@@ -1,16 +1,16 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
-	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id C2C66B6F0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 06:40:29 +1100 (EST)
-Received: by gxk28 with SMTP id 28so5290359gxk.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 11:40:27 -0800 (PST)
-Message-ID: <4B2FCF40.3050204@billgatliff.com>
-Date: Mon, 21 Dec 2009 13:40:48 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Trouble specifying dts gpio-leds with GPIO expander chip
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <mikey@neuling.org>
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by ozlabs.org (Postfix) with ESMTP id BADB4B6F07
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 08:12:16 +1100 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH] powerpc: update ibm,client-architecture
+In-reply-to: <4B2FBB3F.8030703@austin.ibm.com>
+References: <1261170452.8134.13.camel@jschopp-laptop>
+	<29526.1261353566@neuling.org> <4B2FBB3F.8030703@austin.ibm.com>
+Date: Tue, 22 Dec 2009 08:12:15 +1100
+Message-ID: <7024.1261429935@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,95 +20,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys:
+> >> Subject: Re: [PATCH] powerpc: update ibm,client-architecture
+> >>     
+> >
+> > Please give this a more appropriate name.  
+> >   
+> Any suggestions?
 
+Something that's more descriptive of what the patch does.  Say "Add
+max CPU nodes field to ibm,client-architecture call"
 
-I'm trying to come up with the right stuff for my dts file to assign a
-Linux "heartbeat" trigger to an I2C GPIO expansion device (MAX7314). 
-I'm running on a platform that is very similar to the lite5200b, with
-linux-2.6.32.  I'm a bit new to the device tree concept, having come
-most recently from an ARM world, so please be gentle...  :)
+> >   
+> >> In order to boot with more than 64 cores on machines that support the
+> >> ibm,client-architecture RTAS call a new field has been added to the
+> >> structure.  This patch updates that field and adds a few others in the
+> >> process.
+> >>     
+> >
+> > Please detail what these are here.
+> >   
+> OK.
+> >> +	W(NR_CPUS/4),			/* max cores supported */
 
-I have this so far:
+FYI reading the PAPR, this comment should technically be "max 'cpu'
+nodes presented".
 
-        soc5200@f0000000 {
-            #address-cells = <1>;
-            #size-cells = <1>;
-            compatible = "fsl,mpc5200b-immr","simple-bus";
-            ranges = <0 0xf0000000 0x0000c000>;
-            reg = <0xf0000000 0x00000100>;
-            bus-frequency = <0>;        // from bootloader
-            system-frequency = <0>;        // from bootloader
-    ...
-            i2c@3d40 {
-                #address-cells = <1>;
-                #size-cells = <0>;
-                compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-                reg = <0x3d40 0x40>;
-                interrupts = <2 16 0>;
-   
-                lext20: max7314@20 {
-                       #gpio-cells = <2>;
-                       compatible = "maxim,max7314","phillips,pca953x";
-                       reg = <0x20>;
-                       linux,phandle = <0x20>;
-                       gpio-controller;
-                };
-                ...
-            };
-        };
-    ...
-        system {
-            compatible = "simple-bus";
-   
-            gpio-leds {
-                compatible = "gpio-leds";
-   
-                heartbeat {
-                    gpios = <&lext20 3 0>;
-                    linux,default-trigger = "heartbeat";
-                };
-            };
-        };
-    ...
+> >>     
+> >
+> > 4?
+> >
+> >   
+> 4 is the new 2.  
 
+I'd still be asking what 2 is.  It's needs a #define to make clearer
+what you are doing.
 
-The MAX7314 chip is showing up under /debug/gpio:
+> Since you don't know the actual threads per core at 
+> this point in boot you have to be conservative and go with the maximum 
+> number of any processor.  See page 4 of these charts:
+> http://www.power.org/events/powercon09/taiwan09/IBM_Overview_POWER7.pdf
 
-    # cat /debug/gpio
-    ...
-    GPIOs 198-213, i2c/1-0020, max7314, can sleep:
+I don't think hard wiring 4 in here is right. If we are booting a
+machine with SMT2, we will put only half the number of cores that we can
+handle in this field.  This is going to break a lot of machines where
+people have compiled with NR_CPUS = thread number.
 
-And, indeed, I can twiddle the LED by hand:
+I think you just want to put NR_CPUS here.  
 
-    # echo 201 > /sys/class/gpio/export
-    # while true; do for led in high low; \
-        do echo $led > /sys/class/gpio/gpio201/direction; \
-        sleep 1; done; done
-       (observe blinking)
+Mikey
 
-But I see this at boot:
-
-    Skipping unavailable LED gpio -19 (heartbeat)
-
-That error code is -ENODEV.  I double-checked that gpio-leds is showing
-up on of_platform:
-
-    # ls /sys/bus/of_platform/devices/
-    ...
-    gpio-leds.2
-    ...
-
-
-I'm stumped.  Could it be that the startup code is trying to register
-the heartbeat device before it has registered the MAX7314, so it doesn't
-know yet that the GPIO line exists?
-
-Anyone have any suggestions?
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
+> >
+> >
+> > Can we do this now or remove the comment.  Maybe UTS_RELEASE or
+> > something like that.
+> >   
+> I'll just remove the comment for now.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
