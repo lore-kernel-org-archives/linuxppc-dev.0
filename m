@@ -1,16 +1,21 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
-	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 69600B6F07
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 09:30:35 +1100 (EST)
-Received: by ywh11 with SMTP id 11so6041303ywh.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 14:30:33 -0800 (PST)
-Message-ID: <4B2FF71E.10508@billgatliff.com>
-Date: Mon, 21 Dec 2009 16:30:54 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 7C12AB6F16
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 09:32:38 +1100 (EST)
+Received: by yxe8 with SMTP id 8so5971946yxe.17
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 14:32:37 -0800 (PST)
 MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Question on MPC52xx IRQ[123] pins
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B2FCF40.3050204@billgatliff.com>
+References: <4B2FCF40.3050204@billgatliff.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 21 Dec 2009 15:32:17 -0700
+Message-ID: <fa686aa40912211432h606bb8bbh1dd61870a3348319@mail.gmail.com>
+Subject: Re: Trouble specifying dts gpio-leds with GPIO expander chip
+To: Bill Gatliff <bgat@billgatliff.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys:
+On Mon, Dec 21, 2009 at 12:40 PM, Bill Gatliff <bgat@billgatliff.com> wrote=
+:
+> Guys:
+>
+>
+> I'm trying to come up with the right stuff for my dts file to assign a
+> Linux "heartbeat" trigger to an I2C GPIO expansion device (MAX7314).
+> I'm running on a platform that is very similar to the lite5200b, with
+> linux-2.6.32. =A0I'm a bit new to the device tree concept, having come
+> most recently from an ARM world, so please be gentle... =A0:)
+>
+> I have this so far:
+>
+> =A0 =A0 =A0 =A0soc5200@f0000000 {
+> =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
+> =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <1>;
+> =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc5200b-immr","simple-bus";
+> =A0 =A0 =A0 =A0 =A0 =A0ranges =3D <0 0xf0000000 0x0000c000>;
+> =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0xf0000000 0x00000100>;
+> =A0 =A0 =A0 =A0 =A0 =A0bus-frequency =3D <0>; =A0 =A0 =A0 =A0// from boot=
+loader
+> =A0 =A0 =A0 =A0 =A0 =A0system-frequency =3D <0>; =A0 =A0 =A0 =A0// from b=
+ootloader
+> =A0 =A0...
+> =A0 =A0 =A0 =A0 =A0 =A0i2c@3d40 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <0>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc5200b-i2c","fsl,mpc=
+5200-i2c","fsl-i2c";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x3d40 0x40>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <2 16 0>;
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0lext20: max7314@20 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #gpio-cells =3D <2>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "maxim,max7314=
+","phillips,pca953x";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x20>;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 linux,phandle =3D <0x20>;
 
+Drop the linux,phandle.  The phandle property is generated
+automatically by the device tree compiler.  This could mess things up.
 
-I think I already know the answer to this, having read most of the
-MPC52xx manual.  But I'll ask anyway, just to be sure I'm not missing
-something obvious...  :)
+As Anton says, the 7314 driver doesn't register the GPIO in a way that
+the of_gpio layer understands, so cannot translate.  What the of_gpio
+infrastructure *should* be doing is to fetch the device tree node out
+of the struct device and use that path to translate device tree GPIO
+references to Linux GPIO numbers.  ie.
+dev_archdata_get_node(gc->dev->archdata).  Then as long as the device
+tree node pointer is set in the struct device (which it always should
+be), then OF translations for GPIO numbers should work without driver
+changes.
 
-Is it possible to treat the external IRQ[123] pins on the MPC52xx as
-GPIO inputs?  And if so, how do I tweak my dts file and other code, if
-necessary, to make that happen?
+In other words; given a device tree node pointer; loop over all the
+registered GPIO devices and look for a matching node pointer in the
+struct device.  When a matching one is found; do the translation.
+However, on further thought, this may require an additional hook added
+to the gpio_chip registration to override the translation function if
+necessary.
 
-Reason I ask is, I'm trying to enhance
-drivers/input/misc/rotary-encoder.c to use device trees, and one of the
-encoder inputs is on IRQ2.  My strategy so far is to just provide an
-of_probe() function that builds a rotary_encoder_platform_data structure
-and then calls platform_device_register().  And that ain't working.  :)
+Anton, what are you thinking about to simplify OF GPIO registrations?
 
-First off, the rotary-encoder driver assumes that both of its inputs are
-both known to gpiolib, so that they can do both gpio_to_irq() and
-gpio_get_value() on them.  There isn't any existing code that I can find
-that allows you to read the states of IRQ pins, be it under gpiolib or
-otherwise.  And I think the reason for that is that there's no way to
-actually read the states of those pins at all--- the hardware just
-doesn't work that way.
+Bill, in the mean time you could do as Anton suggests and modify the
+GPIO driver to have an of_gpio_chip allocation.
 
-Or am I missing something?
+Cheers,
+g.
 
-Second, if I get all this working then my rotary encoders won't be
-platform devices--- they'll be openfirmware devices, which means I'll
-have to do other work in the code as well.  That's a subtle point I
-know, but rotary-encoder's assumption that all rotary encoder devices
-are also platform devices is kind of like mixing policy with
-implementation, it turns out.  Almost like trying to reuse a PCI driver
-as a platform driver.  I didn't spot how important that was until I
-started hacking on the code itself...
-
-
-
-Thanks!
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
