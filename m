@@ -1,22 +1,20 @@
-Return-Path: <dimov@ronetix.at>
-Received: from smtprelay01.ispgateway.de (smtprelay01.ispgateway.de
-	[80.67.31.28]) by ozlabs.org (Postfix) with ESMTP id 569DEB6F0A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Dec 2009 09:33:50 +1100 (EST)
-Received: from [62.178.142.196] (helo=iserv.ronetix.at)
-	by smtprelay01.ispgateway.de with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.68) (envelope-from <dimov@ronetix.at>) id 1NMqii-0002Xc-6f
-	for linuxppc-dev@lists.ozlabs.org; Mon, 21 Dec 2009 23:27:16 +0100
-Received: from [192.168.10.226] (tserv_vpn [192.168.22.10])
-	by iserv.ronetix.at (8.13.8/8.13.8) with ESMTP id nBLMREF4016461
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Dec 2009 23:27:15 +0100
-Message-ID: <4B2FF66E.7000209@ronetix.at>
-Date: Tue, 22 Dec 2009 00:27:58 +0200
-From: RONETIX - Asen Dimov <dimov@ronetix.at>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 7959BB6F0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 10:16:39 +1100 (EST)
+Received: by ywh11 with SMTP id 11so6076281ywh.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 15:16:38 -0800 (PST)
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: MPC8313e RDB rev A4 and rev C network throughput
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B2FF71E.10508@billgatliff.com>
+References: <4B2FF71E.10508@billgatliff.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 21 Dec 2009 16:16:18 -0700
+Message-ID: <fa686aa40912211516u4a079693h74e39fd887cb421d@mail.gmail.com>
+Subject: Re: Question on MPC52xx IRQ[123] pins
+To: Bill Gatliff <bgat@billgatliff.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello all,
-I have made some test on network throughput with MPC8313e RDB revA4 and 
-revC.
-Some have mentioned that CSB(Coherent System Bus) frequency or untuned 
-TCP/IP stack,
-could cause decrease of network throughput.
+On Mon, Dec 21, 2009 at 3:30 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> gpio_get_value() on them. =A0There isn't any existing code that I can fin=
+d
+> that allows you to read the states of IRQ pins, be it under gpiolib or
+> otherwise. =A0And I think the reason for that is that there's no way to
+> actually read the states of those pins at all--- the hardware just
+> doesn't work that way.
 
-**Test results
+Correct.  IRQ2 can only be used as IRQ2.  It cannot be used a GPIO.
+(Well, I suppose you *could* try to hack into the interrupt controller
+driver and fetch the pin state that way; but I don't know if you can
+read the state of masked out IRQ pins, and it sure would be ugly.)
 
--on MPC8313e RDB revA4 with kernel 2.6.20 and u-boot 1.1.6 created with 
-ltib-mpc8313erdb-20070824
-        iperf -c 172.16.0.1 -l 2m -w 256k
--throughput is 510Mbps
+g.
 
-
--on MPC8313e RDB revA4 with kernel 2.6.23 and u-boot 1.3.0 generated 
-with ltib-mpc8313erdb-20081222
-        iperf -c 172.16.0.1 -l 2m -w 256k
--throughput is 510Mbps
-
-
--on MPC8313e RDB revC with kernel 2.6.23 (the same u-boot, kernel and 
-rootfs as in rev A4, only dtb file differs)
-        iperf -c 172.16.0.1 -l 2m -w 256k
--throughput is 360Mbps.
-
-
-Have someone made such measurements? Any ideas why MPC8313e RDB revC 
-gives worser throughput than revA4?
-
-** Notes
-*The PC (CPU:Intel(R) Core(TM)2 Duo CPU, E8400 @ 3.00GHz;
-         RAM:  2x2G DDR2 @ 800Mhz ;
-         NIC: R8168B PCI Express Gigabit Ethernet controller, driver 
-8.014.00-NAPI;
-         OS: Fedora release 10 (Cambridge) with kernel: 
-2.6.27.38-170.2.113.fc10.i686.PAE #1 SMP )
-*Commnads to set PC
-
-        ethtool -s eth0 autoneg off speed 1000 duplex full
-        ifconfig eth1 172.16.0.1/12 mtu 6000 txqueuelen 10000
-        echo 131071 > /proc/sys/net/core/rmem_max
-        echo 131071 > /proc/sys/net/core/wmem_max
-        echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_rmem
-        echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_wmem
-        iperf -s -l 2m -w 70k
-
-
-*The MPC8313e RDB(CPU: 333Mhz; CSB: 166Mhz) revA4 and revC(using PHY not 
-switch)
-*Commnads to set a board before using iperf
-
-        ifconfig eth1 172.16.0.1/12 mtu 6000 txqueuelen 10000
-        #The PC  lan card is set to advertise 1000Mbps only, so the 
-board switches to 1000Mbps too.
-        echo 131071 > /proc/sys/net/core/rmem_max
-        echo 131071 > /proc/sys/net/core/wmem_max
-        echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_rmem
-        echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_wmem
-
-Regards,
-Asen
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
