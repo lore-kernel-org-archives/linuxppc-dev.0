@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
-	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 7959BB6F0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 10:16:39 +1100 (EST)
-Received: by ywh11 with SMTP id 11so6076281ywh.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 15:16:38 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4B2FF71E.10508@billgatliff.com>
-References: <4B2FF71E.10508@billgatliff.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Dec 2009 16:16:18 -0700
-Message-ID: <fa686aa40912211516u4a079693h74e39fd887cb421d@mail.gmail.com>
-Subject: Re: Question on MPC52xx IRQ[123] pins
-To: Bill Gatliff <bgat@billgatliff.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5EA24B6EEC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Dec 2009 10:25:14 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Dec 2009 10:25:02 +1100
+Message-ID: <1261437902.2173.140.camel@pasglop>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 21, 2009 at 3:30 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
-> gpio_get_value() on them. =A0There isn't any existing code that I can fin=
-d
-> that allows you to read the states of IRQ pins, be it under gpiolib or
-> otherwise. =A0And I think the reason for that is that there's no way to
-> actually read the states of those pins at all--- the hardware just
-> doesn't work that way.
+Hi Linus !
 
-Correct.  IRQ2 can only be used as IRQ2.  It cannot be used a GPIO.
-(Well, I suppose you *could* try to hack into the interrupt controller
-driver and fetch the pin state that way; but I don't know if you can
-read the state of masked out IRQ pins, and it sure would be ugly.)
+Here are some powerpc leftovers from the merge window. Mostly fixes,
+plus a few embedded things that I didn't pull from Kumar in time.
 
-g.
+Cheers,
+Ben.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The following changes since commit 55639353a0035052d9ea6cfe4dde0ac7fcbb2c9f:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc1
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Albert Herranz (3):
+      powerpc/gamecube/wii: Fix off-by-one error in ugecon/usbgecko_udbg
+      powerpc/gc/wii: hlwd-pic: convert irq_desc.lock to raw_spinlock
+      powerpc/gc/wii: Remove get_irq_desc()
+
+Alexey Dobriyan (1):
+      powerpc/iseries: Convert to proc_fops
+
+Anatolij Gustschin (1):
+      powerpc/44x: Extend Katmai dts for ADMA and RAID56 support
+
+Anton Blanchard (3):
+      powerpc/defconfigs: Reduce 64bit vmlinux by making acenic and cramfs modules
+      powerpc/defconfigs: Disable token ring in powerpc defconfigs
+      powerpc/defconfigs: Set HZ=100 on pseries and ppc64 defconfigs
+
+Anton Vorontsov (4):
+      powerpc/fsl_pci: Fix P2P bridge handling for MPC83xx PCIe controllers
+      powerpc/83xx/suspend: Clear deep_sleeping after devices resume
+      powerpc/83xx/suspend: Save and restore SICRL, SICRH and SCCR
+      powerpc/83xx: Add power management support for MPC8315E-RDB boards
+
+Benjamin Herrenschmidt (4):
+      powerpc/mm: Fix a WARN_ON() with CONFIG_DEBUG_PAGEALLOC and CONFIG_DEBUG_VM
+      powerpc: Fix MSI support on U4 bridge PCIe slot
+      Merge commit 'kumar/next' into merge
+      Merge commit 'jwb/next' into merge
+
+David Daney (1):
+      powerpc: Convert BUG() to use unreachable()
+
+David Gibson (1):
+      powerpc/mm: Fix stupid bug in subpge protection handling
+
+Dmitry Eremin-Solenikov (4):
+      powerpc/83xx: mpc8349emitx - add gpio controller declarations
+      powerpc/83xx: mpc8349emitx - populate I2C busses in device tree
+      powerpc/83xx: mpc8349emitx - add OF descriptions of LocalBus devices
+      powerpc/83xx: mpc8349emitx - add leds-gpio binding
+
+Felix Radensky (1):
+      powerpc/85xx: Workaround MPC8572/MPC8536 GPIO 1 errata.
+
+Gautham R Shenoy (2):
+      powerpc/pseries: Don't panic when H_PROD fails during cpu-online.
+      powerpc/pseries: Make declarations of cpu_hotplug_driver_lock() ANSI compatible.
+
+Mark Ware (1):
+      powerpc/cpm2_pic: Allow correct flow_types for port C interrupts
+
+Mel Gorman (1):
+      powerpc/pseries: Select XICS and PCI_MSI PSERIES
+
+Neil Campbell (1):
+      powerpc: Handle VSX alignment faults correctly in little-endian mode
+
+Peter Korsgaard (1):
+      powerpc/gpio: support gpio_to_irq()
+
+Robert Jennings (2):
+      mm: Add notifier in pageblock isolation for balloon drivers
+      powerpc: Make the CMM memory hotplug aware
+
+Roel Kluin (1):
+      powerpc/85xx: Wrong variable returned on error
+
+Sachin P. Sant (1):
+      powerpc/mm: Fix hash_utils_64.c compile errors with DEBUG enabled.
+
+Sean MacLennan (1):
+      powerpc/44x: Increase warp SD buffer
+
+Sebastian Andrzej Siewior (1):
+      powerpc/fsl: try to explain why the interrupt numbers are off by 16
+
+Yang Li (2):
+      powerpc/mm: Fix typo of cpumask_clear_cpu()
+      powerpc/mpic: Fix problem that affinity is not updated
+
+Yong Zhang (1):
+      powerpc/iseries: use DECLARE_COMPLETION_ONSTACK for non-constant completion
+
+ Documentation/powerpc/dts-bindings/fsl/mpic.txt    |   42 ++++
+ arch/powerpc/boot/dts/katmai.dts                   |   52 ++++-
+ arch/powerpc/boot/dts/mpc8315erdb.dts              |   27 ++
+ arch/powerpc/boot/dts/mpc8349emitx.dts             |   82 +++++++-
+ arch/powerpc/boot/dts/warp.dts                     |    2 +-
+ arch/powerpc/boot/ugecon.c                         |    2 +-
+ arch/powerpc/configs/g5_defconfig                  |    6 +-
+ arch/powerpc/configs/iseries_defconfig             |    4 +-
+ arch/powerpc/configs/ppc64_defconfig               |   14 +-
+ arch/powerpc/configs/ppc64e_defconfig              |    4 +-
+ arch/powerpc/configs/pseries_defconfig             |   14 +-
+ arch/powerpc/include/asm/bug.h                     |    2 +-
+ arch/powerpc/include/asm/gpio.h                    |    5 +-
+ arch/powerpc/kernel/align.c                        |   63 ++++--
+ arch/powerpc/mm/hash_utils_64.c                    |   12 +-
+ arch/powerpc/mm/mmu_context_nohash.c               |    2 +-
+ arch/powerpc/mm/pgtable_32.c                       |    2 +-
+ arch/powerpc/platforms/83xx/suspend.c              |   52 ++++-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c          |    2 +-
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c   |    2 +-
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c      |   10 +-
+ arch/powerpc/platforms/embedded6xx/usbgecko_udbg.c |    2 +-
+ arch/powerpc/platforms/iseries/mf.c                |  147 +++++++-----
+ arch/powerpc/platforms/iseries/viopath.c           |    2 +-
+ arch/powerpc/platforms/pseries/Kconfig             |    2 +
+ arch/powerpc/platforms/pseries/cmm.c               |  254 +++++++++++++++++++-
+ arch/powerpc/platforms/pseries/dlpar.c             |    6 +-
+ arch/powerpc/platforms/pseries/smp.c               |    4 +-
+ arch/powerpc/sysdev/cpm2_pic.c                     |   28 ++-
+ arch/powerpc/sysdev/fsl_pci.c                      |    8 +-
+ arch/powerpc/sysdev/mpc8xxx_gpio.c                 |   21 ++-
+ arch/powerpc/sysdev/mpic.c                         |   19 +-
+ arch/powerpc/sysdev/mpic_msi.c                     |   11 +-
+ arch/powerpc/sysdev/mpic_u3msi.c                   |   46 +++-
+ drivers/base/memory.c                              |   19 ++
+ include/linux/memory.h                             |   27 ++
+ mm/page_alloc.c                                    |   57 ++++-
+ 37 files changed, 876 insertions(+), 178 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpic.txt
