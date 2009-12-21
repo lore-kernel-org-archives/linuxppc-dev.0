@@ -1,32 +1,16 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7218FB6F07
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 09:15:01 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBLM6DMl028924
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 17:06:13 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBLMEwAg2125858
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 17:14:58 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBLMEvEr023264
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 17:14:57 -0500
-Message-ID: <4B2FF35E.9020101@austin.ibm.com>
-Date: Mon, 21 Dec 2009 16:14:54 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 69600B6F07
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 09:30:35 +1100 (EST)
+Received: by ywh11 with SMTP id 11so6041303ywh.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 14:30:33 -0800 (PST)
+Message-ID: <4B2FF71E.10508@billgatliff.com>
+Date: Mon, 21 Dec 2009 16:30:54 -0600
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc: update ibm,client-architecture
-References: <1261170452.8134.13.camel@jschopp-laptop>
-	<29526.1261353566@neuling.org>
-	<4B2FBB3F.8030703@austin.ibm.com> <7024.1261429935@neuling.org>
-In-Reply-To: <7024.1261429935@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Question on MPC52xx IRQ[123] pins
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,46 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Guys:
 
->> OK.
->>     
->>>> +	W(NR_CPUS/4),			/* max cores supported */
->>>>         
->
-> FYI reading the PAPR, this comment should technically be "max 'cpu'
-> nodes presented".
->   
-I applied a disambiguation filter to the comment since cpus can mean a 
-lot of things these days ( ie hardware threads, cores, chips) , but a 
-core is a core.
 
->> 4 is the new 2.  
->>     
->
-> I'd still be asking what 2 is.  It's needs a #define to make clearer
-> what you are doing.
->
->   
-I'll add a #define
->> Since you don't know the actual threads per core at 
->> this point in boot you have to be conservative and go with the maximum 
->> number of any processor.  See page 4 of these charts:
->> http://www.power.org/events/powercon09/taiwan09/IBM_Overview_POWER7.pdf
->>     
->
-> I don't think hard wiring 4 in here is right. If we are booting a
-> machine with SMT2, we will put only half the number of cores that we can
-> handle in this field.  This is going to break a lot of machines where
-> people have compiled with NR_CPUS = thread number.
->
-> I think you just want to put NR_CPUS here.  
->
->   
-It's a bad interface.  No matter what you choose there will be a 
-downside.  1) If you choose NR_CPUS, the best case of how many you could 
-boot without SMT, then when you boot with SMT2 or SMT4 you can get 
-assigned more cpus than you can boot.  2) If you choose NR_CPUS/4, the 
-worst case of how many you could boot, and you get a large machine with 
-SMT2 or SMT1 you might have said you support less cpus than you actually 
-do and thus not boot all the cpus.  So no matter what you choose you 
-could be not booting cpus in some theoretical scenario. 
+I think I already know the answer to this, having read most of the
+MPC52xx manual.  But I'll ask anyway, just to be sure I'm not missing
+something obvious...  :)
+
+Is it possible to treat the external IRQ[123] pins on the MPC52xx as
+GPIO inputs?  And if so, how do I tweak my dts file and other code, if
+necessary, to make that happen?
+
+Reason I ask is, I'm trying to enhance
+drivers/input/misc/rotary-encoder.c to use device trees, and one of the
+encoder inputs is on IRQ2.  My strategy so far is to just provide an
+of_probe() function that builds a rotary_encoder_platform_data structure
+and then calls platform_device_register().  And that ain't working.  :)
+
+First off, the rotary-encoder driver assumes that both of its inputs are
+both known to gpiolib, so that they can do both gpio_to_irq() and
+gpio_get_value() on them.  There isn't any existing code that I can find
+that allows you to read the states of IRQ pins, be it under gpiolib or
+otherwise.  And I think the reason for that is that there's no way to
+actually read the states of those pins at all--- the hardware just
+doesn't work that way.
+
+Or am I missing something?
+
+Second, if I get all this working then my rotary encoders won't be
+platform devices--- they'll be openfirmware devices, which means I'll
+have to do other work in the code as well.  That's a subtle point I
+know, but rotary-encoder's assumption that all rotary encoder devices
+are also platform devices is kind of like mixing policy with
+implementation, it turns out.  Almost like trying to reuse a PCI driver
+as a platform driver.  I didn't spot how important that was until I
+started hacking on the code itself...
+
+
+
+Thanks!
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
