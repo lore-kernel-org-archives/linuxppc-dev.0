@@ -1,11 +1,13 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Mon, 21 Dec 2009 11:44:58 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
 To: Joel Schopp <jschopp@austin.ibm.com>
 Subject: Re: [PATCH] powerpc: update ibm,client-architecture
-In-reply-to: <1261170452.8134.13.camel@jschopp-laptop>
+Message-ID: <20091221004458.GI30375@ozlabs.org>
 References: <1261170452.8134.13.camel@jschopp-laptop>
-Date: Mon, 21 Dec 2009 10:59:26 +1100
-Message-ID: <29526.1261353566@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1261170452.8134.13.camel@jschopp-laptop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -16,19 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [PATCH] powerpc: update ibm,client-architecture
-
-Please give this a more appropriate name.  
-
+On Fri, Dec 18, 2009 at 03:07:32PM -0600, Joel Schopp wrote:
 > In order to boot with more than 64 cores on machines that support the
 > ibm,client-architecture RTAS call a new field has been added to the
 > structure.  This patch updates that field and adds a few others in the
-> process.
+> process.  It would be good if this could go in as a bugfix.  
 
-Please detail what these are here.
+But it's not really is it? What does it fix?
 
-> It would be good if this could go in as a bugfix.  
-> 
 > Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
 > 
 > Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
@@ -69,35 +66,31 @@ Please detail what these are here.
 > +	0,				/* reserved */
 > +	0,				/* reserved */
 > +	0,				/* reserved */
+
+Not so much reserved, as unused by us.
+
 > +	W(NR_CPUS/4),			/* max cores supported */
 
-4?
+4?  I can see a case for 2 or just plain NR_CPUS, but 4 is wrong.
 
-> +
 > +	/* option vector 6: IBM PAPR hints */
 > +	4 - 2,
 
-Please put a comment next to these to say what it is.  
+We all know this is a length, but please follow the style in this structure.
 
 > +	0,				/* reserved */
 > +	0,				/* 1 == no secondary pteg */
+
+I think the "1 == " confuses things.
+
 > +	OV6_LINUX,
+
+Does filling in the vector actually let us boot on systems where we do not already?
+
 > +
 > +	/* option vector 7: IBM PAPR OS identification */
 > +	/* a human readable ascii string will go here */
 
-Can we do this now or remove the comment.  Maybe UTS_RELEASE or
-something like that.
+Either fill it in or leave the comments out.  
 
-Mikey
-
->  };
->  
->  /* Old method - ELF header with PT_NOTE sections */
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Yours Tony
