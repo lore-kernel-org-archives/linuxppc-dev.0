@@ -1,33 +1,20 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 39DD4B6F08
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 13:17:53 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBM296jG023777
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 21:09:06 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBM2Hodj1241342
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 21:17:50 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	nBM2HoI2007215
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Dec 2009 21:17:50 -0500
-Message-ID: <4B302C46.2010802@austin.ibm.com>
-Date: Mon, 21 Dec 2009 20:17:42 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 168B2B6F0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 14:43:41 +1100 (EST)
+Date: Mon, 21 Dec 2009 21:48:19 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Peter Tyser <ptyser@xes-inc.com>
+Subject: Re: [PATCH v2 2/3] powerpc: Add support for creating FIT uImages
+Message-ID: <20091222034819.GA24012@lixom.net>
+References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
+	<1261446643-21714-3-git-send-email-ptyser@xes-inc.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/6 v5] CPU probe/release files
-References: <4AE8ADCF.6090104@austin.ibm.com>	
-	<4AE8B072.1070603@austin.ibm.com> <m2oclw9wt4.fsf@igel.home>
-	<1261212415.2173.94.camel@pasglop>
-In-Reply-To: <1261212415.2173.94.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1261446643-21714-3-git-send-email-ptyser@xes-inc.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2009-12-18 at 15:33 +0100, Andreas Schwab wrote:
->> Nathan Fontenot <nfont@austin.ibm.com> writes:
->>
->>> Index: powerpc/arch/powerpc/Kconfig
->>> ===================================================================
->>> --- powerpc.orig/arch/powerpc/Kconfig	2009-10-28 15:21:47.000000000 -0500
->>> +++ powerpc/arch/powerpc/Kconfig	2009-10-28 15:21:53.000000000 -0500
->>> @@ -320,6 +320,10 @@
->>>  
->>>  	  Say N if you are unsure.
->>>  
->>> +config ARCH_CPU_PROBE_RELEASE
->>> +	def_bool y
->>> +	depends on HOTPLUG_CPU
->>> +
->> That does not work.
->>
->> drivers/built-in.o: In function `.store_online':
->> cpu.c:(.ref.text+0xf5c): undefined reference to `.cpu_hotplug_driver_lock'
->> cpu.c:(.ref.text+0xfc8): undefined reference to `.cpu_hotplug_driver_unlock'
->> make: *** [.tmp_vmlinux1] Error 1
->>
->> cpu_hotplug_driver_lock is only defined on pseries, but HOTPLUG_CPU is
->> also defined on pmac.
-> 
-> Well, the stuff was merged ... so we need to fix it.
-> 
-> Nathan, the problem is that the above wlil define ARCH_CPU_PROBE_RELEASE
-> for any powerpc platform that has HOTPLUG_CPU. So a kernel that doesn't
-> have pSeries support but has hotplug CPU will have a problem, though for
-> some reason none of my test configs triggered it (I'll have to check why
-> next week).
-> 
-> The right approach here is to have cpu_hotplug_driver_lock go through
-> ppc_md. I suppose, along with some of the other CPU hotplug platform
-> specific bits.
-> 
+Hi,
 
-Sounds good to me,  I'll get a patch together.
+On Mon, Dec 21, 2009 at 07:50:42PM -0600, Peter Tyser wrote:
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index bb2465b..e56ec21 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -310,6 +310,9 @@ $(obj)/zImage.iseries: vmlinux
+>  $(obj)/uImage: vmlinux $(wrapperbits)
+>  	$(call if_changed,wrap,uboot)
+>  
+> +$(obj)/uImage.fit.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+> +	$(call if_changed,wrap,uboot.fit,,$(obj)/$*.dtb)
+> +
+>  $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>  	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
+>  
+> @@ -349,7 +352,7 @@ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+>  
+>  # anything not in $(targets)
+>  clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+> -	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
+> +	uImage.* zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
 
--Nathan Fontenot
+Please no. It's not entirely uncommon that I will save a "known good"
+binary in the build tree for a while, by copying it aside with a different
+suffix. That'd give me one very big surprise in this case.
+
+
+-Olof
