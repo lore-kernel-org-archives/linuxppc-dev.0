@@ -1,21 +1,16 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
-	by ozlabs.org (Postfix) with ESMTP id 5D46CB7B71
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 08:00:35 +1100 (EST)
-Received: by ey-out-2122.google.com with SMTP id 22so269326eye.33
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 13:00:32 -0800 (PST)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: Does gpio_to_irq() work for MPC52xx gpios?
-References: <4B312EDA.7030606@billgatliff.com>
-Date: Tue, 22 Dec 2009 22:00:30 +0100
-In-Reply-To: <4B312EDA.7030606@billgatliff.com> (Bill Gatliff's message of
-	"Tue, 22 Dec 2009 14:40:58 -0600")
-Message-ID: <87fx72wwpd.fsf@macbook.be.48ers.dk>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id 2B05DB7BA5
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 09:14:50 +1100 (EST)
+Date: Wed, 23 Dec 2009 01:14:47 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH 1/3] phylib: Fix deadlock on resume
+Message-ID: <20091222221447.GA9268@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+	Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +20,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Bill" == Bill Gatliff <bgat@billgatliff.com> writes:
+Sometimes kernel hangs on resume with the following trace:
 
- Bill> Guys:
- Bill> Is it possible to specify an individual GPIO pin as an interrupt source
- Bill> with the current MPC52xx code?
+ ucc_geth e0102000.ucc: resume
+ INFO: task bash:1764 blocked for more than 120 seconds.
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash          D 0fecf43c     0  1764   1763 0x00000000
+ Call Trace:
+ [cf9a7c10] [c0012868] ret_from_except+0x0/0x14 (unreliable)
+ --- Exception: cf9a7ce0 at __switch_to+0x4c/0x6c
+     LR = 0xcf9a7cc0
+ [cf9a7cd0] [c0008c14] __switch_to+0x4c/0x6c (unreliable)
+ [cf9a7ce0] [c028bcfc] schedule+0x158/0x260
+ [cf9a7d10] [c028c720] __mutex_lock_slowpath+0x80/0xd8
+ [cf9a7d40] [c01cf388] phy_stop+0x20/0x70
+ [cf9a7d50] [c01d514c] ugeth_resume+0x6c/0x13c
+ [...]
 
-No (not yet). In Ben's latest pull request there's a patch from me to
-add basic infrastructure for gpio_to_irq(). I've recently added irq
-support to the mpc8xxx driver, but so far nothing has been written for
-52xx.
+Here is why.
 
-http://patchwork.ozlabs.org/patch/41550/
+On suspend:
 
+- PM core starts suspending devices, ucc_geth_suspend gets called;
+
+- ucc_geth calls phy_stop() on suspend. Note that phy_stop() is
+  mostly asynchronous so it doesn't block ucc_geth's suspend routine,
+  it just sets PHY_HALTED state and disables PHY's interrupts;
+
+- Suddenly the state machine gets scheduled, it grabs the phydev->lock
+  mutex and tries to process the PHY_HALTED state, so it calls
+  phydev->adjust_link(phydev->attached_dev). In ucc_geth case
+  adjust_link() calls msleep(), which reschedules the code flow back to
+  PM core, which now finishes suspend and so we end up sleeping with
+  phydev->lock mutex held.
+
+On resume:
+
+- PM core starts resuming devices (notice that nobody rescheduled
+  the state machine yet, so the mutex is still held), the core calls
+  ucc_geth's resume routine;
+
+- ucc_geth_resume restarts the PHY with phy_stop()/phy_start()
+  sequence, and the phy_*() calls are trying to grab the phydev->lock
+  mutex. Here comes the deadlock.
+
+This patch fixes the issue by stopping the state machine on suspend
+and starting it again on resume.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/phy/mdio_bus.c |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index bd4e8d7..49252d3 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -303,8 +303,18 @@ static int mdio_bus_suspend(struct device * dev, pm_message_t state)
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
+ 
++	/*
++	 * We must stop the state machine manually, otherwise it stops out of
++	 * control, possibly with the phydev->lock held. Upon resume, netdev
++	 * may call phy routines that try to grab the same lock, and that may
++	 * lead to a deadlock.
++	 */
++	if (phydev->attached_dev)
++		phy_stop_machine(phydev);
++
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+ 		return 0;
++
+ 	return phydrv->suspend(phydev);
+ }
+ 
+@@ -312,10 +322,20 @@ static int mdio_bus_resume(struct device * dev)
+ {
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
++	int ret;
+ 
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+-		return 0;
+-	return phydrv->resume(phydev);
++		goto no_resume;
++
++	ret = phydrv->resume(phydev);
++	if (ret < 0)
++		return ret;
++
++no_resume:
++	if (phydev->attached_dev)
++		phy_start_machine(phydev, NULL);
++
++	return 0;
+ }
+ 
+ struct bus_type mdio_bus_type = {
 -- 
-Bye, Peter Korsgaard
+1.6.3.3
