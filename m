@@ -1,16 +1,17 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 22 Dec 2009 11:58:41 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH] powerpc: update ibm,client-architecture
-Message-ID: <20091222005841.GM30375@ozlabs.org>
-References: <1261170452.8134.13.camel@jschopp-laptop>
-	<29526.1261353566@neuling.org> <4B2FBB3F.8030703@austin.ibm.com>
-	<7024.1261429935@neuling.org> <4B2FF35E.9020101@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4B2FF35E.9020101@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Return-Path: <ptyser@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 92442B6F05
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 12:50:50 +1100 (EST)
+From: Peter Tyser <ptyser@xes-inc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 1/3] powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
+Date: Mon, 21 Dec 2009 19:50:41 -0600
+Message-Id: <1261446643-21714-2-git-send-email-ptyser@xes-inc.com>
+In-Reply-To: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
+References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
+Cc: Peter Tyser <ptyser@xes-inc.com>, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 21, 2009 at 04:14:54PM -0600, Joel Schopp wrote:
+mkuboot.sh provides a basic wrapper for the 'mkimage' utility.  Using
+mkuboot.sh provides clearer error reporting and allows a toolchain to
+use its own 'mkimage' executable specified by ${CROSS_COMPILE}mkimage.
+Additionally, this brings PowerPC in line with other architectures
+which already call mkimage via mkuboot.sh.
 
-> It's a bad interface.  No matter what you choose there will be a
-> downside.  1) If you choose NR_CPUS, the best case of how many you
-> could boot without SMT, then when you boot with SMT2 or SMT4 you can
-> get assigned more cpus than you can boot.  2) If you choose
-> NR_CPUS/4, the worst case of how many you could boot, and you get a
-> large machine with SMT2 or SMT1 you might have said you support less
-> cpus than you actually do and thus not boot all the cpus.  So no
-> matter what you choose you could be not booting cpus in some
-> theoretical scenario.
+Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+---
+ arch/powerpc/boot/wrapper |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-We're far enough through boot to determine the threading model, so you /could/
-work out what SMT we're in and divide NR_CPUS by that and give that to firmware.
-
-Yours Tony
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 390512a..f4594ed 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -43,6 +43,9 @@ gzip=.gz
+ # cross-compilation prefix
+ CROSS=
+ 
++# mkimage wrapper script
++MKIMAGE=$srctree/scripts/mkuboot.sh
++
+ # directory for object and other files used by this script
+ object=arch/powerpc/boot
+ objbin=$object
+@@ -267,7 +270,7 @@ membase=`${CROSS}objdump -p "$kernel" | grep -m 1 LOAD | awk '{print $7}'`
+ case "$platform" in
+ uboot)
+     rm -f "$ofile"
+-    mkimage -A ppc -O linux -T kernel -C gzip -a $membase -e $membase \
++    ${MKIMAGE} -A ppc -O linux -T kernel -C gzip -a $membase -e $membase \
+ 	$uboot_version -d "$vmz" "$ofile"
+     if [ -z "$cacheit" ]; then
+ 	rm -f "$vmz"
+@@ -327,7 +330,7 @@ coff)
+     ;;
+ cuboot*)
+     gzip -f -9 "$ofile"
+-    mkimage -A ppc -O linux -T kernel -C gzip -a "$base" -e "$entry" \
++    ${MKIMAGE} -A ppc -O linux -T kernel -C gzip -a "$base" -e "$entry" \
+             $uboot_version -d "$ofile".gz "$ofile"
+     ;;
+ treeboot*)
+-- 
+1.6.2.1
