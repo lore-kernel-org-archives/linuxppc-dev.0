@@ -1,16 +1,21 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
-	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id A4164B7B6C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 07:40:35 +1100 (EST)
-Received: by ywh11 with SMTP id 11so7047223ywh.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 12:40:33 -0800 (PST)
-Message-ID: <4B312EDA.7030606@billgatliff.com>
-Date: Tue, 22 Dec 2009 14:40:58 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <jacmet@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.25])
+	by ozlabs.org (Postfix) with ESMTP id 5D46CB7B71
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 08:00:35 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id 22so269326eye.33
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 13:00:32 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Does gpio_to_irq() work for MPC52xx gpios?
+References: <4B312EDA.7030606@billgatliff.com>
+Date: Tue, 22 Dec 2009 22:00:30 +0100
+In-Reply-To: <4B312EDA.7030606@billgatliff.com> (Bill Gatliff's message of
+	"Tue, 22 Dec 2009 14:40:58 -0600")
+Message-ID: <87fx72wwpd.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Does gpio_to_irq() work for MPC52xx gpios?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys:
+>>>>> "Bill" == Bill Gatliff <bgat@billgatliff.com> writes:
 
+ Bill> Guys:
+ Bill> Is it possible to specify an individual GPIO pin as an interrupt source
+ Bill> with the current MPC52xx code?
 
-Is it possible to specify an individual GPIO pin as an interrupt source
-with the current MPC52xx code?
+No (not yet). In Ben's latest pull request there's a patch from me to
+add basic infrastructure for gpio_to_irq(). I've recently added irq
+support to the mpc8xxx driver, but so far nothing has been written for
+52xx.
 
-I don't see anything in mpc52xx_gpio.c that registers an interrupt
-handler, which I think would be a necessary step towards demultiplexing
-the GPIO interrupt event.  So I'm thinking that code to allow me to
-register an interrupt handler for a specific GPIO pin just isn't there...
-
-
-b.g.
+http://patchwork.ozlabs.org/patch/41550/
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Bye, Peter Korsgaard
