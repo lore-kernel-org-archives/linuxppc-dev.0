@@ -1,25 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id B47CFB6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Dec 2009 11:11:57 +1100 (EST)
-Received: by yxe9 with SMTP id 9so5731402yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Dec 2009 16:11:56 -0800 (PST)
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 22 Dec 2009 11:18:19 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH] powerpc: update ibm,client-architecture
+Message-ID: <20091222001819.GL30375@ozlabs.org>
+References: <1261170452.8134.13.camel@jschopp-laptop>
+	<20091221004458.GI30375@ozlabs.org>
+	<4B2FBCD1.7080306@austin.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <200912171355.34694.roman.fietze@telemotive.de>
-References: <200912081339.50722.roman.fietze@telemotive.de>
-	<200912151159.40628.roman.fietze@telemotive.de>
-	<fa686aa40912151150o64f97533h1b736b4445301192@mail.gmail.com>
-	<200912171355.34694.roman.fietze@telemotive.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Dec 2009 17:11:30 -0700
-Message-ID: <fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
-Subject: Re: [PATCH] PowerPC: const intspec pointers
-To: Roman Fietze <roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4B2FBCD1.7080306@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 17, 2009 at 5:55 AM, Roman Fietze
-<roman.fietze@telemotive.de> wrote:
-> Hello Grant,
->
-> On Tuesday 15 December 2009 20:50:05 Grant Likely wrote:
->
->> Yes, I'm using the driver in a couple of projects. =A0It works for me
->> for both RX and TX (although TX+DMA has been troublesome).
->
-> That's what I found out.
->
->> The test driver on the other hand is pretty poor code. =A0Don't expect
->> much from it other than some hints. =A0There's a reason I didn't merge
->> that chunk.
->
-> I brought it up to speed before using it.
->
->> Yes, please post the patches and cc: me. I'll review, test, and make
->> comments.
->
-> I hope it's ok that I've copied them to my web space instead of
-> providing patches in a mail. The URL is:
->
-> =A0http://www.fietze-home.de/telemotive/linux-2.6-telemotive-mpc.git
+On Mon, Dec 21, 2009 at 12:22:09PM -0600, Joel Schopp wrote:
 
-"Access Forbidden!"
+> 4 is the new 2.  Since the actual threads per core is unknown at
+> this point in boot you have to be conservative and go with the
+> maximum number of any processor.  See page 4 of these charts:
+> http://www.power.org/events/powercon09/taiwan09/IBM_Overview_POWER7.pdf
 
-It is easier for me though if you post them to the list.  Then I can
-just hit "reply to all" and make comments on the code.
+Sure P7 /can/ be 4-way SMT, but consider the case where you know you have 128
+threads so you set NR_CPUS to 128, then you boot with "max cores" of 32, so you
+lose half of your threads.  I guess that's only a problem when you build your
+own kernels, distros are probably setting NR_CPUS high enough to cover all SMT2
+systems anyway.
 
-Cheers,
-g.
+I guess if the patch only set the "max cores" and described why, I'd (FWIW :D)
+be more comfortable.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Yours Tony
