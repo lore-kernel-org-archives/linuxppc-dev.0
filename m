@@ -2,25 +2,25 @@ Return-Path: <roman.fietze@telemotive.de>
 Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 29E16B7D1A
+	by ozlabs.org (Postfix) with ESMTPS id A3776B7BC1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Dec 2009 18:08:20 +1100 (EST)
+	Tue, 22 Dec 2009 18:09:15 +1100 (EST)
 Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
 	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 1CB19BADFD
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id C7398BADFD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Dec 2009 08:08:15 +0100 (CET)
+	Tue, 22 Dec 2009 08:09:09 +0100 (CET)
 From: Roman Fietze <roman.fietze@telemotive.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/13] powerpc/5200: LocalPlus driver: smarter calculation of
-	BPT, bytes per transfer
+Subject: [PATCH 10/13] powerpc/5200: LocalPlus driver: fix problem caused by
+	unpredictable IRQ order
 References: <200912081339.50722.roman.fietze@telemotive.de>
 	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
 	<200912220755.09756.roman.fietze@telemotive.de>
 In-Reply-To: <200912220755.09756.roman.fietze@telemotive.de>
 MIME-Version: 1.0
-Message-ID: <200912220808.14759.roman.fietze@telemotive.de>
-Date: Tue, 22 Dec 2009 08:08:14 +0100
+Message-ID: <200912220809.09578.roman.fietze@telemotive.de>
+Date: Tue, 22 Dec 2009 08:09:09 +0100
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,119 +33,285 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+The order of the raised interrupts of SCLPC and BCOM cannot be
+predicted, because it depends on the individual BCOM and CPU loads. So
+in DMA mode we just wait for both until we finish the transaction.
+
 Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
 =2D--
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |   33 +++++++++++++++------=
+ arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |   94 +++++++++++++++++----=
 =2D---
- 1 files changed, 20 insertions(+), 13 deletions(-)
+ 1 files changed, 64 insertions(+), 30 deletions(-)
 
 diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/p=
 latforms/52xx/mpc52xx_lpbfifo.c
-index 48f2b4f..21b2a40 100644
+index 21b2a40..cd8dc69 100644
 =2D-- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
 +++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -80,11 +80,11 @@ static inline int mpc52xx_lpbfifo_is_poll_dma(int flags)
+@@ -32,7 +32,7 @@ struct mpc52xx_lpbfifo {
+ 	struct device *dev;
+ 	phys_addr_t regs_phys;
+ 	struct mpc52xx_sclpc __iomem *regs;
+=2D	int irq;
++	int sclpc_irq;
+ 	spinlock_t lock;
+=20
+ 	struct bcom_task *bcom_tx_task;
+@@ -41,6 +41,7 @@ struct mpc52xx_lpbfifo {
+=20
+ 	/* Current state data */
+ 	struct mpc52xx_lpbfifo_request *req;
++	unsigned short irqs_pending;
+ 	int dma_irqs_enabled;
+ };
+=20
+@@ -48,6 +49,14 @@ struct mpc52xx_lpbfifo {
+ static struct mpc52xx_lpbfifo lpbfifo;
+=20
+=20
++/* The order of the raised interrupts of SCLPC and BCOM cann not be
++ * predicted, because it depends on the individual BCOM and CPU
++ * loads. So in DMA mode we just wait for both until we finish the
++ * transaction. */
++#define MPC52XX_LPBFIFO_PENDING_SCLPC	BIT(0)
++#define MPC52XX_LPBFIFO_PENDING_BCOM	BIT(1)
++
++
+ /**
+  * mpc52xx_lpbfifo_is_write - return true if it's a WRITE request
   */
- static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo_request *req)
- {
-=2D	size_t transfer_size =3D req->size - req->pos;
-+	size_t tc =3D req->size - req->pos;
- 	struct bcom_bd *bd;
- 	void __iomem *reg;
- 	u32 *data;
-=2D	u32 bit_fields;
-+	u32 control;
- 	int rflags =3D req->flags;
-=20
- 	/* Set and clear the reset bits; is good practice in User Manual */
-@@ -93,10 +93,10 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
+@@ -127,6 +136,8 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
 _request *req)
- 	/* Set width, chip select and READ mode */
- 	out_be32(&lpbfifo.regs->start_address, req->offset + req->pos);
-=20
-=2D	/* Set CS and BPT */
-=2D	bit_fields =3D MPC52xx_SCLPC_CONTROL_CS(req->cs) | 0x8;
-+	/* Setup CS */
-+	control =3D MPC52xx_SCLPC_CONTROL_CS(req->cs);
- 	if (!(mpc52xx_lpbfifo_is_write(rflags)))
-=2D		bit_fields |=3D MPC52xx_SCLPC_CONTROL_RWB_RECEIVE;	/* read mode */
-+		control |=3D MPC52xx_SCLPC_CONTROL_RWB_RECEIVE;	/* read mode */
-=20
- 	if (!mpc52xx_lpbfifo_is_dma(rflags)) {
- 		/* While the FIFO can be setup for transfer sizes as
-@@ -112,10 +112,10 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfi=
-fo_request *req)
- 		 * The last block of data will be received with the
- 		 * flush bit set. This avoids stale read data.
- 		 */
-=2D		if (transfer_size > 512)
-=2D			transfer_size =3D 512;
-+		if (tc > 512)
-+			tc =3D 512;
- 		else if (!(mpc52xx_lpbfifo_is_write(rflags)))
-=2D			bit_fields |=3D MPC52xx_SCLPC_CONTROL_FLUSH;
-+			control |=3D MPC52xx_SCLPC_CONTROL_FLUSH;
-=20
- 		/* Load the FIFO with data */
- 		if (mpc52xx_lpbfifo_is_write(rflags)) {
-@@ -123,7 +123,7 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
-_request *req)
-=20
- 			reg =3D &lpbfifo.regs->fifo_data;
- 			data =3D req->data + req->pos;
-=2D			for (i =3D 0; i < transfer_size; i +=3D 4)
-+			for (i =3D 0; i < tc; i +=3D 4)
  				out_be32(reg, *data++);
  		}
 =20
-@@ -136,7 +136,7 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
++		lpbfifo.irqs_pending =3D MPC52XX_LPBFIFO_PENDING_SCLPC;
++
+ 		/* Unmask both error and completion irqs */
+ 		out_be32(&lpbfifo.regs->enable, (MPC52xx_SCLPC_ENABLE_AIE |
+ 						 MPC52xx_SCLPC_ENABLE_NIE |
+@@ -172,6 +183,8 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
 _request *req)
- 		/* In DMA mode we can always set the flush bit to avoid
- 		 * stale read data. */
- 		if (!(mpc52xx_lpbfifo_is_write(rflags)))
-=2D			bit_fields |=3D MPC52xx_SCLPC_CONTROL_FLUSH;
-+			control |=3D MPC52xx_SCLPC_CONTROL_FLUSH;
-=20
- 		/* Choose the correct direction
- 		 *
-@@ -173,15 +173,17 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfi=
-fo_request *req)
+ 		/* error irq & master enabled bit */
  		out_be32(&lpbfifo.regs->enable, MPC52xx_SCLPC_ENABLE_AIE | MPC52xx_SCLPC=
 _ENABLE_NIE | MPC52xx_SCLPC_ENABLE_ME);
 =20
++		lpbfifo.irqs_pending =3D MPC52XX_LPBFIFO_PENDING_BCOM | MPC52XX_LPBFIFO_=
+PENDING_SCLPC;
++
  		bd =3D bcom_prepare_next_buffer(lpbfifo.bcom_cur_task);
-=2D		bd->status =3D transfer_size;
-+		bd->status =3D tc;
+ 		bd->status =3D tc;
  		bd->data[0] =3D req->data_dma + req->pos;
- 		bcom_submit_next_buffer(lpbfifo.bcom_cur_task, NULL);
- 	}
-=20
-=2D	out_be32(&lpbfifo.regs->control, bit_fields);
-+	/* Setup BPT. tc is already screened and a multiple of 4 */
-+	control |=3D tc & 7 ? 4 : 8;
-+	out_be32(&lpbfifo.regs->control, control);
-=20
- 	/* Set packet size and kick it off */
-=2D	out_be32(&lpbfifo.regs->packet_size.packet_size, MPC52xx_SCLPC_PACKET_S=
-IZE_RESTART | transfer_size);
-+	out_be32(&lpbfifo.regs->packet_size.packet_size, MPC52xx_SCLPC_PACKET_SIZ=
-E_RESTART | tc);
- 	if (mpc52xx_lpbfifo_is_dma(rflags))
+@@ -188,6 +201,7 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
+_request *req)
  		bcom_enable(lpbfifo.bcom_cur_task);
  }
-@@ -395,6 +397,11 @@ int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_requ=
-est *req)
- 	if (!lpbfifo.regs)
+=20
++
+ /**
+  * mpc52xx_lpbfifo_sclpc_irq - IRQ handler for LPB FIFO
+  *
+@@ -232,8 +246,9 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfifo=
+_request *req)
+  */
+ static irqreturn_t mpc52xx_lpbfifo_sclpc_irq(int irq, void *dev_id)
+ {
++	struct mpc52xx_lpbfifo *lpbfifo =3D dev_id;
+ 	struct mpc52xx_lpbfifo_request *req;
+=2D	u32 status_count =3D in_be32(&lpbfifo.regs->bytes_done_status.bytes_don=
+e);
++	u32 status_count =3D in_be32(&lpbfifo->regs->bytes_done_status.bytes_done=
+);
+ 	void __iomem *reg;
+ 	u32 *data;
+ 	size_t i;
+@@ -242,18 +257,20 @@ static irqreturn_t mpc52xx_lpbfifo_sclpc_irq(int irq,=
+ void *dev_id)
+ 	unsigned long flags;
+ 	int rflags;
+=20
+=2D	spin_lock_irqsave(&lpbfifo.lock, flags);
++	spin_lock_irqsave(&lpbfifo->lock, flags);
+ 	ts =3D get_tbl();
+=20
+=2D	req =3D lpbfifo.req;
++	req =3D lpbfifo->req;
+ 	if (!req) {
+=2D		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		spin_unlock_irqrestore(&lpbfifo->lock, flags);
+ 		pr_err("bogus SCLPC IRQ\n");
+ 		return IRQ_HANDLED;
+ 	}
+=20
++	lpbfifo->irqs_pending &=3D ~MPC52XX_LPBFIFO_PENDING_SCLPC;
++
+ 	rflags =3D req->flags;
+=2D	status_count =3D in_be32(&lpbfifo.regs->bytes_done_status.bytes_done);
++	status_count =3D in_be32(&lpbfifo->regs->bytes_done_status.bytes_done);
+=20
+ 	/* Check normal termination bit */
+ 	if (!(status_count & MPC52xx_SCLPC_STATUS_NT))
+@@ -261,19 +278,23 @@ static irqreturn_t mpc52xx_lpbfifo_sclpc_irq(int irq,=
+ void *dev_id)
+=20
+ 	/* Check abort bit */
+ 	if (status_count & MPC52xx_SCLPC_STATUS_AT) {
+=2D		out_be32(&lpbfifo.regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLP=
+C_ENABLE_RF);
++		out_be32(&lpbfifo->regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLPC=
+_ENABLE_RF);
+ 		do_callback =3D 1;
+ 		goto out;
+ 	}
+=20
+=2D	if (!mpc52xx_lpbfifo_is_dma(rflags)) {
++	if (mpc52xx_lpbfifo_is_dma(rflags)) {
++		if (!lpbfifo->irqs_pending)
++			do_callback =3D 1;
++	}
++	else {
+=20
+ 		/* Bytes done */
+ 		status_count &=3D MPC52xx_SCLPC_STATUS_BYTES_DONE_MASK;
+=20
+ 		if (!mpc52xx_lpbfifo_is_write(rflags)) {
+ 			/* copy the data out of the FIFO */
+=2D			reg =3D &lpbfifo.regs->fifo_data;
++			reg =3D &lpbfifo->regs->fifo_data;
+ 			data =3D req->data + req->pos;
+ 			for (i =3D 0; i < status_count; i +=3D sizeof(u32))
+ 				*data++ =3D in_be32(reg);
+@@ -288,13 +309,10 @@ static irqreturn_t mpc52xx_lpbfifo_sclpc_irq(int irq,=
+ void *dev_id)
+ 		else
+ 			do_callback =3D 1;
+ 	}
+=2D	else {
+=2D		do_callback =3D 1;
+=2D	}
+=20
+ out:
+ 	/* Clear the IRQ */
+=2D	out_8(&lpbfifo.regs->bytes_done_status.status, BIT(0));
++	out_8(&lpbfifo->regs->bytes_done_status.status, BIT(0));
+=20
+ 	req->last_byte =3D ((u8 *)req->data)[req->size - 1];
+=20
+@@ -304,11 +322,11 @@ out:
+ 	/* When the do_callback flag is set; it means the transfer is finished
+ 	 * so set the FIFO as idle */
+ 	if (do_callback) {
+=2D		lpbfifo.req =3D NULL;
+=2D		out_be32(&lpbfifo.regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLP=
+C_ENABLE_RF);
++		lpbfifo->req =3D NULL;
++		out_be32(&lpbfifo->regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLPC=
+_ENABLE_RF);
+=20
+ 		req->irq_ticks +=3D get_tbl() - ts;
+=2D		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		spin_unlock_irqrestore(&lpbfifo->lock, flags);
+=20
+ 		/* Spinlock is released; it is now safe to call the callback */
+ 		if (req->callback)
+@@ -318,7 +336,7 @@ out:
+ 	}
+ 	else {
+ 		req->irq_ticks +=3D get_tbl() - ts;
+=2D		spin_unlock_irqrestore(&lpbfifo.lock, flags);
++		spin_unlock_irqrestore(&lpbfifo->lock, flags);
+=20
+ 		return IRQ_HANDLED;
+ 	}
+@@ -354,14 +372,30 @@ static irqreturn_t mpc52xx_lpbfifo_bcom_irq(int irq, =
+void *dev_id)
+ 	bcom_retrieve_buffer(lpbfifo->bcom_cur_task, NULL, NULL);
+ 	// req->irq_ticks +=3D get_tbl() - ts;
+=20
+=2D	if (lpbfifo->req) {
+=2D		if (mpc52xx_lpbfifo_is_write(lpbfifo->req->flags))
+=2D			dma_unmap_single(lpbfifo->dev, lpbfifo->req->data_dma, lpbfifo->req->=
+size, DMA_TO_DEVICE);
+=2D		else
+=2D			dma_unmap_single(lpbfifo->dev, lpbfifo->req->data_dma, lpbfifo->req->=
+size, DMA_FROM_DEVICE);
+=2D	} else
+=2D	{
+=2D		dev_err(lpbfifo->dev, "request is NULL\n");
++	lpbfifo->irqs_pending &=3D ~MPC52XX_LPBFIFO_PENDING_BCOM;
++	if (!lpbfifo->irqs_pending) {
++		struct mpc52xx_lpbfifo_request *req =3D lpbfifo->req;
++
++		if (req) {
++			if (mpc52xx_lpbfifo_is_write(lpbfifo->req->flags))
++				dma_unmap_single(lpbfifo->dev, lpbfifo->req->data_dma, lpbfifo->req->s=
+ize, DMA_TO_DEVICE);
++			else
++				dma_unmap_single(lpbfifo->dev, lpbfifo->req->data_dma, lpbfifo->req->s=
+ize, DMA_FROM_DEVICE);
++
++			lpbfifo->req =3D NULL;
++			out_be32(&lpbfifo->regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLP=
+C_ENABLE_RF);
++
++			spin_unlock_irqrestore(&lpbfifo->lock, flags);
++
++			/* Spinlock is released; it is now safe to call the callback */
++			if (req->callback)
++				req->callback(req);
++
++			return IRQ_HANDLED;
++		}
++		else {
++			dev_err(lpbfifo->dev, "bogus BCOM IRQ\n");
++		}
+ 	}
+=20
+ 	spin_unlock_irqrestore(&lpbfifo->lock, flags);
+@@ -451,8 +485,8 @@ mpc52xx_lpbfifo_probe(struct of_device *op, const struc=
+t of_device_id *match)
+ 	if (lpbfifo.dev !=3D NULL)
+ 		return -ENOSPC;
+=20
+=2D	lpbfifo.irq =3D irq_of_parse_and_map(op->node, 0);
+=2D	if (!lpbfifo.irq)
++	lpbfifo.sclpc_irq =3D irq_of_parse_and_map(op->node, 0);
++	if (!lpbfifo.sclpc_irq)
  		return -ENODEV;
 =20
-+	/* The gen bd BestComm task currently only allows an increment
-+	 * of 4 */
-+	if (!req->size || req->size & 0x03)
-+		return -EINVAL;
-+
- 	spin_lock_irqsave(&lpbfifo.lock, flags);
+ 	if (of_address_to_resource(op->node, 0, &res))
+@@ -468,7 +502,7 @@ mpc52xx_lpbfifo_probe(struct of_device *op, const struc=
+t of_device_id *match)
+ 	out_be32(&lpbfifo.regs->enable, MPC52xx_SCLPC_ENABLE_RC | MPC52xx_SCLPC_E=
+NABLE_RF);
 =20
- 	/* If the req pointer is already set, then a transfer is in progress */
+ 	/* register the interrupt handler */
+=2D	rc =3D request_irq(lpbfifo.irq, mpc52xx_lpbfifo_sclpc_irq, 0,
++	rc =3D request_irq(lpbfifo.sclpc_irq, mpc52xx_lpbfifo_sclpc_irq, 0,
+ 			 "mpc52xx-lpbfifo", &lpbfifo);
+ 	if (rc)
+ 		goto err_irq;
+@@ -539,7 +573,7 @@ static int __devexit mpc52xx_lpbfifo_remove(struct of_d=
+evice *op)
+ 	free_irq(bcom_get_task_irq(lpbfifo.bcom_rx_task), &lpbfifo);
+ 	bcom_gen_bd_rx_release(lpbfifo.bcom_rx_task);
+=20
+=2D	free_irq(lpbfifo.irq, &lpbfifo);
++	free_irq(lpbfifo.sclpc_irq, &lpbfifo);
+ 	iounmap(lpbfifo.regs);
+ 	lpbfifo.regs =3D NULL;
+ 	lpbfifo.dev =3D NULL;
+@@ -547,7 +581,7 @@ static int __devexit mpc52xx_lpbfifo_remove(struct of_d=
+evice *op)
+ 	return 0;
+ }
+=20
+=2Dstatic struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst =3D {
++static const struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst =
+=3D {
+ 	{ .compatible =3D "fsl,mpc5200-lpbfifo", },
+ 	{},
+ };
 =2D-=20
 1.6.5.5
 
