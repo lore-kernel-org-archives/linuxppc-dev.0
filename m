@@ -1,19 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 290BEB7B71
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 06:21:45 +1100 (EST)
-Message-ID: <4B311C13.6010903@grandegger.com>
-Date: Tue, 22 Dec 2009 20:20:51 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id A4164B7B6C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 07:40:35 +1100 (EST)
+Received: by ywh11 with SMTP id 11so7047223ywh.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Dec 2009 12:40:33 -0800 (PST)
+Message-ID: <4B312EDA.7030606@billgatliff.com>
+Date: Tue, 22 Dec 2009 14:40:58 -0600
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: I2C bus clock on MPC85XX systems
-References: <4B30E7F5.8080201@embedded-sol.com>	<4B30F165.2060300@grandegger.com>	<4B310D10.4090307@embedded-sol.com>
-	<4B311281.6020801@grandegger.com>
-	<4B3118A9.6000704@embedded-sol.com>
-In-Reply-To: <4B3118A9.6000704@embedded-sol.com>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Does gpio_to_irq() work for MPC52xx gpios?
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Felix,
+Guys:
 
-Felix Radensky wrote:
-> Hi, Wolfgang
-> 
-> Wolfgang Grandegger wrote:
-[snip]
->> The trees provided by Freescale are usually based on older kernel
->> version. Borrow from such trees is OK, but the project developers should
->> use a recent kernel version for development.
->>   
-> 
-> I was talking about modern vanilla kernels for Freescale reference
-> boards. See, for example
-> http://lxr.linux.no/#linux+v2.6.32/arch/powerpc/boot/dts/mpc8536ds.dts
 
-Only a few boards use these new properties to set a reasonable I2C
-clock. But I agree, adding "clock-frequency = <100000>;" would make it
-more obvious to the users how to define a proper frequency.
+Is it possible to specify an individual GPIO pin as an interrupt source
+with the current MPC52xx code?
 
-Wolfgang.
+I don't see anything in mpc52xx_gpio.c that registers an interrupt
+handler, which I think would be a necessary step towards demultiplexing
+the GPIO interrupt event.  So I'm thinking that code to allow me to
+register an interrupt handler for a specific GPIO pin just isn't there...
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
