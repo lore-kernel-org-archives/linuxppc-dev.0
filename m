@@ -1,19 +1,13 @@
-Return-Path: <dimov@ronetix.at>
-Received: from smtprelay04.ispgateway.de (smtprelay04.ispgateway.de
-	[80.67.31.31]) by ozlabs.org (Postfix) with ESMTP id C297FB6EF3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Dec 2009 20:18:33 +1100 (EST)
-Message-ID: <4B308F14.7000800@ronetix.at>
-Date: Tue, 22 Dec 2009 11:19:16 +0200
-From: RONETIX - Asen Dimov <dimov@ronetix.at>
+Return-Path: <jk@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: MPC8313e RDB rev A4 and rev C network throughput
-References: <4B2FF66E.7000209@ronetix.at>
-	<D7CCA83BB0796C49BC0BB53B6AB1208985F8CF@zch01exm21.fsl.freescale.net>
-In-Reply-To: <D7CCA83BB0796C49BC0BB53B6AB1208985F8CF@zch01exm21.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Liu Dave-R63238 <r63238@freescale.com>
+Subject: [PATCH] of/flattree: use callback to setup initrd from /chosen
+Message-Id: <1261474791.289871.854376051633.1.gpush@pororo>
+To: Grant Likely <grant.likely@secretlab.ca>,
+	devicetree-discuss@lists.ozlabs.org
+From: Jeremy Kerr <jeremy.kerr@canonical.com>
+Date: Tue, 22 Dec 2009 17:39:51 +0800
+Cc: microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,95 +17,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-I checked the RCW(RCWLR and RCWHR) and they are the same(taken from 
-NOR), S3 and S4 switches are the same too.
-I will take a look at the priority levels on CSB.
+At present, the fdt code sets the kernel-wide initrd_start and
+initrd_end variables when parsing /chosen. On ARM, we only set these
+once the bootmem has been reserved.
 
-Regards,
-Asen
+This change adds an arch callback to setup the initrd from the device
+tree:
 
-Liu Dave-R63238 wrote:
-> One possible cause is the two board has different RCW.
-> So that the freq of core/csb/.... Is different. 
->
->   
->> -----Original Message-----
->> From: 
->> linuxppc-dev-bounces+daveliu=freescale.com@lists.ozlabs.org 
->> [mailto:linuxppc-dev-bounces+daveliu=freescale.com@lists.ozlab
->> s.org] On Behalf Of RONETIX - Asen Dimov
->> Sent: Tuesday, December 22, 2009 6:28 AM
->> To: linuxppc-dev@lists.ozlabs.org
->> Subject: MPC8313e RDB rev A4 and rev C network throughput
->>
->> Hello all,
->> I have made some test on network throughput with MPC8313e RDB 
->> revA4 and revC.
->> Some have mentioned that CSB(Coherent System Bus) frequency 
->> or untuned TCP/IP stack, could cause decrease of network throughput.
->>
->> **Test results
->>
->> -on MPC8313e RDB revA4 with kernel 2.6.20 and u-boot 1.1.6 
->> created with
->> ltib-mpc8313erdb-20070824
->>         iperf -c 172.16.0.1 -l 2m -w 256k -throughput is 510Mbps
->>
->>
->> -on MPC8313e RDB revA4 with kernel 2.6.23 and u-boot 1.3.0 generated 
->> with ltib-mpc8313erdb-20081222
->>         iperf -c 172.16.0.1 -l 2m -w 256k
->> -throughput is 510Mbps
->>
->>
->> -on MPC8313e RDB revC with kernel 2.6.23 (the same u-boot, kernel and 
->> rootfs as in rev A4, only dtb file differs)
->>         iperf -c 172.16.0.1 -l 2m -w 256k
->> -throughput is 360Mbps.
->>
->>
->> Have someone made such measurements? Any ideas why MPC8313e RDB revC 
->> gives worser throughput than revA4?
->>
->> ** Notes
->> *The PC (CPU:Intel(R) Core(TM)2 Duo CPU, E8400 @ 3.00GHz;
->>          RAM:  2x2G DDR2 @ 800Mhz ;
->>          NIC: R8168B PCI Express Gigabit Ethernet controller, driver 
->> 8.014.00-NAPI;
->>          OS: Fedora release 10 (Cambridge) with kernel: 
->> 2.6.27.38-170.2.113.fc10.i686.PAE #1 SMP )
->> *Commnads to set PC
->>
->>         ethtool -s eth0 autoneg off speed 1000 duplex full
->>         ifconfig eth1 172.16.0.1/12 mtu 6000 txqueuelen 10000
->>         echo 131071 > /proc/sys/net/core/rmem_max
->>         echo 131071 > /proc/sys/net/core/wmem_max
->>         echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_rmem
->>         echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_wmem
->>         iperf -s -l 2m -w 70k
->>
->>
->> *The MPC8313e RDB(CPU: 333Mhz; CSB: 166Mhz) revA4 and 
->> revC(using PHY not 
->> switch)
->> *Commnads to set a board before using iperf
->>
->>         ifconfig eth1 172.16.0.1/12 mtu 6000 txqueuelen 10000
->>         #The PC  lan card is set to advertise 1000Mbps only, so the 
->> board switches to 1000Mbps too.
->>         echo 131071 > /proc/sys/net/core/rmem_max
->>         echo 131071 > /proc/sys/net/core/wmem_max
->>         echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_rmem
->>         echo "4096    1048576   8388608" > /proc/sys/net/ipv4/tcp_wmem
->>
->> Regards,
->> Asen
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
->>
->>     
+ void early_init_dt_setup_initrd_arch(unsigned long start,
+				      unsigned long end);
+
+The arch-specific code can then setup the initrd however it likes.
+
+Compiled on powerpc, with CONFIG_BLK_DEV_INITRD=y and =n.
+
+Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
+
+---
+ arch/microblaze/kernel/prom.c |   10 ++++++++++
+ arch/powerpc/kernel/prom.c    |   10 ++++++++++
+ drivers/of/fdt.c              |   15 +++++----------
+ include/linux/of_fdt.h        |   10 ++++++++++
+ 4 files changed, 35 insertions(+), 10 deletions(-)
+
+diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+index 15853de..4fb5d87 100644
+--- a/arch/microblaze/kernel/prom.c
++++ b/arch/microblaze/kernel/prom.c
+@@ -101,6 +101,16 @@ void __init early_init_devtree_arch(void)
+ 	/* No Microblaze specific code here */
+ }
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++void __init early_init_dt_setup_initrd_arch(unsigned long start,
++		unsigned long end)
++{
++	initrd_start = (unsigned long)__va(start);
++	initrd_end = (unsigned long)__va(end);
++	initrd_below_start_ok = 1;
++}
++#endif
++
+ /*******
+  *
+  * New implementation of the OF "find" APIs, return a refcounted
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 6fea025..236b02c 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -467,6 +467,16 @@ int __init early_init_dt_scan_memory_arch(unsigned long node, const char *uname,
+ }
+ #endif /* CONFIG_PPC_PSERIES */
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++void __init early_init_dt_setup_initrd_arch(unsigned long start,
++		unsigned long end)
++{
++	initrd_start = (unsigned long)__va(start);
++	initrd_end = (unsigned long)__va(end);
++	initrd_below_start_ok = 1;
++}
++#endif
++
+ void __init early_reserve_mem(void)
+ {
+ 	u64 base, size;
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 7cb386c..ad0b09a 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -398,28 +398,23 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+  */
+ void __init early_init_dt_check_for_initrd(unsigned long node)
+ {
+-	unsigned long len;
++	unsigned long start, end, len;
+ 	__be32 *prop;
+ 
+ 	pr_debug("Looking for initrd properties... ");
+ 
+ 	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
+ 	if (prop) {
+-		initrd_start = (unsigned long)
+-				__va(of_read_ulong(prop, len/4));
++		start = of_read_ulong(prop, len/4);
+ 
+ 		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
+ 		if (prop) {
+-			initrd_end = (unsigned long)
+-				__va(of_read_ulong(prop, len/4));
+-			initrd_below_start_ok = 1;
+-		} else {
+-			initrd_start = 0;
++			end = of_read_ulong(prop, len/4);
++			early_init_dt_setup_initrd_arch(start, end);
+ 		}
+ 	}
+ 
+-	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n",
+-		 initrd_start, initrd_end);
++	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n", start, end);
+ }
+ #else
+ inline void early_init_dt_check_for_initrd(unsigned long node)
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 77ae0a4..4aba9a6 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -81,6 +81,16 @@ extern void early_reserve_mem(void);
+ extern void early_init_devtree_arch(void);
+ extern u64 dt_mem_next_cell(int s, __be32 **cellp);
+ 
++/*
++ * If BLK_DEV_INITRD, the fdt early init code will call this function,
++ * to be provided by the arch code. start and end are specified as
++ * physical addresses.
++ */
++#ifdef CONFIG_BLK_DEV_INITRD
++extern void early_init_dt_setup_initrd_arch(unsigned long start,
++					    unsigned long end);
++#endif
++
+ /* With CONFIG_HAVE_LMB, we can just use the lmb_ functions to add & allocate
+  * memory; otherwise, the arch has to provide its own functions to do this.
+  */
