@@ -1,19 +1,18 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DF23BB7BA5
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 05:17:35 +1100 (EST)
-Message-ID: <4B310D10.4090307@embedded-sol.com>
-Date: Tue, 22 Dec 2009 20:16:48 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 3D935B7B71
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 05:40:56 +1100 (EST)
+Message-ID: <4B311281.6020801@grandegger.com>
+Date: Tue, 22 Dec 2009 19:40:01 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
+To: Felix Radensky <felix@embedded-sol.com>
 Subject: Re: I2C bus clock on MPC85XX systems
 References: <4B30E7F5.8080201@embedded-sol.com>
 	<4B30F165.2060300@grandegger.com>
-In-Reply-To: <4B30F165.2060300@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	<4B310D10.4090307@embedded-sol.com>
+In-Reply-To: <4B310D10.4090307@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,50 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Wolfgang
-
-Wolfgang Grandegger wrote:
-> Felix Radensky wrote:
->   
->> Hi,
+Felix Radensky wrote:
+> Hi, Wolfgang
+> 
+> Wolfgang Grandegger wrote:
+>> Felix Radensky wrote:
+>>  
+>>> Hi,
+>>>
+>>> Almost all MPC85XX based systems have the compatible=:"fsl-i2c" in
+>>> respective
+>>> i2c device tree nodes. This causes FSL i2c driver to use the following
+>>> "backward
+>>> compatible" values: FSR=0x31 DFSR=0x10. This is regardless of CCB clock
+>>> frequency and i2c clock prescaler.
+>>>
+>>> On my custom MPC8536 based board with 432MHz CCB clock this results in
+>>> 65KHz i2c clock frequency (checked with scope). U-Boot correctly
+>>> configures
+>>> the clock to 400KHz.
+>>>
+>>> I've fixed the problem by modifying device tree to use different
+>>> compatible value,
+>>> similar to what socrates board does. Is this the right approach ?
+>>>     
 >>
->> Almost all MPC85XX based systems have the compatible=:"fsl-i2c" in
->> respective
->> i2c device tree nodes. This causes FSL i2c driver to use the following
->> "backward
->> compatible" values: FSR=0x31 DFSR=0x10. This is regardless of CCB clock
->> frequency and i2c clock prescaler.
+>> Are you aware of the properties described in
+>> "Documentation/powerpc/dts-bindings/fsl/i2c.txt":
 >>
->> On my custom MPC8536 based board with 432MHz CCB clock this results in
->> 65KHz i2c clock frequency (checked with scope). U-Boot correctly configures
->> the clock to 400KHz.
+>> http://lxr.linux.no/#linux+v2.6.32/Documentation/powerpc/dts-bindings/fsl/i2c.txt
 >>
->> I've fixed the problem by modifying device tree to use different
->> compatible value,
->> similar to what socrates board does. Is this the right approach ?
->>     
->
-> Are you aware of the properties described in
-> "Documentation/powerpc/dts-bindings/fsl/i2c.txt":
->
-> http://lxr.linux.no/#linux+v2.6.32/Documentation/powerpc/dts-bindings/fsl/i2c.txt
->
-> Wolfgang.
->
->   
-Sure, I'm aware of these properties. I've used
+>>
+>> Wolfgang.
+>>
+>>   
+> Sure, I'm aware of these properties. I've used
+> 
+> compatible = "fsl,mpc8543-i2c", "fsl-i2c";
+> clock-frequency = <400000>;
+> 
+> for my custom board.
+> 
+> I think, however, that device trees for FSL reference designs should use
+> them as well, to avoid setting i2c
+> clock to some strange values. I may be wrong, but I think most custom
 
-compatible = "fsl,mpc8543-i2c", "fsl-i2c";
-clock-frequency = <400000>;
+The FSR=0x31 DFSR=0x10 are not strange values. They have been used in
+mainline kernels (< 2.6.30) for a long time.
 
-for my custom board.
+> board developers borrow from
+> reference device trees, so having a sane starting point would help.
 
-I think, however, that device trees for FSL reference designs should use 
-them as well, to avoid setting i2c
-clock to some strange values. I may be wrong, but I think most custom 
-board developers borrow from
-reference device trees, so having a sane starting point would help.
+The trees provided by Freescale are usually based on older kernel
+version. Borrow from such trees is OK, but the project developers should
+use a recent kernel version for development.
 
-Thanks.
-
-Felix.
+Wolfgang.
