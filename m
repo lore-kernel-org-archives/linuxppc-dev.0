@@ -1,22 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id BCA64B7BFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Dec 2009 07:22:28 +1100 (EST)
-Date: Wed, 23 Dec 2009 23:22:26 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: ucc_geth broken in 2.6.32 by
-	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223202226.GA8185@oksana.dev.rtsoft.ru>
-References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
-	<20091223180415.GA12987@oksana.dev.rtsoft.ru>
-	<20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 2CCADB6F06
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Dec 2009 07:38:43 +1100 (EST)
+Received: by ywh11 with SMTP id 11so8080979ywh.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 12:38:41 -0800 (PST)
+Message-ID: <4B327FEC.9030801@billgatliff.com>
+Date: Wed, 23 Dec 2009 14:39:08 -0600
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
-Reply-To: avorontsov@ru.mvista.com
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: Does gpio_to_irq() work for MPC52xx gpios?
+References: <4B312EDA.7030606@billgatliff.com>
+	<87fx72wwpd.fsf@macbook.be.48ers.dk>
+	<4B3249AA.50405@billgatliff.com>
+In-Reply-To: <4B3249AA.50405@billgatliff.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +25,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 23, 2009 at 03:09:48PM -0500, Lennart Sorensen wrote:
-[...]
-> So there result is:
-> 
-> Unable to handle kernel paging request for data at address 0x00000058
-> Faulting instruction address: 0xc024f2fc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> RC8360 CM
-> Modules linked in: rclibapi xeno_native max6369_wdt ucc_geth_driver spi_mpc8xxx ltc4215 lm75
-> NIP: c024f2fc LR: e30aa0a4 CTR: c024f2e8
-> REGS: df857ca0 TRAP: 0300   Not tainted  (2.6.32-trunk-8360e)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 44042088  XER: 00000000
-> DAR: 00000058, DSISR: 20000000
-> TASK = df848c90[4] 'events/0' THREAD: df856000
-> GPR00: e30aa0a4 df857d50 df848c90 00000000 00000640 00000001 c0428df4 dfa40b80
-> GPR08: 000000c8 e30ad2b8 df084360 c024f2e8 44042082 1001af90 e30ad2b8 00000000
-> GPR16: 00000048 00000001 00000000 00000000 df08436c df08440c 00000190 df08455c
-> GPR24: df0844ec df0842c0 df084000 180005ea dfa40b80 00000000 df0842c0 00000000
-> NIP [c024f2fc] skb_recycle_check+0x14/0x100
-> LR [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> Call Trace:
-> [df857d50] [c000b03c] __ipipe_grab_irq+0x3c/0xa4 (unreliable)
-> [df857d60] [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
+Bill Gatliff wrote:
+> Peter Korsgaard wrote:
+>   
+>> No (not yet). In Ben's latest pull request there's a patch from me to
+>> add basic infrastructure for gpio_to_irq(). I've recently added irq
+>> support to the mpc8xxx driver, but so far nothing has been written for
+>> 52xx.
+>>
+>> http://patchwork.ozlabs.org/patch/41550/
+>>   
+>>     
+>
+> Ok.  I'm taking a look at that code now, planning to adapt it for the
+> MPC52xx unless someone raises any objections.
+>   
 
-This I can reproduce. It seems it's a long standing bug that
-becomes easily reproducible with quiesce/activate sequence.
-The driver doesn't handle empty queue correctly, i.e. it ignores
-the empty queue check if netdev queue is stopped, which makes no
-sense.
+Ok, working on this now.  I'm pretty far along, but I'm stopped at what
+I think is a device tree source file problem.
 
-Can you try this patch in addition to previous (i.e. both should
-be applied)?
+I have an external device that generates two interrupt outputs.  One of
+them is connected to IRQ2, the other to GPIO_WKUP_7.  I'm describing the
+device like this:
 
-Thanks!
+    ...
+    soc5200@f0000000 {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "fsl,mpc5200b-immr","simple-bus";
+        ranges = <0 0xf0000000 0x0000c000>;
+        reg = <0xf0000000 0x00000100>;
+        bus-frequency = <0>;        // from bootloader
+        system-frequency = <0>;        // from bootloader
+    ...
+        mpc5200_pic: interrupt-controller@500 {
+            // 5200 interrupts are encoded into two levels;
+            interrupt-controller;
+            gpio-controller;
+            #interrupt-cells = <3>;
+            #address-cells = <0>;
+            #size-cells = <0>;
+            compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
+            reg = <0x500 0x80>;
+            interrupts = < 0 0 3  1 1 3  2 2 2  3 3 2 >;
+        };
+        gpio_wkup: gpio@c00 {
+            compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
+            #gpio-cells = <2>;
+            #interrupt-cells = <2>;
+            #address-cells = <0>;
+            #size-cells = <0>;
+            reg = <0xc00 0x40>;
+            interrupts = <1 8 0  0 3 0>;
+            interrupt-parent = <&mpc5200_pic>;
+            gpio-controller;
+            interrupt-controller;
+        };
+    ...
+    };
+    ...
+    system {
+        compatible = "simple-bus";
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 2f73e3f..b22de51 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3275,7 +3275,7 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
- 		/* Handle the transmitted buffer and release */
- 		/* the BD to be used with the current frame  */
- 
--		if ((bd == ugeth->txBd[txQ]) && (netif_queue_stopped(dev) == 0))
-+		if (bd == ugeth->txBd[txQ]) /* queue empty? */
- 			break;
- 
- 		dev->stats.tx_packets++;
+        rotary-encoder {
+            compatible = "linux,rotary-encoder","rotary-encoder";
+            interrupts = <&mpc5200_pic 2 3  &gpio_wkup 0 0>;
+            //interrupts = <&mpc5200_pic 2 3>;
+            //gpios = <&gpio_wkup 0 0>;
+            type = <1>;
+            val-ccw = <0x4a>;
+            val-cw = <78>;
+        };
+    };
+
+When I use the "gpios" property instead of the above, I get a useful
+gpio number and I can see the signal using sys/class/gpio.  And I also
+know the hardware is working because an ancient, pre-device-tree kernel
+is working fine.  :)
+
+The problem is that I'm not getting a valid number out for the second
+interrupt specification, presumably because the dts compiler doesn't
+have any idea how to generate the data--- and I have no idea how to fix
+that.
+
+I captured some dmesg information which shows the problem.  The first
+line is for IRQ2, which is correct.  The second is for GPIO_WKUP_7,
+which the kernel chokes on:
+
+...
+irq: irq_create_mapping(0xcf814000,
+0x42)                                         
+irq: -> using host
+@cf814000                                                      
+  alloc irq_desc for 66 on node
+0                                                 
+  alloc kstat_irqs on node
+0                                                      
+mpc52xx_irqhost_map: External IRQ2 virq=42, hw=42.
+type=8                         
+irq: irq 66 on host /soc5200@f0000000/interrupt-controller@500 mapped to
+virtual irq
+66                                                                              
+
+mpc52xx_extirq_set_type: irq=42. l2=2
+flow_type=8                                 
+linux,rotary-encoder rotary-encoder.3: irq[0] 66 gpio[0] -2  <- my
+driver's output, the "magic number" was 66
+return 0, l1=4,
+l2=0                                                              
+irq: irq_create_mapping(0xcf814000,
+0x0)                                          
+irq: -> using host
+@cf814000                                                      
+  alloc irq_desc for 16 on node
+0                                                 
+  alloc kstat_irqs on node
+0                                                      
+mpc52xx_irqhost_map: External IRQ0 virq=10, hw=0.
+type=8                          
+irq: irq 0 on host /soc5200@f0000000/interrupt-controller@500 mapped to
+virtual irq
+16                                                                               
+
+mpc52xx_extirq_set_type: irq=0. l2=0
+flow_type=8                                  
+linux,rotary-encoder rotary-encoder.3: irq[1] 16 gpio[1] -2         <-
+my driver's "magic number" was 16
+...
+
+
+The device tree has the magic number "66" for IRQ2, which
+mpc52xx_irqhost_map gets right.  But it doesn't know what to do with the
+magic number "16" that's fed to it from the other interrupt
+specification.  And I don't yet, either...  :)
+
+Any ideas?  Basically, what I think this boils down to is somewhere I
+need to translate that 16 to yet another virtual number for the
+demultiplexed interrupt descriptor.  But I'm getting a little lost in
+the virtual-ness of everything!
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
