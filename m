@@ -1,21 +1,22 @@
-Return-Path: <lsorense@csclub.uwaterloo.ca>
-Received: from caffeine.csclub.uwaterloo.ca (caffeine.csclub.uwaterloo.ca
-	[129.97.134.17]) by ozlabs.org (Postfix) with ESMTP id 52040B7BBA
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Dec 2009 07:15:47 +1100 (EST)
-Date: Wed, 23 Dec 2009 15:15:46 -0500
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: ucc_geth broken in 2.6.32 by
-	864fdf884e82bacbe8ca5e93bd43393a61d2e2b4
-Message-ID: <20091223201546.GG760@caffeine.csclub.uwaterloo.ca>
-References: <20091223174019.GB762@caffeine.csclub.uwaterloo.ca>
-	<20091223180415.GA12987@oksana.dev.rtsoft.ru>
-	<20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
+	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id 4E7C8B7C8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Dec 2009 07:15:49 +1100 (EST)
+Received: by ewy6 with SMTP id 6so5438398ewy.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Dec 2009 12:15:47 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20091223200948.GF760@caffeine.csclub.uwaterloo.ca>
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: linuxppc-dev@ozlabs.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <alpine.OSX.2.00.0911171715450.371@silk.local>
+References: <alpine.OSX.2.00.0911031502250.483@silk.local>
+	<1258423421.2140.555.camel@pasglop>
+	<alpine.OSX.2.00.0911171715450.371@silk.local>
+Date: Wed, 23 Dec 2009 21:15:46 +0100
+Message-ID: <10f740e80912231215m2868aec3qb3c9a419f3635bef@mail.gmail.com>
+Subject: Re: [PATCH 10/13] mac68k: start CUDA early, take 2
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,268 +26,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 23, 2009 at 03:09:48PM -0500, Lennart Sorensen wrote:
-> On Wed, Dec 23, 2009 at 09:04:15PM +0300, Anton Vorontsov wrote:
-> > On Wed, Dec 23, 2009 at 12:40:19PM -0500, Lennart Sorensen wrote:
-> > > We use the ucc_geth for 6 ports (4 100Mbit and 2 Gbit ports) on an
-> > > mpc8360e.  Up to 2.6.31 this worked fine.  2.6.32 on the other hand
-> > > crashes very quickly after boot.
-> > 
-> > Hm. Just curious, what CPU revision you use? So that I could try
-> > to reproduce the issue... I have MPC8360E-MDS boards, rev 2.0 and
-> > rev rev 2.1 CPUs, Marvell PHYs. I also have MPC8360E-RDK (rev 2.1).
-> > And I didn't see any issues with this patch.
-> 
-> Hmm, I have an MDS around, so I could probably try and see if it is
-> reproduceable there.
-> 
-> CPU:   e300c1, MPC8360EA, Rev: 2.1 at 533.333 MHz, CSB: 266.667 MHz
-> BOARD: 12-86-0016-001 [00000000]                                   
-> UPMA:  Configured for Compact Flash PIO Mode                        
-> I2C:   ready                                                       
-> SPI:   ready                                                       
-> DRAM:  512 MB                                                      
-> MTEST: Testing data bus                                            
-> MTEST: Testing address bus                                         
-> MTEST: PASS                                                        
-> BCSR:  Ver A000B                                                   
-> FLASH: 32 MB
-> 
-> The PHY we use is KSZ8001LS for the 100Mbit ports, and on the port
-> that usually fails first is a marvel 88E1111 running fixed gigabit link
-> (converts to serdes before connecting to a switch chip).
-> 
-> I am actually surprised this code should matter at all given out of the
-> 6 ethernet ports only two actually go to external ports, the rest are
-> fixed link.
-> 
-> If relevant here are some chunks from the dtb related to ethernet:
-> 
->         aliases {
->                 ethernet0 = &enet0;
->                 ethernet1 = &enet1;
->                 ethernet2 = &enet2;
->                 ethernet3 = &enet3;
->                 ethernet4 = &enet4;
->                 ethernet5 = &enet5;
->                 serial0 = &serial0;
->                 serial1 = &serial1;
->         };
-> 
->                 mdio {
->                         compatible = "virtual,mdio-gpio";
->                         #address-cells = <1>;
->                         #size-cells = <0>;
->                         /* MDC = PG6 MDIO = PG7 */
->                         gpios = <&qe_pio_g 6 0 &qe_pio_g 7 0>;
-> 
->                         phy0: ethernet-phy@00 {
->                                 reg = <0x18>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy1: ethernet-phy@01 {
->                                 reg = <0x06>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy2: ethernet-phy@02 {
->                                 reg = <0x0F>;
->                                 device_type = "ethernet-phy";
->                         };
->                         phy3: ethernet-phy@03 {
->                                 reg = <0x17>;
->                                 device_type = "ethernet-phy";
->                         };
->                 };
-> 
->                 /* UCC5 Linux fe-cm-1 */
->                 enet0: ethernet@2400 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x5>;
->                         reg = <0x2400 0x200>;
->                         interrupts = <0x28>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk16";
->                         tx-clock-name = "clk14";
->                         phy-handle = <&phy2>;
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc5>;
->                 };
->                 /* UCC 6 Linux fe-em-1 */
->                 enet1: ethernet@3400 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x6>;
->                         reg = <0x3400 0x200>;
->                         interrupts = <0x29>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk7";
->                         tx-clock-name = "clk8";
->                         phy-handle = <&phy3>;
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc6>;
->                 };
->                 /* UCC 1 & 3  1000BT Data Plane dp0 */
->                 enet2: ethernet@2000 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x1>;
->                         reg = <0x2000 0x200>;
->                         interrupts = <0x20>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "none";
->                         tx-clock-name = "clk9";
->                         fixed-link = <0x03 1 1000 0 0>; /* P3 on data plane switch on SM */
->                         phy-connection-type = "gmii";
->                         pio-handle = <&ucc1>;
->                 };
->                 /* UCC 7 100BT Data Plane dp1 */
->                 enet3: ethernet@2600 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x7>;
->                         reg = <0x2600 0x200>;
->                         interrupts = <0x2a>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk20";
->                         tx-clock-name = "clk19";
->                         fixed-link = <0x02 1 100 0 0>; /* P2 on data-plane switch on SM */
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc7>;
->                 };
->                 /* UCC 2 & 4 1000 BT Control Plane cp0 */
->                 enet4: ethernet@3000 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x2>;
->                         reg = <0x3000 0x200>;
->                         interrupts = <0x21>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "none";
->                         tx-clock-name = "clk4";
->                         tx-thread-num = <2>; /* Reduced to allow all enet to come up */
->                         fixed-link = <10 1 1000 0 0>; /* P10 on control-plane switch on CM */
->                         phy-connection-type = "gmii";
->                         pio-handle = <&ucc2>;
->                 };
->                 /* UCC 8 100 BT Control Plane cp1 */
->                 enet5: ethernet@3600 {
->                         device_type = "network";
->                         compatible = "ucc_geth";
->                         cell-index = <0x8>;
->                         reg = <0x3600 0x200>;
->                         interrupts = <0x2b>;
->                         interrupt-parent = <&qeic>;
->                         local-mac-address = [ 00 00 00 00 00 00 ]; /* [U-BOOT] */
->                         rx-clock-name = "clk5";
->                         tx-clock-name = "clk21";
->                         fixed-link = <9 1 100 0 0>; /* P9 on control-plane switch on CM */
->                         phy-connection-type = "mii";
->                         pio-handle = <&ucc8>;
->                 };
-> 
-> > I don't see any point in reverting, because it will surely break my boards.
-> > So, we need to fix this, not just hide.
-> 
-> I agree with that.
-> 
-> > > unless someone can fix it.
-> > 
-> > Well, I'm ready to help you with debugging.
-> 
-> Excellent.
-> 
-> > > Now I must add that I run with the xenomai/adeos-ipipe patches as well,
-> > > which do change interrupt handling a little,
-> > 
-> > It could be that it takes too long to stop the UCC, and xenomai
-> > makes the timings worse, so the watchdog triggers.
-> > 
-> > Can you try the following patch?
-> 
-> Sure thing.
-> 
-> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> > index afaf088..2f73e3f 100644
-> > --- a/drivers/net/ucc_geth.c
-> > +++ b/drivers/net/ucc_geth.c
-> > @@ -1563,6 +1563,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
-> >  
-> >  static void ugeth_quiesce(struct ucc_geth_private *ugeth)
-> >  {
-> > +	netif_device_detach(ugeth->ndev);
-> > +
-> >  	/* Wait for and prevent any further xmits. */
-> >  	netif_tx_disable(ugeth->ndev);
-> >  
-> > @@ -1577,7 +1579,7 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
-> >  {
-> >  	napi_enable(&ugeth->napi);
-> >  	enable_irq(ugeth->ug_info->uf_info.irq);
-> > -	netif_tx_wake_all_queues(ugeth->ndev);
-> > +	netif_device_attach(ugeth->ndev);
-> >  }
-> >  
-> >  /* Called every time the controller might need to be made
-> 
-> So there result is:
-> 
-> Unable to handle kernel paging request for data at address 0x00000058
-> Faulting instruction address: 0xc024f2fc
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> RC8360 CM
-> Modules linked in: rclibapi xeno_native max6369_wdt ucc_geth_driver spi_mpc8xxx ltc4215 lm75
-> NIP: c024f2fc LR: e30aa0a4 CTR: c024f2e8
-> REGS: df857ca0 TRAP: 0300   Not tainted  (2.6.32-trunk-8360e)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 44042088  XER: 00000000
-> DAR: 00000058, DSISR: 20000000
-> TASK = df848c90[4] 'events/0' THREAD: df856000
-> GPR00: e30aa0a4 df857d50 df848c90 00000000 00000640 00000001 c0428df4 dfa40b80
-> GPR08: 000000c8 e30ad2b8 df084360 c024f2e8 44042082 1001af90 e30ad2b8 00000000
-> GPR16: 00000048 00000001 00000000 00000000 df08436c df08440c 00000190 df08455c
-> GPR24: df0844ec df0842c0 df084000 180005ea dfa40b80 00000000 df0842c0 00000000
-> NIP [c024f2fc] skb_recycle_check+0x14/0x100
-> LR [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> Call Trace:
-> [df857d50] [c000b03c] __ipipe_grab_irq+0x3c/0xa4 (unreliable)
-> [df857d60] [e30aa0a4] ucc_geth_poll+0xd8/0x4e0 [ucc_geth_driver]
-> [df857dd0] [c0258cf8] net_rx_action+0xf8/0x1b8
-> [df857e10] [c0032a38] __do_softirq+0xb8/0x13c
-> [df857e60] [c00065cc] do_softirq+0xa0/0xac
-> [df857e70] [c003280c] irq_exit+0x7c/0x9c
-> [df857e80] [c000b1f4] __ipipe_do_IRQ+0x50/0x68
-> [df857ea0] [c0064098] __ipipe_sync_stage+0x21c/0x24c
-> [df857ee0] [c0064a4c] __ipipe_unstall_root+0x5c/0x60
-> [df857ef0] [c005fb4c] enable_irq+0x88/0xc4
-> [df857f10] [e30a73d0] adjust_link+0x1fc/0x2f0 [ucc_geth_driver]
-> [df857f40] [c0209c0c] phy_state_machine+0x3a4/0x610
-> [df857f60] [c003fec4] worker_thread+0x124/0x1a4
-> [df857fc0] [c0044310] kthread+0x78/0x7c
-> [df857ff0] [c0013c30] kernel_thread+0x4c/0x68
-> Instruction dump:
-> 4e800020 4800fcb5 4bffff50 4802782d 4bffffc8 48076dd9 4bffff6c 9421fff0
-> 7c0802a6 93e1000c 7c7f1b78 90010014 <80030058> 2f800000 409e00cc 81630068
-> Kernel panic - not syncing: Fatal exception in interrupt
-> Rebooting in 180 seconds..
-> 
-> So it seems as soon as it touched the phy settings, it blew up.
-> 
-> Now perhaps the ipipe interrupt handling code changes the behaviour
-> enough that it makes the spinlock_irqsave necesary and that is why it
-> worked before.  Maybe ipipe is doing something wrong, given ipipe only
-> supports 2.6.30 for powerpc and I personally ported it to 2.6.31 and
-> then 2.6.32.  Everything else works fine though as long as I revert this
-> particular patch.
+On Tue, Nov 17, 2009 at 10:03, Finn Thain <fthain@telegraphics.com.au> wrot=
+e:
+> The valkyriefb driver needs the CUDA to work in order to set the video
+> mode at boot. So initialise the device earlier, and bring the m68k code
+> closer to the powermac code.
+>
+> Take 2 was changed as per Benjamin Herrenschmidt's review.
 
-Oh and I will be off on vacation for about a week by tomorrow, so if I
-don't fix it today, I will be a bit slow at getting back to you
-on this.  Not that it is bothering any real users yet (they are using
-2.6.30 for now).
+Ben, OK for you?
 
--- 
-Len Sorensen
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+>
+> ---
+> =C2=A0arch/m68k/mac/config.c =C2=A0 =C2=A0 =C2=A0 | =C2=A0 =C2=A06 +++
+> =C2=A0drivers/macintosh/adb.c =C2=A0 =C2=A0 =C2=A0| =C2=A0 =C2=A06 ++-
+> =C2=A0drivers/macintosh/via-cuda.c | =C2=A0 74 +++++++++++++++++++++++---=
+-----------------
+> =C2=A03 files changed, 51 insertions(+), 35 deletions(-)
+>
+> Index: linux-2.6.31/arch/m68k/mac/config.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.31.orig/arch/m68k/mac/config.c =C2=A0 =C2=A02009-11-17 17:1=
+1:47.000000000 +1100
+> +++ linux-2.6.31/arch/m68k/mac/config.c 2009-11-17 17:11:47.000000000 +11=
+00
+> @@ -23,6 +23,8 @@
+> =C2=A0#include <linux/init.h>
+> =C2=A0#include <linux/vt_kern.h>
+> =C2=A0#include <linux/platform_device.h>
+> +#include <linux/adb.h>
+> +#include <linux/cuda.h>
+>
+> =C2=A0#define BOOTINFO_COMPAT_1_0
+> =C2=A0#include <asm/setup.h>
+> @@ -889,6 +891,10 @@ static void __init mac_identify(void)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0oss_init();
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0psc_init();
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0baboon_init();
+> +
+> +#ifdef CONFIG_ADB_CUDA
+> + =C2=A0 =C2=A0 =C2=A0 find_via_cuda();
+> +#endif
+> =C2=A0}
+>
+> =C2=A0static void __init mac_report_hardware(void)
+> Index: linux-2.6.31/drivers/macintosh/via-cuda.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.31.orig/drivers/macintosh/via-cuda.c =C2=A0 =C2=A0 =C2=A020=
+09-11-17 17:07:58.000000000 +1100
+> +++ linux-2.6.31/drivers/macintosh/via-cuda.c =C2=A0 2009-11-17 17:11:47.=
+000000000 +1100
+> @@ -89,7 +89,6 @@ static int cuda_fully_inited;
+>
+> =C2=A0#ifdef CONFIG_ADB
+> =C2=A0static int cuda_probe(void);
+> -static int cuda_init(void);
+> =C2=A0static int cuda_send_request(struct adb_request *req, int sync);
+> =C2=A0static int cuda_adb_autopoll(int devs);
+> =C2=A0static int cuda_reset_adb_bus(void);
+> @@ -107,17 +106,42 @@ int cuda_request(struct adb_request *req
+>
+> =C2=A0#ifdef CONFIG_ADB
+> =C2=A0struct adb_driver via_cuda_driver =3D {
+> - =C2=A0 =C2=A0 =C2=A0 "CUDA",
+> - =C2=A0 =C2=A0 =C2=A0 cuda_probe,
+> - =C2=A0 =C2=A0 =C2=A0 cuda_init,
+> - =C2=A0 =C2=A0 =C2=A0 cuda_send_request,
+> - =C2=A0 =C2=A0 =C2=A0 cuda_adb_autopoll,
+> - =C2=A0 =C2=A0 =C2=A0 cuda_poll,
+> - =C2=A0 =C2=A0 =C2=A0 cuda_reset_adb_bus
+> + =C2=A0 =C2=A0 =C2=A0 .name =C2=A0 =C2=A0 =C2=A0 =C2=A0 =3D "CUDA",
+> + =C2=A0 =C2=A0 =C2=A0 .probe =C2=A0 =C2=A0 =C2=A0 =C2=A0=3D cuda_probe,
+> + =C2=A0 =C2=A0 =C2=A0 .send_request =3D cuda_send_request,
+> + =C2=A0 =C2=A0 =C2=A0 .autopoll =C2=A0 =C2=A0 =3D cuda_adb_autopoll,
+> + =C2=A0 =C2=A0 =C2=A0 .poll =C2=A0 =C2=A0 =C2=A0 =C2=A0 =3D cuda_poll,
+> + =C2=A0 =C2=A0 =C2=A0 .reset_bus =C2=A0 =C2=A0=3D cuda_reset_adb_bus,
+> =C2=A0};
+> =C2=A0#endif /* CONFIG_ADB */
+>
+> -#ifdef CONFIG_PPC
+> +#ifdef CONFIG_MAC
+> +int __init find_via_cuda(void)
+> +{
+> + =C2=A0 =C2=A0struct adb_request req;
+> + =C2=A0 =C2=A0int err;
+> +
+> + =C2=A0 =C2=A0if (macintosh_config->adb_type !=3D MAC_ADB_CUDA)
+> + =C2=A0 =C2=A0 =C2=A0 return 0;
+> +
+> + =C2=A0 =C2=A0via =3D via1;
+> + =C2=A0 =C2=A0cuda_state =3D idle;
+> +
+> + =C2=A0 =C2=A0err =3D cuda_init_via();
+> + =C2=A0 =C2=A0if (err) {
+> + =C2=A0 =C2=A0 =C2=A0 printk(KERN_ERR "cuda_init_via() failed\n");
+> + =C2=A0 =C2=A0 =C2=A0 via =3D NULL;
+> + =C2=A0 =C2=A0 =C2=A0 return 0;
+> + =C2=A0 =C2=A0}
+> +
+> + =C2=A0 =C2=A0/* enable autopoll */
+> + =C2=A0 =C2=A0cuda_request(&req, NULL, 3, CUDA_PACKET, CUDA_AUTOPOLL, 1)=
+;
+> + =C2=A0 =C2=A0while (!req.complete)
+> + =C2=A0 =C2=A0 =C2=A0 cuda_poll();
+> +
+> + =C2=A0 =C2=A0return 1;
+> +}
+> +#else
+> =C2=A0int __init find_via_cuda(void)
+> =C2=A0{
+> =C2=A0 =C2=A0 struct adb_request req;
+> @@ -175,7 +199,7 @@ int __init find_via_cuda(void)
+> =C2=A0 =C2=A0 vias =3D NULL;
+> =C2=A0 =C2=A0 return 0;
+> =C2=A0}
+> -#endif /* CONFIG_PPC */
+> +#endif /* !defined CONFIG_MAC */
+>
+> =C2=A0static int __init via_cuda_start(void)
+> =C2=A0{
+> @@ -184,14 +208,14 @@ static int __init via_cuda_start(void)
+>
+> =C2=A0#ifdef CONFIG_MAC
+> =C2=A0 =C2=A0 cuda_irq =3D IRQ_MAC_ADB;
+> -#else /* CONFIG_MAC */
+> +#else
+> =C2=A0 =C2=A0 cuda_irq =3D irq_of_parse_and_map(vias, 0);
+> =C2=A0 =C2=A0 if (cuda_irq =3D=3D NO_IRQ) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0printk(KERN_ERR "via-cuda: can't map interrupt=
+s for %s\n",
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 vias->full_name);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
+> =C2=A0 =C2=A0 }
+> -#endif /* CONFIG_MAC */
+> +#endif
+>
+> =C2=A0 =C2=A0 if (request_irq(cuda_irq, cuda_interrupt, 0, "ADB", cuda_in=
+terrupt)) {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0printk(KERN_ERR "via-cuda: can't request irq %=
+d\n", cuda_irq);
+> @@ -216,28 +240,10 @@ cuda_probe(void)
+> =C2=A0#else
+> =C2=A0 =C2=A0 if (macintosh_config->adb_type !=3D MAC_ADB_CUDA)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
+> - =C2=A0 =C2=A0via =3D via1;
+> =C2=A0#endif
+> - =C2=A0 =C2=A0return 0;
+> -}
+> -
+> -static int __init
+> -cuda_init(void)
+> -{
+> -#ifdef CONFIG_PPC
+> =C2=A0 =C2=A0 if (via =3D=3D NULL)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
+> =C2=A0 =C2=A0 return 0;
+> -#else
+> - =C2=A0 =C2=A0int err =3D cuda_init_via();
+> - =C2=A0 =C2=A0if (err) {
+> - =C2=A0 =C2=A0 =C2=A0 printk(KERN_ERR "cuda_init_via() failed\n");
+> - =C2=A0 =C2=A0 =C2=A0 return -ENODEV;
+> - =C2=A0 =C2=A0}
+> - =C2=A0 =C2=A0out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from=
+ SR */
+> -
+> - =C2=A0 =C2=A0return via_cuda_start();
+> -#endif
+> =C2=A0}
+> =C2=A0#endif /* CONFIG_ADB */
+>
+> @@ -430,9 +436,11 @@ cuda_poll(void)
+> =C2=A0 =C2=A0 /* cuda_interrupt only takes a normal lock, we disable
+> =C2=A0 =C2=A0 =C2=A0* interrupts here to avoid re-entering and thus deadl=
+ocking.
+> =C2=A0 =C2=A0 =C2=A0*/
+> - =C2=A0 =C2=A0disable_irq(cuda_irq);
+> + =C2=A0 =C2=A0if (cuda_irq)
+> + =C2=A0 =C2=A0 =C2=A0 disable_irq(cuda_irq);
+> =C2=A0 =C2=A0 cuda_interrupt(0, NULL);
+> - =C2=A0 =C2=A0enable_irq(cuda_irq);
+> + =C2=A0 =C2=A0if (cuda_irq)
+> + =C2=A0 =C2=A0 =C2=A0 enable_irq(cuda_irq);
+> =C2=A0}
+>
+> =C2=A0static irqreturn_t
+> @@ -446,7 +454,7 @@ cuda_interrupt(int irq, void *arg)
+>
+> =C2=A0 =C2=A0 spin_lock(&cuda_lock);
+>
+> - =C2=A0 =C2=A0/* On powermacs, this handler is registered for the VIA IR=
+Q. But it uses
+> + =C2=A0 =C2=A0/* On powermacs, this handler is registered for the VIA IR=
+Q. But they use
+> =C2=A0 =C2=A0 =C2=A0* just the shift register IRQ -- other VIA interrupt =
+sources are disabled.
+> =C2=A0 =C2=A0 =C2=A0* On m68k macs, the VIA IRQ sources are dispatched in=
+dividually. Unless
+> =C2=A0 =C2=A0 =C2=A0* we are polling, the shift register IRQ flag has alr=
+eady been cleared.
+> Index: linux-2.6.31/drivers/macintosh/adb.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.31.orig/drivers/macintosh/adb.c =C2=A0 2009-11-17 17:07:58.=
+000000000 +1100
+> +++ linux-2.6.31/drivers/macintosh/adb.c =C2=A0 =C2=A0 =C2=A0 =C2=A02009-=
+11-17 17:11:47.000000000 +1100
+> @@ -317,9 +317,11 @@ static int __init adb_init(void)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0break;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
+> - =C2=A0 =C2=A0 =C2=A0 if ((adb_controller =3D=3D NULL) || adb_controller=
+->init()) {
+> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(KERN_WARNING "W=
+arning: no ADB interface detected\n");
+> + =C2=A0 =C2=A0 =C2=A0 if (adb_controller !=3D NULL && adb_controller->in=
+it &&
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 adb_controller->init())
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0adb_controller =3D=
+ NULL;
+> + =C2=A0 =C2=A0 =C2=A0 if (adb_controller =3D=3D NULL) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 printk(KERN_WARNING "W=
+arning: no ADB interface detected\n");
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0} else {
+> =C2=A0#ifdef CONFIG_PPC
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (machine_is_com=
+patible("AAPL,PowerBook1998") ||
+>
+
+
+
+--=20
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+							    -- Linus Torvalds
