@@ -1,22 +1,21 @@
 Return-Path: <tmarri@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
 	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client CN "Messaging Gateway Appliance Demo Cert",
 	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 911B4B7BF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Dec 2009 04:23:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 30903B7BF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Dec 2009 04:31:27 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: [PATCH 2/2] Adding PCI-E MSI support for PowerPC 460SX SOC.
-Date: Wed, 23 Dec 2009 09:23:14 -0800
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C08882A65@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <200912230918.34124.sr@denx.de>
-References: <1261554743-30498-1-git-send-email-tmarri@amcc.com>
-	<200912230918.34124.sr@denx.de>
+Date: Wed, 23 Dec 2009 09:30:43 -0800
+Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C08882A6D@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C08882A65@SDCEXCHANGE01.ad.amcc.com>
+References: <1261554743-30498-1-git-send-email-tmarri@amcc.com><200912230918.34124.sr@denx.de>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C08882A65@SDCEXCHANGE01.ad.amcc.com>
 From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: "Stefan Roese" <sr@denx.de>,
+To: "Tirumala Reddy Marri" <tmarri@amcc.com>, "Stefan Roese" <sr@denx.de>,
 	<linuxppc-dev@lists.ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, writetomarri@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,6 +26,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+BTW once this patch gets in I will add the 405Ex,460Ex and 440Spe
+support to the same.
+
+-----Original Message-----
+From: linuxppc-dev-bounces+tmarri=3Damcc.com@lists.ozlabs.org
+[mailto:linuxppc-dev-bounces+tmarri=3Damcc.com@lists.ozlabs.org] On =
+Behalf
+Of Tirumala Reddy Marri
+Sent: Wednesday, December 23, 2009 9:23 AM
+To: Stefan Roese; linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org; writetomarri@yahoo.com
+Subject: RE: [PATCH 2/2] Adding PCI-E MSI support for PowerPC 460SX SOC.
 
 Thanks for the suggestions. I will try remove the extra lines . Add
 changes you suggested.
@@ -628,6 +640,10 @@ Stefan
 DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-dev
 _______________________________________________
 Linuxppc-dev mailing list
 Linuxppc-dev@lists.ozlabs.org
