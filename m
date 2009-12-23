@@ -1,32 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5430DB7BE5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Dec 2009 00:22:43 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id nBNDEs2H023450
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2009 06:14:54 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	nBNDMTEQ117458
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2009 06:22:29 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id nBNDMSQK029451
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Dec 2009 06:22:28 -0700
-Date: Wed, 23 Dec 2009 08:22:20 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Weirich, Bernhard" <Bernhard.Weirich@riedel.net>
-Subject: Re: msi / msix on PPC405EX?
-Message-ID: <20091223132220.GA6229@zod.rchland.ibm.com>
-References: <6680AE1BD102B9419251E785D19F5D030178135A@ExchN1.riedel.net>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6680AE1BD102B9419251E785D19F5D030178135A@ExchN1.riedel.net>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1261532718.575722.541804401419.2.gpush@pororo>
+References: <1261532718.575048.365032094903.0.gpush@pororo>
+	<1261532718.575722.541804401419.2.gpush@pororo>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 23 Dec 2009 07:48:23 -0700
+Message-ID: <fa686aa40912230648r3294e8f8m855ae91e490a9edd@mail.gmail.com>
+Subject: Re: [PATCH 2/3] of: make set_node_proc_entry private to
+	proc_devtree.c
+To: Jeremy Kerr <jeremy.kerr@canonical.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,13 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 23, 2009 at 09:50:39AM +0100, Weirich, Bernhard wrote:
->Hello,
+On Tue, Dec 22, 2009 at 6:45 PM, Jeremy Kerr <jeremy.kerr@canonical.com> wrote:
+> We only need set_node_proc_entry in proc_devtree.c, so move it there.
 >
->I am wondering whether msi / msix should work on PPC405EX. A call to pci_enable_msi returns: -38 / ENOSYS, function not implemented.
->Can someone tell me if I am missing out something or if msi is indeed not implemented on this platform?
+> This fixes the !HAVE_ARCH_DEVTREE_FIXUPS build, as we can't make make
+> the definition in linux/of.h conditional on this #define (definitions in
+> asm/prom.h can't be exposed to linux/of.h, due to the enforced #include
+> ordering).
+>
+> Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
 
-It doesn't work there yet, as it has not been implemented.  There are patches
-for MSI on 460SX now, and those could probably be leveraged once they're merged.
+A little ugly, but it can probably be refactored and cleaned up later
+(like a lot of other things in the merged code).  Otherwise these
+three patches look good to me.  I've picked them up into my tree and
+I'll push them out soon.
 
-josh
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
