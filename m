@@ -1,19 +1,21 @@
-Return-Path: <Gavin.Shan@alcatel-lucent.com>
-Received: from cnshjsmin03.cn.alcatel-lucent.com
-	(cnmailgate04.alcatel-sbell.com.cn [211.144.215.47])
-	by ozlabs.org (Postfix) with ESMTP id 6892DB6EEF
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 53488B6EF2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Dec 2009 02:10:42 +1100 (EST)
-Message-ID: <4B3AD271.1050105@alcatel-lucent.com>
-Date: Tue, 29 Dec 2009 23:09:21 -0500
-From: gshan <gshan@alcatel-lucent.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Wed, 30 Dec 2009 08:21:33 +1100 (EST)
 Subject: Re: xmon & SCSI ATA devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: gshan <gshan@alcatel-lucent.com>
+In-Reply-To: <4B3AD271.1050105@alcatel-lucent.com>
 References: <4B33197D.9000506@alcatel-lucent.com>
 	<1262079428.2173.218.camel@pasglop>
-In-Reply-To: <1262079428.2173.218.camel@pasglop>
-Content-Type: text/html; charset=UTF-8
+	<4B3AD271.1050105@alcatel-lucent.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Dec 2009 08:21:25 +1100
+Message-ID: <1262121685.2173.220.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,72 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=UTF-8" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Benjamin Herrenschmidt wrote:
-<blockquote cite="mid1262079428.2173.218.camel@pasglop" type="cite">
-  <pre wrap="">On Thu, 2009-12-24 at 02:34 -0500, gshan wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">Hello,
+On Tue, 2009-12-29 at 23:09 -0500, gshan wrote:
 
-xmon and SCSI SATA device driver were installed on my system. When I invoked
-xmon explicitly for kernel debugging, there're probably pending SCSI 
-requests issued.
-So those SCSI requests complained timeout when I quited from xmon. I want to
-find a way to suspend SCSI device before invoking xmon and resume that 
-before
-quiting from xmon. Anybody knew there is a way to do this?
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Well, it's non trivial. xmon is very low level and doesn't muck around
-with drivers etc...
-  </pre>
-</blockquote>
-Yes. I agree.<br>
-<blockquote cite="mid1262079428.2173.218.camel@pasglop" type="cite">
-  <pre wrap="">
-We could add hacks to avoid those timeouts or even do what you suggest
-with suspending devices, but that would make entering xmon a -lot- more
-fragile. The idea is that xmon relies on very little kernel services and
-can be entered even when things are utterly wrong.
-  </pre>
-</blockquote>
-Actually, the situation I described above has caused lots of disk issue.<br>
-The DPT (disk partition table) might be lost because of this. I think
-it's<br>
-broken the rule: xmon is assisting to resolve kernel issue, not cause<br>
-more.<br>
-<blockquote cite="mid1262079428.2173.218.camel@pasglop" type="cite">
-  <pre wrap="">
-To be honest, I'm tempted to leave that as it is. Most of the time,
-getting into xmon is a one way trip.... 
-  </pre>
-</blockquote>
-<blockquote cite="mid1262079428.2173.218.camel@pasglop" type="cite">
-  <pre wrap="">
+> Actually, the situation I described above has caused lots of disk issue.
+> The DPT (disk partition table) might be lost because of this. I think it's
+> broken the rule: xmon is assisting to resolve kernel issue, not cause
+> more.
+
+Well, mostly xmon kicks in when you already oopsed or crashed so .. :-)
+
+As I said, getting into the SCSI stack or similar would make the whole
+thing extremely fragile. But you may want to hack something for
+yourself, feel free to do so.
+
 Cheers,
 Ben.
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">Thanks,
-Gavin
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a>
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-
-  </pre>
-</blockquote>
-<br>
-</body>
-</html>
