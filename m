@@ -1,15 +1,18 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 70BA71007D4
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 05:21:48 +1100 (EST)
-Date: Wed, 30 Dec 2009 21:21:46 +0300
+	by ozlabs.org (Postfix) with SMTP id ADF841007D4
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 05:23:30 +1100 (EST)
+Date: Wed, 30 Dec 2009 21:23:28 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: net: Assorted fixes
-Message-ID: <20091230182146.GA4515@oksana.dev.rtsoft.ru>
+Subject: [PATCH 1/4] phylib: Fix deadlock on resume
+Message-ID: <20091230182328.GA13162@oksana.dev.rtsoft.ru>
+References: <20091230182146.GA4515@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
+In-Reply-To: <20091230182146.GA4515@oksana.dev.rtsoft.ru>
+Cc: netdev@vger.kernel.org, Andy Fleming <afleming@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,22 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Dec 27, 2009 at 09:57:36PM -0800, David Miller wrote:
-> Actually I'm reverting both patches:
-> 
-> drivers/net/phy/mdio_bus.c:268: warning: ‘mdio_bus_phy_may_suspend’ defined but not used
-> 
-> Please resubmit these two patches with this warning fixed.
-> 
-> CONFIG_PM is not always enabled :-)
+Sometimes kernel hangs on resume with the following trace:
 
-Ugh, sorry about that, and thanks for catching!
+ ucc_geth e0102000.ucc: resume
+ INFO: task bash:1764 blocked for more than 120 seconds.
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash          D 0fecf43c     0  1764   1763 0x00000000
+ Call Trace:
+ [cf9a7c10] [c0012868] ret_from_except+0x0/0x14 (unreliable)
+ --- Exception: cf9a7ce0 at __switch_to+0x4c/0x6c
+     LR = 0xcf9a7cc0
+ [cf9a7cd0] [c0008c14] __switch_to+0x4c/0x6c (unreliable)
+ [cf9a7ce0] [c028bcfc] schedule+0x158/0x260
+ [cf9a7d10] [c028c720] __mutex_lock_slowpath+0x80/0xd8
+ [cf9a7d40] [c01cf388] phy_stop+0x20/0x70
+ [cf9a7d50] [c01d514c] ugeth_resume+0x6c/0x13c
+ [...]
 
-Here are the amended patches + one more fix.
+Here is why.
 
-Thanks,
+On suspend:
 
+- PM core starts suspending devices, ucc_geth_suspend gets called;
+
+- ucc_geth calls phy_stop() on suspend. Note that phy_stop() is
+  mostly asynchronous so it doesn't block ucc_geth's suspend routine,
+  it just sets PHY_HALTED state and disables PHY's interrupts;
+
+- Suddenly the state machine gets scheduled, it grabs the phydev->lock
+  mutex and tries to process the PHY_HALTED state, so it calls
+  phydev->adjust_link(phydev->attached_dev). In ucc_geth case
+  adjust_link() calls msleep(), which reschedules the code flow back to
+  PM core, which now finishes suspend and so we end up sleeping with
+  phydev->lock mutex held.
+
+On resume:
+
+- PM core starts resuming devices (notice that nobody rescheduled
+  the state machine yet, so the mutex is still held), the core calls
+  ucc_geth's resume routine;
+
+- ucc_geth_resume restarts the PHY with phy_stop()/phy_start()
+  sequence, and the phy_*() calls are trying to grab the phydev->lock
+  mutex. Here comes the deadlock.
+
+This patch fixes the issue by stopping the state machine on suspend
+and starting it again on resume.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/phy/mdio_bus.c |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index bd4e8d7..49252d3 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -303,8 +303,18 @@ static int mdio_bus_suspend(struct device * dev, pm_message_t state)
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
+ 
++	/*
++	 * We must stop the state machine manually, otherwise it stops out of
++	 * control, possibly with the phydev->lock held. Upon resume, netdev
++	 * may call phy routines that try to grab the same lock, and that may
++	 * lead to a deadlock.
++	 */
++	if (phydev->attached_dev)
++		phy_stop_machine(phydev);
++
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+ 		return 0;
++
+ 	return phydrv->suspend(phydev);
+ }
+ 
+@@ -312,10 +322,20 @@ static int mdio_bus_resume(struct device * dev)
+ {
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
++	int ret;
+ 
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+-		return 0;
+-	return phydrv->resume(phydev);
++		goto no_resume;
++
++	ret = phydrv->resume(phydev);
++	if (ret < 0)
++		return ret;
++
++no_resume:
++	if (phydev->attached_dev)
++		phy_start_machine(phydev, NULL);
++
++	return 0;
+ }
+ 
+ struct bus_type mdio_bus_type = {
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.5.7
