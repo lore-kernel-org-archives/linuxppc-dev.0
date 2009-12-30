@@ -1,25 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
-	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id F08A91007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 11:01:56 +1100 (EST)
-Received: by yxe8 with SMTP id 8so13124965yxe.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Dec 2009 16:01:55 -0800 (PST)
+Return-Path: <hartleys@visionengravers.com>
+Received: from exprod6og103.obsmtp.com (exprod6og103.obsmtp.com [64.18.1.185])
+	by ozlabs.org (Postfix) with SMTP id A6D801007D5
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 06:37:53 +1100 (EST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1262216393.29396.41.camel@localhost.localdomain>
-References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
-	<1261446643-21714-4-git-send-email-ptyser@xes-inc.com>
-	<fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com>
-	<1262216393.29396.41.camel@localhost.localdomain>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 30 Dec 2009 17:01:35 -0700
-Message-ID: <fa686aa40912301601s6cd0ec4y85b88976159a36af@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] powerpc: Add support for ram filesystems in FIT
-	uImages
-To: Peter Tyser <ptyser@xes-inc.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: u-boot <u-boot@lists.denx.de>, linuxppc-dev@ozlabs.org,
-	linux-kbuild@vger.kernel.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: [PATCH] arch/powerpc/boot/devtree.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 14:30:39 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 30, 2009 at 4:39 PM, Peter Tyser <ptyser@xes-inc.com> wrote:
-> Hi Grant,
-> I put U-Boot ML on CC.
+Use the %pM kernel extension to display the MAC address.
 
-Thinking further, I do actually have another concern, at least with
-regard to the way the current patch set implements things.  Is it
-expected or even "recommended" that fit images will *always* contain a
-.dtb image?  The current patch only handles the case of a .dtb
-embedded inside the fit image.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-Personally, I don't get any benefit out of the new image format, so I
-haven't spent any time looking at it.  However, I'm concerned about
-the drift back towards a different image per target when the move over
-the last 4 years has been towards multiplatform kernel images.  I
-certainly don't want to encourage embedding the device tree blob into
-the kernel image, and I'm not very interested in merging code to do
-that into the kernel tree.  If someone really needs to do that for
-their particular target, it is certainly easy enough for them to weld
-in the .dtb after the fact before transferring the image to the
-target, but I want that mode to be the exception, not the rule.
+---
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index a7e21a3..a2f07a5 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -93,10 +93,7 @@ void dt_fixup_mac_address_by_alias(const char *alias, =
+const u8 *addr)
+ 	void *devp =3D find_node_by_alias(alias);
+=20
+ 	if (devp) {
+-		printf("%s: local-mac-address <-"
+-		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", alias,
+-		       addr[0], addr[1], addr[2],
+-		       addr[3], addr[4], addr[5]);
++		printf("%s: local-mac-address <- %pM\n\r", alias, addr);
+=20
+ 		setprop(devp, "local-mac-address", addr, 6);
+ 	}
+@@ -108,10 +105,7 @@ void dt_fixup_mac_address(u32 index, const u8 =
+*addr)
+ 	                                     (void*)&index, sizeof(index));
+=20
+ 	if (devp) {
+-		printf("ENET%d: local-mac-address <-"
+-		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
+-		       addr[0], addr[1], addr[2],
+-		       addr[3], addr[4], addr[5]);
++		printf("ENET%d: local-mac-address <- %pM\n\r", index, addr);
+=20
+ 		setprop(devp, "local-mac-address", addr, 6);
+ 	}=20
