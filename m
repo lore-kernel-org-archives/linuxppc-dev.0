@@ -1,15 +1,15 @@
-Return-Path: <nanda74pg@rediffmail.com>
-Received: from rediffmail.com (f5mail-237-241.rediffmail.com [202.137.237.241])
-	by ozlabs.org (Postfix) with SMTP id 5AF78B6EEB
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Dec 2009 19:48:17 +1100 (EST)
-Date: 30 Dec 2009 08:36:56 -0000
-Message-ID: <20091230083656.51308.qmail@f5mail-237-241.rediffmail.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id 879901007D2
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 04:40:21 +1100 (EST)
+Date: Wed, 30 Dec 2009 20:40:17 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/swsusp_32: Fix TLB invalidation
+Message-ID: <20091230174017.GA32283@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: <linuxppc-dev@ozlabs.org>
-Subject: =?utf-8?B?RlNMIFVQTSBOQU5EIGRyaXZlciBmb3IgbGludXggMi42LjI0?=
-From: "nanda" <nanda74pg@rediffmail.com>
-Content-Type: multipart/alternative;
-	boundary="=_eb63f51a25cd2f304d8e7e83133d6e81"
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,31 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=_eb63f51a25cd2f304d8e7e83133d6e81
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
+It seems there is a thinko in the TLB invalidation code that makes the
+tlbie in the loop executed just once. The intended check was probably
+'gt', not 'lt'.
 
-Hi,
-   I am looking for freescale NAND driver in the kernel 2.6.24 (which implement UPM based technique). Can anyone point us the patch which is available for the same?
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
 
-Thanks & Regards,
-Nanda
+Btw, 'lis r4,0x1000' seems needlessly too high. e300 core reference
+manual says:
 
---=_eb63f51a25cd2f304d8e7e83133d6e81
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset="UTF-8"
+  The [...]tlbie[...] instruction invalidates the TLB entry indexed by
+  the EA, and operates on both the instruction and data TLBs
+  simultaneously invalidating four TLB entries (both sets in each TLB).
+  The index corresponds to bits 15-19 of the EA. To invalidate all
+  entries within both TLBs, 32 tlbie instructions should be issued,
+  incrementing this field by one each time.
 
-Hi,<br />
-   I am looking for freescale NAND driver in the kernel 2.6.24 (which imple=
-ment UPM based technique). Can anyone point us the patch which is available=
- for the same?<br />
-<br />
-Thanks & Regards,<br />
-Nanda<br />
-<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadding=
-=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR><td=
-><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.rediffm=
-ail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://sig=
-ads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatureli=
-ne.htm@Middle"></A></td></TR></Table>
---=_eb63f51a25cd2f304d8e7e83133d6e81--
+So, shouldn't 0x1000 be 0x0002? Are there any classic PowerPCs
+for which this wouldn't work?
+
+ arch/powerpc/kernel/swsusp_32.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/swsusp_32.S b/arch/powerpc/kernel/swsusp_32.S
+index b47d8ce..b0754e2 100644
+--- a/arch/powerpc/kernel/swsusp_32.S
++++ b/arch/powerpc/kernel/swsusp_32.S
+@@ -303,7 +303,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	lis	r4,0x1000
+ 1:	addic.	r4,r4,-0x1000
+ 	tlbie	r4
+-	blt	1b
++	bgt	1b
+ 	sync
+ 
+ 	/* restore the MSR and turn on the MMU */
+-- 
+1.6.5.7
