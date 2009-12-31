@@ -1,14 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 31 Dec 2009 15:49:26 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Subject: Re: [PATCH] arch/powerpc/boot/devtree.c: use %pM to show MAC address
-Message-ID: <20091231044926.GC18358@brick.ozlabs.ibm.com>
-References: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 9FB6E1007D2
+	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 17:04:01 +1100 (EST)
+Date: Wed, 30 Dec 2009 22:04:03 -0800 (PST)
+Message-Id: <20091230.220403.71104815.davem@davemloft.net>
+To: avorontsov@ru.mvista.com
+Subject: Re: net: Assorted fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091230182146.GA4515@oksana.dev.rtsoft.ru>
+References: <20091230182146.GA4515@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-7
+Cc: netdev@vger.kernel.org, afleming@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,32 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Dec 30, 2009 at 02:30:39PM -0500, H Hartley Sweeten wrote:
-
-> Use the %pM kernel extension to display the MAC address.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> 
-> ---
-> 
-> diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-> index a7e21a3..a2f07a5 100644
-> --- a/arch/powerpc/boot/devtree.c
-> +++ b/arch/powerpc/boot/devtree.c
-> @@ -93,10 +93,7 @@ void dt_fixup_mac_address_by_alias(const char *alias, const u8 *addr)
->  	void *devp = find_node_by_alias(alias);
->  
->  	if (devp) {
-> -		printf("%s: local-mac-address <-"
-> -		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", alias,
-> -		       addr[0], addr[1], addr[2],
-> -		       addr[3], addr[4], addr[5]);
-> +		printf("%s: local-mac-address <- %pM\n\r", alias, addr);
-
-Nak - this isn't the kernel, this is a separate program, namely the
-bootwrapper that decompresses the kernel image, and it has its own
-printf (not printk) implementation in arch/powerpc/boot/stdio.c, which
-doesn't understand the %pX extensions (and I don't see any good reason
-to make it do so).
-
-Paul.
+RnJvbTogQW50b24gVm9yb250c292IDxhdm9yb250c292QHJ1Lm12aXN0YS5jb20+DQpEYXRlOiBX
+ZWQsIDMwIERlYyAyMDA5IDIxOjIxOjQ2ICswMzAwDQoNCj4gT24gU3VuLCBEZWMgMjcsIDIwMDkg
+YXQgMDk6NTc6MzZQTSAtMDgwMCwgRGF2aWQgTWlsbGVyIHdyb3RlOg0KPj4gQWN0dWFsbHkgSSdt
+IHJldmVydGluZyBib3RoIHBhdGNoZXM6DQo+PiANCj4+IGRyaXZlcnMvbmV0L3BoeS9tZGlvX2J1
+cy5jOjI2ODogd2FybmluZzogoW1kaW9fYnVzX3BoeV9tYXlfc3VzcGVuZKIgZGVmaW5lZCBidXQg
+bm90IHVzZWQNCj4+IA0KPj4gUGxlYXNlIHJlc3VibWl0IHRoZXNlIHR3byBwYXRjaGVzIHdpdGgg
+dGhpcyB3YXJuaW5nIGZpeGVkLg0KPj4gDQo+PiBDT05GSUdfUE0gaXMgbm90IGFsd2F5cyBlbmFi
+bGVkIDotKQ0KPiANCj4gVWdoLCBzb3JyeSBhYm91dCB0aGF0LCBhbmQgdGhhbmtzIGZvciBjYXRj
+aGluZyENCj4gDQo+IEhlcmUgYXJlIHRoZSBhbWVuZGVkIHBhdGNoZXMgKyBvbmUgbW9yZSBmaXgu
+DQoNCkFsbCBhcHBsaWVkLCB0aGFua3MuDQo=
