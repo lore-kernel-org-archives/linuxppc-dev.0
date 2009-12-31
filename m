@@ -1,19 +1,14 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-iw0-f181.google.com (mail-iw0-f181.google.com
-	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id A7C671007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 31 Dec 2009 15:19:05 +1100 (EST)
-Received: by iwn11 with SMTP id 11so9448039iwn.17
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Dec 2009 20:19:04 -0800 (PST)
-Message-ID: <4B3C263E.1040307@billgatliff.com>
-Date: Wed, 30 Dec 2009 22:19:10 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 31 Dec 2009 15:49:26 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Subject: Re: [PATCH] arch/powerpc/boot/devtree.c: use %pM to show MAC address
+Message-ID: <20091231044926.GC18358@brick.ozlabs.ibm.com>
+References: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/1] Adds gpio_to_irq() and related support to the
-	mpc52xx_gpio WKUP peripheral driver
-References: <y> <1262232985-30822-1-git-send-email-bgat@billgatliff.com>
-In-Reply-To: <1262232985-30822-1-git-send-email-bgat@billgatliff.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bill Gatliff wrote:
-> Second, the previously-unimplemented gpio_to_irq() function was added,
-> using __gpio_to_irq().  The author does not know why this code was previously
-> left out of arch/powerpc/include/asm/gpio.h.  It seems to work.  The generic
-> irq_to_gpio() function was not tested.
->   
+On Wed, Dec 30, 2009 at 02:30:39PM -0500, H Hartley Sweeten wrote:
 
-Actually, I just noticed that this patch was already committed but I
-hadn't pulled it in to my repo so I ended up re-discovering and
-duplicating it.
+> Use the %pM kernel extension to display the MAC address.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> 
+> ---
+> 
+> diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+> index a7e21a3..a2f07a5 100644
+> --- a/arch/powerpc/boot/devtree.c
+> +++ b/arch/powerpc/boot/devtree.c
+> @@ -93,10 +93,7 @@ void dt_fixup_mac_address_by_alias(const char *alias, const u8 *addr)
+>  	void *devp = find_node_by_alias(alias);
+>  
+>  	if (devp) {
+> -		printf("%s: local-mac-address <-"
+> -		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", alias,
+> -		       addr[0], addr[1], addr[2],
+> -		       addr[3], addr[4], addr[5]);
+> +		printf("%s: local-mac-address <- %pM\n\r", alias, addr);
 
-The rest of the comments for this patch are accurate.
+Nak - this isn't the kernel, this is a separate program, namely the
+bootwrapper that decompresses the kernel image, and it has its own
+printf (not printk) implementation in arch/powerpc/boot/stdio.c, which
+doesn't understand the %pX extensions (and I don't see any good reason
+to make it do so).
 
-
-b.g.
-
--- 
-Bill Gatliff
-Embedded systems training and consulting
-http://billgatliff.com
-bgat@billgatliff.com
+Paul.
