@@ -1,23 +1,15 @@
-Return-Path: <tmarri@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8B0D01007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  1 Jan 2010 10:50:18 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: How to access PPC460EX SDRAM space from PCI/PCIe.
-Date: Thu, 31 Dec 2009 15:50:15 -0800
-Message-ID: <AC5E1C3367E37D44970B81A6ADD1DA2C08882EAA@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <6caf4b5a0912310055h54a6efa6ka1825f19a7f0c691@mail.gmail.com>
-References: <6caf4b5a0912310055h54a6efa6ka1825f19a7f0c691@mail.gmail.com>
-From: "Tirumala Reddy Marri" <tmarri@amcc.com>
-To: "Lonsn" <lonsn2005@gmail.com>,
-	<linuxppc-dev@lists.ozlabs.org>
-Cc: sr@denx.de
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id E103CB6EE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jan 2010 17:10:47 +1100 (EST)
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: dan.j.williams@intel.com
+Subject: fsldma: cleanup driver and fix async_tx compatibility
+Date: Thu, 31 Dec 2009 22:10:38 -0800
+Message-Id: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+Cc: herbert@gondor.apana.org.au, B04825@freescale.com, linuxppc-dev@ozlabs.org,
+	Vishnu@freescale.com, Dipen.Dudhat@freescale.com,
+	Maneesh.Gupta@freescale.com, R58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It should be able to access any region in 32bit mode as long as it is
-smaller than 4GB size. Usually whole SDRAM is mapped to inbound PCI
-memory region.
+This patch series cleans up the Freescale DMAEngine driver, including
+verifying the locking and making sure that all code paths are correct.
+There were a few places that seemed suspicious, and they have been fixed.
 
------Original Message-----
-From: linuxppc-dev-bounces+tmarri=3Damcc.com@lists.ozlabs.org
-[mailto:linuxppc-dev-bounces+tmarri=3Damcc.com@lists.ozlabs.org] On =
-Behalf
-Of Lonsn
-Sent: Thursday, December 31, 2009 12:55 AM
-To: linuxppc-dev@lists.ozlabs.org
-Cc: sr@denx.de
-Subject: How to access PPC460EX SDRAM space from PCI/PCIe.
+I have written a quick memory->memory DMAEngine test driver, and the
+performance is identical before and after my changes (<0.1% change). I
+measured both setting up the DMA operation (via device_prep_dma_interrupt()
+and device_prep_dma_memcpy()) and the actual DMA transfer itself.
 
-Hi:
-I'm now using canyonlands board with latest u-boot and linux kernel
-from DENX git.
-A PCIe card is plugged in the PCIeX4 slot. The PCIe card is a PCIe-pci
-bridge(PI7C9X130) plus an Altera fpga.
-The PCIe card act as a PCI master and send data to SDRAM of 460EX
-space (total sdram 512MB, reserve 8M for PCI write data(0x1F800000)).
-Now linux can identify this card, but CPU cann't receive any data from
-PCIe and no PCIe interrupt.
-I know about the PCI card works in 32bit mode and doesn't support
-64bit address(No pci dual address cycle support).
-Does the PCI card can access PPC460EX sdram space using just 32bit
-physical address(0x1F800000)?
+As an added bonus, the interrupt load is measurably reduced. My test driver
+transfers 32MB as 32x 1MB chunks + 1 interrupt descriptor, using the
+functions noted above. Previous to this patch series, 31 interrupts were
+generated. After this patch series, only a single interrupt is generated
+for the whole transaction.
 
-Best regards,
-Lonsn
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
+Some testing on 85xx/86xx hardware would be appreciated. Also, some testing
+by the users attempting to use async_tx and talitos to handle RAID offload
+would be great as well.
+
+ Documentation/powerpc/dts-bindings/fsl/dma.txt |   17 +-
+ drivers/dma/fsldma.c                           | 1036 ++++++++++++------------
+ drivers/dma/fsldma.h                           |   35 +-
+ 3 files changed, 556 insertions(+), 532 deletions(-)
+
+Thanks,
+Ira
