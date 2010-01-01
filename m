@@ -1,12 +1,14 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id E103CB6EE9
+	by ozlabs.org (Postfix) with ESMTP id E3750B6EF5
 	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jan 2010 17:10:47 +1100 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: dan.j.williams@intel.com
-Subject: fsldma: cleanup driver and fix async_tx compatibility
-Date: Thu, 31 Dec 2009 22:10:38 -0800
-Message-Id: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+Subject: [PATCH 2/8] fsldma: remove unused structure members
+Date: Thu, 31 Dec 2009 22:10:40 -0800
+Message-Id: <1262326246-936-3-git-send-email-iws@ovro.caltech.edu>
+In-Reply-To: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+References: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
 Cc: herbert@gondor.apana.org.au, B04825@freescale.com, linuxppc-dev@ozlabs.org,
 	Vishnu@freescale.com, Dipen.Dudhat@freescale.com,
 	Maneesh.Gupta@freescale.com, R58472@freescale.com
@@ -19,29 +21,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series cleans up the Freescale DMAEngine driver, including
-verifying the locking and making sure that all code paths are correct.
-There were a few places that seemed suspicious, and they have been fixed.
+Remove some unused members from the fsldma data structures. A few trivial
+uses of struct resource were converted to use the stack rather than keeping
+the memory allocated for the lifetime of the driver.
 
-I have written a quick memory->memory DMAEngine test driver, and the
-performance is identical before and after my changes (<0.1% change). I
-measured both setting up the DMA operation (via device_prep_dma_interrupt()
-and device_prep_dma_memcpy()) and the actual DMA transfer itself.
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |   17 ++++++++---------
+ drivers/dma/fsldma.h |    4 ----
+ 2 files changed, 8 insertions(+), 13 deletions(-)
 
-As an added bonus, the interrupt load is measurably reduced. My test driver
-transfers 32MB as 32x 1MB chunks + 1 interrupt descriptor, using the
-functions noted above. Previous to this patch series, 31 interrupts were
-generated. After this patch series, only a single interrupt is generated
-for the whole transaction.
-
-Some testing on 85xx/86xx hardware would be appreciated. Also, some testing
-by the users attempting to use async_tx and talitos to handle RAID offload
-would be great as well.
-
- Documentation/powerpc/dts-bindings/fsl/dma.txt |   17 +-
- drivers/dma/fsldma.c                           | 1036 ++++++++++++------------
- drivers/dma/fsldma.h                           |   35 +-
- 3 files changed, 556 insertions(+), 532 deletions(-)
-
-Thanks,
-Ira
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 0bad741..0b4e638 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1072,6 +1072,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 	struct device_node *node, u32 feature, const char *compatible)
+ {
+ 	struct fsl_dma_chan *new_fsl_chan;
++	struct resource res;
+ 	int err;
+ 
+ 	/* alloc channel */
+@@ -1083,7 +1084,7 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 	}
+ 
+ 	/* get dma channel register base */
+-	err = of_address_to_resource(node, 0, &new_fsl_chan->reg);
++	err = of_address_to_resource(node, 0, &res);
+ 	if (err) {
+ 		dev_err(fdev->dev, "Can't get %s property 'reg'\n",
+ 				node->full_name);
+@@ -1101,10 +1102,8 @@ static int __devinit fsl_dma_chan_probe(struct fsl_dma_device *fdev,
+ 	WARN_ON(fdev->feature != new_fsl_chan->feature);
+ 
+ 	new_fsl_chan->dev = fdev->dev;
+-	new_fsl_chan->reg_base = ioremap(new_fsl_chan->reg.start,
+-			new_fsl_chan->reg.end - new_fsl_chan->reg.start + 1);
+-
+-	new_fsl_chan->id = ((new_fsl_chan->reg.start - 0x100) & 0xfff) >> 7;
++	new_fsl_chan->reg_base = ioremap(res.start, resource_size(&res));
++	new_fsl_chan->id = ((res.start - 0x100) & 0xfff) >> 7;
+ 	if (new_fsl_chan->id >= FSL_DMA_MAX_CHANS_PER_DEVICE) {
+ 		dev_err(fdev->dev, "There is no %d channel!\n",
+ 				new_fsl_chan->id);
+@@ -1183,6 +1182,7 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 	int err;
+ 	struct fsl_dma_device *fdev;
+ 	struct device_node *child;
++	struct resource res;
+ 
+ 	fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
+ 	if (!fdev) {
+@@ -1193,7 +1193,7 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 	INIT_LIST_HEAD(&fdev->common.channels);
+ 
+ 	/* get DMA controller register base */
+-	err = of_address_to_resource(dev->node, 0, &fdev->reg);
++	err = of_address_to_resource(dev->node, 0, &res);
+ 	if (err) {
+ 		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
+ 				dev->node->full_name);
+@@ -1202,9 +1202,8 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 
+ 	dev_info(&dev->dev, "Probe the Freescale DMA driver for %s "
+ 			"controller at 0x%llx...\n",
+-			match->compatible, (unsigned long long)fdev->reg.start);
+-	fdev->reg_base = ioremap(fdev->reg.start, fdev->reg.end
+-						- fdev->reg.start + 1);
++			match->compatible, (unsigned long long)res.start);
++	fdev->reg_base = ioremap(res.start, resource_size(&res));
+ 
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index 0df14cb..dbb5b5c 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -92,8 +92,6 @@ struct fsl_desc_sw {
+ 	struct list_head node;
+ 	struct list_head tx_list;
+ 	struct dma_async_tx_descriptor async_tx;
+-	struct list_head *ld;
+-	void *priv;
+ } __attribute__((aligned(32)));
+ 
+ struct fsl_dma_chan_regs {
+@@ -111,7 +109,6 @@ struct fsl_dma_chan;
+ 
+ struct fsl_dma_device {
+ 	void __iomem *reg_base;	/* DGSR register base */
+-	struct resource reg;	/* Resource for register */
+ 	struct device *dev;
+ 	struct dma_device common;
+ 	struct fsl_dma_chan *chan[FSL_DMA_MAX_CHANS_PER_DEVICE];
+@@ -138,7 +135,6 @@ struct fsl_dma_chan {
+ 	struct dma_chan common;		/* DMA common channel */
+ 	struct dma_pool *desc_pool;	/* Descriptors pool */
+ 	struct device *dev;		/* Channel device */
+-	struct resource reg;		/* Resource for register */
+ 	int irq;			/* Channel IRQ */
+ 	int id;				/* Raw id of this channel */
+ 	struct tasklet_struct tasklet;
+-- 
+1.5.4.3
