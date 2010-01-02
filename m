@@ -1,18 +1,18 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B3F6F6B.5070004@grandegger.com>
-Date: Sat, 02 Jan 2010 17:08:11 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from mail.telegraphics.com.au (www.telegraphics.com.au
+	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id C2585B6EEF
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jan 2010 03:47:13 +1100 (EST)
+Date: Sun, 3 Jan 2010 03:39:25 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver
+In-Reply-To: <10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
+Message-ID: <alpine.OSX.2.00.1001030255060.414@localhost>
+References: <alpine.OSX.2.00.0911171657290.371@silk.local>
+	<10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
-	MPC521x processor
-References: <1262420274-16586-1-git-send-email-wg@grandegger.com>	<1262420274-16586-2-git-send-email-wg@grandegger.com>	<1262420274-16586-3-git-send-email-wg@grandegger.com>
-	<20100102135734.GC2239@pengutronix.de>
-In-Reply-To: <20100102135734.GC2239@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
-	Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-961451201-1262450365=:414"
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,109 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram Sang wrote:
-> On Sat, Jan 02, 2010 at 09:17:53AM +0100, Wolfgang Grandegger wrote:
->> From: Wolfgang Grandegger <wg@denx.de>
->>
->> The main differences compared to the MSCAN on the MPC5200 are:
->>
->> - More flexibility in choosing the CAN source clock and frequency:
->>
->>   Three different clock sources can be selected: "ip", "ref" or "sys".
->>   For the latter two, a clock divider can be defined as well. If the
->>   clock source is not specified by the device tree, we first try to
->>   find an optimal CAN source clock based on the system clock. If that
->>   is not possible, the reference clock will be used.
->>
->> - The behavior of bus-off recovery is configurable:
->>
->>   To comply with the usual handling of Socket-CAN bus-off recovery,
->>   "recovery on request" is selected (instead of automatic recovery).
->>
->> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
->> ---
->>  drivers/net/can/mscan/Kconfig       |    2 +-
->>  drivers/net/can/mscan/mpc5xxx_can.c |  234 +++++++++++++++++++++++++++++------
->>  drivers/net/can/mscan/mscan.c       |   41 +++++--
->>  drivers/net/can/mscan/mscan.h       |   81 ++++++------
->>  4 files changed, 271 insertions(+), 87 deletions(-)
->>
-[snip]
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->> +#else /* !CONFIG_PPC_MPC5200 */
->> +static u32 __devinit mpc52xx_can_get_clock(struct of_device *ofdev,
->> +					   const char *clock_name,
->> +					   int *mscan_clksrc)
->> +{
->> +	return 0;
->> +}
->> +#endif /* CONFIG_PPC_MPC5200 */
-> 
-> Hmmm, I don't really like those empty functions. I once used the data-field of
-> struct of_device_id, which carried a function pointer to a specific
-> init-function for the matched device. What do you think about such an approach?
+--0-961451201-1262450365=:414
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Often the problem is that the function will not compile on the other MPC
-arch. This is not true here. So, the main reason for the #ifdefs is
-space saving. Your approach will not help in both cases.
 
->> +
->> +#ifdef CONFIG_PPC_MPC512x
->> +struct mpc512x_clockctl {
->> +	u32 spmr;		/* System PLL Mode Reg */
->> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
->> +	u32 scfr1;		/* System Clk Freq Reg 1 */
->> +	u32 scfr2;		/* System Clk Freq Reg 2 */
->> +	u32 reserved;
->> +	u32 bcr;		/* Bread Crumb Reg */
->> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
->> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
->> +	u32 cccr;		/* CFM Clk Ctrl Reg */
->> +	u32 dccr;		/* DIU Clk Cnfg Reg */
->> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
->> +};
->> +
->> +static struct of_device_id mpc512x_clock_ids[] __devinitdata = {
->> +	{ .compatible = "fsl,mpc5121-clock", },
->> +	{}
->> +};
->> +
->> +static u32  __devinit mpc512x_can_get_clock(struct of_device *ofdev,
->> +					    const char *clock_name,
->> +					    int *mscan_clksrc,
->> +					    ssize_t mscan_addr)
->> +{
->> +	struct mpc512x_clockctl __iomem *clockctl;
->> +	struct device_node *np_clock;
->> +	struct clk *sys_clk, *ref_clk;
->> +	int plen, clockidx, clocksrc = -1;
->> +	u32 sys_freq, val, clockdiv = 1, freq = 0;
->> +	const u32 *pval;
->> +
->> +	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
->> +	if (!np_clock) {
->> +		dev_err(&ofdev->dev, "couldn't find clock node\n");
->> +		return -ENODEV;
->> +	}
->> +	clockctl = of_iomap(np_clock, 0);
->> +	if (!clockctl) {
->> +		dev_err(&ofdev->dev, "couldn't map clock registers\n");
->> +		return 0;
->> +	}
->> +
->> +	/* Determine the MSCAN device index from the physical address */
->> +	clockidx = (mscan_addr & 0x80) ? 1 : 0;
->> +	if (mscan_addr & 0x2000)
->> +		clockidx += 2;
-> 
-> The PSCs use 'cell-index', here we use mscan_addr to derive the index. This is
-> not consistent, but should be IMHO. Now, which is the preferred way? I think
-> I'd go for 'cell-index', as other processors might have mscan_addr shuffled.
-> Also, we could use 'of_iomap' again in the probe_routine.
+On Sat, 2 Jan 2010, Geert Uytterhoeven wrote:
 
-I understood that "cell-index" is deprecated and it has been removed
-from many nodes. That's why I used the address to derive the index.
+> On Tue, Nov 17, 2009 at 10:04, Finn Thain <fthain@telegraphics.com.au>=20
+> wrote:
+> > Add platform driver to the pmac-zilog driver for mac 68k, putting the=
+=20
+> > powermac-specific bits inside #ifdef CONFIG_PPC_PMAC.
+>=20
+> > --- linux-2.6.31.orig/drivers/serial/pmac_zilog.c =C2=A0 =C2=A0 =C2=A0 =
+2009-11-17 17:07:28.000000000 +1100
+> > +++ linux-2.6.31/drivers/serial/pmac_zilog.c =C2=A0 =C2=A02009-11-17 17=
+:07:38.000000000 +1100
+>=20
+> > @@ -1427,6 +1439,8 @@ static struct uart_ops pmz_pops =3D {
+> > =C2=A0#endif
+> > =C2=A0};
+> >
+> > +#ifdef CONFIG_PPC_PMAC
+> > +
+> > =C2=A0/*
+> > =C2=A0* Setup one port structure after probing, HW is down at this poin=
+t,
+> > =C2=A0* Unlike sunzilog, we don't need to pre-init the spinlock as we d=
+on't
+> > @@ -1823,6 +1837,88 @@ next:
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
+> > =C2=A0}
+> >
+> > +#else
+> > +
+> > +extern struct platform_device scc_a_pdev, scc_b_pdev;
+>=20
+> scripts/checkpatch.pl doesn't like this extern, and it's right.
+> Can't this be found using standard platform device/driver matching?
 
-I will fix all other issues.
+The console initcall and arch initcall order didn't permit me to easily=20
+gather the bootinfo data and populate the platform device resources early=
+=20
+enough. (On powermacs there is the open firmware device tree, but of=20
+course, we don't have one.)
 
-Wolfgang.
+I would like to further adopt the driver model in order to ditch the=20
+macintosh_config global, and I'd also like to have proper nubus device=20
+matching. But I think that the serial console device is a bit exceptional=
+=20
+so I'm not too fussed about these two globals.
+
+Anyway, I don't know of a better way to do the serial console but I'm open=
+=20
+to suggestions.
+
+> BTW, there are a few other minor checkpatch issues with some of the=20
+> other patches in the series, too.
+
+I ran checkpatch on all those patches before I submitted them. I ignored=20
+some of the complaints about whitespace where I felt that checkpatch got=20
+it wrong (space character following tab character, IIRC).
+
+checkpatch found lots of mistakes that I did fix, but it can't determine=20
+the most human readable style in all cases, especially where consistency=20
+with the surrounding code is actually more conducive to readability than=20
+strict but sporadic conformance to simple rules would be.
+
+Finn
+
+>=20
+> Gr{oetje,eeting}s,
+>=20
+> =09=09=09=09=09=09Geert
+>=20
+--0-961451201-1262450365=:414--
