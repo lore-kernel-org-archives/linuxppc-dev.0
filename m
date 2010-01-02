@@ -1,23 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 79A95B6EF0
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jan 2010 08:11:42 +1100 (EST)
-Subject: Re: [PATCH] HVSI: Fix apparently backwards args to time_before()
-	in hvsi.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: <201001011915.47849.bzolnier@gmail.com>
-References: <alpine.LFD.2.00.1001011226020.24958@localhost>
-	<201001011915.47849.bzolnier@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 02 Jan 2010 08:11:19 +1100
-Message-ID: <1262380279.2173.240.camel@pasglop>
-Mime-Version: 1.0
-Cc: Joe Perches <joe@perches.com>, linuxppc-dev@ozlabs.org,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <wg@denx.de>
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: Netdev@vger.kernel.org
+Subject: [PATCH net-next 3/3] powerpc/mpc5xxx: add OF platform binding doc for
+	FSL MSCAN devices
+Date: Sat,  2 Jan 2010 09:17:54 +0100
+Message-Id: <1262420274-16586-4-git-send-email-wg@grandegger.com>
+In-Reply-To: <1262420274-16586-3-git-send-email-wg@grandegger.com>
+References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
+	<1262420274-16586-2-git-send-email-wg@grandegger.com>
+	<1262420274-16586-3-git-send-email-wg@grandegger.com>
+Cc: Socketcan-core@lists.berlios.de, Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +20,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-01-01 at 19:15 +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Friday 01 January 2010 06:28:03 pm Robert P. J. Day wrote:
-> > 
-> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> > 
-> > ---
-> > 
-> >   no appropriate subsystem maintainer listed in MAINTAINERS.
-> 
-> drivers/char/Makefile:
-> obj-$(CONFIG_HVC_CONSOLE)       += hvc_vio.o hvsi.o
-> 
-> so it should belong to:
-> 
-> HYPERVISOR VIRTUAL CONSOLE DRIVER
-> L:      linuxppc-dev@ozlabs.org
-> S:      Odd Fixes
-> F:      drivers/char/hvc_*
-> 
-> [ Though maybe Ben would be willing to pick this one up directly
->   as hvsi is PPC specific thingy and patch is obviously correct. ]
+From: Wolfgang Grandegger <wg@denx.de>
 
-Sure, I'll pick that one up.
+This patch adds documentation for the MSCAN OF device bindings for
+the MPC512x and moves the one for the MPC5200 to the new common file
+"Documentation/powerpc/dts-bindings/fsl/can.txt".
 
-Cheers,
-Ben.
+Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+---
+ Documentation/powerpc/dts-bindings/fsl/can.txt     |   53 ++++++++++++++++++++
+ Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |    9 +---
+ 2 files changed, 54 insertions(+), 8 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/can.txt
 
-> > diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
-> > index 793b236..71c0fcd 100644
-> > --- a/drivers/char/hvsi.c
-> > +++ b/drivers/char/hvsi.c
-> > @@ -711,7 +711,7 @@ static void hvsi_drain_input(struct hvsi_struct *hp)
-> >  	uint8_t buf[HVSI_MAX_READ] __ALIGNED__;
-> >  	unsigned long end_jiffies = jiffies + HVSI_TIMEOUT;
-> > 
-> > -	while (time_before(end_jiffies, jiffies))
-> > +	while (time_before(jiffies, end_jiffies))
-> >  		if (0 == hvsi_read(hp, buf, HVSI_MAX_READ))
-> >  			break;
-> >  }
-> 
-> --
-> Bartlomiej Zolnierkiewicz
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/Documentation/powerpc/dts-bindings/fsl/can.txt b/Documentation/powerpc/dts-bindings/fsl/can.txt
+new file mode 100644
+index 0000000..44cfb61
+--- /dev/null
++++ b/Documentation/powerpc/dts-bindings/fsl/can.txt
+@@ -0,0 +1,53 @@
++CAN Device Tree Bindings
++------------------------
++
++(c) 2006-2009 Secret Lab Technologies Ltd
++Grant Likely <grant.likely@secretlab.ca>
++
++fsl,mpc5200-mscan nodes
++-----------------------
++In addition to the required compatible-, reg- and interrupt-properites, you can
++also specify which clock source shall be used for the controller:
++
++- fsl,mscan-clock-source : a string describing the clock source. Valid values
++			   are:	"ip" for ip bus clock
++				 "ref" for reference clock (XTAL)
++			   "ref" is default in case this property is not
++			   present.
++
++fsl,mpc5121-mscan nodes
++-----------------------
++In addition to the required compatible-, reg- and interrupt-properites, you can
++also specify which clock source shall be used for the controller:
++
++- fsl,mscan-clock-source : a string describing the clock source. Valid values
++			   are:	"ip" for ip bus clock
++				"ref" for reference clock
++				"sys" for system clock
++			   If this property is not present, an optimal CAN
++			   clock source and frequency based on the system
++			   will be selected. If this is not possible, the
++			   reference clock will be used.
++
++- fsl,mscan-clock-divider: for the reference and system clock an additional
++			   clock divider can be specified. By default a
++			   value of 1 is used.
++
++Examples:
++	can@1300 {
++		compatible = "fsl,mpc5121-mscan";
++		cell-index = <0>;
++		interrupts = <12 0x8>;
++		interrupt-parent = < &ipic >;
++		reg = <0x1300 0x80>;
++	};
++
++	can@1380 {
++		compatible = "fsl,mpc5121-mscan";
++		cell-index = <1>;
++		interrupts = <13 0x8>;
++		interrupt-parent = < &ipic >;
++		reg = <0x1380 0x80>;
++		fsl,mscan-clock-source = "ref";
++		fsl,mscan-clock-divider = <3>;
++	};
+diff --git a/Documentation/powerpc/dts-bindings/fsl/mpc5200.txt b/Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
+index 5c6602d..4ccb2cd 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/mpc5200.txt
+@@ -195,11 +195,4 @@ External interrupts:
+ 
+ fsl,mpc5200-mscan nodes
+ -----------------------
+-In addition to the required compatible-, reg- and interrupt-properites, you can
+-also specify which clock source shall be used for the controller:
+-
+-- fsl,mscan-clock-source- a string describing the clock source. Valid values
+-			  are:	"ip" for ip bus clock
+-				"ref" for reference clock (XTAL)
+-			  "ref" is default in case this property is not
+-			  present.
++See file can.txt in this directory.
+-- 
+1.6.2.5
