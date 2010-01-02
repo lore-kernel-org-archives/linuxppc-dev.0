@@ -1,20 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
-	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id C2D01B6EEE
-	for <linuxppc-dev@ozlabs.org>; Sat,  2 Jan 2010 23:43:50 +1100 (EST)
-Received: by ewy6 with SMTP id 6so12415911ewy.9
-	for <linuxppc-dev@ozlabs.org>; Sat, 02 Jan 2010 04:43:48 -0800 (PST)
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F41E81007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun,  3 Jan 2010 00:27:29 +1100 (EST)
+Date: Sat, 2 Jan 2010 14:27:22 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH net-next 0/3] can: mscan-mpc5xxx: add support for the
+	Freescale MPC512x
+Message-ID: <20100102132722.GA2239@pengutronix.de>
+References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <alpine.OSX.2.00.0911171657290.371@silk.local>
-References: <alpine.OSX.2.00.0911171657290.371@silk.local>
-Date: Sat, 2 Jan 2010 13:43:46 +0100
-Message-ID: <10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
-Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Finn Thain <fthain@telegraphics.com.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+In-Reply-To: <1262420274-16586-1-git-send-email-wg@grandegger.com>
+Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
+	Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 17, 2009 at 10:04, Finn Thain <fthain@telegraphics.com.au> wrot=
-e:
-> Add platform driver to the pmac-zilog driver for mac 68k, putting the
-> powermac-specific bits inside #ifdef CONFIG_PPC_PMAC.
 
-> --- linux-2.6.31.orig/drivers/serial/pmac_zilog.c =C2=A0 =C2=A0 =C2=A0 20=
-09-11-17 17:07:28.000000000 +1100
-> +++ linux-2.6.31/drivers/serial/pmac_zilog.c =C2=A0 =C2=A02009-11-17 17:0=
-7:38.000000000 +1100
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> @@ -1427,6 +1439,8 @@ static struct uart_ops pmz_pops =3D {
-> =C2=A0#endif
-> =C2=A0};
->
-> +#ifdef CONFIG_PPC_PMAC
-> +
-> =C2=A0/*
-> =C2=A0* Setup one port structure after probing, HW is down at this point,
-> =C2=A0* Unlike sunzilog, we don't need to pre-init the spinlock as we don=
-'t
-> @@ -1823,6 +1837,88 @@ next:
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
-> =C2=A0}
->
-> +#else
-> +
-> +extern struct platform_device scc_a_pdev, scc_b_pdev;
+On Sat, Jan 02, 2010 at 09:17:51AM +0100, Wolfgang Grandegger wrote:
+> This patch series adds support for the MPC512x from Freescale to
+> the mpc5xxx_can MSCAN driver.
 
-scripts/checkpatch.pl doesn't like this extern, and it's right.
-Can't this be found using standard platform device/driver matching?
+Yay, cool :) I will test the patches with our board when I am back in the
+office next week. So far, a few comments by having a look will follow.
 
-BTW, there are a few other minor checkpatch issues with some of the
-other patches in the series,
-too.
+Happy new 2010,
 
-Gr{oetje,eeting}s,
+   Wolfram
 
-						Geert
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-							    -- Linus Torvalds
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAks/SboACgkQD27XaX1/VRsk6gCePPyzkJNymwhYHl/op6wIkZyr
+m0gAn25b7MOuJXGTcY0iITXb5cFdC3u1
+=Cnne
+-----END PGP SIGNATURE-----
+
+--RnlQjJ0d97Da+TV1--
