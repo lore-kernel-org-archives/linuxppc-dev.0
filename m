@@ -1,16 +1,25 @@
-Return-Path: <aiyuanwang@yahoo.com>
-Received: from web52904.mail.re2.yahoo.com (web52904.mail.re2.yahoo.com
-	[206.190.49.14]) by ozlabs.org (Postfix) with SMTP id 6751BB6F0A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  4 Jan 2010 10:15:08 +1100 (EST)
-Message-ID: <892012.72702.qm@web52904.mail.re2.yahoo.com>
-Date: Sun, 3 Jan 2010 15:15:06 -0800 (PST)
-From: Allan Wang <aiyuanwang@yahoo.com>
-Subject: /dev does not have the devices I have configured with initramfs as my
-	root file system
-To: linuxppc-dev@lists.ozlabs.org
+Return-Path: <ptyser@xes-inc.com>
+Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 595EEB6EFE
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jan 2010 11:54:21 +1100 (EST)
+Message-ID: <4B412DCE.4030509@xes-inc.com>
+Date: Sun, 03 Jan 2010 17:52:46 -0600
+From: Peter Tyser <ptyser@xes-inc.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1852684706-1262560506=:72702"
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v2 3/3] powerpc: Add support for ram filesystems in FIT
+	uImages
+References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
+	<1261446643-21714-4-git-send-email-ptyser@xes-inc.com>
+	<fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com>
+	<20091231224439.AF5353F6D1@gemini.denx.de>
+	<1262301038.29396.137.camel@localhost.localdomain>
+	<20100101104449.6DAC63F6FF@gemini.denx.de>
+In-Reply-To: <20100101104449.6DAC63F6FF@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,123 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0-1852684706-1262560506=:72702
-Content-Type: text/plain; charset=us-ascii
+Hi Wolfgang,
 
-Hello, All,
+> The "new" FIT image type should become the default, and old "legacy"
+> images should only be generated upon special request (i. e. if some-
+> one needs these for compatibility with an old, not yet FIT-aware
+> version of the boot loader).
 
-Happy New Year to everyone! 
-I am running ppc440epx board which is similar Sequoia board. I have configured a I2C RTC device. From the console debug message, it is working, but I do not see /dev/rtc0 file. My kernel version is 2.6.30.4. I use initramfs as my root file system. Here is my initramfs.txt:
-dir /dev 755 0 0
-dir /bin 755 1000 1000
-dir /proc 755 0 0
-slink /bin/sh busybox 777 0 0
-file /bin/busybox /home/awang/proj/linux-2.6.30.4/usr/busybox 755 0 0
-dir /sys 755 0 0
-dir /usr 755 0 0
-dir /usr/bin 755 0 0
-dir /usr/sbin 755 0 0
-dir /sbin 755 0 0
-dir /mnt 755 0 0
-dir /etc 755 0 0
-dir /var 755 0 0
-file /init /home/awang/proj/linux-2.6.30.4/usr/init.sh 755 0 0
+Agreed.
 
-Here is my init.sh:
+>> What do you think about changing the U-Boot documentation to rename
+>> those 2 image types to:
+>> 1 uImages
+>> 2 FIT Images
+>
+> Let's make this "uImage.old" (or "uImage.legacy" similar) and
+> "uImage", then.
 
-#!/bin/sh
+I'm in favor of keeping the old uImage format/naming the same, and 
+calling the new image format a FIT Image.  ie no mention of uImage for 
+FIT images.
 
-/bin/busybox echo " "
-/bin/busybox echo "Hello, I am alive!!!!"
-busybox mkdir /mnt/flash
-busybox mount -t proc /proc /proc
-busybox mount -t sysfs none /sys
-busybox mount -t jffs2 mtd2 /mnt/flash
+<snip>
 
-busybox sleep  2
-/bin/busybox --install -s
-#start a shell
-ifconfig eth0 192.168.0.201
-/bin/sh
+>> uImages have to agree with U-Boot's header format defined in the U-Boot
+>> source code, so the uImage name does make sense with respect to the
+>> "legacy" uImages.
+>
+> Well, you can read "uImage" as "universal Image", which kind of fits
+> the FIT approach :-)
 
+I agree that the FIT image is a type of "universal Image", but I think 
+"FIT image" is much more descriptive and accurate than "universal 
+Image".  The FIT naming convention is designed to match device tree 
+naming, which has lots of meaning.  eg:
+   Flattened Device Tree (FDT) -> Flattened Image Tree (FIT)
+   device tree source (.dts) -> image tree source (.its)
+   device tree blob (.dtb) -> image tree blob (.itb)
 
-Here is my configurations:
+>> My vote would be to make the Linux FIT target rule "fitImage" and then
+>> update the U-Boot documentation to make obvious the differences between
+>> uImages and FIT images.
+>
+> I think we should not try to support both legacy and FIT images on the
+> same level - the idea is clearly that legacy images is the old, to be
+> replaced format, while FIT images is the new, to be used as standard
+> format.
 
-RTC kernel configuration:
+Agreed.
 
-CONFIG_RTC_LIB=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_HCTOSYS=y
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-CONFIG_RTC_DEBUG=y
+In this sense I vote for using plain and simple "uImage" for
+> the (new) standard format, and marking the old format by some ".old"
+> or ".legacy" suffix.
 
-#
-# RTC interfaces
-#
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
+I disagree here.  I don't think calling FIT images "FIT uImages" adds 
+much value and it would add confusion as there are now multiple uImage 
+formats that a user needs to keep straight.  Keeping the legacy uImage 
+naming/format the same, and calling the new FIT images "fitImage" (or 
+possibly itbImage to line up with the dtbImage target) would make more 
+sense to me.  Is there a compelling reason to keep the uImage word 
+connected to FIT images?
 
-dts configuration:
-
- IIC0: i2c@ef600700 {
-                                #address-cells = <1>;
-                                #size-cells = <0>;
-                                compatible = "ibm,iic-440epx", "ibm,iic";
-                                reg = <0xef600700 0x00000014>;
-                                interrupt-parent = <&UIC0>;
-                                interrupts = <0x2 0x4>;
-                                rtc@68 {
-                                        compatible = "stm,m41t80";
-                                        reg = <0x68>;
-                                };
-                                eeprom0@50 {
-                                        compatible = "eeprom";
-                                        reg = <0x50>;
-                                };
-                                eeprom1@54 {
-                                        compatible = "eeprom";
-                                        reg = <0x54>;
-                                };
-                        };
-
-The debug messages:
-
-i2c /dev entries driver
-rtc-m41t80 1-0068: chip found, driver version 0.05
-rtc-m41t80 1-0068: rtc core: registered m41t80 as rtc0
-ibm-iic 1ef600700.i2c: using standard (100 kHz) mode
-TCP cubic registered
-NET: Registered protocol family 17
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-TIPC: Activated (version 1.6.4 compiled Jan  3 2010 12:21:35)
-NET: Registered protocol family 30
-TIPC: Started in single node mode
-rtc-m41t80 1-0068: setting system clock to 2010-01-03 19:43:06 UTC (1262547786)
-
-I have struggled for a few days. Thank you very much.
-
-Allan
-
-
-      
---0-1852684706-1262560506=:72702
-Content-Type: text/html; charset=us-ascii
-
-<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:lucida console,sans-serif;font-size:12pt">
-<div style="font-family: lucida console,sans-serif; font-size: 12pt;"><div>Hello, All,<br><br>Happy New Year to everyone! <br>I am running ppc440epx board which is similar Sequoia board. I have configured a I2C RTC device. From the console debug message, it is working, but I do not see /dev/rtc0 file. My kernel version is 2.6.30.4. I use initramfs as my root file system. Here is my initramfs.txt:<br>dir /dev 755 0 0<br>dir /bin 755 1000 1000<br>dir /proc 755 0 0<br>slink /bin/sh busybox 777 0 0<br>file /bin/busybox /home/awang/proj/linux-2.6.30.4/usr/busybox 755 0 0<br>dir /sys 755 0 0<br>dir /usr 755 0 0<br>dir /usr/bin 755 0 0<br>dir /usr/sbin 755 0 0<br>dir /sbin 755 0 0<br>dir /mnt 755 0 0<br>dir /etc 755 0 0<br>dir /var 755 0 0<br>file /init /home/awang/proj/linux-2.6.30.4/usr/init.sh 755 0 0<br><br>Here is my <a target="_blank" href="http://init.sh">init.sh</a>:<br><br>#!/bin/sh<br><br>/bin/busybox echo "
- "<br>/bin/busybox echo "Hello, I am alive!!!!"<br>busybox mkdir /mnt/flash<br>busybox mount -t proc /proc /proc<br>busybox mount -t sysfs none /sys<br>busybox mount -t jffs2 mtd2 /mnt/flash<br><br>busybox sleep&nbsp; 2<br>/bin/busybox --install -s<br>#start a shell<br>ifconfig eth0 192.168.0.201<br>/bin/sh<br><br><br>Here is my configurations:<br><br>RTC kernel configuration:<br><br>CONFIG_RTC_LIB=y<br>CONFIG_RTC_CLASS=y<br>CONFIG_RTC_HCTOSYS=y<br>CONFIG_RTC_HCTOSYS_DEVICE="rtc0"<br>CONFIG_RTC_DEBUG=y<br><br>#<br># RTC interfaces<br>#<br>CONFIG_RTC_INTF_SYSFS=y<br>CONFIG_RTC_INTF_PROC=y<br>CONFIG_RTC_INTF_DEV=y<br><br>dts configuration:<br><br>&nbsp;IIC0: i2c@ef600700 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =
- &lt;1&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells = &lt;0&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "ibm,iic-440epx", "ibm,iic";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg = &lt;0xef600700 0x00000014&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =
- &lt;&amp;UIC0&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts = &lt;0x2 0x4&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rtc@68 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "stm,m41t80";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =
- &lt;0x68&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eeprom0@50 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "eeprom";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =
- &lt;0x50&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eeprom1@54 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = "eeprom";<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =
- &lt;0x54&gt;;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br><br>The debug messages:<br><br>i2c /dev entries driver<br>rtc-m41t80 1-0068: chip found, driver version 0.05<br>rtc-m41t80 1-0068: rtc core: registered m41t80 as rtc0<br>ibm-iic 1ef600700.i2c: using standard (100 kHz) mode<br>TCP cubic registered<br>NET: Registered protocol family 17<br>RPC: Registered udp transport module.<br>RPC: Registered tcp transport module.<br>TIPC: Activated (version 1.6.4 compiled Jan&nbsp; 3 2010 12:21:35)<br>NET: Registered protocol family 30<br>TIPC: Started in single node mode<br>rtc-m41t80 1-0068: setting system clock to 2010-01-03 19:43:06 UTC (1262547786)<br><br>I have
- struggled for a few days. Thank you very much.<br><br>Allan<br><br><br><br><br><br>&nbsp; <br></div>
-
-</div>
-<!-- cg9.c2.mail.ac4.yahoo.com compressed/chunked Fri Jan  1 20:21:24 PST 2010 -->
-</div><br>
-
-      </body></html>
---0-1852684706-1262560506=:72702--
+Best,
+Peter
