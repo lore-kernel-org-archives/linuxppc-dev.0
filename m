@@ -1,18 +1,22 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from mail.telegraphics.com.au (www.telegraphics.com.au
-	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id C2585B6EEF
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jan 2010 03:47:13 +1100 (EST)
-Date: Sun, 3 Jan 2010 03:39:25 +1100 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver
-In-Reply-To: <10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
-Message-ID: <alpine.OSX.2.00.1001030255060.414@localhost>
-References: <alpine.OSX.2.00.0911171657290.371@silk.local>
-	<10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
+Return-Path: <lonsn2005@gmail.com>
+Received: from mail-px0-f198.google.com (mail-px0-f198.google.com
+	[209.85.216.198]) by ozlabs.org (Postfix) with ESMTP id 2D185B6EEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun,  3 Jan 2010 14:23:45 +1100 (EST)
+Received: by pxi36 with SMTP id 36so9608045pxi.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 02 Jan 2010 19:23:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-961451201-1262450365=:414"
-Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C08882EAA@SDCEXCHANGE01.ad.amcc.com>
+References: <6caf4b5a0912310055h54a6efa6ka1825f19a7f0c691@mail.gmail.com>
+	<AC5E1C3367E37D44970B81A6ADD1DA2C08882EAA@SDCEXCHANGE01.ad.amcc.com>
+Date: Sun, 3 Jan 2010 11:23:43 +0800
+Message-ID: <6caf4b5a1001021923m48d913d8g7da1fb8043dcebca@mail.gmail.com>
+Subject: Re: How to access PPC460EX SDRAM space from PCI/PCIe.
+From: Lonsn <lonsn2005@gmail.com>
+To: Tirumala Reddy Marri <tmarri@amcc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sr@denx.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi:
+Thank you for your reply and Happy New Year!
 
---0-961451201-1262450365=:414
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+According to the canyonlands.dts and arch/powerpc/sysdev/ppc4xx_pci.c
+files in the linux kernel, 2GB has been mappend to inbound PCI memory
+region,
+The followings are PIM init codes related in the kernel:
+/******************************************/
+sa = (0xffffffffffffffffull << ilog2(size));
+ if (res->flags & IORESOURCE_PREFETCH)
+         sa |= 0x8;
 
+ out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
+ out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa));
 
-On Sat, 2 Jan 2010, Geert Uytterhoeven wrote:
+ /* The setup of the split looks weird to me ... let's see
+  * if it works
+  */
+ out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
+ out_le32(mbase + PECFG_PIM0LAH, 0x00000000);
+ out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
+ out_le32(mbase + PECFG_PIM1LAH, 0x00000000);
+ out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
+ out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
 
-> On Tue, Nov 17, 2009 at 10:04, Finn Thain <fthain@telegraphics.com.au>=20
-> wrote:
-> > Add platform driver to the pmac-zilog driver for mac 68k, putting the=
-=20
-> > powermac-specific bits inside #ifdef CONFIG_PPC_PMAC.
->=20
-> > --- linux-2.6.31.orig/drivers/serial/pmac_zilog.c =C2=A0 =C2=A0 =C2=A0 =
-2009-11-17 17:07:28.000000000 +1100
-> > +++ linux-2.6.31/drivers/serial/pmac_zilog.c =C2=A0 =C2=A02009-11-17 17=
-:07:38.000000000 +1100
->=20
-> > @@ -1427,6 +1439,8 @@ static struct uart_ops pmz_pops =3D {
-> > =C2=A0#endif
-> > =C2=A0};
-> >
-> > +#ifdef CONFIG_PPC_PMAC
-> > +
-> > =C2=A0/*
-> > =C2=A0* Setup one port structure after probing, HW is down at this poin=
-t,
-> > =C2=A0* Unlike sunzilog, we don't need to pre-init the spinlock as we d=
-on't
-> > @@ -1823,6 +1837,88 @@ next:
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
-> > =C2=A0}
-> >
-> > +#else
-> > +
-> > +extern struct platform_device scc_a_pdev, scc_b_pdev;
->=20
-> scripts/checkpatch.pl doesn't like this extern, and it's right.
-> Can't this be found using standard platform device/driver matching?
+ out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(res->start));
+ out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(res->start));
+/*****************************************/
 
-The console initcall and arch initcall order didn't permit me to easily=20
-gather the bootinfo data and populate the platform device resources early=
-=20
-enough. (On powermacs there is the open firmware device tree, but of=20
-course, we don't have one.)
+I have debugged these codes and found that the value of register
+PECFGn_BAR0LMPA is
+0x80000008 which means the LT field is 00.
+But according to the PPC460EX usermanual P618:
+LT bit: Type Field:
+              Programming access for PECFGn_BAR0L[LT]:
+              00 32-bit address memory space (not supported)
+             10 64-bit address memory space
+              All other values are reserved.
+It shows that 32 bit address momory space is not supported for PIM.
+The same question happened in the PCI controller (LT field of
+PCI0_BAR0L register).
 
-I would like to further adopt the driver model in order to ditch the=20
-macintosh_config global, and I'd also like to have proper nubus device=20
-matching. But I think that the serial console device is a bit exceptional=
-=20
-so I'm not too fussed about these two globals.
+So my question is:
+1: For PIM, How to access the SDRAM space using 32bit PCI master?
+Using just one address(0x1F800000) or using pci dual address cycle
+command.
+2: Are current linux kernel PIM settings correct and verified by anybody?
 
-Anyway, I don't know of a better way to do the serial console but I'm open=
-=20
-to suggestions.
+Thanks a lot.
 
-> BTW, there are a few other minor checkpatch issues with some of the=20
-> other patches in the series, too.
+Lonsn
 
-I ran checkpatch on all those patches before I submitted them. I ignored=20
-some of the complaints about whitespace where I felt that checkpatch got=20
-it wrong (space character following tab character, IIRC).
-
-checkpatch found lots of mistakes that I did fix, but it can't determine=20
-the most human readable style in all cases, especially where consistency=20
-with the surrounding code is actually more conducive to readability than=20
-strict but sporadic conformance to simple rules would be.
-
-Finn
-
->=20
-> Gr{oetje,eeting}s,
->=20
-> =09=09=09=09=09=09Geert
->=20
---0-961451201-1262450365=:414--
+2010/1/1 Tirumala Reddy Marri <tmarri@amcc.com>:
+> It should be able to access any region in 32bit mode as long as it is
+> smaller than 4GB size. Usually whole SDRAM is mapped to inbound PCI
+> memory region.
+>
+> -----Original Message-----
+> From: linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org
+> [mailto:linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org] On Behalf
+> Of Lonsn
+> Sent: Thursday, December 31, 2009 12:55 AM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: sr@denx.de
+> Subject: How to access PPC460EX SDRAM space from PCI/PCIe.
+>
+> Hi:
+> I'm now using canyonlands board with latest u-boot and linux kernel
+> from DENX git.
+> A PCIe card is plugged in the PCIeX4 slot. The PCIe card is a PCIe-pci
+> bridge(PI7C9X130) plus an Altera fpga.
+> The PCIe card act as a PCI master and send data to SDRAM of 460EX
+> space (total sdram 512MB, reserve 8M for PCI write data(0x1F800000)).
+> Now linux can identify this card, but CPU cann't receive any data from
+> PCIe and no PCIe interrupt.
+> I know about the PCI card works in 32bit mode and doesn't support
+> 64bit address(No pci dual address cycle support).
+> Does the PCI card can access PPC460EX sdram space using just 32bit
+> physical address(0x1F800000)?
+>
+> Best regards,
+> Lonsn
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
