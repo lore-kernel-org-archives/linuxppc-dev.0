@@ -1,22 +1,27 @@
-Return-Path: <lonsn2005@gmail.com>
-Received: from mail-px0-f198.google.com (mail-px0-f198.google.com
-	[209.85.216.198]) by ozlabs.org (Postfix) with ESMTP id 2D185B6EEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  3 Jan 2010 14:23:45 +1100 (EST)
-Received: by pxi36 with SMTP id 36so9608045pxi.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 02 Jan 2010 19:23:43 -0800 (PST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 6D6CCB6EEB
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jan 2010 16:09:05 +1100 (EST)
+Received: by gxk28 with SMTP id 28so7786329gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 02 Jan 2010 21:09:03 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <AC5E1C3367E37D44970B81A6ADD1DA2C08882EAA@SDCEXCHANGE01.ad.amcc.com>
-References: <6caf4b5a0912310055h54a6efa6ka1825f19a7f0c691@mail.gmail.com>
-	<AC5E1C3367E37D44970B81A6ADD1DA2C08882EAA@SDCEXCHANGE01.ad.amcc.com>
-Date: Sun, 3 Jan 2010 11:23:43 +0800
-Message-ID: <6caf4b5a1001021923m48d913d8g7da1fb8043dcebca@mail.gmail.com>
-Subject: Re: How to access PPC460EX SDRAM space from PCI/PCIe.
-From: Lonsn <lonsn2005@gmail.com>
-To: Tirumala Reddy Marri <tmarri@amcc.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1262221856.29396.104.camel@localhost.localdomain>
+References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
+	<1261446643-21714-4-git-send-email-ptyser@xes-inc.com>
+	<fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com>
+	<1262216393.29396.41.camel@localhost.localdomain>
+	<fa686aa40912301601s6cd0ec4y85b88976159a36af@mail.gmail.com>
+	<1262221856.29396.104.camel@localhost.localdomain>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 2 Jan 2010 22:08:43 -0700
+Message-ID: <fa686aa41001022108i92596d6qdf2da0e24c34767e@mail.gmail.com>
+Subject: Re: [U-Boot] [PATCH v2 3/3] powerpc: Add support for ram filesystems
+	in FIT uImages
+To: Peter Tyser <ptyser@xes-inc.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: sr@denx.de, linuxppc-dev@lists.ozlabs.org
+Cc: u-boot <u-boot@lists.denx.de>, linux-kbuild@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +31,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi:
-Thank you for your reply and Happy New Year!
+Hi Peter,
 
-According to the canyonlands.dts and arch/powerpc/sysdev/ppc4xx_pci.c
-files in the linux kernel, 2GB has been mappend to inbound PCI memory
-region,
-The followings are PIM init codes related in the kernel:
-/******************************************/
-sa = (0xffffffffffffffffull << ilog2(size));
- if (res->flags & IORESOURCE_PREFETCH)
-         sa |= 0x8;
-
- out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
- out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa));
-
- /* The setup of the split looks weird to me ... let's see
-  * if it works
-  */
- out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
- out_le32(mbase + PECFG_PIM0LAH, 0x00000000);
- out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
- out_le32(mbase + PECFG_PIM1LAH, 0x00000000);
- out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
- out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
-
- out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(res->start));
- out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(res->start));
-/*****************************************/
-
-I have debugged these codes and found that the value of register
-PECFGn_BAR0LMPA is
-0x80000008 which means the LT field is 00.
-But according to the PPC460EX usermanual P618:
-LT bit: Type Field:
-              Programming access for PECFGn_BAR0L[LT]:
-              00 32-bit address memory space (not supported)
-             10 64-bit address memory space
-              All other values are reserved.
-It shows that 32 bit address momory space is not supported for PIM.
-The same question happened in the PCI controller (LT field of
-PCI0_BAR0L register).
-
-So my question is:
-1: For PIM, How to access the SDRAM space using 32bit PCI master?
-Using just one address(0x1F800000) or using pci dual address cycle
-command.
-2: Are current linux kernel PIM settings correct and verified by anybody?
-
-Thanks a lot.
-
-Lonsn
-
-2010/1/1 Tirumala Reddy Marri <tmarri@amcc.com>:
-> It should be able to access any region in 32bit mode as long as it is
-> smaller than 4GB size. Usually whole SDRAM is mapped to inbound PCI
-> memory region.
+On Wed, Dec 30, 2009 at 6:10 PM, Peter Tyser <ptyser@xes-inc.com> wrote:
+> On Wed, 2009-12-30 at 17:01 -0700, Grant Likely wrote:
+>> On Wed, Dec 30, 2009 at 4:39 PM, Peter Tyser <ptyser@xes-inc.com> wrote:
+>> > Hi Grant,
+>> > I put U-Boot ML on CC.
+>>
+>> Thinking further, I do actually have another concern, at least with
+>> regard to the way the current patch set implements things. =A0Is it
+>> expected or even "recommended" that fit images will *always* contain a
+>> .dtb image? =A0The current patch only handles the case of a .dtb
+>> embedded inside the fit image.
 >
-> -----Original Message-----
-> From: linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+tmarri=amcc.com@lists.ozlabs.org] On Behalf
-> Of Lonsn
-> Sent: Thursday, December 31, 2009 12:55 AM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: sr@denx.de
-> Subject: How to access PPC460EX SDRAM space from PCI/PCIe.
+> I'm not aware of any recommendations as far as what FIT images should
+> contain and there isn't a requirement that it should contain a .dtb
+> image - its just a flexible image format.
 >
-> Hi:
-> I'm now using canyonlands board with latest u-boot and linux kernel
-> from DENX git.
-> A PCIe card is plugged in the PCIeX4 slot. The PCIe card is a PCIe-pci
-> bridge(PI7C9X130) plus an Altera fpga.
-> The PCIe card act as a PCI master and send data to SDRAM of 460EX
-> space (total sdram 512MB, reserve 8M for PCI write data(0x1F800000)).
-> Now linux can identify this card, but CPU cann't receive any data from
-> PCIe and no PCIe interrupt.
-> I know about the PCI card works in 32bit mode and doesn't support
-> 64bit address(No pci dual address cycle support).
-> Does the PCI card can access PPC460EX sdram space using just 32bit
-> physical address(0x1F800000)?
+> I believe in the most common FIT usage scenario the image would contain
+> both a kernel image and .dtb file though. =A0For example, most people I
+> deal with just have boardX and boardY that they want to boot Linux on.
 >
-> Best regards,
-> Lonsn
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> Currently they have to make a "legacy" uImage, manually run the device
+> tree compiler with the proper flags to generate a board-specific .dtb
+> file,
+
+... or put the .dts files into arch/powerpc/boot/dts and use 'make <board>.=
+dtb'
+
+multiple <board>.dtb targets can also be added to CONFIG_EXTRA_TARGETS
+so that a plain 'make' will build all needed files.
+
+> transfer the uImage to to boardX, transfer the .dtb file to
+> boardX, set some U-Boot variables, then boot to Linux. =A0For boardY they
+> would have to redo the steps with the exception of recreating the legacy
+> uImage. =A0(To add to the confusion, the format of device trees is a
+> somewhat moving target, so .dtb files aren't always compatible with
+> different kernel versions.)
+
+The are no guarantees that new dtb files will work with old kernels,
+but old dtb files should continue to work with new kernels.  There
+have been growing pains in this regard, and there are a number of
+examples where this hasn't been the case especially as we were
+learning how best to use the device tree.  It is a lot more stable now
+than it had been and new cases can be considered a kernel bug.
+
+>> Personally, I don't get any benefit out of the new image format, so I
+>> haven't spent any time looking at it. =A0However, I'm concerned about
+>> the drift back towards a different image per target when the move over
+>> the last 4 years has been towards multiplatform kernel images. =A0I
+>> certainly don't want to encourage embedding the device tree blob into
+>> the kernel image, and I'm not very interested in merging code to do
+>> that into the kernel tree. =A0If someone really needs to do that for
+>> their particular target, it is certainly easy enough for them to weld
+>> in the .dtb after the fact before transferring the image to the
+>> target, but I want that mode to be the exception, not the rule.
 >
+> I see your point. =A0The main goal of the patch was to introduce FIT imag=
+e
+> support as its the new, more flexible, "better", standard image format
+> for U-Boot going forward. =A0Also, lots people aren't aware of FIT images
+> and the cool stuff they can do with them, so what better way to get the
+> word out than getting support for FIT images included in the kernel
+> proper:)
+
+Define 'better'.  :-)
+
+I do understand your use-case and what problem fit images solve for
+you.  However, from a "long term strategy" point of view it is a use
+case that I'm not interested in actively supporting for two reasons.
+The first is that I think it is in our best interest to encourage the
+mind set that the hardware description is separate from the operating
+system image, and so they should be stored and updated separately.  I
+look at the unexpected ecosystem of distributions that has sprung up
+around wireless routers (ie OpenWRT and the like) and Linux cell
+phones (ie. Cyanogen Mod) where there is a huge range of hardware.
+The userspace can pretty much run on any of them excepting minor
+configuration changes.  The embedded space is becoming more PCs in
+this regard, and I know that multiplatform is a big deal for some of
+the users.  I'm not interested in encouraging any behaviour that will
+scuttle deployment of multiplatform kernels.  (That being said, I'm
+not going to actively sabotage people who want to put dtb sections
+into the kernel images either.  I understand that at times it is
+necessary, and there are numerous examples of this already in the
+kernel tree; specifically to support firmware that doesn't implement
+arch/powerpc's boot interface)
+
+The second is that I no longer think it is a good idea to be building
+bootloader specific image fomats if we can help it.  U-Boot is not the
+only game bootloaders, especially when talking about ARM or MIPS, and
+some folks are even using kexec to go from one kernel to the next.
+Having the same image format for all firmware and also kexec is far
+more interesting to me than the a new u-boot format.  Some form of
+zImage seems to be a more likely format to standardize around than the
+FIT format, mostly because kexec and a lot of firmware already
+understand zImages, and it doesn't require firmware to link in libfdt.
+
+> I think it would be nice to generate a FIT image that contained the
+> kernel + .dtb as it significantly simplifies the process of booting
+> Linux for the common case for lots of U-Boot users and showcases one of
+> the benefits of the FIT format. =A0If you'd prefer not to have this
+> portion of the patch included, I can respin so that the FIT image
+> created only contains a kernel image, not a .dtb or initramfs. =A0Or I
+> could make targets of fitImage (no dtb included), fitImage.<board> (dtb
+> included), and fitImage.initrd.<board> (dtb and initramfs included).
+> Either way is fine with me, it'd just be nice to see FIT support get in
+> in some form.
+
+I'd be okay (perhaps not happy, but okay) with merging fitImage and
+fitImage.initrd targets (no dtb).  I will resist merging fitImage.%
+and fitImage.initrd.% targets because I see that very much as a
+project specific deployment target and I'm not convinced yet that it
+the pattern is right or that it is even needed in the kernel at all.
+
+Cheers,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
