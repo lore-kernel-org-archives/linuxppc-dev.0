@@ -1,19 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f198.google.com (mail-yw0-f198.google.com
-	[209.85.211.198]) by ozlabs.org (Postfix) with ESMTP id A0C0FB6EEB
-	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jan 2010 16:11:18 +1100 (EST)
-Received: by ywh36 with SMTP id 36so14563186ywh.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 02 Jan 2010 21:11:16 -0800 (PST)
+Received: from mail-yx0-f196.google.com (mail-yx0-f196.google.com
+	[209.85.210.196]) by ozlabs.org (Postfix) with ESMTP id D41BAB6EEB
+	for <linuxppc-dev@ozlabs.org>; Sun,  3 Jan 2010 16:14:04 +1100 (EST)
+Received: by yxe34 with SMTP id 34so12685314yxe.16
+	for <linuxppc-dev@ozlabs.org>; Sat, 02 Jan 2010 21:14:02 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20091231224439.AF5353F6D1@gemini.denx.de>
+In-Reply-To: <20100101104449.6DAC63F6FF@gemini.denx.de>
 References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
 	<1261446643-21714-4-git-send-email-ptyser@xes-inc.com>
 	<fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com>
 	<20091231224439.AF5353F6D1@gemini.denx.de>
+	<1262301038.29396.137.camel@localhost.localdomain>
+	<20100101104449.6DAC63F6FF@gemini.denx.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 2 Jan 2010 22:10:56 -0700
-Message-ID: <fa686aa41001022110m5767925bqf8f6d3eadf965d6d@mail.gmail.com>
+Date: Sat, 2 Jan 2010 22:13:42 -0700
+Message-ID: <fa686aa41001022113o46bad9d2xf6c026f5fa3e8677@mail.gmail.com>
 Subject: Re: [PATCH v2 3/3] powerpc: Add support for ram filesystems in FIT
 	uImages
 To: Wolfgang Denk <wd@denx.de>
@@ -29,28 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 31, 2009 at 3:44 PM, Wolfgang Denk <wd@denx.de> wrote:
-> Dear Grant Likely,
+On Fri, Jan 1, 2010 at 3:44 AM, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Peter,
 >
-> In message <fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com> =
-you wrote:
->>
->> IIRC, uImage.fit.initrd.% should appear before uImage.fit.% in the
->> Makefile so that make behaves more consistently. =A0Speaking of which,
->> the number of '.' in the name is getting rather large. =A0Would you
->> consider using 'fitImage' instead of 'uImage.fit'?
+> In message <1262301038.29396.137.camel@localhost.localdomain> you wrote:
+>> What do you think about changing the U-Boot documentation to rename
+>> those 2 image types to:
+>> 1 uImages
+>> 2 FIT Images
 >
-> Why chose a different name at all? We could still call it "uImage",
-> meaning "U-Boot image" - U-Boot is clever enought o detect
-> automatically if we pass it an old style or a fit image.
+> Let's make this "uImage.old" (or "uImage.legacy" similar) and
+> "uImage", then.
 
-Simply because arch/powerpc/boot/Makefile needs different target names
-to decide which kind of image to build.  I don't care much about the
-name, it can always be renamed at install time, but I do care that the
-make build targets are sane.
+I'm not interested in renaming the target name for the current uImage
+format.  I think it will cause too much breakage and pain to do so.
 
 g.
 
---=20
+-- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
