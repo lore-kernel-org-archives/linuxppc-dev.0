@@ -1,15 +1,27 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B421CDB.4010902@grandegger.com>
-Date: Mon, 04 Jan 2010 17:52:43 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 25899B7C05
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Jan 2010 04:22:17 +1100 (EST)
+Date: Mon, 4 Jan 2010 18:22:09 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
 Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
 	MPC521x processor
-References: <1262420274-16586-1-git-send-email-wg@grandegger.com>	<1262420274-16586-2-git-send-email-wg@grandegger.com>	<1262420274-16586-3-git-send-email-wg@grandegger.com>	<20100102135734.GC2239@pengutronix.de>	<4B3F6F6B.5070004@grandegger.com>
+Message-ID: <20100104172209.GC4665@pengutronix.de>
+References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
+	<1262420274-16586-2-git-send-email-wg@grandegger.com>
+	<1262420274-16586-3-git-send-email-wg@grandegger.com>
+	<20100102135734.GC2239@pengutronix.de>
+	<4B3F6F6B.5070004@grandegger.com>
 	<20100104162441.GA4665@pengutronix.de>
-In-Reply-To: <20100104162441.GA4665@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	<4B421CDB.4010902@grandegger.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xo44VMWPx7vlQ2+2"
+In-Reply-To: <4B421CDB.4010902@grandegger.com>
 Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
 	Devicetree-discuss@lists.ozlabs.org,
 	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
@@ -22,128 +34,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfram,
 
-Wolfram Sang wrote:
-> Hello Wolfgang,
-> 
-> first the good news: Your patches also work with our MPC5121-board.
+--xo44VMWPx7vlQ2+2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Nice. Just for curiosity, what clock and frequency does it select on
-your board? It should be listed when the driver is loaded.
 
->>>> +#else /* !CONFIG_PPC_MPC5200 */
->>>> +static u32 __devinit mpc52xx_can_get_clock(struct of_device *ofdev,
->>>> +					   const char *clock_name,
->>>> +					   int *mscan_clksrc)
->>>> +{
->>>> +	return 0;
->>>> +}
->>>> +#endif /* CONFIG_PPC_MPC5200 */
->>> Hmmm, I don't really like those empty functions. I once used the data-field of
->>> struct of_device_id, which carried a function pointer to a specific
->>> init-function for the matched device. What do you think about such an approach?
->> Often the problem is that the function will not compile on the other MPC
->> arch. This is not true here. So, the main reason for the #ifdefs is
->> space saving. Your approach will not help in both cases.
-> 
-> My idea was: it might be nice to save both #else-branches and the if-clause in
-> probe() which calls this get_clock() or the other (and then another in case
-> there will be a new mpc5xyz-user in the future). And replace it with some
-> mpc5xxx_custom_init() which is taken from of_device_id->data. No big issue,
-> though; no show-stopper.
+> Nice. Just for curiosity, what clock and frequency does it select on
+> your board? It should be listed when the driver is loaded.
 
-You mean like in the i2c-mpc driver:
+Using this simple dts-snipplet
 
-http://lxr.linux.no/#linux+v2.6.32/drivers/i2c/busses/i2c-mpc.c#L585
+                mscan@1300 {
+                        compatible =3D "fsl,mpc5121-mscan";
+                        cell-index =3D <0>;
+                        interrupts =3D <12 8>;
+                        interrupt-parent =3D < &ipic >;
+                        reg =3D <0x1300 0x80>;
+                };
 
-No problem, if I handle the regs property inside the mpc5121-specific
-function. The #ifdef's are for *space saving*. If nobody else than me
-cares, I will remove them.
+I get this output:
 
->>>> +
->>>> +#ifdef CONFIG_PPC_MPC512x
->>>> +struct mpc512x_clockctl {
->>>> +	u32 spmr;		/* System PLL Mode Reg */
->>>> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
->>>> +	u32 scfr1;		/* System Clk Freq Reg 1 */
->>>> +	u32 scfr2;		/* System Clk Freq Reg 2 */
->>>> +	u32 reserved;
->>>> +	u32 bcr;		/* Bread Crumb Reg */
->>>> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
->>>> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
->>>> +	u32 cccr;		/* CFM Clk Ctrl Reg */
->>>> +	u32 dccr;		/* DIU Clk Cnfg Reg */
->>>> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
->>>> +};
-> 
-> I wonder if this (and the occurence in clock.c) should be factored out and
-> moved to asm/mpc5xxx.h?
+mpc5xxx_can 80001300.mscan: using 'sys_clk' with frequency divider 25
+mpc5xxx_can 80001300.mscan: MSCAN at 0xe1064300, irq 16, clock 16000000 Hz
 
-I was thinking about that as well but mpc5xxx.h seems not (yet) to be a
-popular place to store mpc5xxx related definitions.
+mpc5xxx_can 80001380.mscan: using 'sys_clk' with frequency divider 25
+mpc5xxx_can 80001380.mscan: MSCAN at 0xe106c380, irq 17, clock 16000000 Hz
 
->>>> +
->>>> +static struct of_device_id mpc512x_clock_ids[] __devinitdata = {
->>>> +	{ .compatible = "fsl,mpc5121-clock", },
->>>> +	{}
->>>> +};
->>>> +
->>>> +static u32  __devinit mpc512x_can_get_clock(struct of_device *ofdev,
->>>> +					    const char *clock_name,
->>>> +					    int *mscan_clksrc,
->>>> +					    ssize_t mscan_addr)
->>>> +{
->>>> +	struct mpc512x_clockctl __iomem *clockctl;
->>>> +	struct device_node *np_clock;
->>>> +	struct clk *sys_clk, *ref_clk;
->>>> +	int plen, clockidx, clocksrc = -1;
->>>> +	u32 sys_freq, val, clockdiv = 1, freq = 0;
->>>> +	const u32 *pval;
->>>> +
->>>> +	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
->>>> +	if (!np_clock) {
->>>> +		dev_err(&ofdev->dev, "couldn't find clock node\n");
->>>> +		return -ENODEV;
->>>> +	}
->>>> +	clockctl = of_iomap(np_clock, 0);
->>>> +	if (!clockctl) {
->>>> +		dev_err(&ofdev->dev, "couldn't map clock registers\n");
->>>> +		return 0;
->>>> +	}
->>>> +
->>>> +	/* Determine the MSCAN device index from the physical address */
->>>> +	clockidx = (mscan_addr & 0x80) ? 1 : 0;
->>>> +	if (mscan_addr & 0x2000)
->>>> +		clockidx += 2;
->>> The PSCs use 'cell-index', here we use mscan_addr to derive the index. This is
->>> not consistent, but should be IMHO. Now, which is the preferred way? I think
->>> I'd go for 'cell-index', as other processors might have mscan_addr shuffled.
->>> Also, we could use 'of_iomap' again in the probe_routine.
->> I understood that "cell-index" is deprecated and it has been removed
->> from many nodes. That's why I used the address to derive the index.
-> 
-> Well, the arguments in your other mail make sense to me, so keep it this way.
-> As not only the index-issue, but also the clock-handling is different for the
-> PSCs, it is at least consistently inconsistent :D
 
-OK.
+> > My idea was: it might be nice to save both #else-branches and the if-cl=
+ause in
+> > probe() which calls this get_clock() or the other (and then another in =
+case
+> > there will be a new mpc5xyz-user in the future). And replace it with so=
+me
+> > mpc5xxx_custom_init() which is taken from of_device_id->data. No big is=
+sue,
+> > though; no show-stopper.
+>=20
+> You mean like in the i2c-mpc driver:
+>=20
+> http://lxr.linux.no/#linux+v2.6.32/drivers/i2c/busses/i2c-mpc.c#L585
 
-> One further note: I couldn't spot any code handling Rev1 of the MPC5121? Do you
-> plan to add such code? If not, we should at least put a comment that it is
-> missing. The binding documentation should be updated as well, as you can't use
-> all options on such revisions.
+Yes.
 
-Do we have rev1 support in the mainline kernel? I also understood that
-there are only a few devel boards out there with v1 CPUs. If necessary,
-this could be fixed later on demand. But it should be documented, e.g.
-in the KConfig and dts bindings doc, of course.
+> No problem, if I handle the regs property inside the mpc5121-specific
+> function. The #ifdef's are for *space saving*. If nobody else than me
+> cares, I will remove them.
 
-Did you have a chance to test bus-off recovery? I just realized one
-issue if the device is stopped while in bus-off.
+I'd be fine with keeping them.
 
-Will come up with a v2 patch soon...
+> >>>> +
+> >>>> +#ifdef CONFIG_PPC_MPC512x
+> >>>> +struct mpc512x_clockctl {
+> >>>> +	u32 spmr;		/* System PLL Mode Reg */
+> >>>> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
+> >>>> +	u32 scfr1;		/* System Clk Freq Reg 1 */
+> >>>> +	u32 scfr2;		/* System Clk Freq Reg 2 */
+> >>>> +	u32 reserved;
+> >>>> +	u32 bcr;		/* Bread Crumb Reg */
+> >>>> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
+> >>>> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
+> >>>> +	u32 cccr;		/* CFM Clk Ctrl Reg */
+> >>>> +	u32 dccr;		/* DIU Clk Cnfg Reg */
+> >>>> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
+> >>>> +};
+> >=20
+> > I wonder if this (and the occurence in clock.c) should be factored out =
+and
+> > moved to asm/mpc5xxx.h?
+>=20
+> I was thinking about that as well but mpc5xxx.h seems not (yet) to be a
+> popular place to store mpc5xxx related definitions.
 
-Thanks,
+Probably because the mpc5121 is not very popular when it comes to mainline
+activity. (BTW, I also wondered why it is not named mpc512x.h as I'd think
+mpc5xxx is for common stuff between mpc5200 and mpc5121. But this is another
+issue, not relevant here.)
 
-Wolfgang.
+> > One further note: I couldn't spot any code handling Rev1 of the MPC5121=
+? Do you
+> > plan to add such code? If not, we should at least put a comment that it=
+ is
+> > missing. The binding documentation should be updated as well, as you ca=
+n't use
+> > all options on such revisions.
+>=20
+> Do we have rev1 support in the mainline kernel? I also understood that
+> there are only a few devel boards out there with v1 CPUs. If necessary,
+> this could be fixed later on demand. But it should be documented, e.g.
+> in the KConfig and dts bindings doc, of course.
+
+Yup, documenting it will do.
+
+> Did you have a chance to test bus-off recovery? I just realized one
+> issue if the device is stopped while in bus-off.
+
+Sorry, I just did basic transfer-tests as I am currently busy with other
+projects.
+
+> Will come up with a v2 patch soon...
+
+Please do an s/latetr/latter/ before posting it :)
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--xo44VMWPx7vlQ2+2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktCI8EACgkQD27XaX1/VRsiVQCeOY6NPAP1ypafrGuZousfjtRQ
+foQAniRziMi3TzRsydoYZXhEhWQfC94H
+=2lDe
+-----END PGP SIGNATURE-----
+
+--xo44VMWPx7vlQ2+2--
