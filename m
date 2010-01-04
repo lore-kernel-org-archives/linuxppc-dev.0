@@ -1,19 +1,27 @@
-Return-Path: <wd@denx.de>
-To: Wolfram Sang <w.sang@pengutronix.de>
-From: Wolfgang Denk <wd@denx.de>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8A03B7BEF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Jan 2010 07:23:52 +1100 (EST)
+Date: Mon, 4 Jan 2010 21:23:46 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Denk <wd@denx.de>
 Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
 	MPC521x processor
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <20100104162441.GA4665@pengutronix.de>
+Message-ID: <20100104202346.GA8904@pengutronix.de>
 References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
 	<1262420274-16586-2-git-send-email-wg@grandegger.com>
 	<1262420274-16586-3-git-send-email-wg@grandegger.com>
 	<20100102135734.GC2239@pengutronix.de>
 	<4B3F6F6B.5070004@grandegger.com>
 	<20100104162441.GA4665@pengutronix.de>
-Date: Mon, 04 Jan 2010 20:40:27 +0100
-Message-Id: <20100104194027.CB2053F6FD@gemini.denx.de>
+	<20100104194027.CB2053F6FD@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+In-Reply-To: <20100104194027.CB2053F6FD@gemini.denx.de>
 Cc: Netdev@vger.kernel.org, Devicetree-discuss@lists.ozlabs.org,
 	Socketcan-core@lists.berlios.de, Linuxppc-dev@lists.ozlabs.org,
 	Wolfgang Grandegger <wg@denx.de>
@@ -26,26 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Wolfram,
 
-in message <20100104162441.GA4665@pengutronix.de> you wrote:
-> 
-> One further note: I couldn't spot any code handling Rev1 of the MPC5121? Do you
-> plan to add such code? If not, we should at least put a comment that it is
-> missing. The binding documentation should be updated as well, as you can't use
-> all options on such revisions.
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We only support MPC512x Rev. 2 (and later). This is also true for
-other parts of the mainline kernel code - see for example trhe NAND
-driver.
+Hello Wolfgang,
 
+> We only support MPC512x Rev. 2 (and later). This is also true for
+> other parts of the mainline kernel code - see for example trhe NAND
+> driver.
 
-Best regards,
+Okay, good to know there are differences in NAND as well. As said before, it
+makes sense to me to skip V1. It just should be documented IMHO, and, if
+possible, the bindings should allow V1 support in case anyone dares.
 
-Wolfgang Denk
+Regards,
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Include the success of others in your dreams for your own success.
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--ibTvN161/egqYuK8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktCTlIACgkQD27XaX1/VRtOwwCfXZRZyBXyiQeLmMbASY+sQQaA
+5KwAnj5Uj/ATiOJxYE2uBwsm29lcAhM2
+=Sbfj
+-----END PGP SIGNATURE-----
+
+--ibTvN161/egqYuK8--
