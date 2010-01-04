@@ -1,18 +1,30 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B41E3C6.9060306@grandegger.com>
-Date: Mon, 04 Jan 2010 13:49:10 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BEB1FB6EFE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Jan 2010 03:13:44 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o04G5oD0014978
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:05:50 -0700
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o04GDbZ9246394
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:13:39 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o04GDYMZ023484
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:13:35 -0700
+Date: Mon, 4 Jan 2010 11:13:30 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Please pull 'merge' branch of 4xx tree
+Message-ID: <20100104161330.GE6229@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
-	MPC521x processor
-References: <1262420274-16586-1-git-send-email-wg@grandegger.com>	<1262420274-16586-2-git-send-email-wg@grandegger.com>	<1262420274-16586-3-git-send-email-wg@grandegger.com>	<20100102135734.GC2239@pengutronix.de>
-	<4B3F6F6B.5070004@grandegger.com>
-In-Reply-To: <4B3F6F6B.5070004@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
-	Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,112 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-> Wolfram Sang wrote:
->> On Sat, Jan 02, 2010 at 09:17:53AM +0100, Wolfgang Grandegger wrote:
->>> From: Wolfgang Grandegger <wg@denx.de>
->>>
->>> The main differences compared to the MSCAN on the MPC5200 are:
->>>
->>> - More flexibility in choosing the CAN source clock and frequency:
->>>
->>>   Three different clock sources can be selected: "ip", "ref" or "sys".
->>>   For the latter two, a clock divider can be defined as well. If the
->>>   clock source is not specified by the device tree, we first try to
->>>   find an optimal CAN source clock based on the system clock. If that
->>>   is not possible, the reference clock will be used.
->>>
->>> - The behavior of bus-off recovery is configurable:
->>>
->>>   To comply with the usual handling of Socket-CAN bus-off recovery,
->>>   "recovery on request" is selected (instead of automatic recovery).
->>>
->>> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
->>> ---
->>>  drivers/net/can/mscan/Kconfig       |    2 +-
->>>  drivers/net/can/mscan/mpc5xxx_can.c |  234 +++++++++++++++++++++++++++++------
->>>  drivers/net/can/mscan/mscan.c       |   41 +++++--
->>>  drivers/net/can/mscan/mscan.h       |   81 ++++++------
->>>  4 files changed, 271 insertions(+), 87 deletions(-)
->>>
-> [snip]
-> 
->>> +#else /* !CONFIG_PPC_MPC5200 */
->>> +static u32 __devinit mpc52xx_can_get_clock(struct of_device *ofdev,
->>> +					   const char *clock_name,
->>> +					   int *mscan_clksrc)
->>> +{
->>> +	return 0;
->>> +}
->>> +#endif /* CONFIG_PPC_MPC5200 */
->> Hmmm, I don't really like those empty functions. I once used the data-field of
->> struct of_device_id, which carried a function pointer to a specific
->> init-function for the matched device. What do you think about such an approach?
-> 
-> Often the problem is that the function will not compile on the other MPC
-> arch. This is not true here. So, the main reason for the #ifdefs is
-> space saving. Your approach will not help in both cases.
-> 
->>> +
->>> +#ifdef CONFIG_PPC_MPC512x
->>> +struct mpc512x_clockctl {
->>> +	u32 spmr;		/* System PLL Mode Reg */
->>> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
->>> +	u32 scfr1;		/* System Clk Freq Reg 1 */
->>> +	u32 scfr2;		/* System Clk Freq Reg 2 */
->>> +	u32 reserved;
->>> +	u32 bcr;		/* Bread Crumb Reg */
->>> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
->>> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
->>> +	u32 cccr;		/* CFM Clk Ctrl Reg */
->>> +	u32 dccr;		/* DIU Clk Cnfg Reg */
->>> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
->>> +};
->>> +
->>> +static struct of_device_id mpc512x_clock_ids[] __devinitdata = {
->>> +	{ .compatible = "fsl,mpc5121-clock", },
->>> +	{}
->>> +};
->>> +
->>> +static u32  __devinit mpc512x_can_get_clock(struct of_device *ofdev,
->>> +					    const char *clock_name,
->>> +					    int *mscan_clksrc,
->>> +					    ssize_t mscan_addr)
->>> +{
->>> +	struct mpc512x_clockctl __iomem *clockctl;
->>> +	struct device_node *np_clock;
->>> +	struct clk *sys_clk, *ref_clk;
->>> +	int plen, clockidx, clocksrc = -1;
->>> +	u32 sys_freq, val, clockdiv = 1, freq = 0;
->>> +	const u32 *pval;
->>> +
->>> +	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
->>> +	if (!np_clock) {
->>> +		dev_err(&ofdev->dev, "couldn't find clock node\n");
->>> +		return -ENODEV;
->>> +	}
->>> +	clockctl = of_iomap(np_clock, 0);
->>> +	if (!clockctl) {
->>> +		dev_err(&ofdev->dev, "couldn't map clock registers\n");
->>> +		return 0;
->>> +	}
->>> +
->>> +	/* Determine the MSCAN device index from the physical address */
->>> +	clockidx = (mscan_addr & 0x80) ? 1 : 0;
->>> +	if (mscan_addr & 0x2000)
->>> +		clockidx += 2;
->> The PSCs use 'cell-index', here we use mscan_addr to derive the index. This is
->> not consistent, but should be IMHO. Now, which is the preferred way? I think
->> I'd go for 'cell-index', as other processors might have mscan_addr shuffled.
->> Also, we could use 'of_iomap' again in the probe_routine.
-> 
-> I understood that "cell-index" is deprecated and it has been removed
-> from many nodes. That's why I used the address to derive the index.
+Hi Ben,
 
-So more thoughts: I still find inspecting the regs less error prune than
-defining cell-index and it should work fine for "fsl,mpc5121_mscan".
-Other processor variants might handle a different register layout with
-another appropriate compatibility string. But I could retrieve the
-"regs" property inside mpc512x_can_get_clock() to use of_iomap() as before.
+Below are some simple defconfig updates for 4xx for 2.6.33.  Please pull them
+before you send the next batch to Linus.
 
-Wolfgang.
+Thanks,
+josh
+
+The following changes since commit 95cd34b42b43c0ed5a89a764e023189bfe7b1530:
+  Albert Herranz (1):
+        powerpc/gc/wii: Remove get_irq_desc()
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+
+Josh Boyer (2):
+      powerpc/44x: Update PowerPC 44x board defconfigs
+      powerpc/40x: Update the PowerPC 40x board defconfigs
+
+ arch/powerpc/configs/40x/acadia_defconfig      |  241 ++++++++++++++-----
+ arch/powerpc/configs/40x/ep405_defconfig       |  307 ++++++++++++++++++------
+ arch/powerpc/configs/40x/hcu4_defconfig        |  256 +++++++++++++++-----
+ arch/powerpc/configs/40x/kilauea_defconfig     |  140 ++++++++---
+ arch/powerpc/configs/40x/makalu_defconfig      |  190 ++++++++++-----
+ arch/powerpc/configs/40x/walnut_defconfig      |  257 +++++++++++++++-----
+ arch/powerpc/configs/44x/arches_defconfig      |  135 ++++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig      |  255 +++++++++++++++-----
+ arch/powerpc/configs/44x/canyonlands_defconfig |  141 ++++++++---
+ arch/powerpc/configs/44x/ebony_defconfig       |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/eiger_defconfig       |  128 +++++++---
+ arch/powerpc/configs/44x/katmai_defconfig      |  253 +++++++++++++++-----
+ arch/powerpc/configs/44x/rainier_defconfig     |  254 +++++++++++++++-----
+ arch/powerpc/configs/44x/redwood_defconfig     |  274 +++++++++++++++------
+ arch/powerpc/configs/44x/sam440ep_defconfig    |  284 +++++++++++++++-------
+ arch/powerpc/configs/44x/sequoia_defconfig     |  202 +++++++++++-----
+ arch/powerpc/configs/44x/taishan_defconfig     |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/warp_defconfig        |  228 ++++++++++++------
+ arch/powerpc/configs/ppc40x_defconfig          |  292 ++++++++++++++++-------
+ arch/powerpc/configs/ppc44x_defconfig          |  309 +++++++++++++++++-------
+ 20 files changed, 3391 insertions(+), 1271 deletions(-)
