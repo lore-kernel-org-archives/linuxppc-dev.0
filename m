@@ -1,30 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f181.google.com (mail-yx0-f181.google.com
-	[209.85.210.181]) by ozlabs.org (Postfix) with ESMTP id 7B2CBB6EF6
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jan 2010 19:34:53 +1100 (EST)
-Received: by yxe11 with SMTP id 11so12463181yxe.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 04 Jan 2010 00:34:52 -0800 (PST)
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 72792B7BEB
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jan 2010 19:59:26 +1100 (EST)
+Message-ID: <4B41ADF1.1000400@embedded-sol.com>
+Date: Mon, 04 Jan 2010 10:59:29 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <87skanp8ln.fsf@macbook.be.48ers.dk>
-References: <1261446643-21714-1-git-send-email-ptyser@xes-inc.com>
-	<1261446643-21714-4-git-send-email-ptyser@xes-inc.com>
-	<fa686aa40912301502x48785614ya4dd5c71815a7633@mail.gmail.com>
-	<20091231224439.AF5353F6D1@gemini.denx.de>
-	<1262301038.29396.137.camel@localhost.localdomain>
-	<20100101104449.6DAC63F6FF@gemini.denx.de>
-	<87wrzzpq8c.fsf@macbook.be.48ers.dk>
-	<20100103095032.8F05AE34A26@gemini.denx.de>
-	<87skanp8ln.fsf@macbook.be.48ers.dk>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 4 Jan 2010 01:34:32 -0700
-Message-ID: <fa686aa41001040034i22703ab5s6ac0e1fc8ff6b000@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] powerpc: Add support for ram filesystems in FIT
-	uImages
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Peter Tyser <ptyser@xes-inc.com>,
-	Wolfgang Denk <wd@denx.de>, linux-kbuild@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI-PCI bridge scanning broken on 460EX
+References: <4B388D9D.7010404@embedded-sol.com>
+	<1262584539.2173.335.camel@pasglop>
+In-Reply-To: <1262584539.2173.335.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Feng Kan <fkan@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +25,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 3, 2010 at 7:27 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>>>> "Wolfgang" =3D=3D Wolfgang Denk <wd@denx.de> writes:
->
-> Hi,
->
-> =A0>> No, that would break stuff for the existing users. The existing for=
-mat
-> =A0>> make/file names shouldn't change.
->
-> =A0Wolfgang> Well, with this argument you can block all progress and free=
-ze all
-> =A0Wolfgang> development to some ancient state.
->
-> We only break backwards compatibility when we have to. There's no
-> technical reason for renaming the existing make targets.
+Hi, Ben
 
-I agree, and I feel pretty strongly on this point.  The meaning of the
-uImage target should not change.  The new format must use a different
-target name.
+Adding Feng Kan from AMCC to CC.
 
-g.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2009-12-28 at 12:51 +0200, Felix Radensky wrote:
+>   
+>> Hi,
+>>
+>> I'm running linux-2.6.33-rc2 on Canyonlands board. When PLX 6254 
+>> transparent PCI-PCI
+>> bridge is plugged into PCI slot the kernel simply resets the board 
+>> without printing anything
+>> to console. Without PLX bridge kernel boots fine.
+>>     
+>
+> Sorry for the late reply...
+>   
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+No need to apologize, I appreciate you help very much.
+
+>   
+>> I've tracked down the problem to the following code in pci_scan_bridge() 
+>> in drivers/pci/probe.c:
+>>
+>> if (pcibios_assign_all_busses() || broken)
+>>                 /* Temporarily disable forwarding of the
+>>                    configuration cycles on all bridges in
+>>                    this bus segment to avoid possible
+>>                    conflicts in the second pass between two
+>>                    bridges programmed with overlapping
+>>                    bus ranges. */
+>>                 pci_write_config_dword(dev, PCI_PRIMARY_BUS,
+>>                                buses & ~0xffffff);
+>>
+>> If test for broken is removed, kernel boots fine, detects the bridge, but
+>> does not detect the device behind the bridge. The same device plugged
+>> directly into PCI slot is detected correctly.
+>>     
+>
+> So we would have a similar mismatch between the initial setup and the
+> kernel...  However, I don't quite see yet why the kernel trying to fix
+> it up breaks things, that will need a bit more debugging here...
+>
+> Can you give it a quick try with adding something like :
+>
+>  ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
+>
+> Near the end of ppc4xx_pci.c ? It looks like another case of reset
+> not actually resetting bridges (are we not properly doing a fundamental
+> reset ? Stefan what's your take there ?)
+>
+> The above will cause busses to be re-assigned which is risky because it
+> will allow the kernel to assign numbers beyond the limits of what
+> ppc4xx_pci.c supports (see my comments in the thread you quotes).
+>
+> The good thing is that we now have a working fixmap infrastructure, so
+> we could/should just move ppc4xx_pci.c to use that, and just always
+> re-assign busses.
+>
+>   
+>> To remind you, tests for broken were added by commit 
+>> a1c19894b786f10c76ac40e93c6b5d70c9b946d2,
+>> and were intended to solve device detection problem behind PCI-E 
+>> switches, as discussed in this thread:
+>> http://lists.ozlabs.org/pipermail/linuxppc-dev/2008-October/063939.html
+>>     
+>
+>   
+>> PCI: Probing PCI hardware
+>> pci_bus 0000:00: scanning bus
+>> pci 0000:00:06.0: found [3388:0020] class 000604 header type 01
+>> pci 0000:00:06.0: supports D1 D2
+>> pci 0000:00:06.0: PME# supported from D0 D1 D2 D3hot
+>> pci 0000:00:06.0: PME# disabled
+>> pci_bus 0000:00: fixups for bus
+>> pci 0000:00:06.0: scanning behind bridge, config 000000, pass 0
+>> pci 0000:00:06.0: bus configuration invalid, reconfiguring
+>>     
+>
+> Ok so we hit a P2P bridge whose primary, secondary and subordinate bus
+> numbers are all 0, which is clearly unconfigured. I think this is the
+> root complex bridge
+>
+>   
+>> pci 0000:00:06.0: scanning behind bridge, config 000000, pass 1
+>>     
+>
+> Now this is when the bus should be reconfigured (pass 1). Sadly the code
+> doesn't print much debug.
+>
+> Also from that point, it should renumber things and work... 
+>
+>   
+>> pci_bus 0000:01: scanning bus
+>>     
+>
+> Which it does to some extent. It assigned bus number 1 to it afaik so we
+> now start looking below the RC bridge:
+>
+>   
+>> pci 0000:01:06.0: found [3388:0020] class 000604 header type 01
+>>     
+>
+> Hrm... class PCI bridge, vendor 3388 device 0020, is that your PLX ?
+> It's not the right vendor ID but maybe that's configurable by our OEM or
+> something...
+>   
+
+The bridge and its evaluation board were manufactured by HiNT, later 
+purchased by PLX.
+3388:0020 is HiNT HB6 Universal PCI-PCI bridge in transparent mode.
+
+>   
+>> pci 0000:01:06.0: supports D1 D2
+>> pci 0000:01:06.0: PME# supported from D0 D1 D2 D3hot
+>> pci 0000:01:06.0: PME# disabled
+>> pci_bus 0000:01: fixups for bus
+>> pci 0000:00:06.0: PCI bridge to [bus 01-ff]
+>> pci 0000:00:06.0:   bridge window [io  0x0000-0x0fff]
+>> pci 0000:00:06.0:   bridge window [mem 0x00000000-0x000fffff]
+>> pci 0000:00:06.0:   bridge window [mem 0x00000000-0x000fffff 64bit pref]
+>> pci 0000:01:06.0: scanning behind bridge, config ff0100, pass 0
+>>     
+>
+> Allright, that's where it gets interesting. It tries to scan behind the
+> bridge. It gets something it doesn't like. IE, it gets a secondary bus
+> number of 1 (what the heck ? I wonder what your firmware does) which
+> Linux is not happy about and decides to renumber it.
+>   
+
+U-boot has problems with this bridge as well, so I had to completely 
+disable PCI
+support in u-boot to get linux running.
+>   
+>> pci 0000:01:06.0: bus configuration invalid, reconfiguring
+>>     
+>
+> Now, that's where Linux should have written 000000 to the register,
+> which is what you commented out.
+>
+>   
+>> pci 0000:01:06.0: scanning behind bridge, config ff0100, pass 1
+>> pci_bus 0000:01: bus scan returning with max=01
+>> pci_bus 0000:00: bus scan returning with max=01
+>>     
+>
+> Because of that commenting out, it doesn't see the config as 000000 and
+> thus doesn't re-assign a bus number in pass 1, so from there you can't
+> see what's behind the bus.
+>
+> So we have two things here:
+>
+>  - It seems like the writing of 000000 to the register in pass 0 is
+> causing your crash. Can you verify that ? IE. Can you verify that it's
+> indeed crashing on this specific statement:
+>
+> pci_write_config_dword(dev, PCI_PRIMARY_BUS,
+>                                buses & ~0xffffff);
+>
+> When writing to the bridge, and that this seems to be causing a hard
+> reboot of the system ?
+>   
+
+Yes, this particular statement causes hard reboot. With original broken 
+tests restored
+and writing to bridge commented out the system boots. If writing to 
+bridge happens
+I get hard reset.
+
+> It might be useful to ask AMCC how that is possible in HW, ie what kind
+> of signal can be causing that. IE, even if the bridge is causing a PCIe
+> error, that should not cause a reboot ... right ?
+>   
+
+Feng, can you please comment on this ?
+>  - You can test a quick hack workaround which consists of changing:
+>
+> 	/* Check if setup is sensible at all */
+> -	if (!pass &&
+> -	if (1 &&
+> 	    ((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
+> 		dev_dbg(&dev->dev, "bus configuration invalid, reconfiguring\n");
+> 		broken = 1;
+> 	}
+>
+> In -addition- to your commenting out of the broken test. This will cause the
+> second pass to go through the re-assign code path despite the fact that you
+> have not written 000000 to the bus numbers.
+>   
+
+With this change and commented out broken test I still get hard reset.
+
+I didn't try adding ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS)
+If you still want me to try this, please let me know. Should I leave broken
+tests enabled in that case ?
+
+Thanks a lot for your help.
+
+Felix.
