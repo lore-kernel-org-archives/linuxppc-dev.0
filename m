@@ -1,30 +1,28 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BEB1FB6EFE
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 66C8FB7BE6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jan 2010 03:13:44 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o04G5oD0014978
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:05:50 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o04GDbZ9246394
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:13:39 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o04GDYMZ023484
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jan 2010 09:13:35 -0700
-Date: Mon, 4 Jan 2010 11:13:30 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'merge' branch of 4xx tree
-Message-ID: <20100104161330.GE6229@zod.rchland.ibm.com>
+	Tue,  5 Jan 2010 03:24:49 +1100 (EST)
+Date: Mon, 4 Jan 2010 17:24:41 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
+	MPC521x processor
+Message-ID: <20100104162441.GA4665@pengutronix.de>
+References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
+	<1262420274-16586-2-git-send-email-wg@grandegger.com>
+	<1262420274-16586-3-git-send-email-wg@grandegger.com>
+	<20100102135734.GC2239@pengutronix.de>
+	<4B3F6F6B.5070004@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+In-Reply-To: <4B3F6F6B.5070004@grandegger.com>
+Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
+	Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +32,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
 
-Below are some simple defconfig updates for 4xx for 2.6.33.  Please pull them
-before you send the next batch to Linus.
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-josh
+Hello Wolfgang,
 
-The following changes since commit 95cd34b42b43c0ed5a89a764e023189bfe7b1530:
-  Albert Herranz (1):
-        powerpc/gc/wii: Remove get_irq_desc()
+first the good news: Your patches also work with our MPC5121-board.
 
-are available in the git repository at:
+> >> +#else /* !CONFIG_PPC_MPC5200 */
+> >> +static u32 __devinit mpc52xx_can_get_clock(struct of_device *ofdev,
+> >> +					   const char *clock_name,
+> >> +					   int *mscan_clksrc)
+> >> +{
+> >> +	return 0;
+> >> +}
+> >> +#endif /* CONFIG_PPC_MPC5200 */
+> >=20
+> > Hmmm, I don't really like those empty functions. I once used the data-f=
+ield of
+> > struct of_device_id, which carried a function pointer to a specific
+> > init-function for the matched device. What do you think about such an a=
+pproach?
+>=20
+> Often the problem is that the function will not compile on the other MPC
+> arch. This is not true here. So, the main reason for the #ifdefs is
+> space saving. Your approach will not help in both cases.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
+My idea was: it might be nice to save both #else-branches and the if-clause=
+ in
+probe() which calls this get_clock() or the other (and then another in case
+there will be a new mpc5xyz-user in the future). And replace it with some
+mpc5xxx_custom_init() which is taken from of_device_id->data. No big issue,
+though; no show-stopper.
 
-Josh Boyer (2):
-      powerpc/44x: Update PowerPC 44x board defconfigs
-      powerpc/40x: Update the PowerPC 40x board defconfigs
+> >> +
+> >> +#ifdef CONFIG_PPC_MPC512x
+> >> +struct mpc512x_clockctl {
+> >> +	u32 spmr;		/* System PLL Mode Reg */
+> >> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
+> >> +	u32 scfr1;		/* System Clk Freq Reg 1 */
+> >> +	u32 scfr2;		/* System Clk Freq Reg 2 */
+> >> +	u32 reserved;
+> >> +	u32 bcr;		/* Bread Crumb Reg */
+> >> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
+> >> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
+> >> +	u32 cccr;		/* CFM Clk Ctrl Reg */
+> >> +	u32 dccr;		/* DIU Clk Cnfg Reg */
+> >> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
+> >> +};
 
- arch/powerpc/configs/40x/acadia_defconfig      |  241 ++++++++++++++-----
- arch/powerpc/configs/40x/ep405_defconfig       |  307 ++++++++++++++++++------
- arch/powerpc/configs/40x/hcu4_defconfig        |  256 +++++++++++++++-----
- arch/powerpc/configs/40x/kilauea_defconfig     |  140 ++++++++---
- arch/powerpc/configs/40x/makalu_defconfig      |  190 ++++++++++-----
- arch/powerpc/configs/40x/walnut_defconfig      |  257 +++++++++++++++-----
- arch/powerpc/configs/44x/arches_defconfig      |  135 ++++++++---
- arch/powerpc/configs/44x/bamboo_defconfig      |  255 +++++++++++++++-----
- arch/powerpc/configs/44x/canyonlands_defconfig |  141 ++++++++---
- arch/powerpc/configs/44x/ebony_defconfig       |  258 +++++++++++++++-----
- arch/powerpc/configs/44x/eiger_defconfig       |  128 +++++++---
- arch/powerpc/configs/44x/katmai_defconfig      |  253 +++++++++++++++-----
- arch/powerpc/configs/44x/rainier_defconfig     |  254 +++++++++++++++-----
- arch/powerpc/configs/44x/redwood_defconfig     |  274 +++++++++++++++------
- arch/powerpc/configs/44x/sam440ep_defconfig    |  284 +++++++++++++++-------
- arch/powerpc/configs/44x/sequoia_defconfig     |  202 +++++++++++-----
- arch/powerpc/configs/44x/taishan_defconfig     |  258 +++++++++++++++-----
- arch/powerpc/configs/44x/warp_defconfig        |  228 ++++++++++++------
- arch/powerpc/configs/ppc40x_defconfig          |  292 ++++++++++++++++-------
- arch/powerpc/configs/ppc44x_defconfig          |  309 +++++++++++++++++-------
- 20 files changed, 3391 insertions(+), 1271 deletions(-)
+I wonder if this (and the occurence in clock.c) should be factored out and
+moved to asm/mpc5xxx.h?
+
+> >> +
+> >> +static struct of_device_id mpc512x_clock_ids[] __devinitdata =3D {
+> >> +	{ .compatible =3D "fsl,mpc5121-clock", },
+> >> +	{}
+> >> +};
+> >> +
+> >> +static u32  __devinit mpc512x_can_get_clock(struct of_device *ofdev,
+> >> +					    const char *clock_name,
+> >> +					    int *mscan_clksrc,
+> >> +					    ssize_t mscan_addr)
+> >> +{
+> >> +	struct mpc512x_clockctl __iomem *clockctl;
+> >> +	struct device_node *np_clock;
+> >> +	struct clk *sys_clk, *ref_clk;
+> >> +	int plen, clockidx, clocksrc =3D -1;
+> >> +	u32 sys_freq, val, clockdiv =3D 1, freq =3D 0;
+> >> +	const u32 *pval;
+> >> +
+> >> +	np_clock =3D of_find_matching_node(NULL, mpc512x_clock_ids);
+> >> +	if (!np_clock) {
+> >> +		dev_err(&ofdev->dev, "couldn't find clock node\n");
+> >> +		return -ENODEV;
+> >> +	}
+> >> +	clockctl =3D of_iomap(np_clock, 0);
+> >> +	if (!clockctl) {
+> >> +		dev_err(&ofdev->dev, "couldn't map clock registers\n");
+> >> +		return 0;
+> >> +	}
+> >> +
+> >> +	/* Determine the MSCAN device index from the physical address */
+> >> +	clockidx =3D (mscan_addr & 0x80) ? 1 : 0;
+> >> +	if (mscan_addr & 0x2000)
+> >> +		clockidx +=3D 2;
+> >=20
+> > The PSCs use 'cell-index', here we use mscan_addr to derive the index. =
+This is
+> > not consistent, but should be IMHO. Now, which is the preferred way? I =
+think
+> > I'd go for 'cell-index', as other processors might have mscan_addr shuf=
+fled.
+> > Also, we could use 'of_iomap' again in the probe_routine.
+>=20
+> I understood that "cell-index" is deprecated and it has been removed
+> from many nodes. That's why I used the address to derive the index.
+
+Well, the arguments in your other mail make sense to me, so keep it this wa=
+y.
+As not only the index-issue, but also the clock-handling is different for t=
+he
+PSCs, it is at least consistently inconsistent :D
+
+One further note: I couldn't spot any code handling Rev1 of the MPC5121? Do=
+ you
+plan to add such code? If not, we should at least put a comment that it is
+missing. The binding documentation should be updated as well, as you can't =
+use
+all options on such revisions.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--jI8keyz6grp/JLjh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktCFkkACgkQD27XaX1/VRuo7wCdHIpzMXt5e19SoPavgUADo+6g
+NpYAn3pQG3D2coex8knJwkuych0cotUK
+=ks9F
+-----END PGP SIGNATURE-----
+
+--jI8keyz6grp/JLjh--
