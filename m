@@ -1,21 +1,18 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72792B7BEB
-	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jan 2010 19:59:26 +1100 (EST)
-Message-ID: <4B41ADF1.1000400@embedded-sol.com>
-Date: Mon, 04 Jan 2010 10:59:29 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4B41E3C6.9060306@grandegger.com>
+Date: Mon, 04 Jan 2010 13:49:10 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PCI-PCI bridge scanning broken on 460EX
-References: <4B388D9D.7010404@embedded-sol.com>
-	<1262584539.2173.335.camel@pasglop>
-In-Reply-To: <1262584539.2173.335.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Feng Kan <fkan@amcc.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
+	MPC521x processor
+References: <1262420274-16586-1-git-send-email-wg@grandegger.com>	<1262420274-16586-2-git-send-email-wg@grandegger.com>	<1262420274-16586-3-git-send-email-wg@grandegger.com>	<20100102135734.GC2239@pengutronix.de>
+	<4B3F6F6B.5070004@grandegger.com>
+In-Reply-To: <4B3F6F6B.5070004@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
+	Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,203 +22,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Ben
+Wolfgang Grandegger wrote:
+> Wolfram Sang wrote:
+>> On Sat, Jan 02, 2010 at 09:17:53AM +0100, Wolfgang Grandegger wrote:
+>>> From: Wolfgang Grandegger <wg@denx.de>
+>>>
+>>> The main differences compared to the MSCAN on the MPC5200 are:
+>>>
+>>> - More flexibility in choosing the CAN source clock and frequency:
+>>>
+>>>   Three different clock sources can be selected: "ip", "ref" or "sys".
+>>>   For the latter two, a clock divider can be defined as well. If the
+>>>   clock source is not specified by the device tree, we first try to
+>>>   find an optimal CAN source clock based on the system clock. If that
+>>>   is not possible, the reference clock will be used.
+>>>
+>>> - The behavior of bus-off recovery is configurable:
+>>>
+>>>   To comply with the usual handling of Socket-CAN bus-off recovery,
+>>>   "recovery on request" is selected (instead of automatic recovery).
+>>>
+>>> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+>>> ---
+>>>  drivers/net/can/mscan/Kconfig       |    2 +-
+>>>  drivers/net/can/mscan/mpc5xxx_can.c |  234 +++++++++++++++++++++++++++++------
+>>>  drivers/net/can/mscan/mscan.c       |   41 +++++--
+>>>  drivers/net/can/mscan/mscan.h       |   81 ++++++------
+>>>  4 files changed, 271 insertions(+), 87 deletions(-)
+>>>
+> [snip]
+> 
+>>> +#else /* !CONFIG_PPC_MPC5200 */
+>>> +static u32 __devinit mpc52xx_can_get_clock(struct of_device *ofdev,
+>>> +					   const char *clock_name,
+>>> +					   int *mscan_clksrc)
+>>> +{
+>>> +	return 0;
+>>> +}
+>>> +#endif /* CONFIG_PPC_MPC5200 */
+>> Hmmm, I don't really like those empty functions. I once used the data-field of
+>> struct of_device_id, which carried a function pointer to a specific
+>> init-function for the matched device. What do you think about such an approach?
+> 
+> Often the problem is that the function will not compile on the other MPC
+> arch. This is not true here. So, the main reason for the #ifdefs is
+> space saving. Your approach will not help in both cases.
+> 
+>>> +
+>>> +#ifdef CONFIG_PPC_MPC512x
+>>> +struct mpc512x_clockctl {
+>>> +	u32 spmr;		/* System PLL Mode Reg */
+>>> +	u32 sccr[2];		/* System Clk Ctrl Reg 1 & 2 */
+>>> +	u32 scfr1;		/* System Clk Freq Reg 1 */
+>>> +	u32 scfr2;		/* System Clk Freq Reg 2 */
+>>> +	u32 reserved;
+>>> +	u32 bcr;		/* Bread Crumb Reg */
+>>> +	u32 pccr[12];		/* PSC Clk Ctrl Reg 0-11 */
+>>> +	u32 spccr;		/* SPDIF Clk Ctrl Reg */
+>>> +	u32 cccr;		/* CFM Clk Ctrl Reg */
+>>> +	u32 dccr;		/* DIU Clk Cnfg Reg */
+>>> +	u32 mccr[4];		/* MSCAN Clk Ctrl Reg 1-3 */
+>>> +};
+>>> +
+>>> +static struct of_device_id mpc512x_clock_ids[] __devinitdata = {
+>>> +	{ .compatible = "fsl,mpc5121-clock", },
+>>> +	{}
+>>> +};
+>>> +
+>>> +static u32  __devinit mpc512x_can_get_clock(struct of_device *ofdev,
+>>> +					    const char *clock_name,
+>>> +					    int *mscan_clksrc,
+>>> +					    ssize_t mscan_addr)
+>>> +{
+>>> +	struct mpc512x_clockctl __iomem *clockctl;
+>>> +	struct device_node *np_clock;
+>>> +	struct clk *sys_clk, *ref_clk;
+>>> +	int plen, clockidx, clocksrc = -1;
+>>> +	u32 sys_freq, val, clockdiv = 1, freq = 0;
+>>> +	const u32 *pval;
+>>> +
+>>> +	np_clock = of_find_matching_node(NULL, mpc512x_clock_ids);
+>>> +	if (!np_clock) {
+>>> +		dev_err(&ofdev->dev, "couldn't find clock node\n");
+>>> +		return -ENODEV;
+>>> +	}
+>>> +	clockctl = of_iomap(np_clock, 0);
+>>> +	if (!clockctl) {
+>>> +		dev_err(&ofdev->dev, "couldn't map clock registers\n");
+>>> +		return 0;
+>>> +	}
+>>> +
+>>> +	/* Determine the MSCAN device index from the physical address */
+>>> +	clockidx = (mscan_addr & 0x80) ? 1 : 0;
+>>> +	if (mscan_addr & 0x2000)
+>>> +		clockidx += 2;
+>> The PSCs use 'cell-index', here we use mscan_addr to derive the index. This is
+>> not consistent, but should be IMHO. Now, which is the preferred way? I think
+>> I'd go for 'cell-index', as other processors might have mscan_addr shuffled.
+>> Also, we could use 'of_iomap' again in the probe_routine.
+> 
+> I understood that "cell-index" is deprecated and it has been removed
+> from many nodes. That's why I used the address to derive the index.
 
-Adding Feng Kan from AMCC to CC.
+So more thoughts: I still find inspecting the regs less error prune than
+defining cell-index and it should work fine for "fsl,mpc5121_mscan".
+Other processor variants might handle a different register layout with
+another appropriate compatibility string. But I could retrieve the
+"regs" property inside mpc512x_can_get_clock() to use of_iomap() as before.
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2009-12-28 at 12:51 +0200, Felix Radensky wrote:
->   
->> Hi,
->>
->> I'm running linux-2.6.33-rc2 on Canyonlands board. When PLX 6254 
->> transparent PCI-PCI
->> bridge is plugged into PCI slot the kernel simply resets the board 
->> without printing anything
->> to console. Without PLX bridge kernel boots fine.
->>     
->
-> Sorry for the late reply...
->   
-
-No need to apologize, I appreciate you help very much.
-
->   
->> I've tracked down the problem to the following code in pci_scan_bridge() 
->> in drivers/pci/probe.c:
->>
->> if (pcibios_assign_all_busses() || broken)
->>                 /* Temporarily disable forwarding of the
->>                    configuration cycles on all bridges in
->>                    this bus segment to avoid possible
->>                    conflicts in the second pass between two
->>                    bridges programmed with overlapping
->>                    bus ranges. */
->>                 pci_write_config_dword(dev, PCI_PRIMARY_BUS,
->>                                buses & ~0xffffff);
->>
->> If test for broken is removed, kernel boots fine, detects the bridge, but
->> does not detect the device behind the bridge. The same device plugged
->> directly into PCI slot is detected correctly.
->>     
->
-> So we would have a similar mismatch between the initial setup and the
-> kernel...  However, I don't quite see yet why the kernel trying to fix
-> it up breaks things, that will need a bit more debugging here...
->
-> Can you give it a quick try with adding something like :
->
->  ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS);
->
-> Near the end of ppc4xx_pci.c ? It looks like another case of reset
-> not actually resetting bridges (are we not properly doing a fundamental
-> reset ? Stefan what's your take there ?)
->
-> The above will cause busses to be re-assigned which is risky because it
-> will allow the kernel to assign numbers beyond the limits of what
-> ppc4xx_pci.c supports (see my comments in the thread you quotes).
->
-> The good thing is that we now have a working fixmap infrastructure, so
-> we could/should just move ppc4xx_pci.c to use that, and just always
-> re-assign busses.
->
->   
->> To remind you, tests for broken were added by commit 
->> a1c19894b786f10c76ac40e93c6b5d70c9b946d2,
->> and were intended to solve device detection problem behind PCI-E 
->> switches, as discussed in this thread:
->> http://lists.ozlabs.org/pipermail/linuxppc-dev/2008-October/063939.html
->>     
->
->   
->> PCI: Probing PCI hardware
->> pci_bus 0000:00: scanning bus
->> pci 0000:00:06.0: found [3388:0020] class 000604 header type 01
->> pci 0000:00:06.0: supports D1 D2
->> pci 0000:00:06.0: PME# supported from D0 D1 D2 D3hot
->> pci 0000:00:06.0: PME# disabled
->> pci_bus 0000:00: fixups for bus
->> pci 0000:00:06.0: scanning behind bridge, config 000000, pass 0
->> pci 0000:00:06.0: bus configuration invalid, reconfiguring
->>     
->
-> Ok so we hit a P2P bridge whose primary, secondary and subordinate bus
-> numbers are all 0, which is clearly unconfigured. I think this is the
-> root complex bridge
->
->   
->> pci 0000:00:06.0: scanning behind bridge, config 000000, pass 1
->>     
->
-> Now this is when the bus should be reconfigured (pass 1). Sadly the code
-> doesn't print much debug.
->
-> Also from that point, it should renumber things and work... 
->
->   
->> pci_bus 0000:01: scanning bus
->>     
->
-> Which it does to some extent. It assigned bus number 1 to it afaik so we
-> now start looking below the RC bridge:
->
->   
->> pci 0000:01:06.0: found [3388:0020] class 000604 header type 01
->>     
->
-> Hrm... class PCI bridge, vendor 3388 device 0020, is that your PLX ?
-> It's not the right vendor ID but maybe that's configurable by our OEM or
-> something...
->   
-
-The bridge and its evaluation board were manufactured by HiNT, later 
-purchased by PLX.
-3388:0020 is HiNT HB6 Universal PCI-PCI bridge in transparent mode.
-
->   
->> pci 0000:01:06.0: supports D1 D2
->> pci 0000:01:06.0: PME# supported from D0 D1 D2 D3hot
->> pci 0000:01:06.0: PME# disabled
->> pci_bus 0000:01: fixups for bus
->> pci 0000:00:06.0: PCI bridge to [bus 01-ff]
->> pci 0000:00:06.0:   bridge window [io  0x0000-0x0fff]
->> pci 0000:00:06.0:   bridge window [mem 0x00000000-0x000fffff]
->> pci 0000:00:06.0:   bridge window [mem 0x00000000-0x000fffff 64bit pref]
->> pci 0000:01:06.0: scanning behind bridge, config ff0100, pass 0
->>     
->
-> Allright, that's where it gets interesting. It tries to scan behind the
-> bridge. It gets something it doesn't like. IE, it gets a secondary bus
-> number of 1 (what the heck ? I wonder what your firmware does) which
-> Linux is not happy about and decides to renumber it.
->   
-
-U-boot has problems with this bridge as well, so I had to completely 
-disable PCI
-support in u-boot to get linux running.
->   
->> pci 0000:01:06.0: bus configuration invalid, reconfiguring
->>     
->
-> Now, that's where Linux should have written 000000 to the register,
-> which is what you commented out.
->
->   
->> pci 0000:01:06.0: scanning behind bridge, config ff0100, pass 1
->> pci_bus 0000:01: bus scan returning with max=01
->> pci_bus 0000:00: bus scan returning with max=01
->>     
->
-> Because of that commenting out, it doesn't see the config as 000000 and
-> thus doesn't re-assign a bus number in pass 1, so from there you can't
-> see what's behind the bus.
->
-> So we have two things here:
->
->  - It seems like the writing of 000000 to the register in pass 0 is
-> causing your crash. Can you verify that ? IE. Can you verify that it's
-> indeed crashing on this specific statement:
->
-> pci_write_config_dword(dev, PCI_PRIMARY_BUS,
->                                buses & ~0xffffff);
->
-> When writing to the bridge, and that this seems to be causing a hard
-> reboot of the system ?
->   
-
-Yes, this particular statement causes hard reboot. With original broken 
-tests restored
-and writing to bridge commented out the system boots. If writing to 
-bridge happens
-I get hard reset.
-
-> It might be useful to ask AMCC how that is possible in HW, ie what kind
-> of signal can be causing that. IE, even if the bridge is causing a PCIe
-> error, that should not cause a reboot ... right ?
->   
-
-Feng, can you please comment on this ?
->  - You can test a quick hack workaround which consists of changing:
->
-> 	/* Check if setup is sensible at all */
-> -	if (!pass &&
-> -	if (1 &&
-> 	    ((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
-> 		dev_dbg(&dev->dev, "bus configuration invalid, reconfiguring\n");
-> 		broken = 1;
-> 	}
->
-> In -addition- to your commenting out of the broken test. This will cause the
-> second pass to go through the re-assign code path despite the fact that you
-> have not written 000000 to the bus numbers.
->   
-
-With this change and commented out broken test I still get hard reset.
-
-I didn't try adding ppc_pci_add_flags(PPC_PCI_REASSIGN_ALL_BUS)
-If you still want me to try this, please let me know. Should I leave broken
-tests enabled in that case ?
-
-Thanks a lot for your help.
-
-Felix.
+Wolfgang.
