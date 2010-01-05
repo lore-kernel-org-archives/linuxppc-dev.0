@@ -1,30 +1,12 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C8A03B7BEF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jan 2010 07:23:52 +1100 (EST)
-Date: Mon, 4 Jan 2010 21:23:46 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH net-next 2/3] can: mscan-mpc5xxx: add support for the
-	MPC521x processor
-Message-ID: <20100104202346.GA8904@pengutronix.de>
-References: <1262420274-16586-1-git-send-email-wg@grandegger.com>
-	<1262420274-16586-2-git-send-email-wg@grandegger.com>
-	<1262420274-16586-3-git-send-email-wg@grandegger.com>
-	<20100102135734.GC2239@pengutronix.de>
-	<4B3F6F6B.5070004@grandegger.com>
-	<20100104162441.GA4665@pengutronix.de>
-	<20100104194027.CB2053F6FD@gemini.denx.de>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 5 Jan 2010 12:26:33 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/pseries: Fix xics interrupt affinity
+Message-ID: <20100105012633.GA8869@kryten>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
-In-Reply-To: <20100104194027.CB2053F6FD@gemini.denx.de>
-Cc: Netdev@vger.kernel.org, Devicetree-discuss@lists.ozlabs.org,
-	Socketcan-core@lists.berlios.de, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +17,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit 57b150cce8e004ddd36330490a68bfb59b7271e9 (irq: only update affinity if
+->set_affinity() is sucessfull) broke xics irq affinity.
 
-Hello Wolfgang,
+We need to use the cpumask passed in, instead of accessing ->affinity directly.
 
-> We only support MPC512x Rev. 2 (and later). This is also true for
-> other parts of the mainline kernel code - see for example trhe NAND
-> driver.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Okay, good to know there are differences in NAND as well. As said before, it
-makes sense to me to skip V1. It just should be documented IMHO, and, if
-possible, the bindings should allow V1 support in case anyone dares.
+This code needs a rework and a conversion to the new cpumask API,
+but I will leave that for subsequent patches.
 
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktCTlIACgkQD27XaX1/VRtOwwCfXZRZyBXyiQeLmMbASY+sQQaA
-5KwAnj5Uj/ATiOJxYE2uBwsm29lcAhM2
-=Sbfj
------END PGP SIGNATURE-----
-
---ibTvN161/egqYuK8--
+Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-01-05 11:06:55.658914849 +1100
++++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-01-05 11:58:42.288311829 +1100
+@@ -163,14 +163,13 @@ static inline void lpar_qirr_info(int n_
+ /* Interface to generic irq subsystem */
+ 
+ #ifdef CONFIG_SMP
+-static int get_irq_server(unsigned int virq, unsigned int strict_check)
++static int get_irq_server(unsigned int virq, cpumask_t cpumask,
++			  unsigned int strict_check)
+ {
+ 	int server;
+ 	/* For the moment only implement delivery to all cpus or one cpu */
+-	cpumask_t cpumask;
+ 	cpumask_t tmp = CPU_MASK_NONE;
+ 
+-	cpumask_copy(&cpumask, irq_to_desc(virq)->affinity);
+ 	if (!distribute_irqs)
+ 		return default_server;
+ 
+@@ -192,7 +191,8 @@ static int get_irq_server(unsigned int v
+ 	return default_server;
+ }
+ #else
+-static int get_irq_server(unsigned int virq, unsigned int strict_check)
++static int get_irq_server(unsigned int virq, cpumask_t cpumask,
++			  unsigned int strict_check)
+ {
+ 	return default_server;
+ }
+@@ -211,7 +211,7 @@ static void xics_unmask_irq(unsigned int
+ 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
+ 		return;
+ 
+-	server = get_irq_server(virq, 0);
++	server = get_irq_server(virq, *(irq_to_desc(virq)->affinity), 0);
+ 
+ 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, server,
+ 				DEFAULT_PRIORITY);
+@@ -405,7 +405,7 @@ static int xics_set_affinity(unsigned in
+ 	 * For the moment only implement delivery to all cpus or one cpu.
+ 	 * Get current irq_server for the given irq
+ 	 */
+-	irq_server = get_irq_server(virq, 1);
++	irq_server = get_irq_server(virq, *cpumask, 1);
+ 	if (irq_server == -1) {
+ 		char cpulist[128];
+ 		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
