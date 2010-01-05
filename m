@@ -1,19 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0FA15B6EF2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jan 2010 14:32:45 +1100 (EST)
-Date: Tue, 5 Jan 2010 14:32:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Hollis Blanchard <hollisb@us.ibm.com>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>
-Subject: powerpc: allmod config build failure
-Message-Id: <20100105143238.ed113985.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>
+Return-Path: <B09055@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 78241B6EF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jan 2010 17:08:40 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o0568Q7Q010024
+	for <linuxppc-dev@ozlabs.org>; Mon, 4 Jan 2010 23:08:37 -0700 (MST)
+Received: from zin33exm23.fsl.freescale.net (zin33exm23.ap.freescale.net
+	[10.232.192.22])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o0568RVW011763
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Jan 2010 00:08:28 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: fsldma: cleanup driver and fix async_tx compatibility
+Date: Tue, 5 Jan 2010 11:38:22 +0530
+Message-ID: <0949C49693EF1A47A54B0F0113CDB4A6076AE3@zin33exm23.fsl.freescale.net>
+In-Reply-To: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+References: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+From: "Dudhat Dipen-B09055" <B09055@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>, <dan.j.williams@intel.com>
+Cc: herbert@gondor.apana.org.au, Suresh Vishnu-B05022 <B05022@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>, linuxppc-dev@ozlabs.org,
+	Gupta Maneesh-B18878 <B18878@freescale.com>,
+	Li Yang-R58472 <R58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hi Ira,
 
-The powerpc allmodconfig build of Linus' tree has been failing like this
-since Dec 13 (and linux-next since Nov 7):
+I will test it on 85xx hardware and let you know once done.
 
-arch/powerpc/kvm/built-in.o:(.toc1+0x18): undefined reference to `kvm_debug=
-fs_dir'
+Thanks
+Dipen
+=20
 
-$ grep KVM .config
-CONFIG_KVM=3Dy
-CONFIG_KVM_BOOK3S_64_HANDLER=3Dy
-CONFIG_KVM_BOOK3S_64=3Dm
-CONFIG_KVM_EXIT_TIMING=3Dy
+-----Original Message-----
+From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]=20
+Sent: Friday, January 01, 2010 11:41 AM
+To: dan.j.williams@intel.com
+Cc: galak@kernel.crashing.org; herbert@gondor.apana.org.au; Tabi
+Timur-B04825; linuxppc-dev@ozlabs.org; Suresh Vishnu-B05022; Dudhat
+Dipen-B09055; Gupta Maneesh-B18878; Li Yang-R58472
+Subject: fsldma: cleanup driver and fix async_tx compatibility
 
-I assume that this failure was introduced by commit
-c4f9c779f1019c7d5c61961a7c0aaaf1420d8f90 ("Include Book3s_64 target in
-buildsystem").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This patch series cleans up the Freescale DMAEngine driver, including
+verifying the locking and making sure that all code paths are correct.
+There were a few places that seemed suspicious, and they have been
+fixed.
 
---Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa
-Content-Type: application/pgp-signature
+I have written a quick memory->memory DMAEngine test driver, and the
+performance is identical before and after my changes (<0.1% change). I
+measured both setting up the DMA operation (via
+device_prep_dma_interrupt() and device_prep_dma_memcpy()) and the actual
+DMA transfer itself.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+As an added bonus, the interrupt load is measurably reduced. My test
+driver transfers 32MB as 32x 1MB chunks + 1 interrupt descriptor, using
+the functions noted above. Previous to this patch series, 31 interrupts
+were generated. After this patch series, only a single interrupt is
+generated for the whole transaction.
 
-iEYEARECAAYFAktCstYACgkQjjKRsyhoI8wNGQCeJCWby0p9t/oGUB9U+cSYOM6a
-p/oAoKWNaVGCvS1IohLXVgGTsrPl+m2l
-=NNPi
------END PGP SIGNATURE-----
+Some testing on 85xx/86xx hardware would be appreciated. Also, some
+testing by the users attempting to use async_tx and talitos to handle
+RAID offload would be great as well.
 
---Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa--
+ Documentation/powerpc/dts-bindings/fsl/dma.txt |   17 +-
+ drivers/dma/fsldma.c                           | 1036
+++++++++++++------------
+ drivers/dma/fsldma.h                           |   35 +-
+ 3 files changed, 556 insertions(+), 532 deletions(-)
+
+Thanks,
+Ira
