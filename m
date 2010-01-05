@@ -1,18 +1,22 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EFD58B6EDF
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDD40B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  5 Jan 2010 22:07:53 +1100 (EST)
-Date: Tue, 5 Jan 2010 19:49:02 +0900
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: fix pseries/dlpar compile warning without
-	CONFIG_PROC_DEVICETREE
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20100105194830S.fujita.tomonori@lab.ntt.co.jp>
+	Wed,  6 Jan 2010 00:03:40 +1100 (EST)
+Subject: Re: powerpc: allmod config build failure
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20100105143238.ed113985.sfr@canb.auug.org.au>
+Date: Tue, 5 Jan 2010 14:03:28 +0100
+Message-Id: <04B8CF10-6D9F-477F-8500-043EA0DEBD78@suse.de>
+References: <20100105143238.ed113985.sfr@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>, Avi Kivity <avi@redhat.com>,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cc1: warnings being treated as errors
-arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_attach_node':
-arch/powerpc/platforms/pseries/dlpar.c:239: error: unused variable 'ent'
-arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_detach_node':
-arch/powerpc/platforms/pseries/dlpar.c:271: error: unused variable 'prop'
-arch/powerpc/platforms/pseries/dlpar.c:270: error: unused variable 'parent'
-make[3]: *** [arch/powerpc/platforms/pseries/dlpar.o] Error 1
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/platforms/pseries/dlpar.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+On 05.01.2010, at 04:32, Stephen Rothwell wrote:
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 67b7a10..3bd8df8 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -236,7 +236,9 @@ static struct device_node *derive_parent(const char *path)
- 
- int dlpar_attach_node(struct device_node *dn)
- {
-+#ifdef CONFIG_PROC_DEVICETREE
- 	struct proc_dir_entry *ent;
-+#endif
- 	int rc;
- 
- 	of_node_set_flag(dn, OF_DYNAMIC);
-@@ -267,10 +269,10 @@ int dlpar_attach_node(struct device_node *dn)
- 
- int dlpar_detach_node(struct device_node *dn)
- {
-+#ifdef CONFIG_PROC_DEVICETREE
- 	struct device_node *parent = dn->parent;
- 	struct property *prop = dn->properties;
- 
--#ifdef CONFIG_PROC_DEVICETREE
- 	while (prop) {
- 		remove_proc_entry(prop->name, dn->pde);
- 		prop = prop->next;
--- 
-1.5.6.5
+> Hi all,
+>=20
+> The powerpc allmodconfig build of Linus' tree has been failing like =
+this
+> since Dec 13 (and linux-next since Nov 7):
+>=20
+> arch/powerpc/kvm/built-in.o:(.toc1+0x18): undefined reference to =
+`kvm_debugfs_dir'
+>=20
+> $ grep KVM .config
+> CONFIG_KVM=3Dy
+> CONFIG_KVM_BOOK3S_64_HANDLER=3Dy
+> CONFIG_KVM_BOOK3S_64=3Dm
+> CONFIG_KVM_EXIT_TIMING=3Dy
+>=20
+> I assume that this failure was introduced by commit
+> c4f9c779f1019c7d5c61961a7c0aaaf1420d8f90 ("Include Book3s_64 target in
+> buildsystem").
+
+Yes, and the fix is in Avi's tree already =
+(1231730604360801d4e648c37c4b98f30850e001).
+I'm not sure how the syncing of those two happens - let's ask him.
+
+Alex=
