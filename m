@@ -1,18 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 8A070B6EF2
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Jan 2010 20:45:38 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1NS5yo-0007qg-Sq
-	for linuxppc-dev@ozlabs.org; Tue, 05 Jan 2010 01:45:34 -0800
-Message-ID: <27025912.post@talk.nabble.com>
-Date: Tue, 5 Jan 2010 01:45:34 -0800 (PST)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-dev@ozlabs.org
-Subject: Xilinx LL-Temac driver with two network interfaces
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EFD58B6EDF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Jan 2010 22:07:53 +1100 (EST)
+Date: Tue, 5 Jan 2010 19:49:02 +0900
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: fix pseries/dlpar compile warning without
+	CONFIG_PROC_DEVICETREE
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100105194830S.fujita.tomonori@lab.ntt.co.jp>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,16 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+cc1: warnings being treated as errors
+arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_attach_node':
+arch/powerpc/platforms/pseries/dlpar.c:239: error: unused variable 'ent'
+arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_detach_node':
+arch/powerpc/platforms/pseries/dlpar.c:271: error: unused variable 'prop'
+arch/powerpc/platforms/pseries/dlpar.c:270: error: unused variable 'parent'
+make[3]: *** [arch/powerpc/platforms/pseries/dlpar.o] Error 1
 
-Dear All,
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/powerpc/platforms/pseries/dlpar.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-I am successfully using LL-Temac driver on Virtex-4 cheap under linux 2.6.*.
-All works fine with one Network interface. Does anybody know how to
-configure the systems to deal with two network interfaces?
-
-I will be grateful for any hint.
-
-M.
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 67b7a10..3bd8df8 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -236,7 +236,9 @@ static struct device_node *derive_parent(const char *path)
+ 
+ int dlpar_attach_node(struct device_node *dn)
+ {
++#ifdef CONFIG_PROC_DEVICETREE
+ 	struct proc_dir_entry *ent;
++#endif
+ 	int rc;
+ 
+ 	of_node_set_flag(dn, OF_DYNAMIC);
+@@ -267,10 +269,10 @@ int dlpar_attach_node(struct device_node *dn)
+ 
+ int dlpar_detach_node(struct device_node *dn)
+ {
++#ifdef CONFIG_PROC_DEVICETREE
+ 	struct device_node *parent = dn->parent;
+ 	struct property *prop = dn->properties;
+ 
+-#ifdef CONFIG_PROC_DEVICETREE
+ 	while (prop) {
+ 		remove_proc_entry(prop->name, dn->pde);
+ 		prop = prop->next;
 -- 
-View this message in context: http://old.nabble.com/Xilinx-LL-Temac-driver-with-two-network-interfaces-tp27025912p27025912.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+1.5.6.5
