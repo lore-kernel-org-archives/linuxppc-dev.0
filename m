@@ -1,12 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 5 Jan 2010 12:26:33 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc/pseries: Fix xics interrupt affinity
-Message-ID: <20100105012633.GA8869@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0FA15B6EF2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  5 Jan 2010 14:32:45 +1100 (EST)
+Date: Tue, 5 Jan 2010 14:32:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Hollis Blanchard <hollisb@us.ibm.com>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>
+Subject: powerpc: allmod config build failure
+Message-Id: <20100105143238.ed113985.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,64 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Commit 57b150cce8e004ddd36330490a68bfb59b7271e9 (irq: only update affinity if
-->set_affinity() is sucessfull) broke xics irq affinity.
+Hi all,
 
-We need to use the cpumask passed in, instead of accessing ->affinity directly.
+The powerpc allmodconfig build of Linus' tree has been failing like this
+since Dec 13 (and linux-next since Nov 7):
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+arch/powerpc/kvm/built-in.o:(.toc1+0x18): undefined reference to `kvm_debug=
+fs_dir'
 
-This code needs a rework and a conversion to the new cpumask API,
-but I will leave that for subsequent patches.
+$ grep KVM .config
+CONFIG_KVM=3Dy
+CONFIG_KVM_BOOK3S_64_HANDLER=3Dy
+CONFIG_KVM_BOOK3S_64=3Dm
+CONFIG_KVM_EXIT_TIMING=3Dy
 
-Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-01-05 11:06:55.658914849 +1100
-+++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-01-05 11:58:42.288311829 +1100
-@@ -163,14 +163,13 @@ static inline void lpar_qirr_info(int n_
- /* Interface to generic irq subsystem */
- 
- #ifdef CONFIG_SMP
--static int get_irq_server(unsigned int virq, unsigned int strict_check)
-+static int get_irq_server(unsigned int virq, cpumask_t cpumask,
-+			  unsigned int strict_check)
- {
- 	int server;
- 	/* For the moment only implement delivery to all cpus or one cpu */
--	cpumask_t cpumask;
- 	cpumask_t tmp = CPU_MASK_NONE;
- 
--	cpumask_copy(&cpumask, irq_to_desc(virq)->affinity);
- 	if (!distribute_irqs)
- 		return default_server;
- 
-@@ -192,7 +191,8 @@ static int get_irq_server(unsigned int v
- 	return default_server;
- }
- #else
--static int get_irq_server(unsigned int virq, unsigned int strict_check)
-+static int get_irq_server(unsigned int virq, cpumask_t cpumask,
-+			  unsigned int strict_check)
- {
- 	return default_server;
- }
-@@ -211,7 +211,7 @@ static void xics_unmask_irq(unsigned int
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
- 		return;
- 
--	server = get_irq_server(virq, 0);
-+	server = get_irq_server(virq, *(irq_to_desc(virq)->affinity), 0);
- 
- 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, server,
- 				DEFAULT_PRIORITY);
-@@ -405,7 +405,7 @@ static int xics_set_affinity(unsigned in
- 	 * For the moment only implement delivery to all cpus or one cpu.
- 	 * Get current irq_server for the given irq
- 	 */
--	irq_server = get_irq_server(virq, 1);
-+	irq_server = get_irq_server(virq, *cpumask, 1);
- 	if (irq_server == -1) {
- 		char cpulist[128];
- 		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
+I assume that this failure was introduced by commit
+c4f9c779f1019c7d5c61961a7c0aaaf1420d8f90 ("Include Book3s_64 target in
+buildsystem").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktCstYACgkQjjKRsyhoI8wNGQCeJCWby0p9t/oGUB9U+cSYOM6a
+p/oAoKWNaVGCvS1IohLXVgGTsrPl+m2l
+=NNPi
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Jan_2010_14_32_38_+1100_KFDNdDrEE2r5BMoa--
