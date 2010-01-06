@@ -1,23 +1,19 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 561ECB6EDD
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 05:40:57 +1100 (EST)
-Date: Wed, 6 Jan 2010 10:40:55 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 7/8] fsldma: rename fsl_chan to fchan
-Message-ID: <20100106184055.GD26426@ovro.caltech.edu>
-References: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
-	<1262326246-936-8-git-send-email-iws@ovro.caltech.edu>
-	<20100106180422.GB27146@loki.buserror.net>
-	<20100106181933.GB26426@ovro.caltech.edu>
-	<4B44D5FF.5050505@freescale.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 5945DB6EFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 06:14:46 +1100 (EST)
+Date: Wed, 6 Jan 2010 11:14:25 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: i2c_powermac: Kernel access of bad area
+In-Reply-To: <20100106173745.57207520@hyperion.delvare>
+Message-ID: <alpine.DEB.2.01.1001061107350.3483@bogon.housecafe.de>
+References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
+	<1262079255.2173.216.camel@pasglop>
+	<20100106173745.57207520@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4B44D5FF.5050505@freescale.com>
-Cc: herbert@gondor.apana.org.au, B04825@freescale.com, linuxppc-dev@ozlabs.org,
-	Vishnu@freescale.com, Dipen.Dudhat@freescale.com,
-	dan.j.williams@intel.com, Maneesh.Gupta@freescale.com, R58472@freescale.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 06, 2010 at 12:27:11PM -0600, Scott Wood wrote:
-> Ira W. Snyder wrote:
-> > On Wed, Jan 06, 2010 at 12:04:22PM -0600, Scott Wood wrote:
-> >> On Thu, Dec 31, 2009 at 10:10:45PM -0800, Ira W. Snyder wrote:
-> >>> The name fsl_chan seems too long, so it has been shortened to fchan.
-> >> Could be just "chan", no need for namespacing here.
-> >>
-> > 
-> > True. A few functions have a parameter "struct dma_chan *chan" from the
-> > DMAEngine API. I tried to keep the name different to avoid confusing
-> > readers of the code.
-> 
-> Ah, I see.
-> 
-> I suppose "fchan" is OK in that case, or "priv", or call the dma_chan 
-> "dchan", etc.
-> 
+On Wed, 6 Jan 2010 at 17:37, Jean Delvare wrote:
+> Christian, did you happen to try removing the i2c-powermac driver
+> before?
 
-Using "priv" is fine with me too, I use that style in a lot of the code
-I write. I'll try "chan", and see how it works out.
+Well, I definitely removed the driver before, but I'm not sure if I ever 
+read the /sys files after doing this :-\
 
-Ira
+> I am curious if this is a recent problem, possibly caused by
+> changes to the i2c stack, or if older kernels already had this problem
+> and nobody ever noticed. I suspect the latter.
+
+Fair question, but I really could't tell. I realize a bisection would be 
+helpful, but I don't think I'll have to time to do this on this machine 
+(it's a PowerBook G4, but kernel still compilation usually takes ~30min) 
+and I'm not sure that I care _that_ much about this particular issue. 
+I just wanted to report this one, for the sake of the archives, as noone 
+else seems to be bothered by it anyway...
+
+> I think that sysfs files creation should be moved to the end of
+> probe_thermostat() and sysfs files removal should be moved to the
+> beginning of remove_thermostat(). Something like the totally untested
+> patch below (no ppc machine at hand):
+
+OK, thanks Jean - I'll give it a try later today and let you know.
+
+
+Thanks again,
+Christian.
+
+-- 
+BOFH excuse #398:
+
+Data for intranet got routed through the extranet and landed on the internet.
