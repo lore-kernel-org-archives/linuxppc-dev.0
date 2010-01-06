@@ -1,12 +1,14 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id A6B5FB6F1A
+	by ozlabs.org (Postfix) with ESMTP id A91BBB6F1B
 	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 10:34:08 +1100 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: dan.j.williams@intel.com
-Subject: [PATCH 0/8 v2] fsldma: cleanup driver and fix async_tx compatibility
-Date: Wed,  6 Jan 2010 15:33:58 -0800
-Message-Id: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
+Subject: [PATCH 4/8] fsldma: rename dest to dst for uniformity
+Date: Wed,  6 Jan 2010 15:34:02 -0800
+Message-Id: <1262820846-13198-5-git-send-email-iws@ovro.caltech.edu>
+In-Reply-To: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
+References: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
 Cc: R58472@freescale.com, B04825@freescale.com, linuxppc-dev@ozlabs.org,
 	scottwood@freescale.com, Dipen.Dudhat@freescale.com,
 	Maneesh.Gupta@freescale.com, herbert@gondor.apana.org.au
@@ -19,35 +21,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series cleans up the Freescale DMAEngine driver, including
-verifying the locking and making sure that all code paths are correct.
-There were a few places that seemed suspicious, and they have been fixed.
+Most functions in the standard library use "dst" as a parameter, rather
+than "dest". This renames all use of "dest" to "dst" to match the usual
+convention.
 
-I have written a quick memory->memory DMAEngine test driver, and the
-performance is identical before and after my changes (<0.1% change). I
-measured both setting up the DMA operation (via device_prep_dma_interrupt()
-and device_prep_dma_memcpy()) and the actual DMA transfer itself.
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |   32 ++++++++++++++++----------------
+ drivers/dma/fsldma.h |    2 +-
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
-As an added bonus, the interrupt load is measurably reduced. My test driver
-transfers 32MB as 32x 1MB chunks + 1 interrupt descriptor, using the
-functions noted above. Previous to this patch series, 31 interrupts were
-generated. After this patch series, only a single interrupt is generated
-for the whole transaction.
-
-Some testing on 85xx/86xx hardware would be appreciated. Also, some testing
-by the users attempting to use async_tx and talitos to handle RAID offload
-would be great as well.
-
- Documentation/powerpc/dts-bindings/fsl/dma.txt |    8 +
- drivers/dma/fsldma.c                           | 1174 +++++++++++++-----------
- drivers/dma/fsldma.h                           |   35 +-
- 3 files changed, 675 insertions(+), 542 deletions(-)
-
-v1 -> v2:
-- addresses comments from Scott Wood
-  - prefer per-controller interrupt if available
-  - rename "fchan" to "chan"
-  - leave the documentation alone (mostly)
-
-Thanks,
-Ira
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 6795d96..c2db754 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -90,14 +90,14 @@ static void set_desc_src(struct fsldma_chan *fsl_chan,
+ 	hw->src_addr = CPU_TO_DMA(fsl_chan, snoop_bits | src, 64);
+ }
+ 
+-static void set_desc_dest(struct fsldma_chan *fsl_chan,
+-				struct fsl_dma_ld_hw *hw, dma_addr_t dest)
++static void set_desc_dst(struct fsldma_chan *fsl_chan,
++				struct fsl_dma_ld_hw *hw, dma_addr_t dst)
+ {
+ 	u64 snoop_bits;
+ 
+ 	snoop_bits = ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX)
+ 		? ((u64)FSL_DMA_DATR_DWRITETYPE_SNOOP_WRITE << 32) : 0;
+-	hw->dst_addr = CPU_TO_DMA(fsl_chan, snoop_bits | dest, 64);
++	hw->dst_addr = CPU_TO_DMA(fsl_chan, snoop_bits | dst, 64);
+ }
+ 
+ static void set_desc_next(struct fsldma_chan *fsl_chan,
+@@ -253,7 +253,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *fsl_chan, int size)
+ }
+ 
+ /**
+- * fsl_chan_set_dest_loop_size - Set destination address hold transfer size
++ * fsl_chan_set_dst_loop_size - Set destination address hold transfer size
+  * @fsl_chan : Freescale DMA channel
+  * @size     : Address loop size, 0 for disable loop
+  *
+@@ -263,7 +263,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *fsl_chan, int size)
+  * write data to TA, TA + 1, TA + 2, TA + 3, then loop back to TA,
+  * TA + 1 ... and so on.
+  */
+-static void fsl_chan_set_dest_loop_size(struct fsldma_chan *fsl_chan, int size)
++static void fsl_chan_set_dst_loop_size(struct fsldma_chan *fsl_chan, int size)
+ {
+ 	u32 mode;
+ 
+@@ -486,7 +486,7 @@ fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
+ }
+ 
+ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+-	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
++	struct dma_chan *chan, dma_addr_t dma_dst, dma_addr_t dma_src,
+ 	size_t len, unsigned long flags)
+ {
+ 	struct fsldma_chan *fsl_chan;
+@@ -519,7 +519,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 
+ 		set_desc_cnt(fsl_chan, &new->hw, copy);
+ 		set_desc_src(fsl_chan, &new->hw, dma_src);
+-		set_desc_dest(fsl_chan, &new->hw, dma_dest);
++		set_desc_dst(fsl_chan, &new->hw, dma_dst);
+ 
+ 		if (!first)
+ 			first = new;
+@@ -532,7 +532,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 		prev = new;
+ 		len -= copy;
+ 		dma_src += copy;
+-		dma_dest += copy;
++		dma_dst += copy;
+ 
+ 		/* Insert the link descriptor to the LD ring */
+ 		list_add_tail(&new->node, &first->tx_list);
+@@ -680,7 +680,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_slave_sg(
+ 			/* Fill in the descriptor */
+ 			set_desc_cnt(fsl_chan, &new->hw, copy);
+ 			set_desc_src(fsl_chan, &new->hw, dma_src);
+-			set_desc_dest(fsl_chan, &new->hw, dma_dst);
++			set_desc_dst(fsl_chan, &new->hw, dma_dst);
+ 
+ 			/*
+ 			 * If this is not the first descriptor, chain the
+@@ -721,8 +721,8 @@ finished:
+ 	if (fsl_chan->set_src_loop_size)
+ 		fsl_chan->set_src_loop_size(fsl_chan, slave->src_loop_size);
+ 
+-	if (fsl_chan->set_dest_loop_size)
+-		fsl_chan->set_dest_loop_size(fsl_chan, slave->dst_loop_size);
++	if (fsl_chan->set_dst_loop_size)
++		fsl_chan->set_dst_loop_size(fsl_chan, slave->dst_loop_size);
+ 
+ 	if (fsl_chan->toggle_ext_start)
+ 		fsl_chan->toggle_ext_start(fsl_chan, slave->external_start);
+@@ -867,7 +867,7 @@ static void fsl_chan_ld_cleanup(struct fsldma_chan *fsl_chan)
+ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *fsl_chan)
+ {
+ 	struct list_head *ld_node;
+-	dma_addr_t next_dest_addr;
++	dma_addr_t next_dst_addr;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&fsl_chan->desc_lock, flags);
+@@ -892,10 +892,10 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *fsl_chan)
+ 
+ 	if (ld_node != &fsl_chan->ld_queue) {
+ 		/* Get the ld start address from ld_queue */
+-		next_dest_addr = to_fsl_desc(ld_node)->async_tx.phys;
++		next_dst_addr = to_fsl_desc(ld_node)->async_tx.phys;
+ 		dev_dbg(fsl_chan->dev, "xfer LDs staring from 0x%llx\n",
+-				(unsigned long long)next_dest_addr);
+-		set_cdar(fsl_chan, next_dest_addr);
++				(unsigned long long)next_dst_addr);
++		set_cdar(fsl_chan, next_dst_addr);
+ 		dma_start(fsl_chan);
+ 	} else {
+ 		set_cdar(fsl_chan, 0);
+@@ -1130,7 +1130,7 @@ static int __devinit fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 	case FSL_DMA_IP_83XX:
+ 		new_fsl_chan->toggle_ext_start = fsl_chan_toggle_ext_start;
+ 		new_fsl_chan->set_src_loop_size = fsl_chan_set_src_loop_size;
+-		new_fsl_chan->set_dest_loop_size = fsl_chan_set_dest_loop_size;
++		new_fsl_chan->set_dst_loop_size = fsl_chan_set_dst_loop_size;
+ 		new_fsl_chan->set_request_count = fsl_chan_set_request_count;
+ 	}
+ 
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index f8c2baa..a67b8e3 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -143,7 +143,7 @@ struct fsldma_chan {
+ 	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
+ 	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
+ 	void (*set_src_loop_size)(struct fsldma_chan *fsl_chan, int size);
+-	void (*set_dest_loop_size)(struct fsldma_chan *fsl_chan, int size);
++	void (*set_dst_loop_size)(struct fsldma_chan *fsl_chan, int size);
+ 	void (*set_request_count)(struct fsldma_chan *fsl_chan, int size);
+ };
+ 
+-- 
+1.5.4.3
