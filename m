@@ -1,12 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Message-Id: <20100106045524.853685851@samba.org>>
-References: <20100106045509.245662398@samba.org>>
-Date: Wed, 06 Jan 2010 15:55:10 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 1/6] powerpc: cpumask_of_node() should handle -1 as a node
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
+	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id B88FBB6F01
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jan 2010 16:14:48 +1100 (EST)
+Received: by gxk23 with SMTP id 23so19044121gxk.2
+	for <linuxppc-dev@ozlabs.org>; Tue, 05 Jan 2010 21:14:47 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 5 Jan 2010 22:14:27 -0700
+Message-ID: <fa686aa41001052114w7fbd45fydf03c61d19b2cfe8@mail.gmail.com>
+Subject: [git pull] 5200 defconfigs and bootwrapper fix
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Tyser <ptyser@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,40 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pcibus_to_node can return -1 if we cannot determine which node a pci bus
-is on. If passed -1, cpumask_of_node will negatively index the lookup array
-and pull in random data:
+Hi Ben,
 
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-00000000,00000003,00000000,00000000
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
-64-65
+Here's the 5200 defconfig updates and a fix for build errors when
+U-Boot's 'mkimage' tool isn't in $PATH.
 
-Change cpumask_of_node to check for -1 and return cpu_all_mask in this
-case:
+g.
 
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-ffffffff,ffffffff,ffffffff,ffffffff
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
-0-127
+The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc3
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+are available in the git repository at:
 
-Index: linux-cpumask/arch/powerpc/include/asm/topology.h
-===================================================================
---- linux-cpumask.orig/arch/powerpc/include/asm/topology.h	2010-01-06 15:20:22.992583563 +1100
-+++ linux-cpumask/arch/powerpc/include/asm/topology.h	2010-01-06 15:27:24.058833128 +1100
-@@ -17,7 +17,9 @@ static inline int cpu_to_node(int cpu)
- 
- #define parent_node(node)	(node)
- 
--#define cpumask_of_node(node) (&numa_cpumask_lookup_table[node])
-+#define cpumask_of_node(node) ((node) == -1 ?				\
-+			       cpu_all_mask :				\
-+			       &numa_cpumask_lookup_table[node])
- 
- int of_node_to_nid(struct device_node *device);
- 
+  git://git.secretlab.ca/git/linux-2.6 merge
+
+Grant Likely (1):
+      powerpc/5200: update defconfigs
+
+Peter Tyser (1):
+      powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
+
+ arch/powerpc/boot/wrapper                     |    7 +-
+ arch/powerpc/configs/52xx/cm5200_defconfig    |   75 ++++++++++++++---
+ arch/powerpc/configs/52xx/lite5200b_defconfig |   90 +++++++++++++++++-----
+ arch/powerpc/configs/52xx/motionpro_defconfig |   79 +++++++++++++++---
+ arch/powerpc/configs/52xx/pcm030_defconfig    |   83 +++++++++++++++-----
+ arch/powerpc/configs/52xx/tqm5200_defconfig   |   79 +++++++++++++++---
+ arch/powerpc/configs/mpc5200_defconfig        |  106 ++++++++++++++++++++-----
+ 7 files changed, 418 insertions(+), 101 deletions(-)
 
 -- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
