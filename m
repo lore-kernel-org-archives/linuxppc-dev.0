@@ -1,12 +1,12 @@
 Return-Path: <iws@ovro.caltech.edu>
 Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id A91BBB6F1B
+	by ozlabs.org (Postfix) with ESMTP id A4606B6F17
 	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 10:34:08 +1100 (EST)
 From: "Ira W. Snyder" <iws@ovro.caltech.edu>
 To: dan.j.williams@intel.com
-Subject: [PATCH 4/8] fsldma: rename dest to dst for uniformity
-Date: Wed,  6 Jan 2010 15:34:02 -0800
-Message-Id: <1262820846-13198-5-git-send-email-iws@ovro.caltech.edu>
+Subject: [PATCH 1/8] fsldma: reduce kernel text size
+Date: Wed,  6 Jan 2010 15:33:59 -0800
+Message-Id: <1262820846-13198-2-git-send-email-iws@ovro.caltech.edu>
 In-Reply-To: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
 References: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
 Cc: R58472@freescale.com, B04825@freescale.com, linuxppc-dev@ozlabs.org,
@@ -21,147 +21,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most functions in the standard library use "dst" as a parameter, rather
-than "dest". This renames all use of "dest" to "dst" to match the usual
-convention.
+Some of the functions are written in a way where they use multiple reads
+and writes where a single read/write pair could suffice. This shrinks the
+kernel text size measurably, while making the functions easier to
+understand.
+
+add/remove: 0/0 grow/shrink: 1/4 up/down: 4/-196 (-192)
+function                                     old     new   delta
+fsl_chan_set_request_count                   120     124      +4
+dma_halt                                     300     272     -28
+fsl_chan_set_src_loop_size                   208     156     -52
+fsl_chan_set_dest_loop_size                  208     156     -52
+fsl_chan_xfer_ld_queue                       500     436     -64
 
 Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 ---
- drivers/dma/fsldma.c |   32 ++++++++++++++++----------------
- drivers/dma/fsldma.h |    2 +-
- 2 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/dma/fsldma.c |   83 +++++++++++++++++++++++++++-----------------------
+ 1 files changed, 45 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 6795d96..c2db754 100644
+index 296f9e7..0bad741 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -90,14 +90,14 @@ static void set_desc_src(struct fsldma_chan *fsl_chan,
- 	hw->src_addr = CPU_TO_DMA(fsl_chan, snoop_bits | src, 64);
- }
+@@ -143,43 +143,45 @@ static int dma_is_idle(struct fsl_dma_chan *fsl_chan)
  
--static void set_desc_dest(struct fsldma_chan *fsl_chan,
--				struct fsl_dma_ld_hw *hw, dma_addr_t dest)
-+static void set_desc_dst(struct fsldma_chan *fsl_chan,
-+				struct fsl_dma_ld_hw *hw, dma_addr_t dst)
+ static void dma_start(struct fsl_dma_chan *fsl_chan)
  {
- 	u64 snoop_bits;
+-	u32 mr_set = 0;
+-
+-	if (fsl_chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->bcr, 0, 32);
+-		mr_set |= FSL_DMA_MR_EMP_EN;
+-	} else if ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32)
+-				& ~FSL_DMA_MR_EMP_EN, 32);
++	u32 mode;
++
++	mode = DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32);
++
++	if ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
++		if (fsl_chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
++			DMA_OUT(fsl_chan, &fsl_chan->reg_base->bcr, 0, 32);
++			mode |= FSL_DMA_MR_EMP_EN;
++		} else {
++			mode &= ~FSL_DMA_MR_EMP_EN;
++		}
+ 	}
  
- 	snoop_bits = ((fsl_chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX)
- 		? ((u64)FSL_DMA_DATR_DWRITETYPE_SNOOP_WRITE << 32) : 0;
--	hw->dst_addr = CPU_TO_DMA(fsl_chan, snoop_bits | dest, 64);
-+	hw->dst_addr = CPU_TO_DMA(fsl_chan, snoop_bits | dst, 64);
+ 	if (fsl_chan->feature & FSL_DMA_CHAN_START_EXT)
+-		mr_set |= FSL_DMA_MR_EMS_EN;
++		mode |= FSL_DMA_MR_EMS_EN;
+ 	else
+-		mr_set |= FSL_DMA_MR_CS;
++		mode |= FSL_DMA_MR_CS;
+ 
+-	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32)
+-			| mr_set, 32);
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
  }
  
- static void set_desc_next(struct fsldma_chan *fsl_chan,
-@@ -253,7 +253,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *fsl_chan, int size)
+ static void dma_halt(struct fsl_dma_chan *fsl_chan)
+ {
++	u32 mode;
+ 	int i;
+ 
+-	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) | FSL_DMA_MR_CA,
+-		32);
+-	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) & ~(FSL_DMA_MR_CS
+-		| FSL_DMA_MR_EMS_EN | FSL_DMA_MR_CA), 32);
++	mode = DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32);
++	mode |= FSL_DMA_MR_CA;
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
++
++	mode &= ~(FSL_DMA_MR_CS | FSL_DMA_MR_EMS_EN | FSL_DMA_MR_CA);
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
+ 
+ 	for (i = 0; i < 100; i++) {
+ 		if (dma_is_idle(fsl_chan))
+ 			break;
+ 		udelay(10);
+ 	}
++
+ 	if (i >= 100 && !dma_is_idle(fsl_chan))
+ 		dev_err(fsl_chan->dev, "DMA halt timeout!\n");
+ }
+@@ -231,22 +233,23 @@ static void append_ld_queue(struct fsl_dma_chan *fsl_chan,
+  */
+ static void fsl_chan_set_src_loop_size(struct fsl_dma_chan *fsl_chan, int size)
+ {
++	u32 mode;
++
++	mode = DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32);
++
+ 	switch (size) {
+ 	case 0:
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) &
+-			(~FSL_DMA_MR_SAHE), 32);
++		mode &= ~FSL_DMA_MR_SAHE;
+ 		break;
+ 	case 1:
+ 	case 2:
+ 	case 4:
+ 	case 8:
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) |
+-			FSL_DMA_MR_SAHE | (__ilog2(size) << 14),
+-			32);
++		mode |= FSL_DMA_MR_SAHE | (__ilog2(size) << 14);
+ 		break;
+ 	}
++
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
  }
  
  /**
-- * fsl_chan_set_dest_loop_size - Set destination address hold transfer size
-+ * fsl_chan_set_dst_loop_size - Set destination address hold transfer size
-  * @fsl_chan : Freescale DMA channel
-  * @size     : Address loop size, 0 for disable loop
-  *
-@@ -263,7 +263,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *fsl_chan, int size)
-  * write data to TA, TA + 1, TA + 2, TA + 3, then loop back to TA,
-  * TA + 1 ... and so on.
+@@ -262,22 +265,23 @@ static void fsl_chan_set_src_loop_size(struct fsl_dma_chan *fsl_chan, int size)
   */
--static void fsl_chan_set_dest_loop_size(struct fsldma_chan *fsl_chan, int size)
-+static void fsl_chan_set_dst_loop_size(struct fsldma_chan *fsl_chan, int size)
+ static void fsl_chan_set_dest_loop_size(struct fsl_dma_chan *fsl_chan, int size)
  {
- 	u32 mode;
- 
-@@ -486,7 +486,7 @@ fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
++	u32 mode;
++
++	mode = DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32);
++
+ 	switch (size) {
+ 	case 0:
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) &
+-			(~FSL_DMA_MR_DAHE), 32);
++		mode &= ~FSL_DMA_MR_DAHE;
+ 		break;
+ 	case 1:
+ 	case 2:
+ 	case 4:
+ 	case 8:
+-		DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-			DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32) |
+-			FSL_DMA_MR_DAHE | (__ilog2(size) << 16),
+-			32);
++		mode |= FSL_DMA_MR_DAHE | (__ilog2(size) << 16);
+ 		break;
+ 	}
++
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
  }
  
- static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
--	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
-+	struct dma_chan *chan, dma_addr_t dma_dst, dma_addr_t dma_src,
- 	size_t len, unsigned long flags)
+ /**
+@@ -294,11 +298,14 @@ static void fsl_chan_set_dest_loop_size(struct fsl_dma_chan *fsl_chan, int size)
+  */
+ static void fsl_chan_set_request_count(struct fsl_dma_chan *fsl_chan, int size)
  {
- 	struct fsldma_chan *fsl_chan;
-@@ -519,7 +519,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
++	u32 mode;
++
+ 	BUG_ON(size > 1024);
+-	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr,
+-		DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32)
+-			| ((__ilog2(size) << 24) & 0x0f000000),
+-		32);
++
++	mode = DMA_IN(fsl_chan, &fsl_chan->reg_base->mr, 32);
++	mode |= (__ilog2(size) << 24) & 0x0f000000;
++
++	DMA_OUT(fsl_chan, &fsl_chan->reg_base->mr, mode, 32);
+ }
  
- 		set_desc_cnt(fsl_chan, &new->hw, copy);
- 		set_desc_src(fsl_chan, &new->hw, dma_src);
--		set_desc_dest(fsl_chan, &new->hw, dma_dest);
-+		set_desc_dst(fsl_chan, &new->hw, dma_dst);
- 
- 		if (!first)
- 			first = new;
-@@ -532,7 +532,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
- 		prev = new;
- 		len -= copy;
- 		dma_src += copy;
--		dma_dest += copy;
-+		dma_dst += copy;
- 
- 		/* Insert the link descriptor to the LD ring */
- 		list_add_tail(&new->node, &first->tx_list);
-@@ -680,7 +680,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_slave_sg(
- 			/* Fill in the descriptor */
- 			set_desc_cnt(fsl_chan, &new->hw, copy);
- 			set_desc_src(fsl_chan, &new->hw, dma_src);
--			set_desc_dest(fsl_chan, &new->hw, dma_dst);
-+			set_desc_dst(fsl_chan, &new->hw, dma_dst);
- 
- 			/*
- 			 * If this is not the first descriptor, chain the
-@@ -721,8 +721,8 @@ finished:
- 	if (fsl_chan->set_src_loop_size)
- 		fsl_chan->set_src_loop_size(fsl_chan, slave->src_loop_size);
- 
--	if (fsl_chan->set_dest_loop_size)
--		fsl_chan->set_dest_loop_size(fsl_chan, slave->dst_loop_size);
-+	if (fsl_chan->set_dst_loop_size)
-+		fsl_chan->set_dst_loop_size(fsl_chan, slave->dst_loop_size);
- 
- 	if (fsl_chan->toggle_ext_start)
- 		fsl_chan->toggle_ext_start(fsl_chan, slave->external_start);
-@@ -867,7 +867,7 @@ static void fsl_chan_ld_cleanup(struct fsldma_chan *fsl_chan)
- static void fsl_chan_xfer_ld_queue(struct fsldma_chan *fsl_chan)
- {
- 	struct list_head *ld_node;
--	dma_addr_t next_dest_addr;
-+	dma_addr_t next_dst_addr;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&fsl_chan->desc_lock, flags);
-@@ -892,10 +892,10 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *fsl_chan)
- 
- 	if (ld_node != &fsl_chan->ld_queue) {
- 		/* Get the ld start address from ld_queue */
--		next_dest_addr = to_fsl_desc(ld_node)->async_tx.phys;
-+		next_dst_addr = to_fsl_desc(ld_node)->async_tx.phys;
- 		dev_dbg(fsl_chan->dev, "xfer LDs staring from 0x%llx\n",
--				(unsigned long long)next_dest_addr);
--		set_cdar(fsl_chan, next_dest_addr);
-+				(unsigned long long)next_dst_addr);
-+		set_cdar(fsl_chan, next_dst_addr);
- 		dma_start(fsl_chan);
- 	} else {
- 		set_cdar(fsl_chan, 0);
-@@ -1130,7 +1130,7 @@ static int __devinit fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	case FSL_DMA_IP_83XX:
- 		new_fsl_chan->toggle_ext_start = fsl_chan_toggle_ext_start;
- 		new_fsl_chan->set_src_loop_size = fsl_chan_set_src_loop_size;
--		new_fsl_chan->set_dest_loop_size = fsl_chan_set_dest_loop_size;
-+		new_fsl_chan->set_dst_loop_size = fsl_chan_set_dst_loop_size;
- 		new_fsl_chan->set_request_count = fsl_chan_set_request_count;
- 	}
- 
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index f8c2baa..a67b8e3 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -143,7 +143,7 @@ struct fsldma_chan {
- 	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
- 	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
- 	void (*set_src_loop_size)(struct fsldma_chan *fsl_chan, int size);
--	void (*set_dest_loop_size)(struct fsldma_chan *fsl_chan, int size);
-+	void (*set_dst_loop_size)(struct fsldma_chan *fsl_chan, int size);
- 	void (*set_request_count)(struct fsldma_chan *fsl_chan, int size);
- };
- 
+ /**
 -- 
 1.5.4.3
