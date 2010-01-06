@@ -1,19 +1,19 @@
 Return-Path: <bgat@billgatliff.com>
 Received: from mail-iw0-f181.google.com (mail-iw0-f181.google.com
-	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id DB166B6EF2
+	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id DDC04B6EF4
 	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jan 2010 15:30:16 +1100 (EST)
-Received: by iwn11 with SMTP id 11so12662653iwn.17
+Received: by iwn11 with SMTP id 11so12662654iwn.17
 	for <linuxppc-dev@ozlabs.org>; Tue, 05 Jan 2010 20:30:15 -0800 (PST)
 From: Bill Gatliff <bgat@billgatliff.com>
 To: linuxppc-dev@ozlabs.org,
 	lm-sensors@lm-sensors.org
-Subject: [PATCH 1/2] Use struct of_i2c_gpio_chip instead of raw struct
-	gpio_chip
-Date: Tue,  5 Jan 2010 22:30:35 -0600
-Message-Id: <1262752236-1937-3-git-send-email-bgat@billgatliff.com>
-In-Reply-To: <1262752236-1937-2-git-send-email-bgat@billgatliff.com>
+Subject: [PATCH 2/2] Reorder initialization to better support device tree data
+Date: Tue,  5 Jan 2010 22:30:36 -0600
+Message-Id: <1262752236-1937-4-git-send-email-bgat@billgatliff.com>
+In-Reply-To: <1262752236-1937-3-git-send-email-bgat@billgatliff.com>
 References: <1262752236-1937-1-git-send-email-bgat@billgatliff.com>
 	<1262752236-1937-2-git-send-email-bgat@billgatliff.com>
+	<1262752236-1937-3-git-send-email-bgat@billgatliff.com>
 Cc: Bill Gatliff <bgat@billgatliff.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,161 +24,255 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch is the first in a series that improves the pca953x driver's
-support for CONFIG_OF_GPIO a.k.a. device trees.  It modifies the driver's
-chip structure definition to use a struct gpio_chip contained in a struct
-of_i2c_gpio_chip when CONFIG_OF_GPIO is set.  If OF_GPIO is not used,
-an ordinary struct gpio_chip is employed.
+This patch changes the initialization sequence implemented in
+pca953x_probe(), so as to simplify the retrieval of device tree
+data when device trees are used.  Incorporates the new
+of_i2c_gpiochip_add() function to register the newly-added GPIOs.
 
 Signed-off-by: Bill Gatliff <bgat@billgatliff.com>
 ---
- drivers/gpio/pca953x.c |   50 ++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 36 insertions(+), 14 deletions(-)
+ drivers/gpio/pca953x.c |  130 +++++++++++++++++++++--------------------------
+ 1 files changed, 58 insertions(+), 72 deletions(-)
 
 diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
-index b097043..9c70963 100644
+index 9c70963..3a20e2f 100644
 --- a/drivers/gpio/pca953x.c
 +++ b/drivers/gpio/pca953x.c
-@@ -56,18 +56,34 @@ struct pca953x_chip {
- 	unsigned gpio_start;
+@@ -3,6 +3,7 @@
+  *
+  *  Copyright (C) 2005 Ben Gardner <bgardner@wabtec.com>
+  *  Copyright (C) 2007 Marvell International Ltd.
++ *  Copyright (C) 2010 Bill Gatliff <bgat@billgatliff.com>
+  *
+  *  Derived from drivers/i2c/chips/pca9539.c
+  *
+@@ -53,13 +54,13 @@ static const struct i2c_device_id pca953x_id[] = {
+ MODULE_DEVICE_TABLE(i2c, pca953x_id);
+ 
+ struct pca953x_chip {
+-	unsigned gpio_start;
  	uint16_t reg_output;
  	uint16_t reg_direction;
-+	struct gpio_chip *gpio_chip;
++	uint16_t reg_invert;
+ 	struct gpio_chip *gpio_chip;
  
  	struct i2c_client *client;
- 	struct pca953x_platform_data *dyn_pdata;
--	struct gpio_chip gpio_chip;
+-	struct pca953x_platform_data *dyn_pdata;
++	struct pca953x_platform_data *pdata;
  	char **names;
-+
-+#ifdef CONFIG_OF_GPIO
-+	struct of_i2c_gpio_chip i2c_gc;
-+#else
-+	struct gpio_chip gc;
-+#endif
- };
  
-+static inline struct pca953x_chip *to_pca953x_chip(struct gpio_chip *gc)
+ #ifdef CONFIG_OF_GPIO
+@@ -214,7 +215,6 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
+ 	gc->set = pca953x_gpio_set_value;
+ 	gc->can_sleep = 1;
+ 
+-	gc->base = chip->gpio_start;
+ 	gc->ngpio = gpios;
+ 	gc->label = chip->client->name;
+ 	gc->dev = &chip->client->dev;
+@@ -222,119 +222,107 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
+ 	gc->names = chip->names;
+ }
+ 
+-/*
+- * Handlers for alternative sources of platform_data
+- */
+ #ifdef CONFIG_OF_GPIO
+-/*
+- * Translate OpenFirmware node properties into platform_data
+- */
+-static struct pca953x_platform_data *
+-pca953x_get_alt_pdata(struct i2c_client *client)
++static int __devinit pca953x_get_of_pdata(struct pca953x_chip *chip)
+ {
+-	struct pca953x_platform_data *pdata;
+ 	struct device_node *node;
+ 	const uint16_t *val;
+ 
+-	node = dev_archdata_get_node(&client->dev.archdata);
+-	if (node == NULL)
+-		return NULL;
++	node = dev_archdata_get_node(&chip->client->dev.archdata);
++	if (!node)
++		return -EINVAL;
+ 
+-	pdata = kzalloc(sizeof(struct pca953x_platform_data), GFP_KERNEL);
+-	if (pdata == NULL) {
+-		dev_err(&client->dev, "Unable to allocate platform_data\n");
+-		return NULL;
+-	}
+-
+-	pdata->gpio_base = -1;
+-	val = of_get_property(node, "linux,gpio-base", NULL);
+-	if (val) {
+-		if (*val < 0)
+-			dev_warn(&client->dev,
+-				 "invalid gpio-base in device tree\n");
+-		else
+-			pdata->gpio_base = *val;
+-	}
++	chip->gpio_chip->base = -1;
++	chip->i2c_gc.of_gc.gpio_cells = 2;
+ 
+ 	val = of_get_property(node, "polarity", NULL);
+ 	if (val)
+-		pdata->invert = *val;
++		chip->reg_invert = *val;
+ 
+-	return pdata;
++	return 0;
+ }
+-#else
+-static struct pca953x_platform_data *
+-pca953x_get_alt_pdata(struct i2c_client *client)
++
++static int __devinit pca953x_gpiochip_add(struct pca953x_chip *chip)
+ {
+-	return NULL;
++	struct device_node *node;
++	node = dev_archdata_get_node(&chip->client->dev.archdata);
++	return of_i2c_gpiochip_add(node, &chip->i2c_gc);
+ }
+ #endif
+ 
++static int __devinit pca953x_get_pdata(struct pca953x_chip *chip)
 +{
-+#ifdef CONFIG_OF_GPIO
-+	return container_of(gc, struct pca953x_chip, i2c_gc.of_gc.gc);
-+#else
-+	return container_of(gc, struct pca953x_chip, gc);
-+#endif
++	struct pca953x_platform_data *pdata;
++
++	pdata = dev_get_platdata(&chip->client->dev);
++	if (!pdata)
++		return -EINVAL;
++
++	chip->pdata = pdata;
++	chip->gpio_chip->base = pdata->gpio_base;
++	chip->reg_invert = pdata->invert;
++
++	return 0;
 +}
 +
-+
- static int pca953x_write_reg(struct pca953x_chip *chip, int reg, uint16_t val)
+ static int __devinit pca953x_probe(struct i2c_client *client,
+ 				   const struct i2c_device_id *id)
  {
+-	struct pca953x_platform_data *pdata;
+ 	struct pca953x_chip *chip;
  	int ret;
  
--	if (chip->gpio_chip.ngpio <= 8)
-+	if (chip->gpio_chip->ngpio <= 8)
- 		ret = i2c_smbus_write_byte_data(chip->client, reg, val);
- 	else
- 		ret = i2c_smbus_write_word_data(chip->client, reg << 1, val);
-@@ -84,7 +100,7 @@ static int pca953x_read_reg(struct pca953x_chip *chip, int reg, uint16_t *val)
- {
- 	int ret;
- 
--	if (chip->gpio_chip.ngpio <= 8)
-+	if (chip->gpio_chip->ngpio <= 8)
- 		ret = i2c_smbus_read_byte_data(chip->client, reg);
- 	else
- 		ret = i2c_smbus_read_word_data(chip->client, reg << 1);
-@@ -104,7 +120,7 @@ static int pca953x_gpio_direction_input(struct gpio_chip *gc, unsigned off)
- 	uint16_t reg_val;
- 	int ret;
- 
--	chip = container_of(gc, struct pca953x_chip, gpio_chip);
-+	chip = to_pca953x_chip(gc);
- 
- 	reg_val = chip->reg_direction | (1u << off);
- 	ret = pca953x_write_reg(chip, PCA953X_DIRECTION, reg_val);
-@@ -122,7 +138,7 @@ static int pca953x_gpio_direction_output(struct gpio_chip *gc,
- 	uint16_t reg_val;
- 	int ret;
- 
--	chip = container_of(gc, struct pca953x_chip, gpio_chip);
-+	chip = to_pca953x_chip(gc);
- 
- 	/* set output level */
- 	if (val)
-@@ -152,7 +168,7 @@ static int pca953x_gpio_get_value(struct gpio_chip *gc, unsigned off)
- 	uint16_t reg_val;
- 	int ret;
- 
--	chip = container_of(gc, struct pca953x_chip, gpio_chip);
-+	chip = to_pca953x_chip(gc);
- 
- 	ret = pca953x_read_reg(chip, PCA953X_INPUT, &reg_val);
- 	if (ret < 0) {
-@@ -172,7 +188,7 @@ static void pca953x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
- 	uint16_t reg_val;
- 	int ret;
- 
--	chip = container_of(gc, struct pca953x_chip, gpio_chip);
-+	chip = to_pca953x_chip(gc);
- 
- 	if (val)
- 		reg_val = chip->reg_output | (1u << off);
-@@ -190,7 +206,7 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
- {
- 	struct gpio_chip *gc;
- 
--	gc = &chip->gpio_chip;
-+	gc = chip->gpio_chip;
- 
- 	gc->direction_input  = pca953x_gpio_direction_input;
- 	gc->direction_output = pca953x_gpio_direction_output;
-@@ -265,6 +281,12 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ 	chip = kzalloc(sizeof(struct pca953x_chip), GFP_KERNEL);
  	if (chip == NULL)
  		return -ENOMEM;
++	chip->client = client;
  
-+#ifdef CONFIG_OF_GPIO
-+	chip->gpio_chip = &chip->i2c_gc.of_gc.gc;
-+#else
-+	chip->gpio_chip = &chip->gc;
-+#endif
-+
- 	pdata = client->dev.platform_data;
- 	if (pdata == NULL) {
- 		pdata = pca953x_get_alt_pdata(client);
-@@ -306,13 +328,13 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ #ifdef CONFIG_OF_GPIO
+ 	chip->gpio_chip = &chip->i2c_gc.of_gc.gc;
++	if (!dev_get_platdata(&client->dev))
++		pca953x_get_of_pdata(chip);
+ #else
+ 	chip->gpio_chip = &chip->gc;
+-#endif
+-
+-	pdata = client->dev.platform_data;
+-	if (pdata == NULL) {
+-		pdata = pca953x_get_alt_pdata(client);
+-		/*
+-		 * Unlike normal platform_data, this is allocated
+-		 * dynamically and must be freed in the driver
+-		 */
+-		chip->dyn_pdata = pdata;
+-	}
+-
+-	if (pdata == NULL) {
+-		dev_dbg(&client->dev, "no platform data\n");
++	if (!client->dev.platform_data)
++	{
++		dev_err(&client->dev, "no platform data\n");
+ 		ret = -EINVAL;
  		goto out_failed;
+ 	}
++#endif
  
+-	chip->client = client;
+-
+-	chip->gpio_start = pdata->gpio_base;
++	pca953x_setup_gpio(chip, id->driver_data);
  
--	ret = gpiochip_add(&chip->gpio_chip);
-+	ret = gpiochip_add(chip->gpio_chip);
+-	chip->names = pdata->names;
++	if (dev_get_platdata(&client->dev))
++		pca953x_get_pdata(chip);
+ 
+-	/* initialize cached registers from their original values.
+-	 * we can't share this chip with another i2c master.
++	/*
++	 * Note: we cache the values of some registers locally; this
++	 * means that other i2c masters, if any, cannot share this
++	 * chip with us!
+ 	 */
+-	pca953x_setup_gpio(chip, id->driver_data);
+ 
+ 	ret = pca953x_read_reg(chip, PCA953X_OUTPUT, &chip->reg_output);
+ 	if (ret)
+ 		goto out_failed;
+-
+ 	ret = pca953x_read_reg(chip, PCA953X_DIRECTION, &chip->reg_direction);
+ 	if (ret)
+ 		goto out_failed;
+-
+-	/* set platform specific polarity inversion */
+-	ret = pca953x_write_reg(chip, PCA953X_INVERT, pdata->invert);
++	ret = pca953x_write_reg(chip, PCA953X_INVERT, chip->reg_invert);
  	if (ret)
  		goto out_failed;
  
- 	if (pdata->setup) {
--		ret = pdata->setup(client, chip->gpio_chip.base,
--				chip->gpio_chip.ngpio, pdata->context);
-+		ret = pdata->setup(client, chip->gpio_chip->base,
-+				chip->gpio_chip->ngpio, pdata->context);
+-
++#ifdef CONFIG_OF_GPIO
++	ret = pca953x_gpiochip_add(chip);
++#else
+ 	ret = gpiochip_add(chip->gpio_chip);
++#endif
+ 	if (ret)
+ 		goto out_failed;
+ 
+-	if (pdata->setup) {
+-		ret = pdata->setup(client, chip->gpio_chip->base,
+-				chip->gpio_chip->ngpio, pdata->context);
++	if (chip->pdata && chip->pdata->setup) {
++		ret = chip->pdata->setup(client, chip->gpio_chip->base,
++				chip->gpio_chip->ngpio,
++					 chip->pdata->context);
  		if (ret < 0)
  			dev_warn(&client->dev, "setup failed, %d\n", ret);
  	}
-@@ -333,8 +355,8 @@ static int pca953x_remove(struct i2c_client *client)
+@@ -343,20 +331,19 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ 	return 0;
+ 
+ out_failed:
+-	kfree(chip->dyn_pdata);
+ 	kfree(chip);
+ 	return ret;
+ }
+ 
+ static int pca953x_remove(struct i2c_client *client)
+ {
+-	struct pca953x_platform_data *pdata = client->dev.platform_data;
+ 	struct pca953x_chip *chip = i2c_get_clientdata(client);
  	int ret = 0;
  
- 	if (pdata->teardown) {
--		ret = pdata->teardown(client, chip->gpio_chip.base,
--				chip->gpio_chip.ngpio, pdata->context);
-+		ret = pdata->teardown(client, chip->gpio_chip->base,
-+				chip->gpio_chip->ngpio, pdata->context);
+-	if (pdata->teardown) {
+-		ret = pdata->teardown(client, chip->gpio_chip->base,
+-				chip->gpio_chip->ngpio, pdata->context);
++	if (chip->pdata && chip->pdata->teardown) {
++		ret = chip->pdata->teardown(client, chip->gpio_chip->base,
++					    chip->gpio_chip->ngpio,
++					    chip->pdata->context);
  		if (ret < 0) {
  			dev_err(&client->dev, "%s failed, %d\n",
  					"teardown", ret);
-@@ -342,7 +364,7 @@ static int pca953x_remove(struct i2c_client *client)
- 		}
+@@ -371,7 +358,6 @@ static int pca953x_remove(struct i2c_client *client)
+ 		return ret;
  	}
  
--	ret = gpiochip_remove(&chip->gpio_chip);
-+	ret = gpiochip_remove(chip->gpio_chip);
- 	if (ret) {
- 		dev_err(&client->dev, "%s failed, %d\n",
- 				"gpiochip_remove()", ret);
+-	kfree(chip->dyn_pdata);
+ 	kfree(chip);
+ 	return 0;
+ }
 -- 
 1.6.5
