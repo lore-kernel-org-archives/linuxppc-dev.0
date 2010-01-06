@@ -1,19 +1,24 @@
-Return-Path: <khali@linux-fr.org>
-Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
-	by ozlabs.org (Postfix) with ESMTP id C95F2B6EFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 03:43:31 +1100 (EST)
-Date: Wed, 6 Jan 2010 17:37:45 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: i2c_powermac: Kernel access of bad area
-Message-ID: <20100106173745.57207520@hyperion.delvare>
-In-Reply-To: <1262079255.2173.216.camel@pasglop>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
-	<1262079255.2173.216.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 08BAEB6F05
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 05:04:39 +1100 (EST)
+Date: Wed, 6 Jan 2010 12:02:26 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH 6/8] fsldma: simplify IRQ probing and handling
+Message-ID: <20100106180226.GA27146@loki.buserror.net>
+References: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+	<1262326246-936-7-git-send-email-iws@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1262326246-936-7-git-send-email-iws@ovro.caltech.edu>
+Cc: herbert@gondor.apana.org.au, B04825@freescale.com, linuxppc-dev@ozlabs.org,
+	Vishnu@freescale.com, Dipen.Dudhat@freescale.com,
+	dan.j.williams@intel.com, Maneesh.Gupta@freescale.com, R58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,144 +28,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christian, hi Ben,
+On Thu, Dec 31, 2009 at 10:10:44PM -0800, Ira W. Snyder wrote:
+> The IRQ probing is needlessly complex. All off the 83xx device trees in
+> arch/powerpc/boot/dts/ specify 5 interrupts per DMA controller: one for the
+> controller, and one for each channel. These interrupts are all attached to
+> the same IRQ line.
 
-On Tue, 29 Dec 2009 20:34:15 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-12-28 at 20:40 -0800, Christian Kujau wrote:
-> > Hi there,
-> > 
-> > I was trying to find out if I still need i2c_powermac to get details off 
-> > /sys/devices/temperatures, since lm-sensors isn't working for me anyway.
+The reason for this was to accommodate different types of drivers.  A driver
+may want to only care about one channel (e.g. if that channel is used for
+something specific such as audio), in which case it can just look at the
+channel node.
 
-This is because the macintosh/therm_adt746x driver doesn't follow the
-standard hwmon sysfs interface. I would love to see that change.
+A driver that handles multiple channels, OTOH, may want to only register one
+interrupt handler that processes all channels, possibly using the summary
+register, on chips that do not have a different interrupt per channel.  Such
+drivers would register the controller interrupt if there is one -- and if
+so, it would ignore the channel interrupts.
 
-> > After unloading this module, I noticed that reading certain objects would 
-> > fail with a segfault on the prompt and an Oops in the kernel log:
+> This causes an interesting situation if two channels interrupt at the same
+> time. The controller's handler will handle the first channel, and the
+> channel handler will handle the remaining channels.
+
+The driver should not be registering handlers for both the controller
+interrupt and the channel interrupt.
+
+It looks like the other problem is that the controller interrupt handler
+is assuming only one bit will be set in the summary register.  It should
+call the channel handler for each bit that is set.
+
+> The same can be accomplished on 83xx by removing the controller's interrupt
+> property from the device tree. Testing has not shown any problems with this
+> configuration. 
+
+Yes, it will work, but the overhead is a little higher than if you only had
+the one handler and used the summary register.
+
+> All in-tree device trees already have an interrupt property
+> specified for each channel.
 > 
-> Definitely looks like we fail to clean things up on remove.
-
-Indeed.
-
-> I don't have much time to look into this right now, so best is you file
-> a bug report on bugzilla.kernel.org, make sure I'm CCed.
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> ---
+>  Documentation/powerpc/dts-bindings/fsl/dma.txt |   17 +++++---
+>  drivers/dma/fsldma.c                           |   49 +++++++-----------------
+>  2 files changed, 25 insertions(+), 41 deletions(-)
 > 
-> Jean (added on CC), in case you already know what's up, please share :-)
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/dma.txt b/Documentation/powerpc/dts-bindings/fsl/dma.txt
+> index 0732cdd..d5d2d3d 100644
+> --- a/Documentation/powerpc/dts-bindings/fsl/dma.txt
+> +++ b/Documentation/powerpc/dts-bindings/fsl/dma.txt
+> @@ -12,6 +12,9 @@ Required properties:
+>  - ranges		: Should be defined as specified in 1) to describe the
+>  		  DMA controller channels.
+>  - cell-index        : controller index.  0 for controller @ 0x8100
+> +
+> +Optional properties:
+> +
+>  - interrupts        : <interrupt mapping for DMA IRQ>
+>  - interrupt-parent  : optional, if needed for interrupt mapping
+>  
+> @@ -23,11 +26,7 @@ Required properties:
+>  			 "fsl,elo-dma-channel". However, see note below.
+>          - reg               : <registers mapping for channel>
+>          - cell-index        : dma channel index starts at 0.
+> -
+> -Optional properties:
+>          - interrupts        : <interrupt mapping for DMA channel IRQ>
+> -			  (on 83xx this is expected to be identical to
+> -			   the interrupts property of the parent node)
 
-I don't know anything about this for now. But I'll help if I can.
+It should indeed be the controller interrupt that is optional, but why
+remove the comment about 83xx?  That's the only time you'll have a
+controller interrupt at all.
 
-Christian, did you happen to try removing the i2c-powermac driver
-before? I am curious if this is a recent problem, possibly caused by
-changes to the i2c stack, or if older kernels already had this problem
-and nobody ever noticed. I suspect the latter.
+>          - interrupt-parent  : optional, if needed for interrupt mapping
+>  
+>  Example:
+> @@ -37,28 +36,34 @@ Example:
+>  		compatible = "fsl,mpc8349-dma", "fsl,elo-dma";
+>  		reg = <0x82a8 4>;
+>  		ranges = <0 0x8100 0x1a4>;
+> -		interrupt-parent = <&ipic>;
+> -		interrupts = <71 8>;
+>  		cell-index = <0>;
+>  		dma-channel@0 {
+>  			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+>  			cell-index = <0>;
+>  			reg = <0 0x80>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <71 8>;
+>  		};
+>  		dma-channel@80 {
+>  			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+>  			cell-index = <1>;
+>  			reg = <0x80 0x80>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <71 8>;
+>  		};
+>  		dma-channel@100 {
+>  			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+>  			cell-index = <2>;
+>  			reg = <0x100 0x80>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <71 8>;
+>  		};
+>  		dma-channel@180 {
+>  			compatible = "fsl,mpc8349-dma-channel", "fsl,elo-dma-channel";
+>  			cell-index = <3>;
+>  			reg = <0x180 0x80>;
+> +			interrupt-parent = <&ipic>;
+> +			interrupts = <71 8>;
 
-Looking at drivers/macintosh/therm_adt746x.c, the sysfs files are
-created in thermostat_init() and removed in thermostat_exit(), which
-are the driver's init and exit functions. These files are backed-up by
-a per-device structure, so it looks like the wrong thing to do. I think
-this is the problem: the sysfs files have a lifetime longer than the
-data structure that is backing it up. This is somewhat different from
-"we fail to clean things up on remove": I suspect that even if
-i2c-powermac was never ever loaded, the same problem would happen.
+I'd rather the example provide both controller and channel interrupts.
 
-I think that sysfs files creation should be moved to the end of
-probe_thermostat() and sysfs files removal should be moved to the
-beginning of remove_thermostat(). Something like the totally untested
-patch below (no ppc machine at hand):
-
----
- drivers/macintosh/therm_adt746x.c |   34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
-
---- linux-2.6.33-rc3.orig/drivers/macintosh/therm_adt746x.c	2010-01-06 17:30:48.000000000 +0100
-+++ linux-2.6.33-rc3/drivers/macintosh/therm_adt746x.c	2010-01-06 17:36:35.000000000 +0100
-@@ -90,6 +90,8 @@ static struct task_struct *thread_therm
- 
- static void write_both_fan_speed(struct thermostat *th, int speed);
- static void write_fan_speed(struct thermostat *th, int speed, int fan);
-+static void thermostat_create_files(void);
-+static void thermostat_remove_files(void);
- 
- static int
- write_reg(struct thermostat* th, int reg, u8 data)
-@@ -161,6 +163,8 @@ remove_thermostat(struct i2c_client *cli
- 	struct thermostat *th = i2c_get_clientdata(client);
- 	int i;
- 	
-+	thermostat_remove_files();
-+
- 	if (thread_therm != NULL) {
- 		kthread_stop(thread_therm);
- 	}
-@@ -449,6 +453,8 @@ static int probe_thermostat(struct i2c_c
- 		return -ENOMEM;
- 	}
- 
-+	thermostat_create_files();
-+
- 	return 0;
- }
- 
-@@ -566,7 +572,6 @@ thermostat_init(void)
- 	struct device_node* np;
- 	const u32 *prop;
- 	int i = 0, offset = 0;
--	int err;
- 
- 	np = of_find_node_by_name(NULL, "fan");
- 	if (!np)
-@@ -633,6 +638,17 @@ thermostat_init(void)
- 		return -ENODEV;
- 	}
- 
-+#ifndef CONFIG_I2C_POWERMAC
-+	request_module("i2c-powermac");
-+#endif
-+
-+	return i2c_add_driver(&thermostat_driver);
-+}
-+
-+static void thermostat_create_files(void)
-+{
-+	int err;
-+
- 	err = device_create_file(&of_dev->dev, &dev_attr_sensor1_temperature);
- 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor2_temperature);
- 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor1_limit);
-@@ -647,16 +663,9 @@ thermostat_init(void)
- 	if (err)
- 		printk(KERN_WARNING
- 			"Failed to create tempertaure attribute file(s).\n");
--
--#ifndef CONFIG_I2C_POWERMAC
--	request_module("i2c-powermac");
--#endif
--
--	return i2c_add_driver(&thermostat_driver);
- }
- 
--static void __exit
--thermostat_exit(void)
-+static void thermostat_remove_files(void)
- {
- 	if (of_dev) {
- 		device_remove_file(&of_dev->dev, &dev_attr_sensor1_temperature);
-@@ -673,9 +682,14 @@ thermostat_exit(void)
- 			device_remove_file(&of_dev->dev,
- 					   &dev_attr_sensor2_fan_speed);
- 
--		of_device_unregister(of_dev);
- 	}
-+}
-+
-+static void __exit
-+thermostat_exit(void)
-+{
- 	i2c_del_driver(&thermostat_driver);
-+	of_device_unregister(of_dev);
- }
- 
- module_init(thermostat_init);
-
--- 
-Jean Delvare
+-Scott
