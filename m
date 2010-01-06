@@ -1,17 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 46283B6EF2
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 03:34:36 +1100 (EST)
-Date: Wed, 6 Jan 2010 10:34:25 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <khali@linux-fr.org>
+Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
+	by ozlabs.org (Postfix) with ESMTP id C95F2B6EFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 03:43:31 +1100 (EST)
+Date: Wed, 6 Jan 2010 17:37:45 +0100
+From: Jean Delvare <khali@linux-fr.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] defconfig updates
-Message-ID: <Pine.LNX.4.64.1001061034030.12194@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: i2c_powermac: Kernel access of bad area
+Message-ID: <20100106173745.57207520@hyperion.delvare>
+In-Reply-To: <1262079255.2173.216.camel@pasglop>
+References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
+	<1262079255.2173.216.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +23,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc3
+Hi Christian, hi Ben,
 
-are available in the git repository at:
+On Tue, 29 Dec 2009 20:34:15 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-12-28 at 20:40 -0800, Christian Kujau wrote:
+> > Hi there,
+> > 
+> > I was trying to find out if I still need i2c_powermac to get details off 
+> > /sys/devices/temperatures, since lm-sensors isn't working for me anyway.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+This is because the macintosh/therm_adt746x driver doesn't follow the
+standard hwmon sysfs interface. I would love to see that change.
 
-Kumar Gala (1):
-      powerpc: 2.6.33 update of defconfigs for embedded 6xx/7xxx, 8xx, 8xxx
+> > After unloading this module, I noticed that reading certain objects would 
+> > fail with a segfault on the prompt and an Oops in the kernel log:
+> 
+> Definitely looks like we fail to clean things up on remove.
 
- arch/powerpc/configs/83xx/asp8347_defconfig       |   88 +++++++++++++-----
- arch/powerpc/configs/83xx/kmeter1_defconfig       |   68 +++++++++++---
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   97 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  100 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   93 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   95 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   92 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   86 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   87 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   91 ++++++++++++++-----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   85 +++++++++++++-----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   69 +++++++++++---
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   69 +++++++++++---
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   76 ++++++++++++----
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   75 ++++++++++++----
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   77 ++++++++++++----
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   72 +++++++++++---
- arch/powerpc/configs/85xx/socrates_defconfig      |   99 +++++++++++++++-----
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |   87 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   89 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   95 +++++++++++++++----
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |  103 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  102 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   99 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   92 ++++++++++++++----
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   88 ++++++++++++++----
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   90 ++++++++++++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |   81 ++++++++++++----
- arch/powerpc/configs/adder875_defconfig           |   57 +++++++++---
- arch/powerpc/configs/c2k_defconfig                |   90 +++++++++++++-----
- arch/powerpc/configs/ep8248e_defconfig            |   64 ++++++++++---
- arch/powerpc/configs/ep88xc_defconfig             |   55 +++++++++---
- arch/powerpc/configs/linkstation_defconfig        |   96 +++++++++++++++-----
- arch/powerpc/configs/mgcoge_defconfig             |   74 +++++++++++----
- arch/powerpc/configs/mgsuvd_defconfig             |   63 ++++++++++---
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   79 ++++++++++++----
- arch/powerpc/configs/mpc8272_ads_defconfig        |   70 +++++++++++---
- arch/powerpc/configs/mpc83xx_defconfig            |   92 ++++++++++++++-----
- arch/powerpc/configs/mpc85xx_defconfig            |   97 +++++++++++++++-----
- arch/powerpc/configs/mpc85xx_smp_defconfig        |   97 +++++++++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig         |   65 ++++++++++---
- arch/powerpc/configs/mpc86xx_defconfig            |   93 ++++++++++++++----
- arch/powerpc/configs/mpc885_ads_defconfig         |   55 +++++++++---
- arch/powerpc/configs/pq2fads_defconfig            |   72 +++++++++++---
- arch/powerpc/configs/prpmc2800_defconfig          |   94 ++++++++++++++-----
- arch/powerpc/configs/storcenter_defconfig         |   86 +++++++++++++----
- 52 files changed, 3351 insertions(+), 1030 deletions(-)
+Indeed.
+
+> I don't have much time to look into this right now, so best is you file
+> a bug report on bugzilla.kernel.org, make sure I'm CCed.
+> 
+> Jean (added on CC), in case you already know what's up, please share :-)
+
+I don't know anything about this for now. But I'll help if I can.
+
+Christian, did you happen to try removing the i2c-powermac driver
+before? I am curious if this is a recent problem, possibly caused by
+changes to the i2c stack, or if older kernels already had this problem
+and nobody ever noticed. I suspect the latter.
+
+Looking at drivers/macintosh/therm_adt746x.c, the sysfs files are
+created in thermostat_init() and removed in thermostat_exit(), which
+are the driver's init and exit functions. These files are backed-up by
+a per-device structure, so it looks like the wrong thing to do. I think
+this is the problem: the sysfs files have a lifetime longer than the
+data structure that is backing it up. This is somewhat different from
+"we fail to clean things up on remove": I suspect that even if
+i2c-powermac was never ever loaded, the same problem would happen.
+
+I think that sysfs files creation should be moved to the end of
+probe_thermostat() and sysfs files removal should be moved to the
+beginning of remove_thermostat(). Something like the totally untested
+patch below (no ppc machine at hand):
+
+---
+ drivers/macintosh/therm_adt746x.c |   34 ++++++++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 10 deletions(-)
+
+--- linux-2.6.33-rc3.orig/drivers/macintosh/therm_adt746x.c	2010-01-06 17:30:48.000000000 +0100
++++ linux-2.6.33-rc3/drivers/macintosh/therm_adt746x.c	2010-01-06 17:36:35.000000000 +0100
+@@ -90,6 +90,8 @@ static struct task_struct *thread_therm
+ 
+ static void write_both_fan_speed(struct thermostat *th, int speed);
+ static void write_fan_speed(struct thermostat *th, int speed, int fan);
++static void thermostat_create_files(void);
++static void thermostat_remove_files(void);
+ 
+ static int
+ write_reg(struct thermostat* th, int reg, u8 data)
+@@ -161,6 +163,8 @@ remove_thermostat(struct i2c_client *cli
+ 	struct thermostat *th = i2c_get_clientdata(client);
+ 	int i;
+ 	
++	thermostat_remove_files();
++
+ 	if (thread_therm != NULL) {
+ 		kthread_stop(thread_therm);
+ 	}
+@@ -449,6 +453,8 @@ static int probe_thermostat(struct i2c_c
+ 		return -ENOMEM;
+ 	}
+ 
++	thermostat_create_files();
++
+ 	return 0;
+ }
+ 
+@@ -566,7 +572,6 @@ thermostat_init(void)
+ 	struct device_node* np;
+ 	const u32 *prop;
+ 	int i = 0, offset = 0;
+-	int err;
+ 
+ 	np = of_find_node_by_name(NULL, "fan");
+ 	if (!np)
+@@ -633,6 +638,17 @@ thermostat_init(void)
+ 		return -ENODEV;
+ 	}
+ 
++#ifndef CONFIG_I2C_POWERMAC
++	request_module("i2c-powermac");
++#endif
++
++	return i2c_add_driver(&thermostat_driver);
++}
++
++static void thermostat_create_files(void)
++{
++	int err;
++
+ 	err = device_create_file(&of_dev->dev, &dev_attr_sensor1_temperature);
+ 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor2_temperature);
+ 	err |= device_create_file(&of_dev->dev, &dev_attr_sensor1_limit);
+@@ -647,16 +663,9 @@ thermostat_init(void)
+ 	if (err)
+ 		printk(KERN_WARNING
+ 			"Failed to create tempertaure attribute file(s).\n");
+-
+-#ifndef CONFIG_I2C_POWERMAC
+-	request_module("i2c-powermac");
+-#endif
+-
+-	return i2c_add_driver(&thermostat_driver);
+ }
+ 
+-static void __exit
+-thermostat_exit(void)
++static void thermostat_remove_files(void)
+ {
+ 	if (of_dev) {
+ 		device_remove_file(&of_dev->dev, &dev_attr_sensor1_temperature);
+@@ -673,9 +682,14 @@ thermostat_exit(void)
+ 			device_remove_file(&of_dev->dev,
+ 					   &dev_attr_sensor2_fan_speed);
+ 
+-		of_device_unregister(of_dev);
+ 	}
++}
++
++static void __exit
++thermostat_exit(void)
++{
+ 	i2c_del_driver(&thermostat_driver);
++	of_device_unregister(of_dev);
+ }
+ 
+ module_init(thermostat_init);
+
+-- 
+Jean Delvare
