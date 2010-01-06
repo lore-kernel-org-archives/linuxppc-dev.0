@@ -1,24 +1,20 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 886B3B7BF5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  7 Jan 2010 01:45:39 +1100 (EST)
-Date: Wed, 6 Jan 2010 15:45:31 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH net-next v2 0/3] can: mscan-mpc5xxx: add support for
-	the Freescale MPC512x
-Message-ID: <20100106144531.GD5299@pengutronix.de>
-References: <1262719241-2422-1-git-send-email-wg@grandegger.com>
-	<4B449EB0.5090107@grandegger.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-iw0-f181.google.com (mail-iw0-f181.google.com
+	[209.85.223.181]) by ozlabs.org (Postfix) with ESMTP id 866C8B6EF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Jan 2010 02:15:47 +1100 (EST)
+Received: by iwn11 with SMTP id 11so12935718iwn.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Jan 2010 07:15:46 -0800 (PST)
+Message-ID: <4B44A93E.5030805@billgatliff.com>
+Date: Wed, 06 Jan 2010 09:16:14 -0600
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qOrJKOH36bD5yhNe"
-In-Reply-To: <4B449EB0.5090107@grandegger.com>
-Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
-	Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org
+To: Ayman El-Khashab <ayman@elkhashab.com>
+Subject: Re: How to set GPIO state in the dts or in platform
+References: <4B440EDC.3060805@elkhashab.com> <4B4413DA.7010704@billgatliff.com>
+	<4B441AD8.4050709@elkhashab.com>
+In-Reply-To: <4B441AD8.4050709@elkhashab.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ayman El-Khashab wrote:
+> On 1/5/2010 10:38 PM, Bill Gatliff wrote:
+>> Ayman El-Khashab wrote:
+>>  
+>>> I've got a custom board akin to the walnut.  I've successfully got
+>>> u-boot,
+>>> the kernel, and a working filesystem.  The only thing I lack is a
+>>> clear idea
+>>> of how to set a GPIO.
+>>>     
+>>
+>> Isn't that the "flags" parameter, e.g.:
+>>
+>> gpios = <phandle gpioid flags>
+>>
+>> ?
+>>
+>> If you are passing a 0 for the flags, try a 1.  I know of at least one
+>> driver that interprets that to mean a polarity inversion.  Maybe you'll
+>> get lucky.  :)
+>>
+>>   
+> Possibly, I saw that in the documentation directory, but didn't quite
+> follow the explanation that
+> was given.  Below is what I was using as  a reference, but is it as
+> simple as that?  Do the flags encode
+> just the state or also, the open drain, hi-z and everything else?  In
+> my case, I want the GPIO 3 actively
+> driven high.
 
---qOrJKOH36bD5yhNe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The flags can encode everything, or nothing.  It all depends on what the
+caller of of_get_gpio_flags() does with them.  (Note that I'm not an
+authority on this topic, I'm just telling what I've learned about it
+recently).
 
-> Wolfram, is it OK from your point of view now? I will roll out v3 after
-> some  more thorough testing tomorrow.
+For example, in of_mpc8xxx_spi_get_chipselects(), the flag is tested
+against OF_GPIO_ACTIVE_LOW, and the result is passed to
+gpio_direction_output() as the initial value.  So it both inverts the
+sense of the pin, and sets its initial state.
 
-It still works here and, as I see it, all issues were resolved as discussed.
+In of_gpio_leds_probe(), the flag is tested against OF_GPIO_ACTIVE_LOW
+as well.
 
-Thanks,
+In both of the above examples, the drivers can make assumptions about
+things like the pin must be an output, will be actively driven in either
+direction, and so on.  The convention is for the flag to be a bitmap of
+values from the of_gpio_flags enumeration, but the only value there
+is--- you guessed it--- OF_GPIO_ACTIVE_LOW.  :)
 
-   Wolfram
+If you provide your own xlate() function in a of_gpio_chip driver, you
+can make the flags mean anything you want.  As for anywhere you call
+of_gpio_get_flags().  For now, the only established interpretation is
+the OF_GPIO_ACTIVE_LOW one.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---qOrJKOH36bD5yhNe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+b.g.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktEogsACgkQD27XaX1/VRuuxwCfY+Ijx7xKuS8Y+fdznLtD07qd
-wKIAoIvp71e3nlYVA2pH64ekrfjIz20s
-=ahFH
------END PGP SIGNATURE-----
-
---qOrJKOH36bD5yhNe--
+-- 
+Bill Gatliff
+Embedded systems training and consulting
+http://billgatliff.com
+bgat@billgatliff.com
