@@ -1,13 +1,25 @@
-Return-Path: <wg@denx.de>
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: Netdev@vger.kernel.org
-Subject: [PATCH net-next v3 1/3] can: mscan: fix improper return if dlc < 8 in
-	start_xmit function
-Date: Thu,  7 Jan 2010 15:10:19 +0100
-Message-Id: <1262873421-6863-2-git-send-email-wg@grandegger.com>
-In-Reply-To: <1262873421-6863-1-git-send-email-wg@grandegger.com>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6616B6F08
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Jan 2010 03:21:19 +1100 (EST)
+Date: Thu, 7 Jan 2010 17:21:13 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH net-next v3 2/3] can: mscan-mpc5xxx: add support for
+	the MPC512x processor
+Message-ID: <20100107162113.GB7394@pengutronix.de>
 References: <1262873421-6863-1-git-send-email-wg@grandegger.com>
-Cc: Socketcan-core@lists.berlios.de, Devicetree-discuss@lists.ozlabs.org,
+	<1262873421-6863-2-git-send-email-wg@grandegger.com>
+	<1262873421-6863-3-git-send-email-wg@grandegger.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
+In-Reply-To: <1262873421-6863-3-git-send-email-wg@grandegger.com>
+Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
+	Devicetree-discuss@lists.ozlabs.org,
 	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,47 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@denx.de>
 
-The start_xmit function of the MSCAN Driver did return improperly if
-the CAN dlc check failed (skb not freed and invalid return code). This
-patch adds a proper check of the frame lenght and data size and returns
-now correctly. Furthermore, a typo has been fixed.
+--UHN/qo2QbUvPLonB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+On Thu, Jan 07, 2010 at 03:10:20PM +0100, Wolfgang Grandegger wrote:
+> From: Wolfgang Grandegger <wg@denx.de>
+>=20
+> The main differences compared to the MSCAN on the MPC5200 are:
+>=20
+> - More flexibility in choosing the CAN source clock and frequency:
+>=20
+>   Three different clock sources can be selected: "ip", "ref" or "sys".
+>   For the latter two, a clock divider can be defined as well. If the
+>   clock source is not specified by the device tree, we first try to
+>   find an optimal CAN source clock based on the system clock. If that
+>   is not possible, the reference clock will be used.
+>=20
+> - The behavior of bus-off recovery is configurable:
+>=20
+>   To comply with the usual handling of Socket-CAN bus-off recovery,
+>   "recovery on request" is selected (instead of automatic recovery).
+>=20
+> Note that only MPC5121 Rev. 2 and later is supported.
+>=20
+> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+
 Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
----
- drivers/net/can/mscan/mscan.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/can/mscan/mscan.c b/drivers/net/can/mscan/mscan.c
-index 07346f8..955a164 100644
---- a/drivers/net/can/mscan/mscan.c
-+++ b/drivers/net/can/mscan/mscan.c
-@@ -4,7 +4,7 @@
-  * Copyright (C) 2005-2006 Andrey Volkov <avolkov@varma-el.com>,
-  *                         Varma Electronics Oy
-  * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
-- * Copytight (C) 2008-2009 Pengutronix <kernel@pengutronix.de>
-+ * Copyright (C) 2008-2009 Pengutronix <kernel@pengutronix.de>
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the version 2 of the GNU General Public License
-@@ -177,8 +177,13 @@ static netdev_tx_t mscan_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	int i, rtr, buf_id;
- 	u32 can_id;
- 
--	if (frame->can_dlc > 8)
--		return -EINVAL;
-+	if (skb->len != sizeof(*frame) || frame->can_dlc > 8) {
-+		dev_err(dev->dev.parent,
-+			"Dropping non-conform packet: len %u, can_dlc %u\n",
-+			skb->len, frame->can_dlc);
-+		kfree_skb(skb);
-+		return NETDEV_TX_OK;
-+	}
- 
- 	out_8(&regs->cantier, 0);
- 
--- 
-1.6.2.5
+It still works with our board and I didn't find anything else to comment on.
+
+Thanks, Wolfgang!
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--UHN/qo2QbUvPLonB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktGCfkACgkQD27XaX1/VRvi2wCeM7HN2IBscYMOag2R4a9yJ7kP
+lq4An0z/WN5ENEN/YU01eFA34W2GxMLh
+=ECwy
+-----END PGP SIGNATURE-----
+
+--UHN/qo2QbUvPLonB--
