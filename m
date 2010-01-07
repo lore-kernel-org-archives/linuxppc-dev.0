@@ -1,18 +1,12 @@
-Return-Path: <socketcan@hartkopp.net>
-Message-ID: <4B46239E.2000403@hartkopp.net>
-Date: Thu, 07 Jan 2010 19:10:38 +0100
-From: Oliver Hartkopp <socketcan@hartkopp.net>
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH net-next v3 1/3] can: mscan: fix improper return if dlc
-	< 8 in start_xmit function
-References: <1262873421-6863-1-git-send-email-wg@grandegger.com>
-	<1262873421-6863-2-git-send-email-wg@grandegger.com>
-In-Reply-To: <1262873421-6863-2-git-send-email-wg@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Netdev@vger.kernel.org, Devicetree-discuss@lists.ozlabs.org,
-	Socketcan-core@lists.berlios.de, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>
+Return-Path: <wg@denx.de>
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: Netdev@vger.kernel.org
+Subject: [PATCH net-next v4 0/3] can: mscan-mpc5xxx: add support for the
+	Freescale MPC512x
+Date: Thu,  7 Jan 2010 20:43:05 +0100
+Message-Id: <1262893388-16218-1-git-send-email-wg@grandegger.com>
+Cc: Socketcan-core@lists.berlios.de, Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +16,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
+This patch series adds support for the MPC512x from Freescale to the
+mpc5xxx_can MSCAN driver. It has been tested on a MPC5121 and MPC5200B
+board.
 
-> The start_xmit function of the MSCAN Driver did return improperly if
-> the CAN dlc check failed (skb not freed and invalid return code). This
-> patch adds a proper check of the frame lenght and data size and returns
-> now correctly. 
+Changes since v3:
 
-> @@ -177,8 +177,13 @@ static netdev_tx_t mscan_start_xmit(struct sk_buff *skb, struct net_device *dev)
->  	int i, rtr, buf_id;
->  	u32 can_id;
->  
-> -	if (frame->can_dlc > 8)
-> -		return -EINVAL;
-> +	if (skb->len != sizeof(*frame) || frame->can_dlc > 8) {
-> +		dev_err(dev->dev.parent,
-> +			"Dropping non-conform packet: len %u, can_dlc %u\n",
-> +			skb->len, frame->can_dlc);
-> +		kfree_skb(skb);
-> +		return NETDEV_TX_OK;
-> +	}
->  
+- drop invalid skb packets in mscan_start_xmit() silently as suggested
+  by David Miller in the thread "[RFC] ndo_validate_skb: Let the netdev
+  check a valid skb content".
 
-Hi Wolfgang,
+Changes since v2:
 
-i would suggest to remove the dev_err() which may flood the kernel log and add
+- Debugging code just for development has beem removed.
+- Bus-off recovery tested and fixed for MPC5121.
 
-   dev->stats.tx_dropped++;
+Changes since v1:
 
-instead.
+- Various coding style issues, print formats, variable names, error
+  messages and typos fixes or improved.
 
-As discussed with DaveM on netdev-ML this 'silent' handling seems to be the
-most appropriate approach to deal with invalid skbs.
+- MPC5xxx specific data are now passed to mpc5xxx_can_probe() via
+  "of_device_id->data".
 
-We should update the other CAN drivers in a similar way, if this is ok for you.
+- The index of the MPC512x CAN controller is now derived directly
+  from the reg property. This allows using of_iomap() as before.
 
-Best regards,
-Oliver
+- It has been documented that MPC512x Rev.1 CPUs are not supported.
+
+Wolfgang
+
+Wolfgang Grandegger (3):
+  can: mscan: fix improper return if dlc < 8 in start_xmit function
+  can: mscan-mpc5xxx: add support for the MPC512x processor
+  powerpc/mpc5xxx: add OF platform binding doc for FSL MSCAN devices
+
+ Documentation/powerpc/dts-bindings/fsl/can.txt     |   53 +++++
+ Documentation/powerpc/dts-bindings/fsl/mpc5200.txt |    9 +-
+ drivers/net/can/mscan/Kconfig                      |    7 +-
+ drivers/net/can/mscan/mpc5xxx_can.c                |  246 ++++++++++++++++----
+ drivers/net/can/mscan/mscan.c                      |   60 ++++-
+ drivers/net/can/mscan/mscan.h                      |   86 ++++----
+ 6 files changed, 355 insertions(+), 106 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/fsl/can.txt
