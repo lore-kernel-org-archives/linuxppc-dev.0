@@ -1,29 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B48F41007D1
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jan 2010 04:59:46 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o07HxgBP004937
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Jan 2010 10:59:43 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o07I4kq5008911
-	for <linuxppc-dev@ozlabs.org>; Thu, 7 Jan 2010 12:04:46 -0600 (CST)
-Message-ID: <4B46209D.5000605@freescale.com>
-Date: Thu, 07 Jan 2010 11:57:49 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <socketcan@hartkopp.net>
+Message-ID: <4B46239E.2000403@hartkopp.net>
+Date: Thu, 07 Jan 2010 19:10:38 +0100
+From: Oliver Hartkopp <socketcan@hartkopp.net>
 MIME-Version: 1.0
-To: Dario Presti <dario.pr@tiscali.it>
-Subject: Re: kernel panic on MPC8323 custom board
-References: <27059752.post@talk.nabble.com>
-In-Reply-To: <27059752.post@talk.nabble.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH net-next v3 1/3] can: mscan: fix improper return if dlc
+	< 8 in start_xmit function
+References: <1262873421-6863-1-git-send-email-wg@grandegger.com>
+	<1262873421-6863-2-git-send-email-wg@grandegger.com>
+In-Reply-To: <1262873421-6863-2-git-send-email-wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Netdev@vger.kernel.org, Devicetree-discuss@lists.ozlabs.org,
+	Socketcan-core@lists.berlios.de, Linuxppc-dev@lists.ozlabs.org,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dario Presti wrote:
-> Hello,
-> I'm working on MPC8323_rdb board whit 1 new flash device S29GL512P instead
-> of original flash devices.
-> the bootloader is u-boot 1.1.6 (I know is too old and I'm going to upgrade
-> it) and the kernel is 2.6.20.
+Wolfgang Grandegger wrote:
 
-2.6.20 is also too old. :-)
+> The start_xmit function of the MSCAN Driver did return improperly if
+> the CAN dlc check failed (skb not freed and invalid return code). This
+> patch adds a proper check of the frame lenght and data size and returns
+> now correctly. 
 
-> I did this modification to the bootloader to support new flash:
-> 
-> 1)I modified the board/mpc8323rdb/config.mk file to set TEXT_BASE from
-> 0xFE000000 TO  0xFC000000
-> 2)I modified the file /include/configs/MPC8323RDB.h: 
-> 
-> #define CFG_FLASH_BASE		0xFC000000	/* FLASH base address */ 
-> #define CFG_FLASH_SIZE		64	/* FLASH size is 64M */ 
-> #define CFG_LBLAWBAR0_PRELIM	CFG_FLASH_BASE	/* Window base at flash base */
-> #define CFG_LBLAWAR0_PRELIM	0x80000019	/* 64MB window size */ 
-> #define CFG_OR0_PRELIM		0xfc006ff7	/* 64MB Flash size */ 
-> #define CFG_MAX_FLASH_BANKS	1		/* number of banks */
-> #define CFG_MAX_FLASH_SECT	512		/* sectors per device */ 
-> 
-> 3)I modify and recompiled .dts file 
-> 
-> flash@fc000000 {
-> 		device_type = "jedec-flash";
-> 		compatible = "direct-mapped";
-> 		probe-type = "CFI";
-> 		reg = <0xfc000000 0x1000000>;
-> 		bank-width = <0x2>;
-> 		partitions = <0x0 0x80001 0x80000 0x20000 0xa0000 0x180000 0x220000
-> 0xde0000>;
-> 		partition-names = "U-Boot", "dtb", "Kernel", "rootfs";
-> 	};
-> 
-> but the kernel find the flash at 0xFE000000 and the boot stop because kernel
-> panic. The log is:
+> @@ -177,8 +177,13 @@ static netdev_tx_t mscan_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  	int i, rtr, buf_id;
+>  	u32 can_id;
+>  
+> -	if (frame->can_dlc > 8)
+> -		return -EINVAL;
+> +	if (skb->len != sizeof(*frame) || frame->can_dlc > 8) {
+> +		dev_err(dev->dev.parent,
+> +			"Dropping non-conform packet: len %u, can_dlc %u\n",
+> +			skb->len, frame->can_dlc);
+> +		kfree_skb(skb);
+> +		return NETDEV_TX_OK;
+> +	}
+>  
 
-Is the kernel even using that node, or some other means to determine the 
-flash location?  The "MPC8323RDB Flash Bank 1" messages make me think 
-you've got a custom flash map driver.
+Hi Wolfgang,
 
--Scott
+i would suggest to remove the dev_err() which may flood the kernel log and add
+
+   dev->stats.tx_dropped++;
+
+instead.
+
+As discussed with DaveM on netdev-ML this 'silent' handling seems to be the
+most appropriate approach to deal with invalid skbs.
+
+We should update the other CAN drivers in a similar way, if this is ok for you.
+
+Best regards,
+Oliver
