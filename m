@@ -1,26 +1,18 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E6616B6F08
+Return-Path: <jacmet@gmail.com>
+Received: from mail-ew0-f221.google.com (mail-ew0-f221.google.com
+	[209.85.219.221]) by ozlabs.org (Postfix) with ESMTP id 1F9611007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  8 Jan 2010 03:21:19 +1100 (EST)
-Date: Thu, 7 Jan 2010 17:21:13 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH net-next v3 2/3] can: mscan-mpc5xxx: add support for
-	the MPC512x processor
-Message-ID: <20100107162113.GB7394@pengutronix.de>
-References: <1262873421-6863-1-git-send-email-wg@grandegger.com>
-	<1262873421-6863-2-git-send-email-wg@grandegger.com>
-	<1262873421-6863-3-git-send-email-wg@grandegger.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
-In-Reply-To: <1262873421-6863-3-git-send-email-wg@grandegger.com>
-Cc: Socketcan-core@lists.berlios.de, Netdev@vger.kernel.org,
-	Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Wolfgang Grandegger <wg@denx.de>
+	Fri,  8 Jan 2010 03:58:05 +1100 (EST)
+Received: by ewy21 with SMTP id 21so11308755ewy.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 07 Jan 2010 08:58:03 -0800 (PST)
+Sender: Peter Korsgaard <jacmet@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: avorontsov@ru.mvista.com, galak@kernel.crashing.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH-V3] mpc8xxx_gpio: add interrupt support
+Date: Thu,  7 Jan 2010 17:57:46 +0100
+Message-Id: <1262883466-29371-1-git-send-email-jacmet@sunsite.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +22,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+Changes since v1:
+- Document OF binding for IRQ as requested by Kumar.
 
---UHN/qo2QbUvPLonB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes since v2:
+- Fix xlate prototype mismatch warning (intspec should be const)
 
-On Thu, Jan 07, 2010 at 03:10:20PM +0100, Wolfgang Grandegger wrote:
-> From: Wolfgang Grandegger <wg@denx.de>
->=20
-> The main differences compared to the MSCAN on the MPC5200 are:
->=20
-> - More flexibility in choosing the CAN source clock and frequency:
->=20
->   Three different clock sources can be selected: "ip", "ref" or "sys".
->   For the latter two, a clock divider can be defined as well. If the
->   clock source is not specified by the device tree, we first try to
->   find an optimal CAN source clock based on the system clock. If that
->   is not possible, the reference clock will be used.
->=20
-> - The behavior of bus-off recovery is configurable:
->=20
->   To comply with the usual handling of Socket-CAN bus-off recovery,
->   "recovery on request" is selected (instead of automatic recovery).
->=20
-> Note that only MPC5121 Rev. 2 and later is supported.
->=20
-> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+ .../powerpc/dts-bindings/fsl/8xxx_gpio.txt         |   22 +++-
+ arch/powerpc/sysdev/mpc8xxx_gpio.c                 |  147 ++++++++++++++++++++
+ 2 files changed, 168 insertions(+), 1 deletions(-)
 
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
-
-It still works with our board and I didn't find anything else to comment on.
-
-Thanks, Wolfgang!
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---UHN/qo2QbUvPLonB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktGCfkACgkQD27XaX1/VRvi2wCeM7HN2IBscYMOag2R4a9yJ7kP
-lq4An0z/WN5ENEN/YU01eFA34W2GxMLh
-=ECwy
------END PGP SIGNATURE-----
-
---UHN/qo2QbUvPLonB--
+diff --git a/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt b/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
+index d015dce..b0019eb 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/8xxx_gpio.txt
+@@ -11,7 +11,7 @@ Required properties:
+   83xx, "fsl,mpc8572-gpio" for 85xx and "fsl,mpc8610-gpio" for 86xx.
+ - #gpio-cells : Should be two. The first cell is the pin number and the
+   second cell is used to specify optional parameters (currently unused).
+- - interrupts : Interrupt mapping for GPIO IRQ (currently unused).
++ - interrupts : Interrupt mapping for GPIO IRQ.
+  - interrupt-parent : Phandle for the interrupt controller that
+    services interrupts for this device.
+ - gpio-controller : Marks the port as GPIO controller.
+@@ -38,3 +38,23 @@ Example of gpio-controller nodes for a MPC8347 SoC:
+ 
+ See booting-without-of.txt for details of how to specify GPIO
+ information for devices.
++
++To use GPIO pins as interrupt sources for peripherals, specify the
++GPIO controller as the interrupt parent and define GPIO number +
++trigger mode using the interrupts property, which is defined like
++this:
++
++interrupts = <number trigger>, where:
++ - number: GPIO pin (0..31)
++ - trigger: trigger mode:
++	2 = trigger on falling edge
++	3 = trigger on both edges
++
++Example of device using this is:
++
++	funkyfpga@0 {
++		compatible = "funky-fpga";
++		...
++		interrupts = <4 3>;
++		interrupt-parent = <&gpio1>;
++	};
+diff --git a/arch/powerpc/sysdev/mpc8xxx_gpio.c b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+index ee1c0e1..1bd930e 100644
+--- a/arch/powerpc/sysdev/mpc8xxx_gpio.c
++++ b/arch/powerpc/sysdev/mpc8xxx_gpio.c
+@@ -15,6 +15,7 @@
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+ #include <linux/gpio.h>
++#include <linux/irq.h>
+ 
+ #define MPC8XXX_GPIO_PINS	32
+ 
+@@ -34,6 +35,7 @@ struct mpc8xxx_gpio_chip {
+ 	 * open drain mode safely
+ 	 */
+ 	u32 data;
++	struct irq_host *irq;
+ };
+ 
+ static inline u32 mpc8xxx_gpio2mask(unsigned int gpio)
+@@ -127,12 +129,136 @@ static int mpc8xxx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val
+ 	return 0;
+ }
+ 
++static int mpc8xxx_gpio_to_irq(struct gpio_chip *gc, unsigned offset)
++{
++	struct of_mm_gpio_chip *mm = to_of_mm_gpio_chip(gc);
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = to_mpc8xxx_gpio_chip(mm);
++
++	if (mpc8xxx_gc->irq && offset < MPC8XXX_GPIO_PINS)
++		return irq_create_mapping(mpc8xxx_gc->irq, offset);
++	else
++		return -ENXIO;
++}
++
++static void mpc8xxx_gpio_irq_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_desc_data(desc);
++	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
++	unsigned int mask;
++
++	mask = in_be32(mm->regs + GPIO_IER) & in_be32(mm->regs + GPIO_IMR);
++	if (mask)
++		generic_handle_irq(irq_linear_revmap(mpc8xxx_gc->irq,
++						     32 - ffs(mask)));
++}
++
++static void mpc8xxx_irq_unmask(unsigned int virq)
++{
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
++
++	setbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++
++	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
++}
++
++static void mpc8xxx_irq_mask(unsigned int virq)
++{
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
++
++	clrbits32(mm->regs + GPIO_IMR, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++
++	spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
++}
++
++static void mpc8xxx_irq_ack(unsigned int virq)
++{
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
++
++	out_be32(mm->regs + GPIO_IER, mpc8xxx_gpio2mask(virq_to_hw(virq)));
++}
++
++static int mpc8xxx_irq_set_type(unsigned int virq, unsigned int flow_type)
++{
++	struct mpc8xxx_gpio_chip *mpc8xxx_gc = get_irq_chip_data(virq);
++	struct of_mm_gpio_chip *mm = &mpc8xxx_gc->mm_gc;
++	unsigned long flags;
++
++	switch (flow_type) {
++	case IRQ_TYPE_EDGE_FALLING:
++		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
++		setbits32(mm->regs + GPIO_ICR,
++			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
++		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
++		break;
++
++	case IRQ_TYPE_EDGE_BOTH:
++		spin_lock_irqsave(&mpc8xxx_gc->lock, flags);
++		clrbits32(mm->regs + GPIO_ICR,
++			  mpc8xxx_gpio2mask(virq_to_hw(virq)));
++		spin_unlock_irqrestore(&mpc8xxx_gc->lock, flags);
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static struct irq_chip mpc8xxx_irq_chip = {
++	.name		= "mpc8xxx-gpio",
++	.unmask		= mpc8xxx_irq_unmask,
++	.mask		= mpc8xxx_irq_mask,
++	.ack		= mpc8xxx_irq_ack,
++	.set_type	= mpc8xxx_irq_set_type,
++};
++
++static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int virq,
++				irq_hw_number_t hw)
++{
++	set_irq_chip_data(virq, h->host_data);
++	set_irq_chip_and_handler(virq, &mpc8xxx_irq_chip, handle_level_irq);
++	set_irq_type(virq, IRQ_TYPE_NONE);
++
++	return 0;
++}
++
++static int mpc8xxx_gpio_irq_xlate(struct irq_host *h, struct device_node *ct,
++				  const u32 *intspec, unsigned int intsize,
++				  irq_hw_number_t *out_hwirq,
++				  unsigned int *out_flags)
++
++{
++	/* interrupt sense values coming from the device tree equal either
++	 * EDGE_FALLING or EDGE_BOTH
++	 */
++	*out_hwirq = intspec[0];
++	*out_flags = intspec[1];
++
++	return 0;
++}
++
++static struct irq_host_ops mpc8xxx_gpio_irq_ops = {
++	.map	= mpc8xxx_gpio_irq_map,
++	.xlate	= mpc8xxx_gpio_irq_xlate,
++};
++
+ static void __init mpc8xxx_add_controller(struct device_node *np)
+ {
+ 	struct mpc8xxx_gpio_chip *mpc8xxx_gc;
+ 	struct of_mm_gpio_chip *mm_gc;
+ 	struct of_gpio_chip *of_gc;
+ 	struct gpio_chip *gc;
++	unsigned hwirq;
+ 	int ret;
+ 
+ 	mpc8xxx_gc = kzalloc(sizeof(*mpc8xxx_gc), GFP_KERNEL);
+@@ -157,11 +283,32 @@ static void __init mpc8xxx_add_controller(struct device_node *np)
+ 	else
+ 		gc->get = mpc8xxx_gpio_get;
+ 	gc->set = mpc8xxx_gpio_set;
++	gc->to_irq = mpc8xxx_gpio_to_irq;
+ 
+ 	ret = of_mm_gpiochip_add(np, mm_gc);
+ 	if (ret)
+ 		goto err;
+ 
++	hwirq = irq_of_parse_and_map(np, 0);
++	if (hwirq == NO_IRQ)
++		goto skip_irq;
++
++	mpc8xxx_gc->irq =
++		irq_alloc_host(np, IRQ_HOST_MAP_LINEAR, MPC8XXX_GPIO_PINS,
++			       &mpc8xxx_gpio_irq_ops, MPC8XXX_GPIO_PINS);
++	if (!mpc8xxx_gc->irq)
++		goto skip_irq;
++
++	mpc8xxx_gc->irq->host_data = mpc8xxx_gc;
++
++	/* ack and mask all irqs */
++	out_be32(mm_gc->regs + GPIO_IER, 0xffffffff);
++	out_be32(mm_gc->regs + GPIO_IMR, 0);
++
++	set_irq_data(hwirq, mpc8xxx_gc);
++	set_irq_chained_handler(hwirq, mpc8xxx_gpio_irq_cascade);
++
++skip_irq:
+ 	return;
+ 
+ err:
+-- 
+1.6.5
