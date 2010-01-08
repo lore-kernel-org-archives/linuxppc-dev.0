@@ -1,15 +1,22 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Subject: Re: "status" property checks
-From: Hollis Blanchard <hollis_blanchard@mentor.com>
-To: Hunter Cobbs <hunter.cobbs@gmail.com>
-In-Reply-To: <1262918143.2716.8.camel@ccs-laptop>
-References: <1262905673.11702.16.camel@localhost.localdomain>
-	<1262918143.2716.8.camel@ccs-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 10:34:15 -0800
-Message-ID: <1262975655.31871.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ew0-f214.google.com (mail-ew0-f214.google.com
+	[209.85.219.214]) by ozlabs.org (Postfix) with ESMTP id 23600B7BEF
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jan 2010 06:17:46 +1100 (EST)
+Received: by ewy6 with SMTP id 6so18804758ewy.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 08 Jan 2010 11:17:44 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <alpine.OSX.2.00.1001030255060.414@localhost>
+References: <alpine.OSX.2.00.0911171657290.371@silk.local>
+	<10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
+	<alpine.OSX.2.00.1001030255060.414@localhost>
+Date: Fri, 8 Jan 2010 20:17:43 +0100
+Message-ID: <10f740e81001081117s54c5dd9by4cc0490e0c57d67b@mail.gmail.com>
+Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,43 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-01-07 at 20:35 -0600, Hunter Cobbs wrote:
-> I think that is definitely a solution.  It does centralize the testing
-> for this particular issue.  The only thing question I have is if its
-> really better to have the upper level do the check.  Shouldn't the
-> driver itself handle the hardware and device node status?
+On Sat, Jan 2, 2010 at 17:39, Finn Thain <fthain@telegraphics.com.au> wrote:
+> On Sat, 2 Jan 2010, Geert Uytterhoeven wrote:
+>> On Tue, Nov 17, 2009 at 10:04, Finn Thain <fthain@telegraphics.com.au> wrote:
+>> BTW, there are a few other minor checkpatch issues with some of the
+>> other patches in the series, too.
+>
+> I ran checkpatch on all those patches before I submitted them. I ignored
+> some of the complaints about whitespace where I felt that checkpatch got
+> it wrong (space character following tab character, IIRC).
+>
+> checkpatch found lots of mistakes that I did fix, but it can't determine
+> the most human readable style in all cases, especially where consistency
+> with the surrounding code is actually more conducive to readability than
+> strict but sporadic conformance to simple rules would be.
 
-Practically speaking, all drivers doing the checks today just return
--ENODEV. They don't try to do anything to "handle" the situation.
+It seems your editor adds spaces to lines that are continuations of
+the previous statement.
+I fixes them up and applied all your patches to linux-m68k.git.
 
-The definition of the status property implies it's outside of software's
-control, for example:
-        "disabled"
-        "Indicates that the device is not presently operational, but it
-        might become operational in the future (for example, something
-        is not plugged in, or switched off)."
+The other warnings were indeed false positives or complains about
+keeping consistency
+with the surrounding code.
 
-If a device is "not operational" in this sense, I don't think there's
-anything for a device driver to do.
+Gr{oetje,eeting}s,
 
---=20
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-
-> On Thu, 2010-01-07 at 15:07 -0800, Hollis Blanchard wrote:
-> > Right now, a number of drivers honor the "status" property on device
-> > nodes (via of_device_is_available() checks), but it's open-coded in eac=
-h
-> > driver. I'm thinking of "hiding" arbitrary devices from the kernel, and
-> > setting this property seems like the best approach, but at the moment
-> > that would require modifying all OF drivers to check for it.
-> >=20
-> > Wouldn't the better approach be to have of_platform_device_probe()
-> > itself do the check, and not call the driver's probe() routine if the
-> > device isn't available?
-> >=20
->=20
->=20
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
