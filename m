@@ -1,20 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 6B8EAB7BF4
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jan 2010 20:23:44 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1NTB4H-0002Kv-V1
-	for linuxppc-dev@ozlabs.org; Fri, 08 Jan 2010 01:23:41 -0800
-Message-ID: <27073289.post@talk.nabble.com>
-Date: Fri, 8 Jan 2010 01:23:41 -0800 (PST)
-From: Dario Presti <dario.pr@tiscali.it>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: kernel panic on MPC8323 custom board
-In-Reply-To: <4B46209D.5000605@freescale.com>
+Return-Path: <koti.kelam@gmail.com>
+Received: from mail-pw0-f43.google.com (mail-pw0-f43.google.com
+	[209.85.160.43]) by ozlabs.org (Postfix) with ESMTP id 7CDA3B7BEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  8 Jan 2010 17:42:16 +1100 (EST)
+Received: by pwj11 with SMTP id 11so13669903pwj.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 07 Jan 2010 22:42:14 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <27059752.post@talk.nabble.com> <4B46209D.5000605@freescale.com>
+Date: Fri, 8 Jan 2010 12:12:14 +0530
+Message-ID: <e4855a1001072242o718c2dbap4990cc5c0140fb8b@mail.gmail.com>
+Subject: Any patch for MTD_FSL_UPM_NAND with OF_GPIO
+From: Koteswar <koti.kelam@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=00504502cd68f450a1047ca17cb5
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,73 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--00504502cd68f450a1047ca17cb5
+Content-Type: text/plain; charset=ISO-8859-1
 
+Hi
+I am using linux-2.6.26.8 kernel. In drivers/mtd/nand/Kconfig,
+MTD_NAND_FSL_UPM depends on MTD_NAND && OF_GPIO && (PPC_83xx || PPC_85xx).
+But I didnt find any way to select OF_GPIO option in "make menuconfig". So I
+removed it from Kconfig file and got MTD_NAND_FSL_UPM in menuconfig. I
+selected it and did "make uImage". This is giving few errors:
 
-Scott Wood-2 wrote:
-> 
-> Dario Presti wrote:
->> Hello,
->> I'm working on MPC8323_rdb board whit 1 new flash device S29GL512P
->> instead
->> of original flash devices.
->> the bootloader is u-boot 1.1.6 (I know is too old and I'm going to
->> upgrade
->> it) and the kernel is 2.6.20.
-> 
-> 2.6.20 is also too old. :-)
-> 
->> I did this modification to the bootloader to support new flash:
->> 
->> 1)I modified the board/mpc8323rdb/config.mk file to set TEXT_BASE from
->> 0xFE000000 TO  0xFC000000
->> 2)I modified the file /include/configs/MPC8323RDB.h: 
->> 
->> #define CFG_FLASH_BASE		0xFC000000	/* FLASH base address */ 
->> #define CFG_FLASH_SIZE		64	/* FLASH size is 64M */ 
->> #define CFG_LBLAWBAR0_PRELIM	CFG_FLASH_BASE	/* Window base at flash base
->> */
->> #define CFG_LBLAWAR0_PRELIM	0x80000019	/* 64MB window size */ 
->> #define CFG_OR0_PRELIM		0xfc006ff7	/* 64MB Flash size */ 
->> #define CFG_MAX_FLASH_BANKS	1		/* number of banks */
->> #define CFG_MAX_FLASH_SECT	512		/* sectors per device */ 
->> 
->> 3)I modify and recompiled .dts file 
->> 
->> flash@fc000000 {
->> 		device_type = "jedec-flash";
->> 		compatible = "direct-mapped";
->> 		probe-type = "CFI";
->> 		reg = <0xfc000000 0x1000000>;
->> 		bank-width = <0x2>;
->> 		partitions = <0x0 0x80001 0x80000 0x20000 0xa0000 0x180000 0x220000
->> 0xde0000>;
->> 		partition-names = "U-Boot", "dtb", "Kernel", "rootfs";
->> 	};
->> 
->> but the kernel find the flash at 0xFE000000 and the boot stop because
->> kernel
->> panic. The log is:
-> 
-> Is the kernel even using that node, or some other means to determine the 
-> flash location?  The "MPC8323RDB Flash Bank 1" messages make me think 
-> you've got a custom flash map driver.
-> 
-> -Scott
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+include/asm-generic/gpio.h: In function 'gpio_get_value_cansleep':
+include/asm-generic/gpio.h:135: error: implicit declaration of function
+'gpio_get_value'
+include/asm-generic/gpio.h: In function 'gpio_set_value_cansleep':
+include/asm-generic/gpio.h:141: error: implicit declaration of function
+'gpio_set_value'
+In file included from drivers/mtd/nand/fsl_upm.c:21:
+include/linux/of_gpio.h: At top level:
+include/linux/of_gpio.h:26: error: field 'gc' has incomplete type
+include/linux/of_gpio.h: In function 'to_of_gpio_chip':
+include/linux/of_gpio.h:34: warning: type defaults to 'int' in declaration
+of '__mptr'
+include/linux/of_gpio.h:34: warning: initialization from incompatible
+pointer type
+drivers/mtd/nand/fsl_upm.c: In function 'fun_probe':
+drivers/mtd/nand/fsl_upm.c:203: error: implicit declaration of function
+'gpio_request'
+drivers/mtd/nand/fsl_upm.c:208: error: implicit declaration of function
+'gpio_direction_input'
+drivers/mtd/nand/fsl_upm.c:242: error: implicit declaration of function
+'gpio_free'
+make[3]: *** [drivers/mtd/nand/fsl_upm.o] Error 1
+make[2]: *** [drivers/mtd/nand] Error 2
+make[1]: *** [drivers/mtd] Error 2
+make: *** [drivers] Error 2
 
-Thanks Scott, 
-I did not find where the custom map flash driver is in the kernel source,
-where it is?
-How can I say to the kernel to use device tree instead of custom map of
-flash?
-
+I am suspection that some gpio lib is missing. So any patch is there to this
+problem??
 Regards
-Dario
--- 
-View this message in context: http://old.nabble.com/kernel-panic-on-MPC8323-custom-board-tp27059752p27073289.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Koteswar
+
+--00504502cd68f450a1047ca17cb5
+Content-Type: text/html; charset=ISO-8859-1
+
+Hi<br>
+I am using linux-2.6.26.8 kernel. In drivers/mtd/nand/Kconfig,
+MTD_NAND_FSL_UPM depends on MTD_NAND &amp;&amp; OF_GPIO &amp;&amp;
+(PPC_83xx || PPC_85xx). But I didnt find any way to select OF_GPIO
+option in &quot;make menuconfig&quot;. So I removed it from Kconfig file and got
+MTD_NAND_FSL_UPM in menuconfig. I selected it and did &quot;make uImage&quot;.
+This is giving few errors:<br>
+<br>
+include/asm-generic/gpio.h: In function &#39;gpio_get_value_cansleep&#39;:<br>
+include/asm-generic/gpio.h:135: error: implicit declaration of function &#39;gpio_get_value&#39;<br>
+include/asm-generic/gpio.h: In function &#39;gpio_set_value_cansleep&#39;:<br>
+include/asm-generic/gpio.h:141: error: implicit declaration of function &#39;gpio_set_value&#39;<br>
+In file included from drivers/mtd/nand/fsl_upm.c:21:<br>
+include/linux/of_gpio.h: At top level:<br>
+include/linux/of_gpio.h:26: error: field &#39;gc&#39; has incomplete type<br>
+include/linux/of_gpio.h: In function &#39;to_of_gpio_chip&#39;:<br>
+include/linux/of_gpio.h:34: warning: type defaults to &#39;int&#39; in declaration of &#39;__mptr&#39;<br>
+include/linux/of_gpio.h:34: warning: initialization from incompatible pointer type<br>
+drivers/mtd/nand/fsl_upm.c: In function &#39;fun_probe&#39;:<br>
+drivers/mtd/nand/fsl_upm.c:203: error: implicit declaration of function &#39;gpio_request&#39;<br>
+drivers/mtd/nand/fsl_upm.c:208: error: implicit declaration of function &#39;gpio_direction_input&#39;<br>
+drivers/mtd/nand/fsl_upm.c:242: error: implicit declaration of function &#39;gpio_free&#39;<br>
+make[3]: *** [drivers/mtd/nand/fsl_upm.o] Error 1<br>
+make[2]: *** [drivers/mtd/nand] Error 2<br>
+make[1]: *** [drivers/mtd] Error 2<br>
+make: *** [drivers] Error 2<br>
+<br>
+I am suspection that some gpio lib is missing. So any patch is there to this problem??<br>
+Regards<br>
+Koteswar<br>
+<br>
+
+--00504502cd68f450a1047ca17cb5--
