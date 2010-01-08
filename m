@@ -1,15 +1,19 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A9B9DB7C1A
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jan 2010 08:19:48 +1100 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Date: Fri,  8 Jan 2010 22:19:29 +0100
-Message-Id: <1262985569-29826-1-git-send-email-w.sang@pengutronix.de>
-Subject: [PATCH] serial/mpc52xx_uart: Drop outdated comments
-Cc: linux-serial@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 9 Jan 2010 10:46:14 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Hollis Blanchard <hollis_blanchard@mentor.com>
+Subject: Re: "status" property checks
+Message-ID: <20100108234614.GB2661@yookeroo>
+References: <1262905673.11702.16.camel@localhost.localdomain>
+	<1262918143.2716.8.camel@ccs-laptop>
+	<1262975655.31871.67.camel@localhost.localdomain>
+	<4B478747.8070009@freescale.com>
+	<1262979928.31871.81.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1262979928.31871.81.camel@localhost.localdomain>
+Cc: Scott Wood <scottwood@freescale.com>, Hunter Cobbs <hunter.cobbs@gmail.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,58 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most things mentioned are either obsolete (platform-support) or wrong (device
-numbering, DCD spport) these days. The remaining rest is obvious.
+On Fri, Jan 08, 2010 at 11:45:28AM -0800, Hollis Blanchard wrote:
+> On Fri, 2010-01-08 at 13:28 -0600, Scott Wood wrote:
+> > Hollis Blanchard wrote:
+> > > On Thu, 2010-01-07 at 20:35 -0600, Hunter Cobbs wrote:
+> > >> I think that is definitely a solution.  It does centralize the testing
+> > >> for this particular issue.  The only thing question I have is if its
+> > >> really better to have the upper level do the check.  Shouldn't the
+> > >> driver itself handle the hardware and device node status?
+> > > 
+> > > Practically speaking, all drivers doing the checks today just return
+> > > -ENODEV. They don't try to do anything to "handle" the situation.
+> > > 
+> > > The definition of the status property implies it's outside of software's
+> > > control, for example:
+> > >         "disabled"
+> > >         "Indicates that the device is not presently operational, but it
+> > >         might become operational in the future (for example, something
+> > >         is not plugged in, or switched off)."
+> > > 
+> > > If a device is "not operational" in this sense, I don't think there's
+> > > anything for a device driver to do.
+> > 
+> > I could see situations where there is some software action that could 
+> > enable the device (e.g. multiple devices sharing pins, where only one 
+> > can be active at a time) -- but it's likely to not be the driver itself 
+> > that knows how to do that.
+> > 
+> > If the need arises, there could be a mechanism where the enabling entity 
+> > can tell the platform bus that it has enabled a previously-disabled 
+> > device, overriding the status in the device tree (and likewise if it 
+> > wants take down a device that was previously enabled).
+> 
+> OK, that makes sense to me. I'll put together a patch for the original
+> idea, and the enable/disable part can come later as needed.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
----
- drivers/serial/mpc52xx_uart.c |   33 ---------------------------------
- 1 files changed, 0 insertions(+), 33 deletions(-)
+Sounds good to me to.  Only thing I'd add, is that I'd also suggest a
+helper function to do an explicit check on the status property (or do
+we have that already?).  This could be useful for drivers which are
+bound primarily to one device tree node, but also need to (possibly
+optionally) check/use some other node.
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index 7ce9e9f..c7ec1a2 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -29,39 +29,6 @@
-  * kind, whether express or implied.
-  */
- 
--/* Platform device Usage :
-- *
-- * Since PSCs can have multiple function, the correct driver for each one
-- * is selected by calling mpc52xx_match_psc_function(...). The function
-- * handled by this driver is "uart".
-- *
-- * The driver init all necessary registers to place the PSC in uart mode without
-- * DCD. However, the pin multiplexing aren't changed and should be set either
-- * by the bootloader or in the platform init code.
-- *
-- * The idx field must be equal to the PSC index (e.g. 0 for PSC1, 1 for PSC2,
-- * and so on). So the PSC1 is mapped to /dev/ttyPSC0, PSC2 to /dev/ttyPSC1 and
-- * so on. But be warned, it's an ABSOLUTE REQUIREMENT ! This is needed mainly
-- * fpr the console code : without this 1:1 mapping, at early boot time, when we
-- * are parsing the kernel args console=ttyPSC?, we wouldn't know which PSC it
-- * will be mapped to.
-- */
--
--/* OF Platform device Usage :
-- *
-- * This driver is only used for PSCs configured in uart mode.  The device
-- * tree will have a node for each PSC with "mpc52xx-psc-uart" in the compatible
-- * list.
-- *
-- * By default, PSC devices are enumerated in the order they are found.  However
-- * a particular PSC number can be forces by adding 'device_no = <port#>'
-- * to the device node.
-- *
-- * The driver init all necessary registers to place the PSC in uart mode without
-- * DCD. However, the pin multiplexing aren't changed and should be set either
-- * by the bootloader or in the platform init code.
-- */
--
- #undef DEBUG
- 
- #include <linux/device.h>
 -- 
-1.6.5
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
