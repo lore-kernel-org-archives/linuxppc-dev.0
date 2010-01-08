@@ -1,17 +1,30 @@
-Return-Path: <joakim.tjernlund@transmode.com>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <B07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 98B8FB7BF3
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jan 2010 03:53:24 +1100 (EST)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
-Subject: [PATCH] 8xx: fix user space TLB walk in dcbX fixup
-Date: Fri, 8 Jan 2010 17:46:26 +0100
-Message-Id: <1262969186-18462-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 79C01B7BC3
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jan 2010 04:28:17 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.14.3/az33egw01) with ESMTP id
+	o08HSEBY003294
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Jan 2010 10:28:14 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o08HXIS6014492
+	for <linuxppc-dev@ozlabs.org>; Fri, 8 Jan 2010 11:33:18 -0600 (CST)
+Message-ID: <4B476ABA.7050000@freescale.com>
+Date: Fri, 08 Jan 2010 11:26:18 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Dario Presti <dario.pr@tiscali.it>
+Subject: Re: kernel panic on MPC8323 custom board
+References: <27059752.post@talk.nabble.com> <4B46209D.5000605@freescale.com>
+	<27073289.post@talk.nabble.com>
+In-Reply-To: <27073289.post@talk.nabble.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,36 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The newly added fixup for buggy dcbX insn's has
-a bug that always trigger a kernel TLB walk so a user space
-dcbX insn will cause a Kernel Machine Check if it hits DTLB error.
+Dario Presti wrote:
+> Thanks Scott, 
+> I did not find where the custom map flash driver is in the kernel source,
+> where it is?
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
+Grep your kernel tree for "MPC8323RDB Flash".
 
-I found this problem in 2.4 and forward ported it to 2.6. I
-cannot test it so I cannot be 100% sure I got it right.
+> How can I say to the kernel to use device tree instead of custom map of
+> flash?
 
- arch/powerpc/kernel/head_8xx.S |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Turn off that mapping driver, and turn on CONFIG_MTD_PHYSMAP_OF.  This 
+stuff was very new in 2.6.20, though, so there may be issues.  I'd 
+upgrade if you can.
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index ce327c5..91bef6e 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -542,11 +542,11 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
- FixupDAR:/* Entry point for dcbx workaround. */
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
-+	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
- 	DO_8xx_CPU6(0x3780, r3)
- 	mtspr	SPRN_MD_EPN, r10
- 	mfspr	r11, SPRN_M_TWB	/* Get level 1 table entry address */
--	cmplwi	cr0, r11, 0x0800
--	blt-	3f		/* Branch if user space */
-+	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
- 	rlwimi	r11, r10, 32-20, 0xffc /* r11 = r11&~0xffc|(r10>>20)&0xffc */
--- 
-1.6.4.4
+-Scott
