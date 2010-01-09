@@ -1,20 +1,20 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Subject: Re: "status" property checks
-From: Hollis Blanchard <hollis_blanchard@mentor.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20100108234614.GB2661@yookeroo>
-References: <1262905673.11702.16.camel@localhost.localdomain>
-	<1262918143.2716.8.camel@ccs-laptop>
-	<1262975655.31871.67.camel@localhost.localdomain>
-	<4B478747.8070009@freescale.com>
-	<1262979928.31871.81.camel@localhost.localdomain>
-	<20100108234614.GB2661@yookeroo>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 15:58:40 -0800
-Message-ID: <1262995120.31871.105.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, Hunter Cobbs <hunter.cobbs@gmail.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <fthain@mail.telegraphics.com.au>
+Received: from mail.telegraphics.com.au (www.telegraphics.com.au
+	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id 90C5D1007D1
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Jan 2010 14:22:26 +1100 (EST)
+Date: Sat, 9 Jan 2010 14:14:28 +1100 (EST)
+From: fthain@telegraphics.com.au
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver
+In-Reply-To: <10f740e81001081117s54c5dd9by4cc0490e0c57d67b@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1001091331560.17571@nippy.intranet>
+References: <alpine.OSX.2.00.0911171657290.371@silk.local>
+	<10f740e81001020443h78c615d2l206b99c386600108@mail.gmail.com>
+	<alpine.OSX.2.00.1001030255060.414@localhost>
+	<10f740e81001081117s54c5dd9by4cc0490e0c57d67b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-01-09 at 10:46 +1100, David Gibson wrote:
-> On Fri, Jan 08, 2010 at 11:45:28AM -0800, Hollis Blanchard wrote:
-> > On Fri, 2010-01-08 at 13:28 -0600, Scott Wood wrote:
-> > > Hollis Blanchard wrote:
-> > > > On Thu, 2010-01-07 at 20:35 -0600, Hunter Cobbs wrote:
-> > > >> I think that is definitely a solution.  It does centralize the tes=
-ting
-> > > >> for this particular issue.  The only thing question I have is if i=
-ts
-> > > >> really better to have the upper level do the check.  Shouldn't the
-> > > >> driver itself handle the hardware and device node status?
-> > > >=20
-> > > > Practically speaking, all drivers doing the checks today just retur=
-n
-> > > > -ENODEV. They don't try to do anything to "handle" the situation.
-> > > >=20
-> > > > The definition of the status property implies it's outside of softw=
-are's
-> > > > control, for example:
-> > > >         "disabled"
-> > > >         "Indicates that the device is not presently operational, bu=
-t it
-> > > >         might become operational in the future (for example, someth=
-ing
-> > > >         is not plugged in, or switched off)."
-> > > >=20
-> > > > If a device is "not operational" in this sense, I don't think there=
-'s
-> > > > anything for a device driver to do.
-> > >=20
-> > > I could see situations where there is some software action that could=
-=20
-> > > enable the device (e.g. multiple devices sharing pins, where only one=
-=20
-> > > can be active at a time) -- but it's likely to not be the driver itse=
-lf=20
-> > > that knows how to do that.
-> > >=20
-> > > If the need arises, there could be a mechanism where the enabling ent=
-ity=20
-> > > can tell the platform bus that it has enabled a previously-disabled=20
-> > > device, overriding the status in the device tree (and likewise if it=20
-> > > wants take down a device that was previously enabled).
-> >=20
-> > OK, that makes sense to me. I'll put together a patch for the original
-> > idea, and the enable/disable part can come later as needed.
->=20
-> Sounds good to me to.  Only thing I'd add, is that I'd also suggest a
-> helper function to do an explicit check on the status property (or do
-> we have that already?).  This could be useful for drivers which are
-> bound primarily to one device tree node, but also need to (possibly
-> optionally) check/use some other node.
 
-of_device_is_available() exists and is used already, so I think we're OK
-there.
 
---=20
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+On Fri, 8 Jan 2010, Geert Uytterhoeven wrote:
+
+> On Sat, Jan 2, 2010 at 17:39, Finn Thain <fthain@telegraphics.com.au> 
+> wrote:
+> > On Sat, 2 Jan 2010, Geert Uytterhoeven wrote:
+> >> On Tue, Nov 17, 2009 at 10:04, Finn Thain 
+> >> <fthain@telegraphics.com.au> wrote: BTW, there are a few other minor 
+> >> checkpatch issues with some of the other patches in the series, too.
+> >
+> > I ran checkpatch on all those patches before I submitted them. I 
+> > ignored some of the complaints about whitespace where I felt that 
+> > checkpatch got it wrong (space character following tab character, 
+> > IIRC).
+> >
+> > checkpatch found lots of mistakes that I did fix, but it can't 
+> > determine the most human readable style in all cases, especially where 
+> > consistency with the surrounding code is actually more conducive to 
+> > readability than strict but sporadic conformance to simple rules would 
+> > be.
+> 
+> It seems your editor adds spaces to lines that are continuations of the 
+> previous statement.
+
+I put in spaces after tabs for hard wrapped lines so that code always 
+renders properly regardless of the tab settings that might to be applied 
+by any editor, browser, word processor, mailer, tty discipline, publisher, 
+etc. that might stand between the human reader and the code.
+
+Documentation/CodingStyle says that those indented lines should be 
+"substantially to the right", but checkpatch doesn't conform and nor does 
+most kernel code. Some code does follow my preference, which is more 
+readable, and also happens to follow the example of the lisp code found in 
+the same style guide.
+
+But if you prefer no spaces after tabs, I can do that instead. I'm not 
+fussed.
+
+> I fixes them up and applied all your patches to linux-m68k.git.
+
+Thanks. I'll resend the patch to address your comments earlier in the 
+thread.
+
+Finn
+
+> The other warnings were indeed false positives or complains about
+> keeping consistency
+> with the surrounding code.
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
