@@ -1,20 +1,22 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de (bu3sch.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5083EB7BC3
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 05:16:14 +1100 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Allocator MAX_ORDER exceeds SECTION_SIZE
-Date: Sun, 10 Jan 2010 19:15:55 +0100
-References: <201001101431.10736.mb@bu3sch.de>
-In-Reply-To: <201001101431.10736.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <201001101915.57627.mb@bu3sch.de>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id B9F09B7C53
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 07:38:50 +1100 (EST)
+Subject: Re: PCI-PCI bridge scanning broken on 460EX
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Felix Radensky <felix@embedded-sol.com>
+In-Reply-To: <4B49CE8A.7000609@embedded-sol.com>
+References: <4B388D9D.7010404@embedded-sol.com>
+	<1262584539.2173.335.camel@pasglop> <4B41ADF1.1000400@embedded-sol.com>
+	<4B49CE8A.7000609@embedded-sol.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 11 Jan 2010 07:38:26 +1100
+Message-ID: <1263155906.724.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Feng Kan <fkan@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 10 January 2010 14:31:09 Michael Buesch wrote:
-> I get the following compilation failure, if 64k pages is selected
-> on 2.6.32.3 on a PowerMAC config:
-> 
-> include/linux/mmzone.h:947:2: error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
-> 
-> Any idea?
-> 
+On Sun, 2010-01-10 at 14:56 +0200, Felix Radensky wrote:
 
-Ok, I figured out that lowering CONFIG_FORCE_MAX_ZONEORDER from 13 to 9
-seems to fix the problem.
-That error message could really need some improvement and at least a hint on what to do and why.
+> I now have a custom board with 460EX and the same PLX bridge, running 
+> 2.6.23-rc3
+> Things look better here, as u-boot is now able to properly detect PLX 
+> and device behind
+> it, but kernel still has problems. First, I'm still getting hard reset on
+> 
+> pci_write_config_dword(dev, PCI_PRIMARY_BUS,
+>                                buses & ~0xffffff);
+> 
+> If this line is removed, PLX is detected twice, see below. I also get 
+> hard reset
+> if pass test is modified as you requested and broken test removed.
+> 
+> Any ideas how to fix this ? I was suspecting PLX evaluation board, but
+> PLX on our custom board seems to be OK, so it looks like kernel needs 
+> fixing.
 
-I'm also wondering, if the kconfig entry for CONFIG_FORCE_MAX_ZONEORDER could
-somehow be limited to 9, if 64k pages is enabled.
+I have no idea no. It looks like something is wrong with the PLX bridge
+but again, I don't know why that would cause the 460EX to hard reset
+like that, unless some of the PCIe error handling of the 460 has been
+configured to cause such a reset on some kind of errors (which it
+shouldn't at least not in host mode).
 
--- 
-Greetings, Michael.
+Can you try instead of writing all the bus number related registers in
+one single dword write above, writing them byte by byte ? Which one is
+causing the reset ? Does it reset whatever the value you write there
+is ?
+
+It looks like something is causing a hard reset as soon as you try to
+configure the PLX bridge and without configuring it properly I fail to
+see how you'll get things working.
+
+Cheers,
+Ben.
