@@ -1,25 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 902501007D3
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 07:53:52 +1100 (EST)
-Subject: Re: PCI-PCI bridge scanning broken on 460EX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <4B4B55CF.9000707@embedded-sol.com>
-References: <4B388D9D.7010404@embedded-sol.com>
-	<1262584539.2173.335.camel@pasglop>	<4B41ADF1.1000400@embedded-sol.com>
-	<4B49CE8A.7000609@embedded-sol.com>	<1263155906.724.2.camel@pasglop>
-	<4B4A4307.5050704@embedded-sol.com>	<1263159117.724.15.camel@pasglop>
-	<4CD35CD1F8085945B597F80EEC89421303B8AD0C@exc01.bk.prodrive.nl>
-	<4B4B1027.4020708@embedded-sol.com> <4B4B55CF.9000707@embedded-sol.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 07:53:19 +1100
-Message-ID: <1263243199.724.146.camel@pasglop>
-Mime-Version: 1.0
-Cc: Stef van Os <stef.van.os@Prodrive.nl>, Stefan Roese <sr@denx.de>,
-	Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 3EF3EB6ED0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jan 2010 08:21:09 +1100 (EST)
+Received: by yxe9 with SMTP id 9so10973157yxe.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 11 Jan 2010 13:21:06 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100111204302.B42B23F6DA@gemini.denx.de>
+References: <200912081339.50722.roman.fietze@telemotive.de>
+	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
+	<200912220755.09756.roman.fietze@telemotive.de>
+	<200912220759.23453.roman.fietze@telemotive.de>
+	<fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
+	<20100111204302.B42B23F6DA@gemini.denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 11 Jan 2010 14:20:46 -0700
+Message-ID: <fa686aa41001111320x53835478ie56d85a18e221631@mail.gmail.com>
+Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
+	structure
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Roman Fietze <roman.fietze@telemotive.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> It seems I was wrong. I've manually applied the patch at the wrong 
-> place. After patching the correct function
-> I'm not getting hard resets any more, which is a great improvement ! 
-> Thanks a lot, I really appreciate your help !
+On Mon, Jan 11, 2010 at 1:43 PM, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Grant,
+>
+> In message <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com> =
+you wrote:
+>>
+>> Please don't. =A0I know that a lot of other 5200 code uses register map
+>> structures in this way, but I consider it bad practice. =A0I coded this
+>
+> May I ask _why_ you consider this bad practice?
 
-This is somewhat funny... I wonder how it would have managed to find
-anything behind the root complex P2P bridge with broken type 1 cycles...
-very very strange.
+Many reasons.  First off, while C structures somewhat represent the
+layout of a hardware register set, I still find them a poor fit.
+Registers do not data structures, and trying to describe them as such
+causes problems.  Not all devices get mapped onto the bus in the same
+way.  ie. a single device can get wired up with 8-bit wide addressing
+on one system and 32 wide on another.  A struct cannot encode this.  I
+also find I often need to access registers at "none-native" widths due
+to implementation details of the device which is made messy when the
+layout is encoded in a C struct.  Finally, we're talking about a
+hardware interface here.  Driver authors must understand exactly what
+they are doing when writing to registers and it is my opinion (though
+others may disagree with me) that using structs to describe register
+maps encourages a glosses over details that are best left explicit.
 
-> Unfortunately not all problems are gone. PLX is now identified 
-> correctly, but device behind it is not detected,
-> although u-boot detects it correctly. See below.
+I used to prefer C structs for register definitions, but my opinion
+changed as I gained more experience.
 
-You have removed all your changes to that code right ?
+> Is a structure not the most natural way to encode the specifics of a
+> hardware interface (address offet, bus width, etc.) in C?
+>
+> What do you recommend instead? =A0Using lists of register offsets
+> (without any type information) as for example ARM is doing?
 
-Also the log still looks weird:
+Yes, that is what I prefer.  That and, when needed, device-specific
+accessor functions that can be adapted for different bus attachements.
 
-> pci 0000:01:02.0: scanning behind bridge, config 010100, pass 0
-> pci 0000:01:02.0: bus configuration invalid, reconfiguring
-> pci 0000:01:02.0: scanning behind bridge, config 010100, pass 1
-> pci_bus 0000:01: bus scan returning with max=01
-> pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
-> pci_bus 0000:00: bus scan returning with max=01
+>> driver without a structure for a reason. =A0The reason I haven't removed
+>
+> Could you please explain this reason?
 
-Unless you left some experimental changes in, the above isn't right, the
-"config" value should have changed due to the write of ~ffffff to it
+As described above.
 
-If the code running is indeed unmodified from upsteam, can you try with
-just that change:
+> I'm trying to understand if this is a MPC52xx specific reasoning, or
+> if you apply this to all of PowerPC, or generally to all kernel code?
 
-        /* Check if setup is sensible at all */
--        if (!pass &&
--            ((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
-+        if (((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
-                 dev_dbg(&dev->dev, "bus configuration invalid, reconfiguring\n");
-                 broken = 1;
-         }
+I've stated what I prefer.  I don't think I've rejected any code that
+uses structs over register offsets, but I do apply friction on any
+patch that changes a current driver from one to the other without
+need.
 
-(IE remove the check for !pass)
+> And: is this just your personal preferences, or generally agreed on?
 
-Cheers,
-Ben.
+Others will need to answer that.
 
-> pci 0000:00:02.0: disabling bridge window [mem 0xd80000000-0xd8c0fffff] 
-> to [bus 01-01] (unused)
-> pci 0000:00:02.0: PCI bridge to [bus 01-01]
-> pci 0000:00:02.0:   bridge window [io  disabled]
-> pci 0000:00:02.0:   bridge window [mem disabled]
-> pci 0000:00:02.0:   bridge window [mem pref disabled]
-> pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
-> pci_bus 0000:00: resource 1 [mem 0xd80000000-0xdffffffff]
-> pci_bus 0000:01: resource 1 [??? 57982058496-58184433663 flags 0x0]
-> 
-> Any ideas what could be wrong now ?
-> 
-> Thanks a lot.
-> 
-> Felix.
-> 
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
