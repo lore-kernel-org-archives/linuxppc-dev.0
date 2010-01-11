@@ -1,22 +1,21 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5AB3C1007D1
+	by ozlabs.org (Postfix) with ESMTP id AF183B7C15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 07:43:05 +1100 (EST)
+	Tue, 12 Jan 2010 07:50:26 +1100 (EST)
 To: Grant Likely <grant.likely@secretlab.ca>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
-	structure
+Subject: Re: [PATCH 03/13] mpc52xx: add SCLPC register bit definitions
 MIME-Version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
+In-reply-to: <fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com>
 References: <200912081339.50722.roman.fietze@telemotive.de>
 	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
 	<200912220755.09756.roman.fietze@telemotive.de>
-	<200912220759.23453.roman.fietze@telemotive.de>
-	<fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
-Date: Mon, 11 Jan 2010 21:43:02 +0100
-Message-Id: <20100111204302.B42B23F6DA@gemini.denx.de>
+	<200912220800.54373.roman.fietze@telemotive.de>
+	<fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com>
+Date: Mon, 11 Jan 2010 21:50:25 +0100
+Message-Id: <20100111205025.0C96E3F6DA@gemini.denx.de>
 Cc: linuxppc-dev@lists.ozlabs.org, Roman Fietze <roman.fietze@telemotive.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,33 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Grant,
+Dear Grant Likely,
 
-In message <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com> you wrote:
+In message <fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com> you wrote:
+>
+> >  /* mpc52xx_lpbfifo.c */
+> >  #define MPC52XX_LPBFIFO_FLAG_READ              (0)
+> > -#define MPC52XX_LPBFIFO_FLAG_WRITE             (1<<0)
+> > -#define MPC52XX_LPBFIFO_FLAG_NO_INCREMENT      (1<<1)
+> > -#define MPC52XX_LPBFIFO_FLAG_NO_DMA            (1<<2)
+> > -#define MPC52XX_LPBFIFO_FLAG_POLL_DMA          (1<<3)
+> > +#define MPC52XX_LPBFIFO_FLAG_WRITE             BIT(0)
+> > +#define MPC52XX_LPBFIFO_FLAG_NO_INCREMENT      BIT(1)
+> > +#define MPC52XX_LPBFIFO_FLAG_NO_DMA            BIT(2)
+> > +#define MPC52XX_LPBFIFO_FLAG_POLL_DMA          BIT(3)
 > 
-> Please don't.  I know that a lot of other 5200 code uses register map
-> structures in this way, but I consider it bad practice.  I coded this
+> I prefer the (1<<n) style myself.
 
-May I ask _why_ you consider this bad practice?
-
-Is a structure not the most natural way to encode the specifics of a
-hardware interface (address offet, bus width, etc.) in C?
-
-What do you recommend instead?  Using lists of register offsets
-(without any type information) as for example ARM is doing?
-
-> driver without a structure for a reason.  The reason I haven't removed
-
-Could you please explain this reason?
-
-
-I'm trying to understand if this is a MPC52xx specific reasoning, or
-if you apply this to all of PowerPC, or generally to all kernel code?
-
-And: is this just your personal preferences, or generally agreed on?
-
-Thanks in advance, and sorry for asking stupid questions, but your
-reply surprised me...
+Indeed, especially as one can argue that "(1<<0)" should be "BIT(31)"
+on Power Architecture systems, where bit 0 is the MSB by definition.
 
 Best regards,
 
@@ -63,5 +54,5 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Gods don't like people not doing much work. People  who  aren't  busy
-all the time might start to _think_.  - Terry Pratchett, _Small Gods_
+Do not simplify the design of a program if a way can be found to make
+it complex and wonderful.
