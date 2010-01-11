@@ -1,18 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 17C0FB6EEA
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 21:57:30 +1100 (EST)
-Date: Mon, 11 Jan 2010 13:57:29 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCHv2] spi_mpc8xxx: fix WARN_ON on remove after 4c1fba44296
-Message-ID: <20100111105729.GA1259@oksana.dev.rtsoft.ru>
-References: <1262859837-11311-1-git-send-email-jacmet@sunsite.dk>
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CC495B7C09
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 22:49:08 +1100 (EST)
+Message-ID: <4B4B1027.4020708@embedded-sol.com>
+Date: Mon, 11 Jan 2010 13:48:55 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1262859837-11311-1-git-send-email-jacmet@sunsite.dk>
-Cc: linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net
-Reply-To: avorontsov@ru.mvista.com
+To: Stef van Os <stef.van.os@Prodrive.nl>
+Subject: Re: PCI-PCI bridge scanning broken on 460EX
+References: <4B388D9D.7010404@embedded-sol.com><1262584539.2173.335.camel@pasglop>	<4B41ADF1.1000400@embedded-sol.com><4B49CE8A.7000609@embedded-sol.com>	<1263155906.724.2.camel@pasglop><4B4A4307.5050704@embedded-sol.com>	<1263159117.724.15.camel@pasglop>
+	<4CD35CD1F8085945B597F80EEC89421303B8AD0C@exc01.bk.prodrive.nl>
+In-Reply-To: <4CD35CD1F8085945B597F80EEC89421303B8AD0C@exc01.bk.prodrive.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stefan Roese <sr@denx.de>, Feng Kan <fkan@amcc.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,47 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 07, 2010 at 11:23:57AM +0100, Peter Korsgaard wrote:
-> Commit 4c1fba44296 (Add support for QE DMA mode and CPM1/CPM2 chips)
-> added unconditional calls to _cpm_init() / _cpm_free() from
-> probe()/remove(), but only checked if we're actually using CPM mode
-> in _init(), causing the WARN_ON in mpc8xxx_spi_free_dummy_rx() for !CPM.
-> 
-> Fix it by adding the same check in _cpm_free() as well.
-> 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Hi Stef,
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Stef van Os wrote:
+> Hello Felix,
+>
+> I had a problem similar to this on the 440GX, the PCI code was not
+> sending type 1 transactions when scanning behind bridges. Perhaps you
+> could try this:
+>
+> Index: linux/arch/powerpc/sysdev/ppc4xx_pci.c
+> ===================================================================
+> --- linux/arch/powerpc/sysdev/ppc4xx_pci.c      (revision 26)
+> +++ linux/arch/powerpc/sysdev/ppc4xx_pci.c      (revision 27)
+> @@ -569,7 +569,7 @@
+>         hose->last_busno = bus_range ? bus_range[1] : 0xff;
+>
+>         /* Setup config space */
+> -       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
+> 0);
+> +       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
+> PPC_INDIRECT_TYPE_SET_CFG_TYPE);
+>
+>         /* Disable all windows */
+>         writel(0, reg + PCIX0_POM0SA);
+>
+>
+>
+> With kind regards / Met vriendelijke groet,
+>
+> Stef van Os
+>
+> Prodrive B.V. 
+>
+>
+>   
 
-Grant, can you please push it for 2.6.33?
+I think you patch is a valid one, and should be applied, but 
+unfortunately it doesn't fix by problem.
+BTW, in u-boot transaction type bit is set correctly.
 
-Thanks!
-
-> ---
->  drivers/spi/spi_mpc8xxx.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> Changes since v1:
-> Fix return statement, mpc8xxx_spi_cpm_free() has void return type.
-> diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
-> index 1fb2a6e..674e7a2 100644
-> --- a/drivers/spi/spi_mpc8xxx.c
-> +++ b/drivers/spi/spi_mpc8xxx.c
-> @@ -946,6 +946,9 @@ static void mpc8xxx_spi_cpm_free(struct mpc8xxx_spi *mspi)
->  {
->  	struct device *dev = mspi->dev;
->  
-> +	if (!(mspi->flags & SPI_CPM_MODE))
-> +		return;
-> +
->  	dma_unmap_single(dev, mspi->dma_dummy_rx, SPI_MRBLR, DMA_FROM_DEVICE);
->  	dma_unmap_single(dev, mspi->dma_dummy_tx, PAGE_SIZE, DMA_TO_DEVICE);
->  	cpm_muram_free(cpm_muram_offset(mspi->tx_bd));
-> -- 
-> 1.6.5
-> 
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Felix.
