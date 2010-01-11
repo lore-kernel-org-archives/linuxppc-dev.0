@@ -1,14 +1,14 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
+Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 48D1DB8098
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:26:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 245C2B8BBF
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:26:23 +1100 (EST)
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 7/8] powerpc/86xx: Enable VME driver on the GE PPC9A
+Subject: [PATCH 8/8] powerpc/86xx: Enable VME driver on the GE SBC610
 To: galak@kernel.crashing.org
-Date: Mon, 11 Jan 2010 12:23:50 +0000
-Message-ID: <20100111122350.8306.41770.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Date: Mon, 11 Jan 2010 12:23:56 +0000
+Message-ID: <20100111122356.8306.9253.stgit@ES-J7S4D2J.amer.consind.ge.com>
 In-Reply-To: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
 References: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
 MIME-Version: 1.0
@@ -23,19 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the VME driver (which is currently in staging) on the PPC9A
+Enable the VME driver (which is currently in staging) on the SBC610.
 
 Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
 
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig |   47 ++++++++++++++++++++++++-
- 1 files changed, 46 insertions(+), 1 deletions(-)
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |   39 +++++++++++++++++++++++-
+ 1 files changed, 38 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-index 6cd2cd6..1a37b69 100644
---- a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-+++ b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
-@@ -1499,7 +1499,52 @@ CONFIG_RTC_DRV_RX8581=y
+diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+index 4912602..37adfb6 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+@@ -1600,7 +1600,44 @@ CONFIG_RTC_DRV_RX8581=y
  #
  # TI VLYNQ
  #
@@ -63,23 +63,15 @@ index 6cd2cd6..1a37b69 100644
 +# CONFIG_IDE_PHISON is not set
 +# CONFIG_PLAN9AUTH is not set
 +# CONFIG_HECI is not set
++# CONFIG_VT6655 is not set
 +# CONFIG_USB_CPC is not set
-+
-+#
-+# Qualcomm MSM Camera And Video
-+#
-+
-+#
-+# Camera Sensor Selection
-+#
-+# CONFIG_HYPERV_STORAGE is not set
-+# CONFIG_HYPERV_BLOCK is not set
-+# CONFIG_HYPERV_NET is not set
++# CONFIG_RDC_17F3101X is not set
 +CONFIG_VME_BUS=y
 +
 +#
 +# VME Bridge Drivers
 +#
++# CONFIG_VME_CA91CX42 is not set
 +CONFIG_VME_TSI148=y
 +
 +#
