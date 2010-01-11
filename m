@@ -1,28 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 3EF3EB6ED0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 08:21:09 +1100 (EST)
-Received: by yxe9 with SMTP id 9so10973157yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Jan 2010 13:21:06 -0800 (PST)
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B560AB7C27
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 09:48:28 +1100 (EST)
+Message-ID: <4B4BAAC0.4010300@embedded-sol.com>
+Date: Tue, 12 Jan 2010 00:48:32 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100111204302.B42B23F6DA@gemini.denx.de>
-References: <200912081339.50722.roman.fietze@telemotive.de>
-	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
-	<200912220755.09756.roman.fietze@telemotive.de>
-	<200912220759.23453.roman.fietze@telemotive.de>
-	<fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
-	<20100111204302.B42B23F6DA@gemini.denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 11 Jan 2010 14:20:46 -0700
-Message-ID: <fa686aa41001111320x53835478ie56d85a18e221631@mail.gmail.com>
-Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
-	structure
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Roman Fietze <roman.fietze@telemotive.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI-PCI bridge scanning broken on 460EX
+References: <4B388D9D.7010404@embedded-sol.com>	
+	<1262584539.2173.335.camel@pasglop>	<4B41ADF1.1000400@embedded-sol.com>	
+	<4B49CE8A.7000609@embedded-sol.com>	<1263155906.724.2.camel@pasglop>	
+	<4B4A4307.5050704@embedded-sol.com>	<1263159117.724.15.camel@pasglop>	
+	<4CD35CD1F8085945B597F80EEC89421303B8AD0C@exc01.bk.prodrive.nl>	
+	<4B4B1027.4020708@embedded-sol.com>
+	<4B4B55CF.9000707@embedded-sol.com>
+	<1263243199.724.146.camel@pasglop>
+In-Reply-To: <1263243199.724.146.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Stef van Os <stef.van.os@Prodrive.nl>, Stefan Roese <sr@denx.de>,
+	Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 11, 2010 at 1:43 PM, Wolfgang Denk <wd@denx.de> wrote:
-> Dear Grant,
+Hi, Ben
+
+Benjamin Herrenschmidt wrote:
+>> It seems I was wrong. I've manually applied the patch at the wrong 
+>> place. After patching the correct function
+>> I'm not getting hard resets any more, which is a great improvement ! 
+>> Thanks a lot, I really appreciate your help !
+>>     
 >
-> In message <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com> =
-you wrote:
->>
->> Please don't. =A0I know that a lot of other 5200 code uses register map
->> structures in this way, but I consider it bad practice. =A0I coded this
+> This is somewhat funny... I wonder how it would have managed to find
+> anything behind the root complex P2P bridge with broken type 1 cycles...
+> very very strange.
+>   
+
+Maybe because the bus behind root P2P bridge is bus 0, and type 1 cycles are
+needed for bus numbers greater than 0. That's what 460EX manual says.
+>   
+>> Unfortunately not all problems are gone. PLX is now identified 
+>> correctly, but device behind it is not detected,
+>> although u-boot detects it correctly. See below.
+>>     
 >
-> May I ask _why_ you consider this bad practice?
+> You have removed all your changes to that code right ?
+>   
 
-Many reasons.  First off, while C structures somewhat represent the
-layout of a hardware register set, I still find them a poor fit.
-Registers do not data structures, and trying to describe them as such
-causes problems.  Not all devices get mapped onto the bus in the same
-way.  ie. a single device can get wired up with 8-bit wide addressing
-on one system and 32 wide on another.  A struct cannot encode this.  I
-also find I often need to access registers at "none-native" widths due
-to implementation details of the device which is made messy when the
-layout is encoded in a C struct.  Finally, we're talking about a
-hardware interface here.  Driver authors must understand exactly what
-they are doing when writing to registers and it is my opinion (though
-others may disagree with me) that using structs to describe register
-maps encourages a glosses over details that are best left explicit.
+Yes, I've removed all experimental changes.
 
-I used to prefer C structs for register definitions, but my opinion
-changed as I gained more experience.
-
-> Is a structure not the most natural way to encode the specifics of a
-> hardware interface (address offet, bus width, etc.) in C?
+> Also the log still looks weird:
 >
-> What do you recommend instead? =A0Using lists of register offsets
-> (without any type information) as for example ARM is doing?
-
-Yes, that is what I prefer.  That and, when needed, device-specific
-accessor functions that can be adapted for different bus attachements.
-
->> driver without a structure for a reason. =A0The reason I haven't removed
+>   
+>> pci 0000:01:02.0: scanning behind bridge, config 010100, pass 0
+>> pci 0000:01:02.0: bus configuration invalid, reconfiguring
+>> pci 0000:01:02.0: scanning behind bridge, config 010100, pass 1
+>> pci_bus 0000:01: bus scan returning with max=01
+>> pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
+>> pci_bus 0000:00: bus scan returning with max=01
+>>     
 >
-> Could you please explain this reason?
+> Unless you left some experimental changes in, the above isn't right, the
+> "config" value should have changed due to the write of ~ffffff to it
+>   
 
-As described above.
+You are correct, the log is from older version, without Stef's fix. I 
+don't have access to a
+system with devices behind PLX, and the guy who did the testing used 
+wrong kernel.
+I'll make sure he uses the correct one and get back to you. Maybe 
+everything works after all :)
+I'm really sorry for confusion.
 
-> I'm trying to understand if this is a MPC52xx specific reasoning, or
-> if you apply this to all of PowerPC, or generally to all kernel code?
-
-I've stated what I prefer.  I don't think I've rejected any code that
-uses structs over register offsets, but I do apply friction on any
-patch that changes a current driver from one to the other without
-need.
-
-> And: is this just your personal preferences, or generally agreed on?
-
-Others will need to answer that.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Felix.
