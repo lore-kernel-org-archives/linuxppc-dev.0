@@ -1,33 +1,22 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2CB92B7C14
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 00:02:49 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0BCxXMO027552
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:59:33 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0BCwKUx1634362
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:58:20 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0BD2l3R028842
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 00:02:48 +1100
-Date: Mon, 11 Jan 2010 18:32:10 +0530
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH -tip tracing/kprobes v2] Powerpc port of the kprobe-based
-	event tracer
-Message-ID: <20100111130210.GA31980@in.ibm.com>
-References: <20100111125952.604518521@mars.in.ibm.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id BC242B7B6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 03:29:03 +1100 (EST)
+Date: Mon, 11 Jan 2010 08:29:00 -0800
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Dudhat Dipen-B09055 <B09055@freescale.com>
+Subject: Re: fsldma: cleanup driver and fix async_tx compatibility
+Message-ID: <20100111162900.GA10110@ovro.caltech.edu>
+References: <1262326246-936-1-git-send-email-iws@ovro.caltech.edu>
+	<0949C49693EF1A47A54B0F0113CDB4A6076CEE@zin33exm23.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Michael Neuling <mikey@neuling.org>,
-	Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com,
-	Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <0949C49693EF1A47A54B0F0113CDB4A6076CEE@zin33exm23.fsl.freescale.net>
+Cc: herbert@gondor.apana.org.au, Suresh Vishnu-B05022 <B05022@freescale.com>,
+	Tabi Timur-B04825 <B04825@freescale.com>,
+	linuxppc-dev@ozlabs.org, dan.j.williams@intel.com,
+	Gupta Maneesh-B18878 <B18878@freescale.com>,
+	Li Yang-R58472 <R58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,250 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch ports the kprobe-based event tracer to powerpc. This patch
-is based in x86 port. This brings powerpc on par with x86.
+On Mon, Jan 11, 2010 at 11:17:04AM +0530, Dudhat Dipen-B09055 wrote:
+> 
+> Hi Ira,
+> 
+> I have tested your patches with async DMA memcpy support. Though I
+> haven't captured the improvement figures.
+> It works fine for RAID5 memcpy offload as interrupts are coming for
+> separate DMA channels while I have ran IOZONE onto RAID partition.
+> 
 
-ChangeLog - v2:
-- Removed regs_get_argument_nth() API as function argument access syntax
-  is dropped from kprobe-tracer. Please refer to patches below on Linux PPC
-  mailing list:
-  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079331.html
-  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079332.html
-- Rebased to commit f61d6b1dcb06d62bc20d40e51c7a1e80275a80ab of -tip
+Excellent, thanks for running these tests. I'm glad to hear that the
+RAID offload is working now.
 
-This patch is dependent on following patch:
-  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079331.html
+You shouldn't notice any difference in performance. On a 32MB memcpy
+operation, broken into 32x 1MB memcpy(), 1x interrupt(), I noticed less
+than 0.1% difference (approx 100,000 ns / 0.1ms). This is probably at or
+near the limits of my measurement accuracy.
 
-Port the following API's to ppc for accessing registers and stack entries
-from pt_regs.
-
-- regs_query_register_offset(const char *name)
-   Query the offset of "name" register.
-
-- regs_query_register_name(unsigned int offset)
-   Query the name of register by its offset.
-
-- regs_get_register(struct pt_regs *regs, unsigned int offset)
-   Get the value of a register by its offset.
-
-- regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
-   Check the address is in the kernel stack.
-
-- regs_get_kernel_stack_nth(struct pt_regs *reg, unsigned int nth)
-   Get Nth entry of the kernel stack. (N >= 0)
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
----
-
- arch/powerpc/include/asm/ptrace.h |   61 ++++++++++++++++++++++
- arch/powerpc/kernel/ptrace.c      |  102 +++++++++++++++++++++++++++++++++++++
- kernel/trace/Kconfig              |    2 -
- 3 files changed, 164 insertions(+), 1 deletions(-)
+Ira
 
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index cbd759e..cb2eeda 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -83,6 +83,7 @@ struct pt_regs {
- 
- #define instruction_pointer(regs) ((regs)->nip)
- #define user_stack_pointer(regs) ((regs)->gpr[1])
-+#define kernel_stack_pointer(regs) ((regs)->gpr[1])
- #define regs_return_value(regs) ((regs)->gpr[3])
- 
- #ifdef CONFIG_SMP
-@@ -131,6 +132,66 @@ do {									      \
- } while (0)
- #endif /* __powerpc64__ */
- 
-+/* Query offset/name of register from its name/offset */
-+#include <linux/stddef.h>
-+#include <linux/thread_info.h>
-+extern int regs_query_register_offset(const char *name);
-+extern const char *regs_query_register_name(unsigned int offset);
-+#define MAX_REG_OFFSET (offsetof(struct pt_regs, result))
-+
-+/**
-+ * regs_get_register() - get register value from its offset
-+ * @regs:	   pt_regs from which register value is gotten
-+ * @offset:    offset number of the register.
-+ *
-+ * regs_get_register returns the value of a register whose offset from @regs.
-+ * The @offset is the offset of the register in struct pt_regs.
-+ * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
-+ */
-+static inline unsigned long regs_get_register(struct pt_regs *regs,
-+						unsigned int offset)
-+{
-+	if (unlikely(offset > MAX_REG_OFFSET))
-+		return 0;
-+	return *(unsigned long *)((unsigned long)regs + offset);
-+}
-+
-+/**
-+ * regs_within_kernel_stack() - check the address in the stack
-+ * @regs:      pt_regs which contains kernel stack pointer.
-+ * @addr:      address which is checked.
-+ *
-+ * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
-+ * If @addr is within the kernel stack, it returns true. If not, returns false.
-+ */
-+
-+static inline bool regs_within_kernel_stack(struct pt_regs *regs,
-+						unsigned long addr)
-+{
-+	return ((addr & ~(THREAD_SIZE - 1))  ==
-+		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
-+}
-+
-+/**
-+ * regs_get_kernel_stack_nth() - get Nth entry of the stack
-+ * @regs:	pt_regs which contains kernel stack pointer.
-+ * @n:		stack entry number.
-+ *
-+ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-+ * is specified by @regs. If the @n th entry is NOT in the kernel stack,
-+ * this returns 0.
-+ */
-+static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
-+						      unsigned int n)
-+{
-+	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
-+	addr += n;
-+	if (regs_within_kernel_stack(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
-+}
-+
- /*
-  * These are defined as per linux/ptrace.h, which see.
-  */
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index ef14988..e816aba 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -39,6 +39,108 @@
- #include <asm/system.h>
- 
- /*
-+ * The parameter save area on the stack is used to store arguments being passed
-+ * to callee function and is located at fixed offset from stack pointer.
-+ */
-+#ifdef CONFIG_PPC32
-+#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
-+#else /* CONFIG_PPC32 */
-+#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
-+#endif
-+
-+struct pt_regs_offset {
-+	const char *name;
-+	int offset;
-+};
-+
-+#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-+#define REG_OFFSET_END {.name = NULL, .offset = 0}
-+
-+static const struct pt_regs_offset regoffset_table[] = {
-+	REG_OFFSET_NAME(gpr[0]),
-+	REG_OFFSET_NAME(gpr[1]),
-+	REG_OFFSET_NAME(gpr[2]),
-+	REG_OFFSET_NAME(gpr[3]),
-+	REG_OFFSET_NAME(gpr[4]),
-+	REG_OFFSET_NAME(gpr[5]),
-+	REG_OFFSET_NAME(gpr[6]),
-+	REG_OFFSET_NAME(gpr[7]),
-+	REG_OFFSET_NAME(gpr[8]),
-+	REG_OFFSET_NAME(gpr[9]),
-+	REG_OFFSET_NAME(gpr[10]),
-+	REG_OFFSET_NAME(gpr[11]),
-+	REG_OFFSET_NAME(gpr[12]),
-+	REG_OFFSET_NAME(gpr[13]),
-+	REG_OFFSET_NAME(gpr[14]),
-+	REG_OFFSET_NAME(gpr[15]),
-+	REG_OFFSET_NAME(gpr[16]),
-+	REG_OFFSET_NAME(gpr[17]),
-+	REG_OFFSET_NAME(gpr[18]),
-+	REG_OFFSET_NAME(gpr[19]),
-+	REG_OFFSET_NAME(gpr[20]),
-+	REG_OFFSET_NAME(gpr[21]),
-+	REG_OFFSET_NAME(gpr[22]),
-+	REG_OFFSET_NAME(gpr[23]),
-+	REG_OFFSET_NAME(gpr[24]),
-+	REG_OFFSET_NAME(gpr[25]),
-+	REG_OFFSET_NAME(gpr[26]),
-+	REG_OFFSET_NAME(gpr[27]),
-+	REG_OFFSET_NAME(gpr[28]),
-+	REG_OFFSET_NAME(gpr[29]),
-+	REG_OFFSET_NAME(gpr[30]),
-+	REG_OFFSET_NAME(gpr[31]),
-+	REG_OFFSET_NAME(nip),
-+	REG_OFFSET_NAME(msr),
-+	REG_OFFSET_NAME(orig_gpr3),
-+	REG_OFFSET_NAME(ctr),
-+	REG_OFFSET_NAME(link),
-+	REG_OFFSET_NAME(xer),
-+	REG_OFFSET_NAME(ccr),
-+#ifdef CONFIG_PPC64
-+	REG_OFFSET_NAME(softe),
-+#else
-+	REG_OFFSET_NAME(mq),
-+#endif
-+	REG_OFFSET_NAME(trap),
-+	REG_OFFSET_NAME(dar),
-+	REG_OFFSET_NAME(dsisr),
-+	REG_OFFSET_NAME(result),
-+	REG_OFFSET_END,
-+};
-+
-+/**
-+ * regs_query_register_offset() - query register offset from its name
-+ * @name:	the name of a register
-+ *
-+ * regs_query_register_offset() returns the offset of a register in struct
-+ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
-+ */
-+int regs_query_register_offset(const char *name)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->offset;
-+	return -EINVAL;
-+}
-+
-+/**
-+ * regs_query_register_name() - query register name from its offset
-+ * @offset:	the offset of a register in struct pt_regs.
-+ *
-+ * regs_query_register_name() returns the name of a register from its
-+ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
-+ */
-+const char *regs_query_register_name(unsigned int offset)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (roff->offset == offset)
-+			return roff->name;
-+	return NULL;
-+}
-+
-+/*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
-  */
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 6c22d8a..4d95966 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -451,7 +451,7 @@ config BLK_DEV_IO_TRACE
- 
- config KPROBE_EVENT
- 	depends on KPROBES
--	depends on X86
-+	depends on X86 || PPC
- 	bool "Enable kprobes-based dynamic events"
- 	select TRACING
- 	default y
+> Regards,
+>  Dipen
+>  
+> 
+> -----Original Message-----
+> From: Dudhat Dipen-B09055 
+> Sent: Tuesday, January 05, 2010 11:38 AM
+> To: 'Ira W. Snyder'; dan.j.williams@intel.com
+> Cc: galak@kernel.crashing.org; herbert@gondor.apana.org.au; Tabi
+> Timur-B04825; linuxppc-dev@ozlabs.org; Suresh Vishnu-B05022; Gupta
+> Maneesh-B18878; Li Yang-R58472
+> Subject: RE: fsldma: cleanup driver and fix async_tx compatibility
+> 
+> 
+> Hi Ira,
+> 
+> I will test it on 85xx hardware and let you know once done.
+> 
+> Thanks
+> Dipen
+>  
+> 
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Friday, January 01, 2010 11:41 AM
+> To: dan.j.williams@intel.com
+> Cc: galak@kernel.crashing.org; herbert@gondor.apana.org.au; Tabi
+> Timur-B04825; linuxppc-dev@ozlabs.org; Suresh Vishnu-B05022; Dudhat
+> Dipen-B09055; Gupta Maneesh-B18878; Li Yang-R58472
+> Subject: fsldma: cleanup driver and fix async_tx compatibility
+> 
+> This patch series cleans up the Freescale DMAEngine driver, including
+> verifying the locking and making sure that all code paths are correct.
+> There were a few places that seemed suspicious, and they have been
+> fixed.
+> 
+> I have written a quick memory->memory DMAEngine test driver, and the
+> performance is identical before and after my changes (<0.1% change). I
+> measured both setting up the DMA operation (via
+> device_prep_dma_interrupt() and device_prep_dma_memcpy()) and the actual
+> DMA transfer itself.
+> 
+> As an added bonus, the interrupt load is measurably reduced. My test
+> driver transfers 32MB as 32x 1MB chunks + 1 interrupt descriptor, using
+> the functions noted above. Previous to this patch series, 31 interrupts
+> were generated. After this patch series, only a single interrupt is
+> generated for the whole transaction.
+> 
+> Some testing on 85xx/86xx hardware would be appreciated. Also, some
+> testing by the users attempting to use async_tx and talitos to handle
+> RAID offload would be great as well.
+> 
+>  Documentation/powerpc/dts-bindings/fsl/dma.txt |   17 +-
+>  drivers/dma/fsldma.c                           | 1036
+> ++++++++++++------------
+>  drivers/dma/fsldma.h                           |   35 +-
+>  3 files changed, 556 insertions(+), 532 deletions(-)
+> 
+> Thanks,
+> Ira
+> 
