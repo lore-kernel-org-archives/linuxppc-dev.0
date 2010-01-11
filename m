@@ -1,23 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
-	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id 2F530B7BF4
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id E00B1B7C0C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 06:06:30 +1100 (EST)
-Received: by ywh39 with SMTP id 39so20225708ywh.17
+	Tue, 12 Jan 2010 06:16:22 +1100 (EST)
+Received: by gxk28 with SMTP id 28so14779633gxk.9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Jan 2010 11:06:28 -0800 (PST)
+	Mon, 11 Jan 2010 11:16:20 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <200912220757.44591.roman.fietze@telemotive.de>
+In-Reply-To: <200912220759.23453.roman.fietze@telemotive.de>
 References: <200912081339.50722.roman.fietze@telemotive.de>
 	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
 	<200912220755.09756.roman.fietze@telemotive.de>
-	<200912220757.44591.roman.fietze@telemotive.de>
+	<200912220759.23453.roman.fietze@telemotive.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 11 Jan 2010 12:06:08 -0700
-Message-ID: <fa686aa41001111106w1548ea04pd20e12b31d3dac65@mail.gmail.com>
-Subject: Re: [PATCH 01/13] powerpc/5200: LocalPlus driver: fix indentation and
-	white space
+Date: Mon, 11 Jan 2010 12:15:58 -0700
+Message-ID: <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
+Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
+	structure
 To: Roman Fietze <roman.fietze@telemotive.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -30,53 +30,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Roman.
-
-I'm finally getting some time to look at these with a bit more detail.
-
-On Mon, Dec 21, 2009 at 11:57 PM, Roman Fietze
+On Mon, Dec 21, 2009 at 11:59 PM, Roman Fietze
 <roman.fietze@telemotive.de> wrote:
->
+
+No patch description?  Very few patches are sufficiently described by
+the subject line alone.  Tell me what the problem is, what the patch
+changes, and why.
+
 > Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
 > ---
-> =A0arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c | =A0 18 +++++++++------=
----
-> =A01 files changed, 9 insertions(+), 9 deletions(-)
+> =A0arch/powerpc/include/asm/mpc52xx.h =A0 =A0 =A0 =A0 =A0 =A0| =A0 24 +++=
++++++
+> =A0arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c | =A0 79 +++++++++++----=
+----------
+> =A02 files changed, 59 insertions(+), 44 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc=
-/platforms/52xx/mpc52xx_lpbfifo.c
-> index 929d017..4c84aa5 100644
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-> @@ -165,7 +165,7 @@ static void mpc52xx_lpbfifo_kick(struct mpc52xx_lpbfi=
-fo_request *req)
+> diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/as=
+m/mpc52xx.h
+> index b664ce7..57f8335 100644
+> --- a/arch/powerpc/include/asm/mpc52xx.h
+> +++ b/arch/powerpc/include/asm/mpc52xx.h
+> @@ -193,6 +193,30 @@ struct mpc52xx_xlb {
+> =A0#define MPC52xx_XLB_CFG_PLDIS =A0 =A0 =A0 =A0 =A0(1 << 31)
+> =A0#define MPC52xx_XLB_CFG_SNOOP =A0 =A0 =A0 =A0 =A0(1 << 15)
 >
-> =A0 =A0 =A0 =A0bit_fields =3D req->cs << 24 | 0x000008;
-> =A0 =A0 =A0 =A0if (!write)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 bit_fields |=3D 0x010000; /* read mode */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 bit_fields |=3D 0x010000; /* read mode */
-> =A0 =A0 =A0 =A0out_be32(lpbfifo.regs + LPBFIFO_REG_CONTROL, bit_fields);
->
-> =A0 =A0 =A0 =A0/* Kick it off */
-> @@ -279,7 +279,7 @@ static irqreturn_t mpc52xx_lpbfifo_irq(int irq, void =
-*dev_id)
-> =A0 =A0 =A0 =A0else
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0do_callback =3D 1;
->
-> - out:
-> +out:
+> +/* SCLPC */
+> +struct mpc52xx_sclpc {
+> + =A0 =A0 =A0 union {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 u8 restart; =A0 =A0 /* 0x00 restart bit */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 packet_size; /* 0x00 packet size regist=
+er */
+> + =A0 =A0 =A0 } packet_size;
+> + =A0 =A0 =A0 u32 start_address; =A0 =A0 =A0/* 0x04 start Address registe=
+r */
+> + =A0 =A0 =A0 u32 control; =A0 =A0 =A0 =A0 =A0 =A0/* 0x08 control registe=
+r */
+> + =A0 =A0 =A0 u32 enable; =A0 =A0 =A0 =A0 =A0 =A0 /* 0x0C enable register=
+ */
+> + =A0 =A0 =A0 u32 unused0; =A0 =A0 =A0 =A0 =A0 =A0/* 0x10 */
+> + =A0 =A0 =A0 union {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 u8 status; =A0 =A0 =A0/* 0x14 status regist=
+er bits */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 u32 bytes_done; /* 0x14 bytes done register=
+ bits, read only */
+> + =A0 =A0 =A0 } bytes_done_status;
+> +
+> + =A0 =A0 =A0 u32 reserved1[(0x40-0x18) / sizeof(u32)]; =A0 =A0 =A0 /* 0x=
+18 .. 0x3c */
+> +
+> + =A0 =A0 =A0 u32 fifo_data; =A0 =A0 =A0 =A0 =A0/* 0x40 FIFO data word re=
+gister */
+> + =A0 =A0 =A0 u32 fifo_status; =A0 =A0 =A0 =A0/* 0x44 FIFO status registe=
+r */
+> + =A0 =A0 =A0 u8 fifo_control; =A0 =A0 =A0 =A0/* 0x48 FIFO control regist=
+er */
+> + =A0 =A0 =A0 u8 reserved2[3];
+> + =A0 =A0 =A0 u32 fifo_alarm; =A0 =A0 =A0 =A0 /* 0x4C FIFO alarm register=
+ */
+> +};
 
-The label 1 space indentation is intentional so coax diff into
-choosing the right line for the function name.  There are plenty of
-examples of this in the kernel.
+Please don't.  I know that a lot of other 5200 code uses register map
+structures in this way, but I consider it bad practice.  I coded this
+driver without a structure for a reason.  The reason I haven't removed
+the other 5200 register map structures is the code impact would be
+huge, it would probably cause breakage, and it would break all
+out-of-tree patches touching the same code for no measurable
+advantage.
 
-The rest of the changes are valid, but unimportant.  It's not worth
-the effort.  In most cases I don't bother fixing whitespace unless
-they style violations are so gratuitous  that it is hard to read the
-code otherwise, or if I'm already touching the offending line.
+For this code, there is no advantage to changing the register access
+method, and it generates more work in other areas.  Even if I
+preferred register map structures I would resist applying this patch.
+
+Please drop from your series.
 
 g.
-
 
 --=20
 Grant Likely, B.Sc., P.Eng.
