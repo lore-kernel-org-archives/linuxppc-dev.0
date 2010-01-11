@@ -1,28 +1,26 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 0B6CEB6F1B
+Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
+	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id D87991007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 06:59:41 +1100 (EST)
-Received: by yxe9 with SMTP id 9so10898547yxe.26
+	Tue, 12 Jan 2010 07:00:42 +1100 (EST)
+Received: by ywh39 with SMTP id 39so20282616ywh.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 11 Jan 2010 11:59:40 -0800 (PST)
+	Mon, 11 Jan 2010 12:00:41 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <4B4B7F13.3090809@freescale.com>
+In-Reply-To: <200912220805.20200.roman.fietze@telemotive.de>
 References: <200912081339.50722.roman.fietze@telemotive.de>
 	<fa686aa40912211611i2469b15p175511fd7ead4d49@mail.gmail.com>
 	<200912220755.09756.roman.fietze@telemotive.de>
-	<200912220759.23453.roman.fietze@telemotive.de>
-	<fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
-	<4B4B7F13.3090809@freescale.com>
+	<200912220805.20200.roman.fietze@telemotive.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 11 Jan 2010 12:59:20 -0700
-Message-ID: <fa686aa41001111159n664b3d44m7375b4632e196590@mail.gmail.com>
-Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
-	structure
-To: Scott Wood <scottwood@freescale.com>
+Date: Mon, 11 Jan 2010 13:00:21 -0700
+Message-ID: <fa686aa41001111200q2cfb4b5cs838f27a84bb1c89a@mail.gmail.com>
+Subject: Re: [PATCH 07/13] powerpc/5200: LocalPlus driver: reset BestComm when
+	committing new request
+To: Roman Fietze <roman.fietze@telemotive.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Roman Fietze <roman.fietze@telemotive.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 11, 2010 at 12:42 PM, Scott Wood <scottwood@freescale.com> wrot=
-e:
-> Grant Likely wrote:
->>
->> Please don't. =A0I know that a lot of other 5200 code uses register map
->> structures in this way, but I consider it bad practice. =A0I coded this
->> driver without a structure for a reason. =A0The reason I haven't removed
->> the other 5200 register map structures is the code impact would be
->> huge, it would probably cause breakage, and it would break all
->> out-of-tree patches touching the same code for no measurable
->> advantage.
+On Tue, Dec 22, 2009 at 12:05 AM, Roman Fietze
+<roman.fietze@telemotive.de> wrote:
 >
-> FWIW, over on the U-Boot side patches are getting NACKed by Wolfgang if t=
-hey
-> don't use register structures. :-P
->
-> They're nice from a type-safety and namespacing perspective, though they =
-get
-> ugly pretty quickly if there are gaps.
 
-Regardless, I see no reason to change existing code in either direction.
+Again, need a description as to 'why?'
+
+> Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
+> ---
+> =A0arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c | =A0 =A04 +++-
+> =A01 files changed, 3 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc=
+/platforms/52xx/mpc52xx_lpbfifo.c
+> index 8d8a63a..a7cd585 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
+> @@ -398,6 +398,8 @@ int mpc52xx_lpbfifo_submit(struct mpc52xx_lpbfifo_req=
+uest *req)
+> =A0 =A0 =A0 =A0req->buffer_not_done_cnt =3D 0;
+> =A0 =A0 =A0 =A0req->pos =3D 0;
+>
+> + =A0 =A0 =A0 bcom_gen_bd_rx_reset(lpbfifo.bcom_rx_task);
+> + =A0 =A0 =A0 bcom_gen_bd_tx_reset(lpbfifo.bcom_tx_task);
+> =A0 =A0 =A0 =A0mpc52xx_lpbfifo_kick(req);
+> =A0 =A0 =A0 =A0spin_unlock_irqrestore(&lpbfifo.lock, flags);
+>
+> @@ -456,7 +458,7 @@ mpc52xx_lpbfifo_probe(struct of_device *op, const str=
+uct of_device_id *match)
+> =A0 =A0 =A0 =A0lpbfifo.bcom_rx_task =3D bcom_gen_bd_rx_init(4,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 res.start + offsetof(struct mpc52xx_sclpc, fifo=
+_data),
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 BCOM_INITIATOR_SCLPC, BCOM_IPR_SCLPC,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A016*1024*1024);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A016 * 1024 * 1024);
+
+Unrelated change.  Please drop.
 
 g.
+
 
 --=20
 Grant Likely, B.Sc., P.Eng.
