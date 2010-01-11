@@ -1,14 +1,16 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
+Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDAE2B7C0C
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:25:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 81305B7CC0
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:25:39 +1100 (EST)
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 0/8] Update to GE powerpc/86xx based boards.
+Subject: [PATCH 1/8] powerpc/86xx: Add MSI section to GE SBC310 DTS
 To: galak@kernel.crashing.org
-Date: Mon, 11 Jan 2010 12:23:05 +0000
-Message-ID: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Date: Mon, 11 Jan 2010 12:23:12 +0000
+Message-ID: <20100111122312.8306.71218.stgit@ES-J7S4D2J.amer.consind.ge.com>
+In-Reply-To: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
+References: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev@ozlabs.org
@@ -21,10 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following series implements some minor fixes and updates to the GE
-SBC310, SBC610 and PPC9A
+Add the MSI section to the DTS file for the GE SBC310.
 
--- 
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+---
+
+ arch/powerpc/boot/dts/gef_sbc310.dts |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
+index 820c2b3..8ea8d4a 100644
+--- a/arch/powerpc/boot/dts/gef_sbc310.dts
++++ b/arch/powerpc/boot/dts/gef_sbc310.dts
+@@ -338,6 +338,22 @@
+ 			device_type = "open-pic";
+ 		};
+ 
++		msi@41600 {
++			compatible = "fsl,mpc8641-msi", "fsl,mpic-msi";
++			reg = <0x41600 0x80>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe0 0
++				0xe1 0
++				0xe2 0
++				0xe3 0
++				0xe4 0
++				0xe5 0
++				0xe6 0
++				0xe7 0>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		global-utilities@e0000 {
+ 			compatible = "fsl,mpc8641-guts";
+ 			reg = <0xe0000 0x1000>;
+
+
+--
 Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
 GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
 Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
