@@ -1,14 +1,14 @@
 Return-Path: <martyn.welch@gefanuc.com>
-Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
+Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0DA4B856B
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:26:05 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 1307BB8759
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jan 2010 23:26:10 +1100 (EST)
 From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH 5/8] powerpc/86xx: Switch on highmem support on GE SBC610
+Subject: [PATCH 6/8] powerpc/86xx: Add MSI section to GE PPC9A DTS
 To: galak@kernel.crashing.org
-Date: Mon, 11 Jan 2010 12:23:37 +0000
-Message-ID: <20100111122337.8306.72337.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Date: Mon, 11 Jan 2010 12:23:44 +0000
+Message-ID: <20100111122344.8306.40544.stgit@ES-J7S4D2J.amer.consind.ge.com>
 In-Reply-To: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
 References: <20100111121622.8306.87501.stgit@ES-J7S4D2J.amer.consind.ge.com>
 MIME-Version: 1.0
@@ -23,33 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+From: Malcolm Crossley <malcolm.crossley2@gefanuc.com>
+
+Add the MSI section to the DTS file for the GE PPC9A.
+    
+    Signed-off-by: Malcolm Crossley <malcolm.crossley2@gefanuc.com>
+    Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 ---
 
- arch/powerpc/configs/86xx/gef_sbc610_defconfig |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/powerpc/boot/dts/gef_ppc9a.dts |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-index 9284f04..4912602 100644
---- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-+++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
-@@ -234,7 +234,7 @@ CONFIG_MMIO_NVRAM=y
- #
- # Kernel options
- #
--# CONFIG_HIGHMEM is not set
-+CONFIG_HIGHMEM=y
- CONFIG_TICK_ONESHOT=y
- # CONFIG_NO_HZ is not set
- CONFIG_HIGH_RES_TIMERS=y
-@@ -1832,6 +1832,7 @@ CONFIG_DEBUG_PREEMPT=y
- # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
- # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
- # CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_HIGHMEM is not set
- # CONFIG_DEBUG_BUGVERBOSE is not set
- CONFIG_DEBUG_INFO=y
- # CONFIG_DEBUG_VM is not set
+diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
+index c86114e..977f260 100644
+--- a/arch/powerpc/boot/dts/gef_ppc9a.dts
++++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
+@@ -341,6 +341,22 @@
+ 			device_type = "open-pic";
+ 		};
+ 
++		msi@41600 {
++			compatible = "fsl,mpc8641-msi", "fsl,mpic-msi";
++			reg = <0x41600 0x80>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <
++				0xe0 0
++				0xe1 0
++				0xe2 0
++				0xe3 0
++				0xe4 0
++				0xe5 0
++				0xe6 0
++				0xe7 0>;
++			interrupt-parent = <&mpic>;
++		};
++
+ 		global-utilities@e0000 {
+ 			compatible = "fsl,mpc8641-guts";
+ 			reg = <0xe0000 0x1000>;
 
 
 --
