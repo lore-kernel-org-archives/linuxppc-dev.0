@@ -1,19 +1,21 @@
-Return-Path: <stef.van.os@Prodrive.nl>
-Received: from mail.prodrive.nl (mail.prodrive.nl [194.151.106.228])
-	by ozlabs.org (Postfix) with ESMTP id 0AA4D1007D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 01:20:04 +1100 (EST)
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id 034E8B6F07
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 01:26:18 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1NUhhH-00041K-S5
+	for linuxppc-dev@ozlabs.org; Tue, 12 Jan 2010 06:26:15 -0800
+Message-ID: <27128312.post@talk.nabble.com>
+Date: Tue, 12 Jan 2010 06:26:15 -0800 (PST)
+From: Dario Presti <dario.pr@tiscali.it>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: kernel panic on MPC8323 custom board
+In-Reply-To: <4B476ABA.7050000@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: [PATCH] powerpc/4xx: Add support for type 1 pci transactions on 4xx
-	boards
-Date: Tue, 12 Jan 2010 15:09:26 +0100
-Message-ID: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
-From: "Stef van Os" <stef.van.os@Prodrive.nl>
-To: "Felix Radensky" <felix@embedded-sol.com>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
-	Feng Kan <fkan@amcc.com>
+Content-Type: text/plain; charset=us-ascii
+References: <27059752.post@talk.nabble.com> <4B46209D.5000605@freescale.com>
+	<27073289.post@talk.nabble.com> <4B476ABA.7050000@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,65 +25,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This=20patch=20adds=20type=201=20PCI=20transactions=20to=204xx=20PCI=20co=
-de,=20enabling=20the
-discovery=20of
-devices=20behind=20a=20PCI=20bridge.
-
-Signed-off-by:=20Stef=20van=20Os=20<stef.van.os@gmail.com>
----
-=20arch/powerpc/sysdev/ppc4xx_pci.c=20|=20=20=20=206=20++++--
-=201=20files=20changed,=204=20insertions(+),=202=20deletions(-)
-
-diff=20--git=20a/arch/powerpc/sysdev/ppc4xx_pci.c
-b/arch/powerpc/sysdev/ppc4xx_pci.c
-index=206ff9d71..370cc1c=20100644
----=20a/arch/powerpc/sysdev/ppc4xx_pci.c
-+++=20b/arch/powerpc/sysdev/ppc4xx_pci.c
-@@=20-363,7=20+363,8=20@@=20static=20void=20__init=20ppc4xx_probe_pci_bri=
-dge(struct
-device_node=20*np)
-=20=20=20=20=20=20=20=20hose->last_busno=20=3D=20bus_range=20?=20bus_rang=
-e[1]=20:=200xff;
-
-=20=20=20=20=20=20=20=20/*=20Setup=20config=20space=20*/
--=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
-fg.start=20+=200x4,
-0);
-+=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
-fg.start=20+=200x4,
-+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20PPC_INDIRECT_TYPE_SET_CFG_TY=
-PE);
-
-=20=20=20=20=20=20=20=20/*=20Disable=20all=20windows=20*/
-=20=20=20=20=20=20=20=20writel(0,=20reg=20+=20PCIL0_PMM0MA);
-@@=20-569,7=20+570,8=20@@=20static=20void=20__init=20ppc4xx_probe_pcix_br=
-idge(struct
-device_node=20*np)
-=20=20=20=20=20=20=20=20hose->last_busno=20=3D=20bus_range=20?=20bus_rang=
-e[1]=20:=200xff;
-
-=20=20=20=20=20=20=20=20/*=20Setup=20config=20space=20*/
--=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
-fg.start=20+=200x4,
-0);
-+=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
-fg.start=20+=200x4,
-+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
-=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20PPC_INDIRECT_TYPE_SET_CFG_TY=
-PE);
-
-=20=20=20=20=20=20=20=20/*=20Disable=20all=20windows=20*/
-=20=20=20=20=20=20=20=20writel(0,=20reg=20+=20PCIX0_POM0SA);
 
 
-Disclaimer:=20The=20information=20contained=20in=20this=20email,=20includ=
-ing=20any=20attachments=20is=20
-confidential=20and=20is=20for=20the=20sole=20use=20of=20the=20intended=20=
-recipient(s).=20Any=20unauthorized=20
-review,=20use,=20disclosure=20or=20distribution=20is=20prohibited.=20If=
-=20you=20are=20not=20the=20intended=20
-recipient,=20please=20notify=20the=20sender=20immediately=20by=20replying=
-=20to=20this=20message=20and=20
-destroy=20all=20copies=20of=20this=20message=20and=20any=20attachments.
+
+Scott Wood-2 wrote:
+> 
+> 
+> Turn off that mapping driver, and turn on CONFIG_MTD_PHYSMAP_OF.  This 
+> stuff was very new in 2.6.20, though, so there may be issues.  I'd 
+> upgrade if you can.
+> 
+
+I rebuilded another kernel version 2.6.20.6 whit LTIB and u-boot 1.3.2 (I
+don't have the corresponding source file of my images). 
+I turned on CONFIG_MTD_PHYSMAP_OF, here there is part of config file:
+
+# Memory Technology Devices (MTD)
+#
+CONFIG_MTD=y
+# CONFIG_MTD_DEBUG is not set
+CONFIG_MTD_CONCAT=y
+CONFIG_MTD_PARTITIONS=y
+# CONFIG_MTD_REDBOOT_PARTS is not set
+CONFIG_MTD_CMDLINE_PARTS=y
+
+#
+# User Modules And Translation Layers
+#
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_BLKDEVS=y
+CONFIG_MTD_BLOCK=y
+CONFIG_FTL=y
+# CONFIG_NFTL is not set
+# CONFIG_INFTL is not set
+# CONFIG_RFD_FTL is not set
+# CONFIG_SSFDC is not set
+
+#
+# RAM/ROM/Flash chip drivers
+#
+CONFIG_MTD_CFI=y
+# CONFIG_MTD_JEDECPROBE is not set
+CONFIG_MTD_GEN_PROBE=y
+CONFIG_MTD_CFI_ADV_OPTIONS=y
+CONFIG_MTD_CFI_NOSWAP=y
+# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
+# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
+CONFIG_MTD_CFI_GEOMETRY=y
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+# CONFIG_MTD_CFI_I4 is not set
+# CONFIG_MTD_CFI_I8 is not set
+# CONFIG_MTD_OTP is not set
+# CONFIG_MTD_CFI_INTELEXT is not set
+CONFIG_MTD_CFI_AMDSTD=y
+# CONFIG_MTD_CFI_STAA is not set
+CONFIG_MTD_CFI_UTIL=y
+# CONFIG_MTD_RAM is not set
+# CONFIG_MTD_ROM is not set
+# CONFIG_MTD_ABSENT is not set
+# CONFIG_MTD_OBSOLETE_CHIPS is not set
+
+#
+# Mapping drivers for chip access
+#
+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
+# CONFIG_MTD_PHYSMAP is not set
+CONFIG_MTD_PHYSMAP_OF=y
+# CONFIG_MTD_PLATRAM is not set
+
+But still hte mapping is not showed on boot, it seems to not read yet the
+blob node. The boot-log is:
+
+U-Boot 1.3.2 (Jan  8 2010 - 12:57:17) MPC83XX
+
+Reset Status: Software Hard, External/Internal Soft, External/Internal Hard
+
+CPU:   e300c2, MPC8321E, Rev: 11 at 333.333 MHz, CSB:  133 MHz
+Board: Freescale MPC8323ERDB
+I2C:   ready
+DRAM:  64 MB
+FLASH: 64 MB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   FSL UEC0, FSL UEC1
+Hit any key to stop autoboot:  0
+Scanning PCI devices on bus 0
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+00.00.00   0x1957     0x00a6     Processor               0x20
+## Booting image at fc100000 ...
+   Image Name:   Linux-2.6.20.6-rt8
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1495894 Bytes =  1.4 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+   Booting using the fdt at 0xfc080000
+   Loading Device Tree to 00785000, end 007ff11f ... OK
+Using MPC832x RDB machine description
+Linux version 2.6.20.6-rt8 (cubit@cubit-laptop) (gcc version 4.2.3 (Sourcery
+G++ Lite 4.2-171)) #9 PREEMPT Tue Jan 12 14:53:56 CET 2010
+setup_arch: bootmem
+mpc832x_rdb_setup_arch()
+Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus number:
+0->0
+pio-handle not available
+arch: exit
+Zone PFN ranges:
+  DMA             0 ->    16384
+  Normal      16384 ->    16384
+early_node_map[1] active PFN ranges
+    0:        0 ->    16384
+Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
+Built 1 zonelists.  Total pages: 16256
+Kernel command line: root=/dev/mtdblock4 rootfstype=jffs2 rw console=ttyS0,
+38400
+WARNING: experimental RCU implementation.
+IPIC (128 IRQ sources) at fdefb700
+QEIC (64 IRQ sources) at fdefa080
+PID hash table entries: 256 (order: 8, 1024 bytes)
+
+Using MPC832x RDB machine description
+Linux version 2.6.20.6-rt8 (cubit@cubit-laptop) (gcc version 4.2.3 (Sourcery
+G++ Lite 4.2-171)) #9 PREEMPT Tue Jan 12 14:53:56 CET 2010
+Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus number:
+0->0
+pio-handle not available
+Zone PFN ranges:
+  DMA             0 ->    16384
+  Normal      16384 ->    16384
+early_node_map[1] active PFN ranges
+    0:        0 ->    16384
+Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
+Built 1 zonelists.  Total pages: 16256
+Kernel command line: root=/dev/mtdblock4 rootfstype=jffs2 rw console=ttyS0,
+38400
+WARNING: experimental RCU implementation.
+IPIC (128 IRQ sources) at fdefb700
+QEIC (64 IRQ sources) at fdefa080
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 61200k/65536k available (2836k kernel code, 4268k reserved, 180k
+data, 110k bss, 132k init)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+Generic PHY: Registered new driver
+SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 4, 65536 bytes)
+TCP bind hash table entries: 1024 (order: 2, 28672 bytes)
+TCP: Hash tables configured (established 2048 bind 1024)
+TCP reno registered
+NTFS driver 2.1.28 [Flags: R/O].
+JFFS2 version 2.2. (NAND) (C) 2001-2006 Red Hat, Inc.
+fuse init (API version 7.8)
+JFS: nTxBlock = 478, nTxLock = 3829
+io scheduler noop registered
+io scheduler anticipatory registered (default)
+io scheduler deadline registered
+io scheduler cfq registered
+Generic RTC Driver v1.07
+WDT driver for MPC83xx initialized. mode:reset timeout=65535 (32 seconds)
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 16) is a 16550A
+serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 17) is a 16550A
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: loaded (max 8 devices)
+ucc_tdm: Freescale QE UCC TDM Driver
+config_tdm Delay for Legerity!
+tdm_start 16-bit linear pcm mode active with slots 0 & 2
+tdm_start UCC based TDM enabled
+ucc_tdm_probe UCC based tdm module installed
+UCC Ethernet Controller MII Bus: probed
+ucc_geth: QE UCC Gigabit Ethernet Controller
+ucc_geth: UCC2 at 0xe0103000 (irq = 20)
+eth0: MTU=1500 (frame
+size=1518,rx_buffer_size=1536,truesize=1792,sk_buff=160)
+ucc_geth: UCC3 at 0xe0102200 (irq = 34)
+eth1: MTU=1500 (frame
+size=1518,rx_buffer_size=1536,truesize=1792,sk_buff=160)
+SKB Handler initialized(max=64)
+ICPlus IP175C: Registered new driver
+block2mtd: version $Revision: 1.30 $
+e01004c0.spi: MPC83xx SPI Controller driver at 0xc50aa4c0 (irq = 21)
+usbmon: debugfs is not available
+Initializing USB Mass Storage driver...
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+i2c /dev entries driver
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+No filesystem could mount root, tried: <6>Time: timebase clocksource has
+been installed.
+ jffs2
+Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(0,0)
+Call Trace:
+[C03B5E70] [C000819C]  (unreliable)
+[C03B5EB0] [C0026AB0]
+[C03B5F00] [C02A4B98]
+[C03B5F50] [C02A4DEC]
+[C03B5F70] [C0003B04]
+[C03B5FF0] [C00102BC]
+ <0>Rebooting in 180 seconds..
+
+Do I miss to turn on something or kernel version do not support device tree?
+
+Has u-boot 1.3.2 mtdparts command? When I try to use it an  'unknown
+command' occur.
+
+Thanks
+
+Dario 
+-- 
+View this message in context: http://old.nabble.com/kernel-panic-on-MPC8323-custom-board-tp27059752p27128312.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
