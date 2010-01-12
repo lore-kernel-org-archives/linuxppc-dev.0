@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [RFC,PATCH 2/7 v2] Generic support for fixed-rate clocks
-Message-Id: <1263279511.160846.853659232765.2.gpush@pororo>
+Subject: [RFC,PATCH 7/7 v2] arm/icst307: remove icst307_ps_to_vco
+Message-Id: <1263279511.162732.415109166708.7.gpush@pororo>
 In-Reply-To: <1263279511.160127.576969496193.0.gpush@pororo>
 To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -17,80 +17,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since most platforms will need a fixed-rate clock, add one. This will
-also serve as a basic example of an implementation of struct clk.
+icst307_ps_to_vco isn't used, so remove it.
 
 Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
 
 ---
- include/linux/clk.h |   12 ++++++++++++
- kernel/Makefile     |    1 +
- kernel/clk.c        |   25 +++++++++++++++++++++++++
- 3 files changed, 38 insertions(+)
+ arch/arm/common/icst307.c |   62 --------------------------------------
+ 1 file changed, 62 deletions(-)
 
-diff --git a/include/linux/clk.h b/include/linux/clk.h
-index 1a6199e..8293421 100644
---- a/include/linux/clk.h
-+++ b/include/linux/clk.h
-@@ -97,6 +97,18 @@ static inline struct clk *clk_get_parent(struct clk *clk)
- 	return ERR_PTR(-ENOSYS);
+diff --git a/arch/arm/common/icst307.c b/arch/arm/common/icst307.c
+index cd45b88..9d8d087 100644
+--- a/arch/arm/common/icst307.c
++++ b/arch/arm/common/icst307.c
+@@ -96,68 +96,6 @@ icst307_khz_to_vco(const struct icst307_params *p, unsigned long freq)
+ 	return vco;
  }
  
-+/* Simple fixed-rate clock */
-+struct clk_fixed {
-+	struct clk	clk;
-+	unsigned long	rate;
-+};
-+
-+extern struct clk_operations clk_fixed_operations;
-+
-+#define DEFINE_CLK_FIXED(r) { \
-+	.clk = { .ops = &clk_fixed_operations }, \
-+	.rate = (r) \
-+};
- 
- #else /* !CONFIG_USE_COMMON_STRUCT_CLK */
- 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 864ff75..f63d021 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -100,6 +100,7 @@ obj-$(CONFIG_SLOW_WORK_DEBUG) += slow-work-debugfs.o
- obj-$(CONFIG_PERF_EVENTS) += perf_event.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
- obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
-+obj-$(CONFIG_USE_COMMON_STRUCT_CLK) += clk.o
- 
- ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-diff --git a/kernel/clk.c b/kernel/clk.c
-new file mode 100644
-index 0000000..353736c
---- /dev/null
-+++ b/kernel/clk.c
-@@ -0,0 +1,25 @@
-+/*
-+ * Copyright (C) 2010 Canonical Ltd <jeremy.kerr@canonical.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Standard functionality for the common clock API.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/clk.h>
-+
-+#define to_clk_fixed(clk) (container_of(clk, struct clk_fixed, clk))
-+
-+static unsigned long clk_fixed_get_rate(struct clk *clk)
-+{
-+	return to_clk_fixed(clk)->rate;
-+}
-+
-+struct clk_operations clk_fixed_operations = {
-+	.get_rate = clk_fixed_get_rate,
-+};
-+
-+EXPORT_SYMBOL_GPL(clk_fixed_operations);
+-static struct icst307_vco
+-icst307_ps_to_vco(const struct icst307_params *p, unsigned long period)
+-{
+-	struct icst307_vco vco = { .s = 1, .v = p->vd_max, .r = p->rd_max };
+-	unsigned long f, ps;
+-	unsigned int i = 0, rd, best = (unsigned int)-1;
+-
+-	ps = 1000000000UL / p->vco_max;
+-
+-	/*
+-	 * First, find the PLL output divisor such
+-	 * that the PLL output is within spec.
+-	 */
+-	do {
+-		f = period / s2div[idx2s[i]];
+-
+-		/*
+-		 * f must be between 6MHz and 200MHz (3.3 or 5V)
+-		 */
+-		if (f >= ps && f < 1000000000UL / 6000 + 1)
+-			break;
+-	} while (i < ARRAY_SIZE(idx2s));
+-
+-	if (i >= ARRAY_SIZE(idx2s))
+-		return vco;
+-
+-	vco.s = idx2s[i];
+-
+-	ps = 500000000UL / p->ref;
+-
+-	/*
+-	 * Now find the closest divisor combination
+-	 * which gives a PLL output of 'f'.
+-	 */
+-	for (rd = p->rd_min; rd <= p->rd_max; rd++) {
+-		unsigned long f_in_div, f_pll;
+-		unsigned int vd;
+-		int f_diff;
+-
+-		f_in_div = ps * rd;
+-
+-		vd = (f_in_div + f / 2) / f;
+-		if (vd < p->vd_min || vd > p->vd_max)
+-			continue;
+-
+-		f_pll = (f_in_div + vd / 2) / vd;
+-		f_diff = f_pll - f;
+-		if (f_diff < 0)
+-			f_diff = -f_diff;
+-
+-		if ((unsigned)f_diff < best) {
+-			vco.v = vd - 8;
+-			vco.r = rd - 2;
+-			if (f_diff == 0)
+-				break;
+-			best = f_diff;
+-		}
+-	}
+-
+-	return vco;
+-}
+-
+ static unsigned long clk_icst307_get_rate(struct clk *clk)
+ {
+ 	return to_clk_icst307(clk)->rate;
