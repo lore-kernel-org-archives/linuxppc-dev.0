@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 60AD4B6EEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 13:40:56 +1100 (EST)
-Subject: Re: [PATCH] 8xx: fix user space TLB walk in dcbX fixup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1262969186-18462-1-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1262969186-18462-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 13:40:45 +1100
-Message-ID: <1263264045.724.183.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id ECE55B6F1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 14:01:42 +1100 (EST)
+Date: Tue, 12 Jan 2010 14:01:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
+	of autoconf.h
+Message-Id: <20100112140136.c8ccc357.sfr@canb.auug.org.au>
+In-Reply-To: <20100112022150.GE12666@kryten>
+References: <20100112022150.GE12666@kryten>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__12_Jan_2010_14_01_36_+1100_W5vxqymXTs11J3wT"
+Cc: Roel Kluin <roel.kluin@gmail.com>, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-01-08 at 17:46 +0100, Joakim Tjernlund wrote:
-> The newly added fixup for buggy dcbX insn's has
-> a bug that always trigger a kernel TLB walk so a user space
-> dcbX insn will cause a Kernel Machine Check if it hits DTLB error.
-> 
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> ---
-> 
-> I found this problem in 2.4 and forward ported it to 2.6. I
-> cannot test it so I cannot be 100% sure I got it right.
-> 
->  arch/powerpc/kernel/head_8xx.S |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+--Signature=_Tue__12_Jan_2010_14_01_36_+1100_W5vxqymXTs11J3wT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Do you have something to make sure that TASK_SIZE is never bigger than
-2G ? Else userspace could be all the way to 0xbfffffff ...
+Hi Anton,
 
+On Tue, 12 Jan 2010 13:21:51 +1100 Anton Blanchard <anton@samba.org> wrote:
+>
+> commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 (zlib: optimize inffast w=
+hen
+> copying direct from output) referenced include/linux/autoconf.h which
+> is now called include/generated/autoconf.h.
+
+Even with this fix, you cannot build with a separate object directory.
+See my other posting "linux-next: origin tree build failure" ...
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index ce327c5..91bef6e 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -542,11 +542,11 @@ DARFixed:/* Return from dcbx instruction bug workaround, r10 holds value of DAR
->  FixupDAR:/* Entry point for dcbx workaround. */
->  	/* fetch instruction from memory. */
->  	mfspr	r10, SPRN_SRR0
-> +	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
->  	DO_8xx_CPU6(0x3780, r3)
->  	mtspr	SPRN_MD_EPN, r10
->  	mfspr	r11, SPRN_M_TWB	/* Get level 1 table entry address */
-> -	cmplwi	cr0, r11, 0x0800
-> -	blt-	3f		/* Branch if user space */
-> +	beq-	3f		/* Branch if user space */
->  	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
->  	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
->  	rlwimi	r11, r10, 32-20, 0xffc /* r11 = r11&~0xffc|(r10>>20)&0xffc */
+--Signature=_Tue__12_Jan_2010_14_01_36_+1100_W5vxqymXTs11J3wT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktL5hAACgkQjjKRsyhoI8xzAQCfdPIxGYZ7g7yIIs3BiEc62aZz
+UK4AmgMCDS2mo+QHAVzjQU6MmMyj0bCH
+=x36t
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Jan_2010_14_01_36_+1100_W5vxqymXTs11J3wT--
