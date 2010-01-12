@@ -1,14 +1,23 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 12 Jan 2010 21:58:05 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Reduce footprint of xics_ipi_struct
-Message-ID: <20100112105805.GJ12666@kryten>
-References: <20100112105642.GI12666@kryten>
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 93899B7C68
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 22:02:44 +1100 (EST)
+Message-ID: <4B4C56D5.6020008@embedded-sol.com>
+Date: Tue, 12 Jan 2010 13:02:45 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100112105642.GI12666@kryten>
-Cc: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI-PCI bridge scanning broken on 460EX
+References: <4B388D9D.7010404@embedded-sol.com>	<1262584539.2173.335.camel@pasglop>	<4B41ADF1.1000400@embedded-sol.com>	<4B49CE8A.7000609@embedded-sol.com>	<1263155906.724.2.camel@pasglop>	<4B4A4307.5050704@embedded-sol.com>	<1263159117.724.15.camel@pasglop>	<4CD35CD1F8085945B597F80EEC89421303B8AD0C@exc01.bk.prodrive.nl>	<4B4B1027.4020708@embedded-sol.com>
+	<4B4B55CF.9000707@embedded-sol.com>	<1263243199.724.146.camel@pasglop>
+	<4B4BAAC0.4010300@embedded-sol.com>
+	<1263250414.724.161.camel@pasglop>
+In-Reply-To: <1263250414.724.161.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stef van Os <stef.van.os@Prodrive.nl>, Stefan Roese <sr@denx.de>,
+	Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,90 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben
 
-Right now we allocate a cacheline sized NR_CPUS array for xics IPI
-communication. Since irq_stat is now PowerPC specific and using
-DECLARE_PER_CPU_SHARED_ALIGNED (which should mean remote writes to
-this should not conflict with other per cpu data), we can put it in there.
+Benjamin Herrenschmidt wrote:
+> On Tue, 2010-01-12 at 00:48 +0200, Felix Radensky wrote:
+>   
+>> Maybe because the bus behind root P2P bridge is bus 0, and type 1
+>> cycles are
+>> needed for bus numbers greater than 0. That's what 460EX manual says.
+>>     
+>
+> Well, no... the bus behind the root P2P is bus 1 ... the root P2P itself
+> is on bus 0... but then, it's some trick in the way they implemented it
+> I suppose.
+>
+>   
+>> You are correct, the log is from older version, without Stef's fix. I 
+>> don't have access to a
+>> system with devices behind PLX, and the guy who did the testing used 
+>> wrong kernel.
+>> I'll make sure he uses the correct one and get back to you. Maybe 
+>> everything works after all :)
+>> I'm really sorry for confusion.
+>>     
+>
+> No worries :-) Feel free to send a proper patch to fix that problem
+> upstream too !
+>
+>   
+The kernel with Stef's fix works fine, and recognizes both PLX and 
+device behind it.
+Stef,  do want to provide a patch for upstream kernel, or do you want me 
+to do that on
+your behalf ?
 
-On a kernel with NR_CPUS=1024, this saves quite a lot of memory:
+Thanks a lot everyone for you help !
 
-   text    data     bss      dec         hex    filename
-8767779 2944260 1505724 13217763         c9afe3 vmlinux.irq_cpustat
-8767555 2813444 1505724 13086723         c7b003 vmlinux.xics
-
-A saving of around 128kB.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: linux-cpumask/arch/powerpc/include/asm/hardirq.h
-===================================================================
---- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-01-12 12:36:47.174226189 +1100
-+++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-01-12 12:36:47.432976459 +1100
-@@ -6,6 +6,9 @@
- 
- typedef struct {
- 	unsigned int __softirq_pending;
-+#if defined(CONFIG_XICS) && defined(CONFIG_SMP)
-+	unsigned long xics_ipi;
-+#endif
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-01-12 12:36:46.905477650 +1100
-+++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-01-12 12:40:54.782975198 +1100
-@@ -514,15 +514,12 @@ static void __init xics_init_host(void)
- /*
-  * XICS only has a single IPI, so encode the messages per CPU
-  */
--struct xics_ipi_struct {
--        unsigned long value;
--	} ____cacheline_aligned;
--
--static struct xics_ipi_struct xics_ipi_message[NR_CPUS] __cacheline_aligned;
- 
- static inline void smp_xics_do_message(int cpu, int msg)
- {
--	set_bit(msg, &xics_ipi_message[cpu].value);
-+	unsigned long *tgt = &(per_cpu(irq_stat, cpu).xics_ipi);
-+
-+	set_bit(msg, tgt);
- 	mb();
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		lpar_qirr_info(cpu, IPI_PRIORITY);
-@@ -548,25 +545,23 @@ void smp_xics_message_pass(int target, i
- 
- static irqreturn_t xics_ipi_dispatch(int cpu)
- {
-+	unsigned long *tgt = &(per_cpu(irq_stat, cpu).xics_ipi);
-+
- 	WARN_ON(cpu_is_offline(cpu));
- 
- 	mb();	/* order mmio clearing qirr */
--	while (xics_ipi_message[cpu].value) {
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION,
--				       &xics_ipi_message[cpu].value)) {
-+	while (*tgt) {
-+		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION, tgt)) {
- 			smp_message_recv(PPC_MSG_CALL_FUNCTION);
- 		}
--		if (test_and_clear_bit(PPC_MSG_RESCHEDULE,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_RESCHEDULE, tgt)) {
- 			smp_message_recv(PPC_MSG_RESCHEDULE);
- 		}
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE, tgt)) {
- 			smp_message_recv(PPC_MSG_CALL_FUNC_SINGLE);
- 		}
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
--		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK, tgt)) {
- 			smp_message_recv(PPC_MSG_DEBUGGER_BREAK);
- 		}
- #endif
+Felix.
+Felix.
