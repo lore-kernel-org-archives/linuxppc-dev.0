@@ -1,25 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 274FD1007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jan 2010 01:07:23 +1100 (EST)
-Received: by yxe9 with SMTP id 9so11595320yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 06:07:21 -0800 (PST)
+Return-Path: <stef.van.os@Prodrive.nl>
+Received: from mail.prodrive.nl (mail.prodrive.nl [194.151.106.228])
+	by ozlabs.org (Postfix) with ESMTP id 0AA4D1007D2
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 01:20:04 +1100 (EST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <201001120855.59122.roman.fietze@telemotive.de>
-References: <200912081339.50722.roman.fietze@telemotive.de>
-	<200912220800.54373.roman.fietze@telemotive.de>
-	<fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com>
-	<201001120855.59122.roman.fietze@telemotive.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 12 Jan 2010 07:07:01 -0700
-Message-ID: <fa686aa41001120607m13bd26f3gde65c114c503886f@mail.gmail.com>
-Subject: Re: [PATCH 03/13] mpc52xx: add SCLPC register bit definitions
-To: Roman Fietze <roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] powerpc/4xx: Add support for type 1 pci transactions on 4xx
+	boards
+Date: Tue, 12 Jan 2010 15:09:26 +0100
+Message-ID: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
+From: "Stef van Os" <stef.van.os@Prodrive.nl>
+To: "Felix Radensky" <felix@embedded-sol.com>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	Feng Kan <fkan@amcc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2010 at 12:55 AM, Roman Fietze
-<roman.fietze@telemotive.de> wrote:
-> Hello Grant,
->
-> On Monday 11 January 2010 20:21:22 Grant Likely wrote:
->
->> Unrelated whitespace change?
->
-> My fault, as with some other white space changes. My Emacs is
-> configured using some older setup found in a 2.4
-> Documentation/CodingStyle. Before saving a file my spine is used to
-> reformat the whole source file, which then causes those artefacts.
-> I'll fix the Emacs setup and try to fix my spine, and double check
-> before commits.
->
-> BTW: no Emacs users amongst the kernel coders any more? At least I
-> have to read "So, you can either get rid of GNU emacs, or ...".
+This=20patch=20adds=20type=201=20PCI=20transactions=20to=204xx=20PCI=20co=
+de,=20enabling=20the
+discovery=20of
+devices=20behind=20a=20PCI=20bridge.
 
-I believe there are lots of emacs using kernel hackers.  emacs is fine
-and most of the style changes you were making were valid, but they
-were unrelated and unimportant.  Unless emacs is making automatic
-changes to the files, it sounds like your emacs config is just fine.
+Signed-off-by:=20Stef=20van=20Os=20<stef.van.os@gmail.com>
+---
+=20arch/powerpc/sysdev/ppc4xx_pci.c=20|=20=20=20=206=20++++--
+=201=20files=20changed,=204=20insertions(+),=202=20deletions(-)
 
-g.
+diff=20--git=20a/arch/powerpc/sysdev/ppc4xx_pci.c
+b/arch/powerpc/sysdev/ppc4xx_pci.c
+index=206ff9d71..370cc1c=20100644
+---=20a/arch/powerpc/sysdev/ppc4xx_pci.c
++++=20b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@=20-363,7=20+363,8=20@@=20static=20void=20__init=20ppc4xx_probe_pci_bri=
+dge(struct
+device_node=20*np)
+=20=20=20=20=20=20=20=20hose->last_busno=20=3D=20bus_range=20?=20bus_rang=
+e[1]=20:=200xff;
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+=20=20=20=20=20=20=20=20/*=20Setup=20config=20space=20*/
+-=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
+fg.start=20+=200x4,
+0);
++=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
+fg.start=20+=200x4,
++=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20PPC_INDIRECT_TYPE_SET_CFG_TY=
+PE);
+
+=20=20=20=20=20=20=20=20/*=20Disable=20all=20windows=20*/
+=20=20=20=20=20=20=20=20writel(0,=20reg=20+=20PCIL0_PMM0MA);
+@@=20-569,7=20+570,8=20@@=20static=20void=20__init=20ppc4xx_probe_pcix_br=
+idge(struct
+device_node=20*np)
+=20=20=20=20=20=20=20=20hose->last_busno=20=3D=20bus_range=20?=20bus_rang=
+e[1]=20:=200xff;
+
+=20=20=20=20=20=20=20=20/*=20Setup=20config=20space=20*/
+-=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
+fg.start=20+=200x4,
+0);
++=20=20=20=20=20=20=20setup_indirect_pci(hose,=20rsrc_cfg.start,=20rsrc_c=
+fg.start=20+=200x4,
++=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20=
+=20=20=20=20=20=20=20=20=20=20=20=20=20=20=20PPC_INDIRECT_TYPE_SET_CFG_TY=
+PE);
+
+=20=20=20=20=20=20=20=20/*=20Disable=20all=20windows=20*/
+=20=20=20=20=20=20=20=20writel(0,=20reg=20+=20PCIX0_POM0SA);
+
+
+Disclaimer:=20The=20information=20contained=20in=20this=20email,=20includ=
+ing=20any=20attachments=20is=20
+confidential=20and=20is=20for=20the=20sole=20use=20of=20the=20intended=20=
+recipient(s).=20Any=20unauthorized=20
+review,=20use,=20disclosure=20or=20distribution=20is=20prohibited.=20If=
+=20you=20are=20not=20the=20intended=20
+recipient,=20please=20notify=20the=20sender=20immediately=20by=20replying=
+=20to=20this=20message=20and=20
+destroy=20all=20copies=20of=20this=20message=20and=20any=20attachments.
