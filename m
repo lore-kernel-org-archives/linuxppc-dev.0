@@ -1,20 +1,18 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id D27F11007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jan 2010 03:32:30 +1100 (EST)
-Date: Tue, 12 Jan 2010 19:25:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH-V3] mpc8xxx_gpio: add interrupt support
-Message-ID: <20100112162547.GA27567@oksana.dev.rtsoft.ru>
-References: <1262883466-29371-1-git-send-email-jacmet@sunsite.dk>
-	<87skabqok5.fsf@macbook.be.48ers.dk>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-qy0-f198.google.com (mail-qy0-f198.google.com
+	[209.85.221.198]) by ozlabs.org (Postfix) with ESMTP id 7C7631007D4
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 03:50:13 +1100 (EST)
+Received: by qyk36 with SMTP id 36so270982qyk.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 08:50:11 -0800 (PST)
+Message-ID: <4B4CA844.8040301@billgatliff.com>
+Date: Tue, 12 Jan 2010 10:50:12 -0600
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <87skabqok5.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Sleep-capable GPIO slave-selects on MPC52xx?
+References: <4B4B866B.10207@billgatliff.com>
+In-Reply-To: <4B4B866B.10207@billgatliff.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 12, 2010 at 05:24:10PM +0100, Peter Korsgaard wrote:
-> >>>>> Peter Korsgaard <jacmet@sunsite.dk> writes:
-> 
-> Hi,
-> 
-> Anton, any comments on this?
-> 
->  > Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Bill Gatliff wrote:
+>
+> It looks like the current version of the MPC52xx SPI driver won't work
+> with sleep-capable GPIOs for slave-selects.  In particular, it looks
+> like mpc52xx_spi_fsmstate_transfer() is an interrupt handler that calls
+> mpc52xx_spi_chipsel(), which itself calls gpio_set_value().  Or, at
+> least my kernel thinks so, since I get a barrage of oops-type output
+> screaming at me whenever I hit the SPI device.  :)
+>
+> Am I missing something, or is this a known (or at least now-identified)
+> limitation of the current mpc52xx_spi.c?
+>   
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+So, nobody has any feedback on this?  :)
 
-Thanks!
+Would using a threaded handler for the SPI interrupts be likely to work
+here?
+
+
+b.g.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Bill Gatliff
+Embedded systems training and consulting
+http://billgatliff.com
+bgat@billgatliff.com
