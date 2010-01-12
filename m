@@ -1,21 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 034E8B6F07
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 01:26:18 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1NUhhH-00041K-S5
-	for linuxppc-dev@ozlabs.org; Tue, 12 Jan 2010 06:26:15 -0800
-Message-ID: <27128312.post@talk.nabble.com>
-Date: Tue, 12 Jan 2010 06:26:15 -0800 (PST)
-From: Dario Presti <dario.pr@tiscali.it>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: kernel panic on MPC8323 custom board
-In-Reply-To: <4B476ABA.7050000@freescale.com>
+Return-Path: <ben@trinity.fluff.org>
+Received: from trinity.fluff.org (trinity.fluff.org [89.16.178.74])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 69C75B6F07
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Jan 2010 01:30:24 +1100 (EST)
+Date: Tue, 12 Jan 2010 14:30:19 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Jeremy Kerr <jeremy.kerr@canonical.com>
+Subject: Re: [RFC,PATCH 1/7 v2] Add a common struct clk
+Message-ID: <20100112143019.GF18532@trinity.fluff.org>
+References: <1263279511.160127.576969496193.0.gpush@pororo>
+	<1263279511.160551.332624337260.1.gpush@pororo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <27059752.post@talk.nabble.com> <4B46209D.5000605@freescale.com>
-	<27073289.post@talk.nabble.com> <4B476ABA.7050000@freescale.com>
+In-Reply-To: <1263279511.160551.332624337260.1.gpush@pororo>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,234 +26,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-
-Scott Wood-2 wrote:
+On Tue, Jan 12, 2010 at 05:58:31PM +1100, Jeremy Kerr wrote:
+> We currently have 21 definitions of struct clk in the ARM architecture,
+> each defined on a per-platform basis. This makes it difficult to define
+> platform- (or architecture-) independent clock sources without making
+> assumptions about struct clk.
 > 
+> This change is an effort to unify struct clk where possible, by defining
+> a common struct clk, containing a set of clock operations. Different
+> clock implementations can set their own operations, and have a standard
+> interface for generic code. The callback interface is exposed to the
+> kernel proper, while the clock implementations only need to be seen by
+> the platform internals.
 > 
-> Turn off that mapping driver, and turn on CONFIG_MTD_PHYSMAP_OF.  This 
-> stuff was very new in 2.6.20, though, so there may be issues.  I'd 
-> upgrade if you can.
+> This allows us to share clock code among platforms, and makes it
+> possible to dynamically create clock devices in platform-independent
+> code.
 > 
+> Platforms can enable the generic struct clock through
+> CONFIG_USE_COMMON_STRUCT_CLK.
+> 
+> The common clock definitions are based on a development patch from Ben
+> Herrenschmidt <benh@kernel.crashing.org>.
+> 
+> Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
+> 
+> ---
+>  arch/Kconfig        |    3 
+>  include/linux/clk.h |  134 +++++++++++++++++++++++++++++++++++---------
+>  2 files changed, 110 insertions(+), 27 deletions(-)
+> 
+> diff --git a/arch/Kconfig b/arch/Kconfig
+> index 9d055b4..cefc026 100644
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -140,4 +140,7 @@ config HAVE_HW_BREAKPOINT
+>  config HAVE_USER_RETURN_NOTIFIER
+>  	bool
+>  
+> +config USE_COMMON_STRUCT_CLK
+> +	bool
+> +
+>  source "kernel/gcov/Kconfig"
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index 1d37f42..1a6199e 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -11,36 +11,101 @@
+>  #ifndef __LINUX_CLK_H
+>  #define __LINUX_CLK_H
+>  
+> -struct device;
+> +#include <linux/err.h>
+>  
+> -/*
+> - * The base API.
+> +#ifdef CONFIG_USE_COMMON_STRUCT_CLK
+> +
+> +/* If we're using the common struct clk, we define the base clk object here,
+> + * which will be 'subclassed' by device-specific implementations. For example:
+> + *
+> + *  struct clk_foo {
+> + *      struct clk;
+> + *      [device specific fields]
+> + *  };
+> + *
+> + * We define the common clock API through a set of static inlines that call the
+> + * corresponding clk_operations. The API is exactly the same as that documented
+> + * in the !CONFIG_USE_COMMON_STRUCT_CLK case.
+>   */
+>  
+> +struct clk {
+> +	const struct clk_operations *ops;
+> +};
+> +
+> +struct clk_operations {
+> +       int             (*enable)(struct clk *);
 
-I rebuilded another kernel version 2.6.20.6 whit LTIB and u-boot 1.3.2 (I
-don't have the corresponding source file of my images). 
-I turned on CONFIG_MTD_PHYSMAP_OF, here there is part of config file:
+Personaly I'd leave the enable/disable as one call which takes
+(struct clk *, bool on). these code paths tend to be pretty much the
+same read/modify/write with only the modify changing depending on the
+on parameter.
 
-# Memory Technology Devices (MTD)
-#
-CONFIG_MTD=y
-# CONFIG_MTD_DEBUG is not set
-CONFIG_MTD_CONCAT=y
-CONFIG_MTD_PARTITIONS=y
-# CONFIG_MTD_REDBOOT_PARTS is not set
-CONFIG_MTD_CMDLINE_PARTS=y
+> +       void            (*disable)(struct clk *);
+> +       unsigned long   (*get_rate)(struct clk *);
+> +       void            (*put)(struct clk *);
+> +       long            (*round_rate)(struct clk *, unsigned long);
+> +       int             (*set_rate)(struct clk *, unsigned long);
+> +       int             (*set_parent)(struct clk *, struct clk *);
+> +       struct clk*     (*get_parent)(struct clk *);
+> +};
+> +
+> +static inline int clk_enable(struct clk *clk)
+> +{
+> +	if (clk->ops->enable)
+> +		return clk->ops->enable(clk);
+> +	return 0;
+> +}
+> +
+> +static inline void clk_disable(struct clk *clk)
+> +{
+> +	if (clk->ops->disable)
+> +		clk->ops->disable(clk);
+> +}
+> +
+> +static inline unsigned long clk_get_rate(struct clk *clk)
+> +{
+> +	if (clk->ops->get_rate)
+> +		return clk->ops->get_rate(clk);
+> +	return 0;
+> +}
+> +
+> +static inline void clk_put(struct clk *clk)
+> +{
+> +	if (clk->ops->put)
+> +		clk->ops->put(clk);
+> +}
+> +
+> +static inline long clk_round_rate(struct clk *clk, unsigned long rate)
+> +{
+> +	if (clk->ops->round_rate)
+> +		return clk->ops->round_rate(clk, rate);
+> +	return -ENOSYS;
+> +}
+> +
+> +static inline int clk_set_rate(struct clk *clk, unsigned long rate)
+> +{
+> +	if (clk->ops->set_rate)
+> +		return clk->ops->set_rate(clk, rate);
+> +	return -ENOSYS;
+> +}
+> +
+> +static inline int clk_set_parent(struct clk *clk, struct clk *parent)
+> +{
+> +	if (clk->ops->set_parent)
+> +		return clk->ops->set_parent(clk, parent);
+> +	return -ENOSYS;
+> +}
+> +
+> +static inline struct clk *clk_get_parent(struct clk *clk)
+> +{
+> +	if (clk->ops->get_parent)
+> +		return clk->ops->get_parent(clk);
+> +	return ERR_PTR(-ENOSYS);
+> +}
 
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=y
-CONFIG_MTD_BLKDEVS=y
-CONFIG_MTD_BLOCK=y
-CONFIG_FTL=y
-# CONFIG_NFTL is not set
-# CONFIG_INFTL is not set
-# CONFIG_RFD_FTL is not set
-# CONFIG_SSFDC is not set
+In the Samsung impelemtnations, the clk keeps a parent pointer and
+we just return that as the esult of the clk_get_parent nless the clock
+wants to override it.
 
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=y
-# CONFIG_MTD_JEDECPROBE is not set
-CONFIG_MTD_GEN_PROBE=y
-CONFIG_MTD_CFI_ADV_OPTIONS=y
-CONFIG_MTD_CFI_NOSWAP=y
-# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
-# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
-CONFIG_MTD_CFI_GEOMETRY=y
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-# CONFIG_MTD_CFI_I4 is not set
-# CONFIG_MTD_CFI_I8 is not set
-# CONFIG_MTD_OTP is not set
-# CONFIG_MTD_CFI_INTELEXT is not set
-CONFIG_MTD_CFI_AMDSTD=y
-# CONFIG_MTD_CFI_STAA is not set
-CONFIG_MTD_CFI_UTIL=y
-# CONFIG_MTD_RAM is not set
-# CONFIG_MTD_ROM is not set
-# CONFIG_MTD_ABSENT is not set
-# CONFIG_MTD_OBSOLETE_CHIPS is not set
+> +
+> +#else /* !CONFIG_USE_COMMON_STRUCT_CLK */
+>  
+>  /*
+> - * struct clk - an machine class defined object / cookie.
+> + * Global clock object, actual structure is declared per-machine
+>   */
+>  struct clk;
+>  
+>  /**
+> - * clk_get - lookup and obtain a reference to a clock producer.
+> - * @dev: device for clock "consumer"
+> - * @id: clock comsumer ID
+> - *
+> - * Returns a struct clk corresponding to the clock producer, or
+> - * valid IS_ERR() condition containing errno.  The implementation
+> - * uses @dev and @id to determine the clock consumer, and thereby
+> - * the clock producer.  (IOW, @id may be identical strings, but
+> - * clk_get may return different clock producers depending on @dev.)
+> - *
+> - * Drivers must assume that the clock source is not enabled.
+> - *
+> - * clk_get should not be called from within interrupt context.
+> - */
+> -struct clk *clk_get(struct device *dev, const char *id);
+> -
+> -/**
+>   * clk_enable - inform the system when the clock source should be running.
+>   * @clk: clock source
+>   *
+> @@ -83,12 +148,6 @@ unsigned long clk_get_rate(struct clk *clk);
+>   */
+>  void clk_put(struct clk *clk);
+>  
+> -
+> -/*
+> - * The remaining APIs are optional for machine class support.
+> - */
+> -
+> -
+>  /**
+>   * clk_round_rate - adjust a rate to the exact rate a clock can provide
+>   * @clk: clock source
+> @@ -125,6 +184,27 @@ int clk_set_parent(struct clk *clk, struct clk *parent);
+>   */
+>  struct clk *clk_get_parent(struct clk *clk);
+>  
+> +#endif /* !CONFIG_USE_COMMON_STRUCT_CLK */
+> +
+> +struct device;
+> +
+> +/**
+> + * clk_get - lookup and obtain a reference to a clock producer.
+> + * @dev: device for clock "consumer"
+> + * @id: clock comsumer ID
+> + *
+> + * Returns a struct clk corresponding to the clock producer, or
+> + * valid IS_ERR() condition containing errno.  The implementation
+> + * uses @dev and @id to determine the clock consumer, and thereby
+> + * the clock producer.  (IOW, @id may be identical strings, but
+> + * clk_get may return different clock producers depending on @dev.)
+> + *
+> + * Drivers must assume that the clock source is not enabled.
+> + *
+> + * clk_get should not be called from within interrupt context.
+> + */
+> +struct clk *clk_get(struct device *dev, const char *id);
+> +
+>  /**
+>   * clk_get_sys - get a clock based upon the device name
+>   * @dev_id: device name
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-#
-# Mapping drivers for chip access
-#
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-# CONFIG_MTD_PHYSMAP is not set
-CONFIG_MTD_PHYSMAP_OF=y
-# CONFIG_MTD_PLATRAM is not set
-
-But still hte mapping is not showed on boot, it seems to not read yet the
-blob node. The boot-log is:
-
-U-Boot 1.3.2 (Jan  8 2010 - 12:57:17) MPC83XX
-
-Reset Status: Software Hard, External/Internal Soft, External/Internal Hard
-
-CPU:   e300c2, MPC8321E, Rev: 11 at 333.333 MHz, CSB:  133 MHz
-Board: Freescale MPC8323ERDB
-I2C:   ready
-DRAM:  64 MB
-FLASH: 64 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   FSL UEC0, FSL UEC1
-Hit any key to stop autoboot:  0
-Scanning PCI devices on bus 0
-BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
-_____________________________________________________________
-00.00.00   0x1957     0x00a6     Processor               0x20
-## Booting image at fc100000 ...
-   Image Name:   Linux-2.6.20.6-rt8
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1495894 Bytes =  1.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   Booting using the fdt at 0xfc080000
-   Loading Device Tree to 00785000, end 007ff11f ... OK
-Using MPC832x RDB machine description
-Linux version 2.6.20.6-rt8 (cubit@cubit-laptop) (gcc version 4.2.3 (Sourcery
-G++ Lite 4.2-171)) #9 PREEMPT Tue Jan 12 14:53:56 CET 2010
-setup_arch: bootmem
-mpc832x_rdb_setup_arch()
-Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus number:
-0->0
-pio-handle not available
-arch: exit
-Zone PFN ranges:
-  DMA             0 ->    16384
-  Normal      16384 ->    16384
-early_node_map[1] active PFN ranges
-    0:        0 ->    16384
-Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
-Built 1 zonelists.  Total pages: 16256
-Kernel command line: root=/dev/mtdblock4 rootfstype=jffs2 rw console=ttyS0,
-38400
-WARNING: experimental RCU implementation.
-IPIC (128 IRQ sources) at fdefb700
-QEIC (64 IRQ sources) at fdefa080
-PID hash table entries: 256 (order: 8, 1024 bytes)
-
-Using MPC832x RDB machine description
-Linux version 2.6.20.6-rt8 (cubit@cubit-laptop) (gcc version 4.2.3 (Sourcery
-G++ Lite 4.2-171)) #9 PREEMPT Tue Jan 12 14:53:56 CET 2010
-Found MPC83xx PCI host bridge at 0x00000000e0008500. Firmware bus number:
-0->0
-pio-handle not available
-Zone PFN ranges:
-  DMA             0 ->    16384
-  Normal      16384 ->    16384
-early_node_map[1] active PFN ranges
-    0:        0 ->    16384
-Real-Time Preemption Support (C) 2004-2007 Ingo Molnar
-Built 1 zonelists.  Total pages: 16256
-Kernel command line: root=/dev/mtdblock4 rootfstype=jffs2 rw console=ttyS0,
-38400
-WARNING: experimental RCU implementation.
-IPIC (128 IRQ sources) at fdefb700
-QEIC (64 IRQ sources) at fdefa080
-PID hash table entries: 256 (order: 8, 1024 bytes)
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 61200k/65536k available (2836k kernel code, 4268k reserved, 180k
-data, 110k bss, 132k init)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-Generic PHY: Registered new driver
-SCSI subsystem initialized
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 2048 (order: 4, 65536 bytes)
-TCP bind hash table entries: 1024 (order: 2, 28672 bytes)
-TCP: Hash tables configured (established 2048 bind 1024)
-TCP reno registered
-NTFS driver 2.1.28 [Flags: R/O].
-JFFS2 version 2.2. (NAND) (C) 2001-2006 Red Hat, Inc.
-fuse init (API version 7.8)
-JFS: nTxBlock = 478, nTxLock = 3829
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-Generic RTC Driver v1.07
-WDT driver for MPC83xx initialized. mode:reset timeout=65535 (32 seconds)
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 16) is a 16550A
-serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 17) is a 16550A
-RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
-loop: loaded (max 8 devices)
-ucc_tdm: Freescale QE UCC TDM Driver
-config_tdm Delay for Legerity!
-tdm_start 16-bit linear pcm mode active with slots 0 & 2
-tdm_start UCC based TDM enabled
-ucc_tdm_probe UCC based tdm module installed
-UCC Ethernet Controller MII Bus: probed
-ucc_geth: QE UCC Gigabit Ethernet Controller
-ucc_geth: UCC2 at 0xe0103000 (irq = 20)
-eth0: MTU=1500 (frame
-size=1518,rx_buffer_size=1536,truesize=1792,sk_buff=160)
-ucc_geth: UCC3 at 0xe0102200 (irq = 34)
-eth1: MTU=1500 (frame
-size=1518,rx_buffer_size=1536,truesize=1792,sk_buff=160)
-SKB Handler initialized(max=64)
-ICPlus IP175C: Registered new driver
-block2mtd: version $Revision: 1.30 $
-e01004c0.spi: MPC83xx SPI Controller driver at 0xc50aa4c0 (irq = 21)
-usbmon: debugfs is not available
-Initializing USB Mass Storage driver...
-usbcore: registered new interface driver usb-storage
-USB Mass Storage support registered.
-i2c /dev entries driver
-TCP cubic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-No filesystem could mount root, tried: <6>Time: timebase clocksource has
-been installed.
- jffs2
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(0,0)
-Call Trace:
-[C03B5E70] [C000819C]  (unreliable)
-[C03B5EB0] [C0026AB0]
-[C03B5F00] [C02A4B98]
-[C03B5F50] [C02A4DEC]
-[C03B5F70] [C0003B04]
-[C03B5FF0] [C00102BC]
- <0>Rebooting in 180 seconds..
-
-Do I miss to turn on something or kernel version do not support device tree?
-
-Has u-boot 1.3.2 mtdparts command? When I try to use it an  'unknown
-command' occur.
-
-Thanks
-
-Dario 
 -- 
-View this message in context: http://old.nabble.com/kernel-panic-on-MPC8323-custom-board-tp27059752p27128312.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
