@@ -1,28 +1,23 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 07B191007D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 18:10:35 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 24C72C00E6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 08:06:04 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 02/13] powerpc/5200: LocalPlus driver: use SCLPC register
-	structure
-Date: Tue, 12 Jan 2010 08:06:03 +0100
-References: <200912081339.50722.roman.fietze@telemotive.de>
-	<200912220759.23453.roman.fietze@telemotive.de>
-	<fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
-In-Reply-To: <fa686aa41001111115g3451c9b9h4d6c551afd5698e1@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5946B1007F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 18:12:46 +1100 (EST)
+In-Reply-To: <20100112022150.GE12666@kryten>
+References: <20100112022150.GE12666@kryten>
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
+	autoconf.h
+To: Anton Blanchard <anton@samba.org>
+Message-ID: <OFA2E48A7D.85AD548E-ONC12576A9.002747D1-C12576A9.00277ABD@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 12 Jan 2010 08:11:13 +0100
 MIME-Version: 1.0
-Message-Id: <201001120806.03728.roman.fietze@telemotive.de>
-Content-Type: multipart/signed; boundary="nextPart1299990.2WCzgrOAB3";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-type: text/plain; charset=US-ASCII
+Cc: Roel Kluin <roel.kluin@gmail.com>, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart1299990.2WCzgrOAB3
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Anton Blanchard <anton@samba.org> wrote on 12/01/2010 03:21:51:
+>
+>
+> commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 (zlib: optimize inffast when
+> copying direct from output) referenced include/linux/autoconf.h which
+> is now called include/generated/autoconf.h.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>
+> Index: linux-cpumask/arch/powerpc/boot/Makefile
+> ===================================================================
+> --- linux-cpumask.orig/arch/powerpc/boot/Makefile   2010-01-12 13:15:26.266724762 +1100
+> +++ linux-cpumask/arch/powerpc/boot/Makefile   2010-01-12 13:15:33.532974469 +1100
+> @@ -34,7 +34,7 @@ BOOTCFLAGS   += -fno-stack-protector
+>  endif
+>
+>  BOOTCFLAGS   += -I$(obj) -I$(srctree)/$(obj)
+> -BOOTCFLAGS   += -include include/linux/autoconf.h -Iarch/powerpc/include
+> +BOOTCFLAGS   += -include include/generated/autoconf.h -Iarch/powerpc/include
+>  BOOTCFLAGS   += -Iinclude
 
-Hello Grant,
+Try making that:
+-BOOTCFLAGS   += -include include/linux/autoconf.h -Iarch/powerpc/include
+-BOOTCFLAGS   += -Iinclude
++BOOTCFLAGS   += -include include/generated/autoconf.h -I$(srctree)/arch/powerpc/include
++BOOTCFLAGS   += -I$(srctree)/include
 
-On Monday 11 January 2010 20:15:58 Grant Likely wrote:
-
-> No patch description?  Very few patches are sufficiently described by
-> the subject line alone.  Tell me what the problem is, what the patch
-> changes, and why.
-
-And a lot of other information. Thank you very much for the effort you
-put into those patches. I almost knew that you will criticize e.g.
-patches that mix functional and "optical" changes, patches that are
-not describing more exactly what I did.
-
-As soon as I have some time left I will try to go once more from the
-original driver to the final driver using clear and separate, well
-bescribed patches, of course taking care of your and other people
-comments.
-
-Again, thanks
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
-
-Amtsgericht Ulm                                HRB 541321
-Vorstand:
-Peter Kersten, Markus Fischer, Franz Diller, Markus Stolz
-
---nextPart1299990.2WCzgrOAB3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAktMH1sACgkQp5XY/BK//MLbPwCfWE8j6CKNwlu92qgq+/+6tDSa
-+owAn0XioBoMAxCQbHN8uXJlZ0usWASb
-=Vxbm
------END PGP SIGNATURE-----
-
---nextPart1299990.2WCzgrOAB3--
+ Jocke
