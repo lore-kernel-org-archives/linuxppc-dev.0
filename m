@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[78.32.30.218])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0CEDCB7C5F
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 19:44:25 +1100 (EST)
-Subject: Re: [PATCH] 8xx: fix user space TLB walk in dcbX fixup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OFB21A02C2.A1F50F94-ONC12576A9.00270097-C12576A9.00272133@transmode.se>
-References: <1262969186-18462-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1263264045.724.183.camel@pasglop>
-	<OFB21A02C2.A1F50F94-ONC12576A9.00270097-C12576A9.00272133@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 19:44:09 +1100
-Message-ID: <1263285849.724.199.camel@pasglop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Rex Feany <RFeany@mrv.com>
+	by ozlabs.org (Postfix) with ESMTPS id 03B08B7C64
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 12 Jan 2010 20:13:40 +1100 (EST)
+Date: Tue, 12 Jan 2010 09:13:24 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jeremy Kerr <jeremy.kerr@canonical.com>
+Subject: Re: [RFC,PATCH 0/7 v2] Common struct clk implementation
+Message-ID: <20100112091324.GC26435@n2100.arm.linux.org.uk>
+References: <1263279511.160127.576969496193.0.gpush@pororo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1263279511.160127.576969496193.0.gpush@pororo>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-01-12 at 08:07 +0100, Joakim Tjernlund wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/01/2010 03:40:45:
-> >
-> > On Fri, 2010-01-08 at 17:46 +0100, Joakim Tjernlund wrote:
-> > > The newly added fixup for buggy dcbX insn's has
-> > > a bug that always trigger a kernel TLB walk so a user space
-> > > dcbX insn will cause a Kernel Machine Check if it hits DTLB error.
-> > >
-> > > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> > > ---
-> > >
-> > > I found this problem in 2.4 and forward ported it to 2.6. I
-> > > cannot test it so I cannot be 100% sure I got it right.
-> > >
-> > >  arch/powerpc/kernel/head_8xx.S |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> > Do you have something to make sure that TASK_SIZE is never bigger than
-> > 2G ? Else userspace could be all the way to 0xbfffffff ...
+On Tue, Jan 12, 2010 at 05:58:31PM +1100, Jeremy Kerr wrote:
+> The first two patches are for the architecture-independent kernel code,
+> introducing the common clk API. The remaining patches are specific to
+> the ARM 'versatile' and 'realview' platforms.
+
+You're still only touching the "easy" platforms (as I pointed out
+previously).  This is no real test of the new implementation.  To make
+a decision on this based upon the easy implementations would be
+completely wreckless.
+
+As I said previously:
+
+> Having struct clk be a set of function pointers gets really expensive on
+> some platforms due to the shere number of struct clks - about 900; this
+> will be a bar to them adopting this not only due to the size but the
+> problems of ensuring correct initialisation.
 > 
-> No, but this is 8xx :) The TLB handlers has the same "limitation" and has always
-> been so.
+> Conversely, having those platforms use a pointer to a set of clk operations
+> structures is also prohibitive - some operations such as enable and disable
+> can be common, but the rest are extremely variable.
 
-You should send a patch to express that limitation in KConfig :-)
+The 900 figure was the result of a bad grep - it's more around 220
+for one OMAP CPU - if you include all OMAP CPUs which share the same
+implementation then its around 600 clk structures that need to be
+changed.
 
-Cheers,
-Ben.
+But the point I was trying to convey is that OMAP doesn't work with
+_either_ a pure operations struct _or_ a bunch of per-clock function
+pointers - it currently uses a mixture of the two.
+
+Maybe this is because there was no proper classing of clocks (to
+separate clock masking from clock muxing from PLLs, etc.)  The result
+of this is that with a pure operations struct, you're likely to end
+up with as many operations structures as there are clocks on OMAP.
+
+The answer "OMAP shouldn't use this then" is not one I want to hear;
+as I've already pointed out, OMAP is one of the platforms which should
+use it.
