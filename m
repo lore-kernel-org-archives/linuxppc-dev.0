@@ -1,23 +1,15 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 033DA1007D5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 12 Jan 2010 18:56:03 +1100 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 03/13] mpc52xx: add SCLPC register bit definitions
-Date: Tue, 12 Jan 2010 08:55:58 +0100
-References: <200912081339.50722.roman.fietze@telemotive.de>
-	<200912220800.54373.roman.fietze@telemotive.de>
-	<fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com>
-In-Reply-To: <fa686aa41001111121u5c943fc7p789c0ec0b41af883@mail.gmail.com>
-MIME-Version: 1.0
-Message-Id: <201001120855.59122.roman.fietze@telemotive.de>
-Content-Type: multipart/signed; boundary="nextPart3798798.cbk5vydfiR";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CF82DB6F07
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 19:29:08 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix decrementer setup on 1GHz boards
+Date: Tue, 12 Jan 2010 09:28:54 +0100
+Message-Id: <1263284934-14766-1-git-send-email-sr@denx.de>
+Cc: Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,62 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart3798798.cbk5vydfiR
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+We noticed that recent kernels didn't boot on our 1GHz Canyonlands 460EX
+boards anymore. As it seems, patch 8d165db1 [powerpc: Improve
+decrementer accuracy] introduced this problem. The routine div_sc()
+overflows with shift = 32 resulting in this incorrect setup:
 
-Hello Grant,
+time_init: decrementer frequency = 1000.000012 MHz
+time_init: processor frequency   = 1000.000012 MHz
+clocksource: timebase mult[400000] shift[22] registered
+clockevent: decrementer mult[33] shift[32] cpu[0]
 
-On Monday 11 January 2010 20:21:22 Grant Likely wrote:
+This patch now introduces a local div_dc64() version of this function
+so that this overflow doesn't happen anymore.
 
-> Unrelated whitespace change?
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Detlev Zundel <dzu@denx.de>
+---
 
-My fault, as with some other white space changes. My Emacs is
-configured using some older setup found in a 2.4
-Documentation/CodingStyle. Before saving a file my spine is used to
-reformat the whole source file, which then causes those artefacts.
-I'll fix the Emacs setup and try to fix my spine, and double check
-before commits.
+ arch/powerpc/kernel/time.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-BTW: no Emacs users amongst the kernel coders any more? At least I
-have to read "So, you can either get rid of GNU emacs, or ...".
-
-
-> I prefer the (1<<n) style myself.
-
-Ok. Looking at it a second time you and Wolfgang are definitively
-right. And I prefer the (1<<n) style a lot more than the 0x0080 style.
-
-
-> Why is the list head being removed?
-
-Not used at all, except in initialization?
-
-Of course a seperate patch would have been needed.
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
-
-Amtsgericht Ulm                                HRB 541321
-Vorstand:
-Peter Kersten, Markus Fischer, Franz Diller, Markus Stolz
-
---nextPart3798798.cbk5vydfiR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAktMKw8ACgkQp5XY/BK//MKbHQCfX3aufw0LCkf8LcV4XFB6rb+O
-I0IAnjRH0WVXAAai9bEI5uaCtlmBZtV3
-=/y3t
------END PGP SIGNATURE-----
-
---nextPart3798798.cbk5vydfiR--
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 92dc844..3ad729f 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -882,12 +882,21 @@ static void decrementer_set_mode(enum clock_event_mode mode,
+ 		decrementer_set_next_event(DECREMENTER_MAX, dev);
+ }
+ 
++static inline uint64_t div_sc64(unsigned long ticks, unsigned long nsec,
++				int shift)
++{
++	uint64_t tmp = ((uint64_t)ticks) << shift;
++
++	do_div(tmp, nsec);
++	return tmp;
++}
++
+ static void __init setup_clockevent_multiplier(unsigned long hz)
+ {
+ 	u64 mult, shift = 32;
+ 
+ 	while (1) {
+-		mult = div_sc(hz, NSEC_PER_SEC, shift);
++		mult = div_sc64(hz, NSEC_PER_SEC, shift);
+ 		if (mult && (mult >> 32UL) == 0UL)
+ 			break;
+ 
+-- 
+1.6.4.4
