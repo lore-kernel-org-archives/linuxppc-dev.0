@@ -1,10 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 12 Jan 2010 21:50:14 +1100
+Date: Tue, 12 Jan 2010 21:56:42 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Mark some variables in the page fault path
-	__read_mostly
-Message-ID: <20100112105014.GH12666@kryten>
+Subject: [PATCH] powerpc: Reduce footprint of irq_stat
+Message-ID: <20100112105642.GI12666@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -18,48 +17,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Using perf to trace L1 dcache misses and dumping data addresses I found a few
-variables taking a lot of misses. Since they are almost never written, they
-should go into the __read_mostly section.
+PowerPC is currently using asm-generic/hardirq.h which statically allocates an
+NR_CPUS irq_stat array. Switch to an arch specific implementation which uses
+per cpu data:
+
+On a kernel with NR_CPUS=1024, this saves quite a lot of memory:
+
+   text    data     bss      dec         hex    filename
+8767938 2944132 1636796 13348866         cbb002 vmlinux.baseline
+8767779 2944260 1505724 13217763         c9afe3 vmlinux.irq_cpustat
+
+A saving of around 128kB.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/powerpc/xmon/xmon.c
+Index: linux-cpumask/arch/powerpc/include/asm/hardirq.h
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/xmon/xmon.c	2010-01-12 14:40:35.436777033 +1100
-+++ linux-cpumask/arch/powerpc/xmon/xmon.c	2010-01-12 14:41:30.576726874 +1100
-@@ -61,7 +61,7 @@ static int xmon_owner;
- static int xmon_gate;
- #endif /* CONFIG_SMP */
- 
--static unsigned long in_xmon = 0;
-+static unsigned long in_xmon __read_mostly = 0;
- 
- static unsigned long adrs;
- static int size = 1;
-Index: linux-cpumask/arch/powerpc/kernel/traps.c
+--- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-01-06 16:24:31.220084536 +1100
++++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-01-06 17:45:25.219563704 +1100
+@@ -1 +1,22 @@
+-#include <asm-generic/hardirq.h>
++#ifndef _ASM_POWERPC_HARDIRQ_H
++#define _ASM_POWERPC_HARDIRQ_H
++
++#include <linux/threads.h>
++#include <linux/irq.h>
++
++typedef struct {
++	unsigned int __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
++
++DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
++
++#define __ARCH_IRQ_STAT
++
++#define local_softirq_pending()	__get_cpu_var(irq_stat).__softirq_pending
++
++static inline void ack_bad_irq(unsigned int irq)
++{
++	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
++}
++
++#endif /* _ASM_POWERPC_HARDIRQ_H */
+Index: linux-cpumask/arch/powerpc/kernel/irq.c
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/traps.c	2010-01-12 14:40:29.614225983 +1100
-+++ linux-cpumask/arch/powerpc/kernel/traps.c	2010-01-12 14:41:30.576726874 +1100
-@@ -60,13 +60,13 @@
- #endif
+--- linux-cpumask.orig/arch/powerpc/kernel/irq.c	2010-01-06 16:29:31.370083802 +1100
++++ linux-cpumask/arch/powerpc/kernel/irq.c	2010-01-06 16:48:04.210086075 +1100
+@@ -73,6 +73,9 @@
+ #define CREATE_TRACE_POINTS
+ #include <asm/trace.h>
  
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
--int (*__debugger)(struct pt_regs *regs);
--int (*__debugger_ipi)(struct pt_regs *regs);
--int (*__debugger_bpt)(struct pt_regs *regs);
--int (*__debugger_sstep)(struct pt_regs *regs);
--int (*__debugger_iabr_match)(struct pt_regs *regs);
--int (*__debugger_dabr_match)(struct pt_regs *regs);
--int (*__debugger_fault_handler)(struct pt_regs *regs);
-+int (*__debugger)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_ipi)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_bpt)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_sstep)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_iabr_match)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_dabr_match)(struct pt_regs *regs) __read_mostly;
-+int (*__debugger_fault_handler)(struct pt_regs *regs) __read_mostly;
++DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
++EXPORT_PER_CPU_SYMBOL(irq_stat);
++
+ int __irq_offset_value;
+ static int ppc_spurious_interrupts;
  
- EXPORT_SYMBOL(__debugger);
- EXPORT_SYMBOL(__debugger_ipi);
