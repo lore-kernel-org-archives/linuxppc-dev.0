@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9935BB6F07
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 13:25:39 +1100 (EST)
-Subject: Re: [PATCH] Make cpu hotplug driver lock part of ppc_md
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4B322DD6.60801@austin.ibm.com>
-References: <4B30DB8B.3030305@austin.ibm.com>
-	<1261520982.17348.8.camel@concordia>  <4B322DD6.60801@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 13:23:16 +1100
-Message-ID: <1263262996.724.176.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 12 Jan 2010 13:21:51 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH]: powerpc: Fix build breakage due to incorrect location of
+	autoconf.h
+Message-ID: <20100112022150.GE12666@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Roel Kluin <roel.kluin@gmail.com>, linuxppc-dev@ozlabs.org,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +21,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> The intention of the cpu_hotplug_driver_locks to add additional serialization
-> during cpu hotplug operations.  For pseries this is used during DLPAR of cpu
-> operations so that cpu hotplug actions cannot be initiated whiloe a DLPAR
-> operation is in flight.  For example, during DLPAR add we take the lock while
-> acquiring the cpu from firmware and updating the device tree with the new
-> cpu information, after which we hotplug add the cpu to the system.  
-> 
-> There is nothing harmless about taking the lock on all platforms, I was just
-> trying to avoid taking the lock if the additional serialization is not needed.
-> 
-> > 
-> > If so, you could just make the mutex available to all powerpc code, and
-> > rename it, and then we wouldn't need all this jiggery pokery just to
-> > take & release a lock.
-> 
-> I can make the lock available to all powerpc code and not go through the
-> ppc_md struct, it makes no difference to me personally.  Of course this would
-> make all that fun pokery jiggery go away :)
+commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 (zlib: optimize inffast when
+copying direct from output) referenced include/linux/autoconf.h which
+is now called include/generated/autoconf.h.
 
-Yeah, Michael is right, just make it global to powerpc, it should make
-things simpler.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Cheers,
-Ben.
+Index: linux-cpumask/arch/powerpc/boot/Makefile
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/boot/Makefile	2010-01-12 13:15:26.266724762 +1100
++++ linux-cpumask/arch/powerpc/boot/Makefile	2010-01-12 13:15:33.532974469 +1100
+@@ -34,7 +34,7 @@ BOOTCFLAGS	+= -fno-stack-protector
+ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+-BOOTCFLAGS	+= -include include/linux/autoconf.h -Iarch/powerpc/include
++BOOTCFLAGS	+= -include include/generated/autoconf.h -Iarch/powerpc/include
+ BOOTCFLAGS	+= -Iinclude
+ 
+ DTS_FLAGS	?= -p 1024
