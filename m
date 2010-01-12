@@ -1,15 +1,23 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF82DB6F07
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 19:29:08 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix decrementer setup on 1GHz boards
-Date: Tue, 12 Jan 2010 09:28:54 +0100
-Message-Id: <1263284934-14766-1-git-send-email-sr@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>
+	by ozlabs.org (Postfix) with ESMTPS id 0CEDCB7C5F
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Jan 2010 19:44:25 +1100 (EST)
+Subject: Re: [PATCH] 8xx: fix user space TLB walk in dcbX fixup
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OFB21A02C2.A1F50F94-ONC12576A9.00270097-C12576A9.00272133@transmode.se>
+References: <1262969186-18462-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1263264045.724.183.camel@pasglop>
+	<OFB21A02C2.A1F50F94-ONC12576A9.00270097-C12576A9.00272133@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2010 19:44:09 +1100
+Message-ID: <1263285849.724.199.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Rex Feany <RFeany@mrv.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,53 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We noticed that recent kernels didn't boot on our 1GHz Canyonlands 460EX
-boards anymore. As it seems, patch 8d165db1 [powerpc: Improve
-decrementer accuracy] introduced this problem. The routine div_sc()
-overflows with shift = 32 resulting in this incorrect setup:
+On Tue, 2010-01-12 at 08:07 +0100, Joakim Tjernlund wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 12/01/2010 03:40:45:
+> >
+> > On Fri, 2010-01-08 at 17:46 +0100, Joakim Tjernlund wrote:
+> > > The newly added fixup for buggy dcbX insn's has
+> > > a bug that always trigger a kernel TLB walk so a user space
+> > > dcbX insn will cause a Kernel Machine Check if it hits DTLB error.
+> > >
+> > > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > > ---
+> > >
+> > > I found this problem in 2.4 and forward ported it to 2.6. I
+> > > cannot test it so I cannot be 100% sure I got it right.
+> > >
+> > >  arch/powerpc/kernel/head_8xx.S |    4 ++--
+> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+> >
+> > Do you have something to make sure that TASK_SIZE is never bigger than
+> > 2G ? Else userspace could be all the way to 0xbfffffff ...
+> 
+> No, but this is 8xx :) The TLB handlers has the same "limitation" and has always
+> been so.
 
-time_init: decrementer frequency = 1000.000012 MHz
-time_init: processor frequency   = 1000.000012 MHz
-clocksource: timebase mult[400000] shift[22] registered
-clockevent: decrementer mult[33] shift[32] cpu[0]
+You should send a patch to express that limitation in KConfig :-)
 
-This patch now introduces a local div_dc64() version of this function
-so that this overflow doesn't happen anymore.
-
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Detlev Zundel <dzu@denx.de>
----
-
- arch/powerpc/kernel/time.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 92dc844..3ad729f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -882,12 +882,21 @@ static void decrementer_set_mode(enum clock_event_mode mode,
- 		decrementer_set_next_event(DECREMENTER_MAX, dev);
- }
- 
-+static inline uint64_t div_sc64(unsigned long ticks, unsigned long nsec,
-+				int shift)
-+{
-+	uint64_t tmp = ((uint64_t)ticks) << shift;
-+
-+	do_div(tmp, nsec);
-+	return tmp;
-+}
-+
- static void __init setup_clockevent_multiplier(unsigned long hz)
- {
- 	u64 mult, shift = 32;
- 
- 	while (1) {
--		mult = div_sc(hz, NSEC_PER_SEC, shift);
-+		mult = div_sc64(hz, NSEC_PER_SEC, shift);
- 		if (mult && (mult >> 32UL) == 0UL)
- 			break;
- 
--- 
-1.6.4.4
+Cheers,
+Ben.
