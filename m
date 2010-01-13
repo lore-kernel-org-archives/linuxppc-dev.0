@@ -1,22 +1,19 @@
-Return-Path: <jeremy.kerr@canonical.com>
-Received: from adelie.canonical.com (adelie.canonical.com [91.189.90.139])
-	by ozlabs.org (Postfix) with ESMTP id 53B6FB7C6E
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8F149B7C90
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jan 2010 12:17:48 +1100 (EST)
-From: Jeremy Kerr <jeremy.kerr@canonical.com>
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC,PATCH 0/7 v2] Common struct clk implementation
-Date: Wed, 13 Jan 2010 12:17:36 +1100
-References: <1263279511.160127.576969496193.0.gpush@pororo>
-	<20100112091324.GC26435@n2100.arm.linux.org.uk>
-In-Reply-To: <20100112091324.GC26435@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201001131217.36575.jeremy.kerr@canonical.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	linux-kernel@vger.kernel.org
+	Wed, 13 Jan 2010 16:20:14 +1100 (EST)
+Subject: [PATCH] zlib: Fix build of powerpc boot wrapper
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 16:19:34 +1100
+Message-ID: <1263359974.724.219.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,108 +23,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Russell,
+Commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 broke the build
+of all powerpc boot wrappers.
 
-> But the point I was trying to convey is that OMAP doesn't work with
-> _either_ a pure operations struct _or_ a bunch of per-clock function
-> pointers - it currently uses a mixture of the two.
+It attempts to add an include of autoconf.h but used the wrong
+path for it. It also adds -D__KERNEL__ to our boot wrapper, both
+things that we pretty much didn't do on purpose so far.
 
-With the common clk, you can do exactly that:
+We want our boot wrapper to remain independent enough of the kernel
+for various reasons, one of them being that you can "wrap" an existing
+kernel at distro install time which allows to ship one kernel image
+and a set of boot wrappers for different platforms, the wrappers
+don't have to be built out of the same kernel build tree.
 
-struct clk_foo {
-	/* ->ops provides functions common to clk_foo */
-	struct clk;
+It's also incorrect to do what the patch does in our boot environment
+since we may not have a proper alignment exception handler which means
+we may not be able to fixup the few cases where an unaligned access will
+need SW emulation (depends on the core variant, could be when crossing
+page or segment boundaries for example).
 
-	/* provides a function for only this clock */
-	int (*single_clock_func)(struct clk_foo *);
-}
+This patch fixes it by putting the old code back in and using the
+new "fancy" variant only when CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+is set, which happens not to be set on powerpc since we don't include
+autoconf.h. It also reverts the changes to our boot wrapper Makefile.
 
-The only real difference is that the public API is provided through struct =
-clk=20
-rather than redefined clk_* functions; whatever is implementing the clock-
-type-specific struct clk can add whatever fields necessary.
+This means that x86 should, afaik, keep the optimisations since its
+boot wrapper does include autoconf.h and define __KERNEL__ (though I
+doubt they make that much different outside of slow embedded processors).
 
-=46rom your earlier mail about sizes on omap:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> There are two function pointers in the struct clk which would be
-> identical to the versions proposed in this generic struct clk.
-> There's a total of 219 clk structures in OMAP3.  So, 219 * (4 + 8)
-> =3D 2628.  Switching OMAP means 219 * (4 + 32) =3D 7884, which is an
-> increase in overhead of 3x.
-
-But we also can reduce the size of the struct clk in most cases; I believe =
-the=20
-separate clk_operations in v2 of this series will help with this.
-
-Taking OMAP3 for example (I'm not very familiar with that platform, so am=20
-basing this on a brief look through the clock code), the first step to a=20
-common clk port would be to wrap the existing struct clk:
-
-struct clk_omap {
-	struct clk			clk;
-	struct list_head		node;
-	const struct clkops	*ops;
-    [...]
-};
-
-and define the clk_operations to be the current omap clk_* functions.
-
-This results in one extra pointer per clock, plus the clk_operations, so 90=
-8=20
-bytes (4 * 219 + 32) overhead.
-
-Next, we can start removing fields that are not used by all clocks; the fix=
-ed=20
-top-level clocks would be a good start; it looks like we can represent thos=
-e=20
-with a:
-
-struct clk_omap_fixed {
-	struct clk	clk;
-	char			*name;
-	unsigned long	rate;
-}
-
-[For these fixed clocks, we don't need to propagate changes to children, he=
-nce=20
-I'm assuming no child/sibling members]
-
-The original struct clk is 96 bytes; clk_omap_fixed is 12, but we still nee=
-d=20
-one clk_operations (32 bytes). Since there are 8 of these, we save 640 byte=
-s=20
-((96 - 12) * 8 - 32).
-
-If we then take the 'follow parent' clocks, it looks like we can represent=
-=20
-those with something like:
-
-struct clk_omap_followparent =3D {
-	struct clk	clk;
-	char			*name;
-	struct clk	*parent;
-	struct list_head children, siblings;
-	unsigned long	rate;
-	void __iomem	*enable_reg;
-	__u8			enable_bit;
-	char			*clkdm_name;
-	int			flags;
-};
-
-This would be 48 bytes, there are 140 of these, saving 6688 bytes ( (96 - 4=
-8)=20
-* 140 - 32).
-
-Now, we could stop here, or keep looking for common usage patterns of struc=
-t=20
-clk to find cases where creating another clock type makes sense.
-
-I know I've only looked at the easy OMAP cases here, but the principle stil=
-l=20
-applies: keep the original struct clk around as a fallback, but use the=20
-smaller struct clks where possible.
+Linus, if you don't like the approach, then please just revert
+ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 for now.
 
 Cheers,
+Ben.
+
+ arch/powerpc/boot/Makefile |    4 +---
+ lib/zlib_inflate/inffast.c |   32 ++++++++++++++++++++++++++++++--
+ 2 files changed, 31 insertions(+), 5 deletions(-)
 
 
-Jeremy
+
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 826a30a..bb2465b 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -20,7 +20,7 @@
+ all: $(obj)/zImage
+ 
+ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+-		 -fno-strict-aliasing -Os -msoft-float -pipe -D__KERNEL__\
++		 -fno-strict-aliasing -Os -msoft-float -pipe \
+ 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
+ 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+@@ -34,8 +34,6 @@ BOOTCFLAGS	+= -fno-stack-protector
+ endif
+ 
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+-BOOTCFLAGS	+= -include include/linux/autoconf.h -Iarch/powerpc/include
+-BOOTCFLAGS	+= -Iinclude
+ 
+ DTS_FLAGS	?= -p 1024
+ 
+diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
+index 05e1559..215447c 100644
+--- a/lib/zlib_inflate/inffast.c
++++ b/lib/zlib_inflate/inffast.c
+@@ -4,12 +4,25 @@
+  */
+ 
+ #include <linux/zutil.h>
+-#include <asm/unaligned.h>
+-#include <asm/byteorder.h>
+ #include "inftrees.h"
+ #include "inflate.h"
+ #include "inffast.h"
+ 
++/* Only do the unaligned "Faster" variant when
++ * CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is set
++ *
++ * On powerpc, it won't be as we don't include autoconf.h
++ * automatically for the boot wrapper, which is intended as
++ * we run in an environment where we may not be able to deal
++ * with (even rare) alignment faults. In addition, we do not
++ * define __KERNEL__ for arch/powerpc/boot unlike x86
++ */
++
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
++#include <asm/unaligned.h>
++#include <asm/byteorder.h>
++#endif
++
+ #ifndef ASMINF
+ 
+ /* Allow machine dependent optimization for post-increment or pre-increment.
+@@ -243,6 +256,7 @@ void inflate_fast(z_streamp strm, unsigned start)
+                     }
+                 }
+                 else {
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 		    unsigned short *sout;
+ 		    unsigned long loops;
+ 
+@@ -284,6 +298,20 @@ void inflate_fast(z_streamp strm, unsigned start)
+ 		    }
+ 		    if (len & 1)
+ 			PUP(out) = PUP(from);
++#else /* CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
++                    from = out - dist;          /* copy direct from output */
++                    do {                        /* minimum length is three */
++			 PUP(out) = PUP(from);
++			 PUP(out) = PUP(from);
++			 PUP(out) = PUP(from);
++			 len -= 3;
++                    } while (len > 2);
++                    if (len) {
++			 PUP(out) = PUP(from);
++			 if (len > 1)
++			     PUP(out) = PUP(from);
++                    }
++#endif /* !CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
+                 }
+             }
+             else if ((op & 64) == 0) {          /* 2nd level distance code */
