@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8F149B7C90
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 13 Jan 2010 16:20:14 +1100 (EST)
-Subject: [PATCH] zlib: Fix build of powerpc boot wrapper
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 16:19:34 +1100
-Message-ID: <1263359974.724.219.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1261487856.10767.128.camel@concordia>
+References: <1261474791.289871.854376051633.1.gpush@pororo>
+	<1261478868.10767.2.camel@concordia>
+	<200912221854.37572.jeremy.kerr@canonical.com>
+	<1261487856.10767.128.camel@concordia>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 12 Jan 2010 23:43:15 -0700
+Message-ID: <fa686aa41001122243v31e25e9et5db40b4f7ea8a56f@mail.gmail.com>
+Subject: Re: [PATCH] of/flattree: use callback to setup initrd from /chosen
+To: michael@ellerman.id.au
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: microblaze-uclinux@itee.uq.edu.au, Jeremy Kerr <jeremy.kerr@canonical.com>,
+	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,129 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 broke the build
-of all powerpc boot wrappers.
+On Tue, Dec 22, 2009 at 6:17 AM, Michael Ellerman
+<michael@ellerman.id.au> wrote:
+> On Tue, 2009-12-22 at 18:54 +0800, Jeremy Kerr wrote:
+>> Hi Michael,
+>>
+>> > > =A0void early_init_dt_setup_initrd_arch(unsigned long start,
+>> > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsi=
+gned long end);
+>> >
+>> > arch_early_init_dt_setup_initrd() makes more sense to me, but ..
+>>
+>> <foo>_arch has been the general convention for arch-specific hooks in
+>> drivers/of/.
+>
+> Yuck, doh, guess I should have read those patches before they went in :)
 
-It attempts to add an include of autoconf.h but used the wrong
-path for it. It also adds -D__KERNEL__ to our boot wrapper, both
-things that we pretty much didn't do on purpose so far.
+It's not necessarily permanent.  My first goal is to get the common
+code merged.  Then I want to look closely at it for patterns and
+refactor how the common code calls out to arch specific hooks (or
+maybe turn it around and have arch code calling out to the common
+bits).
 
-We want our boot wrapper to remain independent enough of the kernel
-for various reasons, one of them being that you can "wrap" an existing
-kernel at distro install time which allows to ship one kernel image
-and a set of boot wrappers for different platforms, the wrappers
-don't have to be built out of the same kernel build tree.
+>
+>> > > +#ifdef CONFIG_BLK_DEV_INITRD
+>> > > +void __init early_init_dt_setup_initrd_arch(unsigned long start,
+>> > > + =A0 =A0 =A0 =A0 unsigned long end)
+>> > > +{
+>> > > + initrd_start =3D (unsigned long)__va(start);
+>> > > + initrd_end =3D (unsigned long)__va(end);
+>> > > + initrd_below_start_ok =3D 1;
+>> > > +}
+>> > > +#endif
+>> >
+>> > Given you have two identical implementations why not make that the
+>> > default and make it weak, and let ARM override it.
+>>
+>> Yeah, that would be good too; just been avoiding weak as a potential sou=
+rce of
+>> magic voodoo complexity. Grant - up to you on this one.
+>
+> Yeah, depends on what toolchains you're supporting, modern ones should
+> be OK but it can be troublesome.
 
-It's also incorrect to do what the patch does in our boot environment
-since we may not have a proper alignment exception handler which means
-we may not be able to fixup the few cases where an unaligned access will
-need SW emulation (depends on the core variant, could be when crossing
-page or segment boundaries for example).
+I'll look at this.
 
-This patch fixes it by putting the old code back in and using the
-new "fancy" variant only when CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-is set, which happens not to be set on powerpc since we don't include
-autoconf.h. It also reverts the changes to our boot wrapper Makefile.
-
-This means that x86 should, afaik, keep the optimisations since its
-boot wrapper does include autoconf.h and define __KERNEL__ (though I
-doubt they make that much different outside of slow embedded processors).
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Linus, if you don't like the approach, then please just revert
-ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 for now.
-
-Cheers,
-Ben.
-
- arch/powerpc/boot/Makefile |    4 +---
- lib/zlib_inflate/inffast.c |   32 ++++++++++++++++++++++++++++++--
- 2 files changed, 31 insertions(+), 5 deletions(-)
+g.
 
 
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 826a30a..bb2465b 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -20,7 +20,7 @@
- all: $(obj)/zImage
- 
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
--		 -fno-strict-aliasing -Os -msoft-float -pipe -D__KERNEL__\
-+		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
- 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
-@@ -34,8 +34,6 @@ BOOTCFLAGS	+= -fno-stack-protector
- endif
- 
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
--BOOTCFLAGS	+= -include include/linux/autoconf.h -Iarch/powerpc/include
--BOOTCFLAGS	+= -Iinclude
- 
- DTS_FLAGS	?= -p 1024
- 
-diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-index 05e1559..215447c 100644
---- a/lib/zlib_inflate/inffast.c
-+++ b/lib/zlib_inflate/inffast.c
-@@ -4,12 +4,25 @@
-  */
- 
- #include <linux/zutil.h>
--#include <asm/unaligned.h>
--#include <asm/byteorder.h>
- #include "inftrees.h"
- #include "inflate.h"
- #include "inffast.h"
- 
-+/* Only do the unaligned "Faster" variant when
-+ * CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is set
-+ *
-+ * On powerpc, it won't be as we don't include autoconf.h
-+ * automatically for the boot wrapper, which is intended as
-+ * we run in an environment where we may not be able to deal
-+ * with (even rare) alignment faults. In addition, we do not
-+ * define __KERNEL__ for arch/powerpc/boot unlike x86
-+ */
-+
-+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-+#include <asm/unaligned.h>
-+#include <asm/byteorder.h>
-+#endif
-+
- #ifndef ASMINF
- 
- /* Allow machine dependent optimization for post-increment or pre-increment.
-@@ -243,6 +256,7 @@ void inflate_fast(z_streamp strm, unsigned start)
-                     }
-                 }
-                 else {
-+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
- 		    unsigned short *sout;
- 		    unsigned long loops;
- 
-@@ -284,6 +298,20 @@ void inflate_fast(z_streamp strm, unsigned start)
- 		    }
- 		    if (len & 1)
- 			PUP(out) = PUP(from);
-+#else /* CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
-+                    from = out - dist;          /* copy direct from output */
-+                    do {                        /* minimum length is three */
-+			 PUP(out) = PUP(from);
-+			 PUP(out) = PUP(from);
-+			 PUP(out) = PUP(from);
-+			 len -= 3;
-+                    } while (len > 2);
-+                    if (len) {
-+			 PUP(out) = PUP(from);
-+			 if (len > 1)
-+			     PUP(out) = PUP(from);
-+                    }
-+#endif /* !CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
-                 }
-             }
-             else if ((op & 64) == 0) {          /* 2nd level distance code */
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
