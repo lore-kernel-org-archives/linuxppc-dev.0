@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3C4F1007D4
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 10:19:08 +1100 (EST)
-Subject: Re: [PATCH] powerpc/4xx: Add support for type 1 pci transactions
-	on 4xx boards
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef van Os <stef.van.os@Prodrive.nl>
-In-Reply-To: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
-References: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 10:18:46 +1100
-Message-ID: <1263338326.724.216.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>,
-	Stefan Roese <sr@denx.de>, Feng Kan <fkan@amcc.com>
+Return-Path: <jeremy.kerr@canonical.com>
+Received: from adelie.canonical.com (adelie.canonical.com [91.189.90.139])
+	by ozlabs.org (Postfix) with ESMTP id 53B6FB7C6E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 13 Jan 2010 12:17:48 +1100 (EST)
+From: Jeremy Kerr <jeremy.kerr@canonical.com>
+To: linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC,PATCH 0/7 v2] Common struct clk implementation
+Date: Wed, 13 Jan 2010 12:17:36 +1100
+References: <1263279511.160127.576969496193.0.gpush@pororo>
+	<20100112091324.GC26435@n2100.arm.linux.org.uk>
+In-Reply-To: <20100112091324.GC26435@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201001131217.36575.jeremy.kerr@canonical.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +26,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-01-12 at 15:09 +0100, Stef van Os wrote:
-> This patch adds type 1 PCI transactions to 4xx PCI code, enabling the
-> discovery of
-> devices behind a PCI bridge.
+Hi Russell,
 
-Your patch appears word wrapped and whitespace damaged...
+> But the point I was trying to convey is that OMAP doesn't work with
+> _either_ a pure operations struct _or_ a bunch of per-clock function
+> pointers - it currently uses a mixture of the two.
 
-I'll fix it up manually this time around but please check your mailer
-setup :-)
+With the common clk, you can do exactly that:
+
+struct clk_foo {
+	/* ->ops provides functions common to clk_foo */
+	struct clk;
+
+	/* provides a function for only this clock */
+	int (*single_clock_func)(struct clk_foo *);
+}
+
+The only real difference is that the public API is provided through struct =
+clk=20
+rather than redefined clk_* functions; whatever is implementing the clock-
+type-specific struct clk can add whatever fields necessary.
+
+=46rom your earlier mail about sizes on omap:
+
+> There are two function pointers in the struct clk which would be
+> identical to the versions proposed in this generic struct clk.
+> There's a total of 219 clk structures in OMAP3.  So, 219 * (4 + 8)
+> =3D 2628.  Switching OMAP means 219 * (4 + 32) =3D 7884, which is an
+> increase in overhead of 3x.
+
+But we also can reduce the size of the struct clk in most cases; I believe =
+the=20
+separate clk_operations in v2 of this series will help with this.
+
+Taking OMAP3 for example (I'm not very familiar with that platform, so am=20
+basing this on a brief look through the clock code), the first step to a=20
+common clk port would be to wrap the existing struct clk:
+
+struct clk_omap {
+	struct clk			clk;
+	struct list_head		node;
+	const struct clkops	*ops;
+    [...]
+};
+
+and define the clk_operations to be the current omap clk_* functions.
+
+This results in one extra pointer per clock, plus the clk_operations, so 90=
+8=20
+bytes (4 * 219 + 32) overhead.
+
+Next, we can start removing fields that are not used by all clocks; the fix=
+ed=20
+top-level clocks would be a good start; it looks like we can represent thos=
+e=20
+with a:
+
+struct clk_omap_fixed {
+	struct clk	clk;
+	char			*name;
+	unsigned long	rate;
+}
+
+[For these fixed clocks, we don't need to propagate changes to children, he=
+nce=20
+I'm assuming no child/sibling members]
+
+The original struct clk is 96 bytes; clk_omap_fixed is 12, but we still nee=
+d=20
+one clk_operations (32 bytes). Since there are 8 of these, we save 640 byte=
+s=20
+((96 - 12) * 8 - 32).
+
+If we then take the 'follow parent' clocks, it looks like we can represent=
+=20
+those with something like:
+
+struct clk_omap_followparent =3D {
+	struct clk	clk;
+	char			*name;
+	struct clk	*parent;
+	struct list_head children, siblings;
+	unsigned long	rate;
+	void __iomem	*enable_reg;
+	__u8			enable_bit;
+	char			*clkdm_name;
+	int			flags;
+};
+
+This would be 48 bytes, there are 140 of these, saving 6688 bytes ( (96 - 4=
+8)=20
+* 140 - 32).
+
+Now, we could stop here, or keep looking for common usage patterns of struc=
+t=20
+clk to find cases where creating another clock type makes sense.
+
+I know I've only looked at the easy OMAP cases here, but the principle stil=
+l=20
+applies: keep the original struct clk around as a fallback, but use the=20
+smaller struct clks where possible.
 
 Cheers,
-Ben.
- 
-> Signed-off-by: Stef van Os <stef.van.os@gmail.com>
-> ---
->  arch/powerpc/sysdev/ppc4xx_pci.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c
-> b/arch/powerpc/sysdev/ppc4xx_pci.c
-> index 6ff9d71..370cc1c 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> @@ -363,7 +363,8 @@ static void __init ppc4xx_probe_pci_bridge(struct
-> device_node *np)
->         hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> 
->         /* Setup config space */
-> -       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
-> 0);
-> +       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
-> +                                       PPC_INDIRECT_TYPE_SET_CFG_TYPE);
-> 
->         /* Disable all windows */
->         writel(0, reg + PCIL0_PMM0MA);
-> @@ -569,7 +570,8 @@ static void __init ppc4xx_probe_pcix_bridge(struct
-> device_node *np)
->         hose->last_busno = bus_range ? bus_range[1] : 0xff;
-> 
->         /* Setup config space */
-> -       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
-> 0);
-> +       setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
-> +                                       PPC_INDIRECT_TYPE_SET_CFG_TYPE);
-> 
->         /* Disable all windows */
->         writel(0, reg + PCIX0_POM0SA);
-> 
-> 
-> Disclaimer: The information contained in this email, including any attachments is 
-> confidential and is for the sole use of the intended recipient(s). Any unauthorized 
-> review, use, disclosure or distribution is prohibited. If you are not the intended 
-> recipient, please notify the sender immediately by replying to this message and 
-> destroy all copies of this message and any attachments.
+
+
+Jeremy
