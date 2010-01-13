@@ -1,20 +1,26 @@
-Return-Path: <michal.simek@petalogix.com>
-Received: from mail-bw0-f223.google.com (mail-bw0-f223.google.com
-	[209.85.218.223]) by ozlabs.org (Postfix) with ESMTP id 5CBA7B7C90
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 02:25:39 +1100 (EST)
-Received: by bwz23 with SMTP id 23so15233461bwz.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 07:25:35 -0800 (PST)
-Message-ID: <4B4DE58D.10008@petalogix.com>
-Date: Wed, 13 Jan 2010 16:23:57 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	benh@kernel.crashing.org, thunderbird2k@gmx.net,
-	John Williams <john.williams@petalogix.com>,
-	Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: xilinx-pci driver and pci in general
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: michal.simek@petalogix.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3CD43B7CA8
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 05:59:10 +1100 (EST)
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location	of
+	autoconf.h
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
+Date: Wed, 13 Jan 2010 12:54:51 -0600
+Message-Id: <FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
+References: <20100112022150.GE12666@kryten>
+	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
+	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi guys,
 
-We (John and partially I) did initial support for pci on Microblaze.
-It is based on powerpc files and almost everything is the same.
-There are some small differences which could be easily removed that's 
-why I think that will be good to move that file to any generic location.
-That's why I would like to know your opinion about this step.
-If you don't like or prefer we will add that modified versions to 
-arch/microblaze and in future we can merge them and move to any other 
-location.
+On Jan 12, 2010, at 5:59 AM, Joakim Tjernlund wrote:
 
-Affected files: xilinx-pci.c, pci_32.c pci-common.c, indirect_pci.c and 
-some headers.
+>>=20
+>> Hi Anton,
+>>=20
+>> On Tue, 12 Jan 2010 13:21:51 +1100 Anton Blanchard <anton@samba.org> =
+wrote:
+>>>=20
+>>> commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 (zlib: optimize =
+inffast when
+>>> copying direct from output) referenced include/linux/autoconf.h =
+which
+>>> is now called include/generated/autoconf.h.
+>>=20
+>> Even with this fix, you cannot build with a separate object =
+directory.
+>> See my other posting "linux-next: origin tree build failure" ...
+>> --
+>=20
+> How does this work for you?
+>=20
+>> =46rom 044f40d169bf5fe189d5cb058f56b7cd72675ca4 Mon Sep 17 00:00:00 =
+2001
+> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> Date: Tue, 12 Jan 2010 11:20:36 +0100
+> Subject: [PATCH] powerpc: Fix build breakage due to incorrect location =
+of autoconf.h
+>=20
+> commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 (zlib: optimize =
+inffast when
+> copying direct from output) referenced include/linux/autoconf.h which
+> is now called include/generated/autoconf.h.
+> Also, -I include paths needs to be prefixed with $(srctree)
+>=20
+> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> ---
+> arch/powerpc/boot/Makefile |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 826a30a..79ebd6f 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -34,8 +34,8 @@ BOOTCFLAGS	+=3D -fno-stack-protector
+> endif
+>=20
+> BOOTCFLAGS	+=3D -I$(obj) -I$(srctree)/$(obj)
+> -BOOTCFLAGS	+=3D -include include/linux/autoconf.h =
+-Iarch/powerpc/include
+> -BOOTCFLAGS	+=3D -Iinclude
+> +BOOTCFLAGS	+=3D -include include/generated/autoconf.h
+> +BOOTCFLAGS	+=3D -I$(srctree)/arch/powerpc/include =
+-I$(srctree)/include
+>=20
+> DTS_FLAGS	?=3D -p 1024
+>=20
 
+Ack, this works for me (seeing as -rc4 doesn't generate uImages w/o it =
+:)
 
-The main problems are:
-ppc use ppc_md struct which we don't have it on Microblaze.
-xilinx-pci driver uses exclude_device function. This function is used in 
-indirect_pci.c too. There could be a way to move that function directly 
-to pci_controller structure which could be useful for other controllers 
-too. What do you think?
-
-Then there are some other ppc_md. calling like pcibios_after_init which
-if I see correctly not used for ppc too.
-
-The next thing is that some files contains asm/machdep.h which could be 
-added to asm/pci-bridge.h and the same is for asm/ppc-pci.h
-
-Files contains CONFIG_PPC_OF and we would like to use only CONFIG_OF.
-I remember any discuss around but not sure what was the conclusion on 
-powerpc.
-
-Part of headers are the same that's why there will be a space to move 
-them to asm-generic.
-Anyway: I look at your dma-mapping.h and you can use 
-asm-generic/dma-mapping-common.h as I am using.
-
-
-Then I have some question about EARLY_PCI_OP in ppc_32.c. Is there any 
-reason to use early_##rw##_config_##size fucntions instead of proper 
-pci_bus_##rw##_config_##size functions?
-There is one comment that these functions are used before PCI scanning 
-is done but there are used the same function as are in driver/pci/access.c.
-Is there any "secret" reason to do it in this way?
-
-
-Thanks for this early discuss. I would like to hear your opinion and 
-then I will choose solution how to add our pci support to mainline.
-
-Thanks,
-Michal
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+- k=
