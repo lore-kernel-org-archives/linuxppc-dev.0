@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <d44faed85b5e101743bcb1a5e8a0df8487830654.1263366655.git.michael@ellerman.id.au>
+Message-Id: <7fc2de452d4c0a034681dcaca89630882386b4b2.1263367518.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 1/1] powerpc/iseries: Initialise on-stack completion
-Date: Wed, 13 Jan 2010 18:10:56 +1100 (EST)
+Subject: [PATCH] lmb: Add lmb_free()
+Date: Wed, 13 Jan 2010 18:25:24 +1100 (EST)
+Cc: sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+	linux-sh@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,30 +15,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-get_viotape_info() declares a vio_waitevent on the stack, which
-contains a completion, but never initialises the completion.
-
-I have no idea how this ever worked, and on recent kernels it causes
-an oops in handle_tape_event() when we access the non-initialised
-completion.
+We can free memory allocated with lmb_alloc() by removing it from the
+list of reserved LMBs. Rework lmb_remove() to allow that possibility
+and add lmb_free() which exploits it.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/iseries/vio.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ include/linux/lmb.h |    1 +
+ lib/lmb.c           |   13 +++++++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
-index 657b72f..2aa8b56 100644
---- a/arch/powerpc/platforms/iseries/vio.c
-+++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -474,6 +474,8 @@ static void __init get_viotape_info(struct device_node *vio_root)
- 	struct vio_waitevent we;
- 	int ret;
+diff --git a/include/linux/lmb.h b/include/linux/lmb.h
+index ef82b8f..f3d1433 100644
+--- a/include/linux/lmb.h
++++ b/include/linux/lmb.h
+@@ -42,6 +42,7 @@ extern void __init lmb_init(void);
+ extern void __init lmb_analyze(void);
+ extern long lmb_add(u64 base, u64 size);
+ extern long lmb_remove(u64 base, u64 size);
++extern long __init lmb_free(u64 base, u64 size);
+ extern long __init lmb_reserve(u64 base, u64 size);
+ extern u64 __init lmb_alloc_nid(u64 size, u64 align, int nid,
+ 				u64 (*nid_range)(u64, u64, int *));
+diff --git a/lib/lmb.c b/lib/lmb.c
+index 9cee171..cdeb284 100644
+--- a/lib/lmb.c
++++ b/lib/lmb.c
+@@ -205,9 +205,8 @@ long lmb_add(u64 base, u64 size)
  
-+	init_completion(&we.com);
+ }
+ 
+-long lmb_remove(u64 base, u64 size)
++static long __lmb_remove(struct lmb_region *rgn, u64 base, u64 size)
+ {
+-	struct lmb_region *rgn = &(lmb.memory);
+ 	u64 rgnbegin, rgnend;
+ 	u64 end = base + size;
+ 	int i;
+@@ -254,6 +253,16 @@ long lmb_remove(u64 base, u64 size)
+ 	return lmb_add_region(rgn, end, rgnend - end);
+ }
+ 
++long lmb_remove(u64 base, u64 size)
++{
++	return __lmb_remove(&(lmb.memory), base, size);
++}
 +
- 	ret = viopath_open(viopath_hostLp, viomajorsubtype_tape, 2);
- 	if (ret) {
- 		printk(KERN_WARNING "get_viotape_info: "
++long __init lmb_free(u64 base, u64 size)
++{
++	return __lmb_remove(&(lmb.reserved), base, size);
++}
++
+ long __init lmb_reserve(u64 base, u64 size)
+ {
+ 	struct lmb_region *_rgn = &lmb.reserved;
 -- 
 1.6.3.3
