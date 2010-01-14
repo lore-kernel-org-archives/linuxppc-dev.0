@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <B08308@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A5CE0B7CD6
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 15:56:24 +1100 (EST)
-Subject: Re: [PATCH] powerpc/4xx: Add support for type 1 pci transactions
-	on 4xx boards
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef van Os <stef.van.os@Prodrive.nl>
-In-Reply-To: <1263338326.724.216.camel@pasglop>
-References: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
-	<1263338326.724.216.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 15:56:01 +1100
-Message-ID: <1263444961.724.343.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Felix Radensky <felix@embedded-sol.com>,
-	Stefan Roese <sr@denx.de>, Feng Kan <fkan@amcc.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EF2D6B7CD7
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 17:10:45 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o0E6ARR8018655
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Jan 2010 23:10:37 -0700 (MST)
+Received: from zin33exm23.fsl.freescale.net (zin33exm23.ap.freescale.net
+	[10.232.192.22])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o0E6ASdM027281
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 00:10:29 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CA94E0.430C63C8"
+Subject: Inclusion of 85xx cache-sram patch series 
+Date: Thu, 14 Jan 2010 11:40:26 +0530
+Message-ID: <0949C49693EF1A47A54B0F0113CDB4A6105562@zin33exm23.fsl.freescale.net>
+From: "Mahajan Vivek-B08308" <B08308@freescale.com>
+To: "Gala Kumar-B11780" <B11780@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-13 at 10:18 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2010-01-12 at 15:09 +0100, Stef van Os wrote:
-> > This patch adds type 1 PCI transactions to 4xx PCI code, enabling the
-> > discovery of
-> > devices behind a PCI bridge.
-> 
-> Your patch appears word wrapped and whitespace damaged...
-> 
-> I'll fix it up manually this time around but please check your mailer
-> setup :-)
+This is a multi-part message in MIME format.
 
-Allright, it's not quite that.
+------_=_NextPart_001_01CA94E0.430C63C8
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-I've looked at my docs, and it looks like older parts such as the 440EP
-do -not- take the config type in the low bit.
+Any plans to include this patch series at
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078693.html
 
-More interestingly, they only generate config 0 cycles if you pass a bus
-number of 0 :-)
+into your 'next' branch or there are some outstanding issues with this.
+=20
+Thanks,
+Vivek
 
-So we'll need do do something a little bit different here. We probably
-need to indicate in the device-tree what kind of SoC we have (whether
-it supports the explicit bit to choose between type 0 and type 1 or
-not).
+------_=_NextPart_001_01CA94E0.430C63C8
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-If not, we should then set the "self_busno" field of the bridge to 0,
-causing indirect_pci to always use bus number 0 when trying to talk
-to the bus segment behind the bridge, whatever the linux bus number
-for it actually is.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16825" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D086130506-14012010>Any =
+plans to include=20
+this patch series at <A=20
+href=3D"http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/0786=
+93.html">http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/078=
+693.html</A>&nbsp;</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D086130506-14012010>into =
+your 'next'=20
+branch or there are some outstanding issues with =
+this.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D086130506-14012010></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D086130506-14012010>Thanks,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D086130506-14012010>Vivek</SPAN></FONT></DIV></BODY></HTML>
 
-Now, we need to make a precise list here of what SoC uses what. 460xx
-seem to all support the explicit bit. 440EP doesn't. What else ?
-
-Somebody from AMCC can dbl check that ?
-
-Cheers,
-Ben.
+------_=_NextPart_001_01CA94E0.430C63C8--
