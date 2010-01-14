@@ -1,23 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2E3DF1007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jan 2010 03:20:19 +1100 (EST)
-Subject: Re: [PATCH 4/4] phy: add RTBI mode for m88e1111
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1263456799-3306-4-git-send-email-yu.liu@freescale.com>
-Date: Thu, 14 Jan 2010 10:20:09 -0600
-Message-Id: <BC00E67D-5906-4740-A961-84FC1C524A4F@kernel.crashing.org>
-References: <1263456799-3306-1-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-2-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-3-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-4-git-send-email-yu.liu@freescale.com>
-To: Liu Yu <Yu.Liu@freescale.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E2937B7CC1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 06:46:30 +1100 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0EJb97S016131
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 14:37:09 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o0EJk0IV127106
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 14:46:26 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o0EJk0oH003561
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 17:46:00 -0200
+Received: from [9.53.40.155] (mudbug-009053040155.austin.ibm.com [9.53.40.155])
+	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o0EJk0Qu003531
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 17:46:00 -0200
+Message-ID: <4B4F7476.7060001@austin.ibm.com>
+Date: Thu, 14 Jan 2010 13:45:58 -0600
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Move /proc/ppc64 to /proc/powerpc update
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It looks like the previous patch sent out to move RTAS and
+other items from /proc/ppc64 to /proc/powerpc missed a few
+files needed for RAS and DLPAR functionality.
 
-On Jan 14, 2010, at 2:13 AM, Liu Yu wrote:
+Original Patch here:
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-September/076096.html
 
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> ---
-> drivers/net/phy/marvell.c |   38 =
-++++++++++++++++++++++++++++++++++++++
-> 1 files changed, 38 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
-> index 6f69b9b..65ed385 100644
-> --- a/drivers/net/phy/marvell.c
-> +++ b/drivers/net/phy/marvell.c
-> @@ -63,6 +63,7 @@
-> #define MII_M1111_HWCFG_MODE_COPPER_RGMII	0xb
-> #define MII_M1111_HWCFG_MODE_FIBER_RGMII	0x3
-> #define MII_M1111_HWCFG_MODE_SGMII_NO_CLK	0x4
-> +#define MII_M1111_HWCFG_MODE_COPPER_RTBI	0x9
-> #define MII_M1111_HWCFG_FIBER_COPPER_AUTO	0x8000
-> #define MII_M1111_HWCFG_FIBER_COPPER_RES	0x2000
->=20
-> @@ -269,6 +270,43 @@ static int m88e1111_config_init(struct phy_device =
-*phydev)
-> 			return err;
-> 	}
->=20
-> +	if (phydev->interface =3D=3D PHY_INTERFACE_MODE_RTBI) {
-> +		temp =3D phy_read(phydev, MII_M1111_PHY_EXT_CR);
-> +		if (temp < 0)
-> +			return temp;
-> +		temp |=3D (MII_M1111_RX_DELAY | MII_M1111_TX_DELAY);
-> +		err =3D phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		temp =3D phy_read(phydev, MII_M1111_PHY_EXT_SR);
-> +		if (temp < 0)
-> +			return temp;
-> +		temp &=3D ~(MII_M1111_HWCFG_MODE_MASK | =
-MII_M1111_HWCFG_FIBER_COPPER_RES);
-> +		temp |=3D 0x7 | MII_M1111_HWCFG_FIBER_COPPER_AUTO;
+This patch updates the remaining files to be created under /proc/powerpc.
 
-Does this magic 0x7 have some meaning?
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
+ arch/powerpc/kernel/rtas-proc.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> +		err =3D phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		/* soft reset */
-> +		err =3D phy_write(phydev, MII_BMCR, BMCR_RESET);
-> +		if (err < 0)
-> +			return err;
-> +		do
-> +			temp =3D phy_read(phydev, MII_BMCR);
-> +		while (temp & BMCR_RESET);
-> +
-> +		temp =3D phy_read(phydev, MII_M1111_PHY_EXT_SR);
-> +		if (temp < 0)
-> +			return temp;
-> +		temp &=3D ~(MII_M1111_HWCFG_MODE_MASK | =
-MII_M1111_HWCFG_FIBER_COPPER_RES);
-> +		temp |=3D MII_M1111_HWCFG_MODE_COPPER_RTBI | =
-MII_M1111_HWCFG_FIBER_COPPER_AUTO;
-> +		err =3D phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
-> +		if (err < 0)
-> +			return err;
-> +	}
-> +
-> +
-> 	err =3D phy_write(phydev, MII_BMCR, BMCR_RESET);
-> 	if (err < 0)
-> 		return err;
-> --=20
-> 1.6.4
+Index: powerpc/arch/powerpc/kernel/rtas-proc.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/rtas-proc.c	2009-12-18 09:21:51.000000000 -0600
++++ powerpc/arch/powerpc/kernel/rtas-proc.c	2010-01-14 12:25:22.000000000 -0600
+@@ -262,19 +262,19 @@
+ 	if (rtas_node == NULL)
+ 		return -ENODEV;
+ 
+-	proc_create("ppc64/rtas/progress", S_IRUGO|S_IWUSR, NULL,
++	proc_create("powerpc/rtas/progress", S_IRUGO|S_IWUSR, NULL,
+ 		    &ppc_rtas_progress_operations);
+-	proc_create("ppc64/rtas/clock", S_IRUGO|S_IWUSR, NULL,
++	proc_create("powerpc/rtas/clock", S_IRUGO|S_IWUSR, NULL,
+ 		    &ppc_rtas_clock_operations);
+-	proc_create("ppc64/rtas/poweron", S_IWUSR|S_IRUGO, NULL,
++	proc_create("powerpc/rtas/poweron", S_IWUSR|S_IRUGO, NULL,
+ 		    &ppc_rtas_poweron_operations);
+-	proc_create("ppc64/rtas/sensors", S_IRUGO, NULL,
++	proc_create("powerpc/rtas/sensors", S_IRUGO, NULL,
+ 		    &ppc_rtas_sensors_operations);
+-	proc_create("ppc64/rtas/frequency", S_IWUSR|S_IRUGO, NULL,
++	proc_create("powerpc/rtas/frequency", S_IWUSR|S_IRUGO, NULL,
+ 		    &ppc_rtas_tone_freq_operations);
+-	proc_create("ppc64/rtas/volume", S_IWUSR|S_IRUGO, NULL,
++	proc_create("powerpc/rtas/volume", S_IWUSR|S_IRUGO, NULL,
+ 		    &ppc_rtas_tone_volume_operations);
+-	proc_create("ppc64/rtas/rmo_buffer", S_IRUSR, NULL,
++	proc_create("powerpc/rtas/rmo_buffer", S_IRUSR, NULL,
+ 		    &ppc_rtas_rmo_buf_ops);
+ 	return 0;
+ }
