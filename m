@@ -1,33 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E5D0B7CED
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 07:01:12 +1100 (EST)
-Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
-	of autoconf.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
-References: <20100112022150.GE12666@kryten>
-	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
-	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
-	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
-	<1263412963.724.223.camel@pasglop>
-	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
-	<1263459431.724.352.camel@pasglop>
-	<OF7EAC50CA.1271BCB8-ONC12576AB.00321D31-C12576AB.00329588@transmode.se>
-	<1263462224.724.356.camel@pasglop>
-	<OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 374FBB7CE9
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 07:38:44 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0EKP4al020929
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 13:25:04 -0700
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o0EKcTBv112242
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 13:38:35 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o0EKcT0O029613
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 13:38:29 -0700
+Subject: [PATCH 0/2] Add max CPU nodes field to ibm,client-architecture call
+From: Joel Schopp <jschopp@austin.ibm.com>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 06:59:36 +1100
-Message-ID: <1263499176.724.357.camel@pasglop>
+Date: Thu, 14 Jan 2010 14:38:28 -0600
+Message-ID: <1263501508.4869.133.camel@jschopp-laptop>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,15 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-01-14 at 14:27 +0100, Joakim Tjernlund wrote:
-> 
-> It would probably be a good idea to redefine UP_UNALIGNED macro to
-> do 2 byte accesses in the non CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-> case.
-> 
-> I don't think I will revisit this any time soon so I figured I should
-> mention it in case someone else wants to try it. 
+Large NUMA machines require Linux to indicate support for more than 64
+cpu cores.  This is done through the ibm,client-architecture call, and
+is documented in the PAPR.  There is also another new field added to
+indicate that the OS is Linux as a hint for possible future performance
+settings.
 
-Well, get_unaligned() does just that...
+The first patch attempts to statically initialize the number of
+supported cores with NR_CPUS, the maximum Linux could boot if the cpus
+did not have multi-threading (SMT).  It can overestimate by the factor
+of SMT.  For instance on Power6 with 2 way SMT it would overestimate by
+a factor of 2.  The result of this overestimation is that Linux might
+not be able boot all the cpus assigned to it, but would still boot
+NR_CPUS worth of SMT threads.
 
-Ben.
+The second patch adjusts for SMT by reading the device tree before
+unflattening.  
+
+I've updated patch 1 from previous comments. Patch 1 can be taken on its
+own if Patch 2 seems like overkill.  
