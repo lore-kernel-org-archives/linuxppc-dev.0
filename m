@@ -1,32 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3A7E51007D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 00:28:21 +1100 (EST)
-In-Reply-To: <1263462224.724.356.camel@pasglop>
-References: <20100112022150.GE12666@kryten>	
-	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
-	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
-	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>	
-	<1263412963.724.223.camel@pasglop>
-	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
-	<1263459431.724.352.camel@pasglop>	
-	<OF7EAC50CA.1271BCB8-ONC12576AB.00321D31-C12576AB.00329588@transmode.se>
-	<1263462224.724.356.camel@pasglop>
-Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
-	autoconf.h
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 14 Jan 2010 14:27:02 +0100
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.26])
+	by ozlabs.org (Postfix) with ESMTP id 027D61007D6
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 00:38:41 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id 22so135488eye.33
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 05:38:39 -0800 (PST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <alpine.OSX.2.00.1001110325430.620@localhost>
+References: <alpine.OSX.2.00.0911171657290.371@silk.local>
+	<10f740e81001071312p451de3c0r93d8d9d2782abde8@mail.gmail.com>
+	<alpine.LNX.2.00.1001102340340.22574@nippy.intranet>
+	<alpine.OSX.2.00.1001110325430.620@localhost>
+Date: Thu, 14 Jan 2010 14:38:39 +0100
+Message-ID: <10f740e81001140538n67710bfr17d131a8f4b25137@mail.gmail.com>
+Subject: Re: [PATCH 1/2] pmac-zilog: add platform driver, version 3
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 14/01/2010 10:43:44:
+On Sun, Jan 10, 2010 at 17:29, Finn Thain <fthain@telegraphics.com.au> wrote:
+> Add platform driver support to the pmac-zilog driver, for m68k macs.
+> Place the powermac-specific code inside #ifdef CONFIG_PPC_PMAC.
 >
-> On Thu, 2010-01-14 at 10:12 +0100, Joakim Tjernlund wrote:
-> > > No, that was on purpose. If an arch doesn't have efficient unaligned
-> > > accesses, then they should not use the optimization since it will
-> > result
-> > > in a lot of unaligned accesses :-) In which case they are better off
-> > > falling back to the old byte-by-byte method.
-> >
-> > Not quite, it is only 1 of 4 accesses that uses unaligned and
-> > that accesses is only unaligned 50% in average, it might still
-> > be faster. We will never know now.
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 >
-> Why ? If you think it's a win, then it's easy to make a patch to turn
-> it to __KERNEL__ and ask some people from ARM and MIPS or even sparc
-> land for example to give it a spin. If it's indeed a win, then submit it
-> to Linus and/or Andrew and there's no reason for it not to go in.
+> ---
 >
-> I simply took a more conservative approach for post -rc4
+> This patch should be applied after "[PATCH 3/13] pmac-zilog: cleanup".
+> It obsoletes "[PATCH 4/13] pmac-zilog, mac68k: replace mac68k SCC code
+> with platform device" listed in the linux-ppc patchwork.
+>
+> Version 2 of this patch adopts Geert's suggestions: make better use of
+> dev_{dbg,err,info} macros, change platform_driver_register() to
+> platform_driver_probe(), and use __init and __exit attributes.
+> Version 3 does not #include <macints.h>.
 
-It would probably be a good idea to redefine UP_UNALIGNED macro to
-do 2 byte accesses in the non CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS case.
+Thanks, applied.
 
-I don't think I will revisit this any time soon so I figured I should
-mention it in case someone else wants to try it.
+Gr{oetje,eeting}s,
 
-         Jocke
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
