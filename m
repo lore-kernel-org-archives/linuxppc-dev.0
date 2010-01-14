@@ -1,28 +1,33 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 62A6DB7CEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 06:53:26 +1100 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0EJnbAs027043
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 14:49:37 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0EJqlsa1151082
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 14:52:47 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0EJqkXl012550
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 14:52:47 -0500
-Message-ID: <4B4F760C.4000507@austin.ibm.com>
-Date: Thu, 14 Jan 2010 13:52:44 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Move cpu hotplug driver lock from pseries to powerpc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andreas Schwab <schwab@linux-m68k.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E5D0B7CED
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 07:01:12 +1100 (EST)
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
+	of autoconf.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+In-Reply-To: <OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
+References: <20100112022150.GE12666@kryten>
+	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
+	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
+	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
+	<1263412963.724.223.camel@pasglop>
+	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
+	<1263459431.724.352.camel@pasglop>
+	<OF7EAC50CA.1271BCB8-ONC12576AB.00321D31-C12576AB.00329588@transmode.se>
+	<1263462224.724.356.camel@pasglop>
+	<OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 06:59:36 +1100
+Message-ID: <1263499176.724.357.camel@pasglop>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the defintion and lock helper routines for the cpu hotplug driver
-lock from pseries to powerpc code to avoid build breaks for platforms 
-other than pseries that use cpu hotplug.
+On Thu, 2010-01-14 at 14:27 +0100, Joakim Tjernlund wrote:
+> 
+> It would probably be a good idea to redefine UP_UNALIGNED macro to
+> do 2 byte accesses in the non CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> case.
+> 
+> I don't think I will revisit this any time soon so I figured I should
+> mention it in case someone else wants to try it. 
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/kernel/smp.c              |   12 ++++++++++++
- arch/powerpc/platforms/pseries/dlpar.c |   12 ------------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+Well, get_unaligned() does just that...
 
-Index: powerpc/arch/powerpc/kernel/smp.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/smp.c	2010-01-11 12:19:06.000000000 -0600
-+++ powerpc/arch/powerpc/kernel/smp.c	2010-01-14 09:44:35.000000000 -0600
-@@ -619,4 +619,16 @@
- 	if (smp_ops->cpu_die)
- 		smp_ops->cpu_die(cpu);
- }
-+
-+static DEFINE_MUTEX(powerpc_cpu_hotplug_driver_mutex);
-+
-+void cpu_hotplug_driver_lock()
-+{
-+	mutex_lock(&powerpc_cpu_hotplug_driver_mutex);
-+}
-+
-+void cpu_hotplug_driver_unlock()
-+{
-+	mutex_unlock(&powerpc_cpu_hotplug_driver_mutex);
-+}
- #endif
-Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2010-01-14 09:37:48.000000000 -0600
-+++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2010-01-14 09:42:50.000000000 -0600
-@@ -344,18 +344,6 @@
- 
- #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 
--static DEFINE_MUTEX(pseries_cpu_hotplug_mutex);
--
--void cpu_hotplug_driver_lock()
--{
--	mutex_lock(&pseries_cpu_hotplug_mutex);
--}
--
--void cpu_hotplug_driver_unlock()
--{
--	mutex_unlock(&pseries_cpu_hotplug_mutex);
--}
--
- static int dlpar_online_cpu(struct device_node *dn)
- {
- 	int rc = 0;
+Ben.
