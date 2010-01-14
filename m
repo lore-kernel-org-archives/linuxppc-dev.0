@@ -2,8 +2,8 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7294B7CC3
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 21:23:05 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 3A7E51007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 00:28:21 +1100 (EST)
 In-Reply-To: <1263462224.724.356.camel@pasglop>
 References: <20100112022150.GE12666@kryten>	
 	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
@@ -17,9 +17,9 @@ References: <20100112022150.GE12666@kryten>
 Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
 	autoconf.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF07F486B9.2D988F89-ONC12576AB.00388F86-C12576AB.0038F9A4@transmode.se>
+Message-ID: <OF101A0E86.03F58830-ONC12576AB.00495BF7-C12576AB.0049E2DF@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 14 Jan 2010 11:22:19 +0100
+Date: Thu, 14 Jan 2010 14:27:02 +0100
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
@@ -37,7 +37,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 14/01/2010 10:43:44:
-
+>
 > On Thu, 2010-01-14 at 10:12 +0100, Joakim Tjernlund wrote:
 > > > No, that was on purpose. If an arch doesn't have efficient unaligned
 > > > accesses, then they should not use the optimization since it will
@@ -56,7 +56,10 @@ Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 14/01/2010 10:43:44:
 >
 > I simply took a more conservative approach for post -rc4
 
-Perhaps for the best this late. I will just leave it as is. If ARM/MIPS et. all
-wants, they can test it whenever they want.
+It would probably be a good idea to redefine UP_UNALIGNED macro to
+do 2 byte accesses in the non CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS case.
 
-    Jocke
+I don't think I will revisit this any time soon so I figured I should
+mention it in case someone else wants to try it.
+
+         Jocke
