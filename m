@@ -1,31 +1,17 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8BEEAB6F3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 10:02:18 +1100 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0EMxZF7026561
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 15:59:35 -0700
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0EN21qA090030
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 16:02:03 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o0EN41Pw021724
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jan 2010 16:04:01 -0700
-Subject: [PATCH 1/2] Add static fields to ibm,client-architecture call
-From: Joel Schopp <jschopp@austin.ibm.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1263501613.4869.139.camel@jschopp-laptop>
-References: <1263501508.4869.133.camel@jschopp-laptop>
-	<1263501613.4869.139.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 17:01:56 -0600
-Message-ID: <1263510116.7445.5.camel@jschopp-laptop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Move cpu hotplug driver lock from pseries to powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <4B4F760C.4000507@austin.ibm.com>
+References: <4B4F760C.4000507@austin.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-7X5OEoctQYmYTv+l1sW+"
+Date: Fri, 15 Jan 2010 10:39:20 +1100
+Message-ID: <1263512360.31729.251.camel@concordia>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds 2 fields to the ibm_architecture_vec array.  
 
-The first of these fields indicates the number of cores which Linux can
-boot.  It does not account for SMT, so it may result in cpus assigned to
-Linux which cannot be booted.  A second patch follows that dynamically
-updates this for SMT.
+--=-7X5OEoctQYmYTv+l1sW+
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The second field just indicates that our OS is Linux, and not another
-OS.  The system may or may not use this hint to performance tune
-settings for Linux.
+On Thu, 2010-01-14 at 13:52 -0600, Nathan Fontenot wrote:
+> Move the defintion and lock helper routines for the cpu hotplug driver
+> lock from pseries to powerpc code to avoid build breaks for platforms=20
+> other than pseries that use cpu hotplug.
+>=20
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> ---
+>  arch/powerpc/kernel/smp.c              |   12 ++++++++++++
+>  arch/powerpc/platforms/pseries/dlpar.c |   12 ------------
+>  2 files changed, 12 insertions(+), 12 deletions(-)
 
-Sorry if the last version sent out got whitespace munged.  Hopefully
-evolution works on this one.
+Much nicer :)
 
-Signed-off-by:Joel Schopp<jschopp@austin.ibm.com>
-Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/prom_init.c
-+++ linux-2.6.git/arch/powerpc/kernel/prom_init.c
-@@ -654,6 +656,9 @@ static void __init early_cmdline_parse(v
- #define OV5_CMO			0x00
- #endif
- 
-+/* Option Vector 6: IBM PAPR hints */
-+#define OV6_LINUX		0x02	/* Linux is our OS */
-+
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-  * followed by # option vectors - 1, followed by the option vectors.
-@@ -665,7 +670,7 @@ static unsigned char ibm_architecture_ve
- 	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
- 	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
- 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
--	5 - 1,				/* 5 option vectors */
-+	6 - 1,				/* 6 option vectors */
- 
- 	/* option vector 1: processor architectures supported */
- 	3 - 2,				/* length */
-@@ -697,12 +702,24 @@ static unsigned char ibm_architecture_ve
- 	0,				/* don't halt */
- 
- 	/* option vector 5: PAPR/OF options */
--	5 - 2,				/* length */
-+	13 - 2,				/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
- 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
- 	0,
- 	OV5_CMO,
-+	0,
-+	0,
-+	0,
-+	0,
-+	W(NR_CPUS),			/* number of cores supported*/
-+
-+	/* option vector 6: IBM PAPR hints */
-+	4 - 2,				/* length */
-+	0,
-+	0,
-+	OV6_LINUX,
-+
- };
- 
- /* Old method - ELF header with PT_NOTE sections */
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
+
+cheers
+
+
+--=-7X5OEoctQYmYTv+l1sW+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAktPqygACgkQdSjSd0sB4dK1ogCgywh8GqHiPQnMWf5ft9tBClRK
+B3YAn1Kpa5LwKjryQhQ3lq9cWXO9mjC0
+=VBy/
+-----END PGP SIGNATURE-----
+
+--=-7X5OEoctQYmYTv+l1sW+--
