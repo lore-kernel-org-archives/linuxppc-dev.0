@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8F598B7CB9
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 14:12:54 +1100 (EST)
-Subject: Re: [PATCH -tip tracing/kprobes v2] Powerpc port of the
-	kprobe-based event tracer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-In-Reply-To: <20100111130210.GA31980@in.ibm.com>
-References: <20100111125952.604518521@mars.in.ibm.com>
-	<20100111130210.GA31980@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 14:12:21 +1100
-Message-ID: <1263525141.724.393.camel@pasglop>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com,
-	Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
+Return-Path: <monstr@monstr.eu>
+Received: from mail-fx0-f213.google.com (mail-fx0-f213.google.com
+	[209.85.220.213]) by ozlabs.org (Postfix) with ESMTP id 17D17B7CBA
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 20:25:24 +1100 (EST)
+Received: by fxm5 with SMTP id 5so376845fxm.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 01:25:22 -0800 (PST)
+Message-ID: <4B503422.60209@monstr.eu>
+Date: Fri, 15 Jan 2010 10:23:46 +0100
+From: Michal Simek <monstr@monstr.eu>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: xilinx-pci driver and pci in general
+References: <4B4DE58D.10008@petalogix.com> <1263434836.724.317.camel@pasglop>
+In-Reply-To: <1263434836.724.317.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	thunderbird2k@gmx.net, LKML <linux-kernel@vger.kernel.org>,
+	michal.simek@petalogix.com, John Williams <john.williams@petalogix.com>
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,139 +26,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mahesh !
+Benjamin Herrenschmidt wrote:
+> On Wed, 2010-01-13 at 16:23 +0100, Michal Simek wrote:
+> 
+>> The main problems are:
+>> ppc use ppc_md struct which we don't have it on Microblaze.
+>> xilinx-pci driver uses exclude_device function. This function is used in 
+>> indirect_pci.c too. There could be a way to move that function directly 
+>> to pci_controller structure which could be useful for other controllers 
+>> too. What do you think?
+>>
+>> Then there are some other ppc_md. calling like pcibios_after_init which
+>> if I see correctly not used for ppc too.
+> 
+> We may not be using after_init() anymore in which case you are welcome
+> to send a patch to remove it :-)
 
-> +/**
-> + * regs_within_kernel_stack() - check the address in the stack
-> + * @regs:      pt_regs which contains kernel stack pointer.
-> + * @addr:      address which is checked.
-> + *
-> + * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
-> + * If @addr is within the kernel stack, it returns true. If not, returns false.
-> + */
-> +
-> +static inline bool regs_within_kernel_stack(struct pt_regs *regs,
-> +						unsigned long addr)
-> +{
-> +	return ((addr & ~(THREAD_SIZE - 1))  ==
-> +		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
-> +}
+hmm. I used older kernel and I see that in the latest version powermac
+use it. :-( I will just remove it.
 
-Out of curiosity, what is the above meant for ? I'm trying to understand
-because it will not work with such things as interrupt or softirq
-stack...
+> 
+> As for the others, well ... maybe you can do wrappers for these that
+> call into ppc_md. on powerpc and into some kind of arch_pci_ops. that
+> the platform provides on microblaze ?
+> 
+> I'm not sure moving them into the pci_controller is the best way to go
+> there.
 
-> +/**
-> + * regs_get_kernel_stack_nth() - get Nth entry of the stack
-> + * @regs:	pt_regs which contains kernel stack pointer.
-> + * @n:		stack entry number.
-> + *
-> + * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-> + * is specified by @regs. If the @n th entry is NOT in the kernel stack,
-> + * this returns 0.
-> + */
-> +static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
-> +						      unsigned int n)
-> +{
-> +	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
-> +	addr += n;
-> +	if (regs_within_kernel_stack(regs, (unsigned long)addr))
-> +		return *addr;
-> +	else
-> +		return 0;
-> +}
+ok. I will remove that part of code for now.
 
-Is this meant to fetch stack based arguments or do backtraces or similar
-or does this have a different purpose ?
+> 
+>> The next thing is that some files contains asm/machdep.h which could be 
+>> added to asm/pci-bridge.h and the same is for asm/ppc-pci.h
+> 
+> Yeah, moving includes like that is ok.
+> 
+>> Files contains CONFIG_PPC_OF and we would like to use only CONFIG_OF.
+>> I remember any discuss around but not sure what was the conclusion on 
+>> powerpc.
+> 
+> I think that should be allright, Grant, any objection there ?
+> 
+>> Part of headers are the same that's why there will be a space to move 
+>> them to asm-generic.
+> 
+> If you can convince other archs that it makes sense to do so ? :-)
 
->  /*
->   * These are defined as per linux/ptrace.h, which see.
->   */
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index ef14988..e816aba 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -39,6 +39,108 @@
->  #include <asm/system.h>
->  
->  /*
-> + * The parameter save area on the stack is used to store arguments being passed
-> + * to callee function and is located at fixed offset from stack pointer.
-> + */
-> +#ifdef CONFIG_PPC32
-> +#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
-> +#else /* CONFIG_PPC32 */
-> +#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
-> +#endif
-> +
-> +struct pt_regs_offset {
-> +	const char *name;
-> +	int offset;
-> +};
-> +
-> +#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-> +#define REG_OFFSET_END {.name = NULL, .offset = 0}
-> +
-> +static const struct pt_regs_offset regoffset_table[] = {
-> +	REG_OFFSET_NAME(gpr[0]),
-> +	REG_OFFSET_NAME(gpr[1]),
-> +	REG_OFFSET_NAME(gpr[2]),
-> +	REG_OFFSET_NAME(gpr[3]),
-> +	REG_OFFSET_NAME(gpr[4]),
-> +	REG_OFFSET_NAME(gpr[5]),
-> +	REG_OFFSET_NAME(gpr[6]),
-> +	REG_OFFSET_NAME(gpr[7]),
-> +	REG_OFFSET_NAME(gpr[8]),
-> +	REG_OFFSET_NAME(gpr[9]),
-> +	REG_OFFSET_NAME(gpr[10]),
-> +	REG_OFFSET_NAME(gpr[11]),
-> +	REG_OFFSET_NAME(gpr[12]),
-> +	REG_OFFSET_NAME(gpr[13]),
-> +	REG_OFFSET_NAME(gpr[14]),
-> +	REG_OFFSET_NAME(gpr[15]),
-> +	REG_OFFSET_NAME(gpr[16]),
-> +	REG_OFFSET_NAME(gpr[17]),
-> +	REG_OFFSET_NAME(gpr[18]),
-> +	REG_OFFSET_NAME(gpr[19]),
-> +	REG_OFFSET_NAME(gpr[20]),
-> +	REG_OFFSET_NAME(gpr[21]),
-> +	REG_OFFSET_NAME(gpr[22]),
-> +	REG_OFFSET_NAME(gpr[23]),
-> +	REG_OFFSET_NAME(gpr[24]),
-> +	REG_OFFSET_NAME(gpr[25]),
-> +	REG_OFFSET_NAME(gpr[26]),
-> +	REG_OFFSET_NAME(gpr[27]),
-> +	REG_OFFSET_NAME(gpr[28]),
-> +	REG_OFFSET_NAME(gpr[29]),
-> +	REG_OFFSET_NAME(gpr[30]),
-> +	REG_OFFSET_NAME(gpr[31]),
+will try.
 
-I find it weird that you have the [ an ] in the name ... We usually name
-these guys gpr0...gpr31 or even r0...r31. Is that name user visible ?
-Maybe you should use a different macro GPR_OFFSET_NAME(num) that
-generates both gpr[num] for the offsetof and r##num for the register
-name.
+> 
+>> Anyway: I look at your dma-mapping.h and you can use 
+>> asm-generic/dma-mapping-common.h as I am using.
+> 
+> Not just quite yet, there's still some stuff we need to cleanup with
+> the !coherent cases.
+> 
+>> Then I have some question about EARLY_PCI_OP in ppc_32.c. Is there any 
+>> reason to use early_##rw##_config_##size fucntions instead of proper 
+>> pci_bus_##rw##_config_##size functions?
+>> There is one comment that these functions are used before PCI scanning 
+>> is done but there are used the same function as are in driver/pci/access.c.
+>> Is there any "secret" reason to do it in this way?
+> 
+> Well, first of all, those aren't ppc32 only anymore, they are in
+> pci-common.c now. Then, if you look at them you'll notice that
+> they are just a wrapper on top of pci_bus_* which uses a fake
+> pci_bus structure. IE. They are meant to be used in very early
+> arch fixup code at a time when we may not even have the struct
+> pci_bus at hand. Their use is pretty rare though, maybe we -could-
+> get rid of them at some stage by moving some of that fixup code.
 
-> +	REG_OFFSET_NAME(nip),
-> +	REG_OFFSET_NAME(msr),
-> +	REG_OFFSET_NAME(orig_gpr3),
-> +	REG_OFFSET_NAME(ctr),
-> +	REG_OFFSET_NAME(link),
-> +	REG_OFFSET_NAME(xer),
-> +	REG_OFFSET_NAME(ccr),
-> +#ifdef CONFIG_PPC64
-> +	REG_OFFSET_NAME(softe),
-> +#else
-> +	REG_OFFSET_NAME(mq),
-> +#endif
-> +	REG_OFFSET_NAME(trap),
-> +	REG_OFFSET_NAME(dar),
-> +	REG_OFFSET_NAME(dsisr),
-> +	REG_OFFSET_NAME(result),
-> +	REG_OFFSET_END,
-> +};
+Thanks for that.
 
-Do you need to expose orig_gpr3 and result there ?
+> 
+>> Thanks for this early discuss. I would like to hear your opinion and 
+>> then I will choose solution how to add our pci support to mainline.
 
-Cheers,
-Ben.
+I will keep you informed but I see that I will add that part of code to 
+mainline and then we look at consolidation work.
+
+Thanks,
+Michal
+
+> 
+> Cheers,
+> Ben.
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
