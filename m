@@ -2,20 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E60D11007D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 14:00:28 +1100 (EST)
-Subject: Re: [PATCH 2/2] Update ibm,client-architecture call field based on
-	device tree
+	by ozlabs.org (Postfix) with ESMTPS id 8F598B7CB9
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 14:12:54 +1100 (EST)
+Subject: Re: [PATCH -tip tracing/kprobes v2] Powerpc port of the
+	kprobe-based event tracer
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <1263501674.4869.142.camel@jschopp-laptop>
-References: <1263501508.4869.133.camel@jschopp-laptop>
-	<1263501674.4869.142.camel@jschopp-laptop>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+In-Reply-To: <20100111130210.GA31980@in.ibm.com>
+References: <20100111125952.604518521@mars.in.ibm.com>
+	<20100111130210.GA31980@in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 13:58:21 +1100
-Message-ID: <1263524301.724.387.camel@pasglop>
+Date: Fri, 15 Jan 2010 14:12:21 +1100
+Message-ID: <1263525141.724.393.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, systemtap@sources.redhat.com,
+	Ingo Molnar <mingo@elte.hu>, Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,129 +27,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-01-14 at 14:41 -0600, Joel Schopp wrote:
-> In the previous patch the client-architecture field for the number of
-> cores supported is set statically as high as is possible.  However, that
-> static setting could be too high if the system supports smt, resulting
-> in cpus assigned to Linux that are not booted.  This patch reads the
-> device tree (before it is unflattened) to determine the amount of smt.
-> It then dynamically updates the entires in the array with the proper
-> number of cores supported.  Tests show this correctly detecting SMT4 on
-> a Power7 and still booting all the supported cores on a large machine.
+Hi Mahesh !
 
-Same comments about submission format as the previous patch...
-
-> Signed-off-by:Joel Schopp<jschopp@austin.ibm.com> 
-> Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/kernel/prom_init.c
-> +++ linux-2.6.git/arch/powerpc/kernel/prom_init.c
-> @@ -141,6 +141,8 @@ typedef u32 cell_t;
->  
->  extern void __start(unsigned long r3, unsigned long r4, unsigned long r5);
->  
-> +static int __init prom_smt_way(void);
-
-Do you really need a forward declaration ? We generally avoid those and
-prefer instead having the functions in the right order to make it
-unnecessary.
-
->  #ifdef CONFIG_PPC64
->  extern int enter_prom(struct prom_args *args, unsigned long entry);
->  #else
-> @@ -811,9 +813,17 @@ static void __init prom_send_capabilitie
->  {
->  	ihandle elfloader, root;
->  	prom_arg_t ret;
-> +	u32 *cores;
->  
->  	root = call_prom("open", 1, 1, ADDR("/"));
->  	if (root != 0) {
-> +		/*
-> +		 * If you add to the struct, please be sure the 100 index
-> +		 * didn't change.  The BUILD_BUG_ON is a reminder.
-> +		 */
-> +		BUILD_BUG_ON(sizeof(ibm_architecture_vec) != 108);
-
-This is indeed a bit fishy... a nicer way may have been to have the
-vector in an asm file with labels but that's probably overkill. Just
-maybe add a runtime test that checks the value read initially is
-NR_CORES and if not, print a big fat warning ?
-
-> +		cores = (u32 *) &ibm_architecture_vec[100];
-> +		*cores = (u32) (NR_CPUS/prom_smt_way());
-
-The style is a bit gross though I suppose it will do. Drop the cast on
-the second line, it's not useful, and stick some spaces around that
-division. Also maybe print out a message saying to what value you
-adjusted the max number of supported cores, might be useful on the field
-to diagnose issues.
-
->  		/* try calling the ibm,client-architecture-support method */
->  		prom_printf("Calling ibm,client-architecture-support...");
->  		if (call_prom_ret("call-method", 3, 2, &ret,
-> @@ -1031,6 +1041,45 @@ static void __init reserve_mem(u64 base,
->  	RELOC(mem_reserve_cnt) = cnt + 1;
->  }
->  
+> +/**
+> + * regs_within_kernel_stack() - check the address in the stack
+> + * @regs:      pt_regs which contains kernel stack pointer.
+> + * @addr:      address which is checked.
+> + *
+> + * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
+> + * If @addr is within the kernel stack, it returns true. If not, returns false.
+> + */
 > +
-> +static int __init prom_smt_way(void)
+> +static inline bool regs_within_kernel_stack(struct pt_regs *regs,
+> +						unsigned long addr)
 > +{
-> +	phandle node;
-> +	char type[64];
-> +	unsigned int plen;
-> +
-> +	for (node = 0; prom_next_node(&node); ) {
-> +		type[0] = 0;
-> +		prom_getprop(node, "device_type", type, sizeof(type));
-> +
-> +		if (type[0] == 0) {
-> +			/*
-> +			 * CHRP Longtrail machines have no device_type
-> +			 * on the memory node, so check the name instead...
-> +			 */
-> +			prom_getprop(node, "name", type, sizeof(type));
-
-They also have no SMT :-) Just continue instead. You could also have
-instead gone for /cpus and peeked at the first child. Might have lead to
-a simpler construct (and faster runtime)
-
-> +		}
-> +		if (strcmp(type, RELOC("cpu")))
-> +			continue;
-> +
-> +		/*
-> +		 * There is an entry for each smt thread, each entry being
-> +		 * 4 bytes long.  All cpus should have the same number of
-> +		 * smt threads, so return after finding the first.
-> +		 */
-> +		plen = prom_getproplen(node, "ibm,ppc-interrupt-server#s");
-> +		prom_debug("smt %x\n", (unsigned long) plen);
-
-Might only be a debug message but it should be a tad more verbose about
-what it's actually printing.
-
-> +		if (plen >= 4)
-> +			return plen / 4;
-> +	}
-> +	/*
-> +	 * If things go wrong and we get here fallback to SMT1
-> +	 */
-> +	prom_debug("unable to determine smt from device tree, guessing smt1\n");
-> +	return 1;
-> +
+> +	return ((addr & ~(THREAD_SIZE - 1))  ==
+> +		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
 > +}
+
+Out of curiosity, what is the above meant for ? I'm trying to understand
+because it will not work with such things as interrupt or softirq
+stack...
+
+> +/**
+> + * regs_get_kernel_stack_nth() - get Nth entry of the stack
+> + * @regs:	pt_regs which contains kernel stack pointer.
+> + * @n:		stack entry number.
+> + *
+> + * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+> + * is specified by @regs. If the @n th entry is NOT in the kernel stack,
+> + * this returns 0.
+> + */
+> +static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+> +						      unsigned int n)
+> +{
+> +	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
+> +	addr += n;
+> +	if (regs_within_kernel_stack(regs, (unsigned long)addr))
+> +		return *addr;
+> +	else
+> +		return 0;
+> +}
+
+Is this meant to fetch stack based arguments or do backtraces or similar
+or does this have a different purpose ?
+
+>  /*
+>   * These are defined as per linux/ptrace.h, which see.
+>   */
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index ef14988..e816aba 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -39,6 +39,108 @@
+>  #include <asm/system.h>
+>  
+>  /*
+> + * The parameter save area on the stack is used to store arguments being passed
+> + * to callee function and is located at fixed offset from stack pointer.
+> + */
+> +#ifdef CONFIG_PPC32
+> +#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
+> +#else /* CONFIG_PPC32 */
+> +#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
+> +#endif
 > +
+> +struct pt_regs_offset {
+> +	const char *name;
+> +	int offset;
+> +};
+> +
+> +#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
+> +#define REG_OFFSET_END {.name = NULL, .offset = 0}
+> +
+> +static const struct pt_regs_offset regoffset_table[] = {
+> +	REG_OFFSET_NAME(gpr[0]),
+> +	REG_OFFSET_NAME(gpr[1]),
+> +	REG_OFFSET_NAME(gpr[2]),
+> +	REG_OFFSET_NAME(gpr[3]),
+> +	REG_OFFSET_NAME(gpr[4]),
+> +	REG_OFFSET_NAME(gpr[5]),
+> +	REG_OFFSET_NAME(gpr[6]),
+> +	REG_OFFSET_NAME(gpr[7]),
+> +	REG_OFFSET_NAME(gpr[8]),
+> +	REG_OFFSET_NAME(gpr[9]),
+> +	REG_OFFSET_NAME(gpr[10]),
+> +	REG_OFFSET_NAME(gpr[11]),
+> +	REG_OFFSET_NAME(gpr[12]),
+> +	REG_OFFSET_NAME(gpr[13]),
+> +	REG_OFFSET_NAME(gpr[14]),
+> +	REG_OFFSET_NAME(gpr[15]),
+> +	REG_OFFSET_NAME(gpr[16]),
+> +	REG_OFFSET_NAME(gpr[17]),
+> +	REG_OFFSET_NAME(gpr[18]),
+> +	REG_OFFSET_NAME(gpr[19]),
+> +	REG_OFFSET_NAME(gpr[20]),
+> +	REG_OFFSET_NAME(gpr[21]),
+> +	REG_OFFSET_NAME(gpr[22]),
+> +	REG_OFFSET_NAME(gpr[23]),
+> +	REG_OFFSET_NAME(gpr[24]),
+> +	REG_OFFSET_NAME(gpr[25]),
+> +	REG_OFFSET_NAME(gpr[26]),
+> +	REG_OFFSET_NAME(gpr[27]),
+> +	REG_OFFSET_NAME(gpr[28]),
+> +	REG_OFFSET_NAME(gpr[29]),
+> +	REG_OFFSET_NAME(gpr[30]),
+> +	REG_OFFSET_NAME(gpr[31]),
+
+I find it weird that you have the [ an ] in the name ... We usually name
+these guys gpr0...gpr31 or even r0...r31. Is that name user visible ?
+Maybe you should use a different macro GPR_OFFSET_NAME(num) that
+generates both gpr[num] for the offsetof and r##num for the register
+name.
+
+> +	REG_OFFSET_NAME(nip),
+> +	REG_OFFSET_NAME(msr),
+> +	REG_OFFSET_NAME(orig_gpr3),
+> +	REG_OFFSET_NAME(ctr),
+> +	REG_OFFSET_NAME(link),
+> +	REG_OFFSET_NAME(xer),
+> +	REG_OFFSET_NAME(ccr),
+> +#ifdef CONFIG_PPC64
+> +	REG_OFFSET_NAME(softe),
+> +#else
+> +	REG_OFFSET_NAME(mq),
+> +#endif
+> +	REG_OFFSET_NAME(trap),
+> +	REG_OFFSET_NAME(dar),
+> +	REG_OFFSET_NAME(dsisr),
+> +	REG_OFFSET_NAME(result),
+> +	REG_OFFSET_END,
+> +};
+
+Do you need to expose orig_gpr3 and result there ?
 
 Cheers,
 Ben.
-
->  /*
->   * Initialize memory allocation mechanism, parse "memory" nodes and
->   * obtain that way the top of memory and RMO to setup out local allocator
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
