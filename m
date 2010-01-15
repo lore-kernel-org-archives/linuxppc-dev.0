@@ -3,13 +3,14 @@ Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
 	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8CD0DB7CC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jan 2010 04:11:01 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id E206CB7D2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jan 2010 04:11:05 +1100 (EST)
 From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 5/5] powerpc/kexec: Add support for FSL-BookE
-Date: Fri, 15 Jan 2010 17:41:37 +0100
-Message-Id: <1263573697-17839-6-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+Subject: [PATCH 4/5] powerpc/fsl head: move the entry setup code into a
+	seperate file
+Date: Fri, 15 Jan 2010 17:41:36 +0100
+Message-Id: <1263573697-17839-5-git-send-email-linuxppc-dev@ml.breakpoint.cc>
 In-Reply-To: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
 References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
 Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
@@ -24,167 +25,412 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-This adds support kexec on FSL-BookE where the MMU can not be simply
-switched off. The code borrows the initial MMU-setup code to create the
-identical mapping mapping. The only difference to the original boot code
-is the size of the mapping(s) and the executeable address.
-The kexec code maps the first 2 GiB of memory in 256 MiB steps. This
-should work also on e500v1 boxes.
-SMP support is still not available.
+This patch moves only the initial entry code which setups the mapping
+from what ever to KERNELBASE into a seperate file. No code change has
+been made here.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- arch/powerpc/Kconfig                          |    2 +-
- arch/powerpc/include/asm/kexec.h              |   13 +++++++++
- arch/powerpc/kernel/fsl_booke_entry_mapping.S |   34 +++++++++++++++++++++++++
- arch/powerpc/kernel/head_fsl_booke.S          |    2 +
- arch/powerpc/kernel/misc_32.S                 |   17 ++++++++++++
- 5 files changed, 67 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |  189 +++++++++++++++++++++++++
+ arch/powerpc/kernel/head_fsl_booke.S          |  189 +------------------------
+ 2 files changed, 190 insertions(+), 188 deletions(-)
+ create mode 100644 arch/powerpc/kernel/fsl_booke_entry_mapping.S
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ba3948c..788a154 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -335,7 +335,7 @@ config ARCH_ENABLE_MEMORY_HOTREMOVE
- 
- config KEXEC
- 	bool "kexec system call (EXPERIMENTAL)"
--	depends on PPC_BOOK3S && EXPERIMENTAL
-+	depends on (PPC_BOOK3S || (FSL_BOOKE && !SMP)) && EXPERIMENTAL
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
- 	  current kernel, and to start another kernel.  It is like a reboot
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 7e06b43..83f6481 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -2,6 +2,18 @@
- #define _ASM_POWERPC_KEXEC_H
- #ifdef __KERNEL__
- 
-+#ifdef CONFIG_FSL_BOOKE
-+
-+/*
-+ * On FSL-BookE we setup a 1:1 mapping which covers the first 2GiB of memory
-+ * and therefore we can only deal with memory within this range
-+ */
-+#define KEXEC_SOURCE_MEMORY_LIMIT	(2 * 1024 * 1024 * 1024UL)
-+#define KEXEC_DESTINATION_MEMORY_LIMIT	(2 * 1024 * 1024 * 1024UL)
-+#define KEXEC_CONTROL_MEMORY_LIMIT	(2 * 1024 * 1024 * 1024UL)
-+
-+#else
-+
- /*
-  * Maximum page that is mapped directly into kernel memory.
-  * XXX: Since we copy virt we can use any page we allocate
-@@ -21,6 +33,7 @@
- /* TASK_SIZE, probably left over from use_mm ?? */
- #define KEXEC_CONTROL_MEMORY_LIMIT TASK_SIZE
- #endif
-+#endif
- 
- #define KEXEC_CONTROL_PAGE_SIZE 4096
- 
 diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-index d629618..1fc283a 100644
---- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+new file mode 100644
+index 0000000..d629618
+--- /dev/null
 +++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
-@@ -155,6 +155,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
- #define M_IF_SMP	0
- #endif
- 
-+#if defined(ENTRY_MAPPING_BOOT_SETUP)
+@@ -0,0 +1,189 @@
++/* 1. Find the index of the entry we're executing in */
++	bl	invstr				/* Find our address */
++invstr:	mflr	r6				/* Make it accessible */
++	mfmsr	r7
++	rlwinm	r4,r7,27,31,31			/* extract MSR[IS] */
++	mfspr	r7, SPRN_PID0
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
++	mfspr	r7,SPRN_MAS1
++	andis.	r7,r7,MAS1_VALID@h
++	bne	match_TLB
 +
- /* 6. Setup KERNELBASE mapping in TLB1[0] */
- 	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
- 	mtspr	SPRN_MAS0,r6
-@@ -170,6 +172,38 @@ skpinv:	addi	r6,r6,1				/* Increment */
- /* 7. Jump to KERNELBASE mapping */
- 	lis	r6,(KERNELBASE & ~0xfff)@h
- 	ori	r6,r6,(KERNELBASE & ~0xfff)@l
++	mfspr	r7,SPRN_MMUCFG
++	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
++	cmpwi	r7,3
++	bne	match_TLB			/* skip if NPIDS != 3 */
 +
-+#elif defined(ENTRY_MAPPING_KEXEC_SETUP)
-+/*
-+ * 6. Setup 1:1 mapping TLB1[0 - 8]. We start 0 and map in 256 MiB steps the
-+ * first 2GiB of memory.
-+ */
-+	lis	r10, (MAS1_VALID|MAS1_IPROT)@h
-+	ori	r10,r10, (MAS1_TSIZE(BOOK3E_PAGESZ_256M))@l
-+	li	r11, 0		// We use 16 esel slots and map 4 GiB
-+	li	r0, 8		// of mem 1:1 from 0 to 4 GiB - 1 in
-+	mtctr	r0		// 256 MiB mem steps
++	mfspr	r7,SPRN_PID1
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* search MSR[IS], SPID=PID1 */
++	mfspr	r7,SPRN_MAS1
++	andis.	r7,r7,MAS1_VALID@h
++	bne	match_TLB
++	mfspr	r7, SPRN_PID2
++	slwi	r7,r7,16
++	or	r7,r7,r4
++	mtspr	SPRN_MAS6,r7
++	tlbsx	0,r6				/* Fall through, we had to match */
 +
-+next_tlb_setup:
-+	rlwinm	r0, r11, 16, 4, 15	// Compute esel
-+	rlwinm	r9, r11, 28, 0, 3	// Compute [ER]PN
-+	oris	r0, r0, (MAS0_TLBSEL(1))@h
-+	mtspr	SPRN_MAS0,r0
-+	mtspr	SPRN_MAS1,r10
-+	mtspr	SPRN_MAS2,r9
-+	ori	r9, r9, (MAS3_SX|MAS3_SW|MAS3_SR)
-+	mtspr	SPRN_MAS3,r9
++match_TLB:
++	mfspr	r7,SPRN_MAS0
++	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
++
++	mfspr	r7,SPRN_MAS1			/* Insure IPROT set */
++	oris	r7,r7,MAS1_IPROT@h
++	mtspr	SPRN_MAS1,r7
 +	tlbwe
-+	addi	r11, r11, 1
-+	bdnz+	next_tlb_setup
++
++/* 2. Invalidate all entries except the entry we're executing in */
++	mfspr	r9,SPRN_TLB1CFG
++	andi.	r9,r9,0xfff
++	li	r6,0				/* Set Entry counter to 0 */
++1:	lis	r7,0x1000			/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r6,16,4,15			/* Setup MAS0 = TLBSEL | ESEL(r6) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++	mfspr	r7,SPRN_MAS1
++	rlwinm	r7,r7,0,2,31			/* Clear MAS1 Valid and IPROT */
++	cmpw	r3,r6
++	beq	skpinv				/* Dont update the current execution TLB */
++	mtspr	SPRN_MAS1,r7
++	tlbwe
++	isync
++skpinv:	addi	r6,r6,1				/* Increment */
++	cmpw	r6,r9				/* Are we done? */
++	bne	1b				/* If not, repeat */
++
++	/* Invalidate TLB0 */
++	li	r6,0x04
++	tlbivax 0,r6
++	TLBSYNC
++	/* Invalidate TLB1 */
++	li	r6,0x0c
++	tlbivax 0,r6
++	TLBSYNC
++
++/* 3. Setup a temp mapping and jump to it */
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++
++	/* grab and fixup the RPN */
++	mfspr	r6,SPRN_MAS1	/* extract MAS1[SIZE] */
++	rlwinm	r6,r6,25,27,31
++	li	r8,-1
++	addi	r6,r6,10
++	slw	r6,r8,r6	/* convert to mask */
++
++	bl	1f		/* Find our address */
++1:	mflr	r7
++
++	mfspr	r8,SPRN_MAS3
++#ifdef CONFIG_PHYS_64BIT
++	mfspr	r23,SPRN_MAS7
++#endif
++	and	r8,r6,r8
++	subfic	r9,r6,-4096
++	and	r9,r9,r7
++
++	or	r25,r8,r9
++	ori	r8,r25,(MAS3_SX|MAS3_SW|MAS3_SR)
++
++	/* Just modify the entry ID and EPN for the temp mapping */
++	li	r7, 0		/* Set MAS0(TLBSEL) = 0 | ESEL(0) */
++	mtspr	SPRN_MAS0,r7
++	xori	r6,r4,1		/* Setup TMP mapping in the other Address space */
++	slwi	r6,r6,12
++	oris	r6,r6,(MAS1_VALID)@h
++	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_4K))@l
++	mtspr	SPRN_MAS1,r6
++	mfspr	r6,SPRN_MAS2
++	li	r7,0		/* temp EPN = 0 */
++	rlwimi	r7,r6,0,20,31
++	mtspr	SPRN_MAS2,r7
++	mtspr	SPRN_MAS3,r8
++	tlbwe
++
++	xori	r6,r4,1
++	slwi	r6,r6,5		/* setup new context with other address space */
++	bl	1f		/* Find our address */
++1:	mflr	r9
++	rlwimi	r7,r9,0,20,31
++	addi	r7,r7,(2f - 1b)
++	mtspr	SPRN_SRR0,r7
++	mtspr	SPRN_SRR1,r6
++	rfi
++2:
++/* 4. Clear out PIDs & Search info */
++	li	r6,0
++	mtspr   SPRN_MAS6,r6
++	mtspr	SPRN_PID0,r6
++
++	mfspr	r7,SPRN_MMUCFG
++	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
++	cmpwi	r7,3
++	bne	2f				/* skip if NPIDS != 3 */
++
++	mtspr	SPRN_PID1,r6
++	mtspr	SPRN_PID2,r6
++
++/* 5. Invalidate mapping we started in */
++2:
++	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
++	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
++	mtspr	SPRN_MAS0,r7
++	tlbre
++	mfspr	r6,SPRN_MAS1
++	rlwinm	r6,r6,0,2,0	/* clear IPROT */
++	mtspr	SPRN_MAS1,r6
++	tlbwe
++	/* Invalidate TLB1 */
++	li	r9,0x0c
++	tlbivax 0,r9
++	TLBSYNC
++
++/* The mapping only needs to be cache-coherent on SMP */
++#ifdef CONFIG_SMP
++#define M_IF_SMP	MAS2_M
++#else
++#define M_IF_SMP	0
++#endif
++
++/* 6. Setup KERNELBASE mapping in TLB1[0] */
++	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
++	mtspr	SPRN_MAS0,r6
++	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
++	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
++	mtspr	SPRN_MAS1,r6
++	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_SMP)@h
++	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_SMP)@l
++	mtspr	SPRN_MAS2,r6
++	mtspr	SPRN_MAS3,r8
++	tlbwe
 +
 +/* 7. Jump to KERNELBASE mapping */
-+	li	r6, 0
++	lis	r6,(KERNELBASE & ~0xfff)@h
++	ori	r6,r6,(KERNELBASE & ~0xfff)@l
++	lis	r7,MSR_KERNEL@h
++	ori	r7,r7,MSR_KERNEL@l
++	bl	1f			/* Find our address */
++1:	mflr	r9
++	rlwimi	r6,r9,0,20,31
++	addi	r6,r6,(2f - 1b)
++	add	r6, r6, r25
++	mtspr	SPRN_SRR0,r6
++	mtspr	SPRN_SRR1,r7
++	rfi				/* start execution out of TLB1[0] entry */
 +
-+#else
-+	#error You need to specify the mapping or not use this at all.
-+#endif
-+
- 	lis	r7,MSR_KERNEL@h
- 	ori	r7,r7,MSR_KERNEL@l
- 	bl	1f			/* Find our address */
++/* 8. Clear out the temp mapping */
++2:
++	/* Invalidate TLB0 */
++	li	r9,0x04
++	tlbivax 0,r9
++	TLBSYNC
 diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 4de9bc5..fcace7b 100644
+index 445eddd..4de9bc5 100644
 --- a/arch/powerpc/kernel/head_fsl_booke.S
 +++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -95,7 +95,9 @@ _ENTRY(_start);
+@@ -94,195 +94,8 @@ _ENTRY(_start);
+  */
  
  _ENTRY(__early_start)
+-/* 1. Find the index of the entry we're executing in */
+-	bl	invstr				/* Find our address */
+-invstr:	mflr	r6				/* Make it accessible */
+-	mfmsr	r7
+-	rlwinm	r4,r7,27,31,31			/* extract MSR[IS] */
+-	mfspr	r7, SPRN_PID0
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* search MSR[IS], SPID=PID0 */
+-	mfspr	r7,SPRN_MAS1
+-	andis.	r7,r7,MAS1_VALID@h
+-	bne	match_TLB
+-
+-	mfspr	r7,SPRN_MMUCFG
+-	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
+-	cmpwi	r7,3
+-	bne	match_TLB			/* skip if NPIDS != 3 */
+-
+-	mfspr	r7,SPRN_PID1
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* search MSR[IS], SPID=PID1 */
+-	mfspr	r7,SPRN_MAS1
+-	andis.	r7,r7,MAS1_VALID@h
+-	bne	match_TLB
+-	mfspr	r7, SPRN_PID2
+-	slwi	r7,r7,16
+-	or	r7,r7,r4
+-	mtspr	SPRN_MAS6,r7
+-	tlbsx	0,r6				/* Fall through, we had to match */
+-
+-match_TLB:
+-	mfspr	r7,SPRN_MAS0
+-	rlwinm	r3,r7,16,20,31			/* Extract MAS0(Entry) */
+-
+-	mfspr	r7,SPRN_MAS1			/* Insure IPROT set */
+-	oris	r7,r7,MAS1_IPROT@h
+-	mtspr	SPRN_MAS1,r7
+-	tlbwe
+-
+-/* 2. Invalidate all entries except the entry we're executing in */
+-	mfspr	r9,SPRN_TLB1CFG
+-	andi.	r9,r9,0xfff
+-	li	r6,0				/* Set Entry counter to 0 */
+-1:	lis	r7,0x1000			/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r6,16,4,15			/* Setup MAS0 = TLBSEL | ESEL(r6) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-	mfspr	r7,SPRN_MAS1
+-	rlwinm	r7,r7,0,2,31			/* Clear MAS1 Valid and IPROT */
+-	cmpw	r3,r6
+-	beq	skpinv				/* Dont update the current execution TLB */
+-	mtspr	SPRN_MAS1,r7
+-	tlbwe
+-	isync
+-skpinv:	addi	r6,r6,1				/* Increment */
+-	cmpw	r6,r9				/* Are we done? */
+-	bne	1b				/* If not, repeat */
+-
+-	/* Invalidate TLB0 */
+-	li	r6,0x04
+-	tlbivax 0,r6
+-	TLBSYNC
+-	/* Invalidate TLB1 */
+-	li	r6,0x0c
+-	tlbivax 0,r6
+-	TLBSYNC
+-
+-/* 3. Setup a temp mapping and jump to it */
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-
+-	/* grab and fixup the RPN */
+-	mfspr	r6,SPRN_MAS1	/* extract MAS1[SIZE] */
+-	rlwinm	r6,r6,25,27,31
+-	li	r8,-1
+-	addi	r6,r6,10
+-	slw	r6,r8,r6	/* convert to mask */
+-
+-	bl	1f		/* Find our address */
+-1:	mflr	r7
+-
+-	mfspr	r8,SPRN_MAS3
+-#ifdef CONFIG_PHYS_64BIT
+-	mfspr	r23,SPRN_MAS7
+-#endif
+-	and	r8,r6,r8
+-	subfic	r9,r6,-4096
+-	and	r9,r9,r7
+-
+-	or	r25,r8,r9
+-	ori	r8,r25,(MAS3_SX|MAS3_SW|MAS3_SR)
+-
+-	/* Just modify the entry ID and EPN for the temp mapping */
+-	li	r7, 0		/* Set MAS0(TLBSEL) = 0 | ESEL(0) */
+-	mtspr	SPRN_MAS0,r7
+-	xori	r6,r4,1		/* Setup TMP mapping in the other Address space */
+-	slwi	r6,r6,12
+-	oris	r6,r6,(MAS1_VALID)@h
+-	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_4K))@l
+-	mtspr	SPRN_MAS1,r6
+-	mfspr	r6,SPRN_MAS2
+-	li	r7,0		/* temp EPN = 0 */
+-	rlwimi	r7,r6,0,20,31
+-	mtspr	SPRN_MAS2,r7
+-	mtspr	SPRN_MAS3,r8
+-	tlbwe
+-
+-	xori	r6,r4,1
+-	slwi	r6,r6,5		/* setup new context with other address space */
+-	bl	1f		/* Find our address */
+-1:	mflr	r9
+-	rlwimi	r7,r9,0,20,31
+-	addi	r7,r7,(2f - 1b)
+-	mtspr	SPRN_SRR0,r7
+-	mtspr	SPRN_SRR1,r6
+-	rfi
+-2:
+-/* 4. Clear out PIDs & Search info */
+-	li	r6,0
+-	mtspr   SPRN_MAS6,r6
+-	mtspr	SPRN_PID0,r6
+-
+-	mfspr	r7,SPRN_MMUCFG
+-	rlwinm	r7,r7,21,28,31			/* extract MMUCFG[NPIDS] */
+-	cmpwi	r7,3
+-	bne	2f				/* skip if NPIDS != 3 */
  
-+#define ENTRY_MAPPING_BOOT_SETUP
- #include "fsl_booke_entry_mapping.S"
-+#undef ENTRY_MAPPING_BOOT_SETUP
+-	mtspr	SPRN_PID1,r6
+-	mtspr	SPRN_PID2,r6
+-
+-/* 5. Invalidate mapping we started in */
+-2:
+-	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+-	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+-	mtspr	SPRN_MAS0,r7
+-	tlbre
+-	mfspr	r6,SPRN_MAS1
+-	rlwinm	r6,r6,0,2,0	/* clear IPROT */
+-	mtspr	SPRN_MAS1,r6
+-	tlbwe
+-	/* Invalidate TLB1 */
+-	li	r9,0x0c
+-	tlbivax 0,r9
+-	TLBSYNC
+-
+-/* The mapping only needs to be cache-coherent on SMP */
+-#ifdef CONFIG_SMP
+-#define M_IF_SMP	MAS2_M
+-#else
+-#define M_IF_SMP	0
+-#endif
+-
+-/* 6. Setup KERNELBASE mapping in TLB1[0] */
+-	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
+-	mtspr	SPRN_MAS0,r6
+-	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
+-	ori	r6,r6,(MAS1_TSIZE(BOOK3E_PAGESZ_64M))@l
+-	mtspr	SPRN_MAS1,r6
+-	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_SMP)@h
+-	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_SMP)@l
+-	mtspr	SPRN_MAS2,r6
+-	mtspr	SPRN_MAS3,r8
+-	tlbwe
+-
+-/* 7. Jump to KERNELBASE mapping */
+-	lis	r6,(KERNELBASE & ~0xfff)@h
+-	ori	r6,r6,(KERNELBASE & ~0xfff)@l
+-	lis	r7,MSR_KERNEL@h
+-	ori	r7,r7,MSR_KERNEL@l
+-	bl	1f			/* Find our address */
+-1:	mflr	r9
+-	rlwimi	r6,r9,0,20,31
+-	addi	r6,r6,(2f - 1b)
+-	add	r6, r6, r25
+-	mtspr	SPRN_SRR0,r6
+-	mtspr	SPRN_SRR1,r7
+-	rfi				/* start execution out of TLB1[0] entry */
+-
+-/* 8. Clear out the temp mapping */
+-2:
+-	/* Invalidate TLB0 */
+-	li	r9,0x04
+-	tlbivax 0,r9
+-	TLBSYNC
++#include "fsl_booke_entry_mapping.S"
  
  	/* Establish the interrupt vector offsets */
  	SET_IVOR(0,  CriticalInput);
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 8649f53..99bc652 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -706,6 +706,22 @@ relocate_new_kernel:
- 	/* r4 = reboot_code_buffer */
- 	/* r5 = start_address      */
- 
-+#ifdef CONFIG_FSL_BOOKE
-+
-+	mr	r29, r3
-+	mr	r30, r4
-+	mr	r31, r5
-+
-+#define ENTRY_MAPPING_KEXEC_SETUP
-+#include "fsl_booke_entry_mapping.S"
-+#undef ENTRY_MAPPING_KEXEC_SETUP
-+
-+	mr      r3, r29
-+	mr      r4, r30
-+	mr      r5, r31
-+
-+	li	r0, 0
-+#else
- 	li	r0, 0
- 
- 	/*
-@@ -722,6 +738,7 @@ relocate_new_kernel:
- 	rfi
- 
- 1:
-+#endif
- 	/* from this point address translation is turned off */
- 	/* and interrupts are disabled */
- 
 -- 
 1.6.2.5
