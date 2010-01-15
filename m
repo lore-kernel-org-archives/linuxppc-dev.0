@@ -3,17 +3,14 @@ Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
 	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99958B7EF4
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jan 2010 04:11:14 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id F241B1007E8
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jan 2010 04:11:18 +1100 (EST)
 From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/5] powerpc/head fsl: fix the case where we are not in the
-	first page
-Date: Fri, 15 Jan 2010 17:41:33 +0100
-Message-Id: <1263573697-17839-2-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-In-Reply-To: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Kexec support for FSL-BookE, take two
+Date: Fri, 15 Jan 2010 17:41:32 +0100
+Message-Id: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+This is take two :)
+SMP support did not work in the first one and due to the lack of a working
+SMP machine it is still absent. I took the e500v1 problem into account and
+the result is that I now use multiple 256MiB mappings.
+The final mapping covers the first 2GiB so the part of the highmem should
+be also covered and not just kernel memory.
 
-During boot we change the mapping a few times until we have a "defined"
-mapping. During this procedure a small 4KiB mapping is created and after
-that one a 64MiB. Currently the offset of the 4KiB page in that we run
-is zero because the complete startup up code is in first page which
-starts at RPN zero.
-If the code is recycled and moved to another location then its execution
-will fail because the start address in the 64 MiB mapping is computed
-wrongly. It does not consider the offset to the page from the begin of
-the memory.
-This patch fixes this. Usually (system boot) r25 is zero so this does
-not change anything unless the code is recycled.
+The first three patches prepare the entry code to work outside of the
+first page. Patch 4 simply moves code and finally patch 5 implements the
+kexec functionality.
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/kernel/head_fsl_booke.S |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 7f4bd7f..799ddbe 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -275,6 +275,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 1:	mflr	r9
- 	rlwimi	r6,r9,0,20,31
- 	addi	r6,r6,(2f - 1b)
-+	add	r6, r6, r25
- 	mtspr	SPRN_SRR0,r6
- 	mtspr	SPRN_SRR1,r7
- 	rfi				/* start execution out of TLB1[0] entry */
--- 
-1.6.2.5
+Sebastian
