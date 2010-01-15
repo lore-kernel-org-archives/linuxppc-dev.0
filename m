@@ -1,36 +1,21 @@
-Return-Path: <B13201@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BBF051007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jan 2010 13:49:46 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o0F2ngnT011286 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Jan 2010 19:49:42 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o0F2u4rc021627
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 14 Jan 2010 20:56:05 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 4/4] phy: add RTBI mode for m88e1111
-Date: Fri, 15 Jan 2010 10:49:37 +0800
-Message-ID: <0A1FE637C2C7E148B9573BB60CC630E5711B54@zch01exm26.fsl.freescale.net>
-In-Reply-To: <BC00E67D-5906-4740-A961-84FC1C524A4F@kernel.crashing.org>
-References: <1263456799-3306-1-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-2-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-3-git-send-email-yu.liu@freescale.com>
-	<1263456799-3306-4-git-send-email-yu.liu@freescale.com>
-	<BC00E67D-5906-4740-A961-84FC1C524A4F@kernel.crashing.org>
-From: "Liu Yu-B13201" <B13201@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C60E4B7CC1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 13:53:10 +1100 (EST)
+Subject: Re: [PATCH 1/2] Add static fields to ibm,client-architecture call
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+In-Reply-To: <1263510116.7445.5.camel@jschopp-laptop>
+References: <1263501508.4869.133.camel@jschopp-laptop>
+	<1263501613.4869.139.camel@jschopp-laptop>
+	<1263510116.7445.5.camel@jschopp-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 13:51:03 +1100
+Message-ID: <1263523863.724.380.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+On Thu, 2010-01-14 at 17:01 -0600, Joel Schopp wrote:
+> This patch adds 2 fields to the ibm_architecture_vec array.  
+> 
+> The first of these fields indicates the number of cores which Linux can
+> boot.  It does not account for SMT, so it may result in cpus assigned to
+> Linux which cannot be booted.  A second patch follows that dynamically
+> updates this for SMT.
+> 
+> The second field just indicates that our OS is Linux, and not another
+> OS.  The system may or may not use this hint to performance tune
+> settings for Linux.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Friday, January 15, 2010 12:20 AM
-> To: Liu Yu-B13201
-> Cc: davem@davemloft.net; linuxppc-dev@lists.ozlabs.org;=20
-> netdev@vger.kernel.org
-> Subject: Re: [PATCH 4/4] phy: add RTBI mode for m88e1111
->=20
->=20
-> On Jan 14, 2010, at 2:13 AM, Liu Yu wrote:
->=20
-> > Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> > ---
-> > drivers/net/phy/marvell.c |   38=20
-> ++++++++++++++++++++++++++++++++++++++
-> > 1 files changed, 38 insertions(+), 0 deletions(-)
-> >=20
-> > diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
-> > index 6f69b9b..65ed385 100644
-> > --- a/drivers/net/phy/marvell.c
-> > +++ b/drivers/net/phy/marvell.c
-> > @@ -63,6 +63,7 @@
-> > #define MII_M1111_HWCFG_MODE_COPPER_RGMII	0xb
-> > #define MII_M1111_HWCFG_MODE_FIBER_RGMII	0x3
-> > #define MII_M1111_HWCFG_MODE_SGMII_NO_CLK	0x4
-> > +#define MII_M1111_HWCFG_MODE_COPPER_RTBI	0x9
-> > #define MII_M1111_HWCFG_FIBER_COPPER_AUTO	0x8000
-> > #define MII_M1111_HWCFG_FIBER_COPPER_RES	0x2000
-> >=20
-> > @@ -269,6 +270,43 @@ static int m88e1111_config_init(struct=20
-> phy_device *phydev)
-> > 			return err;
-> > 	}
-> >=20
-> > +	if (phydev->interface =3D=3D PHY_INTERFACE_MODE_RTBI) {
-> > +		temp =3D phy_read(phydev, MII_M1111_PHY_EXT_CR);
-> > +		if (temp < 0)
-> > +			return temp;
-> > +		temp |=3D (MII_M1111_RX_DELAY | MII_M1111_TX_DELAY);
-> > +		err =3D phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
-> > +		if (err < 0)
-> > +			return err;
-> > +
-> > +		temp =3D phy_read(phydev, MII_M1111_PHY_EXT_SR);
-> > +		if (temp < 0)
-> > +			return temp;
-> > +		temp &=3D ~(MII_M1111_HWCFG_MODE_MASK |=20
-> MII_M1111_HWCFG_FIBER_COPPER_RES);
-> > +		temp |=3D 0x7 | MII_M1111_HWCFG_FIBER_COPPER_AUTO;
->=20
-> Does this magic 0x7 have some meaning?
->=20
+Patch submission 101...
 
-Hrr...  it's GMII to fibre mode.
-Document 88E1111_erata_RevB2  chapter 4.35 describ the reason.
-Without this sometimes phys couldnot work.
+> Sorry if the last version sent out got whitespace munged.  Hopefully
+> evolution works on this one.
+
+The above should be past the signature marker (--) so it doesn't end up
+in the changeset comments
+
+> Signed-off-by:Joel Schopp<jschopp@austin.ibm.com>
+
+The marker should be here or the line below:
+
+> Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
+> ===================================================================
+
+Would also end up in the comments.
+
+The rest looks fine.
+
+Cheers,
+Ben.
+
+> --- linux-2.6.git.orig/arch/powerpc/kernel/prom_init.c
+> +++ linux-2.6.git/arch/powerpc/kernel/prom_init.c
+> @@ -654,6 +656,9 @@ static void __init early_cmdline_parse(v
+>  #define OV5_CMO			0x00
+>  #endif
+>  
+> +/* Option Vector 6: IBM PAPR hints */
+> +#define OV6_LINUX		0x02	/* Linux is our OS */
+> +
+>  /*
+>   * The architecture vector has an array of PVR mask/value pairs,
+>   * followed by # option vectors - 1, followed by the option vectors.
+> @@ -665,7 +670,7 @@ static unsigned char ibm_architecture_ve
+>  	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
+>  	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
+>  	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
+> -	5 - 1,				/* 5 option vectors */
+> +	6 - 1,				/* 6 option vectors */
+>  
+>  	/* option vector 1: processor architectures supported */
+>  	3 - 2,				/* length */
+> @@ -697,12 +702,24 @@ static unsigned char ibm_architecture_ve
+>  	0,				/* don't halt */
+>  
+>  	/* option vector 5: PAPR/OF options */
+> -	5 - 2,				/* length */
+> +	13 - 2,				/* length */
+>  	0,				/* don't ignore, don't halt */
+>  	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
+>  	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
+>  	0,
+>  	OV5_CMO,
+> +	0,
+> +	0,
+> +	0,
+> +	0,
+> +	W(NR_CPUS),			/* number of cores supported*/
+> +
+> +	/* option vector 6: IBM PAPR hints */
+> +	4 - 2,				/* length */
+> +	0,
+> +	0,
+> +	OV6_LINUX,
+> +
+>  };
+>  
+>  /* Old method - ELF header with PT_NOTE sections */
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
