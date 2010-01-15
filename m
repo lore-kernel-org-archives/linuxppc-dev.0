@@ -1,17 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Move cpu hotplug driver lock from pseries to powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4B4F760C.4000507@austin.ibm.com>
-References: <4B4F760C.4000507@austin.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-7X5OEoctQYmYTv+l1sW+"
-Date: Fri, 15 Jan 2010 10:39:20 +1100
-Message-ID: <1263512360.31729.251.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE819B7CC1
+	for <linuxppc-dev@ozlabs.org>; Fri, 15 Jan 2010 13:44:08 +1100 (EST)
+Subject: Re: powerpc: should mem_end be assigned to dt_struct_end in
+	flatten_device_tree()?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+In-Reply-To: <4B4FA225.90108@gmail.com>
+References: <4B4FA225.90108@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jan 2010 13:44:00 +1100
+Message-ID: <1263523440.724.375.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2010-01-15 at 00:00 +0100, Roel Kluin wrote:
+> vi arch/powerpc/kernel/prom_init.c +1961 and note that in
+> flatten_device_tree() we do a
+> 
+>         RELOC(dt_struct_end) = PAGE_ALIGN(mem_start);
+> 
+> should that maybe be
+> 
+>         RELOC(dt_struct_end) = PAGE_ALIGN(mem_end);
+> 
 
---=-7X5OEoctQYmYTv+l1sW+
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Nope.
 
-On Thu, 2010-01-14 at 13:52 -0600, Nathan Fontenot wrote:
-> Move the defintion and lock helper routines for the cpu hotplug driver
-> lock from pseries to powerpc code to avoid build breaks for platforms=20
-> other than pseries that use cpu hotplug.
->=20
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
-> ---
->  arch/powerpc/kernel/smp.c              |   12 ++++++++++++
->  arch/powerpc/platforms/pseries/dlpar.c |   12 ------------
->  2 files changed, 12 insertions(+), 12 deletions(-)
+mem_start is a "cursor", it moves as things gets pushed into the flat
+device-tree blob. We thus snapshot its value after pushing the last bit
+of the structure. mem_end is just the max boundary past which we can no
+longer push things.
 
-Much nicer :)
-
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
-cheers
-
-
---=-7X5OEoctQYmYTv+l1sW+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAktPqygACgkQdSjSd0sB4dK1ogCgywh8GqHiPQnMWf5ft9tBClRK
-B3YAn1Kpa5LwKjryQhQ3lq9cWXO9mjC0
-=VBy/
------END PGP SIGNATURE-----
-
---=-7X5OEoctQYmYTv+l1sW+--
+Cheers,
+Ben.
