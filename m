@@ -1,22 +1,21 @@
-Return-Path: <hunter.cobbs@gmail.com>
+Return-Path: <wilbur512@gmail.com>
 Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 413DDB7C8E
+	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 439B91007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jan 2010 14:59:30 +1100 (EST)
-Received: by yxe9 with SMTP id 9so191468yxe.26
+	Sat, 16 Jan 2010 23:35:53 +1100 (EST)
+Received: by yxe9 with SMTP id 9so351499yxe.26
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 15 Jan 2010 19:59:28 -0800 (PST)
-Subject: Re: Problem dtb file booting Kernel 2.6.32
-From: Hunter Cobbs <hunter.cobbs@gmail.com>
-To: Andres Marquez <amarquez@edgeaccess.net>
-In-Reply-To: <1263565840.13514.2.camel@localhost.localdomain>
-References: <1263501641.12055.9.camel@localhost.localdomain>
-	<1263565840.13514.2.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 21:59:24 -0600
-Message-ID: <1263614364.2806.20.camel@ccs-laptop>
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+	Sat, 16 Jan 2010 04:35:51 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+Date: Sat, 16 Jan 2010 20:35:50 +0800
+Message-ID: <e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
+Subject: Re: Kexec support for FSL-BookE, take two
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,52 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-If you're going to attempt to use v1 dts, you might want to try to add
-
-
- * option) any later version.
- */
-
-/dts-v1/;
-
-/ {
-
-to your DTS file.  Also, you'll want to prefix all of your hex addresses
-with "0x"  so, 200000 = 0x200000
-
-Hope that helps,
-Hunter
+2010/1/16 Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>:
+> This is take two :)
+> SMP support did not work in the first one and due to the lack of a working
+> SMP machine it is still absent. I took the e500v1 problem into account and
+> the result is that I now use multiple 256MiB mappings.
+> The final mapping covers the first 2GiB so the part of the highmem should
+> be also covered and not just kernel memory.
+>
+> The first three patches prepare the entry code to work outside of the
+> first page. Patch 4 simply moves code and finally patch 5 implements the
+> kexec functionality.
 
 
-On Fri, 2010-01-15 at 09:30 -0500, Andres F Marquez wrote:
-> Hello,
-> 
-> I was able to boot Kernel 2.6.26.8 (using our old dts file from 
-> Kernel 2.6.25). However, I need to upgrade to a newer Kernel because
-> I am having serious problems with the ethernet interface under heavy
-> load. I am not sure if it could be a scheduling problem or the network
-> driver. CPU usage is low but load average is high (more than 4).
-> 
-> The main difference that I could find is that for newer Kernels the 
-> /arch/ppc was removed. I also read online that dts version changed 
-> from 0 to 1 somewhere around Kernel 2.6.27 or so.
-> 
-> Following your instruction, I executed in the LTIB command shell:
-> 
-> LTIB> dtc -I dtb -O dts ../mpc8272ads.dtb
-> 
-> I executed that command passing as argument the old working dtb file.
-> I got a dts file which I placed in the new Kernel and compiled.
-> Unfortunately, I am still getting the same error.
-> 
-> Attached you can find both dts files.
-> 
-> Thank you.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Hi, sebastian
+
+Is it possible to  avoid setting up  the 1:1 mapping  but to convert
+physical address into virt before relocate , like mips do?
+
+2010/1/16 Kumar Gala <galak@kernel.crashing.org>:
+
+>
+> What do you think we need for SMP support? I'm happy to test out on SMP HW (8572)
+>
+
+I'm happy to test it too   :D
