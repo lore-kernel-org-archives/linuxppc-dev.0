@@ -1,20 +1,21 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.210.179]) by ozlabs.org (Postfix) with ESMTP id 439B91007D4
+Return-Path: <sebastian@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 73FE0B7CA0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jan 2010 23:35:53 +1100 (EST)
-Received: by yxe9 with SMTP id 9so351499yxe.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 16 Jan 2010 04:35:51 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-Date: Sat, 16 Jan 2010 20:35:50 +0800
-Message-ID: <e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
+	Sun, 17 Jan 2010 00:11:03 +1100 (EST)
+Date: Sat, 16 Jan 2010 13:52:08 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: "wilbur.chan" <wilbur512@gmail.com>
 Subject: Re: Kexec support for FSL-BookE, take two
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20100116125208.GA25091@Chamillionaire.breakpoint.cc>
+References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+	<e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,28 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/1/16 Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>:
-> This is take two :)
-> SMP support did not work in the first one and due to the lack of a working
-> SMP machine it is still absent. I took the e500v1 problem into account and
-> the result is that I now use multiple 256MiB mappings.
-> The final mapping covers the first 2GiB so the part of the highmem should
-> be also covered and not just kernel memory.
+* wilbur.chan | 2010-01-16 20:35:50 [+0800]:
+
+>Is it possible to  avoid setting up  the 1:1 mapping  but to convert
+>physical address into virt before relocate , like mips do?
+No.
+
+>2010/1/16 Kumar Gala <galak@kernel.crashing.org>:
 >
-> The first three patches prepare the entry code to work outside of the
-> first page. Patch 4 simply moves code and finally patch 5 implements the
-> kexec functionality.
-
-
-Hi, sebastian
-
-Is it possible to  avoid setting up  the 1:1 mapping  but to convert
-physical address into virt before relocate , like mips do?
-
-2010/1/16 Kumar Gala <galak@kernel.crashing.org>:
-
+>>
+>> What do you think we need for SMP support? I'm happy to test out on SMP HW (8572)
+>>
 >
-> What do you think we need for SMP support? I'm happy to test out on SMP HW (8572)
->
+>I'm happy to test it too   :D
 
-I'm happy to test it too   :D
+I have a 8572 myself but it is not working reliably right now. I will
+try to merge the userland pieces and then I will probably look at SMP.
+
+Sebastian
