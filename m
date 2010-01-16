@@ -1,22 +1,15 @@
-Return-Path: <sebastian@breakpoint.cc>
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
-	[85.10.199.196])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73FE0B7CA0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 17 Jan 2010 00:11:03 +1100 (EST)
-Date: Sat, 16 Jan 2010 13:52:08 +0100
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: "wilbur.chan" <wilbur512@gmail.com>
-Subject: Re: Kexec support for FSL-BookE, take two
-Message-ID: <20100116125208.GA25091@Chamillionaire.breakpoint.cc>
-References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-	<e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
+Return-Path: <nanda74pg@rediffmail.com>
+Received: from rediffmail.com (f5mail-236-241.rediffmail.com [202.137.236.241])
+	by ozlabs.org (Postfix) with SMTP id 94F73B7CD8
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jan 2010 04:13:21 +1100 (EST)
+Date: 16 Jan 2010 17:02:24 -0000
+Message-ID: <20100116170224.29250.qmail@f5mail-236-241.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <e997b7421001160435q83f5837rb931f8a16766ce91@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Subject: =?utf-8?B?RFRTIGZpbGUgcmVmZXJlbmNlIGZvciBGU0wgVVBNIE5BTkQgZm9yIE1QQzgzMng=?=
+From: "nanda" <nanda74pg@rediffmail.com>
+Content-Type: multipart/alternative;
+	boundary="=_a424d856a49a1cffacf845c054e7264c"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* wilbur.chan | 2010-01-16 20:35:50 [+0800]:
+--=_a424d856a49a1cffacf845c054e7264c
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 
->Is it possible to  avoid setting up  the 1:1 mapping  but to convert
->physical address into virt before relocate , like mips do?
-No.
+Hi,
+   Iam looking for any references for the dts (device tree source) file which implements freescale's  UPM based NAND driver connected to NAND flash. (it uses the individual gpio connected to R/B pin)
 
->2010/1/16 Kumar Gala <galak@kernel.crashing.org>:
->
->>
->> What do you think we need for SMP support? I'm happy to test out on SMP HW (8572)
->>
->
->I'm happy to test it too   :D
+Thanks in advance.
 
-I have a 8572 myself but it is not working reliably right now. I will
-try to merge the userland pieces and then I will probably look at SMP.
+Regards,
+Nanda
+--=_a424d856a49a1cffacf845c054e7264c
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="UTF-8"
 
-Sebastian
+Hi,<br />
+   Iam looking for any references for the dts (device tree source) file whi=
+ch implements freescale's  UPM based NAND driver connected to NAND flash. (=
+it uses the individual gpio connected to R/B pin)<br />
+<br />
+Thanks in advance.<br />
+<br />
+Regards,<br />
+Nanda<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadd=
+ing=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR>=
+<td><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.redi=
+ffmail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://=
+sigads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatur=
+eline.htm@Middle"></A></td></TR></Table>
+--=_a424d856a49a1cffacf845c054e7264c--
