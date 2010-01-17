@@ -1,18 +1,18 @@
-Return-Path: <Gavin.Shan@alcatel-lucent.com>
-Received: from cnshjsmin03.alcatel-sbell.com.cn (unknown [211.144.215.47])
-	by ozlabs.org (Postfix) with ESMTP id B4792B7CE6
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jan 2010 18:39:03 +1100 (EST)
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 6969CB7CE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Jan 2010 08:43:44 +1100 (EST)
+Date: Sun, 17 Jan 2010 22:43:40 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: Re: [PATCH] trivial: fix typo s/leve/level/ in powerpc arch
+In-Reply-To: <1263763394-9572-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LNX.2.00.1001172243310.30977@pobox.suse.cz>
+References: <1263763394-9572-1-git-send-email-cascardo@holoscopio.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CA9748.06770A54"
-Subject: RE: openpic specification
-Date: Sun, 17 Jan 2010 15:38:13 +0800
-Message-ID: <6A5F574C5A990242B0541891CF955C0D01D1ED99@CNSHGSMBS05.ad4.ad.alcatel.com>
-References: <4B518E4B.4010202@alcatel-lucent.com>
-	<451D99C3-3C43-450E-A1F5-C828A5EA4BFA@kernel.crashing.org>
-From: "SHAN Gavin" <Gavin.Shan@alcatel-lucent.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,100 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Sun, 17 Jan 2010, Thadeu Lima de Souza Cascardo wrote:
 
-------_=_NextPart_001_01CA9748.06770A54
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> ---
+>  arch/powerpc/mm/tlb_low_64e.S |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+> index f288279..8b04c54 100644
+> --- a/arch/powerpc/mm/tlb_low_64e.S
+> +++ b/arch/powerpc/mm/tlb_low_64e.S
+> @@ -1,5 +1,5 @@
+>  /*
+> - *  Low leve TLB miss handlers for Book3E
+> + *  Low level TLB miss handlers for Book3E
+>   *
+>   *  Copyright (C) 2008-2009
+>   *      Ben. Herrenschmidt (benh@kernel.crashing.org), IBM Corp.
 
+Applied to trivial queue, thanks.
 
-
-> I ever searched openpic specification on google for several times, but =
-unfortunately nothing found.
-> Could anybody point me where I can get the openpic specification?
->=20
-> The source code seems being from IBM: arch/powerpc/sysdev/mpic.c
-
-While not the openpic spec if you grab any of the Freescale RM for =
-MPC85xx chips there will be a chapter on the PIC that is an "openPIC" =
-based interrupt controller.
-
-Thanks, Kumar. Actually, I'm facing a wired issue on my system: some =
-times, the interrupt
-from external devices can't be seen from CPU. That means the CPU was =
-never disturbed by
-extern interrupts at some point. I don't know why, it seems the PIC just =
-ignored the
-external interrupts.
-
-We're using Pasemi 1682M part, which integrated a openpic compatible =
-PIC. But the CPU part has 2
-cores. There're 3 kinds of interrupts:
-
-several internal interrupts - priority 8
-one external interrupt      - priority 8
-IPI                         - priority 10
-
-Thanks,
-Gavin
-
-
-------_=_NextPart_001_01CA9748.06770A54
-Content-Type: text/html;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.12">
-<TITLE>RE: openpic specification</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-<BR>
-
-<P><FONT SIZE=3D2>&gt; I ever searched openpic specification on google =
-for several times, but unfortunately nothing found.<BR>
-&gt; Could anybody point me where I can get the openpic =
-specification?<BR>
-&gt;<BR>
-&gt; The source code seems being from IBM: =
-arch/powerpc/sysdev/mpic.c<BR>
-<BR>
-While not the openpic spec if you grab any of the Freescale RM for =
-MPC85xx chips there will be a chapter on the PIC that is an =
-&quot;openPIC&quot; based interrupt controller.<BR>
-<BR>
-Thanks, Kumar. Actually, I'm facing a wired issue on my system: some =
-times, the interrupt<BR>
-from external devices can't be seen from CPU. That means the CPU was =
-never disturbed by<BR>
-extern interrupts at some point. I don't know why, it seems the PIC just =
-ignored the<BR>
-external interrupts.<BR>
-<BR>
-We're using Pasemi 1682M part, which integrated a openpic compatible =
-PIC. But the CPU part has 2<BR>
-cores. There're 3 kinds of interrupts:<BR>
-<BR>
-several internal interrupts - priority 8<BR>
-one external interrupt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - priority 8<BR>
-IPI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-; - priority 10<BR>
-<BR>
-Thanks,<BR>
-Gavin<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01CA9748.06770A54--
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
