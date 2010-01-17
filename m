@@ -1,15 +1,17 @@
-Return-Path: <nanda74pg@rediffmail.com>
-Received: from rediffmail.com (f5mail-236-241.rediffmail.com [202.137.236.241])
-	by ozlabs.org (Postfix) with SMTP id 94F73B7CD8
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jan 2010 04:13:21 +1100 (EST)
-Date: 16 Jan 2010 17:02:24 -0000
-Message-ID: <20100116170224.29250.qmail@f5mail-236-241.rediffmail.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id BA2E9B7CDA
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Jan 2010 18:22:27 +1100 (EST)
+Message-ID: <4B52BA71.3070206@grandegger.com>
+Date: Sun, 17 Jan 2010 08:21:21 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: <linuxppc-dev@ozlabs.org>
-Subject: =?utf-8?B?RFRTIGZpbGUgcmVmZXJlbmNlIGZvciBGU0wgVVBNIE5BTkQgZm9yIE1QQzgzMng=?=
-From: "nanda" <nanda74pg@rediffmail.com>
-Content-Type: multipart/alternative;
-	boundary="=_a424d856a49a1cffacf845c054e7264c"
+To: nanda <nanda74pg@rediffmail.com>
+Subject: Re: DTS file reference for FSL UPM NAND for MPC832x
+References: <20100116170224.29250.qmail@f5mail-236-241.rediffmail.com>
+In-Reply-To: <20100116170224.29250.qmail@f5mail-236-241.rediffmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,33 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=_a424d856a49a1cffacf845c054e7264c
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
+nanda wrote:
+> Hi,
+>    Iam looking for any references for the dts (device tree source) file which implements freescale's  UPM based NAND driver connected to NAND flash. (it uses the individual gpio connected to R/B pin)
 
-Hi,
-   Iam looking for any references for the dts (device tree source) file which implements freescale's  UPM based NAND driver connected to NAND flash. (it uses the individual gpio connected to R/B pin)
+The following links might be useful:
 
-Thanks in advance.
+http://lxr.linux.no/#linux+v2.6.32/Documentation/powerpc/dts-bindings/fsl/upm-nand.txt
+http://lxr.linux.no/#linux+v2.6.32/arch/powerpc/boot/dts/mpc836x_rdk.dts#L407
 
-Regards,
-Nanda
---=_a424d856a49a1cffacf845c054e7264c
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset="UTF-8"
-
-Hi,<br />
-   Iam looking for any references for the dts (device tree source) file whi=
-ch implements freescale's  UPM based NAND driver connected to NAND flash. (=
-it uses the individual gpio connected to R/B pin)<br />
-<br />
-Thanks in advance.<br />
-<br />
-Regards,<br />
-Nanda<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadd=
-ing=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR>=
-<td><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.redi=
-ffmail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://=
-sigads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatur=
-eline.htm@Middle"></A></td></TR></Table>
---=_a424d856a49a1cffacf845c054e7264c--
+Wolfgang.
