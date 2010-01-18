@@ -1,32 +1,12 @@
-Return-Path: <amarquez@edgeaccess.net>
-Received: from [209.168.173.179] (unknown [209.168.173.179])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "firewall.edgeaccess.net",
-	Issuer "firewall.edgeaccess.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8B912B7D18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jan 2010 08:15:44 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by firewall.edgeaccess.net (Postfix) with ESMTP id 047C227404C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jan 2010 16:15:41 -0500 (EST)
-Received: from mail.edgeaccess.net (unknown [192.168.10.99])
-	by firewall.edgeaccess.net (Postfix) with ESMTP id 3DA5127405D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jan 2010 16:15:35 -0500 (EST)
-Date: Mon, 18 Jan 2010 15:56:26 -0500
-From: Andres F Marquez <amarquez@edgeaccess.net>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <1263848186.16967.6.camel@localhost.localdomain>
-In-Reply-To: <1263614364.2806.20.camel@ccs-laptop>
-References: <1263501641.12055.9.camel@localhost.localdomain>
-References: <1263565840.13514.2.camel@localhost.localdomain>
-References: <1263614364.2806.20.camel@ccs-laptop>
-Subject: Re: Problem dtb file booting Kernel 2.6.32
-Mime-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, Hunter Cobbs <hunter.cobbs@gmail.com>
-Reply-To: Andres Marquez <amarquez@edgeaccess.net>
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Mon, 18 Jan 2010 14:57:04 -0700
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20100118215704.15684.60646.sendpatchset@norville.austin.ibm.com>
+Subject: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
+	extended ptrace interface
+Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>, David Gibson <dwg@au1.ibm.com>,
+	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,75 +16,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+These patches implement an extention to the ptrace interface proposed by
+Thiago Bauermann and the the PowerPC gdb team.
 
-   I finally got the dtb working for the Kernel 2.6.32.2. I went to an
-old folder backup that I had in which I found some files used by LTIB
-for the Kernel configuration and restore them (including .config file).
-Then, I removed the /localbus and /pci references from my dtb file
-because I am not using them at this point. I did it using the fdt
-utility under uboot.
+This is a resubmission of the patches I first sent on December 9th.
+Sorry for the delay.  I have addressed most of the comments, and I'll
+follow up on the others.
 
-Thank you everyone for your help.
+These patches are based on 2.6.33-rc3.  (Nothing really changed in powerpc
+between rc3 & rc4.)  These patches still need some testing, but I want
+to get the ball rolling again.
 
+The following has been added as Documentation/powerpc/ptrace.txt:
+
+GDB intends to support the following hardware debug features of BookE
+processors:
+
+4 hardware breakpoints (IAC)
+2 hardware watchpoints (read, write and read-write) (DAC)
+2 value conditions for the hardware watchpoints (DVC)
+
+For that, we need to extend ptrace so that GDB can query and set these
+resources. Since we're extending, we're trying to create an interface
+that's extendable and that covers both BookE and server processors, so
+that GDB doesn't need to special-case each of them. We added the
+following 3 new ptrace requests.
+
+1. PTRACE_PPC_GETHWDEBUGINFO
+
+Query for GDB to discover the hardware debug features. The main info to
+be returned here is the minimum alignment for the hardware watchpoints.
+BookE processors don't have restrictions here, but server processors have
+an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
+adding special cases to GDB based on what it sees in AUXV.
+
+Since we're at it, we added other useful info that the kernel can return to
+GDB: this query will return the number of hardware breakpoints, hardware
+watchpoints and whether it supports a range of addresses and a condition.
+The query will fill the following structure provided by the requesting process:
+
+struct ppc_debug_info {
+       unit32_t version;
+       unit32_t num_instruction_bps;
+       unit32_t num_data_bps;
+       unit32_t num_condition_regs;
+       unit32_t data_bp_alignment;
+       unit32_t sizeof_condition; /* size of the DVC register */
+       uint64_t features; /* bitmask of the individual flags */
+};
+
+features will have bits indicating whether there is support for:
+
+#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+
+2. PTRACE_SETHWDEBUG
+
+Sets a hardware breakpoint or watchpoint, according to the provided structure:
+
+struct ppc_hw_breakpoint {
+        uint32_t version;
+#define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
+#define PPC_BREAKPOINT_TRIGGER_READ     0x2
+#define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
+        uint32_t trigger_type;       /* only some combinations allowed */
+#define PPC_BREAKPOINT_MODE_EXACT               0x0
+#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
+#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
+#define PPC_BREAKPOINT_MODE_MASK                0x3
+        uint32_t addr_mode;          /* address match mode */
+
+#define PPC_BREAKPOINT_CONDITION_MODE   0x3
+#define PPC_BREAKPOINT_CONDITION_NONE   0x0
+#define PPC_BREAKPOINT_CONDITION_AND    0x1
+#define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for the same thing as above */
+#define PPC_BREAKPOINT_CONDITION_OR     0x2
+#define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
+#define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable bits */
+#define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
+        uint32_t condition_mode;     /* break/watchpoint condition flags */
+
+        uint64_t addr;
+        uint64_t addr2;
+        uint64_t condition_value;
+};
+
+A request specifies one event, not necessarily just one register to be set.
+For instance, if the request is for a watchpoint with a condition, both the
+DAC and DVC registers will be set in the same request.
+
+With this GDB can ask for all kinds of hardware breakpoints and watchpoints
+that the BookE supports. COMEFROM breakpoints available in server processors
+are not contemplated, but that is out of the scope of this work.
+
+ptrace will return an integer (handle) uniquely identifying the breakpoint or
+watchpoint just created. This integer will be used in the PTRACE_DELHWDEBUG
+request to ask for its removal. Return -ENOSPC if the requested breakpoint
+can't be allocated on the registers.
+
+Some examples of using the structure to:
+
+- set a breakpoint in the first breakpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers on reads in the second watchpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers only with a specific value
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_AND | PPC_BREAKPOINT_CONDITION_BE_ALL;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = (uint64_t) condition;
+
+- set a ranged hardware breakpoint
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) begin_range;
+  p.addr2           = (uint64_t) end_range;
+  p.condition_value = 0;
+
+3. PTRACE_DELHWDEBUG
+
+Takes an integer which identifies an existing breakpoint or watchpoint
+(i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
+corresponding breakpoint or watchpoint..
 
 -- 
-Andres F Marquez
-EdgeAccess
-Development
-amarquez@edgeaccess.net
-
-
-
-On Fri, 2010-01-15 at 21:59 -0600, Hunter Cobbs wrote:
-> Hi,
-> 
-> If you're going to attempt to use v1 dts, you might want to try to add
-> 
-> 
->  * option) any later version.
->  */
-> 
-> /dts-v1/;
-> 
-> / {
-> 
-> to your DTS file.  Also, you'll want to prefix all of your hex addresses
-> with "0x"  so, 200000 = 0x200000
-> 
-> Hope that helps,
-> Hunter
-> 
-> 
-> On Fri, 2010-01-15 at 09:30 -0500, Andres F Marquez wrote:
-> > Hello,
-> > 
-> > I was able to boot Kernel 2.6.26.8 (using our old dts file from 
-> > Kernel 2.6.25). However, I need to upgrade to a newer Kernel because
-> > I am having serious problems with the ethernet interface under heavy
-> > load. I am not sure if it could be a scheduling problem or the network
-> > driver. CPU usage is low but load average is high (more than 4).
-> > 
-> > The main difference that I could find is that for newer Kernels the 
-> > /arch/ppc was removed. I also read online that dts version changed 
-> > from 0 to 1 somewhere around Kernel 2.6.27 or so.
-> > 
-> > Following your instruction, I executed in the LTIB command shell:
-> > 
-> > LTIB> dtc -I dtb -O dts ../mpc8272ads.dtb
-> > 
-> > I executed that command passing as argument the old working dtb file.
-> > I got a dts file which I placed in the new Kernel and compiled.
-> > Unfortunately, I am still getting the same error.
-> > 
-> > Attached you can find both dts files.
-> > 
-> > Thank you.
-> > 
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+Dave Kleikamp
+IBM Linux Technology Center
