@@ -1,16 +1,19 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id E6C37B7C8E
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 02:47:53 +1100 (EST)
-Date: Mon, 18 Jan 2010 18:47:50 +0300
+	by ozlabs.org (Postfix) with SMTP id 2B438B7C9C
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 02:53:25 +1100 (EST)
+Date: Mon, 18 Jan 2010 18:53:24 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH] ucc_geth: Fix full TX queue processing
-Message-ID: <20100118154750.GA9224@oksana.dev.rtsoft.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: Fix oops during MSI driver probe on
+	MPC85xxMDS boards
+Message-ID: <20100118155324.GA10014@oksana.dev.rtsoft.ru>
+References: <20091215225809.GA32140@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Wu Jiajun-B06378 <B06378@freescale.com>, lsorense@csclub.uwaterloo.ca
+In-Reply-To: <20091215225809.GA32140@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,54 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jiajun Wu <b06378@freescale.com>
+On Wed, Dec 16, 2009 at 01:58:09AM +0300, Anton Vorontsov wrote:
+> MPC85xx chips report the wrong value in feature reporting register,
+> and that causes the following oops:
+> 
+>  Unable to handle kernel paging request for data at address 0x00000c00
+>  Faulting instruction address: 0xc0019294
+>  Oops: Kernel access of bad area, sig: 11 [#1]
+>  MPC8569 MDS
+>  Modules linked in:
+>  [...]
+>  NIP [c0019294] mpic_set_irq_type+0x2f0/0x368
+>  LR [c0019124] mpic_set_irq_type+0x180/0x368
+>  Call Trace:
+>  [ef851d60] [c0019124] mpic_set_irq_type+0x180/0x368 (unreliable)
+>  [ef851d90] [c007958c] __irq_set_trigger+0x44/0xd4
+>  [ef851db0] [c007b550] set_irq_type+0x40/0x7c
+>  [ef851dc0] [c0004a60] irq_create_of_mapping+0xb4/0x114
+>  [ef851df0] [c0004af0] irq_of_parse_and_map+0x30/0x40
+>  [ef851e20] [c0405678] fsl_of_msi_probe+0x1a0/0x328
+>  [ef851e60] [c02e6438] of_platform_device_probe+0x5c/0x84
+>  [...]
+> 
+> This is because mpic_alloc() assigns wrong values to
+> mpic->isu_{size,shift,mask}, and things eventually break when
+> _mpic_irq_read() is trying to use them.
+> 
+> This patch fixes the issue by enabling MPIC_BROKEN_FRR_NIRQS quirk.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 
-commit 7583605b6d29f1f7f6fc505b883328089f3485ad ("ucc_geth: Fix empty
-TX queue processing") fixed empty TX queue mishandling, but didn't
-account another corner case: when TX queue becomes full.
+Kumar,
 
-Without this patch the driver will stop transmiting when TX queue
-becomes full since 'bd == ugeth->txBd[txQ]' actually checks for
-two things: queue empty or full.
+Did you miss this patch or it's just in a queue for review?
 
-Let's better check for NULL skb, which unambiguously signals an empty
-queue.
+Thanks!
 
-Signed-off-by: Jiajun Wu <b06378@freescale.com>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Stable <stable@vger.kernel.org> [2.6.32]
----
-
-On Mon, Jan 11, 2010 at 07:52:26PM +0800, Wu Jiajun-B06378 wrote:
-> Yes,'if (!skb)' is enough.
-> You can reproduce transmitting stopping if you use
-> 'if ((bd == ugeth->txBd[txQ])' and run ipforwarding with MTU=64
-> 1Gbps 100%linerate.
-
-OK, let's resend the patch with just !skb check?
-
- drivers/net/ucc_geth.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 96bdc0b..eb8fe7e 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3279,13 +3279,12 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
- 		/* Handle the transmitted buffer and release */
- 		/* the BD to be used with the current frame  */
- 
--		if (bd == ugeth->txBd[txQ]) /* queue empty? */
-+		skb = ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]];
-+		if (!skb)
- 			break;
- 
- 		dev->stats.tx_packets++;
- 
--		skb = ugeth->tx_skbuff[txQ][ugeth->skb_dirtytx[txQ]];
--
- 		if (skb_queue_len(&ugeth->rx_recycle) < RX_BD_RING_LEN &&
- 			     skb_recycle_check(skb,
- 				    ugeth->ug_info->uf_info.max_rx_buf_length +
--- 
-1.6.5.7
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> index c5028a2..6491f7c 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -338,7 +338,8 @@ static void __init mpc85xx_mds_pic_init(void)
+>  	}
+>  
+>  	mpic = mpic_alloc(np, r.start,
+> -			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+> +			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN |
+> +			MPIC_BROKEN_FRR_NIRQS,
+>  			0, 256, " OpenPIC  ");
+>  	BUG_ON(mpic == NULL);
+>  	of_node_put(np);
+> -- 
+> 1.6.3.3
