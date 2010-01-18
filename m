@@ -1,19 +1,19 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
-	traps, exceptions and ptrace
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
+	through extended ptrace interface
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20091211032626.GC8852@yookeroo>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
-	<20091211032626.GC8852@yookeroo>
+	<F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
 Content-Type: text/plain
-Date: Mon, 18 Jan 2010 16:31:34 -0600
-Message-Id: <1263853894.27291.44.camel@norville.austin.ibm.com>
+Date: Mon, 18 Jan 2010 16:34:32 -0600
+Message-Id: <1263854072.27291.47.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
 	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
+	Torez Smith <torez@us.ibm.com>,
+	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,130 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2009-12-11 at 14:26 +1100, David Gibson wrote:
-> On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
-> > powerpc: Add support for BookE Debug Reg. traps, exceptions and ptrace
+On Thu, 2009-12-10 at 20:23 -0600, Kumar Gala wrote:
+> On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
+> 
+> > These patches implement an extention to the ptrace interface proposed by
+> > Thiago Bauermann and the the PowerPC gdb team.
 > > 
-> > From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
+> > GDB intends to support the following hardware debug features of BookE
+> > processors:
 > > 
-> > This patch defines context switch and trap related functionality
-> > for BookE specific Debug Registers. It adds support to ptrace()
-> > for setting and getting BookE related Debug Registers
-
-> [snip]
-> > +#if !(defined(CONFIG_40x) || defined(CONFIG_BOOKE))
-> >  void do_dabr(struct pt_regs *regs, unsigned long address,
-> >  		    unsigned long error_code)
-> >  {
-> > @@ -257,12 +275,6 @@ void do_dabr(struct pt_regs *regs, unsigned long address,
-> >  	if (debugger_dabr_match(regs))
-> >  		return;
-> >  
-> > -	/* Clear the DAC and struct entries.  One shot trigger */
-> > -#if defined(CONFIG_BOOKE)
-> > -	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
-> > -							| DBCR0_IDM));
-> > -#endif
-> > -
-> >  	/* Clear the DABR */
-> >  	set_dabr(0);
+> > 4 hardware breakpoints (IAC)
+> > 2 hardware watchpoints (read, write and read-write) (DAC)
+> > 2 value conditions for the hardware watchpoints (DVC)
+> > 
+> > For that, we need to extend ptrace so that GDB can query and set these
+> > resources. Since we're extending, we're trying to create an interface
+> > that's extendable and that covers both BookE and server processors, so
+> > that GDB doesn't need to special-case each of them. We propose the
+> > following 3 new ptrace requests described below.
+> > 
+> > There have been discussions of a generic hardware debug interface for the
+> > kernel which would hopefully contemplate all the functionality below and
+> > supersede it.  But we need something that works now, and which enables GDB
+> > to be simpler and work with both Server and Embedded processors without
+> > special cases.
+> > 
+> > 1. PTRACE_PPC_GETHWDEBUGINFO
+> > 
+> > Query for GDB to discover the hardware debug features. The main info to
+> > be returned here is the minimum alignment for the hardware watchpoints.
+> > BookE processors don't have restrictions here, but server processors have
+> > an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
+> > adding special cases to GDB based on what it sees in AUXV.
+> > 
+> > Since we're at it, we added other useful info that the kernel can return to
+> > GDB: this query will return the number of hardware breakpoints, hardware
+> > watchpoints and whether it supports a range of addresses and a condition.
+> > The query will fill the following structure provided by the requesting process:
+> > 
+> > struct ppc_debug_info {
+> >       unit32_t version;
+> >       unit32_t num_instruction_bps;
+> >       unit32_t num_data_bps;
+> >       unit32_t num_condition_regs;
+> >       unit32_t data_bp_alignment;
+> >       unit32_t sizeof_condition; /* size of the DVC register */
+> >       uint64_t features; /* bitmask of the individual flags */
+> > };
+> > 
+> > features will have bits indicating whether there is support for:
+> > 
+> > #define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+> > #define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+> > #define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+> > #define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
 > 
-> Uh.. does this imply we're keeping the one-shot behaviour for
-> new-style breakpoints?  To me the interface really suggests they're
-> persistent, although dealing with the semantics of that at signal time
-> can get curly.
+> Is GDB smart enough to deal w/no condition_regs?  On some Book-E
+> devices we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the
+> features?
 
-I've left it as one-shot.  The gdb guys seem happy with that.
-
-[snip]
-
-> >  int set_dabr(unsigned long dabr)
-> >  {
-> >  	__get_cpu_var(current_dabr) = dabr;
-> > @@ -284,7 +358,7 @@ int set_dabr(unsigned long dabr)
-> >  		return ppc_md.set_dabr(dabr);
-> >  
-> >  	/* XXX should we have a CPU_FTR_HAS_DABR ? */
-> > -#if defined(CONFIG_BOOKE)
-> > +#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
-> >  	mtspr(SPRN_DAC1, dabr);
-> 
-> Uh.. this would seem to be wrong.  set_dabr(0) is called from the
-> debug exception - but nowadays that could be tiggered by a DAC other
-> than DAC1.
-
-Right now, the only place left that set_dabr() is called for BOOKE or
-40x is from xmon.  I think that's already a problem in that it doesn't
-play nicely with ptrace and it fails to set DBCR0_DAC1R or DBCR0_DAC1W.
-We probably need an independent patch for that.
-
-
-> [snip]
-> > +#else
-> >  	/* As described above, it was assumed 3 bits were passed with the data
-> >  	 *  address, but we will assume only the mode bits will be passed
-> >  	 *  as to not cause alignment restrictions for DAC-based processors.
-> >  	 */
-> >  
-> >  	/* DAC's hold the whole address without any mode flags */
-> > -	task->thread.dabr = data & ~0x3UL;
-> > -
-> > -	if (task->thread.dabr == 0) {
-> > -		task->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
-> > -		task->thread.regs->msr &= ~MSR_DE;
-> > +	task->thread.dac1 = data & ~0x3UL;
-> > +
-> > +	if (task->thread.dac1 == 0) {
-> > +		dbcr_dac(task) &= ~(DBCR_DAC1R | DBCR_DAC1W);
-> > +		if (!DBCR_ACTIVE_EVENTS(task->thread.dbcr0,
-> > +					task->thread.dbcr1)) {
-> > +			task->thread.regs->msr &= ~MSR_DE;
-> > +			task->thread.dbcr0 &= ~DBCR0_IDM;
-> > +		}
-> >  		return 0;
-> >  	}
-> 
-> Ok, so effectively the old ptrace method of setting the DABR acts as a
-> bypass to set DAC1, rather than having the old interface being
-> implemented via the new interface.  This has some weirdness - you can
-> clobber a new-style breakpoint in DAC1 using the old interface, for
-> example.  Still, it might be the simplest approach for a first cut.
-
-I really didn't consider a program using both the old and new interface.
-
-> What *is* a problem though, is that this means that the SIGTRAP will
-> always give a slot number, even for a breakpoint established using the
-> old interface.  Part of the idea of encoding the registered breakpoint
-> number in the siginfo was to be able to distinguish between old-style
-> and new-style breakpoints at trap time.
-
-Do we realistically expect both the old and new style breakpoints to be
-used together?  I'm having trouble visualizing the scenerio.
-
-> [snip]
-
-> > +	int slot;
-> > +
-> > +	if (byte_enable && (condition_mode == 0))
-> > +		return -EINVAL;
-> > +
-> > +	if (bp_info->addr >= TASK_SIZE)
-> > +		return -EIO;
-> > +
-> > +	if ((dbcr_dac(child) & (DBCR_DAC1R | DBCR_DAC1W)) == 0) {
-> > +		if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
-> > +			dbcr_dac(child) |= DBCR_DAC1R;
-> > +		if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
-> > +			dbcr_dac(child) |= DBCR_DAC1W;
-> > +		child->thread.dac1 = (unsigned long)bp_info->addr;
-> > +#ifdef CONFIG_BOOKE
-> 
-> Better to have a runtime feature bit test here, than use an #ifdef to
-> distinguish the 40x and BookE cases.  Plus, you should return an error
-> if the user attempts to use a feature not supported on this hardware,
-> which doesn't seem to happen here.
-
-I'll take a look at making this a runtime feature.
+I wasn't aware that the bookE devices had varying numbers of these
+registers.  I guess I will have to make it a runtime option.
 
 Shaggy
 -- 
