@@ -1,23 +1,35 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C15DBB7CBD
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 01315B7C94
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jan 2010 20:18:03 +1100 (EST)
-In-Reply-To: <cb9ecdfa1001180026q5856b170t3f4c71191a7b99d8@mail.gmail.com>
-References: <cb9ecdfa1001172304q132d5324qa963d0d5cdfb7806@mail.gmail.com>	
-	<OF593A1F75.3C3C7D18-ONC12576AF.002B1239-C12576AF.002BB30A@transmode.se>
-	<cb9ecdfa1001180026q5856b170t3f4c71191a7b99d8@mail.gmail.com>
-Subject: Re: jffs2_gcd_mtdx thread and umount problem.
-To: Johnny Hung <johnny.hacking@gmail.com>
-Message-ID: <OF4F0C58C2.1BF896BC-ONC12576AF.0031AB45-C12576AF.0032B052@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 18 Jan 2010 10:13:39 +0100
+	Mon, 18 Jan 2010 23:32:29 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0ICThuw026313
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2010 05:29:43 -0700
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o0ICWD4R250944
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2010 05:32:17 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o0ICWAdR004137
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jan 2010 05:32:10 -0700
+Date: Mon, 18 Jan 2010 07:32:06 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+Message-ID: <20100118123206.GD7484@zod.rchland.ibm.com>
+References: <1263797148.724.484.camel@pasglop>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
-	linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1263797148.724.484.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +39,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Johnny Hung <johnny.hacking@gmail.com> wrote on 18/01/2010 09:26:26:
+On Mon, Jan 18, 2010 at 05:45:48PM +1100, Benjamin Herrenschmidt wrote:
+>Hi Linus !
 >
-Please don't top post.
+>A tad late due to me slacking and leaving the patches take dust in
+>patchwork for a bit too long, but here are a few bug fixes for powerpc
+>and a bunch of defconfig freshen ups for some of our embedded platforms.
 
-> Yes, umount / reboot command doesn't hang after first boot + wait for=
+You missed my defconfig updates.  I sent you a pull request 2 weeks ago.
 
-> 20 minutes. The jffs2_gcd_mtdx will re-erase empty blocks but how do =
-I
-> know it is finished?
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079309.html
 
-You don't or just monitor jffs2_gcd_mtdx until it is finished.
+Those are still sitting in that tree on that branch if someone wanted to pull
+them directly.
 
->
-> BTW, why jffs2_gcd_mtd need to re-erase empty blocks and it will caus=
-e
-> some command cannot work if erase block is necessary. I mean many
-> pepple could meet this problem if it is need to erase empty block and=
-
-> how do they overcome or workaround it.
-
-Because it might not be completely erased due to power failure in the
-middle of an erase. You get random bit flips if that happens.
-
-You can avoid this by writing clean markers in every empty block when y=
-ou
-install it, a bit messy though and it won't solve the general problem: =
-Try
-removing a few big files and then reboot, you will have to wait then to=
-o.
-If you don't use JFFS2 as a module and unload it, you can my old patch =
-which will
-solve both problems.
-
-    Jocke
->
-> Thank you so much, Jocke
-> BRs, H. Johnny
->
-> > I guess this is the first reboot after mounting a new JFFS2 FS?
-> > Then JFFS2 is reerasing empty blocks and you will have to wait
-> > until it is done.
-> >
-> > I posted a patch long ago for this, but it was racy w.r.t JFSS2 mod=
-ule unload so
-> > it didn't make it into the repo. Search the list for
-> > "[JFFS2] Stop erasing blocks when rebooting." to find my old patch
-> >
-> > =A0Jocke
-> >
-> >
->=
+josh
