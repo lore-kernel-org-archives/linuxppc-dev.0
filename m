@@ -2,19 +2,18 @@ Return-Path: <shaggy@linux.vnet.ibm.com>
 Subject: Re: [RFC:PATCH 03/03] powerpc: Add support for BookE Debug Reg.
 	traps, exceptions and ptrace
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <A04A87EF-F6CC-4AB8-9210-2234007E0AEE@kernel.crashing.org>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20091211032626.GC8852@yookeroo>
 References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
 	<20091210155727.6697.74672.sendpatchset@norville.austin.ibm.com>
-	<A04A87EF-F6CC-4AB8-9210-2234007E0AEE@kernel.crashing.org>
+	<20091211032626.GC8852@yookeroo>
 Content-Type: text/plain
-Date: Mon, 18 Jan 2010 16:18:44 -0600
-Message-Id: <1263853124.27291.31.camel@norville.austin.ibm.com>
+Date: Mon, 18 Jan 2010 16:31:34 -0600
+Message-Id: <1263853894.27291.44.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
 	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
+	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,9 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-10 at 20:50 -0600, Kumar Gala wrote:
-> On Dec 10, 2009, at 9:57 AM, Dave Kleikamp wrote:
-> 
+On Fri, 2009-12-11 at 14:26 +1100, David Gibson wrote:
+> On Thu, Dec 10, 2009 at 01:57:27PM -0200, Dave Kleikamp wrote:
 > > powerpc: Add support for BookE Debug Reg. traps, exceptions and ptrace
 > > 
 > > From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
@@ -35,156 +33,120 @@ On Thu, 2009-12-10 at 20:50 -0600, Kumar Gala wrote:
 > > for BookE specific Debug Registers. It adds support to ptrace()
 > > for setting and getting BookE related Debug Registers
 
-snip
-
-> > +static void prime_debug_regs(struct thread_struct *thread)
-> > +{
-> > +	mtspr(SPRN_IAC1, thread->iac1);
-> > +	mtspr(SPRN_IAC2, thread->iac2);
-> > +	mtspr(SPRN_IAC3, thread->iac3);
-> > +	mtspr(SPRN_IAC4, thread->iac4);
-> > +	mtspr(SPRN_DAC1, thread->dac1);
-> > +	mtspr(SPRN_DAC2, thread->dac2);
-> > +	mtspr(SPRN_DVC1, thread->dvc1);
-> > +	mtspr(SPRN_DVC2, thread->dvc2);
-> > +	mtspr(SPRN_DBCR0, thread->dbcr0);
-> > +	mtspr(SPRN_DBCR1, thread->dbcr1);
-> > +	mtspr(SPRN_DBCR2, thread->dbcr2);
-> 
-> We should probably look at dbginfo.num_condition_regs, dbginfo.num_instruction_bps, & dbginfo.num_data_bps and set these accordingly.
-
-All I did here is make dbcr2 depend on CONFIG_BOOKE.  For the time
-being, there's no run-time checks on this, only compile-time.
-
-> > +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-> > +static long set_intruction_bp(struct task_struct *child,
-> > +			      struct ppc_hw_breakpoint *bp_info)
-> > +{
-> > +	int slots_needed;
-> > +	int slot;
-> > +	int free_slot = 0;
-> > +
-> > +	/*
-> > +	 * Find an avalailable slot for the breakpoint.
-> > +	 * If possible, reserve consecutive slots, 1 & 2, for a range
-> > +	 * breakpoint.  (Can this be done simpler?)
-> > +	 */
-> > +	if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_EXACT)
-> > +		slots_needed = 1;
-> > +	else
-> > +		slots_needed = 2;
-> > +
-> > +	if ((child->thread.dbcr0 & DBCR0_IAC1) == 0) {
-> > +		if (slots_needed == 1) {
-> > +			if (child->thread.dbcr0 & DBCR0_IAC2) {
-> > +				slot = 1;
-> > +				goto found;
-> > +			}
-> > +			/* Try to save slots 1 & 2 for range */
-> > +			free_slot = 1;
-> > +		} else
-> > +			if ((child->thread.dbcr0 & DBCR0_IAC2) == 0) {
-> > +				slot = 1;
-> > +				goto found;
-> > +			}
-> > +	} else if ((slots_needed == 1) &&
-> > +		   ((child->thread.dbcr0 & DBCR0_IAC2) == 0)) {
-> > +		slot = 2;
-> > +		goto found;
-> > +	}
-> > +	if ((child->thread.dbcr0 & DBCR0_IAC3) == 0) {
-> > +		if (slots_needed == 1) {
-> > +			slot = 3;
-> > +			goto found;
-> > +		}
-> > +		if ((child->thread.dbcr0 & DBCR0_IAC4) == 0) {
-> > +			slot = 3;
-> > +			goto found;
-> > +		}
-> > +		return -ENOSPC;
-> > +	} else if (slots_needed == 2)
-> > +		return -ENOSPC;
-> > +	if ((child->thread.dbcr0 & DBCR0_IAC4) == 0) {
-> > +		slot = 4;
-> > +	} else if (free_slot)
-> > +		slot = free_slot;
-> > +	else
-> > +		return -ENOSPC;
-> 
-> Need to factor in if # of IACs is only 2.
-
-What cpu has 2 IACs?
-
-> > static long ppc_set_hwdebug(struct task_struct *child,
-> > 		     struct ppc_hw_breakpoint *bp_info)
-> > {
-> > +	if (bp_info->version != 1)
-> > +		return -ENOTSUPP;
-> > +
-> > +#ifdef CONFIG_BOOKE
-> > +	/*
-> > +	 * Check for invalid flags and combinations
-> > +	 */
-> > +	if ((bp_info->trigger_type == 0) ||
-> > +	    (bp_info->trigger_type & ~(PPC_BREAKPOINT_TRIGGER_EXECUTE |
-> > +				       PPC_BREAKPOINT_TRIGGER_RW)) ||
-> > +	    (bp_info->addr_mode & ~PPC_BREAKPOINT_MODE_MASK) ||
-> > +	    (bp_info->condition_mode &
-> > +	     ~(PPC_BREAKPOINT_CONDITION_AND_OR |
-> > +	       PPC_BREAKPOINT_CONDITION_BE_ALL)))
-> > +		return -EINVAL;
-> 
-> We should add a sanity check for bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE if dbginfo.num_condition_regs = 0.
-
-This falls into the run-time checks that I haven't implemented.  BOOKE
-will not define dbginfo.num_condition_regs to be 0.
-
-> > /*
-> > @@ -980,16 +1308,36 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
-> > 		struct ppc_debug_info dbginfo;
-> > 
-> > 		dbginfo.version = 1;
-> > +#ifdef CONFIG_BOOKE
-> > +		dbginfo.num_instruction_bps = 4;
-> > +		dbginfo.num_data_bps = 2;
-> > +		dbginfo.num_condition_regs = 2;
-> > +		dbginfo.data_bp_alignment = 0;
-> > +		dbginfo.sizeof_condition = 4;
-> > +		dbginfo.features = PPC_DEBUG_FEATURE_INSN_BP_RANGE |
-> > +				   PPC_DEBUG_FEATURE_INSN_BP_MASK |
-> > +				   PPC_DEBUG_FEATURE_DATA_BP_RANGE |
-> > +				   PPC_DEBUG_FEATURE_DATA_BP_MASK;
-> > +#elif defined(CONFIG_40x)
-> > +		/*
-> > +		 * I don't know how the DVCs work on 40x, I'm not going
-> > +		 * to support it now. -- Shaggy
-> > +		 */
-> > +		dbginfo.num_instruction_bps = 4;
-> > +		dbginfo.num_data_bps = 2;
-> > +		dbginfo.num_condition_regs = 0;
-> > +		dbginfo.data_bp_alignment = 0;
-> > +		dbginfo.sizeof_condition = 0;
-> > +		dbginfo.features = PPC_DEBUG_FEATURE_INSN_BP_RANGE |
-> > +				   PPC_DEBUG_FEATURE_INSN_BP_MASK;
-> > +#else
-> > 		dbginfo.num_instruction_bps = 0;
-> > 		dbginfo.num_data_bps = 1;
-> > 		dbginfo.num_condition_regs = 0;
-> > -#ifdef CONFIG_PPC64
-> > 		dbginfo.data_bp_alignment = 8;
-> > -#else
-> > -		dbginfo.data_bp_alignment = 0;
+> [snip]
+> > +#if !(defined(CONFIG_40x) || defined(CONFIG_BOOKE))
+> >  void do_dabr(struct pt_regs *regs, unsigned long address,
+> >  		    unsigned long error_code)
+> >  {
+> > @@ -257,12 +275,6 @@ void do_dabr(struct pt_regs *regs, unsigned long address,
+> >  	if (debugger_dabr_match(regs))
+> >  		return;
+> >  
+> > -	/* Clear the DAC and struct entries.  One shot trigger */
+> > -#if defined(CONFIG_BOOKE)
+> > -	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
+> > -							| DBCR0_IDM));
 > > -#endif
-> > 		dbginfo.sizeof_condition = 0;
-> > 		dbginfo.features = 0;
-> > +#endif
+> > -
+> >  	/* Clear the DABR */
+> >  	set_dabr(0);
 > 
-> This is a bit ugly and BOOKE 64 parts probably don't have the 8 byte alignment.
-> 
-> Should we push some of this into cputable?
+> Uh.. does this imply we're keeping the one-shot behaviour for
+> new-style breakpoints?  To me the interface really suggests they're
+> persistent, although dealing with the semantics of that at signal time
+> can get curly.
 
-I'm thinking about it.  It may clean up some of the ifdefs.  I'll give
-it a try, and if it ends up cleaner, I'll submit a follow-up patch.
+I've left it as one-shot.  The gdb guys seem happy with that.
+
+[snip]
+
+> >  int set_dabr(unsigned long dabr)
+> >  {
+> >  	__get_cpu_var(current_dabr) = dabr;
+> > @@ -284,7 +358,7 @@ int set_dabr(unsigned long dabr)
+> >  		return ppc_md.set_dabr(dabr);
+> >  
+> >  	/* XXX should we have a CPU_FTR_HAS_DABR ? */
+> > -#if defined(CONFIG_BOOKE)
+> > +#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
+> >  	mtspr(SPRN_DAC1, dabr);
+> 
+> Uh.. this would seem to be wrong.  set_dabr(0) is called from the
+> debug exception - but nowadays that could be tiggered by a DAC other
+> than DAC1.
+
+Right now, the only place left that set_dabr() is called for BOOKE or
+40x is from xmon.  I think that's already a problem in that it doesn't
+play nicely with ptrace and it fails to set DBCR0_DAC1R or DBCR0_DAC1W.
+We probably need an independent patch for that.
+
+
+> [snip]
+> > +#else
+> >  	/* As described above, it was assumed 3 bits were passed with the data
+> >  	 *  address, but we will assume only the mode bits will be passed
+> >  	 *  as to not cause alignment restrictions for DAC-based processors.
+> >  	 */
+> >  
+> >  	/* DAC's hold the whole address without any mode flags */
+> > -	task->thread.dabr = data & ~0x3UL;
+> > -
+> > -	if (task->thread.dabr == 0) {
+> > -		task->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
+> > -		task->thread.regs->msr &= ~MSR_DE;
+> > +	task->thread.dac1 = data & ~0x3UL;
+> > +
+> > +	if (task->thread.dac1 == 0) {
+> > +		dbcr_dac(task) &= ~(DBCR_DAC1R | DBCR_DAC1W);
+> > +		if (!DBCR_ACTIVE_EVENTS(task->thread.dbcr0,
+> > +					task->thread.dbcr1)) {
+> > +			task->thread.regs->msr &= ~MSR_DE;
+> > +			task->thread.dbcr0 &= ~DBCR0_IDM;
+> > +		}
+> >  		return 0;
+> >  	}
+> 
+> Ok, so effectively the old ptrace method of setting the DABR acts as a
+> bypass to set DAC1, rather than having the old interface being
+> implemented via the new interface.  This has some weirdness - you can
+> clobber a new-style breakpoint in DAC1 using the old interface, for
+> example.  Still, it might be the simplest approach for a first cut.
+
+I really didn't consider a program using both the old and new interface.
+
+> What *is* a problem though, is that this means that the SIGTRAP will
+> always give a slot number, even for a breakpoint established using the
+> old interface.  Part of the idea of encoding the registered breakpoint
+> number in the siginfo was to be able to distinguish between old-style
+> and new-style breakpoints at trap time.
+
+Do we realistically expect both the old and new style breakpoints to be
+used together?  I'm having trouble visualizing the scenerio.
+
+> [snip]
+
+> > +	int slot;
+> > +
+> > +	if (byte_enable && (condition_mode == 0))
+> > +		return -EINVAL;
+> > +
+> > +	if (bp_info->addr >= TASK_SIZE)
+> > +		return -EIO;
+> > +
+> > +	if ((dbcr_dac(child) & (DBCR_DAC1R | DBCR_DAC1W)) == 0) {
+> > +		if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
+> > +			dbcr_dac(child) |= DBCR_DAC1R;
+> > +		if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
+> > +			dbcr_dac(child) |= DBCR_DAC1W;
+> > +		child->thread.dac1 = (unsigned long)bp_info->addr;
+> > +#ifdef CONFIG_BOOKE
+> 
+> Better to have a runtime feature bit test here, than use an #ifdef to
+> distinguish the 40x and BookE cases.  Plus, you should return an error
+> if the user attempts to use a feature not supported on this hardware,
+> which doesn't seem to happen here.
+
+I'll take a look at making this a runtime feature.
 
 Shaggy
 -- 
