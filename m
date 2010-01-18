@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 266DEB7C31
+Return-Path: <johnny.hacking@gmail.com>
+Received: from mail-pz0-f191.google.com (mail-pz0-f191.google.com
+	[209.85.222.191]) by ozlabs.org (Postfix) with ESMTP id BD9FAB7CF8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 18 Jan 2010 17:46:18 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 18 Jan 2010 17:45:48 +1100
-Message-ID: <1263797148.724.484.camel@pasglop>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	Mon, 18 Jan 2010 18:04:30 +1100 (EST)
+Received: by pzk29 with SMTP id 29so2609763pzk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 17 Jan 2010 23:04:28 -0800 (PST)
+MIME-Version: 1.0
+Date: Mon, 18 Jan 2010 15:04:28 +0800
+Message-ID: <cb9ecdfa1001172304q132d5324qa963d0d5cdfb7806@mail.gmail.com>
+Subject: jffs2_gcd_mtdx thread and umount problem.
+From: Johnny Hung <johnny.hacking@gmail.com>
+To: linux-embedded@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,143 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hi All,
 
-A tad late due to me slacking and leaving the patches take dust in
-patchwork for a bit too long, but here are a few bug fixes for powerpc
-and a bunch of defconfig freshen ups for some of our embedded platforms.
+I have a customized MPC8313 (ppc arch) board with SPANSION 64MB NOR
+flash, everything works fine but I found a abnormal about JFFS2 flahs
+filesystem.
 
-Cheers,
-Ben.
+The system will mount JFFS2 to /mnt/mtd when system boot up. I try to
+execute umount /mnt/mtd or sync or reboot right away after login then
+these commands hangs. Use ps command to check process status and is D
+(Uninterruptible sleep, usually IO). I try to kill jffs2_gcd_mtd4 and
+umount/reboot/syc commands execute successfully. I think
+jffs2_gcd_mtd4 (mount /dev/mtd4) do something in the background so I
+wait for 10 minutes after login and execute the same commands and it
+doesn't hangs.
 
-The following changes since commit 004b35063296b6772fa72404a35b498f1e71e87e:
-  Linus Torvalds (1):
-        Merge branch 'drm-linus' of git://git.kernel.org/.../airlied/drm-2.6
+The following procedure is I to make jffs2 file system and write to
+flash then mount to /mnt/mtd.
 
-are available in the git repository at:
+1. mkfs.jffs2 -d mtd -e 0x20000 --pad 0x3080000 -o mtd.jffs2 (erase
+block size is 128KB and jffs2 partition size is 48.5MB)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+2. write jffs2 file system to flash in uboot.
+      tftpboot 200000 mtd.jffs2;                (load mtd.jffs2 to memory)
+      protect off f8f80000 fbffffff;
+      erase f8f80000 fbffffff;                       (erase all 48.5MB)
+      cp.b 200000 f8f80000 $filesize;     (program mtd.jffs2 to flash)
+      protect on f8f80000 fbffffff;
+      cmp.b 200000 f8f80000 $filesize
 
-Anton Blanchard (2):
-      powerpc/pseries: Fix xics interrupt affinity
-      powerpc: cpumask_of_node() should handle -1 as a node
+3. Add below in /etc/fstab file to mount to /mnt/mtd
+      /dev/mtdblock4  /mnt/mtd        jffs2   defaults        1       1
 
-Anton Vorontsov (1):
-      powerpc/swsusp_32: Fix TLB invalidation
+Does anyone knows what purpose for jffs2_gcd_mtdx thread and why it
+cause umount/sync/reboot commands hangs it is reasonable or  something
+I did wrong?
 
-Benjamin Herrenschmidt (3):
-      serial/pmac_zilog: Workaround problem due to interrupt on closed port
-      Merge commit 'kumar/merge' into merge
-      Merge commit 'gcl/merge' into merge
-
-FUJITA Tomonori (1):
-      powerpc/pseries: Fix dlpar compile warning without CONFIG_PROC_DEVICETREE
-
-Grant Likely (1):
-      powerpc/5200: update defconfigs
-
-Jiri Slaby (1):
-      powerpc: Use helpers for rlimits
-
-Joakim Tjernlund (2):
-      powerpc/8xx: Always pin kernel instruction TLB
-      powerpc/8xx: Fix user space TLB walk in dcbX fixup
-
-Kamalesh Babulal (1):
-      powerpc/hvc: Driver build breaks with !HVC_CONSOLE
-
-Kumar Gala (1):
-      powerpc: 2.6.33 update of defconfigs for embedded 6xx/7xxx, 8xx, 8xxx
-
-Michael Ellerman (1):
-      powerpc/iseries: Initialise on-stack completion
-
-Márton Németh (1):
-      powerpc/macintosh: Make Open Firmware device id constant
-
-Nathan Fontenot (2):
-      powerpc: Move /proc/ppc64 to /proc/powerpc update
-      powerpc: Move cpu hotplug driver lock from pseries to powerpc
-
-Peter Tyser (1):
-      powerpc: Use scripts/mkuboot.sh instead of 'mkimage'
-
-Stefan Roese (1):
-      powerpc: Fix decrementer setup on 1GHz boards
-
- arch/powerpc/boot/wrapper                         |    7 +-
- arch/powerpc/configs/52xx/cm5200_defconfig        |   75 ++++++++++++---
- arch/powerpc/configs/52xx/lite5200b_defconfig     |   90 ++++++++++++++----
- arch/powerpc/configs/52xx/motionpro_defconfig     |   79 +++++++++++++---
- arch/powerpc/configs/52xx/pcm030_defconfig        |   83 +++++++++++++----
- arch/powerpc/configs/52xx/tqm5200_defconfig       |   79 +++++++++++++---
- arch/powerpc/configs/83xx/asp8347_defconfig       |   88 +++++++++++++-----
- arch/powerpc/configs/83xx/kmeter1_defconfig       |   68 +++++++++++---
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   97 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  100 +++++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   93 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   95 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   92 ++++++++++++++-----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   86 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   87 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   89 +++++++++++++-----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   91 +++++++++++++-----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   85 ++++++++++++-----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   69 ++++++++++---
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   69 ++++++++++---
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   76 ++++++++++++----
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   75 +++++++++++----
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   77 ++++++++++++----
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   72 +++++++++++---
- arch/powerpc/configs/85xx/socrates_defconfig      |   99 +++++++++++++++-----
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |   87 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   89 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   95 ++++++++++++++----
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   90 +++++++++++++-----
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |  103 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  102 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   99 ++++++++++++++++----
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   92 ++++++++++++++----
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   88 +++++++++++++----
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   90 ++++++++++++++----
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |   81 ++++++++++++----
- arch/powerpc/configs/adder875_defconfig           |   57 +++++++++---
- arch/powerpc/configs/c2k_defconfig                |   90 +++++++++++++-----
- arch/powerpc/configs/ep8248e_defconfig            |   64 ++++++++++---
- arch/powerpc/configs/ep88xc_defconfig             |   55 +++++++++---
- arch/powerpc/configs/linkstation_defconfig        |   96 ++++++++++++++-----
- arch/powerpc/configs/mgcoge_defconfig             |   74 +++++++++++----
- arch/powerpc/configs/mgsuvd_defconfig             |   63 ++++++++++---
- arch/powerpc/configs/mpc5200_defconfig            |  106 +++++++++++++++++----
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   79 ++++++++++++----
- arch/powerpc/configs/mpc8272_ads_defconfig        |   70 +++++++++++---
- arch/powerpc/configs/mpc83xx_defconfig            |   92 +++++++++++++-----
- arch/powerpc/configs/mpc85xx_defconfig            |   97 ++++++++++++++-----
- arch/powerpc/configs/mpc85xx_smp_defconfig        |   97 ++++++++++++++-----
- arch/powerpc/configs/mpc866_ads_defconfig         |   65 ++++++++++---
- arch/powerpc/configs/mpc86xx_defconfig            |   93 ++++++++++++++----
- arch/powerpc/configs/mpc885_ads_defconfig         |   55 +++++++++---
- arch/powerpc/configs/pq2fads_defconfig            |   72 +++++++++++---
- arch/powerpc/configs/prpmc2800_defconfig          |   94 ++++++++++++++-----
- arch/powerpc/configs/storcenter_defconfig         |   86 +++++++++++++----
- arch/powerpc/include/asm/topology.h               |    4 +-
- arch/powerpc/kernel/head_8xx.S                    |   12 +-
- arch/powerpc/kernel/rtas-proc.c                   |   14 ++--
- arch/powerpc/kernel/smp.c                         |   12 +++
- arch/powerpc/kernel/swsusp_32.S                   |    2 +-
- arch/powerpc/kernel/time.c                        |   11 ++-
- arch/powerpc/mm/mmap_64.c                         |    4 +-
- arch/powerpc/platforms/cell/spufs/coredump.c      |    2 +-
- arch/powerpc/platforms/iseries/vio.c              |    2 +
- arch/powerpc/platforms/pseries/dlpar.c            |   18 +---
- arch/powerpc/platforms/pseries/xics.c             |   12 +-
- drivers/char/Kconfig                              |    2 +-
- drivers/macintosh/smu.c                           |    2 +-
- drivers/macintosh/therm_pm72.c                    |    2 +-
- drivers/macintosh/therm_windtunnel.c              |    2 +-
- drivers/serial/pmac_zilog.c                       |   11 ++
- 75 files changed, 3837 insertions(+), 1175 deletions(-)
+BRs, H. Johnny
