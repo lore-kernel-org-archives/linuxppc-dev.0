@@ -1,24 +1,16 @@
-Return-Path: <matthias@kaehlcke.net>
-Received: from slow3-v.mail.gandi.net (slow3-v.mail.gandi.net [217.70.178.89])
-	by ozlabs.org (Postfix) with ESMTP id AC9AFB6EF4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 02:04:34 +1100 (EST)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
-	[217.70.183.193])
-	by slow3-v.mail.gandi.net (Postfix) with ESMTP id 061FD39FB0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jan 2010 10:55:05 +0100 (CET)
-Date: Tue, 19 Jan 2010 10:50:24 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: Johnny Hung <johnny.hacking@gmail.com>
-Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
-Message-ID: <20100119095024.GD16182@darwin>
-References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
+Return-Path: <nanda74pg@rediffmail.com>
+Received: from rediffmail.com (f5mail-237-237.rediffmail.com [202.137.237.237])
+	by ozlabs.org (Postfix) with SMTP id 2B689B7C98
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 23:51:04 +1100 (EST)
+Date: 19 Jan 2010 12:40:14 -0000
+Message-ID: <20100119124014.22519.qmail@f5mail-237-237.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
-Cc: kernelnewbies <kernelnewbies@nl.linux.org>, linux-mtd@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
+To: <wg@grandegger.com>, <avorontsov@ru.mvista.com>
+Subject: =?utf-8?B?ZnNsIHVwbSBOQU5EIEZsYXNoIGlzc3VlIHdpdGhvdXQgR1BJTyBjaGlwIGhhbmRsZXI=?=
+From: "nanda" <nanda74pg@rediffmail.com>
+Content-Type: multipart/alternative;
+	boundary="=_c9eee608535d82e8c16d9284918b0e96"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-El Tue, Jan 19, 2010 at 05:20:53PM +0800 Johnny Hung ha dit:
+--=_c9eee608535d82e8c16d9284918b0e96
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 
-> I have build an embedded Linux system and rootfs is a ramdisk. Ramdisk
-> rootfs resides in memory so modify files is non-effective after a
-> reboot. Some directories in rootfs, like /etc, /usr, ... are contain
-> many application configuration files and I want to mount it to jffs2
-> flash filesysyem so it will take effect after a reboot. Is it
-> possible?
 
-yes, this is possible
+  We had merged the 2.6.24 with the FSL based NAND driver, we observed that gpio library is mandatory to be included. We have not included the gpios configured in the dts file as the we don’t have the separate GPIO chip(arch/powepc/boot/dts/board.dts). 
+ After executing the image in the board, we observed the below
+1)	The device ID and manufacture Id was printed as "c0" and "c0" and the error message "No NAND device found!!!".  Does it mean it is not accessing the NAND flash and the values read are junk one?
+2)	Processor of the board doesn’t connect the Ready/Busy of the NAND flash through the separate GPIO chip. I mean it is directly connected from GPIO Port C of PIN 15 to the Ready/Busy PIN of the NAND flash. Hence is it necessary to port the gpio specific functions like gpio_request/gpio_free(specified in fsl_upm.c file), instead should we need to configure the PIN par_io_config_pin()  for configuration of the PORT C with 15th PIN and set the data value using par_io_data_set() (specified arch/powerpc/sysdev/qe_lib/qe_io.c)
 
-> I know the flash has write times limited so the log files
-> (syslogd/klogd) should not store in flash. In general, how to deploy
-> root file system for embedded linux with flash storage?
+Please let me know any input on the above issue.
 
-- add jffs2 support to your kernel
-- create your image using mkfs.jffs2 from mtd-utils
-- flash the image
-- specify the rootfs partition and type in the bootargs of the kernel
+Thanks in advance
 
-for further information i recommend the lecture of
-http://free-electrons.com/doc/flash-filesystems.pdf
+Regards,
+Nanda
 
-depending on your requirements/size of the rootfs partitions UBIFS
-might be an option to consider
+--=_c9eee608535d82e8c16d9284918b0e96
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="UTF-8"
 
--- 
-Matthias Kaehlcke
-Embedded Linux Developer
-Barcelona
-
-      El trabajo es el refugio de los que no tienen nada que hacer
-                            (Oscar Wilde)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+<br />
+  We had merged the 2.6.24 with the FSL based NAND driver, we observed that=
+ gpio library is mandatory to be included. We have not included the gpios c=
+onfigured in the dts file as the we don=E2=80=99t have the separate GPIO ch=
+ip(arch/powepc/boot/dts/board.dts). <br />
+ After executing the image in the board, we observed the below<br />
+1)	The device ID and manufacture Id was printed as "c0" and "c0" and the er=
+ror message "No NAND device found!!!".  Does it mean it is not accessing th=
+e NAND flash and the values read are junk one?<br />
+2)	Processor of the board doesn=E2=80=99t connect the Ready/Busy of the NAN=
+D flash through the separate GPIO chip. I mean it is directly connected fro=
+m GPIO Port C of PIN 15 to the Ready/Busy PIN of the NAND flash. Hence is i=
+t necessary to port the gpio specific functions like gpio_request/gpio_free=
+(specified in fsl_upm.c file), instead should we need to configure the PIN =
+par_io_config_pin()  for configuration of the PORT C with 15th PIN and set =
+the data value using par_io_data_set() (specified arch/powerpc/sysdev/qe_li=
+b/qe_io.c)<br />
+<br />
+Please let me know any input on the above issue.<br />
+<br />
+Thanks in advance<br />
+<br />
+Regards,<br />
+Nanda<br />
+<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadding=
+=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR><td=
+><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.rediffm=
+ail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://sig=
+ads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatureli=
+ne.htm@Middle"></A></td></TR></Table>
+--=_c9eee608535d82e8c16d9284918b0e96--
