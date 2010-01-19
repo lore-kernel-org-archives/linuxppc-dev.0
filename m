@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 46385B7CFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 06:15:20 +1100 (EST)
-Subject: Re: [PATCH] powerpc/85xx: Fix oops during MSI driver probe on
-	MPC85xxMDS boards
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100118155324.GA10014@oksana.dev.rtsoft.ru>
-Date: Tue, 19 Jan 2010 13:15:15 -0600
-Message-Id: <F52441BF-6A5F-4A59-97E3-A90203FB07D0@kernel.crashing.org>
-References: <20091215225809.GA32140@oksana.dev.rtsoft.ru>
-	<20100118155324.GA10014@oksana.dev.rtsoft.ru>
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 01DF2B7D30
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:16 +1100 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/11] Update support for MPC512x
+Date: Tue, 19 Jan 2010 21:24:02 +0100
+Message-Id: <1263932653-3634-1-git-send-email-agust@denx.de>
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
+	rtc-linux@googlegroups.com, Dan Williams <dan.j.williams@intel.com>,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +20,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The following patch series brings support for the Freescale MPC512x
+processsors up to date:
 
-On Jan 18, 2010, at 9:53 AM, Anton Vorontsov wrote:
+[PATCH 01/11] fs_enet: Add support for MPC512x to fs_enet driver
+[PATCH 02/11] fs_enet: Add FEC TX Alignment workaround for MPC5121
+[PATCH 03/11] powerpc/mpc5121: Add machine restart support
+[PATCH 04/11] i2c-mpc: Add MPC5121 I2C bus support
+[PATCH 05/11] rtc: Add MPC5121 Real time clock driver
+[PATCH 06/11] mtd: Add NAND Flash Controller driver
+[PATCH 07/11] dma: Add MPC512x DMA driver
+[PATCH 08/11] powerpc/mpc5121: add USB host support
+[PATCH 09/11] powerpc/mpc512x: shared DIU framebuffer support
+[PATCH 10/11] powerpc/mpc5121: update mpc5121ads DTS
+[PATCH 11/11] powerpc/mpc5121: Add default config for MPC5121ADS
 
-> On Wed, Dec 16, 2009 at 01:58:09AM +0300, Anton Vorontsov wrote:
->> MPC85xx chips report the wrong value in feature reporting register,
->> and that causes the following oops:
->> 
->> Unable to handle kernel paging request for data at address 0x00000c00
->> Faulting instruction address: 0xc0019294
->> Oops: Kernel access of bad area, sig: 11 [#1]
->> MPC8569 MDS
->> Modules linked in:
->> [...]
->> NIP [c0019294] mpic_set_irq_type+0x2f0/0x368
->> LR [c0019124] mpic_set_irq_type+0x180/0x368
->> Call Trace:
->> [ef851d60] [c0019124] mpic_set_irq_type+0x180/0x368 (unreliable)
->> [ef851d90] [c007958c] __irq_set_trigger+0x44/0xd4
->> [ef851db0] [c007b550] set_irq_type+0x40/0x7c
->> [ef851dc0] [c0004a60] irq_create_of_mapping+0xb4/0x114
->> [ef851df0] [c0004af0] irq_of_parse_and_map+0x30/0x40
->> [ef851e20] [c0405678] fsl_of_msi_probe+0x1a0/0x328
->> [ef851e60] [c02e6438] of_platform_device_probe+0x5c/0x84
->> [...]
->> 
->> This is because mpic_alloc() assigns wrong values to
->> mpic->isu_{size,shift,mask}, and things eventually break when
->> _mpic_irq_read() is trying to use them.
->> 
->> This patch fixes the issue by enabling MPIC_BROKEN_FRR_NIRQS quirk.
->> 
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->> ---
-> 
-> Kumar,
-> 
-> Did you miss this patch or it's just in a queue for review?
-> 
-> Thanks!
+The patches are based on v2.6.33-rc4 and cover the following
+items:
 
-I just missed it will pick it up in a merge request to benh/linus.
+- platform, DTS
+- DMA
+- FEC Ethernet
+- UART (without h/w flow control)
+- I2C
+- NAND
+- RTC
 
-- k
+The code has been tested on the Freescale/STX "MPC5121ADS" board
+(board rev. 4) with a MPC5121e Rev. 2. No attempt was made to provide
+backward compatibility to older silicon revisions or older revisions
+of the board.
+
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: John Rigby <jcrigby@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: <netdev@vger.kernel.org>
+Cc: <linux-i2c@vger.kernel.org>
+Cc: <rtc-linux@googlegroups.com>
+Cc: <linux-mtd@lists.infradead.org>
+Cc: <linux-usb@vger.kernel.org>
+---
+ Documentation/powerpc/dts-bindings/fsl/usb.txt |    8 +
+ arch/powerpc/boot/dts/mpc5121ads.dts           |   35 +-
+ arch/powerpc/configs/512x/mpc5121ads_defconfig | 1662 ++++++++++++++++++++++++
+ arch/powerpc/include/asm/mpc5xxx.h             |   14 +-
+ arch/powerpc/platforms/512x/Kconfig            |    6 +
+ arch/powerpc/platforms/512x/Makefile           |    2 +-
+ arch/powerpc/platforms/512x/mpc5121_ads.c      |    9 +
+ arch/powerpc/platforms/512x/mpc5121_generic.c  |   13 +
+ arch/powerpc/platforms/512x/mpc5121_usb.c      |  117 ++
+ arch/powerpc/platforms/512x/mpc512x.h          |    5 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c   |  320 +++++-
+ arch/powerpc/sysdev/fsl_soc.c                  |   10 +
+ arch/powerpc/sysdev/fsl_soc.h                  |   10 +
+ drivers/dma/Kconfig                            |    7 +
+ drivers/dma/Makefile                           |    1 +
+ drivers/dma/mpc512x_dma.c                      |  636 +++++++++
+ drivers/dma/mpc512x_dma.h                      |  192 +++
+ drivers/i2c/busses/Kconfig                     |    9 +-
+ drivers/i2c/busses/i2c-mpc.c                   |   23 +
+ drivers/mtd/nand/Kconfig                       |    7 +
+ drivers/mtd/nand/Makefile                      |    1 +
+ drivers/mtd/nand/mpc5121_nfc.c                 |  916 +++++++++++++
+ drivers/net/fs_enet/Kconfig                    |   10 +-
+ drivers/net/fs_enet/fs_enet-main.c             |   43 +
+ drivers/net/fs_enet/fs_enet.h                  |   40 +-
+ drivers/net/fs_enet/mac-fec.c                  |  132 ++-
+ drivers/net/fs_enet/mii-fec.c                  |   55 +-
+ drivers/net/fs_enet/mpc5121_fec.h              |   64 +
+ drivers/net/fs_enet/mpc8xx_fec.h               |   37 +
+ drivers/rtc/Kconfig                            |   10 +
+ drivers/rtc/Makefile                           |    1 +
+ drivers/rtc/rtc-mpc5121.c                      |  408 ++++++
+ drivers/usb/host/ehci-fsl.c                    |  213 +++-
+ drivers/usb/host/ehci-fsl.h                    |   19 +-
+ drivers/usb/host/ehci-mem.c                    |    2 +-
+ drivers/video/fsl-diu-fb.c                     |   40 +-
+ drivers/video/fsl-diu-fb.h                     |  223 ----
+ include/linux/fsl-diu-fb.h                     |  223 ++++
+ include/linux/fsl_devices.h                    |   10 +
+ 39 files changed, 5193 insertions(+), 340 deletions(-)
