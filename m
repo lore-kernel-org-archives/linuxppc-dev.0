@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3AEDEB7C98
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 09:58:21 +1100 (EST)
-Subject: Re: [PATCH] powerpc/4xx: Add support for type 1 pci transactions
-	on 4xx boards
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <4B5637A6.5070600@embedded-sol.com>
-References: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>
-	<1263338326.724.216.camel@pasglop> <1263444961.724.343.camel@pasglop>
-	<4B5637A6.5070600@embedded-sol.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 09:57:53 +1100
-Message-ID: <1263941873.724.524.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6EC7AB7CE8
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 10:42:33 +1100 (EST)
+Date: Wed, 20 Jan 2010 10:42:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 02/11] fs_enet: Add FEC TX Alignment workaround for MPC5121
+Message-Id: <20100120104225.3361e6c4.sfr@canb.auug.org.au>
+In-Reply-To: <20100119.123706.12493208.davem@davemloft.net>
+References: <1263932653-3634-1-git-send-email-agust@denx.de>
+	<1263932653-3634-3-git-send-email-agust@denx.de>
+	<20100119.123706.12493208.davem@davemloft.net>
 Mime-Version: 1.0
-Cc: Stef van Os <stef.van.os@Prodrive.nl>, Stefan Roese <sr@denx.de>,
-	Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK"
+Cc: kosmo@semihalf.com, jrigby@freescale.com, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, agust@denx.de, dzu@denx.de, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-20 at 00:52 +0200, Felix Radensky wrote:
-> 
-> 405XX - no
-> 440EP - no
-> 440GR - no
-> 440EPx/440GRx - no
-> 
-> 440GP - yes
-> 440GX - yes
-> 440SP - yes
-> 440SPe - yes
-> 460XX - yes
-> 
-> The distinction between these groups is pretty clear in the device trees.
-> The members of the first group all have "ibm,plb-pci" property, and all
-> members of second group have "ibm,plb-pcix" property.
-> 
-> So only ppc4xx_probe_pcix_bridge() routine should be fixed.
+--Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah cool, I hadn't noticed that it matched the cell type.
+Hi Dave,
 
+On Tue, 19 Jan 2010 12:37:06 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> Well... where are the other 9 patches?
+
+I think the other 9 are not network related, just PowerPC related.
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktWQ2EACgkQjjKRsyhoI8ysFwCfVM2hUB11JZt6w9YzG2Bwr+EV
+M2gAoKSOD8g/A3XyZ/MOyfAqN9Tl+/10
+=t3vp
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK--
