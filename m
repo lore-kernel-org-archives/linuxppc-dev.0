@@ -1,16 +1,17 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 69E3CB7D43
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 517F9B7DF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:25 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/11] i2c-mpc: Add MPC5121 I2C bus support
-Date: Tue, 19 Jan 2010 21:24:06 +0100
-Message-Id: <1263932653-3634-5-git-send-email-agust@denx.de>
+Subject: [PATCH 05/11] rtc: Add MPC5121 Real time clock driver
+Date: Tue, 19 Jan 2010 21:24:07 +0100
+Message-Id: <1263932653-3634-6-git-send-email-agust@denx.de>
 In-Reply-To: <1263932653-3634-1-git-send-email-agust@denx.de>
 References: <1263932653-3634-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, linux-i2c@vger.kernel.org,
-	Anatolij Gustschin <agust@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
+Cc: wd@denx.de, John Rigby <jrigby@freescale.com>, rtc-linux@googlegroups.com,
+	Anatolij Gustschin <agust@denx.de>, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,78 +21,488 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Piotr Ziecik <kosmo@semihalf.com>
+From: John Rigby <jrigby@freescale.com>
 
-    - Update Kconfig for i2c-mpc driver.
-    - Enable I2C interrupts on MPC5121.
+Based on Domen Puncer's rtc driver for 5200 posted to
+the ppclinux mailing list:
+        http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11675
+but never commited anywhere.
 
+Changes to Domen's original:
+
+    Changed filenames/routine names from mpc5200* to mpc5121*
+    Changed match to only care about compatible and use "fsl,"
+    convention for compatible.
+
+    Make alarms more sane by dealing with lack of second alarm resolution.
+
+    Deal with the fact that most of the 5121 rtc registers are not persistent
+    across a reset even with a battery attached:
+
+        Use actual_time register for time keeping
+        and target_time register as an offset to linux time
+
+        The target_time register would normally be used for hibernation
+        but hibernation does not work on current silicon
+
+Signed-off-by: John Rigby <jcrigby@gmail.com>
 Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: <linux-i2c@vger.kernel.org>
+Cc: <rtc-linux@googlegroups.com>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
- drivers/i2c/busses/Kconfig   |    9 +++++----
- drivers/i2c/busses/i2c-mpc.c |   23 +++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 4 deletions(-)
+ drivers/rtc/Kconfig       |   10 +
+ drivers/rtc/Makefile      |    1 +
+ drivers/rtc/rtc-mpc5121.c |  408 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 419 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/rtc/rtc-mpc5121.c
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 5f318ce..f481f30 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -418,13 +418,14 @@ config I2C_IXP2000
- 	  instead.
- 
- config I2C_MPC
--	tristate "MPC107/824x/85xx/52xx/86xx"
-+	tristate "MPC107/824x/85xx/512x/52xx/86xx"
- 	depends on PPC32
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 8167e9e..e51b094 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -868,4 +868,14 @@ config RTC_DRV_MC13783
  	help
- 	  If you say yes to this option, support will be included for the
--	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
--	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
--	  family processors, though interrupts are known not to work.
-+	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245,
-+	  MPC85xx/MPC8641 and MPC512x family processors. The driver may
-+	  also work on 52xx family processors, though interrupts are known
-+	  not to work.
+ 	  This enables support for the Freescale MC13783 PMIC RTC
  
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-mpc.
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index f627001..84eeb25 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -540,6 +540,29 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
- 		}
- 	}
- 
-+	if (of_device_is_compatible(op->node, "fsl,mpc5121-i2c")) {
-+		struct device_node *np;
-+		void __iomem *i2cctl;
++config RTC_DRV_MPC5121
++	tristate "Freescale MPC5121 built-in RTC"
++	depends on RTC_CLASS
++	help
++	  If you say yes here you will get support for the
++	  built-in RTC MPC5121.
 +
-+		/* Enable I2C interrupts */
-+		np = of_find_compatible_node(NULL, NULL,
-+					     "fsl,mpc5121-i2c-ctrl");
-+		if (np) {
-+			i2cctl = of_iomap(np, 0);
-+			if (i2cctl) {
-+				/*
-+				 * Set interrupt enable bits:
-+				 *  - I2C-0: bit 24,
-+				 *  - I2C-1: bit 26,
-+				 *  - I2C-2: bit 28.
-+				 */
-+				out_be32(i2cctl, 0x15000000);
-+				iounmap(i2cctl);
-+			}
-+			of_node_put(np);
++	  This driver can also be built as a module. If so, the module
++	  will be called rtc-mpc5121.
++
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index e5160fd..db1dcd4 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_RTC_DRV_MAX6902)	+= rtc-max6902.o
+ obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
+ obj-$(CONFIG_RTC_DRV_MSM6242)	+= rtc-msm6242.o
+ obj-$(CONFIG_RTC_DRV_MV)	+= rtc-mv.o
++obj-$(CONFIG_RTC_DRV_MPC5121)	+= rtc-mpc5121.o
+ obj-$(CONFIG_RTC_DRV_NUC900)	+= rtc-nuc900.o
+ obj-$(CONFIG_RTC_DRV_OMAP)	+= rtc-omap.o
+ obj-$(CONFIG_RTC_DRV_PCAP)	+= rtc-pcap.o
+diff --git a/drivers/rtc/rtc-mpc5121.c b/drivers/rtc/rtc-mpc5121.c
+new file mode 100644
+index 0000000..63460cb
+--- /dev/null
++++ b/drivers/rtc/rtc-mpc5121.c
+@@ -0,0 +1,408 @@
++/*
++ * Real-time clock driver for MPC5121
++ *
++ * Copyright 2007, Domen Puncer <domen.puncer@telargo.com>
++ * Copyright 2008, Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++/*
++ * History:
++ *
++ * Based on mpc5200_rtc.c written by Domen Puncer <domen.puncer@telargo.com>
++ *   posted to linuxppc-embedded mailing list:
++ *     http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11675
++ *   but never committed to any public tree.
++ *
++ * Author: John Rigby <jrigby@freescale.com>
++ *   Converted to 5121 rtc driver.
++ *
++ *   Make alarms more sane by dealing with lack of second alarm resolution.
++ *
++ *   Use actual_time time register for time keeping since it is persistent
++ *   and the normal rtc registers are not.  Use target_time register as an
++ *   offset to linux time.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/rtc.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#include <linux/io.h>
++
++struct mpc5121_rtc_regs {
++	u8 set_time;		/* RTC + 0x00 */
++	u8 hour_set;		/* RTC + 0x01 */
++	u8 minute_set;		/* RTC + 0x02 */
++	u8 second_set;		/* RTC + 0x03 */
++
++	u8 set_date;		/* RTC + 0x04 */
++	u8 month_set;		/* RTC + 0x05 */
++	u8 weekday_set;		/* RTC + 0x06 */
++	u8 date_set;		/* RTC + 0x07 */
++
++	u8 write_sw;		/* RTC + 0x08 */
++	u8 sw_set;		/* RTC + 0x09 */
++	u16 year_set;		/* RTC + 0x0a */
++
++	u8 alm_enable;		/* RTC + 0x0c */
++	u8 alm_hour_set;	/* RTC + 0x0d */
++	u8 alm_min_set;		/* RTC + 0x0e */
++	u8 int_enable;		/* RTC + 0x0f */
++
++	u8 reserved1;
++	u8 hour;		/* RTC + 0x11 */
++	u8 minute;		/* RTC + 0x12 */
++	u8 second;		/* RTC + 0x13 */
++
++	u8 month;		/* RTC + 0x14 */
++	u8 wday_mday;		/* RTC + 0x15 */
++	u16 year;		/* RTC + 0x16 */
++
++	u8 int_alm;		/* RTC + 0x18 */
++	u8 int_sw;		/* RTC + 0x19 */
++	u8 alm_status;		/* RTC + 0x1a */
++	u8 sw_minute;		/* RTC + 0x1b */
++
++	u8 bus_error_1;		/* RTC + 0x1c */
++	u8 int_day;		/* RTC + 0x1d */
++	u8 int_min;		/* RTC + 0x1e */
++	u8 int_sec;		/* RTC + 0x1f */
++
++	/*
++	 * target_time:
++	 *	intended to be used for hibernation but hibernation
++	 *	does not work on silicon rev 1.5 so use it for non-volatile
++	 *	storage of offset between the actual_time register and linux
++	 *	time
++	 */
++	u32 target_time;	/* RTC + 0x20 */
++	/*
++	 * actual_time:
++	 * 	readonly time since VBAT_RTC was last connected
++	 */
++	u32 actual_time;	/* RTC + 0x24 */
++	u32 keep_alive;		/* RTC + 0x28 */
++};
++
++struct mpc5121_rtc_data {
++	unsigned irq;
++	unsigned irq_periodic;
++	struct mpc5121_rtc_regs __iomem *regs;
++	struct rtc_device *rtc;
++	struct rtc_wkalrm wkalarm;
++};
++
++/*
++ * Update second/minute/hour registers.
++ *
++ * This is just so alarm will work.
++ */
++static void mpc5121_rtc_update_smh(struct mpc5121_rtc_regs __iomem *regs,
++	struct rtc_time *tm)
++{
++	out_8(&regs->second_set, tm->tm_sec);
++	out_8(&regs->minute_set, tm->tm_min);
++	out_8(&regs->hour_set, tm->tm_hour);
++
++	/* set time sequence */
++	out_8(&regs->set_time, 0x1);
++	out_8(&regs->set_time, 0x3);
++	out_8(&regs->set_time, 0x1);
++	out_8(&regs->set_time, 0x0);
++}
++
++static int mpc5121_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++	unsigned long now;
++
++	/*
++	 * linux time is actual_time plus the offset saved in target_time
++	 */
++	now = in_be32(&regs->actual_time) + in_be32(&regs->target_time);
++
++	rtc_time_to_tm(now, tm);
++
++	/*
++	 * update second minute hour registers
++	 * so alarms will work
++	 */
++	mpc5121_rtc_update_smh(regs, tm);
++
++	return 0;
++}
++
++static int mpc5121_rtc_set_time(struct device *dev, struct rtc_time *tm)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++	int ret;
++	unsigned long now;
++
++
++	/*
++	 * The actual_time register is read only so we write the offset
++	 * between it and linux time to the target_time register.
++	 */
++	ret = rtc_tm_to_time(tm, &now);
++	if (ret == 0)
++		out_be32(&regs->target_time, now - in_be32(&regs->actual_time));
++
++	/*
++	 * update second minute hour registers
++	 * so alarms will work
++	 */
++	mpc5121_rtc_update_smh(regs, tm);
++
++	return 0;
++}
++
++static int mpc5121_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	*alarm = rtc->wkalarm;
++
++	alarm->pending = in_8(&regs->alm_status);
++
++	return 0;
++}
++
++static int mpc5121_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	/*
++	 * the alarm has no seconds so deal with it
++	 */
++	if (alarm->time.tm_sec) {
++		alarm->time.tm_sec = 0;
++		alarm->time.tm_min++;
++		if (alarm->time.tm_min >= 60) {
++			alarm->time.tm_min = 0;
++			alarm->time.tm_hour++;
++			if (alarm->time.tm_hour >= 24)
++				alarm->time.tm_hour = 0;
 +		}
 +	}
 +
- 	dev_set_drvdata(&op->dev, i2c);
- 
- 	i2c->adap = mpc_ops;
++	alarm->time.tm_mday = -1;
++	alarm->time.tm_mon = -1;
++	alarm->time.tm_year = -1;
++
++	out_8(&regs->alm_min_set, alarm->time.tm_min);
++	out_8(&regs->alm_hour_set, alarm->time.tm_hour);
++
++	out_8(&regs->alm_enable, alarm->enabled);
++
++	rtc->wkalarm = *alarm;
++	return 0;
++}
++
++static irqreturn_t mpc5121_rtc_handler(int irq, void *dev)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	if (in_8(&regs->int_alm)) {
++		/* acknowledge and clear status */
++		out_8(&regs->int_alm, 1);
++		out_8(&regs->alm_status, 1);
++
++		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_AF);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static irqreturn_t mpc5121_rtc_handler_upd(int irq, void *dev)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	if (in_8(&regs->int_sec) && (in_8(&regs->int_enable) & 0x1)) {
++		/* acknowledge */
++		out_8(&regs->int_sec, 1);
++
++		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_UF);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static int mpc5121_rtc_ioctl(struct device *dev, unsigned int cmd,
++							unsigned long arg)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	switch (cmd) {
++		/* alarm interrupt */
++	case RTC_AIE_ON:
++		out_8(&regs->alm_enable, 1);
++		rtc->wkalarm.enabled = 1;
++		break;
++	case RTC_AIE_OFF:
++		out_8(&regs->alm_enable, 0);
++		rtc->wkalarm.enabled = 0;
++		break;
++
++		/* update interrupt */
++	case RTC_UIE_ON:
++		out_8(&regs->int_enable,
++				(in_8(&regs->int_enable) & ~0x8) | 0x1);
++		break;
++	case RTC_UIE_OFF:
++		out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
++		break;
++
++		/* no periodic interrupts */
++	case RTC_IRQP_READ:
++	case RTC_IRQP_SET:
++		return -ENOTTY;
++
++	default:
++		return -ENOIOCTLCMD;
++	}
++	return 0;
++}
++
++static const struct rtc_class_ops mpc5121_rtc_ops = {
++	.read_time = mpc5121_rtc_read_time,
++	.set_time = mpc5121_rtc_set_time,
++	.read_alarm = mpc5121_rtc_read_alarm,
++	.set_alarm = mpc5121_rtc_set_alarm,
++	.ioctl = mpc5121_rtc_ioctl,
++};
++
++static int __devinit mpc5121_rtc_probe(struct of_device *op,
++					const struct of_device_id *match)
++{
++	struct mpc5121_rtc_data *rtc;
++	int err = 0;
++	u32 ka;
++
++	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
++	if (!rtc) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	rtc->regs = of_iomap(op->node, 0);
++
++	if (!rtc->regs) {
++		printk(KERN_ERR "%s: couldn't map io space\n", __func__);
++		err = -ENOSYS;
++		goto out_free;
++	}
++
++	device_init_wakeup(&op->dev, 1);
++
++	rtc->rtc = rtc_device_register("mpc5121-rtc", &op->dev,
++						&mpc5121_rtc_ops, THIS_MODULE);
++	if (IS_ERR(rtc->rtc)) {
++		err = PTR_ERR(rtc->rtc);
++		goto out_unmap;
++	}
++
++	dev_set_drvdata(&op->dev, rtc);
++
++	rtc->irq = irq_of_parse_and_map(op->node, 1);
++	err = request_irq(rtc->irq, mpc5121_rtc_handler, IRQF_DISABLED,
++						"mpc5121-rtc", &op->dev);
++	if (err) {
++		printk(KERN_ERR "%s: could not request irq: %i\n",
++							__func__, rtc->irq);
++		goto out_dispose;
++	}
++
++	rtc->irq_periodic = irq_of_parse_and_map(op->node, 0);
++	err = request_irq(rtc->irq_periodic, mpc5121_rtc_handler_upd,
++				 IRQF_DISABLED, "mpc5121-rtc_upd", &op->dev);
++	if (err) {
++		printk(KERN_ERR "%s: could not request irq: %i\n",
++						__func__, rtc->irq_periodic);
++		goto out_dispose2;
++	}
++
++	ka = in_be32(&rtc->regs->keep_alive);
++	if (ka & 0x02) {
++		printk(KERN_WARNING
++			"mpc5121-rtc: Battery or oscillator failure!\n");
++		out_be32(&rtc->regs->keep_alive, ka);
++	}
++
++	goto out;
++
++out_dispose2:
++	irq_dispose_mapping(rtc->irq_periodic);
++	free_irq(rtc->irq, &op->dev);
++out_dispose:
++	irq_dispose_mapping(rtc->irq);
++out_unmap:
++	iounmap(rtc->regs);
++out_free:
++	kfree(rtc);
++out:
++	return err;
++}
++
++static int __devexit mpc5121_rtc_remove(struct of_device *op)
++{
++	struct mpc5121_rtc_data *rtc = dev_get_drvdata(&op->dev);
++	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
++
++	/* disable interrupt, so there are no nasty surprises */
++	out_8(&regs->alm_enable, 0);
++	out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
++
++	rtc_device_unregister(rtc->rtc);
++	iounmap(rtc->regs);
++	free_irq(rtc->irq, &op->dev);
++	free_irq(rtc->irq_periodic, &op->dev);
++	irq_dispose_mapping(rtc->irq);
++	irq_dispose_mapping(rtc->irq_periodic);
++	dev_set_drvdata(&op->dev, NULL);
++	kfree(rtc);
++
++	return 0;
++}
++
++static struct of_device_id mpc5121_rtc_match[] = {
++	{ .compatible = "fsl,mpc5121-rtc", },
++	{},
++};
++
++static struct of_platform_driver mpc5121_rtc_driver = {
++	.owner = THIS_MODULE,
++	.name = "mpc5121-rtc",
++	.match_table = mpc5121_rtc_match,
++	.probe = mpc5121_rtc_probe,
++	.remove = mpc5121_rtc_remove,
++};
++
++static int __init mpc5121_rtc_init(void)
++{
++	return of_register_platform_driver(&mpc5121_rtc_driver);
++}
++
++static void __exit mpc5121_rtc_exit(void)
++{
++	of_unregister_platform_driver(&mpc5121_rtc_driver);
++}
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("John Rigby <jrigby@freescale.com>");
++
++module_init(mpc5121_rtc_init);
++module_exit(mpc5121_rtc_exit);
 -- 
 1.5.6.3
