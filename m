@@ -1,19 +1,15 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
-	through extended ptrace interface
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <ABDB7BBD-AFF2-4CAD-94E0-4A711FB7919B@kernel.crashing.org>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<ABDB7BBD-AFF2-4CAD-94E0-4A711FB7919B@kernel.crashing.org>
-Content-Type: text/plain
-Date: Mon, 18 Jan 2010 16:41:00 -0600
-Message-Id: <1263854460.27291.48.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <oakad@yahoo.com>
+Received: from web37606.mail.mud.yahoo.com (web37606.mail.mud.yahoo.com
+	[209.191.87.89]) by ozlabs.org (Postfix) with SMTP id 2349EB7C7E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 19 Jan 2010 17:54:29 +1100 (EST)
+Message-ID: <341686.17314.qm@web37606.mail.mud.yahoo.com>
+Date: Mon, 18 Jan 2010 22:54:28 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Large physical address support on e500 platform
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-12-10 at 20:45 -0600, Kumar Gala wrote:
-
-> What do we do in EDM mode?  We need a flag somewhere to determine if
-> HW supports conveying DBCR0[EDM] and if it does which of the ptrace
-> calls fails?
-
-I really don't have a good answer to this.  I'm open to any and all
-advice.
-
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+I'm working on an mpc8548 based board and recently I've encountered a=0Apro=
+blem, whereupon kernel crashed each time module loading is attempted. I=0At=
+raced the problem to the fact, that vmalloc_exec was setting incorrect=0Apa=
+ge attributes on allocated pages. This, in turn, happened because I=0Aspeci=
+fied "Large physical address support" in the Kconfig, leading to=0ACONFIG_P=
+HYS_64BIT and friends being set.=0A=0AIt appears that having this option se=
+t on e500 pulls in incorrect headers=0Aand otherwise not working. CPU, howe=
+ver, has support for 36b physical=0Aaddressing, which qualifies as "Large p=
+hysical address".=0A=0ASo, the obvious question is, what is the current sta=
+tus of large physical=0Aaddress support on e500? Is it a problem in current=
+ git version or is it=0Anot ready yet?=0A=0AThanks.=0A=0A=0A=0A=0A=0A=0A=0A=
+      _____________________________________________________________________=
+_____________=0ASee what's on at the movies in your area. Find out now: htt=
+p://au.movies.yahoo.com/session-times/
