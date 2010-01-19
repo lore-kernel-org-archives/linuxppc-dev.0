@@ -1,16 +1,16 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5E517B808C
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:32 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9A1CFB7F3D
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:37 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/11] dma: Add MPC512x DMA driver
-Date: Tue, 19 Jan 2010 21:24:09 +0100
-Message-Id: <1263932653-3634-8-git-send-email-agust@denx.de>
+Subject: [PATCH 08/11] powerpc/mpc5121: add USB host support
+Date: Tue, 19 Jan 2010 21:24:10 +0100
+Message-Id: <1263932653-3634-9-git-send-email-agust@denx.de>
 In-Reply-To: <1263932653-3634-1-git-send-email-agust@denx.de>
 References: <1263932653-3634-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, Dan Williams <dan.j.williams@intel.com>,
-	Anatolij Gustschin <agust@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
+Cc: wd@denx.de, dzu@denx.de, linux-usb@vger.kernel.org,
+	Bruce Schmid <duck@freescale.com>, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,895 +20,607 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Piotr Ziecik <kosmo@semihalf.com>
+Platform specific code for MPC5121 USB Host support.
+MPC5121 Rev 2.0 silicon EHCI registers are big endian.
+Add appropriate support by specifying "big-endian-regs"
+property in device tree node for USB controller. Also
+allow specifying DRVVBUS and PWR_FAULT signal polarity
+of MPC5121 internal PHY using "invert-drvvbus" and
+"invert-pwr-fault" properties.
 
-Adds initial version of MPC512x DMA driver.
-Only memory to memory transfers are currenly supported.
-
-Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-Signed-off-by: Wolfgang Denk <wd@denx.de>
+Signed-off-by: Bruce Schmid <duck@freescale.com>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-usb@vger.kernel.org
 Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: John Rigby <jcrigby@gmail.com>
 ---
- drivers/dma/Kconfig       |    7 +
- drivers/dma/Makefile      |    1 +
- drivers/dma/mpc512x_dma.c |  636 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/mpc512x_dma.h |  192 ++++++++++++++
- 4 files changed, 836 insertions(+), 0 deletions(-)
- create mode 100644 drivers/dma/mpc512x_dma.c
- create mode 100644 drivers/dma/mpc512x_dma.h
+Note that EHCI FSL driver extention in this patch
+applies on top of the following two patches (in the
+linux-next tree):
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index e02d74b..ac67a53 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -69,6 +69,13 @@ config FSL_DMA
- 	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
- 	  Elo Plus is the DMA controller on 85xx and 86xx parts.
+commit 23c3314b88f91db51bd198ed92e34cffb67788dd
+Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date:   Mon Dec 14 18:41:12 2009 +0300
+
+    USB: ehci-fsl: Add power management support
+
+commit bf4bf2d9f646eb0cc531d213a13ffcedf9d6785f
+Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+Date:   Mon Dec 14 18:41:05 2009 +0300
+
+    USB: ehci-fsl: Fix sparse warnings
+
+ Documentation/powerpc/dts-bindings/fsl/usb.txt |    8 ++
+ arch/powerpc/platforms/512x/Kconfig            |    6 +
+ arch/powerpc/platforms/512x/Makefile           |    2 +-
+ arch/powerpc/platforms/512x/mpc5121_ads.c      |    1 +
+ arch/powerpc/platforms/512x/mpc5121_usb.c      |  117 ++++++++++++++++++++++++
+ arch/powerpc/platforms/512x/mpc512x.h          |    1 +
+ arch/powerpc/sysdev/fsl_soc.c                  |   10 ++
+ arch/powerpc/sysdev/fsl_soc.h                  |    9 ++
+ drivers/usb/host/ehci-fsl.c                    |  116 +++++++++++++++++-------
+ drivers/usb/host/ehci-fsl.h                    |   19 ++++-
+ drivers/usb/host/ehci-mem.c                    |    2 +-
+ include/linux/fsl_devices.h                    |   10 ++
+ 12 files changed, 265 insertions(+), 36 deletions(-)
+ create mode 100644 arch/powerpc/platforms/512x/mpc5121_usb.c
+
+diff --git a/Documentation/powerpc/dts-bindings/fsl/usb.txt b/Documentation/powerpc/dts-bindings/fsl/usb.txt
+index b001524..9050154 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/usb.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/usb.txt
+@@ -33,6 +33,14 @@ Recommended properties :
+  - interrupt-parent : the phandle for the interrupt controller that
+    services interrupts for this device.
  
-+config MPC512X_DMA
-+	tristate "Freescale MPC512x built-in DMA engine support"
-+	depends on PPC_MPC512x
-+	select DMA_ENGINE
-+	---help---
-+	  Enable support for the Freescale MPC512x built-in DMA engine.
++Optional properties :
++ - big-endian-regs : boolean; if defined, indicates the USB host
++   controller registers format is big endian.
++ - invert-drvvbus : boolean; for MPC5121 only. Indicates the port
++   power polarity of internal PHY signal DRVVBUS is inverted.
++ - invert-pwr-fault : boolean; for MPC5121 only. Indicates the
++   PWR_FAULT signal polarity is inverted.
 +
- config MV_XOR
- 	bool "Marvell XOR engine support"
- 	depends on PLAT_ORION
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 807053d..4696bcf 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_DMATEST) += dmatest.o
- obj-$(CONFIG_INTEL_IOATDMA) += ioat/
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_FSL_DMA) += fsldma.o
-+obj-$(CONFIG_MPC512X_DMA) += mpc512x_dma.o
- obj-$(CONFIG_MV_XOR) += mv_xor.o
- obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- obj-$(CONFIG_AT_HDMAC) += at_hdmac.o
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+ Example multi port host USB controller device node :
+ 	usb@22000 {
+ 		compatible = "fsl-usb2-mph";
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index 4dac9b0..3fec738 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -9,6 +9,9 @@ config PPC_MPC512x
+ config PPC_MPC5121
+ 	bool
+ 	select PPC_MPC512x
++	select USB_ARCH_HAS_EHCI
++	select USB_EHCI_BIG_ENDIAN_DESC
++	select USB_EHCI_BIG_ENDIAN_MMIO
+ 
+ config MPC5121_ADS
+ 	bool "Freescale MPC5121E ADS"
+@@ -30,3 +33,6 @@ config MPC5121_GENERIC
+ 
+ 	  Compatible boards include:  Protonic LVT base boards (ZANMCU
+ 	  and VICVT2).
++
++config USB_FSL_BIG_ENDIAN_MMIO
++	bool
+diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+index 90be2f5..49adabc 100644
+--- a/arch/powerpc/platforms/512x/Makefile
++++ b/arch/powerpc/platforms/512x/Makefile
+@@ -1,6 +1,6 @@
+ #
+ # Makefile for the Freescale PowerPC 512x linux kernel.
+ #
+-obj-y				+= clock.o mpc512x_shared.o
++obj-y				+= clock.o mpc512x_shared.o mpc5121_usb.o
+ obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
+ obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index 2f40404..a497c14 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -42,6 +42,7 @@ static void __init mpc5121_ads_setup_arch(void)
+ 	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
+ 		mpc83xx_add_bridge(np);
+ #endif
++	mpc5121_usb_init();
+ }
+ 
+ static void __init mpc5121_ads_init_IRQ(void)
+diff --git a/arch/powerpc/platforms/512x/mpc5121_usb.c b/arch/powerpc/platforms/512x/mpc5121_usb.c
 new file mode 100644
-index 0000000..f89b6c2
+index 0000000..7b45651
 --- /dev/null
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -0,0 +1,636 @@
++++ b/arch/powerpc/platforms/512x/mpc5121_usb.c
+@@ -0,0 +1,117 @@
 +/*
-+ * Copyright (C) Semihalf 2009
++ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
 + *
-+ * Written by: Piotr Ziecik <kosmo@semihalf.com>
++ * Author: Bruce Schmid <duck@freescale.com>, Tue Oct 2 2007
 + *
-+ * Approved as OSADL project by a majority of OSADL members and funded
-+ * by OSADL membership fees in 2009;  for details see www.osadl.org.
++ * Description:
++ * MPC5121 USB platform-specific routines
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
 + */
 +
-+/*
-+ * This is initial version of MPC5121 DMA driver. Only memory to memory
-+ * transfers are supported (tested using dmatest module).
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/errno.h>
++#include <linux/fsl_devices.h>
++#include <linux/init.h>
 +#include <linux/io.h>
-+#include <linux/of_device.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/stddef.h>
 +#include <linux/of_platform.h>
++#include <sysdev/fsl_soc.h>
 +
-+#include <linux/random.h>
++#define USBGENCTRL		0x200		/* NOTE: big endian */
++#define GC_WU_INT_CLR		(1 << 5)	/* Wakeup int clear */
++#define GC_ULPI_SEL		(1 << 4)	/* ULPI i/f select (usb0 only)*/
++#define GC_PPP			(1 << 3)	/* Inv. Port Power Polarity */
++#define GC_PFP			(1 << 2)	/* Inv. Power Fault Polarity */
++#define GC_WU_ULPI_EN		(1 << 1)	/* Wakeup on ULPI event */
++#define GC_WU_IE		(1 << 1)	/* Wakeup interrupt enable */
 +
-+#include "mpc512x_dma.h"
++#define ISIPHYCTRL		0x204		/* NOTE: big endian */
++#define PHYCTRL_PHYE		(1 << 4)	/* On-chip UTMI PHY enable */
++#define PHYCTRL_BSENH		(1 << 3)	/* Bit Stuff Enable High */
++#define PHYCTRL_BSEN		(1 << 2)	/* Bit Stuff Enable */
++#define PHYCTRL_LSFE		(1 << 1)	/* Line State Filter Enable */
++#define PHYCTRL_PXE		(1 << 0)	/* PHY oscillator enable */
 +
-+#define DRV_NAME	"mpc512x_dma"
++static struct clk *dr_clk1;
++static struct clk *dr_clk2;
++static int dr_used;
 +
-+/* Convert struct dma_chan to struct mpc_dma_chan */
-+static inline struct mpc_dma_chan *dma_chan_to_mpc_dma_chan(struct dma_chan *c)
++static int mpc5121_usb_dr_init(struct platform_device *pdev)
 +{
-+	return container_of(c, struct mpc_dma_chan, chan);
-+}
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
 +
-+/* Convert struct dma_chan to struct mpc_dma */
-+static inline struct mpc_dma *dma_chan_to_mpc_dma(struct dma_chan *c)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(c);
-+	return container_of(mchan, struct mpc_dma, channels[c->chan_id]);
-+}
++	/* enable the clock if we haven't already */
++	if (!dr_used) {
++		dr_clk1 = clk_get(&pdev->dev, "usb1_clk");
++		if (IS_ERR(dr_clk1)) {
++			dev_err(&pdev->dev, "usb1: clk_get failed\n");
++			return -ENODEV;
++		}
++		clk_enable(dr_clk1);
++		dr_clk2 = clk_get(&pdev->dev, "usb2_clk");
++		if (IS_ERR(dr_clk2)) {
++			dev_err(&pdev->dev, "usb2: clk_get failed\n");
++			return -ENODEV;
++		}
++		clk_enable(dr_clk2);
++	}
++	dr_used++;
 +
-+/*
-+ * Execute all queued DMA descriptors.
-+ *
-+ * Following requirements must be met while calling mpc_dma_execute():
-+ * 	a) mchan->lock is acquired,
-+ * 	b) mchan->active list is empty,
-+ * 	c) mchan->queued list contains at least one entry.
-+ */
-+static void mpc_dma_execute(struct mpc_dma_chan *mchan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(&mchan->chan);
-+	struct mpc_dma_desc *first = NULL;
-+	struct mpc_dma_desc *prev = NULL;
-+	struct mpc_dma_desc *mdesc;
-+	int cid = mchan->chan.chan_id;
++	pdata->big_endian_desc = 1;
++	pdata->es = 1;
 +
-+	/* Move all queued descriptors to active list */
-+	list_splice_tail_init(&mchan->queued, &mchan->active);
++	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
++		struct device_node *np;
++		u32 reg = 0;
 +
-+	/* Chain descriptors into one transaction */
-+	list_for_each_entry(mdesc, &mchan->active, node) {
-+		if (!first)
-+			first = mdesc;
-+
-+		if (!prev) {
-+			prev = mdesc;
-+			continue;
++		np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-usb2-dr");
++		if (!np) {
++			pr_err("No USB node found\n");
++			return -ENODEV;
 +		}
 +
-+		prev->tcd->dlast_sga = mdesc->tcd_paddr;
-+		prev->tcd->e_sg = 1;
-+		mdesc->tcd->start = 1;
++		if (of_get_property(np, "invert-drvvbus", NULL))
++			reg |= GC_PPP;
 +
-+		prev = mdesc;
++		if (of_get_property(np, "invert-pwr-fault", NULL))
++			reg |= GC_PFP;
++
++		of_node_put(np);
++		out_be32(pdata->regs + ISIPHYCTRL, PHYCTRL_PHYE | PHYCTRL_PXE);
++		out_be32(pdata->regs + USBGENCTRL, reg);
 +	}
-+
-+	prev->tcd->start = 0;
-+	prev->tcd->int_maj = 1;
-+
-+	/* Send first descriptor in chain into hardware */
-+	memcpy_toio(&mdma->tcd[cid], first->tcd, sizeof(struct mpc_dma_tcd));
-+	out_8(&mdma->regs->dmassrt, cid);
-+}
-+
-+/* Handle interrupt on one half of DMA controller (32 channels) */
-+static void mpc_dma_irq_process(struct mpc_dma *mdma, u32 is, u32 es, int off)
-+{
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	u32 status = is | es;
-+	int ch;
-+
-+	while ((ch = fls(status) - 1) >= 0) {
-+		status &= ~(1 << ch);
-+		mchan = &mdma->channels[ch + off];
-+
-+		spin_lock(&mchan->lock);
-+
-+		/* Check error status */
-+		if (es & (1 << ch))
-+			list_for_each_entry(mdesc, &mchan->active, node)
-+				mdesc->error = -EIO;
-+
-+		/* Execute queued descriptors */
-+		list_splice_tail_init(&mchan->active, &mchan->completed);
-+		if (!list_empty(&mchan->queued))
-+			mpc_dma_execute(mchan);
-+
-+		spin_unlock(&mchan->lock);
-+	}
-+}
-+
-+/* Interrupt handler */
-+static irqreturn_t mpc_dma_irq(int irq, void *data)
-+{
-+	struct mpc_dma *mdma = data;
-+	uint es;
-+
-+	/* Save error status register */
-+	es = in_be32(&mdma->regs->dmaes);
-+	spin_lock(&mdma->error_status_lock);
-+	if ((es & MPC_DMA_DMAES_VLD) && mdma->error_status == 0)
-+		mdma->error_status = es;
-+	spin_unlock(&mdma->error_status_lock);
-+
-+	/* Handle interrupt on each channel */
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmainth),
-+					in_be32(&mdma->regs->dmaerrh), 32);
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmaintl),
-+					in_be32(&mdma->regs->dmaerrl), 0);
-+
-+	/* Ack interrupt on all channels */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
-+
-+	/* Schedule tasklet */
-+	tasklet_schedule(&mdma->tasklet);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* DMA Tasklet */
-+static void mpc_dma_tasklet(unsigned long data)
-+{
-+	struct mpc_dma *mdma = (void *)data;
-+	dma_cookie_t last_cookie = 0;
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	struct dma_async_tx_descriptor *desc;
-+	unsigned long flags;
-+	LIST_HEAD(list);
-+	uint es;
-+	int i;
-+
-+	spin_lock_irqsave(&mdma->error_status_lock, flags);
-+	es = mdma->error_status;
-+	mdma->error_status = 0;
-+	spin_unlock_irqrestore(&mdma->error_status_lock, flags);
-+
-+	/* Print nice error report */
-+	if (es) {
-+		dev_err(mdma->dma.dev,
-+			"Hardware reported following error(s) on channel %u:\n",
-+						      MPC_DMA_DMAES_ERRCHN(es));
-+
-+		if (es & MPC_DMA_DMAES_GPE)
-+			dev_err(mdma->dma.dev, "- Group Priority Error\n");
-+		if (es & MPC_DMA_DMAES_CPE)
-+			dev_err(mdma->dma.dev, "- Channel Priority Error\n");
-+		if (es & MPC_DMA_DMAES_SAE)
-+			dev_err(mdma->dma.dev, "- Source Address Error\n");
-+		if (es & MPC_DMA_DMAES_SOE)
-+			dev_err(mdma->dma.dev, "- Source Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_DAE)
-+			dev_err(mdma->dma.dev, "- Destination Address"
-+								" Error\n");
-+		if (es & MPC_DMA_DMAES_DOE)
-+			dev_err(mdma->dma.dev, "- Destination Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_NCE)
-+			dev_err(mdma->dma.dev, "- NBytes/Citter"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SGE)
-+			dev_err(mdma->dma.dev, "- Scatter/Gather"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SBE)
-+			dev_err(mdma->dma.dev, "- Source Bus Error\n");
-+		if (es & MPC_DMA_DMAES_DBE)
-+			dev_err(mdma->dma.dev, "- Destination Bus Error\n");
-+	}
-+
-+	for (i = 0; i < mdma->dma.chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		/* Get all completed descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		if (!list_empty(&mchan->completed))
-+			list_splice_tail_init(&mchan->completed, &list);
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+		if (list_empty(&list))
-+			continue;
-+
-+		/* Execute callbacks and run dependencies */
-+		list_for_each_entry(mdesc, &list, node) {
-+			desc = &mdesc->desc;
-+
-+			if (desc->callback)
-+				desc->callback(desc->callback_param);
-+
-+			last_cookie = desc->cookie;
-+			dma_run_dependencies(desc);
-+		}
-+
-+		/* Free descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		list_splice_tail_init(&list, &mchan->free);
-+		mchan->completed_cookie = last_cookie;
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+	}
-+}
-+
-+/* Submit descriptor to hardware */
-+static dma_cookie_t mpc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(txd->chan);
-+	struct mpc_dma_desc *mdesc;
-+	unsigned long flags;
-+	dma_cookie_t cookie;
-+
-+	mdesc = container_of(txd, struct mpc_dma_desc, desc);
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+
-+	/* Move descriptor to queue */
-+	list_move_tail(&mdesc->node, &mchan->queued);
-+
-+	/* If channel is idle, execute all queued descriptors */
-+	if (list_empty(&mchan->active))
-+		mpc_dma_execute(mchan);
-+
-+	/* Update cookie */
-+	cookie = mchan->chan.cookie + 1;
-+	if (cookie <= 0)
-+		cookie = 1;
-+
-+	mchan->chan.cookie = cookie;
-+	mdesc->desc.cookie = cookie;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	return cookie;
-+}
-+
-+/* Alloc channel resources */
-+static int mpc_dma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
-+	int i;
-+
-+	/* Alloc DMA memory for Transfer Control Descriptors */
-+	tcd = dma_alloc_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+							&tcd_paddr, GFP_KERNEL);
-+	if (!tcd)
-+		return -ENOMEM;
-+
-+	/* Alloc descriptors for this channel */
-+	for (i = 0; i < MPC_DMA_DESCRIPTORS; i++) {
-+		mdesc = kzalloc(sizeof(struct mpc_dma_desc), GFP_KERNEL);
-+		if (!mdesc) {
-+			dev_notice(mdma->dma.dev, "Memory allocation error. "
-+					"Allocated only %u descriptors\n", i);
-+			break;
-+		}
-+
-+		dma_async_tx_descriptor_init(&mdesc->desc, chan);
-+		mdesc->desc.flags = DMA_CTRL_ACK;
-+		mdesc->desc.tx_submit = mpc_dma_tx_submit;
-+
-+		mdesc->tcd = &tcd[i];
-+		mdesc->tcd_paddr = tcd_paddr + (i * sizeof(struct mpc_dma_tcd));
-+
-+		list_add_tail(&mdesc->node, &descs);
-+	}
-+
-+	/* Return error only if no descriptors were allocated */
-+	if (i == 0) {
-+		dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+		return -ENOMEM;
-+	}
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	mchan->tcd = tcd;
-+	mchan->tcd_paddr = tcd_paddr;
-+	list_splice_tail_init(&descs, &mchan->free);
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Enable Error Interrupt */
-+	out_8(&mdma->regs->dmaseei, chan->chan_id);
-+
 +	return 0;
 +}
 +
-+/* Free channel resources */
-+static void mpc_dma_free_chan_resources(struct dma_chan *chan)
++static void mpc5121_usb_dr_uninit(struct platform_device *pdev)
 +{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc, *tmp;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
 +
-+	spin_lock_irqsave(&mchan->lock, flags);
++	pdata->regs = NULL;
 +
-+	/* Channel must be idle */
-+	BUG_ON(!list_empty(&mchan->prepared));
-+	BUG_ON(!list_empty(&mchan->queued));
-+	BUG_ON(!list_empty(&mchan->active));
-+	BUG_ON(!list_empty(&mchan->completed));
-+
-+	/* Move data */
-+	list_splice_tail_init(&mchan->free, &descs);
-+	tcd = mchan->tcd;
-+	tcd_paddr = mchan->tcd_paddr;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Free DMA memory used by descriptors */
-+	dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+
-+	/* Free descriptors */
-+	list_for_each_entry_safe(mdesc, tmp, &descs, node)
-+		kfree(mdesc);
-+
-+	/* Disable Error Interrupt */
-+	out_8(&mdma->regs->dmaceei, chan->chan_id);
-+}
-+
-+/* Send all pending descriptor to hardware */
-+static void mpc_dma_issue_pending(struct dma_chan *chan)
-+{
-+	/*
-+	 * We are posting descriptors to the hardware as soon as
-+	 * they are ready, so this function does nothing.
-+	 */
-+}
-+
-+/* Check request completion status */
-+static enum dma_status
-+mpc_dma_is_tx_complete(struct dma_chan *chan, dma_cookie_t cookie,
-+					dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	unsigned long flags;
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	last_used = mchan->chan.cookie;
-+	last_complete = mchan->completed_cookie;
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+/* Prepare descriptor for memory to memory copy */
-+static struct dma_async_tx_descriptor *
-+mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
-+					size_t len, unsigned long flags)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc = NULL;
-+	struct mpc_dma_tcd *tcd;
-+	unsigned long iflags;
-+
-+	/* Get free descriptor */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	if (!list_empty(&mchan->free)) {
-+		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
-+									node);
-+		list_del(&mdesc->node);
++	dr_used--;
++	if (!dr_used) {
++		clk_disable(dr_clk1);
++		clk_disable(dr_clk2);
++		clk_put(dr_clk1);
++		clk_put(dr_clk2);
++		dr_clk1 = NULL;
++		dr_clk2 = NULL;
 +	}
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
++}
 +
-+	if (!mdesc)
-+		return NULL;
++void mpc5121_usb_init(void)
++{
++	fsl_platform_usb_ops.init = mpc5121_usb_dr_init;
++	fsl_platform_usb_ops.uninit = mpc5121_usb_dr_uninit;
++}
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index c38875c..e92a282 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -13,5 +13,6 @@
+ #define __MPC512X_H__
+ extern void __init mpc512x_init_IRQ(void);
+ extern void mpc512x_restart(char *cmd);
++extern void mpc5121_usb_init(void);
+ void __init mpc512x_declare_of_platform_devices(void);
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index b91f7ac..19a455d 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -209,6 +209,9 @@ static int __init of_add_fixed_phys(void)
+ arch_initcall(of_add_fixed_phys);
+ #endif /* CONFIG_FIXED_PHY */
+ 
++struct fsl_platform_usb_ops fsl_platform_usb_ops;
++EXPORT_SYMBOL(fsl_platform_usb_ops);
 +
-+	mdesc->error = 0;
-+	tcd = mdesc->tcd;
+ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ {
+ 	if (!phy_type)
+@@ -267,6 +270,9 @@ static int __init fsl_usb_of_init(void)
+ 		if (prop)
+ 			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
+ 
++		if (of_get_property(np, "big-endian-regs", NULL))
++			usb_data.big_endian_mmio = 1;
 +
-+	/* Prepare Transfer Control Descriptor for this transaction */
-+	memset(tcd, 0, sizeof(struct mpc_dma_tcd));
+ 		prop = of_get_property(np, "phy_type", NULL);
+ 		usb_data.phy_mode = determine_usb_phy(prop);
+ 
+@@ -332,9 +338,13 @@ static int __init fsl_usb_of_init(void)
+ 			ret = -EINVAL;
+ 			goto err;
+ 		}
++		if (of_get_property(np, "big-endian-regs", NULL))
++			usb_data.big_endian_mmio = 1;
+ 
+ 		prop = of_get_property(np, "phy_type", NULL);
+ 		usb_data.phy_mode = determine_usb_phy(prop);
++		usb_data.platform_init = fsl_platform_usb_ops.init;
++		usb_data.platform_uninit = fsl_platform_usb_ops.uninit;
+ 
+ 		if (usb_dev_dr_host) {
+ 			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 42381bb..19754be 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -35,5 +35,14 @@ struct platform_diu_data_ops {
+ extern struct platform_diu_data_ops diu_ops;
+ #endif
+ 
++struct platform_device;
 +
-+	if (IS_ALIGNED(src | dst | len, 32)) {
-+		tcd->ssize = MPC_DMA_TSIZE_32;
-+		tcd->dsize = MPC_DMA_TSIZE_32;
-+		tcd->soff = 32;
-+		tcd->doff = 32;
-+	} else if (IS_ALIGNED(src | dst | len, 16)) {
-+		tcd->ssize = MPC_DMA_TSIZE_16;
-+		tcd->dsize = MPC_DMA_TSIZE_16;
-+		tcd->soff = 16;
-+		tcd->doff = 16;
-+	} else if (IS_ALIGNED(src | dst | len, 4)) {
-+		tcd->ssize = MPC_DMA_TSIZE_4;
-+		tcd->dsize = MPC_DMA_TSIZE_4;
-+		tcd->soff = 4;
-+		tcd->doff = 4;
-+	} else if (IS_ALIGNED(src | dst | len, 2)) {
-+		tcd->ssize = MPC_DMA_TSIZE_2;
-+		tcd->dsize = MPC_DMA_TSIZE_2;
-+		tcd->soff = 2;
-+		tcd->doff = 2;
++struct fsl_platform_usb_ops {
++	int (*init)(struct platform_device *);
++	void (*uninit)(struct platform_device *);
++};
++
++extern struct fsl_platform_usb_ops fsl_platform_usb_ops;
++
+ #endif
+ #endif
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 0e26aa1..c4ec00c 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -57,7 +57,7 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 	pr_debug("initializing FSL-SOC USB Controller\n");
+ 
+ 	/* Need platform data for setup */
+-	pdata = (struct fsl_usb2_platform_data *)pdev->dev.platform_data;
++	pdata = pdev->dev.platform_data;
+ 	if (!pdata) {
+ 		dev_err(&pdev->dev,
+ 			"No platform data for %s.\n", dev_name(&pdev->dev));
+@@ -77,14 +77,13 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 		return -ENODEV;
+ 	}
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+-	if (!res) {
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
+ 		dev_err(&pdev->dev,
+ 			"Found HC with no IRQ. Check %s setup!\n",
+ 			dev_name(&pdev->dev));
+ 		return -ENODEV;
+ 	}
+-	irq = res->start;
+ 
+ 	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
+ 	if (!hcd) {
+@@ -116,13 +115,39 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 		goto err3;
+ 	}
+ 
+-	/* Enable USB controller */
+-	temp = in_be32(hcd->regs + 0x500);
+-	out_be32(hcd->regs + 0x500, temp | 0x4);
++	pdata->regs = hcd->regs;
++
++	/*
++	 * do platform specific init: check the clock, grab/config pins, etc.
++	 */
++	if (pdata->platform_init && pdata->platform_init(pdev)) {
++		retval = -ENODEV;
++		goto err3;
++	}
++
++	/*
++	 * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
++	 * flag for 83xx or 8536 system interface registers.
++	 */
++	if (pdata->big_endian_mmio)
++		temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
++	else
++		temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
++
++	if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
++		pdata->have_sysif_regs = 1;
++
++	/* Enable USB controller, 83xx or 8536 */
++	if (pdata->have_sysif_regs)
++		setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
+ 
+ 	/* Set to Host mode */
+-	temp = in_le32(hcd->regs + 0x1a8);
+-	out_le32(hcd->regs + 0x1a8, temp | 0x3);
++	if (pdata->big_endian_mmio) {
++		setbits32(hcd->regs + FSL_SOC_USB_USBMODE, USBMODE_CM_HOST);
 +	} else {
-+		tcd->ssize = MPC_DMA_TSIZE_1;
-+		tcd->dsize = MPC_DMA_TSIZE_1;
-+		tcd->soff = 1;
-+		tcd->doff = 1;
++		clrsetbits_le32(hcd->regs + FSL_SOC_USB_USBMODE,
++				USBMODE_CM_MASK, USBMODE_CM_HOST);
 +	}
+ 
+ 	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
+ 	if (retval != 0)
+@@ -137,6 +162,8 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 	usb_put_hcd(hcd);
+       err1:
+ 	dev_err(&pdev->dev, "init %s fail, %d\n", dev_name(&pdev->dev), retval);
++	if (pdata->platform_uninit)
++		pdata->platform_uninit(pdev);
+ 	return retval;
+ }
+ 
+@@ -154,17 +181,30 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
+ 			       struct platform_device *pdev)
+ {
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
 +
-+	tcd->saddr = src;
-+	tcd->daddr = dst;
-+	tcd->nbytes = len;
-+	tcd->biter = 1;
-+	tcd->citer = 1;
-+
-+	/* Place descriptor in prepared list */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	list_add_tail(&mdesc->node, &mchan->prepared);
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
-+
-+	return &mdesc->desc;
-+}
-+
-+static int __init mpc_dma_probe(struct of_device *op,
-+					const struct of_device_id *match)
-+{
-+	struct device_node *dn = op->node;
-+	struct device *dev = &op->dev;
-+	struct dma_device *dma;
-+	struct mpc_dma *mdma;
-+	struct mpc_dma_chan *mchan;
-+	struct resource res;
-+	ulong regs_start, regs_size;
-+	int retval, i;
-+
-+	mdma = devm_kzalloc(dev, sizeof(struct mpc_dma), GFP_KERNEL);
-+	if (!mdma) {
-+		dev_err(dev, "Memory exhausted!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->irq = irq_of_parse_and_map(dn, 0);
-+	if (mdma->irq == NO_IRQ) {
-+		dev_err(dev, "Error mapping IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	retval = of_address_to_resource(dn, 0, &res);
-+	if (retval) {
-+		dev_err(dev, "Error parsing memory region!\n");
-+		return retval;
-+	}
-+
-+	regs_start = res.start;
-+	regs_size = res.end - res.start + 1;
-+
-+	if (!devm_request_mem_region(dev, regs_start, regs_size, DRV_NAME)) {
-+		dev_err(dev, "Error requesting memory region!\n");
-+		return -EBUSY;
-+	}
-+
-+	mdma->regs = devm_ioremap(dev, regs_start, regs_size);
-+	if (!mdma->regs) {
-+		dev_err(dev, "Error mapping memory region!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->tcd = (struct mpc_dma_tcd *)((u8 *)(mdma->regs)
-+							+ MPC_DMA_TCD_OFFSET);
-+
-+	retval = devm_request_irq(dev, mdma->irq, &mpc_dma_irq, 0, DRV_NAME,
-+									mdma);
-+	if (retval) {
-+		dev_err(dev, "Error requesting IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_init(&mdma->error_status_lock);
-+
-+	dma = &mdma->dma;
-+	dma->dev = dev;
-+	dma->chancnt = MPC_DMA_CHANNELS;
-+	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
-+	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
-+	dma->device_issue_pending = mpc_dma_issue_pending;
-+	dma->device_is_tx_complete = mpc_dma_is_tx_complete;
-+	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
-+
-+	INIT_LIST_HEAD(&dma->channels);
-+	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
-+
-+	for (i = 0; i < dma->chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		mchan->chan.device = dma;
-+		mchan->chan.chan_id = i;
-+		mchan->chan.cookie = 1;
-+		mchan->completed_cookie = mchan->chan.cookie;
-+
-+		INIT_LIST_HEAD(&mchan->free);
-+		INIT_LIST_HEAD(&mchan->prepared);
-+		INIT_LIST_HEAD(&mchan->queued);
-+		INIT_LIST_HEAD(&mchan->active);
-+		INIT_LIST_HEAD(&mchan->completed);
-+
-+		spin_lock_init(&mchan->lock);
-+		list_add_tail(&mchan->chan.device_node, &dma->channels);
-+	}
-+
-+	tasklet_init(&mdma->tasklet, mpc_dma_tasklet, (unsigned long)mdma);
+ 	usb_remove_hcd(hcd);
 +
 +	/*
-+	 * Configure DMA Engine:
-+	 * - Dynamic clock,
-+	 * - Round-robin group arbitration,
-+	 * - Round-robin channel arbitration.
++	 * do platform specific un-initialization:
++	 * release iomux pins, disable clock, etc.
 +	 */
-+	out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
-+				MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
++	if (pdata->platform_uninit)
++		pdata->platform_uninit(pdev);
+ 	iounmap(hcd->regs);
+ 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
+ 	usb_put_hcd(hcd);
+ }
+ 
+-static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
+-			      enum fsl_usb2_phy_modes phy_mode,
+-			      unsigned int port_offset)
++static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
++			       enum fsl_usb2_phy_modes phy_mode,
++			       unsigned int port_offset)
+ {
+-	u32 portsc = 0;
++	u32 portsc;
 +
-+	/* Disable hardware DMA requests */
-+	out_be32(&mdma->regs->dmaerqh, 0);
-+	out_be32(&mdma->regs->dmaerql, 0);
++	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
++	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
 +
-+	/* Disable error interrupts */
-+	out_be32(&mdma->regs->dmaeeih, 0);
-+	out_be32(&mdma->regs->dmaeeil, 0);
+ 	switch (phy_mode) {
+ 	case FSL_USB2_PHY_ULPI:
+ 		portsc |= PORT_PTS_ULPI;
+@@ -184,20 +224,21 @@ static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
+ 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
+ }
+ 
+-static void mpc83xx_usb_setup(struct usb_hcd *hcd)
++static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
+ {
+-	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
++	struct usb_hcd *hcd = ehci_to_hcd(ehci);
+ 	struct fsl_usb2_platform_data *pdata;
+ 	void __iomem *non_ehci = hcd->regs;
+-	u32 temp;
++	u32 tmp;
 +
-+	/* Clear interrupts status */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
++	pdata = hcd->self.controller->platform_data;
+ 
+-	pdata =
+-	    (struct fsl_usb2_platform_data *)hcd->self.controller->
+-	    platform_data;
+ 	/* Enable PHY interface in the control reg. */
+-	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
+-	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
+-	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
++	if (pdata->have_sysif_regs) {
++		tmp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
++		out_be32(non_ehci + FSL_SOC_USB_CTRL, tmp | 0x00000004);
++		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
++	}
+ 
+ #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
+ 	/*
+@@ -214,7 +255,7 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
+ 
+ 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
+ 			(pdata->operating_mode == FSL_USB2_DR_OTG))
+-		mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
++		ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
+ 
+ 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
+ 		unsigned int chip, rev, svr;
+@@ -228,27 +269,31 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
+ 			ehci->has_fsl_port_bug = 1;
+ 
+ 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
+-			mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
++			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
+ 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
+-			mpc83xx_setup_phy(ehci, pdata->phy_mode, 1);
++			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 1);
+ 	}
+ 
+ 	/* put controller in host mode. */
+-	ehci_writel(ehci, 0x00000003, non_ehci + FSL_SOC_USB_USBMODE);
++	tmp = USBMODE_CM_HOST | (pdata->es ? USBMODE_ES : 0);
++	ehci_writel(ehci, tmp, non_ehci + FSL_SOC_USB_USBMODE);
 +
-+	/* Route interrupts to IPIC */
-+	out_be32(&mdma->regs->dmaihsa, 0);
-+	out_be32(&mdma->regs->dmailsa, 0);
++	if (pdata->have_sysif_regs) {
+ #ifdef CONFIG_PPC_85xx
+-	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
+-	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
++		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
++		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
+ #else
+-	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
+-	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
++		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
++		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
+ #endif
+-	out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
++		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
++	}
+ }
+ 
+ /* called after powerup, by probe or system-pm "wakeup" */
+ static int ehci_fsl_reinit(struct ehci_hcd *ehci)
+ {
+-	mpc83xx_usb_setup(ehci_to_hcd(ehci));
++	ehci_fsl_usb_setup(ehci);
+ 	ehci_port_power(ehci, 0);
+ 
+ 	return 0;
+@@ -259,6 +304,11 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
+ {
+ 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+ 	int retval;
++	struct fsl_usb2_platform_data *pdata;
 +
-+	/* Register DMA engine */
-+	dev_set_drvdata(dev, mdma);
-+	retval = dma_async_device_register(dma);
-+	if (retval)
-+		devm_free_irq(dev, mdma->irq, mdma);
++	pdata = hcd->self.controller->platform_data;
++	ehci->big_endian_desc = pdata->big_endian_desc;
++	ehci->big_endian_mmio = pdata->big_endian_mmio;
+ 
+ 	/* EHCI registers start at offset 0x100 */
+ 	ehci->caps = hcd->regs + 0x100;
+@@ -369,7 +419,7 @@ static const struct hc_driver ehci_fsl_hc_driver = {
+ 	 * generic hardware linkage
+ 	 */
+ 	.irq = ehci_irq,
+-	.flags = HCD_USB2,
++	.flags = HCD_USB2 | HCD_MEMORY,
+ 
+ 	/*
+ 	 * basic lifecycle operations
+diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
+index b5e59db..3525bb4 100644
+--- a/drivers/usb/host/ehci-fsl.h
++++ b/drivers/usb/host/ehci-fsl.h
+@@ -1,4 +1,4 @@
+-/* Copyright (c) 2005 freescale semiconductor
++/* Copyright (C) 2005-2009 Freescale Semiconductor, Inc. All rights reserved.
+  * Copyright (c) 2005 MontaVista Software
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+@@ -19,6 +19,11 @@
+ #define _EHCI_FSL_H
+ 
+ /* offsets for the non-ehci registers in the FSL SOC USB controller */
++#define FSL_SOC_USB_ID		0x0
++#define ID_MSK			0x3f
++#define NID_MSK			0x3f00
++#define FSL_SOC_USB_SBUSCFG	0x90
++#define FSL_SOC_USB_BURSTSIZE	0x160
+ #define FSL_SOC_USB_ULPIVP	0x170
+ #define FSL_SOC_USB_PORTSC1	0x184
+ #define PORT_PTS_MSK		(3<<30)
+@@ -26,8 +31,20 @@
+ #define PORT_PTS_ULPI		(2<<30)
+ #define	PORT_PTS_SERIAL		(3<<30)
+ #define PORT_PTS_PTW		(1<<28)
++#define PORT_PTS_PHCD		(1<<23)
+ #define FSL_SOC_USB_PORTSC2	0x188
+ #define FSL_SOC_USB_USBMODE	0x1a8
++#define USBMODE_CM_MASK		(3 << 0)	/* controller mode mask */
++#define USBMODE_CM_HOST		(3 << 0)	/* controller mode: host */
++#define USBMODE_ES		(1 << 2)	/* (Big) Endian Select */
 +
-+	return retval;
-+}
++#define FSL_SOC_USB_USBGENCTRL 	0x200
++#define USBGENCTRL_PPP 		(1 << 3)
++#define USBGENCTRL_PFP		(1 << 2)
++#define FSL_SOC_USB_ISIPHYCTRL	0x204
++#define ISIPHYCTRL_PXE		(1)
++#define ISIPHYCTRL_PHYE		(1 << 4)
 +
-+static void __exit mpc_dma_remove(struct of_device *op)
-+{
-+	struct device *dev = &op->dev;
-+	struct mpc_dma *mdma = dev_get_drvdata(dev);
+ #define FSL_SOC_USB_SNOOP1	0x400	/* NOTE: big-endian */
+ #define FSL_SOC_USB_SNOOP2	0x404	/* NOTE: big-endian */
+ #define FSL_SOC_USB_AGECNTTHRSH	0x408	/* NOTE: big-endian */
+diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
+index aeda96e..1e7e004 100644
+--- a/drivers/usb/host/ehci-mem.c
++++ b/drivers/usb/host/ehci-mem.c
+@@ -40,7 +40,7 @@ static inline void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd *qtd,
+ {
+ 	memset (qtd, 0, sizeof *qtd);
+ 	qtd->qtd_dma = dma;
+-	qtd->hw_token = cpu_to_le32 (QTD_STS_HALT);
++	qtd->hw_token = cpu_to_hc32(ehci, QTD_STS_HALT);
+ 	qtd->hw_next = EHCI_LIST_END(ehci);
+ 	qtd->hw_alt_next = EHCI_LIST_END(ehci);
+ 	INIT_LIST_HEAD (&qtd->qtd_list);
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 28e33fe..dfe603f 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -58,11 +58,21 @@ enum fsl_usb2_phy_modes {
+ 	FSL_USB2_PHY_SERIAL,
+ };
+ 
++struct platform_device;
+ struct fsl_usb2_platform_data {
+ 	/* board specific information */
+ 	enum fsl_usb2_operating_modes	operating_mode;
+ 	enum fsl_usb2_phy_modes		phy_mode;
+ 	unsigned int			port_enables;
 +
-+	devm_free_irq(dev, mdma->irq, mdma);
-+}
-+
-+static struct of_device_id mpc_dma_match[] = {
-+	{ .compatible = "fsl,mpc5121-dma", },
-+	{},
-+};
-+
-+static struct of_platform_driver mpc_dma_driver = {
-+	.match_table	= mpc_dma_match,
-+	.probe		= mpc_dma_probe,
-+	.remove		= __exit_p(mpc_dma_remove),
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init mpc_dma_init(void)
-+{
-+	return of_register_platform_driver(&mpc_dma_driver);
-+}
-+module_init(mpc_dma_init);
-+
-+static void __exit mpc_dma_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc_dma_driver);
-+}
-+module_exit(mpc_dma_exit);
-+
-+/* MODULE API */
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
-diff --git a/drivers/dma/mpc512x_dma.h b/drivers/dma/mpc512x_dma.h
-new file mode 100644
-index 0000000..867415b
---- /dev/null
-+++ b/drivers/dma/mpc512x_dma.h
-@@ -0,0 +1,192 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
-+ * Copyright (C) Semihalf, 2009.
-+ *
-+ * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
-+ * (defines, structures and comments) was taken from MPC5121 DMA driver
-+ * written by Hongjun Chen <hong-jun.chen@freescale.com>.
-+ *
-+ * Approved as OSADL project by a majority of OSADL members and funded
-+ * by OSADL membership fees in 2009;  for details see www.osadl.org.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
-+ */
-+#ifndef _MPC512X_DMA_H_
-+#define _MPC512X_DMA_H_
-+
-+#include <linux/dmaengine.h>
-+
-+/* Number of DMA Transfer descriptors allocated per channel */
-+#define MPC_DMA_DESCRIPTORS	64
-+
-+/* Macro definitions */
-+#define MPC_DMA_CHANNELS	64
-+#define MPC_DMA_TCD_OFFSET	0x1000
-+
-+/* Arbitration mode of group and channel */
-+#define MPC_DMA_DMACR_EDCG	(1 << 31)
-+#define MPC_DMA_DMACR_ERGA	(1 << 3)
-+#define MPC_DMA_DMACR_ERCA	(1 << 2)
-+
-+/* Error codes */
-+#define MPC_DMA_DMAES_VLD	(1 << 31)
-+#define MPC_DMA_DMAES_GPE	(1 << 15)
-+#define MPC_DMA_DMAES_CPE	(1 << 14)
-+#define MPC_DMA_DMAES_ERRCHN(err) \
-+				(((err) >> 8) & 0x3f)
-+#define MPC_DMA_DMAES_SAE	(1 << 7)
-+#define MPC_DMA_DMAES_SOE	(1 << 6)
-+#define MPC_DMA_DMAES_DAE	(1 << 5)
-+#define MPC_DMA_DMAES_DOE	(1 << 4)
-+#define MPC_DMA_DMAES_NCE	(1 << 3)
-+#define MPC_DMA_DMAES_SGE	(1 << 2)
-+#define MPC_DMA_DMAES_SBE	(1 << 1)
-+#define MPC_DMA_DMAES_DBE	(1 << 0)
-+
-+#define MPC_DMA_TSIZE_1		0x00
-+#define MPC_DMA_TSIZE_2		0x01
-+#define MPC_DMA_TSIZE_4		0x02
-+#define MPC_DMA_TSIZE_16	0x04
-+#define MPC_DMA_TSIZE_32	0x05
-+
-+/* MPC5121 DMA engine registers */
-+struct __attribute__ ((__packed__)) mpc_dma_regs {
-+	/* 0x00 */
-+	u32 dmacr;		/* DMA control register */
-+	u32 dmaes;		/* DMA error status */
-+	/* 0x08 */
-+	u32 dmaerqh;		/* DMA enable request high(channels 63~32) */
-+	u32 dmaerql;		/* DMA enable request low(channels 31~0) */
-+	u32 dmaeeih;		/* DMA enable error interrupt high(ch63~32) */
-+	u32 dmaeeil;		/* DMA enable error interrupt low(ch31~0) */
-+	/* 0x18 */
-+	u8 dmaserq;		/* DMA set enable request */
-+	u8 dmacerq;		/* DMA clear enable request */
-+	u8 dmaseei;		/* DMA set enable error interrupt */
-+	u8 dmaceei;		/* DMA clear enable error interrupt */
-+	/* 0x1c */
-+	u8 dmacint;		/* DMA clear interrupt request */
-+	u8 dmacerr;		/* DMA clear error */
-+	u8 dmassrt;		/* DMA set start bit */
-+	u8 dmacdne;		/* DMA clear DONE status bit */
-+	/* 0x20 */
-+	u32 dmainth;		/* DMA interrupt request high(ch63~32) */
-+	u32 dmaintl;		/* DMA interrupt request low(ch31~0) */
-+	u32 dmaerrh;		/* DMA error high(ch63~32) */
-+	u32 dmaerrl;		/* DMA error low(ch31~0) */
-+	/* 0x30 */
-+	u32 dmahrsh;		/* DMA hw request status high(ch63~32) */
-+	u32 dmahrsl;		/* DMA hardware request status low(ch31~0) */
-+	u32 dmaihsa;		/* DMA interrupt high select AXE(ch63~32) */
-+	u32 dmailsa;		/* DMA interrupt low select AXE(ch31~0) */
-+	/* 0x40 ~ 0xff */
-+	u32 reserve0[48];	/* Reserved */
-+	/* 0x100 */
-+	u8 dchpri[MPC_DMA_CHANNELS];
-+	/* DMA channels(0~63) priority */
-+};
-+
-+struct __attribute__ ((__packed__)) mpc_dma_tcd {
-+	/* 0x00 */
-+	u32 saddr;		/* Source address */
-+
-+	u32 smod:5;		/* Source address modulo */
-+	u32 ssize:3;		/* Source data transfer size */
-+	u32 dmod:5;		/* Destination address modulo */
-+	u32 dsize:3;		/* Destination data transfer size */
-+	u32 soff:16;		/* Signed source address offset */
-+
-+	/* 0x08 */
-+	u32 nbytes;		/* Inner "minor" byte count */
-+	u32 slast;		/* Last source address adjustment */
-+	u32 daddr;		/* Destination address */
-+
-+	/* 0x14 */
-+	u32 citer_elink:1;	/* Enable channel-to-channel linking on
-+				 * minor loop complete
-+				 */
-+	u32 citer_linkch:6;	/* Link channel for minor loop complete */
-+	u32 citer:9;		/* Current "major" iteration count */
-+	u32 doff:16;		/* Signed destination address offset */
-+
-+	/* 0x18 */
-+	u32 dlast_sga;		/* Last Destination address adjustment/scatter
-+				 * gather address
-+				 */
-+
-+	/* 0x1c */
-+	u32 biter_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 biter_linkch:6;
-+	u32 biter:9;		/* Beginning "major" iteration count */
-+	u32 bwc:2;		/* Bandwidth control */
-+	u32 major_linkch:6;	/* Link channel number */
-+	u32 done:1;		/* Channel done */
-+	u32 active:1;		/* Channel active */
-+	u32 major_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 e_sg:1;		/* Enable scatter/gather processing */
-+	u32 d_req:1;		/* Disable request */
-+	u32 int_half:1;		/* Enable an interrupt when major counter is
-+				 * half complete
-+				 */
-+	u32 int_maj:1;		/* Enable an interrupt when major iteration
-+				 * count completes
-+				 */
-+	u32 start:1;		/* Channel start */
-+};
-+
-+struct mpc_dma_desc {
-+	struct dma_async_tx_descriptor	desc;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	int				error;
-+	struct list_head		node;
-+};
-+
-+struct mpc_dma_chan {
-+	struct dma_chan			chan;
-+	struct list_head		free;
-+	struct list_head		prepared;
-+	struct list_head		queued;
-+	struct list_head		active;
-+	struct list_head		completed;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	dma_cookie_t			completed_cookie;
-+
-+	/* Lock for this structure */
-+	spinlock_t			lock;
-+};
-+
-+struct mpc_dma {
-+	struct dma_device		dma;
-+	struct tasklet_struct		tasklet;
-+	struct mpc_dma_chan		channels[MPC_DMA_CHANNELS];
-+	struct mpc_dma_regs __iomem	*regs;
-+	struct mpc_dma_tcd __iomem	*tcd;
-+	int				irq;
-+	uint				error_status;
-+
-+	/* Lock for error_status field in this structure */
-+	spinlock_t			error_status_lock;
-+};
-+
-+#endif /* _MPC512X_DMA_H_ */
++	char				*name;		/* pretty print */
++	int (*platform_init) (struct platform_device *);
++	void (*platform_uninit) (struct platform_device *);
++	void __iomem			*regs;	/* ioremap'd register base */
++	unsigned			big_endian_mmio:1;
++	unsigned			big_endian_desc:1;
++	unsigned			es:1;		/* need USBMODE:ES */
++	unsigned			have_sysif_regs:1;
+ };
+ 
+ /* Flags in fsl_usb2_mph_platform_data */
 -- 
 1.5.6.3
