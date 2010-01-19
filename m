@@ -1,23 +1,23 @@
-Return-Path: <wim@iguana.be>
-Received: from mailrelay011.isp.belgacom.be (mailrelay011.isp.belgacom.be
-	[195.238.6.178]) by ozlabs.org (Postfix) with ESMTP id BE32BB7CF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 09:00:16 +1100 (EST)
-Date: Tue, 19 Jan 2010 23:00:14 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (mail.perches.com [173.55.12.10])
+	by ozlabs.org (Postfix) with ESMTP id 03DD6B7CBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 09:36:13 +1100 (EST)
 Subject: Re: [RFC] [PATCH] watchdog_info separation and constify
-Message-ID: <20100119220014.GG3804@infomag.iguana.be>
+From: Joe Perches <joe@perches.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20100119221647.GC29306@sirena.org.uk>
 References: <20100119211759.GE3804@infomag.iguana.be>
-	<20100119212755.72e81d24@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100119212755.72e81d24@lxorguk.ukuu.org.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	uclinux-dist-devel@blackfin.uclinux.org, Joe Perches <joe@perches.com>,
+	<1263937351.18117.69.camel@Joe-Laptop.home>
+	<20100119221647.GC29306@sirena.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 19 Jan 2010 14:36:11 -0800
+Message-ID: <1263940571.18117.86.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Wim Van Sebroeck <wim@iguana.be>, uclinux-dist-devel@blackfin.uclinux.org,
 	Russell King <rmk+kernel@arm.linux.org.uk>,
 	Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-	Florian Fainelli <florian@openwrt.org>
+	Florian Fainelli <florian@openwrt.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alan,
-
-> > please comment on following patch.
+On Tue, 2010-01-19 at 22:16 +0000, Mark Brown wrote:
+> On Tue, Jan 19, 2010 at 01:42:31PM -0800, Joe Perches wrote:
+> > Maybe a standard #define WATCHDOG_NAME <foo>
+> > .identity = WATCHGOD_NAME
 > 
-> Why move them out - why not just make them const ?
+> I don't really see that the indrection via the #define would buy us
+> anything?
 
-There's 2 options:
-1) we only make them const now. And we move them out later when we do the conversion to the generic watchdog api (which means that we will rip out the code for the open, release, write and ioctl handling of /dev/watchdog) or
-2) we make them const and move them out of ioctl and then the ripping out of the code is much easier.
+Maybe not, just a suggestion.
+There are already 17 uses though.
 
-I opted for the second option.
+It might have some value like DRV_NAME does or
+any other frequent #define used in printks or
+#include code.
 
-Kind regards,
-Wim.
+It may be useful standardization prior to or post
+some generic watchdog code consolidation.
+
+$ grep -r --include=*.[ch] -Poh "^#define\s*\w+NAME\b" drivers | \
+  sed -r -e 's/\s+/ /g' | sort | uniq -c | sort -rn | head -10
+    334 #define DRV_NAME
+    137 #define DRIVER_NAME
+     59 #define MODULE_NAME
+     25 #define DRVNAME
+     21 #define DRV_MODULE_NAME
+     18 #define DEVICE_NAME
+     17 #define WATCHDOG_NAME
+     15 #define MY_NAME
+     12 #define BOARD_MAP_NAME
+     11 #define DSS_SUBSYS_NAME
