@@ -1,16 +1,16 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 6243AB7D7D
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:22 +1100 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 69E3CB7D43
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 07:24:23 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/11] powerpc/mpc5121: Add machine restart support
-Date: Tue, 19 Jan 2010 21:24:05 +0100
-Message-Id: <1263932653-3634-4-git-send-email-agust@denx.de>
+Subject: [PATCH 04/11] i2c-mpc: Add MPC5121 I2C bus support
+Date: Tue, 19 Jan 2010 21:24:06 +0100
+Message-Id: <1263932653-3634-5-git-send-email-agust@denx.de>
 In-Reply-To: <1263932653-3634-1-git-send-email-agust@denx.de>
 References: <1263932653-3634-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, Anatolij Gustschin <agust@denx.de>,
-	Piotr Ziecik <kosmo@semihalf.com>
+Cc: wd@denx.de, dzu@denx.de, linux-i2c@vger.kernel.org,
+	Anatolij Gustschin <agust@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,124 +20,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add reset module registers representation and
-machine restart callback for mpc5121 platform.
+From: Piotr Ziecik <kosmo@semihalf.com>
+
+    - Update Kconfig for i2c-mpc driver.
+    - Enable I2C interrupts on MPC5121.
 
 Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: <linux-i2c@vger.kernel.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
- arch/powerpc/include/asm/mpc5xxx.h            |   14 +++++++++-
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    1 +
- arch/powerpc/platforms/512x/mpc5121_generic.c |    1 +
- arch/powerpc/platforms/512x/mpc512x.h         |    1 +
- arch/powerpc/platforms/512x/mpc512x_shared.c  |   35 +++++++++++++++++++++++++
- 5 files changed, 51 insertions(+), 1 deletions(-)
+ drivers/i2c/busses/Kconfig   |    9 +++++----
+ drivers/i2c/busses/i2c-mpc.c |   23 +++++++++++++++++++++++
+ 2 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mpc5xxx.h b/arch/powerpc/include/asm/mpc5xxx.h
-index 5ce9c5f..0004986 100644
---- a/arch/powerpc/include/asm/mpc5xxx.h
-+++ b/arch/powerpc/include/asm/mpc5xxx.h
-@@ -18,5 +18,17 @@
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index 5f318ce..f481f30 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -418,13 +418,14 @@ config I2C_IXP2000
+ 	  instead.
  
- extern unsigned long mpc5xxx_get_bus_frequency(struct device_node *node);
+ config I2C_MPC
+-	tristate "MPC107/824x/85xx/52xx/86xx"
++	tristate "MPC107/824x/85xx/512x/52xx/86xx"
+ 	depends on PPC32
+ 	help
+ 	  If you say yes to this option, support will be included for the
+-	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+-	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
+-	  family processors, though interrupts are known not to work.
++	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245,
++	  MPC85xx/MPC8641 and MPC512x family processors. The driver may
++	  also work on 52xx family processors, though interrupts are known
++	  not to work.
  
--#endif /* __ASM_POWERPC_MPC5xxx_H__ */
-+/* MPC512x Reset module registers */
-+struct mpc512x_reset_module {
-+	u32	rcwlr;	/* Reset Configuration Word Low Register */
-+	u32	rcwhr;	/* Reset Configuration Word High Register */
-+	u32	reserved1;
-+	u32	reserved2;
-+	u32	rsr;	/* Reset Status Register */
-+	u32	rmr;	/* Reset Mode Register */
-+	u32	rpr;	/* Reset Protection Register */
-+	u32	rcr;	/* Reset Control Register */
-+	u32	rcer;	/* Reset Control Enable Register */
-+};
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called i2c-mpc.
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index f627001..84eeb25 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -540,6 +540,29 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
+ 		}
+ 	}
  
-+#endif /* __ASM_POWERPC_MPC5xxx_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index 441abc4..2f40404 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -68,4 +68,5 @@ define_machine(mpc5121_ads) {
- 	.init_IRQ		= mpc5121_ads_init_IRQ,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
-+	.restart		= mpc512x_restart,
- };
-diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
-index 2479de9..de4c3f7 100644
---- a/arch/powerpc/platforms/512x/mpc5121_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -55,4 +55,5 @@ define_machine(mpc5121_generic) {
- 	.init_IRQ		= mpc512x_init_IRQ,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
-+	.restart		= mpc512x_restart,
- };
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index 22a5352..c38875c 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -12,5 +12,6 @@
- #ifndef __MPC512X_H__
- #define __MPC512X_H__
- extern void __init mpc512x_init_IRQ(void);
-+extern void mpc512x_restart(char *cmd);
- void __init mpc512x_declare_of_platform_devices(void);
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index 434d683..8a0d577 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -21,9 +21,44 @@
- #include <asm/ipic.h>
- #include <asm/prom.h>
- #include <asm/time.h>
-+#include <asm/mpc5xxx.h>
- 
- #include "mpc512x.h"
- 
-+static void __iomem *reset_module_base;
++	if (of_device_is_compatible(op->node, "fsl,mpc5121-i2c")) {
++		struct device_node *np;
++		void __iomem *i2cctl;
 +
-+static int __init mpc512x_restart_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
-+	if (!np)
-+		return -1;
-+
-+	reset_module_base = of_iomap(np, 0);
-+	of_node_put(np);
-+
-+	return 0;
-+}
-+
-+arch_initcall(mpc512x_restart_init);
-+
-+void mpc512x_restart(char *cmd)
-+{
-+	struct mpc512x_reset_module *rm = reset_module_base;
-+
-+	if (rm) {
-+		/* Enable software reset "RSTE" */
-+		out_be32(&rm->rpr, 0x52535445);
-+		/* Set software hard reset */
-+		out_be32(&rm->rcr, 0x2);
-+	} else {
-+		printk(KERN_ERR ": Restart module not mapped.\n");
++		/* Enable I2C interrupts */
++		np = of_find_compatible_node(NULL, NULL,
++					     "fsl,mpc5121-i2c-ctrl");
++		if (np) {
++			i2cctl = of_iomap(np, 0);
++			if (i2cctl) {
++				/*
++				 * Set interrupt enable bits:
++				 *  - I2C-0: bit 24,
++				 *  - I2C-1: bit 26,
++				 *  - I2C-2: bit 28.
++				 */
++				out_be32(i2cctl, 0x15000000);
++				iounmap(i2cctl);
++			}
++			of_node_put(np);
++		}
 +	}
-+	for (;;)
-+		;
-+}
 +
- void __init mpc512x_init_IRQ(void)
- {
- 	struct device_node *np;
+ 	dev_set_drvdata(&op->dev, i2c);
+ 
+ 	i2c->adap = mpc_ops;
 -- 
 1.5.6.3
