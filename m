@@ -1,28 +1,29 @@
-Return-Path: <ricardw@axis.com>
-Received: from miranda.se.axis.com (miranda.se.axis.com [193.13.178.8])
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C79AAB7CA0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 00:55:33 +1100 (EST)
-Date: Tue, 19 Jan 2010 14:17:22 +0100 (CET)
-From: Ricard Wanderlof <ricard.wanderlof@axis.com>
-To: Johnny Hung <johnny.hacking@gmail.com>
-Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
-In-Reply-To: <cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
-References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
-	<20100119095024.GD16182@darwin>
-	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
-	<20100119102026.GF16182@darwin>
-	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2418FB7C8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 04:15:42 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o0JHFdWx017458
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 10:15:40 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o0JHFgms007811
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 11:15:43 -0600 (CST)
+Message-ID: <4B55E82C.3060406@freescale.com>
+Date: Tue, 19 Jan 2010 11:13:16 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Cc: kernelnewbies <kernelnewbies@nl.linux.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-	Matthias Kaehlcke <matthias@kaehlcke.net>
+To: nanda <nanda74pg@rediffmail.com>
+Subject: Re: fsl upm NAND Flash issue without GPIO chip handler
+References: <20100119124014.22519.qmail@f5mail-237-237.rediffmail.com>
+In-Reply-To: <20100119124014.22519.qmail@f5mail-237-237.rediffmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+nanda wrote:
+> 
+> We had merged the 2.6.24 
 
-On Tue, 19 Jan 2010, Johnny Hung wrote:
+That's pretty old...
 
-> Okay, I think the steps is below if my rootfs is ramdisk and configure
-> files in jffs2,
->
-> 1. cp /etc/* /mnt/mtd/etc/    (/mnt/mtd is my jffs2 fs)
-> 2. rm -rf /etc/*
-> 3. make symbolic links from all /etc/xx to /mnt/mtd/etc/xxx
-> 4. remake ramdisk rootfs
->
-> It seems all files in ramdisk rootfs /etc all links to /mnt/mtd/etc/
-> and try to modify these files is effective after reboot.
-> But is this a common way in embedded linux ?
+> with the FSL based NAND driver,
 
-In principle, but it is easier (and cleaner) to make a symbolic link from=
-=20
-(say) /etc -> /mnt/mtd/etc without linking every individual file and=20
-directory.
+Which one?  Which chip are you using, and how is NAND attached to it?
 
-You could also use a jffs2 file system in flash for your rootfs, that way=
-=20
-you wouldn't need a ramdisk at all.
+> we observed that gpio library is mandatory to be included. We have not included the 
+> gpios configured in the dts file as the we don’t have the separate GPIO 
+> chip(arch/powepc/boot/dts/board.dts).
 
-/Ricard
---=20
-Ricard Wolf Wanderl=F6f                           ricardw(at)axis.com
-Axis Communications AB, Lund, Sweden            www.axis.com
-Phone +46 46 272 2016                           Fax +46 46 13 61 30
+What separate GPIO chip?  Which "board.dts" are you looking at?
+
+> After executing the image in the board, we observed the below
+> 1) The device ID and manufacture Id was printed as "c0" and "c0" and the 
+> error message "No NAND device found!!!". Does it mean it is not 
+> accessing the NAND flash and the values read are junk one?
+> 2) Processor of the board doesn’t connect the Ready/Busy of the NAND 
+> flash through the separate GPIO chip. I mean it is directly connected 
+> from GPIO Port C of PIN 15 to the Ready/Busy PIN of the NAND flash. 
+> Hence is it necessary to port the gpio specific functions like 
+> gpio_request/gpio_free(specified in fsl_upm.c file), instead should we 
+> need to configure the PIN par_io_config_pin() for configuration of the 
+> PORT C with 15th PIN and set the data value using par_io_data_set() 
+> (specified arch/powerpc/sysdev/qe_lib/qe_io.c)
+
+Have you tried pointing the "gpios" property at pin 15 of port C?  The 
+whole point of this abstraction is that these connections are described 
+in the data, not in the code.
+
+-Scott
