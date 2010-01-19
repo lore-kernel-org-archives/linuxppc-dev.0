@@ -1,16 +1,28 @@
-Return-Path: <nanda74pg@rediffmail.com>
-Received: from rediffmail.com (f5mail-237-237.rediffmail.com [202.137.237.237])
-	by ozlabs.org (Postfix) with SMTP id 2B689B7C98
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 23:51:04 +1100 (EST)
-Date: 19 Jan 2010 12:40:14 -0000
-Message-ID: <20100119124014.22519.qmail@f5mail-237-237.rediffmail.com>
+Return-Path: <ricardw@axis.com>
+Received: from miranda.se.axis.com (miranda.se.axis.com [193.13.178.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C79AAB7CA0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 20 Jan 2010 00:55:33 +1100 (EST)
+Date: Tue, 19 Jan 2010 14:17:22 +0100 (CET)
+From: Ricard Wanderlof <ricard.wanderlof@axis.com>
+To: Johnny Hung <johnny.hacking@gmail.com>
+Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
+In-Reply-To: <cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
+References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
+	<20100119095024.GD16182@darwin>
+	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
+	<20100119102026.GF16182@darwin>
+	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
 MIME-Version: 1.0
-To: <wg@grandegger.com>, <avorontsov@ru.mvista.com>
-Subject: =?utf-8?B?ZnNsIHVwbSBOQU5EIEZsYXNoIGlzc3VlIHdpdGhvdXQgR1BJTyBjaGlwIGhhbmRsZXI=?=
-From: "nanda" <nanda74pg@rediffmail.com>
-Content-Type: multipart/alternative;
-	boundary="=_c9eee608535d82e8c16d9284918b0e96"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Cc: kernelnewbies <kernelnewbies@nl.linux.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+	Matthias Kaehlcke <matthias@kaehlcke.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,55 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=_c9eee608535d82e8c16d9284918b0e96
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
 
+On Tue, 19 Jan 2010, Johnny Hung wrote:
 
-  We had merged the 2.6.24 with the FSL based NAND driver, we observed that gpio library is mandatory to be included. We have not included the gpios configured in the dts file as the we don’t have the separate GPIO chip(arch/powepc/boot/dts/board.dts). 
- After executing the image in the board, we observed the below
-1)	The device ID and manufacture Id was printed as "c0" and "c0" and the error message "No NAND device found!!!".  Does it mean it is not accessing the NAND flash and the values read are junk one?
-2)	Processor of the board doesn’t connect the Ready/Busy of the NAND flash through the separate GPIO chip. I mean it is directly connected from GPIO Port C of PIN 15 to the Ready/Busy PIN of the NAND flash. Hence is it necessary to port the gpio specific functions like gpio_request/gpio_free(specified in fsl_upm.c file), instead should we need to configure the PIN par_io_config_pin()  for configuration of the PORT C with 15th PIN and set the data value using par_io_data_set() (specified arch/powerpc/sysdev/qe_lib/qe_io.c)
+> Okay, I think the steps is below if my rootfs is ramdisk and configure
+> files in jffs2,
+>
+> 1. cp /etc/* /mnt/mtd/etc/    (/mnt/mtd is my jffs2 fs)
+> 2. rm -rf /etc/*
+> 3. make symbolic links from all /etc/xx to /mnt/mtd/etc/xxx
+> 4. remake ramdisk rootfs
+>
+> It seems all files in ramdisk rootfs /etc all links to /mnt/mtd/etc/
+> and try to modify these files is effective after reboot.
+> But is this a common way in embedded linux ?
 
-Please let me know any input on the above issue.
+In principle, but it is easier (and cleaner) to make a symbolic link from=
+=20
+(say) /etc -> /mnt/mtd/etc without linking every individual file and=20
+directory.
 
-Thanks in advance
+You could also use a jffs2 file system in flash for your rootfs, that way=
+=20
+you wouldn't need a ramdisk at all.
 
-Regards,
-Nanda
-
---=_c9eee608535d82e8c16d9284918b0e96
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html; charset="UTF-8"
-
-<br />
-  We had merged the 2.6.24 with the FSL based NAND driver, we observed that=
- gpio library is mandatory to be included. We have not included the gpios c=
-onfigured in the dts file as the we don=E2=80=99t have the separate GPIO ch=
-ip(arch/powepc/boot/dts/board.dts). <br />
- After executing the image in the board, we observed the below<br />
-1)	The device ID and manufacture Id was printed as "c0" and "c0" and the er=
-ror message "No NAND device found!!!".  Does it mean it is not accessing th=
-e NAND flash and the values read are junk one?<br />
-2)	Processor of the board doesn=E2=80=99t connect the Ready/Busy of the NAN=
-D flash through the separate GPIO chip. I mean it is directly connected fro=
-m GPIO Port C of PIN 15 to the Ready/Busy PIN of the NAND flash. Hence is i=
-t necessary to port the gpio specific functions like gpio_request/gpio_free=
-(specified in fsl_upm.c file), instead should we need to configure the PIN =
-par_io_config_pin()  for configuration of the PORT C with 15th PIN and set =
-the data value using par_io_data_set() (specified arch/powerpc/sysdev/qe_li=
-b/qe_io.c)<br />
-<br />
-Please let me know any input on the above issue.<br />
-<br />
-Thanks in advance<br />
-<br />
-Regards,<br />
-Nanda<br />
-<br><Table border=3D0 Width=3D644 Height=3D57 cellspacing=3D0 cellpadding=
-=3D0 style=3D"font-family:Verdana;font-size:11px;line-height:15px;"><TR><td=
-><A HREF=3D"http://sigads.rediff.com/RealMedia/ads/click_nx.ads/www.rediffm=
-ail.com/signatureline.htm@Middle?" target=3D"_blank"><IMG SRC=3D"http://sig=
-ads.rediff.com/RealMedia/ads/adstream_nx.ads/www.rediffmail.com/signatureli=
-ne.htm@Middle"></A></td></TR></Table>
---=_c9eee608535d82e8c16d9284918b0e96--
+/Ricard
+--=20
+Ricard Wolf Wanderl=F6f                           ricardw(at)axis.com
+Axis Communications AB, Lund, Sweden            www.axis.com
+Phone +46 46 272 2016                           Fax +46 46 13 61 30
