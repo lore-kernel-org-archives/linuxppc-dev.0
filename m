@@ -1,19 +1,27 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id F1A73B7CDB
-	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 21:00:29 +1100 (EST)
-Date: Tue, 19 Jan 2010 02:00:38 -0800 (PST)
-Message-Id: <20100119.020038.152864417.davem@davemloft.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] ucc_geth: Fix full TX queue processing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100118154750.GA9224@oksana.dev.rtsoft.ru>
-References: <20100118154750.GA9224@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, B06378@freescale.com,
-	lsorense@csclub.uwaterloo.ca
+Return-Path: <roland@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 3FB38B7C63
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jan 2010 21:04:25 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Roland McGrath <roland@redhat.com>
+To: prasad@linux.vnet.ibm.com
+Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+In-Reply-To: K.Prasad's message of  Tuesday,
+	19 January 2010 15:10:35 +0530 <20100119094035.GD9971@in.ibm.com>
+References: <20091211160409.GB23156@in.ibm.com>
+	<20091214005648.82BA31DE@magilla.sf.frob.com>
+	<20091214180324.GA18406@in.ibm.com>
+	<20091214192626.3F9171DE@magilla.sf.frob.com>
+	<20091217190320.GA20331@in.ibm.com>
+	<20100119094035.GD9971@in.ibm.com>
+Message-Id: <20100119100335.3EB621DE@magilla.sf.frob.com>
+Date: Tue, 19 Jan 2010 02:03:35 -0800 (PST)
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date: Mon, 18 Jan 2010 18:47:50 +0300
+> It is also not clear to me if disabling pre-emption for the user-space
+> (albeit for a very tiny time-window) is incorrect and if their side-effects
+> are known. If otherwise, I think we should choose to operate in pre-empt
+> safe mode and avoid all costs associated when done without it.
 
-> From: Jiajun Wu <b06378@freescale.com>
-> 
-> commit 7583605b6d29f1f7f6fc505b883328089f3485ad ("ucc_geth: Fix empty
-> TX queue processing") fixed empty TX queue mishandling, but didn't
-> account another corner case: when TX queue becomes full.
-> 
-> Without this patch the driver will stop transmiting when TX queue
-> becomes full since 'bd == ugeth->txBd[txQ]' actually checks for
-> two things: queue empty or full.
-> 
-> Let's better check for NULL skb, which unambiguously signals an empty
-> queue.
-> 
-> Signed-off-by: Jiajun Wu <b06378@freescale.com>
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+I never really gave much consideration to returning to user mode with
+preemption disabled.  It would not really have occurred to me that was
+even possible.  I can't say it seems to me like it could ever be a very
+good idea.  I find it hard even to start listing the cans of worms that
+might be opened by that.  Perhaps the powerpc maintainers have a clearer
+picture of it than I do.
 
-Applied.
+What does it mean when there is something that prevents it from returning
+to user mode?  i.e., TIF_SIGPENDING or TIF_NEED_RESCHED, or whatever.  It
+could do a lot in the kernel before it gets back to user mode.  What if in
+there somewhere it blocks voluntarily?
+
+Similarly, what does it mean if you get to user mode but the single-stepped
+instruction is a load/store that gets a page fault?  What if it blocks in
+the page fault handler?
+
+For that matter, what about a page fault for the kernel-mode case?
+
+Perhaps I'm imagining gremlins where there aren't any, but I just cannot
+really get my head around this "disable preemption while running some
+unknown instruction that normally runs with preemption enabled" thing--let
+alone "disable preemption while returning to user mode".
+
+
+Thanks,
+Roland
