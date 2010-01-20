@@ -1,23 +1,23 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 56A27B7CB8
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 22:21:45 +1100 (EST)
-Message-ID: <4B56E73B.8040903@embedded-sol.com>
-Date: Wed, 20 Jan 2010 13:21:31 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+	by ozlabs.org (Postfix) with ESMTPS id B18FDB7CB8
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 22:22:38 +1100 (EST)
+Date: Wed, 20 Jan 2010 12:22:32 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH 0/11] Update support for MPC512x
+Message-ID: <20100120112232.GD5041@pengutronix.de>
+References: <1263932653-3634-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/4xx: Add support for type 1 pci transactions
-	on 4xx boards
-References: <4CD35CD1F8085945B597F80EEC89421303B8AD11@exc01.bk.prodrive.nl>	<1263338326.724.216.camel@pasglop>
-	<1263444961.724.343.camel@pasglop>	<4B5637A6.5070600@embedded-sol.com>
-	<1263941873.724.524.camel@pasglop>
-In-Reply-To: <1263941873.724.524.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stef van Os <stef.van.os@Prodrive.nl>, Stefan Roese <sr@denx.de>,
-	Feng Kan <fkan@amcc.com>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="oj4kGyHlBMXGt3Le"
+In-Reply-To: <1263932653-3634-1-git-send-email-agust@denx.de>
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	linux-i2c@vger.kernel.org, rtc-linux@googlegroups.com,
+	Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Stef
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2010-01-20 at 00:52 +0200, Felix Radensky wrote:
->   
->> 405XX - no
->> 440EP - no
->> 440GR - no
->> 440EPx/440GRx - no
->>
->> 440GP - yes
->> 440GX - yes
->> 440SP - yes
->> 440SPe - yes
->> 460XX - yes
->>
->> The distinction between these groups is pretty clear in the device trees.
->> The members of the first group all have "ibm,plb-pci" property, and all
->> members of second group have "ibm,plb-pcix" property.
->>
->> So only ppc4xx_probe_pcix_bridge() routine should be fixed.
->>     
->
-> Ah cool, I hadn't noticed that it matched the cell type.
->
->   
+--oj4kGyHlBMXGt3Le
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you please send an updated patch.
 
-Thanks a lot.
+> The patches are based on v2.6.33-rc4 and cover the following
+> items:
 
-Felix.
+The USB-patch needs two patches from linux-next. For convenience, don't you
+have a git-tree somewhere? :)
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--oj4kGyHlBMXGt3Le
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktW53gACgkQD27XaX1/VRtKbgCgnbOgy6LOmZEnpemZUuNjWW4u
+1b0AoMW4N1Hxf8Y8HLfKqzHk3Wq5fF+U
+=AFMW
+-----END PGP SIGNATURE-----
+
+--oj4kGyHlBMXGt3Le--
