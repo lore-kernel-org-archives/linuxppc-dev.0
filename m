@@ -1,22 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6EC7AB7CE8
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 10:42:33 +1100 (EST)
-Date: Wed, 20 Jan 2010 10:42:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 02/11] fs_enet: Add FEC TX Alignment workaround for MPC5121
-Message-Id: <20100120104225.3361e6c4.sfr@canb.auug.org.au>
-In-Reply-To: <20100119.123706.12493208.davem@davemloft.net>
-References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-3-git-send-email-agust@denx.de>
-	<20100119.123706.12493208.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK"
-Cc: kosmo@semihalf.com, jrigby@freescale.com, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, agust@denx.de, dzu@denx.de, wd@denx.de
+Return-Path: <oakad@yahoo.com>
+Received: from web37603.mail.mud.yahoo.com (web37603.mail.mud.yahoo.com
+	[209.191.87.86]) by ozlabs.org (Postfix) with SMTP id C7D32B7CBB
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 20 Jan 2010 12:34:21 +1100 (EST)
+Message-ID: <26163.54141.qm@web37603.mail.mud.yahoo.com>
+Date: Tue, 19 Jan 2010 17:34:19 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Large physical address support on e500 platform
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <DC402F23-C6B5-4F7E-B66D-F0AFCC298CEA@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Dave,
-
-On Tue, 19 Jan 2010 12:37:06 -0800 (PST) David Miller <davem@davemloft.net>=
- wrote:
->
-> Well... where are the other 9 patches?
-
-I think the other 9 are not network related, just PowerPC related.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktWQ2EACgkQjjKRsyhoI8ysFwCfVM2hUB11JZt6w9YzG2Bwr+EV
-M2gAoKSOD8g/A3XyZ/MOyfAqN9Tl+/10
-=t3vp
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_Jan_2010_10_42_25_+1100_oW.M=5hrH7YvCaLK--
+> =0A> > So, the obvious question is, what is the current=0A> status of lar=
+ge physical=0A> > address support on e500? Is it a problem in current=0A> g=
+it version or is it=0A> > not ready yet?=0A> > =0A> > Thanks.=0A> =0A> Its =
+possible that we've broken module/vmalloc support with=0A> "Large physical =
+addressing".=A0 Its not something I've=0A> tried in a while.=A0 What kernel=
+/git SHA are you using.=0A> =0A=0AI'm just pulling in from the main kernel =
+tree git.=0AMy current version is 2.6.33-rc4-00193-gd1e4922-dirty,=0Abut it=
+ had not changed since 2.6.33-rc2=0A=0AI started from 2.6.32, but I don't r=
+emember if I had a large PA=0Asupport enabled there.=0A=0A=0A=0A=0A      __=
+___________________________________________________________________________=
+_____=0ASee what's on at the movies in your area. Find out now: http://au.m=
+ovies.yahoo.com/session-times/
