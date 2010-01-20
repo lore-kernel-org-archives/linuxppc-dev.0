@@ -1,35 +1,24 @@
-Return-Path: <marco.stornelli@gmail.com>
-Received: from mail-ew0-f209.google.com (mail-ew0-f209.google.com
-	[209.85.219.209]) by ozlabs.org (Postfix) with ESMTP id 0D47FB7C98
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5DC01B7CB6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 22:54:19 +1100 (EST)
-Received: by ewy1 with SMTP id 1so2956138ewy.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 03:54:17 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20100120102145.GV16182@darwin>
-References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
-	<20100119095024.GD16182@darwin>
-	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
-	<20100119102026.GF16182@darwin>
-	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
-	<Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
-	<20100119140600.GH16182@darwin>
-	<cb9ecdfa1001191832k28961740qa825a8c8d5e631f2@mail.gmail.com>
-	<2ea1731b1001192357r72d627e2gb36d71f23fd69b2e@mail.gmail.com>
-	<20100120102145.GV16182@darwin>
-Date: Wed, 20 Jan 2010 12:54:16 +0100
-Message-ID: <2ea1731b1001200354t5ed29458h6fc98c49c1a555d5@mail.gmail.com>
-Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
-From: Marco Stornelli <marco.stornelli@gmail.com>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ricard Wanderlof <ricard.wanderlof@axis.com>,
-	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-	kernelnewbies <kernelnewbies@nl.linux.org>,
-	Johnny Hung <johnny.hacking@gmail.com>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	Thu, 21 Jan 2010 00:01:35 +1100 (EST)
+Date: Thu, 21 Jan 2010 00:01:28 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: linux-next: kvm tree build warning
+Message-Id: <20100121000128.cf11525c.sfr@canb.auug.org.au>
+In-Reply-To: <3727B46C-0197-47A4-AF41-023517C15752@suse.de>
+References: <20100120174814.43195995.sfr@canb.auug.org.au>
+	<3727B46C-0197-47A4-AF41-023517C15752@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__21_Jan_2010_00_01_28_+1100_O2UAF5JILjFZKDIf"
+Cc: Marcelo Tosatti <mtosatti@redhat.com>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-next@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/1/20 Matthias Kaehlcke <matthias@kaehlcke.net>:
-> El Wed, Jan 20, 2010 at 08:57:44AM +0100 Marco Stornelli ha dit:
->
->> 2010/1/20 Johnny Hung <johnny.hacking@gmail.com>:
->> > 2010/1/19 Matthias Kaehlcke <matthias@kaehlcke.net>:
->> >> El Tue, Jan 19, 2010 at 02:17:22PM +0100 Ricard Wanderlof ha dit:
->> >>
->> > I consider to use ramdisk as rootfs because worry about wrong
->> > operation in rootfs (is use jffs2 rootfs) and it will cause system
->> > boot up failed.
->> > Another query, does the syslogd/klogd log files also store in jffs2
->> > rootfs? Write to jffs2 frequently will reduce flash life cycle.
->> >
->> > BRs, H. Johnny
->> >>
->> >> --
->>
->> In general a good splitting for rootfs could be: squashfs for rootfs,
->> tmpfs for volatile data (/tmp), ubifs (with a flash partition) for
->> "strong" permanent data (/etc, ....) and pramfs for "light" permanent
->> data (/var/log, .....).
->
-> if ubifs is a good choice depends on the size of the partition, iirc
-> it has a significant overhead for very small partitions.
->
-> once using ubi it could be interesting to set up the read-only rootfs
-> partition upon ubi in order to spread the wear out over a maximum of blocks.
->
+--Signature=_Thu__21_Jan_2010_00_01_28_+1100_O2UAF5JILjFZKDIf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't know the size constraints of Johnny, so it can be useful to use jffs2.
+Hi Alex,
 
-Marco
+On Wed, 20 Jan 2010 11:42:28 +0100 Alexander Graf <agraf@suse.de> wrote:
+>
+> This is odd. The same function saves and restores ext_bkp.vrsave under a =
+common condition:
+>=20
+> So there can't be a case where ext_bkp.vrsave is read, but not written to=
+ before, which is what this warning implies, right?
+
+Right.
+
+> Also, why doesn't gcc complain about vscr too then? They're both used in =
+the very same if statement.
+
+I have no idea how gcc makes these decisions. :-(
+
+> Additionally, while compiling locally I looked for warnings and didn't sp=
+ot any. So apparently our compiler versions / options don't match. Which ve=
+rsion of gcc are you using? I assume a gcc bug.
+>=20
+> $ gcc --version
+> gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]
+
+I use a 4.4.0 cross compiler (I should update it).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_Jan_2010_00_01_28_+1100_O2UAF5JILjFZKDIf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktW/qgACgkQjjKRsyhoI8w/pgCgsnczHyy8m0KWKbupJJpsEzfx
+0oUAmgPFI3YB9bE2x+gWRGWFFJEb7NIA
+=/1aL
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_Jan_2010_00_01_28_+1100_O2UAF5JILjFZKDIf--
