@@ -1,14 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DB7A0B7D1F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 21 Jan 2010 08:36:26 +1100 (EST)
 Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-In-reply-to: <1264017847.5717.132.camel@jschopp-laptop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+In-Reply-To: <1264017847.5717.132.camel@jschopp-laptop>
 References: <1264017638.5717.121.camel@jschopp-laptop>
 	<1264017847.5717.132.camel@jschopp-laptop>
-Date: Thu, 21 Jan 2010 10:04:03 +1300
-Message-ID: <26556.1264021443@neuling.org>
-Cc: Ingo Molnar <mingo@elte.hu>, ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 21 Jan 2010 08:33:33 +1100
+Message-ID: <1264023213.724.561.camel@pasglop>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,6 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2010-01-20 at 14:04 -0600, Joel Schopp wrote:
 > On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
 > there is performance benefit to idling the higher numbered threads in
 > the core.  
@@ -27,6 +37,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > threads 2,3 within a core.
 > 
 > Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+
+So I'll leave Peter deal with the scheduler aspects and will focus on
+details :-)
+
 > ---
 > Index: linux-2.6.git/arch/powerpc/kernel/smp.c
 > ===================================================================
@@ -41,6 +55,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > +{
 > +  return x % 4;
 > +}
+
+Needs a whitespace here though I don't really like the above. Any reason
+why you can't use the existing cpu_thread_in_core() ?
+
 > +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
 > +{
 > +  int cpu2;
@@ -50,27 +68,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > +
 > +	unsigned long weight = cpumask_weight(cpu_map);
 > +	unsigned long smt_gain = sd->smt_gain;
-> +
+
+More whitespace damage above.
+
 > +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
-
-I think we should avoid using cpu_has_feature like this.  It's better to
-create a new feature and add it to POWER7 in the cputable, then check
-for that here.
-
-The way that it is now, I think any CPU that has superset of the POWER7
-features, will be true here.  This is not what we want.
-
 > +		for_each_cpu(cpu2, cpu_map) {
 > +			if (idle_cpu(cpu2))
 > +				idle_count++;
 > +		}
-> +
+
+I'm not 100% sure about the use of the CPU feature above. First I wonder
+if the right approach is to instead do something like
+
+	if (!cpu_has_feature(...) !! weigth < 4)
+		return default_scale_smt_power(sd, cpu);
+
+Though we may be better off using a ppc_md. hook here to avoid
+calculating the weight etc... on processors that don't need any
+of that.
+
+I also dislike your naming. I would suggest you change cpu_map to
+sibling_map() and cpu2 to sibling (or just c). One thing I wonder is how
+sure we are that sched_domain_span() is always going to give us the
+threads btw ? If we introduce another sched domain level for NUMA
+purposes can't we get confused ?
+
+Also, how hot is this code path ?
+
 > +		/* the following section attempts to tweak cpu power based
 > +		 * on current idleness of the threads dynamically at runtime
 > +		 */
 > +		if (idle_count == 2 || idle_count == 3 || idle_count == 4) {
+
+		if (idle_count > 1) ? :-)
+
 > +			if (thread_in_smt4core(cpu) == 0 ||
 > +			    thread_in_smt4core(cpu) == 1) {
+
+			int thread = cpu_thread_in_core(cpu);
+			if (thread < 2)
+				...
+
 > +				/* add 75 % to thread power */
 > +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
 > +			} else {
@@ -81,16 +119,12 @@ features, will be true here.  This is not what we want.
 > +	}
 > +	/* default smt gain is 1178, weight is # of SMT threads */
 > +	smt_gain /= weight;
-
-This results in a PPC div, when most of the time it's going to be a
-power of two divide.  You've optimised the divides a few lines above
-this, but not this one.  Some consistency would be good.
-
-Mikey
-
 > +
 > +	return smt_gain;
-> +
+
+Cheers,
+Ben.
+
 > +}
 > Index: linux-2.6.git/kernel/sched_features.h
 > ===================================================================
@@ -105,10 +139,4 @@ Mikey
 >  
 >  SCHED_FEAT(HRTICK, 0)
 >  SCHED_FEAT(DOUBLE_TICK, 0)
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
