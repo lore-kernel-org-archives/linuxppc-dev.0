@@ -2,21 +2,21 @@ Return-Path: <w.sang@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
 	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64B83B7CA1
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 21:49:20 +1100 (EST)
-Date: Wed, 20 Jan 2010 11:49:15 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 78A73B7CC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 22:01:31 +1100 (EST)
+Date: Wed, 20 Jan 2010 12:01:24 +0100
 From: Wolfram Sang <w.sang@pengutronix.de>
 To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH 06/11] mtd: Add MPC5121 NAND Flash Controller driver
-Message-ID: <20100120104915.GB5041@pengutronix.de>
+Subject: Re: [PATCH 05/11] rtc: Add MPC5121 Real time clock driver
+Message-ID: <20100120110124.GC5041@pengutronix.de>
 References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-7-git-send-email-agust@denx.de>
+	<1263932653-3634-6-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RASg3xLB4tUQ4RcS"
-In-Reply-To: <1263932653-3634-7-git-send-email-agust@denx.de>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org, wd@denx.de,
-	dzu@denx.de, Piotr Ziecik <kosmo@semihalf.com>
+	protocol="application/pgp-signature"; boundary="pAwQNkOnpTn9IO2O"
+In-Reply-To: <1263932653-3634-6-git-send-email-agust@denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, rtc-linux@googlegroups.com,
+	linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +27,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---RASg3xLB4tUQ4RcS
+--pAwQNkOnpTn9IO2O
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 19, 2010 at 09:24:08PM +0100, Anatolij Gustschin wrote:
-> From: Piotr Ziecik <kosmo@semihalf.com>
+On Tue, Jan 19, 2010 at 09:24:07PM +0100, Anatolij Gustschin wrote:
+> From: John Rigby <jrigby@freescale.com>
 >=20
-> Adds NAND Flash Controller driver for MPC5121 Revision 2.
-> All device features, except hardware ECC and power management,
-> are supported.
+> Based on Domen Puncer's rtc driver for 5200 posted to
+> the ppclinux mailing list:
+>         http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=3D11675
+> but never commited anywhere.
 >=20
-> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-> Signed-off-by: Wolfgang Denk <wd@denx.de>
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> Cc: <linux-mtd@lists.infradead.org>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: John Rigby <jcrigby@gmail.com>
-> ---
+> Changes to Domen's original:
+>=20
+>     Changed filenames/routine names from mpc5200* to mpc5121*
+>     Changed match to only care about compatible and use "fsl,"
+>     convention for compatible.
+>=20
+>     Make alarms more sane by dealing with lack of second alarm resolution.
+>=20
+>     Deal with the fact that most of the 5121 rtc registers are not persis=
+tent
+>     across a reset even with a battery attached:
+>=20
+>         Use actual_time register for time keeping
+>         and target_time register as an offset to linux time
+>=20
+>         The target_time register would normally be used for hibernation
+>         but hibernation does not work on current silicon
 
-Please include a logfile with changes since the last version. This really
-helps.
-
-> +static int __init mpc5121_nfc_probe(struct of_device *op,
-> +					const struct of_device_id *match)
-
-[...]
-
-> +{
-> +	/* Support external chip-select logic on ADS5121 board */
-> +	rootnode =3D of_find_node_by_path("/");
-> +	if (of_device_is_compatible(rootnode, "fsl,mpc5121ads")) {
-> +		retval =3D ads5121_chipselect_init(mtd);
-> +		if (retval) {
-> +			dev_err(dev, "Chipselect init error!\n");
-> +			of_node_put(rootnode);
-> +			return retval;
-> +		}
-> +
-> +		chip->select_chip =3D ads5121_select_chip;
-> +	}
-> +	of_node_put(rootnode);
-
-If we have to live with the platform-stuff being in the driver, maybe a tab=
-le
-having the compatible-string and an init-function pointer per entry will ma=
-ke
-it scale better with the number of boards?
+Last time, we discussed if it makes sense to rename it to mpc5xxx, as the r=
+tc
+is quite similar to the mpc5200 one. I then checked and parts of the
+differences include that it is not possible on a 5200 to use the tricks to =
+keep
+the RTC persistent across resets. Thus, I think the patch is okay with not
+supporting the 5200. Its rtc seems pretty useless.
 
 Regards,
 
@@ -84,7 +74,7 @@ Regards,
 Pengutronix e.K.                           | Wolfram Sang                |
 Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---RASg3xLB4tUQ4RcS
+--pAwQNkOnpTn9IO2O
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -92,9 +82,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAktW36sACgkQD27XaX1/VRtA1wCgponKWU3rPA15UQtrVNd9DmWV
-U3gAnj7gLY4JGG8+nHsMWsTH5Oi3eXXf
-=UvF3
+iEYEARECAAYFAktW4oQACgkQD27XaX1/VRv29QCfST7nnnZlCpXhdpdkSjj663dY
+nTQAn3caGXy+1viulhBeKV3a85+NccgA
+=4uds
 -----END PGP SIGNATURE-----
 
---RASg3xLB4tUQ4RcS--
+--pAwQNkOnpTn9IO2O--
