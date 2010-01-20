@@ -1,23 +1,20 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 284A4B7BF3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jan 2010 07:49:16 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <1264017847.5717.132.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
+	by ozlabs.org (Postfix) with ESMTPS id 3DB95B7BF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 07:52:05 +1100 (EST)
+Subject: Re: [PATCH] powerpc/4xx: Add pcix type 1 transactions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stef van Os <stef.van.os@Prodrive.nl>
+In-Reply-To: <1263995979-10954-1-git-send-email-stef.van.os@prodrive.nl>
+References: <1263995979-10954-1-git-send-email-stef.van.os@prodrive.nl>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 20 Jan 2010 21:48:37 +0100
-Message-ID: <1264020517.4283.1117.camel@laptop>
+Date: Thu, 21 Jan 2010 07:51:36 +1100
+Message-ID: <1264020696.724.546.camel@pasglop>
 Mime-Version: 1.0
-Cc: ego@in.ibm.com, Andreas Herrmann <andreas.herrmann3@amd.com>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, felix@embedded-sol.com, sr@denx.de, fkan@amcc.com,
+	Stef van Os <stef.van.os@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,105 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-20 at 14:04 -0600, Joel Schopp wrote:
-> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-> there is performance benefit to idling the higher numbered threads in
-> the core.  
-
-So this is an actual performance improvement, not only power savings?
-
-> This patch implements arch_scale_smt_power to dynamically update smt
-> thread power in these idle cases in order to prefer threads 0,1 over
-> threads 2,3 within a core.
+On Wed, 2010-01-20 at 14:59 +0100, Stef van Os wrote:
+> Some of the newer 4xx pci cores don't send PCI type 1 transactions.
+> This patch enables type 1 transations for pcix nodes, thus enabling
+> devices behind PCI bridges.
 > 
-> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+> Signed-off-by: Stef van Os <stef.van.os@gmail.com>
 > ---
-> Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-> +++ linux-2.6.git/arch/powerpc/kernel/smp.c
-> @@ -617,3 +617,44 @@ void __cpu_die(unsigned int cpu)
->  		smp_ops->cpu_die(cpu);
->  }
->  #endif
-> +
-> +static inline int thread_in_smt4core(int x)
-> +{
-> +  return x % 4;
-> +}
-> +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-> +{
-> +  int cpu2;
-> +  int idle_count = 0;
-> +
-> +  struct cpumask *cpu_map = sched_domain_span(sd);
-> +
-> +	unsigned long weight = cpumask_weight(cpu_map);
-> +	unsigned long smt_gain = sd->smt_gain;
-> +
-> +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
-> +		for_each_cpu(cpu2, cpu_map) {
-> +			if (idle_cpu(cpu2))
-> +				idle_count++;
-> +		}
-> +
-> +		/* the following section attempts to tweak cpu power based
-> +		 * on current idleness of the threads dynamically at runtime
-> +		 */
-> +		if (idle_count == 2 || idle_count == 3 || idle_count == 4) {
-> +			if (thread_in_smt4core(cpu) == 0 ||
-> +			    thread_in_smt4core(cpu) == 1) {
-> +				/* add 75 % to thread power */
-> +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-> +			} else {
-> +				 /* subtract 75 % to thread power */
-> +				smt_gain = smt_gain >> 2;
-> +			}
-> +		}
-> +	}
-> +	/* default smt gain is 1178, weight is # of SMT threads */
-> +	smt_gain /= weight;
-> +
-> +	return smt_gain;
-> +
-> +}
 
-This looks to suffer significant whitespace damage.
+Thanks, I'll send that to Linus after LCA.
 
-The design goal for smt_power was to be able to actually measure the
-processing gains from smt and feed that into the scheduler, not really
-placement tricks like this.
+Cheers,
+Ben.
 
-Now I also heard AMD might want to have something similar to this,
-something to do with powerlines and die layout.
-
-I'm not sure playing games with cpu_power is the best or if simply
-moving tasks to lower numbered cpus using an SD_flag is the best
-solution for these kinds of things.
-
-> Index: linux-2.6.git/kernel/sched_features.h
-> ===================================================================
-> --- linux-2.6.git.orig/kernel/sched_features.h
-> +++ linux-2.6.git/kernel/sched_features.h
-> @@ -107,7 +107,7 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
->  /*
->   * Use arch dependent cpu power functions
->   */
-> -SCHED_FEAT(ARCH_POWER, 0)
-> +SCHED_FEAT(ARCH_POWER, 1)
+>  arch/powerpc/sysdev/ppc4xx_pci.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+> index 6ff9d71..8aa3302 100644
+> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
+> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+> @@ -569,7 +569,8 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
+>  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
 >  
->  SCHED_FEAT(HRTICK, 0)
->  SCHED_FEAT(DOUBLE_TICK, 0)
-
-And you just wrecked x86 ;-)
-
-It has an smt_power implementation that tries to measure smt gains using
-aperf/mperf, trouble is that this represents the actual performance not
-the capacity. This has the problem that when idle it represents 0
-capacity and will not attract work.
-
-Coming up with something that actually works there is on the todo list,
-I was thinking perhaps temporal maximums from !idle.
-
-So if you want to go with this, you'll need to stub out
-arch/x86/kernel/cpu/sched.c
+>  	/* Setup config space */
+> -	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4, 0);
+> +	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
+> +					PPC_INDIRECT_TYPE_SET_CFG_TYPE);
+>  
+>  	/* Disable all windows */
+>  	writel(0, reg + PCIX0_POM0SA);
+> -- 
+> 1.6.6.267.g5b159
+> 
+> 
+> Disclaimer: The information contained in this email, including any attachments is 
+> confidential and is for the sole use of the intended recipient(s). Any unauthorized 
+> review, use, disclosure or distribution is prohibited. If you are not the intended 
+> recipient, please notify the sender immediately by replying to this message and 
+> destroy all copies of this message and any attachments.
