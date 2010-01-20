@@ -1,34 +1,20 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A3A4CB7D4D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jan 2010 09:09:44 +1100 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0KM3HcZ008039
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 17:03:17 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0KM9elv083686
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 17:09:40 -0500
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o0KM9YUx001170
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 15:09:36 -0700
-Message-ID: <4B577F1A.9060907@austin.ibm.com>
-Date: Wed, 20 Jan 2010 16:09:30 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<26556.1264021443@neuling.org>
-In-Reply-To: <26556.1264021443@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ingo Molnar <mingo@elte.hu>, ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Return-Path: <a.zummo@towertech.it>
+Received: from elettra.colt-to.towertech.it (elettra.colt-to.towertech.it
+	[213.215.222.70]) by ozlabs.org (Postfix) with ESMTP id 8DBA0B7D66
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 09:27:29 +1100 (EST)
+Date: Wed, 20 Jan 2010 23:19:57 +0100
+From: Alessandro Zummo <a.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] [PATCH 05/11] rtc: Add MPC5121 Real time clock driver
+Message-ID: <20100120231957.46a248dc@linux.lan.towertech.it>
+In-Reply-To: <1263932653-3634-6-git-send-email-agust@denx.de>
+References: <1263932653-3634-1-git-send-email-agust@denx.de>
+	<1263932653-3634-6-git-send-email-agust@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	John Rigby <jrigby@freescale.com>, agust@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +24,519 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 19 Jan 2010 21:24:07 +0100
+Anatolij Gustschin <agust@denx.de> wrote:
 
->> +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
->>     
->
-> I think we should avoid using cpu_has_feature like this.  It's better to
-> create a new feature and add it to POWER7 in the cputable, then check
-> for that here.
->
-> The way that it is now, I think any CPU that has superset of the POWER7
-> features, will be true here.  This is not what we want.
->   
-Any ideas for what to call this feature?  ASYM_SMT4 ?
->
->> +	smt_gain /= weight;
->>     
->
-> This results in a PPC div, when most of the time it's going to be a
-> power of two divide.  You've optimised the divides a few lines above
-> this, but not this one.  Some consistency would be good.
->
->   
-I can turn that into a conditional branch (case statement) with a shift 
-for the common 1,2,4 cases which should cover all procs available today 
-falling back to a divide for any theoretical future processors that do 
-other numbers of threads.
+ Hi,
+
+  thank for you submission. A few comments below. You might
+ want to read http://groups.google.com/group/rtc-linux/web/checklist?pli=1
+
+> From: John Rigby <jrigby@freescale.com>
+> 
+> Based on Domen Puncer's rtc driver for 5200 posted to
+> the ppclinux mailing list:
+>         http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11675
+> but never commited anywhere.
+> 
+> Changes to Domen's original:
+> 
+>     Changed filenames/routine names from mpc5200* to mpc5121*
+>     Changed match to only care about compatible and use "fsl,"
+>     convention for compatible.
+> 
+>     Make alarms more sane by dealing with lack of second alarm resolution.
+> 
+>     Deal with the fact that most of the 5121 rtc registers are not persistent
+>     across a reset even with a battery attached:
+> 
+>         Use actual_time register for time keeping
+>         and target_time register as an offset to linux time
+> 
+>         The target_time register would normally be used for hibernation
+>         but hibernation does not work on current silicon 
+> Signed-off-by: John Rigby <jcrigby@gmail.com>
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Cc: <rtc-linux@googlegroups.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+>  drivers/rtc/Kconfig       |   10 +
+>  drivers/rtc/Makefile      |    1 +
+>  drivers/rtc/rtc-mpc5121.c |  408 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 419 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-mpc5121.c
+> 
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 8167e9e..e51b094 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -868,4 +868,14 @@ config RTC_DRV_MC13783
+>  	help
+>  	  This enables support for the Freescale MC13783 PMIC RTC
+>  
+> +config RTC_DRV_MPC5121
+> +	tristate "Freescale MPC5121 built-in RTC"
+> +	depends on RTC_CLASS
+> +	help
+> +	  If you say yes here you will get support for the
+> +	  built-in RTC MPC5121.
+> +
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called rtc-mpc5121.
+> +
+>  endif # RTC_CLASS
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index e5160fd..db1dcd4 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -56,6 +56,7 @@ obj-$(CONFIG_RTC_DRV_MAX6902)	+= rtc-max6902.o
+>  obj-$(CONFIG_RTC_DRV_MC13783)	+= rtc-mc13783.o
+>  obj-$(CONFIG_RTC_DRV_MSM6242)	+= rtc-msm6242.o
+>  obj-$(CONFIG_RTC_DRV_MV)	+= rtc-mv.o
+> +obj-$(CONFIG_RTC_DRV_MPC5121)	+= rtc-mpc5121.o
+>  obj-$(CONFIG_RTC_DRV_NUC900)	+= rtc-nuc900.o
+>  obj-$(CONFIG_RTC_DRV_OMAP)	+= rtc-omap.o
+>  obj-$(CONFIG_RTC_DRV_PCAP)	+= rtc-pcap.o
+> diff --git a/drivers/rtc/rtc-mpc5121.c b/drivers/rtc/rtc-mpc5121.c
+> new file mode 100644
+> index 0000000..63460cb
+> --- /dev/null
+> +++ b/drivers/rtc/rtc-mpc5121.c
+> @@ -0,0 +1,408 @@
+> +/*
+> + * Real-time clock driver for MPC5121
+> + *
+> + * Copyright 2007, Domen Puncer <domen.puncer@telargo.com>
+> + * Copyright 2008, Freescale Semiconductor, Inc. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +/*
+> + * History:
+> + *
+> + * Based on mpc5200_rtc.c written by Domen Puncer <domen.puncer@telargo.com>
+> + *   posted to linuxppc-embedded mailing list:
+> + *     http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11675
+> + *   but never committed to any public tree.
+> + *
+> + * Author: John Rigby <jrigby@freescale.com>
+> + *   Converted to 5121 rtc driver.
+> + *
+> + *   Make alarms more sane by dealing with lack of second alarm resolution.
+> + *
+> + *   Use actual_time time register for time keeping since it is persistent
+> + *   and the normal rtc registers are not.  Use target_time register as an
+> + *   offset to linux time.
+> + *
+> + */
+
+ The history goes in the changelog. Author(s) name on the top.
+
+> +#include <linux/module.h>
+> +#include <linux/rtc.h>
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/io.h>
+> +
+> +struct mpc5121_rtc_regs {
+> +	u8 set_time;		/* RTC + 0x00 */
+> +	u8 hour_set;		/* RTC + 0x01 */
+> +	u8 minute_set;		/* RTC + 0x02 */
+> +	u8 second_set;		/* RTC + 0x03 */
+> +
+> +	u8 set_date;		/* RTC + 0x04 */
+> +	u8 month_set;		/* RTC + 0x05 */
+> +	u8 weekday_set;		/* RTC + 0x06 */
+> +	u8 date_set;		/* RTC + 0x07 */
+> +
+> +	u8 write_sw;		/* RTC + 0x08 */
+> +	u8 sw_set;		/* RTC + 0x09 */
+> +	u16 year_set;		/* RTC + 0x0a */
+> +
+> +	u8 alm_enable;		/* RTC + 0x0c */
+> +	u8 alm_hour_set;	/* RTC + 0x0d */
+> +	u8 alm_min_set;		/* RTC + 0x0e */
+> +	u8 int_enable;		/* RTC + 0x0f */
+> +
+> +	u8 reserved1;
+> +	u8 hour;		/* RTC + 0x11 */
+> +	u8 minute;		/* RTC + 0x12 */
+> +	u8 second;		/* RTC + 0x13 */
+> +
+> +	u8 month;		/* RTC + 0x14 */
+> +	u8 wday_mday;		/* RTC + 0x15 */
+> +	u16 year;		/* RTC + 0x16 */
+> +
+> +	u8 int_alm;		/* RTC + 0x18 */
+> +	u8 int_sw;		/* RTC + 0x19 */
+> +	u8 alm_status;		/* RTC + 0x1a */
+> +	u8 sw_minute;		/* RTC + 0x1b */
+> +
+> +	u8 bus_error_1;		/* RTC + 0x1c */
+> +	u8 int_day;		/* RTC + 0x1d */
+> +	u8 int_min;		/* RTC + 0x1e */
+> +	u8 int_sec;		/* RTC + 0x1f */
+> +
+> +	/*
+> +	 * target_time:
+> +	 *	intended to be used for hibernation but hibernation
+> +	 *	does not work on silicon rev 1.5 so use it for non-volatile
+> +	 *	storage of offset between the actual_time register and linux
+> +	 *	time
+> +	 */
+> +	u32 target_time;	/* RTC + 0x20 */
+> +	/*
+> +	 * actual_time:
+> +	 * 	readonly time since VBAT_RTC was last connected
+> +	 */
+> +	u32 actual_time;	/* RTC + 0x24 */
+> +	u32 keep_alive;		/* RTC + 0x28 */
+> +};
+> +
+> +struct mpc5121_rtc_data {
+> +	unsigned irq;
+> +	unsigned irq_periodic;
+> +	struct mpc5121_rtc_regs __iomem *regs;
+> +	struct rtc_device *rtc;
+> +	struct rtc_wkalrm wkalarm;
+> +};
+> +
+> +/*
+> + * Update second/minute/hour registers.
+> + *
+> + * This is just so alarm will work.
+> + */
+> +static void mpc5121_rtc_update_smh(struct mpc5121_rtc_regs __iomem *regs,
+> +	struct rtc_time *tm)
+> +{
+> +	out_8(&regs->second_set, tm->tm_sec);
+> +	out_8(&regs->minute_set, tm->tm_min);
+> +	out_8(&regs->hour_set, tm->tm_hour);
+> +
+> +	/* set time sequence */
+> +	out_8(&regs->set_time, 0x1);
+> +	out_8(&regs->set_time, 0x3);
+> +	out_8(&regs->set_time, 0x1);
+> +	out_8(&regs->set_time, 0x0);
+> +}
+> +
+> +static int mpc5121_rtc_read_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +	unsigned long now;
+> +
+> +	/*
+> +	 * linux time is actual_time plus the offset saved in target_time
+> +	 */
+> +	now = in_be32(&regs->actual_time) + in_be32(&regs->target_time);
+> +
+> +	rtc_time_to_tm(now, tm);
+> +
+> +	/*
+> +	 * update second minute hour registers
+> +	 * so alarms will work
+> +	 */
+> +	mpc5121_rtc_update_smh(regs, tm);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mpc5121_rtc_set_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +	int ret;
+> +	unsigned long now;
+> +
+> +
+> +	/*
+> +	 * The actual_time register is read only so we write the offset
+> +	 * between it and linux time to the target_time register.
+> +	 */
+> +	ret = rtc_tm_to_time(tm, &now);
+> +	if (ret == 0)
+> +		out_be32(&regs->target_time, now - in_be32(&regs->actual_time));
+> +
+> +	/*
+> +	 * update second minute hour registers
+> +	 * so alarms will work
+> +	 */
+> +	mpc5121_rtc_update_smh(regs, tm);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mpc5121_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	*alarm = rtc->wkalarm;
+> +
+> +	alarm->pending = in_8(&regs->alm_status);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mpc5121_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	/*
+> +	 * the alarm has no seconds so deal with it
+> +	 */
+> +	if (alarm->time.tm_sec) {
+> +		alarm->time.tm_sec = 0;
+> +		alarm->time.tm_min++;
+> +		if (alarm->time.tm_min >= 60) {
+> +			alarm->time.tm_min = 0;
+> +			alarm->time.tm_hour++;
+> +			if (alarm->time.tm_hour >= 24)
+> +				alarm->time.tm_hour = 0;
+> +		}
+> +	}
+> +
+> +	alarm->time.tm_mday = -1;
+> +	alarm->time.tm_mon = -1;
+> +	alarm->time.tm_year = -1;
+> +
+> +	out_8(&regs->alm_min_set, alarm->time.tm_min);
+> +	out_8(&regs->alm_hour_set, alarm->time.tm_hour);
+> +
+> +	out_8(&regs->alm_enable, alarm->enabled);
+> +
+> +	rtc->wkalarm = *alarm;
+> +	return 0;
+> +}
+> +
+> +static irqreturn_t mpc5121_rtc_handler(int irq, void *dev)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	if (in_8(&regs->int_alm)) {
+> +		/* acknowledge and clear status */
+> +		out_8(&regs->int_alm, 1);
+> +		out_8(&regs->alm_status, 1);
+> +
+> +		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_AF);
+> +		return IRQ_HANDLED;
+> +	}
+> +
+> +	return IRQ_NONE;
+> +}
+> +
+> +static irqreturn_t mpc5121_rtc_handler_upd(int irq, void *dev)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata((struct device *)dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	if (in_8(&regs->int_sec) && (in_8(&regs->int_enable) & 0x1)) {
+> +		/* acknowledge */
+> +		out_8(&regs->int_sec, 1);
+> +
+> +		rtc_update_irq(rtc->rtc, 1, RTC_IRQF | RTC_UF);
+> +		return IRQ_HANDLED;
+> +	}
+> +
+> +	return IRQ_NONE;
+> +}
+> +
+> +static int mpc5121_rtc_ioctl(struct device *dev, unsigned int cmd,
+> +							unsigned long arg)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	switch (cmd) {
+> +		/* alarm interrupt */
+> +	case RTC_AIE_ON:
+> +		out_8(&regs->alm_enable, 1);
+> +		rtc->wkalarm.enabled = 1;
+> +		break;
+> +	case RTC_AIE_OFF:
+> +		out_8(&regs->alm_enable, 0);
+> +		rtc->wkalarm.enabled = 0;
+> +		break;
+> +
+> +		/* update interrupt */
+> +	case RTC_UIE_ON:
+> +		out_8(&regs->int_enable,
+> +				(in_8(&regs->int_enable) & ~0x8) | 0x1);
+> +		break;
+> +	case RTC_UIE_OFF:
+> +		out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
+> +		break;
+> +
+> +		/* no periodic interrupts */
+> +	case RTC_IRQP_READ:
+> +	case RTC_IRQP_SET:
+> +		return -ENOTTY;
+> +
+> +	default:
+> +		return -ENOIOCTLCMD;
+> +	}
+> +	return 0;
+> +}
+
+ please implement the alarm/irq interface vie the ->ops
+ structure.
+
+
+> +
+> +static const struct rtc_class_ops mpc5121_rtc_ops = {
+> +	.read_time = mpc5121_rtc_read_time,
+> +	.set_time = mpc5121_rtc_set_time,
+> +	.read_alarm = mpc5121_rtc_read_alarm,
+> +	.set_alarm = mpc5121_rtc_set_alarm,
+> +	.ioctl = mpc5121_rtc_ioctl,
+> +};
+> +
+> +static int __devinit mpc5121_rtc_probe(struct of_device *op,
+> +					const struct of_device_id *match)
+> +{
+> +	struct mpc5121_rtc_data *rtc;
+> +	int err = 0;
+> +	u32 ka;
+> +
+> +	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
+> +	if (!rtc) {
+> +		err = -ENOMEM;
+> +		goto out;
+> +	}
+
+ return -ENOMEM;
+
+> +
+> +	rtc->regs = of_iomap(op->node, 0);
+> +
+ 
+ extra empty line
+
+> +	if (!rtc->regs) {
+> +		printk(KERN_ERR "%s: couldn't map io space\n", __func__);
+> +		err = -ENOSYS;
+> +		goto out_free;
+> +	}
+> +
+> +	device_init_wakeup(&op->dev, 1);
+> +
+> +	rtc->rtc = rtc_device_register("mpc5121-rtc", &op->dev,
+> +						&mpc5121_rtc_ops, THIS_MODULE);
+> +	if (IS_ERR(rtc->rtc)) {
+> +		err = PTR_ERR(rtc->rtc);
+> +		goto out_unmap;
+> +	}
+> +
+> +	dev_set_drvdata(&op->dev, rtc);
+> +
+> +	rtc->irq = irq_of_parse_and_map(op->node, 1);
+> +	err = request_irq(rtc->irq, mpc5121_rtc_handler, IRQF_DISABLED,
+> +						"mpc5121-rtc", &op->dev);
+> +	if (err) {
+> +		printk(KERN_ERR "%s: could not request irq: %i\n",
+> +							__func__, rtc->irq);
+> +		goto out_dispose;
+> +	}
+> +
+> +	rtc->irq_periodic = irq_of_parse_and_map(op->node, 0);
+> +	err = request_irq(rtc->irq_periodic, mpc5121_rtc_handler_upd,
+> +				 IRQF_DISABLED, "mpc5121-rtc_upd", &op->dev);
+> +	if (err) {
+> +		printk(KERN_ERR "%s: could not request irq: %i\n",
+> +						__func__, rtc->irq_periodic);
+> +		goto out_dispose2;
+> +	}
+> +
+> +	ka = in_be32(&rtc->regs->keep_alive);
+> +	if (ka & 0x02) {
+> +		printk(KERN_WARNING
+> +			"mpc5121-rtc: Battery or oscillator failure!\n");
+> +		out_be32(&rtc->regs->keep_alive, ka);
+> +	}
+> +
+> +	goto out;
+> +
+> +out_dispose2:
+> +	irq_dispose_mapping(rtc->irq_periodic);
+> +	free_irq(rtc->irq, &op->dev);
+> +out_dispose:
+> +	irq_dispose_mapping(rtc->irq);
+> +out_unmap:
+> +	iounmap(rtc->regs);
+> +out_free:
+> +	kfree(rtc);
+> +out:
+> +	return err;
+> +}
+> +
+> +static int __devexit mpc5121_rtc_remove(struct of_device *op)
+> +{
+> +	struct mpc5121_rtc_data *rtc = dev_get_drvdata(&op->dev);
+> +	struct mpc5121_rtc_regs __iomem *regs = rtc->regs;
+> +
+> +	/* disable interrupt, so there are no nasty surprises */
+> +	out_8(&regs->alm_enable, 0);
+> +	out_8(&regs->int_enable, in_8(&regs->int_enable) & ~0x1);
+> +
+> +	rtc_device_unregister(rtc->rtc);
+> +	iounmap(rtc->regs);
+> +	free_irq(rtc->irq, &op->dev);
+> +	free_irq(rtc->irq_periodic, &op->dev);
+> +	irq_dispose_mapping(rtc->irq);
+> +	irq_dispose_mapping(rtc->irq_periodic);
+> +	dev_set_drvdata(&op->dev, NULL);
+> +	kfree(rtc);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct of_device_id mpc5121_rtc_match[] = {
+> +	{ .compatible = "fsl,mpc5121-rtc", },
+> +	{},
+> +};
+> +
+> +static struct of_platform_driver mpc5121_rtc_driver = {
+> +	.owner = THIS_MODULE,
+> +	.name = "mpc5121-rtc",
+> +	.match_table = mpc5121_rtc_match,
+> +	.probe = mpc5121_rtc_probe,
+> +	.remove = mpc5121_rtc_remove,
+> +};
+> +
+> +static int __init mpc5121_rtc_init(void)
+> +{
+> +	return of_register_platform_driver(&mpc5121_rtc_driver);
+> +}
+> +
+> +static void __exit mpc5121_rtc_exit(void)
+> +{
+> +	of_unregister_platform_driver(&mpc5121_rtc_driver);
+> +}
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("John Rigby <jrigby@freescale.com>");
+> +
+> +module_init(mpc5121_rtc_init);
+> +module_exit(mpc5121_rtc_exit);
+> -- 
+> 1.5.6.3
+> 
+
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
