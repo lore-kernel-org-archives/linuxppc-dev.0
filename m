@@ -1,33 +1,22 @@
-Return-Path: <marco.stornelli@gmail.com>
-Received: from ey-out-1920.google.com (ey-out-1920.google.com [74.125.78.144])
-	by ozlabs.org (Postfix) with ESMTP id 99038B7CEF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 18:57:47 +1100 (EST)
-Received: by ey-out-1920.google.com with SMTP id 26so1007970eyw.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 19 Jan 2010 23:57:44 -0800 (PST)
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8B6DB7CA6
+	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 21:22:33 +1100 (EST)
+Date: Wed, 20 Jan 2010 11:22:27 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH 02/11] fs_enet: Add FEC TX Alignment workaround for MPC5121
+Message-ID: <20100120102227.GA5041@pengutronix.de>
+References: <1263932653-3634-1-git-send-email-agust@denx.de>
+	<1263932653-3634-3-git-send-email-agust@denx.de>
 MIME-Version: 1.0
-In-Reply-To: <cb9ecdfa1001191832k28961740qa825a8c8d5e631f2@mail.gmail.com>
-References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
-	<20100119095024.GD16182@darwin>
-	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
-	<20100119102026.GF16182@darwin>
-	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
-	<Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
-	<20100119140600.GH16182@darwin>
-	<cb9ecdfa1001191832k28961740qa825a8c8d5e631f2@mail.gmail.com>
-Date: Wed, 20 Jan 2010 08:57:44 +0100
-Message-ID: <2ea1731b1001192357r72d627e2gb36d71f23fd69b2e@mail.gmail.com>
-Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
-From: Marco Stornelli <marco.stornelli@gmail.com>
-To: Johnny Hung <johnny.hacking@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ricard Wanderlof <ricard.wanderlof@axis.com>,
-	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-	kernelnewbies <kernelnewbies@nl.linux.org>,
-	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-	Matthias Kaehlcke <matthias@kaehlcke.net>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
+In-Reply-To: <1263932653-3634-3-git-send-email-agust@denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,25 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/1/20 Johnny Hung <johnny.hacking@gmail.com>:
-> 2010/1/19 Matthias Kaehlcke <matthias@kaehlcke.net>:
->> El Tue, Jan 19, 2010 at 02:17:22PM +0100 Ricard Wanderlof ha dit:
->>
-> I consider to use ramdisk as rootfs because worry about wrong
-> operation in rootfs (is use jffs2 rootfs) and it will cause system
-> boot up failed.
-> Another query, does the syslogd/klogd log files also store in jffs2
-> rootfs? Write to jffs2 frequently will reduce flash life cycle.
->
-> BRs, H. Johnny
->>
->> --
 
-In general a good splitting for rootfs could be: squashfs for rootfs,
-tmpfs for volatile data (/tmp), ubifs (with a flash partition) for
-"strong" permanent data (/etc, ....) and pramfs for "light" permanent
-data (/var/log, .....).
-I think you should "split" your rootfs. Ramdisk is an old approach
-with some drawbacks.
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Marco
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_=
+enet-main.c
+> index 909b78d..a391219 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -587,6 +587,33 @@ void fs_cleanup_bds(struct net_device *dev)
+> =20
+>  /***********************************************************************=
+***********/
+> =20
+> +static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
+> +					       struct sk_buff *skb)
+> +{
+> +	struct sk_buff *new_skb;
+> +
+> +	/* Alloc new skb */
+> +	new_skb =3D dev_alloc_skb(ENET_RX_FRSIZE + 32);
+> +	if (!new_skb) {
+> +		printk(KERN_WARNING DRV_MODULE_NAME
+> +				": %s Memory squeeze, dropping tx packet.\n",
+> +								dev->name);
+
+I understand this type of printk fits to the rest of the code, I just wonde=
+r if
+new (and patched) printouts shouldn't be converted to dev_*? Might be one l=
+ine
+then, and more consistent to what other drivers produce.
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--bg08WKrSYDhXBjb5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktW2WMACgkQD27XaX1/VRs9MACgh+1XL6Cey54scoNcVzkIdMIQ
+V0QAn2CMx/PNpLnJAddyYXyhtS8akRlb
+=rO4C
+-----END PGP SIGNATURE-----
+
+--bg08WKrSYDhXBjb5--
