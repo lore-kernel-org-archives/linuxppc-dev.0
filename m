@@ -1,22 +1,31 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8B6DB7CA6
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jan 2010 21:22:33 +1100 (EST)
-Date: Wed, 20 Jan 2010 11:22:27 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH 02/11] fs_enet: Add FEC TX Alignment workaround for MPC5121
-Message-ID: <20100120102227.GA5041@pengutronix.de>
-References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-3-git-send-email-agust@denx.de>
+Return-Path: <matthias@kaehlcke.net>
+Received: from relay4-v.mail.gandi.net (relay4-v.mail.gandi.net
+	[217.70.178.78]) by ozlabs.org (Postfix) with ESMTP id BD825B7CBD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 20 Jan 2010 21:26:27 +1100 (EST)
+Date: Wed, 20 Jan 2010 11:21:45 +0100
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Marco Stornelli <marco.stornelli@gmail.com>
+Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
+Message-ID: <20100120102145.GV16182@darwin>
+References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
+	<20100119095024.GD16182@darwin>
+	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
+	<20100119102026.GF16182@darwin>
+	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
+	<Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
+	<20100119140600.GH16182@darwin>
+	<cb9ecdfa1001191832k28961740qa825a8c8d5e631f2@mail.gmail.com>
+	<2ea1731b1001192357r72d627e2gb36d71f23fd69b2e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
-In-Reply-To: <1263932653-3634-3-git-send-email-agust@denx.de>
-Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, John Rigby <jrigby@freescale.com>, wd@denx.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2ea1731b1001192357r72d627e2gb36d71f23fd69b2e@mail.gmail.com>
+Cc: Ricard Wanderlof <ricard.wanderlof@axis.com>,
+	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+	kernelnewbies <kernelnewbies@nl.linux.org>,
+	Johnny Hung <johnny.hacking@gmail.com>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+El Wed, Jan 20, 2010 at 08:57:44AM +0100 Marco Stornelli ha dit:
 
---bg08WKrSYDhXBjb5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> 2010/1/20 Johnny Hung <johnny.hacking@gmail.com>:
+> > 2010/1/19 Matthias Kaehlcke <matthias@kaehlcke.net>:
+> >> El Tue, Jan 19, 2010 at 02:17:22PM +0100 Ricard Wanderlof ha dit:
+> >>
+> > I consider to use ramdisk as rootfs because worry about wrong
+> > operation in rootfs (is use jffs2 rootfs) and it will cause system
+> > boot up failed.
+> > Another query, does the syslogd/klogd log files also store in jffs2
+> > rootfs? Write to jffs2 frequently will reduce flash life cycle.
+> >
+> > BRs, H. Johnny
+> >>
+> >> --
+> 
+> In general a good splitting for rootfs could be: squashfs for rootfs,
+> tmpfs for volatile data (/tmp), ubifs (with a flash partition) for
+> "strong" permanent data (/etc, ....) and pramfs for "light" permanent
+> data (/var/log, .....).
 
-> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_=
-enet-main.c
-> index 909b78d..a391219 100644
-> --- a/drivers/net/fs_enet/fs_enet-main.c
-> +++ b/drivers/net/fs_enet/fs_enet-main.c
-> @@ -587,6 +587,33 @@ void fs_cleanup_bds(struct net_device *dev)
-> =20
->  /***********************************************************************=
-***********/
-> =20
-> +static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
-> +					       struct sk_buff *skb)
-> +{
-> +	struct sk_buff *new_skb;
-> +
-> +	/* Alloc new skb */
-> +	new_skb =3D dev_alloc_skb(ENET_RX_FRSIZE + 32);
-> +	if (!new_skb) {
-> +		printk(KERN_WARNING DRV_MODULE_NAME
-> +				": %s Memory squeeze, dropping tx packet.\n",
-> +								dev->name);
+if ubifs is a good choice depends on the size of the partition, iirc
+it has a significant overhead for very small partitions.
 
-I understand this type of printk fits to the rest of the code, I just wonde=
-r if
-new (and patched) printouts shouldn't be converted to dev_*? Might be one l=
-ine
-then, and more consistent to what other drivers produce.
+once using ubi it could be interesting to set up the read-only rootfs
+partition upon ubi in order to spread the wear out over a maximum of blocks.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+-- 
+Matthias Kaehlcke
+Embedded Linux Developer
+Barcelona
 
---bg08WKrSYDhXBjb5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktW2WMACgkQD27XaX1/VRs9MACgh+1XL6Cey54scoNcVzkIdMIQ
-V0QAn2CMx/PNpLnJAddyYXyhtS8akRlb
-=rO4C
------END PGP SIGNATURE-----
-
---bg08WKrSYDhXBjb5--
+            You can chain me, you can torture me, you can even
+          destroy this body, but you will never imprison my mind
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
