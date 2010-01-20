@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3DB95B7BF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 07:52:05 +1100 (EST)
-Subject: Re: [PATCH] powerpc/4xx: Add pcix type 1 transactions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef van Os <stef.van.os@Prodrive.nl>
-In-Reply-To: <1263995979-10954-1-git-send-email-stef.van.os@prodrive.nl>
-References: <1263995979-10954-1-git-send-email-stef.van.os@prodrive.nl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 21 Jan 2010 07:51:36 +1100
-Message-ID: <1264020696.724.546.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, felix@embedded-sol.com, sr@denx.de, fkan@amcc.com,
-	Stef van Os <stef.van.os@gmail.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
+In-reply-to: <1264017847.5717.132.camel@jschopp-laptop>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	<1264017847.5717.132.camel@jschopp-laptop>
+Date: Thu, 21 Jan 2010 10:04:03 +1300
+Message-ID: <26556.1264021443@neuling.org>
+Cc: Ingo Molnar <mingo@elte.hu>, ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +18,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-20 at 14:59 +0100, Stef van Os wrote:
-> Some of the newer 4xx pci cores don't send PCI type 1 transactions.
-> This patch enables type 1 transations for pcix nodes, thus enabling
-> devices behind PCI bridges.
+> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
+> there is performance benefit to idling the higher numbered threads in
+> the core.  
 > 
-> Signed-off-by: Stef van Os <stef.van.os@gmail.com>
+> This patch implements arch_scale_smt_power to dynamically update smt
+> thread power in these idle cases in order to prefer threads 0,1 over
+> threads 2,3 within a core.
+> 
+> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
 > ---
+> Index: linux-2.6.git/arch/powerpc/kernel/smp.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
+> +++ linux-2.6.git/arch/powerpc/kernel/smp.c
+> @@ -617,3 +617,44 @@ void __cpu_die(unsigned int cpu)
+>  		smp_ops->cpu_die(cpu);
+>  }
+>  #endif
+> +
+> +static inline int thread_in_smt4core(int x)
+> +{
+> +  return x % 4;
+> +}
+> +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
+> +{
+> +  int cpu2;
+> +  int idle_count = 0;
+> +
+> +  struct cpumask *cpu_map = sched_domain_span(sd);
+> +
+> +	unsigned long weight = cpumask_weight(cpu_map);
+> +	unsigned long smt_gain = sd->smt_gain;
+> +
+> +	if (cpu_has_feature(CPU_FTRS_POWER7) && weight == 4) {
 
-Thanks, I'll send that to Linus after LCA.
+I think we should avoid using cpu_has_feature like this.  It's better to
+create a new feature and add it to POWER7 in the cputable, then check
+for that here.
 
-Cheers,
-Ben.
+The way that it is now, I think any CPU that has superset of the POWER7
+features, will be true here.  This is not what we want.
 
->  arch/powerpc/sysdev/ppc4xx_pci.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> index 6ff9d71..8aa3302 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> @@ -569,7 +569,8 @@ static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
->  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+> +		for_each_cpu(cpu2, cpu_map) {
+> +			if (idle_cpu(cpu2))
+> +				idle_count++;
+> +		}
+> +
+> +		/* the following section attempts to tweak cpu power based
+> +		 * on current idleness of the threads dynamically at runtime
+> +		 */
+> +		if (idle_count == 2 || idle_count == 3 || idle_count == 4) {
+> +			if (thread_in_smt4core(cpu) == 0 ||
+> +			    thread_in_smt4core(cpu) == 1) {
+> +				/* add 75 % to thread power */
+> +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
+> +			} else {
+> +				 /* subtract 75 % to thread power */
+> +				smt_gain = smt_gain >> 2;
+> +			}
+> +		}
+> +	}
+> +	/* default smt gain is 1178, weight is # of SMT threads */
+> +	smt_gain /= weight;
+
+This results in a PPC div, when most of the time it's going to be a
+power of two divide.  You've optimised the divides a few lines above
+this, but not this one.  Some consistency would be good.
+
+Mikey
+
+> +
+> +	return smt_gain;
+> +
+> +}
+> Index: linux-2.6.git/kernel/sched_features.h
+> ===================================================================
+> --- linux-2.6.git.orig/kernel/sched_features.h
+> +++ linux-2.6.git/kernel/sched_features.h
+> @@ -107,7 +107,7 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+>  /*
+>   * Use arch dependent cpu power functions
+>   */
+> -SCHED_FEAT(ARCH_POWER, 0)
+> +SCHED_FEAT(ARCH_POWER, 1)
 >  
->  	/* Setup config space */
-> -	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4, 0);
-> +	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4,
-> +					PPC_INDIRECT_TYPE_SET_CFG_TYPE);
->  
->  	/* Disable all windows */
->  	writel(0, reg + PCIX0_POM0SA);
-> -- 
-> 1.6.6.267.g5b159
+>  SCHED_FEAT(HRTICK, 0)
+>  SCHED_FEAT(DOUBLE_TICK, 0)
 > 
 > 
-> Disclaimer: The information contained in this email, including any attachments is 
-> confidential and is for the sole use of the intended recipient(s). Any unauthorized 
-> review, use, disclosure or distribution is prohibited. If you are not the intended 
-> recipient, please notify the sender immediately by replying to this message and 
-> destroy all copies of this message and any attachments.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
