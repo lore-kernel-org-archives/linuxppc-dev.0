@@ -1,36 +1,14 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BEBF6B7DC0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jan 2010 09:44:18 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0KMUPDY007546
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 15:30:25 -0700
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o0KMi8Nx076458
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 15:44:08 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o0KMi4fv030535
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jan 2010 15:44:04 -0700
-Message-ID: <4B578731.2060709@austin.ibm.com>
-Date: Wed, 20 Jan 2010 16:44:01 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-References: <1264017638.5717.121.camel@jschopp-laptop>	
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264020517.4283.1117.camel@laptop>
-In-Reply-To: <1264020517.4283.1117.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: ego@in.ibm.com, Andreas Herrmann <andreas.herrmann3@amd.com>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 59BA6B7CB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 13:13:21 +1100 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: netdev@vger.kernel.org
+Subject: [net-next-2.6 PATCH 0/3] Support for MPC512x FEC
+Date: Thu, 21 Jan 2010 03:13:16 +0100
+Message-Id: <1264039999-25731-1-git-send-email-agust@denx.de>
+Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra wrote:
-> On Wed, 2010-01-20 at 14:04 -0600, Joel Schopp wrote:
->   
->> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
->> there is performance benefit to idling the higher numbered threads in
->> the core.  
->>     
->
-> So this is an actual performance improvement, not only power savings?
->   
-Yes.
+These patches attempt to provide support for the Freescale MPC512x
+FEC in the fs_enet driver. The first cleanup patch replaces printk
+by dev_xxx. The second and third attemt to support MPC5121 FEC
+in the FEC driver. The first version of the last two patches
+was previously submitted as part of the patch series for updated
+MPC5121 support. Now these are separated and also address comments
+to the first version. Additionally a cleanup patch is added
+to this new series. The patches are based on net-next-2.6.
 
->
->
-> And you just wrecked x86 ;-)
->
-> It has an smt_power implementation that tries to measure smt gains using
-> aperf/mperf, trouble is that this represents the actual performance not
-> the capacity. This has the problem that when idle it represents 0
-> capacity and will not attract work.
->
-> Coming up with something that actually works there is on the todo list,
-> I was thinking perhaps temporal maximums from !idle.
->
-> So if you want to go with this, you'll need to stub out
-> arch/x86/kernel/cpu/sched.c
->   
+[1/3] fs_enet: use dev_xxx instead of printk
+[2/3] fs_enet: Add support for MPC512x to fs_enet driver
+[3/3] fs_enet: Add FEC TX Alignment workaround for MPC5121
 
-OK.  Guess I now will have a 3 patch series, with a patch to stub out 
-the x86 broken version.
+The code has been tested on the Freescale/STX "MPC5121ADS" board
+(board rev. 4) with a MPC5121e Rev. 2.
 
-Care to take Gautham's bugfix patch (patch 1/2) now, since it just fixes 
-a bug?  You'll need it if you ever try to make the x86 broken version work.
+Cc: <linuxppc-dev@ozlabs.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: John Rigby <jcrigby@gmail.com>
+---
