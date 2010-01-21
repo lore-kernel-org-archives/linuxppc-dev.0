@@ -1,22 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-iw0-f204.google.com (mail-iw0-f204.google.com
-	[209.85.223.204]) by ozlabs.org (Postfix) with ESMTP id 75BC8B7CBB
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 04:12:39 +1100 (EST)
-Received: by iwn42 with SMTP id 42so178497iwn.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 09:12:38 -0800 (PST)
+	[209.85.223.204]) by ozlabs.org (Postfix) with ESMTP id E5950B7CEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 04:22:48 +1100 (EST)
+Received: by iwn42 with SMTP id 42so187890iwn.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 09:22:47 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1263932653-3634-5-git-send-email-agust@denx.de>
+In-Reply-To: <1263932653-3634-8-git-send-email-agust@denx.de>
 References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-5-git-send-email-agust@denx.de>
+	<1263932653-3634-8-git-send-email-agust@denx.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 21 Jan 2010 10:12:17 -0700
-Message-ID: <fa686aa41001210912r5fd2a5a4g8a072e0c41ee4107@mail.gmail.com>
-Subject: Re: [PATCH 04/11] i2c-mpc: Add MPC5121 I2C bus support
+Date: Thu, 21 Jan 2010 10:22:27 -0700
+Message-ID: <fa686aa41001210922h280be005pda88e5859b2769f1@mail.gmail.com>
+Subject: Re: [PATCH 07/11] dma: Add MPC512x DMA driver
 To: Anatolij Gustschin <agust@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Piotr Ziecik <kosmo@semihalf.com>
+Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	Dan Williams <dan.j.williams@intel.com>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +29,85 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Tue, Jan 19, 2010 at 1:24 PM, Anatolij Gustschin <agust@denx.de> wrote:
 > From: Piotr Ziecik <kosmo@semihalf.com>
 >
-> =A0 =A0- Update Kconfig for i2c-mpc driver.
-> =A0 =A0- Enable I2C interrupts on MPC5121.
->
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index f627001..84eeb25 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -540,6 +540,29 @@ static int __devinit fsl_i2c_probe(struct of_device =
-*op,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0}
->
-> + =A0 =A0 =A0 if (of_device_is_compatible(op->node, "fsl,mpc5121-i2c")) {
+> Adds initial version of MPC512x DMA driver.
+> Only memory to memory transfers are currenly supported.
 
-Rather than doing stuff like this with explicit compatible checks in
-the probe hook, consider using the .data pointer in the of match
-table.
+Comments below on brief review.  I've not looked at the code in-depth.
 
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+> =A0drivers/dma/Kconfig =A0 =A0 =A0 | =A0 =A07 +
+> =A0drivers/dma/Makefile =A0 =A0 =A0| =A0 =A01 +
+> =A0drivers/dma/mpc512x_dma.c | =A0636 +++++++++++++++++++++++++++++++++++=
+++++++++++
+> =A0drivers/dma/mpc512x_dma.h | =A0192 ++++++++++++++
+
+Unless the stuff in the .h file is used by other .c files, it really
+belongs in mpc512x_dma.c
+
+> +static int __init mpc_dma_probe(struct of_device *op,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 const struct of_device_id *match)
+
+__devinit
+
+> +static void __exit mpc_dma_remove(struct of_device *op)
+
+__devexit
+
+> +{
+> + =A0 =A0 =A0 struct device *dev =3D &op->dev;
+> + =A0 =A0 =A0 struct mpc_dma *mdma =3D dev_get_drvdata(dev);
+> +
+> + =A0 =A0 =A0 devm_free_irq(dev, mdma->irq, mdma);
+> +}
+
+No unregistration of the dma device?  No unmapping?  No kfree()?
+
+> +
+> +static struct of_device_id mpc_dma_match[] =3D {
+> + =A0 =A0 =A0 { .compatible =3D "fsl,mpc5121-dma", },
+> + =A0 =A0 =A0 {},
+> +};
+> +
+> +static struct of_platform_driver mpc_dma_driver =3D {
+> + =A0 =A0 =A0 .match_table =A0 =A0=3D mpc_dma_match,
+> + =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0=3D mpc_dma_probe,
+> + =A0 =A0 =A0 .remove =A0 =A0 =A0 =A0 =3D __exit_p(mpc_dma_remove),
+
+__devexit_p()
+
+> + =A0 =A0 =A0 .driver =A0 =A0 =A0 =A0 =3D {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =3D DRV_NAME,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .owner =A0=3D THIS_MODULE,
+> + =A0 =A0 =A0 },
+> +};
+> +
+> +static int __init mpc_dma_init(void)
+> +{
+> + =A0 =A0 =A0 return of_register_platform_driver(&mpc_dma_driver);
+> +}
+> +module_init(mpc_dma_init);
+> +
+> +static void __exit mpc_dma_exit(void)
+> +{
+> + =A0 =A0 =A0 of_unregister_platform_driver(&mpc_dma_driver);
+> +}
+> +module_exit(mpc_dma_exit);
+> +
+> +/* MODULE API */
+
+Meaningless comment.
+
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
+
+Thanks,
 g.
 
 --=20
