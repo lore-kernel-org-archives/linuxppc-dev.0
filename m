@@ -1,22 +1,21 @@
-Return-Path: <wenlinjing@gmail.com>
-Received: from mail-pz0-f195.google.com (mail-pz0-f195.google.com
-	[209.85.222.195]) by ozlabs.org (Postfix) with ESMTP id C3BF2B7C09
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 21 Jan 2010 17:58:30 +1100 (EST)
-Received: by pzk33 with SMTP id 33so1621037pzk.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 20 Jan 2010 22:58:29 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <6A5F574C5A990242B0541891CF955C0D01D1EDBD@CNSHGSMBS05.ad4.ad.alcatel.com>
-References: <b90a809a1001201702y7d42eb60v43f24cb1043a89fa@mail.gmail.com>
-	<6A5F574C5A990242B0541891CF955C0D01D1EDBD@CNSHGSMBS05.ad4.ad.alcatel.com>
-Date: Thu, 21 Jan 2010 14:58:29 +0800
-Message-ID: <b90a809a1001202258g2bc2610dw6f24c4d75b49faff@mail.gmail.com>
-Subject: Re: How to trun off udbg0 during bootup?
-From: =?UTF-8?B?5pmv5paH5p6X?= <wenlinjing@gmail.com>
-To: SHAN Gavin <Gavin.Shan@alcatel-lucent.com>
-Content-Type: multipart/alternative; boundary=000e0cd13806fa23b4047da73afc
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D343DB7CE8
+	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jan 2010 20:34:02 +1100 (EST)
+Date: Thu, 21 Jan 2010 10:33:52 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+Message-ID: <20100121103352.788a6f80@wker>
+In-Reply-To: <20100121.012235.161201297.davem@davemloft.net>
+References: <1264039999-25731-1-git-send-email-agust@denx.de>
+	<1264039999-25731-3-git-send-email-agust@denx.de>
+	<20100121.012235.161201297.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,95 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd13806fa23b4047da73afc
-Content-Type: text/plain; charset=UTF-8
+On Thu, 21 Jan 2010 01:22:35 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-2010/1/21 SHAN Gavin <Gavin.Shan@alcatel-lucent.com>
-
->
->
-> Hi,
->
->  I `m working on a freescale-MPC8379eRDB like board.And I want to trun off
-> kernel message during bootup.
->
->  I tried to  modify "console = XXX" argument in uboot but it did not
-> work(It
-> works on ARM). Kernel always print:
->
-> "console [udbg0] enabled"    or   "console handover: boot [*udbg0*] -> real
-> [ttyS1]"
->
-> Does anybody know how can I turn off this udbg0?
->
-> You may check arch/powerpc/kernel/udbg.c and disable registering the early
-> debug console driver. Then you can not see the output before the message
-> line like "-> real [ttyS1]"
->
-> Good luck,
-> Gavin
->
->   I assigned 1 to "static int early_console_initialized". The driver did
-not register early debug console.
-It`s worked.
-
-Thank you!
-
-Regards
-jing wenlin
-
---000e0cd13806fa23b4047da73afc
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<br><br><div class=3D"gmail_quote">2010/1/21 SHAN Gavin <span dir=3D"ltr">&=
-lt;<a href=3D"mailto:Gavin.Shan@alcatel-lucent.com">Gavin.Shan@alcatel-luce=
-nt.com</a>&gt;</span><br><blockquote class=3D"gmail_quote" style=3D"border-=
-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left=
-: 1ex;">
-
-
-
-
-
-
-
-<div>
-
-<br>
-
-<p><font size=3D"2"><div><div></div><div class=3D"h5"><br>
-Hi,<br>
-<br>
-=C2=A0I `m working on a freescale-MPC8379eRDB like board.And I want to trun=
- off<br>
-kernel message during bootup.<br>
-<br>
-=C2=A0I tried to=C2=A0 modify &quot;console =3D XXX&quot; argument in uboot=
- but it did not work(It<br>
-works on ARM). Kernel always print:<br>
-<br>
-&quot;console [udbg0] enabled&quot;=C2=A0=C2=A0=C2=A0 or=C2=A0=C2=A0 &quot;=
-console handover: boot [*udbg0*] -&gt; real<br>
-[ttyS1]&quot;<br>
-<br>
-Does anybody know how can I turn off this udbg0?<br>
-<br></div></div>
-You may check arch/powerpc/kernel/udbg.c and disable registering the early<=
-br>
-debug console driver. Then you can not see the output before the message<br=
->
-line like &quot;-&gt; real [ttyS1]&quot;<br>
-<br>
-Good luck,<br>
-Gavin<br>
-<br>
-</font>
-</p>
-
-</div>
-</blockquote></div>I assigned 1 to &quot;static int early_console_initializ=
-ed&quot;. The driver did not register early debug console.<br>It`s worked.<=
-br><br>Thank you!<br><br>Regards<br>jing wenlin<br>
-
---000e0cd13806fa23b4047da73afc--
+> From: Anatolij Gustschin <agust@denx.de>
+> Date: Thu, 21 Jan 2010 03:13:18 +0100
+> 
+> >  struct fec_info {
+> > -	fec_t __iomem *fecp;
+> > +	void __iomem *fecp;
+>  ...
+> >  /* write */
+> > -#define FW(_fecp, _reg, _v) __fs_out32(&(_fecp)->fec_ ## _reg, (_v))
+> > +#define FW(_regp, _reg, _v) __fs_out32((_regp)->fec_ ## _reg, (_v))
+>  ...
+> > +/* register address macros */
+> > +#define fec_reg_addr(_type, _reg) \
+> > +	(fep->fec.rtbl->fec_##_reg = (u32 __iomem *)((u32)fep->fec.fecp + \
+> > +				(u32)&((__typeof__(_type) *)NULL)->fec_##_reg))
+> > +
+> > +#define fec_reg_mpc8xx(_reg) \
+> > +	fec_reg_addr(struct mpc8xx_fec, _reg)
+> > +
+> > +#define fec_reg_mpc5121(_reg) \
+> > +	fec_reg_addr(struct mpc5121_fec, _reg)
+> 
+> This is a step backwards in my view.
+> 
+> If you use the "fec_t __iomem *" type for the register
+> pointer, you simply use &p->fecp->XXX to get the I/O
+> address of register XXX and that's what you pass to
+> the appropriate I/O accessor routines.
+> 
+> Now you've made it typeless, and then you have to walk
+> through all of these contortions to get the offset.
+ 
+OK, i give up
