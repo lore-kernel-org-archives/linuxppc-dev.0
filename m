@@ -1,41 +1,35 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5FEA9B7CDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 18:14:10 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0M7BC94008668
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 18:11:12 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0M79RAP1765542
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 18:09:27 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0M7E85H030439
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 18:14:09 +1100
-Date: Fri, 22 Jan 2010 12:44:02 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100122071402.GA3356@in.ibm.com>
-References: <20091211160409.GB23156@in.ibm.com>
-	<20091214005648.82BA31DE@magilla.sf.frob.com>
-	<20091214180324.GA18406@in.ibm.com>
-	<20091214192626.3F9171DE@magilla.sf.frob.com>
-	<20091217190320.GA20331@in.ibm.com>
-	<20100119094035.GD9971@in.ibm.com>
-	<20100119100335.3EB621DE@magilla.sf.frob.com>
+Return-Path: <marco.stornelli@gmail.com>
+Received: from ey-out-1920.google.com (ey-out-1920.google.com [74.125.78.147])
+	by ozlabs.org (Postfix) with ESMTP id 2A173B7CB8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Jan 2010 19:14:56 +1100 (EST)
+Received: by ey-out-1920.google.com with SMTP id 26so205336eyw.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 22 Jan 2010 00:14:54 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100119100335.3EB621DE@magilla.sf.frob.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org
-Reply-To: prasad@linux.vnet.ibm.com
+In-Reply-To: <cb9ecdfa1001211907u37415485tf3e1d2c443a506f7@mail.gmail.com>
+References: <cb9ecdfa1001190120r593f7799sf566df5a855b8a54@mail.gmail.com>
+	<20100119095024.GD16182@darwin>
+	<cb9ecdfa1001190213u69469505k9c42142bdc17f750@mail.gmail.com>
+	<20100119102026.GF16182@darwin>
+	<cb9ecdfa1001190403v433d839dy6ba2bc018024ce15@mail.gmail.com>
+	<Pine.LNX.4.64.1001191414090.32263@lnxricardw.se.axis.com>
+	<20100119140600.GH16182@darwin>
+	<cb9ecdfa1001191832k28961740qa825a8c8d5e631f2@mail.gmail.com>
+	<2ea1731b1001192357r72d627e2gb36d71f23fd69b2e@mail.gmail.com>
+	<cb9ecdfa1001211907u37415485tf3e1d2c443a506f7@mail.gmail.com>
+Date: Fri, 22 Jan 2010 09:14:54 +0100
+Message-ID: <2ea1731b1001220014v59ea7767m6e1a8547d41c6afb@mail.gmail.com>
+Subject: Re: mount ramdisk rootfs /etc directory to jffs2 filesystem.
+From: Marco Stornelli <marco.stornelli@gmail.com>
+To: Johnny Hung <johnny.hacking@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ricard Wanderlof <ricard.wanderlof@axis.com>,
+	"linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+	kernelnewbies <kernelnewbies@nl.linux.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	Matthias Kaehlcke <matthias@kaehlcke.net>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,44 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 19, 2010 at 02:03:35AM -0800, Roland McGrath wrote:
-> > It is also not clear to me if disabling pre-emption for the user-space
-> > (albeit for a very tiny time-window) is incorrect and if their side-effects
-> > are known. If otherwise, I think we should choose to operate in pre-empt
-> > safe mode and avoid all costs associated when done without it.
-> 
-> I never really gave much consideration to returning to user mode with
-> preemption disabled.  It would not really have occurred to me that was
-> even possible.  I can't say it seems to me like it could ever be a very
-> good idea.  I find it hard even to start listing the cans of worms that
-> might be opened by that.  Perhaps the powerpc maintainers have a clearer
-> picture of it than I do.
-> 
-> What does it mean when there is something that prevents it from returning
-> to user mode?  i.e., TIF_SIGPENDING or TIF_NEED_RESCHED, or whatever.  It
-> could do a lot in the kernel before it gets back to user mode.  What if in
-> there somewhere it blocks voluntarily?
-> 
-> Similarly, what does it mean if you get to user mode but the single-stepped
-> instruction is a load/store that gets a page fault?  What if it blocks in
-> the page fault handler?
-> 
-> For that matter, what about a page fault for the kernel-mode case?
-> 
-> Perhaps I'm imagining gremlins where there aren't any, but I just cannot
-> really get my head around this "disable preemption while running some
-> unknown instruction that normally runs with preemption enabled" thing--let
-> alone "disable preemption while returning to user mode".
-> 
-> 
-> Thanks,
-> Roland
+2010/1/22 Johnny Hung <johnny.hacking@gmail.com>:
+> 2010/1/20 Marco Stornelli <marco.stornelli@gmail.com>:
+>> 2010/1/20 Johnny Hung <johnny.hacking@gmail.com>:
+>>> 2010/1/19 Matthias Kaehlcke <matthias@kaehlcke.net>:
+>>>> El Tue, Jan 19, 2010 at 02:17:22PM +0100 Ricard Wanderlof ha dit:
+>>>>
+>>> I consider to use ramdisk as rootfs because worry about wrong
+>>> operation in rootfs (is use jffs2 rootfs) and it will cause system
+>>> boot up failed.
+>>> Another query, does the syslogd/klogd log files also store in jffs2
+>>> rootfs? Write to jffs2 frequently will reduce flash life cycle.
+>>>
+>>> BRs, H. Johnny
+>>>>
+>>>> --
+>>
+>
+> It seems there are a lot of file-systems I have to study :P. The same
+> question is
+> how to split my rootfs? Re-mount /etc, /var to another file-sysyem mtd part when
+> system boot up?
+>
 
-I posted a patch which re-enables pre-emption after a hw-breakpoint is
-processed (linuxppc-dev ref: 20100121084640.GA3252@in.ibm.com). It does
-lead to clumsiness (due to the new variables to track states, prior
-breakpoints, etc.) but with the reasons you pointed out, it is much
-better than having uncertain/incorrect code.
+Simply, you can mount each mount point with the fstab file and a
+script, same approach of every linux distribution, nothing more. Even
+in the pc world you can mount your /home on a partition with ext3,
+/var in a partition with ext4, and so on. A very simple approach to
+setup the system, it is to start with NFS for example with "whole" fs,
+copy what you need in the right place, setup the start-up script and
+reboot.
 
-Thanks for your comments.
--- K.Prasad
+Marco
