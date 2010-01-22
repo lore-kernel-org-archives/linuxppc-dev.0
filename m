@@ -1,20 +1,18 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id EE1D6B6EF4
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Jan 2010 23:16:32 +1100 (EST)
-Message-ID: <4B5996DC.1020309@grandegger.com>
-Date: Fri, 22 Jan 2010 13:15:24 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
+	by ozlabs.org (Postfix) with ESMTP id 9CA97B7CDA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 23 Jan 2010 07:20:14 +1100 (EST)
+Date: Fri, 22 Jan 2010 21:11:39 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
+To: Roman Fietze <roman.fietze@telemotive.de>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <200912161237.09796.roman.fietze@telemotive.de> (from
+	roman.fietze@telemotive.de on Wed Dec 16 12:37:09 2009)
+Message-Id: <1264191106.2224.0@antares>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 04/11] i2c-mpc: Add MPC5121 I2C bus support
-References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-5-git-send-email-agust@denx.de>
-	<fa686aa41001210912r5fd2a5a4g8a072e0c41ee4107@mail.gmail.com>
-In-Reply-To: <fa686aa41001210912r5fd2a5a4g8a072e0c41ee4107@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, linuxppc-dev@ozlabs.org,
-	linux-i2c@vger.kernel.org, Anatolij Gustschin <agust@denx.de>, wd@denx.de
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-/NjbajBbvZ/vCcVUMuQy"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Tue, Jan 19, 2010 at 1:24 PM, Anatolij Gustschin <agust@denx.de> wrote:
->> From: Piotr Ziecik <kosmo@semihalf.com>
->>
->>    - Update Kconfig for i2c-mpc driver.
->>    - Enable I2C interrupts on MPC5121.
->>
->> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
->> index f627001..84eeb25 100644
->> --- a/drivers/i2c/busses/i2c-mpc.c
->> +++ b/drivers/i2c/busses/i2c-mpc.c
->> @@ -540,6 +540,29 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
->>                }
->>        }
->>
->> +       if (of_device_is_compatible(op->node, "fsl,mpc5121-i2c")) {
-> 
-> Rather than doing stuff like this with explicit compatible checks in
-> the probe hook, consider using the .data pointer in the of match
-> table.
+--=-/NjbajBbvZ/vCcVUMuQy
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, and it does also not use the clock setting code of the MPC5200,
-which should work for the MPC512x as well. I already have a patch in my
-pipeline, which I will roll out after some more testing.
+Hi Roman:
 
-Wolfgang.
+Am 16.12.09 12:37 schrieb(en) Roman Fietze:
+> The board is using the MPC5200B on a board derived from the old lite5200,=
+ but with the fixes for the MPC5200B. All tests are run using an ST940813AM=
+ hard drive with an ext2 and an ext3 of 10GB each, default mkfs options. Th=
+e OS is Debian 4.0. The =20
+> network connection is between a fast Athlon XP2 6400 and the target, usin=
+g 100MBit/s wiring and a 100MBit/s switch.
+
+Are there any "final" conclusions from your tests?
+
+I am using a board derived from the Lite5200b, running u-boot 2009.03 and a=
+ recent stock kernel, where I performed tests concurrently reading and writ=
+ing data to and from
+- two compactflash cards with vfat file systems attached to the ata bus;
+- a nfs3 network drive, connected via a 100MBit line, on a Xeon serve;
+- a signal processor attached to the localbus, using bestcomm and the fifo =
+for the bulk transfer.
+
+I did not observe any issues, but your statements are making me really nerv=
+ous...
+
+Thanks,
+Albrecht.
+
+--=-/NjbajBbvZ/vCcVUMuQy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBLWgaCn/9unNAn/9ERAj3pAKCQwVm6ecx8rVZNezfFXQ0/V646tQCgw0mW
+3QIAUQs9vLAr7jUn+YeHq+Q=
+=shH8
+-----END PGP SIGNATURE-----
+
+--=-/NjbajBbvZ/vCcVUMuQy--
