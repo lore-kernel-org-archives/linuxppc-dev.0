@@ -1,19 +1,22 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-iw0-f184.google.com (mail-iw0-f184.google.com
-	[209.85.223.184]) by ozlabs.org (Postfix) with ESMTP id 05006B7C8D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 24 Jan 2010 00:53:48 +1100 (EST)
-Received: by iwn14 with SMTP id 14so1627274iwn.18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 23 Jan 2010 05:53:46 -0800 (PST)
-Date: Sat, 23 Jan 2010 08:53:37 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: avorontsov@ru.mvista.com
-Subject: FHCI fails to build in 2.6.33-rc5
-Message-ID: <20100123135337.GD17561@hansolo.jdub.homelinux.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 215CAB7CB9
+	for <linuxppc-dev@ozlabs.org>; Sun, 24 Jan 2010 05:52:36 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+Date: Sat, 23 Jan 2010 10:23:14 +0100
+References: <1264039999-25731-1-git-send-email-agust@denx.de>
+	<20100121.012235.161201297.davem@davemloft.net>
+	<4B5871F2.9090005@grandegger.com>
+In-Reply-To: <4B5871F2.9090005@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201001231023.14372.arnd@arndb.de>
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	agust@denx.de, David Miller <davem@davemloft.net>, kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When trying to build the Fedora devel kernel, I get the build error
-below.  The *_frame_Q members of the fhci endpoint structure are
-indeed declared as 'struct kfifo' and not pointers to such.  The
-NULL checks in the fhci_ep0_free function seem odd when you take
-that into account.
+On Thursday 21 January 2010, Wolfgang Grandegger wrote:
+> The major problem that Anatolij tries to solve are the different
+> register layouts of the supported SOCs, MPC52xx and MPC8xx. They use the
+> same registers but at different offsets. Therefore we cannot handle
+> this with a single "fec_t" struct to allow building a single kernel
+> image. Instead it's handled by filling a table with register addresses:
+> 
+>         if (of_device_is_compatible(ofdev->node, "fsl,mpc5121-fec")) {
+>                 fep->fec.fec_id = FS_ENET_MPC5121_FEC;
+>                 fec_reg_mpc5121(ievent);
+>                 fec_reg_mpc5121(imask);
+>                 ...
+>         } else {
+>                 fec_reg_mpc8xx(ievent);
+>                 fec_reg_mpc8xx(imask);
+>                 ...
+>         }
+> 
+> Do you see a more clever solution to this problem? Nevertheless, the
+> code could be improved by using "offsetof", I think.
 
-Thoughts on a fix?  If it's not fixed soon, I'll have to disable
-it in the .config.
+Is there any chance of building a kernel that runs on both mpc8xx and
+mpc5121? AFAIK, the 5121 is built on a 6xx core which is fundamentally
+incompatible with 8xx due to different memory management etc.
 
-josh
+Since this makes it all a compile-time decision, it should be solvable
+with a very small number of carefully placed #ifdef in the header files
+an no runtime detection at all.
 
-In file included from drivers/usb/host/fhci-hcd.c:33:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-In file included from drivers/usb/host/fhci-hub.c:28:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-In file included from drivers/usb/host/fhci-q.c:25:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-In file included from drivers/usb/host/fhci-mem.c:24:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-In file included from drivers/usb/host/fhci-tds.c:25:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-drivers/usb/host/fhci-tds.c: In function 'fhci_ep0_free':
-drivers/usb/host/fhci-tds.c:108: error: used struct type value where scalar is required
-drivers/usb/host/fhci-tds.c:118: error: used struct type value where scalar is required
-drivers/usb/host/fhci-tds.c:128: error: used struct type value where scalar is required
-make[3]: *** [drivers/usb/host/fhci-tds.o] Error 1
-make[2]: *** [drivers/usb/host] Error 2
-make[1]: *** [drivers/usb] Error 2
+Obviously this approach would not work for drivers that want to be portable
+across different register layouts on otherwise compatible platforms.
+
+	Arnd
