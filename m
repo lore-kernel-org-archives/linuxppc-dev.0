@@ -1,31 +1,32 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CFA381007D2
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:37 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0OJIZih001810
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:35 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0OJDl3w1523740
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:13:47 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0OJIaLj029203
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:36 +1100
-Date: Mon, 25 Jan 2010 00:48:30 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: shaggy@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A06151007D1
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 07:32:04 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0OKT5ka001002
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 07:29:05 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o0OKW3J81355940
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 07:32:03 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o0OKW2mJ011121
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 07:32:03 +1100
 Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
 	through extended ptrace interface
-Message-ID: <20100124191830.GB14075@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, David Gibson <dwg@au1.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: prasad@linux.vnet.ibm.com
+In-Reply-To: <20100124191830.GB14075@in.ibm.com>
+References: <20100124191830.GB14075@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 25 Jan 2010 07:32:00 +1100
+Message-ID: <1264365121.3601.43.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>,
+	shaggy@linux.vnet.ibm.com, Frederic Weisbecker <fweisbec@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +36,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From shaggy at linux.vnet.ibm.com  Tue Jan 19 08:57:04 2010
-From: shaggy at linux.vnet.ibm.com (Dave Kleikamp)
-Date: Mon, 18 Jan 2010 14:57:04 -0700
-Subject: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
-	extended ptrace interface
-Message-ID: <20100118215704.15684.60646.sendpatchset@norville.austin.ibm.com>
+On Mon, 2010-01-25 at 00:48 +0530, K.Prasad wrote:
+> 
+> Some of the benefits of using these generic interfaces include:
+> - Interoperability with other users of debug register (such as
+> parallel
+>   kernel requests) i.e. non-exclusive use of debug registers.
+> - Enables debugging/tracing tools such as perf-events and ftrace to
+> make
+>   use of debug registers.
+> - Re-use of common code available in kernel (kernel/hw_breakpoint.c).
+> 
+> Let me know what you think.
 
-> These patches implement an extention to the ptrace interface proposed by
-> Thiago Bauermann and the the PowerPC gdb team.
+This might have changed but last I looked the "generic" breakpoint
+interface was still too x86-centric and wasn't capable of expressing
+some of the features of the BookE debug register set such as the data
+value compare, the ranged breakpoints, etc...
 
-(Using the plain text from mail archive..mail may not be in the usual
-mail-reply format...kindly bear).
+I'd rather have this more dedicated and more complete interface merged
+for gdb's sake, and in a second step look at unifying.
 
-Hi,
-  First of all, thanks for bringing this patch that puts the debug
-registers in BookE to good use! I learnt about this patch submission
-only recently...please see some of my concerns as under.
+I believe that the generic breakpoint infrastructure should not be the
+mid-layer. IE. It cannot be made in any clean shape of form, to express
+all of the subtle features that a given architecture or platform can
+support and as such would always be inferior to a dedicated one.
 
-Given that there now exists generic kernel interfaces to use
-hw-breakpoints - register_user_hw_breakpoint() and
-unregister_hw_breakpoint() (available in mainline since 2.6.33-rc1), it
-would be prudent to use them for the ptrace requests (that are made in
-arch_ptrace()).
+I can see the interest in exposing some kind of generic API that
+implements a common subset of breakpoint or watchpoint facilities to
+generic code such as the event tracer. This could be layered on top of
+an arch specific mechanism
 
-This would mean that some of the arch-specific debug register code that
-read/write from/to the debug registers of Book-E may have to be in a
-form that closely resembles arch/<x86><power>/kernel/hw_breakpoint.c 
+But having the generic mechanism at the core for everybody is another
+attempt of "make everybody look like x86" which I believe in this case
+is sub optimal.
 
-A patch that enables arch-specific code for PPC64 is already submitted
-(linuxppc-dev ref: 20100121084640.GA3252@in.ibm.com). This converts
-ptrace requests for PTRACE_<GET><SET>_DEBUGREG flags to use the
-above-mentioned interfaces for PPC64.
+Again, I might have missed some evolutions of the latest versions of
+your infrastructure that would make it good enough to fully bridge the
+gap with our requirements, and I'll let Shaggy decide here what he wants
+to do. But I will not block his current patches neither if he thinks
+that they are good enough as is.
 
-If you intend to re-write this patch to use the generic hw-breakpoint
-interfaces (which I strongly recommend you to do, for the reasons mentioned
-below), I would be more than glad to help you port them.
-
-Some of the benefits of using these generic interfaces include:
-- Interoperability with other users of debug register (such as parallel
-  kernel requests) i.e. non-exclusive use of debug registers.
-- Enables debugging/tracing tools such as perf-events and ftrace to make
-  use of debug registers.
-- Re-use of common code available in kernel (kernel/hw_breakpoint.c).
-
-Let me know what you think.
-
-Thanks,
-K.Prasad
+Cheers,
+Ben.
