@@ -1,25 +1,31 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 9AB1C1007D6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 25 Jan 2010 03:41:22 +1100 (EST)
-To: Wolfgang Grandegger <wg@grandegger.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
-	fs_enet driver
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CFA381007D2
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:37 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0OJIZih001810
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:35 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o0OJDl3w1523740
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:13:47 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o0OJIaLj029203
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 06:18:36 +1100
+Date: Mon, 25 Jan 2010 00:48:30 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: shaggy@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
+	through extended ptrace interface
+Message-ID: <20100124191830.GB14075@in.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <4B5C5BDF.6020001@grandegger.com>
-References: <1264039999-25731-1-git-send-email-agust@denx.de>
-	<20100121.012235.161201297.davem@davemloft.net>
-	<4B5871F2.9090005@grandegger.com>
-	<201001231023.14372.arnd@arndb.de>
-	<4B5C5BDF.6020001@grandegger.com>
-Date: Sun, 24 Jan 2010 17:41:17 +0100
-Message-Id: <20100124164117.DCB483F6C0@gemini.denx.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, dzu@denx.de, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, kosmo@semihalf.com
+Content-Type: text/plain; charset=us-ascii
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, David Gibson <dwg@au1.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Wolfgang & Arnd,
+>From shaggy at linux.vnet.ibm.com  Tue Jan 19 08:57:04 2010
+From: shaggy at linux.vnet.ibm.com (Dave Kleikamp)
+Date: Mon, 18 Jan 2010 14:57:04 -0700
+Subject: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers through
+	extended ptrace interface
+Message-ID: <20100118215704.15684.60646.sendpatchset@norville.austin.ibm.com>
 
-In message <4B5C5BDF.6020001@grandegger.com> you wrote:
->
-> Arnd Bergmann wrote:
-...
-> > Is there any chance of building a kernel that runs on both mpc8xx and
-> > mpc5121? AFAIK, the 5121 is built on a 6xx core which is fundamentally
-> > incompatible with 8xx due to different memory management etc.
+> These patches implement an extention to the ptrace interface proposed by
+> Thiago Bauermann and the the PowerPC gdb team.
 
-It is my understanding as well that you cannot have a single image
-that boots both on 8xx and on 6xx cores. The focus was more on things
-like supporting MPC5200 and MPC512x with the same image.
+(Using the plain text from mail archive..mail may not be in the usual
+mail-reply format...kindly bear).
 
-> > Since this makes it all a compile-time decision, it should be solvable
-> > with a very small number of carefully placed #ifdef in the header files
-> > an no runtime detection at all.
-> > 
-> > Obviously this approach would not work for drivers that want to be portable
-> > across different register layouts on otherwise compatible platforms.
-> 
-> You are probably right and your proposal would likely result in more
-> transparent (less ugly) code. There has been some discussion about
-> unifying FEC drivers when the patches (with the same subject) have been
-> submitted for the first time in May last year, but it was not about 512x
-> and 8xx, IIRC.
+Hi,
+  First of all, thanks for bringing this patch that puts the debug
+registers in BookE to good use! I learnt about this patch submission
+only recently...please see some of my concerns as under.
 
-You can re-read this discussion here:
+Given that there now exists generic kernel interfaces to use
+hw-breakpoints - register_user_hw_breakpoint() and
+unregister_hw_breakpoint() (available in mainline since 2.6.33-rc1), it
+would be prudent to use them for the ptrace requests (that are made in
+arch_ptrace()).
 
-http://patchwork.ozlabs.org/patch/26927/
+This would mean that some of the arch-specific debug register code that
+read/write from/to the debug registers of Book-E may have to be in a
+form that closely resembles arch/<x86><power>/kernel/hw_breakpoint.c 
 
-ee especiall Grant's note of 2009-05-21 15:36:11: "If it looks too
-ugly, then just fork the driver."
+A patch that enables arch-specific code for PPC64 is already submitted
+(linuxppc-dev ref: 20100121084640.GA3252@in.ibm.com). This converts
+ptrace requests for PTRACE_<GET><SET>_DEBUGREG flags to use the
+above-mentioned interfaces for PPC64.
 
-Best regards,
+If you intend to re-write this patch to use the generic hw-breakpoint
+interfaces (which I strongly recommend you to do, for the reasons mentioned
+below), I would be more than glad to help you port them.
 
-Wolfgang Denk
+Some of the benefits of using these generic interfaces include:
+- Interoperability with other users of debug register (such as parallel
+  kernel requests) i.e. non-exclusive use of debug registers.
+- Enables debugging/tracing tools such as perf-events and ftrace to make
+  use of debug registers.
+- Re-use of common code available in kernel (kernel/hw_breakpoint.c).
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Immortality consists largely of boredom.
-	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
+Let me know what you think.
+
+Thanks,
+K.Prasad
