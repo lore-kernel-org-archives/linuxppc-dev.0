@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3370B7CBD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 24 Jan 2010 14:03:01 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <4B577F1A.9060907@austin.ibm.com>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<26556.1264021443@neuling.org> <4B577F1A.9060907@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 24 Jan 2010 14:00:28 +1100
-Message-ID: <1264302028.3601.36.camel@pasglop>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 360751007D2
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 01:41:43 +1100 (EST)
+Message-ID: <4B5C5BDF.6020001@grandegger.com>
+Date: Sun, 24 Jan 2010 15:40:31 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+References: <1264039999-25731-1-git-send-email-agust@denx.de>
+	<20100121.012235.161201297.davem@davemloft.net>
+	<4B5871F2.9090005@grandegger.com>
+	<201001231023.14372.arnd@arndb.de>
+In-Reply-To: <201001231023.14372.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	agust@denx.de, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,14 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-20 at 16:09 -0600, Joel Schopp wrote:
-> I can turn that into a conditional branch (case statement) with a shift 
-> for the common 1,2,4 cases which should cover all procs available today 
-> falling back to a divide for any theoretical future processors that do 
-> other numbers of threads. 
+Arnd Bergmann wrote:
+> On Thursday 21 January 2010, Wolfgang Grandegger wrote:
+>> The major problem that Anatolij tries to solve are the different
+>> register layouts of the supported SOCs, MPC52xx and MPC8xx. They use the
+>> same registers but at different offsets. Therefore we cannot handle
+>> this with a single "fec_t" struct to allow building a single kernel
+>> image. Instead it's handled by filling a table with register addresses:
+>>
+>>         if (of_device_is_compatible(ofdev->node, "fsl,mpc5121-fec")) {
+>>                 fep->fec.fec_id = FS_ENET_MPC5121_FEC;
+>>                 fec_reg_mpc5121(ievent);
+>>                 fec_reg_mpc5121(imask);
+>>                 ...
+>>         } else {
+>>                 fec_reg_mpc8xx(ievent);
+>>                 fec_reg_mpc8xx(imask);
+>>                 ...
+>>         }
+>>
+>> Do you see a more clever solution to this problem? Nevertheless, the
+>> code could be improved by using "offsetof", I think.
+> 
+> Is there any chance of building a kernel that runs on both mpc8xx and
+> mpc5121? AFAIK, the 5121 is built on a 6xx core which is fundamentally
+> incompatible with 8xx due to different memory management etc.
+> 
+> Since this makes it all a compile-time decision, it should be solvable
+> with a very small number of carefully placed #ifdef in the header files
+> an no runtime detection at all.
+> 
+> Obviously this approach would not work for drivers that want to be portable
+> across different register layouts on otherwise compatible platforms.
 
-Look at the cputhreads.h implementation ... Today we only support
-power-of-two numbers of threads.
+You are probably right and your proposal would likely result in more
+transparent (less ugly) code. There has been some discussion about
+unifying FEC drivers when the patches (with the same subject) have been
+submitted for the first time in May last year, but it was not about 512x
+and 8xx, IIRC.
 
-Cheers,
-Ben.
+Wolfgang.
