@@ -1,21 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 14F4D1007E0
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 04:00:27 +1100 (EST)
-Date: Mon, 25 Jan 2010 18:00:24 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 08/11] powerpc/mpc5121: add USB host support
-Message-ID: <20100125180024.1a850578@wker>
-In-Reply-To: <fa686aa41001210943i3739f693uecf0c05ef0a81c1@mail.gmail.com>
-References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<1263932653-3634-9-git-send-email-agust@denx.de>
-	<fa686aa41001210943i3739f693uecf0c05ef0a81c1@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linux-usb@vger.kernel.org, wd@denx.de, dzu@denx.de
+Return-Path: <kodiakuppercut@gmail.com>
+Received: from mail-iw0-f201.google.com (mail-iw0-f201.google.com
+	[209.85.223.201]) by ozlabs.org (Postfix) with ESMTP id 3C2181007D6
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 04:06:34 +1100 (EST)
+Received: by iwn39 with SMTP id 39so811605iwn.1
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jan 2010 09:06:32 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
+References: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
+	<C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
+Date: Mon, 25 Jan 2010 10:06:32 -0700
+Message-ID: <bc81dc641001250906o18ba8e9cofbb02421ae046f65@mail.gmail.com>
+Subject: Re: Large physical address support on e500 platform
+From: Aaron Pace <kodiakuppercut@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,116 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 21 Jan 2010 10:43:34 -0700
-Grant Likely <grant.likely@secretlab.ca> wrote:
+>
+> Is a simple "hello world" module sufficient to show the issue? =A0I'll lo=
+ok into it this week.
+>
+> - k
 
-> > diff --git a/Documentation/powerpc/dts-bindings/fsl/usb.txt b/Documenta=
-tion/powerpc/dts-bindings/fsl/usb.txt
-> > index b001524..9050154 100644
-> > --- a/Documentation/powerpc/dts-bindings/fsl/usb.txt
-> > +++ b/Documentation/powerpc/dts-bindings/fsl/usb.txt
-> > @@ -33,6 +33,14 @@ Recommended properties :
-> > =C2=A0- interrupt-parent : the phandle for the interrupt controller that
-> > =C2=A0 =C2=A0services interrupts for this device.
-> >
-> > +Optional properties :
->=20
-> > + - big-endian-regs : boolean; if defined, indicates the USB host
-> > + =C2=A0 controller registers format is big endian.
->=20
-> Rather than testing for this explicitly, add fsl,mpc5121-usb2-dr to
-> the match table and use the .data pointer for setting device specific
-> quirks.
+It wasn't in my situation, unfortunately.  To duplicate this, I had
+one relatively large kernel module, and then one simple 'hello world'
+module that did nothing more than call an exported function from the
+first module as part of its init.
 
-There is no match table. fsl_usb_of_init() is an arch_initcall and
-tests other properties using the same approach.
-
-> > + - invert-drvvbus : boolean; for MPC5121 only. Indicates the port
-> > + =C2=A0 power polarity of internal PHY signal DRVVBUS is inverted.
-> > + - invert-pwr-fault : boolean; for MPC5121 only. Indicates the
-> > + =C2=A0 PWR_FAULT signal polarity is inverted.
->=20
-> These are also characteristics of the chip, not the board, right?  If
-> so then these also can be determined implicitly by the compatible
-> value.
-
-No, these are characteristics of the board. The internal USB PHY doesn't
-provide supply voltage. Some boards use MIC2025 switches which require acti=
-ve
-high DRVVBUS and active low PWR_FAULT. Some boards could use MIC2026 or
-MAX1838 which require other polarities.
-
-> Finally, these are all freescale specific properties.  If you still
-> need them, then prefix the property names with 'fsl,'
-
-OK.
-
-> > ...
-> > +
-> > +config USB_FSL_BIG_ENDIAN_MMIO
-> > + =C2=A0 =C2=A0 =C2=A0 bool
->=20
-> What's this for?
-
-This is currently unused (will be used later), I will remove it for now.
-
-> > ...
-> > @@ -77,14 +77,13 @@ static int usb_hcd_fsl_probe(const struct hc_driver=
- *driver,
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> >
-> > - =C2=A0 =C2=A0 =C2=A0 res =3D platform_get_resource(pdev, IORESOURCE_I=
-RQ, 0);
-> > - =C2=A0 =C2=A0 =C2=A0 if (!res) {
-> > + =C2=A0 =C2=A0 =C2=A0 irq =3D platform_get_irq(pdev, 0);
-> > + =C2=A0 =C2=A0 =C2=A0 if (irq < 0) {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0dev_err(&pdev->d=
-ev,
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0"Found HC with no IRQ. Check %s setup!\n",
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0dev_name(&pdev->dev));
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> > - =C2=A0 =C2=A0 =C2=A0 irq =3D res->start;
->=20
-> Put this hunk in a separate patch.
-
-OK.
-
-> > ...
-> > + =C2=A0 =C2=A0 =C2=A0 if (pdata->have_sysif_regs) {
-> > =C2=A0#ifdef CONFIG_PPC_85xx
-> > - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000=
-008);
-> > - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x0=
-0000080);
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + =
-FSL_SOC_USB_PRICTRL, 0x00000008);
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + =
-FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
-> > =C2=A0#else
-> > - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000=
-00c);
-> > - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x0=
-0000040);
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + =
-FSL_SOC_USB_PRICTRL, 0x0000000c);
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + =
-FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
-> > =C2=A0#endif
-> > - =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x000000=
-01);
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(non_ehci + =
-FSL_SOC_USB_SICTRL, 0x00000001);
-> > + =C2=A0 =C2=A0 =C2=A0 }
-> > =C2=A0}
->=20
-> Unrelated whitespace changes.  Put in separate patch.
-
-OK.
-
-Thanks,
-
-Anatolij
+-Aaron
