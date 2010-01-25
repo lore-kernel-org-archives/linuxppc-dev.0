@@ -1,19 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4FA1D1007D1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 03:46:18 +1100 (EST)
-Subject: Re: Large physical address support on e500 platform
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 154361007D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 03:50:47 +1100 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Fix SMP when "cpu-release-addr" is in lowmem
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
-Date: Mon, 25 Jan 2010 10:46:10 -0600
-Message-Id: <C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
-References: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
-To: Aaron Pace <kodiakuppercut@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1264112935.31570.361.camel@localhost.localdomain>
+Date: Mon, 25 Jan 2010 10:50:42 -0600
+Message-Id: <512B1A06-4F10-45C8-8760-2F4EE98E6D84@freescale.com>
+References: <1261176637-23912-1-git-send-email-ptyser@xes-inc.com>
+	<1264112935.31570.361.camel@localhost.localdomain>
+To: Peter Tyser <ptyser@xes-inc.com>
+Cc: linuxppc-dev@ozlabs.org, Nate Case <ncase@xes-inc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +27,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jan 22, 2010, at 12:27 AM, Aaron Pace wrote:
+On Jan 21, 2010, at 4:28 PM, Peter Tyser wrote:
 
->>>=20
->>> Its possible that we've broken module/vmalloc support with
->>> "Large physical addressing".? Its not something I've
->>> tried in a while.? What kernel/git SHA are you using.
->>>=20
->=20
->> I'm just pulling in from the main kernel tree git.
->> My current version is 2.6.33-rc4-00193-gd1e4922-dirty,
->> but it had not changed since 2.6.33-rc2
->>=20
->> I started from 2.6.32, but I don't remember if I had a large PA
->> support enabled there.
->=20
-> Just to second this issue, the following commit is what broke this:
->=20
-> [76acc2c1a7a9a8c2cae7e9cf8d0a8b374a48aa94]
->=20
-> I didn't have time to delve into the whys & hows, but this commit
-> caused the same issue on an 8572 platform.
-> Reverting this one change allows everything (including 36-bit memory
-> access) to work correctly, as before.
+> On Fri, 2009-12-18 at 16:50 -0600, Peter Tyser wrote:
+>> Recent U-Boot commit 5ccd29c3679b3669b0bde5c501c1aa0f325a7acb caused
+>> the "cpu-release-addr" device tree property to contain the physical RAM
+>> location that secondary cores were spinning at.  Previously, the
+>> "cpu-release-addr" property contained a value referencing the boot page
+>> translation address range of 0xfffffxxx, which then indirectly accessed
+>> RAM.
+>> 
+>> The "cpu-release-addr" is currently ioremapped and the secondary cores
+>> kicked.  However, due to the recent change in "cpu-release-addr", it
+>> sometimes points to a memory location in low memory that cannot be
+>> ioremapped.  For example on a P2020-based board with 512MB of RAM the
+>> following error occurs on bootup:
+>> 
+>>  <...>
+>>  mpic: requesting IPIs ...
+>>  __ioremap(): phys addr 0x1ffff000 is RAM lr c05df9a0
+>>  Unable to handle kernel paging request for data at address 0x00000014
+>>  Faulting instruction address: 0xc05df9b0
+>>  Oops: Kernel access of bad area, sig: 11 [#1]
+>>  SMP NR_CPUS=2 P2020 RDB
+>>  Modules linked in:
+>>  <... eventual kernel panic>
+>> 
+>> Adding logic to conditionally ioremap or access memory directly resolves
+>> the issue.
+>> 
+>> Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+>> Signed-off-by: Nate Case <ncase@xes-inc.com>
+>> Reported-by: Dipen Dudhat <B09055@freescale.com>
+>> Tested-by: Dipen Dudhat <B09055@freescale.com>
+> 
+> Any chance this going to be picked up for 2.6.33?  The issue is
+> currently going to bite anyone using an MP-capable 85xx system that
+> doesn't use highmem.
 
-Is a simple "hello world" module sufficient to show the issue?  I'll =
-look into it this week.
+This just got lost in my queue.  Will apply and send up for .33
 
-- k=
+- k
