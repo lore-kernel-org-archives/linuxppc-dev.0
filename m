@@ -1,19 +1,30 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B5D894C.4090001@grandegger.com>
-Date: Mon, 25 Jan 2010 13:06:36 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <leitao@linux.vnet.ibm.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e24smtp04.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C493E1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 26 Jan 2010 00:42:38 +1100 (EST)
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+	by e24smtp04.br.ibm.com (8.14.3/8.13.1) with ESMTP id o0PDVXTM018661
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2010 11:31:33 -0200
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+	by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o0PDgVAn4034738
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2010 10:42:31 -0300
+Received: from d24av02.br.ibm.com (loopback [127.0.0.1])
+	by d24av02.br.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o0PDgVt4009749
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jan 2010 11:42:31 -0200
+Message-ID: <4B5D9FC5.5070600@linux.vnet.ibm.com>
+Date: Mon, 25 Jan 2010 11:42:29 -0200
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH 2/3] i2c-mpc: add support for the MPC512x processors	from
-	Freescale
-References: <1264408029-5290-1-git-send-email-wg@grandegger.com>
-	<1264408029-5290-2-git-send-email-wg@grandegger.com>
-	<1264408029-5290-3-git-send-email-wg@grandegger.com>
-	<20100125115211.GA5257@pengutronix.de>
-In-Reply-To: <20100125115211.GA5257@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Linux-i2c@vger.kernel.org, Wolfgang Grandegger <wg@denx.de>
+To: Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH] PCI-E broken on PPC (regression)
+Content-Type: text/plain; charset=UTF-8
+Cc: Jay Vosburgh <fubar@us.ibm.com>, Ron Mercer <ron.mercer@qlogic.com>,
+	kaneshige.kenji@jp.fujitsu.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,233 +34,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfram,
+Hello, 
 
-Wolfram Sang wrote:
-> Hi Wolfgang,
-> 
-> On Mon, Jan 25, 2010 at 09:27:08AM +0100, Wolfgang Grandegger wrote:
->> From: Wolfgang Grandegger <wg@denx.de>
->>
->> The "setclock" initialization functions have been renamed to "setup"
->> because I2C interrupts must be enabled for the MPC512x. This requires
->> to handle "fsl,preserve-clocking" in a slighly different way. Also,
->> the old settings are now reported calling dev_dbg(). For the MPC512x
->> the clock setup function of the MPC52xx can be re-used.
->>
->> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
->> ---
->>  drivers/i2c/busses/Kconfig   |    9 ++--
->>  drivers/i2c/busses/i2c-mpc.c |  122 ++++++++++++++++++++++++++++++------------
->>  2 files changed, 93 insertions(+), 38 deletions(-)
->>
->> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
->> index 5f318ce..f481f30 100644
->> --- a/drivers/i2c/busses/Kconfig
->> +++ b/drivers/i2c/busses/Kconfig
->> @@ -418,13 +418,14 @@ config I2C_IXP2000
->>  	  instead.
->>  
->>  config I2C_MPC
->> -	tristate "MPC107/824x/85xx/52xx/86xx"
->> +	tristate "MPC107/824x/85xx/512x/52xx/86xx"
->>  	depends on PPC32
->>  	help
->>  	  If you say yes to this option, support will be included for the
->> -	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
->> -	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
->> -	  family processors, though interrupts are known not to work.
->> +	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245,
->> +	  MPC85xx/MPC8641 and MPC512x family processors. The driver may
->> +	  also work on 52xx family processors, though interrupts are known
->> +	  not to work.
-> 
-> Opinion poll: Can we remove the "may work" sentence while we are here? It has
-> worked fine for years. BTW, which interrupts are meant here (from I2C slaves?
-> interrupts of the controller?)?
+I found that qlge is broken on PPC, and it got broken after commit 
+06a1cbafb253c4c60d6a54a994887f5fbceabcc0. It happens because dev->pcie 
+is not set on PPC, because the function set_pcie_port_type(), who sets
+dev->pcie, is not being called on PPC PCI code.
 
-I first wanted to remove this sentence but as I was not sure what it's
-exact meaning... Anyway, it's confusing and I would remove it.
+So, I have two ideas to fix it, the first one is to call 
+set_pcie_port_type() on pci_device_add() instead of pci_setup_device(). 
+Since that PPC device flow calls pci_device_add(), it fixes the problem
+without duplicating the caller for this function. 
 
->>  	  This driver can also be built as a module.  If so, the module
->>  	  will be called i2c-mpc.
->> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
->> index 2cb864e..70c3e5d 100644
->> --- a/drivers/i2c/busses/i2c-mpc.c
->> +++ b/drivers/i2c/busses/i2c-mpc.c
->> @@ -67,9 +67,8 @@ struct mpc_i2c_divider {
->>  };
->>  
->>  struct mpc_i2c_data {
->> -	void (*setclock)(struct device_node *node,
->> -			 struct mpc_i2c *i2c,
->> -			 u32 clock, u32 prescaler);
->> +	void (*setup)(struct device_node *node, struct mpc_i2c *i2c,
->> +		      u32 clock, u32 prescaler);
->>  	u32 prescaler;
->>  };
->>  
->> @@ -164,7 +163,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
->>  	return 0;
->>  }
->>  
->> -#ifdef CONFIG_PPC_MPC52xx
->> +#if defined(CONFIG_PPC_MPC52xx) || defined(CONFIG_PPC_MPC512x)
->>  static const struct __devinitdata mpc_i2c_divider mpc_i2c_dividers_52xx[] = {
->>  	{20, 0x20}, {22, 0x21}, {24, 0x22}, {26, 0x23},
->>  	{28, 0x24}, {30, 0x01}, {32, 0x25}, {34, 0x02},
->> @@ -216,12 +215,18 @@ static int __devinit mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock,
->>  	return div ? (int)div->fdr : -EINVAL;
->>  }
->>  
->> -static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
->> -					    struct mpc_i2c *i2c,
->> -					    u32 clock, u32 prescaler)
->> +static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->>  {
->>  	int ret, fdr;
->>  
->> +	if (clock == -1) {
-> 
-> Could we use 0 for 'no_clock'? This would make the above statement simply
+OTOH, it's also possible to add set_pcie_port_type() on pci.h and call
+it inside the PPC PCI files, specifically on of_create_pci_dev().
 
-"0" is already used to maintain backward compatibility setting a safe
-divider.
+I tested both ideas and they work perfect, so I'd like to figure out 
+which one is the most correct one. Both patches are attached here. 
 
-> 	if (!clock)
-> 
-> and saves us using -1 with a u32.
-> 
->> +		dev_dbg(i2c->dev, "using fdr %d\n",
->> +			readb(i2c->base + MPC_I2C_FDR));
->> +		return;	/* preserve clocking */
->> +	}
->> +
->>  	ret = mpc_i2c_get_fdr_52xx(node, clock, prescaler);
->>  	fdr = (ret >= 0) ? ret : 0x3f; /* backward compatibility */
->>  
->> @@ -230,13 +235,50 @@ static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
->>  	if (ret >= 0)
->>  		dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
->>  }
->> -#else /* !CONFIG_PPC_MPC52xx */
->> -static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
->> -					    struct mpc_i2c *i2c,
->> -					    u32 clock, u32 prescaler)
->> +#else /* !(CONFIG_PPC_MPC52xx || CONFIG_PPC_MPC512x) */
->> +static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->> +{
->> +}
->> +#endif /* CONFIG_PPC_MPC52xx || CONFIG_PPC_MPC512x */
->> +
->> +#ifdef CONFIG_PPC_MPC512x
->> +static void __devinit mpc_i2c_setup_512x(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->> +{
->> +	struct device_node *node_ctrl;
->> +	void __iomem *ctrl;
->> +	const u32 *pval;
->> +	u32 idx;
->> +
->> +	/* Enable I2C interrupts for mpc5121 */
->> +	node_ctrl = of_find_compatible_node(NULL, NULL,
->> +					    "fsl,mpc5121-i2c-ctrl");
->> +	if (node_ctrl) {
->> +		ctrl = of_iomap(node_ctrl, 0);
->> +		if (ctrl) {
->> +
->> +			/* Interrupt enable bits for i2c-0/1/2: bit 24/26/28 */
->> +			pval = of_get_property(node, "reg", NULL);
->> +			idx = (*pval & 0xff) / 0x20;
->> +			setbits32(ctrl, 1 << (24 + idx * 2));
->> +			iounmap(ctrl);
->> +		}
->> +		of_node_put(node_ctrl);
->> +	}
->> +
->> +	/* The clock setup for the 52xx works also fine for the 512x */
->> +	mpc_i2c_setup_52xx(node, i2c, clock, prescaler);
->> +}
->> +#else /* CONFIG_PPC_MPC512x */
->> +static void __devinit mpc_i2c_setup_512x(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->>  {
->>  }
->> -#endif /* CONFIG_PPC_MPC52xx*/
->> +#endif /* CONFIG_PPC_MPC512x */
->>  
->>  #ifdef CONFIG_FSL_SOC
->>  static const struct __devinitdata mpc_i2c_divider mpc_i2c_dividers_8xxx[] = {
->> @@ -322,12 +364,19 @@ static int __devinit mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock,
->>  	return div ? (int)div->fdr : -EINVAL;
->>  }
->>  
->> -static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
->> -					    struct mpc_i2c *i2c,
->> -					    u32 clock, u32 prescaler)
->> +static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->>  {
->>  	int ret, fdr;
->>  
->> +	if (clock == -1) {
->> +		dev_dbg(i2c->dev, "using dfsrr %d, fdr %d\n",
->> +			readb(i2c->base + MPC_I2C_DFSRR),
->> +			readb(i2c->base + MPC_I2C_FDR));
->> +		return;	/* preserve clocking */
->> +	}
->> +
->>  	ret = mpc_i2c_get_fdr_8xxx(node, clock, prescaler);
->>  	fdr = (ret >= 0) ? ret : 0x1031; /* backward compatibility */
->>  
->> @@ -340,9 +389,9 @@ static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
->>  }
->>  
->>  #else /* !CONFIG_FSL_SOC */
->> -static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
->> -					    struct mpc_i2c *i2c,
->> -					    u32 clock, u32 prescaler)
->> +static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
->> +					 struct mpc_i2c *i2c,
->> +					 u32 clock, u32 prescaler)
->>  {
->>  }
->>  #endif /* CONFIG_FSL_SOC */
->> @@ -525,21 +574,21 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
->>  		}
->>  	}
->>  
->> -	if (!of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
->> +	if (of_get_property(op->node, "fsl,preserve-clocking", NULL)) {
->> +		clock = -1;
->> +	} else {
->>  		prop = of_get_property(op->node, "clock-frequency", &plen);
->>  		if (prop && plen == sizeof(u32))
->>  			clock = *prop;
->> +	}
->>  
->> -		if (match->data) {
->> -			struct mpc_i2c_data *data =
->> -				(struct mpc_i2c_data *)match->data;
->> -			data->setclock(op->node, i2c, clock, data->prescaler);
->> -		} else {
->> -			/* Backwards compatibility */
->> -			if (of_get_property(op->node, "dfsrr", NULL))
->> -				mpc_i2c_setclock_8xxx(op->node, i2c,
->> -						      clock, 0);
->> -		}
->> +	if (match->data) {
->> +		struct mpc_i2c_data *data = (struct mpc_i2c_data *)match->data;
-> 
-> The cast should not be necessary.
+Thanks, 
+Breno
 
-Right.
+----- First idea -----
 
-Wolfgang.
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 98ffb2d..328c3ab 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -746,7 +746,6 @@ int pci_setup_device(struct pci_dev *dev)
+ 	dev->hdr_type = hdr_type & 0x7f;
+ 	dev->multifunction = !!(hdr_type & 0x80);
+ 	dev->error_state = pci_channel_io_normal;
+-	set_pcie_port_type(dev);
+ 	set_pci_aer_firmware_first(dev);
+ 
+ 	list_for_each_entry(slot, &dev->bus->slots, list)
+@@ -1052,6 +1051,7 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
+ 	/* Initialize various capabilities */
+ 	pci_init_capabilities(dev);
+ 
++	set_pcie_port_type(dev);
+ 	/*
+ 	 * Add the device to our list of discovered devices
+ 	 * and the bus list for fixup functions, etc.
+
+----- Second idea -----
+
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 7311fdf..f8820e8 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -160,6 +160,7 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+ 	dev->error_state = pci_channel_io_normal;
+ 	dev->dma_mask = 0xffffffff;
+ 
++	set_pcie_port_type(dev);
+ 	if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
+ 		/* a PCI-PCI bridge */
+ 		dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 98ffb2d..f787eea 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -681,7 +681,7 @@ static void pci_read_irq(struct pci_dev *dev)
+ 	dev->irq = irq;
+ }
+ 
+-static void set_pcie_port_type(struct pci_dev *pdev)
++void set_pcie_port_type(struct pci_dev *pdev)
+ {
+ 	int pos;
+ 	u16 reg16;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 174e539..765095b 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1269,6 +1269,7 @@ int pcibios_add_platform_entries(struct pci_dev *dev);
+ void pcibios_disable_device(struct pci_dev *dev);
+ int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+ 				 enum pcie_reset_state state);
++extern void set_pcie_port_type(struct pci_dev *pdev);
+ 
+ #ifdef CONFIG_PCI_MMCONFIG
+ extern void __init pci_mmcfg_early_init(void);
