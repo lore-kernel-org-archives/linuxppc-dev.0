@@ -1,19 +1,21 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 09BB71007D2
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 04:20:46 +1100 (EST)
-Subject: Re: [PATCH 1/4] edac: Remove unused mpc85xx debug code
-From: Peter Tyser <ptyser@xes-inc.com>
-To: bluesmoke-devel@lists.sourceforge.net
-In-Reply-To: <1258677749-15968-1-git-send-email-ptyser@xes-inc.com>
-References: <1258677749-15968-1-git-send-email-ptyser@xes-inc.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 25 Jan 2010 11:20:13 -0600
-Message-ID: <1264440013.22019.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, djiang@mvista.com
+	by ozlabs.org (Postfix) with ESMTPS id 1420A1007D3
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 04:25:34 +1100 (EST)
+Subject: Re: Large physical address support on e500 platform
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <bc81dc641001250906o18ba8e9cofbb02421ae046f65@mail.gmail.com>
+Date: Mon, 25 Jan 2010 11:25:27 -0600
+Message-Id: <F3189FB9-C04F-4C04-A6D4-25EF4D9B4BD6@kernel.crashing.org>
+References: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
+	<C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
+	<bc81dc641001250906o18ba8e9cofbb02421ae046f65@mail.gmail.com>
+To: Aaron Pace <kodiakuppercut@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2009-11-19 at 18:42 -0600, Peter Tyser wrote:
-> Some unused, unsupported debug code existed in the mpc85xx EDAC driver
-> that resulted in a build failure when CONFIG_EDAC_DEBUG was defined:
-> 
->   drivers/edac/mpc85xx_edac.c: In function 'mpc85xx_mc_err_probe':
->   drivers/edac/mpc85xx_edac.c:1031: error: implicit declaration of function 'edac_mc_register_mcidev_debug'
->   drivers/edac/mpc85xx_edac.c:1031: error: 'debug_attr' undeclared (first use in this function)
->   drivers/edac/mpc85xx_edac.c:1031: error: (Each undeclared identifier is reported only once
->   drivers/edac/mpc85xx_edac.c:1031: error: for each function it appears in.)
-> 
-> Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
 
-<snip>
+On Jan 25, 2010, at 11:06 AM, Aaron Pace wrote:
 
-Any chance some of these will be picked up for 2.6.33?
+>>=20
+>> Is a simple "hello world" module sufficient to show the issue?  I'll =
+look into it this week.
+>>=20
+>> - k
+>=20
+> It wasn't in my situation, unfortunately.  To duplicate this, I had
+> one relatively large kernel module, and then one simple 'hello world'
+> module that did nothing more than call an exported function from the
+> first module as part of its init.
 
-I added Kumar on CC as I'm not sure if these should go through the EDAC
-or PPC tree.
+Ok, if there is a module or something you can post that reproduces the =
+issue that would be extremely helpful.
 
-1/4 fixes a build error when CONFIG_EDAC_DEBUG is defined and is pretty
-trivial.
-
-2/4 fixes a regression which results in ECC detection not working.
-
-3/4 and 4/4 are "improvements", but don't necessarily need to go into
-2.6.33.
-
-Best,
-Peter
+- k=
