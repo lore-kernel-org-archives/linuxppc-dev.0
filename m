@@ -1,29 +1,12 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 391AE1007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jan 2010 07:48:39 +1100 (EST)
-Date: Mon, 25 Jan 2010 21:48:33 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH 2/3] i2c-mpc: add support for the MPC512x processors
-	from Freescale
-Message-ID: <20100125204833.GB9693@pengutronix.de>
-References: <1264408029-5290-1-git-send-email-wg@grandegger.com>
-	<1264408029-5290-2-git-send-email-wg@grandegger.com>
-	<1264408029-5290-3-git-send-email-wg@grandegger.com>
-	<20100125115211.GA5257@pengutronix.de>
-	<4B5D894C.4090001@grandegger.com>
-	<20100125151509.GD5257@pengutronix.de>
-	<4B5DE3FB.10505@grandegger.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5I6of5zJg18YgZEa"
-In-Reply-To: <4B5DE3FB.10505@grandegger.com>
+Return-Path: <wg@denx.de>
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: Linux-i2c@vger.kernel.org
+Subject: [PATCH v2 0/3] i2c-mpc: add support for the Freescale MPC512x and
+	other fixes
+Date: Mon, 25 Jan 2010 21:55:03 +0100
+Message-Id: <1264452906-32536-1-git-send-email-wg@grandegger.com>
 Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Linux-i2c@vger.kernel.org, Wolfgang Grandegger <wg@denx.de>
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,34 +16,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Wolfgang Grandegger <wg@denx.de>
 
---5I6of5zJg18YgZEa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch series adds support for the MPC512x from Freescale to the
+i2c-mpc driver. At that occasion, issues with  __devinit[data] have
+been fixed and the doc of the FSL I2C dts bindings updated. It has
+been tested on a MPC5121ADS, TQM5200 and TQM8560 board
 
-> overkill to me. I will have a closer look, though. At a minimum I will
-> replace "-1" with "MPC_I2C_PRESERVE_CLOCK".
+Changes since v1:
 
-Might be also an idea to define it with ~0 (clock is still unsigned). If
-possible, the code checking for those two cases (0 and "-1") should be close
-together. That could be a compromise until more quirks are needed ;)
+- use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
+- document the special DTS node "fsl,mpc5121-i2c-ctrl".
+- update and correct the Kconfig help.
+- some other minor fixes as suggested by Wolfram.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Wolfgang
 
---5I6of5zJg18YgZEa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Wolfgang Grandegger (3):
+  i2c-mpc: use __devinit[data] for initialization functions and data
+  i2c-mpc: add support for the MPC512x processors from Freescale
+  powerpc: doc/dts-bindings: update doc of FSL I2C bindings
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkteA6EACgkQD27XaX1/VRsl0QCdHfqhq/t2ipj5ikJre/V9RWhQ
-6hMAoImtshgFQs81jBThv8XBWDODYIAh
-=fZeb
------END PGP SIGNATURE-----
-
---5I6of5zJg18YgZEa--
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++-
+ drivers/i2c/busses/Kconfig                     |    7 +-
+ drivers/i2c/busses/i2c-mpc.c                   |  190 +++++++++++++++---------
+ 3 files changed, 147 insertions(+), 80 deletions(-)
