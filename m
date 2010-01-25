@@ -1,21 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 24AB0100892
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 05:11:16 +1100 (EST)
-Date: Mon, 25 Jan 2010 21:11:14 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>,
-	David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 4/4] powerpc/mcu_mpc8349emitx: Remove OF GPIO handling stuff
-Message-ID: <20100125181114.GD13805@oksana.dev.rtsoft.ru>
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4B5DE3FB.10505@grandegger.com>
+Date: Mon, 25 Jan 2010 19:33:31 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
-Cc: Bill Gatliff <bgat@billgatliff.com>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 2/3] i2c-mpc: add support for the MPC512x processors	from
+	Freescale
+References: <1264408029-5290-1-git-send-email-wg@grandegger.com>
+	<1264408029-5290-2-git-send-email-wg@grandegger.com>
+	<1264408029-5290-3-git-send-email-wg@grandegger.com>
+	<20100125115211.GA5257@pengutronix.de>
+	<4B5D894C.4090001@grandegger.com>
+	<20100125151509.GD5257@pengutronix.de>
+In-Reply-To: <20100125151509.GD5257@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
+	Linux-i2c@vger.kernel.org, Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,130 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the new OF GPIO infrastructure it's much easier to handle I2C
-GPIO controllers, i.e. now drivers don't have to deal with the
-OF-specific bits.
+Wolfram Sang wrote:
+>>>>  
+>>>> -static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
+>>>> -					    struct mpc_i2c *i2c,
+>>>> -					    u32 clock, u32 prescaler)
+>>>> +static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
+>>>> +					 struct mpc_i2c *i2c,
+>>>> +					 u32 clock, u32 prescaler)
+>>>>  {
+>>>>  	int ret, fdr;
+>>>>  
+>>>> +	if (clock == -1) {
+>>> Could we use 0 for 'no_clock'? This would make the above statement simply
+>> "0" is already used to maintain backward compatibility setting a safe
+>> divider.
+> 
+> Ah, now I see:
+> 
+> 'clock == -1' means 'preserve clocks' (and is checked here in mpc_i2c_setup_52xx())
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   68 +++++-------------------
- 1 files changed, 14 insertions(+), 54 deletions(-)
+Yes, this is now necessary because "setup" does not just do clock settings.
 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index 73c7e6b..5525175 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -18,8 +18,6 @@
- #include <linux/mutex.h>
- #include <linux/i2c.h>
- #include <linux/gpio.h>
--#include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- 
-@@ -36,7 +34,7 @@ struct mcu {
- 	struct mutex lock;
- 	struct device_node *np;
- 	struct i2c_client *client;
--	struct of_gpio_chip of_gc;
-+	struct gpio_chip gc;
- 	u8 reg_ctrl;
- };
- 
-@@ -55,8 +53,7 @@ static void mcu_power_off(void)
- 
- static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_gpio_chip *of_gc = to_of_gpio_chip(gc);
--	struct mcu *mcu = container_of(of_gc, struct mcu, of_gc);
-+	struct mcu *mcu = container_of(gc, struct mcu, gc);
- 	u8 bit = 1 << (4 + gpio);
- 
- 	mutex_lock(&mcu->lock);
-@@ -75,53 +72,6 @@ static int mcu_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int mcu_gpiochip_add(struct mcu *mcu)
--{
--	struct device_node *np;
--	struct of_gpio_chip *of_gc = &mcu->of_gc;
--	struct gpio_chip *gc = &of_gc->gc;
--	int ret;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,mcu-mpc8349emitx");
--	if (!np)
--		return -ENODEV;
--
--	gc->owner = THIS_MODULE;
--	gc->label = np->full_name;
--	gc->can_sleep = 1;
--	gc->ngpio = MCU_NUM_GPIO;
--	gc->base = -1;
--	gc->set = mcu_gpio_set;
--	gc->direction_output = mcu_gpio_dir_out;
--	of_gc->chip = gc;
--	of_gc->gpio_cells = 2;
--	of_gc->xlate = of_gpio_simple_xlate;
--
--	np->data = of_gc;
--	mcu->np = np;
--
--	/*
--	 * We don't want to lose the node, its ->data and ->full_name...
--	 * So, if succeeded, we don't put the node here.
--	 */
--	ret = gpiochip_add(gc);
--	if (ret)
--		of_node_put(np);
--	return ret;
--}
--
--static int mcu_gpiochip_remove(struct mcu *mcu)
--{
--	int ret;
--
--	ret = gpiochip_remove(&mcu->of_gc.gc);
--	if (ret)
--		return ret;
--	of_node_put(mcu->np);
--
--	return 0;
--}
--
- static int __devinit mcu_probe(struct i2c_client *client,
- 			       const struct i2c_device_id *id)
- {
-@@ -141,7 +91,16 @@ static int __devinit mcu_probe(struct i2c_client *client,
- 		goto err;
- 	mcu->reg_ctrl = ret;
- 
--	ret = mcu_gpiochip_add(mcu);
-+	mcu->gc.dev = &client->dev;
-+	mcu->gc.owner = THIS_MODULE;
-+	mcu->gc.label = dev_name(&client->dev);
-+	mcu->gc.can_sleep = 1;
-+	mcu->gc.ngpio = MCU_NUM_GPIO;
-+	mcu->gc.base = -1;
-+	mcu->gc.set = mcu_gpio_set;
-+	mcu->gc.direction_output = mcu_gpio_dir_out;
-+
-+	ret = gpiochip_add(&mcu->gc);
- 	if (ret)
- 		goto err;
- 
-@@ -168,9 +127,10 @@ static int __devexit mcu_remove(struct i2c_client *client)
- 		glob_mcu = NULL;
- 	}
- 
--	ret = mcu_gpiochip_remove(mcu);
-+	ret = gpiochip_remove(&mcu->gc);
- 	if (ret)
- 		return ret;
-+
- 	i2c_set_clientdata(client, NULL);
- 	kfree(mcu);
- 	return 0;
--- 
-1.6.5.7
+> 'clock ==  0' means 'safe divider' (and is checked in mpc_i2c_get_fdr_52xx())
+
+This is for compatibility with old DTS files and last time it was tricky
+ to get that right and therefore...
+
+> This is not a beauty ;)
+> 
+> What about adding a flags variable to the setup-functions?
+
+.. I hesitate to make bigger changes to the code flow, which the
+introduction of a flags variable would required. Also it seems to be
+overkill to me. I will have a closer look, though. At a minimum I will
+replace "-1" with "MPC_I2C_PRESERVE_CLOCK".
+
+Wolfgang.
