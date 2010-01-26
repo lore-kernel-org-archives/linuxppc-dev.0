@@ -1,19 +1,20 @@
 Return-Path: <david-b@pacbell.net>
-Received: from smtp128.sbc.mail.sp1.yahoo.com (smtp128.sbc.mail.sp1.yahoo.com
-	[69.147.65.187]) by ozlabs.org (Postfix) with SMTP id 8813FB7E3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 08:01:22 +1100 (EST)
+Received: from smtp127.sbc.mail.sp1.yahoo.com (smtp127.sbc.mail.sp1.yahoo.com
+	[69.147.65.186]) by ozlabs.org (Postfix) with SMTP id 78BA1B7E41
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 08:03:04 +1100 (EST)
 From: David Brownell <david-b@pacbell.net>
 To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Date: Tue, 26 Jan 2010 13:01:05 -0800
+Subject: Re: [PATCH 2/4] of/gpio: Add support for two-stage registration for
+	the of_gpio_chips
+Date: Tue, 26 Jan 2010 13:02:43 -0800
 References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
-	<201001252234.30169.david-b@pacbell.net>
-	<20100126172824.GA20319@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100126172824.GA20319@oksana.dev.rtsoft.ru>
+	<201001252236.16141.david-b@pacbell.net>
+	<20100126174347.GB20319@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100126174347.GB20319@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <201001261301.05475.david-b@pacbell.net>
+Message-Id: <201001261302.44424.david-b@pacbell.net>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -29,14 +30,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tuesday 26 January 2010, Anton Vorontsov wrote:
-> > Just
-> > inline the little two blocking_notifier_call_chain() calls directly,
-> > making this a *LOT* simpler.
 > 
-> I'd rather stay with gpio_call_chain() helper, it makes the code
-> a little bit prettier, IMO. Compare this:
+> > Why have two options, instead of just the first/simpler one??
+> 
+> Because I2C/SPI drivers allocate (and register) gpio_chip structures
+> by themselves, so the first option is a no-go.
 
-The one without the wrapper is IMO more clear, since it doesn't
-obfuscate anything.  Fewer lines of code, too.  :)
-
-Pretty is a good attribute ... but is a distant third to clarity.
+You should be mentioning such issues in the patch comments.
