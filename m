@@ -1,31 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B550B7EBD
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5088CB7CE2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jan 2010 09:18:15 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o0QMIBJq019422 for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jan 2010 15:18:11 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o0QMP0wg018647
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jan 2010 16:25:00 -0600 (CST)
-Message-ID: <4B5F6A11.70409@freescale.com>
-Date: Tue, 26 Jan 2010 16:17:53 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Dan.Geer@faa.gov
-Subject: Re: BSE-IP
-References: <OF54D7A55A.FE6F4A1D-ON852576B7.00781D7D-852576B7.00794B17@faa.gov>
-In-Reply-To: <OF54D7A55A.FE6F4A1D-ON852576B7.00781D7D-852576B7.00794B17@faa.gov>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+	Wed, 27 Jan 2010 10:28:05 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0QNISqe014391
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2010 18:18:29 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o0QNS2lt118346
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2010 18:28:02 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o0QNS1U6023848
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jan 2010 21:28:01 -0200
+Subject: [PATCHv2 0/2] sched: arch_scale_smt_powers v2
+From: Joel Schopp <jschopp@austin.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1264017638.5717.121.camel@jschopp-laptop>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 26 Jan 2010 17:27:59 -0600
+Message-ID: <1264548479.12239.54.camel@jschopp-laptop>
+Mime-Version: 1.0
+Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan.Geer@faa.gov wrote:
-> Any idea of the last kernel version that worked?  So I know I can count on
-> that as a reference?  
+The new Power7 processor has 4 way SMT.  This 4 way SMT benefits from
+dynamic power updates that arch_scale_smt_power was designed to provide.
+The first patch fixes a generic scheduler bug necessary for arch_scale_smt
+to properly function.  The second patch implements arch_scale_smt_power 
+for powerpc, and in particular for Power7 processors.
 
-I'm not familiar with the board, sorry -- was just pointing out that 
-there shouldn't be anything too dependent on the particular boards/chips 
-  that are currently supported out-of-the-box, and it should be easier 
-to add a new board than it used to be.
+Version 2 changes:
+- Drop Patch 1 from the original series since it's in the -tip tree now
+- Move enabling the cpu feature into it's own patch (now patch 1)
+- Add stubbing out broken x86 implementation to patch 1
+- clean up coding style in patch 2
 
-> I have the 2.2 pre7 from BSE, but there have been a few changes since. ;^)
+---
+Joel Schopp (2):
+powerpc: implement arch_scale_smt_power for Power7
+sched: enable ARCH_POWER
 
-Hopefully not changes in the board. :-)
-
-That kernel should still work for extracting any knowledge about the 
-board's hardware that may or may not be clear from its documentation.
-
-> It appears the image (bootwrapper) needs to be completely self-contained,
-> and needs to understand how to read the flash parameters.  That's on my
-> list.
-
-What firmware is on the board?
-
--Scott
+ arch/powerpc/include/asm/cputable.h |    3 +-
+ arch/powerpc/kernel/smp.c           |   52 ++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/cpu/sched.c         |    6 +---
+ kernel/sched_features.h             |    2 -
+ 4 files changed, 57 insertions(+), 6 deletions(-)
