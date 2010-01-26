@@ -1,27 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99404B7CCD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 26 Jan 2010 15:27:18 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <4B5DD9F1.2010002@austin.ibm.com>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<26556.1264021443@neuling.org>
-	<4B577F1A.9060907@austin.ibm.com> <1264302028.3601.36.camel@pasglop>
-	<4B5DD9F1.2010002@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 26 Jan 2010 15:23:56 +1100
-Message-ID: <1264479836.3601.113.camel@pasglop>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp102.sbc.mail.gq1.yahoo.com (smtp102.sbc.mail.gq1.yahoo.com
+	[67.195.15.61]) by ozlabs.org (Postfix) with SMTP id 5BC8F1007D2
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 17:43:07 +1100 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 2/4] of/gpio: Add support for two-stage registration for
+	the of_gpio_chips
+Date: Mon, 25 Jan 2010 22:36:15 -0800
+References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
+	<20100125181103.GB13805@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100125181103.GB13805@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <201001252236.16141.david-b@pacbell.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Bill Gatliff <bgat@billgatliff.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-01-25 at 11:50 -0600, Joel Schopp wrote:
-> > Look at the cputhreads.h implementation ... Today we only support
-> > power-of-two numbers of threads.
-> >   
-> I've run 3 threads using cpu hotplug to offline 1 of the 4.  It's 
-> certainly a stupid idea, but there you go. 
+On Monday 25 January 2010, Anton Vorontsov wrote:
+> With this patch there are two ways to register OF GPIO controllers:
+> 
+> 1. Allocating the of_gpio_chip structure and passing the
+>    &of_gc->gc pointer to the gpiochip_add. (Can use container_of
+>    to convert the gpio_chip to the of_gpio_chip.)
+> 
+> 2. Allocating and registering the gpio_chip structure separately
+>    from the of_gpio_chip. (Since two allocations are separate,
+>    container_of won't work.)
+> 
+> As time goes by we'll kill the first option.
 
-Oh, you mean you need to use the actual online count ? In which case,
-yes, you do indeed need to be a bit more careful... In this case though,
-you're probably better off special casing "3" :-)
-
-Cheers,
-Ben.
+Why have two options, instead of just the first/simpler one??
