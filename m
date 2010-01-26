@@ -1,22 +1,12 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B5F3829.5080902@grandegger.com>
-Date: Tue, 26 Jan 2010 19:44:57 +0100
+Return-Path: <wg@denx.de>
 From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [PATCH 2/3] i2c-mpc: add support for the MPC512x processors from
-	Freescale
-References: <1264408029-5290-1-git-send-email-wg@grandegger.com>
-	<1264408029-5290-2-git-send-email-wg@grandegger.com>
-	<1264408029-5290-3-git-send-email-wg@grandegger.com>
-	<20100125115211.GA5257@pengutronix.de>
-	<4B5D894C.4090001@grandegger.com>
-	<20100125151509.GD5257@pengutronix.de>
-	<20100126143925.GD12774@fluff.org.uk>
-In-Reply-To: <20100126143925.GD12774@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux-i2c@vger.kernel.org
+Subject: [PATCH v3 0/3] i2c-mpc: add support for the Freescale MPC512x and
+	other fixes
+Date: Tue, 26 Jan 2010 20:28:12 +0100
+Message-Id: <1264534095-20777-1-git-send-email-wg@grandegger.com>
 Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>, Linux-i2c@vger.kernel.org
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben Dooks wrote:
-> On Mon, Jan 25, 2010 at 04:15:09PM +0100, Wolfram Sang wrote:
->>>>>  
->>>>> -static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
->>>>> -					    struct mpc_i2c *i2c,
->>>>> -					    u32 clock, u32 prescaler)
->>>>> +static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
->>>>> +					 struct mpc_i2c *i2c,
->>>>> +					 u32 clock, u32 prescaler)
->>>>>  {
->>>>>  	int ret, fdr;
->>>>>  
->>>>> +	if (clock == -1) {
->>>> Could we use 0 for 'no_clock'? This would make the above statement simply
->>> "0" is already used to maintain backward compatibility setting a safe
->>> divider.
->> Ah, now I see:
->>
->> 'clock == -1' means 'preserve clocks' (and is checked here in mpc_i2c_setup_52xx())
->> 'clock ==  0' means 'safe divider' (and is checked in mpc_i2c_get_fdr_52xx())
-> 
-> hmm, sounds like a job for a  #define or similar.
+From: Wolfgang Grandegger <wg@denx.de>
 
-See v2 of this patch.
+This patch series adds support for the MPC512x from Freescale to the
+i2c-mpc driver. At that occasion, issues with  __devinit[data] have
+been fixed and the doc of the FSL I2C dts bindings updated. It has
+been tested on a MPC5121ADS, TQM5200 and TQM8560 board
 
-Wolfgang.
+Changes since v1:
+
+- use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
+- document the special DTS node "fsl,mpc5121-i2c-ctrl".
+- update and correct the Kconfig help.
+- some other minor fixes as suggested by Wolfram.
+
+Changes since v2:
+
+- use __init[data] instead of __devinit[data] for this driver.
+
+Wolfgang
+
+Wolfgang Grandegger (3):
+  i2c-mpc: use __init[data] for initialization functions and data
+  i2c-mpc: add support for the MPC512x processors from Freescale
+  powerpc: doc/dts-bindings: update doc of FSL I2C bindings
+
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++-
+ drivers/i2c/busses/Kconfig                     |    7 +-
+ drivers/i2c/busses/i2c-mpc.c                   |  197 +++++++++++++++---------
+ 3 files changed, 150 insertions(+), 84 deletions(-)
