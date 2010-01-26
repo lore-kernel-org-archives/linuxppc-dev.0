@@ -1,18 +1,19 @@
 Return-Path: <david-b@pacbell.net>
 Received: from smtp102.sbc.mail.gq1.yahoo.com (smtp102.sbc.mail.gq1.yahoo.com
-	[67.195.15.61]) by ozlabs.org (Postfix) with SMTP id 5E2211007D3
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 17:43:07 +1100 (EST)
+	[67.195.15.61]) by ozlabs.org (Postfix) with SMTP id 5917A1007D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 17:43:08 +1100 (EST)
 From: David Brownell <david-b@pacbell.net>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Date: Mon, 25 Jan 2010 22:34:29 -0800
+Subject: Re: [PATCH 4/4] powerpc/mcu_mpc8349emitx: Remove OF GPIO handling
+	stuff
+Date: Mon, 25 Jan 2010 22:43:04 -0800
 References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
-	<20100125181100.GA13805@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100125181100.GA13805@oksana.dev.rtsoft.ru>
+	<20100125181114.GD13805@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100125181114.GD13805@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
+Message-Id: <201001252243.04888.david-b@pacbell.net>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <201001252234.30169.david-b@pacbell.net>
+  charset="us-ascii"
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -28,19 +29,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Monday 25 January 2010, Anton Vorontsov wrote:
-> 
-> +config GPIOLIB_NOTIFIER
-> +       bool
-> +       help
-> +         This symbol is selected by subsystems that need to handle GPIO
-> +         chips addition and removal. E.g., this is used for the
-> +         OpenFirmware bindings.
-> +
+> With the new OF GPIO infrastructure it's much easier to handle I2C
+> GPIO controllers, i.e. now drivers don't have to deal with the
+> OF-specific bits.
 
-I'm no huge fan of notifiers, but I suppose they have their place.
+Good, that's how it should have been done in the first place.  :)
 
-However ... I don't see a lot of win to making this optional.  Just
-inline the little two blocking_notifier_call_chain() calls directly,
-making this a *LOT* simpler.
-
-- Dave
+Of course, there's still the question of how to get driver-specific
+configuration data into the driver...
