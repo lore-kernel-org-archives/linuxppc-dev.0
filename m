@@ -1,24 +1,20 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp102.sbc.mail.gq1.yahoo.com (smtp102.sbc.mail.gq1.yahoo.com
-	[67.195.15.61]) by ozlabs.org (Postfix) with SMTP id 5917A1007D1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 17:43:08 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 4/4] powerpc/mcu_mpc8349emitx: Remove OF GPIO handling
-	stuff
-Date: Mon, 25 Jan 2010 22:43:04 -0800
-References: <20100125180957.GA5380@oksana.dev.rtsoft.ru>
-	<20100125181114.GD13805@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100125181114.GD13805@oksana.dev.rtsoft.ru>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id D6B7CB7CC1
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 18:34:46 +1100 (EST)
+Message-ID: <4B5E9ACF.7000206@grandegger.com>
+Date: Tue, 26 Jan 2010 08:33:35 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Message-Id: <201001252243.04888.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bill Gatliff <bgat@billgatliff.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: [PATCH/RFC 2/2] 5200: improve i2c bus error recovery
+References: <1264191502.2224.2@antares> <4B5D4E56.3020902@grandegger.com>
+	<1264451219.2315.1@antares>
+In-Reply-To: <1264451219.2315.1@antares>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 25 January 2010, Anton Vorontsov wrote:
-> With the new OF GPIO infrastructure it's much easier to handle I2C
-> GPIO controllers, i.e. now drivers don't have to deal with the
-> OF-specific bits.
+Albrecht Dreß wrote:
+> Am 25.01.10 08:55 schrieb(en) Wolfgang Grandegger:
+>> Albrecht Dreß wrote:
+>>> Make the I2C adapter timeout configurable through a Device Tree
+>>> property which gives the timeout in microseconds.
+>>
+>> My understanding is that software properties should not be defined via
+>> the device tree. I think a sysfs entry is more appropriate.
+> 
+> Is the timeout really a /software/ property?  My feeling is that the
+> timeout basically depends upon the bus clock and the chips attached to
+> the bus.  Therefore, it is linked closer to the composition of the
+> board's hardware as described in the device tree, than to any userland
+> software.  Or am I totally wrong here?
 
-Good, that's how it should have been done in the first place.  :)
+Well, yes, it seems to be a border case.
 
-Of course, there's still the question of how to get driver-specific
-configuration data into the driver...
+Wolfgang.
