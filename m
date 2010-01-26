@@ -1,25 +1,14 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 06EC8B7CE7
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 23:16:38 +1100 (EST)
-Date: Tue, 26 Jan 2010 13:16:21 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH 0/11] Update support for MPC512x
-Message-ID: <20100126121621.GA4431@pengutronix.de>
-References: <1263932653-3634-1-git-send-email-agust@denx.de>
-	<20100120112232.GD5041@pengutronix.de>
-	<20100126090633.74257b1a@wker>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
-In-Reply-To: <20100126090633.74257b1a@wker>
-Cc: rtc-linux@googlegroups.com, dzu@denx.de, netdev@vger.kernel.org,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
-	Dan Williams <dan.j.williams@intel.com>
+	by ozlabs.org (Postfix) with ESMTPS id 2FA28B7CF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 00:50:21 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc/44x: Add MTD support (NOR FLASH) to Katmai dts
+Date: Tue, 26 Jan 2010 14:50:07 +0100
+Message-Id: <1264513807-16289-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +18,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch adds NOR FLASH MTD support to the Katmai (440SPe) dts file.
 
---HcAYCG3uE/tztfnV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Additionally with a small whitespace cleanup.
 
-> No, I don't have a git tree for this now, sorry.
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
+ arch/powerpc/boot/dts/katmai.dts |   71 +++++++++++++++++++++++++++----------
+ 1 files changed, 52 insertions(+), 19 deletions(-)
 
-No problem, I set one up at:
-
-	git://git.pengutronix.de/git/wsa/linux-2.6.git
-
-It is based on 2.6.33-rc5 and contains the newest patches for FEC and I2C. =
-(I
-will pick up the patches as they show up on the lists, so this tree will be
-rebased!)
-
-This tree includes all MPC5121-patches and the two USB-patches from Anton. I
-haven't actually tested them yet, but they all applied cleanly, at least.
-Testing will come soon...
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---HcAYCG3uE/tztfnV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkte3RUACgkQD27XaX1/VRueqACgzELpbWZLj3PaSUx0F9SZp7FX
-PbQAnjyi1ZRptgosw9GUBZlgJzczKcNh
-=/8WQ
------END PGP SIGNATURE-----
-
---HcAYCG3uE/tztfnV--
+diff --git a/arch/powerpc/boot/dts/katmai.dts b/arch/powerpc/boot/dts/katmai.dts
+index 8f345de..8cf2c0c 100644
+--- a/arch/powerpc/boot/dts/katmai.dts
++++ b/arch/powerpc/boot/dts/katmai.dts
+@@ -156,7 +156,7 @@
+ 			compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+-			ranges = <0x00000000 0x00000004 0xe0000000 0x20000000>;
++			ranges = <0xe0000000 0x00000004 0xe0000000 0x20000000>;
+ 			clock-frequency = <0>; /* Filled in by zImage */
+ 
+ 			EBC0: ebc {
+@@ -165,14 +165,47 @@
+ 				#address-cells = <2>;
+ 				#size-cells = <1>;
+ 				clock-frequency = <0>; /* Filled in by zImage */
++				/* ranges property is supplied by U-Boot */
+ 				interrupts = <0x5 0x1>;
+ 				interrupt-parent = <&UIC1>;
++
++				nor_flash@0,0 {
++					compatible = "cfi-flash";
++					bank-width = <2>;
++					reg = <0x00000000 0x00000000 0x01000000>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					partition@0 {
++						label = "kernel";
++						reg = <0x00000000 0x001e0000>;
++					};
++					partition@1e0000 {
++						label = "dtb";
++						reg = <0x001e0000 0x00020000>;
++					};
++					partition@200000 {
++						label = "root";
++						reg = <0x00200000 0x00200000>;
++					};
++					partition@400000 {
++						label = "user";
++						reg = <0x00400000 0x00b60000>;
++					};
++					partition@f60000 {
++						label = "env";
++						reg = <0x00f60000 0x00040000>;
++					};
++					partition@fa0000 {
++						label = "u-boot";
++						reg = <0x00fa0000 0x00060000>;
++					};
++				};
+ 			};
+ 
+-			UART0: serial@10000200 {
++			UART0: serial@f0000200 {
+ 				device_type = "serial";
+ 				compatible = "ns16550";
+-				reg = <0x10000200 0x00000008>;
++				reg = <0xf0000200 0x00000008>;
+ 				virtual-reg = <0xa0000200>;
+ 				clock-frequency = <0>; /* Filled in by zImage */
+ 				current-speed = <115200>;
+@@ -180,10 +213,10 @@
+ 				interrupts = <0x0 0x4>;
+ 			};
+ 
+-			UART1: serial@10000300 {
++			UART1: serial@f0000300 {
+ 				device_type = "serial";
+ 				compatible = "ns16550";
+-				reg = <0x10000300 0x00000008>;
++				reg = <0xf0000300 0x00000008>;
+ 				virtual-reg = <0xa0000300>;
+ 				clock-frequency = <0>;
+ 				current-speed = <0>;
+@@ -192,10 +225,10 @@
+ 			};
+ 
+ 
+-			UART2: serial@10000600 {
++			UART2: serial@f0000600 {
+ 				device_type = "serial";
+ 				compatible = "ns16550";
+-				reg = <0x10000600 0x00000008>;
++				reg = <0xf0000600 0x00000008>;
+ 				virtual-reg = <0xa0000600>;
+ 				clock-frequency = <0>;
+ 				current-speed = <0>;
+@@ -203,27 +236,27 @@
+ 				interrupts = <0x5 0x4>;
+ 			};
+ 
+-			IIC0: i2c@10000400 {
++			IIC0: i2c@f0000400 {
+ 				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
+-				reg = <0x10000400 0x00000014>;
++				reg = <0xf0000400 0x00000014>;
+ 				interrupt-parent = <&UIC0>;
+ 				interrupts = <0x2 0x4>;
+ 			};
+ 
+-			IIC1: i2c@10000500 {
++			IIC1: i2c@f0000500 {
+ 				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
+-				reg = <0x10000500 0x00000014>;
++				reg = <0xf0000500 0x00000014>;
+ 				interrupt-parent = <&UIC0>;
+ 				interrupts = <0x3 0x4>;
+ 			};
+ 
+-			EMAC0: ethernet@10000800 {
++			EMAC0: ethernet@f0000800 {
+ 				linux,network-index = <0x0>;
+ 				device_type = "network";
+ 				compatible = "ibm,emac-440spe", "ibm,emac4";
+ 				interrupt-parent = <&UIC1>;
+ 				interrupts = <0x1c 0x4 0x1d 0x4>;
+-				reg = <0x10000800 0x00000074>;
++				reg = <0xf0000800 0x00000074>;
+ 				local-mac-address = [000000000000];
+ 				mal-device = <&MAL0>;
+ 				mal-tx-channel = <0>;
+@@ -248,11 +281,11 @@
+ 			primary;
+ 			large-inbound-windows;
+ 			enable-msi-hole;
+-			reg = <0x0000000c 0x0ec00000   0x00000008	/* Config space access */
+-			       0x00000000 0x00000000 0x00000000		/* no IACK cycles */
+-			       0x0000000c 0x0ed00000   0x00000004   /* Special cycles */
+-			       0x0000000c 0x0ec80000 0x00000100	/* Internal registers */
+-			       0x0000000c 0x0ec80100  0x000000fc>;	/* Internal messaging registers */
++			reg = <0x0000000c 0x0ec00000 0x00000008   /* Config space access */
++			       0x00000000 0x00000000 0x00000000   /* no IACK cycles */
++			       0x0000000c 0x0ed00000 0x00000004   /* Special cycles */
++			       0x0000000c 0x0ec80000 0x00000100   /* Internal registers */
++			       0x0000000c 0x0ec80100 0x000000fc>; /* Internal messaging registers */
+ 
+ 			/* Outbound ranges, one memory and one IO,
+ 			 * later cannot be changed
+@@ -453,6 +486,6 @@
+ 	};
+ 
+ 	chosen {
+-		linux,stdout-path = "/plb/opb/serial@10000200";
++		linux,stdout-path = "/plb/opb/serial@f0000200";
+ 	};
+ };
+-- 
+1.6.6.1
