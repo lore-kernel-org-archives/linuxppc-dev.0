@@ -1,20 +1,20 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id D6B7CB7CC1
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 18:34:46 +1100 (EST)
-Message-ID: <4B5E9ACF.7000206@grandegger.com>
-Date: Tue, 26 Jan 2010 08:33:35 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: [PATCH/RFC 2/2] 5200: improve i2c bus error recovery
-References: <1264191502.2224.2@antares> <4B5D4E56.3020902@grandegger.com>
-	<1264451219.2315.1@antares>
-In-Reply-To: <1264451219.2315.1@antares>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9802BB7CE2
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Jan 2010 18:53:28 +1100 (EST)
+Date: Tue, 26 Jan 2010 08:53:20 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 03/11] powerpc/mpc5121: Add machine restart support
+Message-ID: <20100126085320.29126050@wker>
+In-Reply-To: <20100120112843.GE5041@pengutronix.de>
+References: <1263932653-3634-1-git-send-email-agust@denx.de>
+	<1263932653-3634-4-git-send-email-agust@denx.de>
+	<20100120112843.GE5041@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Albrecht Dreß wrote:
-> Am 25.01.10 08:55 schrieb(en) Wolfgang Grandegger:
->> Albrecht Dreß wrote:
->>> Make the I2C adapter timeout configurable through a Device Tree
->>> property which gives the timeout in microseconds.
->>
->> My understanding is that software properties should not be defined via
->> the device tree. I think a sysfs entry is more appropriate.
+On Wed, 20 Jan 2010 12:28:43 +0100
+Wolfram Sang <w.sang@pengutronix.de> wrote:
+
+> > +static void __iomem *reset_module_base;
 > 
-> Is the timeout really a /software/ property?  My feeling is that the
-> timeout basically depends upon the bus clock and the chips attached to
-> the bus.  Therefore, it is linked closer to the composition of the
-> board's hardware as described in the device tree, than to any userland
-> software.  Or am I totally wrong here?
+> type here also?
 
-Well, yes, it seems to be a border case.
+Ok.
 
-Wolfgang.
+> > +
+> > +static int __init mpc512x_restart_init(void)
+> > +{
+> > +	struct device_node *np;
+> > +
+> > +	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
+> > +	if (!np)
+> > +		return -1;
+> > +
+> > +	reset_module_base = of_iomap(np, 0);
+> > +	of_node_put(np);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> 
+> Drop this empty line?
+
+Ok.
+
+> > +	} else {
+> > +		printk(KERN_ERR ": Restart module not mapped.\n");
+> 
+> The colon is a leftover?
+
+Yes, will fix for using pr_error() and resubmit.
+
+Thanks,
+Anatolij
