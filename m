@@ -1,23 +1,15 @@
-Return-Path: <wg@grandegger.com>
+Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 13C5CB7C33
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 19:14:32 +1100 (EST)
-Message-ID: <4B5FF59E.3090805@grandegger.com>
-Date: Wed, 27 Jan 2010 09:13:18 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
-	fs_enet driver
-References: <1264039999-25731-1-git-send-email-agust@denx.de>
-	<4B5C5BDF.6020001@grandegger.com>
-	<20100124164117.DCB483F6C0@gemini.denx.de>
-	<201001270306.22089.arnd@arndb.de>
-In-Reply-To: <201001270306.22089.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wolfgang Denk <wd@denx.de>, dzu@denx.de, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>, kosmo@semihalf.com
+	by ozlabs.org (Postfix) with ESMTP id C21F7B7CE4
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:37 +1100 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/8] Update support for MPC512x
+Date: Wed, 27 Jan 2010 13:07:24 +0100
+Message-Id: <1264594052-20317-1-git-send-email-agust@denx.de>
+Cc: wd@denx.de, dzu@denx.de, linux-usb@vger.kernel.org,
+	linux-mtd@lists.infradead.org, rtc-linux@googlegroups.com,
+	Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Sunday 24 January 2010, Wolfgang Denk wrote:
->> In message <4B5C5BDF.6020001@grandegger.com> you wrote:
->>> You are probably right and your proposal would likely result in more
->>> transparent (less ugly) code. There has been some discussion about
->>> unifying FEC drivers when the patches (with the same subject) have been
->>> submitted for the first time in May last year, but it was not about 512x
->>> and 8xx, IIRC.
->> You can re-read this discussion here:
->>
->> http://patchwork.ozlabs.org/patch/26927/
->>
->> ee especiall Grant's note of 2009-05-21 15:36:11: "If it looks too
->> ugly, then just fork the driver."
-> 
-> Ok. I fully agree with what Grant said in that thread, especially the
-> way the files could be split. Forking the entire driver would work
-> as an easy way to get it running at first, and we still have the option
-> of reorganizing the duplicate parts later in a saner way if that's seen
-> as helpful. I'd assume that at least some parts of it could become a
-> lib_fs_enet module that can be shared by all of them.
+This patch series brings support for the Freescale MPC512x
+processsors up to date:
 
-Yes, I also vote for forking the driver allowing a clean implementation.
- I don't think it makes sense to share a driver with the 8xx for the
-reasons you already mentioned. And the 8xx is a dying out arch anyway.
+powerpc/mpc5121: Add machine restart support
+rtc: Add MPC5121 Real time clock driver
+mtd: Add NAND Flash Controller driver
+dma: Add MPC512x DMA driver
+powerpc/mpc5121: add USB host support
+powerpc/mpc5121: shared DIU framebuffer support
+powerpc/mpc5121: update mpc5121ads DTS
+powerpc/mpc5121: Add default config for MPC5121ADS
 
-Wolfgang.
+The patches are based on v2.6.33-rc5 and cover the following
+items:
+
+- platform, DTS
+- DMA
+- DIU
+- UART (without h/w flow control)
+- I2C
+- NAND
+- RTC
+
+The code has been tested on the Freescale/STX "MPC5121ADS" board
+(board rev. 4) with a MPC5121e Rev. 2. No attempt was made to provide
+backward compatibility to older silicon revisions or older revisions
+of the board.
+
+Changes since v1:
+ - MPC5121 FEC support patches are removed from this patch series
+   as these were not accepted
+ - I2C support path is also removed, the I2C support is addressed
+   by another patch series from Wolfgang Grandegger:
+       i2c-mpc: add support for the Freescale MPC512x and other fixes
+   Appropriate fixes for MPC5121ADS DTS are addressed by DTS patch in
+   this patch series
+ - Detailed changelog is added to each patch of the series
+
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: John Rigby <jcrigby@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: <rtc-linux@googlegroups.com>
+Cc: <linux-mtd@lists.infradead.org>
+Cc: <linux-usb@vger.kernel.org>
+---
