@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0EBE2B831A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jan 2010 14:10:32 +1100 (EST)
-Subject: [PATCH 3/3] powerpc/pci: Add missing call to header fixup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 14:10:05 +1100
-Message-ID: <1264561805.3601.165.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linux PCI <linux-pci@vger.kernel.org>,
-	Breno Leitao <leitao@linux.vnet.ibm.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: michael@ellerman.id.au
+Subject: Re: [RFC/PATCH] powerpc: Dynamically allocate pacas
+In-reply-to: <1264561612.14310.15.camel@concordia>
+References: <39fb8f1aeab9940b86c940b9a5f8e6bd41ec316c.1263368253.git.michael@ellerman.id.au>
+	<31712.1264130388@neuling.org>
+	<1264561612.14310.15.camel@concordia>
+Date: Wed, 27 Jan 2010 13:40:44 +1030
+Message-ID: <16692.1264561844@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add missing call to  pci_fixup_device(pci_fixup_early, ...) when
-building the pci_dev from scratch off the Open Firmware device-tree
+> On Fri, 2010-01-22 at 16:19 +1300, Michael Neuling wrote:
+> >=20
+> > In message <39fb8f1aeab9940b86c940b9a5f8e6bd41ec316c.1263368253.git.micha=
+> el@ell
+> > erman.id.au> you wrote:
+> > > On 64-bit kernels we currently have a 512 byte struct paca_struct for
+> > > each cpu (usually just called "the paca"). Currently they are staticall=
+> y
+> > > allocated, which means a kernel built for a large number of cpus will
+> > > waste a lot of space if it's booted on a machine with few cpus.
+> > >=20
+> > > We can avoid that by only allocating the number of pacas we need at
+> > > boot. However this is complicated by the fact that we need to access
+> > > the paca before we know how many cpus there are in the system.
+> > >=20
+> > > The solution is to dynamically allocate enough space for NR_CPUS pacas,
+> > > but then later in boot when we know how many cpus we have, we free any
+> > > unused pacas.
+> > >=20
+> > > Lightly booted on Legacy iSeries & pSeries LPAR.
+> >=20
+> > This is broken on 32bit CPUs.  Dies at compile time with
+> > mpc86xx_defconfig.  No paca on 32bit :-(
+> 
+> Bah, who really uses 32-bit anyway ..
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/pci_of_scan.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Hehe, that's coming from the guy who tested it on iSeries... :-P
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index b6b2e86..4aa1740 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -166,6 +166,9 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 	dev->error_state = pci_channel_io_normal;
- 	dev->dma_mask = 0xffffffff;
- 
-+	/* Early fixups, before probing the BARs */
-+	pci_fixup_device(pci_fixup_early, dev);
-+
- 	if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
- 		/* a PCI-PCI bridge */
- 		dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
+Mikey
