@@ -1,24 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id D2A10B7CF0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0E059B7CF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jan 2010 13:06:44 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
-	fs_enet driver
-Date: Wed, 27 Jan 2010 03:06:21 +0100
-References: <1264039999-25731-1-git-send-email-agust@denx.de>
-	<4B5C5BDF.6020001@grandegger.com>
-	<20100124164117.DCB483F6C0@gemini.denx.de>
-In-Reply-To: <20100124164117.DCB483F6C0@gemini.denx.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201001270306.22089.arnd@arndb.de>
-Cc: kosmo@semihalf.com, dzu@denx.de, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>
+	Wed, 27 Jan 2010 13:11:20 +1100 (EST)
+Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <20100125175025.4c74f412@jbarnes-piketon>
+References: <4B5D9FC5.5070600@linux.vnet.ibm.com>
+	<20100125123849.111fa2d1@jbarnes-piketon>
+	<20100125175025.4c74f412@jbarnes-piketon>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 27 Jan 2010 13:10:56 +1100
+Message-ID: <1264558256.3601.153.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Jay Vosburgh <fubar@us.ibm.com>,
+	David Miller <davem@davemloft.net>, Ron Mercer <ron.mercer@qlogic.com>,
+	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
+	Breno Leitao <leitao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 24 January 2010, Wolfgang Denk wrote:
-> In message <4B5C5BDF.6020001@grandegger.com> you wrote:
-> > 
-> > You are probably right and your proposal would likely result in more
-> > transparent (less ugly) code. There has been some discussion about
-> > unifying FEC drivers when the patches (with the same subject) have been
-> > submitted for the first time in May last year, but it was not about 512x
-> > and 8xx, IIRC.
-> 
-> You can re-read this discussion here:
-> 
-> http://patchwork.ozlabs.org/patch/26927/
-> 
-> ee especiall Grant's note of 2009-05-21 15:36:11: "If it looks too
-> ugly, then just fork the driver."
 
-Ok. I fully agree with what Grant said in that thread, especially the
-way the files could be split. Forking the entire driver would work
-as an easy way to get it running at first, and we still have the option
-of reorganizing the duplicate parts later in a saner way if that's seen
-as helpful. I'd assume that at least some parts of it could become a
-lib_fs_enet module that can be shared by all of them.
+> Cc'ing Ben for PPC.  Ben, should PPC use pci_scan_device when probing
+> its root busses?  Sounds like it just uses pci_device_add for each one
+> it finds instead?
+> 
+> If you don't actually need scanning (though what about hotplug?) we can
+> move the call to device_add instead...
 
-	Arnd
+Ok so I looked at the code and the problem goes way beyond root busses.
+
+Basically, powerpc can use the code in arch/powerpc/kernel/pci_of_scan.c
+to "generate" the pci_dev without using config space probing or at least
+using as little of it as possible, using the firmware device-tree
+information instead.
+
+This is also probably going to be moved to a more generic place and
+extended to be used optionally by other architectures.
+
+I think sparc does something similar in fact in arch/sparc/kernel/pci.c
+(of_create_pci_dev()) though it would be logical to have sparc and
+powerpc share the same implementation here in the long run and I believe
+Grant Likely is working on it.
+
+That means that potentially, pci_dev will be created on those archs for
+which pci_setup_device() is never called. Thus we need to be very
+careful when adding initializations there that at least we (myself and
+davem) are notified of that so we can mirror them in our code, or even
+better, if people doing so put them there too...
+
+So as far as I can tell, we are missing that set_pcie_port_type(), so we
+need to add it to sparc and powerpc (and so make the function non-static
+in drivers/pci/probe.c). We are also missing the manipulation of
+dev->slot in fact, so that will need to be fixed too.
+
+set_pcie_hotplug_bridge() might be something we want to add too, it's
+not totally clear yet due to possible issues with our firmwares.
+pci_fixup_device(pci_fixup_early,...) as well in fact.
+
+I'll try do make ppc catch up with some of that see how it goes.
+
+Cheers,
+Ben.
