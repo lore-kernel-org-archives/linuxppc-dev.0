@@ -1,20 +1,20 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from mail-yx0-f185.google.com (mail-yx0-f185.google.com
-	[209.85.210.185]) by ozlabs.org (Postfix) with ESMTP id C77CCB7CE8
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 06:09:56 +1100 (EST)
-Received: by yxe15 with SMTP id 15so3200250yxe.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 11:09:55 -0800 (PST)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 98264B7CEE
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 07:24:32 +1100 (EST)
+To: Grant Likely <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 3/8 v2] mtd: Add MPC5121 NAND Flash Controller driver
 MIME-Version: 1.0
-In-Reply-To: <0642ead63df1b9fdced24750eb0aea940f0408b7.1264617281.git.root@sanx1002.austin.ibm.com>
-References: <0642ead63df1b9fdced24750eb0aea940f0408b7.1264617281.git.root@sanx1002.austin.ibm.com>
-Date: Wed, 27 Jan 2010 13:09:53 -0600
-Message-ID: <3ae3aa421001271109s6b857384x7617566220ffc38b@mail.gmail.com>
-Subject: Re: [PATCH 1/2] eeh: Fixing a bug when pci structure is null
-From: Linas Vepstas <linasvepstas@gmail.com>
-To: leitao@linux.vnet.ibm.com
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: linasvepstas@gmail.com
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <fa686aa41001270843u3b4e9687k699ad579de4460d4@mail.gmail.com>
+References: <1264594052-20317-1-git-send-email-agust@denx.de>
+	<1264594052-20317-4-git-send-email-agust@denx.de>
+	<fa686aa41001270843u3b4e9687k699ad579de4460d4@mail.gmail.com>
+Date: Wed, 27 Jan 2010 21:24:27 +0100
+Message-Id: <20100127202427.D311CD334C9@gemini.denx.de>
+Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Dear Grant Likely,
 
-Yes, that's really my sign off: I discussed this at length with Breno.
-One comment:
+In message <fa686aa41001270843u3b4e9687k699ad579de4460d4@mail.gmail.com> you wrote:
+>
+> > +       if (rev != 2) {
+> > +               dev_err(dev, "SoC revision %u is not supported!\n", rev);
+> > +               return -ENXIO;
+> > +       }
+>
+> *Only* revision 2?  Are future revisions of silicon assumed to be broken then?
 
-2010/1/27  <leitao@linux.vnet.ibm.com>:
-> During a EEH recover, the pci_dev structure can be null,
+I vote for keeping it this way - if you look at the diffferences
+between revision 1 and 2, or at differences between MPC5121/3 and
+MPC5125, it is more than likely that revision 3, should it ever come
+out, will be incompatible and require driver changes.
 
-It can be null when an error is detected during device config (i.e. via
-pci config space access through open firmware, using the OF device
-node, instead of mmio/dma access), before the kernel has created
-a pci_dev structure for the device.
+Best regards,
 
-Oddly enough, either this slipped through the cracks all this time,
-or maybe pci_name() used to protect against nulls? Not sure.
+Wolfgang Denk
 
--- Linas Vepstas
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Landru! Guide us!
+	-- A Beta 3-oid, "The Return of the Archons", stardate 3157.4
