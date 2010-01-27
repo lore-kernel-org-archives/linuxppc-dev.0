@@ -1,25 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0E059B7CF7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jan 2010 13:11:20 +1100 (EST)
-Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <20100125175025.4c74f412@jbarnes-piketon>
-References: <4B5D9FC5.5070600@linux.vnet.ibm.com>
-	<20100125123849.111fa2d1@jbarnes-piketon>
-	<20100125175025.4c74f412@jbarnes-piketon>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 13:10:56 +1100
-Message-ID: <1264558256.3601.153.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH] powerpc: Dynamically allocate pacas
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <31712.1264130388@neuling.org>
+References: <39fb8f1aeab9940b86c940b9a5f8e6bd41ec316c.1263368253.git.michael@ellerman.id.au>
+	<31712.1264130388@neuling.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-obxCvjvzdAQHqjs623l6"
+Date: Wed, 27 Jan 2010 14:06:52 +1100
+Message-ID: <1264561612.14310.15.camel@concordia>
 Mime-Version: 1.0
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jay Vosburgh <fubar@us.ibm.com>,
-	David Miller <davem@davemloft.net>, Ron Mercer <ron.mercer@qlogic.com>,
-	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
-	Breno Leitao <leitao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +23,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> Cc'ing Ben for PPC.  Ben, should PPC use pci_scan_device when probing
-> its root busses?  Sounds like it just uses pci_device_add for each one
-> it finds instead?
-> 
-> If you don't actually need scanning (though what about hotplug?) we can
-> move the call to device_add instead...
+--=-obxCvjvzdAQHqjs623l6
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Ok so I looked at the code and the problem goes way beyond root busses.
+On Fri, 2010-01-22 at 16:19 +1300, Michael Neuling wrote:
+>=20
+> In message <39fb8f1aeab9940b86c940b9a5f8e6bd41ec316c.1263368253.git.micha=
+el@ell
+> erman.id.au> you wrote:
+> > On 64-bit kernels we currently have a 512 byte struct paca_struct for
+> > each cpu (usually just called "the paca"). Currently they are staticall=
+y
+> > allocated, which means a kernel built for a large number of cpus will
+> > waste a lot of space if it's booted on a machine with few cpus.
+> >=20
+> > We can avoid that by only allocating the number of pacas we need at
+> > boot. However this is complicated by the fact that we need to access
+> > the paca before we know how many cpus there are in the system.
+> >=20
+> > The solution is to dynamically allocate enough space for NR_CPUS pacas,
+> > but then later in boot when we know how many cpus we have, we free any
+> > unused pacas.
+> >=20
+> > Lightly booted on Legacy iSeries & pSeries LPAR.
+>=20
+> This is broken on 32bit CPUs.  Dies at compile time with
+> mpc86xx_defconfig.  No paca on 32bit :-(
 
-Basically, powerpc can use the code in arch/powerpc/kernel/pci_of_scan.c
-to "generate" the pci_dev without using config space probing or at least
-using as little of it as possible, using the firmware device-tree
-information instead.
+Bah, who really uses 32-bit anyway ..
 
-This is also probably going to be moved to a more generic place and
-extended to be used optionally by other architectures.
+cheers
 
-I think sparc does something similar in fact in arch/sparc/kernel/pci.c
-(of_create_pci_dev()) though it would be logical to have sparc and
-powerpc share the same implementation here in the long run and I believe
-Grant Likely is working on it.
+--=-obxCvjvzdAQHqjs623l6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-That means that potentially, pci_dev will be created on those archs for
-which pci_setup_device() is never called. Thus we need to be very
-careful when adding initializations there that at least we (myself and
-davem) are notified of that so we can mirror them in our code, or even
-better, if people doing so put them there too...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-So as far as I can tell, we are missing that set_pcie_port_type(), so we
-need to add it to sparc and powerpc (and so make the function non-static
-in drivers/pci/probe.c). We are also missing the manipulation of
-dev->slot in fact, so that will need to be fixed too.
+iEYEABECAAYFAktfrccACgkQdSjSd0sB4dK7QQCeOGCklkEa2OtjCRl3Nrs2apHt
+JUYAnRsuJ0YHxNsoaCrcUXkwIQHcy+o9
+=GNMA
+-----END PGP SIGNATURE-----
 
-set_pcie_hotplug_bridge() might be something we want to add too, it's
-not totally clear yet due to possible issues with our firmwares.
-pci_fixup_device(pci_fixup_early,...) as well in fact.
-
-I'll try do make ppc catch up with some of that see how it goes.
-
-Cheers,
-Ben.
+--=-obxCvjvzdAQHqjs623l6--
