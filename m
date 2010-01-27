@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 68021B7EB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 01:09:38 +1100 (EST)
-Date: Wed, 27 Jan 2010 17:09:36 +0300
+	by ozlabs.org (Postfix) with SMTP id D0AEFB7F65
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 01:09:40 +1100 (EST)
+Date: Wed, 27 Jan 2010 17:09:38 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] USB: FHCI: Fix build after kfifo rework
-Message-ID: <20100127140936.GB31608@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] kfifo: Don't use integer as NULL pointer
+Message-ID: <20100127140938.GC31608@oksana.dev.rtsoft.ru>
 References: <20100127140809.GA27906@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -23,54 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After kfifo rework FHCI fails to build:
+This patch fixes following sparse warnings:
 
-  CC      drivers/usb/host/fhci-tds.o
-drivers/usb/host/fhci-tds.c: In function 'fhci_ep0_free':
-drivers/usb/host/fhci-tds.c:108: error: used struct type value where scalar is required
-drivers/usb/host/fhci-tds.c:118: error: used struct type value where scalar is required
-drivers/usb/host/fhci-tds.c:128: error: used struct type value where scalar is required
+include/linux/kfifo.h:127:25: warning: Using plain integer as NULL pointer
+kernel/kfifo.c:83:21: warning: Using plain integer as NULL pointer
 
-This is because kfifos are no longer pointers in the ep struct.
-So, instead of checking the pointers, we should now check if kfifo
-is initialized.
-
-Reported-by: Josh Boyer <jwboyer@gmail.com>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/usb/host/fhci-tds.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/kfifo.h |    2 +-
+ kernel/kfifo.c        |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/host/fhci-tds.c b/drivers/usb/host/fhci-tds.c
-index d224ab4..e123289 100644
---- a/drivers/usb/host/fhci-tds.c
-+++ b/drivers/usb/host/fhci-tds.c
-@@ -105,7 +105,7 @@ void fhci_ep0_free(struct fhci_usb *usb)
- 		if (ep->td_base)
- 			cpm_muram_free(cpm_muram_offset(ep->td_base));
+diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
+index 6f6c5f3..bc0fc79 100644
+--- a/include/linux/kfifo.h
++++ b/include/linux/kfifo.h
+@@ -124,7 +124,7 @@ extern __must_check unsigned int kfifo_out_peek(struct kfifo *fifo,
+  */
+ static inline bool kfifo_initialized(struct kfifo *fifo)
+ {
+-	return fifo->buffer != 0;
++	return fifo->buffer != NULL;
+ }
  
--		if (ep->conf_frame_Q) {
-+		if (kfifo_initialized(&ep->conf_frame_Q)) {
- 			size = cq_howmany(&ep->conf_frame_Q);
- 			for (; size; size--) {
- 				struct packet *pkt = cq_get(&ep->conf_frame_Q);
-@@ -115,7 +115,7 @@ void fhci_ep0_free(struct fhci_usb *usb)
- 			cq_delete(&ep->conf_frame_Q);
- 		}
+ /**
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index 3b00bf8..6d58e1a 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -80,7 +80,7 @@ int kfifo_alloc(struct kfifo *fifo, unsigned int size, gfp_t gfp_mask)
  
--		if (ep->empty_frame_Q) {
-+		if (kfifo_initialized(&ep->empty_frame_Q)) {
- 			size = cq_howmany(&ep->empty_frame_Q);
- 			for (; size; size--) {
- 				struct packet *pkt = cq_get(&ep->empty_frame_Q);
-@@ -125,7 +125,7 @@ void fhci_ep0_free(struct fhci_usb *usb)
- 			cq_delete(&ep->empty_frame_Q);
- 		}
+ 	buffer = kmalloc(size, gfp_mask);
+ 	if (!buffer) {
+-		_kfifo_init(fifo, 0, 0);
++		_kfifo_init(fifo, NULL, 0);
+ 		return -ENOMEM;
+ 	}
  
--		if (ep->dummy_packets_Q) {
-+		if (kfifo_initialized(&ep->dummy_packets_Q)) {
- 			size = cq_howmany(&ep->dummy_packets_Q);
- 			for (; size; size--) {
- 				u8 *buff = cq_get(&ep->dummy_packets_Q);
 -- 
 1.6.5.7
