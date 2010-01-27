@@ -1,22 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f175.google.com (mail-yw0-f175.google.com
-	[209.85.211.175]) by ozlabs.org (Postfix) with ESMTP id 1E266B8131
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 03:44:17 +1100 (EST)
-Received: by ywh5 with SMTP id 5so12775392ywh.11
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 08:44:16 -0800 (PST)
+Return-Path: <jan@gaisler.com>
+Received: from mail168c2.megamailservers.com (mail168c2.megamailservers.com
+	[69.49.111.68])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84FB5B7D22
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 01:08:13 +1100 (EST)
+Message-ID: <4B60333C.9040806@gaisler.com>
+Date: Wed, 27 Jan 2010 13:36:12 +0100
+From: Jan Andersson <jan@gaisler.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1264594052-20317-4-git-send-email-agust@denx.de>
-References: <1264594052-20317-1-git-send-email-agust@denx.de>
-	<1264594052-20317-4-git-send-email-agust@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 27 Jan 2010 09:43:56 -0700
-Message-ID: <fa686aa41001270843u3b4e9687k699ad579de4460d4@mail.gmail.com>
-Subject: Re: [PATCH 3/8 v2] mtd: Add MPC5121 NAND Flash Controller driver
 To: Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: wd@denx.de, dzu@denx.de, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Piotr Ziecik <kosmo@semihalf.com>
+Subject: Re: [PATCH 5/8 v2] powerpc/mpc5121: add USB host support
+References: <1264594052-20317-1-git-send-email-agust@denx.de>
+	<1264594052-20317-6-git-send-email-agust@denx.de>
+In-Reply-To: <1264594052-20317-6-git-send-email-agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: wd@denx.de, dzu@denx.de, linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Bruce Schmid <duck@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,97 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 27, 2010 at 5:07 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> From: Piotr Ziecik <kosmo@semihalf.com>
-
-Again, it is appropriate for you to claim patch ownership now as long
-as you preserve the signed-off-by history.
-
->
-> Adds NAND Flash Controller driver for MPC5121 Revision 2.
-> All device features, except hardware ECC and power management,
-> are supported.
-
-A few comments below.
-
-> diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/=
-platforms/512x/mpc512x_shared.c
-> index 4745028..6b8314c 100644
-> --- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-> +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-> @@ -82,6 +82,7 @@ void __init mpc512x_init_IRQ(void)
-> =A0static struct of_device_id __initdata of_bus_ids[] =3D {
-> =A0 =A0 =A0 =A0{ .compatible =3D "fsl,mpc5121-immr", },
-> =A0 =A0 =A0 =A0{ .compatible =3D "fsl,mpc5121-localbus", },
-> + =A0 =A0 =A0 { .compatible =3D "fsl,mpc5121-nfc", },
-> =A0 =A0 =A0 =A0{},
-> =A0};
-
-This hunk shouldn't be in this patch since it touches arch code.  Keep
-the NAND and arch bits in separate patches.
-
-Also, this is probably not what you really want.  Doing it this way
-means that each of the child nodes also get registered as of_platform
-devices.  You want the platform code to only register the nfc@40000000
-node.
-
-> +static int __init mpc5121_nfc_probe(struct of_device *op,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 const struct of_device_id *match)
-
-__devinit
-
-> +{
-> + =A0 =A0 =A0 struct device_node *rootnode, *dn =3D op->node;
-> + =A0 =A0 =A0 struct device *dev =3D &op->dev;
-> + =A0 =A0 =A0 struct mpc5121_nfc_prv *prv;
-> + =A0 =A0 =A0 struct resource res;
-> + =A0 =A0 =A0 struct mtd_info *mtd;
-> +#ifdef CONFIG_MTD_PARTITIONS
-> + =A0 =A0 =A0 struct mtd_partition *parts;
-> +#endif
-> + =A0 =A0 =A0 struct nand_chip *chip;
-> + =A0 =A0 =A0 unsigned long regs_paddr, regs_size;
-> + =A0 =A0 =A0 const uint *chips_no;
-> + =A0 =A0 =A0 int resettime =3D 0;
-> + =A0 =A0 =A0 int retval =3D 0;
-> + =A0 =A0 =A0 int rev, len;
+Anatolij Gustschin wrote:
+> @@ -259,6 +305,11 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
+>  {
+>  	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+>  	int retval;
+> +	struct fsl_usb2_platform_data *pdata;
 > +
-> + =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0* Check SoC revision. This driver supports only NFC
-> + =A0 =A0 =A0 =A0* in MPC5121 revision 2.
-> + =A0 =A0 =A0 =A0*/
-> + =A0 =A0 =A0 rev =3D (mfspr(SPRN_SVR) >> 4) & 0xF;
-> + =A0 =A0 =A0 if (rev !=3D 2) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "SoC revision %u is not suppor=
-ted!\n", rev);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENXIO;
-> + =A0 =A0 =A0 }
+> +	pdata = hcd->self.controller->platform_data;
+> +	ehci->big_endian_desc = pdata->big_endian_desc;
+> +	ehci->big_endian_mmio = pdata->big_endian_mmio;
 
-*Only* revision 2?  Are future revisions of silicon assumed to be broken th=
-en?
+I recently posted some questions to linux-usb@vger about big_endian_mmio 
+and the definition of the HC_LENGTH and HC_VERSION macros. The thread 
+can be found here: http://marc.info/?l=linux-usb&m=126441448626924&w=2
 
-> +static int __exit mpc5121_nfc_remove(struct of_device *op)
+The EHCI specification defines the CAPLENGTH register as an 8-bit 
+register at byte offset 0 and HCIVERSION as a 16-bit register at byte 
+offset 2. Performing a 32-bit read on a big endian system should 
+therefore results in the following organisation (MSB .. LSB):
+CAPLENGTH : RESERVED : HCIVERSION
 
-__devexit
+The macros for reading CAPLENGTH and HCIVERSION (defined in 
+include/linux/usb/ehci-def.h) look like:
 
-> +static struct of_device_id mpc5121_nfc_match[] =3D {
+#define HC_LENGTH(p)		(((p)>>00)&0x00ff)	/* bits 7:0 */
+#define HC_VERSION(p)		(((p)>>16)&0xffff)	/* bits 31:16 */
 
-...match[] __devinitdata =3D {
+That is, they select the registers as they were organized within the 
+word according to little endian. Is this not a problem for your 
+controller/driver?
 
-> + =A0 =A0 =A0 { .compatible =3D "fsl,mpc5121-nfc", },
-> + =A0 =A0 =A0 {},
-> +};
-> +
-> +static struct of_platform_driver mpc5121_nfc_driver =3D {
-> + =A0 =A0 =A0 .match_table =A0 =A0=3D mpc5121_nfc_match,
-> + =A0 =A0 =A0 .probe =A0 =A0 =A0 =A0 =A0=3D mpc5121_nfc_probe,
-> + =A0 =A0 =A0 .remove =A0 =A0 =A0 =A0 =3D __exit_p(mpc5121_nfc_remove),
-
-__devexit_p()
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Best regards,
+   Jan
