@@ -1,23 +1,20 @@
 Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
-	[69.89.21.11]) by ozlabs.org (Postfix) with SMTP id E4C79B812C
+Received: from outbound-mail-313.bluehost.com (outbound-mail-313.bluehost.com
+	[67.222.54.6]) by ozlabs.org (Postfix) with SMTP id 24AD6B80CD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Jan 2010 03:26:45 +1100 (EST)
-Date: Wed, 27 Jan 2010 08:26:24 -0800
+	Thu, 28 Jan 2010 03:40:39 +1100 (EST)
+Date: Wed, 27 Jan 2010 08:33:43 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
-Message-ID: <20100127082624.4a91323a@jbarnes-piketon>
-In-Reply-To: <1264558256.3601.153.camel@pasglop>
-References: <4B5D9FC5.5070600@linux.vnet.ibm.com>
-	<20100125123849.111fa2d1@jbarnes-piketon>
-	<20100125175025.4c74f412@jbarnes-piketon>
-	<1264558256.3601.153.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc/pci: Add calls to set_pcie_port_type() and
+	set_pcie_hotplug_bridge()
+Message-ID: <20100127083343.03a4ce32@jbarnes-piketon>
+In-Reply-To: <1264561803.3601.163.camel@pasglop>
+References: <1264561803.3601.163.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jay Vosburgh <fubar@us.ibm.com>,
-	David Miller <davem@davemloft.net>, Ron Mercer <ron.mercer@qlogic.com>,
-	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
+Cc: Linux PCI <linux-pci@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	Breno Leitao <leitao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,52 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 27 Jan 2010 13:10:56 +1100
+On Wed, 27 Jan 2010 14:10:03 +1100
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+> We are missing these when building the pci_dev from scratch off
+> the Open Firmware device-tree
 > 
-> > Cc'ing Ben for PPC.  Ben, should PPC use pci_scan_device when probing
-> > its root busses?  Sounds like it just uses pci_device_add for each one
-> > it finds instead?
-> > 
-> > If you don't actually need scanning (though what about hotplug?) we can
-> > move the call to device_add instead...
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/pci_of_scan.c |    2 ++
+>  drivers/pci/probe.c               |    4 ++--
+>  include/linux/pci.h               |    4 ++++
+>  3 files changed, 8 insertions(+), 2 deletions(-)
 > 
-> Ok so I looked at the code and the problem goes way beyond root busses.
-> 
-> Basically, powerpc can use the code in arch/powerpc/kernel/pci_of_scan.c
-> to "generate" the pci_dev without using config space probing or at least
-> using as little of it as possible, using the firmware device-tree
-> information instead.
-> 
-> This is also probably going to be moved to a more generic place and
-> extended to be used optionally by other architectures.
-> 
-> I think sparc does something similar in fact in arch/sparc/kernel/pci.c
-> (of_create_pci_dev()) though it would be logical to have sparc and
-> powerpc share the same implementation here in the long run and I believe
-> Grant Likely is working on it.
-> 
-> That means that potentially, pci_dev will be created on those archs for
-> which pci_setup_device() is never called. Thus we need to be very
-> careful when adding initializations there that at least we (myself and
-> davem) are notified of that so we can mirror them in our code, or even
-> better, if people doing so put them there too...
-> 
-> So as far as I can tell, we are missing that set_pcie_port_type(), so we
-> need to add it to sparc and powerpc (and so make the function non-static
-> in drivers/pci/probe.c). We are also missing the manipulation of
-> dev->slot in fact, so that will need to be fixed too.
-> 
-> set_pcie_hotplug_bridge() might be something we want to add too, it's
-> not totally clear yet due to possible issues with our firmwares.
-> pci_fixup_device(pci_fixup_early,...) as well in fact.
-> 
-> I'll try do make ppc catch up with some of that see how it goes.
+> Jesse, can I have an ack for the generic bits ? Note that I couldn't test
+> on a pSeries machine with PCI-E as all such machines in ozlabs currently
+> have all their partitions with PCI-E devices in them in FAIL state in ABAT
+> and our admin is out.
 
-Thanks Ben.  Any refactoring we need to handle this stuff better is
-fine with me too.  I guess on some platforms calling pci_setup_device
-may cause problems with special platform devices?
+Yeah, generic bits look fine.
+
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
