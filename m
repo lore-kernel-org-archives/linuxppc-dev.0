@@ -1,16 +1,16 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9CF68B7D22
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:44 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4051CB7D2A
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:45 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8 v2] powerpc/mpc5121: shared DIU framebuffer support
-Date: Wed, 27 Jan 2010 13:07:30 +0100
-Message-Id: <1264594052-20317-7-git-send-email-agust@denx.de>
+Subject: [PATCH 7/8 v2] powerpc/mpc5121: update mpc5121ads DTS
+Date: Wed, 27 Jan 2010 13:07:31 +0100
+Message-Id: <1264594052-20317-8-git-send-email-agust@denx.de>
 In-Reply-To: <1264594052-20317-1-git-send-email-agust@denx.de>
 References: <1264594052-20317-1-git-send-email-agust@denx.de>
-Cc: John Rigby <jrigby@gmail.com>, Anatolij Gustschin <agust@denx.de>,
-	wd@denx.de, dzu@denx.de
+Cc: Anatolij Gustschin <agust@denx.de>, wd@denx.de, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,537 +20,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC5121 DIU configuration/setup as initialized by the boot
-loader currently will get lost while booting Linux. As a
-result displaying the boot splash is not possible through
-the boot process.
+Collects several changes needed after applying
+previous mpc5121 platform and driver patches:
 
-To prevent this we reserve configured DIU frame buffer
-address range while booting and preserve AOI descriptor
-and gamma table so that DIU continues displaying through
-the whole boot process. On first open from user space
-DIU frame buffer driver releases the reserved frame
-buffer area and continues to operate as usual.
+- Add mpc5121 reset module node
+- Clean up and fix NAND description, remove unused properties
+  here and correct NAND flash chip size.
+- Clean up I2C nodes: remove obsolete "cell-index" properties,
+  add "fsl,preserve-clocking" property
+- Add I2C RTC node for m41t61 RTC
+- Add I2C nodes for AD7414 temperature sensor and AT24C32CD3 EEPROM
+- Fix compatible property in DMA node
+- Clean up CAN nodes, remove unused "cell-index" properties
+- Fix compatible property in DIU node
+- USB node changes:
+    - remove "port0" and "port1" properties as these are only used
+      for multi-port host(MHP) module which is not available
+      on MPC5121.
+    - MPC5121 Rev 2.0 EHCI registers are big endian.
+      'fsl,big-endian-regs' property in USB node indicates
+      this now.
+    - use 'fsl,invert-drvvbus' and 'fsl,invert-pwr-fault' in
+      USB node for internal PHY to specify polarities
+      of the appropriate port pins.
 
-The patch also moves drivers/video/fsl-diu-fb.h file to
-include/linux as we use some DIU structures in platform
-code.
-
-'diu_ops' callbacks in platform code borrowed from John's
-DIU code.
-
-Signed-off-by: John Rigby <jrigby@gmail.com>
+Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Signed-off-by: Detlev Zundel <dzu@denx.de>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
+
 Changes since v1:
- - specify align attribute before "diu_shared_fb" variable
-   name to fix checkpatch warning
+ - move RTC node for m41t61 RTC to the node for I2C0
+ - add nodes for AD74114 and AT24C32CD3 devices
+ - remove obsolete "cell-index" properties from i2c nodes
+   and add "fsl,preserve-clocking" property
+ - Clean up CAN nodes
+ - prefix USB properties with 'fsl,'
 
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
- arch/powerpc/platforms/512x/mpc5121_generic.c |   12 +
- arch/powerpc/platforms/512x/mpc512x.h         |    3 +
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  284 ++++++++++++++++++++++++-
- arch/powerpc/sysdev/fsl_soc.h                 |    1 +
- drivers/video/fsl-diu-fb.c                    |   40 +++-
- {drivers/video => include/linux}/fsl-diu-fb.h |    0 
- 7 files changed, 341 insertions(+), 6 deletions(-)
- rename {drivers/video => include/linux}/fsl-diu-fb.h (100%)
+ arch/powerpc/boot/dts/mpc5121ads.dts |   53 +++++++++++++++++++++-------------
+ 1 files changed, 33 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index a497c14..213354e 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -42,6 +42,7 @@ static void __init mpc5121_ads_setup_arch(void)
- 	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-+	mpc512x_setup_diu();
- 	mpc5121_usb_init();
- }
+diff --git a/arch/powerpc/boot/dts/mpc5121ads.dts b/arch/powerpc/boot/dts/mpc5121ads.dts
+index c353dac..9c5b3b4 100644
+--- a/arch/powerpc/boot/dts/mpc5121ads.dts
++++ b/arch/powerpc/boot/dts/mpc5121ads.dts
+@@ -62,17 +62,12 @@
+ 		interrupt-parent = < &ipic >;
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+-		bank-width = <1>;
+ 		// ADS has two Hynix 512MB Nand flash chips in a single
+-		// stacked package .
++		// stacked package.
+ 		chips = <2>;
+-		nand0@0 {
+-			label = "nand0";
+-			reg = <0x00000000 0x02000000>; 	// first 32 MB of chip 0
+-		};
+-		nand1@20000000 {
+-			label = "nand1";
+-			reg = <0x20000000 0x02000000>; 	// first 32 MB of chip 1
++		nand@0 {
++			label = "nand";
++			reg = <0x00000000 0x40000000>;	// 512MB + 512MB
+ 		};
+ 	};
  
-@@ -61,12 +62,18 @@ static int __init mpc5121_ads_probe(void)
- 	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
- }
+@@ -166,6 +161,11 @@
+ 			interrupt-parent = < &ipic >;
+ 		};
  
-+void __init mpc5121_ads_init_early(void)
-+{
-+	mpc512x_init_diu();
-+}
++		reset@e00 {	// Reset module
++			compatible = "fsl,mpc5121-reset";
++			reg = <0xe00 0x100>;
++		};
 +
- define_machine(mpc5121_ads) {
- 	.name			= "MPC5121 ADS",
- 	.probe			= mpc5121_ads_probe,
- 	.setup_arch		= mpc5121_ads_setup_arch,
- 	.init			= mpc512x_declare_of_platform_devices,
- 	.init_IRQ		= mpc5121_ads_init_IRQ,
-+	.init_early		= mpc5121_ads_init_early,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.restart		= mpc512x_restart,
-diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
-index de4c3f7..38d8bf2 100644
---- a/arch/powerpc/platforms/512x/mpc5121_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -48,10 +48,22 @@ static int __init mpc5121_generic_probe(void)
- 	return board[i] != NULL;
- }
+ 		clock@f00 {	// Clock control
+ 			compatible = "fsl,mpc5121-clock";
+ 			reg = <0xf00 0x100>;
+@@ -185,17 +185,15 @@
+ 			interrupt-parent = < &ipic >;
+ 		};
  
-+void __init mpc512x_generic_init_early(void)
-+{
-+	mpc512x_init_diu();
-+}
-+
-+void __init mpc512x_generic_setup_arch(void)
-+{
-+	mpc512x_setup_diu();
-+}
-+
- define_machine(mpc5121_generic) {
- 	.name			= "MPC5121 generic",
- 	.probe			= mpc5121_generic_probe,
- 	.init			= mpc512x_declare_of_platform_devices,
-+	.init_early		= mpc512x_generic_init_early,
-+	.setup_arch		= mpc512x_generic_setup_arch,
- 	.init_IRQ		= mpc512x_init_IRQ,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index e92a282..9ad7dc5 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -14,5 +14,8 @@
- extern void __init mpc512x_init_IRQ(void);
- extern void mpc512x_restart(char *cmd);
- extern void mpc5121_usb_init(void);
-+extern void __init mpc512x_init_diu(void);
-+extern void __init mpc512x_setup_diu(void);
-+extern struct fsl_diu_shared_fb diu_shared_fb;
- void __init mpc512x_declare_of_platform_devices(void);
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index 6b8314c..f0f9075 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -16,7 +16,11 @@
- #include <linux/io.h>
- #include <linux/irq.h>
- #include <linux/of_platform.h>
-+#include <linux/fsl-diu-fb.h>
-+#include <linux/bootmem.h>
-+#include <sysdev/fsl_soc.h>
+-		mscan@1300 {
++		can@1300 {
+ 			compatible = "fsl,mpc5121-mscan";
+-			cell-index = <0>;
+ 			interrupts = <12 0x8>;
+ 			interrupt-parent = < &ipic >;
+ 			reg = <0x1300 0x80>;
+ 		};
  
-+#include <asm/cacheflush.h>
- #include <asm/machdep.h>
- #include <asm/ipic.h>
- #include <asm/prom.h>
-@@ -58,6 +62,285 @@ void mpc512x_restart(char *cmd)
- 		;
- }
+-		mscan@1380 {
++		can@1380 {
+ 			compatible = "fsl,mpc5121-mscan";
+-			cell-index = <1>;
+ 			interrupts = <13 0x8>;
+ 			interrupt-parent = < &ipic >;
+ 			reg = <0x1380 0x80>;
+@@ -205,17 +203,31 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
+-			cell-index = <0>;
+ 			reg = <0x1700 0x20>;
+ 			interrupts = <9 0x8>;
+ 			interrupt-parent = < &ipic >;
++			fsl,preserve-clocking;
++
++			hwmon@4a {
++				compatible = "adi,ad7414";
++				reg = <0x4a>;
++			};
++
++			eeprom@50 {
++				compatible = "at,24c32";
++				reg = <0x50>;
++			};
++
++			rtc@68 {
++				compatible = "stm,m41t62";
++				reg = <0x68>;
++			};
+ 		};
  
-+
-+struct fsl_diu_shared_fb {
-+	char		gamma[0x300];	/* 32-bit aligned! */
-+	struct diu_ad	ad0;		/* 32-bit aligned! */
-+	phys_addr_t	fb_phys;
-+	size_t		fb_len;
-+	bool		in_use;
-+};
-+
-+unsigned int mpc512x_get_pixel_format(unsigned int bits_per_pixel,
-+				      int monitor_port)
-+{
-+	unsigned int pix_fmt;
-+
-+	switch (bits_per_pixel) {
-+	case 32:
-+		pix_fmt = 0x88883316;
-+		break;
-+	case 24:
-+		pix_fmt = 0x88082219;
-+		break;
-+	case 16:
-+		pix_fmt = 0x65053118;
-+		break;
-+	default:
-+		pix_fmt = 0x00000400;
-+	}
-+	return pix_fmt;
-+}
-+
-+void mpc512x_set_gamma_table(int monitor_port, char *gamma_table_base)
-+{
-+}
-+
-+void mpc512x_set_monitor_port(int monitor_port)
-+{
-+}
-+
-+#define CCM_SCFR1	0x0000000c
-+#define DIU_DIV_MASK	0x000000ff
-+void mpc512x_set_pixel_clock(unsigned int pixclock)
-+{
-+	unsigned long bestval, bestfreq, speed_ccb, busfreq;
-+	unsigned long minpixclock, maxpixclock, pixval;
-+	struct device_node *np;
-+	void __iomem *ccm;
-+	u32 temp;
-+	long err;
-+	int i;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
-+	if (!np) {
-+		pr_err("Can't find clock control module.\n");
-+		return;
-+	}
-+
-+	ccm = of_iomap(np, 0);
-+	if (!ccm) {
-+		pr_err("Can't map clock control module reg.\n");
-+		of_node_put(np);
-+		return;
-+	}
-+	of_node_put(np);
-+
-+	busfreq = 200000000;
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		unsigned int size;
-+		const unsigned int *prop =
-+			of_get_property(np, "bus-frequency", &size);
-+		if (prop)
-+			busfreq = *prop;
-+		of_node_put(np);
-+	}
-+
-+	/* Pixel Clock configuration */
-+	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
-+	speed_ccb = busfreq * 4;
-+
-+	/* Calculate the pixel clock with the smallest error */
-+	/* calculate the following in steps to avoid overflow */
-+	pr_debug("DIU pixclock in ps - %d\n", pixclock);
-+	temp = 1;
-+	temp *= 1000000000;
-+	temp /= pixclock;
-+	temp *= 1000;
-+	pixclock = temp;
-+	pr_debug("DIU pixclock freq - %u\n", pixclock);
-+
-+	temp *= 5;
-+	temp /= 100;  /* pixclock * 0.05 */
-+	pr_debug("deviation = %d\n", temp);
-+	minpixclock = pixclock - temp;
-+	maxpixclock = pixclock + temp;
-+	pr_debug("DIU minpixclock - %lu\n", minpixclock);
-+	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
-+	pixval = speed_ccb/pixclock;
-+	pr_debug("DIU pixval = %lu\n", pixval);
-+
-+	err = 100000000;
-+	bestval = pixval;
-+	pr_debug("DIU bestval = %lu\n", bestval);
-+
-+	bestfreq = 0;
-+	for (i = -1; i <= 1; i++) {
-+		temp = speed_ccb / (pixval+i);
-+		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
-+			i, pixval, temp);
-+		if ((temp < minpixclock) || (temp > maxpixclock))
-+			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
-+				minpixclock, maxpixclock);
-+		else if (abs(temp - pixclock) < err) {
-+			pr_debug("Entered the else if block %d\n", i);
-+			err = abs(temp - pixclock);
-+			bestval = pixval + i;
-+			bestfreq = temp;
-+		}
-+	}
-+
-+	pr_debug("DIU chose = %lx\n", bestval);
-+	pr_debug("DIU error = %ld\n NomPixClk ", err);
-+	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
-+	/* Modify DIU_DIV in CCM SCFR1 */
-+	temp = in_be32(ccm + CCM_SCFR1);
-+	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
-+	temp &= ~DIU_DIV_MASK;
-+	temp |= (bestval & DIU_DIV_MASK);
-+	out_be32(ccm + CCM_SCFR1, temp);
-+	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
-+	iounmap(ccm);
-+}
-+
-+ssize_t mpc512x_show_monitor_port(int monitor_port, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "0 - 5121 LCD\n");
-+}
-+
-+int mpc512x_set_sysfs_monitor_port(int val)
-+{
-+	return 0;
-+}
-+
-+struct fsl_diu_shared_fb __attribute__ ((__aligned__(8))) diu_shared_fb;
-+EXPORT_SYMBOL_GPL(diu_shared_fb);
-+
-+#if defined(CONFIG_FB_FSL_DIU) || \
-+    defined(CONFIG_FB_FSL_DIU_MODULE)
-+static inline void mpc512x_free_bootmem(struct page *page)
-+{
-+	__ClearPageReserved(page);
-+	BUG_ON(PageTail(page));
-+	BUG_ON(atomic_read(&page->_count) > 1);
-+	atomic_set(&page->_count, 1);
-+	__free_page(page);
-+	totalram_pages++;
-+}
-+
-+void mpc512x_release_bootmem(void)
-+{
-+	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
-+	unsigned long size = diu_shared_fb.fb_len;
-+	unsigned long start, end;
-+
-+	if (diu_shared_fb.in_use) {
-+		start = PFN_UP(addr);
-+		end = PFN_DOWN(addr + size);
-+
-+		for (; start < end; start++)
-+			mpc512x_free_bootmem(pfn_to_page(start));
-+
-+		diu_shared_fb.in_use = false;
-+	}
-+	diu_ops.release_bootmem	= NULL;
-+}
-+#endif
-+
-+/*
-+ * Check if DIU was pre-initialized. If so, perform steps
-+ * needed to continue displaying through the whole boot process.
-+ * Move area descriptor and gamma table elsewhere, they are
-+ * destroyed by bootmem allocator otherwise. The frame buffer
-+ * address range will be reserved in setup_arch() after bootmem
-+ * allocator is up.
-+ */
-+void __init mpc512x_init_diu(void)
-+{
-+	struct device_node *np;
-+	void __iomem *diu_reg;
-+	phys_addr_t desc;
-+	void __iomem *vaddr;
-+	unsigned long mode, pix_fmt, res, bpp;
-+	unsigned long dst;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,diu");
-+	if (!np) {
-+		pr_err("No DIU node\n");
-+		return;
-+	}
-+
-+	diu_reg = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!diu_reg) {
-+		pr_err("Can't map DIU\n");
-+		return;
-+	}
-+
-+	mode = in_be32(diu_reg + 0x1c);
-+	if (mode != 1) {
-+		pr_info("%s: DIU OFF\n", __func__);
-+		goto out;
-+	}
-+
-+	desc = in_be32(diu_reg);
-+	vaddr = ioremap(desc, sizeof(struct diu_ad));
-+	if (!vaddr) {
-+		pr_err("Can't map DIU area desc.\n");
-+		goto out;
-+	}
-+	memcpy(&diu_shared_fb.ad0, vaddr, sizeof(struct diu_ad));
-+	/* flush fb area descriptor */
-+	dst = (unsigned long)&diu_shared_fb.ad0;
-+	flush_dcache_range(dst, dst + sizeof(struct diu_ad) - 1);
-+
-+	res = in_be32(diu_reg + 0x28);
-+	pix_fmt = in_le32(vaddr);
-+	bpp = ((pix_fmt >> 16) & 0x3) + 1;
-+	diu_shared_fb.fb_phys = in_le32(vaddr + 4);
-+	diu_shared_fb.fb_len = ((res & 0xfff0000) >> 16) * (res & 0xfff) * bpp;
-+	diu_shared_fb.in_use = true;
-+	iounmap(vaddr);
-+
-+	desc = in_be32(diu_reg + 0xc);
-+	vaddr = ioremap(desc, sizeof(diu_shared_fb.gamma));
-+	if (!vaddr) {
-+		pr_err("Can't map DIU area desc.\n");
-+		diu_shared_fb.in_use = false;
-+		goto out;
-+	}
-+	memcpy(&diu_shared_fb.gamma, vaddr, sizeof(diu_shared_fb.gamma));
-+	/* flush gamma table */
-+	dst = (unsigned long)&diu_shared_fb.gamma;
-+	flush_dcache_range(dst, dst + sizeof(diu_shared_fb.gamma) - 1);
-+
-+	iounmap(vaddr);
-+	out_be32(diu_reg + 0xc, virt_to_phys(&diu_shared_fb.gamma));
-+	out_be32(diu_reg + 4, 0);
-+	out_be32(diu_reg + 8, 0);
-+	out_be32(diu_reg, virt_to_phys(&diu_shared_fb.ad0));
-+
-+out:
-+	iounmap(diu_reg);
-+}
-+
-+void __init mpc512x_setup_diu(void)
-+{
-+	int ret;
-+
-+	if (diu_shared_fb.in_use) {
-+		ret = reserve_bootmem(diu_shared_fb.fb_phys,
-+				      diu_shared_fb.fb_len,
-+				      BOOTMEM_EXCLUSIVE);
-+		if (ret) {
-+			pr_err("%s: reserve bootmem failed\n", __func__);
-+			diu_shared_fb.in_use = false;
-+		}
-+	}
-+
-+#if defined(CONFIG_FB_FSL_DIU) || \
-+    defined(CONFIG_FB_FSL_DIU_MODULE)
-+	diu_ops.get_pixel_format	= mpc512x_get_pixel_format;
-+	diu_ops.set_gamma_table		= mpc512x_set_gamma_table;
-+	diu_ops.set_monitor_port	= mpc512x_set_monitor_port;
-+	diu_ops.set_pixel_clock		= mpc512x_set_pixel_clock;
-+	diu_ops.show_monitor_port	= mpc512x_show_monitor_port;
-+	diu_ops.set_sysfs_monitor_port	= mpc512x_set_sysfs_monitor_port;
-+	diu_ops.release_bootmem		= mpc512x_release_bootmem;
-+#endif
-+}
-+
- void __init mpc512x_init_IRQ(void)
- {
- 	struct device_node *np;
-@@ -92,4 +375,3 @@ void __init mpc512x_declare_of_platform_devices(void)
- 		printk(KERN_ERR __FILE__ ": "
- 			"Error while probing of_platform bus\n");
- }
--
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 19754be..346057d 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -30,6 +30,7 @@ struct platform_diu_data_ops {
- 	void (*set_pixel_clock) (unsigned int pixclock);
- 	ssize_t (*show_monitor_port) (int monitor_port, char *buf);
- 	int (*set_sysfs_monitor_port) (int val);
-+	void (*release_bootmem) (void);
- };
+ 		i2c@1720 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
+-			cell-index = <1>;
+ 			reg = <0x1720 0x20>;
+ 			interrupts = <10 0x8>;
+ 			interrupt-parent = < &ipic >;
+@@ -225,7 +237,6 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			compatible = "fsl,mpc5121-i2c", "fsl-i2c";
+-			cell-index = <2>;
+ 			reg = <0x1740 0x20>;
+ 			interrupts = <11 0x8>;
+ 			interrupt-parent = < &ipic >;
+@@ -244,7 +255,7 @@
+ 		};
  
- extern struct platform_diu_data_ops diu_ops;
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 72d68b3..29c7f31 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -34,7 +34,7 @@
- #include <linux/of_platform.h>
+ 		display@2100 {
+-			compatible = "fsl,mpc5121-diu", "fsl-diu";
++			compatible = "fsl,mpc5121-diu", "fsl,diu";
+ 			reg = <0x2100 0x100>;
+ 			interrupts = <64 0x8>;
+ 			interrupt-parent = < &ipic >;
+@@ -285,7 +296,7 @@
+ 		//	interrupts = <43 0x8>;
+ 		//	dr_mode = "otg";
+ 		//	phy_type = "ulpi";
+-		//	port1;
++		//	fsl,big-endian-regs;
+ 		//};
  
- #include <sysdev/fsl_soc.h>
--#include "fsl-diu-fb.h"
-+#include <linux/fsl-diu-fb.h>
+ 		// USB0 using internal UTMI PHY
+@@ -298,7 +309,9 @@
+ 			interrupts = <44 0x8>;
+ 			dr_mode = "otg";
+ 			phy_type = "utmi_wide";
+-			port0;
++			fsl,big-endian-regs;
++			fsl,invert-drvvbus;
++			fsl,invert-pwr-fault;
+ 		};
  
- /*
-  * These parameters give default parameters
-@@ -178,6 +178,21 @@ static struct fb_videomode __devinitdata fsl_diu_mode_db[] = {
- 		.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 		.vmode		= FB_VMODE_NONINTERLACED
- 	},
-+	{
-+		.name		= "800x480-60",
-+		.refresh	= 60,
-+		.xres		= 800,
-+		.yres		= 480,
-+		.pixclock	= 31250,
-+		.left_margin	= 86,
-+		.right_margin	= 42,
-+		.upper_margin	= 33,
-+		.lower_margin	= 10,
-+		.hsync_len	= 128,
-+		.vsync_len	= 2,
-+		.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+		.vmode		= FB_VMODE_NONINTERLACED
-+	},
- };
+ 		// IO control
+@@ -365,7 +378,7 @@
+ 		};
  
- static char *fb_mode = "1024x768-32@60";
-@@ -329,8 +344,11 @@ static int fsl_diu_enable_panel(struct fb_info *info)
- 	if (mfbi->type != MFB_TYPE_OFF) {
- 		switch (mfbi->index) {
- 		case 0:				/* plane 0 */
--			if (hw->desc[0] != ad->paddr)
-+			if (in_be32(&hw->desc[0]) != ad->paddr) {
-+				out_be32(&dr.diu_reg->diu_mode, 0);
- 				out_be32(&hw->desc[0], ad->paddr);
-+				out_be32(&dr.diu_reg->diu_mode, 1);
-+			}
- 			break;
- 		case 1:				/* plane 1 AOI 0 */
- 			cmfbi = machine_data->fsl_diu_info[2]->par;
-@@ -389,7 +407,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
- 
- 	switch (mfbi->index) {
- 	case 0:					/* plane 0 */
--		if (hw->desc[0] != machine_data->dummy_ad->paddr)
-+		if (in_be32(&hw->desc[0]) != machine_data->dummy_ad->paddr)
- 			out_be32(&hw->desc[0],
- 				machine_data->dummy_ad->paddr);
- 		break;
-@@ -1100,6 +1118,10 @@ static int fsl_diu_open(struct fb_info *info, int user)
- 	struct mfb_info *mfbi = info->par;
- 	int res = 0;
- 
-+	/* free boot splash memory on first /dev/fb0 open */
-+	if (!mfbi->index && diu_ops.release_bootmem)
-+		diu_ops.release_bootmem();
-+
- 	spin_lock(&diu_lock);
- 	mfbi->count++;
- 	if (mfbi->count == 1) {
-@@ -1427,6 +1449,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 	int ret, i, error = 0;
- 	struct resource res;
- 	struct fsl_diu_data *machine_data;
-+	int diu_mode;
- 
- 	machine_data = kzalloc(sizeof(struct fsl_diu_data), GFP_KERNEL);
- 	if (!machine_data)
-@@ -1463,7 +1486,9 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 		goto error2;
- 	}
- 
--	out_be32(&dr.diu_reg->diu_mode, 0);		/* disable DIU anyway*/
-+	diu_mode = in_be32(&dr.diu_reg->diu_mode);
-+	if (diu_mode != MFB_MODE1)
-+		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
- 
- 	/* Get the IRQ of the DIU */
- 	machine_data->irq = irq_of_parse_and_map(np, 0);
-@@ -1511,7 +1536,12 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 	machine_data->dummy_ad->offset_xyd = 0;
- 	machine_data->dummy_ad->next_ad = 0;
- 
--	out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
-+	/* Let DIU display splash screen if it was pre-initialized
-+	 * by the bootloader, set dummy area descriptor otherwise.
-+	 */
-+	if (diu_mode != MFB_MODE1)
-+		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
-+
- 	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
- 	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
- 
-diff --git a/drivers/video/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
-similarity index 100%
-rename from drivers/video/fsl-diu-fb.h
-rename to include/linux/fsl-diu-fb.h
+ 		dma@14000 {
+-			compatible = "fsl,mpc5121-dma2";
++			compatible = "fsl,mpc5121-dma";
+ 			reg = <0x14000 0x1800>;
+ 			interrupts = <65 0x8>;
+ 			interrupt-parent = < &ipic >;
 -- 
 1.5.6.3
