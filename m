@@ -1,16 +1,16 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 3CE5EB7D02
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:43 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9CF68B7D22
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:44 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8 v2] powerpc/mpc5121: add USB host support
-Date: Wed, 27 Jan 2010 13:07:29 +0100
-Message-Id: <1264594052-20317-6-git-send-email-agust@denx.de>
+Subject: [PATCH 6/8 v2] powerpc/mpc5121: shared DIU framebuffer support
+Date: Wed, 27 Jan 2010 13:07:30 +0100
+Message-Id: <1264594052-20317-7-git-send-email-agust@denx.de>
 In-Reply-To: <1264594052-20317-1-git-send-email-agust@denx.de>
 References: <1264594052-20317-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, linux-usb@vger.kernel.org,
-	Bruce Schmid <duck@freescale.com>, Anatolij Gustschin <agust@denx.de>
+Cc: John Rigby <jrigby@gmail.com>, Anatolij Gustschin <agust@denx.de>,
+	wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,590 +20,537 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Platform specific code for MPC5121 USB Host support.
-MPC5121 Rev 2.0 silicon EHCI registers are big endian.
-Add appropriate support by specifying "fsl,big-endian-regs"
-property in device tree node for USB controller. Also
-allow specifying DRVVBUS and PWR_FAULT signal polarity
-of the MPC5121 internal PHY using "fsl,invert-drvvbus" and
-"fsl,invert-pwr-fault" properties.
+MPC5121 DIU configuration/setup as initialized by the boot
+loader currently will get lost while booting Linux. As a
+result displaying the boot splash is not possible through
+the boot process.
 
-Signed-off-by: Bruce Schmid <duck@freescale.com>
+To prevent this we reserve configured DIU frame buffer
+address range while booting and preserve AOI descriptor
+and gamma table so that DIU continues displaying through
+the whole boot process. On first open from user space
+DIU frame buffer driver releases the reserved frame
+buffer area and continues to operate as usual.
+
+The patch also moves drivers/video/fsl-diu-fb.h file to
+include/linux as we use some DIU structures in platform
+code.
+
+'diu_ops' callbacks in platform code borrowed from John's
+DIU code.
+
+Signed-off-by: John Rigby <jrigby@gmail.com>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: linux-usb@vger.kernel.org
 Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
 Changes since v1:
- - prefix the property names with 'fsl,'
- - drop currently unused USB_FSL_BIG_ENDIAN_MMIO config option
- - remove unrelated changes which can be addressed by
-   separate patch
- - fix commit message
+ - specify align attribute before "diu_shared_fb" variable
+   name to fix checkpatch warning
 
-Note that EHCI FSL driver extention in this patch
-applies on top of the following two patches (in the
-linux-next tree):
+ arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
+ arch/powerpc/platforms/512x/mpc5121_generic.c |   12 +
+ arch/powerpc/platforms/512x/mpc512x.h         |    3 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c  |  284 ++++++++++++++++++++++++-
+ arch/powerpc/sysdev/fsl_soc.h                 |    1 +
+ drivers/video/fsl-diu-fb.c                    |   40 +++-
+ {drivers/video => include/linux}/fsl-diu-fb.h |    0 
+ 7 files changed, 341 insertions(+), 6 deletions(-)
+ rename {drivers/video => include/linux}/fsl-diu-fb.h (100%)
 
-commit 23c3314b88f91db51bd198ed92e34cffb67788dd
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Mon Dec 14 18:41:12 2009 +0300
-
-    USB: ehci-fsl: Add power management support
-
-commit bf4bf2d9f646eb0cc531d213a13ffcedf9d6785f
-Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-Date:   Mon Dec 14 18:41:05 2009 +0300
-
-    USB: ehci-fsl: Fix sparse warnings
-
- Documentation/powerpc/dts-bindings/fsl/usb.txt |    8 ++
- arch/powerpc/platforms/512x/Kconfig            |    3 +
- arch/powerpc/platforms/512x/Makefile           |    2 +-
- arch/powerpc/platforms/512x/mpc5121_ads.c      |    1 +
- arch/powerpc/platforms/512x/mpc5121_usb.c      |  117 ++++++++++++++++++++++++
- arch/powerpc/platforms/512x/mpc512x.h          |    1 +
- arch/powerpc/sysdev/fsl_soc.c                  |   10 ++
- arch/powerpc/sysdev/fsl_soc.h                  |    9 ++
- drivers/usb/host/ehci-fsl.c                    |  111 ++++++++++++++++------
- drivers/usb/host/ehci-fsl.h                    |   19 ++++-
- drivers/usb/host/ehci-mem.c                    |    2 +-
- include/linux/fsl_devices.h                    |   10 ++
- 12 files changed, 260 insertions(+), 33 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/mpc5121_usb.c
-
-diff --git a/Documentation/powerpc/dts-bindings/fsl/usb.txt b/Documentation/powerpc/dts-bindings/fsl/usb.txt
-index b001524..71c0f72 100644
---- a/Documentation/powerpc/dts-bindings/fsl/usb.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/usb.txt
-@@ -33,6 +33,14 @@ Recommended properties :
-  - interrupt-parent : the phandle for the interrupt controller that
-    services interrupts for this device.
- 
-+Optional properties :
-+ - fsl,big-endian-regs : boolean; if defined, indicates the USB host
-+   controller registers format is big endian.
-+ - fsl,invert-drvvbus : boolean; for MPC5121 only. Indicates the port
-+   power polarity of internal PHY signal DRVVBUS is inverted.
-+ - fsl,invert-pwr-fault : boolean; for MPC5121 only. Indicates the
-+   PWR_FAULT signal polarity is inverted.
-+
- Example multi port host USB controller device node :
- 	usb@22000 {
- 		compatible = "fsl-usb2-mph";
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 4dac9b0..fed7b5d 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -9,6 +9,9 @@ config PPC_MPC512x
- config PPC_MPC5121
- 	bool
- 	select PPC_MPC512x
-+	select USB_ARCH_HAS_EHCI
-+	select USB_EHCI_BIG_ENDIAN_DESC
-+	select USB_EHCI_BIG_ENDIAN_MMIO
- 
- config MPC5121_ADS
- 	bool "Freescale MPC5121E ADS"
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 90be2f5..49adabc 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -1,6 +1,6 @@
- #
- # Makefile for the Freescale PowerPC 512x linux kernel.
- #
--obj-y				+= clock.o mpc512x_shared.o
-+obj-y				+= clock.o mpc512x_shared.o mpc5121_usb.o
- obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
 diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index 2f40404..a497c14 100644
+index a497c14..213354e 100644
 --- a/arch/powerpc/platforms/512x/mpc5121_ads.c
 +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
 @@ -42,6 +42,7 @@ static void __init mpc5121_ads_setup_arch(void)
  	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
  		mpc83xx_add_bridge(np);
  #endif
-+	mpc5121_usb_init();
++	mpc512x_setup_diu();
+ 	mpc5121_usb_init();
  }
  
- static void __init mpc5121_ads_init_IRQ(void)
-diff --git a/arch/powerpc/platforms/512x/mpc5121_usb.c b/arch/powerpc/platforms/512x/mpc5121_usb.c
-new file mode 100644
-index 0000000..3625d2e
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc5121_usb.c
-@@ -0,0 +1,117 @@
-+/*
-+ * Copyright (C) 2007,2008 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * Author: Bruce Schmid <duck@freescale.com>, Tue Oct 2 2007
-+ *
-+ * Description:
-+ * MPC5121 USB platform-specific routines
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/errno.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/stddef.h>
-+#include <linux/of_platform.h>
-+#include <sysdev/fsl_soc.h>
-+
-+#define USBGENCTRL		0x200		/* NOTE: big endian */
-+#define GC_WU_INT_CLR		(1 << 5)	/* Wakeup int clear */
-+#define GC_ULPI_SEL		(1 << 4)	/* ULPI i/f select (usb0 only)*/
-+#define GC_PPP			(1 << 3)	/* Inv. Port Power Polarity */
-+#define GC_PFP			(1 << 2)	/* Inv. Power Fault Polarity */
-+#define GC_WU_ULPI_EN		(1 << 1)	/* Wakeup on ULPI event */
-+#define GC_WU_IE		(1 << 1)	/* Wakeup interrupt enable */
-+
-+#define ISIPHYCTRL		0x204		/* NOTE: big endian */
-+#define PHYCTRL_PHYE		(1 << 4)	/* On-chip UTMI PHY enable */
-+#define PHYCTRL_BSENH		(1 << 3)	/* Bit Stuff Enable High */
-+#define PHYCTRL_BSEN		(1 << 2)	/* Bit Stuff Enable */
-+#define PHYCTRL_LSFE		(1 << 1)	/* Line State Filter Enable */
-+#define PHYCTRL_PXE		(1 << 0)	/* PHY oscillator enable */
-+
-+static struct clk *dr_clk1;
-+static struct clk *dr_clk2;
-+static int dr_used;
-+
-+static int mpc5121_usb_dr_init(struct platform_device *pdev)
+@@ -61,12 +62,18 @@ static int __init mpc5121_ads_probe(void)
+ 	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
+ }
+ 
++void __init mpc5121_ads_init_early(void)
 +{
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++	mpc512x_init_diu();
++}
 +
-+	/* enable the clock if we haven't already */
-+	if (!dr_used) {
-+		dr_clk1 = clk_get(&pdev->dev, "usb1_clk");
-+		if (IS_ERR(dr_clk1)) {
-+			dev_err(&pdev->dev, "usb1: clk_get failed\n");
-+			return -ENODEV;
-+		}
-+		clk_enable(dr_clk1);
-+		dr_clk2 = clk_get(&pdev->dev, "usb2_clk");
-+		if (IS_ERR(dr_clk2)) {
-+			dev_err(&pdev->dev, "usb2: clk_get failed\n");
-+			return -ENODEV;
-+		}
-+		clk_enable(dr_clk2);
+ define_machine(mpc5121_ads) {
+ 	.name			= "MPC5121 ADS",
+ 	.probe			= mpc5121_ads_probe,
+ 	.setup_arch		= mpc5121_ads_setup_arch,
+ 	.init			= mpc512x_declare_of_platform_devices,
+ 	.init_IRQ		= mpc5121_ads_init_IRQ,
++	.init_early		= mpc5121_ads_init_early,
+ 	.get_irq		= ipic_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.restart		= mpc512x_restart,
+diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+index de4c3f7..38d8bf2 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_generic.c
++++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+@@ -48,10 +48,22 @@ static int __init mpc5121_generic_probe(void)
+ 	return board[i] != NULL;
+ }
+ 
++void __init mpc512x_generic_init_early(void)
++{
++	mpc512x_init_diu();
++}
++
++void __init mpc512x_generic_setup_arch(void)
++{
++	mpc512x_setup_diu();
++}
++
+ define_machine(mpc5121_generic) {
+ 	.name			= "MPC5121 generic",
+ 	.probe			= mpc5121_generic_probe,
+ 	.init			= mpc512x_declare_of_platform_devices,
++	.init_early		= mpc512x_generic_init_early,
++	.setup_arch		= mpc512x_generic_setup_arch,
+ 	.init_IRQ		= mpc512x_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index e92a282..9ad7dc5 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -14,5 +14,8 @@
+ extern void __init mpc512x_init_IRQ(void);
+ extern void mpc512x_restart(char *cmd);
+ extern void mpc5121_usb_init(void);
++extern void __init mpc512x_init_diu(void);
++extern void __init mpc512x_setup_diu(void);
++extern struct fsl_diu_shared_fb diu_shared_fb;
+ void __init mpc512x_declare_of_platform_devices(void);
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 6b8314c..f0f9075 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -16,7 +16,11 @@
+ #include <linux/io.h>
+ #include <linux/irq.h>
+ #include <linux/of_platform.h>
++#include <linux/fsl-diu-fb.h>
++#include <linux/bootmem.h>
++#include <sysdev/fsl_soc.h>
+ 
++#include <asm/cacheflush.h>
+ #include <asm/machdep.h>
+ #include <asm/ipic.h>
+ #include <asm/prom.h>
+@@ -58,6 +62,285 @@ void mpc512x_restart(char *cmd)
+ 		;
+ }
+ 
++
++struct fsl_diu_shared_fb {
++	char		gamma[0x300];	/* 32-bit aligned! */
++	struct diu_ad	ad0;		/* 32-bit aligned! */
++	phys_addr_t	fb_phys;
++	size_t		fb_len;
++	bool		in_use;
++};
++
++unsigned int mpc512x_get_pixel_format(unsigned int bits_per_pixel,
++				      int monitor_port)
++{
++	unsigned int pix_fmt;
++
++	switch (bits_per_pixel) {
++	case 32:
++		pix_fmt = 0x88883316;
++		break;
++	case 24:
++		pix_fmt = 0x88082219;
++		break;
++	case 16:
++		pix_fmt = 0x65053118;
++		break;
++	default:
++		pix_fmt = 0x00000400;
 +	}
-+	dr_used++;
++	return pix_fmt;
++}
 +
-+	pdata->big_endian_desc = 1;
-+	pdata->es = 1;
++void mpc512x_set_gamma_table(int monitor_port, char *gamma_table_base)
++{
++}
 +
-+	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
-+		struct device_node *np;
-+		u32 reg = 0;
++void mpc512x_set_monitor_port(int monitor_port)
++{
++}
 +
-+		np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-usb2-dr");
-+		if (!np) {
-+			pr_err("No USB node found\n");
-+			return -ENODEV;
-+		}
++#define CCM_SCFR1	0x0000000c
++#define DIU_DIV_MASK	0x000000ff
++void mpc512x_set_pixel_clock(unsigned int pixclock)
++{
++	unsigned long bestval, bestfreq, speed_ccb, busfreq;
++	unsigned long minpixclock, maxpixclock, pixval;
++	struct device_node *np;
++	void __iomem *ccm;
++	u32 temp;
++	long err;
++	int i;
 +
-+		if (of_get_property(np, "fsl,invert-drvvbus", NULL))
-+			reg |= GC_PPP;
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
++	if (!np) {
++		pr_err("Can't find clock control module.\n");
++		return;
++	}
 +
-+		if (of_get_property(np, "fsl,invert-pwr-fault", NULL))
-+			reg |= GC_PFP;
-+
++	ccm = of_iomap(np, 0);
++	if (!ccm) {
++		pr_err("Can't map clock control module reg.\n");
 +		of_node_put(np);
-+		out_be32(pdata->regs + ISIPHYCTRL, PHYCTRL_PHYE | PHYCTRL_PXE);
-+		out_be32(pdata->regs + USBGENCTRL, reg);
++		return;
 +	}
++	of_node_put(np);
++
++	busfreq = 200000000;
++	np = of_find_node_by_type(NULL, "cpu");
++	if (np) {
++		unsigned int size;
++		const unsigned int *prop =
++			of_get_property(np, "bus-frequency", &size);
++		if (prop)
++			busfreq = *prop;
++		of_node_put(np);
++	}
++
++	/* Pixel Clock configuration */
++	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
++	speed_ccb = busfreq * 4;
++
++	/* Calculate the pixel clock with the smallest error */
++	/* calculate the following in steps to avoid overflow */
++	pr_debug("DIU pixclock in ps - %d\n", pixclock);
++	temp = 1;
++	temp *= 1000000000;
++	temp /= pixclock;
++	temp *= 1000;
++	pixclock = temp;
++	pr_debug("DIU pixclock freq - %u\n", pixclock);
++
++	temp *= 5;
++	temp /= 100;  /* pixclock * 0.05 */
++	pr_debug("deviation = %d\n", temp);
++	minpixclock = pixclock - temp;
++	maxpixclock = pixclock + temp;
++	pr_debug("DIU minpixclock - %lu\n", minpixclock);
++	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
++	pixval = speed_ccb/pixclock;
++	pr_debug("DIU pixval = %lu\n", pixval);
++
++	err = 100000000;
++	bestval = pixval;
++	pr_debug("DIU bestval = %lu\n", bestval);
++
++	bestfreq = 0;
++	for (i = -1; i <= 1; i++) {
++		temp = speed_ccb / (pixval+i);
++		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
++			i, pixval, temp);
++		if ((temp < minpixclock) || (temp > maxpixclock))
++			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
++				minpixclock, maxpixclock);
++		else if (abs(temp - pixclock) < err) {
++			pr_debug("Entered the else if block %d\n", i);
++			err = abs(temp - pixclock);
++			bestval = pixval + i;
++			bestfreq = temp;
++		}
++	}
++
++	pr_debug("DIU chose = %lx\n", bestval);
++	pr_debug("DIU error = %ld\n NomPixClk ", err);
++	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
++	/* Modify DIU_DIV in CCM SCFR1 */
++	temp = in_be32(ccm + CCM_SCFR1);
++	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
++	temp &= ~DIU_DIV_MASK;
++	temp |= (bestval & DIU_DIV_MASK);
++	out_be32(ccm + CCM_SCFR1, temp);
++	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
++	iounmap(ccm);
++}
++
++ssize_t mpc512x_show_monitor_port(int monitor_port, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "0 - 5121 LCD\n");
++}
++
++int mpc512x_set_sysfs_monitor_port(int val)
++{
 +	return 0;
 +}
 +
-+static void mpc5121_usb_dr_uninit(struct platform_device *pdev)
++struct fsl_diu_shared_fb __attribute__ ((__aligned__(8))) diu_shared_fb;
++EXPORT_SYMBOL_GPL(diu_shared_fb);
++
++#if defined(CONFIG_FB_FSL_DIU) || \
++    defined(CONFIG_FB_FSL_DIU_MODULE)
++static inline void mpc512x_free_bootmem(struct page *page)
 +{
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++	__ClearPageReserved(page);
++	BUG_ON(PageTail(page));
++	BUG_ON(atomic_read(&page->_count) > 1);
++	atomic_set(&page->_count, 1);
++	__free_page(page);
++	totalram_pages++;
++}
 +
-+	pdata->regs = NULL;
++void mpc512x_release_bootmem(void)
++{
++	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
++	unsigned long size = diu_shared_fb.fb_len;
++	unsigned long start, end;
 +
-+	dr_used--;
-+	if (!dr_used) {
-+		clk_disable(dr_clk1);
-+		clk_disable(dr_clk2);
-+		clk_put(dr_clk1);
-+		clk_put(dr_clk2);
-+		dr_clk1 = NULL;
-+		dr_clk2 = NULL;
++	if (diu_shared_fb.in_use) {
++		start = PFN_UP(addr);
++		end = PFN_DOWN(addr + size);
++
++		for (; start < end; start++)
++			mpc512x_free_bootmem(pfn_to_page(start));
++
++		diu_shared_fb.in_use = false;
 +	}
++	diu_ops.release_bootmem	= NULL;
 +}
++#endif
 +
-+void mpc5121_usb_init(void)
++/*
++ * Check if DIU was pre-initialized. If so, perform steps
++ * needed to continue displaying through the whole boot process.
++ * Move area descriptor and gamma table elsewhere, they are
++ * destroyed by bootmem allocator otherwise. The frame buffer
++ * address range will be reserved in setup_arch() after bootmem
++ * allocator is up.
++ */
++void __init mpc512x_init_diu(void)
 +{
-+	fsl_platform_usb_ops.init = mpc5121_usb_dr_init;
-+	fsl_platform_usb_ops.uninit = mpc5121_usb_dr_uninit;
++	struct device_node *np;
++	void __iomem *diu_reg;
++	phys_addr_t desc;
++	void __iomem *vaddr;
++	unsigned long mode, pix_fmt, res, bpp;
++	unsigned long dst;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,diu");
++	if (!np) {
++		pr_err("No DIU node\n");
++		return;
++	}
++
++	diu_reg = of_iomap(np, 0);
++	of_node_put(np);
++	if (!diu_reg) {
++		pr_err("Can't map DIU\n");
++		return;
++	}
++
++	mode = in_be32(diu_reg + 0x1c);
++	if (mode != 1) {
++		pr_info("%s: DIU OFF\n", __func__);
++		goto out;
++	}
++
++	desc = in_be32(diu_reg);
++	vaddr = ioremap(desc, sizeof(struct diu_ad));
++	if (!vaddr) {
++		pr_err("Can't map DIU area desc.\n");
++		goto out;
++	}
++	memcpy(&diu_shared_fb.ad0, vaddr, sizeof(struct diu_ad));
++	/* flush fb area descriptor */
++	dst = (unsigned long)&diu_shared_fb.ad0;
++	flush_dcache_range(dst, dst + sizeof(struct diu_ad) - 1);
++
++	res = in_be32(diu_reg + 0x28);
++	pix_fmt = in_le32(vaddr);
++	bpp = ((pix_fmt >> 16) & 0x3) + 1;
++	diu_shared_fb.fb_phys = in_le32(vaddr + 4);
++	diu_shared_fb.fb_len = ((res & 0xfff0000) >> 16) * (res & 0xfff) * bpp;
++	diu_shared_fb.in_use = true;
++	iounmap(vaddr);
++
++	desc = in_be32(diu_reg + 0xc);
++	vaddr = ioremap(desc, sizeof(diu_shared_fb.gamma));
++	if (!vaddr) {
++		pr_err("Can't map DIU area desc.\n");
++		diu_shared_fb.in_use = false;
++		goto out;
++	}
++	memcpy(&diu_shared_fb.gamma, vaddr, sizeof(diu_shared_fb.gamma));
++	/* flush gamma table */
++	dst = (unsigned long)&diu_shared_fb.gamma;
++	flush_dcache_range(dst, dst + sizeof(diu_shared_fb.gamma) - 1);
++
++	iounmap(vaddr);
++	out_be32(diu_reg + 0xc, virt_to_phys(&diu_shared_fb.gamma));
++	out_be32(diu_reg + 4, 0);
++	out_be32(diu_reg + 8, 0);
++	out_be32(diu_reg, virt_to_phys(&diu_shared_fb.ad0));
++
++out:
++	iounmap(diu_reg);
 +}
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index c38875c..e92a282 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -13,5 +13,6 @@
- #define __MPC512X_H__
- extern void __init mpc512x_init_IRQ(void);
- extern void mpc512x_restart(char *cmd);
-+extern void mpc5121_usb_init(void);
- void __init mpc512x_declare_of_platform_devices(void);
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index b91f7ac..1e412a8 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -209,6 +209,9 @@ static int __init of_add_fixed_phys(void)
- arch_initcall(of_add_fixed_phys);
- #endif /* CONFIG_FIXED_PHY */
- 
-+struct fsl_platform_usb_ops fsl_platform_usb_ops;
-+EXPORT_SYMBOL(fsl_platform_usb_ops);
 +
- static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
++void __init mpc512x_setup_diu(void)
++{
++	int ret;
++
++	if (diu_shared_fb.in_use) {
++		ret = reserve_bootmem(diu_shared_fb.fb_phys,
++				      diu_shared_fb.fb_len,
++				      BOOTMEM_EXCLUSIVE);
++		if (ret) {
++			pr_err("%s: reserve bootmem failed\n", __func__);
++			diu_shared_fb.in_use = false;
++		}
++	}
++
++#if defined(CONFIG_FB_FSL_DIU) || \
++    defined(CONFIG_FB_FSL_DIU_MODULE)
++	diu_ops.get_pixel_format	= mpc512x_get_pixel_format;
++	diu_ops.set_gamma_table		= mpc512x_set_gamma_table;
++	diu_ops.set_monitor_port	= mpc512x_set_monitor_port;
++	diu_ops.set_pixel_clock		= mpc512x_set_pixel_clock;
++	diu_ops.show_monitor_port	= mpc512x_show_monitor_port;
++	diu_ops.set_sysfs_monitor_port	= mpc512x_set_sysfs_monitor_port;
++	diu_ops.release_bootmem		= mpc512x_release_bootmem;
++#endif
++}
++
+ void __init mpc512x_init_IRQ(void)
  {
- 	if (!phy_type)
-@@ -267,6 +270,9 @@ static int __init fsl_usb_of_init(void)
- 		if (prop)
- 			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
- 
-+		if (of_get_property(np, "fsl,big-endian-regs", NULL))
-+			usb_data.big_endian_mmio = 1;
-+
- 		prop = of_get_property(np, "phy_type", NULL);
- 		usb_data.phy_mode = determine_usb_phy(prop);
- 
-@@ -332,9 +338,13 @@ static int __init fsl_usb_of_init(void)
- 			ret = -EINVAL;
- 			goto err;
- 		}
-+		if (of_get_property(np, "fsl,big-endian-regs", NULL))
-+			usb_data.big_endian_mmio = 1;
- 
- 		prop = of_get_property(np, "phy_type", NULL);
- 		usb_data.phy_mode = determine_usb_phy(prop);
-+		usb_data.platform_init = fsl_platform_usb_ops.init;
-+		usb_data.platform_uninit = fsl_platform_usb_ops.uninit;
- 
- 		if (usb_dev_dr_host) {
- 			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
+ 	struct device_node *np;
+@@ -92,4 +375,3 @@ void __init mpc512x_declare_of_platform_devices(void)
+ 		printk(KERN_ERR __FILE__ ": "
+ 			"Error while probing of_platform bus\n");
+ }
+-
 diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 42381bb..19754be 100644
+index 19754be..346057d 100644
 --- a/arch/powerpc/sysdev/fsl_soc.h
 +++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -35,5 +35,14 @@ struct platform_diu_data_ops {
+@@ -30,6 +30,7 @@ struct platform_diu_data_ops {
+ 	void (*set_pixel_clock) (unsigned int pixclock);
+ 	ssize_t (*show_monitor_port) (int monitor_port, char *buf);
+ 	int (*set_sysfs_monitor_port) (int val);
++	void (*release_bootmem) (void);
+ };
+ 
  extern struct platform_diu_data_ops diu_ops;
- #endif
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 72d68b3..29c7f31 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -34,7 +34,7 @@
+ #include <linux/of_platform.h>
  
-+struct platform_device;
-+
-+struct fsl_platform_usb_ops {
-+	int (*init)(struct platform_device *);
-+	void (*uninit)(struct platform_device *);
-+};
-+
-+extern struct fsl_platform_usb_ops fsl_platform_usb_ops;
-+
- #endif
- #endif
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 0e26aa1..6b3f1df 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -57,7 +57,7 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 	pr_debug("initializing FSL-SOC USB Controller\n");
+ #include <sysdev/fsl_soc.h>
+-#include "fsl-diu-fb.h"
++#include <linux/fsl-diu-fb.h>
  
- 	/* Need platform data for setup */
--	pdata = (struct fsl_usb2_platform_data *)pdev->dev.platform_data;
-+	pdata = pdev->dev.platform_data;
- 	if (!pdata) {
- 		dev_err(&pdev->dev,
- 			"No platform data for %s.\n", dev_name(&pdev->dev));
-@@ -116,13 +116,39 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 		goto err3;
- 	}
- 
--	/* Enable USB controller */
--	temp = in_be32(hcd->regs + 0x500);
--	out_be32(hcd->regs + 0x500, temp | 0x4);
-+	pdata->regs = hcd->regs;
-+
-+	/*
-+	 * do platform specific init: check the clock, grab/config pins, etc.
-+	 */
-+	if (pdata->platform_init && pdata->platform_init(pdev)) {
-+		retval = -ENODEV;
-+		goto err3;
-+	}
-+
-+	/*
-+	 * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
-+	 * flag for 83xx or 8536 system interface registers.
-+	 */
-+	if (pdata->big_endian_mmio)
-+		temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
-+	else
-+		temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
-+
-+	if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
-+		pdata->have_sysif_regs = 1;
-+
-+	/* Enable USB controller, 83xx or 8536 */
-+	if (pdata->have_sysif_regs)
-+		setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
- 
- 	/* Set to Host mode */
--	temp = in_le32(hcd->regs + 0x1a8);
--	out_le32(hcd->regs + 0x1a8, temp | 0x3);
-+	if (pdata->big_endian_mmio) {
-+		setbits32(hcd->regs + FSL_SOC_USB_USBMODE, USBMODE_CM_HOST);
-+	} else {
-+		clrsetbits_le32(hcd->regs + FSL_SOC_USB_USBMODE,
-+				USBMODE_CM_MASK, USBMODE_CM_HOST);
-+	}
- 
- 	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
- 	if (retval != 0)
-@@ -137,6 +163,8 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 	usb_put_hcd(hcd);
-       err1:
- 	dev_err(&pdev->dev, "init %s fail, %d\n", dev_name(&pdev->dev), retval);
-+	if (pdata->platform_uninit)
-+		pdata->platform_uninit(pdev);
- 	return retval;
- }
- 
-@@ -154,17 +182,30 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
- 			       struct platform_device *pdev)
- {
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+
- 	usb_remove_hcd(hcd);
-+
-+	/*
-+	 * do platform specific un-initialization:
-+	 * release iomux pins, disable clock, etc.
-+	 */
-+	if (pdata->platform_uninit)
-+		pdata->platform_uninit(pdev);
- 	iounmap(hcd->regs);
- 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
- 	usb_put_hcd(hcd);
- }
- 
--static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
--			      enum fsl_usb2_phy_modes phy_mode,
--			      unsigned int port_offset)
-+static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
-+			       enum fsl_usb2_phy_modes phy_mode,
-+			       unsigned int port_offset)
- {
--	u32 portsc = 0;
-+	u32 portsc;
-+
-+	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
-+	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
-+
- 	switch (phy_mode) {
- 	case FSL_USB2_PHY_ULPI:
- 		portsc |= PORT_PTS_ULPI;
-@@ -184,20 +225,21 @@ static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
- 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
- }
- 
--static void mpc83xx_usb_setup(struct usb_hcd *hcd)
-+static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- {
--	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+	struct usb_hcd *hcd = ehci_to_hcd(ehci);
- 	struct fsl_usb2_platform_data *pdata;
- 	void __iomem *non_ehci = hcd->regs;
--	u32 temp;
-+	u32 tmp;
-+
-+	pdata = hcd->self.controller->platform_data;
- 
--	pdata =
--	    (struct fsl_usb2_platform_data *)hcd->self.controller->
--	    platform_data;
- 	/* Enable PHY interface in the control reg. */
--	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-+	if (pdata->have_sysif_regs) {
-+		tmp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
-+		out_be32(non_ehci + FSL_SOC_USB_CTRL, tmp | 0x00000004);
-+		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-+	}
- 
- #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
- 	/*
-@@ -214,7 +256,7 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
- 
- 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
- 			(pdata->operating_mode == FSL_USB2_DR_OTG))
--		mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
-+		ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
- 
- 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
- 		unsigned int chip, rev, svr;
-@@ -228,27 +270,31 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
- 			ehci->has_fsl_port_bug = 1;
- 
- 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
--			mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
-+			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
- 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
--			mpc83xx_setup_phy(ehci, pdata->phy_mode, 1);
-+			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 1);
- 	}
- 
- 	/* put controller in host mode. */
--	ehci_writel(ehci, 0x00000003, non_ehci + FSL_SOC_USB_USBMODE);
-+	tmp = USBMODE_CM_HOST | (pdata->es ? USBMODE_ES : 0);
-+	ehci_writel(ehci, tmp, non_ehci + FSL_SOC_USB_USBMODE);
-+
-+	if (pdata->have_sysif_regs) {
- #ifdef CONFIG_PPC_85xx
--	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
--	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
-+		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
-+		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
- #else
--	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
--	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
-+		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
-+		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
- #endif
--	out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
-+		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
-+	}
- }
- 
- /* called after powerup, by probe or system-pm "wakeup" */
- static int ehci_fsl_reinit(struct ehci_hcd *ehci)
- {
--	mpc83xx_usb_setup(ehci_to_hcd(ehci));
-+	ehci_fsl_usb_setup(ehci);
- 	ehci_port_power(ehci, 0);
- 
- 	return 0;
-@@ -259,6 +305,11 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
- {
- 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
- 	int retval;
-+	struct fsl_usb2_platform_data *pdata;
-+
-+	pdata = hcd->self.controller->platform_data;
-+	ehci->big_endian_desc = pdata->big_endian_desc;
-+	ehci->big_endian_mmio = pdata->big_endian_mmio;
- 
- 	/* EHCI registers start at offset 0x100 */
- 	ehci->caps = hcd->regs + 0x100;
-@@ -369,7 +420,7 @@ static const struct hc_driver ehci_fsl_hc_driver = {
- 	 * generic hardware linkage
- 	 */
- 	.irq = ehci_irq,
--	.flags = HCD_USB2,
-+	.flags = HCD_USB2 | HCD_MEMORY,
- 
- 	/*
- 	 * basic lifecycle operations
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index b5e59db..3525bb4 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -1,4 +1,4 @@
--/* Copyright (c) 2005 freescale semiconductor
-+/* Copyright (C) 2005-2009 Freescale Semiconductor, Inc. All rights reserved.
-  * Copyright (c) 2005 MontaVista Software
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-@@ -19,6 +19,11 @@
- #define _EHCI_FSL_H
- 
- /* offsets for the non-ehci registers in the FSL SOC USB controller */
-+#define FSL_SOC_USB_ID		0x0
-+#define ID_MSK			0x3f
-+#define NID_MSK			0x3f00
-+#define FSL_SOC_USB_SBUSCFG	0x90
-+#define FSL_SOC_USB_BURSTSIZE	0x160
- #define FSL_SOC_USB_ULPIVP	0x170
- #define FSL_SOC_USB_PORTSC1	0x184
- #define PORT_PTS_MSK		(3<<30)
-@@ -26,8 +31,20 @@
- #define PORT_PTS_ULPI		(2<<30)
- #define	PORT_PTS_SERIAL		(3<<30)
- #define PORT_PTS_PTW		(1<<28)
-+#define PORT_PTS_PHCD		(1<<23)
- #define FSL_SOC_USB_PORTSC2	0x188
- #define FSL_SOC_USB_USBMODE	0x1a8
-+#define USBMODE_CM_MASK		(3 << 0)	/* controller mode mask */
-+#define USBMODE_CM_HOST		(3 << 0)	/* controller mode: host */
-+#define USBMODE_ES		(1 << 2)	/* (Big) Endian Select */
-+
-+#define FSL_SOC_USB_USBGENCTRL 	0x200
-+#define USBGENCTRL_PPP 		(1 << 3)
-+#define USBGENCTRL_PFP		(1 << 2)
-+#define FSL_SOC_USB_ISIPHYCTRL	0x204
-+#define ISIPHYCTRL_PXE		(1)
-+#define ISIPHYCTRL_PHYE		(1 << 4)
-+
- #define FSL_SOC_USB_SNOOP1	0x400	/* NOTE: big-endian */
- #define FSL_SOC_USB_SNOOP2	0x404	/* NOTE: big-endian */
- #define FSL_SOC_USB_AGECNTTHRSH	0x408	/* NOTE: big-endian */
-diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
-index aeda96e..1e7e004 100644
---- a/drivers/usb/host/ehci-mem.c
-+++ b/drivers/usb/host/ehci-mem.c
-@@ -40,7 +40,7 @@ static inline void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd *qtd,
- {
- 	memset (qtd, 0, sizeof *qtd);
- 	qtd->qtd_dma = dma;
--	qtd->hw_token = cpu_to_le32 (QTD_STS_HALT);
-+	qtd->hw_token = cpu_to_hc32(ehci, QTD_STS_HALT);
- 	qtd->hw_next = EHCI_LIST_END(ehci);
- 	qtd->hw_alt_next = EHCI_LIST_END(ehci);
- 	INIT_LIST_HEAD (&qtd->qtd_list);
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 28e33fe..dfe603f 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -58,11 +58,21 @@ enum fsl_usb2_phy_modes {
- 	FSL_USB2_PHY_SERIAL,
+ /*
+  * These parameters give default parameters
+@@ -178,6 +178,21 @@ static struct fb_videomode __devinitdata fsl_diu_mode_db[] = {
+ 		.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 		.vmode		= FB_VMODE_NONINTERLACED
+ 	},
++	{
++		.name		= "800x480-60",
++		.refresh	= 60,
++		.xres		= 800,
++		.yres		= 480,
++		.pixclock	= 31250,
++		.left_margin	= 86,
++		.right_margin	= 42,
++		.upper_margin	= 33,
++		.lower_margin	= 10,
++		.hsync_len	= 128,
++		.vsync_len	= 2,
++		.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++		.vmode		= FB_VMODE_NONINTERLACED
++	},
  };
  
-+struct platform_device;
- struct fsl_usb2_platform_data {
- 	/* board specific information */
- 	enum fsl_usb2_operating_modes	operating_mode;
- 	enum fsl_usb2_phy_modes		phy_mode;
- 	unsigned int			port_enables;
-+
-+	char				*name;		/* pretty print */
-+	int (*platform_init) (struct platform_device *);
-+	void (*platform_uninit) (struct platform_device *);
-+	void __iomem			*regs;	/* ioremap'd register base */
-+	unsigned			big_endian_mmio:1;
-+	unsigned			big_endian_desc:1;
-+	unsigned			es:1;		/* need USBMODE:ES */
-+	unsigned			have_sysif_regs:1;
- };
+ static char *fb_mode = "1024x768-32@60";
+@@ -329,8 +344,11 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 	if (mfbi->type != MFB_TYPE_OFF) {
+ 		switch (mfbi->index) {
+ 		case 0:				/* plane 0 */
+-			if (hw->desc[0] != ad->paddr)
++			if (in_be32(&hw->desc[0]) != ad->paddr) {
++				out_be32(&dr.diu_reg->diu_mode, 0);
+ 				out_be32(&hw->desc[0], ad->paddr);
++				out_be32(&dr.diu_reg->diu_mode, 1);
++			}
+ 			break;
+ 		case 1:				/* plane 1 AOI 0 */
+ 			cmfbi = machine_data->fsl_diu_info[2]->par;
+@@ -389,7 +407,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
  
- /* Flags in fsl_usb2_mph_platform_data */
+ 	switch (mfbi->index) {
+ 	case 0:					/* plane 0 */
+-		if (hw->desc[0] != machine_data->dummy_ad->paddr)
++		if (in_be32(&hw->desc[0]) != machine_data->dummy_ad->paddr)
+ 			out_be32(&hw->desc[0],
+ 				machine_data->dummy_ad->paddr);
+ 		break;
+@@ -1100,6 +1118,10 @@ static int fsl_diu_open(struct fb_info *info, int user)
+ 	struct mfb_info *mfbi = info->par;
+ 	int res = 0;
+ 
++	/* free boot splash memory on first /dev/fb0 open */
++	if (!mfbi->index && diu_ops.release_bootmem)
++		diu_ops.release_bootmem();
++
+ 	spin_lock(&diu_lock);
+ 	mfbi->count++;
+ 	if (mfbi->count == 1) {
+@@ -1427,6 +1449,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 	int ret, i, error = 0;
+ 	struct resource res;
+ 	struct fsl_diu_data *machine_data;
++	int diu_mode;
+ 
+ 	machine_data = kzalloc(sizeof(struct fsl_diu_data), GFP_KERNEL);
+ 	if (!machine_data)
+@@ -1463,7 +1486,9 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 		goto error2;
+ 	}
+ 
+-	out_be32(&dr.diu_reg->diu_mode, 0);		/* disable DIU anyway*/
++	diu_mode = in_be32(&dr.diu_reg->diu_mode);
++	if (diu_mode != MFB_MODE1)
++		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
+ 
+ 	/* Get the IRQ of the DIU */
+ 	machine_data->irq = irq_of_parse_and_map(np, 0);
+@@ -1511,7 +1536,12 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 	machine_data->dummy_ad->offset_xyd = 0;
+ 	machine_data->dummy_ad->next_ad = 0;
+ 
+-	out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
++	/* Let DIU display splash screen if it was pre-initialized
++	 * by the bootloader, set dummy area descriptor otherwise.
++	 */
++	if (diu_mode != MFB_MODE1)
++		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
++
+ 	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
+ 	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
+ 
+diff --git a/drivers/video/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+similarity index 100%
+rename from drivers/video/fsl-diu-fb.h
+rename to include/linux/fsl-diu-fb.h
 -- 
 1.5.6.3
