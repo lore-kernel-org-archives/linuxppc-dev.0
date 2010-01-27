@@ -1,12 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Dynamically allocate pacas
-In-reply-to: <c22a0fd3d76675813ce5f1596d80614aee80ed24.1264568410.git.michael@ellerman.id.au>
-References: <c22a0fd3d76675813ce5f1596d80614aee80ed24.1264568410.git.michael@ellerman.id.au>
-Date: Wed, 27 Jan 2010 17:29:36 +1030
-Message-ID: <4389.1264575576@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 13C5CB7C33
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 19:14:32 +1100 (EST)
+Message-ID: <4B5FF59E.3090805@grandegger.com>
+Date: Wed, 27 Jan 2010 09:13:18 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+References: <1264039999-25731-1-git-send-email-agust@denx.de>
+	<4B5C5BDF.6020001@grandegger.com>
+	<20100124164117.DCB483F6C0@gemini.denx.de>
+	<201001270306.22089.arnd@arndb.de>
+In-Reply-To: <201001270306.22089.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wolfgang Denk <wd@denx.de>, dzu@denx.de, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>, kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,36 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On 64-bit kernels we currently have a 512 byte struct paca_struct for
-> each cpu (usually just called "the paca"). Currently they are statically
-> allocated, which means a kernel built for a large number of cpus will
-> waste a lot of space if it's booted on a machine with few cpus.
+Arnd Bergmann wrote:
+> On Sunday 24 January 2010, Wolfgang Denk wrote:
+>> In message <4B5C5BDF.6020001@grandegger.com> you wrote:
+>>> You are probably right and your proposal would likely result in more
+>>> transparent (less ugly) code. There has been some discussion about
+>>> unifying FEC drivers when the patches (with the same subject) have been
+>>> submitted for the first time in May last year, but it was not about 512x
+>>> and 8xx, IIRC.
+>> You can re-read this discussion here:
+>>
+>> http://patchwork.ozlabs.org/patch/26927/
+>>
+>> ee especiall Grant's note of 2009-05-21 15:36:11: "If it looks too
+>> ugly, then just fork the driver."
 > 
-> We can avoid that by only allocating the number of pacas we need at
-> boot. However this is complicated by the fact that we need to access
-> the paca before we know how many cpus there are in the system.
-> 
-> The solution is to dynamically allocate enough space for NR_CPUS pacas,
-> but then later in boot when we know how many cpus we have, we free any
-> unused pacas.
-> 
-> Lightly booted on Legacy iSeries & pSeries LPAR.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> Ok. I fully agree with what Grant said in that thread, especially the
+> way the files could be split. Forking the entire driver would work
+> as an easy way to get it running at first, and we still have the option
+> of reorganizing the duplicate parts later in a saner way if that's seen
+> as helpful. I'd assume that at least some parts of it could become a
+> lib_fs_enet module that can be shared by all of them.
 
-<snip>
+Yes, I also vote for forking the driver allowing a clean implementation.
+ I don't think it makes sense to share a driver with the 8xx for the
+reasons you already mentioned. And the 8xx is a dying out arch anyway.
 
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -493,6 +493,8 @@ void __init smp_setup_cpu_maps(void)
->  	 * here will have to be reworked
->  	 */
->  	cpu_init_thread_core_maps(nthreads);
-> +
-> +	free_unused_pacas();
-
-This is still barfing for me on 32bit.
-
-Putting an #include <asm/paca.h> at the top of setup-common.c fixes it.
-
-Mikey
+Wolfgang.
