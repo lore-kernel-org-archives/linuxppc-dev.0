@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 08086B7CE6
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id D2A10B7CF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 27 Jan 2010 11:55:22 +1100 (EST)
-Subject: Re: [PATCHv2 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <1264548495.12239.56.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 27 Jan 2010 11:52:57 +1100
-Message-ID: <1264553577.3601.144.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
+	Wed, 27 Jan 2010 13:06:44 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+Date: Wed, 27 Jan 2010 03:06:21 +0100
+References: <1264039999-25731-1-git-send-email-agust@denx.de>
+	<4B5C5BDF.6020001@grandegger.com>
+	<20100124164117.DCB483F6C0@gemini.denx.de>
+In-Reply-To: <20100124164117.DCB483F6C0@gemini.denx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201001270306.22089.arnd@arndb.de>
+Cc: kosmo@semihalf.com, dzu@denx.de, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, agust@denx.de, linuxppc-dev@lists.ozlabs.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,97 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-01-26 at 17:28 -0600, Joel Schopp wrote:
-> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-> there is performance benefit to idling the higher numbered threads in
-> the core.  
+On Sunday 24 January 2010, Wolfgang Denk wrote:
+> In message <4B5C5BDF.6020001@grandegger.com> you wrote:
+> > 
+> > You are probably right and your proposal would likely result in more
+> > transparent (less ugly) code. There has been some discussion about
+> > unifying FEC drivers when the patches (with the same subject) have been
+> > submitted for the first time in May last year, but it was not about 512x
+> > and 8xx, IIRC.
 > 
-> This patch implements arch_scale_smt_power to dynamically update smt
-> thread power in these idle cases in order to prefer threads 0,1 over
-> threads 2,3 within a core.
+> You can re-read this discussion here:
 > 
-> v2 - Same functionality as v1, better coding style.
+> http://patchwork.ozlabs.org/patch/26927/
+> 
+> ee especiall Grant's note of 2009-05-21 15:36:11: "If it looks too
+> ugly, then just fork the driver."
 
-Better. Some more comments...
+Ok. I fully agree with what Grant said in that thread, especially the
+way the files could be split. Forking the entire driver would work
+as an easy way to get it running at first, and we still have the option
+of reorganizing the duplicate parts later in a saner way if that's seen
+as helpful. I'd assume that at least some parts of it could become a
+lib_fs_enet module that can be shared by all of them.
 
-> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
-> ---
-> Version 2 addresses style and optimization, same basic functionality
-> Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-> +++ linux-2.6.git/arch/powerpc/kernel/smp.c
-> @@ -620,3 +620,55 @@ void __cpu_die(unsigned int cpu)
->  		smp_ops->cpu_die(cpu);
->  }
->  #endif
-> +
-> +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-> +{
-> +	int sibling;
-> +	int idle_count = 0;
-> +	int thread;
-> +
-> +	struct cpumask *sibling_map = sched_domain_span(sd);
-
-What about an early exit if !cpu_has_feature(CPU_FTR_SMT) ? That would
-de-facto compile it out for 32-bit CPU platforms that don't support SMT
-at all and avoid some overhead on POWER3,4,970...
-
-> +	unsigned long weight = cpumask_weight(sibling_map);
-> +	unsigned long smt_gain = sd->smt_gain;
-> +
-> +	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-
-So that will only handle the case where all 4 threads are online right ?
-There is no provision for the case where the user play tricks like
-offlining thread, in which case it will stop trying to "push down"
-processes right ? Not a big deal per-se I suppose, just something to be
-aware of.
-
-Also, can you add a comment as to why this is done in the code itself ?
-above the if (cpu_has_feature(...)) statement.
- 
-> +		for_each_cpu(sibling, sibling_map) {
-> +			if (idle_cpu(sibling))
-> +				idle_count++;
-> +		}
-> +
-> +		/* the following section attempts to tweak cpu power based
-> +		 * on current idleness of the threads dynamically at runtime
-> +		 */
-> +		if (idle_count > 1) {
-> +			thread = cpu_thread_in_core(cpu);
-> +			if (thread < 2) {
-> +				/* add 75 % to thread power */
-> +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-> +			} else {
-> +				 /* subtract 75 % to thread power */
-> +				smt_gain = smt_gain >> 2;
-> +			}
-> +		}
-> +	}
-> +
-> +	/* default smt gain is 1178, weight is # of SMT threads */
-> +	switch (weight) {
-> +	case 1:
-> +		/*divide by 1, do nothing*/
-> +		break;
-> +	case 2:
-> +		smt_gain = smt_gain >> 1;
-> +		break;
-> +	case 4:
-> +		smt_gain = smt_gain >> 2;
-> +		break;
-> +	default:
-> +		smt_gain /= weight;
-> +		break;
-> +	}
-> +
-> +	return smt_gain;
-> +}
-
-Appart from that, it looks allright to me.
-
-Cheers,
-Ben.
+	Arnd
