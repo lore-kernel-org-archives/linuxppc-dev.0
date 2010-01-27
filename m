@@ -1,15 +1,15 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 96E6FB7CE8
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:40 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4EB98B7CFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jan 2010 23:07:42 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/8 v2] mtd: Add MPC5121 NAND Flash Controller driver
-Date: Wed, 27 Jan 2010 13:07:27 +0100
-Message-Id: <1264594052-20317-4-git-send-email-agust@denx.de>
+Subject: [PATCH 4/8 v2] dma: Add MPC512x DMA driver
+Date: Wed, 27 Jan 2010 13:07:28 +0100
+Message-Id: <1264594052-20317-5-git-send-email-agust@denx.de>
 In-Reply-To: <1264594052-20317-1-git-send-email-agust@denx.de>
 References: <1264594052-20317-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, linux-mtd@lists.infradead.org,
+Cc: wd@denx.de, dzu@denx.de, Dan Williams <dan.j.williams@intel.com>,
 	Anatolij Gustschin <agust@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,785 +22,724 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Piotr Ziecik <kosmo@semihalf.com>
 
-Adds NAND Flash Controller driver for MPC5121 Revision 2.
-All device features, except hardware ECC and power management,
-are supported.
+Adds initial version of MPC512x DMA driver.
+Only memory to memory transfers are currenly supported.
 
 Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
 Signed-off-by: Wolfgang Denk <wd@denx.de>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: <linux-mtd@lists.infradead.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: John Rigby <jcrigby@gmail.com>
 ---
+
 Changes since v1:
- - add logfile with changes since previous version 
+ - move content of the mpc512x.h into the drivers .c file as
+   it is only used by this DMA driver
+ - use __devinit/__devexit/__devexit_p as requested
+ - add unregistration of the dma device
+ - remove meaningless comment
 
-Changes since the patch version submitted in May 2009:
+Changes since patch version submitted in May 2009:
+ - don't use wildcards in compatible property, use "fsl,mpc5121-dma"
+ - don't add "fsl,mpc5121-dma" compatible to of_bus_ids[] as the
+   dma device is part of IMMR
 
- - move mpc5121_nfc.h to the driver .c as there is only one user
- - remove DRV_VERSION macro
- - replace printk() by dev_*()
- - drop unnecessary .suspend and .resume initializations
- - remove duplicate .name/.owner settings
- - fix mpc5121_nfc_init() to "return of_register_platform_driver(&mpc5121_nfc_driver);"
- - move module_init() to just below the init function
- - remove MODULE_VERSION
- - use "mtd: Add MPC5121 NAND Flash Controller driver" as the subject,
-   previously it was "mpc5121: Added NAND Flash Controller driver."
+ drivers/dma/Kconfig       |    7 +
+ drivers/dma/Makefile      |    1 +
+ drivers/dma/mpc512x_dma.c |  800 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 808 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/dma/mpc512x_dma.c
 
- arch/powerpc/platforms/512x/mpc512x_shared.c |    1 +
- drivers/mtd/nand/Kconfig                     |    7 +
- drivers/mtd/nand/Makefile                    |    1 +
- drivers/mtd/nand/mpc5121_nfc.c               |  916 ++++++++++++++++++++++++++
- 4 files changed, 925 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/nand/mpc5121_nfc.c
-
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index 4745028..6b8314c 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -82,6 +82,7 @@ void __init mpc512x_init_IRQ(void)
- static struct of_device_id __initdata of_bus_ids[] = {
- 	{ .compatible = "fsl,mpc5121-immr", },
- 	{ .compatible = "fsl,mpc5121-localbus", },
-+	{ .compatible = "fsl,mpc5121-nfc", },
- 	{},
- };
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index e02d74b..ac67a53 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -69,6 +69,13 @@ config FSL_DMA
+ 	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
+ 	  Elo Plus is the DMA controller on 85xx and 86xx parts.
  
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 677cd53..099f002 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -442,6 +442,13 @@ config MTD_NAND_FSL_UPM
- 	  Enables support for NAND Flash chips wired onto Freescale PowerPC
- 	  processor localbus with User-Programmable Machine support.
- 
-+config MTD_NAND_MPC5121_NFC
-+	tristate "MPC5121 built-in NAND Flash Controller support"
++config MPC512X_DMA
++	tristate "Freescale MPC512x built-in DMA engine support"
 +	depends on PPC_MPC512x
-+	help
-+	  This enables the driver for the NAND flash controller on the
-+	  MPC5121 SoC.
++	select DMA_ENGINE
++	---help---
++	  Enable support for the Freescale MPC512x built-in DMA engine.
 +
- config MTD_NAND_MXC
- 	tristate "MXC NAND support"
- 	depends on ARCH_MX2 || ARCH_MX3
-diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
-index 1407bd1..d4ddf05 100644
---- a/drivers/mtd/nand/Makefile
-+++ b/drivers/mtd/nand/Makefile
-@@ -42,5 +42,6 @@ obj-$(CONFIG_MTD_NAND_TXX9NDFMC)	+= txx9ndfmc.o
- obj-$(CONFIG_MTD_NAND_W90P910)		+= w90p910_nand.o
- obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o
- obj-$(CONFIG_MTD_NAND_BCM_UMI)		+= bcm_umi_nand.o nand_bcm_umi.o
-+obj-$(CONFIG_MTD_NAND_MPC5121_NFC)	+= mpc5121_nfc.o
- 
- nand-objs := nand_base.o nand_bbt.o
-diff --git a/drivers/mtd/nand/mpc5121_nfc.c b/drivers/mtd/nand/mpc5121_nfc.c
+ config MV_XOR
+ 	bool "Marvell XOR engine support"
+ 	depends on PLAT_ORION
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index 807053d..4696bcf 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -4,6 +4,7 @@ obj-$(CONFIG_DMATEST) += dmatest.o
+ obj-$(CONFIG_INTEL_IOATDMA) += ioat/
+ obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
+ obj-$(CONFIG_FSL_DMA) += fsldma.o
++obj-$(CONFIG_MPC512X_DMA) += mpc512x_dma.o
+ obj-$(CONFIG_MV_XOR) += mv_xor.o
+ obj-$(CONFIG_DW_DMAC) += dw_dmac.o
+ obj-$(CONFIG_AT_HDMAC) += at_hdmac.o
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
 new file mode 100644
-index 0000000..2980eb1
+index 0000000..3fdf1f4
 --- /dev/null
-+++ b/drivers/mtd/nand/mpc5121_nfc.c
-@@ -0,0 +1,916 @@
++++ b/drivers/dma/mpc512x_dma.c
+@@ -0,0 +1,800 @@
 +/*
-+ * Copyright 2004-2008 Freescale Semiconductor, Inc.
-+ * Copyright 2009 Semihalf.
++ * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
++ * Copyright (C) Semihalf 2009
++ *
++ * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
++ * (defines, structures and comments) was taken from MPC5121 DMA driver
++ * written by Hongjun Chen <hong-jun.chen@freescale.com>.
 + *
 + * Approved as OSADL project by a majority of OSADL members and funded
 + * by OSADL membership fees in 2009;  for details see www.osadl.org.
 + *
-+ * Based on original driver from Freescale Semiconductor
-+ * written by John Rigby <jrigby@freescale.com> on basis
-+ * of drivers/mtd/nand/mxc_nand.c. Reworked and extended
-+ * Piotr Ziecik <kosmo@semihalf.com>.
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version 2
-+ * of the License, or (at your option) any later version.
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
 + *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-+ * MA 02110-1301, USA.
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59
++ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++ *
++ * The full GNU General Public License is included in this distribution in the
++ * file called COPYING.
++ */
++
++/*
++ * This is initial version of MPC5121 DMA driver. Only memory to memory
++ * transfers are supported (tested using dmatest module).
 + */
 +
 +#include <linux/module.h>
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
++#include <linux/dmaengine.h>
++#include <linux/dma-mapping.h>
 +#include <linux/interrupt.h>
 +#include <linux/io.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/partitions.h>
 +#include <linux/of_device.h>
 +#include <linux/of_platform.h>
 +
-+#include <asm/mpc5xxx.h>
++#include <linux/random.h>
 +
-+/* Addresses for NFC MAIN RAM BUFFER areas */
-+#define NFC_MAIN_AREA(n)	((n) *  0x200)
++/* Number of DMA Transfer descriptors allocated per channel */
++#define MPC_DMA_DESCRIPTORS	64
 +
-+/* Addresses for NFC SPARE BUFFER areas */
-+#define NFC_SPARE_BUFFERS	8
-+#define NFC_SPARE_LEN		0x40
-+#define NFC_SPARE_AREA(n)	(0x1000 + ((n) * NFC_SPARE_LEN))
++/* Macro definitions */
++#define MPC_DMA_CHANNELS	64
++#define MPC_DMA_TCD_OFFSET	0x1000
 +
-+/* MPC5121 NFC registers */
-+#define NFC_BUF_ADDR		0x1E04
-+#define NFC_FLASH_ADDR		0x1E06
-+#define NFC_FLASH_CMD		0x1E08
-+#define NFC_CONFIG		0x1E0A
-+#define NFC_ECC_STATUS1		0x1E0C
-+#define NFC_ECC_STATUS2		0x1E0E
-+#define NFC_SPAS		0x1E10
-+#define NFC_WRPROT		0x1E12
-+#define NFC_NF_WRPRST		0x1E18
-+#define NFC_CONFIG1		0x1E1A
-+#define NFC_CONFIG2		0x1E1C
-+#define NFC_UNLOCKSTART_BLK0	0x1E20
-+#define NFC_UNLOCKEND_BLK0	0x1E22
-+#define NFC_UNLOCKSTART_BLK1	0x1E24
-+#define NFC_UNLOCKEND_BLK1	0x1E26
-+#define NFC_UNLOCKSTART_BLK2	0x1E28
-+#define NFC_UNLOCKEND_BLK2	0x1E2A
-+#define NFC_UNLOCKSTART_BLK3	0x1E2C
-+#define NFC_UNLOCKEND_BLK3	0x1E2E
++/* Arbitration mode of group and channel */
++#define MPC_DMA_DMACR_EDCG	(1 << 31)
++#define MPC_DMA_DMACR_ERGA	(1 << 3)
++#define MPC_DMA_DMACR_ERCA	(1 << 2)
 +
-+/* Bit Definitions: NFC_BUF_ADDR */
-+#define NFC_RBA_MASK		(7 << 0)
-+#define NFC_ACTIVE_CS_SHIFT	5
-+#define NFC_ACTIVE_CS_MASK	(3 << NFC_ACTIVE_CS_SHIFT)
++/* Error codes */
++#define MPC_DMA_DMAES_VLD	(1 << 31)
++#define MPC_DMA_DMAES_GPE	(1 << 15)
++#define MPC_DMA_DMAES_CPE	(1 << 14)
++#define MPC_DMA_DMAES_ERRCHN(err) \
++				(((err) >> 8) & 0x3f)
++#define MPC_DMA_DMAES_SAE	(1 << 7)
++#define MPC_DMA_DMAES_SOE	(1 << 6)
++#define MPC_DMA_DMAES_DAE	(1 << 5)
++#define MPC_DMA_DMAES_DOE	(1 << 4)
++#define MPC_DMA_DMAES_NCE	(1 << 3)
++#define MPC_DMA_DMAES_SGE	(1 << 2)
++#define MPC_DMA_DMAES_SBE	(1 << 1)
++#define MPC_DMA_DMAES_DBE	(1 << 0)
 +
-+/* Bit Definitions: NFC_CONFIG */
-+#define NFC_BLS_UNLOCKED	(1 << 1)
++#define MPC_DMA_TSIZE_1		0x00
++#define MPC_DMA_TSIZE_2		0x01
++#define MPC_DMA_TSIZE_4		0x02
++#define MPC_DMA_TSIZE_16	0x04
++#define MPC_DMA_TSIZE_32	0x05
 +
-+/* Bit Definitions: NFC_CONFIG1 */
-+#define NFC_ECC_4BIT		(1 << 0)
-+#define NFC_FULL_PAGE_DMA	(1 << 1)
-+#define NFC_SPARE_ONLY		(1 << 2)
-+#define NFC_ECC_ENABLE		(1 << 3)
-+#define NFC_INT_MASK		(1 << 4)
-+#define NFC_BIG_ENDIAN		(1 << 5)
-+#define NFC_RESET		(1 << 6)
-+#define NFC_CE			(1 << 7)
-+#define NFC_ONE_CYCLE		(1 << 8)
-+#define NFC_PPB_32		(0 << 9)
-+#define NFC_PPB_64		(1 << 9)
-+#define NFC_PPB_128		(2 << 9)
-+#define NFC_PPB_256		(3 << 9)
-+#define NFC_PPB_MASK		(3 << 9)
-+#define NFC_FULL_PAGE_INT	(1 << 11)
-+
-+/* Bit Definitions: NFC_CONFIG2 */
-+#define NFC_COMMAND		(1 << 0)
-+#define NFC_ADDRESS		(1 << 1)
-+#define NFC_INPUT		(1 << 2)
-+#define NFC_OUTPUT		(1 << 3)
-+#define NFC_ID			(1 << 4)
-+#define NFC_STATUS		(1 << 5)
-+#define NFC_CMD_FAIL		(1 << 15)
-+#define NFC_INT			(1 << 15)
-+
-+/* Bit Definitions: NFC_WRPROT */
-+#define NFC_WPC_LOCK_TIGHT	(1 << 0)
-+#define NFC_WPC_LOCK		(1 << 1)
-+#define NFC_WPC_UNLOCK		(1 << 2)
-+
-+#define	DRV_NAME		"mpc5121_nfc"
-+
-+/* Timeouts */
-+#define NFC_RESET_TIMEOUT	1000		/* 1 ms */
-+#define NFC_TIMEOUT		(HZ / 10)	/* 1/10 s */
-+
-+struct mpc5121_nfc_prv {
-+	struct mtd_info		mtd;
-+	struct nand_chip	chip;
-+	int			irq;
-+	void __iomem		*regs;
-+	struct clk		*clk;
-+	wait_queue_head_t	irq_waitq;
-+	uint			column;
-+	int			spareonly;
-+	void __iomem		*csreg;
-+	struct device		*dev;
++/* MPC5121 DMA engine registers */
++struct __attribute__ ((__packed__)) mpc_dma_regs {
++	/* 0x00 */
++	u32 dmacr;		/* DMA control register */
++	u32 dmaes;		/* DMA error status */
++	/* 0x08 */
++	u32 dmaerqh;		/* DMA enable request high(channels 63~32) */
++	u32 dmaerql;		/* DMA enable request low(channels 31~0) */
++	u32 dmaeeih;		/* DMA enable error interrupt high(ch63~32) */
++	u32 dmaeeil;		/* DMA enable error interrupt low(ch31~0) */
++	/* 0x18 */
++	u8 dmaserq;		/* DMA set enable request */
++	u8 dmacerq;		/* DMA clear enable request */
++	u8 dmaseei;		/* DMA set enable error interrupt */
++	u8 dmaceei;		/* DMA clear enable error interrupt */
++	/* 0x1c */
++	u8 dmacint;		/* DMA clear interrupt request */
++	u8 dmacerr;		/* DMA clear error */
++	u8 dmassrt;		/* DMA set start bit */
++	u8 dmacdne;		/* DMA clear DONE status bit */
++	/* 0x20 */
++	u32 dmainth;		/* DMA interrupt request high(ch63~32) */
++	u32 dmaintl;		/* DMA interrupt request low(ch31~0) */
++	u32 dmaerrh;		/* DMA error high(ch63~32) */
++	u32 dmaerrl;		/* DMA error low(ch31~0) */
++	/* 0x30 */
++	u32 dmahrsh;		/* DMA hw request status high(ch63~32) */
++	u32 dmahrsl;		/* DMA hardware request status low(ch31~0) */
++	u32 dmaihsa;		/* DMA interrupt high select AXE(ch63~32) */
++	u32 dmailsa;		/* DMA interrupt low select AXE(ch31~0) */
++	/* 0x40 ~ 0xff */
++	u32 reserve0[48];	/* Reserved */
++	/* 0x100 */
++	u8 dchpri[MPC_DMA_CHANNELS];
++	/* DMA channels(0~63) priority */
 +};
 +
-+static void mpc5121_nfc_done(struct mtd_info *mtd);
++struct __attribute__ ((__packed__)) mpc_dma_tcd {
++	/* 0x00 */
++	u32 saddr;		/* Source address */
 +
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *mpc5121_nfc_pprobes[] = { "cmdlinepart", NULL };
-+#endif
++	u32 smod:5;		/* Source address modulo */
++	u32 ssize:3;		/* Source data transfer size */
++	u32 dmod:5;		/* Destination address modulo */
++	u32 dsize:3;		/* Destination data transfer size */
++	u32 soff:16;		/* Signed source address offset */
 +
-+/* Read NFC register */
-+static inline u16 nfc_read(struct mtd_info *mtd, uint reg)
++	/* 0x08 */
++	u32 nbytes;		/* Inner "minor" byte count */
++	u32 slast;		/* Last source address adjustment */
++	u32 daddr;		/* Destination address */
++
++	/* 0x14 */
++	u32 citer_elink:1;	/* Enable channel-to-channel linking on
++				 * minor loop complete
++				 */
++	u32 citer_linkch:6;	/* Link channel for minor loop complete */
++	u32 citer:9;		/* Current "major" iteration count */
++	u32 doff:16;		/* Signed destination address offset */
++
++	/* 0x18 */
++	u32 dlast_sga;		/* Last Destination address adjustment/scatter
++				 * gather address
++				 */
++
++	/* 0x1c */
++	u32 biter_elink:1;	/* Enable channel-to-channel linking on major
++				 * loop complete
++				 */
++	u32 biter_linkch:6;
++	u32 biter:9;		/* Beginning "major" iteration count */
++	u32 bwc:2;		/* Bandwidth control */
++	u32 major_linkch:6;	/* Link channel number */
++	u32 done:1;		/* Channel done */
++	u32 active:1;		/* Channel active */
++	u32 major_elink:1;	/* Enable channel-to-channel linking on major
++				 * loop complete
++				 */
++	u32 e_sg:1;		/* Enable scatter/gather processing */
++	u32 d_req:1;		/* Disable request */
++	u32 int_half:1;		/* Enable an interrupt when major counter is
++				 * half complete
++				 */
++	u32 int_maj:1;		/* Enable an interrupt when major iteration
++				 * count completes
++				 */
++	u32 start:1;		/* Channel start */
++};
++
++struct mpc_dma_desc {
++	struct dma_async_tx_descriptor	desc;
++	struct mpc_dma_tcd		*tcd;
++	dma_addr_t			tcd_paddr;
++	int				error;
++	struct list_head		node;
++};
++
++struct mpc_dma_chan {
++	struct dma_chan			chan;
++	struct list_head		free;
++	struct list_head		prepared;
++	struct list_head		queued;
++	struct list_head		active;
++	struct list_head		completed;
++	struct mpc_dma_tcd		*tcd;
++	dma_addr_t			tcd_paddr;
++	dma_cookie_t			completed_cookie;
++
++	/* Lock for this structure */
++	spinlock_t			lock;
++};
++
++struct mpc_dma {
++	struct dma_device		dma;
++	struct tasklet_struct		tasklet;
++	struct mpc_dma_chan		channels[MPC_DMA_CHANNELS];
++	struct mpc_dma_regs __iomem	*regs;
++	struct mpc_dma_tcd __iomem	*tcd;
++	int				irq;
++	uint				error_status;
++
++	/* Lock for error_status field in this structure */
++	spinlock_t			error_status_lock;
++};
++
++#define DRV_NAME	"mpc512x_dma"
++
++/* Convert struct dma_chan to struct mpc_dma_chan */
++static inline struct mpc_dma_chan *dma_chan_to_mpc_dma_chan(struct dma_chan *c)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+
-+	return in_be16(prv->regs + reg);
++	return container_of(c, struct mpc_dma_chan, chan);
 +}
 +
-+/* Write NFC register */
-+static inline void nfc_write(struct mtd_info *mtd, uint reg, u16 val)
++/* Convert struct dma_chan to struct mpc_dma */
++static inline struct mpc_dma *dma_chan_to_mpc_dma(struct dma_chan *c)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+
-+	out_be16(prv->regs + reg, val);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(c);
++	return container_of(mchan, struct mpc_dma, channels[c->chan_id]);
 +}
 +
-+/* Set bits in NFC register */
-+static inline void nfc_set(struct mtd_info *mtd, uint reg, u16 bits)
++/*
++ * Execute all queued DMA descriptors.
++ *
++ * Following requirements must be met while calling mpc_dma_execute():
++ * 	a) mchan->lock is acquired,
++ * 	b) mchan->active list is empty,
++ * 	c) mchan->queued list contains at least one entry.
++ */
++static void mpc_dma_execute(struct mpc_dma_chan *mchan)
 +{
-+	nfc_write(mtd, reg, nfc_read(mtd, reg) | bits);
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(&mchan->chan);
++	struct mpc_dma_desc *first = NULL;
++	struct mpc_dma_desc *prev = NULL;
++	struct mpc_dma_desc *mdesc;
++	int cid = mchan->chan.chan_id;
++
++	/* Move all queued descriptors to active list */
++	list_splice_tail_init(&mchan->queued, &mchan->active);
++
++	/* Chain descriptors into one transaction */
++	list_for_each_entry(mdesc, &mchan->active, node) {
++		if (!first)
++			first = mdesc;
++
++		if (!prev) {
++			prev = mdesc;
++			continue;
++		}
++
++		prev->tcd->dlast_sga = mdesc->tcd_paddr;
++		prev->tcd->e_sg = 1;
++		mdesc->tcd->start = 1;
++
++		prev = mdesc;
++	}
++
++	prev->tcd->start = 0;
++	prev->tcd->int_maj = 1;
++
++	/* Send first descriptor in chain into hardware */
++	memcpy_toio(&mdma->tcd[cid], first->tcd, sizeof(struct mpc_dma_tcd));
++	out_8(&mdma->regs->dmassrt, cid);
 +}
 +
-+/* Clear bits in NFC register */
-+static inline void nfc_clear(struct mtd_info *mtd, uint reg, u16 bits)
++/* Handle interrupt on one half of DMA controller (32 channels) */
++static void mpc_dma_irq_process(struct mpc_dma *mdma, u32 is, u32 es, int off)
 +{
-+	nfc_write(mtd, reg, nfc_read(mtd, reg) & ~bits);
++	struct mpc_dma_chan *mchan;
++	struct mpc_dma_desc *mdesc;
++	u32 status = is | es;
++	int ch;
++
++	while ((ch = fls(status) - 1) >= 0) {
++		status &= ~(1 << ch);
++		mchan = &mdma->channels[ch + off];
++
++		spin_lock(&mchan->lock);
++
++		/* Check error status */
++		if (es & (1 << ch))
++			list_for_each_entry(mdesc, &mchan->active, node)
++				mdesc->error = -EIO;
++
++		/* Execute queued descriptors */
++		list_splice_tail_init(&mchan->active, &mchan->completed);
++		if (!list_empty(&mchan->queued))
++			mpc_dma_execute(mchan);
++
++		spin_unlock(&mchan->lock);
++	}
 +}
 +
-+/* Invoke address cycle */
-+static inline void mpc5121_nfc_send_addr(struct mtd_info *mtd, u16 addr)
++/* Interrupt handler */
++static irqreturn_t mpc_dma_irq(int irq, void *data)
 +{
-+	nfc_write(mtd, NFC_FLASH_ADDR, addr);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_ADDRESS);
-+	mpc5121_nfc_done(mtd);
-+}
++	struct mpc_dma *mdma = data;
++	uint es;
 +
-+/* Invoke command cycle */
-+static inline void mpc5121_nfc_send_cmd(struct mtd_info *mtd, u16 cmd)
-+{
-+	nfc_write(mtd, NFC_FLASH_CMD, cmd);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_COMMAND);
-+	mpc5121_nfc_done(mtd);
-+}
++	/* Save error status register */
++	es = in_be32(&mdma->regs->dmaes);
++	spin_lock(&mdma->error_status_lock);
++	if ((es & MPC_DMA_DMAES_VLD) && mdma->error_status == 0)
++		mdma->error_status = es;
++	spin_unlock(&mdma->error_status_lock);
 +
-+/* Send data from NFC buffers to NAND flash */
-+static inline void mpc5121_nfc_send_prog_page(struct mtd_info *mtd)
-+{
-+	nfc_clear(mtd, NFC_BUF_ADDR, NFC_RBA_MASK);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_INPUT);
-+	mpc5121_nfc_done(mtd);
-+}
++	/* Handle interrupt on each channel */
++	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmainth),
++					in_be32(&mdma->regs->dmaerrh), 32);
++	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmaintl),
++					in_be32(&mdma->regs->dmaerrl), 0);
 +
-+/* Receive data from NAND flash */
-+static inline void mpc5121_nfc_send_read_page(struct mtd_info *mtd)
-+{
-+	nfc_clear(mtd, NFC_BUF_ADDR, NFC_RBA_MASK);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_OUTPUT);
-+	mpc5121_nfc_done(mtd);
-+}
++	/* Ack interrupt on all channels */
++	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
 +
-+/* Receive ID from NAND flash */
-+static inline void mpc5121_nfc_send_read_id(struct mtd_info *mtd)
-+{
-+	nfc_clear(mtd, NFC_BUF_ADDR, NFC_RBA_MASK);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_ID);
-+	mpc5121_nfc_done(mtd);
-+}
-+
-+/* Receive status from NAND flash */
-+static inline void mpc5121_nfc_send_read_status(struct mtd_info *mtd)
-+{
-+	nfc_clear(mtd, NFC_BUF_ADDR, NFC_RBA_MASK);
-+	nfc_write(mtd, NFC_CONFIG2, NFC_STATUS);
-+	mpc5121_nfc_done(mtd);
-+}
-+
-+/* NFC interrupt handler */
-+static irqreturn_t mpc5121_nfc_irq(int irq, void *data)
-+{
-+	struct mtd_info *mtd = data;
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+
-+	nfc_set(mtd, NFC_CONFIG1, NFC_INT_MASK);
-+	wake_up(&prv->irq_waitq);
++	/* Schedule tasklet */
++	tasklet_schedule(&mdma->tasklet);
 +
 +	return IRQ_HANDLED;
 +}
 +
-+/* Wait for operation complete */
-+static void mpc5121_nfc_done(struct mtd_info *mtd)
++/* DMA Tasklet */
++static void mpc_dma_tasklet(unsigned long data)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+	int rv;
++	struct mpc_dma *mdma = (void *)data;
++	dma_cookie_t last_cookie = 0;
++	struct mpc_dma_chan *mchan;
++	struct mpc_dma_desc *mdesc;
++	struct dma_async_tx_descriptor *desc;
++	unsigned long flags;
++	LIST_HEAD(list);
++	uint es;
++	int i;
 +
-+	if ((nfc_read(mtd, NFC_CONFIG2) & NFC_INT) == 0) {
-+		nfc_clear(mtd, NFC_CONFIG1, NFC_INT_MASK);
-+		rv = wait_event_timeout(prv->irq_waitq,
-+			(nfc_read(mtd, NFC_CONFIG2) & NFC_INT), NFC_TIMEOUT);
++	spin_lock_irqsave(&mdma->error_status_lock, flags);
++	es = mdma->error_status;
++	mdma->error_status = 0;
++	spin_unlock_irqrestore(&mdma->error_status_lock, flags);
 +
-+		if (!rv)
-+			dev_warn(prv->dev,
-+				"Timeout while waiting for interrupt.\n");
++	/* Print nice error report */
++	if (es) {
++		dev_err(mdma->dma.dev,
++			"Hardware reported following error(s) on channel %u:\n",
++						      MPC_DMA_DMAES_ERRCHN(es));
++
++		if (es & MPC_DMA_DMAES_GPE)
++			dev_err(mdma->dma.dev, "- Group Priority Error\n");
++		if (es & MPC_DMA_DMAES_CPE)
++			dev_err(mdma->dma.dev, "- Channel Priority Error\n");
++		if (es & MPC_DMA_DMAES_SAE)
++			dev_err(mdma->dma.dev, "- Source Address Error\n");
++		if (es & MPC_DMA_DMAES_SOE)
++			dev_err(mdma->dma.dev, "- Source Offset"
++						" Configuration Error\n");
++		if (es & MPC_DMA_DMAES_DAE)
++			dev_err(mdma->dma.dev, "- Destination Address"
++								" Error\n");
++		if (es & MPC_DMA_DMAES_DOE)
++			dev_err(mdma->dma.dev, "- Destination Offset"
++						" Configuration Error\n");
++		if (es & MPC_DMA_DMAES_NCE)
++			dev_err(mdma->dma.dev, "- NBytes/Citter"
++						" Configuration Error\n");
++		if (es & MPC_DMA_DMAES_SGE)
++			dev_err(mdma->dma.dev, "- Scatter/Gather"
++						" Configuration Error\n");
++		if (es & MPC_DMA_DMAES_SBE)
++			dev_err(mdma->dma.dev, "- Source Bus Error\n");
++		if (es & MPC_DMA_DMAES_DBE)
++			dev_err(mdma->dma.dev, "- Destination Bus Error\n");
 +	}
 +
-+	nfc_clear(mtd, NFC_CONFIG2, NFC_INT);
-+}
++	for (i = 0; i < mdma->dma.chancnt; i++) {
++		mchan = &mdma->channels[i];
 +
-+/* Do address cycle(s) */
-+static void mpc5121_nfc_addr_cycle(struct mtd_info *mtd, int column, int page)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	u32 pagemask = chip->pagemask;
++		/* Get all completed descriptors */
++		spin_lock_irqsave(&mchan->lock, flags);
++		if (!list_empty(&mchan->completed))
++			list_splice_tail_init(&mchan->completed, &list);
++		spin_unlock_irqrestore(&mchan->lock, flags);
 +
-+	if (column != -1) {
-+		mpc5121_nfc_send_addr(mtd, column);
-+		if (mtd->writesize > 512)
-+			mpc5121_nfc_send_addr(mtd, column >> 8);
-+	}
++		if (list_empty(&list))
++			continue;
 +
-+	if (page != -1) {
-+		do {
-+			mpc5121_nfc_send_addr(mtd, page & 0xFF);
-+			page >>= 8;
-+			pagemask >>= 8;
-+		} while (pagemask);
-+	}
-+}
++		/* Execute callbacks and run dependencies */
++		list_for_each_entry(mdesc, &list, node) {
++			desc = &mdesc->desc;
 +
-+/* Control chip select signals */
-+static void mpc5121_nfc_select_chip(struct mtd_info *mtd, int chip)
-+{
-+	if (chip < 0) {
-+		nfc_clear(mtd, NFC_CONFIG1, NFC_CE);
-+		return;
-+	}
++			if (desc->callback)
++				desc->callback(desc->callback_param);
 +
-+	nfc_clear(mtd, NFC_BUF_ADDR, NFC_ACTIVE_CS_MASK);
-+	nfc_set(mtd, NFC_BUF_ADDR, (chip << NFC_ACTIVE_CS_SHIFT) &
-+							NFC_ACTIVE_CS_MASK);
-+	nfc_set(mtd, NFC_CONFIG1, NFC_CE);
-+}
++			last_cookie = desc->cookie;
++			dma_run_dependencies(desc);
++		}
 +
-+/* Init external chip select logic on ADS5121 board */
-+static int ads5121_chipselect_init(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+	struct device_node *dn;
-+
-+	dn = of_find_compatible_node(NULL, NULL, "fsl,mpc5121ads-cpld");
-+	if (dn) {
-+		prv->csreg = of_iomap(dn, 0);
-+		of_node_put(dn);
-+		if (!prv->csreg)
-+			return -ENOMEM;
-+
-+		/* CPLD Register 9 controls NAND /CE Lines */
-+		prv->csreg += 9;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+/* Control chips select signal on ADS5121 board */
-+static void ads5121_select_chip(struct mtd_info *mtd, int chip)
-+{
-+	struct nand_chip *nand = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = nand->priv;
-+	u8 v;
-+
-+	v = in_8(prv->csreg);
-+	v |= 0x0F;
-+
-+	if (chip >= 0) {
-+		mpc5121_nfc_select_chip(mtd, 0);
-+		v &= ~(1 << chip);
-+	} else
-+		mpc5121_nfc_select_chip(mtd, -1);
-+
-+	out_8(prv->csreg, v);
-+}
-+
-+/* Read NAND Ready/Busy signal */
-+static int mpc5121_nfc_dev_ready(struct mtd_info *mtd)
-+{
-+	/*
-+	 * NFC handles ready/busy signal internally. Therefore, this function
-+	 * always returns status as ready.
-+	 */
-+	return 1;
-+}
-+
-+/* Write command to NAND flash */
-+static void mpc5121_nfc_command(struct mtd_info *mtd, unsigned command,
-+							int column, int page)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+
-+	prv->column = (column >= 0) ? column : 0;
-+	prv->spareonly = 0;
-+
-+	switch (command) {
-+	case NAND_CMD_PAGEPROG:
-+		mpc5121_nfc_send_prog_page(mtd);
-+		break;
-+	/*
-+	 * NFC does not support sub-page reads and writes,
-+	 * so emulate them using full page transfers.
-+	 */
-+	case NAND_CMD_READ0:
-+		column = 0;
-+		break;
-+
-+	case NAND_CMD_READ1:
-+		prv->column += 256;
-+		command = NAND_CMD_READ0;
-+		column = 0;
-+		break;
-+
-+	case NAND_CMD_READOOB:
-+		prv->spareonly = 1;
-+		command = NAND_CMD_READ0;
-+		column = 0;
-+		break;
-+
-+	case NAND_CMD_SEQIN:
-+		mpc5121_nfc_command(mtd, NAND_CMD_READ0, column, page);
-+		column = 0;
-+		break;
-+
-+	case NAND_CMD_ERASE1:
-+	case NAND_CMD_ERASE2:
-+	case NAND_CMD_READID:
-+	case NAND_CMD_STATUS:
-+		break;
-+
-+	default:
-+		return;
-+	}
-+
-+	mpc5121_nfc_send_cmd(mtd, command);
-+	mpc5121_nfc_addr_cycle(mtd, column, page);
-+
-+	switch (command) {
-+	case NAND_CMD_READ0:
-+		if (mtd->writesize > 512)
-+			mpc5121_nfc_send_cmd(mtd, NAND_CMD_READSTART);
-+		mpc5121_nfc_send_read_page(mtd);
-+		break;
-+
-+	case NAND_CMD_READID:
-+		mpc5121_nfc_send_read_id(mtd);
-+		break;
-+
-+	case NAND_CMD_STATUS:
-+		mpc5121_nfc_send_read_status(mtd);
-+		if (chip->options & NAND_BUSWIDTH_16)
-+			prv->column = 1;
-+		else
-+			prv->column = 0;
-+		break;
++		/* Free descriptors */
++		spin_lock_irqsave(&mchan->lock, flags);
++		list_splice_tail_init(&list, &mchan->free);
++		mchan->completed_cookie = last_cookie;
++		spin_unlock_irqrestore(&mchan->lock, flags);
 +	}
 +}
 +
-+/* Copy data from/to NFC spare buffers. */
-+static void mpc5121_nfc_copy_spare(struct mtd_info *mtd, uint offset,
-+						u8 *buffer, uint size, int wr)
++/* Submit descriptor to hardware */
++static dma_cookie_t mpc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
 +{
-+	struct nand_chip *nand = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = nand->priv;
-+	uint o, s, sbsize, blksize;
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(txd->chan);
++	struct mpc_dma_desc *mdesc;
++	unsigned long flags;
++	dma_cookie_t cookie;
 +
-+	/*
-+	 * NAND spare area is available through NFC spare buffers.
-+	 * The NFC divides spare area into (page_size / 512) chunks.
-+	 * Each chunk is placed into separate spare memory area, using
-+	 * first (spare_size / num_of_chunks) bytes of the buffer.
-+	 *
-+	 * For NAND device in which the spare area is not divided fully
-+	 * by the number of chunks, number of used bytes in each spare
-+	 * buffer is rounded down to the nearest even number of bytes,
-+	 * and all remaining bytes are added to the last used spare area.
-+	 *
-+	 * For more information read section 26.6.10 of MPC5121e
-+	 * Microcontroller Reference Manual, Rev. 3.
-+	 */
++	mdesc = container_of(txd, struct mpc_dma_desc, desc);
 +
-+	/* Calculate number of valid bytes in each spare buffer */
-+	sbsize = (mtd->oobsize / (mtd->writesize / 512)) & ~1;
++	spin_lock_irqsave(&mchan->lock, flags);
 +
-+	while (size) {
-+		/* Calculate spare buffer number */
-+		s = offset / sbsize;
-+		if (s > NFC_SPARE_BUFFERS - 1)
-+			s = NFC_SPARE_BUFFERS - 1;
++	/* Move descriptor to queue */
++	list_move_tail(&mdesc->node, &mchan->queued);
 +
-+		/*
-+		 * Calculate offset to requested data block in selected spare
-+		 * buffer and its size.
-+		 */
-+		o = offset - (s * sbsize);
-+		blksize = min(sbsize - o, size);
++	/* If channel is idle, execute all queued descriptors */
++	if (list_empty(&mchan->active))
++		mpc_dma_execute(mchan);
 +
-+		if (wr)
-+			memcpy_toio(prv->regs + NFC_SPARE_AREA(s) + o,
-+							buffer, blksize);
-+		else
-+			memcpy_fromio(buffer,
-+				prv->regs + NFC_SPARE_AREA(s) + o, blksize);
++	/* Update cookie */
++	cookie = mchan->chan.cookie + 1;
++	if (cookie <= 0)
++		cookie = 1;
 +
-+		buffer += blksize;
-+		offset += blksize;
-+		size -= blksize;
-+	};
++	mchan->chan.cookie = cookie;
++	mdesc->desc.cookie = cookie;
++
++	spin_unlock_irqrestore(&mchan->lock, flags);
++
++	return cookie;
 +}
 +
-+/* Copy data from/to NFC main and spare buffers */
-+static void mpc5121_nfc_buf_copy(struct mtd_info *mtd, u_char *buf, int len,
-+									int wr)
++/* Alloc channel resources */
++static int mpc_dma_alloc_chan_resources(struct dma_chan *chan)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+	uint c = prv->column;
-+	uint l;
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc;
++	struct mpc_dma_tcd *tcd;
++	dma_addr_t tcd_paddr;
++	unsigned long flags;
++	LIST_HEAD(descs);
++	int i;
 +
-+	/* Handle spare area access */
-+	if (prv->spareonly || c >= mtd->writesize) {
-+		/* Calculate offset from beginning of spare area */
-+		if (c >= mtd->writesize)
-+			c -= mtd->writesize;
++	/* Alloc DMA memory for Transfer Control Descriptors */
++	tcd = dma_alloc_coherent(mdma->dma.dev,
++			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
++							&tcd_paddr, GFP_KERNEL);
++	if (!tcd)
++		return -ENOMEM;
 +
-+		prv->column += len;
-+		mpc5121_nfc_copy_spare(mtd, c, buf, len, wr);
-+		return;
++	/* Alloc descriptors for this channel */
++	for (i = 0; i < MPC_DMA_DESCRIPTORS; i++) {
++		mdesc = kzalloc(sizeof(struct mpc_dma_desc), GFP_KERNEL);
++		if (!mdesc) {
++			dev_notice(mdma->dma.dev, "Memory allocation error. "
++					"Allocated only %u descriptors\n", i);
++			break;
++		}
++
++		dma_async_tx_descriptor_init(&mdesc->desc, chan);
++		mdesc->desc.flags = DMA_CTRL_ACK;
++		mdesc->desc.tx_submit = mpc_dma_tx_submit;
++
++		mdesc->tcd = &tcd[i];
++		mdesc->tcd_paddr = tcd_paddr + (i * sizeof(struct mpc_dma_tcd));
++
++		list_add_tail(&mdesc->node, &descs);
 +	}
 +
-+	/*
-+	 * Handle main area access - limit copy length to prevent
-+	 * crossing main/spare boundary.
-+	 */
-+	l = min((uint)len, mtd->writesize - c);
-+	prv->column += l;
-+
-+	if (wr)
-+		memcpy_toio(prv->regs + NFC_MAIN_AREA(0) + c, buf, l);
-+	else
-+		memcpy_fromio(buf, prv->regs + NFC_MAIN_AREA(0) + c, l);
-+
-+	/* Handle crossing main/spare boundary */
-+	if (l != len) {
-+		buf += l;
-+		len -= l;
-+		mpc5121_nfc_buf_copy(mtd, buf, len, wr);
++	/* Return error only if no descriptors were allocated */
++	if (i == 0) {
++		dma_free_coherent(mdma->dma.dev,
++			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
++								tcd, tcd_paddr);
++		return -ENOMEM;
 +	}
-+}
 +
-+/* Read data from NFC buffers */
-+static void mpc5121_nfc_read_buf(struct mtd_info *mtd, u_char *buf, int len)
-+{
-+	mpc5121_nfc_buf_copy(mtd, buf, len, 0);
-+}
++	spin_lock_irqsave(&mchan->lock, flags);
++	mchan->tcd = tcd;
++	mchan->tcd_paddr = tcd_paddr;
++	list_splice_tail_init(&descs, &mchan->free);
++	spin_unlock_irqrestore(&mchan->lock, flags);
 +
-+/* Write data to NFC buffers */
-+static void mpc5121_nfc_write_buf(struct mtd_info *mtd,
-+						const u_char *buf, int len)
-+{
-+	mpc5121_nfc_buf_copy(mtd, (u_char *)buf, len, 1);
-+}
-+
-+/* Compare buffer with NAND flash */
-+static int mpc5121_nfc_verify_buf(struct mtd_info *mtd,
-+						const u_char *buf, int len)
-+{
-+	u_char tmp[256];
-+	uint bsize;
-+
-+	while (len) {
-+		bsize = min(len, 256);
-+		mpc5121_nfc_read_buf(mtd, tmp, bsize);
-+
-+		if (memcmp(buf, tmp, bsize))
-+			return 1;
-+
-+		buf += bsize;
-+		len -= bsize;
-+	}
++	/* Enable Error Interrupt */
++	out_8(&mdma->regs->dmaseei, chan->chan_id);
 +
 +	return 0;
 +}
 +
-+/* Read byte from NFC buffers */
-+static u8 mpc5121_nfc_read_byte(struct mtd_info *mtd)
++/* Free channel resources */
++static void mpc_dma_free_chan_resources(struct dma_chan *chan)
 +{
-+	u8 tmp;
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc, *tmp;
++	struct mpc_dma_tcd *tcd;
++	dma_addr_t tcd_paddr;
++	unsigned long flags;
++	LIST_HEAD(descs);
 +
-+	mpc5121_nfc_read_buf(mtd, &tmp, sizeof(tmp));
++	spin_lock_irqsave(&mchan->lock, flags);
 +
-+	return tmp;
++	/* Channel must be idle */
++	BUG_ON(!list_empty(&mchan->prepared));
++	BUG_ON(!list_empty(&mchan->queued));
++	BUG_ON(!list_empty(&mchan->active));
++	BUG_ON(!list_empty(&mchan->completed));
++
++	/* Move data */
++	list_splice_tail_init(&mchan->free, &descs);
++	tcd = mchan->tcd;
++	tcd_paddr = mchan->tcd_paddr;
++
++	spin_unlock_irqrestore(&mchan->lock, flags);
++
++	/* Free DMA memory used by descriptors */
++	dma_free_coherent(mdma->dma.dev,
++			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
++								tcd, tcd_paddr);
++
++	/* Free descriptors */
++	list_for_each_entry_safe(mdesc, tmp, &descs, node)
++		kfree(mdesc);
++
++	/* Disable Error Interrupt */
++	out_8(&mdma->regs->dmaceei, chan->chan_id);
 +}
 +
-+/* Read word from NFC buffers */
-+static u16 mpc5121_nfc_read_word(struct mtd_info *mtd)
++/* Send all pending descriptor to hardware */
++static void mpc_dma_issue_pending(struct dma_chan *chan)
 +{
-+	u16 tmp;
-+
-+	mpc5121_nfc_read_buf(mtd, (u_char *)&tmp, sizeof(tmp));
-+
-+	return tmp;
++	/*
++	 * We are posting descriptors to the hardware as soon as
++	 * they are ready, so this function does nothing.
++	 */
 +}
 +
-+/*
-+ * Read NFC configuration from Reset Config Word
-+ *
-+ * NFC is configured during reset in basis of information stored
-+ * in Reset Config Word. There is no other way to set NAND block
-+ * size, spare size and bus width.
-+ */
-+static int mpc5121_nfc_read_hw_config(struct mtd_info *mtd)
++/* Check request completion status */
++static enum dma_status
++mpc_dma_is_tx_complete(struct dma_chan *chan, dma_cookie_t cookie,
++					dma_cookie_t *done, dma_cookie_t *used)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
-+	struct mpc512x_reset_module *rm;
-+	struct device_node *rmnode;
-+	uint rcw_pagesize = 0;
-+	uint rcw_sparesize = 0;
-+	uint rcw_width;
-+	uint rcwh;
-+	uint romloc, ps;
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	unsigned long flags;
++	dma_cookie_t last_used;
++	dma_cookie_t last_complete;
 +
-+	rmnode = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
-+	if (!rmnode) {
-+		dev_err(prv->dev, "Missing 'fsl,mpc5121-reset' "
-+					"node in device tree!\n");
-+		return -ENODEV;
-+	}
++	spin_lock_irqsave(&mchan->lock, flags);
++	last_used = mchan->chan.cookie;
++	last_complete = mchan->completed_cookie;
++	spin_unlock_irqrestore(&mchan->lock, flags);
 +
-+	rm = of_iomap(rmnode, 0);
-+	if (!rm) {
-+		dev_err(prv->dev, "Error mapping reset module node!\n");
-+		return -EBUSY;
-+	}
++	if (done)
++		*done = last_complete;
 +
-+	rcwh = in_be32(&rm->rcwhr);
++	if (used)
++		*used = last_used;
 +
-+	/* Bit 6: NFC bus width */
-+	rcw_width = ((rcwh >> 6) & 0x1) ? 2 : 1;
-+
-+	/* Bit 7: NFC Page/Spare size */
-+	ps = (rcwh >> 7) & 0x1;
-+
-+	/* Bits [22:21]: ROM Location */
-+	romloc = (rcwh >> 21) & 0x3;
-+
-+	/* Decode RCW bits */
-+	switch ((ps << 2) | romloc) {
-+	case 0x00:
-+	case 0x01:
-+		rcw_pagesize = 512;
-+		rcw_sparesize = 16;
-+		break;
-+	case 0x02:
-+	case 0x03:
-+		rcw_pagesize = 4096;
-+		rcw_sparesize = 128;
-+		break;
-+	case 0x04:
-+	case 0x05:
-+		rcw_pagesize = 2048;
-+		rcw_sparesize = 64;
-+		break;
-+	case 0x06:
-+	case 0x07:
-+		rcw_pagesize = 4096;
-+		rcw_sparesize = 218;
-+		break;
-+	}
-+
-+	mtd->writesize = rcw_pagesize;
-+	mtd->oobsize = rcw_sparesize;
-+	if (rcw_width == 2)
-+		chip->options |= NAND_BUSWIDTH_16;
-+
-+	dev_notice(prv->dev, "Configured for "
-+				"%u-bit NAND, page size %u "
-+				"with %u spare.\n",
-+				rcw_width * 8, rcw_pagesize,
-+				rcw_sparesize);
-+	iounmap(rm);
-+	of_node_put(rmnode);
-+	return 0;
++	return dma_async_is_complete(cookie, last_complete, last_used);
 +}
 +
-+/* Free driver resources */
-+static void mpc5121_nfc_free(struct device *dev, struct mtd_info *mtd)
++/* Prepare descriptor for memory to memory copy */
++static struct dma_async_tx_descriptor *
++mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
++					size_t len, unsigned long flags)
 +{
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc = NULL;
++	struct mpc_dma_tcd *tcd;
++	unsigned long iflags;
 +
-+	if (prv->clk) {
-+		clk_disable(prv->clk);
-+		clk_put(prv->clk);
++	/* Get free descriptor */
++	spin_lock_irqsave(&mchan->lock, iflags);
++	if (!list_empty(&mchan->free)) {
++		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
++									node);
++		list_del(&mdesc->node);
++	}
++	spin_unlock_irqrestore(&mchan->lock, iflags);
++
++	if (!mdesc)
++		return NULL;
++
++	mdesc->error = 0;
++	tcd = mdesc->tcd;
++
++	/* Prepare Transfer Control Descriptor for this transaction */
++	memset(tcd, 0, sizeof(struct mpc_dma_tcd));
++
++	if (IS_ALIGNED(src | dst | len, 32)) {
++		tcd->ssize = MPC_DMA_TSIZE_32;
++		tcd->dsize = MPC_DMA_TSIZE_32;
++		tcd->soff = 32;
++		tcd->doff = 32;
++	} else if (IS_ALIGNED(src | dst | len, 16)) {
++		tcd->ssize = MPC_DMA_TSIZE_16;
++		tcd->dsize = MPC_DMA_TSIZE_16;
++		tcd->soff = 16;
++		tcd->doff = 16;
++	} else if (IS_ALIGNED(src | dst | len, 4)) {
++		tcd->ssize = MPC_DMA_TSIZE_4;
++		tcd->dsize = MPC_DMA_TSIZE_4;
++		tcd->soff = 4;
++		tcd->doff = 4;
++	} else if (IS_ALIGNED(src | dst | len, 2)) {
++		tcd->ssize = MPC_DMA_TSIZE_2;
++		tcd->dsize = MPC_DMA_TSIZE_2;
++		tcd->soff = 2;
++		tcd->doff = 2;
++	} else {
++		tcd->ssize = MPC_DMA_TSIZE_1;
++		tcd->dsize = MPC_DMA_TSIZE_1;
++		tcd->soff = 1;
++		tcd->doff = 1;
 +	}
 +
-+	if (prv->csreg)
-+		iounmap(prv->csreg);
++	tcd->saddr = src;
++	tcd->daddr = dst;
++	tcd->nbytes = len;
++	tcd->biter = 1;
++	tcd->citer = 1;
++
++	/* Place descriptor in prepared list */
++	spin_lock_irqsave(&mchan->lock, iflags);
++	list_add_tail(&mdesc->node, &mchan->prepared);
++	spin_unlock_irqrestore(&mchan->lock, iflags);
++
++	return &mdesc->desc;
 +}
 +
-+static int __init mpc5121_nfc_probe(struct of_device *op,
++static int __devinit mpc_dma_probe(struct of_device *op,
 +					const struct of_device_id *match)
 +{
-+	struct device_node *rootnode, *dn = op->node;
++	struct device_node *dn = op->node;
 +	struct device *dev = &op->dev;
-+	struct mpc5121_nfc_prv *prv;
++	struct dma_device *dma;
++	struct mpc_dma *mdma;
++	struct mpc_dma_chan *mchan;
 +	struct resource res;
-+	struct mtd_info *mtd;
-+#ifdef CONFIG_MTD_PARTITIONS
-+	struct mtd_partition *parts;
-+#endif
-+	struct nand_chip *chip;
-+	unsigned long regs_paddr, regs_size;
-+	const uint *chips_no;
-+	int resettime = 0;
-+	int retval = 0;
-+	int rev, len;
++	ulong regs_start, regs_size;
++	int retval, i;
 +
-+	/*
-+	 * Check SoC revision. This driver supports only NFC
-+	 * in MPC5121 revision 2.
-+	 */
-+	rev = (mfspr(SPRN_SVR) >> 4) & 0xF;
-+	if (rev != 2) {
-+		dev_err(dev, "SoC revision %u is not supported!\n", rev);
-+		return -ENXIO;
-+	}
-+
-+	prv = devm_kzalloc(dev, sizeof(*prv), GFP_KERNEL);
-+	if (!prv) {
++	mdma = devm_kzalloc(dev, sizeof(struct mpc_dma), GFP_KERNEL);
++	if (!mdma) {
 +		dev_err(dev, "Memory exhausted!\n");
 +		return -ENOMEM;
 +	}
 +
-+	mtd = &prv->mtd;
-+	chip = &prv->chip;
-+
-+	mtd->priv = chip;
-+	chip->priv = prv;
-+	prv->dev = dev;
-+
-+	/* Read NFC configuration from Reset Config Word */
-+	retval = mpc5121_nfc_read_hw_config(mtd);
-+	if (retval) {
-+		dev_err(dev, "Unable to read NFC config!\n");
-+		return retval;
-+	}
-+
-+	prv->irq = irq_of_parse_and_map(dn, 0);
-+	if (prv->irq == NO_IRQ) {
++	mdma->irq = irq_of_parse_and_map(dn, 0);
++	if (mdma->irq == NO_IRQ) {
 +		dev_err(dev, "Error mapping IRQ!\n");
 +		return -EINVAL;
 +	}
@@ -811,213 +750,142 @@ index 0000000..2980eb1
 +		return retval;
 +	}
 +
-+	chips_no = of_get_property(dn, "chips", &len);
-+	if (!chips_no || len != sizeof(*chips_no)) {
-+		dev_err(dev, "Invalid/missing 'chips' property!\n");
-+		return -EINVAL;
-+	}
-+
-+	regs_paddr = res.start;
++	regs_start = res.start;
 +	regs_size = res.end - res.start + 1;
 +
-+	if (!devm_request_mem_region(dev, regs_paddr, regs_size, DRV_NAME)) {
++	if (!devm_request_mem_region(dev, regs_start, regs_size, DRV_NAME)) {
 +		dev_err(dev, "Error requesting memory region!\n");
 +		return -EBUSY;
 +	}
 +
-+	prv->regs = devm_ioremap(dev, regs_paddr, regs_size);
-+	if (!prv->regs) {
++	mdma->regs = devm_ioremap(dev, regs_start, regs_size);
++	if (!mdma->regs) {
 +		dev_err(dev, "Error mapping memory region!\n");
 +		return -ENOMEM;
 +	}
 +
-+	mtd->name = "MPC5121 NAND";
-+	chip->dev_ready = mpc5121_nfc_dev_ready;
-+	chip->cmdfunc = mpc5121_nfc_command;
-+	chip->read_byte = mpc5121_nfc_read_byte;
-+	chip->read_word = mpc5121_nfc_read_word;
-+	chip->read_buf = mpc5121_nfc_read_buf;
-+	chip->write_buf = mpc5121_nfc_write_buf;
-+	chip->verify_buf = mpc5121_nfc_verify_buf;
-+	chip->select_chip = mpc5121_nfc_select_chip;
-+	chip->options = NAND_NO_AUTOINCR | NAND_USE_FLASH_BBT;
-+	chip->ecc.mode = NAND_ECC_SOFT;
++	mdma->tcd = (struct mpc_dma_tcd *)((u8 *)(mdma->regs)
++							+ MPC_DMA_TCD_OFFSET);
 +
-+	/* Support external chip-select logic on ADS5121 board */
-+	rootnode = of_find_node_by_path("/");
-+	if (of_device_is_compatible(rootnode, "fsl,mpc5121ads")) {
-+		retval = ads5121_chipselect_init(mtd);
-+		if (retval) {
-+			dev_err(dev, "Chipselect init error!\n");
-+			of_node_put(rootnode);
-+			return retval;
-+		}
-+
-+		chip->select_chip = ads5121_select_chip;
-+	}
-+	of_node_put(rootnode);
-+
-+	/* Enable NFC clock */
-+	prv->clk = clk_get(dev, "nfc_clk");
-+	if (!prv->clk) {
-+		dev_err(dev, "Unable to acquire NFC clock!\n");
-+		retval = -ENODEV;
-+		goto error;
-+	}
-+
-+	clk_enable(prv->clk);
-+
-+	/* Reset NAND Flash controller */
-+	nfc_set(mtd, NFC_CONFIG1, NFC_RESET);
-+	while (nfc_read(mtd, NFC_CONFIG1) & NFC_RESET) {
-+		if (resettime++ >= NFC_RESET_TIMEOUT) {
-+			dev_err(dev, "Timeout while resetting NFC!\n");
-+			retval = -EINVAL;
-+			goto error;
-+		}
-+
-+		udelay(1);
-+	}
-+
-+	/* Enable write to NFC memory */
-+	nfc_write(mtd, NFC_CONFIG, NFC_BLS_UNLOCKED);
-+
-+	/* Enable write to all NAND pages */
-+	nfc_write(mtd, NFC_UNLOCKSTART_BLK0, 0x0000);
-+	nfc_write(mtd, NFC_UNLOCKEND_BLK0, 0xFFFF);
-+	nfc_write(mtd, NFC_WRPROT, NFC_WPC_UNLOCK);
-+
-+	/*
-+	 * Setup NFC:
-+	 *	- Big Endian transfers,
-+	 *	- Interrupt after full page read/write.
-+	 */
-+	nfc_write(mtd, NFC_CONFIG1, NFC_BIG_ENDIAN | NFC_INT_MASK |
-+							NFC_FULL_PAGE_INT);
-+
-+	/* Set spare area size */
-+	nfc_write(mtd, NFC_SPAS, mtd->oobsize >> 1);
-+
-+	init_waitqueue_head(&prv->irq_waitq);
-+	retval = devm_request_irq(dev, prv->irq, &mpc5121_nfc_irq, 0, DRV_NAME,
-+									mtd);
++	retval = devm_request_irq(dev, mdma->irq, &mpc_dma_irq, 0, DRV_NAME,
++									mdma);
 +	if (retval) {
 +		dev_err(dev, "Error requesting IRQ!\n");
-+		goto error;
++		return -EINVAL;
 +	}
 +
-+	/* Detect NAND chips */
-+	if (nand_scan(mtd, *chips_no)) {
-+		dev_err(dev, "NAND Flash not found !\n");
-+		devm_free_irq(dev, prv->irq, mtd);
-+		retval = -ENXIO;
-+		goto error;
++	spin_lock_init(&mdma->error_status_lock);
++
++	dma = &mdma->dma;
++	dma->dev = dev;
++	dma->chancnt = MPC_DMA_CHANNELS;
++	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
++	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
++	dma->device_issue_pending = mpc_dma_issue_pending;
++	dma->device_is_tx_complete = mpc_dma_is_tx_complete;
++	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
++
++	INIT_LIST_HEAD(&dma->channels);
++	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
++
++	for (i = 0; i < dma->chancnt; i++) {
++		mchan = &mdma->channels[i];
++
++		mchan->chan.device = dma;
++		mchan->chan.chan_id = i;
++		mchan->chan.cookie = 1;
++		mchan->completed_cookie = mchan->chan.cookie;
++
++		INIT_LIST_HEAD(&mchan->free);
++		INIT_LIST_HEAD(&mchan->prepared);
++		INIT_LIST_HEAD(&mchan->queued);
++		INIT_LIST_HEAD(&mchan->active);
++		INIT_LIST_HEAD(&mchan->completed);
++
++		spin_lock_init(&mchan->lock);
++		list_add_tail(&mchan->chan.device_node, &dma->channels);
 +	}
 +
-+	/* Set erase block size */
-+	switch (mtd->erasesize / mtd->writesize) {
-+	case 32:
-+		nfc_set(mtd, NFC_CONFIG1, NFC_PPB_32);
-+		break;
++	tasklet_init(&mdma->tasklet, mpc_dma_tasklet, (unsigned long)mdma);
 +
-+	case 64:
-+		nfc_set(mtd, NFC_CONFIG1, NFC_PPB_64);
-+		break;
++	/*
++	 * Configure DMA Engine:
++	 * - Dynamic clock,
++	 * - Round-robin group arbitration,
++	 * - Round-robin channel arbitration.
++	 */
++	out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
++				MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
 +
-+	case 128:
-+		nfc_set(mtd, NFC_CONFIG1, NFC_PPB_128);
-+		break;
++	/* Disable hardware DMA requests */
++	out_be32(&mdma->regs->dmaerqh, 0);
++	out_be32(&mdma->regs->dmaerql, 0);
 +
-+	case 256:
-+		nfc_set(mtd, NFC_CONFIG1, NFC_PPB_256);
-+		break;
++	/* Disable error interrupts */
++	out_be32(&mdma->regs->dmaeeih, 0);
++	out_be32(&mdma->regs->dmaeeil, 0);
 +
-+	default:
-+		dev_err(dev, "Unsupported NAND flash!\n");
-+		devm_free_irq(dev, prv->irq, mtd);
-+		retval = -ENXIO;
-+		goto error;
-+	}
++	/* Clear interrupts status */
++	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
++	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
 +
-+	dev_set_drvdata(dev, mtd);
++	/* Route interrupts to IPIC */
++	out_be32(&mdma->regs->dmaihsa, 0);
++	out_be32(&mdma->regs->dmailsa, 0);
 +
-+	/* Register device in MTD */
-+#ifdef CONFIG_MTD_PARTITIONS
-+	retval = parse_mtd_partitions(mtd, mpc5121_nfc_pprobes, &parts, 0);
-+#ifdef CONFIG_MTD_OF_PARTS
-+	if (retval == 0)
-+		retval = of_mtd_parse_partitions(dev, dn, &parts);
-+#endif
-+	if (retval < 0) {
-+		dev_err(dev, "Error parsing MTD partitions!\n");
-+		devm_free_irq(dev, prv->irq, mtd);
-+		retval = -EINVAL;
-+		goto error;
-+	}
-+
-+	if (retval > 0)
-+		retval = add_mtd_partitions(mtd, parts, retval);
-+	else
-+#endif
-+		retval = add_mtd_device(mtd);
-+
++	/* Register DMA engine */
++	dev_set_drvdata(dev, mdma);
++	retval = dma_async_device_register(dma);
 +	if (retval) {
-+		dev_err(dev, "Error adding MTD device!\n");
-+		devm_free_irq(dev, prv->irq, mtd);
-+		goto error;
++		devm_free_irq(dev, mdma->irq, mdma);
++		irq_dispose_mapping(mdma->irq);
 +	}
 +
-+	return 0;
-+error:
-+	mpc5121_nfc_free(dev, mtd);
 +	return retval;
 +}
 +
-+static int __exit mpc5121_nfc_remove(struct of_device *op)
++static int __devexit mpc_dma_remove(struct of_device *op)
 +{
 +	struct device *dev = &op->dev;
-+	struct mtd_info *mtd = dev_get_drvdata(dev);
-+	struct nand_chip *chip = mtd->priv;
-+	struct mpc5121_nfc_prv *prv = chip->priv;
++	struct mpc_dma *mdma = dev_get_drvdata(dev);
 +
-+	nand_release(mtd);
-+	devm_free_irq(dev, prv->irq, mtd);
-+	mpc5121_nfc_free(dev, mtd);
++	dma_async_device_unregister(&mdma->dma);
++	devm_free_irq(dev, mdma->irq, mdma);
++	irq_dispose_mapping(mdma->irq);
 +
 +	return 0;
 +}
 +
-+static struct of_device_id mpc5121_nfc_match[] = {
-+	{ .compatible = "fsl,mpc5121-nfc", },
++static struct of_device_id mpc_dma_match[] = {
++	{ .compatible = "fsl,mpc5121-dma", },
 +	{},
 +};
 +
-+static struct of_platform_driver mpc5121_nfc_driver = {
-+	.match_table	= mpc5121_nfc_match,
-+	.probe		= mpc5121_nfc_probe,
-+	.remove		= __exit_p(mpc5121_nfc_remove),
++static struct of_platform_driver mpc_dma_driver = {
++	.match_table	= mpc_dma_match,
++	.probe		= mpc_dma_probe,
++	.remove		= __devexit_p(mpc_dma_remove),
 +	.driver		= {
 +		.name	= DRV_NAME,
 +		.owner	= THIS_MODULE,
 +	},
 +};
 +
-+static int __init mpc5121_nfc_init(void)
++static int __init mpc_dma_init(void)
 +{
-+	return of_register_platform_driver(&mpc5121_nfc_driver);
++	return of_register_platform_driver(&mpc_dma_driver);
 +}
++module_init(mpc_dma_init);
 +
-+module_init(mpc5121_nfc_init);
-+
-+static void __exit mpc5121_nfc_cleanup(void)
++static void __exit mpc_dma_exit(void)
 +{
-+	of_unregister_platform_driver(&mpc5121_nfc_driver);
++	of_unregister_platform_driver(&mpc_dma_driver);
 +}
++module_exit(mpc_dma_exit);
 +
-+module_exit(mpc5121_nfc_cleanup);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("MPC5121 NAND MTD driver");
 +MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
 -- 
 1.5.6.3
