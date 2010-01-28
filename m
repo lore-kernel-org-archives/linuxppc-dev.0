@@ -1,34 +1,9 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 65FCDB7D09
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Jan 2010 10:21:03 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0SNAgmY022180
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2010 18:10:42 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0SNL06r141564
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2010 18:21:00 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0SNKwHv004445
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jan 2010 21:20:59 -0200
-Subject: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Joel Schopp <jschopp@austin.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1264548495.12239.56.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 28 Jan 2010 17:20:55 -0600
-Message-ID: <1264720855.9660.22.camel@jschopp-laptop>
-Mime-Version: 1.0
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <16e0281128d6c1e7de25e9d6f48e3e09ad533f59.1264720987.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] powerpc: Dynamically allocate pacas
+Date: Fri, 29 Jan 2010 10:23:22 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,112 +13,348 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-there is performance benefit to idling the higher numbered threads in
-the core.  
+On 64-bit kernels we currently have a 512 byte struct paca_struct for
+each cpu (usually just called "the paca"). Currently they are statically
+allocated, which means a kernel built for a large number of cpus will
+waste a lot of space if it's booted on a machine with few cpus.
 
-This patch implements arch_scale_smt_power to dynamically update smt
-thread power in these idle cases in order to prefer threads 0,1 over
-threads 2,3 within a core.
+We can avoid that by only allocating the number of pacas we need at
+boot. However this is complicated by the fact that we need to access
+the paca before we know how many cpus there are in the system.
 
+The solution is to dynamically allocate enough space for NR_CPUS pacas,
+but then later in boot when we know how many cpus we have, we free any
+unused pacas.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+Lightly booted on Legacy iSeries & pSeries LPAR.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
-Version 2 addresses style and optimization, same basic functionality
-Version 3 adds a comment
-On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-there is performance benefit to idling the higher numbered threads in
-the core.  
+ arch/powerpc/include/asm/paca.h            |   18 +++++-
+ arch/powerpc/kernel/head_64.S              |    6 +-
+ arch/powerpc/kernel/paca.c                 |   93 +++++++++++++++++++++-------
+ arch/powerpc/kernel/prom.c                 |    3 +
+ arch/powerpc/kernel/setup-common.c         |    3 +
+ arch/powerpc/kernel/setup_64.c             |   12 ++--
+ arch/powerpc/platforms/iseries/exception.S |   25 +++++---
+ 7 files changed, 118 insertions(+), 42 deletions(-)
 
-This patch implements arch_scale_smt_power to dynamically update smt
-thread power in these idle cases in order to prefer threads 0,1 over
-threads 2,3 within a core.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
----
-Version 2 addresses style and optimization, same basic functionality
-Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.git/arch/powerpc/kernel/smp.c
-@@ -620,3 +620,59 @@ void __cpu_die(unsigned int cpu)
- 		smp_ops->cpu_die(cpu);
- }
+v3: Really fixed the 32-bit build.
+
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 5e9b4ef..fbcd003 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -14,6 +14,9 @@
+ #define _ASM_POWERPC_PACA_H
+ #ifdef __KERNEL__
+ 
++#ifdef CONFIG_PPC64
++
++#include <linux/init.h>
+ #include <asm/types.h>
+ #include <asm/lppaca.h>
+ #include <asm/mmu.h>
+@@ -140,8 +143,19 @@ struct paca_struct {
  #endif
+ };
+ 
+-extern struct paca_struct paca[];
+-extern void initialise_pacas(void);
++extern struct paca_struct *paca;
++extern __initdata struct paca_struct boot_paca;
++extern void initialise_paca(struct paca_struct *new_paca, int cpu);
 +
-+unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
++extern void allocate_pacas(void);
++extern void free_unused_pacas(void);
++
++#else /* CONFIG_PPC64 */
++
++static inline void allocate_pacas(void) { };
++static inline void free_unused_pacas(void) { };
++
++#endif /* CONFIG_PPC64 */
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_PACA_H */
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 9258074..b24b700 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -219,7 +219,8 @@ generic_secondary_common_init:
+ 	 * physical cpu id in r24, we need to search the pacas to find
+ 	 * which logical id maps to our physical one.
+ 	 */
+-	LOAD_REG_ADDR(r13, paca)	/* Get base vaddr of paca array	 */
++	LOAD_REG_ADDR(r13, paca)	/* Load paca pointer		 */
++	ld	r13,0(r13)		/* Get base vaddr of paca array	 */
+ 	li	r5,0			/* logical cpu id                */
+ 1:	lhz	r6,PACAHWCPUID(r13)	/* Load HW procid from paca      */
+ 	cmpw	r6,r24			/* Compare to our id             */
+@@ -536,7 +537,8 @@ _GLOBAL(pmac_secondary_start)
+ 	mtmsrd	r3			/* RI on */
+ 
+ 	/* Set up a paca value for this processor. */
+-	LOAD_REG_ADDR(r4,paca)		/* Get base vaddr of paca array	*/
++	LOAD_REG_ADDR(r4,paca)		/* Load paca pointer		*/
++	ld	r4,0(r4)		/* Get base vaddr of paca array	*/
+ 	mulli	r13,r24,PACA_SIZE	/* Calculate vaddr of right paca */
+ 	add	r13,r13,r4		/* for this processor.		*/
+ 	mtspr	SPRN_SPRG_PACA,r13	/* Save vaddr of paca in an SPRG*/
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index d16b1ea..0c40c6f 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -9,11 +9,15 @@
+ 
+ #include <linux/threads.h>
+ #include <linux/module.h>
++#include <linux/lmb.h>
+ 
++#include <asm/firmware.h>
+ #include <asm/lppaca.h>
+ #include <asm/paca.h>
+ #include <asm/sections.h>
+ #include <asm/pgtable.h>
++#include <asm/iseries/lpar_map.h>
++#include <asm/iseries/hv_types.h>
+ 
+ /* This symbol is provided by the linker - let it fill in the paca
+  * field correctly */
+@@ -70,37 +74,82 @@ struct slb_shadow slb_shadow[] __cacheline_aligned = {
+  * processors.  The processor VPD array needs one entry per physical
+  * processor (not thread).
+  */
+-struct paca_struct paca[NR_CPUS];
++struct paca_struct *paca;
+ EXPORT_SYMBOL(paca);
+ 
+-void __init initialise_pacas(void)
+-{
+-	int cpu;
++struct paca_struct boot_paca;
+ 
+-	/* The TOC register (GPR2) points 32kB into the TOC, so that 64kB
+-	 * of the TOC can be addressed using a single machine instruction.
+-	 */
++void __init initialise_paca(struct paca_struct *new_paca, int cpu)
 +{
-+	int sibling;
-+	int idle_count = 0;
-+	int thread;
-+
-+	/* Setup the default weight and smt_gain used by most cpus for SMT
-+	 * Power.  Doing this right away covers the default case and can be
-+	 * used by cpus that modify it dynamically.
-+	 */
-+	struct cpumask *sibling_map = sched_domain_span(sd);
-+	unsigned long weight = cpumask_weight(sibling_map);
-+	unsigned long smt_gain = sd->smt_gain;
-+
-+
-+	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-+		for_each_cpu(sibling, sibling_map) {
-+			if (idle_cpu(sibling))
-+				idle_count++;
-+		}
-+
-+		/* the following section attempts to tweak cpu power based
-+		 * on current idleness of the threads dynamically at runtime
-+		 */
-+		if (idle_count > 1) {
-+			thread = cpu_thread_in_core(cpu);
-+			if (thread < 2) {
-+				/* add 75 % to thread power */
-+				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-+			} else {
-+				 /* subtract 75 % to thread power */
-+				smt_gain = smt_gain >> 2;
-+			}
-+		}
-+	}
-+
-+	/* default smt gain is 1178, weight is # of SMT threads */
-+	switch (weight) {
-+	case 1:
-+		/*divide by 1, do nothing*/
-+		break;
-+	case 2:
-+		smt_gain = smt_gain >> 1;
-+		break;
-+	case 4:
-+		smt_gain = smt_gain >> 2;
-+		break;
-+	default:
-+		smt_gain /= weight;
-+		break;
-+	}
-+
-+	return smt_gain;
-+
++       /* The TOC register (GPR2) points 32kB into the TOC, so that 64kB
++	* of the TOC can be addressed using a single machine instruction.
++	*/
+ 	unsigned long kernel_toc = (unsigned long)(&__toc_start) + 0x8000UL;
+ 
+-	/* Can't use for_each_*_cpu, as they aren't functional yet */
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-		struct paca_struct *new_paca = &paca[cpu];
+-
+ #ifdef CONFIG_PPC_BOOK3S
+-		new_paca->lppaca_ptr = &lppaca[cpu];
++	new_paca->lppaca_ptr = &lppaca[cpu];
+ #else
+-		new_paca->kernel_pgd = swapper_pg_dir;
++	new_paca->kernel_pgd = swapper_pg_dir;
+ #endif
+-		new_paca->lock_token = 0x8000;
+-		new_paca->paca_index = cpu;
+-		new_paca->kernel_toc = kernel_toc;
+-		new_paca->kernelbase = (unsigned long) _stext;
+-		new_paca->kernel_msr = MSR_KERNEL;
+-		new_paca->hw_cpu_id = 0xffff;
+-		new_paca->__current = &init_task;
++	new_paca->lock_token = 0x8000;
++	new_paca->paca_index = cpu;
++	new_paca->kernel_toc = kernel_toc;
++	new_paca->kernelbase = (unsigned long) _stext;
++	new_paca->kernel_msr = MSR_KERNEL;
++	new_paca->hw_cpu_id = 0xffff;
++	new_paca->__current = &init_task;
+ #ifdef CONFIG_PPC_STD_MMU_64
+-		new_paca->slb_shadow_ptr = &slb_shadow[cpu];
++	new_paca->slb_shadow_ptr = &slb_shadow[cpu];
+ #endif /* CONFIG_PPC_STD_MMU_64 */
 +}
-Index: linux-2.6.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-2.6.git/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYNC_SMT4		LONG_ASM_CONST(0x0100000000000000)
++
++static int __initdata paca_size;
++
++void __init allocate_pacas(void)
++{
++	int nr_cpus, cpu, limit;
++
++	/*
++	 * We can't take SLB misses on the paca, and we want to access them
++	 * in real mode, so allocate them within the RMA and also within
++	 * the first segment. On iSeries they must be within the area mapped
++	 * by the HV, which is HvPagesToMap * HVPAGESIZE bytes.
++	 */
++	limit = min(0x10000000ULL, lmb.rmo_size);
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		limit = min(limit, HvPagesToMap * HVPAGESIZE);
++
++	nr_cpus = NR_CPUS;
++	/* On iSeries we know we can never have more than 64 cpus */
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		nr_cpus = min(64, nr_cpus);
++
++	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpus);
++
++	paca = __va(lmb_alloc_base(paca_size, PAGE_SIZE, limit));
++	memset(paca, 0, paca_size);
++
++	printk(KERN_DEBUG "Allocated %u bytes for %d pacas at %p\n",
++		paca_size, nr_cpus, paca);
++
++	/* Can't use for_each_*_cpu, as they aren't functional yet */
++	for (cpu = 0; cpu < nr_cpus; cpu++)
++		initialise_paca(&paca[cpu], cpu);
++}
++
++void __init free_unused_pacas(void)
++{
++	int new_size;
++
++	new_size = PAGE_ALIGN(sizeof(struct paca_struct) * num_possible_cpus());
++
++	if (new_size >= paca_size)
++		return;
++
++	lmb_free(__pa(paca) + new_size, paca_size - new_size);
++
++	printk(KERN_DEBUG "Freed %u bytes for unused pacas\n",
++		paca_size - new_size);
  
- #ifndef __ASSEMBLY__
+-	}
++	paca_size = new_size;
+ }
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 4ec3008..6e0cab0 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -43,6 +43,7 @@
+ #include <asm/smp.h>
+ #include <asm/system.h>
+ #include <asm/mmu.h>
++#include <asm/paca.h>
+ #include <asm/pgtable.h>
+ #include <asm/pci.h>
+ #include <asm/iommu.h>
+@@ -1224,6 +1225,8 @@ void __init early_init_devtree(void *params)
+ 	 * FIXME .. and the initrd too? */
+ 	move_device_tree();
  
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO | CPU_FTR_ASYNC_SMT4)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
++	allocate_pacas();
++
+ 	DBG("Scanning CPUs ...\n");
+ 
+ 	/* Retreive CPU related informations from the flat tree
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 03dd6a2..48f0a00 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -36,6 +36,7 @@
+ #include <linux/lmb.h>
+ #include <linux/of_platform.h>
+ #include <asm/io.h>
++#include <asm/paca.h>
+ #include <asm/prom.h>
+ #include <asm/processor.h>
+ #include <asm/vdso_datapage.h>
+@@ -493,6 +494,8 @@ void __init smp_setup_cpu_maps(void)
+ 	 * here will have to be reworked
+ 	 */
+ 	cpu_init_thread_core_maps(nthreads);
++
++	free_unused_pacas();
+ }
+ #endif /* CONFIG_SMP */
+ 
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 6568406..6354739 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -144,9 +144,9 @@ early_param("smt-enabled", early_smt_enabled);
+ #endif /* CONFIG_SMP */
+ 
+ /* Put the paca pointer into r13 and SPRG_PACA */
+-void __init setup_paca(int cpu)
++static void __init setup_paca(struct paca_struct *new_paca)
+ {
+-	local_paca = &paca[cpu];
++	local_paca = new_paca;
+ 	mtspr(SPRN_SPRG_PACA, local_paca);
+ #ifdef CONFIG_PPC_BOOK3E
+ 	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
+@@ -176,14 +176,12 @@ void __init early_setup(unsigned long dt_ptr)
+ {
+ 	/* -------- printk is _NOT_ safe to use here ! ------- */
+ 
+-	/* Fill in any unititialised pacas */
+-	initialise_pacas();
+-
+ 	/* Identify CPU type */
+ 	identify_cpu(0, mfspr(SPRN_PVR));
+ 
+ 	/* Assume we're on cpu 0 for now. Don't write to the paca yet! */
+-	setup_paca(0);
++	initialise_paca(&boot_paca, 0);
++	setup_paca(&boot_paca);
+ 
+ 	/* Initialize lockdep early or else spinlocks will blow */
+ 	lockdep_init();
+@@ -203,7 +201,7 @@ void __init early_setup(unsigned long dt_ptr)
+ 	early_init_devtree(__va(dt_ptr));
+ 
+ 	/* Now we know the logical id of our boot cpu, setup the paca. */
+-	setup_paca(boot_cpuid);
++	setup_paca(&paca[boot_cpuid]);
+ 
+ 	/* Fix up paca fields required for the boot cpu */
+ 	get_paca()->cpu_start = 1;
+diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
+index 5369653..fba5bf9 100644
+--- a/arch/powerpc/platforms/iseries/exception.S
++++ b/arch/powerpc/platforms/iseries/exception.S
+@@ -43,17 +43,14 @@ system_reset_iSeries:
+ 	LOAD_REG_ADDR(r23, alpaca)
+ 	li	r0,ALPACA_SIZE
+ 	sub	r23,r13,r23
+-	divdu	r23,r23,r0		/* r23 has cpu number */
+-	LOAD_REG_ADDR(r13, paca)
+-	mulli	r0,r23,PACA_SIZE
+-	add	r13,r13,r0
+-	mtspr	SPRN_SPRG_PACA,r13	/* Save it away for the future */
+-	mfmsr	r24
+-	ori	r24,r24,MSR_RI
+-	mtmsrd	r24			/* RI on */
+-	mr	r24,r23
++	divdu	r24,r23,r0		/* r24 has cpu number */
+ 	cmpwi	0,r24,0			/* Are we processor 0? */
+ 	bne	1f
++	LOAD_REG_ADDR(r13, boot_paca)
++	mtspr	SPRN_SPRG_PACA,r13	/* Save it away for the future */
++	mfmsr	r23
++	ori	r23,r23,MSR_RI
++	mtmsrd	r23			/* RI on */
+ 	b	.__start_initialization_iSeries	/* Start up the first processor */
+ 1:	mfspr	r4,SPRN_CTRLF
+ 	li	r5,CTRL_RUNLATCH	/* Turn off the run light */
+@@ -86,6 +83,16 @@ system_reset_iSeries:
+ #endif
+ 
+ 2:
++	/* Load our paca now that it's been allocated */
++	LOAD_REG_ADDR(r13, paca)
++	ld	r13,0(r13)
++	mulli	r0,r24,PACA_SIZE
++	add	r13,r13,r0
++	mtspr	SPRN_SPRG_PACA,r13	/* Save it away for the future */
++	mfmsr	r23
++	ori	r23,r23,MSR_RI
++	mtmsrd	r23			/* RI on */
++
+ 	HMT_LOW
+ #ifdef CONFIG_SMP
+ 	lbz	r23,PACAPROCSTART(r13)	/* Test if this processor
+-- 
+1.6.3.3
