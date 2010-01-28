@@ -1,21 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 26CBBB7D03
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 11:08:51 +1100 (EST)
-Date: Thu, 28 Jan 2010 11:08:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc: Dynamically allocate pacas
-Message-Id: <20100128110846.7a9f8941.sfr@canb.auug.org.au>
-In-Reply-To: <8748.1264634853@neuling.org>
-References: <c22a0fd3d76675813ce5f1596d80614aee80ed24.1264568410.git.michael@ellerman.id.au>
-	<4389.1264575576@neuling.org> <1264632445.6352.6.camel@concordia>
-	<8748.1264634853@neuling.org>
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outbound-mail-158.bluehost.com (outbound-mail-158.bluehost.com
+	[67.222.39.38]) by ozlabs.org (Postfix) with SMTP id A337BB7D03
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 28 Jan 2010 11:10:46 +1100 (EST)
+Date: Wed, 27 Jan 2010 16:03:48 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
+Message-ID: <20100127160348.3c5b0741@jbarnes-piketon>
+In-Reply-To: <20100127.160121.71577531.davem@davemloft.net>
+References: <1264558256.3601.153.camel@pasglop>
+	<20100127082624.4a91323a@jbarnes-piketon>
+	<1264629612.3601.176.camel@pasglop>
+	<20100127.160121.71577531.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__28_Jan_2010_11_08_46_+1100_PmLRqmS1f/FKBlXj"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: fubar@us.ibm.com, linux-pci@vger.kernel.org, ron.mercer@qlogic.com,
+	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
+	leitao@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__28_Jan_2010_11_08_46_+1100_PmLRqmS1f/FKBlXj
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 27 Jan 2010 16:01:21 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-On Thu, 28 Jan 2010 09:57:33 +1030 Michael Neuling <mikey@neuling.org> wrot=
-e:
->
-> > > Putting an #include <asm/paca.h> at the top of setup-common.c fixes i=
-t.
-> >=20
-> > Gah, I saw it was coming via somewhere else but decided not to add it,
-> > wrong decision :)
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Thu, 28 Jan 2010 09:00:12 +1100
+> 
+> > On Wed, 2010-01-27 at 08:26 -0800, Jesse Barnes wrote:
+> >> 
+> >> Thanks Ben.  Any refactoring we need to handle this stuff better is
+> >> fine with me too.  I guess on some platforms calling pci_setup_device
+> >> may cause problems with special platform devices? 
+> > 
+> > Well, we don't call pci_setup_device() because part of the deal is to
+> > avoid all of that config space reading that it does :-) Especially in
+> > the case of some of the IBM EADS bridges which don't let you access
+> > everything we may want.
+> 
+> Same problem on sparc64, it's not safe to poke config space
+> arbitrarily.  Some PCI controllers even have bugs which cause them to
+> hang if you try to access some parts of the host controller's PCI
+> config space.
 
-Always the wrong decision, Mr Ellerman :-)
+Ok, that's what I thought.  We'll need to make these functions
+available then...
 
-> IMHO, if it's used we should put it in.  Otherwise some other random
-> include file will remove it and break us.
-
-I see this a lot in linux-next builds ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__28_Jan_2010_11_08_46_+1100_PmLRqmS1f/FKBlXj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktg1Y4ACgkQjjKRsyhoI8yfHgCeJKjzyFcl8x4hHSzpPGr8B67Y
-rsAAoIj9d/X0wBlaps4YHpZBkGtkxyL/
-=9TgA
------END PGP SIGNATURE-----
-
---Signature=_Thu__28_Jan_2010_11_08_46_+1100_PmLRqmS1f/FKBlXj--
+-- 
+Jesse Barnes, Intel Open Source Technology Center
