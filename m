@@ -1,13 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] powerpc: Dynamically allocate pacas
-In-reply-to: <1264632445.6352.6.camel@concordia>
-References: <c22a0fd3d76675813ce5f1596d80614aee80ed24.1264568410.git.michael@ellerman.id.au>
-	<4389.1264575576@neuling.org> <1264632445.6352.6.camel@concordia>
-Date: Thu, 28 Jan 2010 09:57:33 +1030
-Message-ID: <8748.1264634853@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id D6BEEB7CFC
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 28 Jan 2010 11:01:10 +1100 (EST)
+Date: Wed, 27 Jan 2010 16:01:21 -0800 (PST)
+Message-Id: <20100127.160121.71577531.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1264629612.3601.176.camel@pasglop>
+References: <1264558256.3601.153.camel@pasglop>
+	<20100127082624.4a91323a@jbarnes-piketon>
+	<1264629612.3601.176.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-pci@vger.kernel.org, fubar@us.ibm.com, jbarnes@virtuousgeek.org,
+	ron.mercer@qlogic.com, kaneshige.kenji@jp.fujitsu.com,
+	linuxppc-dev@lists.ozlabs.org, leitao@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,47 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > > On 64-bit kernels we currently have a 512 byte struct paca_struct for
-> > > each cpu (usually just called "the paca"). Currently they are staticall=
-> y
-> > > allocated, which means a kernel built for a large number of cpus will
-> > > waste a lot of space if it's booted on a machine with few cpus.
-> > >=20
-> > > We can avoid that by only allocating the number of pacas we need at
-> > > boot. However this is complicated by the fact that we need to access
-> > > the paca before we know how many cpus there are in the system.
-> > >=20
-> > > The solution is to dynamically allocate enough space for NR_CPUS pacas,
-> > > but then later in boot when we know how many cpus we have, we free any
-> > > unused pacas.
-> > >=20
-> > > Lightly booted on Legacy iSeries & pSeries LPAR.
-> > >=20
-> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> >=20
-> > <snip>
-> >=20
-> > > --- a/arch/powerpc/kernel/setup-common.c
-> > > +++ b/arch/powerpc/kernel/setup-common.c
-> > > @@ -493,6 +493,8 @@ void __init smp_setup_cpu_maps(void)
-> > >  	 * here will have to be reworked
-> > >  	 */
-> > >  	cpu_init_thread_core_maps(nthreads);
-> > > +
-> > > +	free_unused_pacas();
-> >=20
-> > This is still barfing for me on 32bit.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 28 Jan 2010 09:00:12 +1100
+
+> On Wed, 2010-01-27 at 08:26 -0800, Jesse Barnes wrote:
+>> 
+>> Thanks Ben.  Any refactoring we need to handle this stuff better is
+>> fine with me too.  I guess on some platforms calling pci_setup_device
+>> may cause problems with special platform devices? 
 > 
-> Darn, what config? I built at least one :)
+> Well, we don't call pci_setup_device() because part of the deal is to
+> avoid all of that config space reading that it does :-) Especially in
+> the case of some of the IBM EADS bridges which don't let you access
+> everything we may want.
 
-I think I used mpc86xx_defconfig.
-
-> > Putting an #include <asm/paca.h> at the top of setup-common.c fixes it.
-> 
-> Gah, I saw it was coming via somewhere else but decided not to add it,
-> wrong decision :)
-
-IMHO, if it's used we should put it in.  Otherwise some other random
-include file will remove it and break us.
-
-Mikey
+Same problem on sparc64, it's not safe to poke config space
+arbitrarily.  Some PCI controllers even have bugs which cause them to
+hang if you try to access some parts of the host controller's PCI
+config space.
