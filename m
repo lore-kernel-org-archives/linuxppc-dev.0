@@ -1,27 +1,23 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D8AEBB7CF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 19:55:50 +1100 (EST)
-In-Reply-To: <20100127170536.23634cdf.akpm@linux-foundation.org>
-References: <20100112022150.GE12666@kryten>	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
-	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
-	<1263412963.724.223.camel@pasglop>	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
-	<1263459431.724.352.camel@pasglop>	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
-	<20100127170536.23634cdf.akpm@linux-foundation.org>
-Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
-	autoconf.h
-To: Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 28 Jan 2010 09:52:41 +0100
+	by ozlabs.org (Postfix) with ESMTPS id 3C6F6B7D09
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 28 Jan 2010 21:45:55 +1100 (EST)
+Date: Thu, 28 Jan 2010 11:45:45 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: John Williams <john.williams@petalogix.com>
+Subject: Re: UIO / of_genirq driver
+Message-ID: <20100128104545.GA3105@pengutronix.de>
+References: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+In-Reply-To: <1d3f23371001272313i62fc9158se4cd9173f196fb12@mail.gmail.com>
+Cc: gregkh@suse.de, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	hjk@linutronix.de, Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,182 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote on 2010/01/28 02:05:36:
->
-> On Mon, 25 Jan 2010 09:19:59 +0100
-> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
->
-> > Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
-> > new optimized inflate only available on arch's that
-> > define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
-> > fixes it by defining our own endian independent versions
-> > of unaligned access.
->
-> (I hope I picked up the right version of
-> whatever-it-was-i-was-supposed-to-pick-up - I wasn't paying attention).
 
-It was the right one.
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> The changelog sucks.  You say the patch fixes "it", but what is "it"?
-> Is "it" a build error?  If so, what?  Or is "it" a
-> make-optimized-inflate-available-on-ppc patch, in which case it's a
-> "feature"?
+John,
 
-Here is a new version with a somewhat better commit msg and
-checkpatch fixes.
+> I came across this thread/patchset from around June last year:
+>=20
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/073086.html
+>=20
+> where Wolfgang proposed a generic OF-driven UIO driver.  The
 
-   Jocke
+Wolfram, please ;)
 
-BTW, I get duplicate mails from your patch handling tools,
-one to Joakim.Tjernlund@transmode.se and one to joakim.tjernlund@transmode.se
+> discussion seemed to stall after Grant Likely indicated he didn't like
+> the use of a linux-specific compatible binding in the device tree
+> (compatible=3D"generic-uio").
 
+I agree with him on that.
 
->From 612bfb4cc6cc55243c2a4f536ae2ae71065b57b0 Mon Sep 17 00:00:00 2001
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Sun, 24 Jan 2010 11:12:56 +0100
-Subject: [PATCH] zlib: Make new optimized inflate endian independent
+> I guess I have a couple of questions:
+>=20
+>  * did this patchset go anywhere?  I've been using it here the last
+> few days and it works great.
 
-Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
-new optimized inflate only available on arch's that
-define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
-will again enable the optimization for all arch's by
-by defining our own endian independent version
-of unaligned access. As an added bonus, arch's that
-define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS do a
-plain load instead.
+The idea was to create a mechanism to instantiate bindings at runtime, simi=
+lar
+to new_id for PCI/PCMCIA, e.g.:
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
-  v2:
-    - fix checkpatch complaints.
-    - Improve commit msg.
+$ echo "commodore,c64" > /sys/bus/of_platform/drivers/of_uio_genirq/new_com=
+patible
 
- lib/zlib_inflate/inffast.c |   70 +++++++++++++++++++-------------------------
- 1 files changed, 30 insertions(+), 40 deletions(-)
+so we don't have to maintain an ever growing list of hardcoded
+compatible-properties for those UIO-devices.
 
-diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-index 215447c..fa62fc7 100644
---- a/lib/zlib_inflate/inffast.c
-+++ b/lib/zlib_inflate/inffast.c
-@@ -8,21 +8,6 @@
- #include "inflate.h"
- #include "inffast.h"
+>  * Is there a better way to handle the OF bindings for this sort of thing?
 
--/* Only do the unaligned "Faster" variant when
-- * CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is set
-- *
-- * On powerpc, it won't be as we don't include autoconf.h
-- * automatically for the boot wrapper, which is intended as
-- * we run in an environment where we may not be able to deal
-- * with (even rare) alignment faults. In addition, we do not
-- * define __KERNEL__ for arch/powerpc/boot unlike x86
-- */
--
--#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
--#include <asm/unaligned.h>
--#include <asm/byteorder.h>
--#endif
--
- #ifndef ASMINF
+Run-time instantiation might help in a couple of other cases; still, in the
+progress of unifying/extending the OF-support, it was discussed if it was
+possible to get rid of of_platform entirely. It looks like a very challengi=
+ng
+task, but seems to be favoured designwise (at least I do).
 
- /* Allow machine dependent optimization for post-increment or pre-increment.
-@@ -36,14 +21,31 @@
-    - Pentium III (Anderson)
-    - M68060 (Nikl)
-  */
-+union uu {
-+	unsigned short us;
-+	unsigned char b[2];
-+};
-+
-+/* Endian independed version */
-+static inline unsigned short
-+get_unaligned16(const unsigned short *p)
-+{
-+	union uu  mm;
-+	unsigned char *b = (unsigned char *)p;
-+
-+	mm.b[0] = b[0];
-+	mm.b[1] = b[1];
-+	return mm.us;
-+}
-+
- #ifdef POSTINC
- #  define OFF 0
- #  define PUP(a) *(a)++
--#  define UP_UNALIGNED(a) get_unaligned((a)++)
-+#  define UP_UNALIGNED(a) get_unaligned16((a)++)
- #else
- #  define OFF 1
- #  define PUP(a) *++(a)
--#  define UP_UNALIGNED(a) get_unaligned(++(a))
-+#  define UP_UNALIGNED(a) get_unaligned16(++(a))
- #endif
+> However, the device-tree guys complain whenever anyone tries to encode
+> anything non-hardware related into the DTS itself.
 
- /*
-@@ -256,7 +258,6 @@ void inflate_fast(z_streamp strm, unsigned start)
-                     }
-                 }
-                 else {
--#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
- 		    unsigned short *sout;
- 		    unsigned long loops;
+Well, if I get a device tree including special properties for Linux and BSD=
+ and
+whatever may follow, that could get quite confusing :)
 
-@@ -274,7 +275,11 @@ void inflate_fast(z_streamp strm, unsigned start)
- 			sfrom = (unsigned short *)(from - OFF);
- 			loops = len >> 1;
- 			do
-+#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-+			    PUP(sout) = PUP(sfrom);
-+#else
- 			    PUP(sout) = UP_UNALIGNED(sfrom);
-+#endif
- 			while (--loops);
- 			out = (unsigned char *)sout + OFF;
- 			from = (unsigned char *)sfrom + OFF;
-@@ -282,14 +287,13 @@ void inflate_fast(z_streamp strm, unsigned start)
- 			unsigned short pat16;
+> I guess I'd like to just open up a discussion, see if there's been any
+> progress towards a general solution.
 
- 			pat16 = *(sout-2+2*OFF);
--			if (dist == 1)
--#if defined(__BIG_ENDIAN)
--			    pat16 = (pat16 & 0xff) | ((pat16 & 0xff) << 8);
--#elif defined(__LITTLE_ENDIAN)
--			    pat16 = (pat16 & 0xff00) | ((pat16 & 0xff00) >> 8);
--#else
--#error __BIG_ENDIAN nor __LITTLE_ENDIAN is defined
--#endif
-+			if (dist == 1) {
-+				union uu mm;
-+				/* copy one char pattern to both bytes */
-+				mm.us = pat16;
-+				mm.b[0] = mm.b[1];
-+				pat16 = mm.us;
-+			}
- 			loops = len >> 1;
- 			do
- 			    PUP(sout) = pat16;
-@@ -298,20 +302,6 @@ void inflate_fast(z_streamp strm, unsigned start)
- 		    }
- 		    if (len & 1)
- 			PUP(out) = PUP(from);
--#else /* CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
--                    from = out - dist;          /* copy direct from output */
--                    do {                        /* minimum length is three */
--			 PUP(out) = PUP(from);
--			 PUP(out) = PUP(from);
--			 PUP(out) = PUP(from);
--			 len -= 3;
--                    } while (len > 2);
--                    if (len) {
--			 PUP(out) = PUP(from);
--			 if (len > 1)
--			     PUP(out) = PUP(from);
--                    }
--#endif /* !CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
-                 }
-             }
-             else if ((op & 64) == 0) {          /* 2nd level distance code */
---
-1.6.4.4
+I decided to wait for the outcome of the of_platform-removal-idea. Though, I
+have to admit that in the last weeks I haven't followed of-related things d=
+ue
+to other commitments.
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--UugvWAfsgieZRqgk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkthatkACgkQD27XaX1/VRvjrACgketVU/GiUf+uHBeK1ACqDNbo
+xpwAoMw9nB8eMvfqMgCwl8PXG1TqgmXk
+=qPOC
+-----END PGP SIGNATURE-----
+
+--UugvWAfsgieZRqgk--
