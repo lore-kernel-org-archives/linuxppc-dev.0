@@ -1,23 +1,32 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-158.bluehost.com (outbound-mail-158.bluehost.com
-	[67.222.39.38]) by ozlabs.org (Postfix) with SMTP id A337BB7D03
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 28 Jan 2010 11:10:46 +1100 (EST)
-Date: Wed, 27 Jan 2010 16:03:48 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
-Message-ID: <20100127160348.3c5b0741@jbarnes-piketon>
-In-Reply-To: <20100127.160121.71577531.davem@davemloft.net>
-References: <1264558256.3601.153.camel@pasglop>
-	<20100127082624.4a91323a@jbarnes-piketon>
-	<1264629612.3601.176.camel@pasglop>
-	<20100127.160121.71577531.davem@davemloft.net>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70887B7CBB
+	for <linuxppc-dev@ozlabs.org>; Thu, 28 Jan 2010 12:05:57 +1100 (EST)
+Date: Wed, 27 Jan 2010 17:05:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
+	of autoconf.h
+Message-Id: <20100127170536.23634cdf.akpm@linux-foundation.org>
+In-Reply-To: <OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
+References: <20100112022150.GE12666@kryten>
+	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
+	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
+	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
+	<1263412963.724.223.camel@pasglop>
+	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
+	<1263459431.724.352.camel@pasglop>
+	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: fubar@us.ibm.com, linux-pci@vger.kernel.org, ron.mercer@qlogic.com,
-	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
-	leitao@linux.vnet.ibm.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +36,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 27 Jan 2010 16:01:21 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+On Mon, 25 Jan 2010 09:19:59 +0100
+Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Thu, 28 Jan 2010 09:00:12 +1100
-> 
-> > On Wed, 2010-01-27 at 08:26 -0800, Jesse Barnes wrote:
-> >> 
-> >> Thanks Ben.  Any refactoring we need to handle this stuff better is
-> >> fine with me too.  I guess on some platforms calling pci_setup_device
-> >> may cause problems with special platform devices? 
-> > 
-> > Well, we don't call pci_setup_device() because part of the deal is to
-> > avoid all of that config space reading that it does :-) Especially in
-> > the case of some of the IBM EADS bridges which don't let you access
-> > everything we may want.
-> 
-> Same problem on sparc64, it's not safe to poke config space
-> arbitrarily.  Some PCI controllers even have bugs which cause them to
-> hang if you try to access some parts of the host controller's PCI
-> config space.
+> Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
+> new optimized inflate only available on arch's that
+> define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
+> fixes it by defining our own endian independent versions
+> of unaligned access.
 
-Ok, that's what I thought.  We'll need to make these functions
-available then...
+(I hope I picked up the right version of
+whatever-it-was-i-was-supposed-to-pick-up - I wasn't paying attention).
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+The changelog sucks.  You say the patch fixes "it", but what is "it"? 
+Is "it" a build error?  If so, what?  Or is "it" a
+make-optimized-inflate-available-on-ppc patch, in which case it's a
+"feature"?
+
+Confuzzzzzed.
