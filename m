@@ -1,28 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 92791B7CD7
+Return-Path: <johnny.hacking@gmail.com>
+Received: from mail-pw0-f43.google.com (mail-pw0-f43.google.com
+	[209.85.160.43]) by ozlabs.org (Postfix) with ESMTP id 2CF54B7D12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Jan 2010 14:54:42 +1100 (EST)
-Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <20100129034524.GA13385@parisc-linux.org>
-References: <4B5D9FC5.5070600@linux.vnet.ibm.com>
-	<20100125123849.111fa2d1@jbarnes-piketon>
-	<20100125175025.4c74f412@jbarnes-piketon>
-	<1264558256.3601.153.camel@pasglop>
-	<20100129034524.GA13385@parisc-linux.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 29 Jan 2010 14:54:15 +1100
-Message-ID: <1264737255.20211.45.camel@pasglop>
-Mime-Version: 1.0
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jay Vosburgh <fubar@us.ibm.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	David Miller <davem@davemloft.net>, Ron Mercer <ron.mercer@qlogic.com>,
-	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
-	Breno Leitao <leitao@linux.vnet.ibm.com>
+	Fri, 29 Jan 2010 17:29:05 +1100 (EST)
+Received: by pwj11 with SMTP id 11so1168216pwj.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 28 Jan 2010 22:29:04 -0800 (PST)
+MIME-Version: 1.0
+Date: Fri, 29 Jan 2010 14:29:04 +0800
+Message-ID: <cb9ecdfa1001282229n21a11aa9sf15ebf279990862a@mail.gmail.com>
+Subject: Freescale MPC8313 TSEC SGMII problem.
+From: Johnny Hung <johnny.hacking@gmail.com>
+To: linux-embedded@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-01-28 at 20:45 -0700, Matthew Wilcox wrote:
-> > This is also probably going to be moved to a more generic place and
-> > extended to be used optionally by other architectures.
-> 
-> Yes, having it under drivers/pci/ somewhere would be a big improvement,
-> that way we'd actually see it when trying to do cleanups and wouldn't
-> accidentally break your architectures. 
+Hi All,
 
-Yup, and you'll notice that I didn't complain about the breakage for
-that precise reason :-)
+I have a Freescale MPC8313 customized board and want to confiugre
+TSEC1 to SGMII. Would you please help me for this question,
 
-Cheers,
-Ben.
+1). Is it possible for MPC8313 TSEC1 connect to Ethernet Switch by
+SGMII (without phy), like below diagram.
+
+[MPC8313 TSEC1]  <====SGMII====> [Ethernet Switch]
+
+2). If yes in 1), how to configure it in MPC8313, as I know it can set
+TSEC1 to SGMII in LTIB uboot setting. How about in Linux Kernel driver
+? Is it need extra setting or patch?
+
+BRs, H. Johnny
