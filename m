@@ -1,21 +1,23 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wbmler5.mail.xerox.com (wbmler5.mail.xerox.com [13.13.138.230])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wbmler5.mail.xerox.com",
-	Issuer "AAA Certificate Services" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B6D6B7D15
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id C703AB7D17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Jan 2010 22:54:04 +1100 (EST)
+	Fri, 29 Jan 2010 23:43:18 +1100 (EST)
+Date: Fri, 29 Jan 2010 13:25:36 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
+Message-ID: <20100129122536.GA11156@iram.es>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	<1264017847.5717.132.camel@jschopp-laptop>
+	<1264548495.12239.56.camel@jschopp-laptop>
+	<1264720855.9660.22.camel@jschopp-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Proc/CpuInfo - Timebase
-Date: Fri, 29 Jan 2010 11:35:41 -0000
-Message-ID: <929D3CED81F34E43887A393170D66FB9024A4E1E@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <b92b327b1001290323g4e586804ta6aad8fba098dc2a@mail.gmail.com>
-References: <b92b327b1001290323g4e586804ta6aad8fba098dc2a@mail.gmail.com>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Ajay Jain" <ajay050@gmail.com>, <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1264720855.9660.22.camel@jschopp-laptop>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On a powerpc system running linux, when I see cat /proc/cpuinfo, I
-> find the value of timebase. Can somebody suggest on what is that, and
-> how is it used?
+On Thu, Jan 28, 2010 at 05:20:55PM -0600, Joel Schopp wrote:
+> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
+> there is performance benefit to idling the higher numbered threads in
+> the core.  
+> 
 
-It is the frequency (in Hz) of the clock that increments the Time Base
-Register (TBR).
+Really 2, 3, or 4? When you have 4 idle threads out of 4, performance
+becomes a minor concern, no? ;-)
 
-After reading TBR (or calculating a difference between two TBR values)
-you can use "timebase" to convert to real time units, such as
-microseconds/nanoseconds/picoseconds.
-
-For debugging I log events together with a TBR reading, which I can
-later convert to a time from reset (or a time from the moment when the
-kernel initialised TBR to zero, which happens in some kernels).
-
-Clive
+	Gabriel
