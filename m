@@ -1,23 +1,22 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id C703AB7D17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 29 Jan 2010 23:43:18 +1100 (EST)
-Date: Fri, 29 Jan 2010 13:25:36 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
-Message-ID: <20100129122536.GA11156@iram.es>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
+Return-Path: <linasvepstas@gmail.com>
+Received: from mail-yx0-f185.google.com (mail-yx0-f185.google.com
+	[209.85.210.185]) by ozlabs.org (Postfix) with ESMTP id EDBA0B7D1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 02:42:06 +1100 (EST)
+Received: by yxe15 with SMTP id 15so1924160yxe.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2010 07:42:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1264720855.9660.22.camel@jschopp-laptop>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
+In-Reply-To: <1264723487.20211.17.camel@pasglop>
+References: <0642ead63df1b9fdced24750eb0aea940f0408b7.1264617281.git.root@sanx1002.austin.ibm.com>
+	<930155d7427ae670cd2add220649c6490f68d0d4.1264617281.git.root@sanx1002.austin.ibm.com>
+	<1264723487.20211.17.camel@pasglop>
+Date: Fri, 29 Jan 2010 09:42:04 -0600
+Message-ID: <3ae3aa421001290742i7768cb79gf0684758dbe85a0d@mail.gmail.com>
+Subject: Re: [PATCH 2/2] eeh: fixing pci_dev dependency
+From: Linas Vepstas <linasvepstas@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, leitao@linux.vnet.ibm.com
+Reply-To: linasvepstas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 28, 2010 at 05:20:55PM -0600, Joel Schopp wrote:
-> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-> there is performance benefit to idling the higher numbered threads in
-> the core.  
-> 
+On 28 January 2010 18:04, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Wed, 2010-01-27 at 12:43 -0600, leitao@linux.vnet.ibm.com wrote:
+>> Currently pci_dev can be null when EEH is in action. This patch
+>> just assure that we pci_dev is not NULL before calling pci_dev_put.
+>
+> Like all variants of *_put(), it already checks for a NULL argument
+> afaik. So that patch should be unnecessary.
 
-Really 2, 3, or 4? When you have 4 idle threads out of 4, performance
-becomes a minor concern, no? ;-)
+Ah, OK, I paniced when I saw that and assumed the worst
 
-	Gabriel
+--linas
