@@ -1,38 +1,27 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1F9D4B7D1F
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B95EBB8254
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Jan 2010 03:26:28 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0TGNceG016395
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 09:23:38 -0700
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0TGQIn3067274
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 09:26:18 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o0TGSRpj005985
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 09:28:28 -0700
-Message-ID: <4B630C27.1060405@austin.ibm.com>
-Date: Fri, 29 Jan 2010 10:26:15 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
+	Sat, 30 Jan 2010 03:26:44 +1100 (EST)
+Date: Fri, 29 Jan 2010 17:26:33 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH v4 3/3] powerpc: doc/dts-bindings: update doc of FSL
+	I2C bindings
+Message-ID: <20100129162633.GK7812@pengutronix.de>
+References: <1264685141-26391-1-git-send-email-wg@grandegger.com>
+	<1264685141-26391-2-git-send-email-wg@grandegger.com>
+	<1264685141-26391-3-git-send-email-wg@grandegger.com>
+	<1264685141-26391-4-git-send-email-wg@grandegger.com>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for	Power7
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<20100129122536.GA11156@iram.es>
-In-Reply-To: <20100129122536.GA11156@iram.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yUmmepPgoWmUqRhm"
+In-Reply-To: <1264685141-26391-4-git-send-email-wg@grandegger.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,20 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gabriel Paubert wrote:
-> On Thu, Jan 28, 2010 at 05:20:55PM -0600, Joel Schopp wrote:
->   
->> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
->> there is performance benefit to idling the higher numbered threads in
->> the core.  
->>
->>     
->
-> Really 2, 3, or 4? When you have 4 idle threads out of 4, performance
-> becomes a minor concern, no? ;-)
->
-> 	Gabriel
->   
-Yes, but going from 4 idle to 3 idle you want to keep the slanted 
-weights.  If you ignored 4 you'd place wrong and then correct it after 
-the fact.
+
+--yUmmepPgoWmUqRhm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Jan 28, 2010 at 02:25:41PM +0100, Wolfgang Grandegger wrote:
+> From: Wolfgang Grandegger <wg@denx.de>
+>=20
+> This patch adds the MPC5121 to the list of supported devices,
+> enhances the doc of the "clock-frequency" property and removes
+> the obsolete "cell-index" property from the example nodes.
+> Furthermore and example for the MPC5121 has been added.
+>=20
+> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--yUmmepPgoWmUqRhm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktjDDkACgkQD27XaX1/VRtEBQCePpqFLJ62n5Z9dkl8/t+KN7js
+ChwAoJgMAEG/GrFg+ee+9ExCN0zu+1Z3
+=cxxG
+-----END PGP SIGNATURE-----
+
+--yUmmepPgoWmUqRhm--
