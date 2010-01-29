@@ -1,26 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B6A69B7D1F
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 08:35:29 +1100 (EST)
-Subject: Re: i2c_powermac: Kernel access of bad area
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20100129091857.3b7228db@hyperion.delvare>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
-	<1262079255.2173.216.camel@pasglop>
-	<20100106173745.57207520@hyperion.delvare>
-	<alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
-	<20100107171738.2c83b13e@hyperion.delvare>
-	<20100129091857.3b7228db@hyperion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 30 Jan 2010 08:34:55 +1100
-Message-ID: <1264800895.20211.120.camel@pasglop>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C742DB7D19
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 10:49:58 +1100 (EST)
+Date: Fri, 29 Jan 2010 15:49:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
+	of autoconf.h
+Message-Id: <20100129154924.d1bf8bc3.akpm@linux-foundation.org>
+In-Reply-To: <OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
+References: <20100112022150.GE12666@kryten>
+	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
+	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
+	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
+	<1263412963.724.223.camel@pasglop>
+	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
+	<1263459431.724.352.camel@pasglop>
+	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
+	<20100127170536.23634cdf.akpm@linux-foundation.org>
+	<OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
 Mime-Version: 1.0
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-	Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LKML <linux-kernel@vger.kernel.org>, Stelian Pop <stelian@popies.net>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,130 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 28 Jan 2010 09:52:41 +0100
+Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-> Ben, what about applying this patch of mine, as Christian reported it
-> fixed his oops?
+> Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
+> new optimized inflate only available on arch's that
+> define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
+> will again enable the optimization for all arch's by
+> by defining our own endian independent version
+> of unaligned access. As an added bonus, arch's that
+> define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS do a
+> plain load instead.
 
-Sure. I never quite know with i2c which ones you will apply directly and
-which ones you want to go through my tree :-)
+Given that we're at -rc5, that changelog says to me "this is a 2.6.34
+patch".
 
-Hopefully they should still be referened on patchwork, I'll dig there
-and pick them up.
-
-Cheers,
-Ben.
-
-> > > However, the "Badness" remains when I try to modprobe i2c-powermac again:
-> > > 
-> > > [  442.148222] PowerMac i2c bus pmu 2 registered
-> > > [  442.148792] PowerMac i2c bus pmu 1 registered
-> > > [  442.149299] PowerMac i2c bus mac-io 0 registered
-> > > [  442.163573] adt746x: ADT7467 initializing
-> > > [  442.170072] adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
-> > > [  442.176559] PowerMac i2c bus uni-n 1 registered
-> > > [  442.227115] sysfs: cannot create duplicate filename '/devices/ams'
-> > > [  442.227697] ------------[ cut here ]------------
-> > > [  442.228176] Badness at fs/sysfs/dir.c:487
-> > > [  442.228642] NIP: c00eb71c LR: c00eb71c CTR: 00000000
-> > > [  442.229117] REGS: eea0fa50 TRAP: 0700   Not tainted  (2.6.33-rc3)
-> > > [  442.229592] MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42008444  XER: 00000000
-> > > [  442.230151] TASK = eea10000[2821] 'modprobe' THREAD: eea0e000
-> > > [  442.230191] GPR00: c00eb71c eea0fb00 eea10000 0000004c 000064c6 ffffffff ffffffff 00000000 
-> > > [  442.230758] GPR08: efa71740 c03e0000 00000000 000064c6 44008428 10020390 100e0000 100df49c 
-> > > [  442.231326] GPR16: 100b54c0 100df49c 100ddd20 1018fb08 100b5340 c03e674c c03e6720 c03ea044 
-> > > [  442.231902] GPR24: 00000000 24008422 ffffffea eea0fb58 ef0e9000 ef0e9000 ef0a9ea0 ffffffef 
-> > > [  442.233187] NIP [c00eb71c] sysfs_add_one+0x94/0xc0
-> > > [  442.233695] LR [c00eb71c] sysfs_add_one+0x94/0xc0
-> > > [  442.234363] Call Trace:
-> > > 
-> > > I've put the whole dmesg on:
-> > > 
-> > >    http://nerdbynature.de/bits/2.6.33-rc2/i2c_powermac/r1/
-> > 
-> > Hmm. Looks like a different but somewhat similar problem in the ams
-> > driver: some code that is in ams_exit() (the module exit code) should
-> > instead be called when the device (not module) is removed. It probably
-> > doesn't make much of a difference in the PMU case, but in the I2C case
-> > it does matter.
-> > 
-> > The following, totally untested patch may fix it. I make no guarantee
-> > that my code isn't racy though, I'm not familiar enough with the ams
-> > driver code to tell for sure.
-> > 
-> > ---
-> >  drivers/hwmon/ams/ams-core.c |   11 +++++++----
-> >  drivers/hwmon/ams/ams-i2c.c  |    2 ++
-> >  drivers/hwmon/ams/ams-pmu.c  |    2 ++
-> >  drivers/hwmon/ams/ams.h      |    1 +
-> >  4 files changed, 12 insertions(+), 4 deletions(-)
-> > 
-> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-core.c	2009-06-10 05:05:27.000000000 +0200
-> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-core.c	2010-01-07 17:14:25.000000000 +0100
-> > @@ -213,7 +213,7 @@ int __init ams_init(void)
-> >  	return -ENODEV;
-> >  }
-> >  
-> > -void ams_exit(void)
-> > +void ams_sensor_detach(void)
-> >  {
-> >  	/* Remove input device */
-> >  	ams_input_exit();
-> > @@ -221,9 +221,6 @@ void ams_exit(void)
-> >  	/* Remove attributes */
-> >  	device_remove_file(&ams_info.of_dev->dev, &dev_attr_current);
-> >  
-> > -	/* Shut down implementation */
-> > -	ams_info.exit();
-> > -
-> >  	/* Flush interrupt worker
-> >  	 *
-> >  	 * We do this after ams_info.exit(), because an interrupt might
-> > @@ -239,6 +236,12 @@ void ams_exit(void)
-> >  	pmf_unregister_irq_client(&ams_freefall_client);
-> >  }
-> >  
-> > +static void __exit ams_exit(void)
-> > +{
-> > +	/* Shut down implementation */
-> > +	ams_info.exit();
-> > +}
-> > +
-> >  MODULE_AUTHOR("Stelian Pop, Michael Hanselmann");
-> >  MODULE_DESCRIPTION("Apple Motion Sensor driver");
-> >  MODULE_LICENSE("GPL");
-> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-i2c.c	2009-06-10 05:05:27.000000000 +0200
-> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-i2c.c	2010-01-07 17:12:46.000000000 +0100
-> > @@ -238,6 +238,8 @@ static int ams_i2c_probe(struct i2c_clie
-> >  static int ams_i2c_remove(struct i2c_client *client)
-> >  {
-> >  	if (ams_info.has_device) {
-> > +		ams_sensor_detach();
-> > +
-> >  		/* Disable interrupts */
-> >  		ams_i2c_set_irq(AMS_IRQ_ALL, 0);
-> >  
-> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-pmu.c	2009-06-10 05:05:27.000000000 +0200
-> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-pmu.c	2010-01-07 17:13:47.000000000 +0100
-> > @@ -133,6 +133,8 @@ static void ams_pmu_get_xyz(s8 *x, s8 *y
-> >  
-> >  static void ams_pmu_exit(void)
-> >  {
-> > +	ams_sensor_detach();
-> > +
-> >  	/* Disable interrupts */
-> >  	ams_pmu_set_irq(AMS_IRQ_ALL, 0);
-> >  
-> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams.h	2009-06-10 05:05:27.000000000 +0200
-> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams.h	2010-01-07 17:11:43.000000000 +0100
-> > @@ -61,6 +61,7 @@ extern struct ams ams_info;
-> >  
-> >  extern void ams_sensors(s8 *x, s8 *y, s8 *z);
-> >  extern int ams_sensor_attach(void);
-> > +extern void ams_sensor_detach(void);
-> >  
-> >  extern int ams_pmu_init(struct device_node *np);
-> >  extern int ams_i2c_init(struct device_node *np);
-> 
-> Christian, did you ever test this second patch of mine? If you did,
-> what was the outcome?
-> 
+If that is wrong, please tell me why.
