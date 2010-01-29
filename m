@@ -1,39 +1,26 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EC196B7D18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 30 Jan 2010 05:41:54 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o0TIRjt5030925
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 11:27:45 -0700
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0TIfeUU092294
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 11:41:41 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o0TIfd8A014313
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jan 2010 11:41:40 -0700
-Message-ID: <4B632BE2.9020106@austin.ibm.com>
-Date: Fri, 29 Jan 2010 12:41:38 -0600
-From: Joel Schopp <jschopp@austin.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCHv3 2/2] powerpc: implement arch_scale_smt_power for Power7
-References: <1264017638.5717.121.camel@jschopp-laptop>	
-	<1264017847.5717.132.camel@jschopp-laptop>	
-	<1264548495.12239.56.camel@jschopp-laptop>	
-	<1264720855.9660.22.camel@jschopp-laptop>	
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1264728185.20211.34.camel@pasglop>
-In-Reply-To: <1264728185.20211.34.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, ego@in.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B6A69B7D1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 08:35:29 +1100 (EST)
+Subject: Re: i2c_powermac: Kernel access of bad area
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <20100129091857.3b7228db@hyperion.delvare>
+References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
+	<1262079255.2173.216.camel@pasglop>
+	<20100106173745.57207520@hyperion.delvare>
+	<alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
+	<20100107171738.2c83b13e@hyperion.delvare>
+	<20100129091857.3b7228db@hyperion.delvare>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 30 Jan 2010 08:34:55 +1100
+Message-ID: <1264800895.20211.120.camel@pasglop>
+Mime-Version: 1.0
+Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
+	Michael Hanselmann <linux-kernel@hansmi.ch>,
+	LKML <linux-kernel@vger.kernel.org>, Stelian Pop <stelian@popies.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,34 +30,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2010-01-28 at 17:24 -0600, Joel Schopp wrote:
->   
->> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
->> there is performance benefit to idling the higher numbered threads in
->> the core.  
->>
->> This patch implements arch_scale_smt_power to dynamically update smt
->> thread power in these idle cases in order to prefer threads 0,1 over
->> threads 2,3 within a core.
->>     
->
-> Almost there :-) Joel, Peter, can you help me figure something out tho ?
->
-> On machine that don't have SMT, I would like to avoid calling
-> arch_scale_smt_power() at all if possible (in addition to not compiling
-> it in if SMT is not enabled in .config).
->
-> Now, I must say I'm utterly confused by how the domains are setup and I
-> haven't quite managed to sort it out... it looks to me that
-> SD_SHARE_CPUPOWER is always going to be set on all CPUs when the config
-> option is set (though each CPU will have its own domain) or am I
-> misguided ? IE. Is there any sense in having at least a fast exit path
-> out of arch_scale_smt_power() for non-SMT CPUs ?
->
-> Joel, can you look at compiling it out when SMT is not set ? We don't
-> want to bloat SMP kernels for 32-bit non-SMT embedded platforms.
->   
-I can wrap the powerpc definition of arch_scale_smt in an #ifdef, if 
-it's not there the scheduler uses the default, which is the same as it 
-uses if SMT isn't compiled. 
+
+> Ben, what about applying this patch of mine, as Christian reported it
+> fixed his oops?
+
+Sure. I never quite know with i2c which ones you will apply directly and
+which ones you want to go through my tree :-)
+
+Hopefully they should still be referened on patchwork, I'll dig there
+and pick them up.
+
+Cheers,
+Ben.
+
+> > > However, the "Badness" remains when I try to modprobe i2c-powermac again:
+> > > 
+> > > [  442.148222] PowerMac i2c bus pmu 2 registered
+> > > [  442.148792] PowerMac i2c bus pmu 1 registered
+> > > [  442.149299] PowerMac i2c bus mac-io 0 registered
+> > > [  442.163573] adt746x: ADT7467 initializing
+> > > [  442.170072] adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
+> > > [  442.176559] PowerMac i2c bus uni-n 1 registered
+> > > [  442.227115] sysfs: cannot create duplicate filename '/devices/ams'
+> > > [  442.227697] ------------[ cut here ]------------
+> > > [  442.228176] Badness at fs/sysfs/dir.c:487
+> > > [  442.228642] NIP: c00eb71c LR: c00eb71c CTR: 00000000
+> > > [  442.229117] REGS: eea0fa50 TRAP: 0700   Not tainted  (2.6.33-rc3)
+> > > [  442.229592] MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42008444  XER: 00000000
+> > > [  442.230151] TASK = eea10000[2821] 'modprobe' THREAD: eea0e000
+> > > [  442.230191] GPR00: c00eb71c eea0fb00 eea10000 0000004c 000064c6 ffffffff ffffffff 00000000 
+> > > [  442.230758] GPR08: efa71740 c03e0000 00000000 000064c6 44008428 10020390 100e0000 100df49c 
+> > > [  442.231326] GPR16: 100b54c0 100df49c 100ddd20 1018fb08 100b5340 c03e674c c03e6720 c03ea044 
+> > > [  442.231902] GPR24: 00000000 24008422 ffffffea eea0fb58 ef0e9000 ef0e9000 ef0a9ea0 ffffffef 
+> > > [  442.233187] NIP [c00eb71c] sysfs_add_one+0x94/0xc0
+> > > [  442.233695] LR [c00eb71c] sysfs_add_one+0x94/0xc0
+> > > [  442.234363] Call Trace:
+> > > 
+> > > I've put the whole dmesg on:
+> > > 
+> > >    http://nerdbynature.de/bits/2.6.33-rc2/i2c_powermac/r1/
+> > 
+> > Hmm. Looks like a different but somewhat similar problem in the ams
+> > driver: some code that is in ams_exit() (the module exit code) should
+> > instead be called when the device (not module) is removed. It probably
+> > doesn't make much of a difference in the PMU case, but in the I2C case
+> > it does matter.
+> > 
+> > The following, totally untested patch may fix it. I make no guarantee
+> > that my code isn't racy though, I'm not familiar enough with the ams
+> > driver code to tell for sure.
+> > 
+> > ---
+> >  drivers/hwmon/ams/ams-core.c |   11 +++++++----
+> >  drivers/hwmon/ams/ams-i2c.c  |    2 ++
+> >  drivers/hwmon/ams/ams-pmu.c  |    2 ++
+> >  drivers/hwmon/ams/ams.h      |    1 +
+> >  4 files changed, 12 insertions(+), 4 deletions(-)
+> > 
+> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-core.c	2009-06-10 05:05:27.000000000 +0200
+> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-core.c	2010-01-07 17:14:25.000000000 +0100
+> > @@ -213,7 +213,7 @@ int __init ams_init(void)
+> >  	return -ENODEV;
+> >  }
+> >  
+> > -void ams_exit(void)
+> > +void ams_sensor_detach(void)
+> >  {
+> >  	/* Remove input device */
+> >  	ams_input_exit();
+> > @@ -221,9 +221,6 @@ void ams_exit(void)
+> >  	/* Remove attributes */
+> >  	device_remove_file(&ams_info.of_dev->dev, &dev_attr_current);
+> >  
+> > -	/* Shut down implementation */
+> > -	ams_info.exit();
+> > -
+> >  	/* Flush interrupt worker
+> >  	 *
+> >  	 * We do this after ams_info.exit(), because an interrupt might
+> > @@ -239,6 +236,12 @@ void ams_exit(void)
+> >  	pmf_unregister_irq_client(&ams_freefall_client);
+> >  }
+> >  
+> > +static void __exit ams_exit(void)
+> > +{
+> > +	/* Shut down implementation */
+> > +	ams_info.exit();
+> > +}
+> > +
+> >  MODULE_AUTHOR("Stelian Pop, Michael Hanselmann");
+> >  MODULE_DESCRIPTION("Apple Motion Sensor driver");
+> >  MODULE_LICENSE("GPL");
+> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-i2c.c	2009-06-10 05:05:27.000000000 +0200
+> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-i2c.c	2010-01-07 17:12:46.000000000 +0100
+> > @@ -238,6 +238,8 @@ static int ams_i2c_probe(struct i2c_clie
+> >  static int ams_i2c_remove(struct i2c_client *client)
+> >  {
+> >  	if (ams_info.has_device) {
+> > +		ams_sensor_detach();
+> > +
+> >  		/* Disable interrupts */
+> >  		ams_i2c_set_irq(AMS_IRQ_ALL, 0);
+> >  
+> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams-pmu.c	2009-06-10 05:05:27.000000000 +0200
+> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams-pmu.c	2010-01-07 17:13:47.000000000 +0100
+> > @@ -133,6 +133,8 @@ static void ams_pmu_get_xyz(s8 *x, s8 *y
+> >  
+> >  static void ams_pmu_exit(void)
+> >  {
+> > +	ams_sensor_detach();
+> > +
+> >  	/* Disable interrupts */
+> >  	ams_pmu_set_irq(AMS_IRQ_ALL, 0);
+> >  
+> > --- linux-2.6.33-rc3.orig/drivers/hwmon/ams/ams.h	2009-06-10 05:05:27.000000000 +0200
+> > +++ linux-2.6.33-rc3/drivers/hwmon/ams/ams.h	2010-01-07 17:11:43.000000000 +0100
+> > @@ -61,6 +61,7 @@ extern struct ams ams_info;
+> >  
+> >  extern void ams_sensors(s8 *x, s8 *y, s8 *z);
+> >  extern int ams_sensor_attach(void);
+> > +extern void ams_sensor_detach(void);
+> >  
+> >  extern int ams_pmu_init(struct device_node *np);
+> >  extern int ams_i2c_init(struct device_node *np);
+> 
+> Christian, did you ever test this second patch of mine? If you did,
+> what was the outcome?
+> 
