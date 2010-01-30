@@ -1,34 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C742DB7D19
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 10:49:58 +1100 (EST)
-Date: Fri, 29 Jan 2010 15:49:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location
-	of autoconf.h
-Message-Id: <20100129154924.d1bf8bc3.akpm@linux-foundation.org>
-In-Reply-To: <OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
-References: <20100112022150.GE12666@kryten>
-	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
-	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>
-	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
-	<1263412963.724.223.camel@pasglop>
-	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
-	<1263459431.724.352.camel@pasglop>
-	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
-	<20100127170536.23634cdf.akpm@linux-foundation.org>
-	<OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Return-Path: <minyard@acm.org>
+Received: from vms173019pub.verizon.net (vms173019pub.verizon.net
+	[206.46.173.19]) by ozlabs.org (Postfix) with ESMTP id CC5E2B7D26
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 11:18:38 +1100 (EST)
+Received: from wf-rch.minyard.local ([unknown] [173.57.145.237])
+	by vms173019.mailsrvcs.net
+	(Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16
+	2009)) with ESMTPA id <0KX1002BIA6MJ9X4@vms173019.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Fri, 29 Jan 2010 18:18:22 -0600 (CST)
+Received: from i2 (i2.minyard.local [192.168.27.126])
+	by wf-rch.minyard.local (Postfix) with ESMTP id 86B7B1F849	for
+	<linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2010 18:18:21 -0600 (CST)
+Date: Fri, 29 Jan 2010 18:18:20 -0600
+From: Corey Minyard <minyard@acm.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add a new platform for maple so a different link
+	address can be set
+Message-id: <20100130001820.GA25629@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Reply-To: minyard@acm.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,19 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Jan 2010 09:52:41 +0100
-Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+From: Corey Minyard <cminyard@mvista.com>
 
-> Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
-> new optimized inflate only available on arch's that
-> define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
-> will again enable the optimization for all arch's by
-> by defining our own endian independent version
-> of unaligned access. As an added bonus, arch's that
-> define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS do a
-> plain load instead.
+The maple platform failed to load because it's firmware could not take a
+link address of 0x4000000.  A new platform type with a link address of
+0x400000 had to be created for the maple.
 
-Given that we're at -rc5, that changelog says to me "this is a 2.6.34
-patch".
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+---
+Without this patch the firmware loader says it is unable to parse the
+ELF header and dies.  This patch lets 2.6.31 boot without issue.  At
+the current head of k.org git, at least with an NFS mount, I'm getting:
+  Kernel panic - not syncing: No init found
+So I'm not sure what the deal is there, but this patch is still required
+to get the firmware to load the kernel.
 
-If that is wrong, please tell me why.
+Index: linux-2.6.31/arch/powerpc/boot/wrapper
+===================================================================
+--- linux-2.6.31.orig/arch/powerpc/boot/wrapper
++++ linux-2.6.31/arch/powerpc/boot/wrapper
+@@ -145,6 +145,10 @@ pseries)
+     platformo=$object/of.o
+     link_address='0x4000000'
+     ;;
++maple)
++    platformo=$object/of.o
++    link_address='0x400000'
++    ;;
+ pmac|chrp)
+     platformo=$object/of.o
+     ;;
+@@ -313,7 +319,7 @@ fi
+ 
+ # post-processing needed for some platforms
+ case "$platform" in
+-pseries|chrp)
++pseries|chrp|maple)
+     $objbin/addnote "$ofile"
+     ;;
+ coff)
+Index: linux-2.6.31/arch/powerpc/boot/Makefile
+===================================================================
+--- linux-2.6.31.orig/arch/powerpc/boot/Makefile
++++ linux-2.6.31/arch/powerpc/boot/Makefile
+@@ -167,7 +167,7 @@ quiet_cmd_wrap	= WRAP    $@
+ 		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
+ 
+ image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
+-image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
++image-$(CONFIG_PPC_MAPLE)		+= zImage.maple
+ image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
+ image-$(CONFIG_PPC_PS3)			+= dtbImage.ps3
+ image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
+@@ -346,7 +346,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
+ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+ 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
+ 	zImage.iseries zImage.miboot zImage.pmac zImage.pseries \
+-	simpleImage.* otheros.bld *.dtb
++	zImage.maple simpleImage.* otheros.bld *.dtb
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin
