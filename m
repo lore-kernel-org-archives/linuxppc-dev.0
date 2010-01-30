@@ -1,28 +1,15 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D0B90B7D39
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 21:49:52 +1100 (EST)
-In-Reply-To: <20100129154924.d1bf8bc3.akpm@linux-foundation.org>
-References: <20100112022150.GE12666@kryten>	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
-	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
-	<1263412963.724.223.camel@pasglop>	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
-	<1263459431.724.352.camel@pasglop>	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
-	<20100127170536.23634cdf.akpm@linux-foundation.org>	<OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
-	<20100129154924.d1bf8bc3.akpm@linux-foundation.org>
-Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
-	autoconf.h
-To: Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <OF6663C9F9.89378713-ONC12576BB.003B188A-C12576BB.003B4798@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 30 Jan 2010 11:47:29 +0100
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4019CB7D2E
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 07:21:04 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: TIF_ABI_PENDING bit removal
+Date: Sat, 30 Jan 2010 21:20:59 +0100
+Message-ID: <m2zl3v5opg.fsf@igel.home>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
-	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton <akpm@linux-foundation.org> wrote on 2010/01/30 00:49:24:
->
-> On Thu, 28 Jan 2010 09:52:41 +0100
-> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
->
-> > Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
-> > new optimized inflate only available on arch's that
-> > define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
-> > will again enable the optimization for all arch's by
-> > by defining our own endian independent version
-> > of unaligned access. As an added bonus, arch's that
-> > define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS do a
-> > plain load instead.
->
-> Given that we're at -rc5, that changelog says to me "this is a 2.6.34
-> patch".
->
-> If that is wrong, please tell me why.
+Here are the powerpc bits to remove TIF_ABI_PENDING now that
+set_personality() is called at the appropriate place in exec.
 
-2.6.34 is fine, thanks.
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/include/asm/elf.h         |    8 ++------
+ arch/powerpc/include/asm/thread_info.h |    2 --
+ arch/powerpc/kernel/process.c          |   12 ------------
+ 3 files changed, 2 insertions(+), 20 deletions(-)
 
- Jocke
+diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
+index 17828ad..c376eda 100644
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -235,14 +235,10 @@ typedef elf_vrregset_t elf_fpxregset_t;
+ #ifdef __powerpc64__
+ # define SET_PERSONALITY(ex)					\
+ do {								\
+-	unsigned long new_flags = 0;				\
+ 	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
+-		new_flags = _TIF_32BIT;				\
+-	if ((current_thread_info()->flags & _TIF_32BIT)		\
+-	    != new_flags)					\
+-		set_thread_flag(TIF_ABI_PENDING);		\
++		set_thread_flag(TIF_32BIT);			\
+ 	else							\
+-		clear_thread_flag(TIF_ABI_PENDING);		\
++		clear_thread_flag(TIF_32BIT);			\
+ 	if (personality(current->personality) != PER_LINUX32)	\
+ 		set_personality(PER_LINUX |			\
+ 			(current->personality & (~PER_MASK)));	\
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index c8b3292..aa9d383 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -111,7 +111,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+-#define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -129,7 +128,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+-#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index c930ac3..7b816da 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -554,18 +554,6 @@ void exit_thread(void)
+ 
+ void flush_thread(void)
+ {
+-#ifdef CONFIG_PPC64
+-	struct thread_info *t = current_thread_info();
+-
+-	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
+-		clear_ti_thread_flag(t, TIF_ABI_PENDING);
+-		if (test_ti_thread_flag(t, TIF_32BIT))
+-			clear_ti_thread_flag(t, TIF_32BIT);
+-		else
+-			set_ti_thread_flag(t, TIF_32BIT);
+-	}
+-#endif
+-
+ 	discard_lazy_cpu_state();
+ 
+ 	if (current->thread.dabr) {
+-- 
+1.6.6.1
+
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
