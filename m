@@ -1,34 +1,20 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D1670B7D37
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 08:33:28 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o0ULXR4s025914
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 08:33:27 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o0ULSYn11708246
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 08:28:34 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o0ULXRgA004954
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 08:33:27 +1100
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
-	through extended ptrace interface
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <20100130204409.GE5675@nowhere>
-References: <20100124191830.GB14075@in.ibm.com>
-	<1264365121.3601.43.camel@pasglop>  <20100130204409.GE5675@nowhere>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CBCCCB7D02
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 31 Jan 2010 10:34:51 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 31 Jan 2010 08:33:25 +1100
-Message-ID: <1264887205.8287.5.camel@pasglop>
+Date: Sun, 31 Jan 2010 10:34:40 +1100
+Message-ID: <1264894480.8287.7.camel@pasglop>
 Mime-Version: 1.0
-Cc: shaggy@linux.vnet.ibm.com, David Gibson <dwg@au1.ibm.com>,
-	prasad@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,77 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
-> We have one field for addr, one for len and one for the memory access
-> type.
-> 
-> I think that those three are enough to express breakpoint ranges.
-> Basically a breakpoint range is a breakpoint that can have a high
-> len.
-> 
-> I've looked at the G2 PowerPc core breakpoint implementation, just to
-> face one of such tricky examples.
-
-BookE has a richer semantic. We have watchpoints with data value compare
-for example, we also have instruction value compare for breakpoints, and
-a few other niceties. There's also subtle differences between what
-processor variants support.
-
- .../...
-
-> > I'd rather have this more dedicated and more complete interface merged
-> > for gdb's sake, and in a second step look at unifying.
-> 
-> 
-> Perhaps. Supporting ptrace breakpoints should be an easy first
-> step as it's basically the responsibility of the user to fill
-> the registers, but it's a pretty limited scope work, especially you
-> won't have perf support.
-
-But we can add it later. 
-
-> > I believe that the generic breakpoint infrastructure should not be the
-> > mid-layer. IE. It cannot be made in any clean shape of form, to express
-> > all of the subtle features that a given architecture or platform can
-> > support and as such would always be inferior to a dedicated one.
-> 
-> 
-> Actually I think the current interface already does, as I explained
-> above.
-> 
-> What is broken for any other architectures than x86 is the set
-> of constraints, but I can easily move it to the arch, unless
-> I find a good generic solution (or a cool combination between
-> both).
-
-Again, this is all "can do" vs. "already done and working". May I point
-you to Linus recent rant against magic infrastructures that try to do
-everything and do nothing right ? :-) I much prefer starting with
-something dedicated that does exactly what is expected, have that
-upstream (and in that regard the patches are good for the next merge
-window) and -then- maybe look at how some of it could be re-used for
-perf.
-
-> Not at all. It's an attempt to make a generic interface that can
-> exploit at best _each_ arch specific features. 
-
-That reminds me of the justifications for utrace :-) It might well be
-but I very much doubt that is possible. In any case, it doesn't appear
-to be there yet. So let's just get that stuff in so we have our
-interface finally working, and we can look at doing fancy things with
-perf in a second pass.
-
-> Other than the set
-> of constraints that I'm going to rework, the generic interface is powerful
-> enough to host what I've seen in term of cpu breakpoints implementations
-> for now. But if it's actually not and I'm missing other cases, please
-> report it to me.
-> 
-> The reason that makes the current generic constraints x86
-> oriented only is that I've only x86 boxes at home and I needed
-> to make a first shot without knowing anything about other archs
-> constraints, but in the long term, our motivations (Prasad's and mines)
-> are definetely not archX-centric.
+Here are some more defconfig updates that I missed before LCA and a
+few PCI related fixes, some of them actually fixing regressions and
+one of them (the 4xx one) trivial enough that's really not worth
+delaying it.
 
 Cheers,
 Ben.
+
+The following changes since commit b04da8bfdfbbd79544cab2fadfdc12e87eb01600:
+  Greg Kroah-Hartman (1):
+        fnctl: f_modown should call write_lock_irqsave/restore
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Benjamin Herrenschmidt (4):
+      powerpc/pci: Add calls to set_pcie_port_type() and set_pcie_hotplug_bridge()
+      powerpc/pci: Add missing hookup to pci_slot
+      powerpc/pci: Add missing call to header fixup
+      Merge commit 'jwb/merge' into merge
+
+Josh Boyer (2):
+      powerpc/44x: Update PowerPC 44x board defconfigs
+      powerpc/40x: Update the PowerPC 40x board defconfigs
+
+Stef van Os (1):
+      powerpc/4xx: Add pcix type 1 transactions
+
+ arch/powerpc/configs/40x/acadia_defconfig      |  241 ++++++++++++++-----
+ arch/powerpc/configs/40x/ep405_defconfig       |  307 ++++++++++++++++++------
+ arch/powerpc/configs/40x/hcu4_defconfig        |  256 +++++++++++++++-----
+ arch/powerpc/configs/40x/kilauea_defconfig     |  140 ++++++++---
+ arch/powerpc/configs/40x/makalu_defconfig      |  190 ++++++++++-----
+ arch/powerpc/configs/40x/walnut_defconfig      |  257 +++++++++++++++-----
+ arch/powerpc/configs/44x/arches_defconfig      |  135 ++++++++---
+ arch/powerpc/configs/44x/bamboo_defconfig      |  255 +++++++++++++++-----
+ arch/powerpc/configs/44x/canyonlands_defconfig |  141 ++++++++---
+ arch/powerpc/configs/44x/ebony_defconfig       |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/eiger_defconfig       |  128 +++++++---
+ arch/powerpc/configs/44x/katmai_defconfig      |  253 +++++++++++++++-----
+ arch/powerpc/configs/44x/rainier_defconfig     |  254 +++++++++++++++-----
+ arch/powerpc/configs/44x/redwood_defconfig     |  274 +++++++++++++++------
+ arch/powerpc/configs/44x/sam440ep_defconfig    |  284 +++++++++++++++-------
+ arch/powerpc/configs/44x/sequoia_defconfig     |  202 +++++++++++-----
+ arch/powerpc/configs/44x/taishan_defconfig     |  258 +++++++++++++++-----
+ arch/powerpc/configs/44x/warp_defconfig        |  228 ++++++++++++------
+ arch/powerpc/configs/ppc40x_defconfig          |  292 ++++++++++++++++-------
+ arch/powerpc/configs/ppc44x_defconfig          |  309 +++++++++++++++++-------
+ arch/powerpc/kernel/pci_of_scan.c              |   10 +
+ arch/powerpc/sysdev/ppc4xx_pci.c               |    3 +-
+ drivers/pci/probe.c                            |    4 +-
+ include/linux/pci.h                            |    4 +
+ 24 files changed, 3409 insertions(+), 1274 deletions(-)
