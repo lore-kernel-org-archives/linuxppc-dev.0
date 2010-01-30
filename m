@@ -1,15 +1,23 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4019CB7D2E
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 07:21:04 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: TIF_ABI_PENDING bit removal
-Date: Sat, 30 Jan 2010 21:20:59 +0100
-Message-ID: <m2zl3v5opg.fsf@igel.home>
+Return-Path: <fweisbec@gmail.com>
+Received: from ey-out-2122.google.com (ey-out-2122.google.com [74.125.78.26])
+	by ozlabs.org (Postfix) with ESMTP id B3BF7B7D39
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 07:44:15 +1100 (EST)
+Received: by ey-out-2122.google.com with SMTP id 9so637753eyd.33
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 12:44:13 -0800 (PST)
+Date: Sat, 30 Jan 2010 21:44:10 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
+	through extended ptrace interface
+Message-ID: <20100130204409.GE5675@nowhere>
+References: <20100124191830.GB14075@in.ibm.com>
+	<1264365121.3601.43.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1264365121.3601.43.camel@pasglop>
+Cc: shaggy@linux.vnet.ibm.com, David Gibson <dwg@au1.ibm.com>,
+	prasad@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,87 +27,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here are the powerpc bits to remove TIF_ABI_PENDING now that
-set_personality() is called at the appropriate place in exec.
+On Mon, Jan 25, 2010 at 07:32:00AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2010-01-25 at 00:48 +0530, K.Prasad wrote:
+> > 
+> > Some of the benefits of using these generic interfaces include:
+> > - Interoperability with other users of debug register (such as
+> > parallel
+> >   kernel requests) i.e. non-exclusive use of debug registers.
+> > - Enables debugging/tracing tools such as perf-events and ftrace to
+> > make
+> >   use of debug registers.
+> > - Re-use of common code available in kernel (kernel/hw_breakpoint.c).
+> > 
+> > Let me know what you think.
+> 
+> This might have changed but last I looked the "generic" breakpoint
+> interface was still too x86-centric and wasn't capable of expressing
+> some of the features of the BookE debug register set such as the data
+> value compare, the ranged breakpoints, etc...
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/include/asm/elf.h         |    8 ++------
- arch/powerpc/include/asm/thread_info.h |    2 --
- arch/powerpc/kernel/process.c          |   12 ------------
- 3 files changed, 2 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 17828ad..c376eda 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -235,14 +235,10 @@ typedef elf_vrregset_t elf_fpxregset_t;
- #ifdef __powerpc64__
- # define SET_PERSONALITY(ex)					\
- do {								\
--	unsigned long new_flags = 0;				\
- 	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
--		new_flags = _TIF_32BIT;				\
--	if ((current_thread_info()->flags & _TIF_32BIT)		\
--	    != new_flags)					\
--		set_thread_flag(TIF_ABI_PENDING);		\
-+		set_thread_flag(TIF_32BIT);			\
- 	else							\
--		clear_thread_flag(TIF_ABI_PENDING);		\
-+		clear_thread_flag(TIF_32BIT);			\
- 	if (personality(current->personality) != PER_LINUX32)	\
- 		set_personality(PER_LINUX |			\
- 			(current->personality & (~PER_MASK)));	\
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index c8b3292..aa9d383 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -111,7 +111,6 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
- #define TIF_FREEZE		14	/* Freezing for suspend */
- #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
--#define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+
+We have one field for addr, one for len and one for the memory access
+type.
+
+I think that those three are enough to express breakpoint ranges.
+Basically a breakpoint range is a breakpoint that can have a high
+len.
+
+I've looked at the G2 PowerPc core breakpoint implementation, just to
+face one of such tricky examples.
+
+We have DABR and DABR2 for watchpoint (and respectively IABR and IABR2
+for ins breakpoints). Those host the addresses to target, or well,
+let's rather call them "address operand" registers. To generalize, I
+call these xABR and xABR2 as it seems instruction and data breakpoint
+work the same, they just have their own dedicated registers.
+
+Then you have DBCR/IBCR (let's call them xBCR) which control the
+breakpoints, with two fields in each that detail the operators to affect
+in the address operands registers. You can choose betwen ==, <, or >= .
+
+Another field in the operator is the SIG_TYPE, which describes the
+combination, either "matches xABR AND xABR2" or "matches xABR OR xABR2".
+
+If you choose the "OR" SIG_TYPE, it makes no sense to use the < or >=
+operators on the addresses operands in practice. Who needs the following
+matches?
+
+	addr < xABR || addr >= xABR2
+	addr < xABR || addr < xABR2
+	addr >= xABR || addr >= xABR2
+
+The only operator that makes sense in a OR type is ==, which
+basically provides you two breakpoints:
+
+	addr == xABR || addr == xABR2
+
+Now if you choose the "AND" SIG_TYPE, the following matches
+make no sense:
+
+	addr < xABR && addr < xABR2
+	addr < xABR && addr >= xABR2 (if xABR < xABR2)
+	addr == xABR && addr (>=,<) xABR2
+
+Basically, it's only usable for delimited ranges:
+
+	addr >= xABR && addr < xABR2 (xABR < xABR2)
+
+So the comparison is a trick that can actually only have
+a practical use to define two exact matching breakpoints
+or a delimited breakpoint range.
+
+Hence, unless I'm missing something obvious, the current
+generic interface is sufficient to express that.
+
+I may also miss other kind of implementation that could
+have other requirements.
+
  
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -129,7 +128,6 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
--#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c930ac3..7b816da 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -554,18 +554,6 @@ void exit_thread(void)
- 
- void flush_thread(void)
- {
--#ifdef CONFIG_PPC64
--	struct thread_info *t = current_thread_info();
--
--	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
--		clear_ti_thread_flag(t, TIF_ABI_PENDING);
--		if (test_ti_thread_flag(t, TIF_32BIT))
--			clear_ti_thread_flag(t, TIF_32BIT);
--		else
--			set_ti_thread_flag(t, TIF_32BIT);
--	}
--#endif
--
- 	discard_lazy_cpu_state();
- 
- 	if (current->thread.dabr) {
--- 
-1.6.6.1
+> I'd rather have this more dedicated and more complete interface merged
+> for gdb's sake, and in a second step look at unifying.
 
 
-Andreas.
+Perhaps. Supporting ptrace breakpoints should be an easy first
+step as it's basically the responsibility of the user to fill
+the registers, but it's a pretty limited scope work, especially you
+won't have perf support.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+> I believe that the generic breakpoint infrastructure should not be the
+> mid-layer. IE. It cannot be made in any clean shape of form, to express
+> all of the subtle features that a given architecture or platform can
+> support and as such would always be inferior to a dedicated one.
+
+
+Actually I think the current interface already does, as I explained
+above.
+
+What is broken for any other architectures than x86 is the set
+of constraints, but I can easily move it to the arch, unless
+I find a good generic solution (or a cool combination between
+both).
+
+
+
+> I can see the interest in exposing some kind of generic API that
+> implements a common subset of breakpoint or watchpoint facilities to
+> generic code such as the event tracer. This could be layered on top of
+> an arch specific mechanism
+> 
+> But having the generic mechanism at the core for everybody is another
+> attempt of "make everybody look like x86" which I believe in this case
+> is sub optimal.
+
+
+Not at all. It's an attempt to make a generic interface that can
+exploit at best _each_ arch specific features. Other than the set
+of constraints that I'm going to rework, the generic interface is powerful
+enough to host what I've seen in term of cpu breakpoints implementations
+for now. But if it's actually not and I'm missing other cases, please
+report it to me.
+
+The reason that makes the current generic constraints x86
+oriented only is that I've only x86 boxes at home and I needed
+to make a first shot without knowing anything about other archs
+constraints, but in the long term, our motivations (Prasad's and mines)
+are definetely not archX-centric.
