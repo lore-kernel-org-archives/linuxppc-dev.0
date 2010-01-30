@@ -1,25 +1,28 @@
-Return-Path: <khali@linux-fr.org>
-Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
-	by ozlabs.org (Postfix) with ESMTP id 324AFB7D35
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 20:50:28 +1100 (EST)
-Date: Sat, 30 Jan 2010 10:35:52 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: i2c_powermac: Kernel access of bad area
-Message-ID: <20100130103552.284209fb@hyperion.delvare>
-In-Reply-To: <1264800895.20211.120.camel@pasglop>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
-	<1262079255.2173.216.camel@pasglop>
-	<20100106173745.57207520@hyperion.delvare>
-	<alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
-	<20100107171738.2c83b13e@hyperion.delvare>
-	<20100129091857.3b7228db@hyperion.delvare>
-	<1264800895.20211.120.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org,
-	Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LKML <linux-kernel@vger.kernel.org>, Stelian Pop <stelian@popies.net>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D0B90B7D39
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 21:49:52 +1100 (EST)
+In-Reply-To: <20100129154924.d1bf8bc3.akpm@linux-foundation.org>
+References: <20100112022150.GE12666@kryten>	<20100112140136.c8ccc357.sfr@canb.auug.org.au>
+	<OFF0BABDB9.D573B5F9-ONC12576A9.0041BA69-C12576A9.0041D76A@transmode.se>	<FB3DFBD5-9976-4D03-828A-EB4E6E08DAA4@kernel.crashing.org>
+	<1263412963.724.223.camel@pasglop>	<OF20873087.ECC43BEB-ONC12576AB.0029EA9A-C12576AB.002AC5CA@transmode.se>
+	<1263459431.724.352.camel@pasglop>	<OF0311C7C7.F02F52A9-ONC12576B6.002D4A11-C12576B6.002DC689@transmode.se>
+	<20100127170536.23634cdf.akpm@linux-foundation.org>	<OF871F5B59.C2574563-ONC12576B9.00300E39-C12576B9.0030C51C@transmode.se>
+	<20100129154924.d1bf8bc3.akpm@linux-foundation.org>
+Subject: Re: [PATCH]: powerpc: Fix build breakage due to incorrect location of
+	autoconf.h
+To: Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <OF6663C9F9.89378713-ONC12576BB.003B188A-C12576BB.003B4798@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 30 Jan 2010 11:47:29 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Roel Kluin <roel.kluin@gmail.com>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>, Anton Blanchard <anton@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Jan 2010 08:34:55 +1100, Benjamin Herrenschmidt wrote:
-> 
-> > Ben, what about applying this patch of mine, as Christian reported it
-> > fixed his oops?
-> 
-> Sure. I never quite know with i2c which ones you will apply directly and
-> which ones you want to go through my tree :-)
-> 
-> Hopefully they should still be referened on patchwork, I'll dig there
-> and pick them up.
+Andrew Morton <akpm@linux-foundation.org> wrote on 2010/01/30 00:49:24:
+>
+> On Thu, 28 Jan 2010 09:52:41 +0100
+> Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
+>
+> > Commit 6846ee5ca68d81e6baccf0d56221d7a00c1be18b made the
+> > new optimized inflate only available on arch's that
+> > define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS. This
+> > will again enable the optimization for all arch's by
+> > by defining our own endian independent version
+> > of unaligned access. As an added bonus, arch's that
+> > define CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS do a
+> > plain load instead.
+>
+> Given that we're at -rc5, that changelog says to me "this is a 2.6.34
+> patch".
+>
+> If that is wrong, please tell me why.
 
-Well, basically I pick patches that touch drivers/i2c/*, and I don't
-pick patches that touch drivers/macintosh/*. When I can't build the
-drivers, I don't really feel like pushing the patches myself.
+2.6.34 is fine, thanks.
 
--- 
-Jean Delvare
+ Jocke
