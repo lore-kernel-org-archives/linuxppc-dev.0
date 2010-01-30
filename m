@@ -1,21 +1,21 @@
 Return-Path: <minyard@acm.org>
 Received: from vms173019pub.verizon.net (vms173019pub.verizon.net
-	[206.46.173.19]) by ozlabs.org (Postfix) with ESMTP id CC5E2B7D26
-	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 11:18:38 +1100 (EST)
+	[206.46.173.19]) by ozlabs.org (Postfix) with ESMTP id 9206DB7D3A
+	for <linuxppc-dev@ozlabs.org>; Sat, 30 Jan 2010 12:04:36 +1100 (EST)
 Received: from wf-rch.minyard.local ([unknown] [173.57.145.237])
 	by vms173019.mailsrvcs.net
 	(Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16
-	2009)) with ESMTPA id <0KX1002BIA6MJ9X4@vms173019.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Fri, 29 Jan 2010 18:18:22 -0600 (CST)
+	2009)) with ESMTPA id <0KX100B339IW4R51@vms173019.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Fri, 29 Jan 2010 18:04:08 -0600 (CST)
 Received: from i2 (i2.minyard.local [192.168.27.126])
-	by wf-rch.minyard.local (Postfix) with ESMTP id 86B7B1F849	for
-	<linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2010 18:18:21 -0600 (CST)
-Date: Fri, 29 Jan 2010 18:18:20 -0600
+	by wf-rch.minyard.local (Postfix) with ESMTP id 096BF1F843	for
+	<linuxppc-dev@ozlabs.org>; Fri, 29 Jan 2010 18:04:08 -0600 (CST)
+Date: Fri, 29 Jan 2010 18:04:07 -0600
 From: Corey Minyard <minyard@acm.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Add a new platform for maple so a different link
-	address can be set
-Message-id: <20100130001820.GA25629@minyard.local>
+Subject: [PATCH] powerpc: Add DMA mask to MPSC serial and network and UART
+	device to serial
+Message-id: <20100130000407.GA16156@minyard.local>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Reply-To: minyard@acm.org
@@ -30,62 +30,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Corey Minyard <cminyard@mvista.com>
 
-The maple platform failed to load because it's firmware could not take a
-link address of 0x4000000.  A new platform type with a link address of
-0x400000 had to be created for the maple.
+The MPSC drivers that use DMA need to set coherent_dma_mask to allow
+dma_alloc_xxx routines to work properly.  Also, the mpsc serial driver
+needed to set pi->port.dev to register properly.  With these fixes,
+the MPSC drivers seem to work again.
 
 Signed-off-by: Corey Minyard <cminyard@mvista.com>
 ---
-Without this patch the firmware loader says it is unable to parse the
-ELF header and dies.  This patch lets 2.6.31 boot without issue.  At
-the current head of k.org git, at least with an NFS mount, I'm getting:
-  Kernel panic - not syncing: No init found
-So I'm not sure what the deal is there, but this patch is still required
-to get the firmware to load the kernel.
+I'm not really sure about where to set the coherent_dma_mask, it seems
+like a more general place would be better but I couldn't find it.
 
-Index: linux-2.6.31/arch/powerpc/boot/wrapper
+Without these, the console stops working after the switchover and
+the network driver fails to allocate buffers.  With these, my board
+boots up and works fine.
+
+Index: linux-2.6.31/drivers/serial/mpsc.c
 ===================================================================
---- linux-2.6.31.orig/arch/powerpc/boot/wrapper
-+++ linux-2.6.31/arch/powerpc/boot/wrapper
-@@ -145,6 +145,10 @@ pseries)
-     platformo=$object/of.o
-     link_address='0x4000000'
-     ;;
-+maple)
-+    platformo=$object/of.o
-+    link_address='0x400000'
-+    ;;
- pmac|chrp)
-     platformo=$object/of.o
-     ;;
-@@ -313,7 +319,7 @@ fi
+--- linux-2.6.31.orig/drivers/serial/mpsc.c
++++ linux-2.6.31/drivers/serial/mpsc.c
+@@ -2071,6 +2071,9 @@ static int mpsc_drv_probe(struct platfor
+ 		if (!(rc = mpsc_drv_map_regs(pi, dev))) {
+ 			mpsc_drv_get_platform_data(pi, dev, dev->id);
  
- # post-processing needed for some platforms
- case "$platform" in
--pseries|chrp)
-+pseries|chrp|maple)
-     $objbin/addnote "$ofile"
-     ;;
- coff)
-Index: linux-2.6.31/arch/powerpc/boot/Makefile
++			dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++			pi->port.dev = &dev->dev;
++
+ 			if (!(rc = mpsc_make_ready(pi))) {
+ 				spin_lock_init(&pi->tx_lock);
+ 				if (!(rc = uart_add_one_port(&mpsc_reg,
+Index: linux-2.6.31/drivers/net/mv643xx_eth.c
 ===================================================================
---- linux-2.6.31.orig/arch/powerpc/boot/Makefile
-+++ linux-2.6.31/arch/powerpc/boot/Makefile
-@@ -167,7 +167,7 @@ quiet_cmd_wrap	= WRAP    $@
- 		$(if $3, -s $3)$(if $4, -d $4)$(if $5, -i $5) vmlinux
+--- linux-2.6.31.orig/drivers/net/mv643xx_eth.c
++++ linux-2.6.31/drivers/net/mv643xx_eth.c
+@@ -2916,7 +2916,7 @@ static int mv643xx_eth_probe(struct plat
+ 	mp->shared = platform_get_drvdata(pd->shared);
+ 	mp->base = mp->shared->base + 0x0400 + (pd->port_number << 10);
+ 	mp->port_num = pd->port_number;
+-
++	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+ 	mp->dev = dev;
  
- image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
--image-$(CONFIG_PPC_MAPLE)		+= zImage.pseries
-+image-$(CONFIG_PPC_MAPLE)		+= zImage.maple
- image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
- image-$(CONFIG_PPC_PS3)			+= dtbImage.ps3
- image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
-@@ -346,7 +346,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
- clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
- 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
- 	zImage.iseries zImage.miboot zImage.pmac zImage.pseries \
--	simpleImage.* otheros.bld *.dtb
-+	zImage.maple simpleImage.* otheros.bld *.dtb
- 
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
+ 	set_params(mp, pd);
