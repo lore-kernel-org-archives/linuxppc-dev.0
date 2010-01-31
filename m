@@ -1,15 +1,15 @@
 Return-Path: <anton@ozlabs.org>
-Date: Sun, 31 Jan 2010 22:13:15 +1100
+Date: Sun, 31 Jan 2010 22:11:55 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 4/5] powerpc: Convert global "BAD" interrupt to per cpu
-	spurious
-Message-ID: <20100131111315.GO2996@kryten>
-References: <20100131110938.GL2996@kryten> <20100131111012.GM2996@kryten>
-	<20100131111155.GN2996@kryten>
+Subject: [PATCH 3/5] powerpc: Add timer, performance monitor and machine
+	check counts to /proc/interrupts
+Message-ID: <20100131111155.GN2996@kryten>
+References: <20100131110938.GL2996@kryten>
+ <20100131111012.GM2996@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100131111155.GN2996@kryten>
+In-Reply-To: <20100131111012.GM2996@kryten>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,96 +21,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-I often get asked if BAD interrupts are really bad. On some boxes (eg
-IBM machines running a hypervisor) there are valid cases where are
-presented with an interrupt that is not for us. These cases are common
-enough to show up as thousands of BAD interrupts a day.
+With NO_HZ it is useful to know how often the decrementer is going off. The
+patch below adds an entry for it and also adds it into the /proc/stat
+summaries.
 
-Tone them down by calling them spurious. Since they can be a significant cause
-of OS jitter, we may as well log them per cpu so we know where they are
-occurring.
+While here, I added performance monitoring and machine check exceptions.
+I found it useful to keep an eye on the PMU exception rate
+when using the perf tool. Since it's possible to take a completely
+handled machine check on a System p box it also sounds like a good idea to
+keep a machine check summary.
+
+The event naming matches x86 to keep gratuitous differences to a minimum.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Again, the short name matches x86 but if people are sufficiently confused by
-it ("SPU"), then we can think up something else.
+If people really don't like the x86 short names, we can think up something
+else.
 
 Index: linux-cpumask/arch/powerpc/include/asm/hardirq.h
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-01-30 23:27:24.787211611 +1100
-+++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-01-30 23:27:32.277210667 +1100
-@@ -9,6 +9,7 @@ typedef struct {
- 	unsigned int timer_irqs;
- 	unsigned int pmu_irqs;
- 	unsigned int mce_exceptions;
-+	unsigned int spurious_irqs;
+--- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-01-30 20:15:07.148462638 +1100
++++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-01-30 21:33:43.160961369 +1100
+@@ -6,6 +6,9 @@
+ 
+ typedef struct {
+ 	unsigned int __softirq_pending;
++	unsigned int timer_irqs;
++	unsigned int pmu_irqs;
++	unsigned int mce_exceptions;
  #if defined(CONFIG_XICS) && defined(CONFIG_SMP)
  	unsigned long xics_ipi;
  #endif
-@@ -28,7 +29,4 @@ static inline void ack_bad_irq(unsigned 
- extern u64 arch_irq_stat_cpu(unsigned int cpu);
- #define arch_irq_stat_cpu	arch_irq_stat_cpu
+@@ -22,4 +25,10 @@ static inline void ack_bad_irq(unsigned 
+ 	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
+ }
  
--extern u64 arch_irq_stat(void);
--#define arch_irq_stat		arch_irq_stat
--
++extern u64 arch_irq_stat_cpu(unsigned int cpu);
++#define arch_irq_stat_cpu	arch_irq_stat_cpu
++
++extern u64 arch_irq_stat(void);
++#define arch_irq_stat		arch_irq_stat
++
  #endif /* _ASM_POWERPC_HARDIRQ_H */
+Index: linux-cpumask/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/kernel/time.c	2010-01-30 20:15:07.138465242 +1100
++++ linux-cpumask/arch/powerpc/kernel/time.c	2010-01-30 20:15:21.077211379 +1100
+@@ -575,6 +575,8 @@ void timer_interrupt(struct pt_regs * re
+ 
+ 	trace_timer_interrupt_entry(regs);
+ 
++	__get_cpu_var(irq_stat).timer_irqs++;
++
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continuue to take decrementer exceptions */
+ 	set_dec(DECREMENTER_MAX);
 Index: linux-cpumask/arch/powerpc/kernel/irq.c
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/irq.c	2010-01-30 23:27:24.787211611 +1100
-+++ linux-cpumask/arch/powerpc/kernel/irq.c	2010-01-30 23:27:25.080961389 +1100
-@@ -77,7 +77,6 @@ DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpusta
- EXPORT_PER_CPU_SYMBOL(irq_stat);
+--- linux-cpumask.orig/arch/powerpc/kernel/irq.c	2010-01-30 20:15:17.287210745 +1100
++++ linux-cpumask/arch/powerpc/kernel/irq.c	2010-01-30 21:35:54.528460683 +1100
+@@ -196,6 +196,21 @@ static int show_other_interrupts(struct 
+ 	}
+ #endif /* CONFIG_PPC32 && CONFIG_TAU_INT */
  
- int __irq_offset_value;
--static int ppc_spurious_interrupts;
- 
- #ifdef CONFIG_PPC32
- EXPORT_SYMBOL(__irq_offset_value);
-@@ -201,6 +200,11 @@ static int show_other_interrupts(struct 
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs);
-         seq_printf(p, "  Local timer interrupts\n");
- 
-+	seq_printf(p, "%*s: ", prec, "SPU");
++	seq_printf(p, "%*s: ", prec, "LOC");
 +	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", per_cpu(irq_stat, j).spurious_irqs);
-+	seq_printf(p, "  Spurious interrupts\n");
++		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs);
++        seq_printf(p, "  Local timer interrupts\n");
 +
- 	seq_printf(p, "%*s: ", prec, "CNT");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
-@@ -211,8 +215,6 @@ static int show_other_interrupts(struct 
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
- 	seq_printf(p, "  Machine check exceptions\n");
++	seq_printf(p, "%*s: ", prec, "CNT");
++	for_each_online_cpu(j)
++		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
++	seq_printf(p, "  Performance monitoring interrupts\n");
++
++	seq_printf(p, "%*s: ", prec, "MCE");
++	for_each_online_cpu(j)
++		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
++	seq_printf(p, "  Machine check exceptions\n");
++
+ 	seq_printf(p, "%*s: %10u\n", prec, "BAD", ppc_spurious_interrupts);
  
--	seq_printf(p, "%*s: %10u\n", prec, "BAD", ppc_spurious_interrupts);
--
+ 	return 0;
+@@ -258,6 +273,26 @@ out:
  	return 0;
  }
  
-@@ -282,13 +284,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
++/*
++ * /proc/stat helpers
++ */
++u64 arch_irq_stat_cpu(unsigned int cpu)
++{
++	u64 sum = per_cpu(irq_stat, cpu).timer_irqs;
++
++	sum += per_cpu(irq_stat, cpu).pmu_irqs;
++	sum += per_cpu(irq_stat, cpu).mce_exceptions;
++
++	return sum;
++}
++
++u64 arch_irq_stat(void)
++{
++	u64 sum = ppc_spurious_interrupts;
++
++	return sum;
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void fixup_irqs(cpumask_t map)
+ {
+Index: linux-cpumask/arch/powerpc/kernel/traps.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/kernel/traps.c	2010-01-30 20:15:07.118462038 +1100
++++ linux-cpumask/arch/powerpc/kernel/traps.c	2010-01-30 21:31:57.487211520 +1100
+@@ -478,6 +478,8 @@ void machine_check_exception(struct pt_r
+ {
+ 	int recover = 0;
  
- 	sum += per_cpu(irq_stat, cpu).pmu_irqs;
- 	sum += per_cpu(irq_stat, cpu).mce_exceptions;
--
--	return sum;
--}
--
--u64 arch_irq_stat(void)
--{
--	u64 sum = ppc_spurious_interrupts;
-+	sum += per_cpu(irq_stat, cpu).spurious_irqs;
++	__get_cpu_var(irq_stat).mce_exceptions++;
++
+ 	/* See if any machine dependent calls. In theory, we would want
+ 	 * to call the CPU first, and call the ppc_md. one if the CPU
+ 	 * one returns a positive number. However there is existing code
+@@ -960,6 +962,8 @@ void vsx_unavailable_exception(struct pt
  
- 	return sum;
+ void performance_monitor_exception(struct pt_regs *regs)
+ {
++	__get_cpu_var(irq_stat).pmu_irqs++;
++
+ 	perf_irq(regs);
  }
-@@ -404,8 +400,7 @@ void do_IRQ(struct pt_regs *regs)
- 	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
- 		handle_one_irq(irq);
- 	else if (irq != NO_IRQ_IGNORE)
--		/* That's not SMP safe ... but who cares ? */
--		ppc_spurious_interrupts++;
-+		__get_cpu_var(irq_stat).spurious_irqs++;
  
- 	irq_exit();
- 	set_irq_regs(old_regs);
