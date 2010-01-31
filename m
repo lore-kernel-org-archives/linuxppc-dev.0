@@ -1,26 +1,14 @@
-Return-Path: <khali@linux-fr.org>
-Received: from bamako.nerim.net (bamako.nerim.net [62.4.17.28])
-	by ozlabs.org (Postfix) with ESMTP id 2B7E2B7D3F
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 20:52:35 +1100 (EST)
-Date: Sun, 31 Jan 2010 10:52:31 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Christian Kujau <lists@nerdbynature.de>
-Subject: Re: i2c_powermac: Kernel access of bad area
-Message-ID: <20100131105231.23d70990@hyperion.delvare>
-In-Reply-To: <alpine.DEB.2.01.1001302156380.3483@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
-	<1262079255.2173.216.camel@pasglop>
-	<20100106173745.57207520@hyperion.delvare>
-	<alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
-	<20100107171738.2c83b13e@hyperion.delvare>
-	<20100129091857.3b7228db@hyperion.delvare>
-	<alpine.DEB.2.01.1001292202150.3483@bogon.housecafe.de>
-	<alpine.DEB.2.01.1001302156380.3483@bogon.housecafe.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Stelian Pop <stelian@popies.net>,
-	Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 31 Jan 2010 22:10:12 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH 2/5] powerpc: Remove whitespace in irq chip name fields
+Message-ID: <20100131111012.GM2996@kryten>
+References: <20100131110938.GL2996@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100131110938.GL2996@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +18,258 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 30 Jan 2010 22:05:26 -0800 (PST), Christian Kujau wrote:
-> OK, I've now applied both the drivers/hwmon/ams/ patches and your earlier 
-> one for drivers/macintosh/therm_adt746x.c [0] to a current -git checkout 
-> and now I can unload i2c_powermac, list and read the remaining files in
-> /sys/devices/temperatures, load i2c_powermac again, and unload, and
-> load, and ... - it's wonderful! :-) No oopses so far.
-> 
-> Feel free to add a Tested-by: Christian Kujau <lists@nerdbynature.de>
-> so that the patches can be pushed into mainline.
 
-Thanks, I'll resend both patches with proper comments and headers now.
+Now we use printf style alignment there is no need to manually space
+these fields.
 
-> Thanks for the fixes, Jean!
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-You're welcome.
-
--- 
-Jean Delvare
-http://khali.linux-fr.org/wishlist.html
+Index: linux-cpumask/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c	2010-01-30 19:56:29.019715672 +1100
++++ linux-cpumask/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c	2010-01-30 19:56:34.010961169 +1100
+@@ -79,7 +79,7 @@ cpld_unmask_irq(unsigned int irq)
+ }
+ 
+ static struct irq_chip cpld_pic = {
+-	.name = " CPLD PIC ",
++	.name = "CPLD PIC",
+ 	.mask = cpld_mask_irq,
+ 	.ack = cpld_mask_irq,
+ 	.unmask = cpld_unmask_irq,
+Index: linux-cpumask/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/85xx/socrates_fpga_pic.c	2010-01-30 19:56:29.079716769 +1100
++++ linux-cpumask/arch/powerpc/platforms/85xx/socrates_fpga_pic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -232,7 +232,7 @@ static int socrates_fpga_pic_set_type(un
+ }
+ 
+ static struct irq_chip socrates_fpga_pic_chip = {
+-	.name		= " FPGA-PIC ",
++	.name		= "FPGA-PIC",
+ 	.ack		= socrates_fpga_pic_ack,
+ 	.mask           = socrates_fpga_pic_mask,
+ 	.mask_ack       = socrates_fpga_pic_mask_ack,
+Index: linux-cpumask/arch/powerpc/platforms/cell/beat_interrupt.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/cell/beat_interrupt.c	2010-01-30 19:56:29.049717504 +1100
++++ linux-cpumask/arch/powerpc/platforms/cell/beat_interrupt.c	2010-01-30 19:56:34.010961169 +1100
+@@ -110,7 +110,7 @@ static void beatic_end_irq(unsigned int 
+ }
+ 
+ static struct irq_chip beatic_pic = {
+-	.name = " CELL-BEAT ",
++	.name = "CELL-BEAT",
+ 	.unmask = beatic_unmask_irq,
+ 	.mask = beatic_mask_irq,
+ 	.eoi = beatic_end_irq,
+Index: linux-cpumask/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/cell/interrupt.c	2010-01-30 19:56:29.059714370 +1100
++++ linux-cpumask/arch/powerpc/platforms/cell/interrupt.c	2010-01-30 19:56:34.010961169 +1100
+@@ -88,7 +88,7 @@ static void iic_eoi(unsigned int irq)
+ }
+ 
+ static struct irq_chip iic_chip = {
+-	.name = " CELL-IIC ",
++	.name = "CELL-IIC",
+ 	.mask = iic_mask,
+ 	.unmask = iic_unmask,
+ 	.eoi = iic_eoi,
+@@ -133,7 +133,7 @@ static void iic_ioexc_cascade(unsigned i
+ 
+ 
+ static struct irq_chip iic_ioexc_chip = {
+-	.name = " CELL-IOEX",
++	.name = "CELL-IOEX",
+ 	.mask = iic_mask,
+ 	.unmask = iic_unmask,
+ 	.eoi = iic_ioexc_eoi,
+Index: linux-cpumask/arch/powerpc/platforms/cell/spider-pic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/cell/spider-pic.c	2010-01-30 19:56:29.049717504 +1100
++++ linux-cpumask/arch/powerpc/platforms/cell/spider-pic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -168,7 +168,7 @@ static int spider_set_irq_type(unsigned 
+ }
+ 
+ static struct irq_chip spider_pic = {
+-	.name = " SPIDER   ",
++	.name = "SPIDER",
+ 	.unmask = spider_unmask_irq,
+ 	.mask = spider_mask_irq,
+ 	.ack = spider_ack_irq,
+Index: linux-cpumask/arch/powerpc/platforms/iseries/irq.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/iseries/irq.c	2010-01-30 19:56:29.009711380 +1100
++++ linux-cpumask/arch/powerpc/platforms/iseries/irq.c	2010-01-30 19:56:34.010961169 +1100
+@@ -273,7 +273,7 @@ static void iseries_end_IRQ(unsigned int
+ }
+ 
+ static struct irq_chip iseries_pic = {
+-	.name	= "iSeries irq controller",
++	.name		= "iSeries",
+ 	.startup	= iseries_startup_IRQ,
+ 	.shutdown	= iseries_shutdown_IRQ,
+ 	.unmask		= iseries_enable_IRQ,
+Index: linux-cpumask/arch/powerpc/platforms/powermac/pic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/powermac/pic.c	2010-01-30 19:56:29.039711810 +1100
++++ linux-cpumask/arch/powerpc/platforms/powermac/pic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -195,7 +195,7 @@ static int pmac_retrigger(unsigned int v
+ }
+ 
+ static struct irq_chip pmac_pic = {
+-	.name		= " PMAC-PIC ",
++	.name		= "PMAC-PIC",
+ 	.startup	= pmac_startup_irq,
+ 	.mask		= pmac_mask_irq,
+ 	.ack		= pmac_ack_irq,
+Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-01-30 19:56:32.388460978 +1100
++++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-01-30 19:56:34.010961169 +1100
+@@ -428,7 +428,7 @@ static int xics_set_affinity(unsigned in
+ }
+ 
+ static struct irq_chip xics_pic_direct = {
+-	.name = " XICS     ",
++	.name = "XICS",
+ 	.startup = xics_startup,
+ 	.mask = xics_mask_irq,
+ 	.unmask = xics_unmask_irq,
+@@ -437,7 +437,7 @@ static struct irq_chip xics_pic_direct =
+ };
+ 
+ static struct irq_chip xics_pic_lpar = {
+-	.name = " XICS     ",
++	.name = "XICS",
+ 	.startup = xics_startup,
+ 	.mask = xics_mask_irq,
+ 	.unmask = xics_unmask_irq,
+Index: linux-cpumask/arch/powerpc/sysdev/cpm1.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/cpm1.c	2010-01-30 19:56:29.129711920 +1100
++++ linux-cpumask/arch/powerpc/sysdev/cpm1.c	2010-01-30 19:56:34.010961169 +1100
+@@ -77,7 +77,7 @@ static void cpm_end_irq(unsigned int irq
+ }
+ 
+ static struct irq_chip cpm_pic = {
+-	.name = " CPM PIC ",
++	.name = "CPM PIC",
+ 	.mask = cpm_mask_irq,
+ 	.unmask = cpm_unmask_irq,
+ 	.eoi = cpm_end_irq,
+Index: linux-cpumask/arch/powerpc/sysdev/cpm2_pic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/cpm2_pic.c	2010-01-30 19:56:29.149713109 +1100
++++ linux-cpumask/arch/powerpc/sysdev/cpm2_pic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -198,7 +198,7 @@ err_sense:
+ }
+ 
+ static struct irq_chip cpm2_pic = {
+-	.name = " CPM2 SIU ",
++	.name = "CPM2 SIU",
+ 	.mask = cpm2_mask_irq,
+ 	.unmask = cpm2_unmask_irq,
+ 	.ack = cpm2_ack,
+Index: linux-cpumask/arch/powerpc/sysdev/fsl_msi.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/fsl_msi.c	2010-01-30 19:56:29.119713229 +1100
++++ linux-cpumask/arch/powerpc/sysdev/fsl_msi.c	2010-01-30 19:56:34.010961169 +1100
+@@ -47,7 +47,7 @@ static struct irq_chip fsl_msi_chip = {
+ 	.mask		= mask_msi_irq,
+ 	.unmask		= unmask_msi_irq,
+ 	.ack		= fsl_msi_end_irq,
+-	.name	= " FSL-MSI  ",
++	.name		= "FSL-MSI",
+ };
+ 
+ static int fsl_msi_host_map(struct irq_host *h, unsigned int virq,
+Index: linux-cpumask/arch/powerpc/sysdev/i8259.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/i8259.c	2010-01-30 19:56:29.119713229 +1100
++++ linux-cpumask/arch/powerpc/sysdev/i8259.c	2010-01-30 19:56:34.010961169 +1100
+@@ -135,7 +135,7 @@ static void i8259_unmask_irq(unsigned in
+ }
+ 
+ static struct irq_chip i8259_pic = {
+-	.name		= " i8259    ",
++	.name		= "i8259",
+ 	.mask		= i8259_mask_irq,
+ 	.disable	= i8259_mask_irq,
+ 	.unmask		= i8259_unmask_irq,
+Index: linux-cpumask/arch/powerpc/sysdev/ipic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/ipic.c	2010-01-30 19:56:29.089713470 +1100
++++ linux-cpumask/arch/powerpc/sysdev/ipic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -660,7 +660,7 @@ static int ipic_set_irq_type(unsigned in
+ 
+ /* level interrupts and edge interrupts have different ack operations */
+ static struct irq_chip ipic_level_irq_chip = {
+-	.name		= " IPIC  ",
++	.name		= "IPIC",
+ 	.unmask		= ipic_unmask_irq,
+ 	.mask		= ipic_mask_irq,
+ 	.mask_ack	= ipic_mask_irq,
+@@ -668,7 +668,7 @@ static struct irq_chip ipic_level_irq_ch
+ };
+ 
+ static struct irq_chip ipic_edge_irq_chip = {
+-	.name		= " IPIC  ",
++	.name		= "IPIC",
+ 	.unmask		= ipic_unmask_irq,
+ 	.mask		= ipic_mask_irq,
+ 	.mask_ack	= ipic_mask_irq_and_ack,
+Index: linux-cpumask/arch/powerpc/sysdev/mpc8xx_pic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/mpc8xx_pic.c	2010-01-30 19:56:29.109716536 +1100
++++ linux-cpumask/arch/powerpc/sysdev/mpc8xx_pic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -94,7 +94,7 @@ static int mpc8xx_set_irq_type(unsigned 
+ }
+ 
+ static struct irq_chip mpc8xx_pic = {
+-	.name = " MPC8XX SIU ",
++	.name = "MPC8XX SIU",
+ 	.unmask = mpc8xx_unmask_irq,
+ 	.mask = mpc8xx_mask_irq,
+ 	.ack = mpc8xx_ack,
+Index: linux-cpumask/arch/powerpc/sysdev/mpic_pasemi_msi.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/mpic_pasemi_msi.c	2010-01-30 19:56:29.139718229 +1100
++++ linux-cpumask/arch/powerpc/sysdev/mpic_pasemi_msi.c	2010-01-30 19:56:34.010961169 +1100
+@@ -60,7 +60,7 @@ static struct irq_chip mpic_pasemi_msi_c
+ 	.eoi		= mpic_end_irq,
+ 	.set_type	= mpic_set_irq_type,
+ 	.set_affinity	= mpic_set_affinity,
+-	.name		= "PASEMI-MSI ",
++	.name		= "PASEMI-MSI",
+ };
+ 
+ static int pasemi_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+Index: linux-cpumask/arch/powerpc/sysdev/qe_lib/qe_ic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/qe_lib/qe_ic.c	2010-01-30 19:56:29.099711483 +1100
++++ linux-cpumask/arch/powerpc/sysdev/qe_lib/qe_ic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -237,7 +237,7 @@ static void qe_ic_mask_irq(unsigned int 
+ }
+ 
+ static struct irq_chip qe_ic_irq_chip = {
+-	.name = " QEIC  ",
++	.name = "QEIC",
+ 	.unmask = qe_ic_unmask_irq,
+ 	.mask = qe_ic_mask_irq,
+ 	.mask_ack = qe_ic_mask_irq,
+Index: linux-cpumask/arch/powerpc/sysdev/uic.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/sysdev/uic.c	2010-01-30 19:56:29.089713470 +1100
++++ linux-cpumask/arch/powerpc/sysdev/uic.c	2010-01-30 19:56:34.010961169 +1100
+@@ -177,7 +177,7 @@ static int uic_set_irq_type(unsigned int
+ }
+ 
+ static struct irq_chip uic_irq_chip = {
+-	.name		= " UIC  ",
++	.name		= "UIC",
+ 	.unmask		= uic_unmask_irq,
+ 	.mask		= uic_mask_irq,
+  	.mask_ack	= uic_mask_ack_irq,
