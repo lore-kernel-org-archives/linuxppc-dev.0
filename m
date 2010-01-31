@@ -1,25 +1,21 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
-	by ozlabs.org (Postfix) with ESMTP id 3F067B7D40
-	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 17:06:02 +1100 (EST)
-Date: Sat, 30 Jan 2010 22:05:26 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: i2c_powermac: Kernel access of bad area
-In-Reply-To: <alpine.DEB.2.01.1001292202150.3483@bogon.housecafe.de>
-Message-ID: <alpine.DEB.2.01.1001302156380.3483@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de>
-	<1262079255.2173.216.camel@pasglop>
-	<20100106173745.57207520@hyperion.delvare>
-	<alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
-	<20100107171738.2c83b13e@hyperion.delvare>
-	<20100129091857.3b7228db@hyperion.delvare>
-	<alpine.DEB.2.01.1001292202150.3483@bogon.housecafe.de>
+Return-Path: <fthain@mail.telegraphics.com.au>
+Received: from mail.telegraphics.com.au (www.telegraphics.com.au
+	[204.15.192.19]) by ozlabs.org (Postfix) with ESMTP id 67F65B7D40
+	for <linuxppc-dev@ozlabs.org>; Sun, 31 Jan 2010 18:25:45 +1100 (EST)
+Date: Sun, 31 Jan 2010 18:25:38 +1100 (EST)
+From: fthain@telegraphics.com.au
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: ping, was Re: [PATCH 1/2] pmac-zilog: add platform driver, version 3
+In-Reply-To: <10f740e81001140538n67710bfr17d131a8f4b25137@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1001311820070.5428@nippy.intranet>
+References: <alpine.OSX.2.00.0911171657290.371@silk.local>
+	<10f740e81001071312p451de3c0r93d8d9d2782abde8@mail.gmail.com>
+	<alpine.LNX.2.00.1001102340340.22574@nippy.intranet>
+	<alpine.OSX.2.00.1001110325430.620@localhost>
+	<10f740e81001140538n67710bfr17d131a8f4b25137@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stelian Pop <stelian@popies.net>,
-	Michael Hanselmann <linux-kernel@hansmi.ch>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 29 Jan 2010 at 22:03, Christian Kujau wrote:
-> On Fri, 29 Jan 2010 at 09:18, Jean Delvare wrote:
-> > Christian, did you ever test this second patch of mine? If you did,
-> > what was the outcome?
 
-OK, I've now applied both the drivers/hwmon/ams/ patches and your earlier 
-one for drivers/macintosh/therm_adt746x.c [0] to a current -git checkout 
-and now I can unload i2c_powermac, list and read the remaining files in
-/sys/devices/temperatures, load i2c_powermac again, and unload, and
-load, and ... - it's wonderful! :-) No oopses so far.
+Hi Geert,
 
-Feel free to add a Tested-by: Christian Kujau <lists@nerdbynature.de>
-so that the patches can be pushed into mainline.
+As I understand it, this patch needs Ben's ack before it (and the others) 
+can be merged into linux-next (?)
 
-Thanks for the fixes, Jean!
+Finn
 
-Christian.
+On Thu, 14 Jan 2010, Geert Uytterhoeven wrote:
 
-[0] http://nerdbynature.de/bits/2.6.33-rc2/i2c_powermac/r2/
--- 
-BOFH excuse #337:
-
-the butane lighter causes the pincushioning
+> Thanks, applied.
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
