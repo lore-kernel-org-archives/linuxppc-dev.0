@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 85CB7B7D57
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Feb 2010 05:24:19 +1100 (EST)
-Message-ID: <4B671C4D.5070806@freescale.com>
-Date: Mon, 01 Feb 2010 12:24:13 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Dan.Geer@faa.gov
-Subject: Re: BSE-IP
-References: <OF7C180968.43598D84-ON852576BD.006286D6-852576BD.0063AC38@faa.gov>
-In-Reply-To: <OF7C180968.43598D84-ON852576BD.006286D6-852576BD.0063AC38@faa.gov>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <joe@perches.com>
+Received: from mail.perches.com (mail.perches.com [173.55.12.10])
+	by ozlabs.org (Postfix) with ESMTP id 1D049B7D67
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 05:30:40 +1100 (EST)
+Subject: Re: [PATCH 01/10] arch/powerpc: Fix continuation line formats
+From: Joe Perches <joe@perches.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1264990574.8287.15.camel@pasglop>
+References: <cover.1264967493.git.joe@perches.com>
+	<d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
+	<1264990574.8287.15.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 10:30:37 -0800
+Message-ID: <1265049037.25140.301.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dan.Geer@faa.gov wrote:
-> I'm hoping someone can offer some advice on this:
+On Mon, 2010-02-01 at 13:16 +1100, Benjamin Herrenschmidt wrote:
+> On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
+> > String constants that are continued on subsequent lines with \
+> > are not good.
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> You want me to take that in the powerpc tree ?
+
+Yes please.
+
+> A minor glitch below tho...
+> > @@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
+> >  	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
+> >  	if (rc <= 0) {
+> >  		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
+> > -				"failed (%d)\n", rc);
+> > +		       "failed (%d)\n", rc);
+> >  		return rc;
+> >  	}
 > 
-> I'm working with an embedded platform that does not pass anything from
-> firmware. I'm just trying to get some activity out the serial console at
-> this stage.  simpleImage.bseip compiled with the following bseip.dts seems
-> to freeze before anything is written to the console.  I'm assuming the
-> standard 8xx code will pickup this device tree, and work from there.  Is
-> this correct?  Shouldn't I see some output?
+> The above is objectionable :-)
 
-Has your firmware already set up the serial port?  cpm-serial doesn't make 
-assumptions about specific addresses, but it does assume that the BRG, pins, 
-etc. have been set up for the serial port to work.
-
-If this isn't the case, you'll need to do it from a custom bootwrapper platform 
-file.
-
->                                      d-cache-line-size = <8>;		 // 8 bytes
-> per line
->                                      i-cache-line-size = <8>;		 // 8 bytes
-> per line
-
-Shouldn't this be 16 bytes?
-
->              soc@ff000000 {
-
-Is this the correct IMMR address for your firmware?
-
--Scott
+Can you drop that section or do you need another patch?
