@@ -1,24 +1,18 @@
-Return-Path: <minyard@acm.org>
-Received: from vms173011pub.verizon.net (vms173011pub.verizon.net
-	[206.46.173.11]) by ozlabs.org (Postfix) with ESMTP id 385F0B7D0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 05:01:24 +1100 (EST)
-Received: from wf-rch.minyard.local ([unknown] [173.57.145.237])
-	by vms173011.mailsrvcs.net
-	(Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16
-	2009)) with ESMTPA id <0KX60017ZCPNLUM8@vms173011.mailsrvcs.net> for
-	linuxppc-dev@ozlabs.org; Mon, 01 Feb 2010 12:00:59 -0600 (CST)
-Message-id: <4B6716D8.2050209@acm.org>
-Date: Mon, 01 Feb 2010 12:00:56 -0600
-From: Corey Minyard <minyard@acm.org>
-MIME-version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add DMA mask to MPSC serial and network and UART
-	device to serial
-References: <20100130000407.GA16156@minyard.local>
-	<1265000313.8287.25.camel@pasglop>
-In-reply-to: <1265000313.8287.25.camel@pasglop>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Dan.Geer@faa.gov>
+Received: from relay1.faa.gov (relay1.faa.gov [204.108.10.6])
+	by ozlabs.org (Postfix) with ESMTP id A8CF4B7D0C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Feb 2010 05:09:02 +1100 (EST)
+MIME-Version: 1.0
+In-Reply-To: 
+References: 
+Subject: Re: BSE-IP
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF7C180968.43598D84-ON852576BD.006286D6-852576BD.0063AC38@faa.gov>
+From: Dan.Geer@faa.gov
+Date: Mon, 1 Feb 2010 13:08:41 -0500
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,78 +22,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2010-01-29 at 18:04 -0600, Corey Minyard wrote:
->   
->> From: Corey Minyard <cminyard@mvista.com>
->>
->> The MPSC drivers that use DMA need to set coherent_dma_mask to allow
->> dma_alloc_xxx routines to work properly.  Also, the mpsc serial driver
->> needed to set pi->port.dev to register properly.  With these fixes,
->> the MPSC drivers seem to work again.
->>
->> Signed-off-by: Corey Minyard <cminyard@mvista.com>
->> ---
->>     
->
-> Is that enough ? Since 2.6.31 we also need the dma ops to be filled
-> properly and obviously that isn't going to happen for random platform
-> devices... Or are those initialized elsewhere by your platform code ? In
-> which case it might be a good place to also set the coherent mask...	
->   
-That's done in ppc_dflt_bus_notify(), but that didn't seem an appropriate
-place to do this.  If it is, it's easy enough to add it there, but that 
-would
-mean it would get set for all devices on any type of ppc system.
 
--corey
-> Maybe we should have a more generic way to set the "default" dma
-> information (including ops, masks etc...) for use by platform,
-> of_platform etc... devices.
->
-> Cheers,
-> Ben.
->
->   
->> I'm not really sure about where to set the coherent_dma_mask, it seems
->> like a more general place would be better but I couldn't find it.
->>
->> Without these, the console stops working after the switchover andantipode
->> the network driver fails to allocate buffers.  With these, my board
->> boots up and works fine.
->>
->> Index: linux-2.6.31/drivers/serial/mpsc.c
->> ===================================================================
->> --- linux-2.6.31.orig/drivers/serial/mpsc.c
->> +++ linux-2.6.31/drivers/serial/mpsc.c
->> @@ -2071,6 +2071,9 @@ static int mpsc_drv_probe(struct platfor
->>  		if (!(rc = mpsc_drv_map_regs(pi, dev))) {
->>  			mpsc_drv_get_platform_data(pi, dev, dev->id);
->>  
->> +			dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
->> +			pi->port.dev = &dev->dev;
->> +
->>  			if (!(rc = mpsc_make_ready(pi))) {
->>  				spin_lock_init(&pi->tx_lock);
->>  				if (!(rc = uart_add_one_port(&mpsc_reg,
->> Index: linux-2.6.31/drivers/net/mv643xx_eth.c
->> ===================================================================
->> --- linux-2.6.31.orig/drivers/net/mv643xx_eth.c
->> +++ linux-2.6.31/drivers/net/mv643xx_eth.c
->> @@ -2916,7 +2916,7 @@ static int mv643xx_eth_probe(struct plat
->>  	mp->shared = platform_get_drvdata(pd->shared);
->>  	mp->base = mp->shared->base + 0x0400 + (pd->port_number << 10);
->>  	mp->port_num = pd->port_number;
->> -
->> +	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
->>  	mp->dev = dev;
->>  
->>  	set_params(mp, pd);
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>     
->
->
->   
+I'm hoping someone can offer some advice on this:
+
+I'm working with an embedded platform that does not pass anything from
+firmware. I'm just trying to get some activity out the serial console at
+this stage.  simpleImage.bseip compiled with the following bseip.dts seems
+to freeze before anything is written to the console.  I'm assuming the
+standard 8xx code will pickup this device tree, and work from there.  Is
+this correct?  Shouldn't I see some output?
+
+
+/dts-v1/;
+
+/ {
+             model = "BSEIP";
+             compatible = "fsl,bseip";
+             #address-cells = <1>;
+             #size-cells = <1>;
+
+             cpus {
+                         #address-cells = <1>;
+                         #size-cells = <0>;
+
+                         PowerPC,823@0 {
+                                     compatible = "PowerPC,8xx";
+                                     device_type = "cpu";
+                                     reg = <0x0>;
+                                     d-cache-line-size = <8>;		 // 8 bytes
+per line
+                                     i-cache-line-size = <8>;		 // 8 bytes
+per line
+                                     d-cache-size = <0x0400>;		 // L1, 1K
+                                     i-cache-size = <0x0800>;		 // L1, 2K
+                                     timebase-frequency = <48000000>;
+                                     bus-frequency = <48000000>;
+                                     clock-frequency = <48000000>;
+                                     interrupts = <15 2>;
+ // decrementer interrupt
+                                     interrupt-parent = <&PIC>;
+                         };
+             };
+
+             memory {
+                         device_type = "memory";
+                         reg = <0 0x1000000>;
+             };
+
+             soc@ff000000 {
+                         compatible = "fsl,mpc823", "fsl,pq1-soc";
+                         #address-cells = <1>;
+                         #size-cells = <1>;
+                         device_type = "soc";
+                         ranges = <0 0xff000000 0x00004000>;
+                         reg = <0xff000000 0x4000>;
+                         bus-frequency = <48000000>;
+
+                         PIC: interrupt-controller@0 {
+                                     interrupt-controller;
+                                     #interrupt-cells = <2>;
+                                     reg = <0 0x24>;
+                                     compatible = "fsl,mpc823-pic",
+"fsl,pq1-pic";
+                         };
+
+                         pcmcia@80 {
+                                     #address-cells = <3>;
+                                     #interrupt-cells = <1>;
+                                     #size-cells = <2>;
+                                     compatible = "fsl,pq-pcmcia";
+                                     device_type = "pcmcia";
+                                     reg = <0x80 0x80>;
+                                     interrupt-parent = <&PIC>;
+                                     interrupts = <13 1>;
+                         };
+
+                         cpm@9c0 {
+                                     #address-cells = <1>;
+                                     #size-cells = <1>;
+                                     compatible = "fsl,mpc823-cpm",
+"fsl,cpm1";
+                                     command-proc = <0x9c0>;
+                                     interrupts = <0>;		 // cpm error
+interrupt
+                                     interrupt-parent = <&CPM_PIC>;
+                                     reg = <0x9c0 0x40>;
+                                     ranges;
+
+                                     muram@2000 {
+                                                 #address-cells = <1>;
+                                                 #size-cells = <1>;
+                                                 ranges = <0 0x2000
+0x2000>;
+
+                                                 data@0 {
+                                                             compatible =
+"fsl,cpm-muram-data";
+                                                             reg = <0
+0x1c00>;
+                                                 };
+                                     };
+
+                                     brg@9f0 {
+                                                 compatible =
+"fsl,mpc823-brg",
+
+"fsl,cpm1-brg",
+
+"fsl,cpm-brg";
+                                                 reg = <0x9f0 0x10>;
+                                                 clock-frequency =
+<48000000>;
+                                     };
+
+                                     CPM_PIC: interrupt-controller@930 {
+                                                 interrupt-controller;
+                                                 #interrupt-cells = <1>;
+                                                 interrupts = <5 2 0 2>;
+                                                 interrupt-parent = <&PIC>;
+                                                 reg = <0x930 0x20>;
+                                                 compatible =
+"fsl,mpc823-cpm-pic",
+
+"fsl,cpm1-pic";
+                                     };
+
+                                     serial@a80 {
+                                                 device_type = "serial";
+                                                 compatible =
+"fsl,mpc823-smc-uart",
+
+"fsl,cpm1-smc-uart";
+                                                 reg = <0xa80 0x10 0x3e80
+0x40>;
+                                                 interrupts = <4>;
+                                                 interrupt-parent =
+<&CPM_PIC>;
+                                                 fsl,cpm-brg = <1>;
+                                                 fsl,cpm-command = <0x90>;
+                                                 current-speed = <9600>;
+                                     };
+
+                                     serial@a90 {
+                                                 device_type = "serial";
+                                                 compatible =
+"fsl,mpc823-smc-uart",
+
+"fsl,cpm1-smc-uart";
+                                                 reg = <0xa90 0x10 0x3f80
+0x40>;
+                                                 interrupts = <3>;
+                                                 interrupt-parent =
+<&CPM_PIC>;
+                                                 fsl,cpm-brg = <2>;
+                                                 fsl,cpm-command = <0xd0>;
+                                                 current-speed = <9600>;
+                                     };
+
+                                     ethernet@a20 {
+                                                 device_type = "network";
+                                                 compatible =
+"fsl,mpc823-scc-enet",
+
+"fsl,cpm1-scc-enet";
+                                                 reg = <0xa20 0x18 0x3c00
+0x100>;
+                                                 local-mac-address = [ 00
+00 00 00 00 00 ];
+                                                 interrupts = <30>;
+                                                 interrupt-parent =
+<&CPM_PIC>;
+                                                 fsl,cpm-command = <0x80>;
+                                                 linux,network-index = <1>;
+                                     };
+                         };
+             };
+
+             chosen {
+                         linux,stdout-path = "/soc/cpm/serial@a80";
+             };
+};
