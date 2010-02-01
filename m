@@ -1,20 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f172.google.com (mail-yw0-f172.google.com
-	[209.85.211.172]) by ozlabs.org (Postfix) with ESMTP id 11831B7D4E
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 5607BB7D1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Feb 2010 08:57:53 +1100 (EST)
-Received: by ywh2 with SMTP id 2so729538ywh.2
+	Tue,  2 Feb 2010 09:00:43 +1100 (EST)
+Received: by yxe8 with SMTP id 8so4360163yxe.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 01 Feb 2010 13:57:51 -0800 (PST)
+	Mon, 01 Feb 2010 14:00:41 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1263456799-3306-2-git-send-email-yu.liu@freescale.com>
+In-Reply-To: <1263456799-3306-3-git-send-email-yu.liu@freescale.com>
 References: <1263456799-3306-1-git-send-email-yu.liu@freescale.com>
 	<1263456799-3306-2-git-send-email-yu.liu@freescale.com>
+	<1263456799-3306-3-git-send-email-yu.liu@freescale.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 1 Feb 2010 14:57:31 -0700
-Message-ID: <fa686aa41002011357pb24d8a6k640ab5ae13f8fbbc@mail.gmail.com>
-Subject: Re: [PATCH 2/4] mpc8569mds: Add bscr setting for rtbi mode
+Date: Mon, 1 Feb 2010 15:00:21 -0700
+Message-ID: <fa686aa41002011400i7160f360offc5b788e82122ea@mail.gmail.com>
+Subject: Re: [PATCH 3/4] ucc_geth: update the tbi-phy setting
 To: Liu Yu <yu.liu@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
@@ -28,94 +29,104 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jan 14, 2010 at 1:13 AM, Liu Yu <yu.liu@freescale.com> wrote:
+> Old method only set tbi-phy for eth0.
+>
 > Signed-off-by: Liu Yu <yu.liu@freescale.com>
 > ---
-> =A0arch/powerpc/platforms/85xx/mpc85xx_mds.c | =A0 24 +++++++++++++++++++=
-+++++
-> =A01 files changed, 24 insertions(+), 0 deletions(-)
+> =A0drivers/net/ucc_geth.c | =A0 23 +++++++++++++++--------
+> =A01 files changed, 15 insertions(+), 8 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/pla=
-tforms/85xx/mpc85xx_mds.c
-> index c5028a2..0872e4a 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> @@ -237,6 +237,8 @@ static void __init mpc85xx_mds_setup_arch(void)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0} else if (machine_is(mpc8569_mds)) {
-> =A0#define BCSR7_UCC12_GETHnRST =A0 (0x1 << 2)
-> =A0#define BCSR8_UEM_MARVELL_RST =A0(0x1 << 1)
-> +#define BCSR_UCC_RGMII =A0 =A0 =A0 =A0 (0x1 << 6)
-> +#define BCSR_UCC_RTBI =A0 =A0 =A0 =A0 =A0(0x1 << 5)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/*
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * U-Boot mangles interrup=
-t polarity for Marvell PHYs,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 * so reset built-in and U=
-EM Marvell PHYs, this puts
-> @@ -247,6 +249,28 @@ static void __init mpc85xx_mds_setup_arch(void)
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 750d86d..0e72013 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -37,6 +37,7 @@
+> =A0#include <asm/qe.h>
+> =A0#include <asm/ucc.h>
+> =A0#include <asm/ucc_fast.h>
+> +#include <asm/machdep.h>
 >
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0setbits8(&bcsr_regs[7], BC=
-SR7_UCC12_GETHnRST);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clrbits8(&bcsr_regs[8], BC=
-SR8_UEM_MARVELL_RST);
+> =A0#include "ucc_geth.h"
+> =A0#include "fsl_pq_mdio.h"
+> @@ -1334,7 +1335,7 @@ static int adjust_enet_interface(struct ucc_geth_pr=
+ivate *ugeth)
+> =A0 =A0 =A0 =A0struct ucc_geth __iomem *ug_regs;
+> =A0 =A0 =A0 =A0struct ucc_fast __iomem *uf_regs;
+> =A0 =A0 =A0 =A0int ret_val;
+> - =A0 =A0 =A0 u32 upsmr, maccfg2, tbiBaseAddress;
+> + =A0 =A0 =A0 u32 upsmr, maccfg2;
+> =A0 =A0 =A0 =A0u16 value;
+>
+> =A0 =A0 =A0 =A0ugeth_vdbg("%s: IN", __func__);
+> @@ -1389,14 +1390,20 @@ static int adjust_enet_interface(struct ucc_geth_=
+private *ugeth)
+> =A0 =A0 =A0 =A0/* Note that this depends on proper setting in utbipar reg=
+ister. */
+> =A0 =A0 =A0 =A0if ((ugeth->phy_interface =3D=3D PHY_INTERFACE_MODE_TBI) |=
+|
+> =A0 =A0 =A0 =A0 =A0 =A0(ugeth->phy_interface =3D=3D PHY_INTERFACE_MODE_RT=
+BI)) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbiBaseAddress =3D in_be32(&ug_regs->utbipa=
+r);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbiBaseAddress &=3D UTBIPAR_PHY_ADDRESS_MAS=
+K;
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbiBaseAddress >>=3D UTBIPAR_PHY_ADDRESS_SH=
+IFT;
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 value =3D ugeth->phydev->bus->read(ugeth->p=
+hydev->bus,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (u8) tbiBas=
+eAddress, ENET_TBI_MII_CR);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct ucc_geth_info *ug_info =3D ugeth->ug=
+_info;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct phy_device *tbiphy;
 > +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 for (np =3D NULL; (np =3D o=
-f_find_compatible_node(np,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "network",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!ug_info->tbi_node)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ugeth_warn("TBI mode requir=
+es that the device "
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "tree speci=
+fy a tbi-handle\n");
 
-Don't match on the 'type' field.  Replace "network" with NULL and just
-rely on "ucc_geth" for matching.
+Shouldn't the driver avoid calling of_phy_find_device() if this error
+path is taken?
 
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "ucc_geth")) !=3D NULL;) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 const unsig=
-ned int *prop;
-
-u32 please.
-
-Also, rather than reusing 'prop' for both char* and u32 values, which
-forces you to use ugly casts, use 2 local variables here.
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int ucc_num=
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 tbiphy =3D of_phy_find_device(ug_info->tbi_=
+node);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!tbiphy)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ugeth_warn("Could not get T=
+BI device\n");
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 value =3D phy_read(tbiphy, ENET_TBI_MII_CR)=
 ;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of=
-_get_property(np, "cell-index", NULL);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop =
-=3D=3D NULL)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 continue;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ucc_num =3D=
- *prop - 1;
 
-Ugh.  No bounds checking...
+Ditto here; the code unconditionally tries to read the tbiphy, even if
+it isn't there.
 
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 prop =3D of=
-_get_property(np, "phy-connection-type", NULL);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (prop =
-=3D=3D NULL)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 continue;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (strcmp(=
-"rtbi", (const char *)prop) =3D=3D 0)
-
-(This is the ugly cast I was talking about.)
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 clrsetbits_8(&bcsr_regs[7 + ucc_num],
-
-...not having bounds checking could result in badness in this array index.
-
-This patch is dangerous as written.
-
-Finally, while using cell-index seems convenient, I think it would be
-better to have a lookup table of the index into the BCSR register
-block from the UCC base address, which also gives you implicit bounds
-checking.
+Looks wrong.
 
 g.
+
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0value &=3D ~0x1000; =A0 =A0 =A0 /* Turn of=
+f autonegotiation */
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ugeth->phydev->bus->write(ugeth->phydev->bu=
+s,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (u8) tbiBas=
+eAddress, ENET_TBI_MII_CR, value);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_write(tbiphy, ENET_TBI_MII_CR, value);
+> =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0init_check_frame_length_mode(ug_info->lengthCheckRx, &ug_r=
+egs->maccfg2);
+> --
+> 1.6.4
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+
+
 
 --=20
 Grant Likely, B.Sc., P.Eng.
