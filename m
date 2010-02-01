@@ -1,13 +1,16 @@
 Return-Path: <anton@ozlabs.org>
-Date: Mon, 1 Feb 2010 17:32:51 +1100
+Date: Mon, 1 Feb 2010 17:34:36 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 2/7] powerpc: Reduce footprint of xics_ipi_struct
-Message-ID: <20100201063251.GU2996@kryten>
-References: <20100201063023.GT2996@kryten>
+Subject: [PATCH 6/7] powerpc: Convert global "BAD" interrupt to per cpu
+	spurious
+Message-ID: <20100201063436.GY2996@kryten>
+References: <20100201063023.GT2996@kryten> <20100201063251.GU2996@kryten>
+	<20100201063318.GV2996@kryten> <20100201063341.GW2996@kryten>
+	<20100201063406.GX2996@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100201063023.GT2996@kryten>
+In-Reply-To: <20100201063406.GX2996@kryten>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,75 +22,96 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Right now we allocate a cacheline sized NR_CPUS array for xics IPI
-communication. Use DECLARE_PER_CPU_SHARED_ALIGNED to put it in percpu
-data in its own cacheline since it is written to by other cpus.
+I often get asked if BAD interrupts are really bad. On some boxes (eg
+IBM machines running a hypervisor) there are valid cases where are
+presented with an interrupt that is not for us. These cases are common
+enough to show up as thousands of BAD interrupts a day.
 
-On a kernel with NR_CPUS=1024, this saves quite a lot of memory:
-
-   text    data     bss      dec         hex    filename
-8767779 2944260 1505724 13217763         c9afe3 vmlinux.irq_cpustat
-8767555 2813444 1505724 13086723         c7b003 vmlinux.xics
-
-A saving of around 128kB.
+Tone them down by calling them spurious. Since they can be a significant cause
+of OS jitter, we may as well log them per cpu so we know where they are
+occurring.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
+Again, the short name matches x86 but if people are sufficiently confused by
+it ("SPU"), then we can think up something else.
+
+Index: linux-cpumask/arch/powerpc/include/asm/hardirq.h
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-02-01 17:28:56.980961887 +1100
-+++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-02-01 17:29:00.980963118 +1100
-@@ -514,15 +514,13 @@ static void __init xics_init_host(void)
- /*
-  * XICS only has a single IPI, so encode the messages per CPU
-  */
--struct xics_ipi_struct {
--        unsigned long value;
--	} ____cacheline_aligned;
+--- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-02-01 17:29:03.887211643 +1100
++++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-02-01 17:29:04.738461552 +1100
+@@ -9,6 +9,7 @@ typedef struct {
+ 	unsigned int timer_irqs;
+ 	unsigned int pmu_irqs;
+ 	unsigned int mce_exceptions;
++	unsigned int spurious_irqs;
+ } ____cacheline_aligned irq_cpustat_t;
+ 
+ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+@@ -25,7 +26,4 @@ static inline void ack_bad_irq(unsigned 
+ extern u64 arch_irq_stat_cpu(unsigned int cpu);
+ #define arch_irq_stat_cpu	arch_irq_stat_cpu
+ 
+-extern u64 arch_irq_stat(void);
+-#define arch_irq_stat		arch_irq_stat
 -
--static struct xics_ipi_struct xics_ipi_message[NR_CPUS] __cacheline_aligned;
-+static DEFINE_PER_CPU_SHARED_ALIGNED(unsigned long, xics_ipi_message);
+ #endif /* _ASM_POWERPC_HARDIRQ_H */
+Index: linux-cpumask/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/kernel/irq.c	2010-02-01 17:29:03.887211643 +1100
++++ linux-cpumask/arch/powerpc/kernel/irq.c	2010-02-01 17:29:04.738461552 +1100
+@@ -77,7 +77,6 @@ DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpusta
+ EXPORT_PER_CPU_SYMBOL(irq_stat);
  
- static inline void smp_xics_do_message(int cpu, int msg)
- {
--	set_bit(msg, &xics_ipi_message[cpu].value);
-+	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
+ int __irq_offset_value;
+-static int ppc_spurious_interrupts;
+ 
+ #ifdef CONFIG_PPC32
+ EXPORT_SYMBOL(__irq_offset_value);
+@@ -201,6 +200,11 @@ static int show_other_interrupts(struct 
+ 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs);
+         seq_printf(p, "  Local timer interrupts\n");
+ 
++	seq_printf(p, "%*s: ", prec, "SPU");
++	for_each_online_cpu(j)
++		seq_printf(p, "%10u ", per_cpu(irq_stat, j).spurious_irqs);
++	seq_printf(p, "  Spurious interrupts\n");
 +
-+	set_bit(msg, tgt);
- 	mb();
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		lpar_qirr_info(cpu, IPI_PRIORITY);
-@@ -548,25 +546,23 @@ void smp_xics_message_pass(int target, i
+ 	seq_printf(p, "%*s: ", prec, "CNT");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
+@@ -211,8 +215,6 @@ static int show_other_interrupts(struct 
+ 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
+ 	seq_printf(p, "  Machine check exceptions\n");
  
- static irqreturn_t xics_ipi_dispatch(int cpu)
- {
-+	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
-+
- 	WARN_ON(cpu_is_offline(cpu));
+-	seq_printf(p, "%*s: %10u\n", prec, "BAD", ppc_spurious_interrupts);
+-
+ 	return 0;
+ }
  
- 	mb();	/* order mmio clearing qirr */
--	while (xics_ipi_message[cpu].value) {
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION,
--				       &xics_ipi_message[cpu].value)) {
-+	while (*tgt) {
-+		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION, tgt)) {
- 			smp_message_recv(PPC_MSG_CALL_FUNCTION);
- 		}
--		if (test_and_clear_bit(PPC_MSG_RESCHEDULE,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_RESCHEDULE, tgt)) {
- 			smp_message_recv(PPC_MSG_RESCHEDULE);
- 		}
--		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE, tgt)) {
- 			smp_message_recv(PPC_MSG_CALL_FUNC_SINGLE);
- 		}
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
--		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK,
--				       &xics_ipi_message[cpu].value)) {
-+		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK, tgt)) {
- 			smp_message_recv(PPC_MSG_DEBUGGER_BREAK);
- 		}
- #endif
+@@ -282,13 +284,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
+ 
+ 	sum += per_cpu(irq_stat, cpu).pmu_irqs;
+ 	sum += per_cpu(irq_stat, cpu).mce_exceptions;
+-
+-	return sum;
+-}
+-
+-u64 arch_irq_stat(void)
+-{
+-	u64 sum = ppc_spurious_interrupts;
++	sum += per_cpu(irq_stat, cpu).spurious_irqs;
+ 
+ 	return sum;
+ }
+@@ -404,8 +400,7 @@ void do_IRQ(struct pt_regs *regs)
+ 	if (irq != NO_IRQ && irq != NO_IRQ_IGNORE)
+ 		handle_one_irq(irq);
+ 	else if (irq != NO_IRQ_IGNORE)
+-		/* That's not SMP safe ... but who cares ? */
+-		ppc_spurious_interrupts++;
++		__get_cpu_var(irq_stat).spurious_irqs++;
+ 
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
