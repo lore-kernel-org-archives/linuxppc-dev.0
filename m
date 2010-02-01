@@ -1,16 +1,20 @@
-Return-Path: <wg@denx.de>
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: Linux-i2c@vger.kernel.org
-Subject: [PATCH v5 3/3] powerpc: doc/dts-bindings: update doc of FSL I2C
-	bindings
-Date: Mon,  1 Feb 2010 08:37:16 +0100
-Message-Id: <1265009836-26398-4-git-send-email-wg@grandegger.com>
-In-Reply-To: <1265009836-26398-3-git-send-email-wg@grandegger.com>
-References: <1265009836-26398-1-git-send-email-wg@grandegger.com>
-	<1265009836-26398-2-git-send-email-wg@grandegger.com>
-	<1265009836-26398-3-git-send-email-wg@grandegger.com>
-Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id EA09EB7D1E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Feb 2010 20:10:02 +1100 (EST)
+Date: Mon, 1 Feb 2010 10:09:46 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 5/5] powerpc: Increase NR_IRQS Kconfig maximum to 32768
+Message-ID: <20100201090946.GA22966@iram.es>
+References: <20100131110938.GL2996@kryten> <20100131111012.GM2996@kryten>
+	<20100131111155.GN2996@kryten> <20100131111315.GO2996@kryten>
+	<20100131111403.GP2996@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100131111403.GP2996@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,85 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@denx.de>
+On Sun, Jan 31, 2010 at 10:14:03PM +1100, Anton Blanchard wrote:
+> 
+> With dynamic irq descriptors the overhead of a large NR_IRQS is much lower
+> than it used to be. With more MSI-X capable adapters and drivers exploiting 
+> multiple vectors we may as well allow the user to increase it beyond the
+> current maximum of 512.
+> 
+> 32768 seems large enough that we'd never have to bump it again (although I bet
+> my prediction is horribly wrong). It boot tests OK and the vmlinux footprint
+> increase is only around 500kB due to:
 
-This patch adds the MPC5121 to the list of supported devices,
-enhances the doc of the "clock-frequency" property and removes
-the obsolete "cell-index" property from the example nodes.
-Furthermore and example for the MPC5121 has been added.
+Only 1/2 MB? 
 
-Signed-off-by: Wolfgang Grandegger <wg@denx.de>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
----
- Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++++++++++++++++++----
- 1 files changed, 24 insertions(+), 6 deletions(-)
+I'm running Linux on 12 year old PPC machines which have 16MB
+or RAM (ok, they are still running an old kernel, but a few
+patches like this and they wont't even boot). The kernels
+I have are well below 1MB, code+data+bss. 
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/i2c.txt b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-index b6d2e21..2f62dae 100644
---- a/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-@@ -9,8 +9,9 @@ Recommended properties :
- 
-  - compatible : compatibility list with 2 entries, the first should
-    be "fsl,CHIP-i2c" where CHIP is the name of a compatible processor,
--   e.g. mpc8313, mpc8543, mpc8544, mpc5200 or mpc5200b. The second one
--   should be "fsl-i2c".
-+   e.g. mpc8313, mpc8543, mpc8544, mpc5121, mpc5200 or mpc5200b. The
-+   second one should be "fsl-i2c". For the mpc5121, an additional node
-+   "fsl,mpc5121-i2c-ctrl" is required as shown in the example below.
-  - interrupts : <a b> where a is the interrupt number and b is a
-    field that represents an encoding of the sense and level
-    information for the interrupt.  This should be encoded based on
-@@ -20,29 +21,46 @@ Recommended properties :
-    services interrupts for this device.
-  - fsl,preserve-clocking : boolean; if defined, the clock settings
-    from the bootloader are preserved (not touched).
-- - clock-frequency : desired I2C bus clock frequency in Hz.
-+ - clock-frequency : desired I2C bus clock frequency in Hz.  If this
-+   property and "fsl,preserve-clocking" is not defined, a safe fixed
-+   clock divider value is used (resulting in a small clock frequency).
- 
- Examples :
- 
-+	/* MPC5121 based board */
-+	i2c@1740 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+		reg = <0x1740 0x20>;
-+		interrupts = <11 0x8>;
-+		interrupt-parent = <&ipic>;
-+		clock-frequency = <100000>;
-+	};
-+
-+	i2ccontrol@1760 {
-+		compatible = "fsl,mpc5121-i2c-ctrl";
-+		reg = <0x1760 0x8>;
-+	};
-+
-+	/* MPC5200B based board */
- 	i2c@3d00 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
--		cell-index = <0>;
- 		reg = <0x3d00 0x40>;
- 		interrupts = <2 15 0>;
- 		interrupt-parent = <&mpc5200_pic>;
- 		fsl,preserve-clocking;
- 	};
- 
-+	/* MPC8544 base board */
- 	i2c@3100 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		cell-index = <1>;
- 		compatible = "fsl,mpc8544-i2c", "fsl-i2c";
- 		reg = <0x3100 0x100>;
- 		interrupts = <43 2>;
- 		interrupt-parent = <&mpic>;
- 		clock-frequency = <400000>;
- 	};
--
--- 
-1.6.2.5
+Yes it is configurable, thanks, and 64 is enough for these
+machines (8259 plus an MPIC), so it's not that crucial.
+
+What I object to is calling 1/2MB negligible.
+
+	Gabriel
