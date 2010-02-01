@@ -1,20 +1,22 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 804EAB7D37
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Feb 2010 21:00:22 +1100 (EST)
-Date: Mon, 1 Feb 2010 11:00:17 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@ozlabs.org
-Subject: Re: [resend] Make the kernel accept ePAPR style phandle information
-Message-ID: <20100201100017.GA3288@pengutronix.de>
-References: <20100201045242.GB8095@yookeroo>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
-In-Reply-To: <20100201045242.GB8095@yookeroo>
+	by ozlabs.org (Postfix) with ESMTPS id 02F5BB7D52
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Feb 2010 21:04:36 +1100 (EST)
+Subject: Re: [PATCH 5/5] powerpc: Increase NR_IRQS Kconfig maximum to 32768
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20100201090946.GA22966@iram.es>
+References: <20100131110938.GL2996@kryten> <20100131111012.GM2996@kryten>
+	<20100131111155.GN2996@kryten> <20100131111315.GO2996@kryten>
+	<20100131111403.GP2996@kryten>  <20100201090946.GA22966@iram.es>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 21:04:25 +1100
+Message-ID: <1265018665.8287.36.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,89 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2010-02-01 at 10:09 +0100, Gabriel Paubert wrote:
+> On Sun, Jan 31, 2010 at 10:14:03PM +1100, Anton Blanchard wrote:
+> > 
+> > With dynamic irq descriptors the overhead of a large NR_IRQS is much lower
+> > than it used to be. With more MSI-X capable adapters and drivers exploiting 
+> > multiple vectors we may as well allow the user to increase it beyond the
+> > current maximum of 512.
+> > 
+> > 32768 seems large enough that we'd never have to bump it again (although I bet
+> > my prediction is horribly wrong). It boot tests OK and the vmlinux footprint
+> > increase is only around 500kB due to:
+> 
+> Only 1/2 MB? 
+> 
+> I'm running Linux on 12 year old PPC machines which have 16MB
+> or RAM (ok, they are still running an old kernel, but a few
+> patches like this and they wont't even boot). The kernels
+> I have are well below 1MB, code+data+bss. 
+> 
+> Yes it is configurable, thanks, and 64 is enough for these
+> machines (8259 plus an MPIC), so it's not that crucial.
+> 
+> What I object to is calling 1/2MB negligible.
 
---sdtB3X0nJg68CQEu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah well, all Anton did was to push up the -max- value you can set in
+the config, not the default :-)
 
-On Mon, Feb 01, 2010 at 03:52:42PM +1100, David Gibson wrote:
-> Grant, I've updated this for your current test-devicetree branch.
-> Please apply.
->=20
-> Currently when processing flattened device trees, the kernel expects
-> the phandle in a property called "linux,phandle".  The ePAPR spec -
-> not being Linux specific - instead requires phandles to be encoded in
-> a property named simply "phandle".  This patch makes the kernel accept
-> either form when unflattening the device tree.
->=20
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
->=20
-> Index: working-2.6/drivers/of/fdt.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- working-2.6.orig/drivers/of/fdt.c	2010-02-01 15:51:44.000000000 +1100
-> +++ working-2.6/drivers/of/fdt.c	2010-02-01 15:51:46.458557615 +1100
-> @@ -310,10 +310,19 @@ unsigned long __init unflatten_dt_node(u
->  		pp =3D unflatten_dt_alloc(&mem, sizeof(struct property),
->  					__alignof__(struct property));
->  		if (allnextpp) {
-> -			if (strcmp(pname, "linux,phandle") =3D=3D 0) {
-> +			/* We accept flattened tree phandles either in
-> +			 * ePAPR-style "phandle" properties, or the
-> +			 * legacy "linux,phandle" properties.  If both
-> +			 * appear and have different values, things
-> +			 * will get weird.  Don't do that. */
+But yeah, it's not "negligible" per-se.
 
-I don't want to be just pedantic, I really think the preferred way of
-multi-line comments
-
- /*
-  * foo
-  * bar
-  */
-
-will help readability a lot here.
-
-
-> +			if ((strcmp(pname, "phandle") =3D=3D 0)
-> +			    || (strcmp(pname, "linux,phandle") =3D=3D 0)) {
->  				if (np->phandle =3D=3D 0)
->  					np->phandle =3D *((u32 *)*p);
->  			}
-> +			/* And we process the "ibm,phandle" property
-> +			 * used in pSeries dynamic device tree
-> +			 * stuff */
->  			if (strcmp(pname, "ibm,phandle") =3D=3D 0)
->  				np->phandle =3D *((u32 *)*p);
->  			pp->name =3D pname;
->=20
-> --=20
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---sdtB3X0nJg68CQEu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktmpjEACgkQD27XaX1/VRtH/gCgxP0YNT9wjgDky/HL163sOaGG
-dUUAnjVkCEDwmwlh9bsQsmw8ufnlebP7
-=f4Ab
------END PGP SIGNATURE-----
-
---sdtB3X0nJg68CQEu--
+Cheers,
+Ben.
