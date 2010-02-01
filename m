@@ -2,26 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44D1BB7D69
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Feb 2010 13:09:57 +1100 (EST)
-Subject: Re: [PATCH] nodmask.h: remove macro any_online_node
+	by ozlabs.org (Postfix) with ESMTPS id 9F3F2B7D70
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Feb 2010 13:16:21 +1100 (EST)
+Subject: Re: [PATCH 01/10] arch/powerpc: Fix continuation line formats
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-In-Reply-To: <201001061624.59118.hartleys@visionengravers.com>
-References: <201001061624.59118.hartleys@visionengravers.com>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
+References: <cover.1264967493.git.joe@perches.com>
+	<d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 13:05:58 +1100
-Message-ID: <1264989958.8287.13.camel@pasglop>
+Date: Mon, 01 Feb 2010 13:16:14 +1100
+Message-ID: <1264990574.8287.15.camel@pasglop>
 Mime-Version: 1.0
-Cc: neilb@suse.de, Trond.Myklebust@netapp.com, bfields@fieldses.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Ricardo.Labiaga@netapp.com, rientjes@google.com, mel@csn.ul.ie,
-	devicetree-discuss@lists.ozlabs.org, akpm@linux-foundation.org,
-	kamezawa.hiroyu@jp.fujitsu.com, lee.schermerhorn@hp.com,
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-	Linux Kernel <linux-kernel@vger.kernel.org>, miltonm@bga.com,
-	dave@linux.vnet.ibm.com, chuck.lever@oracle.com,
-	bhalevy@panasas.com, davem@davemloft.net
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-01-06 at 16:24 -0700, H Hartley Sweeten wrote:
-> nodmask.h: remove macro any_online_node
+On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
+> String constants that are continued on subsequent lines with \
+> are not good.
 > 
-> The macro any_online_node is prone to producing sparse warnings
-> due to the local symbol 'node'. Since all the in-tree users are really
-> requesting the first online node (the mask argument is either
-> NODE_MASK_ALL or node_online_map) just use the first_online_node
-> macro and remove the any_online_node macro since there are no users.
+> Signed-off-by: Joe Perches <joe@perches.com>
+
+You want me to take that in the powerpc tree ?
+
+A minor glitch below tho...
+
+> ---
+>  arch/powerpc/kernel/nvram_64.c               |    6 +++---
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c |    8 ++++----
+>  arch/powerpc/platforms/pseries/smp.c         |    4 ++--
+>  3 files changed, 9 insertions(+), 9 deletions(-)
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: David Rientjes <rientjes@google.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+> index ad461e7..9cf197f 100644
+> --- a/arch/powerpc/kernel/nvram_64.c
+> +++ b/arch/powerpc/kernel/nvram_64.c
+> @@ -338,8 +338,8 @@ static int __init nvram_create_os_partition(void)
+>  
+>  	rc = nvram_write_header(new_part);
+>  	if (rc <= 0) {
+> -		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header \
+> -				failed (%d)\n", rc);
+> +		printk(KERN_ERR "nvram_create_os_partition: nvram_write_header "
+> +				"failed (%d)\n", rc);
+>  		return rc;
+>  	}
+>  
+> @@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
+>  	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
+>  	if (rc <= 0) {
+>  		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
+> -				"failed (%d)\n", rc);
+> +		       "failed (%d)\n", rc);
+>  		return rc;
+>  	}
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The above is objectionable :-)
 
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> Cc: Milton Miller <miltonm@bga.com>
-> Cc: Nathan Fontenot <nfont@austin.ibm.com>
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: J. Bruce Fields <bfields@fieldses.org>
-> Cc: Neil Brown <neilb@suse.de>
-> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: Benny Halevy <bhalevy@panasas.com>
-> Cc: Chuck Lever <chuck.lever@oracle.com>
-> Cc: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>
-
-Cheers,
-Ben.
+>  	
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index 6ea4698..a70de10 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -397,12 +397,12 @@ static int parse_cede_parameters(void)
+>  				CEDE_LATENCY_PARAM_MAX_LENGTH);
+>  
+>  	if (call_status != 0)
+> -		printk(KERN_INFO "CEDE_LATENCY: \
+> -			%s %s Error calling get-system-parameter(0x%x)\n",
+> +		printk(KERN_INFO "CEDE_LATENCY: "
+> +			"%s %s Error calling get-system-parameter(0x%x)\n",
+>  			__FILE__, __func__, call_status);
+>  	else
+> -		printk(KERN_INFO "CEDE_LATENCY: \
+> -			get-system-parameter successful.\n");
+> +		printk(KERN_INFO "CEDE_LATENCY: "
+> +			"get-system-parameter successful.\n");
+>  
+>  	return call_status;
+>  }
+> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+> index b488663..4e7f89a 100644
+> --- a/arch/powerpc/platforms/pseries/smp.c
+> +++ b/arch/powerpc/platforms/pseries/smp.c
+> @@ -144,8 +144,8 @@ static void __devinit smp_pSeries_kick_cpu(int nr)
+>  		hcpuid = get_hard_smp_processor_id(nr);
+>  		rc = plpar_hcall_norets(H_PROD, hcpuid);
+>  		if (rc != H_SUCCESS)
+> -			printk(KERN_ERR "Error: Prod to wake up processor %d\
+> -						Ret= %ld\n", nr, rc);
+> +			printk(KERN_ERR "Error: Prod to wake up processor %d "
+> +						"Ret= %ld\n", nr, rc);
+>  	}
+>  }
+>  
