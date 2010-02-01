@@ -1,20 +1,19 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 1D049B7D67
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 05:30:40 +1100 (EST)
-Subject: Re: [PATCH 01/10] arch/powerpc: Fix continuation line formats
-From: Joe Perches <joe@perches.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1264990574.8287.15.camel@pasglop>
-References: <cover.1264967493.git.joe@perches.com>
-	<d8e2cb6523906c5e77bb13ea9ffc077a9310dc9e.1264967498.git.joe@perches.com>
-	<1264990574.8287.15.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 10:30:37 -0800
-Message-ID: <1265049037.25140.301.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <Dan.Geer@faa.gov>
+Received: from relay2.faa.gov (relay2.faa.gov [204.108.10.7])
+	by ozlabs.org (Postfix) with ESMTP id 98156B7D55
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Feb 2010 06:00:18 +1100 (EST)
+In-Reply-To: <4B671C4D.5070806@freescale.com>
+References: <OF7C180968.43598D84-ON852576BD.006286D6-852576BD.0063AC38@faa.gov>
+	<4B671C4D.5070806@freescale.com>
+Subject: Re: BSE-IP
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF7ADBC091.CA74BF20-ON852576BD.0065FA13-852576BD.00685848@faa.gov>
+From: Dan.Geer@faa.gov
+Date: Mon, 1 Feb 2010 13:59:43 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-02-01 at 13:16 +1100, Benjamin Herrenschmidt wrote:
-> On Sun, 2010-01-31 at 12:02 -0800, Joe Perches wrote:
-> > String constants that are continued on subsequent lines with \
-> > are not good.
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> You want me to take that in the powerpc tree ?
+> Has your firmware already set up the serial port?  cpm-serial doesn't
+make
+> assumptions about specific addresses, but it does assume that the BRG,
+pins,
+> etc. have been set up for the serial port to work.
 
-Yes please.
+Yes. Or, so I thought. First, I interrupt the bootstrap with <Esc>.  Then,
+I load the image into RAM with 'load simpleImage.bseip 200000' then 'go
+200000'.  All of which is echo'd out the serial console by the firmware.
+I assumed that the low-level setups were complete.  However, in the old
+ppc/boot/m8xx_tty.c there is some initialization for SMC1 and the BRG
+(serial_init()).  Where should I do this in the new model?  Is
+platform_specific_init() the right place?
 
-> A minor glitch below tho...
-> > @@ -349,7 +349,7 @@ static int __init nvram_create_os_partition(void)
-> >  	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
-> >  	if (rc <= 0) {
-> >  		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
-> > -				"failed (%d)\n", rc);
-> > +		       "failed (%d)\n", rc);
-> >  		return rc;
-> >  	}
-> 
-> The above is objectionable :-)
+> If this isn't the case, you'll need to do it from a custom bootwrapper
+platform
+> file.
+>
+> >                                      d-cache-line-size = <8>;       //
+8 bytes
+> > per line
+> >                                      i-cache-line-size = <8>;       //
+8 bytes
+> > per line
+>
+> Shouldn't this be 16 bytes?
 
-Can you drop that section or do you need another patch?
+Thanks!  I read "4 word boundary" in the manual, and assumed 16bit words.
+I fixed this, but same results.  I think I have a little more init work
+todo.
+
+> >              soc@ff000000 {
+>
+> Is this the correct IMMR address for your firmware?
+
+Yes, this is the correct IMMR address.
+
+Thanks for your help!
+Dan
