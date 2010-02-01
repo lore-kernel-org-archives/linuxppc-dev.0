@@ -1,35 +1,36 @@
 Return-Path: <jschopp@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E2326B80F2
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 09:50:55 +1100 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o11MlGvq013528
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 17:47:16 -0500
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 547BBB7D67
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 09:51:20 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o11MgvwY020435
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:42:57 -0700
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o11Moq0B143552
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 17:50:52 -0500
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o11Mp3jP078944
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:51:04 -0700
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o11Montk000882
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:50:49 -0700
+	id o11Mp3E0002162
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:51:03 -0700
 Received: from [9.53.41.167] (jschopp-laptop-009053041167.austin.ibm.com
 	[9.53.41.167])
 	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o11MomxL000834
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:50:49 -0700
-Subject: [PATCHv2 1/2] Add static fields to ibm,client-architecture call
+	o11Mp3vu002140
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Feb 2010 15:51:03 -0700
+Subject: [PATCHv2 2/2] Update ibm,client-architecture call field based on
+	device tree
 From: Joel Schopp <jschopp@austin.ibm.com>
 To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1263510116.7445.5.camel@jschopp-laptop>
+In-Reply-To: <1263501674.4869.142.camel@jschopp-laptop>
 References: <1263501508.4869.133.camel@jschopp-laptop>
-	<1263501613.4869.139.camel@jschopp-laptop>
-	<1263510116.7445.5.camel@jschopp-laptop>
+	<1263501674.4869.142.camel@jschopp-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 16:50:48 -0600
-Message-ID: <1265064648.5391.18.camel@jschopp-laptop>
+Date: Mon, 01 Feb 2010 16:51:02 -0600
+Message-ID: <1265064662.5391.19.camel@jschopp-laptop>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,65 +41,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds 2 fields to the ibm_architecture_vec array.  
+In the previous patch the client-architecture field for the number of
+cores supported is set statically as high as is possible.  However, that
+static setting could be too high if the system supports smt, resulting
+in cpus assigned to Linux that are not booted.  This patch reads the
+device tree (before it is unflattened) to determine the amount of smt.
+It then dynamically updates the entires in the array with the proper
+number of cores supported.  Tests show this correctly detecting SMT4 on
+a Power7 and still booting all the supported cores on a large machine.
 
-The first of these fields indicates the number of cores which Linux can
-boot.  It does not account for SMT, so it may result in cpus assigned to
-Linux which cannot be booted.  A second patch follows that dynamically
-updates this for SMT.
-
-The second field just indicates that our OS is Linux, and not another
-OS.  The system may or may not use this hint to performance tune
-settings for Linux.
-
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+Signed-off-by: Joel Schopp <jschopp@austin.ibm.com> 
 ---
 Index: linux-2.6.git/arch/powerpc/kernel/prom_init.c
 ===================================================================
 --- linux-2.6.git.orig/arch/powerpc/kernel/prom_init.c
 +++ linux-2.6.git/arch/powerpc/kernel/prom_init.c
-@@ -654,6 +656,9 @@ static void __init early_cmdline_parse(v
- #define OV5_CMO			0x00
- #endif
- 
-+/* Option Vector 6: IBM PAPR hints */
-+#define OV6_LINUX		0x02	/* Linux is our OS */
-+
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-  * followed by # option vectors - 1, followed by the option vectors.
-@@ -665,7 +670,7 @@ static unsigned char ibm_architecture_ve
- 	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
- 	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
- 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
--	5 - 1,				/* 5 option vectors */
-+	6 - 1,				/* 6 option vectors */
- 
- 	/* option vector 1: processor architectures supported */
- 	3 - 2,				/* length */
-@@ -697,12 +702,24 @@ static unsigned char ibm_architecture_ve
- 	0,				/* don't halt */
- 
- 	/* option vector 5: PAPR/OF options */
--	5 - 2,				/* length */
-+	13 - 2,				/* length */
- 	0,				/* don't ignore, don't halt */
- 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
- 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
- 	0,
- 	OV5_CMO,
-+	0,
-+	0,
-+	0,
-+	0,
-+	W(NR_CPUS),			/* number of cores supported*/
-+
-+	/* option vector 6: IBM PAPR hints */
-+	4 - 2,				/* length */
-+	0,
-+	0,
-+	OV6_LINUX,
-+
+@@ -807,13 +807,55 @@ static struct fake_elf {
+ 	}
  };
  
- /* Old method - ELF header with PT_NOTE sections */
++static int __init prom_smt_way(void)
++{
++	phandle node;
++	char type[64];
++	unsigned int plen;
++
++	for (node = 0; prom_next_node(&node); ) {
++		type[0] = 0;
++		prom_getprop(node, "device_type", type, sizeof(type));
++
++		if (strcmp(type, RELOC("cpu")))
++			continue;
++
++		/*
++		 * There is an entry for each smt thread, each entry being
++		 * 4 bytes long.  All cpus should have the same number of
++		 * smt threads, so return after finding the first.
++		 */
++		plen = prom_getproplen(node, "ibm,ppc-interrupt-server#s");
++		prom_printf("smt threads per core %x\n", (unsigned long) plen);
++		if (plen >= 4)
++			return plen / 4;
++	}
++	/*
++	 * If things go wrong and we get here fallback to SMT1
++	 */
++	prom_debug("unable to determine smt from device tree, guessing smt1\n");
++	return 1;
++
++}
++
++
+ static void __init prom_send_capabilities(void)
+ {
+ 	ihandle elfloader, root;
+ 	prom_arg_t ret;
++	u32 *cores;
+ 
+ 	root = call_prom("open", 1, 1, ADDR("/"));
+ 	if (root != 0) {
++		/*
++		 * If you add to the struct, please be sure the 100 index
++		 * didn't change.  The BUILD_BUG_ON is a reminder.
++		 */
++		cores = (u32 *) &ibm_architecture_vec[100];
++		if(*cores != NR_CPUS)
++			prom_printf("client-architecture structure corrupted\n");
++		*cores = (NR_CPUS / prom_smt_way());
++		prom_printf("setting client-architecture cores to %x\n", *cores);
+ 		/* try calling the ibm,client-architecture-support method */
+ 		prom_printf("Calling ibm,client-architecture-support...");
+ 		if (call_prom_ret("call-method", 3, 2, &ret,
