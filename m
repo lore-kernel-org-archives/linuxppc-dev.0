@@ -1,20 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 01C8CB7D93
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Feb 2010 15:58:54 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add DMA mask to MPSC serial and network and
-	UART device to serial
+Subject: Re: [RFC:PATCH 01/03] powerpc: Extended ptrace interface
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: minyard@acm.org
-In-Reply-To: <20100130000407.GA16156@minyard.local>
-References: <20100130000407.GA16156@minyard.local>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <14701.1264042076@neuling.org>
+References: <20100118215704.15684.60646.sendpatchset@norville.austin.ibm.com>
+	<20100118215709.15684.28776.sendpatchset@norville.austin.ibm.com>
+	<14701.1264042076@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 01 Feb 2010 15:58:33 +1100
-Message-ID: <1265000313.8287.25.camel@pasglop>
+Date: Mon, 01 Feb 2010 16:08:04 +1100
+Message-ID: <1265000884.8287.28.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>,
+	linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Torez Smith <torez@us.ibm.com>, Sergio Durigan Junior <sergiodj@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,64 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-01-29 at 18:04 -0600, Corey Minyard wrote:
-> From: Corey Minyard <cminyard@mvista.com>
-> 
-> The MPSC drivers that use DMA need to set coherent_dma_mask to allow
-> dma_alloc_xxx routines to work properly.  Also, the mpsc serial driver
-> needed to set pi->port.dev to register properly.  With these fixes,
-> the MPSC drivers seem to work again.
-> 
-> Signed-off-by: Corey Minyard <cminyard@mvista.com>
-> ---
+On Thu, 2010-01-21 at 15:47 +1300, Michael Neuling wrote:
+> > powerpc: Extended ptrace interface
 
-Is that enough ? Since 2.6.31 we also need the dma ops to be filled
-properly and obviously that isn't going to happen for random platform
-devices... Or are those initialized elsewhere by your platform code ? In
-which case it might be a good place to also set the coherent mask...
+> > +static long ppc_set_hwdebug(struct task_struct *child,
+> > +		     struct ppc_hw_breakpoint *bp_info)
+> > +{
+> > +	/*
+> > +	 * We currently support one data breakpoint
+> > +	 */
+> > +	if (((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0) ||
+> > +	    ((bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0) ||
+> > +	    (bp_info->trigger_type != PPC_BREAKPOINT_TRIGGER_WRITE) ||
+> > +	    (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) ||
+> > +	    (bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE))
+> > +		return -EINVAL;
+> > +
+> > +	if (child->thread.dabr)
+> > +		return -ENOSPC;
+> > +
+> > +	if ((unsigned long)bp_info->addr >= TASK_SIZE)
+> > +		return -EIO;
+> > +
+> > +	child->thread.dabr = (unsigned long)bp_info->addr;
+> > +#ifdef CONFIG_BOOKE
+> 
+> Do we want to add these CONFIG_BOOKE into a ppc_md call, so different
+> CPU typs can have different setups?  I could see other CPUs might need
+> to do different stuff here and we end up in #ifdef chaos
 
-Maybe we should have a more generic way to set the "default" dma
-information (including ops, masks etc...) for use by platform,
-of_platform etc... devices.
+Actually, I don't think we need that level of indirection just now. If
+there's ever a need for more ifdef's then ok, but the BookE debug
+facility is somewhat architected so I wouldn't expect that much new
+stuff.
 
 Cheers,
 Ben.
-
-> I'm not really sure about where to set the coherent_dma_mask, it seems
-> like a more general place would be better but I couldn't find it.
-> 
-> Without these, the console stops working after the switchover and
-> the network driver fails to allocate buffers.  With these, my board
-> boots up and works fine.
-> 
-> Index: linux-2.6.31/drivers/serial/mpsc.c
-> ===================================================================
-> --- linux-2.6.31.orig/drivers/serial/mpsc.c
-> +++ linux-2.6.31/drivers/serial/mpsc.c
-> @@ -2071,6 +2071,9 @@ static int mpsc_drv_probe(struct platfor
->  		if (!(rc = mpsc_drv_map_regs(pi, dev))) {
->  			mpsc_drv_get_platform_data(pi, dev, dev->id);
->  
-> +			dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-> +			pi->port.dev = &dev->dev;
-> +
->  			if (!(rc = mpsc_make_ready(pi))) {
->  				spin_lock_init(&pi->tx_lock);
->  				if (!(rc = uart_add_one_port(&mpsc_reg,
-> Index: linux-2.6.31/drivers/net/mv643xx_eth.c
-> ===================================================================
-> --- linux-2.6.31.orig/drivers/net/mv643xx_eth.c
-> +++ linux-2.6.31/drivers/net/mv643xx_eth.c
-> @@ -2916,7 +2916,7 @@ static int mv643xx_eth_probe(struct plat
->  	mp->shared = platform_get_drvdata(pd->shared);
->  	mp->base = mp->shared->base + 0x0400 + (pd->port_number << 10);
->  	mp->port_num = pd->port_number;
-> -
-> +	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
->  	mp->dev = dev;
->  
->  	set_params(mp, pd);
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
