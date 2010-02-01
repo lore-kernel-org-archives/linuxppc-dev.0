@@ -1,15 +1,13 @@
 Return-Path: <anton@ozlabs.org>
-Date: Mon, 1 Feb 2010 17:34:06 +1100
+Date: Mon, 1 Feb 2010 17:32:51 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH 5/7] powerpc: Add timer, performance monitor and machine
-	check counts to /proc/interrupts
-Message-ID: <20100201063406.GX2996@kryten>
-References: <20100201063023.GT2996@kryten> <20100201063251.GU2996@kryten>
-	<20100201063318.GV2996@kryten> <20100201063341.GW2996@kryten>
+Subject: [PATCH 2/7] powerpc: Reduce footprint of xics_ipi_struct
+Message-ID: <20100201063251.GU2996@kryten>
+References: <20100201063023.GT2996@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100201063341.GW2996@kryten>
+In-Reply-To: <20100201063023.GT2996@kryten>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,134 +19,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-With NO_HZ it is useful to know how often the decrementer is going off. The
-patch below adds an entry for it and also adds it into the /proc/stat
-summaries.
+Right now we allocate a cacheline sized NR_CPUS array for xics IPI
+communication. Use DECLARE_PER_CPU_SHARED_ALIGNED to put it in percpu
+data in its own cacheline since it is written to by other cpus.
 
-While here, I added performance monitoring and machine check exceptions.
-I found it useful to keep an eye on the PMU exception rate
-when using the perf tool. Since it's possible to take a completely
-handled machine check on a System p box it also sounds like a good idea to
-keep a machine check summary.
+On a kernel with NR_CPUS=1024, this saves quite a lot of memory:
 
-The event naming matches x86 to keep gratuitous differences to a minimum.
+   text    data     bss      dec         hex    filename
+8767779 2944260 1505724 13217763         c9afe3 vmlinux.irq_cpustat
+8767555 2813444 1505724 13086723         c7b003 vmlinux.xics
+
+A saving of around 128kB.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-If people really don't like the x86 short names, we can think up something
-else.
-
-Index: linux-cpumask/arch/powerpc/include/asm/hardirq.h
+Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/include/asm/hardirq.h	2010-02-01 17:28:56.990963256 +1100
-+++ linux-cpumask/arch/powerpc/include/asm/hardirq.h	2010-02-01 17:29:03.887211643 +1100
-@@ -6,6 +6,9 @@
+--- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-02-01 17:28:56.980961887 +1100
++++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-02-01 17:29:00.980963118 +1100
+@@ -514,15 +514,13 @@ static void __init xics_init_host(void)
+ /*
+  * XICS only has a single IPI, so encode the messages per CPU
+  */
+-struct xics_ipi_struct {
+-        unsigned long value;
+-	} ____cacheline_aligned;
+-
+-static struct xics_ipi_struct xics_ipi_message[NR_CPUS] __cacheline_aligned;
++static DEFINE_PER_CPU_SHARED_ALIGNED(unsigned long, xics_ipi_message);
  
- typedef struct {
- 	unsigned int __softirq_pending;
-+	unsigned int timer_irqs;
-+	unsigned int pmu_irqs;
-+	unsigned int mce_exceptions;
- } ____cacheline_aligned irq_cpustat_t;
- 
- DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-@@ -19,4 +22,10 @@ static inline void ack_bad_irq(unsigned 
- 	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
- }
- 
-+extern u64 arch_irq_stat_cpu(unsigned int cpu);
-+#define arch_irq_stat_cpu	arch_irq_stat_cpu
-+
-+extern u64 arch_irq_stat(void);
-+#define arch_irq_stat		arch_irq_stat
-+
- #endif /* _ASM_POWERPC_HARDIRQ_H */
-Index: linux-cpumask/arch/powerpc/kernel/time.c
-===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/time.c	2010-02-01 17:28:56.590961781 +1100
-+++ linux-cpumask/arch/powerpc/kernel/time.c	2010-02-01 17:29:03.887211643 +1100
-@@ -575,6 +575,8 @@ void timer_interrupt(struct pt_regs * re
- 
- 	trace_timer_interrupt_entry(regs);
- 
-+	__get_cpu_var(irq_stat).timer_irqs++;
-+
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continuue to take decrementer exceptions */
- 	set_dec(DECREMENTER_MAX);
-Index: linux-cpumask/arch/powerpc/kernel/irq.c
-===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/irq.c	2010-02-01 17:29:02.007212291 +1100
-+++ linux-cpumask/arch/powerpc/kernel/irq.c	2010-02-01 17:29:03.887211643 +1100
-@@ -196,6 +196,21 @@ static int show_other_interrupts(struct 
- 	}
- #endif /* CONFIG_PPC32 && CONFIG_TAU_INT */
- 
-+	seq_printf(p, "%*s: ", prec, "LOC");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs);
-+        seq_printf(p, "  Local timer interrupts\n");
-+
-+	seq_printf(p, "%*s: ", prec, "CNT");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", per_cpu(irq_stat, j).pmu_irqs);
-+	seq_printf(p, "  Performance monitoring interrupts\n");
-+
-+	seq_printf(p, "%*s: ", prec, "MCE");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", per_cpu(irq_stat, j).mce_exceptions);
-+	seq_printf(p, "  Machine check exceptions\n");
-+
- 	seq_printf(p, "%*s: %10u\n", prec, "BAD", ppc_spurious_interrupts);
- 
- 	return 0;
-@@ -258,6 +273,26 @@ out:
- 	return 0;
- }
- 
-+/*
-+ * /proc/stat helpers
-+ */
-+u64 arch_irq_stat_cpu(unsigned int cpu)
-+{
-+	u64 sum = per_cpu(irq_stat, cpu).timer_irqs;
-+
-+	sum += per_cpu(irq_stat, cpu).pmu_irqs;
-+	sum += per_cpu(irq_stat, cpu).mce_exceptions;
-+
-+	return sum;
-+}
-+
-+u64 arch_irq_stat(void)
-+{
-+	u64 sum = ppc_spurious_interrupts;
-+
-+	return sum;
-+}
-+
- #ifdef CONFIG_HOTPLUG_CPU
- void fixup_irqs(cpumask_t map)
+ static inline void smp_xics_do_message(int cpu, int msg)
  {
-Index: linux-cpumask/arch/powerpc/kernel/traps.c
-===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/traps.c	2010-02-01 17:28:56.570961322 +1100
-+++ linux-cpumask/arch/powerpc/kernel/traps.c	2010-02-01 17:29:03.897211396 +1100
-@@ -478,6 +478,8 @@ void machine_check_exception(struct pt_r
- {
- 	int recover = 0;
- 
-+	__get_cpu_var(irq_stat).mce_exceptions++;
+-	set_bit(msg, &xics_ipi_message[cpu].value);
++	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
 +
- 	/* See if any machine dependent calls. In theory, we would want
- 	 * to call the CPU first, and call the ppc_md. one if the CPU
- 	 * one returns a positive number. However there is existing code
-@@ -960,6 +962,8 @@ void vsx_unavailable_exception(struct pt
++	set_bit(msg, tgt);
+ 	mb();
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		lpar_qirr_info(cpu, IPI_PRIORITY);
+@@ -548,25 +546,23 @@ void smp_xics_message_pass(int target, i
  
- void performance_monitor_exception(struct pt_regs *regs)
+ static irqreturn_t xics_ipi_dispatch(int cpu)
  {
-+	__get_cpu_var(irq_stat).pmu_irqs++;
++	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
 +
- 	perf_irq(regs);
- }
+ 	WARN_ON(cpu_is_offline(cpu));
  
+ 	mb();	/* order mmio clearing qirr */
+-	while (xics_ipi_message[cpu].value) {
+-		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION,
+-				       &xics_ipi_message[cpu].value)) {
++	while (*tgt) {
++		if (test_and_clear_bit(PPC_MSG_CALL_FUNCTION, tgt)) {
+ 			smp_message_recv(PPC_MSG_CALL_FUNCTION);
+ 		}
+-		if (test_and_clear_bit(PPC_MSG_RESCHEDULE,
+-				       &xics_ipi_message[cpu].value)) {
++		if (test_and_clear_bit(PPC_MSG_RESCHEDULE, tgt)) {
+ 			smp_message_recv(PPC_MSG_RESCHEDULE);
+ 		}
+-		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE,
+-				       &xics_ipi_message[cpu].value)) {
++		if (test_and_clear_bit(PPC_MSG_CALL_FUNC_SINGLE, tgt)) {
+ 			smp_message_recv(PPC_MSG_CALL_FUNC_SINGLE);
+ 		}
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+-		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK,
+-				       &xics_ipi_message[cpu].value)) {
++		if (test_and_clear_bit(PPC_MSG_DEBUGGER_BREAK, tgt)) {
+ 			smp_message_recv(PPC_MSG_DEBUGGER_BREAK);
+ 		}
+ #endif
