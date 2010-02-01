@@ -1,12 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 1 Feb 2010 15:52:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [resend] Make the kernel accept ePAPR style phandle information
-Message-ID: <20100201045242.GB8095@yookeroo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 01C8CB7D93
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Feb 2010 15:58:54 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add DMA mask to MPSC serial and network and
+	UART device to serial
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: minyard@acm.org
+In-Reply-To: <20100130000407.GA16156@minyard.local>
+References: <20100130000407.GA16156@minyard.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 15:58:33 +1100
+Message-ID: <1265000313.8287.25.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,45 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant, I've updated this for your current test-devicetree branch.
-Please apply.
+On Fri, 2010-01-29 at 18:04 -0600, Corey Minyard wrote:
+> From: Corey Minyard <cminyard@mvista.com>
+> 
+> The MPSC drivers that use DMA need to set coherent_dma_mask to allow
+> dma_alloc_xxx routines to work properly.  Also, the mpsc serial driver
+> needed to set pi->port.dev to register properly.  With these fixes,
+> the MPSC drivers seem to work again.
+> 
+> Signed-off-by: Corey Minyard <cminyard@mvista.com>
+> ---
 
-Currently when processing flattened device trees, the kernel expects
-the phandle in a property called "linux,phandle".  The ePAPR spec -
-not being Linux specific - instead requires phandles to be encoded in
-a property named simply "phandle".  This patch makes the kernel accept
-either form when unflattening the device tree.
+Is that enough ? Since 2.6.31 we also need the dma ops to be filled
+properly and obviously that isn't going to happen for random platform
+devices... Or are those initialized elsewhere by your platform code ? In
+which case it might be a good place to also set the coherent mask...
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Maybe we should have a more generic way to set the "default" dma
+information (including ops, masks etc...) for use by platform,
+of_platform etc... devices.
 
-Index: working-2.6/drivers/of/fdt.c
-===================================================================
---- working-2.6.orig/drivers/of/fdt.c	2010-02-01 15:51:44.000000000 +1100
-+++ working-2.6/drivers/of/fdt.c	2010-02-01 15:51:46.458557615 +1100
-@@ -310,10 +310,19 @@ unsigned long __init unflatten_dt_node(u
- 		pp = unflatten_dt_alloc(&mem, sizeof(struct property),
- 					__alignof__(struct property));
- 		if (allnextpp) {
--			if (strcmp(pname, "linux,phandle") == 0) {
-+			/* We accept flattened tree phandles either in
-+			 * ePAPR-style "phandle" properties, or the
-+			 * legacy "linux,phandle" properties.  If both
-+			 * appear and have different values, things
-+			 * will get weird.  Don't do that. */
-+			if ((strcmp(pname, "phandle") == 0)
-+			    || (strcmp(pname, "linux,phandle") == 0)) {
- 				if (np->phandle == 0)
- 					np->phandle = *((u32 *)*p);
- 			}
-+			/* And we process the "ibm,phandle" property
-+			 * used in pSeries dynamic device tree
-+			 * stuff */
- 			if (strcmp(pname, "ibm,phandle") == 0)
- 				np->phandle = *((u32 *)*p);
- 			pp->name = pname;
+Cheers,
+Ben.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> I'm not really sure about where to set the coherent_dma_mask, it seems
+> like a more general place would be better but I couldn't find it.
+> 
+> Without these, the console stops working after the switchover and
+> the network driver fails to allocate buffers.  With these, my board
+> boots up and works fine.
+> 
+> Index: linux-2.6.31/drivers/serial/mpsc.c
+> ===================================================================
+> --- linux-2.6.31.orig/drivers/serial/mpsc.c
+> +++ linux-2.6.31/drivers/serial/mpsc.c
+> @@ -2071,6 +2071,9 @@ static int mpsc_drv_probe(struct platfor
+>  		if (!(rc = mpsc_drv_map_regs(pi, dev))) {
+>  			mpsc_drv_get_platform_data(pi, dev, dev->id);
+>  
+> +			dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+> +			pi->port.dev = &dev->dev;
+> +
+>  			if (!(rc = mpsc_make_ready(pi))) {
+>  				spin_lock_init(&pi->tx_lock);
+>  				if (!(rc = uart_add_one_port(&mpsc_reg,
+> Index: linux-2.6.31/drivers/net/mv643xx_eth.c
+> ===================================================================
+> --- linux-2.6.31.orig/drivers/net/mv643xx_eth.c
+> +++ linux-2.6.31/drivers/net/mv643xx_eth.c
+> @@ -2916,7 +2916,7 @@ static int mv643xx_eth_probe(struct plat
+>  	mp->shared = platform_get_drvdata(pd->shared);
+>  	mp->base = mp->shared->base + 0x0400 + (pd->port_number << 10);
+>  	mp->port_num = pd->port_number;
+> -
+> +	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+>  	mp->dev = dev;
+>  
+>  	set_params(mp, pd);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
