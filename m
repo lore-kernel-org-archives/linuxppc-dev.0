@@ -1,21 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f175.google.com (mail-yw0-f175.google.com
-	[209.85.211.175]) by ozlabs.org (Postfix) with ESMTP id 788DFB7D4C
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2010 06:06:34 +1100 (EST)
-Received: by ywh5 with SMTP id 5so747659ywh.11
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Feb 2010 11:06:32 -0800 (PST)
+Return-Path: <dan.j.williams@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
+	by ozlabs.org (Postfix) with ESMTP id C9F1CB7D3B
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2010 08:02:47 +1100 (EST)
+Message-ID: <4B6892F4.9070906@intel.com>
+Date: Tue, 02 Feb 2010 14:02:44 -0700
+From: Dan Williams <dan.j.williams@intel.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100202185812.GM4757@pengutronix.de>
-References: <1262985569-29826-1-git-send-email-w.sang@pengutronix.de>
-	<20100202185812.GM4757@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 2 Feb 2010 12:06:12 -0700
-Message-ID: <fa686aa41002021106x785f1808o6a3dd5769cc8cb2f@mail.gmail.com>
-Subject: Re: [PATCH] serial/mpc52xx_uart: Drop outdated comments
-To: Wolfram Sang <w.sang@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH 8/8] fsldma: major cleanups and fixes
+References: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
+	<1262820846-13198-9-git-send-email-iws@ovro.caltech.edu>
+In-Reply-To: <1262820846-13198-9-git-send-email-iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "R58472@freescale.com" <R58472@freescale.com>,
+	"B04825@freescale.com" <B04825@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"scottwood@freescale.com" <scottwood@freescale.com>,
+	"Dipen.Dudhat@freescale.com" <Dipen.Dudhat@freescale.com>,
+	"Maneesh.Gupta@freescale.com" <Maneesh.Gupta@freescale.com>,
+	"herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 2, 2010 at 11:58 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
-> On Fri, Jan 08, 2010 at 10:19:29PM +0100, Wolfram Sang wrote:
->> Most things mentioned are either obsolete (platform-support) or wrong (device
->> numbering, DCD spport) these days. The remaining rest is obvious.
->>
->> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
->> Cc: Grant Likely <grant.likely@secretlab.ca>
->
-> Ping. Anyone interested in this patch?
+Ira W. Snyder wrote:
+> Fix locking. Use two queues in the driver, one for pending transacions, and
+> one for transactions which are actually running on the hardware. Call
+> dma_run_dependencies() on descriptor cleanup so that the async_tx API works
+> correctly.
 
-I haven't forgotten, I just haven't gotten around to looking at it.
+I notice that fsldma diverges from other dma drivers in that the 
+callback is performed with interrupts disabled.  MD/raid5 currently 
+assumes that interrupts are enabled in its callback routines (see 
+ops_complete_biofill()'s use of spin_lock_irq()).  On top of these 
+changes can we align fsldma to the other raid offload drivers (mv_xor, 
+iop-adma, ioatdma) and provide callbacks with irq's enabled?
 
-g.
+I'll proceed with applying these patches as they obviously improve 
+things, but you will hit the irq problem when performing reads to a 
+degraded array.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--
+Dan
