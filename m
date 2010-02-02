@@ -1,18 +1,19 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 23A42B7D51
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2010 08:17:00 +1100 (EST)
-Date: Tue, 2 Feb 2010 13:16:57 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Dan Williams <dan.j.williams@intel.com>
+Return-Path: <dan.j.williams@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 890D5B7D57
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2010 08:32:51 +1100 (EST)
+Message-ID: <4B6897BC.60203@intel.com>
+Date: Tue, 02 Feb 2010 14:23:08 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+MIME-Version: 1.0
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
 Subject: Re: [PATCH 8/8] fsldma: major cleanups and fixes
-Message-ID: <20100202211656.GA2609@ovro.caltech.edu>
 References: <1262820846-13198-1-git-send-email-iws@ovro.caltech.edu>
 	<1262820846-13198-9-git-send-email-iws@ovro.caltech.edu>
 	<4B6892F4.9070906@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4B6892F4.9070906@intel.com>
+	<20100202211656.GA2609@ovro.caltech.edu>
+In-Reply-To: <20100202211656.GA2609@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: "R58472@freescale.com" <R58472@freescale.com>,
 	"B04825@freescale.com" <B04825@freescale.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -29,38 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 02, 2010 at 02:02:44PM -0700, Dan Williams wrote:
-> Ira W. Snyder wrote:
-> > Fix locking. Use two queues in the driver, one for pending transacions, and
-> > one for transactions which are actually running on the hardware. Call
-> > dma_run_dependencies() on descriptor cleanup so that the async_tx API works
-> > correctly.
-> 
-> I notice that fsldma diverges from other dma drivers in that the 
-> callback is performed with interrupts disabled.  MD/raid5 currently 
-> assumes that interrupts are enabled in its callback routines (see 
-> ops_complete_biofill()'s use of spin_lock_irq()).  On top of these 
-> changes can we align fsldma to the other raid offload drivers (mv_xor, 
-> iop-adma, ioatdma) and provide callbacks with irq's enabled?
-> 
-> I'll proceed with applying these patches as they obviously improve 
-> things, but you will hit the irq problem when performing reads to a 
-> degraded array.
-> 
+Ira W. Snyder wrote:
+> In the fsldma driver, all callbacks are run from tasklet (softirq)
+> context. That's under local_irq_disable(), right? Hardirq's certainly
+> aren't disabled there.
 
-In the fsldma driver, all callbacks are run from tasklet (softirq)
-context. That's under local_irq_disable(), right? Hardirq's certainly
-aren't disabled there.
+Actually, my mistake, the cleanup routine does spin_lock_irqsave(), but 
+I now see that it drops the lock across the callback:
 
-Is a DMAEngine user expected to call the device_is_tx_complete()
-function until it returns that the DMA has completed?
+/* Run the link descriptor callback function */
+if (callback) {
+	spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
+	dev_dbg(fsl_chan->dev, "link descriptor %p callback\n", desc);
+	callback(callback_param);
+	spin_lock_irqsave(&fsl_chan->desc_lock, flags);
+}
 
-If so, it is pretty easy to switch to a workqueue instead of a tasklet
-to handle the callbacks. The cost is increased latency until the
-callbacks are processed.
+...so I retract my comment about surprising the raid5 code.
 
-Would you want a driver-wide singlethreaded workqueue? A driver-wide
-multi-threaded workqueue? A workqueue per-device? A workqueue
-per-channel? This starts to get excessive, IMO.
-
-Ira
+--
+Dan
