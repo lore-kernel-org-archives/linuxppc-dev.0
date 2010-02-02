@@ -1,15 +1,17 @@
-Return-Path: <jtyner@cs.ucr.edu>
-Received: from fed1rmmtao104.cox.net (fed1rmmtao104.cox.net [68.230.241.42])
-	by ozlabs.org (Postfix) with ESMTP id 110DEB7D4F
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Feb 2010 10:31:14 +1100 (EST)
-Message-ID: <4B6762CE.1050001@cs.ucr.edu>
-Date: Mon, 01 Feb 2010 15:25:02 -0800
-From: John Tyner <jtyner@cs.ucr.edu>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 2 Feb 2010 14:48:32 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCHv2 2/2] Update ibm,client-architecture call field based
+	on device tree
+Message-ID: <20100202034832.GD12389@ozlabs.org>
+References: <1263501508.4869.133.camel@jschopp-laptop>
+	<1263501674.4869.142.camel@jschopp-laptop>
+	<1265064662.5391.19.camel@jschopp-laptop>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: PATCH: Add non-Virtex 5 support for LL TEMAC driver
-Content-Type: multipart/mixed; boundary="------------040108000603080003060800"
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1265064662.5391.19.camel@jschopp-laptop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,101 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040108000603080003060800
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Feb 01, 2010 at 04:51:02PM -0600, Joel Schopp wrote:
 
-This patch adds support for using the LL TEMAC Ethernet driver on 
-non-Virtex 5 platforms by adding support for accessing the Soft DMA 
-registers as if they were memory mapped instead of solely through the 
-DCR's (available on the Virtex 5).
+>  static void __init prom_send_capabilities(void)
+>  {
+>  	ihandle elfloader, root;
+>  	prom_arg_t ret;
+> +	u32 *cores;
+>  
+>  	root = call_prom("open", 1, 1, ADDR("/"));
+>  	if (root != 0) {
+> +		/*
+> +		 * If you add to the struct, please be sure the 100 index
+> +		 * didn't change.  The BUILD_BUG_ON is a reminder.
+> +		 */
+> +		cores = (u32 *) &ibm_architecture_vec[100];
+> +		if(*cores != NR_CPUS)
+> +			prom_printf("client-architecture structure corrupted\n");
+> +		*cores = (NR_CPUS / prom_smt_way());
+> +		prom_printf("setting client-architecture cores to %x\n", *cores);
 
-Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+I don't know if I'm painting a bike shed of if this is a real concern, but if
+*cores isn't NR_CPUS shouldn't we do nothing rather then clobbering it?
 
---------------040108000603080003060800
-Content-Type: text/x-diff;
- name="temac.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="temac.patch"
-
---- /tmp/tmp.5198.41	2010-02-01 15:04:45.000000000 -0800
-+++ ./linux-2.6.32.3/drivers/net/ll_temac.h	2010-01-28 15:06:17.000000000 -0800
-@@ -338,6 +338,7 @@
- 	/* IO registers and IRQs */
- 	void __iomem *regs;
- 	dcr_host_t sdma_dcrs;
-+	u32 __iomem *sdma_regs;
- 	int tx_irq;
- 	int rx_irq;
- 	int emac_num;
---- /tmp/tmp.5198.53	2010-02-01 15:04:45.000000000 -0800
-+++ ./linux-2.6.32.3/drivers/net/ll_temac_main.c	2010-02-01 15:04:01.000000000 -0800
-@@ -20,9 +20,6 @@
-  *   or rx, so this should be okay.
-  *
-  * TODO:
-- * - Fix driver to work on more than just Virtex5.  Right now the driver
-- *   assumes that the locallink DMA registers are accessed via DCR
-- *   instructions.
-  * - Factor out locallink DMA code into separate driver
-  * - Fix multicast assignment.
-  * - Fix support for hardware checksumming.
-@@ -117,12 +114,20 @@
- 
- static u32 temac_dma_in32(struct temac_local *lp, int reg)
- {
--	return dcr_read(lp->sdma_dcrs, reg);
-+	if (lp->sdma_regs) {
-+		return __raw_readl(lp->sdma_regs + reg);
-+	} else {
-+		return dcr_read(lp->sdma_dcrs, reg);
-+	}
- }
- 
- static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
- {
--	dcr_write(lp->sdma_dcrs, reg, value);
-+	if (lp->sdma_regs) {
-+		__raw_writel(value, lp->sdma_regs + reg);
-+	} else {
-+		dcr_write(lp->sdma_dcrs, reg, value);
-+	}
- }
- 
- /**
-@@ -862,13 +867,17 @@
- 		goto nodev;
- 	}
- 
--	dcrs = dcr_resource_start(np, 0);
--	if (dcrs == 0) {
--		dev_err(&op->dev, "could not get DMA register address\n");
-+	lp->sdma_regs = NULL;
-+
-+	if ((dcrs = dcr_resource_start(np, 0)) != 0) {
-+		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-+		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
-+	} else if ((lp->sdma_regs = of_iomap(np, 0))) {
-+		dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
-+	} else {
-+		dev_err(&op->dev, "unable to map DMA registers\n");
- 		goto nodev;
- 	}
--	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
--	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
- 
- 	lp->rx_irq = irq_of_parse_and_map(np, 0);
- 	lp->tx_irq = irq_of_parse_and_map(np, 1);
-@@ -895,7 +904,7 @@
- 
- 	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
- 	if (lp->phy_node)
--		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
-+		dev_dbg(lp->dev, "using PHY node %s (%p)\n", lp->phy_node->full_name, lp->phy_node);
- 
- 	/* Add the device attributes */
- 	rc = sysfs_create_group(&lp->dev->kobj, &temac_attr_group);
-
---------------040108000603080003060800--
+Yours Tony
