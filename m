@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33047B7D47
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 10:22:05 +1100 (EST)
-Subject: Re: [patch 1/2] powerpc: Sky CPU: redundant or incorrect tests on
-	unsigned
+	by ozlabs.org (Postfix) with ESMTPS id 8FA04B7CE7
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 10:45:57 +1100 (EST)
+Subject: Re: [patch 2/2] kbuild: move -fno-dwarf2-cfi-asm to powerpc only
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: akpm@linux-foundation.org
-In-Reply-To: <201002022240.o12Me1iY018842@imap1.linux-foundation.org>
-References: <201002022240.o12Me1iY018842@imap1.linux-foundation.org>
+In-Reply-To: <201002022240.o12Me3aI018845@imap1.linux-foundation.org>
+References: <201002022240.o12Me3aI018845@imap1.linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 10:21:27 +1100
-Message-ID: <1265239287.8287.125.camel@pasglop>
+Date: Thu, 04 Feb 2010 10:22:19 +1100
+Message-ID: <1265239339.8287.126.camel@pasglop>
 Mime-Version: 1.0
-Cc: gorcunov@gmail.com, linuxppc-dev@ozlabs.org, roel.kluin@gmail.com,
-	waite@skycomputers.com, galak@gate.crashing.org
+Cc: ak@linux.intel.com, linuxppc-dev@ozlabs.org, andi@firstfloor.org,
+	mmarek@suse.cz, kyle@mcmartin.ca
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +25,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2010-02-02 at 14:40 -0800, akpm@linux-foundation.org wrote:
-> From: Roel Kluin <roel.kluin@gmail.com>
+> From: Andi Kleen <andi@firstfloor.org>
 > 
-> count is unsigned and cannot be less than 0.
+> Better dwarf2 unwind information is a good thing, it allows better
+> debugging with kgdb and crash and helps systemtap.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Kumar Gala <galak@gate.crashing.org>
-> Cc: Brian Waite <waite@skycomputers.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
+> Commit 003086497f07f7f1e67c0c295e261740f822b377 ("Build with
+> -fno-dwarf2-cfi-asm") disabled some CFI information globally to work
+> around a module loader bug on powerpc.
+> 
+> But this disables the better unwind tables for all architectures, not just
+> powerpc.  Move the workaround to powerpc and also add a suitable comment
+> that's it really a workaround.
+> 
+> This improves dwarf2 unwind tables on x86 at least.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> Cc: Kyle McMartin <kyle@mcmartin.ca>
 
-I still have a hard time figuring out what this sky CPU actually is :-) 
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The whole drivers/misc/hdpuftrs is only built when CONFIG_HDPU_FEATURES
-is set and git grep HDPU_FEATURES doesn't show anybody ever setting
-it :-)
-
-Is that just dead code ? I'm happy to carry it in powerpc.git if you
-wish so but you it would be nice to figure out what's going on there...
+Do you want me to carry that in powerpc-next ?
 
 Cheers,
 Ben.
 
->  drivers/misc/hdpuftrs/hdpu_cpustate.c |    5 -----
->  1 file changed, 5 deletions(-)
+> Cc: Michal Marek <mmarek@suse.cz>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
 > 
-> diff -puN drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned drivers/misc/hdpuftrs/hdpu_cpustate.c
-> --- a/drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned
-> +++ a/drivers/misc/hdpuftrs/hdpu_cpustate.c
-> @@ -121,8 +121,6 @@ static ssize_t cpustate_read(struct file
->  {
->  	unsigned char data;
+>  Makefile              |    3 ---
+>  arch/powerpc/Makefile |    5 +++++
+>  2 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff -puN Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only Makefile
+> --- a/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only
+> +++ a/Makefile
+> @@ -579,9 +579,6 @@ KBUILD_CFLAGS += $(call cc-option,-Wno-p
+>  # disable invalid "can't wrap" optimizations for signed / pointers
+>  KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 >  
-> -	if (count < 0)
-> -		return -EFAULT;
->  	if (count == 0)
->  		return 0;
->  
-> @@ -137,9 +135,6 @@ static ssize_t cpustate_write(struct fil
->  {
->  	unsigned char data;
->  
-> -	if (count < 0)
-> -		return -EFAULT;
+> -# revert to pre-gcc-4.4 behaviour of .eh_frame
+> -KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
 > -
->  	if (count == 0)
->  		return 0;
+>  # conserve stack if available
+>  KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 >  
+> diff -puN arch/powerpc/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only arch/powerpc/Makefile
+> --- a/arch/powerpc/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only
+> +++ a/arch/powerpc/Makefile
+> @@ -112,6 +112,11 @@ KBUILD_CFLAGS += $(call cc-option,-mspe=
+>  # kernel considerably.
+>  KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
+>  
+> +# FIXME: the module load should be taught about the additional relocs
+> +# generated by this.
+> +# revert to pre-gcc-4.4 behaviour of .eh_frame
+> +KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+> +
+>  # Never use string load/store instructions as they are
+>  # often slow when they are implemented at all
+>  KBUILD_CFLAGS		+= -mno-string
 > _
