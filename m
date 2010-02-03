@@ -1,17 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 3/3] of/flattree: merge early_init_dt_scan_memory() common code
-To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
-	monstr@monstr.eu, sfr@canb.auug.org.au,
-	jeremy.kerr@canonical.com, benh@kernel.crashing.org
-Date: Wed, 03 Feb 2010 12:01:04 -0700
-Message-ID: <20100203190101.26862.94771.stgit@angua>
-In-Reply-To: <20100203185753.26862.6818.stgit@angua>
-References: <20100203185753.26862.6818.stgit@angua>
+Return-Path: <stern+4b6f04d4@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id AF7BFB7D3B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  4 Feb 2010 06:46:53 +1100 (EST)
+Date: Wed, 3 Feb 2010 14:40:11 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller
+	driver flag
+In-Reply-To: <1265221840-25634-2-git-send-email-albert_herranz@yahoo.es>
+Message-ID: <Pine.LNX.4.44L0.1002031429430.1321-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,259 +22,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze architectures.
+On Wed, 3 Feb 2010, Albert Herranz wrote:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+> The HCD_BOUNCE_BUFFERS USB host controller driver flag can be enabled
+> to instruct the USB stack to always bounce USB buffers to/from coherent
+> memory buffers _just_ before/after a host controller transmission.
+> 
+> This setting allows overcoming some platform-specific limitations.
+> 
+> For example, the Nintendo Wii video game console is a NOT_COHERENT_CACHE
+> platform that is unable to safely perform non-32 bit uncached writes
+> to RAM because the byte enables are not connected to the bus.
+> Thus, in that platform, "coherent" DMA buffers cannot be directly used
+> by the kernel code unless it guarantees that all write accesses
+> to said buffers are done in 32 bit chunks (which is not the case in the
+> USB subsystem).
+> 
+> To avoid this unwanted behaviour HCD_BOUNCE_BUFFERS can be enabled at
+> the HCD controller, causing buffer allocations to be satisfied from
+> normal memory and, only at the very last moment, before the actual
+> transfer, buffers get copied to/from their corresponding DMA coherent
+> bounce buffers.
+> 
+> Note that HCD_LOCAL_MEM doesn't help in solving this problem as in that
+> case buffers may be allocated from coherent memory in the first place
+> and thus potentially accessed in non-32 bit chuncks by USB drivers.
 
- arch/microblaze/kernel/prom.c |   51 +-----------------------------
- arch/powerpc/kernel/prom.c    |   69 +++++++++++------------------------------
- drivers/of/fdt.c              |   50 ++++++++++++++++++++++++++++++
- include/linux/of_fdt.h        |    3 ++
- 4 files changed, 73 insertions(+), 100 deletions(-)
+This description sounds hopelessly confused.  Maybe you're just
+misusing the term "coherent".  The patch itself doesn't affect the
+coherent DMA mappings anyway; it affects the streaming mappings.  Or to
+put it another way, what's the justification for replacing a call to
+dma_map_single() with a call to dma_alloc_coherent()?
 
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index f7bd0ee..459c32e 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -45,61 +45,14 @@
- /* export that to outside world */
- struct device_node *of_chosen;
- 
--#define early_init_dt_scan_drconf_memory(node) 0
--
- void __init early_init_dt_scan_chosen_arch(unsigned long node)
- {
- 	/* No Microblaze specific code here */
- }
- 
--static int __init early_init_dt_scan_memory(unsigned long node,
--				const char *uname, int depth, void *data)
-+void __init early_init_dt_add_memory_arch(u64 base, u64 size)
- {
--	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
--	__be32 *reg, *endp;
--	unsigned long l;
--
--	/* Look for the ibm,dynamic-reconfiguration-memory node */
--/*	if (depth == 1 &&
--		strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
--		return early_init_dt_scan_drconf_memory(node);
--*/
--	/* We are scanning "memory" nodes only */
--	if (type == NULL) {
--		/*
--		 * The longtrail doesn't have a device_type on the
--		 * /memory node, so look for the node called /memory@0.
--		 */
--		if (depth != 1 || strcmp(uname, "memory@0") != 0)
--			return 0;
--	} else if (strcmp(type, "memory") != 0)
--		return 0;
--
--	reg = (__be32 *)of_get_flat_dt_prop(node, "linux,usable-memory", &l);
--	if (reg == NULL)
--		reg = (__be32 *)of_get_flat_dt_prop(node, "reg", &l);
--	if (reg == NULL)
--		return 0;
--
--	endp = reg + (l / sizeof(__be32));
--
--	pr_debug("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
--		uname, l, reg[0], reg[1], reg[2], reg[3]);
--
--	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
--		u64 base, size;
--
--		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
--		size = dt_mem_next_cell(dt_root_size_cells, &reg);
--
--		if (size == 0)
--			continue;
--		pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
--			(unsigned long long)size);
--
--		lmb_add(base, size);
--	}
--	return 0;
-+	lmb_add(base, size);
- }
- 
- #ifdef CONFIG_EARLY_PRINTK
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 28be19a..e0f368f 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -483,64 +483,31 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
- #define early_init_dt_scan_drconf_memory(node)	0
- #endif /* CONFIG_PPC_PSERIES */
- 
--static int __init early_init_dt_scan_memory(unsigned long node,
--					    const char *uname, int depth, void *data)
-+static int __init early_init_dt_scan_memory_ppc(unsigned long node,
-+						const char *uname,
-+						int depth, void *data)
- {
--	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
--	__be32 *reg, *endp;
--	unsigned long l;
--
--	/* Look for the ibm,dynamic-reconfiguration-memory node */
- 	if (depth == 1 &&
- 	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
- 		return early_init_dt_scan_drconf_memory(node);
-+	
-+	return early_init_dt_scan_memory(node, uname, depth, data);
-+}
- 
--	/* We are scanning "memory" nodes only */
--	if (type == NULL) {
--		/*
--		 * The longtrail doesn't have a device_type on the
--		 * /memory node, so look for the node called /memory@0.
--		 */
--		if (depth != 1 || strcmp(uname, "memory@0") != 0)
--			return 0;
--	} else if (strcmp(type, "memory") != 0)
--		return 0;
--
--	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
--	if (reg == NULL)
--		reg = of_get_flat_dt_prop(node, "reg", &l);
--	if (reg == NULL)
--		return 0;
--
--	endp = reg + (l / sizeof(__be32));
--
--	DBG("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
--	    uname, l, reg[0], reg[1], reg[2], reg[3]);
--
--	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
--		u64 base, size;
--
--		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
--		size = dt_mem_next_cell(dt_root_size_cells, &reg);
--
--		if (size == 0)
--			continue;
--		DBG(" - %llx ,  %llx\n", (unsigned long long)base,
--		    (unsigned long long)size);
--#ifdef CONFIG_PPC64
--		if (iommu_is_off) {
--			if (base >= 0x80000000ul)
--				continue;
--			if ((base + size) > 0x80000000ul)
--				size = 0x80000000ul - base;
--		}
-+void __init early_init_dt_add_memory_arch(u64 base, u64 size)
-+{
-+#if defined(CONFIG_PPC64)
-+	if (iommu_is_off) {
-+		if (base >= 0x80000000ul)
-+			return;
-+		if ((base + size) > 0x80000000ul)
-+			size = 0x80000000ul - base;
-+	}
- #endif
--		lmb_add(base, size);
- 
--		memstart_addr = min((u64)memstart_addr, base);
--	}
-+	lmb_add(base, size);
- 
--	return 0;
-+	memstart_addr = min((u64)memstart_addr, base);
- }
- 
- static void __init early_reserve_mem(void)
-@@ -706,7 +673,7 @@ void __init early_init_devtree(void *params)
- 	/* Scan memory nodes and rebuild LMBs */
- 	lmb_init();
- 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
--	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
-+	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
- 
- 	/* Save command line for /proc/cmdline and then parse parameters */
- 	strlcpy(boot_command_line, cmd_line, COMMAND_LINE_SIZE);
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 7f88611..f84152d 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -15,6 +15,7 @@
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- 
-+
- #ifdef CONFIG_PPC
- #include <asm/machdep.h>
- #endif /* CONFIG_PPC */
-@@ -443,6 +444,55 @@ u64 __init dt_mem_next_cell(int s, u32 **cellp)
- 	return of_read_number(p, s);
- }
- 
-+/**
-+ * early_init_dt_scan_memory - Look for an parse memory nodes
-+ */
-+int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
-+				     int depth, void *data)
-+{
-+	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
-+	__be32 *reg, *endp;
-+	unsigned long l;
-+
-+	/* We are scanning "memory" nodes only */
-+	if (type == NULL) {
-+		/*
-+		 * The longtrail doesn't have a device_type on the
-+		 * /memory node, so look for the node called /memory@0.
-+		 */
-+		if (depth != 1 || strcmp(uname, "memory@0") != 0)
-+			return 0;
-+	} else if (strcmp(type, "memory") != 0)
-+		return 0;
-+
-+	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
-+	if (reg == NULL)
-+		reg = of_get_flat_dt_prop(node, "reg", &l);
-+	if (reg == NULL)
-+		return 0;
-+
-+	endp = reg + (l / sizeof(__be32));
-+
-+	pr_debug("memory scan node %s, reg size %ld, data: %x %x %x %x,\n",
-+	    uname, l, reg[0], reg[1], reg[2], reg[3]);
-+
-+	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
-+		u64 base, size;
-+
-+		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
-+		size = dt_mem_next_cell(dt_root_size_cells, &reg);
-+
-+		if (size == 0)
-+			continue;
-+		pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
-+		    (unsigned long long)size);
-+
-+		early_init_dt_add_memory_arch(base, size);
-+	}
-+
-+	return 0;
-+}
-+
- int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
- 				     int depth, void *data)
- {
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index fbf2961..bf26bd5 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -75,6 +75,9 @@ extern void early_init_dt_scan_chosen_arch(unsigned long node);
- extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
- 				     int depth, void *data);
- extern void early_init_dt_check_for_initrd(unsigned long node);
-+extern int early_init_dt_scan_memory(unsigned long node, const char *uname,
-+				     int depth, void *data);
-+extern void early_init_dt_add_memory_arch(u64 base, u64 size);
- extern u64 dt_mem_next_cell(int s, u32 **cellp);
- 
- /* Early flat tree scan hooks */
+Since the patch doesn't affect any of the coherent mappings (see for 
+example the calls to dma_pool_create() in ehci-mem.c), I don't see how 
+it can possibly do what you claim.
+
+> +/**
+> + * hcd_memcpy32_to_coherent - copy data to a bounce buffer
+> + * @dst: destination dma bounce buffer
+> + * @src: source buffer
+> + * @len: number of bytes to copy
+> + *
+> + * This function copies @len bytes from @src to @dst in 32 bit chunks.
+> + * The caller must guarantee that @dst length is 4 byte aligned and
+> + * that @dst length is greater than or equal to @src length.
+> + */
+> +static void *hcd_memcpy32_to_coherent(void *dst, const void *src, size_t len)
+> +{
+> +	u32 *q = dst, *p = (void *)src;
+> +	u8 *s;
+> +
+> +	while (len >= 4) {
+> +		*q++ = *p++;
+> +		len -= 4;
+> +	}
+> +	s = (u8 *)p;
+> +	switch (len) {
+> +	case 3:
+> +		*q = s[0] << 24 | s[1] << 16 | s[2] << 8;
+> +		break;
+> +	case 2:
+> +		*q = s[0] << 24 | s[1] << 16;
+> +		break;
+> +	case 1:
+> +		*q = s[0] << 24;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +	return dst;
+> +}
+
+What happens if somebody tries to use this code on a little-endian CPU?
+
+>  static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+>  			   gfp_t mem_flags)
+>  {
+> @@ -1274,53 +1441,80 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+>  	if (is_root_hub(urb->dev))
+>  		return 0;
+>  
+> -	if (usb_endpoint_xfer_control(&urb->ep->desc)
+> -	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
+> -		if (hcd->self.uses_dma) {
+> -			urb->setup_dma = dma_map_single(
+> -					hcd->self.controller,
+> -					urb->setup_packet,
+> -					sizeof(struct usb_ctrlrequest),
+> -					DMA_TO_DEVICE);
+> -			if (dma_mapping_error(hcd->self.controller,
+> -						urb->setup_dma))
+> -				return -EAGAIN;
+> -		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
+> -			ret = hcd_alloc_coherent(
+> -					urb->dev->bus, mem_flags,
+> +	if (usb_endpoint_xfer_control(&urb->ep->desc)) {
+> +		if (hcd->driver->flags & HCD_BOUNCE_BUFFERS) {
+> +			if (!(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
+> +				urb->setup_dma = 0;
+> +			ret = hcd_bounce_to_coherent(
+> +					hcd->self.controller, mem_flags,
+>  					&urb->setup_dma,
+>  					(void **)&urb->setup_packet,
+>  					sizeof(struct usb_ctrlrequest),
+>  					DMA_TO_DEVICE);
+> +		} else if (!(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
+> +			if (hcd->self.uses_dma) {
+> +				urb->setup_dma = dma_map_single(
+> +						hcd->self.controller,
+> +						urb->setup_packet,
+> +						sizeof(struct usb_ctrlrequest),
+> +						DMA_TO_DEVICE);
+> +				if (dma_mapping_error(hcd->self.controller,
+> +						      urb->setup_dma))
+> +					return -EAGAIN;
+> +			} else if (hcd->driver->flags & HCD_LOCAL_MEM)
+> +				ret = hcd_alloc_coherent(
+> +						urb->dev->bus, mem_flags,
+> +						&urb->setup_dma,
+> +						(void **)&urb->setup_packet,
+> +						sizeof(struct usb_ctrlrequest),
+> +						DMA_TO_DEVICE);
+> +		}
+>  	}
+>  
+>  	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
+> -	if (ret == 0 && urb->transfer_buffer_length != 0
+> -	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
+> -		if (hcd->self.uses_dma) {
+> -			urb->transfer_dma = dma_map_single (
+> -					hcd->self.controller,
+> -					urb->transfer_buffer,
+> -					urb->transfer_buffer_length,
+> -					dir);
+> -			if (dma_mapping_error(hcd->self.controller,
+> -						urb->transfer_dma))
+> -				return -EAGAIN;
+> -		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
+> -			ret = hcd_alloc_coherent(
+> -					urb->dev->bus, mem_flags,
+> +	if (ret == 0 && urb->transfer_buffer_length != 0) {
+> +		if (hcd->driver->flags & HCD_BOUNCE_BUFFERS) {
+> +			if (!(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
+> +				urb->transfer_dma = 0;
+> +			ret = hcd_bounce_to_coherent(
+> +					hcd->self.controller, mem_flags,
+>  					&urb->transfer_dma,
+>  					&urb->transfer_buffer,
+>  					urb->transfer_buffer_length,
+>  					dir);
+>  
+> -			if (ret && usb_endpoint_xfer_control(&urb->ep->desc)
+> -			    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
+> -				hcd_free_coherent(urb->dev->bus,
+> -					&urb->setup_dma,
+> -					(void **)&urb->setup_packet,
+> -					sizeof(struct usb_ctrlrequest),
+> -					DMA_TO_DEVICE);
+> +			if (ret && usb_endpoint_xfer_control(&urb->ep->desc))
+> +				hcd_bounce_from_coherent(hcd->self.controller,
+> +						&urb->setup_dma,
+> +						(void **)&urb->setup_packet,
+> +						sizeof(struct usb_ctrlrequest),
+> +						DMA_TO_DEVICE);
+> +		} else if (!(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
+> +			if (hcd->self.uses_dma) {
+> +				urb->transfer_dma = dma_map_single(
+> +						hcd->self.controller,
+> +						urb->transfer_buffer,
+> +						urb->transfer_buffer_length,
+> +						dir);
+> +				if (dma_mapping_error(hcd->self.controller,
+> +						      urb->transfer_dma))
+> +					return -EAGAIN;
+> +			} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
+> +				ret = hcd_alloc_coherent(
+> +						urb->dev->bus, mem_flags,
+> +						&urb->transfer_dma,
+> +						&urb->transfer_buffer,
+> +						urb->transfer_buffer_length,
+> +						dir);
+> +
+> +				if (ret &&
+> +				    usb_endpoint_xfer_control(&urb->ep->desc))
+> +					hcd_free_coherent(urb->dev->bus,
+> +						&urb->setup_dma,
+> +						(void **)&urb->setup_packet,
+> +						sizeof(struct usb_ctrlrequest),
+> +						DMA_TO_DEVICE);
+> +			}
+>  		}
+>  	}
+>  	return ret;
+
+It seems that every time somebody comes up with a new kind of 
+memory-access restriction, this function grows by a factor of 2.  After 
+a few more iterations it will be larger than the rest of the kernel!
+
+There must be a better way to structure the requirements here.
+
+Alan Stern
