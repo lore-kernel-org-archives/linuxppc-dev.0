@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
-	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 30183B7D46
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 10:01:44 +1100 (EST)
-Received: by gxk23 with SMTP id 23so2831727gxk.2
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Feb 2010 15:01:43 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4B6762CE.1050001@cs.ucr.edu>
-References: <4B6762CE.1050001@cs.ucr.edu>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 3 Feb 2010 16:01:22 -0700
-Message-ID: <fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
-Subject: Re: PATCH: Add non-Virtex 5 support for LL TEMAC driver
-To: John Tyner <jtyner@cs.ucr.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 33047B7D47
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 10:22:05 +1100 (EST)
+Subject: Re: [patch 1/2] powerpc: Sky CPU: redundant or incorrect tests on
+	unsigned
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: akpm@linux-foundation.org
+In-Reply-To: <201002022240.o12Me1iY018842@imap1.linux-foundation.org>
+References: <201002022240.o12Me1iY018842@imap1.linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 10:21:27 +1100
+Message-ID: <1265239287.8287.125.camel@pasglop>
+Mime-Version: 1.0
+Cc: gorcunov@gmail.com, linuxppc-dev@ozlabs.org, roel.kluin@gmail.com,
+	waite@skycomputers.com, galak@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,102 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 1, 2010 at 4:25 PM, John Tyner <jtyner@cs.ucr.edu> wrote:
-> This patch adds support for using the LL TEMAC Ethernet driver on non-Virtex
-> 5 platforms by adding support for accessing the Soft DMA registers as if
-> they were memory mapped instead of solely through the DCR's (available on
-> the Virtex 5).
->
-> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+On Tue, 2010-02-02 at 14:40 -0800, akpm@linux-foundation.org wrote:
+> From: Roel Kluin <roel.kluin@gmail.com>
+> 
+> count is unsigned and cannot be less than 0.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Kumar Gala <galak@gate.crashing.org>
+> Cc: Brian Waite <waite@skycomputers.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
 
-Hi John, thanks for doing this work.  A couple of comments below.
+I still have a hard time figuring out what this sky CPU actually is :-) 
 
->
-> --- /tmp/tmp.5198.41	2010-02-01 15:04:45.000000000 -0800
-> +++ ./linux-2.6.32.3/drivers/net/ll_temac.h	2010-01-28 15:06:17.000000000 -0800
-> @@ -338,6 +338,7 @@
->  	/* IO registers and IRQs */
->  	void __iomem *regs;
->  	dcr_host_t sdma_dcrs;
-> +	u32 __iomem *sdma_regs;
->  	int tx_irq;
->  	int rx_irq;
->  	int emac_num;
-> --- /tmp/tmp.5198.53	2010-02-01 15:04:45.000000000 -0800
-> +++ ./linux-2.6.32.3/drivers/net/ll_temac_main.c	2010-02-01 15:04:01.000000000 -0800
-> @@ -20,9 +20,6 @@
->   *   or rx, so this should be okay.
->   *
->   * TODO:
-> - * - Fix driver to work on more than just Virtex5.  Right now the driver
-> - *   assumes that the locallink DMA registers are accessed via DCR
-> - *   instructions.
->   * - Factor out locallink DMA code into separate driver
->   * - Fix multicast assignment.
->   * - Fix support for hardware checksumming.
-> @@ -117,12 +114,20 @@
->
->  static u32 temac_dma_in32(struct temac_local *lp, int reg)
+The whole drivers/misc/hdpuftrs is only built when CONFIG_HDPU_FEATURES
+is set and git grep HDPU_FEATURES doesn't show anybody ever setting
+it :-)
+
+Is that just dead code ? I'm happy to carry it in powerpc.git if you
+wish so but you it would be nice to figure out what's going on there...
+
+Cheers,
+Ben.
+
+>  drivers/misc/hdpuftrs/hdpu_cpustate.c |    5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff -puN drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned drivers/misc/hdpuftrs/hdpu_cpustate.c
+> --- a/drivers/misc/hdpuftrs/hdpu_cpustate.c~powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned
+> +++ a/drivers/misc/hdpuftrs/hdpu_cpustate.c
+> @@ -121,8 +121,6 @@ static ssize_t cpustate_read(struct file
 >  {
-> -	return dcr_read(lp->sdma_dcrs, reg);
-> +	if (lp->sdma_regs) {
-> +		return __raw_readl(lp->sdma_regs + reg);
-> +	} else {
-> +		return dcr_read(lp->sdma_dcrs, reg);
-> +	}
-
-Rather than taking the ugliness an if/else block on every register
-access, why not create an ops structure and populate it with the
-correct access routines at runtime?
-
->  }
->
->  static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
+>  	unsigned char data;
+>  
+> -	if (count < 0)
+> -		return -EFAULT;
+>  	if (count == 0)
+>  		return 0;
+>  
+> @@ -137,9 +135,6 @@ static ssize_t cpustate_write(struct fil
 >  {
-> -	dcr_write(lp->sdma_dcrs, reg, value);
-> +	if (lp->sdma_regs) {
-> +		__raw_writel(value, lp->sdma_regs + reg);
-> +	} else {
-> +		dcr_write(lp->sdma_dcrs, reg, value);
-> +	}
->  }
->
->  /**
-> @@ -862,13 +867,17 @@
->  		goto nodev;
->  	}
->
-> -	dcrs = dcr_resource_start(np, 0);
-> -	if (dcrs == 0) {
-> -		dev_err(&op->dev, "could not get DMA register address\n");
-> +	lp->sdma_regs = NULL;
-> +
-> +	if ((dcrs = dcr_resource_start(np, 0)) != 0) {
-> +		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-> +		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
-> +	} else if ((lp->sdma_regs = of_iomap(np, 0))) {
-> +		dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
-> +	} else {
-> +		dev_err(&op->dev, "unable to map DMA registers\n");
->  		goto nodev;
->  	}
-> -	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-> -	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
->
->  	lp->rx_irq = irq_of_parse_and_map(np, 0);
->  	lp->tx_irq = irq_of_parse_and_map(np, 1);
-> @@ -895,7 +904,7 @@
->
->  	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
->  	if (lp->phy_node)
-> -		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
-> +		dev_dbg(lp->dev, "using PHY node %s (%p)\n", lp->phy_node->full_name, lp->phy_node);
-
-This looks like an unrelated bug fix.  Please put into a separate
-patch and post separately.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+>  	unsigned char data;
+>  
+> -	if (count < 0)
+> -		return -EFAULT;
+> -
+>  	if (count == 0)
+>  		return 0;
+>  
+> _
