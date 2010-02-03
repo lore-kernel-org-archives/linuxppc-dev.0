@@ -1,21 +1,20 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E7D3DB7D51
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Feb 2010 17:17:22 +1100 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: Albrecht =?iso-8859-15?q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
-References: <1264191106.2224.0-2010-02-02-19-31-49@antares>
-In-Reply-To: <1264191106.2224.0-2010-02-02-19-31-49@antares>
-MIME-Version: 1.0
-Message-ID: <201002030716.31280.roman.fietze@telemotive.de>
-Date: Wed, 3 Feb 2010 07:16:31 +0100
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <minyard@acm.org>
+Received: from vms173003pub.verizon.net (vms173003pub.verizon.net
+	[206.46.173.3]) by ozlabs.org (Postfix) with ESMTP id B27CDB7D24
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 02:08:49 +1100 (EST)
+Received: from wf-rch.minyard.local ([unknown] [173.57.145.237])
+	by vms173003.mailsrvcs.net
+	(Sun Java(tm) System Messaging Server 7u2-7.02 32bit (built Apr 16
+	2009)) with ESMTPA id <0KX9000HSU1V6KLC@vms173003.mailsrvcs.net> for
+	linuxppc-dev@ozlabs.org; Wed, 03 Feb 2010 09:08:19 -0600 (CST)
+Date: Wed, 03 Feb 2010 09:08:17 -0600
+From: Corey Minyard <minyard@acm.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Add coherent_dma_mask to mv64x60 devices
+Message-id: <20100203150817.GA13461@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Reply-To: minyard@acm.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Albrecht,
+From: Corey Minyard <cminyard@mvista.com>
 
-Sorry for the delay ... your mail got stuck in a Notes "spam filter".
+DMA ops requires that coherent_dma_mask be set properly for a device,
+but this was not being done for devices on the MV64x60 that use DMA.
+Both the serial and ethernet devices need this or they won't be able
+to allocate memory.
 
-On Friday 22 January 2010 21:11:39 Albrecht Dre=DF wrote:
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+---
+Mark Greer pointed me to the right place, I believe this is the
+correct way to handle the problem.
 
-> Are there any "final" conclusions from your tests?
-
-Yes.
-
-=46or the small product using the 2.6 kernel we turned all snooping and
-the kernel coherent flag off, which avoided crashes of the FEC and/or
-hard disk since we introduced that change.
-
-We are currently investigating problems that we are seeing on the
-2.4.25 (DENX and Lite5200B based) boards for a long time. Here we are
-having problems with corrupt filesystems and FEC hick ups. In this
-case we are using UDMA2, because we cannot yet get MWDMA2 work on
-2.4.25, well knowing that there might be a problem with UDMA2 and LPC.
-So we also turned of snooping and are currently in the testing phase
-(again).
-
-> ... two compactflash cards with vfat file systems attached to the
-> ata bus; - a nfs3 network drive, connected via a 100MBit line, on a
-> Xeon serve
-
-Are you using MWDMA2 with the compact flash cards? What is the load on
-the different (DMA) channels? ATA reads or writes?
-
-> ... a signal processor attached to the localbus, using bestcomm and
-> the fifo for the bulk transfer
-
-Are you using an own driver, or are you using Grant's SCLPC+SDMA
-driver? BD task?
-
-
-Our latest product uses an SMSC MOST150 Spynic and an FPGA to sample
-data from a MOST ring via SCLPC+SDMA (single non BD task from the old
-=46reescale Betstcomm API) on the 2.4.25. Here moving from memory
-accesses to SCLPC+SDMA helped somewhat, probably by avoiding the
-UDMA2/LPC problem by mainly letting the SDMA scheduler do the
-scheduling of the LPC traffic, which avoids the LPC arbiter problem
-"somehow".
-
-The probability for seeing problems or crashes increases a lot with
-the bandwidth. I think, and I might be wrong, esp. when an arbiter or
-scheduler (LPC/PCI or SDMA) needs to switch users or tasks. In our
-case we have data running with about 3-6 MB/s (avg.) via the LPC to
-the hard disks or somewhat more using FTP from the hard disk to the
-=46EC.
-
-> I did not observe any issues
-
-The filesystem crashes are seldom, but happen often enough to be able
-to reproduce them once every 1 or 2 days under heavy load, and to
-produce failures in the field, what's even worse. And they
-statistically increased a lot wen we ran out of GPIO on the MPC5200B
-and then used an CPLD or FPGA to replace them, just a few bits to MUX
-SPI lines, but that was enough.
-
-> but your statements are making me really nervous...
-
-That was not my intention. The best thing is to run very ugly tests
-with very high load for at least 24h. Due to the fact that we see
-those problems on different boards we (the SW guys) no longer can
-assume self made HW problems (HW guys), esp. when reading Freescale's
-advice with the XLB config.
-
-It might happen that we switch to 2.6 on our older products, hoping
-that at least the LPC/IDE problem disappears by using MWDMA2 instead
-of UDMA2.
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Index: linux-2.6/arch/powerpc/sysdev/mv64x60_dev.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/mv64x60_dev.c
++++ linux-2.6/arch/powerpc/sysdev/mv64x60_dev.c
+@@ -16,6 +16,7 @@
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_platform.h>
++#include <linux/dma-mapping.h>
+ 
+ #include <asm/prom.h>
+ 
+@@ -189,6 +190,7 @@ static int __init mv64x60_mpsc_device_se
+ 	pdev = platform_device_alloc(MPSC_CTLR_NAME, port_number);
+ 	if (!pdev)
+ 		return -ENOMEM;
++	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+ 
+ 	err = platform_device_add_resources(pdev, r, 5);
+ 	if (err)
+@@ -302,6 +304,7 @@ static int __init mv64x60_eth_device_set
+ 	if (!pdev)
+ 		return -ENOMEM;
+ 
++	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+ 	err = platform_device_add_resources(pdev, r, 1);
+ 	if (err)
+ 		goto error;
