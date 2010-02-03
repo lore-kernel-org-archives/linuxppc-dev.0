@@ -1,22 +1,15 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0DA0CB7D43
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  4 Feb 2010 06:00:31 +1100 (EST)
-Date: Wed, 3 Feb 2010 11:00:19 -0800
-From: Greg KH <greg@kroah.com>
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller
-	driver flag
-Message-ID: <20100203190019.GA12637@kroah.com>
-References: <1265221840-25634-1-git-send-email-albert_herranz@yahoo.es>
-	<1265221840-25634-2-git-send-email-albert_herranz@yahoo.es>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/3] OF Device tree merge patches
+To: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+	monstr@monstr.eu, sfr@canb.auug.org.au,
+	jeremy.kerr@canonical.com, benh@kernel.crashing.org
+Date: Wed, 03 Feb 2010 12:00:34 -0700
+Message-ID: <20100203185753.26862.6818.stgit@angua>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1265221840-25634-2-git-send-email-albert_herranz@yahoo.es>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +19,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 03, 2010 at 07:30:39PM +0100, Albert Herranz wrote:
-> +/**
-> + * hcd_memcpy32_to_coherent - copy data to a bounce buffer
-> + * @dst: destination dma bounce buffer
-> + * @src: source buffer
-> + * @len: number of bytes to copy
-> + *
-> + * This function copies @len bytes from @src to @dst in 32 bit chunks.
-> + * The caller must guarantee that @dst length is 4 byte aligned and
-> + * that @dst length is greater than or equal to @src length.
-> + */
-> +static void *hcd_memcpy32_to_coherent(void *dst, const void *src, size_t len)
+Hi everyone.  Here are a few patches that I've got sitting in my
+test-devicetree branch, but I haven't posted for review yet.  Please
+take a look and let me know if they are okay.  Once I've collected
+acks I'll move them over to my next-devicetree branch.
 
-Why isn't there platform-specific functions for this already?  It seems
-a bit odd to bury them in the USB hcd core, when I'm sure that other
-people need these, if they haven't already created them.
+Thanks,
+g.
 
-thanks,
+---
 
-greg k-h
+Grant Likely (3):
+      of/flattree: merge early_init_dt_scan_memory() common code
+      of: add 'of_' prefix to machine_is_compatible()
+      microblaze: remove early_init_dt_scan_cpus() and phyp_dump_*()
+
+
+ arch/microblaze/include/asm/prom.h            |    4 
+ arch/microblaze/kernel/prom.c                 |  284 -------------------------
+ arch/powerpc/include/asm/prom.h               |    4 
+ arch/powerpc/kernel/pci_64.c                  |    2 
+ arch/powerpc/kernel/prom.c                    |  149 ++-----------
+ arch/powerpc/platforms/85xx/xes_mpc85xx.c     |    4 
+ arch/powerpc/platforms/cell/cbe_powerbutton.c |    2 
+ arch/powerpc/platforms/cell/ras.c             |    2 
+ arch/powerpc/platforms/pasemi/cpufreq.c       |    4 
+ arch/powerpc/platforms/powermac/cpufreq_32.c  |   14 +
+ arch/powerpc/platforms/powermac/cpufreq_64.c  |   14 +
+ arch/powerpc/platforms/powermac/feature.c     |    2 
+ arch/powerpc/platforms/powermac/smp.c         |   12 +
+ arch/powerpc/platforms/powermac/time.c        |    8 -
+ arch/powerpc/platforms/powermac/udbg_scc.c    |    6 -
+ arch/powerpc/sysdev/grackle.c                 |    4 
+ arch/sparc/kernel/prom_common.c               |   12 -
+ drivers/char/hvc_beat.c                       |    2 
+ drivers/gpu/drm/radeon/radeon_combios.c       |   44 ++--
+ drivers/macintosh/adb.c                       |    4 
+ drivers/macintosh/therm_pm72.c                |    8 -
+ drivers/macintosh/therm_windtunnel.c          |    2 
+ drivers/macintosh/via-pmu-backlight.c         |    8 -
+ drivers/macintosh/via-pmu.c                   |    8 -
+ drivers/macintosh/windfarm_core.c             |    6 -
+ drivers/macintosh/windfarm_cpufreq_clamp.c    |    6 -
+ drivers/macintosh/windfarm_lm75_sensor.c      |    6 -
+ drivers/macintosh/windfarm_max6690_sensor.c   |    6 -
+ drivers/macintosh/windfarm_pm112.c            |    2 
+ drivers/macintosh/windfarm_pm121.c            |    2 
+ drivers/macintosh/windfarm_pm81.c             |    4 
+ drivers/macintosh/windfarm_pm91.c             |    2 
+ drivers/macintosh/windfarm_smu_sensors.c      |    6 -
+ drivers/net/mace.c                            |    2 
+ drivers/of/Kconfig                            |    4 
+ drivers/of/base.c                             |   98 ++++++++-
+ drivers/of/fdt.c                              |   50 ++++
+ drivers/serial/pmac_zilog.c                   |    6 -
+ drivers/video/aty/aty128fb.c                  |   14 +
+ drivers/video/aty/atyfb_base.c                |    8 -
+ drivers/video/aty/radeon_backlight.c          |    6 -
+ include/linux/of.h                            |    6 +
+ include/linux/of_fdt.h                        |    5 
+ sound/ppc/awacs.c                             |   24 +-
+ sound/ppc/burgundy.c                          |    4 
+ sound/ppc/pmac.c                              |   18 +-
+ sound/soc/fsl/efika-audio-fabric.c            |    2 
+ sound/soc/fsl/pcm030-audio-fabric.c           |    2 
+ 48 files changed, 317 insertions(+), 575 deletions(-)
+
+-- 
+Signature
