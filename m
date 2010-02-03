@@ -1,18 +1,20 @@
-Return-Path: <stern+4b6f04d4@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id AF7BFB7D3B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  4 Feb 2010 06:46:53 +1100 (EST)
-Date: Wed, 3 Feb 2010 14:40:11 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller
-	driver flag
-In-Reply-To: <1265221840-25634-2-git-send-email-albert_herranz@yahoo.es>
-Message-ID: <Pine.LNX.4.44L0.1002031429430.1321-100000@iolanthe.rowland.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f223.google.com (mail-gx0-f223.google.com
+	[209.85.217.223]) by ozlabs.org (Postfix) with ESMTP id 30183B7D46
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 10:01:44 +1100 (EST)
+Received: by gxk23 with SMTP id 23so2831727gxk.2
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Feb 2010 15:01:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B6762CE.1050001@cs.ucr.edu>
+References: <4B6762CE.1050001@cs.ucr.edu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Feb 2010 16:01:22 -0700
+Message-ID: <fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
+Subject: Re: PATCH: Add non-Virtex 5 support for LL TEMAC driver
+To: John Tyner <jtyner@cs.ucr.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,204 +24,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 3 Feb 2010, Albert Herranz wrote:
+On Mon, Feb 1, 2010 at 4:25 PM, John Tyner <jtyner@cs.ucr.edu> wrote:
+> This patch adds support for using the LL TEMAC Ethernet driver on non-Virtex
+> 5 platforms by adding support for accessing the Soft DMA registers as if
+> they were memory mapped instead of solely through the DCR's (available on
+> the Virtex 5).
+>
+> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
 
-> The HCD_BOUNCE_BUFFERS USB host controller driver flag can be enabled
-> to instruct the USB stack to always bounce USB buffers to/from coherent
-> memory buffers _just_ before/after a host controller transmission.
-> 
-> This setting allows overcoming some platform-specific limitations.
-> 
-> For example, the Nintendo Wii video game console is a NOT_COHERENT_CACHE
-> platform that is unable to safely perform non-32 bit uncached writes
-> to RAM because the byte enables are not connected to the bus.
-> Thus, in that platform, "coherent" DMA buffers cannot be directly used
-> by the kernel code unless it guarantees that all write accesses
-> to said buffers are done in 32 bit chunks (which is not the case in the
-> USB subsystem).
-> 
-> To avoid this unwanted behaviour HCD_BOUNCE_BUFFERS can be enabled at
-> the HCD controller, causing buffer allocations to be satisfied from
-> normal memory and, only at the very last moment, before the actual
-> transfer, buffers get copied to/from their corresponding DMA coherent
-> bounce buffers.
-> 
-> Note that HCD_LOCAL_MEM doesn't help in solving this problem as in that
-> case buffers may be allocated from coherent memory in the first place
-> and thus potentially accessed in non-32 bit chuncks by USB drivers.
+Hi John, thanks for doing this work.  A couple of comments below.
 
-This description sounds hopelessly confused.  Maybe you're just
-misusing the term "coherent".  The patch itself doesn't affect the
-coherent DMA mappings anyway; it affects the streaming mappings.  Or to
-put it another way, what's the justification for replacing a call to
-dma_map_single() with a call to dma_alloc_coherent()?
-
-Since the patch doesn't affect any of the coherent mappings (see for 
-example the calls to dma_pool_create() in ehci-mem.c), I don't see how 
-it can possibly do what you claim.
-
-> +/**
-> + * hcd_memcpy32_to_coherent - copy data to a bounce buffer
-> + * @dst: destination dma bounce buffer
-> + * @src: source buffer
-> + * @len: number of bytes to copy
-> + *
-> + * This function copies @len bytes from @src to @dst in 32 bit chunks.
-> + * The caller must guarantee that @dst length is 4 byte aligned and
-> + * that @dst length is greater than or equal to @src length.
-> + */
-> +static void *hcd_memcpy32_to_coherent(void *dst, const void *src, size_t len)
-> +{
-> +	u32 *q = dst, *p = (void *)src;
-> +	u8 *s;
-> +
-> +	while (len >= 4) {
-> +		*q++ = *p++;
-> +		len -= 4;
-> +	}
-> +	s = (u8 *)p;
-> +	switch (len) {
-> +	case 3:
-> +		*q = s[0] << 24 | s[1] << 16 | s[2] << 8;
-> +		break;
-> +	case 2:
-> +		*q = s[0] << 24 | s[1] << 16;
-> +		break;
-> +	case 1:
-> +		*q = s[0] << 24;
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	return dst;
-> +}
-
-What happens if somebody tries to use this code on a little-endian CPU?
-
->  static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
->  			   gfp_t mem_flags)
+>
+> --- /tmp/tmp.5198.41	2010-02-01 15:04:45.000000000 -0800
+> +++ ./linux-2.6.32.3/drivers/net/ll_temac.h	2010-01-28 15:06:17.000000000 -0800
+> @@ -338,6 +338,7 @@
+>  	/* IO registers and IRQs */
+>  	void __iomem *regs;
+>  	dcr_host_t sdma_dcrs;
+> +	u32 __iomem *sdma_regs;
+>  	int tx_irq;
+>  	int rx_irq;
+>  	int emac_num;
+> --- /tmp/tmp.5198.53	2010-02-01 15:04:45.000000000 -0800
+> +++ ./linux-2.6.32.3/drivers/net/ll_temac_main.c	2010-02-01 15:04:01.000000000 -0800
+> @@ -20,9 +20,6 @@
+>   *   or rx, so this should be okay.
+>   *
+>   * TODO:
+> - * - Fix driver to work on more than just Virtex5.  Right now the driver
+> - *   assumes that the locallink DMA registers are accessed via DCR
+> - *   instructions.
+>   * - Factor out locallink DMA code into separate driver
+>   * - Fix multicast assignment.
+>   * - Fix support for hardware checksumming.
+> @@ -117,12 +114,20 @@
+>
+>  static u32 temac_dma_in32(struct temac_local *lp, int reg)
 >  {
-> @@ -1274,53 +1441,80 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
->  	if (is_root_hub(urb->dev))
->  		return 0;
->  
-> -	if (usb_endpoint_xfer_control(&urb->ep->desc)
-> -	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> -		if (hcd->self.uses_dma) {
-> -			urb->setup_dma = dma_map_single(
-> -					hcd->self.controller,
-> -					urb->setup_packet,
-> -					sizeof(struct usb_ctrlrequest),
-> -					DMA_TO_DEVICE);
-> -			if (dma_mapping_error(hcd->self.controller,
-> -						urb->setup_dma))
-> -				return -EAGAIN;
-> -		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
-> -			ret = hcd_alloc_coherent(
-> -					urb->dev->bus, mem_flags,
-> +	if (usb_endpoint_xfer_control(&urb->ep->desc)) {
-> +		if (hcd->driver->flags & HCD_BOUNCE_BUFFERS) {
-> +			if (!(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
-> +				urb->setup_dma = 0;
-> +			ret = hcd_bounce_to_coherent(
-> +					hcd->self.controller, mem_flags,
->  					&urb->setup_dma,
->  					(void **)&urb->setup_packet,
->  					sizeof(struct usb_ctrlrequest),
->  					DMA_TO_DEVICE);
-> +		} else if (!(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> +			if (hcd->self.uses_dma) {
-> +				urb->setup_dma = dma_map_single(
-> +						hcd->self.controller,
-> +						urb->setup_packet,
-> +						sizeof(struct usb_ctrlrequest),
-> +						DMA_TO_DEVICE);
-> +				if (dma_mapping_error(hcd->self.controller,
-> +						      urb->setup_dma))
-> +					return -EAGAIN;
-> +			} else if (hcd->driver->flags & HCD_LOCAL_MEM)
-> +				ret = hcd_alloc_coherent(
-> +						urb->dev->bus, mem_flags,
-> +						&urb->setup_dma,
-> +						(void **)&urb->setup_packet,
-> +						sizeof(struct usb_ctrlrequest),
-> +						DMA_TO_DEVICE);
-> +		}
+> -	return dcr_read(lp->sdma_dcrs, reg);
+> +	if (lp->sdma_regs) {
+> +		return __raw_readl(lp->sdma_regs + reg);
+> +	} else {
+> +		return dcr_read(lp->sdma_dcrs, reg);
+> +	}
+
+Rather than taking the ugliness an if/else block on every register
+access, why not create an ops structure and populate it with the
+correct access routines at runtime?
+
+>  }
+>
+>  static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
+>  {
+> -	dcr_write(lp->sdma_dcrs, reg, value);
+> +	if (lp->sdma_regs) {
+> +		__raw_writel(value, lp->sdma_regs + reg);
+> +	} else {
+> +		dcr_write(lp->sdma_dcrs, reg, value);
+> +	}
+>  }
+>
+>  /**
+> @@ -862,13 +867,17 @@
+>  		goto nodev;
 >  	}
->  
->  	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
-> -	if (ret == 0 && urb->transfer_buffer_length != 0
-> -	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
-> -		if (hcd->self.uses_dma) {
-> -			urb->transfer_dma = dma_map_single (
-> -					hcd->self.controller,
-> -					urb->transfer_buffer,
-> -					urb->transfer_buffer_length,
-> -					dir);
-> -			if (dma_mapping_error(hcd->self.controller,
-> -						urb->transfer_dma))
-> -				return -EAGAIN;
-> -		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
-> -			ret = hcd_alloc_coherent(
-> -					urb->dev->bus, mem_flags,
-> +	if (ret == 0 && urb->transfer_buffer_length != 0) {
-> +		if (hcd->driver->flags & HCD_BOUNCE_BUFFERS) {
-> +			if (!(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
-> +				urb->transfer_dma = 0;
-> +			ret = hcd_bounce_to_coherent(
-> +					hcd->self.controller, mem_flags,
->  					&urb->transfer_dma,
->  					&urb->transfer_buffer,
->  					urb->transfer_buffer_length,
->  					dir);
->  
-> -			if (ret && usb_endpoint_xfer_control(&urb->ep->desc)
-> -			    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
-> -				hcd_free_coherent(urb->dev->bus,
-> -					&urb->setup_dma,
-> -					(void **)&urb->setup_packet,
-> -					sizeof(struct usb_ctrlrequest),
-> -					DMA_TO_DEVICE);
-> +			if (ret && usb_endpoint_xfer_control(&urb->ep->desc))
-> +				hcd_bounce_from_coherent(hcd->self.controller,
-> +						&urb->setup_dma,
-> +						(void **)&urb->setup_packet,
-> +						sizeof(struct usb_ctrlrequest),
-> +						DMA_TO_DEVICE);
-> +		} else if (!(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
-> +			if (hcd->self.uses_dma) {
-> +				urb->transfer_dma = dma_map_single(
-> +						hcd->self.controller,
-> +						urb->transfer_buffer,
-> +						urb->transfer_buffer_length,
-> +						dir);
-> +				if (dma_mapping_error(hcd->self.controller,
-> +						      urb->transfer_dma))
-> +					return -EAGAIN;
-> +			} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
-> +				ret = hcd_alloc_coherent(
-> +						urb->dev->bus, mem_flags,
-> +						&urb->transfer_dma,
-> +						&urb->transfer_buffer,
-> +						urb->transfer_buffer_length,
-> +						dir);
+>
+> -	dcrs = dcr_resource_start(np, 0);
+> -	if (dcrs == 0) {
+> -		dev_err(&op->dev, "could not get DMA register address\n");
+> +	lp->sdma_regs = NULL;
 > +
-> +				if (ret &&
-> +				    usb_endpoint_xfer_control(&urb->ep->desc))
-> +					hcd_free_coherent(urb->dev->bus,
-> +						&urb->setup_dma,
-> +						(void **)&urb->setup_packet,
-> +						sizeof(struct usb_ctrlrequest),
-> +						DMA_TO_DEVICE);
-> +			}
->  		}
+> +	if ((dcrs = dcr_resource_start(np, 0)) != 0) {
+> +		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+> +		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+> +	} else if ((lp->sdma_regs = of_iomap(np, 0))) {
+> +		dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
+> +	} else {
+> +		dev_err(&op->dev, "unable to map DMA registers\n");
+>  		goto nodev;
 >  	}
->  	return ret;
+> -	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+> -	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+>
+>  	lp->rx_irq = irq_of_parse_and_map(np, 0);
+>  	lp->tx_irq = irq_of_parse_and_map(np, 1);
+> @@ -895,7 +904,7 @@
+>
+>  	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
+>  	if (lp->phy_node)
+> -		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
+> +		dev_dbg(lp->dev, "using PHY node %s (%p)\n", lp->phy_node->full_name, lp->phy_node);
 
-It seems that every time somebody comes up with a new kind of 
-memory-access restriction, this function grows by a factor of 2.  After 
-a few more iterations it will be larger than the rest of the kernel!
+This looks like an unrelated bug fix.  Please put into a separate
+patch and post separately.
 
-There must be a better way to structure the requirements here.
+g.
 
-Alan Stern
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
