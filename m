@@ -1,20 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 16D35B7FD1
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Feb 2010 09:40:16 +1100 (EST)
-Message-Id: <201002022240.o12Me3aI018845@imap1.linux-foundation.org>
-Subject: [patch 2/2] kbuild: move -fno-dwarf2-cfi-asm to powerpc only
-To: benh@kernel.crashing.org
-From: akpm@linux-foundation.org
-Date: Tue, 02 Feb 2010 14:40:02 -0800
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Cc: mmarek@suse.cz, ak@linux.intel.com, kyle@mcmartin.ca,
-	linuxppc-dev@ozlabs.org, andi@firstfloor.org, akpm@linux-foundation.org
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
+	through extended ptrace interface
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1263854072.27291.47.camel@norville.austin.ibm.com>
+References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
+	<F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
+	<1263854072.27291.47.camel@norville.austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 02 Feb 2010 20:03:34 -0600
+Message-Id: <1265162614.17758.28.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Sergio Durigan Junior <sergiodj@br.ibm.com>,
+	Torez Smith <torez@us.ibm.com>,
+	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <andi@firstfloor.org>
+On Mon, 2010-01-18 at 16:34 -0600, Dave Kleikamp wrote:
+> On Thu, 2009-12-10 at 20:23 -0600, Kumar Gala wrote:
 
-Better dwarf2 unwind information is a good thing, it allows better
-debugging with kgdb and crash and helps systemtap.
+> > Is GDB smart enough to deal w/no condition_regs?  On some Book-E
+> > devices we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the
+> > features?
+> 
+> I wasn't aware that the bookE devices had varying numbers of these
+> registers.  I guess I will have to make it a runtime option.
 
-Commit 003086497f07f7f1e67c0c295e261740f822b377 ("Build with
--fno-dwarf2-cfi-asm") disabled some CFI information globally to work
-around a module loader bug on powerpc.
+Kumar,
 
-But this disables the better unwind tables for all architectures, not just
-powerpc.  Move the workaround to powerpc and also add a suitable comment
-that's it really a workaround.
+Can you tell me which bookE processors have 2 IAC's, and which have no
+DVC's?
 
-This improves dwarf2 unwind tables on x86 at least.
+I think we still may be able to make these compile-time options as long
+no two cpus that run on the same binary kernel vary in the number of
+registers.  Right now I know the 403 only has 2 IAC's, and I don't
+intend to expose the DVC's for the 40x processors anyway.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michal Marek <mmarek@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+If they don't need to be run-time configurable, I think it would be
+cleaner to define the number of each type of register in CONFIG_ flags
+and put the logic into the Kconfig files.
 
- Makefile              |    3 ---
- arch/powerpc/Makefile |    5 +++++
- 2 files changed, 5 insertions(+), 3 deletions(-)
-
-diff -puN Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only Makefile
---- a/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only
-+++ a/Makefile
-@@ -579,9 +579,6 @@ KBUILD_CFLAGS += $(call cc-option,-Wno-p
- # disable invalid "can't wrap" optimizations for signed / pointers
- KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
- 
--# revert to pre-gcc-4.4 behaviour of .eh_frame
--KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
--
- # conserve stack if available
- KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
- 
-diff -puN arch/powerpc/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only arch/powerpc/Makefile
---- a/arch/powerpc/Makefile~kbuild-move-fno-dwarf2-cfi-asm-to-powerpc-only
-+++ a/arch/powerpc/Makefile
-@@ -112,6 +112,11 @@ KBUILD_CFLAGS += $(call cc-option,-mspe=
- # kernel considerably.
- KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
- 
-+# FIXME: the module load should be taught about the additional relocs
-+# generated by this.
-+# revert to pre-gcc-4.4 behaviour of .eh_frame
-+KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
-+
- # Never use string load/store instructions as they are
- # often slow when they are implemented at all
- KBUILD_CFLAGS		+= -mno-string
-_
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
