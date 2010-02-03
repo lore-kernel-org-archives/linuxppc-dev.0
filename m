@@ -1,20 +1,21 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC:PATCH 00/03] powerpc: Expose BookE debug registers
-	through extended ptrace interface
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1263854072.27291.47.camel@norville.austin.ibm.com>
-References: <20091210155709.6697.4635.sendpatchset@norville.austin.ibm.com>
-	<F0B42818-1EE1-47EE-B2F3-B7529B2E13C8@kernel.crashing.org>
-	<1263854072.27291.47.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 02 Feb 2010 20:03:34 -0600
-Message-Id: <1265162614.17758.28.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Sergio Durigan Junior <sergiodj@br.ibm.com>,
-	Torez Smith <torez@us.ibm.com>,
-	Thiago Jung Bauermann <bauerman@br.ibm.com>, David Gibson <dwg@au1.ibm.com>
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id E7D3DB7D51
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  3 Feb 2010 17:17:22 +1100 (EST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: Albrecht =?iso-8859-15?q?Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
+References: <1264191106.2224.0-2010-02-02-19-31-49@antares>
+In-Reply-To: <1264191106.2224.0-2010-02-02-19-31-49@antares>
+MIME-Version: 1.0
+Message-ID: <201002030716.31280.roman.fietze@telemotive.de>
+Date: Wed, 3 Feb 2010 07:16:31 +0100
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-01-18 at 16:34 -0600, Dave Kleikamp wrote:
-> On Thu, 2009-12-10 at 20:23 -0600, Kumar Gala wrote:
+Hello Albrecht,
 
-> > Is GDB smart enough to deal w/no condition_regs?  On some Book-E
-> > devices we have 2 IACs, 2 DACs, and 0 DVCs.  Does it need to be in the
-> > features?
-> 
-> I wasn't aware that the bookE devices had varying numbers of these
-> registers.  I guess I will have to make it a runtime option.
+Sorry for the delay ... your mail got stuck in a Notes "spam filter".
 
-Kumar,
+On Friday 22 January 2010 21:11:39 Albrecht Dre=DF wrote:
 
-Can you tell me which bookE processors have 2 IAC's, and which have no
-DVC's?
+> Are there any "final" conclusions from your tests?
 
-I think we still may be able to make these compile-time options as long
-no two cpus that run on the same binary kernel vary in the number of
-registers.  Right now I know the 403 only has 2 IAC's, and I don't
-intend to expose the DVC's for the 40x processors anyway.
+Yes.
 
-If they don't need to be run-time configurable, I think it would be
-cleaner to define the number of each type of register in CONFIG_ flags
-and put the logic into the Kconfig files.
+=46or the small product using the 2.6 kernel we turned all snooping and
+the kernel coherent flag off, which avoided crashes of the FEC and/or
+hard disk since we introduced that change.
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+We are currently investigating problems that we are seeing on the
+2.4.25 (DENX and Lite5200B based) boards for a long time. Here we are
+having problems with corrupt filesystems and FEC hick ups. In this
+case we are using UDMA2, because we cannot yet get MWDMA2 work on
+2.4.25, well knowing that there might be a problem with UDMA2 and LPC.
+So we also turned of snooping and are currently in the testing phase
+(again).
+
+> ... two compactflash cards with vfat file systems attached to the
+> ata bus; - a nfs3 network drive, connected via a 100MBit line, on a
+> Xeon serve
+
+Are you using MWDMA2 with the compact flash cards? What is the load on
+the different (DMA) channels? ATA reads or writes?
+
+> ... a signal processor attached to the localbus, using bestcomm and
+> the fifo for the bulk transfer
+
+Are you using an own driver, or are you using Grant's SCLPC+SDMA
+driver? BD task?
+
+
+Our latest product uses an SMSC MOST150 Spynic and an FPGA to sample
+data from a MOST ring via SCLPC+SDMA (single non BD task from the old
+=46reescale Betstcomm API) on the 2.4.25. Here moving from memory
+accesses to SCLPC+SDMA helped somewhat, probably by avoiding the
+UDMA2/LPC problem by mainly letting the SDMA scheduler do the
+scheduling of the LPC traffic, which avoids the LPC arbiter problem
+"somehow".
+
+The probability for seeing problems or crashes increases a lot with
+the bandwidth. I think, and I might be wrong, esp. when an arbiter or
+scheduler (LPC/PCI or SDMA) needs to switch users or tasks. In our
+case we have data running with about 3-6 MB/s (avg.) via the LPC to
+the hard disks or somewhat more using FTP from the hard disk to the
+=46EC.
+
+> I did not observe any issues
+
+The filesystem crashes are seldom, but happen often enough to be able
+to reproduce them once every 1 or 2 days under heavy load, and to
+produce failures in the field, what's even worse. And they
+statistically increased a lot wen we ran out of GPIO on the MPC5200B
+and then used an CPLD or FPGA to replace them, just a few bits to MUX
+SPI lines, but that was enough.
+
+> but your statements are making me really nervous...
+
+That was not my intention. The best thing is to run very ugly tests
+with very high load for at least 24h. Due to the fact that we see
+those problems on different boards we (the SW guys) no longer can
+assume self made HW problems (HW guys), esp. when reading Freescale's
+advice with the XLB config.
+
+It might happen that we switch to 2.6 on our older products, hoping
+that at least the LPC/IDE problem disappears by using MWDMA2 instead
+of UDMA2.
+
+
+Roman
+
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
