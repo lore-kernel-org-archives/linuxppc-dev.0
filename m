@@ -2,22 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 650A9B7D4C
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Feb 2010 14:29:57 +1100 (EST)
-Subject: Re: [PATCHv2 2/2] Update ibm,client-architecture call field based
-	on device tree
+	by ozlabs.org (Postfix) with ESMTPS id 56F7CB7D4D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  4 Feb 2010 14:37:40 +1100 (EST)
+Subject: [PATCH] powerpc/pseries: Pass more accurate number of supported
+	cores to firmware
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <4B6870DF.9030408@austin.ibm.com>
-References: <1263501508.4869.133.camel@jschopp-laptop>
-	<1263501674.4869.142.camel@jschopp-laptop>
-	<1265064662.5391.19.camel@jschopp-laptop>
-	<20100202034832.GD12389@ozlabs.org> <4B6870DF.9030408@austin.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 14:27:45 +1100
-Message-ID: <1265254065.8287.147.camel@pasglop>
+Date: Thu, 04 Feb 2010 14:35:22 +1100
+Message-ID: <1265254522.8287.151.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +22,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-02-02 at 12:37 -0600, Joel Schopp wrote:
-> >> +		if(*cores != NR_CPUS)
-> >> +			prom_printf("client-architecture structure corrupted\n");
-> >> +		*cores = (NR_CPUS / prom_smt_way());
-> >> +		prom_printf("setting client-architecture cores to %x\n", *cores);
-> >>     
-> >
-> > I don't know if I'm painting a bike shed of if this is a real concern, but if
-> > *cores isn't NR_CPUS shouldn't we do nothing rather then clobbering it?
-> >
-> > Yours Tony
-> >   
-> If it isn't NR_CPUS we're pretty broken if we set it or if we don't.  My 
-> previous version did a BUILD_BUG_ON() but Ben didn't like that and said 
-> he preferred just a warning message. 
+The field containing the number of supported cores which we pass to
+firmware via the ibm,client-architecture call was set by a previous
+patch statically as high as is possible (NR_CPUS).
 
-BUILD_BUG_ON would probably not have worked unless gcc smarter than I
-think it is :-) Your latest approach is bad because when you detect
-you are poking at the wrong thing ... you still proceed and do it. In
-fact you -are- poking at the wrong thing always since you are missing
-PTRRELOC() to relocate the pointer to the vec.
+However, that value isn't quite right for a system that supports
+multiple threads per core, thus permitting the firmware to assign
+more cores to a Linux partition than it can really cope with.
 
-I'll post a new variant of that patch.
+This patch improves it by using the device-tree to determine the
+number of threads supported by the processors in order to adjust
+the value passed to firmware.
 
-Cheers,
-Ben.
+Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/prom_init.c |   64 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 63 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 59d5bd1..5f306c4 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -710,7 +710,12 @@ static unsigned char ibm_architecture_vec[] = {
+ 	0,
+ 	0,
+ 	0,
+-	W(NR_CPUS),			/* number of cores supported*/
++	/* WARNING: The offset of the "number of cores" field below
++	 * must match by the macro below. Update the definition if
++	 * the structure layout changes.
++	 */
++#define IBM_ARCH_VEC_NRCORES_OFFSET	100
++	W(NR_CPUS),			/* number of cores supported */
+ 
+ 	/* option vector 6: IBM PAPR hints */
+ 	4 - 2,				/* length */
+@@ -807,13 +812,70 @@ static struct fake_elf {
+ 	}
+ };
+ 
++static int __init prom_count_smt_threads(void)
++{
++	phandle node;
++	char type[64];
++	unsigned int plen;
++
++	/* Pick up th first CPU node we can find */
++	for (node = 0; prom_next_node(&node); ) {
++		type[0] = 0;
++		prom_getprop(node, "device_type", type, sizeof(type));
++
++		if (strcmp(type, RELOC("cpu")))
++			continue;
++		/*
++		 * There is an entry for each smt thread, each entry being
++		 * 4 bytes long.  All cpus should have the same number of
++		 * smt threads, so return after finding the first.
++		 */
++		plen = prom_getproplen(node, "ibm,ppc-interrupt-server#s");
++		if (plen == PROM_ERROR)
++			break;
++		plen >>= 2;
++		prom_debug("Found 0x%x smt threads per core\n", (unsigned long)plen);
++
++		/* Sanity check */
++		if (plen < 1 || plen > 64) {
++			prom_printf("Threads per core 0x%x out of bounds, assuming 1\n",
++				    (unsigned long)plen);
++			return 1;
++		}
++		return plen;
++	}
++	prom_debug("No threads found, assuming 1 per core\n");
++
++	return 1;
++
++}
++
++
+ static void __init prom_send_capabilities(void)
+ {
+ 	ihandle elfloader, root;
+ 	prom_arg_t ret;
++	u32 *cores;
+ 
+ 	root = call_prom("open", 1, 1, ADDR("/"));
+ 	if (root != 0) {
++		/* We need to tell the FW about the number of cores we support.
++		 *
++		 * To do that, we count the number of threads on the first core
++		 * (we assume this is the same for all cores) and use it to
++		 * divide NR_CPUS.
++		 */
++		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
++		if (*cores != NR_CPUS) {
++			prom_printf("WARNING ! "
++				    "ibm_architecture_vec structure inconsistent: 0x%x !\n",
++				    *cores);
++		} else {
++			*cores = NR_CPUS / prom_count_smt_threads();
++			prom_printf("Max number of cores passed to firmware: 0x%x\n",
++				    (unsigned long)*cores);
++		}
++
+ 		/* try calling the ibm,client-architecture-support method */
+ 		prom_printf("Calling ibm,client-architecture-support...");
+ 		if (call_prom_ret("call-method", 3, 2, &ret,
