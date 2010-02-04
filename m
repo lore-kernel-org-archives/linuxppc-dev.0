@@ -1,18 +1,19 @@
-Return-Path: <stern+4b6f04d4@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id 4BD4FB7D49
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 1A30CB7D31
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  5 Feb 2010 05:58:20 +1100 (EST)
-Date: Thu, 4 Feb 2010 13:58:18 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller
-	driver flag
-In-Reply-To: <4B6B1089.6070708@yahoo.es>
-Message-ID: <Pine.LNX.4.44L0.1002041345150.1261-100000@iolanthe.rowland.org>
+	Fri,  5 Feb 2010 06:35:16 +1100 (EST)
+Date: Thu, 04 Feb 2010 20:35:12 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: MPC5200B XLB Configuration Issues, FEC RFIFO Events, ATA Crashes
+To: Roman Fietze <roman.fietze@telemotive.de>
+In-Reply-To: <201002030716.31280.roman.fietze@telemotive.de> (from
+	roman.fietze@telemotive.de on Wed Feb  3 07:16:31 2010)
+Message-Id: <1265312112.2256.1@antares>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-hWn7wCkfgYSzxn655QI8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 4 Feb 2010, Albert Herranz wrote:
+--=-hWn7wCkfgYSzxn655QI8
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Alan,
-> 
-> Alan Stern wrote:
-> > This description sounds hopelessly confused.  Maybe you're just
-> > misusing the term "coherent".  The patch itself doesn't affect the
-> > coherent DMA mappings anyway; it affects the streaming mappings.  Or to
-> > put it another way, what's the justification for replacing a call to
-> > dma_map_single() with a call to dma_alloc_coherent()?
-> > 
-> > Since the patch doesn't affect any of the coherent mappings (see for 
-> > example the calls to dma_pool_create() in ehci-mem.c), I don't see how 
-> > it can possibly do what you claim.
-> > 
-> 
-> Thanks for your comments. Let's try to hopefully clarify this a bit.
-> 
-> I've used the term "coherent" as described in Documentation/DMA-API.txt (aka "consistent" as used in PCI-related functions).
-> I've tried to describe first the limitations of the platform that I'm working on. Basically, one of the annoying things of that platform is that writes to uncached memory (as used in "coherent" memory) can only be reliably performed in 32-bit accesses.
-> 
-> The USB subsystem ends up using "coherent" memory for buffers and/or other structures in different ways.
-> 
-> The "coherent" memory allocated in dma_pool_create() in ehci-mem.c that you report is not a problem at all because it is always accessed in 32-bit chunks (it hasn't been always like that but since commit 3807e26d69b9ad3864fe03224ebebc9610d5802e "USB: EHCI: split ehci_qh into hw and sw parts" this got addressed as a side effect, so I didn't need to post another patch for that).
+Hi Roman:
 
-On a 64-bit processor, some of the accesses will be 64 bits wide
-instead of 32.  Does that matter for your purposes?
+Am 03.02.10 07:16 schrieb(en) Roman Fietze:
+> Sorry for the delay ... your mail got stuck in a Notes "spam filter".
 
-What about ohci-hcd and uhci-hcd?  They both use non-32-bit accesses to 
-structures in coherent memory.
+Never mind.  I didn't know yet that I'm *such* a nasty guy... ;-)
 
-> Other possible interactions with "coherent" memory are those involving buffers used in USB transactions, which may be allocated via the USB subsystem (at usb_buffer_alloc() or when bounced via hcd_alloc_coherent()) or which may come already allocated and ready for use (URB_NO_{SETUP,TRANSFER}_DMA_MAP).
+> Are you using MWDMA2 with the compact flash cards? What is the load on th=
+e different (DMA) channels? ATA reads or writes?
 
-Ah yes, quite correct.  And this indicates that you need to concentrate
-on usb_buffer_alloc().  On your system (or rather, whenever the
-HCD_NO_COHERENT_MEM flag is set) it should allocate normal memory and
-set the DMA pointer to NULL.
+Actually, I forgot that I have to explicitly enable libata dma on the 5200b=
+, due to the known silicon bugs...  I will repeat my tests with the proper =
+configuration, stay tuned.
 
-Then map_urb_for_dma() should check the urb->setup_dma and
-urb->transfer_dma pointers; if a pointer is NULL then the
-corresponding urb->URB_NO_SETUP_DMA_MAP or urb->NO_TRANSFER_DMA_MAP
-flag should be ignored (and probably should be cleared so as to 
-avoid confusing unmap_urb_for_dma()).
+>> ... a signal processor attached to the localbus, using bestcomm and the =
+fifo for the bulk transfer
+>=20
+> Are you using an own driver, or are you using Grant's SCLPC+SDMA driver? =
+BD task?
 
-> The patch, as posted, allocates normal memory for USB buffers _within_ the USB subsystem and invariably bounces all buffers to new "coherent" buffers.
-> So, basically, what the patch claims (avoid 32-bit writes for "coherent" memory within the USB subsystem) is "done" (hey, it actually works ;-).
-> 
-> But I think you have raised valid points here :)
-> 
-> If the "coherent" memory is already allocated and passed (as already dma-mapped) to the USB subsystem then there is no gain in bouncing the buffer:
-> - if a non-32 bit write was done to that "coherent" memory the damage is already done
-> - if the "coherent" memory was written always in 32-bit accesses then we can just safely use it
-> So bouncing here should be avoided as it is unneeded.
-> 
-> On the other hand, we can control USB buffers managed by the USB subsystem itself.
-> That's what the patch "does". It avoids access restrictions to USB buffers by allocating them from normal memory (leaving USB drivers free to access those buffers in whatever bus width they need, as they do today) ... and bouncing them.
-> The thing here is that it makes no sense to bounce them to "coherent" memory if they can be dma-mapped directly (as you point in your dma_map_single-vs-dma_alloc_coherent comment).
-> 
-> So... that's what RFCs are for :)
+Basically Grant's driver, but with a slightly modified variant of the gen_b=
+d task.  The signal processor is a LE, and I managed to insert the LE/BE co=
+nversion into the bestcomm task (see also <http://patchwork.ozlabs.org/patc=
+h/35038/>).  Unfortunately, there is no good documentation of the engine; I=
+ would like to also shift crc calculation into bestcomm, which seems to be =
+possible in principle, but I never got it running.
 
-If you do it as described above then the buffers you're worried about
-won't be allocated in coherent memory to begin with, so no problems 
-will arise.
+> The best thing is to run very ugly tests with very high load for at least=
+ 24h.
 
-Alan Stern
+Thanks again for this tip!  I hope I manage to run a test over the weekend.=
+  Throughput onto the cf cards is not critical for me (so I could live with=
+ pio there), but I'm a little afraid I might also see similar effects with =
+fec and the signal processor (in particular, the latter *is* critical).
+
+Thanks, Albrecht.
+
+--=-hWn7wCkfgYSzxn655QI8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBLayFwn/9unNAn/9ERAv14AJ0VNLnjRnvU20YB+fXWePnStc6iXQCgk7Wk
+H12CLMkcMtKPg/8vjep2dl8=
+=4ies
+-----END PGP SIGNATURE-----
+
+--=-hWn7wCkfgYSzxn655QI8--
