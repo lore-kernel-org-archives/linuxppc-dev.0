@@ -1,19 +1,23 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE002.bigfish.com (sg2ehsobe002.messaging.microsoft.com
-	[207.46.51.76]) by ozlabs.org (Postfix) with ESMTP id 5C854B6F0D
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 06:05:29 +1100 (EST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id E1D92B7CFD
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:22:37 +1100 (EST)
+Received: by gxk28 with SMTP id 28so3665106gxk.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 05 Feb 2010 12:22:36 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] net: emaclite: adding MDIO and phy lib support
-Date: Fri, 5 Feb 2010 11:50:08 -0700
-In-Reply-To: <1265244560-23593-1-git-send-email-john.linn@xilinx.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <a3cfa41e-7220-460d-8fce-96db4752ab08@SG2EHSMHS012.ehs.local>
 References: <1265244560-23593-1-git-send-email-john.linn@xilinx.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "John Linn" <john.linn@xilinx.com>, <netdev@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>, <jgarzik@pobox.com>,
-	<grant.likely@secretlab.ca>, <jwboyer@linux.vnet.ibm.com>
-Message-ID: <a3cfa41e-7220-460d-8fce-96db4752ab08@SG2EHSMHS012.ehs.local>
-Cc: Sadanand Mutyala <sadanan@xilinx.com>, john.williams@petalogix.com
+	<a3cfa41e-7220-460d-8fce-96db4752ab08@SG2EHSMHS012.ehs.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 5 Feb 2010 12:22:16 -0800
+Message-ID: <fa686aa41002051222o4670a35alea373d45c3f7498d@mail.gmail.com>
+Subject: Re: [PATCH] net: emaclite: adding MDIO and phy lib support
+To: John Linn <John.Linn@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Sadanand Mutyala <sadanan@xilinx.com>, jgarzik@pobox.com,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,211 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Grant Likely
-> Sent: Thurs, 4 Feb 2010 11:12:29 AM
-> To: John Linn
-> Subject: FW: [PATCH] net: emaclite: adding MDIO and phy lib support
-> =
+On Fri, Feb 5, 2010 at 10:50 AM, John Linn <John.Linn@xilinx.com> wrote:
+>> -----Original Message-----
+>> From: Grant Likely
+>> Sent: Thurs, 4 Feb 2010 11:12:29 AM
+>> To: John Linn
+>> Subject: FW: [PATCH] net: emaclite: adding MDIO and phy lib support
+>>
+>> Hi John and Sadanand. =A0Looks like a good patch, but a few issues to
+>> resolve. =A0Comments below.
+>>
+>> g.
+>
+> Somehow I didn't get this message but found it out on the web, so this
+> is a contrived version of the message so I could respond :)
+>
+>>
+>> On Wed, Feb 3, 2010 at 5:49 PM, John Linn <john.linn@xxxxxxxxxx>
+> wrote:
+>> > These changes add MDIO and phy lib support to the driver as the
+>> > IP core now supports the MDIO bus.
+>> >
+>> > The MDIO bus and phy are added as a child to the emaclite in the
+> device
+>> > tree as illustrated below.
+>> >
+>> > mdio {
+>> > =A0 =A0 =A0 =A0#address-cells =3D <1>;
+>> > =A0 =A0 =A0 =A0#size-cells =3D <0>;
+>> > =A0 =A0 =A0 =A0phy0: phy@7 {
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <7>;
+>>
+>> For completeness, phy node need a "compatible" property.
+>
+> It seems like this is in the device tree only but the driver won't use
+> it. So no real affect on the driver unless I'm not synced up with you.
 
-> Hi John and Sadanand.  Looks like a good patch, but a few issues to
-> resolve.  Comments below.
-> =
+That's right.  That's why I said "for completeness".  This is just an
+example phy node, but it is good practice to give accurate examples.
+:-)
 
-> g.
+>> > =A0 =A0 =A0 =A0/* Set the MAC address in the EmacLite device */
+>> > - =A0 =A0 =A0 xemaclite_set_mac_address(lp, ndev->dev_addr);
+>> > + =A0 =A0 =A0 xemaclite_update_address(lp, ndev->dev_addr);
+>> > +
+>> > + =A0 =A0 =A0 /* Check if MDIO is included in the HW */
+>> > + =A0 =A0 =A0 lp->has_mdio =3D get_bool(ofdev, "xlnx,include-mdio");
+>> > + =A0 =A0 =A0 if (lp->has_mdio) {
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->phy_node =3D of_parse_phandle(ofdev-=
+>node,
+> "phy-handle", 0);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D xemaclite_mdio_setup(lp, &ofdev->=
+dev);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (rc)
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_warn(&ofdev->dev, "e=
+rror registering
+> MDIO bus\n");
+>> > + =A0 =A0 =A0 }
+>>
+>> What if the phy is attached to a different MDIO bus (which is
+>> completely possible)? =A0The fetching of phy_node should be performed
+>> regardless of whether or not xlnx,include-mdio is set.
+>>
+>
+> So the issue here is that the IP core can be built without any PHY
+> interface and MDIO bus.
 
-Somehow I didn't get this message but found it out on the web, so this
-is a contrived version of the message so I could respond :)
+Right, but just because the *core* doesn't have a phy interface built
+in, doesn't mean that the PHY isn't attached to a different MDIO bus
+(ie. on another emaclite, or on a gpio driven MDIO bus).  So even if
+mdio is configured out, the driver should still handle the case of it
+having an valid phy-handle.
 
-> =
+g.
 
-> On Wed, Feb 3, 2010 at 5:49 PM, John Linn <john.linn@xxxxxxxxxx>
-wrote:
-> > These changes add MDIO and phy lib support to the driver as the
-> > IP core now supports the MDIO bus.
-> >
-> > The MDIO bus and phy are added as a child to the emaclite in the
-device
-> > tree as illustrated below.
-> >
-> > mdio {
-> >        #address-cells =3D <1>;
-> >        #size-cells =3D <0>;
-> >        phy0: phy@7 {
-> >                reg =3D <7>;
-> =
-
-> For completeness, phy node need a "compatible" property.
-
-It seems like this is in the device tree only but the driver won't use
-it. So no real affect on the driver unless I'm not synced up with you.
-
-> =
-
-> >        } ;
-> > }
-> >
-> > Signed-off-by: Sadanand Mutyala <Sadanand.Mutyala@xxxxxxxxxx>
-> > Signed-off-by: John Linn <john.linn@xxxxxxxxxx>
-> > ---
-> >  drivers/net/Kconfig           |    1 +
-> >  drivers/net/xilinx_emaclite.c |  362
-++++++++++++++++++++++++++++++++++++-----
-> >  2 files changed, 319 insertions(+), 44 deletions(-)
-> >
-> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> > index 396fd38..2056cd2 100644
-> > --- a/drivers/net/Kconfig
-> > +++ b/drivers/net/Kconfig
-> > @@ -1947,6 +1947,7 @@ config ATL2
-> >  config XILINX_EMACLITE
-> >        tristate "Xilinx 10/100 Ethernet Lite support"
-> >        depends on PPC32 || MICROBLAZE
-> > +       select PHYLIB
-> >        help
-> >          This driver supports the 10/100 Ethernet Lite from Xilinx.
-> >
-> =
-
-> Patch appears to be whitespace damaged.  All tabs have been converted
-to spaces.
-
-Ok, will look at this.
-
-<snip>
-
-> > +static int xemaclite_mdio_read(struct mii_bus *bus, int phy_id, int
-reg)
-> > +{
-> > +       struct net_local *lp =3D bus->priv;
-> > +       u32 ctrl_reg;
-> > +       u32 rc;
-> > +
-> > +       /* Wait till the device is ready */
-> > +       do {
-> > +               ctrl_reg =3D in_be32(lp->base_addr +
-XEL_MDIOCTRL_OFFSET);
-> > +       } while (ctrl_reg & XEL_MDIOCTRL_MDIOSTS_MASK);
-> =
-
-> This is a busywait loop that just burns cycles while waiting for the
-> MDIO bus to become non-busy, and further down...
-
-Yep agreed.
-
-> =
-
-> > +
-> > +       /* Write the PHY address, register number and set the OP bit
-in the
-> > +        * MDIO Address register. Set the Status bit in the MDIO
-Control
-> > +        * register to start a MDIO read transaction.
-> > +        */
-> > +       out_be32(lp->base_addr + XEL_MDIOADDR_OFFSET,
-> > +                XEL_MDIOADDR_OP_MASK |
-> > +                ((phy_id << XEL_MDIOADDR_PHYADR_SHIFT) | reg));
-> > +       out_be32(lp->base_addr + XEL_MDIOCTRL_OFFSET,
-> > +                ctrl_reg | XEL_MDIOCTRL_MDIOSTS_MASK);
-> > +
-> > +       /* Wait for the device to complete the transaction and read
-the value
-> > +        * from MDIO Read Data register.
-> > +        */
-> > +       do {
-> > +               ctrl_reg =3D in_be32(lp->base_addr +
-XEL_MDIOCTRL_OFFSET);
-> > +       } while (ctrl_reg & XEL_MDIOCTRL_MDIOSTS_MASK);
-> =
-
-> ... I see the same thing waiting for the issued transaction to
-> complete.  Busywaiting on slow events, like MDIO transfers, wastes a
-> lot of cycles that could be used for running other threads.
-> =
-
-> At the very least, the wait loop should msleep() so that other threads
-> get scheduled.  Even better is if a completion is used and the MDIO
-> irq can be used to wake up the thread.
-> =
-
-> Another problem with this busywait is that is has no failure path if
-> the MDIO bus hangs up.  The thread could get stuck spinning on this
-> loop forever with no way to kill it.
-> =
-
-
-Agree, will fix all these, probably not use an interrupt.
-
-<snip>
-
-> >  * Return:     0, if the driver is bound to the Emaclite device, or
-> >  *             a negative error if there is failure.
-> > @@ -853,7 +1104,6 @@ static int __devinit xemaclite_of_probe(struct
-of_device *ofdev,
-> >        struct net_local *lp =3D NULL;
-> >        struct device *dev =3D &ofdev->dev;
-> >        const void *mac_address;
-> > -
-> =
-
-> Unrelated whitespace change.
-
-Yep.
-
-> =
-
-> >        int rc =3D 0;
-> >
-> >        dev_info(dev, "Device Tree Probing\n");
-> > @@ -880,6 +1130,7 @@ static int __devinit xemaclite_of_probe(struct
-of_device *ofdev,
-> >        }
-> >
-> >        dev_set_drvdata(dev, ndev);
-> > +       SET_NETDEV_DEV(ndev, &ofdev->dev);
-> >
-> >        ndev->irq =3D r_irq.start;
-> >        ndev->mem_start =3D r_mem.start;
-> > @@ -923,7 +1174,16 @@ static int __devinit xemaclite_of_probe(struct
-of_device *ofdev,
-> >        out_be32(lp->base_addr + XEL_BUFFER_OFFSET + XEL_TSR_OFFSET,
-0);
-> >
-> >        /* Set the MAC address in the EmacLite device */
-> > -       xemaclite_set_mac_address(lp, ndev->dev_addr);
-> > +       xemaclite_update_address(lp, ndev->dev_addr);
-> > +
-> > +       /* Check if MDIO is included in the HW */
-> > +       lp->has_mdio =3D get_bool(ofdev, "xlnx,include-mdio");
-> > +       if (lp->has_mdio) {
-> > +               lp->phy_node =3D of_parse_phandle(ofdev->node,
-"phy-handle", 0);
-> > +               rc =3D xemaclite_mdio_setup(lp, &ofdev->dev);
-> > +               if (rc)
-> > +                       dev_warn(&ofdev->dev, "error registering
-MDIO bus\n");
-> > +       }
-> =
-
-> What if the phy is attached to a different MDIO bus (which is
-> completely possible)?  The fetching of phy_node should be performed
-> regardless of whether or not xlnx,include-mdio is set.
-> =
-
-
-So the issue here is that the IP core can be built without any PHY
-interface and MDIO bus.
-
-Maybe we can still do that, I'll need to test it.  =
-
-
-Will get a new patch ready soon.
-
-Thanks,
-John
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
