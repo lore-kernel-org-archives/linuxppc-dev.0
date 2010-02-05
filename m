@@ -1,23 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
-	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id E1D92B7CFD
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:22:37 +1100 (EST)
-Received: by gxk28 with SMTP id 28so3665106gxk.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 05 Feb 2010 12:22:36 -0800 (PST)
+Received: from mail-yx0-f185.google.com (mail-yx0-f185.google.com
+	[209.85.210.185]) by ozlabs.org (Postfix) with ESMTP id 9A9E4B7BFA
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:29:52 +1100 (EST)
+Received: by yxe15 with SMTP id 15so5024426yxe.9
+	for <linuxppc-dev@ozlabs.org>; Fri, 05 Feb 2010 12:29:51 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <a3cfa41e-7220-460d-8fce-96db4752ab08@SG2EHSMHS012.ehs.local>
-References: <1265244560-23593-1-git-send-email-john.linn@xilinx.com>
-	<a3cfa41e-7220-460d-8fce-96db4752ab08@SG2EHSMHS012.ehs.local>
+In-Reply-To: <4B6C5271.9080802@cs.ucr.edu>
+References: <4B6762CE.1050001@cs.ucr.edu>
+	<fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
+	<4B6C5271.9080802@cs.ucr.edu>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 5 Feb 2010 12:22:16 -0800
-Message-ID: <fa686aa41002051222o4670a35alea373d45c3f7498d@mail.gmail.com>
-Subject: Re: [PATCH] net: emaclite: adding MDIO and phy lib support
-To: John Linn <John.Linn@xilinx.com>
+Date: Fri, 5 Feb 2010 12:29:31 -0800
+Message-ID: <fa686aa41002051229y3c19ebfj9ae6d52811199668@mail.gmail.com>
+Subject: Re: PATCH: Add non-Virtex 5 support for LL TEMAC driver
+To: John Tyner <jtyner@cs.ucr.edu>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Sadanand Mutyala <sadanan@xilinx.com>, jgarzik@pobox.com,
-	john.williams@petalogix.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +26,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 5, 2010 at 10:50 AM, John Linn <John.Linn@xilinx.com> wrote:
->> -----Original Message-----
->> From: Grant Likely
->> Sent: Thurs, 4 Feb 2010 11:12:29 AM
->> To: John Linn
->> Subject: FW: [PATCH] net: emaclite: adding MDIO and phy lib support
->>
->> Hi John and Sadanand. =A0Looks like a good patch, but a few issues to
->> resolve. =A0Comments below.
->>
->> g.
+On Fri, Feb 5, 2010 at 9:16 AM, John Tyner <jtyner@cs.ucr.edu> wrote:
 >
-> Somehow I didn't get this message but found it out on the web, so this
-> is a contrived version of the message so I could respond :)
 >
+> Grant Likely wrote:
 >>
->> On Wed, Feb 3, 2010 at 5:49 PM, John Linn <john.linn@xxxxxxxxxx>
-> wrote:
->> > These changes add MDIO and phy lib support to the driver as the
->> > IP core now supports the MDIO bus.
->> >
->> > The MDIO bus and phy are added as a child to the emaclite in the
-> device
->> > tree as illustrated below.
->> >
->> > mdio {
->> > =A0 =A0 =A0 =A0#address-cells =3D <1>;
->> > =A0 =A0 =A0 =A0#size-cells =3D <0>;
->> > =A0 =A0 =A0 =A0phy0: phy@7 {
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <7>;
+>> On Mon, Feb 1, 2010 at 4:25 PM, John Tyner <jtyner@cs.ucr.edu> wrote:
+>>>
+>>> This patch adds support for using the LL TEMAC Ethernet driver on
+>>> non-Virtex
+>>> 5 platforms by adding support for accessing the Soft DMA registers as i=
+f
+>>> they were memory mapped instead of solely through the DCR's (available =
+on
+>>> the Virtex 5).
+>>>
+>>> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
 >>
->> For completeness, phy node need a "compatible" property.
+>> Hi John, thanks for doing this work. =A0A couple of comments below.
+>>
 >
-> It seems like this is in the device tree only but the driver won't use
-> it. So no real affect on the driver unless I'm not synced up with you.
+> [snip]
+>
+>>> =A0* TODO:
+>>> - * - Fix driver to work on more than just Virtex5. =A0Right now the dr=
+iver
+>>> - * =A0 assumes that the locallink DMA registers are accessed via DCR
+>>> - * =A0 instructions.
+>>> =A0* - Factor out locallink DMA code into separate driver
+>>> =A0* - Fix multicast assignment.
+>>> =A0* - Fix support for hardware checksumming.
+>>> @@ -117,12 +114,20 @@
+>>>
+>>> =A0static u32 temac_dma_in32(struct temac_local *lp, int reg)
+>>> =A0{
+>>> - =A0 =A0 =A0 return dcr_read(lp->sdma_dcrs, reg);
+>>> + =A0 =A0 =A0 if (lp->sdma_regs) {
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return __raw_readl(lp->sdma_regs + reg);
+>>> + =A0 =A0 =A0 } else {
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return dcr_read(lp->sdma_dcrs, reg);
+>>> + =A0 =A0 =A0 }
+>>
+>> Rather than taking the ugliness an if/else block on every register
+>> access, why not create an ops structure and populate it with the
+>> correct access routines at runtime?
+>
+> As you can see from the comments in the TODO section, someone thinks (and=
+ I
+> would tend to agree) that it would be a good idea to separate the DMA cod=
+e
+> from the Ethernet driver entirely. I also agree with your suggestion of
+> avoiding the ugliness of the if/else block, but it seems like a job bette=
+r
+> left to be done when that refactoring takes place.
+>
+> This patch is only about 20 lines worth of changes, and to add a bunch of
+> complexity doesn't seem worthwhile to me at this time.
 
-That's right.  That's why I said "for completeness".  This is just an
-example phy node, but it is good practice to give accurate examples.
-:-)
+I wrote that comment, so that someone would happen to be me.  :-)
 
->> > =A0 =A0 =A0 =A0/* Set the MAC address in the EmacLite device */
->> > - =A0 =A0 =A0 xemaclite_set_mac_address(lp, ndev->dev_addr);
->> > + =A0 =A0 =A0 xemaclite_update_address(lp, ndev->dev_addr);
->> > +
->> > + =A0 =A0 =A0 /* Check if MDIO is included in the HW */
->> > + =A0 =A0 =A0 lp->has_mdio =3D get_bool(ofdev, "xlnx,include-mdio");
->> > + =A0 =A0 =A0 if (lp->has_mdio) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->phy_node =3D of_parse_phandle(ofdev-=
->node,
-> "phy-handle", 0);
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D xemaclite_mdio_setup(lp, &ofdev->=
-dev);
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (rc)
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_warn(&ofdev->dev, "e=
-rror registering
-> MDIO bus\n");
->> > + =A0 =A0 =A0 }
->>
->> What if the phy is attached to a different MDIO bus (which is
->> completely possible)? =A0The fetching of phy_node should be performed
->> regardless of whether or not xlnx,include-mdio is set.
->>
+Breaking the register access functions out into callbacks or an ops
+callbacks structure is unrelated to the DMA refactoring task.  Doing
+callbacks is pretty trivial to implement and it makes things simpler,
+not more complex.
+
 >
-> So the issue here is that the IP core can be built without any PHY
-> interface and MDIO bus.
+>>> @@ -895,7 +904,7 @@
+>>>
+>>> =A0 =A0 =A0 =A0lp->phy_node =3D of_parse_phandle(op->node, "phy-handle"=
+, 0);
+>>> =A0 =A0 =A0 =A0if (lp->phy_node)
+>>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(lp->dev, "using PHY node %s (%p)\=
+n",
+>>> np->full_name, np);
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(lp->dev, "using PHY node %s (%p)\=
+n",
+>>> lp->phy_node->full_name, lp->phy_node);
+>>
+>> This looks like an unrelated bug fix. =A0Please put into a separate
+>> patch and post separately.
+>
+> It is an unrelated bug fix. If it's really a big deal, I can submit a
+> separate patch, but it seems like it would be easier for someone to manua=
+lly
+> make this change than for me to go back and generate a new patch (since I=
+'m
+> not working on anything related to this anymore).
+>
+> I apologize for being kind of a dick about this stuff, but as I said, I'm
+> not doing anything related to this stuff anymore. The change is really
+> small, but adds support for something that currently doesn't work, so I'm
+> hoping somebody else is willing to take up the cause in my stead. :)
 
-Right, but just because the *core* doesn't have a phy interface built
-in, doesn't mean that the PHY isn't attached to a different MDIO bus
-(ie. on another emaclite, or on a gpio driven MDIO bus).  So even if
-mdio is configured out, the driver should still handle the case of it
-having an valid phy-handle.
+Fair enough.  Thanks for posting what you have.
 
 g.
 
