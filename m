@@ -1,22 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id D0D0BB7CED
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 01:57:07 +1100 (EST)
-Date: Fri, 5 Feb 2010 15:39:23 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH 1/4] Add ps3_storage module alias
-In-Reply-To: <20100205140350.GL12001@hansolo.jdub.homelinux.org>
-Message-ID: <alpine.LRH.2.00.1002051538360.5981@mink.sonytel.be>
-References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
-	<20100205134235.GG12001@hansolo.jdub.homelinux.org>
-	<alpine.LRH.2.00.1002051446280.5981@mink.sonytel.be>
-	<20100205140350.GL12001@hansolo.jdub.homelinux.org>
+Return-Path: <jtyner@cs.ucr.edu>
+Received: from fed1rmmtao105.cox.net (fed1rmmtao105.cox.net [68.230.241.41])
+	by ozlabs.org (Postfix) with ESMTP id CB427B7C48
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 04:16:47 +1100 (EST)
+Message-ID: <4B6C5271.9080802@cs.ucr.edu>
+Date: Fri, 05 Feb 2010 09:16:33 -0800
+From: John Tyner <jtyner@cs.ucr.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: PATCH: Add non-Virtex 5 support for LL TEMAC driver
+References: <4B6762CE.1050001@cs.ucr.edu>
+	<fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
+In-Reply-To: <fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Feb 2010, Josh Boyer wrote:
-> On Fri, Feb 05, 2010 at 02:49:14PM +0100, Geert Uytterhoeven wrote:
-> >On Fri, 5 Feb 2010, Josh Boyer wrote:
-> >> This allows the upgrade path from older kernel releases to work
-> >> with the Fedora mkinitrd tool.
-> >>=20
-> >> ---
-> >>=20
-> >> --- linux-2.6.22.ppc64/drivers/block/ps3disk.c~=092007-07-25 16:06:16.=
-000000000 +0100
-> >> +++ linux-2.6.22.ppc64/drivers/block/ps3disk.c=092007-07-26 08:49:44.0=
-00000000 +0100
-> >> @@ -628,3 +628,4 @@ MODULE_LICENSE("GPL");
-> >>  MODULE_DESCRIPTION("PS3 Disk Storage Driver");
-> >>  MODULE_AUTHOR("Sony Corporation");
-> >>  MODULE_ALIAS(PS3_MODULE_ALIAS_STOR_DISK);
-> >> +MODULE_ALIAS("ps3_storage");
-> >
-> >NAKed-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> >
-> >ps3_storage was replaced by 3 drivers: ps3disk, ps3rom, and ps3flash. Th=
-ese are
-> >automatically loaded by udev.
-> >
-> >How does mkinitrd determine the driver for the root file system on other
-> >systems? Does it really contain a big list of e.g. all SCSI drivers?
->=20
-> At one time I believe it did have a list of "odd" drivers to explicitly
-> include.  Anaconda didn't (doesn't?) use udev to determine which drivers
-> to include in the initrd since the install image is most likely not compo=
-sed
-> on a machine that includes those drivers.  If the install initrd didn't h=
-ave
-> the drivers loaded, it wouldn't install on PS3.
->=20
-> This is highlighted as a Fedora local change, probably for the reasons yo=
-u
-> state.  We might have already moved past the point where this is needed,
-> so I'm fine with it being NAKed.  I'll probably just drop it from the Fed=
-ora
-> kernel builds.
 
-It's possible it's (still) needed on Fedora, though (Geoff, do you know?).
-But it's definitely not something we want in mainline.
 
-With kind regards,
+Grant Likely wrote:
+> On Mon, Feb 1, 2010 at 4:25 PM, John Tyner <jtyner@cs.ucr.edu> wrote:
+>> This patch adds support for using the LL TEMAC Ethernet driver on non-Virtex
+>> 5 platforms by adding support for accessing the Soft DMA registers as if
+>> they were memory mapped instead of solely through the DCR's (available on
+>> the Virtex 5).
+>>
+>> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+> 
+> Hi John, thanks for doing this work.  A couple of comments below.
+> 
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+[snip]
 
-Technology and Software Centre Europe
-The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Belgium
+>>   * TODO:
+>> - * - Fix driver to work on more than just Virtex5.  Right now the driver
+>> - *   assumes that the locallink DMA registers are accessed via DCR
+>> - *   instructions.
+>>   * - Factor out locallink DMA code into separate driver
+>>   * - Fix multicast assignment.
+>>   * - Fix support for hardware checksumming.
+>> @@ -117,12 +114,20 @@
+>>
+>>  static u32 temac_dma_in32(struct temac_local *lp, int reg)
+>>  {
+>> -	return dcr_read(lp->sdma_dcrs, reg);
+>> +	if (lp->sdma_regs) {
+>> +		return __raw_readl(lp->sdma_regs + reg);
+>> +	} else {
+>> +		return dcr_read(lp->sdma_dcrs, reg);
+>> +	}
+> 
+> Rather than taking the ugliness an if/else block on every register
+> access, why not create an ops structure and populate it with the
+> correct access routines at runtime?
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+As you can see from the comments in the TODO section, someone thinks 
+(and I would tend to agree) that it would be a good idea to separate the 
+DMA code from the Ethernet driver entirely. I also agree with your 
+suggestion of avoiding the ugliness of the if/else block, but it seems 
+like a job better left to be done when that refactoring takes place.
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 =B7 RPR Brussels
-Fortis =B7 BIC GEBABEBB =B7 IBAN BE41293037680010
+This patch is only about 20 lines worth of changes, and to add a bunch 
+of complexity doesn't seem worthwhile to me at this time.
+
+>> @@ -895,7 +904,7 @@
+>>
+>>  	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
+>>  	if (lp->phy_node)
+>> -		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
+>> +		dev_dbg(lp->dev, "using PHY node %s (%p)\n", lp->phy_node->full_name, lp->phy_node);
+> 
+> This looks like an unrelated bug fix.  Please put into a separate
+> patch and post separately.
+
+It is an unrelated bug fix. If it's really a big deal, I can submit a 
+separate patch, but it seems like it would be easier for someone to 
+manually make this change than for me to go back and generate a new 
+patch (since I'm not working on anything related to this anymore).
+
+I apologize for being kind of a dick about this stuff, but as I said, 
+I'm not doing anything related to this stuff anymore. The change is 
+really small, but adds support for something that currently doesn't 
+work, so I'm hoping somebody else is willing to take up the cause in my 
+stead. :)
+
+John
