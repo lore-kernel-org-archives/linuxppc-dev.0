@@ -1,36 +1,16 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C940BB7D32
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 07:58:44 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e7.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o15KpixT026968
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:51:44 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o15Kwfg0071102
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:58:41 -0500
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o15Kw4Co020970
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 13:58:05 -0700
-Subject: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Joel Schopp <jschopp@austin.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1264721088.10385.1.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 14:57:58 -0600
-Message-ID: <1265403478.6089.41.camel@jschopp-laptop>
-Mime-Version: 1.0
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id CB347B7D2F
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 08:06:27 +1100 (EST)
+Date: Sat, 6 Feb 2010 00:06:26 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/85xx: Add NOR, LEDs and PIB support for
+	MPC8568E-MDS boards
+Message-ID: <20100205210626.GA9882@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,101 +20,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-there is performance benefit to idling the higher numbered threads in
-the core.  
+This patch adds NOR Flash, LEDs and PIB support for MPC8568E-MDS
+boards. Plus, move bcsr node into localbus node, and add bcsr5
+gpio-controller node.
 
-This patch implements arch_scale_smt_power to dynamically update smt
-thread power in these idle cases in order to prefer threads 0,1 over
-threads 2,3 within a core.
+Some platform code modifications were also needed.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
-Version 3 adds the #ifdef to avoid compiling on kernels that don't need it
-Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.git/arch/powerpc/kernel/smp.c
-@@ -620,3 +620,61 @@ void __cpu_die(unsigned int cpu)
- 		smp_ops->cpu_die(cpu);
- }
- #endif
-+
-+#ifdef CONFIG_SCHED_SMT
-+unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-+{
-+	int sibling;
-+	int idle_count = 0;
-+	int thread;
-+
-+	/* Setup the default weight and smt_gain used by most cpus for SMT
-+	 * Power.  Doing this right away covers the default case and can be
-+	 * used by cpus that modify it dynamically.
-+	 */
-+	struct cpumask *sibling_map = sched_domain_span(sd);
-+	unsigned long weight = cpumask_weight(sibling_map);
-+	unsigned long smt_gain = sd->smt_gain;
-+
-+
-+	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-+		for_each_cpu(sibling, sibling_map) {
-+			if (idle_cpu(sibling))
-+				idle_count++;
-+		}
-+
-+		/* the following section attempts to tweak cpu power based
-+		 * on current idleness of the threads dynamically at runtime
-+		 */
-+		if (idle_count > 1) {
-+			thread = cpu_thread_in_core(cpu);
-+			if (thread < 2) {
-+				/* add 75 % to thread power */
-+				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-+			} else {
-+				 /* subtract 75 % to thread power */
-+				smt_gain = smt_gain >> 2;
-+			}
-+		}
-+	}
-+
-+	/* default smt gain is 1178, weight is # of SMT threads */
-+	switch (weight) {
-+	case 1:
-+		/*divide by 1, do nothing*/
-+		break;
-+	case 2:
-+		smt_gain = smt_gain >> 1;
-+		break;
-+	case 4:
-+		smt_gain = smt_gain >> 2;
-+		break;
-+	default:
-+		smt_gain /= weight;
-+		break;
-+	}
-+
-+	return smt_gain;
-+
-+}
-+#endif
-Index: linux-2.6.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-2.6.git/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYNC_SMT4		LONG_ASM_CONST(0x0100000000000000)
+ arch/powerpc/boot/dts/mpc8568mds.dts      |   65 +++++++++++++++++++++++++++-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    3 +
+ 2 files changed, 65 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 6d892ba..92fb178 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -54,9 +54,52 @@
+ 		reg = <0x0 0x10000000>;
+ 	};
  
- #ifndef __ASSEMBLY__
+-	bcsr@f8000000 {
+-		compatible = "fsl,mpc8568mds-bcsr";
+-		reg = <0xf8000000 0x8000>;
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8568-localbus", "fsl,pq3-localbus",
++			     "simple-bus";
++		reg = <0xe0005000 0x1000>;
++
++		ranges = <0x0 0x0 0xfe000000 0x02000000
++			  0x1 0x0 0xf8000000 0x00008000
++			  0x2 0x0 0xf0000000 0x04000000
++			  0x4 0x0 0xf8008000 0x00008000
++			  0x5 0x0 0xf8010000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x02000000>;
++			bank-width = <2>;
++			device-width = <2>;
++		};
++
++		bcsr@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8568mds-bcsr";
++			reg = <1 0 0x8000>;
++			ranges = <0 1 0 0x8000>;
++
++			bcsr5: gpio-controller@11 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8568mds-bcsr-gpio";
++				reg = <0x5 0x1>;
++				gpio-controller;
++			};
++		};
++
++		pib@4,0 {
++			compatible = "fsl,mpc8568mds-pib";
++			reg = <4 0 0x8000>;
++		};
++
++		pib@5,0 {
++			compatible = "fsl,mpc8568mds-pib";
++			reg = <5 0 0x8000>;
++		};
+ 	};
  
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO | CPU_FTR_ASYNC_SMT4)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	soc8568@e0000000 {
+@@ -610,4 +653,20 @@
+ 		sleep = <&pmc 0x00080000   /* controller */
+ 			 &pmc 0x00040000>; /* message unit */
+ 	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		green {
++			gpios = <&bcsr5 1 0>;
++		};
++
++		amber {
++			gpios = <&bcsr5 2 0>;
++		};
++
++		red {
++			gpios = <&bcsr5 3 0>;
++		};
++	};
+ };
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 21f61b8..04af81e 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -302,11 +302,14 @@ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .compatible = "gianfar", },
+ 	{ .compatible = "fsl,rapidio-delta", },
+ 	{ .compatible = "fsl,mpc8548-guts", },
++	{ .compatible = "gpio-leds", },
+ 	{},
+ };
+ 
+ static int __init mpc85xx_publish_devices(void)
+ {
++	if (machine_is(mpc8568_mds))
++		simple_gpiochip_init("fsl,mpc8568mds-bcsr-gpio");
+ 	if (machine_is(mpc8569_mds))
+ 		simple_gpiochip_init("fsl,mpc8569mds-bcsr-gpio");
+ 
+-- 
+1.6.5.7
