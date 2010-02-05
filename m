@@ -1,18 +1,21 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7160CB7D09
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 00:57:35 +1100 (EST)
-Message-ID: <4B6C2488.3060403@ge.com>
-Date: Fri, 05 Feb 2010 14:00:40 +0000
-From: Martyn Welch <martyn.welch@ge.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-iw0-f172.google.com (mail-iw0-f172.google.com
+	[209.85.223.172]) by ozlabs.org (Postfix) with ESMTP id 258B7B8140
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  6 Feb 2010 00:59:29 +1100 (EST)
+Received: by iwn2 with SMTP id 2so357994iwn.10
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 05 Feb 2010 05:59:28 -0800 (PST)
+Date: Fri, 5 Feb 2010 08:59:20 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/4] Fedora kernel patch review
+Message-ID: <20100205135920.GK12001@hansolo.jdub.homelinux.org>
+References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
+	<20100205135354.GI12001@hansolo.jdub.homelinux.org>
 MIME-Version: 1.0
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org
-Subject: Gianfar driver failing on MPC8641D based board
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100205135354.GI12001@hansolo.jdub.homelinux.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have recently attempted to boot an 8641D based board from an NFS root.
-The boot process grinds to a halt not long after the first access of the
-NFS root and I receive multiple "nfs: server 192.168.0.1 not responding,
-still trying" messages. Wireshark suggests that there is no further
-traffic from this board at this point on. The NFS server seems to
-eventually try sending duplicate packets it's already sent, which
-results in "nfs: server 192.168.0.1 OK" messages, but the "not
-responding" messages resume with no further traffic from the board.
+On Fri, Feb 05, 2010 at 08:53:54AM -0500, Josh Boyer wrote:
+>Provide a modalias entry for VIO devices in sysfs.  I believe
+>this was another initrd generation bugfix for anaconda.
 
-I am able to boot to a ramdisk fine and the network seems to work -
-though I haven't really pushed the interface from it.
-
-I have attempted to git bisect, though I wasn't able to get much further
-than discovering the problem was introduced in the 2.6.33 merge window -
-at which point the gianfar network driver fails to compile (I have tried
-to git bisect skip many, many times to no avail).
-
-NFS booting fails for this board on todays linux-next, the master branch
-of Kumar's PPC tree and the head of the main tree. I have also been able
-to NFS boot from a random x86 based board that I have, using the head of
-the main tree and the linux-next tree.
-
-Copying the gianfar drivers from 2.6.32 into the head of the main tree
-restores the correct behaviour and I'm able to NFS boot. I have heard
-from others that the latest drivers work on 83xx and 85xx based boards,
-but it seems to be broken on at least the 8641D.
-
-I can see there has been a fair amount of work done on the gianfar
-driver, I assume that this is a bug introduced by the multiple queue
-support, but I'm way out of my depth on this.
-
-I'm also off for the next week - so if I'm quiet, it'll be because of that.
-
-Martyn
-
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+Bah, subject on this should have been [PATCH 3/4] Provide VIO modalias
