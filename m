@@ -1,32 +1,31 @@
 Return-Path: <jschopp@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 35655B7D15
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9F3A9B89DC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 07:58:12 +1100 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o15KsW3O012163
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:54:32 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o15Kw88i080030
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:58:08 -0500
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o15KvsOl027711
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 13:57:55 -0700
-Subject: [PATCHv4 1/2] sched: enable ARCH_POWER
+	Sat,  6 Feb 2010 07:58:23 +1100 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o15KnNIF025412
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:49:23 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o15KwKxe135012
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:58:20 -0500
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o15KvnGU018985
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 13:57:49 -0700
+Subject: [PATCHv4 0/2] sched: arch_scale_smt_powers
 From: Joel Schopp <jschopp@austin.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1264720833.9660.21.camel@jschopp-laptop>
+In-Reply-To: <1264720808.9660.18.camel@jschopp-laptop>
 References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017764.5717.127.camel@jschopp-laptop>
-	<1264548486.12239.55.camel@jschopp-laptop>
-	<1264720833.9660.21.camel@jschopp-laptop>
+	<1264548479.12239.54.camel@jschopp-laptop>
+	<1264720808.9660.18.camel@jschopp-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 14:57:52 -0600
-Message-ID: <1265403472.6089.40.camel@jschopp-laptop>
+Date: Fri, 05 Feb 2010 14:57:46 -0600
+Message-ID: <1265403466.6089.39.camel@jschopp-laptop>
 Mime-Version: 1.0
 Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
 	linuxppc-dev@lists.ozlabs.org
@@ -39,38 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the scheduler feature that allows use of arch_scale_smt_power.  Stub out
-the broken x86 implementation.
+The new Power7 processor has 4 way SMT.  This 4 way SMT benefits from
+dynamic power updates that arch_scale_smt_power was designed to provide.
+The first patch fixes a generic scheduler bug necessary for arch_scale_smt
+to properly function.  The second patch implements arch_scale_smt_power 
+for powerpc, and in particular for Power7 processors.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+Version 2 changes:
+- Drop Patch 1 from the original series since it's in the -tip tree now
+- Move enabling the cpu feature into it's own patch (now patch 1)
+- Add stubbing out broken x86 implementation to patch 1
+- clean up coding style in patch 2
+
+Version 3 changes:
+- Added a comment to Patch 2
+
+Version 4 changes:
+- Wrap arch_scale_smt_power() in #ifdef CONFIG_SCHED_SMT in Patch 2
+
 ---
-Index: linux-2.6.git/kernel/sched_features.h
-===================================================================
---- linux-2.6.git.orig/kernel/sched_features.h
-+++ linux-2.6.git/kernel/sched_features.h
-@@ -102,7 +102,7 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
- /*
-  * Use arch dependent cpu power functions
-  */
--SCHED_FEAT(ARCH_POWER, 0)
-+SCHED_FEAT(ARCH_POWER, 1)
- 
- SCHED_FEAT(HRTICK, 0)
- SCHED_FEAT(DOUBLE_TICK, 0)
-Index: linux-2.6.git/arch/x86/kernel/cpu/sched.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/sched.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/sched.c
-@@ -44,11 +44,9 @@ unsigned long arch_scale_freq_power(stru
- unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
- {
- 	/*
--	 * aperf/mperf already includes the smt gain
-+	 * aperf/mperf already includes the smt gain, but represents capacity
-+	 * as 0 when idle.  So for now just return default.
- 	 */
--	if (boot_cpu_has(X86_FEATURE_APERFMPERF))
--		return SCHED_LOAD_SCALE;
--
- 	return default_scale_smt_power(sd, cpu);
- }
+Joel Schopp (2):
+sched: enable ARCH_POWER
+powerpc: implement arch_scale_smt_power for Power7
+
+ arch/powerpc/include/asm/cputable.h |    3 +
+ arch/powerpc/kernel/smp.c           |   58
+++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/cpu/sched.c         |    6 +--
+ kernel/sched_features.h             |    2 -
+ 4 files changed, 63 insertions(+), 6 deletions(-)
