@@ -1,21 +1,19 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 635B3B801D
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:32:41 +1100 (EST)
-Date: Fri, 5 Feb 2010 23:32:39 +0300
+	by ozlabs.org (Postfix) with SMTP id A530EB7CFD
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:49:51 +1100 (EST)
+Date: Fri, 5 Feb 2010 23:49:49 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Grant Likely <grant.likely@secretlab.ca>,
 	David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 4/4] powerpc/mcu_mpc8349emitx: Remove OF GPIO handling stuff
-Message-ID: <20100205203239.GD1475@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+Subject: [PATCH RFC 0/3] Implement refcounting for OF GPIO chips
+Message-ID: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-Cc: Bill Gatliff <bgat@billgatliff.com>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+Cc: Michal Simek <monstr@monstr.eu>, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	microblaze-uclinux@itee.uq.edu.au, David Miller <davem@davemloft.net>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,130 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the new OF GPIO infrastructure it's much easier to handle I2C
-GPIO controllers, i.e. now drivers don't have to deal with the
-OF-specific bits.
+Hi all,
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   68 +++++-------------------
- 1 files changed, 14 insertions(+), 54 deletions(-)
+OF GPIO infrastructure is using dynamic GPIO bases, so it is possible
+that of_get_gpio()'s returned GPIO number will be no longer valid, or
+worse, it may point to an unexpected GPIO controller.
 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index 73c7e6b..5525175 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -18,8 +18,6 @@
- #include <linux/mutex.h>
- #include <linux/i2c.h>
- #include <linux/gpio.h>
--#include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- 
-@@ -36,7 +34,7 @@ struct mcu {
- 	struct mutex lock;
- 	struct device_node *np;
- 	struct i2c_client *client;
--	struct of_gpio_chip of_gc;
-+	struct gpio_chip gc;
- 	u8 reg_ctrl;
- };
- 
-@@ -55,8 +53,7 @@ static void mcu_power_off(void)
- 
- static void mcu_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_gpio_chip *of_gc = to_of_gpio_chip(gc);
--	struct mcu *mcu = container_of(of_gc, struct mcu, of_gc);
-+	struct mcu *mcu = container_of(gc, struct mcu, gc);
- 	u8 bit = 1 << (4 + gpio);
- 
- 	mutex_lock(&mcu->lock);
-@@ -75,53 +72,6 @@ static int mcu_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int mcu_gpiochip_add(struct mcu *mcu)
--{
--	struct device_node *np;
--	struct of_gpio_chip *of_gc = &mcu->of_gc;
--	struct gpio_chip *gc = &of_gc->gc;
--	int ret;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,mcu-mpc8349emitx");
--	if (!np)
--		return -ENODEV;
--
--	gc->owner = THIS_MODULE;
--	gc->label = np->full_name;
--	gc->can_sleep = 1;
--	gc->ngpio = MCU_NUM_GPIO;
--	gc->base = -1;
--	gc->set = mcu_gpio_set;
--	gc->direction_output = mcu_gpio_dir_out;
--	of_gc->chip = gc;
--	of_gc->gpio_cells = 2;
--	of_gc->xlate = of_gpio_simple_xlate;
--
--	np->data = of_gc;
--	mcu->np = np;
--
--	/*
--	 * We don't want to lose the node, its ->data and ->full_name...
--	 * So, if succeeded, we don't put the node here.
--	 */
--	ret = gpiochip_add(gc);
--	if (ret)
--		of_node_put(np);
--	return ret;
--}
--
--static int mcu_gpiochip_remove(struct mcu *mcu)
--{
--	int ret;
--
--	ret = gpiochip_remove(&mcu->of_gc.gc);
--	if (ret)
--		return ret;
--	of_node_put(mcu->np);
--
--	return 0;
--}
--
- static int __devinit mcu_probe(struct i2c_client *client,
- 			       const struct i2c_device_id *id)
- {
-@@ -141,7 +91,16 @@ static int __devinit mcu_probe(struct i2c_client *client,
- 		goto err;
- 	mcu->reg_ctrl = ret;
- 
--	ret = mcu_gpiochip_add(mcu);
-+	mcu->gc.dev = &client->dev;
-+	mcu->gc.owner = THIS_MODULE;
-+	mcu->gc.label = dev_name(&client->dev);
-+	mcu->gc.can_sleep = 1;
-+	mcu->gc.ngpio = MCU_NUM_GPIO;
-+	mcu->gc.base = -1;
-+	mcu->gc.set = mcu_gpio_set;
-+	mcu->gc.direction_output = mcu_gpio_dir_out;
-+
-+	ret = gpiochip_add(&mcu->gc);
- 	if (ret)
- 		goto err;
- 
-@@ -168,9 +127,10 @@ static int __devexit mcu_remove(struct i2c_client *client)
- 		glob_mcu = NULL;
- 	}
- 
--	ret = mcu_gpiochip_remove(mcu);
-+	ret = gpiochip_remove(&mcu->gc);
- 	if (ret)
- 		return ret;
-+
- 	i2c_set_clientdata(client, NULL);
- 	kfree(mcu);
- 	return 0;
+This scenario is possible:
+
+driver A:               driver B:              driver C:
+---------               ---------              ---------
+                        gpiochip_add()
+gpio = of_get_gpio()
+                        gpiochip_remove()
+                                               gpiochip_add()
+gpio_request(gpio);
+gpio_set_value(gpio);
+
+That is, driver A assumes that it is working with GPIO from driver B,
+but in practice it may disappear and driver C will take its GPIO base
+number, so it will provide the same GPIO numbers.
+
+The above situation is hard to trigger, but the issue is there
+nonetheless, and so needs fixing.
+
+Thanks,
+
+p.s. The patches are based on top of
+     '[PATCH v2 0/4] OF GPIO integration for I2C/SPI GPIO chips'
+     http://lkml.org/lkml/2010/2/5/243
+
 -- 
-1.6.5.7
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
