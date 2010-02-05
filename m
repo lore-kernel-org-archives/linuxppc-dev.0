@@ -1,21 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 271ECB7D21
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 35655B7D15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 07:57:53 +1100 (EST)
-Subject: Re: [PATCH 4/4] Fix iMac iSight PCI bridge setup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <20100205135546.GJ12001@hansolo.jdub.homelinux.org>
-References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
-	<20100205135546.GJ12001@hansolo.jdub.homelinux.org>
+	Sat,  6 Feb 2010 07:58:12 +1100 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o15KsW3O012163
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:54:32 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o15Kw88i080030
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 15:58:08 -0500
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o15KvsOl027711
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Feb 2010 13:57:55 -0700
+Subject: [PATCHv4 1/2] sched: enable ARCH_POWER
+From: Joel Schopp <jschopp@austin.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1264720833.9660.21.camel@jschopp-laptop>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	<1264017764.5717.127.camel@jschopp-laptop>
+	<1264548486.12239.55.camel@jschopp-laptop>
+	<1264720833.9660.21.camel@jschopp-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Feb 2010 07:57:46 +1100
-Message-ID: <1265403466.8287.218.camel@pasglop>
+Date: Fri, 05 Feb 2010 14:57:52 -0600
+Message-ID: <1265403472.6089.40.camel@jschopp-laptop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-05 at 08:55 -0500, Josh Boyer wrote:
-> This works around the PCIe bridge setup on the iMac iSight boxen.
+Enable the scheduler feature that allows use of arch_scale_smt_power.  Stub out
+the broken x86 implementation.
 
-Is this still needed ? I though I had fixed the root cause (incorrect
-setup of the bridge) a while back...
-
-Cheers,
-Ben.
-
-> ---
-> 
-> --- linux/arch/powerpc/platforms/powermac/pci.c~	2008-03-22 19:08:07.000000000 +0000
-> +++ linux/arch/powerpc/platforms/powermac/pci.c	2008-03-23 09:10:46.000000000 +0000
-> @@ -1271,6 +1271,12 @@ void pmac_pci_fixup_pciata(struct pci_de
->  	}
->  }
->  DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pmac_pci_fixup_pciata);
-> +#else /* CONFIG_PPC64 */
-> +static void __devinit imac_transparent_bridge(struct pci_dev *dev)
-> +{
-> +	dev->transparent = 1;
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, 0x005b, imac_transparent_bridge);
->  #endif /* CONFIG_PPC32 */
->  
->  /*
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+---
+Index: linux-2.6.git/kernel/sched_features.h
+===================================================================
+--- linux-2.6.git.orig/kernel/sched_features.h
++++ linux-2.6.git/kernel/sched_features.h
+@@ -102,7 +102,7 @@ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+ /*
+  * Use arch dependent cpu power functions
+  */
+-SCHED_FEAT(ARCH_POWER, 0)
++SCHED_FEAT(ARCH_POWER, 1)
+ 
+ SCHED_FEAT(HRTICK, 0)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+Index: linux-2.6.git/arch/x86/kernel/cpu/sched.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/cpu/sched.c
++++ linux-2.6.git/arch/x86/kernel/cpu/sched.c
+@@ -44,11 +44,9 @@ unsigned long arch_scale_freq_power(stru
+ unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
+ {
+ 	/*
+-	 * aperf/mperf already includes the smt gain
++	 * aperf/mperf already includes the smt gain, but represents capacity
++	 * as 0 when idle.  So for now just return default.
+ 	 */
+-	if (boot_cpu_has(X86_FEATURE_APERFMPERF))
+-		return SCHED_LOAD_SCALE;
+-
+ 	return default_scale_smt_power(sd, cpu);
+ }
