@@ -1,16 +1,16 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A53BBB89FB
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 00:44:21 +1100 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E9B06B8CD0
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 00:44:31 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 06/11] dma: Add MPC512x DMA driver
-Date: Fri,  5 Feb 2010 14:42:52 +0100
-Message-Id: <1265377377-29327-7-git-send-email-agust@denx.de>
+Subject: [PATCH v3 07/11] powerpc/fsl_soc.c: prepare for addition of mpc5121
+	USB code
+Date: Fri,  5 Feb 2010 14:42:53 +0100
+Message-Id: <1265377377-29327-8-git-send-email-agust@denx.de>
 In-Reply-To: <1265377377-29327-1-git-send-email-agust@denx.de>
 References: <1265377377-29327-1-git-send-email-agust@denx.de>
-Cc: wd@denx.de, dzu@denx.de, Dan Williams <dan.j.williams@intel.com>,
-	Anatolij Gustschin <agust@denx.de>, Piotr Ziecik <kosmo@semihalf.com>
+Cc: Anatolij Gustschin <agust@denx.de>, wd@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,873 +20,287 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Piotr Ziecik <kosmo@semihalf.com>
+Factor out common code for registering a FSL EHCI platform
+device into new fsl_usb2_register_device() function. This
+is done to avoid code duplication while adding code for
+instantiating of MPC5121 dual role USB platform devices.
+Then, the subsequent patch can use
+for_each_compatible_node(np, NULL, "fsl,mpc5121-usb2-dr") {
+	...
+	fsl_usb2_register_device();
+}
 
-Adds initial version of MPC512x DMA driver.
-Only memory to memory transfers are currenly supported.
-
-Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-Signed-off-by: Wolfgang Denk <wd@denx.de>
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: John Rigby <jcrigby@gmail.com>
 ---
-No changes since v2
+Note to avoid confusion: this patch is new in this series
+and is needed because for mpc5121 "fsl,mpc5121-usb2-dr" is
+used as the compatible property as requested. "fsl-usb2-dr"
+won't be used for mpc5121 any more.
 
-Changes since v1:
- - move content of the mpc512x.h into the drivers .c file as
-   it is only used by this DMA driver
- - use __devinit/__devexit/__devexit_p as requested
- - add unregistration of the dma device
- - remove meaningless comment
+ arch/powerpc/sysdev/fsl_soc.c |  219 ++++++++++++++++++-----------------------
+ 1 files changed, 98 insertions(+), 121 deletions(-)
 
-Changes since patch version submitted in May 2009:
- - don't use wildcards in compatible property, use "fsl,mpc5121-dma"
- - don't add "fsl,mpc5121-dma" compatible to of_bus_ids[] as the
-   dma device is part of IMMR
-
- drivers/dma/Kconfig       |    7 +
- drivers/dma/Makefile      |    1 +
- drivers/dma/mpc512x_dma.c |  800 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 808 insertions(+), 0 deletions(-)
- create mode 100644 drivers/dma/mpc512x_dma.c
-
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index e02d74b..ac67a53 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -69,6 +69,13 @@ config FSL_DMA
- 	  The Elo is the DMA controller on some 82xx and 83xx parts, and the
- 	  Elo Plus is the DMA controller on 85xx and 86xx parts.
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index b91f7ac..7bd6436 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -209,6 +209,37 @@ static int __init of_add_fixed_phys(void)
+ arch_initcall(of_add_fixed_phys);
+ #endif /* CONFIG_FIXED_PHY */
  
-+config MPC512X_DMA
-+	tristate "Freescale MPC512x built-in DMA engine support"
-+	depends on PPC_MPC512x
-+	select DMA_ENGINE
-+	---help---
-+	  Enable support for the Freescale MPC512x built-in DMA engine.
-+
- config MV_XOR
- 	bool "Marvell XOR engine support"
- 	depends on PLAT_ORION
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 807053d..4696bcf 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_DMATEST) += dmatest.o
- obj-$(CONFIG_INTEL_IOATDMA) += ioat/
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_FSL_DMA) += fsldma.o
-+obj-$(CONFIG_MPC512X_DMA) += mpc512x_dma.o
- obj-$(CONFIG_MV_XOR) += mv_xor.o
- obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- obj-$(CONFIG_AT_HDMAC) += at_hdmac.o
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-new file mode 100644
-index 0000000..3fdf1f4
---- /dev/null
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -0,0 +1,800 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
-+ * Copyright (C) Semihalf 2009
-+ *
-+ * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
-+ * (defines, structures and comments) was taken from MPC5121 DMA driver
-+ * written by Hongjun Chen <hong-jun.chen@freescale.com>.
-+ *
-+ * Approved as OSADL project by a majority of OSADL members and funded
-+ * by OSADL membership fees in 2009;  for details see www.osadl.org.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59
-+ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in the
-+ * file called COPYING.
-+ */
-+
-+/*
-+ * This is initial version of MPC5121 DMA driver. Only memory to memory
-+ * transfers are supported (tested using dmatest module).
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+
-+#include <linux/random.h>
-+
-+/* Number of DMA Transfer descriptors allocated per channel */
-+#define MPC_DMA_DESCRIPTORS	64
-+
-+/* Macro definitions */
-+#define MPC_DMA_CHANNELS	64
-+#define MPC_DMA_TCD_OFFSET	0x1000
-+
-+/* Arbitration mode of group and channel */
-+#define MPC_DMA_DMACR_EDCG	(1 << 31)
-+#define MPC_DMA_DMACR_ERGA	(1 << 3)
-+#define MPC_DMA_DMACR_ERCA	(1 << 2)
-+
-+/* Error codes */
-+#define MPC_DMA_DMAES_VLD	(1 << 31)
-+#define MPC_DMA_DMAES_GPE	(1 << 15)
-+#define MPC_DMA_DMAES_CPE	(1 << 14)
-+#define MPC_DMA_DMAES_ERRCHN(err) \
-+				(((err) >> 8) & 0x3f)
-+#define MPC_DMA_DMAES_SAE	(1 << 7)
-+#define MPC_DMA_DMAES_SOE	(1 << 6)
-+#define MPC_DMA_DMAES_DAE	(1 << 5)
-+#define MPC_DMA_DMAES_DOE	(1 << 4)
-+#define MPC_DMA_DMAES_NCE	(1 << 3)
-+#define MPC_DMA_DMAES_SGE	(1 << 2)
-+#define MPC_DMA_DMAES_SBE	(1 << 1)
-+#define MPC_DMA_DMAES_DBE	(1 << 0)
-+
-+#define MPC_DMA_TSIZE_1		0x00
-+#define MPC_DMA_TSIZE_2		0x01
-+#define MPC_DMA_TSIZE_4		0x02
-+#define MPC_DMA_TSIZE_16	0x04
-+#define MPC_DMA_TSIZE_32	0x05
-+
-+/* MPC5121 DMA engine registers */
-+struct __attribute__ ((__packed__)) mpc_dma_regs {
-+	/* 0x00 */
-+	u32 dmacr;		/* DMA control register */
-+	u32 dmaes;		/* DMA error status */
-+	/* 0x08 */
-+	u32 dmaerqh;		/* DMA enable request high(channels 63~32) */
-+	u32 dmaerql;		/* DMA enable request low(channels 31~0) */
-+	u32 dmaeeih;		/* DMA enable error interrupt high(ch63~32) */
-+	u32 dmaeeil;		/* DMA enable error interrupt low(ch31~0) */
-+	/* 0x18 */
-+	u8 dmaserq;		/* DMA set enable request */
-+	u8 dmacerq;		/* DMA clear enable request */
-+	u8 dmaseei;		/* DMA set enable error interrupt */
-+	u8 dmaceei;		/* DMA clear enable error interrupt */
-+	/* 0x1c */
-+	u8 dmacint;		/* DMA clear interrupt request */
-+	u8 dmacerr;		/* DMA clear error */
-+	u8 dmassrt;		/* DMA set start bit */
-+	u8 dmacdne;		/* DMA clear DONE status bit */
-+	/* 0x20 */
-+	u32 dmainth;		/* DMA interrupt request high(ch63~32) */
-+	u32 dmaintl;		/* DMA interrupt request low(ch31~0) */
-+	u32 dmaerrh;		/* DMA error high(ch63~32) */
-+	u32 dmaerrl;		/* DMA error low(ch31~0) */
-+	/* 0x30 */
-+	u32 dmahrsh;		/* DMA hw request status high(ch63~32) */
-+	u32 dmahrsl;		/* DMA hardware request status low(ch31~0) */
-+	u32 dmaihsa;		/* DMA interrupt high select AXE(ch63~32) */
-+	u32 dmailsa;		/* DMA interrupt low select AXE(ch31~0) */
-+	/* 0x40 ~ 0xff */
-+	u32 reserve0[48];	/* Reserved */
-+	/* 0x100 */
-+	u8 dchpri[MPC_DMA_CHANNELS];
-+	/* DMA channels(0~63) priority */
++struct fsl_usb2_dev_data {
++	char *dr_mode;		/* controller mode */
++	char *drivers[2];	/* drivers to instantiate for this mode */
++	enum fsl_usb2_operating_modes op_mode;	/* operating mode */
 +};
 +
-+struct __attribute__ ((__packed__)) mpc_dma_tcd {
-+	/* 0x00 */
-+	u32 saddr;		/* Source address */
-+
-+	u32 smod:5;		/* Source address modulo */
-+	u32 ssize:3;		/* Source data transfer size */
-+	u32 dmod:5;		/* Destination address modulo */
-+	u32 dsize:3;		/* Destination data transfer size */
-+	u32 soff:16;		/* Signed source address offset */
-+
-+	/* 0x08 */
-+	u32 nbytes;		/* Inner "minor" byte count */
-+	u32 slast;		/* Last source address adjustment */
-+	u32 daddr;		/* Destination address */
-+
-+	/* 0x14 */
-+	u32 citer_elink:1;	/* Enable channel-to-channel linking on
-+				 * minor loop complete
-+				 */
-+	u32 citer_linkch:6;	/* Link channel for minor loop complete */
-+	u32 citer:9;		/* Current "major" iteration count */
-+	u32 doff:16;		/* Signed destination address offset */
-+
-+	/* 0x18 */
-+	u32 dlast_sga;		/* Last Destination address adjustment/scatter
-+				 * gather address
-+				 */
-+
-+	/* 0x1c */
-+	u32 biter_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 biter_linkch:6;
-+	u32 biter:9;		/* Beginning "major" iteration count */
-+	u32 bwc:2;		/* Bandwidth control */
-+	u32 major_linkch:6;	/* Link channel number */
-+	u32 done:1;		/* Channel done */
-+	u32 active:1;		/* Channel active */
-+	u32 major_elink:1;	/* Enable channel-to-channel linking on major
-+				 * loop complete
-+				 */
-+	u32 e_sg:1;		/* Enable scatter/gather processing */
-+	u32 d_req:1;		/* Disable request */
-+	u32 int_half:1;		/* Enable an interrupt when major counter is
-+				 * half complete
-+				 */
-+	u32 int_maj:1;		/* Enable an interrupt when major iteration
-+				 * count completes
-+				 */
-+	u32 start:1;		/* Channel start */
++struct fsl_usb2_dev_data dr_data[] __initdata = {
++	{ "host",	{ "fsl-ehci",	NULL,		}, FSL_USB2_DR_HOST,  },
++	{ "otg",	{ "fsl-ehci",	"fsl-usb2-udc",	}, FSL_USB2_DR_OTG,   },
++	{ "periferal",	{ "fsl-usb2-udc", NULL,		}, FSL_USB2_DR_DEVICE,},
 +};
 +
-+struct mpc_dma_desc {
-+	struct dma_async_tx_descriptor	desc;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	int				error;
-+	struct list_head		node;
++struct fsl_usb2_dev_data mph_data[] __initdata = {
++	{ NULL,		{ "fsl-ehci",	NULL,		}, FSL_USB2_MPH_HOST, },
 +};
 +
-+struct mpc_dma_chan {
-+	struct dma_chan			chan;
-+	struct list_head		free;
-+	struct list_head		prepared;
-+	struct list_head		queued;
-+	struct list_head		active;
-+	struct list_head		completed;
-+	struct mpc_dma_tcd		*tcd;
-+	dma_addr_t			tcd_paddr;
-+	dma_cookie_t			completed_cookie;
-+
-+	/* Lock for this structure */
-+	spinlock_t			lock;
-+};
-+
-+struct mpc_dma {
-+	struct dma_device		dma;
-+	struct tasklet_struct		tasklet;
-+	struct mpc_dma_chan		channels[MPC_DMA_CHANNELS];
-+	struct mpc_dma_regs __iomem	*regs;
-+	struct mpc_dma_tcd __iomem	*tcd;
-+	int				irq;
-+	uint				error_status;
-+
-+	/* Lock for error_status field in this structure */
-+	spinlock_t			error_status_lock;
-+};
-+
-+#define DRV_NAME	"mpc512x_dma"
-+
-+/* Convert struct dma_chan to struct mpc_dma_chan */
-+static inline struct mpc_dma_chan *dma_chan_to_mpc_dma_chan(struct dma_chan *c)
++struct fsl_usb2_dev_data * __init get_dr_data(struct device_node *np)
 +{
-+	return container_of(c, struct mpc_dma_chan, chan);
-+}
-+
-+/* Convert struct dma_chan to struct mpc_dma */
-+static inline struct mpc_dma *dma_chan_to_mpc_dma(struct dma_chan *c)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(c);
-+	return container_of(mchan, struct mpc_dma, channels[c->chan_id]);
-+}
-+
-+/*
-+ * Execute all queued DMA descriptors.
-+ *
-+ * Following requirements must be met while calling mpc_dma_execute():
-+ * 	a) mchan->lock is acquired,
-+ * 	b) mchan->active list is empty,
-+ * 	c) mchan->queued list contains at least one entry.
-+ */
-+static void mpc_dma_execute(struct mpc_dma_chan *mchan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(&mchan->chan);
-+	struct mpc_dma_desc *first = NULL;
-+	struct mpc_dma_desc *prev = NULL;
-+	struct mpc_dma_desc *mdesc;
-+	int cid = mchan->chan.chan_id;
-+
-+	/* Move all queued descriptors to active list */
-+	list_splice_tail_init(&mchan->queued, &mchan->active);
-+
-+	/* Chain descriptors into one transaction */
-+	list_for_each_entry(mdesc, &mchan->active, node) {
-+		if (!first)
-+			first = mdesc;
-+
-+		if (!prev) {
-+			prev = mdesc;
-+			continue;
-+		}
-+
-+		prev->tcd->dlast_sga = mdesc->tcd_paddr;
-+		prev->tcd->e_sg = 1;
-+		mdesc->tcd->start = 1;
-+
-+		prev = mdesc;
-+	}
-+
-+	prev->tcd->start = 0;
-+	prev->tcd->int_maj = 1;
-+
-+	/* Send first descriptor in chain into hardware */
-+	memcpy_toio(&mdma->tcd[cid], first->tcd, sizeof(struct mpc_dma_tcd));
-+	out_8(&mdma->regs->dmassrt, cid);
-+}
-+
-+/* Handle interrupt on one half of DMA controller (32 channels) */
-+static void mpc_dma_irq_process(struct mpc_dma *mdma, u32 is, u32 es, int off)
-+{
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	u32 status = is | es;
-+	int ch;
-+
-+	while ((ch = fls(status) - 1) >= 0) {
-+		status &= ~(1 << ch);
-+		mchan = &mdma->channels[ch + off];
-+
-+		spin_lock(&mchan->lock);
-+
-+		/* Check error status */
-+		if (es & (1 << ch))
-+			list_for_each_entry(mdesc, &mchan->active, node)
-+				mdesc->error = -EIO;
-+
-+		/* Execute queued descriptors */
-+		list_splice_tail_init(&mchan->active, &mchan->completed);
-+		if (!list_empty(&mchan->queued))
-+			mpc_dma_execute(mchan);
-+
-+		spin_unlock(&mchan->lock);
-+	}
-+}
-+
-+/* Interrupt handler */
-+static irqreturn_t mpc_dma_irq(int irq, void *data)
-+{
-+	struct mpc_dma *mdma = data;
-+	uint es;
-+
-+	/* Save error status register */
-+	es = in_be32(&mdma->regs->dmaes);
-+	spin_lock(&mdma->error_status_lock);
-+	if ((es & MPC_DMA_DMAES_VLD) && mdma->error_status == 0)
-+		mdma->error_status = es;
-+	spin_unlock(&mdma->error_status_lock);
-+
-+	/* Handle interrupt on each channel */
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmainth),
-+					in_be32(&mdma->regs->dmaerrh), 32);
-+	mpc_dma_irq_process(mdma, in_be32(&mdma->regs->dmaintl),
-+					in_be32(&mdma->regs->dmaerrl), 0);
-+
-+	/* Ack interrupt on all channels */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
-+
-+	/* Schedule tasklet */
-+	tasklet_schedule(&mdma->tasklet);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* DMA Tasklet */
-+static void mpc_dma_tasklet(unsigned long data)
-+{
-+	struct mpc_dma *mdma = (void *)data;
-+	dma_cookie_t last_cookie = 0;
-+	struct mpc_dma_chan *mchan;
-+	struct mpc_dma_desc *mdesc;
-+	struct dma_async_tx_descriptor *desc;
-+	unsigned long flags;
-+	LIST_HEAD(list);
-+	uint es;
++	const unsigned char *prop;
 +	int i;
 +
-+	spin_lock_irqsave(&mdma->error_status_lock, flags);
-+	es = mdma->error_status;
-+	mdma->error_status = 0;
-+	spin_unlock_irqrestore(&mdma->error_status_lock, flags);
-+
-+	/* Print nice error report */
-+	if (es) {
-+		dev_err(mdma->dma.dev,
-+			"Hardware reported following error(s) on channel %u:\n",
-+						      MPC_DMA_DMAES_ERRCHN(es));
-+
-+		if (es & MPC_DMA_DMAES_GPE)
-+			dev_err(mdma->dma.dev, "- Group Priority Error\n");
-+		if (es & MPC_DMA_DMAES_CPE)
-+			dev_err(mdma->dma.dev, "- Channel Priority Error\n");
-+		if (es & MPC_DMA_DMAES_SAE)
-+			dev_err(mdma->dma.dev, "- Source Address Error\n");
-+		if (es & MPC_DMA_DMAES_SOE)
-+			dev_err(mdma->dma.dev, "- Source Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_DAE)
-+			dev_err(mdma->dma.dev, "- Destination Address"
-+								" Error\n");
-+		if (es & MPC_DMA_DMAES_DOE)
-+			dev_err(mdma->dma.dev, "- Destination Offset"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_NCE)
-+			dev_err(mdma->dma.dev, "- NBytes/Citter"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SGE)
-+			dev_err(mdma->dma.dev, "- Scatter/Gather"
-+						" Configuration Error\n");
-+		if (es & MPC_DMA_DMAES_SBE)
-+			dev_err(mdma->dma.dev, "- Source Bus Error\n");
-+		if (es & MPC_DMA_DMAES_DBE)
-+			dev_err(mdma->dma.dev, "- Destination Bus Error\n");
-+	}
-+
-+	for (i = 0; i < mdma->dma.chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		/* Get all completed descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		if (!list_empty(&mchan->completed))
-+			list_splice_tail_init(&mchan->completed, &list);
-+		spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+		if (list_empty(&list))
-+			continue;
-+
-+		/* Execute callbacks and run dependencies */
-+		list_for_each_entry(mdesc, &list, node) {
-+			desc = &mdesc->desc;
-+
-+			if (desc->callback)
-+				desc->callback(desc->callback_param);
-+
-+			last_cookie = desc->cookie;
-+			dma_run_dependencies(desc);
++	prop = of_get_property(np, "dr_mode", NULL);
++	if (prop) {
++		for (i = 0; i < ARRAY_SIZE(dr_data); i++) {
++			if (!strcmp(prop, dr_data[i].dr_mode))
++				return &dr_data[i];
 +		}
-+
-+		/* Free descriptors */
-+		spin_lock_irqsave(&mchan->lock, flags);
-+		list_splice_tail_init(&list, &mchan->free);
-+		mchan->completed_cookie = last_cookie;
-+		spin_unlock_irqrestore(&mchan->lock, flags);
 +	}
++	return &dr_data[0]; /* mode not specified, use host */
 +}
 +
-+/* Submit descriptor to hardware */
-+static dma_cookie_t mpc_dma_tx_submit(struct dma_async_tx_descriptor *txd)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(txd->chan);
-+	struct mpc_dma_desc *mdesc;
-+	unsigned long flags;
-+	dma_cookie_t cookie;
-+
-+	mdesc = container_of(txd, struct mpc_dma_desc, desc);
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+
-+	/* Move descriptor to queue */
-+	list_move_tail(&mdesc->node, &mchan->queued);
-+
-+	/* If channel is idle, execute all queued descriptors */
-+	if (list_empty(&mchan->active))
-+		mpc_dma_execute(mchan);
-+
-+	/* Update cookie */
-+	cookie = mchan->chan.cookie + 1;
-+	if (cookie <= 0)
-+		cookie = 1;
-+
-+	mchan->chan.cookie = cookie;
-+	mdesc->desc.cookie = cookie;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	return cookie;
-+}
-+
-+/* Alloc channel resources */
-+static int mpc_dma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
+ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ {
+ 	if (!phy_type)
+@@ -225,151 +256,97 @@ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+ 	return FSL_USB2_PHY_NONE;
+ }
+ 
+-static int __init fsl_usb_of_init(void)
++int __init fsl_usb2_register_device(struct device_node *np,
++			struct fsl_usb2_dev_data *dev_data,
++			struct fsl_usb2_platform_data *pdata,
++			unsigned int idx)
+ {
+-	struct device_node *np;
+-	unsigned int i = 0;
+-	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
+-		*usb_dev_dr_client = NULL;
++	struct platform_device *usb_dev;
++	const unsigned char *prop;
++	struct resource r[2];
++	int registered = 0;
+ 	int ret;
 +	int i;
 +
-+	/* Alloc DMA memory for Transfer Control Descriptors */
-+	tcd = dma_alloc_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+							&tcd_paddr, GFP_KERNEL);
-+	if (!tcd)
-+		return -ENOMEM;
++	if (!(dev_data && pdata))
++		return -EINVAL;
 +
-+	/* Alloc descriptors for this channel */
-+	for (i = 0; i < MPC_DMA_DESCRIPTORS; i++) {
-+		mdesc = kzalloc(sizeof(struct mpc_dma_desc), GFP_KERNEL);
-+		if (!mdesc) {
-+			dev_notice(mdma->dma.dev, "Memory allocation error. "
-+					"Allocated only %u descriptors\n", i);
++	memset(&r, 0, sizeof(r));
++	ret = of_address_to_resource(np, 0, &r[0]);
++	if (ret)
++		return -ENODEV;
++
++	ret = of_irq_to_resource(np, 0, &r[1]);
++	if (ret == NO_IRQ)
++		return -ENODEV;
++
++	pdata->operating_mode = dev_data->op_mode;
++
++	prop = of_get_property(np, "phy_type", NULL);
++	pdata->phy_mode = determine_usb_phy(prop);
++	ret = 0;
++	for (i = 0; i < ARRAY_SIZE(dev_data->drivers); i++) {
++		if (!dev_data->drivers[i])
 +			break;
++		usb_dev = platform_device_register_simple(
++					dev_data->drivers[i], idx, r, 2);
++		if (IS_ERR(usb_dev)) {
++			ret = PTR_ERR(usb_dev);
++			goto out;
 +		}
-+
-+		dma_async_tx_descriptor_init(&mdesc->desc, chan);
-+		mdesc->desc.flags = DMA_CTRL_ACK;
-+		mdesc->desc.tx_submit = mpc_dma_tx_submit;
-+
-+		mdesc->tcd = &tcd[i];
-+		mdesc->tcd_paddr = tcd_paddr + (i * sizeof(struct mpc_dma_tcd));
-+
-+		list_add_tail(&mdesc->node, &descs);
+ 
+-	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
++		usb_dev->dev.coherent_dma_mask = 0xffffffffUL;
++		usb_dev->dev.dma_mask = &usb_dev->dev.coherent_dma_mask;
++		ret = platform_device_add_data(usb_dev, pdata,
++				sizeof(struct fsl_usb2_platform_data));
+ 		if (ret)
+-			goto err;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		usb_dev_mph =
+-		    platform_device_register_simple("fsl-ehci", i, r, 2);
+-		if (IS_ERR(usb_dev_mph)) {
+-			ret = PTR_ERR(usb_dev_mph);
+-			goto err;
+-		}
++			platform_device_unregister(usb_dev);
++		else
++			registered++;
 +	}
-+
-+	/* Return error only if no descriptors were allocated */
-+	if (i == 0) {
-+		dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+		return -ENOMEM;
-+	}
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	mchan->tcd = tcd;
-+	mchan->tcd_paddr = tcd_paddr;
-+	list_splice_tail_init(&descs, &mchan->free);
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Enable Error Interrupt */
-+	out_8(&mdma->regs->dmaseei, chan->chan_id);
-+
++out:
++	if (!registered)
++		irq_dispose_mapping(r[1].end);
+ 
+-		usb_dev_mph->dev.coherent_dma_mask = 0xffffffffUL;
+-		usb_dev_mph->dev.dma_mask = &usb_dev_mph->dev.coherent_dma_mask;
++	return ret;
++}
+ 
+-		usb_data.operating_mode = FSL_USB2_MPH_HOST;
++static int __init fsl_usb_of_init(void)
++{
++	struct device_node *np;
++	const unsigned char *prop;
++	struct fsl_usb2_platform_data pdata;
++	unsigned int idx = 0;
++	int ret;
+ 
++	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
++		memset(&pdata, 0, sizeof(pdata));
+ 		prop = of_get_property(np, "port0", NULL);
+ 		if (prop)
+-			usb_data.port_enables |= FSL_USB2_PORT0_ENABLED;
++			pdata.port_enables |= FSL_USB2_PORT0_ENABLED;
+ 
+ 		prop = of_get_property(np, "port1", NULL);
+ 		if (prop)
+-			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
++			pdata.port_enables |= FSL_USB2_PORT1_ENABLED;
+ 
+-		prop = of_get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
+-
+-		ret =
+-		    platform_device_add_data(usb_dev_mph, &usb_data,
+-					     sizeof(struct
+-						    fsl_usb2_platform_data));
++		ret = fsl_usb2_register_device(np, mph_data, &pdata, idx++);
+ 		if (ret)
+-			goto unreg_mph;
+-		i++;
++			return ret;
+ 	}
+ 
+ 	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+ 		if (!of_device_is_available(np))
+ 			continue;
+ 
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
++		memset(&pdata, 0, sizeof(pdata));
++		ret = fsl_usb2_register_device(np, get_dr_data(np),
++						&pdata, idx++);
+ 		if (ret)
+-			goto unreg_mph;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		prop = of_get_property(np, "dr_mode", NULL);
+-
+-		if (!prop || !strcmp(prop, "host")) {
+-			usb_data.operating_mode = FSL_USB2_DR_HOST;
+-			usb_dev_dr_host = platform_device_register_simple(
+-					"fsl-ehci", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_host)) {
+-				ret = PTR_ERR(usb_dev_dr_host);
+-				goto err;
+-			}
+-		} else if (prop && !strcmp(prop, "peripheral")) {
+-			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
+-			usb_dev_dr_client = platform_device_register_simple(
+-					"fsl-usb2-udc", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_client)) {
+-				ret = PTR_ERR(usb_dev_dr_client);
+-				goto err;
+-			}
+-		} else if (prop && !strcmp(prop, "otg")) {
+-			usb_data.operating_mode = FSL_USB2_DR_OTG;
+-			usb_dev_dr_host = platform_device_register_simple(
+-					"fsl-ehci", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_host)) {
+-				ret = PTR_ERR(usb_dev_dr_host);
+-				goto err;
+-			}
+-			usb_dev_dr_client = platform_device_register_simple(
+-					"fsl-usb2-udc", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_client)) {
+-				ret = PTR_ERR(usb_dev_dr_client);
+-				goto err;
+-			}
+-		} else {
+-			ret = -EINVAL;
+-			goto err;
+-		}
+-
+-		prop = of_get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
+-
+-		if (usb_dev_dr_host) {
+-			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
+-			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
+-				dev.coherent_dma_mask;
+-			if ((ret = platform_device_add_data(usb_dev_dr_host,
+-						&usb_data, sizeof(struct
+-						fsl_usb2_platform_data))))
+-				goto unreg_dr;
+-		}
+-		if (usb_dev_dr_client) {
+-			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
+-			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
+-				dev.coherent_dma_mask;
+-			if ((ret = platform_device_add_data(usb_dev_dr_client,
+-						&usb_data, sizeof(struct
+-						fsl_usb2_platform_data))))
+-				goto unreg_dr;
+-		}
+-		i++;
++			return ret;
+ 	}
+-	return 0;
+ 
+-unreg_dr:
+-	if (usb_dev_dr_host)
+-		platform_device_unregister(usb_dev_dr_host);
+-	if (usb_dev_dr_client)
+-		platform_device_unregister(usb_dev_dr_client);
+-unreg_mph:
+-	if (usb_dev_mph)
+-		platform_device_unregister(usb_dev_mph);
+-err:
+-	return ret;
 +	return 0;
-+}
-+
-+/* Free channel resources */
-+static void mpc_dma_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc, *tmp;
-+	struct mpc_dma_tcd *tcd;
-+	dma_addr_t tcd_paddr;
-+	unsigned long flags;
-+	LIST_HEAD(descs);
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+
-+	/* Channel must be idle */
-+	BUG_ON(!list_empty(&mchan->prepared));
-+	BUG_ON(!list_empty(&mchan->queued));
-+	BUG_ON(!list_empty(&mchan->active));
-+	BUG_ON(!list_empty(&mchan->completed));
-+
-+	/* Move data */
-+	list_splice_tail_init(&mchan->free, &descs);
-+	tcd = mchan->tcd;
-+	tcd_paddr = mchan->tcd_paddr;
-+
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	/* Free DMA memory used by descriptors */
-+	dma_free_coherent(mdma->dma.dev,
-+			MPC_DMA_DESCRIPTORS * sizeof(struct mpc_dma_tcd),
-+								tcd, tcd_paddr);
-+
-+	/* Free descriptors */
-+	list_for_each_entry_safe(mdesc, tmp, &descs, node)
-+		kfree(mdesc);
-+
-+	/* Disable Error Interrupt */
-+	out_8(&mdma->regs->dmaceei, chan->chan_id);
-+}
-+
-+/* Send all pending descriptor to hardware */
-+static void mpc_dma_issue_pending(struct dma_chan *chan)
-+{
-+	/*
-+	 * We are posting descriptors to the hardware as soon as
-+	 * they are ready, so this function does nothing.
-+	 */
-+}
-+
-+/* Check request completion status */
-+static enum dma_status
-+mpc_dma_is_tx_complete(struct dma_chan *chan, dma_cookie_t cookie,
-+					dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	unsigned long flags;
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	spin_lock_irqsave(&mchan->lock, flags);
-+	last_used = mchan->chan.cookie;
-+	last_complete = mchan->completed_cookie;
-+	spin_unlock_irqrestore(&mchan->lock, flags);
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+/* Prepare descriptor for memory to memory copy */
-+static struct dma_async_tx_descriptor *
-+mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
-+					size_t len, unsigned long flags)
-+{
-+	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
-+	struct mpc_dma_desc *mdesc = NULL;
-+	struct mpc_dma_tcd *tcd;
-+	unsigned long iflags;
-+
-+	/* Get free descriptor */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	if (!list_empty(&mchan->free)) {
-+		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
-+									node);
-+		list_del(&mdesc->node);
-+	}
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
-+
-+	if (!mdesc)
-+		return NULL;
-+
-+	mdesc->error = 0;
-+	tcd = mdesc->tcd;
-+
-+	/* Prepare Transfer Control Descriptor for this transaction */
-+	memset(tcd, 0, sizeof(struct mpc_dma_tcd));
-+
-+	if (IS_ALIGNED(src | dst | len, 32)) {
-+		tcd->ssize = MPC_DMA_TSIZE_32;
-+		tcd->dsize = MPC_DMA_TSIZE_32;
-+		tcd->soff = 32;
-+		tcd->doff = 32;
-+	} else if (IS_ALIGNED(src | dst | len, 16)) {
-+		tcd->ssize = MPC_DMA_TSIZE_16;
-+		tcd->dsize = MPC_DMA_TSIZE_16;
-+		tcd->soff = 16;
-+		tcd->doff = 16;
-+	} else if (IS_ALIGNED(src | dst | len, 4)) {
-+		tcd->ssize = MPC_DMA_TSIZE_4;
-+		tcd->dsize = MPC_DMA_TSIZE_4;
-+		tcd->soff = 4;
-+		tcd->doff = 4;
-+	} else if (IS_ALIGNED(src | dst | len, 2)) {
-+		tcd->ssize = MPC_DMA_TSIZE_2;
-+		tcd->dsize = MPC_DMA_TSIZE_2;
-+		tcd->soff = 2;
-+		tcd->doff = 2;
-+	} else {
-+		tcd->ssize = MPC_DMA_TSIZE_1;
-+		tcd->dsize = MPC_DMA_TSIZE_1;
-+		tcd->soff = 1;
-+		tcd->doff = 1;
-+	}
-+
-+	tcd->saddr = src;
-+	tcd->daddr = dst;
-+	tcd->nbytes = len;
-+	tcd->biter = 1;
-+	tcd->citer = 1;
-+
-+	/* Place descriptor in prepared list */
-+	spin_lock_irqsave(&mchan->lock, iflags);
-+	list_add_tail(&mdesc->node, &mchan->prepared);
-+	spin_unlock_irqrestore(&mchan->lock, iflags);
-+
-+	return &mdesc->desc;
-+}
-+
-+static int __devinit mpc_dma_probe(struct of_device *op,
-+					const struct of_device_id *match)
-+{
-+	struct device_node *dn = op->node;
-+	struct device *dev = &op->dev;
-+	struct dma_device *dma;
-+	struct mpc_dma *mdma;
-+	struct mpc_dma_chan *mchan;
-+	struct resource res;
-+	ulong regs_start, regs_size;
-+	int retval, i;
-+
-+	mdma = devm_kzalloc(dev, sizeof(struct mpc_dma), GFP_KERNEL);
-+	if (!mdma) {
-+		dev_err(dev, "Memory exhausted!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->irq = irq_of_parse_and_map(dn, 0);
-+	if (mdma->irq == NO_IRQ) {
-+		dev_err(dev, "Error mapping IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	retval = of_address_to_resource(dn, 0, &res);
-+	if (retval) {
-+		dev_err(dev, "Error parsing memory region!\n");
-+		return retval;
-+	}
-+
-+	regs_start = res.start;
-+	regs_size = res.end - res.start + 1;
-+
-+	if (!devm_request_mem_region(dev, regs_start, regs_size, DRV_NAME)) {
-+		dev_err(dev, "Error requesting memory region!\n");
-+		return -EBUSY;
-+	}
-+
-+	mdma->regs = devm_ioremap(dev, regs_start, regs_size);
-+	if (!mdma->regs) {
-+		dev_err(dev, "Error mapping memory region!\n");
-+		return -ENOMEM;
-+	}
-+
-+	mdma->tcd = (struct mpc_dma_tcd *)((u8 *)(mdma->regs)
-+							+ MPC_DMA_TCD_OFFSET);
-+
-+	retval = devm_request_irq(dev, mdma->irq, &mpc_dma_irq, 0, DRV_NAME,
-+									mdma);
-+	if (retval) {
-+		dev_err(dev, "Error requesting IRQ!\n");
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_init(&mdma->error_status_lock);
-+
-+	dma = &mdma->dma;
-+	dma->dev = dev;
-+	dma->chancnt = MPC_DMA_CHANNELS;
-+	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
-+	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
-+	dma->device_issue_pending = mpc_dma_issue_pending;
-+	dma->device_is_tx_complete = mpc_dma_is_tx_complete;
-+	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
-+
-+	INIT_LIST_HEAD(&dma->channels);
-+	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
-+
-+	for (i = 0; i < dma->chancnt; i++) {
-+		mchan = &mdma->channels[i];
-+
-+		mchan->chan.device = dma;
-+		mchan->chan.chan_id = i;
-+		mchan->chan.cookie = 1;
-+		mchan->completed_cookie = mchan->chan.cookie;
-+
-+		INIT_LIST_HEAD(&mchan->free);
-+		INIT_LIST_HEAD(&mchan->prepared);
-+		INIT_LIST_HEAD(&mchan->queued);
-+		INIT_LIST_HEAD(&mchan->active);
-+		INIT_LIST_HEAD(&mchan->completed);
-+
-+		spin_lock_init(&mchan->lock);
-+		list_add_tail(&mchan->chan.device_node, &dma->channels);
-+	}
-+
-+	tasklet_init(&mdma->tasklet, mpc_dma_tasklet, (unsigned long)mdma);
-+
-+	/*
-+	 * Configure DMA Engine:
-+	 * - Dynamic clock,
-+	 * - Round-robin group arbitration,
-+	 * - Round-robin channel arbitration.
-+	 */
-+	out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
-+				MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
-+
-+	/* Disable hardware DMA requests */
-+	out_be32(&mdma->regs->dmaerqh, 0);
-+	out_be32(&mdma->regs->dmaerql, 0);
-+
-+	/* Disable error interrupts */
-+	out_be32(&mdma->regs->dmaeeih, 0);
-+	out_be32(&mdma->regs->dmaeeil, 0);
-+
-+	/* Clear interrupts status */
-+	out_be32(&mdma->regs->dmainth, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaintl, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrh, 0xFFFFFFFF);
-+	out_be32(&mdma->regs->dmaerrl, 0xFFFFFFFF);
-+
-+	/* Route interrupts to IPIC */
-+	out_be32(&mdma->regs->dmaihsa, 0);
-+	out_be32(&mdma->regs->dmailsa, 0);
-+
-+	/* Register DMA engine */
-+	dev_set_drvdata(dev, mdma);
-+	retval = dma_async_device_register(dma);
-+	if (retval) {
-+		devm_free_irq(dev, mdma->irq, mdma);
-+		irq_dispose_mapping(mdma->irq);
-+	}
-+
-+	return retval;
-+}
-+
-+static int __devexit mpc_dma_remove(struct of_device *op)
-+{
-+	struct device *dev = &op->dev;
-+	struct mpc_dma *mdma = dev_get_drvdata(dev);
-+
-+	dma_async_device_unregister(&mdma->dma);
-+	devm_free_irq(dev, mdma->irq, mdma);
-+	irq_dispose_mapping(mdma->irq);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id mpc_dma_match[] = {
-+	{ .compatible = "fsl,mpc5121-dma", },
-+	{},
-+};
-+
-+static struct of_platform_driver mpc_dma_driver = {
-+	.match_table	= mpc_dma_match,
-+	.probe		= mpc_dma_probe,
-+	.remove		= __devexit_p(mpc_dma_remove),
-+	.driver		= {
-+		.name	= DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init mpc_dma_init(void)
-+{
-+	return of_register_platform_driver(&mpc_dma_driver);
-+}
-+module_init(mpc_dma_init);
-+
-+static void __exit mpc_dma_exit(void)
-+{
-+	of_unregister_platform_driver(&mpc_dma_driver);
-+}
-+module_exit(mpc_dma_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
+ }
+-
+ arch_initcall(fsl_usb_of_init);
+ 
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
 -- 
 1.6.3.3
