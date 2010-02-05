@@ -1,16 +1,16 @@
 Return-Path: <jwboyer@gmail.com>
-Received: from mail-iw0-f172.google.com (mail-iw0-f172.google.com
-	[209.85.223.172]) by ozlabs.org (Postfix) with ESMTP id 449E9B7E39
+Received: from mail-yx0-f197.google.com (mail-yx0-f197.google.com
+	[209.85.210.197]) by ozlabs.org (Postfix) with ESMTP id 806E7B7CEF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 00:54:04 +1100 (EST)
-Received: by iwn2 with SMTP id 2so352940iwn.10
+	Sat,  6 Feb 2010 00:55:56 +1100 (EST)
+Received: by yxe35 with SMTP id 35so3747929yxe.2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 05 Feb 2010 05:54:02 -0800 (PST)
-Date: Fri, 5 Feb 2010 08:53:54 -0500
+	Fri, 05 Feb 2010 05:55:54 -0800 (PST)
+Date: Fri, 5 Feb 2010 08:55:46 -0500
 From: Josh Boyer <jwboyer@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/4] Fedora kernel patch review
-Message-ID: <20100205135354.GI12001@hansolo.jdub.homelinux.org>
+Subject: [PATCH 4/4] Fix iMac iSight PCI bridge setup
+Message-ID: <20100205135546.GJ12001@hansolo.jdub.homelinux.org>
 References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,39 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide a modalias entry for VIO devices in sysfs.  I believe
-this was another initrd generation bugfix for anaconda.
+This works around the PCIe bridge setup on the iMac iSight boxen.
 
 ---
- 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index f988672..12a0851 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -294,9 +294,27 @@ static ssize_t devspec_show(struct device *dev,
- 	return sprintf(buf, "%s\n", of_node ? of_node->full_name : "none");
+
+--- linux/arch/powerpc/platforms/powermac/pci.c~	2008-03-22 19:08:07.000000000 +0000
++++ linux/arch/powerpc/platforms/powermac/pci.c	2008-03-23 09:10:46.000000000 +0000
+@@ -1271,6 +1271,12 @@ void pmac_pci_fixup_pciata(struct pci_de
+ 	}
  }
- 
-+static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
+ DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pmac_pci_fixup_pciata);
++#else /* CONFIG_PPC64 */
++static void __devinit imac_transparent_bridge(struct pci_dev *dev)
 +{
-+	const struct vio_dev *vio_dev = to_vio_dev(dev);
-+	struct device_node *dn;
-+	const char *cp;
-+
-+	dn = dev->archdata.of_node;
-+	if (!dn)
-+		return -ENODEV;
-+	cp = of_get_property(dn, "compatible", NULL);
-+	if (!cp)
-+		return -ENODEV;
-+
-+	return sprintf(buf, "vio:T%sS%s\n", vio_dev->type, cp);
++	dev->transparent = 1;
 +}
-+
- static struct device_attribute vio_dev_attrs[] = {
- 	__ATTR_RO(name),
- 	__ATTR_RO(devspec),
-+	__ATTR_RO(modalias),
- 	__ATTR_NULL
- };
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, 0x005b, imac_transparent_bridge);
+ #endif /* CONFIG_PPC32 */
+ 
+ /*
