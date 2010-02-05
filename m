@@ -1,16 +1,21 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id BF654B7BFA
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 07:54:39 +1100 (EST)
-Date: Fri, 5 Feb 2010 23:54:37 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] leds-gpio: Fix default state handling on OF platforms
-Message-ID: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>,
-	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 271ECB7D21
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  6 Feb 2010 07:57:53 +1100 (EST)
+Subject: Re: [PATCH 4/4] Fix iMac iSight PCI bridge setup
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <20100205135546.GJ12001@hansolo.jdub.homelinux.org>
+References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
+	<20100205135546.GJ12001@hansolo.jdub.homelinux.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 06 Feb 2010 07:57:46 +1100
+Message-ID: <1265403466.8287.218.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,54 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver wrongly sets default state for LEDs that don't specify
-default-state property.
+On Fri, 2010-02-05 at 08:55 -0500, Josh Boyer wrote:
+> This works around the PCIe bridge setup on the iMac iSight boxen.
 
-Currently the driver handles default state this way:
+Is this still needed ? I though I had fixed the root cause (incorrect
+setup of the bridge) a while back...
 
-memset(&led, 0, sizeof(led));
-for_each_child_of_node(np, child) {
-	state = of_get_property(child, "default-state", NULL);
-	if (state) {
-		if (!strcmp(state, "keep"))
-			led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
-		...
-	}
-	ret = create_gpio_led(&led, ...);
-}
+Cheers,
+Ben.
 
-Which means that all LEDs that do not specify default-state will
-inherit the last value of the default-state property, which is wrong.
-
-This patch fixes the issue by moving LED's template initialization
-into the loop body.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/leds/leds-gpio.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index e5225d2..0823e26 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -211,7 +211,6 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
- 					const struct of_device_id *match)
- {
- 	struct device_node *np = ofdev->node, *child;
--	struct gpio_led led;
- 	struct gpio_led_of_platform_data *pdata;
- 	int count = 0, ret;
- 
-@@ -226,8 +225,8 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
- 	if (!pdata)
- 		return -ENOMEM;
- 
--	memset(&led, 0, sizeof(led));
- 	for_each_child_of_node(np, child) {
-+		struct gpio_led led = {};
- 		enum of_gpio_flags flags;
- 		const char *state;
- 
--- 
-1.6.5.7
+> ---
+> 
+> --- linux/arch/powerpc/platforms/powermac/pci.c~	2008-03-22 19:08:07.000000000 +0000
+> +++ linux/arch/powerpc/platforms/powermac/pci.c	2008-03-23 09:10:46.000000000 +0000
+> @@ -1271,6 +1271,12 @@ void pmac_pci_fixup_pciata(struct pci_de
+>  	}
+>  }
+>  DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pmac_pci_fixup_pciata);
+> +#else /* CONFIG_PPC64 */
+> +static void __devinit imac_transparent_bridge(struct pci_dev *dev)
+> +{
+> +	dev->transparent = 1;
+> +}
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, 0x005b, imac_transparent_bridge);
+>  #endif /* CONFIG_PPC32 */
+>  
+>  /*
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
