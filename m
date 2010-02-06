@@ -1,16 +1,12 @@
-Return-Path: <pengxihan@gmail.com>
-Received: from mail-px0-f188.google.com (mail-px0-f188.google.com
-	[209.85.216.188]) by ozlabs.org (Postfix) with ESMTP id 45E1BB7CEA
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Feb 2010 16:08:56 +1100 (EST)
-Received: by pxi26 with SMTP id 26so5385475pxi.17
-	for <linuxppc-dev@ozlabs.org>; Fri, 05 Feb 2010 21:08:54 -0800 (PST)
-MIME-Version: 1.0
-Date: Sat, 6 Feb 2010 13:08:54 +0800
-Message-ID: <389deec71002052108u22d2a6t5521933460d55458@mail.gmail.com>
-Subject: XFS filesystem on MPC8548 based board
-From: hank peng <pengxihan@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Ron Madrid <ron_madrid@sbcglobal.net>
+Subject: Re: Question about inclusion in mainline
+In-reply-to: <451889.4336.qm@web83507.mail.sp1.yahoo.com>
+References: <451889.4336.qm@web83507.mail.sp1.yahoo.com>
+Date: Sat, 06 Feb 2010 19:47:14 +1100
+Message-ID: <2744.1265446034@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +16,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I am running XFS filesystem on my self-built MPC8548 based(a NAS box),
-kernel version is 2.6.31.6. I have encountered a very very odd problem
-which has been unsoled untill now, see
-this:http://oss.sgi.com/archives/xfs/2009-12/msg00073.html
-I wonder if anybody on this list had experience to use XFS on PPC
-platform(especially on MPC85XX based board), what is your kernel
-version?
+> Quick question.  I have a 8313 based custom board.  If I wanted to
+> include my config file and dts into mainline are there any
+> restrictions or requirements?  Just curious.
 
--- 
-The simplest is not all best but the best is surely the simplest!
+It just needs to be licenced under the GPL.  If you are happy and able
+to do this, add a signed-off-by and send them to this list.
+
+Mikey
