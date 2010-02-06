@@ -1,12 +1,15 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: Re: Question about inclusion in mainline
-In-reply-to: <451889.4336.qm@web83507.mail.sp1.yahoo.com>
-References: <451889.4336.qm@web83507.mail.sp1.yahoo.com>
-Date: Sat, 06 Feb 2010 19:47:14 +1100
-Message-ID: <2744.1265446034@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: Stack size protection broken on ppc64
+In-reply-to: <20100206042038.GB32246@kryten>
+References: <3984.1265416993@neuling.org> <20100206042038.GB32246@kryten>
+Date: Sat, 06 Feb 2010 21:22:12 +1100
+Message-ID: <10125.1265451732@neuling.org>
+Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	WANG Cong <xiyou.wangcong@gmail.com>,
+	Serge Hallyn <serue@us.ibm.com>, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,11 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Quick question.  I have a 8313 based custom board.  If I wanted to
-> include my config file and dts into mainline are there any
-> restrictions or requirements?  Just curious.
+> > On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
+> > now more restrictive than it was before.  On 2.6.31 with 4k pages I
+> > could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
+> > mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
+> > 
+> > Using 64k pages is even worse.  I can't even run '/bin/ls' with a 1MB
+> > stack (ulimit -s 1024; /bin/ls).  Hence, it seems new kernels are too
+> > restrictive, rather than the old kernels being too liberal.
+> 
+> It looks like this is causing it:
+> 
+> #define EXTRA_STACK_VM_PAGES    20      /* random */
+> 
+> ...
+> 
+> #ifdef CONFIG_STACK_GROWSUP
+>         stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> #else
+>         stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> #endif
+> 
+> Which got added back in 2005 in a memory overcommit patch. It only took 5
+> years for us to go back and review that random setting :)
+> 
+> The comment from Andries explains the purpose:
+> 
+>     (1) It reserves a reasonable amount of virtual stack space (amount
+>         randomly chosen, no guarantees given) when the process is started, so
+>         that the common utilities will not be killed by segfault on stack
+>         extension.
+> 
+> This explains why 64kB is much worse. The extra stack reserve should be in kB
+> and we also need to be careful not to ask for more than our rlimit.
 
-It just needs to be licenced under the GPL.  If you are happy and able
-to do this, add a signed-off-by and send them to this list.
+Cool, thanks.  The following is based on this and fixes the problem for
+me on PPC64 ie. the !CONFIG_STACK_GROWSUP case. 
 
 Mikey
+
+[PATCH] Restrict stack space reservation to rlimit
+
+When reserving stack space for a new process, make sure we're not
+attempting to allocate more than rlimit allows.
+
+Also, reserve the same stack size independent of page size.
+
+This fixes a bug unmasked by fc63cf237078c86214abcb2ee9926d8ad289da9b
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
+ fs/exec.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: clone1/fs/exec.c
+===================================================================
+--- clone1.orig/fs/exec.c
++++ clone1/fs/exec.c
+@@ -554,7 +554,7 @@ static int shift_arg_pages(struct vm_are
+ 	return 0;
+ }
+ 
+-#define EXTRA_STACK_VM_PAGES	20	/* random */
++#define EXTRA_STACK_VM_SIZE	81920UL	/* randomly 20 4K pages */
+ 
+ /*
+  * Finalizes the stack vm_area_struct. The flags and permissions are updated,
+@@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+ 			goto out_unlock;
+ 	}
+ 
++	stack_base = min(EXTRA_STACK_VM_SIZE,
++			 current->signal->rlim[RLIMIT_STACK].rlim_cur) -
++		PAGE_SIZE;
+ #ifdef CONFIG_STACK_GROWSUP
+-	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_end + stack_base;
+ #else
+-	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_start - stack_base;
+ #endif
+ 	ret = expand_stack(vma, stack_base);
+ 	if (ret)
