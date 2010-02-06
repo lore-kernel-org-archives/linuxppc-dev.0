@@ -1,14 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: anton@samba.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
-	WANG Cong <xiyou.wangcong@gmail.com>,
-	Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-iw0-f204.google.com (mail-iw0-f204.google.com
+	[209.85.223.204]) by ozlabs.org (Postfix) with ESMTP id DBA36B7D14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  6 Feb 2010 12:03:30 +1100 (EST)
+Received: by iwn42 with SMTP id 42so1619746iwn.9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 05 Feb 2010 17:03:29 -0800 (PST)
+Date: Fri, 5 Feb 2010 20:03:14 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] Fix iMac iSight PCI bridge setup
+Message-ID: <20100206010314.GP12001@hansolo.jdub.homelinux.org>
+References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
+	<20100205135546.GJ12001@hansolo.jdub.homelinux.org>
+	<1265403466.8287.218.camel@pasglop>
 MIME-Version: 1.0
-Subject: Stack size protection broken on ppc64
-Date: Sat, 06 Feb 2010 11:43:13 +1100
-Message-ID: <3984.1265416993@neuling.org>
-Cc: miltonm@bga.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1265403466.8287.218.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,41 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
-now more restrictive than it was before.  On 2.6.31 with 4k pages I
-could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
-mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
+On Sat, Feb 06, 2010 at 07:57:46AM +1100, Benjamin Herrenschmidt wrote:
+>On Fri, 2010-02-05 at 08:55 -0500, Josh Boyer wrote:
+>> This works around the PCIe bridge setup on the iMac iSight boxen.
+>
+>Is this still needed ? I though I had fixed the root cause (incorrect
+>setup of the bridge) a while back...
 
-Using 64k pages is even worse.  I can't even run '/bin/ls' with a 1MB
-stack (ulimit -s 1024; /bin/ls).  Hence, it seems new kernels are too
-restrictive, rather than the old kernels being too liberal.
+I honestly have no clue, and I have no means of actually testing this.  I have
+an iMac running Fedora, but not the iSight version.  If you think it's fixed
+then I can just drop the patch from the Fedora kernel and we can wait for
+either silence or bug reports :)
 
-I've not tested with any other architectures.  
-
-Bisecting, I found that this is the culprit (which is in 2.6.32)
-
-  commit fc63cf237078c86214abcb2ee9926d8ad289da9b
-  Author: Anton Blanchard <anton@samba.org>
-  exec:   setup_arg_pages() fails to return errors
-
-Looking at the patch, it's probably just unmasking a preexisting issue.
-The error path for expand_stack() (and others) was modified to:
----
-	ret = expand_stack(vma, stack_base);
-	if (ret)
-		ret = -EFAULT;
-
-out_unlock:
-	up_write(&mm->mmap_sem);
--       return 0;
-+       return ret;
- }
- EXPORT_SYMBOL(setup_arg_pages);
----
-
-So previously expand_stack errors were not returned correctly by
-setup_arg_pages, but now they are.
-
-Any clues how to fix this?
-
-Mikey
+josh
