@@ -1,23 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5DCA6B7D05
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  6 Feb 2010 12:49:16 +1100 (EST)
-Subject: Re: [PATCH 4/4] Fix iMac iSight PCI bridge setup
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@gmail.com>
-In-Reply-To: <20100206010314.GP12001@hansolo.jdub.homelinux.org>
-References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
-	<20100205135546.GJ12001@hansolo.jdub.homelinux.org>
-	<1265403466.8287.218.camel@pasglop>
-	<20100206010314.GP12001@hansolo.jdub.homelinux.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Feb 2010 12:48:56 +1100
-Message-ID: <1265420936.8287.219.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 6 Feb 2010 15:20:38 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Stack size protection broken on ppc64
+Message-ID: <20100206042038.GB32246@kryten>
+References: <3984.1265416993@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3984.1265416993@neuling.org>
+Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org, miltonm@bga.com,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Serge Hallyn <serue@us.ibm.com>, WANG Cong <xiyou.wangcong@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-05 at 20:03 -0500, Josh Boyer wrote:
-> On Sat, Feb 06, 2010 at 07:57:46AM +1100, Benjamin Herrenschmidt wrote:
-> >On Fri, 2010-02-05 at 08:55 -0500, Josh Boyer wrote:
-> >> This works around the PCIe bridge setup on the iMac iSight boxen.
-> >
-> >Is this still needed ? I though I had fixed the root cause (incorrect
-> >setup of the bridge) a while back...
+
+Hi,
+
+> On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
+> now more restrictive than it was before.  On 2.6.31 with 4k pages I
+> could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
+> mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
 > 
-> I honestly have no clue, and I have no means of actually testing this.  I have
-> an iMac running Fedora, but not the iSight version.  If you think it's fixed
-> then I can just drop the patch from the Fedora kernel and we can wait for
-> either silence or bug reports :)
+> Using 64k pages is even worse.  I can't even run '/bin/ls' with a 1MB
+> stack (ulimit -s 1024; /bin/ls).  Hence, it seems new kernels are too
+> restrictive, rather than the old kernels being too liberal.
 
-I -think- it is but users of those machines are hard to find :-)
+It looks like this is causing it:
 
-Cheers,
-Ben.
+#define EXTRA_STACK_VM_PAGES    20      /* random */
+
+...
+
+#ifdef CONFIG_STACK_GROWSUP
+        stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+#else
+        stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+#endif
+
+Which got added back in 2005 in a memory overcommit patch. It only took 5
+years for us to go back and review that random setting :)
+
+The comment from Andries explains the purpose:
+
+    (1) It reserves a reasonable amount of virtual stack space (amount
+        randomly chosen, no guarantees given) when the process is started, so
+        that the common utilities will not be killed by segfault on stack
+        extension.
+
+This explains why 64kB is much worse. The extra stack reserve should be in kB
+and we also need to be careful not to ask for more than our rlimit.
+
+Anton
