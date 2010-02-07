@@ -1,18 +1,16 @@
-Return-Path: <stern+4b6f04d4@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
-	by ozlabs.org (Postfix) with SMTP id E3547B7CF5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 07:26:38 +1100 (EST)
-Date: Sun, 7 Feb 2010 15:26:35 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller
-	driver flag
-In-Reply-To: <4B6F0229.5070604@yahoo.es>
-Message-ID: <Pine.LNX.4.44L0.1002071523350.10952-100000@netrider.rowland.org>
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 8 Feb 2010 09:26:28 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: powerpc: Reduce differences between pseries and ppc64 defconfigs
+Message-ID: <20100207222628.GD32246@kryten>
+References: <20091207034509.GA3421@kryten> <20091207034555.GB3421@kryten>
+	<20091207034714.GC3421@kryten> <1260235641.4668.1.camel@concordia>
+	<1260235944.10809.23.camel@pasglop> <20091208013528.GA2716@kryten>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091208013528.GA2716@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +20,436 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 7 Feb 2010, Albert Herranz wrote:
 
-> The wii has no uhci, but has 2 ohci controllers.
-> For ohci we need a similar approach as done for ehci.
+The pseries and ppc64 defconfigs have drifted apart over the years. Reduce
+some of the differences while still keeping the idea that the ppc64 defconfig
+is cross platform but enables fewer features than pseries, eg NR_CPUS is
+lower.
 
-So you'll need to write a patch splitting up the OHCI data structures 
-in the same way the EHCI qh was split up.
+Also enable a number of common adapters as modules.
 
-> >If you do it as described above then the buffers you're worried about
-> >won't be allocated in coherent memory to begin with, so no problems 
-> >will arise.
-> 
-> It turns out that we have more limitations.
-> The wii has 2 discontiguous memory areas (usually called MEM1 and MEM2). I have checked that the ehci controller doesn't work properly when performing dma to buffers allocated in MEM1 (it corrupts part of the data) but has no problems if the buffers sit within MEM2.
-> So usb buffers will need to be bounced anyway if they are part of MEM1.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-This sounds like the sort of restriction that dma_map_single() should 
-be capable of handling.
+v2: Enable NUMA on ppc64_defconfig
 
-Alan Stern
+Index: powerpc.git/arch/powerpc/configs/ppc64_defconfig
+===================================================================
+--- powerpc.git.orig/arch/powerpc/configs/ppc64_defconfig	2010-02-05 14:57:48.889717208 +1100
++++ powerpc.git/arch/powerpc/configs/ppc64_defconfig	2010-02-05 14:57:52.600960379 +1100
+@@ -137,8 +137,9 @@ CONFIG_TRACEPOINTS=y
+ CONFIG_MARKERS=y
+ CONFIG_OPROFILE=y
+ CONFIG_HAVE_OPROFILE=y
+-# CONFIG_KPROBES is not set
++CONFIG_KPROBES=y
+ CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
++CONFIG_KRETPROBES=y
+ CONFIG_HAVE_IOREMAP_PROT=y
+ CONFIG_HAVE_KPROBES=y
+ CONFIG_HAVE_KRETPROBES=y
+@@ -191,6 +192,7 @@ CONFIG_SCANLOG=m
+ CONFIG_LPARCFG=y
+ CONFIG_PPC_SMLPAR=y
+ CONFIG_CMM=y
++CONFIG_DTL=y
+ CONFIG_PPC_ISERIES=y
+ 
+ #
+@@ -328,9 +330,10 @@ CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+ CONFIG_KEXEC=y
+ # CONFIG_PHYP_DUMP is not set
+ CONFIG_IRQ_ALL_CPUS=y
+-# CONFIG_NUMA is not set
++CONFIG_NUMA=y
++CONFIG_NODES_SHIFT=8
++CONFIG_MAX_ACTIVE_REGIONS=256
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+-CONFIG_ARCH_FLATMEM_ENABLE=y
+ CONFIG_ARCH_SPARSEMEM_ENABLE=y
+ CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+ CONFIG_ARCH_POPULATES_NODE_MAP=y
+@@ -339,6 +342,7 @@ CONFIG_SELECT_MEMORY_MODEL=y
+ # CONFIG_DISCONTIGMEM_MANUAL is not set
+ CONFIG_SPARSEMEM_MANUAL=y
+ CONFIG_SPARSEMEM=y
++CONFIG_NEED_MULTIPLE_NODES=y
+ CONFIG_HAVE_MEMORY_PRESENT=y
+ CONFIG_SPARSEMEM_EXTREME=y
+ CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+@@ -354,11 +358,12 @@ CONFIG_PHYS_ADDR_T_64BIT=y
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_UNEVICTABLE_LRU=y
++CONFIG_NODES_SPAN_OTHER_NODES=y
+ CONFIG_ARCH_MEMORY_PROBE=y
+ CONFIG_PPC_HAS_HASH_64K=y
+ # CONFIG_PPC_64K_PAGES is not set
+ CONFIG_FORCE_MAX_ZONEORDER=13
+-# CONFIG_SCHED_SMT is not set
++CONFIG_SCHED_SMT=y
+ CONFIG_PROC_DEVICETREE=y
+ # CONFIG_CMDLINE_BOOL is not set
+ CONFIG_EXTRA_TARGETS=""
+@@ -790,12 +795,12 @@ CONFIG_SCSI_IPR=y
+ CONFIG_SCSI_IPR_TRACE=y
+ CONFIG_SCSI_IPR_DUMP=y
+ # CONFIG_SCSI_QLOGIC_1280 is not set
+-# CONFIG_SCSI_QLA_FC is not set
++CONFIG_SCSI_QLA_FC=m
+ # CONFIG_SCSI_QLA_ISCSI is not set
+ CONFIG_SCSI_LPFC=m
+ # CONFIG_SCSI_DC395x is not set
+ # CONFIG_SCSI_DC390T is not set
+-CONFIG_SCSI_DEBUG=m
++# CONFIG_SCSI_DEBUG is not set
+ # CONFIG_SCSI_SRP is not set
+ # CONFIG_SCSI_LOWLEVEL_PCMCIA is not set
+ # CONFIG_SCSI_DH is not set
+@@ -867,9 +872,8 @@ CONFIG_MD_AUTODETECT=y
+ CONFIG_MD_LINEAR=y
+ CONFIG_MD_RAID0=y
+ CONFIG_MD_RAID1=y
+-CONFIG_MD_RAID10=y
+-CONFIG_MD_RAID456=y
+-CONFIG_MD_RAID5_RESHAPE=y
++CONFIG_MD_RAID10=m
++CONFIG_MD_RAID456=m
+ CONFIG_MD_MULTIPATH=m
+ CONFIG_MD_FAULTY=m
+ CONFIG_BLK_DEV_DM=y
+@@ -984,7 +988,7 @@ CONFIG_ACENIC=m
+ CONFIG_ACENIC_OMIT_TIGON_I=y
+ # CONFIG_DL2K is not set
+ CONFIG_E1000=y
+-# CONFIG_E1000E is not set
++CONFIG_E1000E=m
+ # CONFIG_IP1000 is not set
+ # CONFIG_IGB is not set
+ # CONFIG_NS83820 is not set
+@@ -1006,19 +1010,19 @@ CONFIG_GELIC_WIRELESS=y
+ # CONFIG_ATL1E is not set
+ # CONFIG_JME is not set
+ CONFIG_NETDEV_10000=y
+-# CONFIG_CHELSIO_T1 is not set
+-# CONFIG_CHELSIO_T3 is not set
++CONFIG_CHELSIO_T1=m
++CONFIG_CHELSIO_T3=m
+ CONFIG_EHEA=m
+ # CONFIG_ENIC is not set
+-# CONFIG_IXGBE is not set
++CONFIG_IXGBE=m
+ CONFIG_IXGB=m
+-# CONFIG_S2IO is not set
+-# CONFIG_MYRI10GE is not set
+-# CONFIG_NETXEN_NIC is not set
++CONFIG_S2IO=m
++CONFIG_MYRI10GE=m
++CONFIG_NETXEN_NIC=m
+ # CONFIG_NIU is not set
+ CONFIG_PASEMI_MAC=y
+-# CONFIG_MLX4_EN is not set
+-# CONFIG_MLX4_CORE is not set
++CONFIG_MLX4_EN=m
++CONFIG_MLX4_CORE=m
+ # CONFIG_TEHUTI is not set
+ # CONFIG_BNX2X is not set
+ # CONFIG_QLGE is not set
+@@ -1169,7 +1173,7 @@ CONFIG_SERIAL_TXX9=y
+ CONFIG_HAS_TXX9_SERIAL=y
+ CONFIG_SERIAL_TXX9_NR_UARTS=6
+ CONFIG_SERIAL_TXX9_CONSOLE=y
+-# CONFIG_SERIAL_JSM is not set
++CONFIG_SERIAL_JSM=m
+ # CONFIG_SERIAL_OF_PLATFORM is not set
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+@@ -1586,7 +1590,7 @@ CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_DEVICE_CLASS=y
+ # CONFIG_USB_DYNAMIC_MINORS is not set
+ # CONFIG_USB_OTG is not set
+-# CONFIG_USB_MON is not set
++CONFIG_USB_MON=m
+ # CONFIG_USB_WUSB is not set
+ # CONFIG_USB_WUSB_CBAF is not set
+ 
+@@ -1686,21 +1690,22 @@ CONFIG_USB_APPLEDISPLAY=m
+ # CONFIG_NEW_LEDS is not set
+ # CONFIG_ACCESSIBILITY is not set
+ CONFIG_INFINIBAND=m
+-# CONFIG_INFINIBAND_USER_MAD is not set
+-# CONFIG_INFINIBAND_USER_ACCESS is not set
++CONFIG_INFINIBAND_USER_MAD=m
++CONFIG_INFINIBAND_USER_ACCESS=m
++CONFIG_INFINIBAND_USER_MEM=y
+ CONFIG_INFINIBAND_ADDR_TRANS=y
+ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_MTHCA_DEBUG=y
+-# CONFIG_INFINIBAND_IPATH is not set
++CONFIG_INFINIBAND_IPATH=m
+ CONFIG_INFINIBAND_EHCA=m
+ # CONFIG_INFINIBAND_AMSO1100 is not set
+-# CONFIG_MLX4_INFINIBAND is not set
++CONFIG_MLX4_INFINIBAND=m
+ # CONFIG_INFINIBAND_NES is not set
+ CONFIG_INFINIBAND_IPOIB=m
+-# CONFIG_INFINIBAND_IPOIB_CM is not set
++CONFIG_INFINIBAND_IPOIB_CM=y
+ CONFIG_INFINIBAND_IPOIB_DEBUG=y
+ # CONFIG_INFINIBAND_IPOIB_DEBUG_DATA is not set
+-# CONFIG_INFINIBAND_SRP is not set
++CONFIG_INFINIBAND_SRP=m
+ CONFIG_INFINIBAND_ISER=m
+ CONFIG_EDAC=y
+ 
+@@ -1798,7 +1803,7 @@ CONFIG_REISERFS_FS=y
+ CONFIG_REISERFS_FS_XATTR=y
+ CONFIG_REISERFS_FS_POSIX_ACL=y
+ CONFIG_REISERFS_FS_SECURITY=y
+-CONFIG_JFS_FS=y
++CONFIG_JFS_FS=m
+ CONFIG_JFS_POSIX_ACL=y
+ CONFIG_JFS_SECURITY=y
+ # CONFIG_JFS_DEBUG is not set
+@@ -1811,14 +1816,22 @@ CONFIG_XFS_POSIX_ACL=y
+ # CONFIG_XFS_RT is not set
+ # CONFIG_XFS_DEBUG is not set
+ # CONFIG_GFS2_FS is not set
+-# CONFIG_OCFS2_FS is not set
++CONFIG_OCFS2_FS=m
++CONFIG_OCFS2_FS_O2CB=m
++CONFIG_OCFS2_FS_STATS=y
++CONFIG_OCFS2_DEBUG_MASKLOG=y
++# CONFIG_OCFS2_DEBUG_FS is not set
++# CONFIG_OCFS2_COMPAT_JBD is not set
++CONFIG_BTRFS_FS=m
++CONFIG_BTRFS_FS_POSIX_ACL=y
++CONFIG_NILFS2_FS=m
+ CONFIG_DNOTIFY=y
+ CONFIG_INOTIFY=y
+ CONFIG_INOTIFY_USER=y
+ # CONFIG_QUOTA is not set
+ # CONFIG_AUTOFS_FS is not set
+ CONFIG_AUTOFS4_FS=m
+-# CONFIG_FUSE_FS is not set
++CONFIG_FUSE_FS=m
+ 
+ #
+ # CD-ROM/DVD Filesystems
+@@ -1851,7 +1864,7 @@ CONFIG_TMPFS=y
+ # CONFIG_TMPFS_POSIX_ACL is not set
+ CONFIG_HUGETLBFS=y
+ CONFIG_HUGETLB_PAGE=y
+-# CONFIG_CONFIGFS_FS is not set
++CONFIG_CONFIGFS_FS=m
+ 
+ #
+ # Miscellaneous filesystems
+@@ -2075,7 +2088,7 @@ CONFIG_XMON=y
+ CONFIG_XMON_DISASSEMBLY=y
+ CONFIG_DEBUGGER=y
+ CONFIG_IRQSTACKS=y
+-# CONFIG_VIRQ_DEBUG is not set
++CONFIG_VIRQ_DEBUG=y
+ CONFIG_BOOTX_TEXT=y
+ # CONFIG_PPC_EARLY_DEBUG is not set
+ 
+Index: powerpc.git/arch/powerpc/configs/pseries_defconfig
+===================================================================
+--- powerpc.git.orig/arch/powerpc/configs/pseries_defconfig	2010-02-05 14:57:48.869712312 +1100
++++ powerpc.git/arch/powerpc/configs/pseries_defconfig	2010-02-05 14:57:52.620986101 +1100
+@@ -159,7 +159,7 @@ CONFIG_MODULE_SRCVERSION_ALL=y
+ CONFIG_KMOD=y
+ CONFIG_STOP_MACHINE=y
+ CONFIG_BLOCK=y
+-# CONFIG_BLK_DEV_IO_TRACE is not set
++CONFIG_BLK_DEV_IO_TRACE=y
+ CONFIG_BLK_DEV_BSG=y
+ # CONFIG_BLK_DEV_INTEGRITY is not set
+ CONFIG_BLOCK_COMPAT=y
+@@ -191,6 +191,7 @@ CONFIG_SCANLOG=m
+ CONFIG_LPARCFG=y
+ CONFIG_PPC_SMLPAR=y
+ CONFIG_CMM=y
++CONFIG_DTL=y
+ # CONFIG_PPC_ISERIES is not set
+ # CONFIG_PPC_PMAC is not set
+ # CONFIG_PPC_MAPLE is not set
+@@ -255,7 +256,8 @@ CONFIG_KEXEC=y
+ # CONFIG_PHYP_DUMP is not set
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_NUMA=y
+-CONFIG_NODES_SHIFT=4
++CONFIG_NODES_SHIFT=8
++CONFIG_MAX_ACTIVE_REGIONS=256
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+ CONFIG_ARCH_SPARSEMEM_ENABLE=y
+ CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+@@ -270,7 +272,9 @@ CONFIG_HAVE_MEMORY_PRESENT=y
+ CONFIG_SPARSEMEM_EXTREME=y
+ CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+ CONFIG_SPARSEMEM_VMEMMAP=y
+-# CONFIG_MEMORY_HOTPLUG is not set
++CONFIG_MEMORY_HOTPLUG=y
++CONFIG_MEMORY_HOTPLUG_SPARSE=y
++CONFIG_MEMORY_HOTREMOVE=y
+ CONFIG_PAGEFLAGS_EXTENDED=y
+ CONFIG_SPLIT_PTLOCK_CPUS=4
+ CONFIG_MIGRATION=y
+@@ -705,7 +709,7 @@ CONFIG_MD_LINEAR=y
+ CONFIG_MD_RAID0=y
+ CONFIG_MD_RAID1=y
+ CONFIG_MD_RAID10=m
+-# CONFIG_MD_RAID456 is not set
++CONFIG_MD_RAID456=m
+ CONFIG_MD_MULTIPATH=m
+ CONFIG_MD_FAULTY=m
+ CONFIG_BLK_DEV_DM=y
+@@ -800,7 +804,7 @@ CONFIG_ACENIC=m
+ CONFIG_ACENIC_OMIT_TIGON_I=y
+ # CONFIG_DL2K is not set
+ CONFIG_E1000=y
+-# CONFIG_E1000E is not set
++CONFIG_E1000E=m
+ # CONFIG_IP1000 is not set
+ # CONFIG_IGB is not set
+ # CONFIG_NS83820 is not set
+@@ -818,18 +822,18 @@ CONFIG_TIGON3=y
+ # CONFIG_ATL1E is not set
+ # CONFIG_JME is not set
+ CONFIG_NETDEV_10000=y
+-# CONFIG_CHELSIO_T1 is not set
+-# CONFIG_CHELSIO_T3 is not set
++CONFIG_CHELSIO_T1=m
++CONFIG_CHELSIO_T3=m
+ CONFIG_EHEA=y
+ # CONFIG_ENIC is not set
+-# CONFIG_IXGBE is not set
++CONFIG_IXGBE=m
+ CONFIG_IXGB=m
+ CONFIG_S2IO=m
+-# CONFIG_MYRI10GE is not set
+-# CONFIG_NETXEN_NIC is not set
++CONFIG_MYRI10GE=m
++CONFIG_NETXEN_NIC=m
+ # CONFIG_NIU is not set
+-# CONFIG_MLX4_EN is not set
+-# CONFIG_MLX4_CORE is not set
++CONFIG_MLX4_EN=m
++CONFIG_MLX4_CORE=m
+ # CONFIG_TEHUTI is not set
+ # CONFIG_BNX2X is not set
+ # CONFIG_QLGE is not set
+@@ -894,7 +898,7 @@ CONFIG_INPUT_MOUSEDEV=y
+ CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+ CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+ # CONFIG_INPUT_JOYDEV is not set
+-# CONFIG_INPUT_EVDEV is not set
++CONFIG_INPUT_EVDEV=m
+ # CONFIG_INPUT_EVBUG is not set
+ 
+ #
+@@ -1271,7 +1275,7 @@ CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_DEVICE_CLASS=y
+ # CONFIG_USB_DYNAMIC_MINORS is not set
+ # CONFIG_USB_OTG is not set
+-CONFIG_USB_MON=y
++CONFIG_USB_MON=m
+ # CONFIG_USB_WUSB is not set
+ # CONFIG_USB_WUSB_CBAF is not set
+ 
+@@ -1311,7 +1315,7 @@ CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+ #
+ # may also be needed; see USB_STORAGE Help for more information
+ #
+-CONFIG_USB_STORAGE=y
++CONFIG_USB_STORAGE=m
+ # CONFIG_USB_STORAGE_DEBUG is not set
+ # CONFIG_USB_STORAGE_DATAFAB is not set
+ # CONFIG_USB_STORAGE_FREECOM is not set
+@@ -1322,7 +1326,7 @@ CONFIG_USB_STORAGE=y
+ # CONFIG_USB_STORAGE_SDDR55 is not set
+ # CONFIG_USB_STORAGE_JUMPSHOT is not set
+ # CONFIG_USB_STORAGE_ALAUDA is not set
+-CONFIG_USB_STORAGE_ONETOUCH=y
++# CONFIG_USB_STORAGE_ONETOUCH is not set
+ # CONFIG_USB_STORAGE_KARMA is not set
+ # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+ # CONFIG_USB_LIBUSUAL is not set
+@@ -1377,17 +1381,17 @@ CONFIG_INFINIBAND_USER_MEM=y
+ CONFIG_INFINIBAND_ADDR_TRANS=y
+ CONFIG_INFINIBAND_MTHCA=m
+ CONFIG_INFINIBAND_MTHCA_DEBUG=y
+-# CONFIG_INFINIBAND_IPATH is not set
++CONFIG_INFINIBAND_IPATH=m
+ CONFIG_INFINIBAND_EHCA=m
+ # CONFIG_INFINIBAND_AMSO1100 is not set
+-# CONFIG_MLX4_INFINIBAND is not set
++CONFIG_MLX4_INFINIBAND=m
+ # CONFIG_INFINIBAND_NES is not set
+ CONFIG_INFINIBAND_IPOIB=m
+-# CONFIG_INFINIBAND_IPOIB_CM is not set
++CONFIG_INFINIBAND_IPOIB_CM=y
+ CONFIG_INFINIBAND_IPOIB_DEBUG=y
+ # CONFIG_INFINIBAND_IPOIB_DEBUG_DATA is not set
+ CONFIG_INFINIBAND_SRP=m
+-# CONFIG_INFINIBAND_ISER is not set
++CONFIG_INFINIBAND_ISER=m
+ # CONFIG_EDAC is not set
+ # CONFIG_RTC_CLASS is not set
+ # CONFIG_DMADEVICES is not set
+@@ -1443,6 +1447,9 @@ CONFIG_OCFS2_FS_STATS=y
+ CONFIG_OCFS2_DEBUG_MASKLOG=y
+ # CONFIG_OCFS2_DEBUG_FS is not set
+ # CONFIG_OCFS2_COMPAT_JBD is not set
++CONFIG_BTRFS_FS=m
++CONFIG_BTRFS_FS_POSIX_ACL=y
++CONFIG_NILFS2_FS=m
+ CONFIG_DNOTIFY=y
+ CONFIG_INOTIFY=y
+ CONFIG_INOTIFY_USER=y
+@@ -1455,8 +1462,8 @@ CONFIG_FUSE_FS=m
+ # CD-ROM/DVD Filesystems
+ #
+ CONFIG_ISO9660_FS=y
+-CONFIG_JOLIET=y
+-CONFIG_ZISOFS=y
++# CONFIG_JOLIET is not set
++# CONFIG_ZISOFS is not set
+ CONFIG_UDF_FS=m
+ CONFIG_UDF_NLS=y
+ 
+@@ -1508,14 +1515,14 @@ CONFIG_NFS_FS=y
+ CONFIG_NFS_V3=y
+ CONFIG_NFS_V3_ACL=y
+ CONFIG_NFS_V4=y
+-CONFIG_NFSD=y
++CONFIG_NFSD=m
+ CONFIG_NFSD_V2_ACL=y
+ CONFIG_NFSD_V3=y
+ CONFIG_NFSD_V3_ACL=y
+ CONFIG_NFSD_V4=y
+ CONFIG_LOCKD=y
+ CONFIG_LOCKD_V4=y
+-CONFIG_EXPORTFS=y
++CONFIG_EXPORTFS=m
+ CONFIG_NFS_ACL_SUPPORT=y
+ CONFIG_NFS_COMMON=y
+ CONFIG_SUNRPC=y
+@@ -1681,12 +1688,12 @@ CONFIG_DYNAMIC_PRINTK_DEBUG=y
+ CONFIG_HAVE_ARCH_KGDB=y
+ # CONFIG_KGDB is not set
+ CONFIG_DEBUG_STACKOVERFLOW=y
+-# CONFIG_DEBUG_STACK_USAGE is not set
++CONFIG_DEBUG_STACK_USAGE=y
+ # CONFIG_DEBUG_PAGEALLOC is not set
+ # CONFIG_HCALL_STATS is not set
+-# CONFIG_CODE_PATCHING_SELFTEST is not set
+-# CONFIG_FTR_FIXUP_SELFTEST is not set
+-# CONFIG_MSI_BITMAP_SELFTEST is not set
++CONFIG_CODE_PATCHING_SELFTEST=y
++CONFIG_FTR_FIXUP_SELFTEST=y
++CONFIG_MSI_BITMAP_SELFTEST=y
+ CONFIG_XMON=y
+ CONFIG_XMON_DEFAULT=y
+ CONFIG_XMON_DISASSEMBLY=y
