@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Mon, 8 Feb 2010 09:30:12 +1100
+Date: Mon, 8 Feb 2010 09:28:01 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Convert mmu context allocator from idr to ida
-Message-ID: <20100207223012.GF32246@kryten>
+Subject: [PATCH] powerpc: Only print clockevent settings once
+Message-ID: <20100207222801.GE32246@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,54 +17,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We can use the much more lightweight ida allocator since we don't
-need the pointer storage idr provides.
+The clockevent multiplier and shift is useful information, but we
+only need to print it once.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: powerpc.git/arch/powerpc/mm/mmu_context_hash64.c
+Index: powerpc.git/arch/powerpc/kernel/time.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/mm/mmu_context_hash64.c	2010-02-05 14:57:48.399712677 +1100
-+++ powerpc.git/arch/powerpc/mm/mmu_context_hash64.c	2010-02-05 14:57:55.938461799 +1100
-@@ -23,7 +23,7 @@
- #include <asm/mmu_context.h>
+--- powerpc.git.orig/arch/powerpc/kernel/time.c	2010-02-05 14:57:48.839716602 +1100
++++ powerpc.git/arch/powerpc/kernel/time.c	2010-02-05 14:57:53.057212067 +1100
+@@ -930,13 +930,17 @@ static void __init setup_clockevent_mult
  
- static DEFINE_SPINLOCK(mmu_context_lock);
--static DEFINE_IDR(mmu_context_idr);
-+static DEFINE_IDA(mmu_context_ida);
- 
- /*
-  * The proto-VSID space has 2^35 - 1 segments available for user mappings.
-@@ -39,11 +39,11 @@ int __init_new_context(void)
- 	int err;
- 
- again:
--	if (!idr_pre_get(&mmu_context_idr, GFP_KERNEL))
-+	if (!ida_pre_get(&mmu_context_ida, GFP_KERNEL))
- 		return -ENOMEM;
- 
- 	spin_lock(&mmu_context_lock);
--	err = idr_get_new_above(&mmu_context_idr, NULL, 1, &index);
-+	err = ida_get_new_above(&mmu_context_ida, 1, &index);
- 	spin_unlock(&mmu_context_lock);
- 
- 	if (err == -EAGAIN)
-@@ -53,7 +53,7 @@ again:
- 
- 	if (index > MAX_CONTEXT) {
- 		spin_lock(&mmu_context_lock);
--		idr_remove(&mmu_context_idr, index);
-+		ida_remove(&mmu_context_ida, index);
- 		spin_unlock(&mmu_context_lock);
- 		return -ENOMEM;
- 	}
-@@ -85,7 +85,7 @@ int init_new_context(struct task_struct 
- void __destroy_context(int context_id)
+ static void register_decrementer_clockevent(int cpu)
  {
- 	spin_lock(&mmu_context_lock);
--	idr_remove(&mmu_context_idr, context_id);
-+	ida_remove(&mmu_context_ida, context_id);
- 	spin_unlock(&mmu_context_lock);
++	static int printed = 0;
+ 	struct clock_event_device *dec = &per_cpu(decrementers, cpu).event;
+ 
+ 	*dec = decrementer_clockevent;
+ 	dec->cpumask = cpumask_of(cpu);
+ 
+-	printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
+-	       dec->name, dec->mult, dec->shift, cpu);
++	if (!printed) {
++		printed = 1;
++		printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
++		       dec->name, dec->mult, dec->shift, cpu);
++	}
+ 
+ 	clockevents_register_device(dec);
  }
- EXPORT_SYMBOL_GPL(__destroy_context);
