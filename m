@@ -1,13 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 8 Feb 2010 10:23:30 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: reformat SD_NODE_INIT to match x86
-Message-ID: <20100207232330.GH32246@kryten>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp108.mail.ukl.yahoo.com (smtp108.mail.ukl.yahoo.com
+	[77.238.184.40]) by ozlabs.org (Postfix) with SMTP id 44DB5B7D01
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  8 Feb 2010 10:38:31 +1100 (EST)
+Message-ID: <4B6F4EF0.1030303@yahoo.es>
+Date: Mon, 08 Feb 2010 00:38:24 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: mingo@elte.hu, efault@gmx.de, linuxppc-dev@lists.ozlabs.org,
-	a.p.zijlstra@chello.nl
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller driver
+	flag
+References: <Pine.LNX.4.44L0.1002071523350.10952-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002071523350.10952-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,69 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Alan Stern wrote:
+> On Sun, 7 Feb 2010, Albert Herranz wrote:
+> 
+>> The wii has no uhci, but has 2 ohci controllers.
+>> For ohci we need a similar approach as done for ehci.
+> 
+> So you'll need to write a patch splitting up the OHCI data structures 
+> in the same way the EHCI qh was split up.
+> 
 
-Clean up SD_NODE_INITS so we can easily compare it to x86. Similar to the
-work in 47734f89be0614b5acbd6a532390f9c72f019648 (sched: Clean up topology.h)
+Yes.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+>> It turns out that we have more limitations.
+>> The wii has 2 discontiguous memory areas (usually called MEM1 and MEM2). I have checked that the ehci controller doesn't work properly when performing dma to buffers allocated in MEM1 (it corrupts part of the data) but has no problems if the buffers sit within MEM2.
+>> So usb buffers will need to be bounced anyway if they are part of MEM1.
+> 
+> This sounds like the sort of restriction that dma_map_single() should 
+> be capable of handling.
+> 
 
-Index: linux.trees.git/arch/powerpc/include/asm/topology.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/topology.h	2010-01-22 11:35:07.000000000 +1100
-+++ linux.trees.git/arch/powerpc/include/asm/topology.h	2010-01-22 11:37:29.000000000 +1100
-@@ -38,27 +38,33 @@ static inline int pcibus_to_node(struct 
- 				 cpumask_of_node(pcibus_to_node(bus)))
- 
- /* sched_domains SD_NODE_INIT for PPC64 machines */
--#define SD_NODE_INIT (struct sched_domain) {		\
--	.parent			= NULL,			\
--	.child			= NULL,			\
--	.groups			= NULL,			\
--	.min_interval		= 8,			\
--	.max_interval		= 32,			\
--	.busy_factor		= 32,			\
--	.imbalance_pct		= 125,			\
--	.cache_nice_tries	= 1,			\
--	.busy_idx		= 3,			\
--	.idle_idx		= 1,			\
--	.newidle_idx		= 0,			\
--	.wake_idx		= 0,			\
--	.flags			= SD_LOAD_BALANCE	\
--				| SD_BALANCE_EXEC	\
--				| SD_BALANCE_FORK	\
--				| SD_BALANCE_NEWIDLE	\
--				| SD_SERIALIZE,		\
--	.last_balance		= jiffies,		\
--	.balance_interval	= 1,			\
--	.nr_balance_failed	= 0,			\
-+#define SD_NODE_INIT (struct sched_domain) {				\
-+	.min_interval		= 8,					\
-+	.max_interval		= 32,					\
-+	.busy_factor		= 32,					\
-+	.imbalance_pct		= 125,					\
-+	.cache_nice_tries	= 1,					\
-+	.busy_idx		= 3,					\
-+	.idle_idx		= 1,					\
-+	.newidle_idx		= 0,					\
-+	.wake_idx		= 0,					\
-+	.forkexec_idx		= 0,					\
-+									\
-+	.flags			= 1*SD_LOAD_BALANCE			\
-+				| 1*SD_BALANCE_NEWIDLE			\
-+				| 1*SD_BALANCE_EXEC			\
-+				| 1*SD_BALANCE_FORK			\
-+				| 0*SD_BALANCE_WAKE			\
-+				| 0*SD_WAKE_AFFINE			\
-+				| 0*SD_PREFER_LOCAL			\
-+				| 0*SD_SHARE_CPUPOWER			\
-+				| 0*SD_POWERSAVINGS_BALANCE		\
-+				| 0*SD_SHARE_PKG_RESOURCES		\
-+				| 1*SD_SERIALIZE			\
-+				| 0*SD_PREFER_SIBLING			\
-+				,					\
-+	.last_balance		= jiffies,				\
-+	.balance_interval	= 1,					\
- }
- 
- extern void __init dump_numa_cpu_topology(void);
+On powerpc you can have per-device specific dma ops.
+I'll work on that direction and create a special dma ops set for devices which need their dma buffers on mem2, and then use those for ehci-hlwd.
+
+> Alan Stern
+> 
+
+Thanks,
+Albert
