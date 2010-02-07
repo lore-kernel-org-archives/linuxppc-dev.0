@@ -1,22 +1,19 @@
-Return-Path: <h.thalib@gmail.com>
-Received: from mail-yx0-f197.google.com (mail-yx0-f197.google.com
-	[209.85.210.197]) by ozlabs.org (Postfix) with ESMTP id 76B8EB7CF5
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp121.mail.ukl.yahoo.com (smtp121.mail.ukl.yahoo.com
+	[77.238.184.52]) by ozlabs.org (Postfix) with SMTP id A7FD8B7CA1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  7 Feb 2010 17:15:30 +1100 (EST)
-Received: by yxe35 with SMTP id 35so5196545yxe.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 06 Feb 2010 22:15:27 -0800 (PST)
-Message-ID: <4B6E5AAE.8020504@gmail.com>
-Date: Sun, 07 Feb 2010 11:46:14 +0530
-From: hmthalib <h.thalib@gmail.com>
+	Mon,  8 Feb 2010 05:10:59 +1100 (EST)
+Message-ID: <4B6F0229.5070604@yahoo.es>
+Date: Sun, 07 Feb 2010 19:10:49 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-To: Johnny Hung <johnny.hacking@gmail.com>
-Subject: Re: Freescale MPC8313 TSEC SGMII problem.
-References: <cb9ecdfa1001282229n21a11aa9sf15ebf279990862a@mail.gmail.com>
-In-Reply-To: <cb9ecdfa1001282229n21a11aa9sf15ebf279990862a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-embedded@vger.kernel.org
-Reply-To: hmthalib@gmail.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH 1/2] USB: add HCD_BOUNCE_BUFFERS host controller driver
+	flag
+References: <Pine.LNX.4.44L0.1002031429430.1321-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002031429430.1321-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: USB list <linux-usb@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Johnny Hung,
+Alan Stern wrote:
+>On a 64-bit processor, some of the accesses will be 64 bits wide
+>instead of 32.  Does that matter for your purposes?
+>
 
-Please find the reply inliend
-Johnny Hung wrote:
-> Hi All,
-> 
-> I have a Freescale MPC8313 customized board and want to confiugre
-> TSEC1 to SGMII. Would you please help me for this question,
-> 
-> 1). Is it possible for MPC8313 TSEC1 connect to Ethernet Switch by
-> SGMII (without phy), like below diagram.
-> 
-> [MPC8313 TSEC1]  <====SGMII====> [Ethernet Switch]
-> 
+The wii uses a 32-bit processor, so this is safe in this case.
 
-Not possible
+>What about ohci-hcd and uhci-hcd?  They both use non-32-bit accesses to 
+>structures in coherent memory.
+>
 
-> 2). If yes in 1), how to configure it in MPC8313, as I know it can set
-> TSEC1 to SGMII in LTIB uboot setting. How about in Linux Kernel driver
-> ? Is it need extra setting or patch?
-> 
-> BRs, H. Johnny
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-embedded" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+The wii has no uhci, but has 2 ohci controllers.
+For ohci we need a similar approach as done for ehci.
 
+>If you do it as described above then the buffers you're worried about
+>won't be allocated in coherent memory to begin with, so no problems 
+>will arise.
 
--- 
-Regards,
-Mohamed Thalib H
+It turns out that we have more limitations.
+The wii has 2 discontiguous memory areas (usually called MEM1 and MEM2). I have checked that the ehci controller doesn't work properly when performing dma to buffers allocated in MEM1 (it corrupts part of the data) but has no problems if the buffers sit within MEM2.
+So usb buffers will need to be bounced anyway if they are part of MEM1.
+
+This worked in the original patch as buffers were always bounced to MEM2 buffers. Sigh.
+
+>Alan Stern
+>
+
+Thanks,
+Albert
+
+PS: Your reply didn't get to me. I looked at the ML and found it (I'm not subscribed). Sorry for the late answer.
