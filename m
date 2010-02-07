@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Mon, 8 Feb 2010 09:28:01 +1100
+Date: Mon, 8 Feb 2010 10:07:36 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Only print clockevent settings once
-Message-ID: <20100207222801.GE32246@kryten>
+Subject: powerpc: Make powerpc_firmware_features __read_mostly
+Message-ID: <20100207230736.GG32246@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -17,33 +17,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-The clockevent multiplier and shift is useful information, but we
-only need to print it once.
+We use firmware_has_feature quite a lot these days, so it's worth putting
+powerpc_firmware_features into __read_mostly.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: powerpc.git/arch/powerpc/kernel/time.c
+Index: powerpc.git/arch/powerpc/kernel/firmware.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/time.c	2010-02-05 14:57:48.839716602 +1100
-+++ powerpc.git/arch/powerpc/kernel/time.c	2010-02-05 14:57:53.057212067 +1100
-@@ -930,13 +930,17 @@ static void __init setup_clockevent_mult
+--- powerpc.git.orig/arch/powerpc/kernel/firmware.c	2010-02-05 14:57:48.579712760 +1100
++++ powerpc.git/arch/powerpc/kernel/firmware.c	2010-02-05 14:57:54.688461988 +1100
+@@ -17,5 +17,5 @@
  
- static void register_decrementer_clockevent(int cpu)
- {
-+	static int printed = 0;
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu).event;
+ #include <asm/firmware.h>
  
- 	*dec = decrementer_clockevent;
- 	dec->cpumask = cpumask_of(cpu);
- 
--	printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
--	       dec->name, dec->mult, dec->shift, cpu);
-+	if (!printed) {
-+		printed = 1;
-+		printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
-+		       dec->name, dec->mult, dec->shift, cpu);
-+	}
- 
- 	clockevents_register_device(dec);
- }
+-unsigned long powerpc_firmware_features;
++unsigned long powerpc_firmware_features __read_mostly;
+ EXPORT_SYMBOL_GPL(powerpc_firmware_features);
