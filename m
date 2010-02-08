@@ -1,23 +1,22 @@
-Return-Path: <john.jarvis@tel.com>
-Received: from chrysaor.tel.co.jp (chrysaor.tel.co.jp [218.45.244.100])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7E7A1B7D14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 20:54:51 +1100 (EST)
-Received: from euryale.tel.co.jp (euryale.tel.co.jp [192.168.117.39])
-	by chrysaor.tel.co.jp (8.13.8/8.13.8) with SMTP id o189MBSX023734
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 18:22:11 +0900
-Received: from TELIS0024.asia.tel.com ([10.163.142.134])
-	by medusa.tel.co.jp (8.13.8/8.13.8) with ESMTP id o189MBsP021345
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 18:22:11 +0900
-From: <john.jarvis@tel.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 8 Feb 2010 18:22:09 +0900
-Subject: CPU usage spikes with MPC8377E IRQs
-Message-ID: <55734BD5AF9AFC4EBFB8652657DE8A79BEC813ECE6@TELIS6322.asia.tel.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] Restrict stack space reservation to rlimit
+In-reply-to: <20100208145240.FB58.A69D9226@jp.fujitsu.com>
+References: <20100208141716.FB55.A69D9226@jp.fujitsu.com>
+	<9729.1265607469@neuling.org>
+	<20100208145240.FB58.A69D9226@jp.fujitsu.com>
+Date: Mon, 08 Feb 2010 21:45:51 +1100
+Message-ID: <32102.1265625951@neuling.org>
+Cc: stable@kernel.org, aeb@cwi.nl, James Morris <jmorris@namei.org>,
+	miltonm@bga.com, Oleg Nesterov <oleg@redhat.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, WANG Cong <xiyou.wangcong@gmail.com>,
+	linux-fsdevel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +26,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
 
-I'm developing software for a custom MPC8377E-based board. I've run
-into a strange problem that has me completely stumped and I would be
-forever grateful for any suggestions or pointers.
+In message <20100208145240.FB58.A69D9226@jp.fujitsu.com> you wrote:
+> > > >  
+> > > > Hi,
+> > > > 
+> > > > > Why do we need page size independent stack size? It seems to have
+> > > > > compatibility breaking risk.
+> > > > 
+> > > > I don't think so. The current behaviour is clearly wrong, we dont need 
+a
+> > > > 16x larger stack just because you went from a 4kB to a 64kB base page
+> > > > size. The user application stack usage is the same in both cases.
+> > > 
+> > > I didn't discuss which behavior is better. Michael said he want to apply
+> > > his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
+> > > compatibility patch.
+> > > 
+> > > Your answer doesn't explain why can't we wait it until next merge window.
+> > > 
+> > > btw, personally, I like page size indepent stack size. but I'm not sure
+> > > why making stack size independency is related to bug fix.
+> > 
+> > I tend to agree.  
+> > 
+> > Below is just the bug fix to limit the reservation size based rlimit.
+> > We still reserve different stack sizes based on the page size as
+> > before (unless we hit rlimit of course).
+> 
+> Thanks.
+> 
+> I agree your patch in almost part. but I have very few requests.
+> 
+> 
+> > Mikey
+> > 
+> > Restrict stack space reservation to rlimit
+> > 
+> > When reserving stack space for a new process, make sure we're not
+> > attempting to allocate more than rlimit allows.
+> > 
+> > This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
+> > "mm: variable length argument support" and unmasked by
+> > fc63cf237078c86214abcb2ee9926d8ad289da9b 
+> > "exec: setup_arg_pages() fails to return errors".
+> 
+> Your initial mail have following problem use-case. please append it
+> into the patch description.
+> 
+> 	On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
+> 	now more restrictive than it was before.  On 2.6.31 with 4k pages I
+> 	could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
+> 	mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
 
-I have a kernel module that basically handles IRQs produced every 1ms
-and wakes up any processes that are blocked waiting. (The event is
-saved in case a process has requested notification but is not waiting
-at the moment the IRQ occurs.)
+Ok,  I'll add this info in.  
 
-This works, except that every 28 seconds the IRQ thread, workqueue,
-and user task all suddenly take up 100% CPU for 3 or 4 seconds.
-(around 97% sys, then 97% IRQ, according to top) When this happens,
-deadlines aren't met, watchdogs bark, motors crash, global warming
-occurs...
+> 
+> > 
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > Cc: Anton Blanchard <anton@samba.org>
+> > Cc: stable@kernel.org
+> > ---
+> >  fs/exec.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6-ozlabs/fs/exec.c
+> > ===================================================================
+> > --- linux-2.6-ozlabs.orig/fs/exec.c
+> > +++ linux-2.6-ozlabs/fs/exec.c
+> > @@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+> >  			goto out_unlock;
+> >  	}
+> >  
+> > +	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
+> > +			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
+> > +			   PAGE_SIZE);
+> 
+> This line is a bit unclear why "- PAGE_SIZE" is necessary.
 
-Removing the workqueue and user task from the system simply isolates
-an IRQ thread whose CPU usage spikes every 28 seconds. This has been
-observed with both GTM and external IRQs. (I haven't tested others)
+This is because the stack is already 1 page in size.  I'm going to
+change that code to make it clearer...  hopefully :-)
 
-So, basically, for the GTM, the execution path is:
+> personally, I like following likes explicit comments.
+> 
+> 	stack_expand = EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> 	stack_lim = ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur);
+> 
+> 	/* Initial stack must not cause stack overflow. */
+> 	if (stack_expand + PAGE_SIZE > stack_lim)
+> 		stack_expand = stack_lim - PAGE_SIZE;
+> 
+> note: accessing rlim_cur require ACCESS_ONCE.
+> 
+> 
+> Thought?
 
-IRQ =3D> IPIC =3D> IRQ thread ACKs timer and returns IRQ_HANDLED =3D> IPIC =
-=3D> IRQ
+Thanks, looks better/clearer to me too.  I'll change, new patch coming....
 
-That's all. Spikes every 28 seconds.
+Mikey
 
-System specs
-------------------
-CPU: MPC8377E (33.333Mhz timebase/133Mhz csb/400Mhz core)
-Board: Custom
-System controller: FPGA connected to the eLBC
-Memory: DDR 1GB
-ROM: NOR Flash connected to the FCM
-RTC: None
-
-Bootloader: U-Boot 1.3.3
-Kernel: Linux 2.6.29-rt24
-LTIB: mpc837xerdb-20081113=20
-        (w/custom configs. We started on an MPC8313ERDB)
-
-Some notes:
-
-* Spinlocks don't make a difference. (It's single-core anyway)
-* Using a workqueue adds a thread to the workflow, but the spikes
-  still occur at the same frequency. (Actually, IRQ thread jumps
-  around 2s after workqueue)
-* Changing the frequency of IRQs changes the time between spikes
-   between 1ms increments.  1ms, 2ms, 3ms are all the same. Fractions
-   are different.
-* RT_PREEMPT kernel + real-time priority on user space task makes the
-  spikes shorter, but they still occur every 28 seconds.
-* Kernel debug options seem to have no effect.
-
-I have a version which sets up GTM1/Timer1 and ACKs event IRQs which I
-can share if anyone is interested. It's a 3KB tgz. You'll have to modify th=
-e=20
-Makefile to fit your cross-compiler environment, and maybe edit the registe=
-r=20
-offset macros, too. But I think it's pretty generic code.
-
-If there is a more approriate place to make this inquiry, please let me kno=
-w.
-(I think the traffic here is mostly kernel patches?)
-
-Thank you,
-John Jarvis =
+> 
+> 
+> >  #ifdef CONFIG_STACK_GROWSUP
+> > -	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> > +	stack_base = vma->vm_end + stack_base;
+> >  #else
+> > -	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> > +	stack_base = vma->vm_start - stack_base;
+> >  #endif
+> >  	ret = expand_stack(vma, stack_base);
+> >  	if (ret)
+> > 
+> 
+> 
+> 
