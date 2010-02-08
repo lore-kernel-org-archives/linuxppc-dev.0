@@ -1,22 +1,12 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B03DB7CB6
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 08:05:27 +1100 (EST)
-Date: Mon, 8 Feb 2010 13:04:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] leds-gpio: Fix default state handling on OF platforms
-Message-Id: <20100208130455.8cb90ff1.akpm@linux-foundation.org>
-In-Reply-To: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
-References: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>,
-	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Mon, 8 Feb 2010 14:50:50 -0700
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
+Subject: [PATCH 00/04] powerpc/booke: Expose advanced debug registers through
+	extended ptrace interface
+Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>, David Gibson <dwg@au1.ibm.com>,
+	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +16,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Feb 2010 23:54:37 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+These patches implement an extention to the ptrace interface proposed by
+Thiago Bauermann and the the PowerPC gdb team.
 
-> The driver wrongly sets default state for LEDs that don't specify
-> default-state property.
-> 
-> Currently the driver handles default state this way:
-> 
-> memset(&led, 0, sizeof(led));
-> for_each_child_of_node(np, child) {
-> 	state = of_get_property(child, "default-state", NULL);
-> 	if (state) {
-> 		if (!strcmp(state, "keep"))
-> 			led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
-> 		...
-> 	}
-> 	ret = create_gpio_led(&led, ...);
-> }
-> 
-> Which means that all LEDs that do not specify default-state will
-> inherit the last value of the default-state property, which is wrong.
+This is a resubmission of the patches I first sent on December 9th, and
+later on January 18th.  The biggest change is that I added new config
+options to define the debug register support at compile time.  There were
+some suggestions to add cpu features to dynamically determine the specifics
+of the architecture, but I think compile-time configuration should be
+sufficient.
 
+The first patch defines and explains the new config options.
 
-Does this actually happen in any 2.6.33 driver code?  If so, we might
-want to merge this into 2.6.33.  And perhaps earlier kernels.  Or not. 
-There's no way for me to tell :(
+These patches are based on 2.6.33-rc7.
+
+The following has been added as Documentation/powerpc/ptrace.txt:
+
+GDB intends to support the following hardware debug features of BookE
+processors:
+
+4 hardware breakpoints (IAC)
+2 hardware watchpoints (read, write and read-write) (DAC)
+2 value conditions for the hardware watchpoints (DVC)
+
+For that, we need to extend ptrace so that GDB can query and set these
+resources. Since we're extending, we're trying to create an interface
+that's extendable and that covers both BookE and server processors, so
+that GDB doesn't need to special-case each of them. We added the
+following 3 new ptrace requests.
+
+1. PTRACE_PPC_GETHWDEBUGINFO
+
+Query for GDB to discover the hardware debug features. The main info to
+be returned here is the minimum alignment for the hardware watchpoints.
+BookE processors don't have restrictions here, but server processors have
+an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
+adding special cases to GDB based on what it sees in AUXV.
+
+Since we're at it, we added other useful info that the kernel can return to
+GDB: this query will return the number of hardware breakpoints, hardware
+watchpoints and whether it supports a range of addresses and a condition.
+The query will fill the following structure provided by the requesting process:
+
+struct ppc_debug_info {
+       unit32_t version;
+       unit32_t num_instruction_bps;
+       unit32_t num_data_bps;
+       unit32_t num_condition_regs;
+       unit32_t data_bp_alignment;
+       unit32_t sizeof_condition; /* size of the DVC register */
+       uint64_t features; /* bitmask of the individual flags */
+};
+
+features will have bits indicating whether there is support for:
+
+#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
+#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
+#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
+#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
+
+2. PTRACE_SETHWDEBUG
+
+Sets a hardware breakpoint or watchpoint, according to the provided structure:
+
+struct ppc_hw_breakpoint {
+        uint32_t version;
+#define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
+#define PPC_BREAKPOINT_TRIGGER_READ     0x2
+#define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
+        uint32_t trigger_type;       /* only some combinations allowed */
+#define PPC_BREAKPOINT_MODE_EXACT               0x0
+#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
+#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
+#define PPC_BREAKPOINT_MODE_MASK                0x3
+        uint32_t addr_mode;          /* address match mode */
+
+#define PPC_BREAKPOINT_CONDITION_MODE   0x3
+#define PPC_BREAKPOINT_CONDITION_NONE   0x0
+#define PPC_BREAKPOINT_CONDITION_AND    0x1
+#define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for the same thing as above */
+#define PPC_BREAKPOINT_CONDITION_OR     0x2
+#define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
+#define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable bits */
+#define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
+        uint32_t condition_mode;     /* break/watchpoint condition flags */
+
+        uint64_t addr;
+        uint64_t addr2;
+        uint64_t condition_value;
+};
+
+A request specifies one event, not necessarily just one register to be set.
+For instance, if the request is for a watchpoint with a condition, both the
+DAC and DVC registers will be set in the same request.
+
+With this GDB can ask for all kinds of hardware breakpoints and watchpoints
+that the BookE supports. COMEFROM breakpoints available in server processors
+are not contemplated, but that is out of the scope of this work.
+
+ptrace will return an integer (handle) uniquely identifying the breakpoint or
+watchpoint just created. This integer will be used in the PTRACE_DELHWDEBUG
+request to ask for its removal. Return -ENOSPC if the requested breakpoint
+can't be allocated on the registers.
+
+Some examples of using the structure to:
+
+- set a breakpoint in the first breakpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers on reads in the second watchpoint register
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = 0;
+
+- set a watchpoint which triggers only with a specific value
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_AND | PPC_BREAKPOINT_CONDITION_BE_ALL;
+  p.addr            = (uint64_t) address;
+  p.addr2           = 0;
+  p.condition_value = (uint64_t) condition;
+
+- set a ranged hardware breakpoint
+
+  p.version         = PPC_DEBUG_CURRENT_VERSION;
+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
+  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
+  p.addr            = (uint64_t) begin_range;
+  p.addr2           = (uint64_t) end_range;
+  p.condition_value = 0;
+
+3. PTRACE_DELHWDEBUG
+
+Takes an integer which identifies an existing breakpoint or watchpoint
+(i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
+corresponding breakpoint or watchpoint..
+
+-- 
+Dave Kleikamp
+IBM Linux Technology Center
