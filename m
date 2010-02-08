@@ -1,20 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6518FB7D14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 17:16:17 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Feb 2010 17:16:06 +1100
-Message-ID: <1265609766.8287.234.camel@pasglop>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev list <linuxppc-dev@lists.ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <xiyou.wangcong@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.26])
+	by ozlabs.org (Postfix) with ESMTP id 3950BB7D17
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 18:07:49 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 9so442758qwb.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 07 Feb 2010 23:07:48 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20100208145240.FB58.A69D9226@jp.fujitsu.com>
+References: <20100208141716.FB55.A69D9226@jp.fujitsu.com>
+	<9729.1265607469@neuling.org>
+	<20100208145240.FB58.A69D9226@jp.fujitsu.com>
+Date: Mon, 8 Feb 2010 15:07:47 +0800
+Message-ID: <2375c9f91002072307h4af1ba6dw1b7a598582991dc4@mail.gmail.com>
+Subject: Re: [PATCH] Restrict stack space reservation to rlimit
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>, stable@kernel.org, aeb@cwi.nl,
+	Oleg Nesterov <oleg@redhat.com>, miltonm@bga.com,
+	James Morris <jmorris@namei.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, linux-fsdevel@vger.kernel.org,
+	Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Mon, Feb 8, 2010 at 2:05 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> --- linux-2.6-ozlabs.orig/fs/exec.c
+>> +++ linux-2.6-ozlabs/fs/exec.c
+>> @@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 goto out_unlock;
+>> =C2=A0 =C2=A0 =C2=A0 }
+>>
+>> + =C2=A0 =C2=A0 stack_base =3D min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0current->signal->rlim[RLIMIT_STACK].rlim_cur -
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0PAGE_SIZE);
+>
+> This line is a bit unclear why "- PAGE_SIZE" is necessary.
+> personally, I like following likes explicit comments.
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0stack_expand =3D EXTRA_STACK_VM_PAGES * PAGE_S=
+IZE;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0stack_lim =3D ACCESS_ONCE(rlim[RLIMIT_STACK].r=
+lim_cur);
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0/* Initial stack must not cause stack overflow=
+. */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (stack_expand + PAGE_SIZE > stack_lim)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0stack_expand =3D s=
+tack_lim - PAGE_SIZE;
+>
+> note: accessing rlim_cur require ACCESS_ONCE.
+>
+>
+> Thought?
 
-Here's a small regression fix that should still make it into .33
-
-Cheers,
-Ben.
-
-The following changes since commit 6339204ecc2aa2067a99595522de0403f0854bb8:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../viro/vfs-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Mark Nelson (1):
-      powerpc/pseries: Fix kexec regression caused by CPPR tracking
-
- arch/powerpc/platforms/pseries/xics.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+It's better to use the helper function: rlimit().
