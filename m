@@ -1,12 +1,22 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 8 Feb 2010 16:37:29 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] Clear MSR_RI during RTAS calls
-Message-ID: <20100208053729.GO32246@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH] Restrict stack space reservation to rlimit
+In-reply-to: <20100208141716.FB55.A69D9226@jp.fujitsu.com>
+References: <20100208140323.FB52.A69D9226@jp.fujitsu.com>
+	<20100208051104.GL32246@kryten>
+	<20100208141716.FB55.A69D9226@jp.fujitsu.com>
+Date: Mon, 08 Feb 2010 16:37:49 +1100
+Message-ID: <9729.1265607469@neuling.org>
+Cc: stable@kernel.org, aeb@cwi.nl, James Morris <jmorris@namei.org>,
+	miltonm@bga.com, Oleg Nesterov <oleg@redhat.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, WANG Cong <xiyou.wangcong@gmail.com>,
+	linux-fsdevel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,31 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> >  
+> > Hi,
+> > 
+> > > Why do we need page size independent stack size? It seems to have
+> > > compatibility breaking risk.
+> > 
+> > I don't think so. The current behaviour is clearly wrong, we dont need a
+> > 16x larger stack just because you went from a 4kB to a 64kB base page
+> > size. The user application stack usage is the same in both cases.
+> 
+> I didn't discuss which behavior is better. Michael said he want to apply
+> his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
+> compatibility patch.
+> 
+> Your answer doesn't explain why can't we wait it until next merge window.
+> 
+> btw, personally, I like page size indepent stack size. but I'm not sure
+> why making stack size independency is related to bug fix.
 
-RTAS should never cause an exception but if it does (for example accessing
-outside our RMO) then we might go a long way through the kernel before
-oopsing. If we unset MSR_RI we should at least stop things on exception
-exit.
+I tend to agree.  
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Below is just the bug fix to limit the reservation size based rlimit.
+We still reserve different stack sizes based on the page size as
+before (unless we hit rlimit of course).
+
+Mikey
+
+Restrict stack space reservation to rlimit
+
+When reserving stack space for a new process, make sure we're not
+attempting to allocate more than rlimit allows.
+
+This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
+"mm: variable length argument support" and unmasked by
+fc63cf237078c86214abcb2ee9926d8ad289da9b 
+"exec: setup_arg_pages() fails to return errors".
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
 ---
+ fs/exec.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-The setting of MSR_RI during RTAS calls went in ages ago (2003), and I'm
-not sure why. Clearly an exception inside RTAS is fatal since we most likely
-have a bad r13.
-
-Index: powerpc.git/arch/powerpc/kernel/entry_64.S
+Index: linux-2.6-ozlabs/fs/exec.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/entry_64.S	2010-02-08 12:25:51.543072119 +1100
-+++ powerpc.git/arch/powerpc/kernel/entry_64.S	2010-02-08 12:26:56.043513290 +1100
-@@ -791,9 +791,8 @@ _GLOBAL(enter_rtas)
- 	
-         li      r9,1
-         rldicr  r9,r9,MSR_SF_LG,(63-MSR_SF_LG)
--	ori	r9,r9,MSR_IR|MSR_DR|MSR_FE0|MSR_FE1|MSR_FP
-+	ori	r9,r9,MSR_IR|MSR_DR|MSR_FE0|MSR_FE1|MSR_FP|MSR_RI
- 	andc	r6,r0,r9
--	ori	r6,r6,MSR_RI
- 	sync				/* disable interrupts so SRR0/1 */
- 	mtmsrd	r0			/* don't get trashed */
+--- linux-2.6-ozlabs.orig/fs/exec.c
++++ linux-2.6-ozlabs/fs/exec.c
+@@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+ 			goto out_unlock;
+ 	}
  
++	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
++			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
++			   PAGE_SIZE);
+ #ifdef CONFIG_STACK_GROWSUP
+-	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_end + stack_base;
+ #else
+-	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_start - stack_base;
+ #endif
+ 	ret = expand_stack(vma, stack_base);
+ 	if (ret)
