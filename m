@@ -1,42 +1,23 @@
-Return-Path: <kosaki.motohiro@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 4DBF2B7CF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 18:11:50 +1100 (EST)
-Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
-	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o187Bno8005388 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kosaki.motohiro@jp.fujitsu.com); Mon, 8 Feb 2010 16:11:49 +0900
-Received: from smail (m6 [127.0.0.1])
-	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 5CF5E45DE56
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 16:11:49 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
-	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 3579E45DE4F
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 16:11:49 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 1415A1DB8044
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 16:11:49 +0900 (JST)
-Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id BDEFE1DB803A
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 16:11:48 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Americo Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH] Restrict stack space reservation to rlimit
-In-Reply-To: <2375c9f91002072307h4af1ba6dw1b7a598582991dc4@mail.gmail.com>
-References: <20100208145240.FB58.A69D9226@jp.fujitsu.com>
-	<2375c9f91002072307h4af1ba6dw1b7a598582991dc4@mail.gmail.com>
-Message-Id: <20100208161014.7C6D.A69D9226@jp.fujitsu.com>
+Return-Path: <john.jarvis@tel.com>
+Received: from chrysaor.tel.co.jp (chrysaor.tel.co.jp [218.45.244.100])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E7A1B7D14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  8 Feb 2010 20:54:51 +1100 (EST)
+Received: from euryale.tel.co.jp (euryale.tel.co.jp [192.168.117.39])
+	by chrysaor.tel.co.jp (8.13.8/8.13.8) with SMTP id o189MBSX023734
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 18:22:11 +0900
+Received: from TELIS0024.asia.tel.com ([10.163.142.134])
+	by medusa.tel.co.jp (8.13.8/8.13.8) with ESMTP id o189MBsP021345
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 18:22:11 +0900
+From: <john.jarvis@tel.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 8 Feb 2010 18:22:09 +0900
+Subject: CPU usage spikes with MPC8377E IRQs
+Message-ID: <55734BD5AF9AFC4EBFB8652657DE8A79BEC813ECE6@TELIS6322.asia.tel.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon,  8 Feb 2010 16:11:47 +0900 (JST)
-Cc: Michael Neuling <mikey@neuling.org>, stable@kernel.org, aeb@cwi.nl,
-	Oleg Nesterov <oleg@redhat.com>, miltonm@bga.com,
-	James Morris <jmorris@namei.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	kosaki.motohiro@jp.fujitsu.com, linux-fsdevel@vger.kernel.org,
-	Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,34 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Mon, Feb 8, 2010 at 2:05 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> --- linux-2.6-ozlabs.orig/fs/exec.c
-> >> +++ linux-2.6-ozlabs/fs/exec.c
-> >> @@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm
-> >>                       goto out_unlock;
-> >>       }
-> >>
-> >> +     stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
-> >> +                      current->signal->rlim[RLIMIT_STACK].rlim_cur -
-> >> +                        PAGE_SIZE);
-> >
-> > This line is a bit unclear why "- PAGE_SIZE" is necessary.
-> > personally, I like following likes explicit comments.
-> >
-> >        stack_expand = EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-> >        stack_lim = ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur);
-> >
-> >        /* Initial stack must not cause stack overflow. */
-> >        if (stack_expand + PAGE_SIZE > stack_lim)
-> >                stack_expand = stack_lim - PAGE_SIZE;
-> >
-> > note: accessing rlim_cur require ACCESS_ONCE.
-> >
-> >
-> > Thought?
-> 
-> It's better to use the helper function: rlimit().
+Hello,
 
-AFAIK, stable tree doesn't have rlimit(). but yes, making two patch
-(for mainline and for stable) is good opinion.
+I'm developing software for a custom MPC8377E-based board. I've run
+into a strange problem that has me completely stumped and I would be
+forever grateful for any suggestions or pointers.
+
+I have a kernel module that basically handles IRQs produced every 1ms
+and wakes up any processes that are blocked waiting. (The event is
+saved in case a process has requested notification but is not waiting
+at the moment the IRQ occurs.)
+
+This works, except that every 28 seconds the IRQ thread, workqueue,
+and user task all suddenly take up 100% CPU for 3 or 4 seconds.
+(around 97% sys, then 97% IRQ, according to top) When this happens,
+deadlines aren't met, watchdogs bark, motors crash, global warming
+occurs...
+
+Removing the workqueue and user task from the system simply isolates
+an IRQ thread whose CPU usage spikes every 28 seconds. This has been
+observed with both GTM and external IRQs. (I haven't tested others)
+
+So, basically, for the GTM, the execution path is:
+
+IRQ =3D> IPIC =3D> IRQ thread ACKs timer and returns IRQ_HANDLED =3D> IPIC =
+=3D> IRQ
+
+That's all. Spikes every 28 seconds.
+
+System specs
+------------------
+CPU: MPC8377E (33.333Mhz timebase/133Mhz csb/400Mhz core)
+Board: Custom
+System controller: FPGA connected to the eLBC
+Memory: DDR 1GB
+ROM: NOR Flash connected to the FCM
+RTC: None
+
+Bootloader: U-Boot 1.3.3
+Kernel: Linux 2.6.29-rt24
+LTIB: mpc837xerdb-20081113=20
+        (w/custom configs. We started on an MPC8313ERDB)
+
+Some notes:
+
+* Spinlocks don't make a difference. (It's single-core anyway)
+* Using a workqueue adds a thread to the workflow, but the spikes
+  still occur at the same frequency. (Actually, IRQ thread jumps
+  around 2s after workqueue)
+* Changing the frequency of IRQs changes the time between spikes
+   between 1ms increments.  1ms, 2ms, 3ms are all the same. Fractions
+   are different.
+* RT_PREEMPT kernel + real-time priority on user space task makes the
+  spikes shorter, but they still occur every 28 seconds.
+* Kernel debug options seem to have no effect.
+
+I have a version which sets up GTM1/Timer1 and ACKs event IRQs which I
+can share if anyone is interested. It's a 3KB tgz. You'll have to modify th=
+e=20
+Makefile to fit your cross-compiler environment, and maybe edit the registe=
+r=20
+offset macros, too. But I think it's pretty generic code.
+
+If there is a more approriate place to make this inquiry, please let me kno=
+w.
+(I think the traffic here is mostly kernel patches?)
+
+Thank you,
+John Jarvis =
