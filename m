@@ -1,18 +1,34 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 4D568B7D1C
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7D33DB7D1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 22:21:38 +1100 (EST)
-Date: Mon, 8 Feb 2010 12:21:16 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Paride Legovini <pl@ninthfloor.org>
-Subject: Re: resurrecting the mvme5100 ppc platform
-Message-ID: <20100208112116.GA3381@iram.es>
-References: <20100204133935.GA9337@ninthfloor.org>
+	Mon,  8 Feb 2010 23:56:29 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o18CuS3T006982
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:56:28 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o18CpJh91642508
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:51:19 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o18CuRPp007313
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:56:28 +1100
+Date: Mon, 8 Feb 2010 18:26:19 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Quieten cede latency printk
+Message-ID: <20100208125619.GA22194@dirshya.in.ibm.com>
+References: <20100207235205.GI32246@kryten>
+	<661de9471002080307p48e0ff69v6318790eaff1c64c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100204133935.GA9337@ninthfloor.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <661de9471002080307p48e0ff69v6318790eaff1c64c@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+	Gautham R Shenoy <ego@in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 04, 2010 at 01:39:35PM +0000, Paride Legovini wrote:
-> Hello,
-> I'm just started working on some mvme5100 boards, and so I discovered
-> that support for these cards has been dropped with linux-2.6.27 due to
-> lack of interest. Here is the relevent post on linuxppc-embedded:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2010-02-08 16:37:37]:
+
+> On Mon, Feb 8, 2010 at 5:22 AM, Anton Blanchard <anton@samba.org> wrote:
+> >
+> > The cede latency stuff is relatively new and we don't need to complain about
+> > it not working on older firmware.
+> >
+> > Signed-off-by: Anton Blanchard <anton@samba.org>
 > 
-> http://www.mail-archive.com/linuxppc-embedded@ozlabs.org/msg30049.html
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 > 
-> Well, I'd really like to see support for the mvme5100 to be reintegrated
-> in the kernel. I'm willing to help on this, but at the moment I don't
-> know how much work is to be done, as I don't know how the switch from
-> ppc to powerpc changed things.
+> Seems like a reasonable change. CC'ing Vaidy and Gautham to look even
+> more closely at the patch.
 
-A lot, these are PreP platforms. I'm using several MVME24xx/26xx/27xx
-here (some have been running continously over a decade). They have 
-a lot of similarities with MVME5100 if I remember correctly. 
+Hi Anton,
 
-I don't have time right now (especially if I am alone) to write 
-support for them, but I am interested in running a more recent
-kernel, provided it's not too bloated (some machines only have
-16MB of RAM).
+Removing the printk is reasonable.  The failure case is noise in older
+firmware while the success case may not be very informative.
 
-	Regards,
-	Gabriel
+Thanks,
+Vaidy
