@@ -1,12 +1,11 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Mon, 8 Feb 2010 14:50:57 -0700
+Date: Mon, 8 Feb 2010 14:51:05 -0700
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20100208215057.17930.30833.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20100208215104.17930.35673.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
 References: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
-Subject: [PATCH 01/04] powerpc/booke: Introduce new CONFIG options for
-	advanced debug registers
+Subject: [PATCH 02/04] powerpc: Extended ptrace interface
 Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>, David Gibson <dwg@au1.ibm.com>,
 	Torez Smith <torez@us.ibm.com>, Thiago Jung Bauermann <bauerman@br.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,322 +17,380 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/booke: Introduce new CONFIG options for advanced debug registers
+powerpc: Extended ptrace interface
 
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 
-Introduce new config options to simplify the ifdefs pertaining to the
-advanced debug registers for booke and 40x processors:
+Based on patches originally written by Torez Smith.
 
-CONFIG_PPC_ADV_DEBUG_REGS - boolean: true for dac-based processors
-CONFIG_PPC_ADV_DEBUG_IACS - number of IAC registers
-CONFIG_PPC_ADV_DEBUG_DACS - number of DAC registers
-CONFIG_PPC_ADV_DEBUG_DVCS - number of DVC registers
-CONFIG_PPC_ADV_DEBUG_DAC_RANGE - DAC ranges supported
+Add a new extended ptrace interface so that user-space has a single
+interface for powerpc, without having to know the specific layout
+of the debug registers.
 
-Beginning conservatively, since I only have the facilities to test 440
-hardware.  I believe all 40x and booke platforms support at least 2 IAC
-and 2 DAC registers.  For 440, 4 IAC and 2 DVC registers are enabled, as
-well as the DAC ranges.
+Implement:
+PPC_PTRACE_GETHWDEBUGINFO
+PPC_PTRACE_SETHWDEBUG
+PPC_PTRACE_DELHWDEBUG
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Acked-by: David Gibson <dwg@au1.ibm.com>
+Cc: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Sergio Durigan Junior <sergiodj@br.ibm.com>
+Cc: Thiago Jung Bauermann <bauerman@br.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 ---
 
- arch/powerpc/Kconfig            |   27 +++++++++++++++++++++++++++
- arch/powerpc/kernel/kgdb.c      |    2 +-
- arch/powerpc/kernel/kprobes.c   |    4 ++--
- arch/powerpc/kernel/process.c   |   10 +++++-----
- arch/powerpc/kernel/ptrace.c    |   18 +++++++-----------
- arch/powerpc/kernel/signal.c    |    2 +-
- arch/powerpc/kernel/signal_32.c |    8 ++++----
- arch/powerpc/kernel/traps.c     |    6 +++---
- 8 files changed, 50 insertions(+), 27 deletions(-)
+ Documentation/powerpc/ptrace.txt  |  134 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/ptrace.h |   77 +++++++++++++++++++++
+ arch/powerpc/kernel/ptrace.c      |   90 +++++++++++++++++++++++++
+ 3 files changed, 301 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/powerpc/ptrace.txt
 
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ba3948c..32840fb 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -240,6 +240,33 @@ config PPC_OF_PLATFORM_PCI
- config ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	def_bool y
- 
-+config PPC_ADV_DEBUG_REGS
-+	bool
-+	depends on 40x || BOOKE
-+	default y
+diff --git a/Documentation/powerpc/ptrace.txt b/Documentation/powerpc/ptrace.txt
+new file mode 100644
+index 0000000..f4a5499
+--- /dev/null
++++ b/Documentation/powerpc/ptrace.txt
+@@ -0,0 +1,134 @@
++GDB intends to support the following hardware debug features of BookE
++processors:
 +
-+config PPC_ADV_DEBUG_IACS
-+	int
-+	depends on PPC_ADV_DEBUG_REGS
-+	default 4 if 44x
-+	default 2
++4 hardware breakpoints (IAC)
++2 hardware watchpoints (read, write and read-write) (DAC)
++2 value conditions for the hardware watchpoints (DVC)
 +
-+config PPC_ADV_DEBUG_DACS
-+	int
-+	depends on PPC_ADV_DEBUG_REGS
-+	default 2
++For that, we need to extend ptrace so that GDB can query and set these
++resources. Since we're extending, we're trying to create an interface
++that's extendable and that covers both BookE and server processors, so
++that GDB doesn't need to special-case each of them. We added the
++following 3 new ptrace requests.
 +
-+config PPC_ADV_DEBUG_DVCS
-+	int
-+	depends on PPC_ADV_DEBUG_REGS
-+	default 2 if 44x
-+	default 0
++1. PTRACE_PPC_GETHWDEBUGINFO
 +
-+config PPC_ADV_DEBUG_DAC_RANGE
-+	bool
-+	depends on PPC_ADV_DEBUG_REGS && 44x
-+	default y
++Query for GDB to discover the hardware debug features. The main info to
++be returned here is the minimum alignment for the hardware watchpoints.
++BookE processors don't have restrictions here, but server processors have
++an 8-byte alignment restriction for hardware watchpoints. We'd like to avoid
++adding special cases to GDB based on what it sees in AUXV.
 +
- source "init/Kconfig"
++Since we're at it, we added other useful info that the kernel can return to
++GDB: this query will return the number of hardware breakpoints, hardware
++watchpoints and whether it supports a range of addresses and a condition.
++The query will fill the following structure provided by the requesting process:
++
++struct ppc_debug_info {
++       unit32_t version;
++       unit32_t num_instruction_bps;
++       unit32_t num_data_bps;
++       unit32_t num_condition_regs;
++       unit32_t data_bp_alignment;
++       unit32_t sizeof_condition; /* size of the DVC register */
++       uint64_t features; /* bitmask of the individual flags */
++};
++
++features will have bits indicating whether there is support for:
++
++#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x1
++#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x2
++#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x4
++#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x8
++
++2. PTRACE_SETHWDEBUG
++
++Sets a hardware breakpoint or watchpoint, according to the provided structure:
++
++struct ppc_hw_breakpoint {
++        uint32_t version;
++#define PPC_BREAKPOINT_TRIGGER_EXECUTE  0x1
++#define PPC_BREAKPOINT_TRIGGER_READ     0x2
++#define PPC_BREAKPOINT_TRIGGER_WRITE    0x4
++        uint32_t trigger_type;       /* only some combinations allowed */
++#define PPC_BREAKPOINT_MODE_EXACT               0x0
++#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE     0x1
++#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE     0x2
++#define PPC_BREAKPOINT_MODE_MASK                0x3
++        uint32_t addr_mode;          /* address match mode */
++
++#define PPC_BREAKPOINT_CONDITION_MODE   0x3
++#define PPC_BREAKPOINT_CONDITION_NONE   0x0
++#define PPC_BREAKPOINT_CONDITION_AND    0x1
++#define PPC_BREAKPOINT_CONDITION_EXACT  0x1	/* different name for the same thing as above */
++#define PPC_BREAKPOINT_CONDITION_OR     0x2
++#define PPC_BREAKPOINT_CONDITION_AND_OR 0x3
++#define PPC_BREAKPOINT_CONDITION_BE_ALL 0x00ff0000	/* byte enable bits */
++#define PPC_BREAKPOINT_CONDITION_BE(n)  (1<<((n)+16))
++        uint32_t condition_mode;     /* break/watchpoint condition flags */
++
++        uint64_t addr;
++        uint64_t addr2;
++        uint64_t condition_value;
++};
++
++A request specifies one event, not necessarily just one register to be set.
++For instance, if the request is for a watchpoint with a condition, both the
++DAC and DVC registers will be set in the same request.
++
++With this GDB can ask for all kinds of hardware breakpoints and watchpoints
++that the BookE supports. COMEFROM breakpoints available in server processors
++are not contemplated, but that is out of the scope of this work.
++
++ptrace will return an integer (handle) uniquely identifying the breakpoint or
++watchpoint just created. This integer will be used in the PTRACE_DELHWDEBUG
++request to ask for its removal. Return -ENOSPC if the requested breakpoint
++can't be allocated on the registers.
++
++Some examples of using the structure to:
++
++- set a breakpoint in the first breakpoint register
++
++  p.version         = PPC_DEBUG_CURRENT_VERSION;
++  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
++  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
++  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
++  p.addr            = (uint64_t) address;
++  p.addr2           = 0;
++  p.condition_value = 0;
++
++- set a watchpoint which triggers on reads in the second watchpoint register
++
++  p.version         = PPC_DEBUG_CURRENT_VERSION;
++  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
++  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
++  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
++  p.addr            = (uint64_t) address;
++  p.addr2           = 0;
++  p.condition_value = 0;
++
++- set a watchpoint which triggers only with a specific value
++
++  p.version         = PPC_DEBUG_CURRENT_VERSION;
++  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_READ;
++  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
++  p.condition_mode  = PPC_BREAKPOINT_CONDITION_AND | PPC_BREAKPOINT_CONDITION_BE_ALL;
++  p.addr            = (uint64_t) address;
++  p.addr2           = 0;
++  p.condition_value = (uint64_t) condition;
++
++- set a ranged hardware breakpoint
++
++  p.version         = PPC_DEBUG_CURRENT_VERSION;
++  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_EXECUTE;
++  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
++  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
++  p.addr            = (uint64_t) begin_range;
++  p.addr2           = (uint64_t) end_range;
++  p.condition_value = 0;
++
++3. PTRACE_DELHWDEBUG
++
++Takes an integer which identifies an existing breakpoint or watchpoint
++(i.e., the value returned from PTRACE_SETHWDEBUG), and deletes the
++corresponding breakpoint or watchpoint..
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index cbd759e..b451081 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -24,6 +24,12 @@
+  * 2 of the License, or (at your option) any later version.
+  */
  
- source "kernel/Kconfig.freezer"
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index b6bd1ea..41bada0 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -333,7 +333,7 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 		atomic_set(&kgdb_cpu_doing_single_step, -1);
- 		/* set the trace bit if we're stepping */
- 		if (remcom_in_buffer[0] == 's') {
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 			mtspr(SPRN_DBCR0,
- 			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
- 			linux_regs->msr |= MSR_DE;
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index c932978..3fd1af9 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -36,7 +36,7 @@
- #include <asm/uaccess.h>
- #include <asm/system.h>
++#ifdef __KERNEL__
++#include <linux/types.h>
++#else
++#include <stdint.h>
++#endif
++
+ #ifndef __ASSEMBLY__
  
--#ifdef CONFIG_BOOKE
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- #define MSR_SINGLESTEP	(MSR_DE)
- #else
- #define MSR_SINGLESTEP	(MSR_SE)
-@@ -110,7 +110,7 @@ static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
- 	 * like Decrementer or External Interrupt */
- 	regs->msr &= ~MSR_EE;
- 	regs->msr |= MSR_SINGLESTEP;
--#ifdef CONFIG_BOOKE
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	regs->msr &= ~MSR_CE;
- 	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
- #endif
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 7b816da..9be77e3 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -258,7 +258,7 @@ void do_dabr(struct pt_regs *regs, unsigned long address,
- 		return;
+ struct pt_regs {
+@@ -294,4 +300,75 @@ extern void user_disable_single_step(struct task_struct *);
  
- 	/* Clear the DAC and struct entries.  One shot trigger */
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~(DBSR_DAC1R | DBSR_DAC1W
- 							| DBCR0_IDM));
- #endif
-@@ -284,7 +284,7 @@ int set_dabr(unsigned long dabr)
- 		return ppc_md.set_dabr(dabr);
+ #define PTRACE_SINGLEBLOCK	0x100	/* resume execution until next branch */
  
- 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	mtspr(SPRN_DAC1, dabr);
- #elif defined(CONFIG_PPC_BOOK3S)
- 	mtspr(SPRN_DABR, dabr);
-@@ -371,7 +371,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 
- #endif /* CONFIG_SMP */
- 
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	/* If new thread DAC (HW breakpoint) is the same then leave it */
- 	if (new->thread.dabr)
- 		set_dabr(new->thread.dabr);
-@@ -514,7 +514,7 @@ void show_regs(struct pt_regs * regs)
- 	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
- 	if (trap == 0x300 || trap == 0x600)
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		printk("DEAR: "REG", ESR: "REG"\n", regs->dar, regs->dsisr);
- #else
- 		printk("DAR: "REG", DSISR: "REG"\n", regs->dar, regs->dsisr);
-@@ -560,7 +560,7 @@ void flush_thread(void)
- 		current->thread.dabr = 0;
- 		set_dabr(0);
- 
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		current->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W);
- #endif
- 	}
++#define PPC_PTRACE_GETHWDBGINFO	0x89
++#define PPC_PTRACE_SETHWDEBUG	0x88
++#define PPC_PTRACE_DELHWDEBUG	0x87
++
++#ifndef __ASSEMBLY__
++
++struct ppc_debug_info {
++	uint32_t version;		/* Only version 1 exists to date */
++	uint32_t num_instruction_bps;
++	uint32_t num_data_bps;
++	uint32_t num_condition_regs;
++	uint32_t data_bp_alignment;
++	uint32_t sizeof_condition;	/* size of the DVC register */
++	uint64_t features;
++};
++
++#endif /* __ASSEMBLY__ */
++
++/*
++ * features will have bits indication whether there is support for:
++ */
++#define PPC_DEBUG_FEATURE_INSN_BP_RANGE		0x0000000000000001
++#define PPC_DEBUG_FEATURE_INSN_BP_MASK		0x0000000000000002
++#define PPC_DEBUG_FEATURE_DATA_BP_RANGE		0x0000000000000004
++#define PPC_DEBUG_FEATURE_DATA_BP_MASK		0x0000000000000008
++
++#ifndef __ASSEMBLY__
++
++struct ppc_hw_breakpoint {
++	uint32_t version;		/* currently, version must be 1 */
++	uint32_t trigger_type;		/* only some combinations allowed */
++	uint32_t addr_mode;		/* address match mode */
++	uint32_t condition_mode;	/* break/watchpoint condition flags */
++	uint64_t addr;			/* break/watchpoint address */
++	uint64_t addr2;			/* range end or mask */
++	uint64_t condition_value;	/* contents of the DVC register */
++};
++
++#endif /* __ASSEMBLY__ */
++
++/*
++ * Trigger Type
++ */
++#define PPC_BREAKPOINT_TRIGGER_EXECUTE	0x00000001
++#define PPC_BREAKPOINT_TRIGGER_READ	0x00000002
++#define PPC_BREAKPOINT_TRIGGER_WRITE	0x00000004
++#define PPC_BREAKPOINT_TRIGGER_RW	\
++	(PPC_BREAKPOINT_TRIGGER_READ | PPC_BREAKPOINT_TRIGGER_WRITE)
++
++/*
++ * Address Mode
++ */
++#define PPC_BREAKPOINT_MODE_EXACT		0x00000000
++#define PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE	0x00000001
++#define PPC_BREAKPOINT_MODE_RANGE_EXCLUSIVE	0x00000002
++#define PPC_BREAKPOINT_MODE_MASK		0x00000003
++
++/*
++ * Condition Mode
++ */
++#define PPC_BREAKPOINT_CONDITION_MODE	0x00000003
++#define PPC_BREAKPOINT_CONDITION_NONE	0x00000000
++#define PPC_BREAKPOINT_CONDITION_AND	0x00000001
++#define PPC_BREAKPOINT_CONDITION_EXACT	PPC_BREAKPOINT_CONDITION_AND
++#define PPC_BREAKPOINT_CONDITION_OR	0x00000002
++#define PPC_BREAKPOINT_CONDITION_AND_OR	0x00000003
++#define PPC_BREAKPOINT_CONDITION_BE_ALL	0x00ff0000
++#define PPC_BREAKPOINT_CONDITION_BE_SHIFT	16
++#define PPC_BREAKPOINT_CONDITION_BE(n)	\
++	(1<<((n)+PPC_BREAKPOINT_CONDITION_BE_SHIFT))
++
+ #endif /* _ASM_POWERPC_PTRACE_H */
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index ef14988..292c814 100644
+index 292c814..8847bd6 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -46,7 +46,7 @@
+@@ -835,6 +835,52 @@ void ptrace_disable(struct task_struct *child)
+ 	user_disable_single_step(child);
+ }
+ 
++static long ppc_set_hwdebug(struct task_struct *child,
++		     struct ppc_hw_breakpoint *bp_info)
++{
++	/*
++	 * We currently support one data breakpoint
++	 */
++	if (((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0) ||
++	    ((bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0) ||
++	    (bp_info->trigger_type != PPC_BREAKPOINT_TRIGGER_WRITE) ||
++	    (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) ||
++	    (bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE))
++		return -EINVAL;
++
++	if (child->thread.dabr)
++		return -ENOSPC;
++
++	if ((unsigned long)bp_info->addr >= TASK_SIZE)
++		return -EIO;
++
++	child->thread.dabr = (unsigned long)bp_info->addr;
++#ifdef CONFIG_PPC_ADV_DEBUG_REGS
++	child->thread.dbcr0 = DBCR0_IDM;
++	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_READ)
++		child->thread.dbcr0 |= DBSR_DAC1R;
++	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
++		child->thread.dbcr0 |= DBSR_DAC1W;
++	child->thread.regs->msr |= MSR_DE;
++#endif
++	return 1;
++}
++
++static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
++{
++	if (data != 1)
++		return -EINVAL;
++	if (child->thread.dabr == 0)
++		return -ENOENT;
++
++	child->thread.dabr = 0;
++#ifdef CONFIG_PPC_ADV_DEBUG_REGS
++	child->thread.dbcr0 &= ~(DBSR_DAC1R | DBSR_DAC1W | DBCR0_IDM);
++	child->thread.regs->msr &= ~MSR_DE;
++#endif
++	return 0;
++}
++
  /*
-  * Set of msr bits that gdb can change on behalf of a process.
-  */
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- #define MSR_DEBUGCHANGE	0
- #else
- #define MSR_DEBUGCHANGE	(MSR_SE | MSR_BE)
-@@ -703,7 +703,7 @@ void user_enable_single_step(struct task_struct *task)
- 	struct pt_regs *regs = task->thread.regs;
- 
- 	if (regs != NULL) {
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		task->thread.dbcr0 &= ~DBCR0_BT;
- 		task->thread.dbcr0 |= DBCR0_IDM | DBCR0_IC;
- 		regs->msr |= MSR_DE;
-@@ -720,7 +720,7 @@ void user_enable_block_step(struct task_struct *task)
- 	struct pt_regs *regs = task->thread.regs;
- 
- 	if (regs != NULL) {
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		task->thread.dbcr0 &= ~DBCR0_IC;
- 		task->thread.dbcr0 = DBCR0_IDM | DBCR0_BT;
- 		regs->msr |= MSR_DE;
-@@ -737,7 +737,7 @@ void user_disable_single_step(struct task_struct *task)
- 	struct pt_regs *regs = task->thread.regs;
- 
- 	if (regs != NULL) {
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		/* If DAC don't clear DBCRO_IDM or MSR_DE */
- 		if (task->thread.dabr)
- 			task->thread.dbcr0 &= ~(DBCR0_IC | DBCR0_BT);
-@@ -745,9 +745,6 @@ void user_disable_single_step(struct task_struct *task)
- 			task->thread.dbcr0 &= ~(DBCR0_IC | DBCR0_BT | DBCR0_IDM);
- 			regs->msr &= ~MSR_DE;
- 		}
--#elif defined(CONFIG_40x)
--		task->thread.dbcr0 &= ~(DBCR0_IC | DBCR0_BT | DBCR0_IDM);
--		regs->msr &= ~MSR_DE;
- #else
- 		regs->msr &= ~(MSR_SE | MSR_BE);
- #endif
-@@ -769,7 +766,7 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
- 	if ((data & ~0x7UL) >= TASK_SIZE)
- 		return -EIO;
- 
--#ifndef CONFIG_BOOKE
-+#ifndef CONFIG_PPC_ADV_DEBUG_REGS
- 
- 	/* For processors using DABR (i.e. 970), the bottom 3 bits are flags.
- 	 *  It was assumed, on previous implementations, that 3 bits were
-@@ -790,8 +787,7 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
- 	/* Move contents to the DABR register */
- 	task->thread.dabr = data;
- 
--#endif
--#if defined(CONFIG_BOOKE)
-+#else /* CONFIG_PPC_ADV_DEBUG_REGS */
- 
- 	/* As described above, it was assumed 3 bits were passed with the data
- 	 *  address, but we will assume only the mode bits will be passed
-@@ -824,7 +820,7 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
- 		task->thread.dbcr0 |= DBSR_DAC1W;
- 
- 	task->thread.regs->msr |= MSR_DE;
--#endif
-+#endif /* CONFIG_PPC_ADV_DEBUG_REGS */
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index 00b5078..ad7044b 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -147,7 +147,7 @@ static int do_signal_pending(sigset_t *oldset, struct pt_regs *regs)
- 	 */
- 	if (current->thread.dabr) {
- 		set_dabr(current->thread.dabr);
--#if defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 		mtspr(SPRN_DBCR0, current->thread.dbcr0);
- #endif
+  * Here are the old "legacy" powerpc specific getregs/setregs ptrace calls,
+  * we mark them as obsolete now, they will be removed in a future version
+@@ -928,6 +974,50 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+ 		break;
  	}
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index d670429..e4883ae 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1078,7 +1078,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
- 	int i;
- 	unsigned char tmp;
- 	unsigned long new_msr = regs->msr;
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	unsigned long new_dbcr0 = current->thread.dbcr0;
- #endif
  
-@@ -1087,7 +1087,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
- 			return -EFAULT;
- 		switch (op.dbg_type) {
- 		case SIG_DBG_SINGLE_STEPPING:
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 			if (op.dbg_value) {
- 				new_msr |= MSR_DE;
- 				new_dbcr0 |= (DBCR0_IDM | DBCR0_IC);
-@@ -1103,7 +1103,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
- #endif
- 			break;
- 		case SIG_DBG_BRANCH_TRACING:
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 			return -EINVAL;
- #else
- 			if (op.dbg_value)
-@@ -1124,7 +1124,7 @@ int sys_debug_setcontext(struct ucontext __user *ctx,
- 	   failure is a problem, anyway, and it's very unlikely unless
- 	   the user is really doing something wrong. */
- 	regs->msr = new_msr;
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	current->thread.dbcr0 = new_dbcr0;
- #endif
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d069ff8..3623530 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -294,7 +294,7 @@ static inline int check_io_access(struct pt_regs *regs)
- 	return 0;
- }
- 
--#if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- /* On 4xx, the reason for the machine check or program exception
-    is in the ESR. */
- #define get_reason(regs)	((regs)->dsisr)
-@@ -1024,7 +1024,7 @@ void SoftwareEmulation(struct pt_regs *regs)
- }
- #endif /* CONFIG_8xx */
- 
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 
- void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
- {
-@@ -1093,7 +1093,7 @@ void __kprobes DebugException(struct pt_regs *regs, unsigned long debug_status)
- 		do_dabr(regs, mfspr(SPRN_DAC1), debug_status);
- 	}
- }
--#endif /* CONFIG_4xx || CONFIG_BOOKE */
-+#endif /* CONFIG_PPC_ADV_DEBUG_REGS */
- 
- #if !defined(CONFIG_TAU_INT)
- void TAUException(struct pt_regs *regs)
++	case PPC_PTRACE_GETHWDBGINFO: {
++		struct ppc_debug_info dbginfo;
++
++		dbginfo.version = 1;
++		dbginfo.num_instruction_bps = 0;
++		dbginfo.num_data_bps = 1;
++		dbginfo.num_condition_regs = 0;
++#ifdef CONFIG_PPC64
++		dbginfo.data_bp_alignment = 8;
++#else
++		dbginfo.data_bp_alignment = 4;
++#endif
++		dbginfo.sizeof_condition = 0;
++		dbginfo.features = 0;
++
++		if (!access_ok(VERIFY_WRITE, data,
++			       sizeof(struct ppc_debug_info)))
++			return -EFAULT;
++		ret = __copy_to_user((struct ppc_debug_info __user *)data,
++				     &dbginfo, sizeof(struct ppc_debug_info)) ?
++		      -EFAULT : 0;
++		break;
++	}
++
++	case PPC_PTRACE_SETHWDEBUG: {
++		struct ppc_hw_breakpoint bp_info;
++
++		if (!access_ok(VERIFY_READ, data,
++			       sizeof(struct ppc_hw_breakpoint)))
++			return -EFAULT;
++		ret = __copy_from_user(&bp_info,
++				       (struct ppc_hw_breakpoint __user *)data,
++				       sizeof(struct ppc_hw_breakpoint)) ?
++		      -EFAULT : 0;
++		if (!ret)
++			ret = ppc_set_hwdebug(child, &bp_info);
++		break;
++	}
++
++	case PPC_PTRACE_DELHWDEBUG: {
++		ret = ppc_del_hwdebug(child, addr, data);
++		break;
++	}
++
+ 	case PTRACE_GET_DEBUGREG: {
+ 		ret = -EINVAL;
+ 		/* We only support one DABR and no IABRS at the moment */
 
 -- 
 Dave Kleikamp
