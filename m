@@ -4,22 +4,19 @@ Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.linux-foundation.org",
 	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F1B27B7CBB
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 08:03:14 +1100 (EST)
-Date: Mon, 8 Feb 2010 13:02:48 -0800
+	by ozlabs.org (Postfix) with ESMTPS id 6B03DB7CB6
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 08:05:27 +1100 (EST)
+Date: Mon, 8 Feb 2010 13:04:55 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-Message-Id: <20100208130248.72febd68.akpm@linux-foundation.org>
-In-Reply-To: <20100205203236.GC1475@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH] leds-gpio: Fix default state handling on OF platforms
+Message-Id: <20100208130455.8cb90ff1.akpm@linux-foundation.org>
+In-Reply-To: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
+References: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bill Gatliff <bgat@billgatliff.com>
+Cc: linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>,
+	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 5 Feb 2010 23:32:36 +0300
+On Fri, 5 Feb 2010 23:54:37 +0300
 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-> This patch implements GPIOLIB notifier hooks, and thus makes device-enabled
-> GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatically
-> attached to the OpenFirmware subsystem. Which means that now we can handle
-> I2C and SPI GPIO chips almost* transparently.
+> The driver wrongly sets default state for LEDs that don't specify
+> default-state property.
 > 
-> * "Almost" because some chips still require platform data, and for these
->   chips OF-glue is still needed, though with this support the glue will
->   be much smaller.
+> Currently the driver handles default state this way:
 > 
+> memset(&led, 0, sizeof(led));
+> for_each_child_of_node(np, child) {
+> 	state = of_get_property(child, "default-state", NULL);
+> 	if (state) {
+> 		if (!strcmp(state, "keep"))
+> 			led.default_state = LEDS_GPIO_DEFSTATE_KEEP;
+> 		...
+> 	}
+> 	ret = create_gpio_led(&led, ...);
+> }
+> 
+> Which means that all LEDs that do not specify default-state will
+> inherit the last value of the default-state property, which is wrong.
 
-We can clean this up a little with the WARN_ON trick:
 
-diff -puN drivers/of/gpio.c~of-gpio-implement-gpiolib-notifier-hooks-fix drivers/of/gpio.c
---- a/drivers/of/gpio.c~of-gpio-implement-gpiolib-notifier-hooks-fix
-+++ a/drivers/of/gpio.c
-@@ -255,10 +255,8 @@ static int of_gpiochip_register_simple(s
- {
- 	struct of_gpio_chip *of_gc;
- 
--	if (np->data) {
--		WARN_ON(1);
-+	if (WARN_ON(np->data))
- 		return -EBUSY;
--	}
- 
- 	of_gc = kzalloc(sizeof(*of_gc), GFP_KERNEL);
- 	if (!of_gc)
-@@ -287,10 +285,8 @@ static int of_gpiochip_unregister(struct
- {
- 	struct of_gpio_chip *of_gc = np->data;
- 
--	if (!of_gc || of_gc->chip != chip) {
--		WARN_ON(1);
-+	if (WARN_ON(!of_gc || of_gc->chip != chip))
- 		return -EINVAL;
--	}
- 
- 	np->data = NULL;
- 	kfree(of_gc);
-_
+Does this actually happen in any 2.6.33 driver code?  If so, we might
+want to merge this into 2.6.33.  And perhaps earlier kernels.  Or not. 
+There's no way for me to tell :(
