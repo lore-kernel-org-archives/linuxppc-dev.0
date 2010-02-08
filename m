@@ -1,16 +1,16 @@
-Return-Path: <john.williams@petalogix.com>
-Received: from mail-px0-f194.google.com (mail-px0-f194.google.com
-	[209.85.216.194]) by ozlabs.org (Postfix) with ESMTP id 8D2F1B7D1C
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Feb 2010 21:47:45 +1100 (EST)
-Received: by pxi32 with SMTP id 32so2651332pxi.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Feb 2010 02:47:44 -0800 (PST)
+Return-Path: <igvk2000@hotmail.com>
+Received: from col0-omc3-s18.col0.hotmail.com (col0-omc3-s18.col0.hotmail.com
+	[65.55.34.157]) by ozlabs.org (Postfix) with ESMTP id 295CFB7D13
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  8 Feb 2010 20:17:02 +1100 (EST)
+Message-ID: <COL103-W15C3CDC5A3CC74FBAA112BDE510@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_"
+From: Igor <igvk2000@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Earliest Kernel to support FreeScale 8572
+Date: Mon, 8 Feb 2010 02:16:59 -0700
 MIME-Version: 1.0
-Date: Mon, 8 Feb 2010 20:47:44 +1000
-Message-ID: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
-Subject: simpleImage.XX and large kernels
-From: John Williams <john.williams@petalogix.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I'm looking at the simpleImage.XXX make target (PPC 405/440), and it
-seems that by default the arch/powerpc/boot/wrapper script places the
-bootwrapper at 0x400000, effectively setting a limit on the maximum
-bootable kernel size.
 
-For various reasons we'd like to be able to put a fairly complete
-rootfs as an initramfs, which obviously blows past a 4Mbyte limit very
-quickly.  Short of adding a new 'platform' option and associated
-hackery through the powerpc/boot Makefiles and wrapper, is there a
-quick and clean way I can tell the boot wrapper to link at a higher
-address?
+What would be the earliest Kernel that has full support for 8572 (dual E500=
+ core) ? Thanks in advance for any pointers.
+ 		 	   		 =20
+_________________________________________________________________
+Hotmail: Powerful Free email with security by Microsoft.
+http://clk.atdmt.com/GBL/go/201469230/direct/01/=
 
-Thanks,
+--_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-John
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+What would be the earliest Kernel that has full support for 8572 (dual E500=
+ core) ? Thanks in advance for any pointers.<BR> 		 	   		  <br /><hr />Hot=
+mail: Powerful Free email with security by Microsoft. <a href=3D'http://clk=
+.atdmt.com/GBL/go/201469230/direct/01/' target=3D'_new'>Get it now.</a></bo=
+dy>
+</html>=
+
+--_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_--
