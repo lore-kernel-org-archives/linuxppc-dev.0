@@ -1,34 +1,19 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7D33DB7D1F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 23:56:29 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o18CuS3T006982
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:56:28 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o18CpJh91642508
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:51:19 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o18CuRPp007313
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Feb 2010 23:56:28 +1100
-Date: Mon, 8 Feb 2010 18:26:19 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Quieten cede latency printk
-Message-ID: <20100208125619.GA22194@dirshya.in.ibm.com>
-References: <20100207235205.GI32246@kryten>
-	<661de9471002080307p48e0ff69v6318790eaff1c64c@mail.gmail.com>
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
+	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id EFFEBB7CD5
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 01:09:11 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <661de9471002080307p48e0ff69v6318790eaff1c64c@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
-	Gautham R Shenoy <ego@in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] [V2] net: emaclite: adding MDIO and phy lib support
+Date: Mon, 8 Feb 2010 07:09:01 -0700
+In-Reply-To: <1265409646-11882-1-git-send-email-john.linn@xilinx.com>
+References: <1265409646-11882-1-git-send-email-john.linn@xilinx.com>
+From: John Linn <John.Linn@xilinx.com>
+To: "John Linn" <john.linn@xilinx.com>, <netdev@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>, <jgarzik@pobox.com>,
+	<grant.likely@secretlab.ca>, <jwboyer@linux.vnet.ibm.com>
+Message-ID: <260b8801-53bd-44fe-a6b8-7d1d0f56fef5@SG2EHSMHS011.ehs.local>
+Cc: Sadanand Mutyala <sadanan@xilinx.com>, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +23,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2010-02-08 16:37:37]:
+> -----Original Message-----
+> From: John Linn [mailto:john.linn@xilinx.com]
+> Sent: Friday, February 05, 2010 3:41 PM
+> To: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
+jgarzik@pobox.com; grant.likely@secretlab.ca;
+> jwboyer@linux.vnet.ibm.com
+> Cc: john.williams@petalogix.com; John Linn; Sadanand Mutyala
+> Subject: [PATCH] [V2] net: emaclite: adding MDIO and phy lib support
+> =
 
-> On Mon, Feb 8, 2010 at 5:22 AM, Anton Blanchard <anton@samba.org> wrote:
-> >
-> > The cede latency stuff is relatively new and we don't need to complain about
-> > it not working on older firmware.
-> >
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Seems like a reasonable change. CC'ing Vaidy and Gautham to look even
-> more closely at the patch.
+> These changes add MDIO and phy lib support to the driver as the
+> IP core now supports the MDIO bus.
+> =
 
-Hi Anton,
+> The MDIO bus and phy are added as a child to the emaclite in the
+device
+> tree as illustrated below.
+> =
 
-Removing the printk is reasonable.  The failure case is noise in older
-firmware while the success case may not be very informative.
+> mdio {
+> 	#address-cells =3D <1>;
+> 	#size-cells =3D <0>;
+> 	compatible =3D "xlnx,emaclite-mdio";
+> 	phy0: phy@7 {
+> 		reg =3D <7>;
+> 	} ;
+> }
+> =
+
+> Signed-off-by: Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>
+> Signed-off-by: John Linn <john.linn@xilinx.com>
+> =
+
+> ---
+> =
+
+> V2 - updated it for Grant's comments, except I couldn't find any tabs
+> converted to white space issue, let's see if V2 has it also
+> ---
+>  drivers/net/Kconfig           |    1 +
+>  drivers/net/xilinx_emaclite.c |  393
+++++++++++++++++++++++++++++++++++++-----
+>  2 files changed, 351 insertions(+), 43 deletions(-)
+> =
+
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index dd9a09c..9509a36 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -1939,6 +1939,7 @@ config ATL2
+>  config XILINX_EMACLITE
+>  	tristate "Xilinx 10/100 Ethernet Lite support"
+>  	depends on PPC32 || MICROBLAZE
+> +	select PHYLIB
+>  	help
+>  	  This driver supports the 10/100 Ethernet Lite from Xilinx.
+> =
+
+> diff --git a/drivers/net/xilinx_emaclite.c
+b/drivers/net/xilinx_emaclite.c
+> index 8c777ba..02f18dd 100644
+> --- a/drivers/net/xilinx_emaclite.c
+> +++ b/drivers/net/xilinx_emaclite.c
+> @@ -22,11 +22,17 @@
+> =
+
+>  #include <linux/of_device.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/of_mdio.h>
+> +#include <linux/phy.h>
+> =
+
+
+<snip>
+
+> +static int xemaclite_mdio_read(struct mii_bus *bus, int phy_id, int
+reg)
+> +{
+> +	struct net_local *lp =3D bus->priv;
+> +	u32 ctrl_reg;
+> +	u32 rc;
+> +
+> +	mutex_lock(&lp->mdio_mutex);
+> +
+> +	if (xemaclite_mdio_wait(lp))
+> +		return -ETIMEDOUT;
+
+
+I already see a problem with this patch as when there's a timeout
+waiting for the mdio the mutex won't get unlocked.  This is true
+anywhere the timeout happens (other places also).
+
+I tested it with normal operation, but don't have a great way to test
+the timeout paths.
+
+I'll wait for other comments then spin it again to unlock the mutex when
+there's a timeout.
 
 Thanks,
-Vaidy
+John
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
