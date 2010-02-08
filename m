@@ -1,16 +1,22 @@
-Return-Path: <igvk2000@hotmail.com>
-Received: from col0-omc3-s18.col0.hotmail.com (col0-omc3-s18.col0.hotmail.com
-	[65.55.34.157]) by ozlabs.org (Postfix) with ESMTP id 295CFB7D13
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pz0-f195.google.com (mail-pz0-f195.google.com
+	[209.85.222.195]) by ozlabs.org (Postfix) with ESMTP id 41171B7D0F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 20:17:02 +1100 (EST)
-Message-ID: <COL103-W15C3CDC5A3CC74FBAA112BDE510@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_"
-From: Igor <igvk2000@hotmail.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Earliest Kernel to support FreeScale 8572
-Date: Mon, 8 Feb 2010 02:16:59 -0700
+	Mon,  8 Feb 2010 22:07:38 +1100 (EST)
+Received: by pzk33 with SMTP id 33so3483458pzk.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 08 Feb 2010 03:07:37 -0800 (PST)
 MIME-Version: 1.0
+Sender: bsingharora@gmail.com
+In-Reply-To: <20100207235205.GI32246@kryten>
+References: <20100207235205.GI32246@kryten>
+Date: Mon, 8 Feb 2010 16:37:37 +0530
+Message-ID: <661de9471002080307p48e0ff69v6318790eaff1c64c@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Quieten cede latency printk
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Gautham R Shenoy <ego@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,43 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 8, 2010 at 5:22 AM, Anton Blanchard <anton@samba.org> wrote:
+>
+> The cede latency stuff is relatively new and we don't need to complain about
+> it not working on older firmware.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-What would be the earliest Kernel that has full support for 8572 (dual E500=
- core) ? Thanks in advance for any pointers.
- 		 	   		 =20
-_________________________________________________________________
-Hotmail: Powerful Free email with security by Microsoft.
-http://clk.atdmt.com/GBL/go/201469230/direct/01/=
+Seems like a reasonable change. CC'ing Vaidy and Gautham to look even
+more closely at the patch.
 
---_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Verdana
-}
---></style>
-</head>
-<body class=3D'hmmessage'>
-What would be the earliest Kernel that has full support for 8572 (dual E500=
- core) ? Thanks in advance for any pointers.<BR> 		 	   		  <br /><hr />Hot=
-mail: Powerful Free email with security by Microsoft. <a href=3D'http://clk=
-.atdmt.com/GBL/go/201469230/direct/01/' target=3D'_new'>Get it now.</a></bo=
-dy>
-</html>=
-
---_ec74fafd-ba94-4e74-8f6a-c39c7f32de88_--
+Balbir
