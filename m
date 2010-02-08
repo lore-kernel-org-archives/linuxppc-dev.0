@@ -1,19 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2CE1EB7CF1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Feb 2010 10:07:08 +1100 (EST)
-Date: Tue, 9 Feb 2010 10:07:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: tip build problem on powerpc
-Message-Id: <20100209100700.81685ffe.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd"
-Cc: Don Zickus <dzickus@redhat.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <john.williams@petalogix.com>
+Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
+	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id 28778B7D00
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 10:13:00 +1100 (EST)
+Received: by pzk15 with SMTP id 15so2505966pzk.11
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Feb 2010 15:12:58 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20100208224812.CBED7A87D1A@gemini.denx.de>
+References: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
+	<20100208224812.CBED7A87D1A@gemini.denx.de>
+Date: Tue, 9 Feb 2010 09:12:58 +1000
+Message-ID: <1d3f23371002081512vec499d1wcd0ae2ea34d41df9@mail.gmail.com>
+Subject: Re: simpleImage.XX and large kernels
+From: John Williams <john.williams@petalogix.com>
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Wolfgang,
 
-Hi all,
+On Tue, Feb 9, 2010 at 8:48 AM, Wolfgang Denk <wd@denx.de> wrote:
+>> I'm looking at the simpleImage.XXX make target (PPC 405/440), and it
+>> seems that by default the arch/powerpc/boot/wrapper script places the
+>> bootwrapper at 0x400000, effectively setting a limit on the maximum
+>> bootable kernel size.
+>>
+>> For various reasons we'd like to be able to put a fairly complete
+>> rootfs as an initramfs, which obviously blows past a 4Mbyte limit very
+>> quickly. =A0Short of adding a new 'platform' option and associated
+>> hackery through the powerpc/boot Makefiles and wrapper, is there a
+>> quick and clean way I can tell the boot wrapper to link at a higher
+>> address?
+>
+> Is there any specific reason why you want to use simpleImage, instead
+> of using a normal uImage either bundled with your ramdisk image as a
+> classic multifile image, or (recommended) as a FIT image?
 
-Last night's build of tip/master on powerpc produced these errors:
+Yes, there are a few reasons, though not necessarily very strong ones!
+ Although we'll normally be using u-boot, I don't want to make it a
+hard requirement.  simpleImage's ability to boot directly with a DTB
+already bundled is attractive in this regard.
 
-kernel/nmi_watchdog.c:33: error: redefinition of 'touch_nmi_watchdog'
-kernel/nmi_watchdog.c:59: error: 'nmi_watchdog_enabled' undeclared (first u=
-se in this function)
-kernel/nmi_watchdog.c:59: error: (Each undeclared identifier is reported on=
-ly once
-kernel/nmi_watchdog.c:59: error: for each function it appears in.)
-kernel/nmi_watchdog.c:109: error: implicit declaration of function 'die_nmi'
-kernel/nmi_watchdog.c:136: error: 'cpu_khz' undeclared (first use in this f=
-unction)
+Another reason is that for compatibility with our MicroBlaze flow
+(which also uses a simpleImage target, although a MicroBlaze
+simpleImage is actually vmlinux with the DTB stuffed into its own
+section).
 
-This was from the powerpc pseries_defconfig build (as well as the
-pamc32_defconfig, ppc6xx_defconfig and ppc64_defconfig builds).  Caused
-by commit 1fb9d6ad2766a1dd70d167552988375049a97f21 ("nmi_watchdog: Add
-new, generic implementation, using perf events") but exposed by commit
-84e478c6f1eb9c4bfa1fff2f8108e9a061b46428 ("nmi_watchdog: Config option to
-enable new nmi_watchdog").
+Also sometimes it's nice to have a single ELF or binary blob we can
+just push over JTAG straight to the target.  Having the DTB embedded
+simplifies this process, no need to download vmlinux and DTB
+separately, setup boot params etc.
 
-Full logs, configs: http://kisskb.ellerman.id.au/kisskb/branch/12/
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I like FIT and think it's an elegant solution, I'm just a bit
+reluctant to force its use.  For deeply embedded and flash constrained
+systems we sometimes have a requirement to bypass uboot and boot
+directly.
 
---Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd
-Content-Type: application/pgp-signature
+I may have to rethink the boot strategy eventually but in the short
+term, getting some control over simpleImage as per my original post
+would be a good first step.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Regards,
 
-iEYEARECAAYFAktwmRQACgkQjjKRsyhoI8zNbQCeMJzSrhHOO5x6ESgjQKBhCydi
-Mv0AmgJ7giKuY3VHDLzA6Ts9gr09w/jN
-=ukqN
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd--
+John
