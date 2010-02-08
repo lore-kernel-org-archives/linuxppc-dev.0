@@ -1,17 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 4D0BFB7CEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 09:48:16 +1100 (EST)
-To: John Williams <john.williams@petalogix.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: simpleImage.XX and large kernels
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
-References: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
-Date: Mon, 08 Feb 2010 23:48:12 +0100
-Message-Id: <20100208224812.CBED7A87D1A@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2CE1EB7CF1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  9 Feb 2010 10:07:08 +1100 (EST)
+Date: Tue, 9 Feb 2010 10:07:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: tip build problem on powerpc
+Message-Id: <20100209100700.81685ffe.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd"
+Cc: Don Zickus <dzickus@redhat.com>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,33 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear John Williams,
+--Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In message <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com> you wrote:
-> 
-> I'm looking at the simpleImage.XXX make target (PPC 405/440), and it
-> seems that by default the arch/powerpc/boot/wrapper script places the
-> bootwrapper at 0x400000, effectively setting a limit on the maximum
-> bootable kernel size.
-> 
-> For various reasons we'd like to be able to put a fairly complete
-> rootfs as an initramfs, which obviously blows past a 4Mbyte limit very
-> quickly.  Short of adding a new 'platform' option and associated
-> hackery through the powerpc/boot Makefiles and wrapper, is there a
-> quick and clean way I can tell the boot wrapper to link at a higher
-> address?
+Hi all,
 
-Is there any specific reason why you want to use simpleImage, instead
-of using a normal uImage either bundled with your ramdisk image as a
-classic multifile image, or (recommended) as a FIT image?
+Last night's build of tip/master on powerpc produced these errors:
 
-Best regards,
+kernel/nmi_watchdog.c:33: error: redefinition of 'touch_nmi_watchdog'
+kernel/nmi_watchdog.c:59: error: 'nmi_watchdog_enabled' undeclared (first u=
+se in this function)
+kernel/nmi_watchdog.c:59: error: (Each undeclared identifier is reported on=
+ly once
+kernel/nmi_watchdog.c:59: error: for each function it appears in.)
+kernel/nmi_watchdog.c:109: error: implicit declaration of function 'die_nmi'
+kernel/nmi_watchdog.c:136: error: 'cpu_khz' undeclared (first use in this f=
+unction)
 
-Wolfgang Denk
+This was from the powerpc pseries_defconfig build (as well as the
+pamc32_defconfig, ppc6xx_defconfig and ppc64_defconfig builds).  Caused
+by commit 1fb9d6ad2766a1dd70d167552988375049a97f21 ("nmi_watchdog: Add
+new, generic implementation, using perf events") but exposed by commit
+84e478c6f1eb9c4bfa1fff2f8108e9a061b46428 ("nmi_watchdog: Config option to
+enable new nmi_watchdog").
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It's all Klatchian to me.
-        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
+Full logs, configs: http://kisskb.ellerman.id.au/kisskb/branch/12/
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktwmRQACgkQjjKRsyhoI8zNbQCeMJzSrhHOO5x6ESgjQKBhCydi
+Mv0AmgJ7giKuY3VHDLzA6Ts9gr09w/jN
+=ukqN
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Feb_2010_10_07_00_+1100_dGQNYtNRg+qaRNfd--
