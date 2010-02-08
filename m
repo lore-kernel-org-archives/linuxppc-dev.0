@@ -1,20 +1,17 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 338CEB7CA1
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 09:24:01 +1100 (EST)
-Date: Tue, 9 Feb 2010 01:23:59 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] leds-gpio: Fix default state handling on OF platforms
-Message-ID: <20100208222359.GA1870@oksana.dev.rtsoft.ru>
-References: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
-	<20100208130455.8cb90ff1.akpm@linux-foundation.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 4D0BFB7CEE
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 09:48:16 +1100 (EST)
+To: John Williams <john.williams@petalogix.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: simpleImage.XX and large kernels
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100208130455.8cb90ff1.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, Trent Piepho <xyzzy@speakeasy.org>,
-	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@linux.intel.com>
-Reply-To: avorontsov@ru.mvista.com
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
+References: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
+Date: Mon, 08 Feb 2010 23:48:12 +0100
+Message-Id: <20100208224812.CBED7A87D1A@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 08, 2010 at 01:04:55PM -0800, Andrew Morton wrote:
-> On Fri, 5 Feb 2010 23:54:37 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+Dear John Williams,
+
+In message <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com> you wrote:
 > 
-> > The driver wrongly sets default state for LEDs that don't specify
-> > default-state property.
-[...]
-> Does this actually happen in any 2.6.33 driver code?
+> I'm looking at the simpleImage.XXX make target (PPC 405/440), and it
+> seems that by default the arch/powerpc/boot/wrapper script places the
+> bootwrapper at 0x400000, effectively setting a limit on the maximum
+> bootable kernel size.
+> 
+> For various reasons we'd like to be able to put a fairly complete
+> rootfs as an initramfs, which obviously blows past a 4Mbyte limit very
+> quickly.  Short of adding a new 'platform' option and associated
+> hackery through the powerpc/boot Makefiles and wrapper, is there a
+> quick and clean way I can tell the boot wrapper to link at a higher
+> address?
 
-Well, the code that I fixed constructs Linux structures out of
-OpenFirmware device tree. OF tree is somewhat similar to ACPI or
-DMI tables in x86 world. So, in general, OF isn't kernel version
-dependant.
+Is there any specific reason why you want to use simpleImage, instead
+of using a normal uImage either bundled with your ramdisk image as a
+classic multifile image, or (recommended) as a FIT image?
 
-(We have an in-tree depot of device trees for reference/devel boards
-in arch/powerpc/boot/dts/, but this is surely not a conclusive
-list of device trees in the wild.)
+Best regards,
 
-> If so, we might
-> want to merge this into 2.6.33.  And perhaps earlier kernels.  Or not. 
-> There's no way for me to tell :(
-
-Since the fix is trivial, I'd say 2.6.33. But the issue isn't major,
-so no big deal if it won't make it.
-
-Thanks!
+Wolfgang Denk
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It's all Klatchian to me.
+        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
