@@ -1,21 +1,24 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 70AD4B7D01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  8 Feb 2010 15:53:37 +1100 (EST)
-Date: Mon, 8 Feb 2010 05:53:19 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Only print clockevent settings once
-Message-ID: <20100208045319.GA1405@pengutronix.de>
-References: <20100207222801.GE32246@kryten>
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 8 Feb 2010 16:11:04 +1100
+From: Anton Blanchard <anton@samba.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] Restrict stack space reservation to rlimit
+Message-ID: <20100208051104.GL32246@kryten>
+References: <10125.1265451732@neuling.org> <18033.1265587672@neuling.org>
+	<20100208140323.FB52.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
-In-Reply-To: <20100207222801.GE32246@kryten>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100208140323.FB52.A69D9226@jp.fujitsu.com>
+Cc: Michael Neuling <mikey@neuling.org>, stable@kernel.org, aeb@cwi.nl,
+	James Morris <jmorris@namei.org>, miltonm@bga.com,
+	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	WANG Cong <xiyou.wangcong@gmail.com>,
+	linux-fsdevel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+ 
+Hi,
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Why do we need page size independent stack size? It seems to have
+> compatibility breaking risk.
 
-On Mon, Feb 08, 2010 at 09:28:01AM +1100, Anton Blanchard wrote:
->=20
-> The clockevent multiplier and shift is useful information, but we
-> only need to print it once.
->=20
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->=20
-> Index: powerpc.git/arch/powerpc/kernel/time.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- powerpc.git.orig/arch/powerpc/kernel/time.c	2010-02-05 14:57:48.83971=
-6602 +1100
-> +++ powerpc.git/arch/powerpc/kernel/time.c	2010-02-05 14:57:53.057212067 =
-+1100
-> @@ -930,13 +930,17 @@ static void __init setup_clockevent_mult
-> =20
->  static void register_decrementer_clockevent(int cpu)
->  {
-> +	static int printed =3D 0;
->  	struct clock_event_device *dec =3D &per_cpu(decrementers, cpu).event;
-> =20
->  	*dec =3D decrementer_clockevent;
->  	dec->cpumask =3D cpumask_of(cpu);
-> =20
-> -	printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
-> -	       dec->name, dec->mult, dec->shift, cpu);
-> +	if (!printed) {
-> +		printed =3D 1;
-> +		printk(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
-> +		       dec->name, dec->mult, dec->shift, cpu);
-> +	}
+I don't think so. The current behaviour is clearly wrong, we dont need a
+16x larger stack just because you went from a 4kB to a 64kB base page
+size. The user application stack usage is the same in both cases.
 
-What about printk_once from kernel.h?
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---xHFwDpU9dbj6ez1V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktvmL8ACgkQD27XaX1/VRv+iQCePTJJfOw1Ib5wcYrIMs44t5AG
-PzIAniOxiNAgjPPfPiFBuAsA3671FvkX
-=SLV2
------END PGP SIGNATURE-----
-
---xHFwDpU9dbj6ez1V--
+Anton
