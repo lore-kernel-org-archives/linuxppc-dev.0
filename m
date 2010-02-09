@@ -1,20 +1,21 @@
-Return-Path: <john.williams@petalogix.com>
-Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
-	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id 28778B7D00
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Feb 2010 10:13:00 +1100 (EST)
-Received: by pzk15 with SMTP id 15so2505966pzk.11
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Feb 2010 15:12:58 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20100208224812.CBED7A87D1A@gemini.denx.de>
-References: <1d3f23371002080247j17138famcf4e4aebc1ae04f5@mail.gmail.com>
-	<20100208224812.CBED7A87D1A@gemini.denx.de>
-Date: Tue, 9 Feb 2010 09:12:58 +1000
-Message-ID: <1d3f23371002081512vec499d1wcd0ae2ea34d41df9@mail.gmail.com>
-Subject: Re: simpleImage.XX and large kernels
-From: John Williams <john.williams@petalogix.com>
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D9718B7CE8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  9 Feb 2010 11:55:26 +1100 (EST)
+Subject: Re: [PATCH 2/4] Fix G5 thermal shutdown
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+In-Reply-To: <20100205135216.GH12001@hansolo.jdub.homelinux.org>
+References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
+	<20100205135216.GH12001@hansolo.jdub.homelinux.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 11:55:05 +1100
+Message-ID: <1265676905.8287.254.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +25,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfgang,
+On Fri, 2010-02-05 at 08:52 -0500, Josh Boyer wrote:
+> This changes the thresholds for the liquid cooled G5 thermal
+> shutdown mechanism to prevent an errant shutdown.
+> 
+> This has been carried since about Fedora Core 5.  I have no idea
+> if it's really needed or not.
 
-On Tue, Feb 9, 2010 at 8:48 AM, Wolfgang Denk <wd@denx.de> wrote:
->> I'm looking at the simpleImage.XXX make target (PPC 405/440), and it
->> seems that by default the arch/powerpc/boot/wrapper script places the
->> bootwrapper at 0x400000, effectively setting a limit on the maximum
->> bootable kernel size.
->>
->> For various reasons we'd like to be able to put a fairly complete
->> rootfs as an initramfs, which obviously blows past a 4Mbyte limit very
->> quickly. =A0Short of adding a new 'platform' option and associated
->> hackery through the powerpc/boot Makefiles and wrapper, is there a
->> quick and clean way I can tell the boot wrapper to link at a higher
->> address?
->
-> Is there any specific reason why you want to use simpleImage, instead
-> of using a normal uImage either bundled with your ramdisk image as a
-> classic multifile image, or (recommended) as a FIT image?
+Can we have a SoB ?
 
-Yes, there are a few reasons, though not necessarily very strong ones!
- Although we'll normally be using u-boot, I don't want to make it a
-hard requirement.  simpleImage's ability to boot directly with a DTB
-already bundled is attractive in this regard.
+Cheers,
+Ben.
 
-Another reason is that for compatibility with our MicroBlaze flow
-(which also uses a simpleImage target, although a MicroBlaze
-simpleImage is actually vmlinux with the DTB stuffed into its own
-section).
-
-Also sometimes it's nice to have a single ELF or binary blob we can
-just push over JTAG straight to the target.  Having the DTB embedded
-simplifies this process, no need to download vmlinux and DTB
-separately, setup boot params etc.
-
-I like FIT and think it's an elegant solution, I'm just a bit
-reluctant to force its use.  For deeply embedded and flash constrained
-systems we sometimes have a requirement to bypass uboot and boot
-directly.
-
-I may have to rethink the boot strategy eventually but in the short
-term, getting some control over simpleImage as per my original post
-would be a good first step.
-
-Regards,
-
-John
+> ---
+> 
+> --- linux-2.6.15/drivers/macintosh/therm_pm72.c.orig	2006-04-02 21:34:48.000000000 +0100
+> +++ linux-2.6.15/drivers/macintosh/therm_pm72.c	2006-04-02 22:33:27.000000000 +0100
+> @@ -924,10 +925,16 @@ static void do_monitor_cpu_combined(void
+>  		printk(KERN_WARNING "Warning ! Temperature way above maximum (%d) !\n",
+>  		       temp_combi >> 16);
+>  		state0->overtemp += CPU_MAX_OVERTEMP / 4;
+> -	} else if (temp_combi > (state0->mpu.tmax << 16))
+> +	} else if (temp_combi > (state0->mpu.tmax << 16)) {
+>  		state0->overtemp++;
+> -	else
+> +		printk(KERN_WARNING "Temperature %d above max %d. overtemp %d\n",
+> +		       temp_combi >> 16, state0->mpu.tmax, state0->overtemp);
+> +	} else {
+> +		if (state0->overtemp)
+> +			printk(KERN_WARNING "Temperature back down to %d\n",
+> +			       temp_combi >> 16);
+>  		state0->overtemp = 0;
+> +	}
+>  	if (state0->overtemp >= CPU_MAX_OVERTEMP)
+>  		critical_state = 1;
+>  	if (state0->overtemp > 0) {
+> @@ -999,10 +1015,16 @@ static void do_monitor_cpu_split(struct 
+>  		       " (%d) !\n",
+>  		       state->index, temp >> 16);
+>  		state->overtemp += CPU_MAX_OVERTEMP / 4;
+> -	} else if (temp > (state->mpu.tmax << 16))
+> +	} else if (temp > (state->mpu.tmax << 16)) {
+>  		state->overtemp++;
+> -	else
+> +		printk(KERN_WARNING "CPU %d temperature %d above max %d. overtemp %d\n",
+> +		       state->index, temp >> 16, state->mpu.tmax, state->overtemp);
+> +	} else {
+> +		if (state->overtemp)
+> +			printk(KERN_WARNING "CPU %d temperature back down to %d\n",
+> +			       state->index, temp >> 16);
+>  		state->overtemp = 0;
+> +	}
+>  	if (state->overtemp >= CPU_MAX_OVERTEMP)
+>  		critical_state = 1;
+>  	if (state->overtemp > 0) {
+> @@ -1061,10 +1097,16 @@ static void do_monitor_cpu_rack(struct c
+>  		       " (%d) !\n",
+>  		       state->index, temp >> 16);
+>  		state->overtemp = CPU_MAX_OVERTEMP / 4;
+> -	} else if (temp > (state->mpu.tmax << 16))
+> +	} else if (temp > (state->mpu.tmax << 16)) {
+>  		state->overtemp++;
+> -	else
+> +		printk(KERN_WARNING "CPU %d temperature %d above max %d. overtemp %d\n",
+> +		       state->index, temp >> 16, state->mpu.tmax, state->overtemp);
+> +	} else {
+> +		if (state->overtemp)
+> +			printk(KERN_WARNING "CPU %d temperature back down to %d\n",
+> +			       state->index, temp >> 16);
+>  		state->overtemp = 0;
+> +	}
+>  	if (state->overtemp >= CPU_MAX_OVERTEMP)
+>  		critical_state = 1;
+>  	if (state->overtemp > 0) {
+> --- linux-2.6.15/drivers/macintosh/therm_pm72.h~	2006-01-03 03:21:10.000000000 +0000
+> +++ linux-2.6.15/drivers/macintosh/therm_pm72.h	2006-04-02 22:25:58.000000000 +0100
+> @@ -243,7 +243,7 @@ struct dimm_pid_state
+>  #define CPU_TEMP_HISTORY_SIZE		2
+>  #define CPU_POWER_HISTORY_SIZE		10
+>  #define CPU_PID_INTERVAL		1
+> -#define CPU_MAX_OVERTEMP		30
+> +#define CPU_MAX_OVERTEMP		90
+>  
+>  #define CPUA_PUMP_RPM_INDEX		7
+>  #define CPUB_PUMP_RPM_INDEX		8
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
