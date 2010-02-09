@@ -1,18 +1,22 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B71B618.6020807@grandegger.com>
-Date: Tue, 09 Feb 2010 20:23:04 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v4 3/3] powerpc: doc/dts-bindings: update doc of FSL I2C
-	bindings
-References: <1264685141-26391-1-git-send-email-wg@grandegger.com>	<1264685141-26391-2-git-send-email-wg@grandegger.com>	<1264685141-26391-3-git-send-email-wg@grandegger.com>	<1264685141-26391-4-git-send-email-wg@grandegger.com>	<fa686aa41002090950w2c3cd008k47784089dd3417d7@mail.gmail.com>
-	<4B71AFFC.3010301@grandegger.com>
-In-Reply-To: <4B71AFFC.3010301@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wolfgang Grandegger <wg@denx.de>, Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 04842B7D54
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 07:13:43 +1100 (EST)
+Date: Tue, 09 Feb 2010 12:13:56 -0800 (PST)
+Message-Id: <20100209.121356.216640014.davem@davemloft.net>
+To: agust@denx.de
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100209152317.5303b1b3@wker>
+References: <4B5871F2.9090005@grandegger.com>
+	<20100121.180311.228791894.davem@davemloft.net>
+	<20100209152317.5303b1b3@wker>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: kosmo@semihalf.com, dzu@denx.de, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, wd@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,71 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfgang Grandegger wrote:
-> Hi Grant,
-> 
-> Grant Likely wrote:
->> On Thu, Jan 28, 2010 at 6:25 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->>> From: Wolfgang Grandegger <wg@denx.de>
->>>
->>> This patch adds the MPC5121 to the list of supported devices,
->>> enhances the doc of the "clock-frequency" property and removes
->>> the obsolete "cell-index" property from the example nodes.
->>> Furthermore and example for the MPC5121 has been added.
->>>
->>> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
->> Thanks Wolfgang.  Comments below.
->>
->>> ---
->>>  Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++++++++++++++++++----
->>>  1 files changed, 24 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/Documentation/powerpc/dts-bindings/fsl/i2c.txt b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
->>> index b6d2e21..2f62dae 100644
->>> --- a/Documentation/powerpc/dts-bindings/fsl/i2c.txt
->>> +++ b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
->>> @@ -9,8 +9,9 @@ Recommended properties :
->>>
->>>  - compatible : compatibility list with 2 entries, the first should
->>>    be "fsl,CHIP-i2c" where CHIP is the name of a compatible processor,
->>> -   e.g. mpc8313, mpc8543, mpc8544, mpc5200 or mpc5200b. The second one
->>> -   should be "fsl-i2c".
->>> +   e.g. mpc8313, mpc8543, mpc8544, mpc5121, mpc5200 or mpc5200b. The
->>> +   second one should be "fsl-i2c". For the mpc5121, an additional node
->>> +   "fsl,mpc5121-i2c-ctrl" is required as shown in the example below.
->> While you're editing this line; drop the requirement for the second
->> value to be 'fsl-i2c'.  We don't use it anymore, and only preserve it
->> for backwards compatibility with old trees.
-> 
-> OK.
-> 
->>>  - interrupts : <a b> where a is the interrupt number and b is a
->>>    field that represents an encoding of the sense and level
->>>    information for the interrupt.  This should be encoded based on
->>> @@ -20,29 +21,46 @@ Recommended properties :
->>>    services interrupts for this device.
->>>  - fsl,preserve-clocking : boolean; if defined, the clock settings
->>>    from the bootloader are preserved (not touched).
->>> - - clock-frequency : desired I2C bus clock frequency in Hz.
->>> + - clock-frequency : desired I2C bus clock frequency in Hz.  If this
->>> +   property and "fsl,preserve-clocking" is not defined, a safe fixed
->>> +   clock divider value is used (resulting in a small clock frequency).
->> Nah, leave this as is.  Don't make it sound like omitting both
->> properties is a valid option.  The driver may (and should!) handle the
->> situation gracefully, but that fact does not need to be documented.
-> 
-> The safe value is not a good choice, indeed. Then it will also change
-> MPC_I2C_CLOCK_SAFE to MPC_I2C_CLOCK_LEGACY in i2c-mpc.c.
-> 
-> I will also fix the other issues you commented on.
+From: Anatolij Gustschin <agust@denx.de>
+Date: Tue, 9 Feb 2010 15:23:17 +0100
 
-And I will also remove the "device_type" line from:
+> In my understanding, in the ESP scsi driver the set of defines for
+> the register offsets is common for all chip drivers. The chip driver
+> methods for register access translate the offsets because the
+> registers on some chips are at different intervals (4-byte, 1-byte,
+> 16-byte for mac_esp.c). But the register order is the same for
+> different chips.
+> 
+> In our case non only the register order is not the same for 8xx
+> FEC and 5121 FEC, but there are also other differences, different
+> reserved areas between several registers, some registers are
+> available only on 8xx and some only on 5121.
 
- -------------
- Required properties :
+That only means you would need to use a table based register address
+translation scheme, rather than a simple calculation.  Something
+like:
 
- - device_type : Should be "i2c"
- - reg : Offset and length of the register set for the device
- -------------
+static unsigned int chip_xxx_table[] =
+{
+	[GENERIC_REG_FOO]	 = CHIP_XXX_FOO,
+	...
+};
 
-Wolfgang.
+static u32 chip_xxx_read_reg(struct chip *p, unsigned int reg)
+{
+	unsigned int reg_off = chip_xxx_table[reg];
+
+	return readl(p->regs + reg_off);
+}
+
+And this table can have special tokens in entries for
+registers which do not exist on a chip, so you can trap
+attempted access to them in these read/write handlers.
+
+Please stop looking for excuses to fork this driver, a
+unified driver I think can be done cleanly.
