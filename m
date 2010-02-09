@@ -1,19 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
-	[207.46.51.75]) by ozlabs.org (Postfix) with ESMTP id 9044EB7D4D
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 10:01:01 +1100 (EST)
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 382C2B7D49
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 10:24:12 +1100 (EST)
+Date: Wed, 10 Feb 2010 00:24:06 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH v3 02/11] powerpc/mpc5121: Add machine restart support
+Message-ID: <20100209232406.GA21807@pengutronix.de>
+References: <1265377377-29327-1-git-send-email-agust@denx.de>
+	<1265377377-29327-3-git-send-email-agust@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: [PATCH] [V3] net: emaclite: adding MDIO and phy lib support
-Date: Tue, 9 Feb 2010 16:00:04 -0700
-In-Reply-To: <1d3f23371002091430hb550153u602c8e7c010381b9@mail.gmail.com>
-References: <2ea396ca-3014-40f4-86ac-0e9f1aa82b5b@SG2EHSMHS005.ehs.local>
-	<1d3f23371002091430hb550153u602c8e7c010381b9@mail.gmail.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "John Williams" <john.williams@petalogix.com>
-Message-ID: <ad1b9321-b7ad-47a6-93ca-ca260ff2a66d@SG2EHSMHS011.ehs.local>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Sadanand Mutyala <sadanan@xilinx.com>, jgarzik@pobox.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
+In-Reply-To: <1265377377-29327-3-git-send-email-agust@denx.de>
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,142 +26,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: John Williams [mailto:john.williams@petalogix.com]
-> Sent: Tuesday, February 09, 2010 3:30 PM
-> To: John Linn
-> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org; jgarzik@pobox.com; g=
-rant.likely@secretlab.ca;
-> jwboyer@linux.vnet.ibm.com; Sadanand Mutyala
-> Subject: Re: [PATCH] [V3] net: emaclite: adding MDIO and phy lib support
-> =
 
-> Hi John,
-> =
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Sorry If I'm painting bike-sheds here, just one tiny tweak might be in
-> order to standardise your mutex_unlock exit path:
-> =
+Hi,
 
-> > +static int xemaclite_mdio_read(struct mii_bus *bus, int phy_id, int re=
-g)
-> > +{
-> > + =A0 =A0 =A0 struct net_local *lp =3D bus->priv;
-> > + =A0 =A0 =A0 u32 ctrl_reg;
-> > + =A0 =A0 =A0 u32 rc;
-> > +
-> > + =A0 =A0 =A0 mutex_lock(&lp->mdio_mutex);
-> > +
-> > + =A0 =A0 =A0 if (xemaclite_mdio_wait(lp)) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&lp->mdio_mutex);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ETIMEDOUT;
-> > + =A0 =A0 =A0 }
-> =
+On Fri, Feb 05, 2010 at 02:42:48PM +0100, Anatolij Gustschin wrote:
+> Add reset module registers representation and
+> machine restart callback for mpc5121 platform.
+>=20
 
-> [snip]
-> =
+Two comments:
 
-> =
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+> Changes since v2:
+>  - call mpc512x_restart_init() explicitely from platform
+>    init code
+>=20
+> Changes since v1:
+>  - use 'struct mpc512x_reset_module *' type for 'reset_module_base'
+>  - remove empty line
+>  - remove leftover colon and use pr_err() instead of printk.
+>=20
+>  arch/powerpc/include/asm/mpc5xxx.h            |   14 +++++++++-
+>  arch/powerpc/platforms/512x/mpc5121_ads.c     |    1 +
+>  arch/powerpc/platforms/512x/mpc5121_generic.c |    1 +
+>  arch/powerpc/platforms/512x/mpc512x.h         |    1 +
+>  arch/powerpc/platforms/512x/mpc512x_shared.c  |   34 +++++++++++++++++++=
+++++++
+>  5 files changed, 50 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/mpc5xxx.h b/arch/powerpc/include/as=
+m/mpc5xxx.h
+> index 5ce9c5f..0004986 100644
+> --- a/arch/powerpc/include/asm/mpc5xxx.h
+> +++ b/arch/powerpc/include/asm/mpc5xxx.h
+> @@ -18,5 +18,17 @@
+> =20
+>  extern unsigned long mpc5xxx_get_bus_frequency(struct device_node *node);
+> =20
+> -#endif /* __ASM_POWERPC_MPC5xxx_H__ */
+> +/* MPC512x Reset module registers */
+> +struct mpc512x_reset_module {
+> +	u32	rcwlr;	/* Reset Configuration Word Low Register */
+> +	u32	rcwhr;	/* Reset Configuration Word High Register */
+> +	u32	reserved1;
+> +	u32	reserved2;
+> +	u32	rsr;	/* Reset Status Register */
+> +	u32	rmr;	/* Reset Mode Register */
+> +	u32	rpr;	/* Reset Protection Register */
+> +	u32	rcr;	/* Reset Control Register */
+> +	u32	rcer;	/* Reset Control Enable Register */
+> +};
+> =20
+> +#endif /* __ASM_POWERPC_MPC5xxx_H__ */
+> diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/pla=
+tforms/512x/mpc5121_ads.c
+> index 0f8f2e9..ee6ae12 100644
+> --- a/arch/powerpc/platforms/512x/mpc5121_ads.c
+> +++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+> @@ -68,4 +68,5 @@ define_machine(mpc5121_ads) {
+>  	.init_IRQ		=3D mpc5121_ads_init_IRQ,
+>  	.get_irq		=3D ipic_get_irq,
+>  	.calibrate_decr		=3D generic_calibrate_decr,
+> +	.restart		=3D mpc512x_restart,
+>  };
+> diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc=
+/platforms/512x/mpc5121_generic.c
+> index 9b8c9b0..a6c0e3a 100644
+> --- a/arch/powerpc/platforms/512x/mpc5121_generic.c
+> +++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+> @@ -55,4 +55,5 @@ define_machine(mpc5121_generic) {
+>  	.init_IRQ		=3D mpc512x_init_IRQ,
+>  	.get_irq		=3D ipic_get_irq,
+>  	.calibrate_decr		=3D generic_calibrate_decr,
+> +	.restart		=3D mpc512x_restart,
+>  };
+> diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platfor=
+ms/512x/mpc512x.h
+> index ac3da1a..b2daca0 100644
+> --- a/arch/powerpc/platforms/512x/mpc512x.h
+> +++ b/arch/powerpc/platforms/512x/mpc512x.h
+> @@ -15,4 +15,5 @@ extern void __init mpc512x_init_IRQ(void);
+>  extern void __init mpc512x_init(void);
+>  extern int __init mpc5121_clk_init(void);
+>  void __init mpc512x_declare_of_platform_devices(void);
+> +extern void mpc512x_restart(char *cmd);
+>  #endif				/* __MPC512X_H__ */
+> diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/=
+platforms/512x/mpc512x_shared.c
+> index b683165..ac0400e 100644
+> --- a/arch/powerpc/platforms/512x/mpc512x_shared.c
+> +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+> @@ -21,9 +21,42 @@
+>  #include <asm/ipic.h>
+>  #include <asm/prom.h>
+>  #include <asm/time.h>
+> +#include <asm/mpc5xxx.h>
+> =20
+>  #include "mpc512x.h"
+> =20
+> +static struct mpc512x_reset_module __iomem *reset_module_base;
+> +
+> +static int __init mpc512x_restart_init(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,mpc5121-reset");
+> +	if (!np)
+> +		return -1;
+> +
+> +	reset_module_base =3D of_iomap(np, 0);
+> +	of_node_put(np);
+> +
+> +	return 0;
+> +}
+> +
+> +void mpc512x_restart(char *cmd)
+> +{
+> +	struct mpc512x_reset_module *rm =3D reset_module_base;
 
-> > + =A0 =A0 =A0 if (xemaclite_mdio_wait(lp)) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&lp->mdio_mutex);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ETIMEDOUT;
-> > + =A0 =A0 =A0 }
-> =
+Why not using reset_module_base directly?
 
-> [snip]
-> =
+> +
+> +	if (rm) {
+> +		/* Enable software reset "RSTE" */
+> +		out_be32(&rm->rpr, 0x52535445);
+> +		/* Set software hard reset */
+> +		out_be32(&rm->rcr, 0x2);
+> +	} else {
+> +		pr_err("Restart module not mapped.\n");
+> +	}
+> +	for (;;)
+> +		;
+> +}
+> +
+>  void __init mpc512x_init_IRQ(void)
+>  {
+>  	struct device_node *np;
+> @@ -62,4 +95,5 @@ void __init mpc512x_init(void)
+>  {
+>  	mpc512x_declare_of_platform_devices();
+>  	mpc5121_clk_init();
+> +	mpc512x_restart_init();
 
-> =
+If the return value is not checked here, you could as well make the function
+void. (Not much one could do in the error-case, too.)
 
-> > + =A0 =A0 =A0 dev_dbg(&lp->ndev->dev,
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 "xemaclite_mdio_read(phy_id=3D%i, reg=3D%=
-x) =3D=3D %x\n",
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_id, reg, rc);
-> > +
-> > + =A0 =A0 =A0 return rc;
-> =
+>  }
+> --=20
 
-> Can this be better expressed like this:
-> =
+Regards,
 
-> my_func() {
->   mutex_lock()
-> ..
-> =
+   Wolfram
 
->   if(some error) {
->     rc=3D-ETIMEDOUT;
->     goto out_unlock;
->   }
->   ...
-> =
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
->   /* success path */
->   rc=3D0;
-> ..
-> out_unlock:
->   mutex_unlock()
->   return rc;
-> }
-> =
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> =
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> Is this style still favoured in driver exit paths?
+iEYEARECAAYFAktx7pYACgkQD27XaX1/VRtA3ACgr2wF/ZxAJ7MIP9gmGs90taJ1
+LLwAnA4UYpFDNRiDNiYWtmjcLFZTxvL/
+=JqWB
+-----END PGP SIGNATURE-----
 
-It looks to me like the mutex is not needed in the driver mdio functions as=
- there's a mutex in the mdiobus functions already.
-
-Am I wrong about that?
-
-Thanks,
-John
-
->From phy/mdio_bus.c
-
-int mdiobus_read(struct mii_bus *bus, int addr, u16 regnum)
-{
-	int retval;
-
-	BUG_ON(in_interrupt());
-
-	mutex_lock(&bus->mdio_lock);
-	retval =3D bus->read(bus, addr, regnum);
-	mutex_unlock(&bus->mdio_lock);
-
-	return retval;
-}
-EXPORT_SYMBOL(mdiobus_read);
-
-int mdiobus_write(struct mii_bus *bus, int addr, u16 regnum, u16 val)
-{
-	int err;
-
-	BUG_ON(in_interrupt());
-
-	mutex_lock(&bus->mdio_lock);
-	err =3D bus->write(bus, addr, regnum, val);
-	mutex_unlock(&bus->mdio_lock);
-
-	return err;
-}
-EXPORT_SYMBOL(mdiobus_write);
-
-> =
-
-> Thanks,
-> =
-
-> John
-> --
-> John Williams, PhD, B.Eng, B.IT
-> PetaLogix - Linux Solutions for a Reconfigurable World
-> w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+--WIyZ46R2i8wDzkSu--
