@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57ABBB7CFD
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C58A8B7D01
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  9 Feb 2010 15:41:12 +1100 (EST)
-Date: Tue, 9 Feb 2010 15:41:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
+	Tue,  9 Feb 2010 16:18:14 +1100 (EST)
+Received: from mx2.mail.elte.hu ([157.181.151.9])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1Nehdp-0000Eu-Iz
+	from <mingo@elte.hu>
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Feb 2010 05:24:01 +0100
+Date: Tue, 9 Feb 2010 05:22:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: tip build problem on powerpc
-Message-Id: <20100209154106.ff295472.sfr@canb.auug.org.au>
-In-Reply-To: <20100209042238.GB11280@elte.hu>
+Message-ID: <20100209042238.GB11280@elte.hu>
 References: <20100209100700.81685ffe.sfr@canb.auug.org.au>
-	<20100209042238.GB11280@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__9_Feb_2010_15_41_06_+1100_/=2Grjw_GMrucSpA"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100209100700.81685ffe.sfr@canb.auug.org.au>
 Cc: Peter Zijlstra <peterz@infradead.org>, Don Zickus <dzickus@redhat.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	ppc-dev <linuxppc-dev@lists.ozlabs.org>, "H. Peter Anvin" <hpa@zytor.com>
@@ -27,36 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__9_Feb_2010_15_41_06_+1100_/=2Grjw_GMrucSpA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-On Tue, 9 Feb 2010 05:22:38 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> yep, i know that already from the -tip cross build tests and reported it =
-to=20
-> Don yesterday. Do you boot -tip or only build test it? If you use -tip=20
-> personally then you can simply disable CONFIG_NMI_WATCHDOG.
+> Hi all,
+> 
+> Last night's build of tip/master on powerpc produced these errors:
+> 
+> kernel/nmi_watchdog.c:33: error: redefinition of 'touch_nmi_watchdog'
+> kernel/nmi_watchdog.c:59: error: 'nmi_watchdog_enabled' undeclared (first use in this function)
+> kernel/nmi_watchdog.c:59: error: (Each undeclared identifier is reported only once
+> kernel/nmi_watchdog.c:59: error: for each function it appears in.)
+> kernel/nmi_watchdog.c:109: error: implicit declaration of function 'die_nmi'
+> kernel/nmi_watchdog.c:136: error: 'cpu_khz' undeclared (first use in this function)
 
-OK, good.  I just build test.
+yep, i know that already from the -tip cross build tests and reported it to 
+Don yesterday. Do you boot -tip or only build test it? If you use -tip 
+personally then you can simply disable CONFIG_NMI_WATCHDOG.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Thanks,
 
---Signature=_Tue__9_Feb_2010_15_41_06_+1100_/=2Grjw_GMrucSpA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktw52IACgkQjjKRsyhoI8ySPQCgkr0aHLMAU2WGBZL+6jPyOSIb
-8ogAoIc62EKRAQP1456Y5MYDX8bgb/o4
-=TKLG
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Feb_2010_15_41_06_+1100_/=2Grjw_GMrucSpA--
+	Ingo
