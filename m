@@ -1,18 +1,19 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id C4D34B7D8E
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 06:10:55 +1100 (EST)
-Date: Tue, 9 Feb 2010 22:10:53 +0300
+	by ozlabs.org (Postfix) with SMTP id 526E3B7D5D
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 06:14:28 +1100 (EST)
+Date: Tue, 9 Feb 2010 22:14:27 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/3] of: Introduce safe accessors for node->data
-Message-ID: <20100209191053.GA16560@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 3/3] of/gpio: Introduce of_put_gpio(), add ref counting
+	for OF GPIO chips
+Message-ID: <20100209191427.GA18263@oksana.dev.rtsoft.ru>
 References: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
-	<20100205205043.GB4178@oksana.dev.rtsoft.ru>
-	<fa686aa41002090925q30f362d6x4d14894a72439125@mail.gmail.com>
+	<20100205205045.GC4178@oksana.dev.rtsoft.ru>
+	<fa686aa41002090928o6911d095ydca1e1e670a0fc22@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa41002090925q30f362d6x4d14894a72439125@mail.gmail.com>
+In-Reply-To: <fa686aa41002090928o6911d095ydca1e1e670a0fc22@mail.gmail.com>
 Cc: Michal Simek <monstr@monstr.eu>,
 	David Brownell <dbrownell@users.sourceforge.net>,
 	devicetree-discuss@lists.ozlabs.org,
@@ -28,43 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 09, 2010 at 10:25:22AM -0700, Grant Likely wrote:
-> On Fri, Feb 5, 2010 at 1:50 PM, Anton Vorontsov
-> <avorontsov@ru.mvista.com> wrote:
-> > Platform code use node->data to store some private information
-> > associated with a node.
-> >
-> > Previously there was no need for any locks and accessors since we were
-> > initializing the data mostly at boot time and never modified it later.
-> >
-> > Though, nowadays OF GPIO infrastructure supports GPIO chips detaching,
-> > so to handle this correctly we have to introduce locking for the
-> > node->data field.
-> 
-> I'm not convinced this is needed.  What's wrong with using the
-> whole-tree devtree_lock?
+On Tue, Feb 09, 2010 at 10:28:15AM -0700, Grant Likely wrote:
+[...]
+> Rather than having a lock at the device tree data pointer level which
+> mixes usage with potentially many other drivers; wouldn't it make more
+> sense to use a mutex at the of_gc subsystem context?
 
-Why are you concerned? It doesn't add much of any footprint.
+I don't think so.
 
-$ grep -c { -r arch/powerpc/boot/dts/ | cut -d: -f2 | sort -n | tail -n1
-84
+of_gc = np->data;
+lock(of_gc); (or lock(devtree))
+<do something with of_gc>
 
-So far we have max 84 nodes, so it's a few hundreds of bytes for all
-the dev tree.
+doesn't provide us what we need, i.e. it doesn't guarantee that
+np->data (of_gc) is still alive.
 
-Anyway, yes, we can use the devtree lock. Though, this will require a
-bit more modifications, and I'm not sure if it's a great idea in
-general (i.e. using the global lock in contrast to fine grained
-locking).
+And here:
 
-The thing is that you can't use most of the of_ functions when you
-hold the devtree lock (IIRC, rwlock has the same restrictions as a
-spinlock, so you can't nest these locks).
+lock(np->data); (or lock(devtree))
+of_gc = np->data;
+lock(of_gc);
+<do something with of_gc>
 
-I can try to rework OF GPIO calls so that they won't require of_
-calls when they hold the lock, and let's see how it'll look like.
+The second lock becomes useless (unless you also refcount np->data
+usage and can drop the devtree/np->data lock, and grab some other
+kind of lock, e.g. mutex, but this is silly).
 
-Thanks!
+Thanks,
 
 -- 
 Anton Vorontsov
