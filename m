@@ -1,20 +1,17 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A8D35B7D6F
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 20:17:14 +1100 (EST)
-Message-ID: <4B72794A.9010805@grandegger.com>
-Date: Wed, 10 Feb 2010 10:15:54 +0100
+Return-Path: <wg@denx.de>
 From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
-	fs_enet driver
-References: <4B5871F2.9090005@grandegger.com>	<20100121.180311.228791894.davem@davemloft.net>	<20100209152317.5303b1b3@wker>
-	<20100209.121356.216640014.davem@davemloft.net>
-In-Reply-To: <20100209.121356.216640014.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	agust@denx.de, kosmo@semihalf.com
+To: Linux-i2c@vger.kernel.org
+Subject: [PATCH v6 4/4] powerpc: doc/dts-bindings: update doc of FSL I2C
+	bindings
+Date: Wed, 10 Feb 2010 11:05:30 +0100
+Message-Id: <1265796330-15976-5-git-send-email-wg@grandegger.com>
+In-Reply-To: <1265796330-15976-4-git-send-email-wg@grandegger.com>
+References: <1265796330-15976-1-git-send-email-wg@grandegger.com>
+	<1265796330-15976-2-git-send-email-wg@grandegger.com>
+	<1265796330-15976-3-git-send-email-wg@grandegger.com>
+	<1265796330-15976-4-git-send-email-wg@grandegger.com>
+Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
+	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +21,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+From: Wolfgang Grandegger <wg@denx.de>
 
-David Miller wrote:
-> From: Anatolij Gustschin <agust@denx.de>
-> Date: Tue, 9 Feb 2010 15:23:17 +0100
-> 
->> In my understanding, in the ESP scsi driver the set of defines for
->> the register offsets is common for all chip drivers. The chip driver
->> methods for register access translate the offsets because the
->> registers on some chips are at different intervals (4-byte, 1-byte,
->> 16-byte for mac_esp.c). But the register order is the same for
->> different chips.
->>
->> In our case non only the register order is not the same for 8xx
->> FEC and 5121 FEC, but there are also other differences, different
->> reserved areas between several registers, some registers are
->> available only on 8xx and some only on 5121.
-> 
-> That only means you would need to use a table based register address
-> translation scheme, rather than a simple calculation.  Something
-> like:
-> 
-> static unsigned int chip_xxx_table[] =
-> {
-> 	[GENERIC_REG_FOO]	 = CHIP_XXX_FOO,
-> 	...
-> };
-> 
-> static u32 chip_xxx_read_reg(struct chip *p, unsigned int reg)
-> {
-> 	unsigned int reg_off = chip_xxx_table[reg];
-> 
-> 	return readl(p->regs + reg_off);
-> }
-> 
-> And this table can have special tokens in entries for
-> registers which do not exist on a chip, so you can trap
-> attempted access to them in these read/write handlers.
+This patch adds the MPC5121 to the list of supported devices,
+enhances the doc of the "clock-frequency" property and removes
+the obsolete "cell-index", "device_type" and "fsl-i2c" property.
+Furthermore an example for the MPC5121 has been added.
 
-Yes, that could be done, but to honest, I do not see any improvement in
-respect to the previous patch where the register offset were defined via
-pointers within a structure.
+Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++++++++++++++++------
+ 1 files changed, 22 insertions(+), 8 deletions(-)
 
-> Please stop looking for excuses to fork this driver, a
-> unified driver I think can be done cleanly.
-
-Other people suggested to fork the driver because it's getting too ugly.
-
-Wolfgang.
+diff --git a/Documentation/powerpc/dts-bindings/fsl/i2c.txt b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
+index b6d2e21..50da203 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/i2c.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
+@@ -2,15 +2,14 @@
+ 
+ Required properties :
+ 
+- - device_type : Should be "i2c"
+  - reg : Offset and length of the register set for the device
++ - compatible : should be "fsl,CHIP-i2c" where CHIP is the name of a
++   compatible processor, e.g. mpc8313, mpc8543, mpc8544, mpc5121,
++   mpc5200 or mpc5200b. For the mpc5121, an additional node
++   "fsl,mpc5121-i2c-ctrl" is required as shown in the example below.
+ 
+ Recommended properties :
+ 
+- - compatible : compatibility list with 2 entries, the first should
+-   be "fsl,CHIP-i2c" where CHIP is the name of a compatible processor,
+-   e.g. mpc8313, mpc8543, mpc8544, mpc5200 or mpc5200b. The second one
+-   should be "fsl-i2c".
+  - interrupts : <a b> where a is the interrupt number and b is a
+    field that represents an encoding of the sense and level
+    information for the interrupt.  This should be encoded based on
+@@ -24,25 +23,40 @@ Recommended properties :
+ 
+ Examples :
+ 
++	/* MPC5121 based board */
++	i2c@1740 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "fsl,mpc5121-i2c", "fsl-i2c";
++		reg = <0x1740 0x20>;
++		interrupts = <11 0x8>;
++		interrupt-parent = <&ipic>;
++		clock-frequency = <100000>;
++	};
++
++	i2ccontrol@1760 {
++		compatible = "fsl,mpc5121-i2c-ctrl";
++		reg = <0x1760 0x8>;
++	};
++
++	/* MPC5200B based board */
+ 	i2c@3d00 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+-		cell-index = <0>;
+ 		reg = <0x3d00 0x40>;
+ 		interrupts = <2 15 0>;
+ 		interrupt-parent = <&mpc5200_pic>;
+ 		fsl,preserve-clocking;
+ 	};
+ 
++	/* MPC8544 base board */
+ 	i2c@3100 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		cell-index = <1>;
+ 		compatible = "fsl,mpc8544-i2c", "fsl-i2c";
+ 		reg = <0x3100 0x100>;
+ 		interrupts = <43 2>;
+ 		interrupt-parent = <&mpic>;
+ 		clock-frequency = <400000>;
+ 	};
+-
+-- 
+1.6.2.5
