@@ -1,13 +1,10 @@
 Return-Path: <wg@denx.de>
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: Linux-i2c@vger.kernel.org
-Subject: [PATCH v7 2/4] i2c-mpc: rename "setclock" initialization functions to
-	"setup"
-Date: Wed, 10 Feb 2010 15:55:09 +0100
-Message-Id: <1265813711-16794-3-git-send-email-wg@grandegger.com>
-In-Reply-To: <1265813711-16794-2-git-send-email-wg@grandegger.com>
-References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
-	<1265813711-16794-2-git-send-email-wg@grandegger.com>
+Subject: [PATCH v7 0/4] i2c-mpc: add support for the Freescale MPC512x and
+	other fixes
+Date: Wed, 10 Feb 2010 15:55:07 +0100
+Message-Id: <1265813711-16794-1-git-send-email-wg@grandegger.com>
 Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
 	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,98 +18,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wolfgang Grandegger <wg@denx.de>
 
-To prepare  support for the MPC512x processors from Freescale the
-"setclock" initialization functions have been renamed to "setup"
-because I2C interrupts must be enabled for the MPC512x by this
-function as well.
+This patch series adds support for the MPC512x from Freescale to the
+i2c-mpc driver. At that occasion, issues with  __devinit[data] have
+been fixed and the doc of the FSL I2C dts bindings updated. It has
+been tested on a MPC5121ADS, TQM5200 and TQM8560 board
 
-Signed-off-by: Wolfgang Grandegger <wg@denx.de>
----
- drivers/i2c/busses/i2c-mpc.c |   34 ++++++++++++++++------------------
- 1 files changed, 16 insertions(+), 18 deletions(-)
+Changes since v1:
 
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 9f0e203..370c342 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -67,9 +67,8 @@ struct mpc_i2c_divider {
- };
- 
- struct mpc_i2c_data {
--	void (*setclock)(struct device_node *node,
--			 struct mpc_i2c *i2c,
--			 u32 clock, u32 prescaler);
-+	void (*setup)(struct device_node *node, struct mpc_i2c *i2c,
-+		      u32 clock, u32 prescaler);
- 	u32 prescaler;
- };
- 
-@@ -216,9 +215,9 @@ static int __devinit mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock,
- 	return div ? (int)div->fdr : -EINVAL;
- }
- 
--static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
--					    struct mpc_i2c *i2c,
--					    u32 clock, u32 prescaler)
-+static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
-+					 struct mpc_i2c *i2c,
-+					 u32 clock, u32 prescaler)
- {
- 	int ret, fdr;
- 
-@@ -231,9 +230,9 @@ static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
- 		dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
- }
- #else /* !CONFIG_PPC_MPC52xx */
--static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
--					    struct mpc_i2c *i2c,
--					    u32 clock, u32 prescaler)
-+static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
-+					 struct mpc_i2c *i2c,
-+					 u32 clock, u32 prescaler)
- {
- }
- #endif /* CONFIG_PPC_MPC52xx*/
-@@ -322,9 +321,9 @@ static int __devinit mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock,
- 	return div ? (int)div->fdr : -EINVAL;
- }
- 
--static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
--					    struct mpc_i2c *i2c,
--					    u32 clock, u32 prescaler)
-+static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
-+					 struct mpc_i2c *i2c,
-+					 u32 clock, u32 prescaler)
- {
- 	int ret, fdr;
- 
-@@ -340,9 +339,9 @@ static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
- }
- 
- #else /* !CONFIG_FSL_SOC */
--static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
--					    struct mpc_i2c *i2c,
--					    u32 clock, u32 prescaler)
-+static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
-+					 struct mpc_i2c *i2c,
-+					 u32 clock, u32 prescaler)
- {
- }
- #endif /* CONFIG_FSL_SOC */
-@@ -533,12 +532,11 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
- 		if (match->data) {
- 			struct mpc_i2c_data *data =
- 				(struct mpc_i2c_data *)match->data;
--			data->setclock(op->node, i2c, clock, data->prescaler);
-+			data->setup(op->node, i2c, clock, data->prescaler);
- 		} else {
- 			/* Backwards compatibility */
- 			if (of_get_property(op->node, "dfsrr", NULL))
--				mpc_i2c_setclock_8xxx(op->node, i2c,
--						      clock, 0);
-+				mpc_i2c_setup_8xxx(op->node, i2c, clock, 0);
- 		}
- 	}
- 
--- 
-1.6.2.5
+- use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
+- document the special DTS node "fsl,mpc5121-i2c-ctrl".
+- update and correct the Kconfig help.
+- some other minor fixes as suggested by Wolfram.
+
+Changes since v2:
+
+- use __init[data] instead of __devinit[data] for this driver.
+
+Changes since v3:
+
+- switch back to __devinit[data] as pointed out by Ben.
+
+Changes since v4:
+
+- check MPC_I2C_CLOCK_SAFE instead of "!clock" as suggested by Wolfram.
+- update MODULE_DESCRIPTION().
+
+Changes since v5 (suggested by Grant Likely):
+
+- various correctings for labling initialization functions and data
+  (this is tricky because section mismatches are not always obvious).
+- add a separate patch for renaming the setclock into setup functions.
+- correct the doc of the I2C bindings, e.g. don't mention the legacy
+  clock setting and remove obsolte parts.
+
+Changes since v6:
+
+- use __devinitconst for const data as suggested by Stephen Rothwell.
+
+Wolfgang
+
+Wolfgang Grandegger (4):
+  i2c-mpc: use __devinit[data] for initialization functions and data
+  i2c-mpc: rename "setclock" initialization functions to "setup"
+  i2c-mpc: add support for the MPC512x processors from Freescale
+  powerpc: doc/dts-bindings: update doc of FSL I2C bindings
+
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++-
+ drivers/i2c/busses/Kconfig                     |    7 +-
+ drivers/i2c/busses/i2c-mpc.c                   |  194 +++++++++++++++---------
+ 3 files changed, 146 insertions(+), 85 deletions(-)
