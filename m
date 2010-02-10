@@ -1,24 +1,15 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B72C68A.8020300@grandegger.com>
-Date: Wed, 10 Feb 2010 15:45:30 +0100
+Return-Path: <wg@denx.de>
 From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v4 1/3] i2c-mpc: use __devinit[data] for initialization
-	functions and data
-References: <1264685141-26391-1-git-send-email-wg@grandegger.com>
-	<1264685141-26391-2-git-send-email-wg@grandegger.com>
-	<fa686aa41002090941je3e4fdqbecf2616a8b90e42@mail.gmail.com>
-	<4B7285D5.9060008@grandegger.com>
-	<20100210213203.48a9105e.sfr@canb.auug.org.au>
-	<4B729043.9080303@grandegger.com>
-	<fa686aa41002100614l76bff396ved847c0b0a4c71ff@mail.gmail.com>
-In-Reply-To: <fa686aa41002100614l76bff396ved847c0b0a4c71ff@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Devicetree-discuss@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>
+To: Linux-i2c@vger.kernel.org
+Subject: [PATCH v7 2/4] i2c-mpc: rename "setclock" initialization functions to
+	"setup"
+Date: Wed, 10 Feb 2010 15:55:09 +0100
+Message-Id: <1265813711-16794-3-git-send-email-wg@grandegger.com>
+In-Reply-To: <1265813711-16794-2-git-send-email-wg@grandegger.com>
+References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
+	<1265813711-16794-2-git-send-email-wg@grandegger.com>
+Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
+	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Feb 10, 2010 at 3:53 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Stephen Rothwell wrote:
->>> Hi Wolfgang,
->>>
->>> On Wed, 10 Feb 2010 11:09:25 +0100 Wolfgang Grandegger <wg@grandegger.com> wrote:
->>>>> __devinitdata goes at the end, immediately before the '='.  Ditto
->>>>> throughout the file.
->>>> This made a difference and revealed section mismatches. "const" seems to
->>>> be incompatible with "__devinitdata".
->>> Maybe try no "const" and "__devinitconst" (I am not sure if both will
->>> work).
->> Yes, that works, even together with "const". To avoid rolling out the
->> whole patch series again, I can prepare a follow-up patch fixing this issue.
-> 
-> Nah, just resend this one patch.
+From: Wolfgang Grandegger <wg@denx.de>
 
-Even if it break the following patches? Will resend v7 in a second.
+To prepare  support for the MPC512x processors from Freescale the
+"setclock" initialization functions have been renamed to "setup"
+because I2C interrupts must be enabled for the MPC512x by this
+function as well.
 
-Wolfgang.
+Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+---
+ drivers/i2c/busses/i2c-mpc.c |   34 ++++++++++++++++------------------
+ 1 files changed, 16 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 9f0e203..370c342 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -67,9 +67,8 @@ struct mpc_i2c_divider {
+ };
+ 
+ struct mpc_i2c_data {
+-	void (*setclock)(struct device_node *node,
+-			 struct mpc_i2c *i2c,
+-			 u32 clock, u32 prescaler);
++	void (*setup)(struct device_node *node, struct mpc_i2c *i2c,
++		      u32 clock, u32 prescaler);
+ 	u32 prescaler;
+ };
+ 
+@@ -216,9 +215,9 @@ static int __devinit mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock,
+ 	return div ? (int)div->fdr : -EINVAL;
+ }
+ 
+-static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
+-					    struct mpc_i2c *i2c,
+-					    u32 clock, u32 prescaler)
++static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
++					 struct mpc_i2c *i2c,
++					 u32 clock, u32 prescaler)
+ {
+ 	int ret, fdr;
+ 
+@@ -231,9 +230,9 @@ static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
+ 		dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
+ }
+ #else /* !CONFIG_PPC_MPC52xx */
+-static void __devinit mpc_i2c_setclock_52xx(struct device_node *node,
+-					    struct mpc_i2c *i2c,
+-					    u32 clock, u32 prescaler)
++static void __devinit mpc_i2c_setup_52xx(struct device_node *node,
++					 struct mpc_i2c *i2c,
++					 u32 clock, u32 prescaler)
+ {
+ }
+ #endif /* CONFIG_PPC_MPC52xx*/
+@@ -322,9 +321,9 @@ static int __devinit mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock,
+ 	return div ? (int)div->fdr : -EINVAL;
+ }
+ 
+-static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
+-					    struct mpc_i2c *i2c,
+-					    u32 clock, u32 prescaler)
++static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
++					 struct mpc_i2c *i2c,
++					 u32 clock, u32 prescaler)
+ {
+ 	int ret, fdr;
+ 
+@@ -340,9 +339,9 @@ static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
+ }
+ 
+ #else /* !CONFIG_FSL_SOC */
+-static void __devinit mpc_i2c_setclock_8xxx(struct device_node *node,
+-					    struct mpc_i2c *i2c,
+-					    u32 clock, u32 prescaler)
++static void __devinit mpc_i2c_setup_8xxx(struct device_node *node,
++					 struct mpc_i2c *i2c,
++					 u32 clock, u32 prescaler)
+ {
+ }
+ #endif /* CONFIG_FSL_SOC */
+@@ -533,12 +532,11 @@ static int __devinit fsl_i2c_probe(struct of_device *op,
+ 		if (match->data) {
+ 			struct mpc_i2c_data *data =
+ 				(struct mpc_i2c_data *)match->data;
+-			data->setclock(op->node, i2c, clock, data->prescaler);
++			data->setup(op->node, i2c, clock, data->prescaler);
+ 		} else {
+ 			/* Backwards compatibility */
+ 			if (of_get_property(op->node, "dfsrr", NULL))
+-				mpc_i2c_setclock_8xxx(op->node, i2c,
+-						      clock, 0);
++				mpc_i2c_setup_8xxx(op->node, i2c, clock, 0);
+ 		}
+ 	}
+ 
+-- 
+1.6.2.5
