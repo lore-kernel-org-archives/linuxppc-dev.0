@@ -1,16 +1,14 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 10 Feb 2010 22:10:25 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH 6/6] powerpc: Use lwsync for acquire barrier if CPU supports it
-Message-ID: <20100210111025.GF3399@kryten>
-References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
-	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
-	<20100210110719.GE3399@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100210110719.GE3399@kryten>
-Cc: npiggin@suse.de, linuxppc-dev@ozlabs.org
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 83BD6B6EF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 00:55:23 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/40x: Add support for PPC40x boards with > 512MB SDRAM
+Date: Wed, 10 Feb 2010 14:54:59 +0100
+Message-Id: <1265810099-31355-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,55 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch adds support for boards with more that 512MByte RAM. Currently
+only 512MB of memory are enabled in the DCCR/ICCR real-mode cache
+control registers. This patch now enables caching in real-mode for
+2GByte.
 
-Nick Piggin discovered that lwsync barriers around locks were faster than isync
-on 970. That was a long time ago and I completely dropped the ball in testing
-his patches across other ppc64 processors.
-
-Turns out the idea helps on other chips. Using a microbenchmark that
-uses a lot of threads to contend on a global pthread mutex (and therefore a
-global futex), POWER6 improves 8% and POWER7 improves 2%. I checked POWER5
-and while I couldn't measure an improvement, there was no regression.
-
-This patch uses the lwsync patching code to replace the isyncs with lwsyncs
-on CPUs that support the instruction. We were marking POWER3 and RS64 as lwsync
-capable but in reality they treat it as a full sync (ie slow). Remove the
-CPU_FTR_LWSYNC bit from these CPUs so they continue to use the faster isync
-method.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
+ arch/powerpc/mm/40x_mmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: powerpc.git/arch/powerpc/include/asm/synch.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/synch.h	2010-02-10 17:16:44.666823141 +1100
-+++ powerpc.git/arch/powerpc/include/asm/synch.h	2010-02-10 17:16:45.123073249 +1100
-@@ -37,7 +37,11 @@ static inline void isync(void)
- #endif
+diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
+index 08dfa8e..65abfcf 100644
+--- a/arch/powerpc/mm/40x_mmu.c
++++ b/arch/powerpc/mm/40x_mmu.c
+@@ -84,8 +84,8 @@ void __init MMU_init_hw(void)
+ 	 * vectors and the kernel live in real-mode.
+ 	 */
  
- #ifdef CONFIG_SMP
--#define PPC_ACQUIRE_BARRIER	"\n\tisync\n"
-+#define __PPC_ACQUIRE_BARRIER				\
-+	START_LWSYNC_SECTION(97);			\
-+	isync;						\
-+	MAKE_LWSYNC_SECTION_ENTRY(97, __lwsync_fixup);
-+#define PPC_ACQUIRE_BARRIER	"\n" stringify_in_c(__PPC_ACQUIRE_BARRIER)
- #define PPC_RELEASE_BARRIER	stringify_in_c(LWSYNC) "\n"
- #else
- #define PPC_ACQUIRE_BARRIER
-Index: powerpc.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/cputable.h	2010-02-10 17:15:59.816823326 +1100
-+++ powerpc.git/arch/powerpc/include/asm/cputable.h	2010-02-10 17:16:45.123073249 +1100
-@@ -381,9 +381,9 @@ extern const char *powerpc_base_platform
- #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+-        mtspr(SPRN_DCCR, 0xF0000000);	/* 512 MB of data space at 0x0. */
+-        mtspr(SPRN_ICCR, 0xF0000000);	/* 512 MB of instr. space at 0x0. */
++        mtspr(SPRN_DCCR, 0xFFFF0000);	/* 2GByte of data space at 0x0. */
++        mtspr(SPRN_ICCR, 0xFFFF0000);	/* 2GByte of instr. space at 0x0. */
+ }
  
- /* 64-bit CPUs */
--#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | \
- 	    CPU_FTR_IABR | CPU_FTR_PPC_LE)
--#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-+#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | \
- 	    CPU_FTR_IABR | \
- 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
- #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ #define LARGE_PAGE_SIZE_16M	(1<<24)
+-- 
+1.6.6.1
