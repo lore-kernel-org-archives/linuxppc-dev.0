@@ -1,12 +1,19 @@
-Return-Path: <wg@denx.de>
+Return-Path: <wg@grandegger.com>
+Message-ID: <4B7285D5.9060008@grandegger.com>
+Date: Wed, 10 Feb 2010 11:09:25 +0100
 From: Wolfgang Grandegger <wg@grandegger.com>
-To: Linux-i2c@vger.kernel.org
-Subject: [PATCH v6 0/4] i2c-mpc: add support for the Freescale MPC512x and
-	other fixes
-Date: Wed, 10 Feb 2010 11:05:26 +0100
-Message-Id: <1265796330-15976-1-git-send-email-wg@grandegger.com>
-Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v4 1/3] i2c-mpc: use __devinit[data] for initialization
+	functions and data
+References: <1264685141-26391-1-git-send-email-wg@grandegger.com>
+	<1264685141-26391-2-git-send-email-wg@grandegger.com>
+	<fa686aa41002090941je3e4fdqbecf2616a8b90e42@mail.gmail.com>
+In-Reply-To: <fa686aa41002090941je3e4fdqbecf2616a8b90e42@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ben Dooks <ben-linux@fluff.org>, Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,50 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@denx.de>
+Grant Likely wrote:
+> On Thu, Jan 28, 2010 at 6:25 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>> From: Wolfgang Grandegger <wg@denx.de>
+>>
+>> "__devinit[data]" has not yet been used for all initialization functions
+>> and data. To avoid truncating lines, the struct "mpc_i2c_match_data" has
+>> been renamed to "mpc_i2c_data", which is even the better name.
+>>
+>> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+> 
+> Several comments below.
+> 
+>> ---
+>>  drivers/i2c/busses/i2c-mpc.c |  103 +++++++++++++++++++----------------------
+>>  1 files changed, 48 insertions(+), 55 deletions(-)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+>> index f627001..275ebe6 100644
+>> --- a/drivers/i2c/busses/i2c-mpc.c
+>> +++ b/drivers/i2c/busses/i2c-mpc.c
+>> @@ -66,7 +66,7 @@ struct mpc_i2c_divider {
+>>        u16 fdr;        /* including dfsrr */
+>>  };
+>>
+>> -struct mpc_i2c_match_data {
+>> +struct mpc_i2c_data {
+>>        void (*setclock)(struct device_node *node,
+>>                         struct mpc_i2c *i2c,
+>>                         u32 clock, u32 prescaler);
+>> @@ -165,7 +165,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+>>  }
+>>
+>>  #ifdef CONFIG_PPC_MPC52xx
+>> -static const struct mpc_i2c_divider mpc_i2c_dividers_52xx[] = {
+>> +static const struct __devinitdata mpc_i2c_divider mpc_i2c_dividers_52xx[] = {
+> 
+> __devinitdata goes at the end, immediately before the '='.  Ditto
+> throughout the file.
 
-This patch series adds support for the MPC512x from Freescale to the
-i2c-mpc driver. At that occasion, issues with  __devinit[data] have
-been fixed and the doc of the FSL I2C dts bindings updated. It has
-been tested on a MPC5121ADS, TQM5200 and TQM8560 board
+This made a difference and revealed section mismatches. "const" seems to
+be incompatible with "__devinitdata".
 
-Changes since v1:
+>>        {20, 0x20}, {22, 0x21}, {24, 0x22}, {26, 0x23},
+>>        {28, 0x24}, {30, 0x01}, {32, 0x25}, {34, 0x02},
+>>        {36, 0x26}, {40, 0x27}, {44, 0x04}, {48, 0x28},
+>> @@ -582,44 +584,35 @@ static int __devexit fsl_i2c_remove(struct of_device *op)
+>>        return 0;
+>>  };
+>>
+>> +static struct mpc_i2c_data __devinitdata mpc_i2c_data_52xx = {
+>> +       .setclock = mpc_i2c_setclock_52xx,
+>> +};
+>> +
+>> +static struct mpc_i2c_data __devinitdata mpc_i2c_data_8313 = {
+>> +       .setclock = mpc_i2c_setclock_8xxx,
+>> +};
+>> +
+>> +static struct mpc_i2c_data __devinitdata mpc_i2c_data_8543 = {
+>> +       .setclock = mpc_i2c_setclock_8xxx,
+>> +       .prescaler = 2,
+>> +};
+>> +
+>> +static struct mpc_i2c_data __devinitdata mpc_i2c_data_8544 = {
+>> +       .setclock = mpc_i2c_setclock_8xxx,
+>> +       .prescaler = 3,
+>> +};
+>> +
+>>  static const struct of_device_id mpc_i2c_of_match[] = {
+> 
+> You can make this __devinitdata too.
 
-- use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
-- document the special DTS node "fsl,mpc5121-i2c-ctrl".
-- update and correct the Kconfig help.
-- some other minor fixes as suggested by Wolfram.
+This results in a section mismatch as it's referenced by fsl_i2c_init().
+I just sent out v6. Hope it's OK now.
 
-Changes since v2:
+Thanks,
 
-- use __init[data] instead of __devinit[data] for this driver.
-
-Changes since v3:
-
-- switch back to __devinit[data] as pointed out by Ben.
-
-Changes since v4:
-
-- check MPC_I2C_CLOCK_SAFE instead of "!clock" as suggested by Wolfram.
-- update MODULE_DESCRIPTION().
-
-Changes since v5 (suggested by Grant Likely):
-
-- various correctings for labling initialization functions and data
-  (this is tricky because section mismatches are not always obvious).
-- add a separate patch for renaming the setclock into setup functions.
-- correct the doc of the I2C bindings, e.g. don't mention the legacy
-  clock setting and remove obsolte parts.
-
-Wolfgang
-
-Wolfgang Grandegger (4):
-  i2c-mpc: use __devinit[data] for initialization functions and data
-  i2c-mpc: rename "setclock" initialization functions to "setup"
-  i2c-mpc: add support for the MPC512x processors from Freescale
-  powerpc: doc/dts-bindings: update doc of FSL I2C bindings
-
- Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++-
- drivers/i2c/busses/Kconfig                     |    7 +-
- drivers/i2c/busses/i2c-mpc.c                   |  194 +++++++++++++++---------
- 3 files changed, 146 insertions(+), 85 deletions(-)
+Wolfgang.
