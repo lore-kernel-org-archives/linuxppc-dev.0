@@ -1,14 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 33501B7D67
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 20:08:40 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/44x: Update Arches dts
-Date: Wed, 10 Feb 2010 10:08:34 +0100
-Message-Id: <1265792914-26363-1-git-send-email-sr@denx.de>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id A8D35B7D6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 20:17:14 +1100 (EST)
+Message-ID: <4B72794A.9010805@grandegger.com>
+Date: Wed, 10 Feb 2010 10:15:54 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+References: <4B5871F2.9090005@grandegger.com>	<20100121.180311.228791894.davem@davemloft.net>	<20100209152317.5303b1b3@wker>
+	<20100209.121356.216640014.davem@davemloft.net>
+In-Reply-To: <20100209.121356.216640014.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	agust@denx.de, kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,68 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sync Arches dts with latest Canyonlands version:
+Hi David,
 
-- Add 16k FIFO size to supported EMAC nodes
-- Add next-level-cache property
-- Add Crypto device node
+David Miller wrote:
+> From: Anatolij Gustschin <agust@denx.de>
+> Date: Tue, 9 Feb 2010 15:23:17 +0100
+> 
+>> In my understanding, in the ESP scsi driver the set of defines for
+>> the register offsets is common for all chip drivers. The chip driver
+>> methods for register access translate the offsets because the
+>> registers on some chips are at different intervals (4-byte, 1-byte,
+>> 16-byte for mac_esp.c). But the register order is the same for
+>> different chips.
+>>
+>> In our case non only the register order is not the same for 8xx
+>> FEC and 5121 FEC, but there are also other differences, different
+>> reserved areas between several registers, some registers are
+>> available only on 8xx and some only on 5121.
+> 
+> That only means you would need to use a table based register address
+> translation scheme, rather than a simple calculation.  Something
+> like:
+> 
+> static unsigned int chip_xxx_table[] =
+> {
+> 	[GENERIC_REG_FOO]	 = CHIP_XXX_FOO,
+> 	...
+> };
+> 
+> static u32 chip_xxx_read_reg(struct chip *p, unsigned int reg)
+> {
+> 	unsigned int reg_off = chip_xxx_table[reg];
+> 
+> 	return readl(p->regs + reg_off);
+> }
+> 
+> And this table can have special tokens in entries for
+> registers which do not exist on a chip, so you can trap
+> attempted access to them in these read/write handlers.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
----
- arch/powerpc/boot/dts/arches.dts |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+Yes, that could be done, but to honest, I do not see any improvement in
+respect to the previous patch where the register offset were defined via
+pointers within a structure.
 
-diff --git a/arch/powerpc/boot/dts/arches.dts b/arch/powerpc/boot/dts/arches.dts
-index 414ef8b..30f4120 100644
---- a/arch/powerpc/boot/dts/arches.dts
-+++ b/arch/powerpc/boot/dts/arches.dts
-@@ -60,6 +60,7 @@
- 			d-cache-size = <32768>;
- 			dcr-controller;
- 			dcr-access-method = "native";
-+			next-level-cache = <&L2C0>;
- 		};
- 	};
- 
-@@ -146,6 +147,13 @@
- 			dcr-reg = <0x010 0x002>;
- 		};
- 
-+		CRYPTO: crypto@180000 {
-+			compatible = "amcc,ppc460gt-crypto", "amcc,ppc4xx-crypto";
-+			reg = <4 0x00180000 0x80400>;
-+			interrupt-parent = <&UIC0>;
-+			interrupts = <0x1d 0x4>;
-+		};
-+
- 		MAL0: mcmal {
- 			compatible = "ibm,mcmal-460gt", "ibm,mcmal2";
- 			dcr-reg = <0x180 0x062>;
-@@ -274,6 +282,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "sgmii";
- 				phy-map = <0xffffffff>;
- 				gpcs-address = <0x0000000a>;
-@@ -302,6 +311,7 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
- 				phy-mode = "sgmii";
- 				phy-map = <0x00000000>;
- 				gpcs-address = <0x0000000b>;
-@@ -331,6 +341,8 @@
- 				max-frame-size = <9000>;
- 				rx-fifo-size = <4096>;
- 				tx-fifo-size = <2048>;
-+				rx-fifo-size-gige = <16384>;
-+				tx-fifo-size-gige = <16384>; /* emac2&3 only */
- 				phy-mode = "sgmii";
- 				phy-map = <0x00000001>;
- 				gpcs-address = <0x0000000C>;
--- 
-1.6.6.1
+> Please stop looking for excuses to fork this driver, a
+> unified driver I think can be done cleanly.
+
+Other people suggested to fork the driver because it's getting too ugly.
+
+Wolfgang.
