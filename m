@@ -1,17 +1,20 @@
-Return-Path: <wg@denx.de>
-From: Wolfgang Grandegger <wg@grandegger.com>
-To: Linux-i2c@vger.kernel.org
-Subject: [PATCH v7 4/4] powerpc: doc/dts-bindings: update doc of FSL I2C
-	bindings
-Date: Wed, 10 Feb 2010 15:55:11 +0100
-Message-Id: <1265813711-16794-5-git-send-email-wg@grandegger.com>
-In-Reply-To: <1265813711-16794-4-git-send-email-wg@grandegger.com>
-References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
-	<1265813711-16794-2-git-send-email-wg@grandegger.com>
-	<1265813711-16794-3-git-send-email-wg@grandegger.com>
-	<1265813711-16794-4-git-send-email-wg@grandegger.com>
-Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Wolfgang Grandegger <wg@denx.de>, Ben Dooks <ben-linux@fluff.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1A96B7CF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 02:40:47 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Use lwarx hint bit in spinlocks
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20100210031923.GB16178@zod.rchland.ibm.com>
+Date: Wed, 10 Feb 2010 09:40:34 -0600
+Message-Id: <3941DE04-15C3-4E44-9278-923E874FE23E@kernel.crashing.org>
+References: <20100210025010.GC3702@kryten>
+	<20100210031923.GB16178@zod.rchland.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,86 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wolfgang Grandegger <wg@denx.de>
 
-This patch adds the MPC5121 to the list of supported devices,
-enhances the doc of the "clock-frequency" property and removes
-the obsolete "cell-index", "device_type" and "fsl-i2c" property.
-Furthermore an example for the MPC5121 has been added.
+On Feb 9, 2010, at 9:19 PM, Josh Boyer wrote:
 
-Signed-off-by: Wolfgang Grandegger <wg@denx.de>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
----
- Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++++++++++++++++------
- 1 files changed, 22 insertions(+), 8 deletions(-)
+> On Wed, Feb 10, 2010 at 01:50:11PM +1100, Anton Blanchard wrote:
+>>=20
+>> Recent versions of the PowerPC architecture added a hint bit to the =
+larx
+>> instructions to differentiate between an atomic operation and a lock =
+operation:
+>>=20
+>>> 0 Other programs might attempt to modify the word in storage =
+addressed by EA
+>>> even if the subsequent Store Conditional succeeds.
+>>>=20
+>>> 1 Other programs will not attempt to modify the word in storage =
+addressed by
+>>> EA until the program that has acquired the lock performs a =
+subsequent store
+>>> releasing the lock.
+>>=20
+>> To avoid a binutils dependency this patch create macros for the =
+extended lwarx
+>> format and uses it in the spinlock code. To test this change I used a =
+simple
+>> test case that acquires and releases a global pthread mutex:
+>>=20
+>> 	pthread_mutex_lock(&mutex);
+>> 	pthread_mutex_unlock(&mutex);
+>>=20
+>> On a 32 core POWER6 running 32 test threads we spend almost all our =
+time in
+>> the futex spinlock code (as expected):
+>>=20
+>>   94.37%     perf  [kernel]                     [k] ._raw_spin_lock
+>>              |         =20
+>>              |--99.95%-- ._raw_spin_lock
+>>              |          |         =20
+>>              |          |--63.29%-- .futex_wake
+>>              |          |         =20
+>>              |          |--36.64%-- .futex_wait_setup
+>>=20
+>> which is a good test for this patch. The results (in lock/unlock =
+operations
+>> per second) are:
+>>=20
+>> before: 1538203 ops/sec
+>> after:  2189219 ops/sec
+>>=20
+>> An improvement of 42%
+>>=20
+>> Signed-off-by: Anton Blanchard <anton@samba.org>
+>> ---
+>>=20
+>> We've had issues in the past with chips that do the wrong thing and =
+don't
+>> ignore instruction reserved bits. One option might be to limit this =
+change to
+>> 64bit and verify on that limited set of CPUs.
+>=20
+> In the off chance that someone actually does an SMP 44x, I think the =
+hint bit
+> here would just be ignored (I could test possibly if we want to =
+verify).
+> However, I thought the FSL parts didn't like toggling the reserved =
+bits and
+> those already are SMP in some cases.
+>=20
+> Kumar?
+>=20
+> josh
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/i2c.txt b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-index b6d2e21..50da203 100644
---- a/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-@@ -2,15 +2,14 @@
- 
- Required properties :
- 
-- - device_type : Should be "i2c"
-  - reg : Offset and length of the register set for the device
-+ - compatible : should be "fsl,CHIP-i2c" where CHIP is the name of a
-+   compatible processor, e.g. mpc8313, mpc8543, mpc8544, mpc5121,
-+   mpc5200 or mpc5200b. For the mpc5121, an additional node
-+   "fsl,mpc5121-i2c-ctrl" is required as shown in the example below.
- 
- Recommended properties :
- 
-- - compatible : compatibility list with 2 entries, the first should
--   be "fsl,CHIP-i2c" where CHIP is the name of a compatible processor,
--   e.g. mpc8313, mpc8543, mpc8544, mpc5200 or mpc5200b. The second one
--   should be "fsl-i2c".
-  - interrupts : <a b> where a is the interrupt number and b is a
-    field that represents an encoding of the sense and level
-    information for the interrupt.  This should be encoded based on
-@@ -24,25 +23,40 @@ Recommended properties :
- 
- Examples :
- 
-+	/* MPC5121 based board */
-+	i2c@1740 {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		compatible = "fsl,mpc5121-i2c", "fsl-i2c";
-+		reg = <0x1740 0x20>;
-+		interrupts = <11 0x8>;
-+		interrupt-parent = <&ipic>;
-+		clock-frequency = <100000>;
-+	};
-+
-+	i2ccontrol@1760 {
-+		compatible = "fsl,mpc5121-i2c-ctrl";
-+		reg = <0x1760 0x8>;
-+	};
-+
-+	/* MPC5200B based board */
- 	i2c@3d00 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
--		cell-index = <0>;
- 		reg = <0x3d00 0x40>;
- 		interrupts = <2 15 0>;
- 		interrupt-parent = <&mpc5200_pic>;
- 		fsl,preserve-clocking;
- 	};
- 
-+	/* MPC8544 base board */
- 	i2c@3100 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		cell-index = <1>;
- 		compatible = "fsl,mpc8544-i2c", "fsl-i2c";
- 		reg = <0x3100 0x100>;
- 		interrupts = <43 2>;
- 		interrupt-parent = <&mpic>;
- 		clock-frequency = <400000>;
- 	};
--
--- 
-1.6.2.5
+Yeah, I need to test this on some older SMP parts that didn't treated =
+reserved bits being set in the opcode as ignored but illegal.
+
+- k=
