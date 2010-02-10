@@ -1,12 +1,12 @@
-Return-Path: <mneuling@au1.ibm.com>
-From: Michael Neuling <mneuling@au1.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
 To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Subject: Re: [PATCH] Restrict initial stack space expansion to rlimit
 In-reply-to: <20100210141016.4D18.A69D9226@jp.fujitsu.com>
 References: <10733.1265752289@neuling.org> <4B71E13C.2050905@gmx.de>
 	<20100210141016.4D18.A69D9226@jp.fujitsu.com>
-Date: Wed, 10 Feb 2010 16:30:16 +1100
-Message-ID: <16993.1265779816@neuling.org>
+Date: Wed, 10 Feb 2010 16:31:07 +1100
+Message-ID: <17323.1265779867@neuling.org>
 Cc: linux-parisc@vger.kernel.org, stable@kernel.org,
 	Helge Deller <deller@gmx.de>, aeb@cwi.nl,
 	Oleg Nesterov <oleg@redhat.com>, miltonm@bga.com,
