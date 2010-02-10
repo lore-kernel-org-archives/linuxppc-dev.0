@@ -1,31 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 161DBB7B98
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 14:19:32 +1100 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e35.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o1A3G6TQ026618
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Feb 2010 20:16:06 -0700
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id o1A3JPJq178562
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Feb 2010 20:19:25 -0700
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o1A3JPTL009111
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Feb 2010 20:19:25 -0700
-Date: Tue, 9 Feb 2010 22:19:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Use lwarx hint bit in spinlocks
-Message-ID: <20100210031923.GB16178@zod.rchland.ibm.com>
-References: <20100210025010.GC3702@kryten>
+Return-Path: <john.williams@petalogix.com>
+Received: from mail-px0-f199.google.com (mail-px0-f199.google.com
+	[209.85.216.199]) by ozlabs.org (Postfix) with ESMTP id DEFEDB7B98
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 14:21:49 +1100 (EST)
+Received: by pxi37 with SMTP id 37so8336992pxi.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Feb 2010 19:21:48 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100210025010.GC3702@kryten>
-Cc: linuxppc-dev@ozlabs.org
+Date: Wed, 10 Feb 2010 13:21:45 +1000
+Message-ID: <1d3f23371002091921m7f47a1fbt1cf7fd2ef0a927fa@mail.gmail.com>
+Subject: PPC: Possible bug in prom_parse.c:of_irq_map_raw?
+From: John Williams <john.williams@petalogix.com>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Grant Likely <grant.likely@secretlab.ca>,
+	Michal Simek <michal.simek@petalogix.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,56 +22,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 10, 2010 at 01:50:11PM +1100, Anton Blanchard wrote:
->
->Recent versions of the PowerPC architecture added a hint bit to the larx
->instructions to differentiate between an atomic operation and a lock operation:
->
->> 0 Other programs might attempt to modify the word in storage addressed by EA
->> even if the subsequent Store Conditional succeeds.
->> 
->> 1 Other programs will not attempt to modify the word in storage addressed by
->> EA until the program that has acquired the lock performs a subsequent store
->> releasing the lock.
->
->To avoid a binutils dependency this patch create macros for the extended lwarx
->format and uses it in the spinlock code. To test this change I used a simple
->test case that acquires and releases a global pthread mutex:
->
->	pthread_mutex_lock(&mutex);
->	pthread_mutex_unlock(&mutex);
->
->On a 32 core POWER6 running 32 test threads we spend almost all our time in
->the futex spinlock code (as expected):
->
->    94.37%     perf  [kernel]                     [k] ._raw_spin_lock
->               |          
->               |--99.95%-- ._raw_spin_lock
->               |          |          
->               |          |--63.29%-- .futex_wake
->               |          |          
->               |          |--36.64%-- .futex_wait_setup
->
->which is a good test for this patch. The results (in lock/unlock operations
->per second) are:
->
->before: 1538203 ops/sec
->after:  2189219 ops/sec
->
->An improvement of 42%
->
->Signed-off-by: Anton Blanchard <anton@samba.org>
->---
->
->We've had issues in the past with chips that do the wrong thing and don't
->ignore instruction reserved bits. One option might be to limit this change to
->64bit and verify on that limited set of CPUs.
+Hi,
 
-In the off chance that someone actually does an SMP 44x, I think the hint bit
-here would just be ignored (I could test possibly if we want to verify).
-However, I thought the FSL parts didn't like toggling the reserved bits and
-those already are SMP in some cases.
+Perhaps this is my misunderstanding, but I'm looking at the bit of
+code in of_irq_map_raw() that iterates the interrupt-map DTS node,
+which I am seeing to behave strangely when handling the interrupt-map
+property on a PCI bridge node.
 
-Kumar?
+Early in the function, we get the #address-cells value from the node -
+in this case the PCI bridge, and store it in local var addrsize:
 
-josh
+        /* Look for this #address-cells. We have to implement the old linux
+         * trick of looking for the parent here as some device-trees rely on it
+         */
+        old = of_node_get(ipar);
+        do {
+                tmp = of_get_property(old, "#address-cells", NULL);
+                tnode = of_get_parent(old);
+                of_node_put(old);
+                old = tnode;
+        } while(old && tmp == NULL);
+        of_node_put(old);
+        old = NULL;
+        addrsize = (tmp == NULL) ? 2 : *tmp;
+
+        DBG(" -> addrsize=%d\n", addrsize);
+
+
+Later, once we've found the interrupt-map and are iterating over it
+attempting to match on PCI device addresses, there is this little
+fragment:
+
+                        /* Get the interrupt parent */
+                        if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
+                                newpar = of_node_get(of_irq_dflt_pic);
+                        else
+                                newpar =
+of_find_node_by_phandle((phandle)*imap);
+                        imap++;
+                        --imaplen;
+
+                        /* Check if not found */
+                        if (newpar == NULL) {
+                                DBG(" -> imap parent not found !\n");
+                                goto fail;
+                        }
+
+                        /* Get #interrupt-cells and #address-cells of new
+                         * parent
+                         */
+                        tmp = of_get_property(newpar, "#interrupt-cells", NULL);
+                        if (tmp == NULL) {
+                                DBG(" -> parent lacks #interrupt-cells !\n");
+                                goto fail;
+                        }
+                        newintsize = *tmp;
+                        tmp = of_get_property(newpar, "#address-cells", NULL);
+                        newaddrsize = (tmp == NULL) ? 0 : *tmp;
+
+Finally, later in the loop we update addrsize=newaddrsize
+
+As I read this code, and the behaviour I'm seeing, is that if the
+interrupt controller parent device doesn't have an #address-cells
+entry, then this get_property will return fail, therefore setting
+newaddrsize  to zero.  This then means that subsequent match attempts
+when iterating the interrupt-map always fail, because the match length
+(addrsize) is 0.
+
+Maybe I'm missing something here, but shouldn't this last bit of code
+instead be:
+
+                        tmp = of_get_property(newpar, "#address-cells", NULL);
+                        newaddrsize = (tmp == NULL) ? addrsize : *tmp;
+
+ ^^^^^^^^^
+?
+
+In other words, if the parent node has an #address-cells value, then
+use it, otherwise stick to the #address-cells value we picked up for
+the actual node in question (ie the PCI bridge).
+
+The way this is manifesting itself in the system I'm looking at is
+that only the PCI device matching the first entry in the PCI bridge
+interrupt-map property is correctly matching. For PCI devices that
+require more than one pass through the interrupt-map loop, addrsize
+goes to zero and no further match is possible.
+
+I might be able to hack around this in the device-tree by setting
+#address-cells=<3> in the interrupt controller node, but that doesn't
+smell right either - it's only true for PCI devices for a start,
+whereas this controller handles interrupts from many sources on the
+32-bit PLB bus as well.  I looked at the ML510 DTS in boot/dts and
+it's not doing anything like this.
+
+As a footnote, I'm actually doing this in MicroBlaze whose PCI
+infrastructure is not yet in mainline, however we copied this bit of
+code directly from PPC and the logic is the same.
+
+Thanks,
+
+John
+-- 
+John Williams
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
