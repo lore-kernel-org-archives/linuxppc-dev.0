@@ -1,33 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AF22DB7CEE
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 05:42:10 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o1AIchuJ030356
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 11:38:43 -0700
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1AIfq86093600
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 11:41:54 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o1AIfnjY006348
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 11:41:49 -0700
-Date: Wed, 10 Feb 2010 13:41:41 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Use lwarx hint bit in spinlocks
-Message-ID: <20100210184141.GC16178@zod.rchland.ibm.com>
-References: <20100210025010.GC3702@kryten>
-	<20100210031923.GB16178@zod.rchland.ibm.com>
-	<3941DE04-15C3-4E44-9278-923E874FE23E@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 11 Feb 2010 09:29:32 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] perf_event: e500 support
+Message-ID: <20100210222932.GA9844@brick.ozlabs.ibm.com>
+References: <20100115214351.GA2869@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3941DE04-15C3-4E44-9278-923E874FE23E@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20100115214351.GA2869@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,18 +18,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 10, 2010 at 09:40:34AM -0600, Kumar Gala wrote:
->> In the off chance that someone actually does an SMP 44x, I think the hint bit
->> here would just be ignored (I could test possibly if we want to verify).
->> However, I thought the FSL parts didn't like toggling the reserved bits and
->> those already are SMP in some cases.
->> 
->> Kumar?
->> 
->> josh
->
->Yeah, I need to test this on some older SMP parts that didn't treated reserved bits being set in the opcode as ignored but illegal.
+On Fri, Jan 15, 2010 at 03:43:51PM -0600, Scott Wood wrote:
 
-It looks like Anton just did a v2 of the patch targeted at ppc64 instead.
+> This implements perf_event support for the Freescale embedded performance
+> monitor, based on the existing perf_event.c that supports server/classic
+> chips.  Eventually we may want to factor out some of the common bits.
 
-josh
+Cool!  I agree we will want to factor out some things, such as
+collect_events() for instance.  We could create a perf_helper.c for
+those bits.
+
+> Some limitations:
+> - No threshold support -- need to figure out how to represent it in
+>   the event struct from userspace.
+
+What does "threshold support" mean in this context?  Does it mean
+something different from getting an interrupt after N events have been
+counted?  Or does it mean counting instances where something takes
+longer than a specific number of cycles?
+
+> - When trying to schedule multiple event groups at once, and using
+>   restricted events, situations could arise where scheduling fails even
+>   though it would be possible.  Consider three groups, each with two events.
+>   One group has restricted events, the others don't.  The two non-restricted
+>   groups are scheduled, then one is removed, which happens to occupy the two
+>   counters that can't do restricted events.  The remaining non-restricted
+>   group will not be moved to the non-restricted-capable counters to make
+>   room if the restricted group tries to be scheduled.  Since thresholds are
+>   not yet supported (though you can use the events with a threshold of
+>   zero), and threshold events are the only restricted events, this seems
+>   like a low priority issue.
+
+Which way around are the restrictions?  That some events can only be
+counted on certain counters, or that some counters can only count a
+subset of the available events?
+
+Did you look at the constraint satisfaction code in the existing
+perf_event.c and p*-pmu.c?  That lets you express both sorts of
+restrictions and automatically find the best solution (including
+moving events from one counter to another like you describe).
+
+Some specific comments:
+
+> diff --git a/arch/powerpc/include/asm/perf_event.h b/arch/powerpc/include/asm/perf_event.h
+> index 3288ce3..2fd2781 100644
+> --- a/arch/powerpc/include/asm/perf_event.h
+> +++ b/arch/powerpc/include/asm/perf_event.h
+> @@ -2,6 +2,7 @@
+>   * Performance event support - PowerPC-specific definitions.
+>   *
+>   * Copyright 2008-2009 Paul Mackerras, IBM Corporation.
+> + * Copyright 2010 Freescale Semiconductor, Inc.
+>   *
+>   * This program is free software; you can redistribute it and/or
+>   * modify it under the terms of the GNU General Public License
+> @@ -12,6 +13,36 @@
+>  
+>  #include <asm/hw_irq.h>
+>  
+> +#ifdef CONFIG_FSL_EMB_PERFMON
+> +#define MAX_HWEVENTS 4
+> +
+> +/* event flags */
+> +#define FSL_EMB_EVENT_VALID 1
+> +#define FSL_EMB_EVENT_RESTRICTED 2
+> +
+> +struct power_pmu {
+
+I wonder if we should have just the stuff exported to the core in
+asm/perf_event.h and move MAX_HWEVENTS, struct power_pmu etc. to
+separate headers for fsl_embedded, classic, etc.?
+
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -98,7 +98,10 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+>  
+>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+>  obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+> -obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o perf_callchain.o
+> +obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
+> +obj-$(CONFIG_FSL_EMB_PERF_EVENT) += perf_event_fsl_emb.o
+> +obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o
+> +obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
+
+This is because we want perf_callchain.o even if we don't have
+hardware PMU support, is it?  If so this is a separate fix that
+deserves its own patch.
+
+Paul.
