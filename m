@@ -1,26 +1,21 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AB8FCB7D81
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Feb 2010 21:21:38 +1100 (EST)
-Date: Wed, 10 Feb 2010 11:21:30 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: [PATCH v6 2/4] i2c-mpc: rename "setclock" initialization
-	functions to "setup"
-Message-ID: <20100210102130.GB5239@pengutronix.de>
-References: <1265796330-15976-1-git-send-email-wg@grandegger.com>
-	<1265796330-15976-2-git-send-email-wg@grandegger.com>
-	<1265796330-15976-3-git-send-email-wg@grandegger.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C067FB81AD
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 21:21:43 +1100 (EST)
+Message-ID: <4B728869.1090404@grandegger.com>
+Date: Wed, 10 Feb 2010 11:20:25 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MfFXiAuoTsnnDAfZ"
-In-Reply-To: <1265796330-15976-3-git-send-email-wg@grandegger.com>
-Cc: Wolfgang Grandegger <wg@denx.de>, Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [net-next-2.6 PATCH 2/3] fs_enet: Add support for MPC512x to
+	fs_enet driver
+References: <4B5871F2.9090005@grandegger.com>	<20100121.180311.228791894.davem@davemloft.net>	<20100209152317.5303b1b3@wker>
+	<20100209.121356.216640014.davem@davemloft.net>
+	<4B72794A.9010805@grandegger.com>
+In-Reply-To: <4B72794A.9010805@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	agust@denx.de, kosmo@semihalf.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Wolfgang Grandegger wrote:
+> Hi David,
+> 
+> David Miller wrote:
+>> From: Anatolij Gustschin <agust@denx.de>
+>> Date: Tue, 9 Feb 2010 15:23:17 +0100
+>>
+>>> In my understanding, in the ESP scsi driver the set of defines for
+>>> the register offsets is common for all chip drivers. The chip driver
+>>> methods for register access translate the offsets because the
+>>> registers on some chips are at different intervals (4-byte, 1-byte,
+>>> 16-byte for mac_esp.c). But the register order is the same for
+>>> different chips.
+>>>
+>>> In our case non only the register order is not the same for 8xx
+>>> FEC and 5121 FEC, but there are also other differences, different
+>>> reserved areas between several registers, some registers are
+>>> available only on 8xx and some only on 5121.
+>> That only means you would need to use a table based register address
+>> translation scheme, rather than a simple calculation.  Something
+>> like:
+>>
+>> static unsigned int chip_xxx_table[] =
+>> {
+>> 	[GENERIC_REG_FOO]	 = CHIP_XXX_FOO,
+>> 	...
+>> };
+>>
+>> static u32 chip_xxx_read_reg(struct chip *p, unsigned int reg)
+>> {
+>> 	unsigned int reg_off = chip_xxx_table[reg];
+>>
+>> 	return readl(p->regs + reg_off);
+>> }
+>>
+>> And this table can have special tokens in entries for
+>> registers which do not exist on a chip, so you can trap
+>> attempted access to them in these read/write handlers.
+> 
+> Yes, that could be done, but to honest, I do not see any improvement in
+> respect to the previous patch where the register offset were defined via
+> pointers within a structure.
+> 
+>> Please stop looking for excuses to fork this driver, a
+>> unified driver I think can be done cleanly.
+> 
+> Other people suggested to fork the driver because it's getting too ugly.
 
---MfFXiAuoTsnnDAfZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That said, I think there is consensus that it does not make sense, and
+it's even not possible, to provide a kernel image which runs on both,
+the 8xx and the mpc512x. Therefore, there is also no need for sharing
+this driver at run time. Compile time selection would allow a more
+elegant and transparent implementation. Would that be an acceptable
+solution?
 
-On Wed, Feb 10, 2010 at 11:05:28AM +0100, Wolfgang Grandegger wrote:
-> From: Wolfgang Grandegger <wg@denx.de>
->=20
-> To prepare  support for the MPC512x processors from Freescale the
-> "setclock" initialization functions have been renamed to "setup"
-> because I2C interrupts must be enabled for the MPC512x by this
-> function as well.
->=20
-> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
-
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---MfFXiAuoTsnnDAfZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktyiKoACgkQD27XaX1/VRvbLACeOfNnwxjSG7CFOIRKM7wFwx0A
-bn4An2166t2pNPhSaRwgr1ixS2YKI6jX
-=qsek
------END PGP SIGNATURE-----
-
---MfFXiAuoTsnnDAfZ--
+Wolfgang.
