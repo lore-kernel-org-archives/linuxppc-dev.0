@@ -1,24 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
-	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 24156B7D5A
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 12:53:23 +1100 (EST)
-Received: by ywh11 with SMTP id 11so132562ywh.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Feb 2010 17:53:22 -0800 (PST)
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id 0FC6FB7D66
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Feb 2010 13:33:09 +1100 (EST)
+Received: by ywh11 with SMTP id 11so162345ywh.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Feb 2010 18:33:08 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <ad1b9321-b7ad-47a6-93ca-ca260ff2a66d@SG2EHSMHS011.ehs.local>
-References: <2ea396ca-3014-40f4-86ac-0e9f1aa82b5b@SG2EHSMHS005.ehs.local>
-	<1d3f23371002091430hb550153u602c8e7c010381b9@mail.gmail.com>
-	<ad1b9321-b7ad-47a6-93ca-ca260ff2a66d@SG2EHSMHS011.ehs.local>
+In-Reply-To: <1265377377-29327-3-git-send-email-agust@denx.de>
+References: <1265377377-29327-1-git-send-email-agust@denx.de>
+	<1265377377-29327-3-git-send-email-agust@denx.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 9 Feb 2010 18:53:01 -0700
-Message-ID: <fa686aa41002091753n36c59e3brd2b2174035e4933d@mail.gmail.com>
-Subject: Re: [PATCH] [V3] net: emaclite: adding MDIO and phy lib support
-To: John Linn <John.Linn@xilinx.com>
+Date: Tue, 9 Feb 2010 19:32:47 -0700
+Message-ID: <fa686aa41002091832y671c3cci4125b1923d535876@mail.gmail.com>
+Subject: Re: [PATCH v3 02/11] powerpc/mpc5121: Add machine restart support
+To: Anatolij Gustschin <agust@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Sadanand Mutyala <sadanan@xilinx.com>, jgarzik@pobox.com,
-	John Williams <john.williams@petalogix.com>
+Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de,
+	Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,81 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 9, 2010 at 4:00 PM, John Linn <John.Linn@xilinx.com> wrote:
->> -----Original Message-----
->> From: John Williams [mailto:john.williams@petalogix.com]
->> Sent: Tuesday, February 09, 2010 3:30 PM
->> To: John Linn
->> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org; jgarzik@pobox.com; =
-grant.likely@secretlab.ca;
->> jwboyer@linux.vnet.ibm.com; Sadanand Mutyala
->> Subject: Re: [PATCH] [V3] net: emaclite: adding MDIO and phy lib support
->>
->> Hi John,
->>
->> Sorry If I'm painting bike-sheds here, just one tiny tweak might be in
->> order to standardise your mutex_unlock exit path:
->>
->> > +static int xemaclite_mdio_read(struct mii_bus *bus, int phy_id, int r=
-eg)
->> > +{
->> > + =A0 =A0 =A0 struct net_local *lp =3D bus->priv;
->> > + =A0 =A0 =A0 u32 ctrl_reg;
->> > + =A0 =A0 =A0 u32 rc;
->> > +
->> > + =A0 =A0 =A0 mutex_lock(&lp->mdio_mutex);
->> > +
->> > + =A0 =A0 =A0 if (xemaclite_mdio_wait(lp)) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&lp->mdio_mutex);
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ETIMEDOUT;
->> > + =A0 =A0 =A0 }
->>
->> [snip]
->>
->>
->> > + =A0 =A0 =A0 if (xemaclite_mdio_wait(lp)) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&lp->mdio_mutex);
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ETIMEDOUT;
->> > + =A0 =A0 =A0 }
->>
->> [snip]
->>
->>
->> > + =A0 =A0 =A0 dev_dbg(&lp->ndev->dev,
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 "xemaclite_mdio_read(phy_id=3D%i, reg=3D=
-%x) =3D=3D %x\n",
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy_id, reg, rc);
->> > +
->> > + =A0 =A0 =A0 return rc;
->>
->> Can this be better expressed like this:
->>
->> my_func() {
->> =A0 mutex_lock()
->> ..
->>
->> =A0 if(some error) {
->> =A0 =A0 rc=3D-ETIMEDOUT;
->> =A0 =A0 goto out_unlock;
->> =A0 }
->> =A0 ...
->>
->> =A0 /* success path */
->> =A0 rc=3D0;
->> ..
->> out_unlock:
->> =A0 mutex_unlock()
->> =A0 return rc;
->> }
->>
->>
->> Is this style still favoured in driver exit paths?
+On Fri, Feb 5, 2010 at 6:42 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> Add reset module registers representation and
+> machine restart callback for mpc5121 platform.
 >
-> It looks to me like the mutex is not needed in the driver mdio functions =
-as there's a mutex in the mdiobus functions already.
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: John Rigby <jcrigby@gmail.com>
+> ---
+> Changes since v2:
+> =A0- call mpc512x_restart_init() explicitely from platform
+> =A0 init code
+>
+> Changes since v1:
+> =A0- use 'struct mpc512x_reset_module *' type for 'reset_module_base'
+> =A0- remove empty line
+> =A0- remove leftover colon and use pr_err() instead of printk.
+>
+> =A0arch/powerpc/include/asm/mpc5xxx.h =A0 =A0 =A0 =A0 =A0 =A0| =A0 14 +++=
+++++++-
+> =A0arch/powerpc/platforms/512x/mpc5121_ads.c =A0 =A0 | =A0 =A01 +
+> =A0arch/powerpc/platforms/512x/mpc5121_generic.c | =A0 =A01 +
+> =A0arch/powerpc/platforms/512x/mpc512x.h =A0 =A0 =A0 =A0 | =A0 =A01 +
+> =A0arch/powerpc/platforms/512x/mpc512x_shared.c =A0| =A0 34 +++++++++++++=
+++++++++++++
+> =A05 files changed, 50 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/mpc5xxx.h b/arch/powerpc/include/as=
+m/mpc5xxx.h
+> index 5ce9c5f..0004986 100644
+> --- a/arch/powerpc/include/asm/mpc5xxx.h
+> +++ b/arch/powerpc/include/asm/mpc5xxx.h
+> @@ -18,5 +18,17 @@
+>
+> =A0extern unsigned long mpc5xxx_get_bus_frequency(struct device_node *nod=
+e);
+>
+> -#endif /* __ASM_POWERPC_MPC5xxx_H__ */
+> +/* MPC512x Reset module registers */
+> +struct mpc512x_reset_module {
+> + =A0 =A0 =A0 u32 =A0 =A0 rcwlr; =A0/* Reset Configuration Word Low Regis=
+ter */
+> + =A0 =A0 =A0 u32 =A0 =A0 rcwhr; =A0/* Reset Configuration Word High Regi=
+ster */
+> + =A0 =A0 =A0 u32 =A0 =A0 reserved1;
+> + =A0 =A0 =A0 u32 =A0 =A0 reserved2;
+> + =A0 =A0 =A0 u32 =A0 =A0 rsr; =A0 =A0/* Reset Status Register */
+> + =A0 =A0 =A0 u32 =A0 =A0 rmr; =A0 =A0/* Reset Mode Register */
+> + =A0 =A0 =A0 u32 =A0 =A0 rpr; =A0 =A0/* Reset Protection Register */
+> + =A0 =A0 =A0 u32 =A0 =A0 rcr; =A0 =A0/* Reset Control Register */
+> + =A0 =A0 =A0 u32 =A0 =A0 rcer; =A0 /* Reset Control Enable Register */
+> +};
 
-Yes, you're correct, but you still need to protect against direct
-calls to the read/write routines from within the driver.  But you can
-probably use the mdio_lock mutex for this.
+This isn't useful for 5200.  Create a new file.
+arch/powerpc/include/asm/mpc5121.h
 
 g.
