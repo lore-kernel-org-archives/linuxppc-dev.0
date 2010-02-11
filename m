@@ -1,20 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DAF52B7DC1
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 03:59:30 +1100 (EST)
-In-Reply-To: <20100211163328.GC16348@lisas.de>
-References: <OF43B135B0.EF8D9CB9-ONC12576C7.00588245-C12576C7.00598135@transmode.se>
-	<20100211163328.GC16348@lisas.de>
-Subject: Re: Endian/__BYTE_ORDER question
-To: Adrian Reber <adrian@lisas.de>
-Message-ID: <OF918AA866.3ED427EB-ONC12576C7.005CBEE4-C12576C7.005CF730@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Thu, 11 Feb 2010 17:55:25 +0100
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp-out04.msg.oleane.net (smtp-out04.msg.oleane.net
+	[62.161.7.2]) by ozlabs.org (Postfix) with ESMTP id DF240B7CE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 07:16:25 +1100 (EST)
+Received: from smtp06.msg.oleane.net (smtp06.mail.priv [172.17.20.115])
+	by smtp-out04.msg.oleane.net with ESMTP id o1BIwnDg010135
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 19:58:49 +0100
+Received: from GEGE6600V (iconcept-gw.rain.fr [194.2.96.216]) (authenticated)
+	by smtp06.msg.oleane.net (MTA) with ESMTP id o1BIca2I032180
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 19:38:37 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: TR: Linux 2.6.x 82xx probe devices with multiple serial drivers
+Date: Thu, 11 Feb 2010 19:39:44 +0100
+Message-ID: <000901caab49$98517d00$a501a8c0@GEGE6600V>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adrian Reber <adrian@lisas.de> wrote on 2010/02/11 17:33:29:
->
-> On Thu, Feb 11, 2010 at 05:17:37PM +0100, Joakim Tjernlund wrote:
-> > I am getting confused about on how to test for Endian in the kernel code. In user
-> > space one uses #if __BYTE_ORDER == __LITTLE_ENDIAN or #if __BYTE_ORDER == __BIG_ENDIAN
-> >
-> > I can see lots of kernel headers using this test too, but it doesn't seem
-> > to be an arch specific file #defining __BYTE_ORDER. Instead I find files like:
-> >  arch/alpha/math-emu/sfp-util.h
-> >  arch/powerpc/include/asm/sfp-machine.h
-> >  arch/s390/include/asm/sfp-util.h
-> >  arch/sh/math-emu/sfp-util.h
-> >
-> > How is this supposed to work?
->
-> I have no idea how it is actually done in the kernel code... but gcc
-> defines it:
->
-> gcc -dM -E -x c - <<<'' | grep ENDIAN
-> #define __BIG_ENDIAN__ 1
-> #define _BIG_ENDIAN 1
 
-That doesn't define __BYTE_ORDER. Try the same gcc command
-on a file that #includes <stdlib.h> and you will get both
-__BIG_ENDIAN and __LITTLE_ENDIAN
+Hello,
 
-     Jocke
+I use a 82xx platform with a device tree which describes 4 SCC ports.
+I want to probe these 4 SCC ports against 2 serial drivers (e.g. async and
+sync).
+Each port is declared as compatible with the 2 drivers.
+
+When the first driver is loaded, all devices are probed and bound
+with this driver and cannot be probed against the second driver.
+
+I know that it can be a way to prevent against concurrent accesses but the
+configuration is static and depends on how the drivers are loaded.
+
+In fact, I want to load my 2 drivers, probe each entry without requesting
+any resource then select how to open my ports using the first or second
+driver.
+
+Any tips ?
+Thanks
+Laurent
