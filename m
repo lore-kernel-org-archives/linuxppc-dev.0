@@ -1,12 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Thu, 11 Feb 2010 15:07:54 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, markn@au1.ibm.com
-Subject: [PATCH] powerpc: pair loads and stores in copy_4k_page
-Message-ID: <20100211040754.GH3399@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 05687B7CCD
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 16:31:21 +1100 (EST)
+Subject: Re: register long sp asm("r1") incorrect
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz>
+References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Feb 2010 16:31:13 +1100
+Message-ID: <1265866273.16346.34.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,141 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2010-02-09 at 16:24 +0100, Pavel Machek wrote:
+> ...according to gcc docs, sp should be global, or placement in
+> register is not guaranteed (except at asm boundaries, but there are
+> none).
 
-A number of our chips like loads and stores to be paired. A small kernel
-module testcase shows the improvement of pairing loads and stores in 
-copy_4k_page:
+Sorry I'm not sure I grok what you mean.
 
-POWER6: +9%
-POWER7: +1.5%
-
-
-#include <linux/module.h>
-#include <linux/mm.h>
-
-#define ITERATIONS 10000000
-
-static int __init copypage_init(void)
-{
-	struct timespec before, after;
-	unsigned long i;
-	struct page *destpage, *srcpage;
-	char *dest, *src;
-
-	destpage = alloc_page(GFP_KERNEL);
-	srcpage = alloc_page(GFP_KERNEL);
-
-	dest = page_address(destpage);
-	src = page_address(srcpage);
-
-	getnstimeofday(&before);
-
-	for (i = 0; i < ITERATIONS; i++)
-		copy_4K_page(dest, src);
-
-	getnstimeofday(&after);
-
-	free_page((unsigned long)dest);
-	free_page((unsigned long)src);
-
-	printk(KERN_DEBUG "copy_4K_page loop took %lu ns\n",
-		(after.tv_sec - before.tv_sec) * NSEC_PER_SEC +
-		(after.tv_nsec - before.tv_nsec));
-
-	return 0;
-}
-
-static void __exit copypage_exit(void)
-{
-}
-
-module_init(copypage_init)
-module_exit(copypage_exit)
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Anton Blanchard");
-
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-diff --git a/arch/powerpc/lib/copypage_64.S b/arch/powerpc/lib/copypage_64.S
-index 75f3267..22b6c7b 100644
---- a/arch/powerpc/lib/copypage_64.S
-+++ b/arch/powerpc/lib/copypage_64.S
-@@ -43,62 +43,62 @@ END_FTR_SECTION_IFSET(CPU_FTR_CP_USE_DCBTZ)
- 	ld	r7,16(r4)
- 	ldu	r8,24(r4)
- 1:	std	r5,8(r3)
--	ld	r9,8(r4)
- 	std	r6,16(r3)
-+	ld	r9,8(r4)
- 	ld	r10,16(r4)
- 	std	r7,24(r3)
--	ld	r11,24(r4)
- 	std	r8,32(r3)
-+	ld	r11,24(r4)
- 	ld	r12,32(r4)
- 	std	r9,40(r3)
--	ld	r5,40(r4)
- 	std	r10,48(r3)
-+	ld	r5,40(r4)
- 	ld	r6,48(r4)
- 	std	r11,56(r3)
--	ld	r7,56(r4)
- 	std	r12,64(r3)
-+	ld	r7,56(r4)
- 	ld	r8,64(r4)
- 	std	r5,72(r3)
--	ld	r9,72(r4)
- 	std	r6,80(r3)
-+	ld	r9,72(r4)
- 	ld	r10,80(r4)
- 	std	r7,88(r3)
--	ld	r11,88(r4)
- 	std	r8,96(r3)
-+	ld	r11,88(r4)
- 	ld	r12,96(r4)
- 	std	r9,104(r3)
--	ld	r5,104(r4)
- 	std	r10,112(r3)
-+	ld	r5,104(r4)
- 	ld	r6,112(r4)
- 	std	r11,120(r3)
--	ld	r7,120(r4)
- 	stdu	r12,128(r3)
-+	ld	r7,120(r4)
- 	ldu	r8,128(r4)
- 	bdnz	1b
- 
- 	std	r5,8(r3)
--	ld	r9,8(r4)
- 	std	r6,16(r3)
-+	ld	r9,8(r4)
- 	ld	r10,16(r4)
- 	std	r7,24(r3)
--	ld	r11,24(r4)
- 	std	r8,32(r3)
-+	ld	r11,24(r4)
- 	ld	r12,32(r4)
- 	std	r9,40(r3)
--	ld	r5,40(r4)
- 	std	r10,48(r3)
-+	ld	r5,40(r4)
- 	ld	r6,48(r4)
- 	std	r11,56(r3)
--	ld	r7,56(r4)
- 	std	r12,64(r3)
-+	ld	r7,56(r4)
- 	ld	r8,64(r4)
- 	std	r5,72(r3)
--	ld	r9,72(r4)
- 	std	r6,80(r3)
-+	ld	r9,72(r4)
- 	ld	r10,80(r4)
- 	std	r7,88(r3)
--	ld	r11,88(r4)
- 	std	r8,96(r3)
-+	ld	r11,88(r4)
- 	ld	r12,96(r4)
- 	std	r9,104(r3)
- 	std	r10,112(r3)
+Cheers,
+Ben.
