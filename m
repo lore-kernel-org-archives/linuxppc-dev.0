@@ -1,24 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] Restrict initial stack space expansion to rlimit
-In-reply-to: <4B7481A6.7080300@gmx.de>
-References: <10733.1265752289@neuling.org> <4B71E13C.2050905@gmx.de>
-	<20100210141016.4D18.A69D9226@jp.fujitsu.com>
-	<17323.1265779867@neuling.org> <4B7481A6.7080300@gmx.de>
-Date: Fri, 12 Feb 2010 09:22:33 +1100
-Message-ID: <17278.1265926953@neuling.org>
-Cc: linux-parisc@vger.kernel.org, stable@kernel.org, aeb@cwi.nl,
-	Oleg Nesterov <oleg@redhat.com>, miltonm@bga.com,
-	James Morris <jmorris@namei.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Serge Hallyn <serue@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-	Americo Wang <xiyou.wangcong@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 5ABF6B7CCD
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 09:40:45 +1100 (EST)
+Received: by gxk28 with SMTP id 28so1506436gxk.9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 14:40:44 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <38677d6a-3f33-483c-8fbe-5f5c46d70140@VA3EHSMHS027.ehs.local>
+References: <38677d6a-3f33-483c-8fbe-5f5c46d70140@VA3EHSMHS027.ehs.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 11 Feb 2010 15:40:24 -0700
+Message-ID: <fa686aa41002111440x699b6b1ck97b14002ee9fe7b1@mail.gmail.com>
+Subject: Re: [PATCH] [V5] net: emaclite: adding MDIO and phy lib support
+To: John Linn <john.linn@xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,92 +25,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <4B7481A6.7080300@gmx.de> you wrote:
-> On 02/10/2010 06:31 AM, Michael Neuling wrote:
-> > In message<20100210141016.4D18.A69D9226@jp.fujitsu.com>  you wrote:
-> >>> On 02/09/2010 10:51 PM, Michael Neuling wrote:
-> >>>>>> I'd still like someone with a CONFIG_STACK_GROWSUP arch to test/ACK it
-> >>>>>> as well.
-> >>>>>
-> >>>>> There's only one CONFIG_GROWSUP arch - parisc.
-> >>>>> Could someone please test it on parisc?
-> >>>
-> >>> I did.
-> >>>
-> >>>> How about doing:
-> >>>>     'ulimit -s 15; ls'
-> >>>> before and after the patch is applied.  Before it's applied, 'ls' should
-> >>>> be killed.  After the patch is applied, 'ls' should no longer be killed.
-> >>>>
-> >>>> I'm suggesting a stack limit of 15KB since it's small enough to trigger
-> >>>> 20*PAGE_SIZE.  Also 15KB not a multiple of PAGE_SIZE, which is a trickie
-r
-> >>>> case to handle correctly with this code.
-> >>>>
-> >>>> 4K pages on parisc should be fine to test with.
-> >>>
-> >>> Mikey, thanks for the suggested test plan.
-> >>>
-> >>> I'm not sure if your patch does it correct for parisc/stack-grows-up-case
-.
-> >>>
-> >>> I tested your patch on  a 4k pages kernel:
-> >>> root@c3000:~# uname -a
-> >>> Linux c3000 2.6.33-rc7-32bit #221 Tue Feb 9 23:17:06 CET 2010 parisc GNU/
-Li
-> > nux
-> >>>
-> >>> Without your patch:
-> >>> root@c3000:~# ulimit -s 15; ls
-> >>> Killed
-> >>> ->  correct.
-> >>>
-> >>> With your patch:
-> >>> root@c3000:~# ulimit -s 15; ls
-> >>> Killed
-> >>> _or_:
-> >>> root@c3000:~# ulimit -s 15; ls
-> >>> Segmentation fault
-> >>> ->  ??
-> >>>
-> >>> Any idea?
-> >>
-> >> My x86_64 box also makes segmentation fault. I think "ulimit -s 15" is too
- sm
-> > all stack for ls.
-> >> "ulimit -s 27; ls "  wroks perfectly fine.
-> >
-> > Arrh.  I asked Helge offline earlier to check what use to work on parisc
-> > on 2.6.31.
-> >
-> > I guess PPC has a nice clean non-bloated ABI :-D
-> 
-> Hi Mikey,
-> 
-> I tested again, and it works for me with "ulimit -s 27" as well (on a
-> 4k, 32bit kernel).
-> Still, I'm not 100%  sure if your patch is correct.
+On Thu, Feb 11, 2010 at 3:12 PM, John Linn <john.linn@xilinx.com> wrote:
+> These changes add MDIO and phy lib support to the driver as the
+> IP core now supports the MDIO bus.
+>
+> The MDIO bus and phy are added as a child to the emaclite in the device
+> tree as illustrated below.
+>
+> mdio {
+> =A0 =A0 =A0 =A0#address-cells =3D <1>;
+> =A0 =A0 =A0 =A0#size-cells =3D <0>;
+> =A0 =A0 =A0 =A0phy0: phy@7 {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "marvell,88e1111";
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <7>;
+> =A0 =A0 =A0 =A0} ;
+> }
+>
+> Signed-off-by: Sadanand Mutyala <Sadanand.Mutyala@xilinx.com>
+> Signed-off-by: John Linn <john.linn@xilinx.com>
 
-Thanks for retesting
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Did "ulimit -s 27" fail before you applied?
+I've noticed one more problem below, but I'm okay with this being
+merged as-is and fixed up with a follow-on patch later.
 
-> Anyway, it seems to work.
-> 
-> But what makes me wonder is, why EXTRA_STACK_VM_PAGES is defined in pages at 
-all.
-> You wrote in your patch description:
-> > This bug means that when limiting the stack to less the 20*PAGE_SIZE (eg.
-> > 80K on 4K pages or 'ulimit -s 79') all processes will be killed before
-> > they start.  This is particularly bad with 64K pages, where a ulimit below
-> > 1280K will kill every process.
-> 
-> Wouldn't it make sense to define and use EXTRA_STACK_VM_SIZE instead
-> (e.g. as 20*4096 = 80k)?  This extra stack reservation should IMHO be
-> independend of the actual kernel page size.
+g.
 
-If you look back through this thread, that has already been noted but
-it's a separate issue to this bug, so that change will be deferred till
-2.6.34.
+> +/**
+> + * xemaclite_mdio_setup - Register mii_bus for the Emaclite device
+> + * @lp: =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Pointer to the Emaclite device pr=
+ivate data
+> + * @ofdev: =A0 =A0 Pointer to OF device structure
+> + *
+> + * This function enables MDIO bus in the Emaclite device and registers a
+> + * mii_bus.
+> + *
+> + * Return: =A0 =A0 0 upon success or a negative error upon failure
+> + */
+> +static int xemaclite_mdio_setup(struct net_local *lp, struct device *dev=
+)
+> +{
+> + =A0 =A0 =A0 struct mii_bus *bus;
+> + =A0 =A0 =A0 int rc;
+> + =A0 =A0 =A0 struct resource res;
+> + =A0 =A0 =A0 struct device_node *np =3D of_get_parent(lp->phy_node);
+> +
+> + =A0 =A0 =A0 /* Don't register the MDIO bus if the phy_node or its paren=
+t node
+> + =A0 =A0 =A0 =A0* can't be found.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 if (!np)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
 
-Mikey
+This doesn't make sense.  The MDIO bus registration should not be
+conditional on whether or not this particular xemaclite instance has a
+phy on this particular bus.  Instead of following the mac
+--(phandle)--> phy-device --(parent)--> mdio node linkage, this
+function should look at the mac nodes children to find the mdio node.
+
+In fact, now that I think about it, the code is actually dangerous,
+because it may try and register a different mdio bus node as its own.
+
+> +
+> + =A0 =A0 =A0 /* Enable the MDIO bus by asserting the enable bit in MDIO =
+Control
+> + =A0 =A0 =A0 =A0* register.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 out_be32(lp->base_addr + XEL_MDIOCTRL_OFFSET,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0XEL_MDIOCTRL_MDIOEN_MASK);
+> +
+> + =A0 =A0 =A0 bus =3D mdiobus_alloc();
+> + =A0 =A0 =A0 if (!bus)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+> +
+> + =A0 =A0 =A0 of_address_to_resource(np, 0, &res);
+> + =A0 =A0 =A0 snprintf(bus->id, MII_BUS_ID_SIZE, "%.8llx",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(unsigned long long)res.start);
+> + =A0 =A0 =A0 bus->priv =3D lp;
+> + =A0 =A0 =A0 bus->name =3D "Xilinx Emaclite MDIO";
+> + =A0 =A0 =A0 bus->read =3D xemaclite_mdio_read;
+> + =A0 =A0 =A0 bus->write =3D xemaclite_mdio_write;
+> + =A0 =A0 =A0 bus->reset =3D xemaclite_mdio_reset;
+> + =A0 =A0 =A0 bus->parent =3D dev;
+> + =A0 =A0 =A0 bus->irq =3D lp->mdio_irqs; /* preallocated IRQ table */
+> +
+> + =A0 =A0 =A0 lp->mii_bus =3D bus;
+> +
+> + =A0 =A0 =A0 rc =3D of_mdiobus_register(bus, np);
+> + =A0 =A0 =A0 if (rc)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_register;
+> +
+> + =A0 =A0 =A0 return 0;
+> +
+> +err_register:
+> + =A0 =A0 =A0 mdiobus_free(bus);
+> + =A0 =A0 =A0 return rc;
+> +}
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
