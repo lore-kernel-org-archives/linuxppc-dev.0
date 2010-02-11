@@ -1,17 +1,18 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 79FC5B7D94
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 03:35:58 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
+Return-Path: <adrian@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rhlx01.hs-esslingen.de", Issuer "HE CA - G02" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2B376B7D9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 03:40:55 +1100 (EST)
+Date: Thu, 11 Feb 2010 17:33:29 +0100
+From: Adrian Reber <adrian@lisas.de>
 To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 Subject: Re: Endian/__BYTE_ORDER question
+Message-ID: <20100211163328.GC16348@lisas.de>
 References: <OF43B135B0.EF8D9CB9-ONC12576C7.00588245-C12576C7.00598135@transmode.se>
-Date: Thu, 11 Feb 2010 17:35:54 +0100
-In-Reply-To: <OF43B135B0.EF8D9CB9-ONC12576C7.00588245-C12576C7.00598135@transmode.se>
-	(Joakim Tjernlund's message of "Thu, 11 Feb 2010 17:17:37 +0100")
-Message-ID: <m2sk977ms5.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF43B135B0.EF8D9CB9-ONC12576C7.00588245-C12576C7.00598135@transmode.se>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,18 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund <joakim.tjernlund@transmode.se> writes:
-
+On Thu, Feb 11, 2010 at 05:17:37PM +0100, Joakim Tjernlund wrote:
 > I am getting confused about on how to test for Endian in the kernel code. In user
 > space one uses #if __BYTE_ORDER == __LITTLE_ENDIAN or #if __BYTE_ORDER == __BIG_ENDIAN
->
-> I can see lots of kernel headers using this test too
+> 
+> I can see lots of kernel headers using this test too, but it doesn't seem
+> to be an arch specific file #defining __BYTE_ORDER. Instead I find files like:
+>  arch/alpha/math-emu/sfp-util.h
+>  arch/powerpc/include/asm/sfp-machine.h
+>  arch/s390/include/asm/sfp-util.h
+>  arch/sh/math-emu/sfp-util.h
+> 
+> How is this supposed to work?
 
-Only outside of __KERNEL__.
+I have no idea how it is actually done in the kernel code... but gcc
+defines it:
 
-Andreas.
+gcc -dM -E -x c - <<<'' | grep ENDIAN
+#define __BIG_ENDIAN__ 1
+#define _BIG_ENDIAN 1
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+		Adrian
