@@ -1,21 +1,11 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2545B7CB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 11:06:31 +1100 (EST)
-Message-ID: <4B7349F2.8030802@freescale.com>
-Date: Wed, 10 Feb 2010 18:06:10 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 11 Feb 2010 11:56:26 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Improve 64bit copy_tofrom_user
+Message-ID: <20100211005626.GG3399@kryten>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf_event: e500 support
-References: <20100115214351.GA2869@loki.buserror.net>
-	<20100210222932.GA9844@brick.ozlabs.ibm.com>
-In-Reply-To: <20100210222932.GA9844@brick.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,81 +16,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
->> Some limitations:
->> - No threshold support -- need to figure out how to represent it in
->>   the event struct from userspace.
-> 
-> What does "threshold support" mean in this context?  Does it mean
-> something different from getting an interrupt after N events have been
-> counted?  Or does it mean counting instances where something takes
-> longer than a specific number of cycles?
 
-The latter.
+Here is a patch from Paul Mackerras that improves the ppc64 copy_tofrom_user.
+The loop now does 32 bytes at a time and as well as pairing loads and stores.
 
->> - When trying to schedule multiple event groups at once, and using
->>   restricted events, situations could arise where scheduling fails even
->>   though it would be possible.  Consider three groups, each with two events.
->>   One group has restricted events, the others don't.  The two non-restricted
->>   groups are scheduled, then one is removed, which happens to occupy the two
->>   counters that can't do restricted events.  The remaining non-restricted
->>   group will not be moved to the non-restricted-capable counters to make
->>   room if the restricted group tries to be scheduled.  Since thresholds are
->>   not yet supported (though you can use the events with a threshold of
->>   zero), and threshold events are the only restricted events, this seems
->>   like a low priority issue.
-> 
-> Which way around are the restrictions?  That some events can only be
-> counted on certain counters, or that some counters can only count a
-> subset of the available events?
+A quick test case that reads 8kB over and over shows the improvement:
 
-You could look at it either way -- threshold-capable events can only go on 
-counters 0-1, or counters 2-3 can only count non-threshold-capable events.
+POWER6: 53% faster
+POWER7: 51% faster
 
-> Did you look at the constraint satisfaction code in the existing
-> perf_event.c and p*-pmu.c?  That lets you express both sorts of
-> restrictions and automatically find the best solution (including
-> moving events from one counter to another like you describe).
 
-I did look at it -- but I had a hard time understanding it, and went with the 
-simpler approach for now since the constraints are minimal on these chips.  I'm 
-open to converting with a little help, if it doesn't add too much complexity or 
-if future chips need it.
+#define _XOPEN_SOURCE 500
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
->> +#ifdef CONFIG_FSL_EMB_PERFMON
->> +#define MAX_HWEVENTS 4
->> +
->> +/* event flags */
->> +#define FSL_EMB_EVENT_VALID 1
->> +#define FSL_EMB_EVENT_RESTRICTED 2
->> +
->> +struct power_pmu {
-> 
-> I wonder if we should have just the stuff exported to the core in
-> asm/perf_event.h and move MAX_HWEVENTS, struct power_pmu etc. to
-> separate headers for fsl_embedded, classic, etc.?
+#define BUFSIZE (8 * 1024)
+#define ITERATIONS 10000000
 
-Maybe.  We may also want to consider making it runtime selectable, as later 
-revisions of e300 have an e500-style performance counter.  There's also a 
-separate platform-level performance counter on some of our chips; having arch 
-infrastructure that can delegate to multiple counter types would help there as well.
+int main()
+{
+	char tmpfile[] = "/tmp/copy_to_user_testXXXXXX";
+	int fd;
+	char *buf[BUFSIZE];
+	unsigned long i;
 
->> --- a/arch/powerpc/kernel/Makefile
->> +++ b/arch/powerpc/kernel/Makefile
->> @@ -98,7 +98,10 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
->>  
->>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
->>  obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
->> -obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o perf_callchain.o
->> +obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
->> +obj-$(CONFIG_FSL_EMB_PERF_EVENT) += perf_event_fsl_emb.o
->> +obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o
->> +obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
-> 
-> This is because we want perf_callchain.o even if we don't have
-> hardware PMU support, is it?  If so this is a separate fix that
-> deserves its own patch.
+	fd = mkstemp(tmpfile);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
 
-OK.
+	if (write(fd, buf, BUFSIZE) != BUFSIZE) {
+		perror("open");
+		exit(1);
+	}
 
--Scott
+	for (i = 0; i < 10000000; i++) {
+		if (pread(fd, buf, BUFSIZE, 0) != BUFSIZE) {
+			perror("pread");
+			exit(1);
+		}
+	}
+
+	unlink(tmpfile);
+
+	return 0;
+}
+
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: powerpc.git/arch/powerpc/lib/copyuser_64.S
+===================================================================
+--- powerpc.git.orig/arch/powerpc/lib/copyuser_64.S	2009-02-27 14:09:46.000000000 +1100
++++ powerpc.git/arch/powerpc/lib/copyuser_64.S	2010-02-11 11:12:37.646821713 +1100
+@@ -44,37 +44,55 @@ BEGIN_FTR_SECTION
+ 	andi.	r0,r4,7
+ 	bne	.Lsrc_unaligned
+ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+-	srdi	r7,r5,4
+-20:	ld	r9,0(r4)
+-	addi	r4,r4,-8
+-	mtctr	r7
+-	andi.	r5,r5,7
+-	bf	cr7*4+0,22f
+-	addi	r3,r3,8
+-	addi	r4,r4,8
+-	mr	r8,r9
+-	blt	cr1,72f
+-21:	ld	r9,8(r4)
+-70:	std	r8,8(r3)
+-22:	ldu	r8,16(r4)
+-71:	stdu	r9,16(r3)
++	blt	cr1,.Ldo_tail		/* if < 16 bytes to copy */
++	srdi	r0,r5,5
++	cmpdi	cr1,r0,0
++20:	ld	r7,0(r4)
++220:	ld	r6,8(r4)
++	addi	r4,r4,16
++	mtctr	r0
++	andi.	r0,r5,0x10
++	beq	22f
++	addi	r3,r3,16
++	addi	r4,r4,-16
++	mr	r9,r7
++	mr	r8,r6
++	beq	cr1,72f
++21:	ld	r7,16(r4)
++221:	ld	r6,24(r4)
++	addi	r4,r4,32
++70:	std	r9,0(r3)
++270:	std	r8,8(r3)
++22:	ld	r9,0(r4)
++222:	ld	r8,8(r4)
++71:	std	r7,16(r3)
++271:	std	r6,24(r3)
++	addi	r3,r3,32
+ 	bdnz	21b
+-72:	std	r8,8(r3)
++72:	std	r9,0(r3)
++272:	std	r8,8(r3)
++	andi.	r5,r5,0xf
+ 	beq+	3f
+-	addi	r3,r3,16
++	addi	r4,r4,16
+ .Ldo_tail:
+-	bf	cr7*4+1,1f
+-23:	lwz	r9,8(r4)
++	addi	r3,r3,16
++	bf	cr7*4+0,246f
++244:	ld	r9,0(r4)
++	addi	r4,r4,8
++245:	std	r9,0(r3)
++	addi	r3,r3,8
++246:	bf	cr7*4+1,1f
++23:	lwz	r9,0(r4)
+ 	addi	r4,r4,4
+ 73:	stw	r9,0(r3)
+ 	addi	r3,r3,4
+ 1:	bf	cr7*4+2,2f
+-44:	lhz	r9,8(r4)
++44:	lhz	r9,0(r4)
+ 	addi	r4,r4,2
+ 74:	sth	r9,0(r3)
+ 	addi	r3,r3,2
+ 2:	bf	cr7*4+3,3f
+-45:	lbz	r9,8(r4)
++45:	lbz	r9,0(r4)
+ 75:	stb	r9,0(r3)
+ 3:	li	r3,0
+ 	blr
+@@ -220,7 +238,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 131:
+ 	addi	r3,r3,8
+ 120:
++320:
+ 122:
++322:
+ 124:
+ 125:
+ 126:
+@@ -229,9 +249,11 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 129:
+ 133:
+ 	addi	r3,r3,8
+-121:
+ 132:
+ 	addi	r3,r3,8
++121:
++321:
++344:
+ 134:
+ 135:
+ 138:
+@@ -303,18 +325,22 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 183:
+ 	add	r3,r3,r7
+ 	b	1f
++371:
+ 180:
+ 	addi	r3,r3,8
+ 171:
+ 177:
+ 	addi	r3,r3,8
+-170:
+-172:
++370:
++372:
+ 176:
+ 178:
+ 	addi	r3,r3,4
+ 185:
+ 	addi	r3,r3,4
++170:
++172:
++345:
+ 173:
+ 174:
+ 175:
+@@ -341,11 +367,19 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	.section __ex_table,"a"
+ 	.align	3
+ 	.llong	20b,120b
++	.llong	220b,320b
+ 	.llong	21b,121b
++	.llong	221b,321b
+ 	.llong	70b,170b
++	.llong	270b,370b
+ 	.llong	22b,122b
++	.llong	222b,322b
+ 	.llong	71b,171b
++	.llong	271b,371b
+ 	.llong	72b,172b
++	.llong	272b,372b
++	.llong	244b,344b
++	.llong	245b,345b
+ 	.llong	23b,123b
+ 	.llong	73b,173b
+ 	.llong	44b,144b
