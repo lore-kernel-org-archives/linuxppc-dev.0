@@ -1,20 +1,19 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 8688BB7CEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 18:09:18 +1100 (EST)
-Date: Thu, 11 Feb 2010 18:09:14 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 6/6] powerpc: Use lwsync for acquire barrier if CPU
-	supports it
-Message-ID: <20100211070914.GB6735@laptop>
-References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
-	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
-	<20100210110719.GE3399@kryten> <20100210111025.GF3399@kryten>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 40B2EB7CBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Feb 2010 03:19:29 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id D4F5F650002
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Feb 2010 17:19:23 +0100 (CET)
+Subject: Endian/__BYTE_ORDER question
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF43B135B0.EF8D9CB9-ONC12576C7.00588245-C12576C7.00598135@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 11 Feb 2010 17:17:37 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100210111025.GF3399@kryten>
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 10, 2010 at 10:10:25PM +1100, Anton Blanchard wrote:
-> 
-> Nick Piggin discovered that lwsync barriers around locks were faster than isync
-> on 970. That was a long time ago and I completely dropped the ball in testing
-> his patches across other ppc64 processors.
-> 
-> Turns out the idea helps on other chips. Using a microbenchmark that
-> uses a lot of threads to contend on a global pthread mutex (and therefore a
-> global futex), POWER6 improves 8% and POWER7 improves 2%. I checked POWER5
-> and while I couldn't measure an improvement, there was no regression.
 
-Ah, good to see this one come back. I also tested tbench over localhost
-btw which actually did show some speedup on the G5. 
+I am getting confused about on how to test for Endian in the kernel code. In user
+space one uses #if __BYTE_ORDER == __LITTLE_ENDIAN or #if __BYTE_ORDER == __BIG_ENDIAN
 
-BTW. this was the last thing left:
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg29738.html
+I can see lots of kernel headers using this test too, but it doesn't seem
+to be an arch specific file #defining __BYTE_ORDER. Instead I find files like:
+ arch/alpha/math-emu/sfp-util.h
+ arch/powerpc/include/asm/sfp-machine.h
+ arch/s390/include/asm/sfp-util.h
+ arch/sh/math-emu/sfp-util.h
 
-Don't know if you took a look at that again, but maybe it's worth
-looking at. Hmm, we do actually seem to be growing number of smp_mb*
-calls in core kernel too.
+How is this supposed to work?
+
+    Jocke
