@@ -1,30 +1,27 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <bjorn.helgaas@hp.com>
+Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7172CB7D0D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 13 Feb 2010 00:03:31 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o1CCv9Z3006871
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2010 05:57:09 -0700
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1CD38pd034354
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2010 06:03:10 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o1CD37XW004510
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Feb 2010 06:03:07 -0700
-Date: Fri, 12 Feb 2010 08:02:56 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'next' branch of 4xx tree
-Message-ID: <20100212130256.GD16178@zod.rchland.ibm.com>
+	(Client CN "smtp1.hp.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 692ABB6F0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 04:05:25 +1100 (EST)
+Subject: [PATCH v3 1/7] PCI: split up pci_read_bridge_bases()
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date: Fri, 12 Feb 2010 09:59:52 -0700
+Message-ID: <20100212165952.19522.19555.stgit@bob.kio>
+In-Reply-To: <20100212165532.19522.47240.stgit@bob.kio>
+References: <20100212165532.19522.47240.stgit@bob.kio>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
+	Peter Haight <peterh@sapros.com>,
+	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
+	linux-alpha@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Yinghai Lu <yinghai@kernel.org>, Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +31,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
 
-Some updates for various boards from Stefan.  I don't have anything else at
-the moment, so I thought I'd get this rolled into your tree now.
+No functional change; this breaks up pci_read_bridge_bases() into separate
+pieces for the I/O, memory, and prefetchable memory windows, similar to how
+Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
 
-josh
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
 
-The following changes since commit b919ee827e048826786fd7e889a2b04f63382fe6:
-  Anton Blanchard (1):
-        powerpc: Only print clockevent settings once
+ drivers/pci/probe.c |   54 +++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 39 insertions(+), 15 deletions(-)
 
-are available in the git repository at:
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
-
-Stefan Roese (6):
-      powerpc/44x: Fix L2-cache support for 460GT
-      powerpc/44x: Add MTD support (NOR FLASH) to Katmai dts
-      powerpc/44x: Update Arches dts
-      powerpc/44x: Update Glacier dts
-      powerpc/44x: Add MTD support to katmai defconfig
-      powerpc/40x: Add support for PPC40x boards with > 512MB SDRAM
-
- arch/powerpc/boot/dts/arches.dts          |   12 ++++
- arch/powerpc/boot/dts/glacier.dts         |   76 ++++++++++++++++++++---
- arch/powerpc/boot/dts/katmai.dts          |   71 ++++++++++++++++------
- arch/powerpc/configs/44x/katmai_defconfig |   94 +++++++++++++++++++++++++++--
- arch/powerpc/mm/40x_mmu.c                 |    4 +-
- arch/powerpc/sysdev/ppc4xx_soc.c          |    3 +-
- 6 files changed, 224 insertions(+), 36 deletions(-)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index d300943..3d305c1 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -281,26 +281,12 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
+ 	}
+ }
+ 
+-void __devinit pci_read_bridge_bases(struct pci_bus *child)
++static void __devinit pci_read_bridge_io(struct pci_bus *child)
+ {
+ 	struct pci_dev *dev = child->self;
+ 	u8 io_base_lo, io_limit_lo;
+-	u16 mem_base_lo, mem_limit_lo;
+ 	unsigned long base, limit;
+ 	struct resource *res;
+-	int i;
+-
+-	if (pci_is_root_bus(child))	/* It's a host bus, nothing to read */
+-		return;
+-
+-	dev_info(&dev->dev, "PCI bridge to [bus %02x-%02x]%s\n",
+-		 child->secondary, child->subordinate,
+-		 dev->transparent ? " (subtractive decode)": "");
+-
+-	if (dev->transparent) {
+-		for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
+-			child->resource[i] = child->parent->resource[i - 3];
+-	}
+ 
+ 	res = child->resource[0];
+ 	pci_read_config_byte(dev, PCI_IO_BASE, &io_base_lo);
+@@ -328,6 +314,14 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			 "  bridge window [io  %04lx - %04lx] reg reading\n",
+ 				 base, limit);
+ 	}
++}
++
++static void __devinit pci_read_bridge_mmio(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	u16 mem_base_lo, mem_limit_lo;
++	unsigned long base, limit;
++	struct resource *res;
+ 
+ 	res = child->resource[1];
+ 	pci_read_config_word(dev, PCI_MEMORY_BASE, &mem_base_lo);
+@@ -344,6 +338,14 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			"  bridge window [mem 0x%08lx - 0x%08lx] reg reading\n",
+ 					 base, limit + 0xfffff);
+ 	}
++}
++
++static void __devinit pci_read_bridge_mmio_pref(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	u16 mem_base_lo, mem_limit_lo;
++	unsigned long base, limit;
++	struct resource *res;
+ 
+ 	res = child->resource[2];
+ 	pci_read_config_word(dev, PCI_PREF_MEMORY_BASE, &mem_base_lo);
+@@ -389,6 +391,28 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 	}
+ }
+ 
++void __devinit pci_read_bridge_bases(struct pci_bus *child)
++{
++	struct pci_dev *dev = child->self;
++	int i;
++
++	if (pci_is_root_bus(child))	/* It's a host bus, nothing to read */
++		return;
++
++	dev_info(&dev->dev, "PCI bridge to [bus %02x-%02x]%s\n",
++		 child->secondary, child->subordinate,
++		 dev->transparent ? " (subtractive decode)": "");
++
++	if (dev->transparent) {
++		for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
++			child->resource[i] = child->parent->resource[i - 3];
++	}
++
++	pci_read_bridge_io(child);
++	pci_read_bridge_mmio(child);
++	pci_read_bridge_mmio_pref(child);
++}
++
+ static struct pci_bus * pci_alloc_bus(void)
+ {
+ 	struct pci_bus *b;
