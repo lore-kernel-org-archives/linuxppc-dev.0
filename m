@@ -3,16 +3,13 @@ Received: from g4t0017.houston.hp.com (g4t0017.houston.hp.com [15.201.24.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp1.hp.com",
 	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B2862B7080
+	by ozlabs.org (Postfix) with ESMTPS id DA426B7CD5
 	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 04:10:13 +1100 (EST)
-Subject: [PATCH v3 6/7] PCI: break out primary/secondary/subordinate for
-	readability
+Subject: [PATCH v3 0/7] PCI: try "pci=use_crs" again
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date: Fri, 12 Feb 2010 10:00:17 -0700
-Message-ID: <20100212170017.19522.97245.stgit@bob.kio>
-In-Reply-To: <20100212165532.19522.47240.stgit@bob.kio>
-References: <20100212165532.19522.47240.stgit@bob.kio>
+Date: Fri, 12 Feb 2010 09:59:46 -0700
+Message-ID: <20100212165532.19522.47240.stgit@bob.kio>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
@@ -32,79 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Historically, Linux has assumed a single PCI host bridge, with that bridge
+claiming all the address space left after RAM and legacy devices are taken out.
 
-No functional change; just add names for the primary/secondary/subordinate
-bus numbers read from config space rather than repeatedly masking/shifting.
+If the system contains multiple host bridges, we can no longer operate under
+that assumption.  We have to know what parts of the address space are claimed
+by each bridge so that when we assign resources to a PCI device, we take them
+from a range claimed by the upstream host bridge.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in the
+system, and part of the host bridge description is the "_CRS" (current resource
+settings" property, which lists the address space used by the bridge.  On x86,
+we currently ignore most of the _CRS information.  This patch series changes
+this, so we will use _CRS to learn about the host bridge windows.
+
+Since most x86 machines with multiple host bridges are relatively new, this
+series only turns this on for machines with BIOS dates of 2008 or newer.
+
+Changes from v2 to v3:
+    - Fix alpha, powerpc, and mn10300 references to pci_bus resource table
+    - Turn on "pci=use_crs" for 2008 and newer, not 2010 and newer
+    - Remove Toshiba A355 quirk (BIOS date is 2009, so automatically included)
+    - Remove IBM x3850 and x3950 quirks (BIOS dates in 2008, so automatically
+      included)
+    - Leave IBM x3800 quirk (pre-2008 BIOS)
+    - Use "bool" for pci_use_crs (new to me, but I see akpm suggesting it)
+    - Reorder so the important patches are first
+
+Changes from v1 to v2:
+    - Rebase to be6e9f7853e
+    - Add patch to clean up "disabled window" printk
+    - Add bugzilla reference comment in use_crs DMI quirk
+
 ---
 
- drivers/pci/probe.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
+Bjorn Helgaas (7):
+      PCI: split up pci_read_bridge_bases()
+      PCI: read bridge windows before filling in subtractive decode resources
+      PCI: replace bus resource table with a list
+      x86/PCI: use host bridge _CRS info by default on 2008 and newer machines
+      PCI: make disabled window printk style match the enabled ones
+      PCI: break out primary/secondary/subordinate for readability
+      PCI: reference bridge window resources explicitly
 
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index dacdeae..04e7e97 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -671,16 +671,20 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
- 	int is_cardbus = (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS);
- 	u32 buses, i, j = 0;
- 	u16 bctl;
-+	u8 primary, secondary, subordinate;
- 	int broken = 0;
- 
- 	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
-+	primary = buses & 0xFF;
-+	secondary = (buses >> 8) & 0xFF;
-+	subordinate = (buses >> 16) & 0xFF;
- 
--	dev_dbg(&dev->dev, "scanning behind bridge, config %06x, pass %d\n",
--		buses & 0xffffff, pass);
-+	dev_dbg(&dev->dev, "scanning [bus %02x-%02x] behind bridge, pass %d\n",
-+		secondary, subordinate, pass);
- 
- 	/* Check if setup is sensible at all */
- 	if (!pass &&
--	    ((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
-+	    (primary != bus->number || secondary <= bus->number)) {
- 		dev_dbg(&dev->dev, "bus configuration invalid, reconfiguring\n");
- 		broken = 1;
- 	}
-@@ -691,15 +695,15 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
- 	pci_write_config_word(dev, PCI_BRIDGE_CONTROL,
- 			      bctl & ~PCI_BRIDGE_CTL_MASTER_ABORT);
- 
--	if ((buses & 0xffff00) && !pcibios_assign_all_busses() && !is_cardbus && !broken) {
--		unsigned int cmax, busnr;
-+	if ((secondary || subordinate) && !pcibios_assign_all_busses() &&
-+	    !is_cardbus && !broken) {
-+		unsigned int cmax;
- 		/*
- 		 * Bus already configured by firmware, process it in the first
- 		 * pass and just note the configuration.
- 		 */
- 		if (pass)
- 			goto out;
--		busnr = (buses >> 8) & 0xFF;
- 
- 		/*
- 		 * If we already got to this bus through a different bridge,
-@@ -708,13 +712,13 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
- 		 * However, we continue to descend down the hierarchy and
- 		 * scan remaining child buses.
- 		 */
--		child = pci_find_bus(pci_domain_nr(bus), busnr);
-+		child = pci_find_bus(pci_domain_nr(bus), secondary);
- 		if (!child) {
--			child = pci_add_new_bus(bus, dev, busnr);
-+			child = pci_add_new_bus(bus, dev, secondary);
- 			if (!child)
- 				goto out;
--			child->primary = buses & 0xFF;
--			child->subordinate = (buses >> 16) & 0xFF;
-+			child->primary = primary;
-+			child->subordinate = subordinate;
- 			child->bridge_ctl = bctl;
- 		}
- 
+ Documentation/kernel-parameters.txt  |    8 +-
+ arch/alpha/kernel/pci.c              |    5 +
+ arch/ia64/include/asm/acpi.h         |    1 
+ arch/ia64/pci/pci.c                  |   20 ++--
+ arch/mn10300/unit-asb2305/pci.c      |    7 +
+ arch/powerpc/kernel/pci-common.c     |   26 +++--
+ arch/powerpc/kernel/pci_64.c         |   18 ++--
+ arch/powerpc/kernel/pci_of_scan.c    |   12 ++
+ arch/powerpc/platforms/fsl_uli1575.c |   15 ++-
+ arch/x86/include/asm/pci_x86.h       |    1 
+ arch/x86/pci/acpi.c                  |   82 ++++++++++-------
+ arch/x86/pci/bus_numa.c              |    9 +-
+ arch/x86/pci/bus_numa.h              |    3 -
+ arch/x86/pci/common.c                |    3 +
+ drivers/acpi/pci_root.c              |    1 
+ drivers/eisa/pci_eisa.c              |    4 -
+ drivers/pci/bus.c                    |   50 ++++++++++
+ drivers/pci/hotplug/shpchp_sysfs.c   |   15 ++-
+ drivers/pci/pci.c                    |    6 +
+ drivers/pci/probe.c                  |  108 +++++++++++++++-------
+ drivers/pci/quirks.c                 |    4 -
+ drivers/pci/setup-bus.c              |  168 +++++++++++++++++-----------------
+ drivers/pcmcia/rsrc_nonstatic.c      |    7 +
+ drivers/pcmcia/yenta_socket.c        |   46 +++++----
+ include/acpi/acpi_drivers.h          |    1 
+ include/linux/pci.h                  |   27 ++++-
+ 26 files changed, 401 insertions(+), 246 deletions(-)
