@@ -1,19 +1,19 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-px0-f187.google.com (mail-px0-f187.google.com
-	[209.85.216.187]) by ozlabs.org (Postfix) with ESMTP id 974F4B7DD7
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 03:02:42 +1100 (EST)
-Received: by pxi17 with SMTP id 17so834000pxi.11
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 08:02:41 -0800 (PST)
+Received: from mail-pz0-f191.google.com (mail-pz0-f191.google.com
+	[209.85.222.191]) by ozlabs.org (Postfix) with ESMTP id 23861B7D8F
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 03:02:44 +1100 (EST)
+Received: by mail-pz0-f191.google.com with SMTP id 29so4673738pzk.17
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 08:02:44 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/9] proc_devtree: fix THIS_MODULE without module.h
+Subject: [PATCH 3/9] of: protect linux/of.h with CONFIG_OF
 To: monstr@monstr.eu, sfr@canb.auug.org.au, benh@kernel.crashing.org,
 	jeremy.kerr@canonical.com, davem@davemloft.net,
 	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@ozlabs.org,
 	sparclinux@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Date: Sat, 13 Feb 2010 09:02:37 -0700
-Message-ID: <20100213160236.4767.48310.stgit@angua>
+Date: Sat, 13 Feb 2010 09:02:42 -0700
+Message-ID: <20100213160242.4767.57641.stgit@angua>
 In-Reply-To: <20100213154838.4767.83881.stgit@angua>
 References: <20100213154838.4767.83881.stgit@angua>
 MIME-Version: 1.0
@@ -29,31 +29,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Jeremy Kerr <jeremy.kerr@canonical.com>
 
-Commit e22f628395432b967f2f505858c64450f7835365 introduced a build
-breakage for ARM devtree work: the THIS_MODULE macro was added, but we
-don't have module.h
-
-This change adds the necessary #include to get THIS_MODULE defined.
-While we could just replace it with NULL (PROC_FS is a bool, not a
-tristate), using THIS_MODULE will prevent unexpected breakage if we
-ever do compile this as a module.
+For platforms that have CONFIG_OF optional, we need to make the contents
+of linux/of.h conditional on CONFIG_OF.
 
 Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- fs/proc/proc_devtree.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ include/linux/of.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/fs/proc/proc_devtree.c b/fs/proc/proc_devtree.c
-index 0ec4511..f8650dc 100644
---- a/fs/proc/proc_devtree.c
-+++ b/fs/proc/proc_devtree.c
-@@ -11,6 +11,7 @@
- #include <linux/stat.h>
- #include <linux/string.h>
- #include <linux/of.h>
-+#include <linux/module.h>
- #include <asm/prom.h>
- #include <asm/uaccess.h>
- #include "internal.h"
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 5c7b6a6..48b0ee6 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -22,6 +22,8 @@
+ 
+ #include <asm/byteorder.h>
+ 
++#ifdef CONFIG_OF
++
+ typedef u32 phandle;
+ typedef u32 ihandle;
+ 
+@@ -194,4 +196,5 @@ extern void of_attach_node(struct device_node *);
+ extern void of_detach_node(struct device_node *);
+ #endif
+ 
++#endif /* CONFIG_OF */
+ #endif /* _LINUX_OF_H */
