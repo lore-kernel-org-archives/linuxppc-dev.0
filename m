@@ -1,20 +1,20 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-px0-f187.google.com (mail-px0-f187.google.com
-	[209.85.216.187]) by ozlabs.org (Postfix) with ESMTP id 4D478B83D7
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 03:03:12 +1100 (EST)
+	[209.85.216.187]) by ozlabs.org (Postfix) with ESMTP id EFAFCB7FEC
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 03:03:17 +1100 (EST)
 Received: by mail-px0-f187.google.com with SMTP id 17so834000pxi.11
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 08:03:11 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Feb 2010 08:03:17 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 8/9] of/sparc: Remove sparc-local declaration of allnodes and
-	devtree_lock
+Subject: [PATCH 9/9] of: remove undefined request_OF_resource &
+	release_OF_resource
 To: monstr@monstr.eu, sfr@canb.auug.org.au, benh@kernel.crashing.org,
 	jeremy.kerr@canonical.com, davem@davemloft.net,
 	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@ozlabs.org,
 	sparclinux@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Date: Sat, 13 Feb 2010 09:03:09 -0700
-Message-ID: <20100213160309.4767.94443.stgit@angua>
+Date: Sat, 13 Feb 2010 09:03:15 -0700
+Message-ID: <20100213160314.4767.93924.stgit@angua>
 In-Reply-To: <20100213154838.4767.83881.stgit@angua>
 References: <20100213154838.4767.83881.stgit@angua>
 MIME-Version: 1.0
@@ -28,51 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both allnodes and devtree_lock are defined in common code.  The
-extern declaration should be in the common header too so that the
-compiler can type check.  allnodes is already in of.h, but
-devtree_lock should be declared there too.
-
-This patch removes the SPARC declarations and uses decls in of.h instead.
+Neither request_OF_resource or release_OF_resource are defined
+anywhere.  Remove the declarations.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/sparc/kernel/prom.h |    3 ---
- include/linux/of.h       |    2 ++
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ arch/microblaze/include/asm/prom.h |    4 ----
+ arch/powerpc/include/asm/prom.h    |    5 -----
+ 2 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/arch/sparc/kernel/prom.h b/arch/sparc/kernel/prom.h
-index 453397f..a8591ef 100644
---- a/arch/sparc/kernel/prom.h
-+++ b/arch/sparc/kernel/prom.h
-@@ -4,9 +4,6 @@
- #include <linux/spinlock.h>
- #include <asm/prom.h>
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+index aa1a437..03f45a9 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -31,10 +31,6 @@
+ /* Other Prototypes */
+ extern int early_uartlite_console(void);
  
--extern struct device_node *allnodes;	/* temporary while merging */
--extern rwlock_t devtree_lock;	/* temporary while merging */
+-extern struct resource *request_OF_resource(struct device_node *node,
+-				int index, const char *name_postfix);
+-extern int release_OF_resource(struct device_node *node, int index);
 -
- extern void * prom_early_alloc(unsigned long size);
- extern void irq_trans_init(struct device_node *dp);
+ /*
+  * OF address retreival & translation
+  */
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f9a50a..ddd408a 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -39,11 +39,6 @@ extern struct device_node* pci_device_to_OF_node(struct pci_dev *);
+ extern void pci_create_OF_bus_map(void);
+ #endif
  
-diff --git a/include/linux/of.h b/include/linux/of.h
-index d34cc5d..f6d9cbc 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -19,6 +19,7 @@
- #include <linux/bitops.h>
- #include <linux/kref.h>
- #include <linux/mod_devicetable.h>
-+#include <linux/spinlock.h>
- 
- #include <asm/byteorder.h>
- 
-@@ -67,6 +68,7 @@ struct device_node {
- /* Pointer for first entry in chain of all nodes. */
- extern struct device_node *allnodes;
- extern struct device_node *of_chosen;
-+extern rwlock_t devtree_lock;
- 
- static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
- {
+-extern struct resource *request_OF_resource(struct device_node* node,
+-				int index, const char* name_postfix);
+-extern int release_OF_resource(struct device_node* node, int index);
+-
+-
+ /*
+  * OF address retreival & translation
+  */
