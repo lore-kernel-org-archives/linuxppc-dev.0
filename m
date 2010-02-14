@@ -1,26 +1,24 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A36EFB7BFA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 14 Feb 2010 21:15:38 +1100 (EST)
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-In-Reply-To: <1265403478.6089.41.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1265403478.6089.41.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 11:12:20 +0100
-Message-ID: <1266142340.5273.418.camel@laptop>
-Mime-Version: 1.0
-Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, ego@in.ibm.com
+Return-Path: <michal.simek@petalogix.com>
+Received: from mail-bw0-f220.google.com (mail-bw0-f220.google.com
+	[209.85.218.220]) by ozlabs.org (Postfix) with ESMTP id 41D84B7C59
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 01:03:03 +1100 (EST)
+Received: by bwz20 with SMTP id 20so986281bwz.20
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 06:03:01 -0800 (PST)
+Message-ID: <4B7801FA.9080203@petalogix.com>
+Date: Sun, 14 Feb 2010 15:00:26 +0100
+From: Michal Simek <michal.simek@petalogix.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 4/9] of/flattree: Don't assume HAVE_LMB
+References: <20100213154838.4767.83881.stgit@angua>
+	<20100213160247.4767.74578.stgit@angua>
+In-Reply-To: <20100213160247.4767.74578.stgit@angua>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com, davem@davemloft.net
+Reply-To: michal.simek@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,103 +28,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-05 at 14:57 -0600, Joel Schopp wrote:
-> On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-> there is performance benefit to idling the higher numbered threads in
-> the core.  
+Grant Likely wrote:
+> From: Jeremy Kerr <jeremy.kerr@canonical.com>
 > 
-> This patch implements arch_scale_smt_power to dynamically update smt
-> thread power in these idle cases in order to prefer threads 0,1 over
-> threads 2,3 within a core.
+> We don't always have lmb available, so make arches provide an
+> early_init_dt_alloc_memory_arch() to handle the allocation of
+> memory in the fdt code.
 > 
-> Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
+> When we don't have lmb.h included, we need asm/page.h for __va.
+> 
+> Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > ---
-
-> Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-> +++ linux-2.6.git/arch/powerpc/kernel/smp.c
-> @@ -620,3 +620,61 @@ void __cpu_die(unsigned int cpu)
->  		smp_ops->cpu_die(cpu);
+> 
+>  arch/microblaze/kernel/prom.c |    5 +++++
+>  arch/powerpc/kernel/prom.c    |    5 +++++
+>  drivers/of/fdt.c              |    9 ++++++---
+>  include/linux/of_fdt.h        |    1 +
+>  4 files changed, 17 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+> index 050b799..a7dcaf0 100644
+> --- a/arch/microblaze/kernel/prom.c
+> +++ b/arch/microblaze/kernel/prom.c
+> @@ -55,6 +55,11 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+>  	lmb_add(base, size);
 >  }
->  #endif
-> +
-> +#ifdef CONFIG_SCHED_SMT
-> +unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
+>  
+> +u64 __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
 > +{
-> +	int sibling;
-> +	int idle_count = 0;
-> +	int thread;
-> +
-> +	/* Setup the default weight and smt_gain used by most cpus for SMT
-> +	 * Power.  Doing this right away covers the default case and can be
-> +	 * used by cpus that modify it dynamically.
-> +	 */
-> +	struct cpumask *sibling_map = sched_domain_span(sd);
-> +	unsigned long weight = cpumask_weight(sibling_map);
-> +	unsigned long smt_gain = sd->smt_gain;
-> +
-> +
-> +	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-> +		for_each_cpu(sibling, sibling_map) {
-> +			if (idle_cpu(sibling))
-> +				idle_count++;
-> +		}
-> +
-> +		/* the following section attempts to tweak cpu power based
-> +		 * on current idleness of the threads dynamically at runtime
-> +		 */
-> +		if (idle_count > 1) {
-> +			thread = cpu_thread_in_core(cpu);
-> +			if (thread < 2) {
-> +				/* add 75 % to thread power */
-> +				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-> +			} else {
-> +				 /* subtract 75 % to thread power */
-> +				smt_gain = smt_gain >> 2;
-> +			}
-> +		}
-> +	}
-> +
-> +	/* default smt gain is 1178, weight is # of SMT threads */
-> +	switch (weight) {
-> +	case 1:
-> +		/*divide by 1, do nothing*/
-> +		break;
-> +	case 2:
-> +		smt_gain = smt_gain >> 1;
-> +		break;
-> +	case 4:
-> +		smt_gain = smt_gain >> 2;
-> +		break;
-> +	default:
-> +		smt_gain /= weight;
-> +		break;
-> +	}
-> +
-> +	return smt_gain;
-> +
+> +	return lmb_alloc(size, align);
 > +}
-> +#endif
+> +
+>  #ifdef CONFIG_EARLY_PRINTK
+>  /* MS this is Microblaze specifig function */
+>  static int __init early_init_dt_scan_serial(unsigned long node,
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 43c78d7..5bbbdb2 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -510,6 +510,11 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+>  	memstart_addr = min((u64)memstart_addr, base);
+>  }
+>  
+> +u64 __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+> +{
+> +	return lmb_alloc(size, align);
+> +}
+> +
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>  void __init early_init_dt_setup_initrd_arch(unsigned long start,
+>  		unsigned long end)
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index b51f797..406757a 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -10,16 +10,18 @@
+>   */
+>  
+>  #include <linux/kernel.h>
+> -#include <linux/lmb.h>
+>  #include <linux/initrd.h>
+>  #include <linux/of.h>
+>  #include <linux/of_fdt.h>
+> -
+> +#include <linux/string.h>
+> +#include <linux/errno.h>
+>  
+>  #ifdef CONFIG_PPC
+>  #include <asm/machdep.h>
+>  #endif /* CONFIG_PPC */
 
-Suppose for a moment we have 2 threads (hot-unplugged thread 1 and 3, we
-can construct an equivalent but more complex example for 4 threads), and
-we have 4 tasks, 3 SCHED_OTHER of equal nice level and 1 SCHED_FIFO, the
-SCHED_FIFO task will consume exactly 50% walltime of whatever cpu it
-ends up on.
+It is not part of your patch but I think that will be great completely 
+remove this CONFIG_PPC part from generic OF file.
+Would it be possible to include your asm/machdep.h through asm/page.h or 
+any other file?
 
-In that situation, provided that each cpu's cpu_power is of equal
-measure, scale_rt_power() ensures that we run 2 SCHED_OTHER tasks on the
-cpu that doesn't run the RT task, and 1 SCHED_OTHER task next to the RT
-task, so that each task consumes 50%, which is all fair and proper.
+Michal
 
-However, if you do the above, thread 0 will have +75% = 1.75 and thread
-2 will have -75% = 0.25, then if the RT task will land on thread 0,
-we'll be having: 0.875 vs 0.25, or on thread 3, 1.75 vs 0.125. In either
-case thread 0 will receive too many (if not all) SCHED_OTHER tasks.
+>  
+> +#include <asm/page.h>
+> +
+>  int __initdata dt_root_addr_cells;
+>  int __initdata dt_root_size_cells;
+>  
+> @@ -560,7 +562,8 @@ void __init unflatten_device_tree(void)
+>  	pr_debug("  size is %lx, allocating...\n", size);
+>  
+>  	/* Allocate memory for the expanded device tree */
+> -	mem = lmb_alloc(size + 4, __alignof__(struct device_node));
+> +	mem = early_init_dt_alloc_memory_arch(size + 4,
+> +			__alignof__(struct device_node));
+>  	mem = (unsigned long) __va(mem);
+>  
+>  	((__be32 *)mem)[size / 4] = cpu_to_be32(0xdeadbeef);
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index c9cb8a7..a1ca92c 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -78,6 +78,7 @@ extern void early_init_dt_check_for_initrd(unsigned long node);
+>  extern int early_init_dt_scan_memory(unsigned long node, const char *uname,
+>  				     int depth, void *data);
+>  extern void early_init_dt_add_memory_arch(u64 base, u64 size);
+> +extern u64 early_init_dt_alloc_memory_arch(u64 size, u64 align);
+>  extern u64 dt_mem_next_cell(int s, __be32 **cellp);
+>  
+>  /*
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-That is, unless these threads 2 and 3 really are _that_ weak, at which
-point one wonders why IBM bothered with the silicon ;-)
 
-So tell me again, why is fiddling with the cpu_power a good placement
-tool?
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
