@@ -1,23 +1,25 @@
-Return-Path: <monstr@monstr.eu>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.155])
-	by ozlabs.org (Postfix) with ESMTP id 6932CB7CC2
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 01:08:43 +1100 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so266993fgg.3
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 06:08:41 -0800 (PST)
-Message-ID: <4B780350.2080400@monstr.eu>
-Date: Sun, 14 Feb 2010 15:06:08 +0100
-From: Michal Simek <monstr@monstr.eu>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id E0B57B7CE7
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 01:09:14 +1100 (EST)
+Received: by gxk28 with SMTP id 28so3088169gxk.9
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Feb 2010 06:09:13 -0800 (PST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 0/9] Random OF cleanups and merges
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B7801FA.9080203@petalogix.com>
 References: <20100213154838.4767.83881.stgit@angua>
-In-Reply-To: <20100213154838.4767.83881.stgit@angua>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
+	<20100213160247.4767.74578.stgit@angua>
+	<4B7801FA.9080203@petalogix.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sun, 14 Feb 2010 07:08:52 -0700
+Message-ID: <fa686aa41002140608q77af6878n70821d874ea7ecde@mail.gmail.com>
+Subject: Re: [PATCH 4/9] of/flattree: Don't assume HAVE_LMB
+To: michal.simek@petalogix.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com, davem@davemloft.net
-Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +29,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> Here's another batch of cleanup patches from my test-devicetree branch.
-> A number of cleanups, corrections and minor merges of common code.
-> Also a patch from Jeremy to make the flat tree work on architectures
-> without LMB (arm).
-> 
-> Once I've collected acks on these, I'll move them over to my
-> next-devicetree branch on git://git.secretlab.ca/git/linux-2.6
+On Sun, Feb 14, 2010 at 7:00 AM, Michal Simek
+<michal.simek@petalogix.com> wrote:
+> Grant Likely wrote:
+>>
+>> From: Jeremy Kerr <jeremy.kerr@canonical.com>
+>>
+>> We don't always have lmb available, so make arches provide an
+>> early_init_dt_alloc_memory_arch() to handle the allocation of
+>> memory in the fdt code.
+>>
+>> When we don't have lmb.h included, we need asm/page.h for __va.
+>>
+>> Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> ---
+>>
+>> =A0arch/microblaze/kernel/prom.c | =A0 =A05 +++++
+>> =A0arch/powerpc/kernel/prom.c =A0 =A0| =A0 =A05 +++++
+>> =A0drivers/of/fdt.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A09 ++++++---
+>> =A0include/linux/of_fdt.h =A0 =A0 =A0 =A0| =A0 =A01 +
+>> =A04 files changed, 17 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom=
+.c
+>> index 050b799..a7dcaf0 100644
+>> --- a/arch/microblaze/kernel/prom.c
+>> +++ b/arch/microblaze/kernel/prom.c
+>> @@ -55,6 +55,11 @@ void __init early_init_dt_add_memory_arch(u64 base, u=
+64
+>> size)
+>> =A0 =A0 =A0 =A0lmb_add(base, size);
+>> =A0}
+>> =A0+u64 __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+>> +{
+>> + =A0 =A0 =A0 return lmb_alloc(size, align);
+>> +}
+>> +
+>> =A0#ifdef CONFIG_EARLY_PRINTK
+>> =A0/* MS this is Microblaze specifig function */
+>> =A0static int __init early_init_dt_scan_serial(unsigned long node,
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index 43c78d7..5bbbdb2 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -510,6 +510,11 @@ void __init early_init_dt_add_memory_arch(u64 base,
+>> u64 size)
+>> =A0 =A0 =A0 =A0memstart_addr =3D min((u64)memstart_addr, base);
+>> =A0}
+>> =A0+u64 __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+>> +{
+>> + =A0 =A0 =A0 return lmb_alloc(size, align);
+>> +}
+>> +
+>> =A0#ifdef CONFIG_BLK_DEV_INITRD
+>> =A0void __init early_init_dt_setup_initrd_arch(unsigned long start,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned long end)
+>> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+>> index b51f797..406757a 100644
+>> --- a/drivers/of/fdt.c
+>> +++ b/drivers/of/fdt.c
+>> @@ -10,16 +10,18 @@
+>> =A0*/
+>> =A0=A0#include <linux/kernel.h>
+>> -#include <linux/lmb.h>
+>> =A0#include <linux/initrd.h>
+>> =A0#include <linux/of.h>
+>> =A0#include <linux/of_fdt.h>
+>> -
+>> +#include <linux/string.h>
+>> +#include <linux/errno.h>
+>> =A0=A0#ifdef CONFIG_PPC
+>> =A0#include <asm/machdep.h>
+>> =A0#endif /* CONFIG_PPC */
+>
+> It is not part of your patch but I think that will be great completely
+> remove this CONFIG_PPC part from generic OF file.
+> Would it be possible to include your asm/machdep.h through asm/page.h or =
+any
+> other file?
 
-All changes look ok. Please add them to linux-next which I am testing. I 
-don't expect any problem with it but anywya if any problems arise, I 
-will let you know.
+Yup.  I'll get there unless someone else beats me to it.  :-)
 
-I don't want to reply every email as Ben that's why one my big ACK
-for that 9 patches.
-
-Acked-by: Michal Simek <monstr@monstr.eu>
-
-> 
-> Cheers,
-> g.
-> 
-> ---
-> 
-> Grant Likely (6):
->       of: remove undefined request_OF_resource & release_OF_resource
->       of/sparc: Remove sparc-local declaration of allnodes and devtree_lock
->       of: move definition of of_chosen into common code.
->       of: remove unused extern reference to devtree_lock
->       of: put default string compare and #a/s-cell values into common header
->       of: Remove old and misplaced function declarations
-> 
-> Jeremy Kerr (3):
->       of/flattree: Don't assume HAVE_LMB
->       of: protect linux/of.h with CONFIG_OF
->       proc_devtree: fix THIS_MODULE without module.h
-> 
-> 
->  arch/microblaze/include/asm/prom.h |   15 ---------------
->  arch/microblaze/kernel/prom.c      |    8 +++++---
->  arch/powerpc/include/asm/prom.h    |   14 --------------
->  arch/powerpc/kernel/prom.c         |   10 +++++-----
->  arch/sparc/kernel/prom.h           |    3 ---
->  drivers/of/base.c                  |    1 +
->  drivers/of/fdt.c                   |    9 ++++++---
->  fs/proc/proc_devtree.c             |    1 +
->  include/linux/of.h                 |   27 +++++++++++++++++++++++++++
->  include/linux/of_fdt.h             |   11 +----------
->  10 files changed, 46 insertions(+), 53 deletions(-)
+>
+> Michal
+>
+>> =A0+#include <asm/page.h>
+>> +
+>> =A0int __initdata dt_root_addr_cells;
+>> =A0int __initdata dt_root_size_cells;
+>> =A0@@ -560,7 +562,8 @@ void __init unflatten_device_tree(void)
+>> =A0 =A0 =A0 =A0pr_debug(" =A0size is %lx, allocating...\n", size);
+>> =A0 =A0 =A0 =A0 =A0/* Allocate memory for the expanded device tree */
+>> - =A0 =A0 =A0 mem =3D lmb_alloc(size + 4, __alignof__(struct device_node=
+));
+>> + =A0 =A0 =A0 mem =3D early_init_dt_alloc_memory_arch(size + 4,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __alignof__(struct device_=
+node));
+>> =A0 =A0 =A0 =A0mem =3D (unsigned long) __va(mem);
+>> =A0 =A0 =A0 =A0 =A0((__be32 *)mem)[size / 4] =3D cpu_to_be32(0xdeadbeef)=
+;
+>> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+>> index c9cb8a7..a1ca92c 100644
+>> --- a/include/linux/of_fdt.h
+>> +++ b/include/linux/of_fdt.h
+>> @@ -78,6 +78,7 @@ extern void early_init_dt_check_for_initrd(unsigned lo=
+ng
+>> node);
+>> =A0extern int early_init_dt_scan_memory(unsigned long node, const char
+>> *uname,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+int depth, void *data);
+>> =A0extern void early_init_dt_add_memory_arch(u64 base, u64 size);
+>> +extern u64 early_init_dt_alloc_memory_arch(u64 size, u64 align);
+>> =A0extern u64 dt_mem_next_cell(int s, __be32 **cellp);
+>> =A0=A0/*
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at =A0http://www.tux.org/lkml/
+>
+>
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Michal Simek, Ing. (M.Eng)
+> PetaLogix - Linux Solutions for a Reconfigurable World
+> w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+>
 
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
