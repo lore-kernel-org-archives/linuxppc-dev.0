@@ -1,27 +1,29 @@
 Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0D8CB7CE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 16:56:17 +1100 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id o1F5uCSj004227
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 11:26:12 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1F5uCIH2863228
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 11:26:12 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o1F5uBTP024857
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 16:56:12 +1100
-Date: Mon, 15 Feb 2010 11:26:05 +0530
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E2243B7C09
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 16:59:29 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id o1F5xQIi020410
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 11:29:26 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o1F5xQhg1511590
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 11:29:26 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o1F5xP0k016114
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 16:59:25 +1100
+Date: Mon, 15 Feb 2010 11:29:14 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [Patch 0/1] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver XIII
-Message-ID: <20100215055605.GB3670@in.ibm.com>
+Subject: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+Message-ID: <20100215055914.GA6017@in.ibm.com>
+References: <20100215055605.GB3670@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100215055605.GB3670@in.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
 	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
 	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
@@ -37,177 +39,673 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-	Please find the version XIII of the patch that ports the
-hw-breakpoint interfaces (in kernel/hw_breakpoint.c) to PPC64. A new
-patchset is necessitated due to a bug triggered by user-space breakpoint
-requests.
+Implement perf-events based hw-breakpoint interfaces for PPC64 processors.
+These interfaces help arbitrate requests from various users and schedules
+them as appropriate.
 
-This patch should not conflict with work done to enable debug register
-use through ptrace interface for Book-E processors. Kindly include this
-patch as a part of powerpc -next tree to enable wider testing and to
-be eventually pushed upstream.
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig                     |    1 
+ arch/powerpc/include/asm/hw_breakpoint.h |   55 ++++
+ arch/powerpc/include/asm/processor.h     |    6 
+ arch/powerpc/include/asm/reg.h           |    1 
+ arch/powerpc/kernel/Makefile             |    2 
+ arch/powerpc/kernel/hw_breakpoint.c      |  363 +++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/process.c            |    5 
+ arch/powerpc/kernel/ptrace.c             |   77 ++++++
+ arch/powerpc/mm/fault.c                  |   14 -
+ 9 files changed, 515 insertions(+), 9 deletions(-)
 
-Changelog - ver XIII
---------------------
-(Version XII: linuxppc-dev ref: 20100121084640.GA3252@in.ibm.com)
-
-- Fixed a bug for user-space breakpoints (triggered following the
-  failure of a breakpoint request) causing data exception (due to access
-  of NULL/spurious address).
-- Re-based on commit 724e6d3fe8003c3f60bf404bf22e4e331327c596 of
-  linux-2.6
+Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h	2010-02-15 02:10:43.000000000 +0530
+@@ -0,0 +1,55 @@
++#ifndef	_PPC64_HW_BREAKPOINT_H
++#define	_PPC64_HW_BREAKPOINT_H
++
++#ifdef	__KERNEL__
++#define	__ARCH_HW_BREAKPOINT_H
++#ifdef CONFIG_PPC64
++
++struct arch_hw_breakpoint {
++	u8		len; /* length of the target symbol */
++	int		type;
++	char		*name; /* Contains name of the symbol to set bkpt */
++	unsigned long	address;
++};
++
++#include <linux/kdebug.h>
++#include <asm/reg.h>
++#include <asm/system.h>
++
++/* Total number of available HW breakpoint registers */
++#define HBP_NUM 1
++
++struct perf_event;
++struct pmu;
++struct perf_sample_data;
++
++#define HW_BREAKPOINT_ALIGN 0x7
++/* Maximum permissible length of any HW Breakpoint */
++#define HW_BREAKPOINT_LEN 0x8
++
++extern int arch_validate_hwbkpt_settings(struct perf_event *bp,
++						struct task_struct *tsk);
++extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
++						unsigned long val, void *data);
++int arch_install_hw_breakpoint(struct perf_event *bp);
++void arch_uninstall_hw_breakpoint(struct perf_event *bp);
++void hw_breakpoint_pmu_read(struct perf_event *bp);
++void hw_breakpoint_pmu_unthrottle(struct perf_event *bp);
++extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
++
++extern struct pmu perf_ops_bp;
++extern void ptrace_triggered(struct perf_event *bp, int nmi,
++			struct perf_sample_data *data, struct pt_regs *regs);
++static inline void hw_breakpoint_disable(void)
++{
++	set_dabr(0);
++}
++
++#else
++static inline void hw_breakpoint_disable(void)
++{
++	/* Function is defined only on PPC64 for now */
++}
++#endif	/* CONFIG_PPC64 */
++#endif	/* __KERNEL__ */
++#endif	/* _PPC64_HW_BREAKPOINT_H */
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/hw_breakpoint.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/hw_breakpoint.c	2010-02-15 02:10:43.000000000 +0530
+@@ -0,0 +1,363 @@
++/*
++ * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
++ * using the CPU's debug registers. Derived from
++ * "arch/x86/kernel/hw_breakpoint.c"
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright 2009 IBM Corporation
++ * Author: K.Prasad <prasad@linux.vnet.ibm.com>
++ *
++ */
++
++#include <linux/hw_breakpoint.h>
++#include <linux/notifier.h>
++#include <linux/kprobes.h>
++#include <linux/percpu.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/smp.h>
++
++#include <asm/hw_breakpoint.h>
++#include <asm/processor.h>
++#include <asm/sstep.h>
++
++/*
++ * Store the 'bp' that caused the hw-breakpoint exception just before we
++ * single-step. Used to distinguish a single-step exception (due to a previous
++ * hw-breakpoint exception) from a normal one
++ */
++static DEFINE_PER_CPU(struct perf_event *, last_hit_bp);
++
++/*
++ * Flag to denote if the kernel was already single-stepping. Used to
++ * conditionally unset the MSR_SE flag in the single-step exception
++ * following the breakpoint exception.
++ */
++static DEFINE_PER_CPU(bool, is_cpu_singlestep);
++
++/*
++ * Stores the breakpoints currently in use on each breakpoint address
++ * register for each cpus
++ */
++static DEFINE_PER_CPU(struct perf_event *, bp_per_reg);
++
++/*
++ * Install a perf counter breakpoint.
++ *
++ * We seek a free debug address register and use it for this
++ * breakpoint.
++ *
++ * Atomic: we hold the counter->ctx->lock and we only handle variables
++ * and registers local to this cpu.
++ */
++int arch_install_hw_breakpoint(struct perf_event *bp)
++{
++	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
++	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
++
++	if (!*slot)
++		*slot = bp;
++	else {
++		WARN_ONCE(1, "Can't find any breakpoint slot");
++		return -EBUSY;
++	}
++
++	set_dabr(info->address | info->type | DABR_TRANSLATION);
++	return 0;
++}
++
++/*
++ * Uninstall the breakpoint contained in the given counter.
++ *
++ * First we search the debug address register it uses and then we disable
++ * it.
++ *
++ * Atomic: we hold the counter->ctx->lock and we only handle variables
++ * and registers local to this cpu.
++ */
++void arch_uninstall_hw_breakpoint(struct perf_event *bp)
++{
++	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
++
++	if (*slot == bp)
++		*slot = NULL;
++	else {
++		WARN_ONCE(1, "Can't find the breakpoint slot");
++		return;
++	}
++	set_dabr(0);
++}
++
++/*
++ * Validate the arch-specific HW Breakpoint register settings
++ */
++int arch_validate_hwbkpt_settings(struct perf_event *bp,
++						struct task_struct *tsk)
++{
++	int is_kernel, ret = -EINVAL;
++	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
++
++	if (!bp)
++		return ret;
++
++	switch (bp->attr.bp_type) {
++	case HW_BREAKPOINT_R:
++		info->type = DABR_DATA_READ;
++		break;
++	case HW_BREAKPOINT_W:
++		info->type = DABR_DATA_WRITE;
++		break;
++	case HW_BREAKPOINT_R | HW_BREAKPOINT_W:
++		info->type = (DABR_DATA_READ | DABR_DATA_WRITE);
++		break;
++	default:
++		return ret;
++	}
++	/* TODO: Check for a valid triggered function */
++	/* if (!bp->triggered)
++		return -EINVAL; */
++
++	is_kernel = is_kernel_addr(bp->attr.bp_addr);
++	if ((tsk && is_kernel) || (!tsk && !is_kernel))
++		return -EINVAL;
++
++	info->address = bp->attr.bp_addr;
++	info->len = bp->attr.bp_len;
++
++	/*
++	 * Since breakpoint length can be a maximum of HW_BREAKPOINT_LEN(8)
++	 * and breakpoint addresses are aligned to nearest double-word
++	 * HW_BREAKPOINT_ALIGN by rounding off to the lower address, the
++	 * 'symbolsize' should satisfy the check below.
++	 */
++	if (info->len >
++	    (HW_BREAKPOINT_LEN - (info->address & HW_BREAKPOINT_ALIGN)))
++		return -EINVAL;
++	return 0;
++}
++
++/*
++ * Handle debug exception notifications.
++ */
++int __kprobes hw_breakpoint_handler(struct die_args *args)
++{
++	int rc = NOTIFY_STOP;
++	struct perf_event *bp;
++	struct pt_regs *regs = args->regs;
++	unsigned long dar = regs->dar;
++	int cpu, is_kernel, stepped = 1;
++	struct arch_hw_breakpoint *info;
++
++	/* Disable breakpoints during exception handling */
++	set_dabr(0);
++	cpu = get_cpu();
++	/*
++	 * The counter may be concurrently released but that can only
++	 * occur from a call_rcu() path. We can then safely fetch
++	 * the breakpoint, use its callback, touch its counter
++	 * while we are in an rcu_read_lock() path.
++	 */
++	rcu_read_lock();
++
++	bp = per_cpu(bp_per_reg, cpu);
++	if (!bp)
++		goto out;
++	info = counter_arch_bp(bp);
++	is_kernel = is_kernel_addr(bp->attr.bp_addr);
++
++	/*
++	 * Verify if dar lies within the address range occupied by the symbol
++	 * being watched to filter extraneous exceptions.
++	 */
++	    if (!((bp->attr.bp_addr <= dar) &&
++	    (dar <= (bp->attr.bp_addr + bp->attr.bp_len))))
++		/*
++		 * This exception is triggered not because of a memory access on
++		 * the monitored variable but in the double-word address range
++		 * in which it is contained. We will consume this exception,
++		 * considering it as 'noise'.
++		 */
++		goto out;
++
++	/*
++	 * Return early after invoking user-callback function without restoring
++	 * DABR if the breakpoint is from ptrace which always operates in
++	 * one-shot mode
++	 */
++	if (bp->overflow_handler == ptrace_triggered) {
++		(bp->overflow_handler)(bp, 0, NULL, regs);
++		rc = NOTIFY_DONE;
++		goto out;
++	}
++
++	/*
++	 * Do not emulate user-space instructions from kernel-space,
++	 * instead single-step them.
++	 */
++	if (!is_kernel) {
++		current->thread.last_hit_ubp = bp;
++		goto out;
++	}
++
++	/*
++	 * Emulating single-step over causative instruction if already
++	 * in MSR_SE mode will harm other users of kernel single-stepping
++	 * (like an in-kernel debugger), single-step over them.
++	 */
++
++	if (regs->msr & MSR_SE) {
++		per_cpu(is_cpu_singlestep, cpu) = true;
++		per_cpu(last_hit_bp, cpu) = bp;
++		goto out;
++	}
++
++	stepped = emulate_step(regs, regs->nip);
++	 /* emulate_step() could not execute it, single-step them */
++	if (stepped == 0) {
++		regs->msr |= MSR_SE;
++		if (is_kernel)
++			per_cpu(last_hit_bp, cpu) = bp;
++		else
++			current->thread.last_hit_ubp = bp;
++		per_cpu(last_hit_bp, cpu) = bp;
++		goto out;
++	}
++	/*
++	 * As a policy, the callback is invoked in a 'trigger-after-execute'
++	 * fashion
++	 */
++	(bp->overflow_handler)(bp, 0, NULL, regs);
++	set_dabr(info->address | info->type | DABR_TRANSLATION);
++	per_cpu(is_cpu_singlestep, cpu) = false;
++out:
++	rcu_read_unlock();
++	put_cpu();
++	return rc;
++}
++
++/*
++ * Handle single-step exceptions following a DABR hit.
++ */
++int __kprobes single_step_dabr_instruction(struct die_args *args)
++{
++	struct pt_regs *regs = args->regs;
++	int cpu = get_cpu();
++	int ret = NOTIFY_DONE;
++	siginfo_t info;
++	struct perf_event *bp = NULL, *kernel_bp, *user_bp;
++	struct arch_hw_breakpoint *bp_info;
++
++	/*
++	 * Identify the cause of single-stepping and find the corresponding
++	 * breakpoint structure
++	 */
++	kernel_bp = per_cpu(last_hit_bp, cpu);
++	user_bp = current->thread.last_hit_ubp;
++	if (kernel_bp) {
++		bp = kernel_bp;
++		per_cpu(last_hit_bp, cpu) = NULL;
++	} else if (user_bp) {
++		bp = user_bp;
++		current->thread.last_hit_ubp = NULL;
++	}
++
++	/*
++	 * Check if we are single-stepping as a result of a
++	 * previous HW Breakpoint exception
++	 */
++	if (!bp)
++		goto out;
++
++	bp_info = counter_arch_bp(bp);
++
++	/*
++	 * We shall invoke the user-defined callback function in the single
++	 * stepping handler to confirm to 'trigger-after-execute' semantics
++	 */
++	(bp->overflow_handler)(bp, 0, NULL, regs);
++
++	if (!(per_cpu(is_cpu_singlestep, cpu) ||
++	      test_thread_flag(TIF_SINGLESTEP)))
++		regs->msr &= ~MSR_SE;
++
++	/* Deliver signal to user-space */
++	if (!is_kernel_addr(bp->attr.bp_addr)) {
++		info.si_signo = SIGTRAP;
++		info.si_errno = 0;
++		info.si_code = TRAP_HWBKPT;
++		info.si_addr = (void __user *)bp_info->address;
++		force_sig_info(SIGTRAP, &info, current);
++	}
++
++	set_dabr(bp_info->address | bp_info->type | DABR_TRANSLATION);
++	/*
++	 * The kernel was in single-step mode before hw-breakpoint
++	 * exception, allow them to process the single-step exception further.
++	 */
++	if (per_cpu(is_cpu_singlestep, cpu)) {
++		per_cpu(is_cpu_singlestep, cpu) = false;
++		ret = NOTIFY_DONE;
++	} else
++		ret = NOTIFY_STOP;
++out:
++	put_cpu();
++	return ret;
++}
++
++/*
++ * Handle debug exception notifications.
++ */
++int __kprobes hw_breakpoint_exceptions_notify(
++		struct notifier_block *unused, unsigned long val, void *data)
++{
++	int ret = NOTIFY_DONE;
++
++	switch (val) {
++	case DIE_DABR_MATCH:
++		ret = hw_breakpoint_handler(data);
++		break;
++	case DIE_SSTEP:
++		ret = single_step_dabr_instruction(data);
++		break;
++	}
++
++	return ret;
++}
++
++/*
++ * Release the user breakpoints used by ptrace
++ */
++void flush_ptrace_hw_breakpoint(struct task_struct *tsk)
++{
++	struct thread_struct *t = &tsk->thread;
++
++	unregister_hw_breakpoint(t->ptrace_bps[0]);
++	t->ptrace_bps[0] = NULL;
++}
++
++void hw_breakpoint_pmu_read(struct perf_event *bp)
++{
++	/* TODO */
++}
++
++void hw_breakpoint_pmu_unthrottle(struct perf_event *bp)
++{
++	/* TODO */
++}
++
++
+Index: linux-2.6.ppc64_test/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/Kconfig	2010-02-03 07:37:58.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/Kconfig	2010-02-15 02:10:43.000000000 +0530
+@@ -140,6 +140,7 @@
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
+ 	select GENERIC_ATOMIC64 if PPC32
+ 	select HAVE_PERF_EVENTS
++	select HAVE_HW_BREAKPOINT if PPC64
  
-Thanks,
-K.Prasad
-
-Changelog - ver XII
---------------------
-(Version XI: linuxppc-dev ref: 20100119091234.GA9971@in.ibm.com)
-
-- Unset MSR_SE only if kernel was not previously in single-step mode.
-- Pre-emption is now enabled before returning from the hw-breakpoint exception
-  handler.
-- Variables to track the source of single-step exception (breakpoint from kernel,
-  user-space vs single-stepping due to other requests) are added.
-- Extraneous hw-breakpoint exceptions (due to memory accesses lying outside
-  monitored symbol length) is now done for both kernel and user-space
-  (previously only user-space).
-- single_step_dabr_instruction() now returns NOTIFY_DONE if kernel was in
-  single-step mode even before the hw-breakpoint. This enables other users of
-  single-step mode to be notified of the exception.
-- User-space instructions are not emulated from kernel-space, they are instead
-  single-stepped.
-  
-Changelog - ver XI
-------------------
-(Version X: linuxppc-dev ref: 20091211160144.GA23156@in.ibm.com)
-- Conditionally unset MSR_SE in the single-step handler
-- Added comments to explain the duration and need for pre-emption
-disable following hw-breakpoint exception.
-
-Changelog - ver X
-------------------
-- Re-write the PPC64 patches for the new implementation of hw-breakpoints that
-  uses the perf-layer.
-- Rebased to commit 7622fc234190a37d4e9fe3ed944a2b61a63fca03 of -tip.
-
-Changelog - ver IX
--------------------
-- Invocation of user-defined callback will be 'trigger-after-execute' (except
-  for ptrace).
-- Creation of a new global per-CPU breakpoint structure to help invocation of
-  user-defined callback from single-step handler.
-(Changes made now)
-- Validation before registration will fail only if the address does not match
-  the kernel symbol's (if specified) resolved address
-  (through kallsyms_lookup_name()).
-- 'symbolsize' value is expected to within the range contained by the symbol's
-  starting address and the end of a double-word boundary (8 Bytes).
-- PPC64's arch-dependant code is now aware of 'cpumask' in 'struct hw_breakpoint'
-  and can accomodate requests for a subset of CPUs in the system.
-- Introduced arch_disable_hw_breakpoint() required for
-  <enable><disable>_hw_breakpoint() APIs.
-
-Changelog - ver VIII
--------------------
-- Reverting changes to allow one-shot breakpoints only for ptrace requests.
-- Minor changes in sanity checking in arch_validate_hwbkpt_settings().
-- put_cpu_no_resched() is no longer available. Converted to put_cpu().
-
-Changelog - ver VII
--------------------
-- Allow the one-shot behaviour for exception handlers to be defined by the user.
-  A new 'is_one_shot' flag is added to 'struct arch_hw_breakpoint'.
-
-Changelog - ver VI
-------------------
-The task of identifying 'genuine' breakpoint exceptions from those caused by
-'out-of-range' accesses turned out to be more tricky than originally thought.
-Some changes to this effect were made in version IV of this patchset, but they
-were not sufficient for user-space. Basically the breakpoint address received
-through ptrace is always aligned to 8-bytes since ptrace receives an encoded
-'data' (consisting of address | translation_enable | bkpt_type), and the size of
-the symbol is not known. However for kernel-space addresses, the symbol-size can
-be determined using kallsyms_lookup_size_offset() and this is used to check if
-DAR (in the exception context) is
-'bkpt_address <= DAR <= (bkpt_address + symbol_size)', failing which we conclude
-it as a stray exception.
-
-The following changes are made to enable check:
-- Addition of a symbolsize field in 'struct arch_hw_breakpoint' field.
-- Store the size of the 'watched' kernel symbol into 'symbolsize' field in
-  arch_store_info(0 routine.
-- Verify if the above described condition is true when is_one_shot is FALSE in
-  hw_breakpoint_handler().
-
-Changelog - ver V
-------------------
-- Breakpoint requests from ptrace (for user-space) are designed to be one-shot
-in PPC64. The patch contains changes to retain this behaviour by returning early
-in hw_breakpoint_handler() [without re-initialising DABR] and unregistering the
-user-space request in ptrace_triggered(). It is safe to make a
-unregister_user_hw_breakpoint() call from the breakpoint exception context
-[through ptrace_triggered()] without giving rise to circular locking-dependancy.
-This is because there can be no kernel code running on the CPU (which received
-the exception) with the same spinlock held.
-
-- Minor change in 'type' member of 'struct arch_hw_breakpoint' from u8 to 'int'.
-
-Changelog - ver IV
-------------------
-- While DABR register requires double-word (8 bytes) aligned addresses, i.e.
-the breakpoint is active over a range of 8 bytes, PPC64 allows byte-level
-addressability. This may lead to stray exceptions which have to be ignored in
-hw_breakpoint_handler(), when DAR != (Breakpoint request address). However DABR
-will be populated with the requested breakpoint address aligned to the previous
-double-word address. The code is now modified to store user-requested address
-in 'bp->info.address' but update the DABR with a double-word aligned address.
-
-- Please note that the Data Breakpoint facility in Xmon is broken as of 2.6.29
-and the same has not been integrated into this facility as described in Ver I.
-
-Changelog - ver III
-------------------
-- Patches are based on commit 08f16e060bf54bdc34f800ed8b5362cdeda75d8b of -tip
-tree.
-
-- The declarations in arch/powerpc/include/asm/hw_breakpoint.h are done only if
-CONFIG_PPC64 is defined. This eliminates the need to conditionally include this
-header file.
-
-- load_debug_registers() is done in start_secondary() i.e. during CPU
-initialisation.
-
-- arch_check_va_<> routines in hw_breakpoint.c are now replaced with a much
-simpler is_kernel_addr() check in arch_validate_hwbkpt_settings()
-
-- Return code of hw_breakpoint_handler() when triggered due to Lazy debug
-register switching is now changed to NOTIFY_STOP.
-
-- The ptrace code no longer sets the TIF_DEBUG task flag as it is proposed to
-be done in register_user_hw_breakpoint() routine.
-
-- hw_breakpoint_handler() is now modified to use hbp_kernel_pos value to
-  determine if the trigger was a user/kernel space address. The DAR register
-  value is checked with the address stored in 'struct hw_breakpoint' to avoid
-  handling of exceptions that belong to kprobe/Xmon.
-
-
-Changelog - ver II
-------------------
-- Split the monolithic patch into six logical patches
-
-- Changed the signature of arch_check_va_in_<user><kernel>space functions. They
-  are now marked static.
-
-- HB_NUM is now called as HBP_NUM (to preserve a consistent short-name
-  convention)
-
-- Introduced hw_breakpoint_disable() and changes to kexec code to disable
-  breakpoints before a reboot.
-  
-- Minor changes in ptrace code to use macro-defined constants instead of
-  numbers.
-
-- Introduced a new constant definition INSTRUCTION_LEN in reg.h
+ config EARLY_PRINTK
+ 	bool
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/Makefile	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/Makefile	2010-02-15 02:10:43.000000000 +0530
+@@ -33,7 +33,7 @@
+ obj-y				+= vdso32/
+ obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
+ 				   signal_64.o ptrace32.o \
+-				   paca.o nvram_64.o firmware.o
++				   paca.o nvram_64.o firmware.o hw_breakpoint.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+ obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
+ obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o
+Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/reg.h
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/reg.h	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/include/asm/reg.h	2010-02-15 02:10:43.000000000 +0530
+@@ -180,6 +180,7 @@
+ #define   CTRL_TE	0x00c00000	/* thread enable */
+ #define   CTRL_RUNLATCH	0x1
+ #define SPRN_DABR	0x3F5	/* Data Address Breakpoint Register */
++#define   HBP_NUM	1	/* Number of physical HW breakpoint registers */
+ #define   DABR_TRANSLATION	(1UL << 2)
+ #define   DABR_DATA_WRITE	(1UL << 1)
+ #define   DABR_DATA_READ	(1UL << 0)
+Index: linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/mm/fault.c	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/mm/fault.c	2010-02-15 02:10:43.000000000 +0530
+@@ -137,6 +137,12 @@
+ 		error_code &= 0x48200000;
+ 	else
+ 		is_write = error_code & DSISR_ISSTORE;
++
++	if (error_code & DSISR_DABRMATCH) {
++		/* DABR match */
++		do_dabr(regs, address, error_code);
++		return 0;
++	}
+ #else
+ 	is_write = error_code & ESR_DST;
+ #endif /* CONFIG_4xx || CONFIG_BOOKE */
+@@ -151,14 +157,6 @@
+ 	if (!user_mode(regs) && (address >= TASK_SIZE))
+ 		return SIGSEGV;
+ 
+-#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+-  	if (error_code & DSISR_DABRMATCH) {
+-		/* DABR match */
+-		do_dabr(regs, address, error_code);
+-		return 0;
+-	}
+-#endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
+-
+ 	if (in_atomic() || mm == NULL) {
+ 		if (!user_mode(regs))
+ 			return SIGSEGV;
+Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/processor.h
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/processor.h	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/include/asm/processor.h	2010-02-15 02:10:43.000000000 +0530
+@@ -177,6 +177,12 @@
+ #ifdef CONFIG_PPC64
+ 	unsigned long	start_tb;	/* Start purr when proc switched in */
+ 	unsigned long	accum_tb;	/* Total accumilated purr for process */
++	struct perf_event *ptrace_bps[HBP_NUM];
++	/*
++	 * Point to the hw-breakpoint last. Helps safe pre-emption and
++	 * hw-breakpoint re-enablement.
++	 */
++	struct perf_event *last_hit_ubp;
+ #endif
+ 	unsigned long	dabr;		/* Data address breakpoint register */
+ #ifdef CONFIG_ALTIVEC
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/ptrace.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/ptrace.c	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/ptrace.c	2010-02-15 02:11:24.000000000 +0530
+@@ -32,6 +32,8 @@
+ #ifdef CONFIG_PPC32
+ #include <linux/module.h>
+ #endif
++#include <linux/hw_breakpoint.h>
++#include <linux/perf_event.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -755,9 +757,32 @@
+ 	clear_tsk_thread_flag(task, TIF_SINGLESTEP);
+ }
+ 
++void ptrace_triggered(struct perf_event *bp, int nmi,
++		      struct perf_sample_data *data, struct pt_regs *regs)
++{
++	struct perf_event_attr attr;
++
++	/*
++	 * Disable the breakpoint request here since ptrace has defined a
++	 * one-shot behaviour for breakpoint exceptions in PPC64.
++	 * The SIGTRAP signal is generated automatically for us in do_dabr().
++	 * We don't have to do anything about that here
++	 */
++	attr = bp->attr;
++	attr.disabled = true;
++	modify_user_hw_breakpoint(bp, &attr);
++}
++
+ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
+ 			       unsigned long data)
+ {
++#ifdef CONFIG_PPC64
++	int ret;
++	struct thread_struct *thread = &(task->thread);
++	struct perf_event *bp;
++	struct perf_event_attr attr;
++#endif /* CONFIG_PPC64 */
++
+ 	/* For ppc64 we support one DABR and no IABR's at the moment (ppc64).
+ 	 *  For embedded processors we support one DAC and no IAC's at the
+ 	 *  moment.
+@@ -786,6 +811,60 @@
+ 	/* Ensure breakpoint translation bit is set */
+ 	if (data && !(data & DABR_TRANSLATION))
+ 		return -EIO;
++#ifdef CONFIG_PPC64
++	bp = thread->ptrace_bps[0];
++	if (data == 0) {
++		if (bp) {
++			unregister_hw_breakpoint(bp);
++			thread->ptrace_bps[0] = NULL;
++		}
++		return 0;
++	}
++	if (bp) {
++		attr = bp->attr;
++		attr.bp_addr = data & ~HW_BREAKPOINT_ALIGN;
++
++		switch (data & (DABR_DATA_WRITE | DABR_DATA_READ)) {
++		case DABR_DATA_READ:
++			attr.bp_type = HW_BREAKPOINT_R;
++			break;
++		case DABR_DATA_WRITE:
++			attr.bp_type = HW_BREAKPOINT_W;
++			break;
++		case (DABR_DATA_WRITE | DABR_DATA_READ):
++			attr.bp_type = HW_BREAKPOINT_R | HW_BREAKPOINT_W;
++			break;
++		}
++		ret =  modify_user_hw_breakpoint(bp, &attr);
++		if (ret)
++			return ret;
++		thread->ptrace_bps[0] = bp;
++		thread->dabr = data;
++		return 0;
++	}
++
++	/* Create a new breakpoint request if one doesn't exist already */
++	hw_breakpoint_init(&attr);
++	attr.bp_addr = data & ~HW_BREAKPOINT_ALIGN;
++	switch (data & (DABR_DATA_WRITE | DABR_DATA_READ)) {
++	case DABR_DATA_READ:
++		attr.bp_type = HW_BREAKPOINT_R;
++		break;
++	case DABR_DATA_WRITE:
++		attr.bp_type = HW_BREAKPOINT_W;
++		break;
++	case (DABR_DATA_WRITE | DABR_DATA_READ):
++		attr.bp_type = HW_BREAKPOINT_R | HW_BREAKPOINT_W;
++		break;
++	}
++	thread->ptrace_bps[0] = bp = register_user_hw_breakpoint(&attr,
++							ptrace_triggered, task);
++	if (IS_ERR(bp)) {
++		thread->ptrace_bps[0] = NULL;
++		return PTR_ERR(bp);
++	}
++
++#endif /* CONFIG_PPC64 */
+ 
+ 	/* Move contents to the DABR register */
+ 	task->thread.dabr = data;
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/process.c	2010-02-03 07:37:59.000000000 +0530
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/process.c	2010-02-15 02:10:43.000000000 +0530
+@@ -48,6 +48,7 @@
+ #include <asm/machdep.h>
+ #include <asm/time.h>
+ #include <asm/syscalls.h>
++#include <asm/hw_breakpoint.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/firmware.h>
+ #endif
+@@ -376,8 +377,11 @@
+ 	if (new->thread.dabr)
+ 		set_dabr(new->thread.dabr);
+ #else
++/* For PPC64, we use the hw-breakpoint interfaces that would schedule DABR */
++#ifndef CONFIG_PPC64
+ 	if (unlikely(__get_cpu_var(current_dabr) != new->thread.dabr))
+ 		set_dabr(new->thread.dabr);
++#endif /* CONFIG_PPC64 */
+ #endif
+ 
+ 
+@@ -396,6 +400,7 @@
+ 		old_thread->accum_tb += (current_tb - start_tb);
+ 		new_thread->start_tb = current_tb;
+ 	}
++	flush_ptrace_hw_breakpoint(current);
+ #endif
+ 
+ 	local_irq_save(flags);
