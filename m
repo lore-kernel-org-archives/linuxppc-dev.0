@@ -1,17 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f196.google.com (mail-yx0-f196.google.com
+	[209.85.210.196]) by ozlabs.org (Postfix) with ESMTP id D988FB7CC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2010 06:40:06 +1100 (EST)
+Received: by yxe34 with SMTP id 34so2608800yxe.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 11:40:04 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1265813711-16794-1-git-send-email-wg@grandegger.com>
-References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
+In-Reply-To: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
+References: <20100205205437.GA4733@oksana.dev.rtsoft.ru>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 15 Feb 2010 12:34:35 -0700
-Message-ID: <fa686aa41002151134pfbbe66fm978cfa0215446d51@mail.gmail.com>
-Subject: Re: [PATCH v7 0/4] i2c-mpc: add support for the Freescale MPC512x and
-	other fixes
-To: Wolfgang Grandegger <wg@grandegger.com>, Ben Dooks <ben-linux@fluff.org>
+Date: Mon, 15 Feb 2010 12:39:44 -0700
+Message-ID: <fa686aa41002151139yf7035d9kdfb6b9b592486fe4@mail.gmail.com>
+Subject: Re: [PATCH] leds-gpio: Fix default state handling on OF platforms
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org,
-	Linux-i2c@vger.kernel.org, Wolfgang Grandegger <wg@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Trent Piepho <xyzzy@speakeasy.org>, linux-kernel@vger.kernel.org,
+	Richard Purdie <rpurdie@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,74 +26,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben D.,
+On Fri, Feb 5, 2010 at 1:54 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> The driver wrongly sets default state for LEDs that don't specify
+> default-state property.
+>
+> Currently the driver handles default state this way:
+>
+> memset(&led, 0, sizeof(led));
+> for_each_child_of_node(np, child) {
+> =A0 =A0 =A0 =A0state =3D of_get_property(child, "default-state", NULL);
+> =A0 =A0 =A0 =A0if (state) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!strcmp(state, "keep"))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0led.default_state =3D LEDS=
+_GPIO_DEFSTATE_KEEP;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0...
+> =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0ret =3D create_gpio_led(&led, ...);
+> }
+>
+> Which means that all LEDs that do not specify default-state will
+> inherit the last value of the default-state property, which is wrong.
+>
+> This patch fixes the issue by moving LED's template initialization
+> into the loop body.
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-These 4 patches are totally fine.  Do you want to pick them up, or
-should I take them through the PowerPC tree?
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Cheers,
+Richard, I assume you'll pick this one up via your tree?
+
 g.
 
-On Wed, Feb 10, 2010 at 7:55 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
-ote:
-> From: Wolfgang Grandegger <wg@denx.de>
+> ---
+> =A0drivers/leds/leds-gpio.c | =A0 =A03 +--
+> =A01 files changed, 1 insertions(+), 2 deletions(-)
 >
-> This patch series adds support for the MPC512x from Freescale to the
-> i2c-mpc driver. At that occasion, issues with =A0__devinit[data] have
-> been fixed and the doc of the FSL I2C dts bindings updated. It has
-> been tested on a MPC5121ADS, TQM5200 and TQM8560 board
+> diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
+> index e5225d2..0823e26 100644
+> --- a/drivers/leds/leds-gpio.c
+> +++ b/drivers/leds/leds-gpio.c
+> @@ -211,7 +211,6 @@ static int __devinit of_gpio_leds_probe(struct of_dev=
+ice *ofdev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0const struct of_device_id *match)
+> =A0{
+> =A0 =A0 =A0 =A0struct device_node *np =3D ofdev->node, *child;
+> - =A0 =A0 =A0 struct gpio_led led;
+> =A0 =A0 =A0 =A0struct gpio_led_of_platform_data *pdata;
+> =A0 =A0 =A0 =A0int count =3D 0, ret;
 >
-> Changes since v1:
+> @@ -226,8 +225,8 @@ static int __devinit of_gpio_leds_probe(struct of_dev=
+ice *ofdev,
+> =A0 =A0 =A0 =A0if (!pdata)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENOMEM;
 >
-> - use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
-> - document the special DTS node "fsl,mpc5121-i2c-ctrl".
-> - update and correct the Kconfig help.
-> - some other minor fixes as suggested by Wolfram.
+> - =A0 =A0 =A0 memset(&led, 0, sizeof(led));
+> =A0 =A0 =A0 =A0for_each_child_of_node(np, child) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct gpio_led led =3D {};
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0enum of_gpio_flags flags;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0const char *state;
 >
-> Changes since v2:
->
-> - use __init[data] instead of __devinit[data] for this driver.
->
-> Changes since v3:
->
-> - switch back to __devinit[data] as pointed out by Ben.
->
-> Changes since v4:
->
-> - check MPC_I2C_CLOCK_SAFE instead of "!clock" as suggested by Wolfram.
-> - update MODULE_DESCRIPTION().
->
-> Changes since v5 (suggested by Grant Likely):
->
-> - various correctings for labling initialization functions and data
-> =A0(this is tricky because section mismatches are not always obvious).
-> - add a separate patch for renaming the setclock into setup functions.
-> - correct the doc of the I2C bindings, e.g. don't mention the legacy
-> =A0clock setting and remove obsolte parts.
->
-> Changes since v6:
->
-> - use __devinitconst for const data as suggested by Stephen Rothwell.
->
-> Wolfgang
->
-> Wolfgang Grandegger (4):
-> =A0i2c-mpc: use __devinit[data] for initialization functions and data
-> =A0i2c-mpc: rename "setclock" initialization functions to "setup"
-> =A0i2c-mpc: add support for the MPC512x processors from Freescale
-> =A0powerpc: doc/dts-bindings: update doc of FSL I2C bindings
->
-> =A0Documentation/powerpc/dts-bindings/fsl/i2c.txt | =A0 30 +++-
-> =A0drivers/i2c/busses/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A07 +-
-> =A0drivers/i2c/busses/i2c-mpc.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
-194 +++++++++++++++---------
-> =A03 files changed, 146 insertions(+), 85 deletions(-)
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
+> --
+> 1.6.5.7
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at =A0http://www.tux.org/lkml/
 >
 
 
