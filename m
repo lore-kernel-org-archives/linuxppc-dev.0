@@ -1,23 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id AB2C2B7C09
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Feb 2010 06:49:54 +1100 (EST)
-Date: Sun, 14 Feb 2010 11:50:07 -0800 (PST)
-Message-Id: <20100214.115007.94112348.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 8/9] of/sparc: Remove sparc-local declaration of
-	allnodes and devtree_lock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100213160309.4767.94443.stgit@angua>
-References: <20100213154838.4767.83881.stgit@angua>
-	<20100213160309.4767.94443.stgit@angua>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 15 Feb 2010 12:40:28 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Don't clear larx reservation on system call exit
+Message-ID: <20100215014028.GB13355@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 13 Feb 2010 09:03:09 -0700
 
-> Both allnodes and devtree_lock are defined in common code.  The
-> extern declaration should be in the common header too so that the
-> compiler can type check.  allnodes is already in of.h, but
-> devtree_lock should be declared there too.
-> 
-> This patch removes the SPARC declarations and uses decls in of.h instead.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Right now we clear the larx reservation on every system call exit. No code
+should exist that tries to make use of larx/stcx across a system call (because
+it would fail 100% of the time).
 
-Acked-by: David S. Miller <davem@davemloft.net>
+We could continue to play it safe but system call latency affects so many
+workloads. In the past we have already cut down the set of registers we
+save and restore across a system call and this could be seen as an
+extension of that. The PowerPC system call ABI does not (and could not)
+preserve a larx reservation.
+
+On POWER6 the poster child for system call improvements, getppid, improves 6%.
+
+A more useful test is the private futex wake system call and that improves 5%.
+This is a decent speedup on an important system call for threaded applications.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+If my previous patches didn't worry you then this one is sure to.
+
+Getting this wrong will make someone's life miserable, so it could do with
+some double checking (eg we don't branch through there on other exceptions and
+we dont invoke system calls from the kernel that rely on the reservation being
+cleared).
+
+Index: powerpc.git/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/entry_64.S	2010-02-13 16:26:43.794322638 +1100
++++ powerpc.git/arch/powerpc/kernel/entry_64.S	2010-02-13 16:27:03.205575405 +1100
+@@ -202,7 +202,6 @@ syscall_exit:
+ 	bge-	syscall_error
+ syscall_error_cont:
+ 	ld	r7,_NIP(r1)
+-	stdcx.	r0,0,r1			/* to clear the reservation */
+ 	andi.	r6,r8,MSR_PR
+ 	ld	r4,_LINK(r1)
+ 	/*
