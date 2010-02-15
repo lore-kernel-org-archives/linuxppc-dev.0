@@ -1,27 +1,24 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id EBFDBB7CE2
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2010 07:59:26 +1100 (EST)
-Date: Mon, 15 Feb 2010 23:59:24 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/3] of/gpio: Introduce of_put_gpio(), add ref counting
-	for OF GPIO chips
-Message-ID: <20100215205924.GA23654@oksana.dev.rtsoft.ru>
-References: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
-	<20100205205045.GC4178@oksana.dev.rtsoft.ru>
-	<fa686aa41002090928o6911d095ydca1e1e670a0fc22@mail.gmail.com>
-	<20100209191427.GA18263@oksana.dev.rtsoft.ru>
-	<fa686aa41002151149u158bc2fbn5af16f6bd714d36c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa41002151149u158bc2fbn5af16f6bd714d36c@mail.gmail.com>
-Cc: Michal Simek <monstr@monstr.eu>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, David Miller <davem@davemloft.net>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CE015B7C67
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2010 08:05:05 +1100 (EST)
+Subject: Re: register long sp asm("r1") incorrect
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20100215202854.GA21601@elf.ucw.cz>
+References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz>
+	<1265866273.16346.34.camel@pasglop>
+	<20100215073405.GB20456@atrey.karlin.mff.cuni.cz>
+	<1266263992.16346.125.camel@pasglop>
+	<20100215202854.GA21601@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2010 08:04:58 +1100
+Message-ID: <1266267898.16346.135.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,39 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 15, 2010 at 12:49:56PM -0700, Grant Likely wrote:
-[...]
-> Okay, I'm convinced now.  The model is wrong.  struct of_gc does need
-> to be a member of struct gpio_chip and conditionally compiled against
-> CONFIG_OF_GPIO.  This locking requirement is just too plain ugly,
+On Mon, 2010-02-15 at 21:28 +0100, Pavel Machek wrote:
+> On Tue 2010-02-16 06:59:52, Benjamin Herrenschmidt wrote:
+> > On Mon, 2010-02-15 at 08:34 +0100, Pavel Machek wrote:
+> > > > On Tue, 2010-02-09 at 16:24 +0100, Pavel Machek wrote:
+> > > > > ...according to gcc docs, sp should be global, or placement in
+> > > > > register is not guaranteed (except at asm boundaries, but there
+> > > are
+> > > > > none).
+> > > > 
+> > > > Sorry I'm not sure I grok what you mean.
+> > > 
+> > > Well, according to gcc doscs and my experience, local "register int
+> > > __asm()" variables only work by accident (or not at all). 
+> > 
+> > Hrm... we definitely rely on that for our thread_info() access, and so
+> > far it has worked well for us, but I'll poke our gcc folks just in case.
+> 
+> Thanks, and let me know about any results.
 
-And how would you implement of_get_gpio(np, index) then?
-You don't have 'struct gpio_chip' in of_get_gpio(), so you can't
-get of_gc out of it.
+All the gcc folks I talked to say something along the lines that there
+is no way in hell it doesn't work :-)
 
-It's possible to lookup all GPIOs (gpio[0..ARCH_NR_GPIOS]) matching
-on chip->dev->archdata.node == np, but you're just moving this stuff
-into gpiolib, where you'll have to grab global gpio_lock instead of
-devtree lock. And just as with np->data_lock or global devtree lock,
-you'll have to grab gpio_lock in of_gpio_put(), of_gpio_chip_register
-and of_gpio_chip_unregister().
+It's true that most other use of it we have are global scope (local_paca
+in r13, glibc use of r2/r13, etc...) afaik, but since r1 itself is the
+stack pointer always, I think they pretty much guarantee it works.
 
-See? Your suggestion doesn't make things better or simpler, instead
-it turns the OF GPIO inside out, exposing arch details to the generic
-code.
+I'm CCing a couple of experts just to be sure.
 
-There is really no excuse for the arch-specific (OF) stuff being in
-the generic code. Not in the irq subsystem, not in the gpio
-subsystem. My implementation actually proves that.
-
-> and
-> dereferencing the np->data pointer in this way is dangerous
-> (what if
-> something that is not struct of_gc is stored there).
-
-Not possible with the safe np->data accessors.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Cheers,
+Ben.
