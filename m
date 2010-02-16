@@ -1,20 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
-	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id B0A9FB7CBD
+Received: from mail-yx0-f178.google.com (mail-yx0-f178.google.com
+	[209.85.210.178]) by ozlabs.org (Postfix) with ESMTP id 0A728B7D00
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Feb 2010 03:00:07 +1100 (EST)
-Received: by ywh39 with SMTP id 39so5284584ywh.17
+	Wed, 17 Feb 2010 03:00:26 +1100 (EST)
+Received: by yxe8 with SMTP id 8so9432738yxe.17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Feb 2010 08:00:05 -0800 (PST)
+	Tue, 16 Feb 2010 08:00:25 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1256245888-25210-2-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1256245888-25210-3-git-send-email-w.sang@pengutronix.de>
 References: <1256245888-25210-1-git-send-email-w.sang@pengutronix.de>
 	<1256245888-25210-2-git-send-email-w.sang@pengutronix.de>
+	<1256245888-25210-3-git-send-email-w.sang@pengutronix.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Feb 2010 08:59:38 -0700
-Message-ID: <fa686aa41002160759k360e55bdkbb3fd67ba523b027@mail.gmail.com>
-Subject: Re: [PATCH 1/3] i2c/mpc: drop NO_IRQ
+Date: Tue, 16 Feb 2010 08:59:54 -0700
+Message-ID: <fa686aa41002160759g6abb34a0t3bca718655822a88@mail.gmail.com>
+Subject: Re: [PATCH 2/3] i2c/cpm: drop NO_IRQ
 To: Wolfram Sang <w.sang@pengutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
@@ -36,57 +37,36 @@ On Thu, Oct 22, 2009 at 2:11 PM, Wolfram Sang <w.sang@pengutronix.de> wrote=
 > only used on powerpc, where NO_IRQ is 0 anyhow.
 >
 > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Jochen Friedrich <jochen@scram.de>
 > Cc: Ben Dooks <ben-linux@fluff.org>
 
 Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
 > ---
-> =A0drivers/i2c/busses/i2c-mpc.c | =A0 =A06 +++---
-> =A01 files changed, 3 insertions(+), 3 deletions(-)
+> =A0drivers/i2c/busses/i2c-cpm.c | =A0 =A02 +-
+> =A01 files changed, 1 insertions(+), 1 deletions(-)
 >
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index d325e86..7e58443 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -115,7 +115,7 @@ static int i2c_wait(struct mpc_i2c *i2c, unsigned tim=
-eout, int writing)
-> =A0 =A0 =A0 =A0u32 x;
-> =A0 =A0 =A0 =A0int result =3D 0;
+> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+> index 9c2e100..16948db 100644
+> --- a/drivers/i2c/busses/i2c-cpm.c
+> +++ b/drivers/i2c/busses/i2c-cpm.c
+> @@ -441,7 +441,7 @@ static int __devinit cpm_i2c_setup(struct cpm_i2c *cp=
+m)
+> =A0 =A0 =A0 =A0init_waitqueue_head(&cpm->i2c_wait);
 >
-> - =A0 =A0 =A0 if (i2c->irq =3D=3D NO_IRQ) {
-> + =A0 =A0 =A0 if (!i2c->irq) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0while (!(readb(i2c->base + MPC_I2C_SR) & C=
-SR_MIF)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0schedule();
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (time_after(jiffies, or=
-ig_jiffies + timeout)) {
-> @@ -520,7 +520,7 @@ static int __devinit fsl_i2c_probe(struct of_device *=
-op,
-> =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0cpm->irq =3D of_irq_to_resource(ofdev->node, 0, NULL);
+> - =A0 =A0 =A0 if (cpm->irq =3D=3D NO_IRQ)
+> + =A0 =A0 =A0 if (!cpm->irq)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
 >
-> =A0 =A0 =A0 =A0i2c->irq =3D irq_of_parse_and_map(op->node, 0);
-> - =A0 =A0 =A0 if (i2c->irq !=3D NO_IRQ) { /* i2c->irq =3D NO_IRQ implies =
-polling */
-> + =A0 =A0 =A0 if (i2c->irq) { /* no i2c->irq implies polling */
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0result =3D request_irq(i2c->irq, mpc_i2c_i=
-sr,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 I=
-RQF_SHARED, "i2c-mpc", i2c);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (result < 0) {
-> @@ -579,7 +579,7 @@ static int __devexit fsl_i2c_remove(struct of_device =
-*op)
-> =A0 =A0 =A0 =A0i2c_del_adapter(&i2c->adap);
-> =A0 =A0 =A0 =A0dev_set_drvdata(&op->dev, NULL);
->
-> - =A0 =A0 =A0 if (i2c->irq !=3D NO_IRQ)
-> + =A0 =A0 =A0 if (i2c->irq)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0free_irq(i2c->irq, i2c);
->
-> =A0 =A0 =A0 =A0irq_dispose_mapping(i2c->irq);
+> =A0 =A0 =A0 =A0/* Install interrupt handler. */
 > --
 > 1.6.5
 >
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
 
 
