@@ -1,26 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f201.google.com (mail-yw0-f201.google.com
-	[209.85.211.201]) by ozlabs.org (Postfix) with ESMTP id 8714EB7CF0
+Received: from mail-qy0-f199.google.com (mail-qy0-f199.google.com
+	[209.85.221.199]) by ozlabs.org (Postfix) with ESMTP id 6AFF5B7D64
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Feb 2010 03:01:48 +1100 (EST)
-Received: by ywh39 with SMTP id 39so5286380ywh.17
+	Wed, 17 Feb 2010 04:39:52 +1100 (EST)
+Received: by qyk37 with SMTP id 37so6233076qyk.15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Feb 2010 08:01:46 -0800 (PST)
+	Tue, 16 Feb 2010 09:39:50 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1256245888-25210-4-git-send-email-w.sang@pengutronix.de>
-References: <1256245888-25210-1-git-send-email-w.sang@pengutronix.de>
-	<1256245888-25210-2-git-send-email-w.sang@pengutronix.de>
-	<1256245888-25210-3-git-send-email-w.sang@pengutronix.de>
-	<1256245888-25210-4-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <20100216174349.b0ea60ef.eschwab@online.de>
+References: <20100216151240.148f9413.eschwab@online.de>
+	<fa686aa41002160732w1da68f35ifd0d21407b1052e4@mail.gmail.com>
+	<20100216174349.b0ea60ef.eschwab@online.de>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Feb 2010 09:01:20 -0700
-Message-ID: <fa686aa41002160801k7a277567r50d71fb9d827203b@mail.gmail.com>
-Subject: Re: [PATCH 3/3] i2c/ibm-iic: drop NO_IRQ
-To: Wolfram Sang <w.sang@pengutronix.de>
+Date: Tue, 16 Feb 2010 10:39:30 -0700
+Message-ID: <fa686aa41002160939y475f9634i225e3047f42c9695@mail.gmail.com>
+Subject: Re: [PATCH] spi: Correct SPI clock frequency setting in spi_mpc8xxx
+To: Ernst Schwab <eschwab@online.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>, Sean MacLennan <smaclennan@pikatech.com>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,102 +28,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 22, 2009 at 2:11 PM, Wolfram Sang <w.sang@pengutronix.de> wrote=
-:
-> Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
-> (http://lkml.org/lkml/2005/11/21/221). This change is safe, as the driver=
- is
-> only used on powerpc, where NO_IRQ is 0 anyhow.
+On Tue, Feb 16, 2010 at 9:43 AM, Ernst Schwab <eschwab@online.de> wrote:
+> Grant Likely <grant.likely@secretlab.ca> wrote:
 >
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Sean MacLennan <smaclennan@pikatech.com>
-> Cc: Ben Dooks <ben-linux@fluff.org>
+>> The change forces the division to always round up instead of down.
+>> Please describe (for me now, and for people looking at the commit in
+>> the future) the mathematical reason for the changes.
+>
+> Ok, here are some infos on the problem I observed, and the fix.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Excellent description.  Thank you.  I'll add this to the commit text
+when I apply the patch.
 
-Ben, will you pick up this series of 3, or would you like me to merge
-them through the powerpc tree?
-
-Thanks,
 g.
 
-> ---
-> =A0drivers/i2c/busses/i2c-ibm_iic.c | =A0 14 +++++++-------
-> =A01 files changed, 7 insertions(+), 7 deletions(-)
 >
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ib=
-m_iic.c
-> index b1bc6e2..2bef534 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -668,12 +668,12 @@ static int __devinit iic_request_irq(struct of_devi=
-ce *ofdev,
-> =A0 =A0 =A0 =A0int irq;
+> Example:
 >
-> =A0 =A0 =A0 =A0if (iic_force_poll)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> When specifying spi-max-frequency =3D <10000000> in the device tree,
+> the resulting frequency was 11.1 MHz, with spibrg being 133333332.
 >
-> =A0 =A0 =A0 =A0irq =3D irq_of_parse_and_map(np, 0);
-> - =A0 =A0 =A0 if (irq =3D=3D NO_IRQ) {
-> + =A0 =A0 =A0 if (!irq) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&ofdev->dev, "irq_of_parse_and_map=
- failed\n");
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> =A0 =A0 =A0 =A0}
+> According to the freescale datasheet [1], the spi clock rate is
+> spiclk =3D spibrg / (4 * (pm+1))
 >
-> =A0 =A0 =A0 =A0/* Disable interrupts until we finish initialization, assu=
-mes
-> @@ -683,7 +683,7 @@ static int __devinit iic_request_irq(struct of_device=
- *ofdev,
-> =A0 =A0 =A0 =A0if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&ofdev->dev, "request_irq %d faile=
-d\n", irq);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Fallback to the polling mode */
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NO_IRQ;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> =A0 =A0 =A0 =A0}
+> The existing code calculated
+> =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 4); pm--;
+> resulting in pm =3D (int) (3.3333) - 1 =3D 2,
+> resulting in spiclk =3D 133333332/(4*(2+1)) =3D 11111111
 >
-> =A0 =A0 =A0 =A0return irq;
-> @@ -719,7 +719,7 @@ static int __devinit iic_probe(struct of_device *ofde=
-v,
-> =A0 =A0 =A0 =A0init_waitqueue_head(&dev->wq);
+> With the fix,
+> =A0pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * 4) + 1; pm--;
+> resulting in pm =3D (int) (4.3333) - 1 =3D 3,
+> resulting in spiclk =3D 133333332/(4*(3+1)) =3D 8333333
 >
-> =A0 =A0 =A0 =A0dev->irq =3D iic_request_irq(ofdev, dev);
-> - =A0 =A0 =A0 if (dev->irq =3D=3D NO_IRQ)
-> + =A0 =A0 =A0 if (!dev->irq)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_warn(&ofdev->dev, "using polling mode\=
-n");
+> Without the fix, for every desired SPI frequency that
+> is not exactly deriveable from spibrg, pm will be too
+> small due to rounding down, resulting in a too high SPI clock,
+> so we need a pm which is one higher.
 >
-> =A0 =A0 =A0 =A0/* Board specific settings */
-> @@ -766,7 +766,7 @@ static int __devinit iic_probe(struct of_device *ofde=
-v,
-> =A0 =A0 =A0 =A0return 0;
+> For values that are exactly deriveable, spibrg will
+> be divideable by (hz*4) without remainder, and
+> (int) ((spibrg-1)/(hz*4)) will be one lower than
+> (int) (spibrg)/(hz*4), which is compensated by adding 1.
+> For these values, the fixed version calculates the same pm
+> as the unfixed version.
 >
-> =A0error_cleanup:
-> - =A0 =A0 =A0 if (dev->irq !=3D NO_IRQ) {
-> + =A0 =A0 =A0 if (dev->irq) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0iic_interrupt_mode(dev, 0);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0free_irq(dev->irq, dev);
-> =A0 =A0 =A0 =A0}
-> @@ -790,7 +790,7 @@ static int __devexit iic_remove(struct of_device *ofd=
-ev)
+> For all values that are not exactly deriveable,
+> spibrg will be not divideable by (hz*4) without
+> remainder, and (int) ((spibrg-1)/(hz*4)) will be
+> the same as (int) (spibrg)/(hz*4), and the calculated pm will
+> be one higher than calculated by the unfixed version.
 >
-> =A0 =A0 =A0 =A0i2c_del_adapter(&dev->adap);
+> Regards
+> Ernst
 >
-> - =A0 =A0 =A0 if (dev->irq !=3D NO_IRQ) {
-> + =A0 =A0 =A0 if (dev->irq) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0iic_interrupt_mode(dev, 0);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0free_irq(dev->irq, dev);
-> =A0 =A0 =A0 =A0}
+> References:
+> [1] http://www.freescale.com/files/32bit/doc/ref_manual/MPC8315ERM.pdf,
+> =A0 =A0page 22-10 -> 1398
+> "
+> pm: Prescale modulus select. Specifies the divide ratio of the
+> prescale divider in the SPI clock generator. The SPI baud rate generator
+> clock source (either system clock or system clock divided by 16,
+> depending on DIV16 bit) is divided by 4 * ([PM] + 1), a range from 4 to 6=
+4.
+> The clock has a 50% duty cycle. For example, if the prescale
+> modulus is set to PM =3D 0011 and DIV16 is set, the system/SPICLK clock
+> ratio will be 16 * (4 * (0011 + 1)) =3D 256.
+> "
+>
+>
+>> >
+>> > Signed-off-by: Ernst Schwab <eschwab@online.de>
+>> > ---
+>> > Tested on MPC8314.
+>> >
+>> > diff -up linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c linux-2.6.33-=
+rc8/drivers/spi/spi_mpc8xxx.c
+>> > --- linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c =A0 =A0 2010-02-12=
+ 20:07:45.000000000 +0100
+>> > +++ linux-2.6.33-rc8/drivers/spi/spi_mpc8xxx.c =A02010-02-15 14:08:33.=
+000000000 +0100
+>> > @@ -365,7 +365,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
+>> >
+>> > =A0 =A0 =A0 =A0if ((mpc8xxx_spi->spibrg / hz) > 64) {
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cs->hw_mode |=3D SPMODE_DIV16;
+>> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 64);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz *=
+ 64) + 1;
+>> >
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0WARN_ONCE(pm > 16, "%s: Requested speed=
+ is too low: %d Hz. "
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"Will use %d Hz ins=
+tead.\n", dev_name(&spi->dev),
+>> > @@ -373,7 +373,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (pm > 16)
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm =3D 16;
+>> > =A0 =A0 =A0 =A0} else
+>> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 4);
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz *=
+ 4) + 1;
+>> > =A0 =A0 =A0 =A0if (pm)
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm--;
+>> >
+>> >
+>> >
+>> >
+>> > --
+>> >
+>> >
+>>
+>>
+>>
+>> --
+>> Grant Likely, B.Sc., P.Eng.
+>> Secret Lab Technologies Ltd.
+>
+>
 > --
-> 1.6.5
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
 
 
