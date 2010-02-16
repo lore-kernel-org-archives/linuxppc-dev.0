@@ -1,19 +1,19 @@
-Return-Path: <wg@grandegger.com>
-Message-ID: <4B7B04EA.9010707@grandegger.com>
-Date: Tue, 16 Feb 2010 21:49:46 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
+Return-Path: <eschwab@online.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id CC9D5B7D64
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 17 Feb 2010 03:44:08 +1100 (EST)
+Date: Tue, 16 Feb 2010 17:43:49 +0100
+From: Ernst Schwab <eschwab@online.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v7 1/4] i2c-mpc: use __devinit[data] for initialization
-	functions and data
-References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
-	<1265813711-16794-2-git-send-email-wg@grandegger.com>
-	<fa686aa41002161040kada217ds1f63d363157e08ab@mail.gmail.com>
-In-Reply-To: <fa686aa41002161040kada217ds1f63d363157e08ab@mail.gmail.com>
+Subject: Re: [PATCH] spi: Correct SPI clock frequency setting in spi_mpc8xxx
+Message-Id: <20100216174349.b0ea60ef.eschwab@online.de>
+In-Reply-To: <fa686aa41002160732w1da68f35ifd0d21407b1052e4@mail.gmail.com>
+References: <20100216151240.148f9413.eschwab@online.de>
+	<fa686aa41002160732w1da68f35ifd0d21407b1052e4@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ben Dooks <ben-linux@fluff.org>, Devicetree-discuss@lists.ozlabs.org,
-	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
-	Wolfgang Grandegger <wg@denx.de>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,87 +23,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Feb 10, 2010 at 7:55 AM, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> From: Wolfgang Grandegger <wg@denx.de>
->>
->> "__devinit[data]" has not yet been used for all initialization functions
->> and data. To avoid truncating lines, the struct "mpc_i2c_match_data" has
->> been renamed to "mpc_i2c_data", which is even the better name.
->>
->> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
->> Tested-by: Wolfram Sang <w.sang@pengutronix.de>
-> 
-> Between patch 1 & 2 is not bisectable.  Functions still called
-> *_setclock in this patch, but referenced as *_setup in the structure.
-> Please respin.
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Argh, sorry for the mess. I will fix it tomorrow.
+> The change forces the division to always round up instead of down.
+> Please describe (for me now, and for people looking at the commit in
+> the future) the mathematical reason for the changes.
 
-> Also ...
-> 
->> +static struct mpc_i2c_data mpc_i2c_data_52xx __devinitdata = {
->> +       .setup = mpc_i2c_setup_52xx,
->> +};
->> +
->> +static struct mpc_i2c_data mpc_i2c_data_8313 __devinitdata = {
->> +       .setup = mpc_i2c_setup_8xxx,
->> +};
->> +
->> +static struct mpc_i2c_data mpc_i2c_data_8543 __devinitdata = {
->> +       .setup = mpc_i2c_setup_8xxx,
->> +       .prescaler = 2,
->> +};
->> +
->> +static struct mpc_i2c_data mpc_i2c_data_8544 __devinitdata = {
->> +       .setup = mpc_i2c_setup_8xxx,
->> +       .prescaler = 3,
->> +};
->> +
->>  static const struct of_device_id mpc_i2c_of_match[] = {
->> -       {.compatible = "mpc5200-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_52xx,
->> -               },
->> -       },
->> -       {.compatible = "fsl,mpc5200b-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_52xx,
->> -               },
->> -       },
->> -       {.compatible = "fsl,mpc5200-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_52xx,
->> -               },
->> -       },
->> -       {.compatible = "fsl,mpc8313-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_8xxx,
->> -               },
->> -       },
->> -       {.compatible = "fsl,mpc8543-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_8xxx,
->> -                       .prescaler = 2,
->> -               },
->> -       },
->> -       {.compatible = "fsl,mpc8544-i2c",
->> -        .data = &(struct mpc_i2c_match_data) {
->> -                       .setclock = mpc_i2c_setclock_8xxx,
->> -                       .prescaler = 3,
->> -               },
->> +       {.compatible = "mpc5200-i2c", .data = &mpc_i2c_data_52xx, },
->> +       {.compatible = "fsl,mpc5200b-i2c", .data = &mpc_i2c_data_52xx, },
->> +       {.compatible = "fsl,mpc5200-i2c", .data = &mpc_i2c_data_52xx, },
->> +       {.compatible = "fsl,mpc8313-i2c", .data = &mpc_i2c_data_8313, },
->> +       {.compatible = "fsl,mpc8543-i2c", .data = &mpc_i2c_data_8543, },
->> +       {.compatible = "fsl,mpc8544-i2c", .data = &mpc_i2c_data_8544, },
-> 
-> ... what was wrong with the old format of declaring the .data
-> structures inline with the match table?
+Ok, here are some infos on the problem I observed, and the fix.
 
-It does not allow to use __devinitdata because the space reserved by the
-compiler does belong to another section. In other words it was necessary
-to get ride of section mismatches.
+Example:
 
-Wolfgang.
+When specifying spi-max-frequency =3D <10000000> in the device tree,
+the resulting frequency was 11.1 MHz, with spibrg being 133333332.=20
+
+According to the freescale datasheet [1], the spi clock rate is
+spiclk =3D spibrg / (4 * (pm+1))
+
+The existing code calculated =20
+   pm =3D mpc8xxx_spi->spibrg / (hz * 4); pm--;
+resulting in pm =3D (int) (3.3333) - 1 =3D 2,=20
+resulting in spiclk =3D 133333332/(4*(2+1)) =3D 11111111
+
+With the fix,=20
+  pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * 4) + 1; pm--;
+resulting in pm =3D (int) (4.3333) - 1 =3D 3,
+resulting in spiclk =3D 133333332/(4*(3+1)) =3D 8333333
+
+Without the fix, for every desired SPI frequency that=20
+is not exactly deriveable from spibrg, pm will be too=20
+small due to rounding down, resulting in a too high SPI clock,
+so we need a pm which is one higher.
+
+For values that are exactly deriveable, spibrg will
+be divideable by (hz*4) without remainder, and=20
+(int) ((spibrg-1)/(hz*4)) will be one lower than=20
+(int) (spibrg)/(hz*4), which is compensated by adding 1.
+For these values, the fixed version calculates the same pm=20
+as the unfixed version.
+
+For all values that are not exactly deriveable,
+spibrg will be not divideable by (hz*4) without=20
+remainder, and (int) ((spibrg-1)/(hz*4)) will be=20
+the same as (int) (spibrg)/(hz*4), and the calculated pm will
+be one higher than calculated by the unfixed version.
+
+Regards
+Ernst
+
+References:
+[1] http://www.freescale.com/files/32bit/doc/ref_manual/MPC8315ERM.pdf,
+    page 22-10 -> 1398
+"
+pm: Prescale modulus select. Specifies the divide ratio of the=20
+prescale divider in the SPI clock generator. The SPI baud rate generator
+clock source (either system clock or system clock divided by 16,=20
+depending on DIV16 bit) is divided by 4 * ([PM] + 1), a range from 4 to 64.=
+=20
+The clock has a 50% duty cycle. For example, if the prescale
+modulus is set to PM =3D 0011 and DIV16 is set, the system/SPICLK clock=20
+ratio will be 16 * (4 * (0011 + 1)) =3D 256.
+"
+
+
+> >
+> > Signed-off-by: Ernst Schwab <eschwab@online.de>
+> > ---
+> > Tested on MPC8314.
+> >
+> > diff -up linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c linux-2.6.33-r=
+c8/drivers/spi/spi_mpc8xxx.c
+> > --- linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c =A0 =A0 2010-02-12 =
+20:07:45.000000000 +0100
+> > +++ linux-2.6.33-rc8/drivers/spi/spi_mpc8xxx.c =A02010-02-15 14:08:33.0=
+00000000 +0100
+> > @@ -365,7 +365,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
+> >
+> > =A0 =A0 =A0 =A0if ((mpc8xxx_spi->spibrg / hz) > 64) {
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cs->hw_mode |=3D SPMODE_DIV16;
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 64);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * =
+64) + 1;
+> >
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0WARN_ONCE(pm > 16, "%s: Requested speed =
+is too low: %d Hz. "
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"Will use %d Hz inst=
+ead.\n", dev_name(&spi->dev),
+> > @@ -373,7 +373,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (pm > 16)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm =3D 16;
+> > =A0 =A0 =A0 =A0} else
+> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 4);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * =
+4) + 1;
+> > =A0 =A0 =A0 =A0if (pm)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm--;
+> >
+> >
+> >
+> >
+> > --
+> >
+> >
+>=20
+>=20
+>=20
+> --=20
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+
+
+--=20
