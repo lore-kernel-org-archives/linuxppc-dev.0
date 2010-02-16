@@ -1,22 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-qy0-f189.google.com (mail-qy0-f189.google.com
-	[209.85.221.189]) by ozlabs.org (Postfix) with ESMTP id 7C1B7B7D71
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 05:11:48 +1100 (EST)
-Received: by qyk27 with SMTP id 27so4079677qyk.3
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Feb 2010 10:11:47 -0800 (PST)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1265377377-29327-11-git-send-email-agust@denx.de>
-References: <1265377377-29327-1-git-send-email-agust@denx.de>
-	<1265377377-29327-11-git-send-email-agust@denx.de>
+In-Reply-To: <1265813711-16794-2-git-send-email-wg@grandegger.com>
+References: <1265813711-16794-1-git-send-email-wg@grandegger.com>
+	<1265813711-16794-2-git-send-email-wg@grandegger.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 16 Feb 2010 11:11:26 -0700
-Message-ID: <fa686aa41002161011r29f5323clcbb1d89a9df6614@mail.gmail.com>
-Subject: Re: [PATCH v3 10/11] powerpc/mpc5121: update mpc5121ads DTS
-To: Anatolij Gustschin <agust@denx.de>
+Date: Tue, 16 Feb 2010 11:40:35 -0700
+Message-ID: <fa686aa41002161040kada217ds1f63d363157e08ab@mail.gmail.com>
+Subject: Re: [PATCH v7 1/4] i2c-mpc: use __devinit[data] for initialization
+	functions and data
+To: Wolfgang Grandegger <wg@grandegger.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de,
-	Piotr Ziecik <kosmo@semihalf.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, Devicetree-discuss@lists.ozlabs.org,
+	Linuxppc-dev@lists.ozlabs.org, Linux-i2c@vger.kernel.org,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 5, 2010 at 6:42 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> Collects several changes needed after applying
-> previous mpc5121 platform and driver patches:
+On Wed, Feb 10, 2010 at 7:55 AM, Wolfgang Grandegger <wg@grandegger.com> wr=
+ote:
+> From: Wolfgang Grandegger <wg@denx.de>
+>
+> "__devinit[data]" has not yet been used for all initialization functions
+> and data. To avoid truncating lines, the struct "mpc_i2c_match_data" has
+> been renamed to "mpc_i2c_data", which is even the better name.
+>
+> Signed-off-by: Wolfgang Grandegger <wg@denx.de>
+> Tested-by: Wolfram Sang <w.sang@pengutronix.de>
 
-I'll merge this one, but...
+Between patch 1 & 2 is not bisectable.  Functions still called
+*_setclock in this patch, but referenced as *_setup in the structure.
+Please respin.
 
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0display@2100 {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5121=
--diu", "fsl-diu";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5121=
--diu", "fsl,diu";
+Also ...
 
-I want to see the "fsl,diu" value removed.  It is meaningless (the
-8xxx and 5121 dius are similar, but they are not identical), and the
-driver should bind against "fsl,mpc5121-diu" directly.  Can you please
-send a followup patch to fix this?
+> +static struct mpc_i2c_data mpc_i2c_data_52xx __devinitdata =3D {
+> + =A0 =A0 =A0 .setup =3D mpc_i2c_setup_52xx,
+> +};
+> +
+> +static struct mpc_i2c_data mpc_i2c_data_8313 __devinitdata =3D {
+> + =A0 =A0 =A0 .setup =3D mpc_i2c_setup_8xxx,
+> +};
+> +
+> +static struct mpc_i2c_data mpc_i2c_data_8543 __devinitdata =3D {
+> + =A0 =A0 =A0 .setup =3D mpc_i2c_setup_8xxx,
+> + =A0 =A0 =A0 .prescaler =3D 2,
+> +};
+> +
+> +static struct mpc_i2c_data mpc_i2c_data_8544 __devinitdata =3D {
+> + =A0 =A0 =A0 .setup =3D mpc_i2c_setup_8xxx,
+> + =A0 =A0 =A0 .prescaler =3D 3,
+> +};
+> +
+> =A0static const struct of_device_id mpc_i2c_of_match[] =3D {
+> - =A0 =A0 =A0 {.compatible =3D "mpc5200-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> - =A0 =A0 =A0 },
+> - =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200b-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> - =A0 =A0 =A0 },
+> - =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_52xx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> - =A0 =A0 =A0 },
+> - =A0 =A0 =A0 {.compatible =3D "fsl,mpc8313-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> - =A0 =A0 =A0 },
+> - =A0 =A0 =A0 {.compatible =3D "fsl,mpc8543-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .prescaler =3D 2,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> - =A0 =A0 =A0 },
+> - =A0 =A0 =A0 {.compatible =3D "fsl,mpc8544-i2c",
+> - =A0 =A0 =A0 =A0.data =3D &(struct mpc_i2c_match_data) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .setclock =3D mpc_i2c_setcl=
+ock_8xxx,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .prescaler =3D 3,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 },
+> + =A0 =A0 =A0 {.compatible =3D "mpc5200-i2c", .data =3D &mpc_i2c_data_52x=
+x, },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200b-i2c", .data =3D &mpc_i2c_dat=
+a_52xx, },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc5200-i2c", .data =3D &mpc_i2c_data=
+_52xx, },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8313-i2c", .data =3D &mpc_i2c_data=
+_8313, },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8543-i2c", .data =3D &mpc_i2c_data=
+_8543, },
+> + =A0 =A0 =A0 {.compatible =3D "fsl,mpc8544-i2c", .data =3D &mpc_i2c_data=
+_8544, },
 
-Thanks,
+... what was wrong with the old format of declaring the .data
+structures inline with the match table?
+
 g.
