@@ -1,28 +1,25 @@
-Return-Path: <bjorn.helgaas@hp.com>
-Received: from g1t0028.austin.hp.com (g1t0028.austin.hp.com [15.216.28.35])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp1.hp.com",
-	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB502B822E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 07:20:16 +1100 (EST)
-Subject: [PATCH v4 5/5] x86/PCI: use host bridge _CRS info by default on 2008
-	and newer machines
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date: Wed, 17 Feb 2010 13:20:13 -0700
-Message-ID: <20100217202013.4013.41704.stgit@bob.kio>
-In-Reply-To: <20100217201654.4013.70201.stgit@bob.kio>
-References: <20100217201654.4013.70201.stgit@bob.kio>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
-	Peter Haight <peterh@sapros.com>,
-	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-	Larry Finger <Larry.Finger@lwfinger.net>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-bw0-f212.google.com (mail-bw0-f212.google.com
+	[209.85.218.212]) by ozlabs.org (Postfix) with ESMTP id E2AFCB7D59
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 02:17:22 +1100 (EST)
+Received: by bwz4 with SMTP id 4so118830bwz.22
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 07:17:20 -0800 (PST)
+Subject: Re: [net-next-2.6 PATCH v2 3/3] fs_enet: add FEC TX buffer
+	alignment workaround for MPC5121
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Anatolij Gustschin <agust@denx.de>
+In-Reply-To: <1266418530-2727-4-git-send-email-agust@denx.de>
+References: <1266418530-2727-1-git-send-email-agust@denx.de>
+	<1266418530-2727-2-git-send-email-agust@denx.de>
+	<1266418530-2727-3-git-send-email-agust@denx.de>
+	<1266418530-2727-4-git-send-email-agust@denx.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 16:17:16 +0100
+Message-ID: <1266419836.3075.12.camel@edumazet-laptop>
+Mime-Version: 1.0
+Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	"David S. Miller" <davem@davemloft.net>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,187 +29,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Le mercredi 17 février 2010 à 15:55 +0100, Anatolij Gustschin a écrit :
+> MPC5121 FEC requeries 4-byte alignmnent for TX data buffers.
+> This patch is a work around that copies misaligned tx packets
+> to an aligned skb before sending.
+> 
+> Signed-off-by: John Rigby <jcrigby@gmail.com>
+> Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> Signed-off-by: Wolfgang Denk <wd@denx.de>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+>  drivers/net/fs_enet/fs_enet-main.c |   44 ++++++++++++++++++++++++++++++++++++
+>  1 files changed, 44 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index 4297021..166a89d 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -580,6 +580,37 @@ void fs_cleanup_bds(struct net_device *dev)
+>  
+>  /**********************************************************************************/
+>  
+> +#ifdef CONFIG_FS_ENET_MPC5121_FEC
+> +/*
+> + * MPC5121 FEC requeries 4-byte alignment for TX data buffer!
+> + */
+> +static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
+> +					       struct sk_buff *skb)
+> +{
+> +	struct sk_buff *new_skb;
+> +	struct fs_enet_private *fep = netdev_priv(dev);
+> +
+> +	/* Alloc new skb */
+> +	new_skb = dev_alloc_skb(ENET_RX_FRSIZE + 4);
 
-The main benefit of using ACPI host bridge window information is that
-we can do better resource allocation in systems with multiple host bridges,
-e.g., http://bugzilla.kernel.org/show_bug.cgi?id=14183
 
-Sometimes we need _CRS information even if we only have one host bridge,
-e.g., https://bugs.launchpad.net/ubuntu/+source/linux/+bug/341681
+ENET_RX_FRSIZE looks strange in TX path
 
-Most of these systems are relatively new, so this patch turns on
-"pci=use_crs" only on machines with a BIOS date of 2008 or newer.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
----
-
- Documentation/kernel-parameters.txt |    8 ++++-
- arch/ia64/include/asm/acpi.h        |    1 +
- arch/x86/include/asm/pci_x86.h      |    1 +
- arch/x86/pci/acpi.c                 |   53 +++++++++++++++++++++++++++++++----
- arch/x86/pci/common.c               |    3 ++
- drivers/acpi/pci_root.c             |    1 +
- include/acpi/acpi_drivers.h         |    1 +
- 7 files changed, 60 insertions(+), 8 deletions(-)
+Why not using skb->len + 4 instead of ENET_RX_FRSIZE + 4 ?
 
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 01e2a98..6913e9a 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1939,8 +1939,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 				IRQ routing is enabled.
- 		noacpi		[X86] Do not use ACPI for IRQ routing
- 				or for PCI scanning.
--		use_crs		[X86] Use _CRS for PCI resource
--				allocation.
-+		use_crs		[X86] Use PCI host bridge window information
-+				from ACPI.  On BIOSes from 2008 or later, this
-+				is enabled by default.  If you need to use this,
-+				please report a bug.
-+		nocrs		[X86] Ignore PCI host bridge windows from ACPI.
-+			        If you need to use this, please report a bug.
- 		routeirq	Do IRQ routing for all PCI devices.
- 				This is normally done in pci_enable_device(),
- 				so this option is a temporary workaround
-diff --git a/arch/ia64/include/asm/acpi.h b/arch/ia64/include/asm/acpi.h
-index 7ae5889..7f2d7f2 100644
---- a/arch/ia64/include/asm/acpi.h
-+++ b/arch/ia64/include/asm/acpi.h
-@@ -97,6 +97,7 @@ ia64_acpi_release_global_lock (unsigned int *lock)
- #endif
- #define acpi_processor_cstate_check(x) (x) /* no idle limits on IA64 :) */
- static inline void disable_acpi(void) { }
-+static inline void pci_acpi_crs_quirks(void) { }
- 
- const char *acpi_get_sysname (void);
- int acpi_request_vector (u32 int_type);
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index b4bf9a9..05b58cc 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -29,6 +29,7 @@
- #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
- #define PCI_HAS_IO_ECS		0x40000
- #define PCI_NOASSIGN_ROMS	0x80000
-+#define PCI_ROOT_NO_CRS		0x100000
- 
- extern unsigned int pci_probe;
- extern unsigned long pirq_table_addr;
-diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-index a2f8cdb..5f11ff6 100644
---- a/arch/x86/pci/acpi.c
-+++ b/arch/x86/pci/acpi.c
-@@ -15,6 +15,51 @@ struct pci_root_info {
- 	int busnum;
- };
- 
-+static bool pci_use_crs = true;
-+
-+static int __init set_use_crs(const struct dmi_system_id *id)
-+{
-+	pci_use_crs = true;
-+	return 0;
-+}
-+
-+static const struct dmi_system_id pci_use_crs_table[] __initconst = {
-+	/* http://bugzilla.kernel.org/show_bug.cgi?id=14183 */
-+	{
-+		.callback = set_use_crs,
-+		.ident = "IBM System x3800",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "x3800"),
-+		},
-+	},
-+	{}
-+};
-+
-+void __init pci_acpi_crs_quirks(void)
-+{
-+	int year;
-+
-+	if (dmi_get_date(DMI_BIOS_DATE, &year, NULL, NULL) && year < 2008)
-+		pci_use_crs = false;
-+
-+	dmi_check_system(pci_use_crs_table);
-+
-+	/*
-+	 * If the user specifies "pci=use_crs" or "pci=nocrs" explicitly, that
-+	 * takes precedence over anything we figured out above.
-+	 */
-+	if (pci_probe & PCI_ROOT_NO_CRS)
-+		pci_use_crs = false;
-+	else if (pci_probe & PCI_USE__CRS)
-+		pci_use_crs = true;
-+
-+	printk(KERN_INFO "PCI: %s host bridge windows from ACPI; "
-+	       "if necessary, use \"pci=%s\" and report a bug\n",
-+	       pci_use_crs ? "Using" : "Ignoring",
-+	       pci_use_crs ? "nocrs" : "use_crs");
-+}
-+
- static acpi_status
- resource_to_addr(struct acpi_resource *resource,
- 			struct acpi_resource_address64 *addr)
-@@ -106,7 +151,7 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
- 	res->child = NULL;
- 	align_resource(info->bridge, res);
- 
--	if (!(pci_probe & PCI_USE__CRS)) {
-+	if (!pci_use_crs) {
- 		dev_printk(KERN_DEBUG, &info->bridge->dev,
- 			   "host bridge window %pR (ignored)\n", res);
- 		return AE_OK;
-@@ -137,12 +182,8 @@ get_current_resources(struct acpi_device *device, int busnum,
- 	struct pci_root_info info;
- 	size_t size;
- 
--	if (pci_probe & PCI_USE__CRS)
-+	if (pci_use_crs)
- 		pci_bus_remove_resources(bus);
--	else
--		dev_info(&device->dev,
--			 "ignoring host bridge windows from ACPI; "
--			 "boot with \"pci=use_crs\" to use them\n");
- 
- 	info.bridge = device;
- 	info.bus = bus;
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index d2552c6..3736176 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -520,6 +520,9 @@ char * __devinit  pcibios_setup(char *str)
- 	} else if (!strcmp(str, "use_crs")) {
- 		pci_probe |= PCI_USE__CRS;
- 		return NULL;
-+	} else if (!strcmp(str, "nocrs")) {
-+		pci_probe |= PCI_ROOT_NO_CRS;
-+		return NULL;
- 	} else if (!strcmp(str, "earlydump")) {
- 		pci_early_dump_regs = 1;
- 		return NULL;
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 64ae2f2..4a46051 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -566,6 +566,7 @@ static int __init acpi_pci_root_init(void)
- 	if (acpi_pci_disabled)
- 		return 0;
- 
-+	pci_acpi_crs_quirks();
- 	if (acpi_bus_register_driver(&acpi_pci_root_driver) < 0)
- 		return -ENODEV;
- 
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index f4906f6..3a4767c 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -104,6 +104,7 @@ int acpi_pci_bind_root(struct acpi_device *device);
- 
- struct pci_bus *pci_acpi_scan_root(struct acpi_device *device, int domain,
- 				   int bus);
-+void pci_acpi_crs_quirks(void);
- 
- /* --------------------------------------------------------------------------
-                                     Processor
+> +	if (!new_skb) {
+> +		dev_warn(fep->dev, "Memory squeeze, dropping tx packet.\n");
+
+I am just wondering if this is ratelimited ?
+
+> +		return NULL;
+> +	}
+> +
+> +	/* Make sure new skb is properly aligned */
+> +	skb_align(new_skb, 4);
+
+> +
+> +	/* Copy data to new skb ... */
+> +	skb_copy_from_linear_data(skb, new_skb->data, skb->len);
+> +	skb_put(new_skb, skb->len);
+> +
+> +	/* ... and free an old one */
+> +	dev_kfree_skb_any(skb);
+> +
+> +	return new_skb;
+> +}
+> +#endif
+> +
+>  static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  {
+>  	struct fs_enet_private *fep = netdev_priv(dev);
+> @@ -588,6 +619,19 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  	u16 sc;
+>  	unsigned long flags;
+>  
+> +#ifdef CONFIG_FS_ENET_MPC5121_FEC
+> +	if (((unsigned long)skb->data) & 0x3) {
+> +		skb = tx_skb_align_workaround(dev, skb);
+> +		if (!skb) {
+> +			/*
+> +			 * We have lost packet due to memory allocation error
+> +			 * in tx_skb_align_workaround(). Hopefully original
+> +			 * skb is still valid, so try transmit it later.
+> +			 */
+
+Could you define 'try to transmit later' ?
+Who is responsible to trigger this event ?
+
+
+> +			return NETDEV_TX_BUSY;
+> +		}
+> +	}
+> +#endif
+>  	spin_lock_irqsave(&fep->tx_lock, flags);
+>  
+>  	/*
