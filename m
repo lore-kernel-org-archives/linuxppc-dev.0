@@ -1,18 +1,11 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 17 Feb 2010 20:43:14 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 6/6] powerpc: Use lwsync for acquire barrier if CPU
-	supports it
-Message-ID: <20100217094314.GC24270@kryten>
-References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
-	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
-	<20100210110719.GE3399@kryten> <20100210111025.GF3399@kryten>
-	<20100211070914.GB6735@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100211070914.GB6735@laptop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wg@denx.de>
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: Linux-i2c@vger.kernel.org
+Subject: [PATCH v8 0/4] i2c-mpc: add support for the Freescale MPC512x and
+	other fixes
+Date: Wed, 17 Feb 2010 11:19:16 +0100
+Message-Id: <1266401960-19127-1-git-send-email-wg@grandegger.com>
+Cc: Devicetree-discuss@lists.ozlabs.org, Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +15,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Nick,
+This patch series adds support for the MPC512x from Freescale to the
+i2c-mpc driver. At that occasion, issues with  __devinit[data] have
+been fixed and the doc of the FSL I2C dts bindings updated. It has
+been tested on a MPC5121ADS, TQM5200 and TQM8560 board
 
-> Ah, good to see this one come back. I also tested tbench over localhost
-> btw which actually did show some speedup on the G5. 
-> 
-> BTW. this was the last thing left:
-> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg29738.html
-> 
-> Don't know if you took a look at that again, but maybe it's worth
-> looking at. Hmm, we do actually seem to be growing number of smp_mb*
-> calls in core kernel too.
+Changes since v1:
 
-Interesting idea! I do worry we will get a late night visit from the
-architecture police. From memory they want the complete larx, stcwx, bne,
-isync sequence to guarantee an acquire barrier.
+- use macro MPC_I2C_CLOCK_PRESERVE/SAFE for the special clock settings.
+- document the special DTS node "fsl,mpc5121-i2c-ctrl".
+- update and correct the Kconfig help.
+- some other minor fixes as suggested by Wolfram.
 
-Anton
+Changes since v2:
+
+- use __init[data] instead of __devinit[data] for this driver.
+
+Changes since v3:
+
+- switch back to __devinit[data] as pointed out by Ben.
+
+Changes since v4:
+
+- check MPC_I2C_CLOCK_SAFE instead of "!clock" as suggested by Wolfram.
+- update MODULE_DESCRIPTION().
+
+Changes since v5 (suggested by Grant Likely):
+
+- various correctings for labling initialization functions and data
+  (this is tricky because section mismatches are not always obvious).
+- add a separate patch for renaming the setclock into setup functions.
+- correct the doc of the I2C bindings, e.g. don't mention the legacy
+  clock setting and remove obsolte parts.
+
+Changes since v6:
+
+- use __devinitconst for const data as suggested by Stephen Rothwell.
+
+Changes since v7:
+
+- fix non-bisectable patch 1 as pointed out by Grant Likely.
+
+Wolfgang
+
+Wolfgang Grandegger (4):
+  i2c-mpc: use __devinit[data] for initialization functions and data
+  i2c-mpc: rename "setclock" initialization functions to "setup"
+  i2c-mpc: add support for the MPC512x processors from Freescale
+  powerpc: doc/dts-bindings: update doc of FSL I2C bindings
+
+ Documentation/powerpc/dts-bindings/fsl/i2c.txt |   30 +++-
+ drivers/i2c/busses/Kconfig                     |    7 +-
+ drivers/i2c/busses/i2c-mpc.c                   |  194 +++++++++++++++---------
+ 3 files changed, 146 insertions(+), 85 deletions(-)
