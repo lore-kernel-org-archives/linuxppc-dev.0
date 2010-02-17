@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59F91B7CFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 23:12:41 +1100 (EST)
-Subject: Re: [PATCH 6/6] powerpc: Use lwsync for acquire barrier if CPU
-	supports it
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20100217104153.GA7952@laptop>
-References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
-	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
-	<20100210110719.GE3399@kryten> <20100210111025.GF3399@kryten>
-	<20100211070914.GB6735@laptop> <20100217094314.GC24270@kryten>
-	<20100217104153.GA7952@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Feb 2010 23:12:34 +1100
-Message-ID: <1266408754.16346.280.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id B65FCB7D47
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 23:55:26 +1100 (EST)
+Received: from bzq-79-182-17-112.red.bezeqint.net ([79.182.17.112]:50281
+	helo=[10.0.0.2]) by vega.surpasshosting.com with esmtpa (Exim 4.69)
+	(envelope-from <felix@embedded-sol.com>) id 1NhjR4-0007Tx-LW
+	for linuxppc-dev@ozlabs.org; Wed, 17 Feb 2010 07:55:22 -0500
+Message-ID: <4B7BE719.9070107@embedded-sol.com>
+Date: Wed, 17 Feb 2010 14:54:49 +0200
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Starting bare metal application on second core of P2020
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
-> Yes I suppose the branch can be executed "non speculatively" before the 
-> lwsync is completed. Wheras the larx/stcwx will have to complete before
-> the branch outcome can be known. I suppose probably not worthwhile
-> avoiding the full IO sync by adding yet more crap to make this work.
-> 
-> Thanks for putting my mind to rest though :)
-> 
-> I'd still be interested to know how expensive the full sync is when you
-> have a lot of IOs in flight.
-> 
-> Question, are you going to do the hint and isync->lwsync thing for
-> userspace as well? Too bad the kernel doesn't export synchronisation
-> primitives to userspace...
+We'd like to run Linux on core0 of P2020 and some bare metal application 
+running without OS
+on core1. Is it possible to start this application from Linux ? I've 
+seen example of running 2 copies
+of Linux in AMP mode, in which case both are started from u-boot. I'd 
+like to leave core1 in
+reset, start Linux on core0 from u-boot and load bare metal application 
+from Linux. If this
+possible, where can I learn about the procedure ?
 
-We'd love to.... the vdso inherits from all the dynamic patching
-features of the kernel and more...
+Thanks.
 
-It's really a matter of getting glibc to grok it, and doing so
-efficiently (ie, not just having a function point in glibc, might be a
-good use of the IFUNC stuff).
-
-Cheers,
-Ben.
+Felix.
