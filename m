@@ -1,23 +1,17 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 13376B7DDA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 08:31:29 +1100 (EST)
-Date: Wed, 17 Feb 2010 22:31:04 +0100
+	by ozlabs.org (Postfix) with ESMTP id 98B95B7D5D
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 09:08:26 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [net-next-2.6 PATCH v2 3/3] fs_enet: add FEC TX buffer
-	alignment workaround for MPC5121
-Message-ID: <20100217223104.41d91a83@wker>
-In-Reply-To: <1266419836.3075.12.camel@edumazet-laptop>
-References: <1266418530-2727-1-git-send-email-agust@denx.de>
-	<1266418530-2727-2-git-send-email-agust@denx.de>
-	<1266418530-2727-3-git-send-email-agust@denx.de>
-	<1266418530-2727-4-git-send-email-agust@denx.de>
-	<1266419836.3075.12.camel@edumazet-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: netdev@vger.kernel.org
+Subject: [net-next-2.6 PATCH v3 3/3] fs_enet: add FEC TX buffer alignment
+	workaround for MPC5121
+Date: Wed, 17 Feb 2010 23:08:20 +0100
+Message-Id: <1266444500-17818-1-git-send-email-agust@denx.de>
+In-Reply-To: <1266418530-2727-4-git-send-email-agust@denx.de>
+References: <1266418530-2727-4-git-send-email-agust@denx.de>
 Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
 	"David S. Miller" <davem@davemloft.net>, Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,61 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Feb 2010 16:17:16 +0100
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
+MPC5121 FEC requeries 4-byte alignmnent for TX data buffers.
+This patch is a work around that copies misaligned tx packets
+to an aligned skb before sending.
 
-> Le mercredi 17 f=C3=A9vrier 2010 =C3=A0 15:55 +0100, Anatolij Gustschin a=
- =C3=A9crit :
-...
-> > +static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
-> > +					       struct sk_buff *skb)
-> > +{
-> > +	struct sk_buff *new_skb;
-> > +	struct fs_enet_private *fep =3D netdev_priv(dev);
-> > +
-> > +	/* Alloc new skb */
-> > +	new_skb =3D dev_alloc_skb(ENET_RX_FRSIZE + 4);
->=20
->=20
-> ENET_RX_FRSIZE looks strange in TX path
->=20
-> Why not using skb->len + 4 instead of ENET_RX_FRSIZE + 4 ?
+Signed-off-by: John Rigby <jcrigby@gmail.com>
+Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+Changes since v2:
+ - ratelimit warning message
+ - use skb->len + 4 as size for allocation of the new skb
+   with aligned buffer.
 
-I will fix it.
+ drivers/net/fs_enet/fs_enet-main.c |   47 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
 
-> > +	if (!new_skb) {
-> > +		dev_warn(fep->dev, "Memory squeeze, dropping tx packet.\n");
->=20
-> I am just wondering if this is ratelimited ?
-
-Right, it should be ratelimited, will fix it, too.
-
-...
-> >  static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *=
-dev)
-> >  {
-> >  	struct fs_enet_private *fep =3D netdev_priv(dev);
-> > @@ -588,6 +619,19 @@ static int fs_enet_start_xmit(struct sk_buff *skb,=
- struct net_device *dev)
-> >  	u16 sc;
-> >  	unsigned long flags;
-> > =20
-> > +#ifdef CONFIG_FS_ENET_MPC5121_FEC
-> > +	if (((unsigned long)skb->data) & 0x3) {
-> > +		skb =3D tx_skb_align_workaround(dev, skb);
-> > +		if (!skb) {
-> > +			/*
-> > +			 * We have lost packet due to memory allocation error
-> > +			 * in tx_skb_align_workaround(). Hopefully original
-> > +			 * skb is still valid, so try transmit it later.
-> > +			 */
->=20
-> Could you define 'try to transmit later' ?
-> Who is responsible to trigger this event ?
-
-The function returns NETDEV_TX_BUSY here, skb is not
-consumed and will be requeued by sch_direct_xmit(), so
-it is scheduled for resending later.
-
-Thanks,
-Anatolij
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 4297021..0770e2f 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -580,6 +580,40 @@ void fs_cleanup_bds(struct net_device *dev)
+ 
+ /**********************************************************************************/
+ 
++#ifdef CONFIG_FS_ENET_MPC5121_FEC
++/*
++ * MPC5121 FEC requeries 4-byte alignment for TX data buffer!
++ */
++static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
++					       struct sk_buff *skb)
++{
++	struct sk_buff *new_skb;
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	/* Alloc new skb */
++	new_skb = dev_alloc_skb(skb->len + 4);
++	if (!new_skb) {
++		if (net_ratelimit()) {
++			dev_warn(fep->dev,
++				 "Memory squeeze, dropping tx packet.\n");
++		}
++		return NULL;
++	}
++
++	/* Make sure new skb is properly aligned */
++	skb_align(new_skb, 4);
++
++	/* Copy data to new skb ... */
++	skb_copy_from_linear_data(skb, new_skb->data, skb->len);
++	skb_put(new_skb, skb->len);
++
++	/* ... and free an old one */
++	dev_kfree_skb_any(skb);
++
++	return new_skb;
++}
++#endif
++
+ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -588,6 +622,19 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	u16 sc;
+ 	unsigned long flags;
+ 
++#ifdef CONFIG_FS_ENET_MPC5121_FEC
++	if (((unsigned long)skb->data) & 0x3) {
++		skb = tx_skb_align_workaround(dev, skb);
++		if (!skb) {
++			/*
++			 * We have lost packet due to memory allocation error
++			 * in tx_skb_align_workaround(). Hopefully original
++			 * skb is still valid, so try transmit it later.
++			 */
++			return NETDEV_TX_BUSY;
++		}
++	}
++#endif
+ 	spin_lock_irqsave(&fep->tx_lock, flags);
+ 
+ 	/*
+-- 
+1.6.3.3
