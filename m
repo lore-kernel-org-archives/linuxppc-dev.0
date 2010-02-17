@@ -1,23 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
-	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id D4C0EB7E79
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 07:11:10 +1100 (EST)
-Received: by ywh14 with SMTP id 14so266891ywh.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 12:11:09 -0800 (PST)
+Return-Path: <bjorn.helgaas@hp.com>
+Received: from g1t0029.austin.hp.com (g1t0029.austin.hp.com [15.216.28.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp1.hp.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EFCA1B7CD5
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 07:19:55 +1100 (EST)
+Subject: [PATCH v4 0/5] PCI: try "pci=use_crs" again
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date: Wed, 17 Feb 2010 13:19:47 -0700
+Message-ID: <20100217201654.4013.70201.stgit@bob.kio>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1266433158.2322.1@antares>
-References: <1266433158.2322.1@antares>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 17 Feb 2010 13:10:46 -0700
-Message-ID: <fa686aa41002171210y5aed279epe24d51cc8705c13@mail.gmail.com>
-Subject: Re: [Patch v2 2/2] 5200/mpc: improve i2c bus error recovery
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset="utf-8"
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
+	Peter Haight <peterh@sapros.com>,
+	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+	Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2010 at 11:59 AM, Albrecht Dre=DF <albrecht.dress@arcor.de>=
- wrote:
-> Make the I2C adapter timeout configurable through a Device Tree property
-> which gives the timeout in microseconds.
->
-> Change vs. v.1: use "fsl,timeout" as property name (Thanks, Grant)
->
-> Signed-off-by: Albrecht Dre=DF <albrecht.dress@arcor.de>
+Historically, Linux has assumed a single PCI host bridge, with that bridge
+claiming all the address space left after RAM and legacy devices are taken out.
 
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+If the system contains multiple host bridges, we can no longer operate under
+that assumption.  We have to know what parts of the address space are claimed
+by each bridge so that when we assign resources to a PCI device, we take them
+from a range claimed by the upstream host bridge.
 
->
-> ---
->
-> --- linux-2.6.32-orig/Documentation/powerpc/dts-bindings/fsl/i2c.txt
-> =A02009-12-03 04:51:21.000000000 +0100
-> +++ linux-2.6.32/Documentation/powerpc/dts-bindings/fsl/i2c.txt 2010-02-1=
-7
-> 14:18:01.000000000 +0100
-> @@ -21,6 +21,7 @@ Recommended properties :
-> =A0- fsl,preserve-clocking : boolean; if defined, the clock settings
-> =A0 =A0from the bootloader are preserved (not touched).
-> =A0- clock-frequency : desired I2C bus clock frequency in Hz.
-> + - fsl,timeout : I2C bus timeout in microseconds.
->
-> =A0Examples :
->
-> @@ -44,5 +45,6 @@ Examples :
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <43 2>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&mpic>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clock-frequency =3D <400000>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,timeout =3D <10000>;
-> =A0 =A0 =A0 =A0};
->
->
+On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in the
+system, and part of the host bridge description is the "_CRS" (current resource
+settings" property, which lists the address space used by the bridge.  On x86,
+we currently ignore most of the _CRS information.  This patch series changes
+this, so we will use _CRS to learn about the host bridge windows.
+
+Since most x86 machines with multiple host bridges are relatively new, this
+series only turns this on for machines with BIOS dates of 2008 or newer.
+
+Changes from v3 to v4:
+    - Keep the bus->resource[] table to avoid having to change all arches
+      at once, but reduce it to size 4 (minimum required for P2P & CardBus
+      bridges).
+    - Store additional host bridge or subtractive decode windows in a list.
+    - Add pci_bus_for_each_resource() iterator to hide PCI_BUS_NUM_RESOURCES
+      and the table/list split.  This reduces the size of the main patch.
+    - Remove tidy-up patches completely; they feel like distractions to this
+      series.
+
+Changes from v2 to v3:
+    - Fix alpha, powerpc, and mn10300 references to pci_bus resource table
+    - Turn on "pci=use_crs" for 2008 and newer, not 2010 and newer
+    - Remove Toshiba A355 quirk (BIOS date is 2009, so automatically included)
+    - Remove IBM x3850 and x3950 quirks (BIOS dates in 2008, so automatically
+      included)
+    - Leave IBM x3800 quirk (pre-2008 BIOS)
+    - Use "bool" for pci_use_crs (new to me, but I see akpm suggesting it)
+    - Reorder so the important patches are first
+
+Changes from v1 to v2:
+    - Rebase to be6e9f7853e
+    - Add patch to clean up "disabled window" printk
+    - Add bugzilla reference comment in use_crs DMI quirk
+
+---
+
+Bjorn Helgaas (5):
+      PCI: split up pci_read_bridge_bases()
+      PCI: read bridge windows before filling in subtractive decode resources
+      PCI: add pci_bus_for_each_resource(), remove direct bus->resource[] refs
+      PCI: augment bus resource table with a list
+      x86/PCI: use host bridge _CRS info by default on 2008 and newer machines
 
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+ Documentation/kernel-parameters.txt  |    8 ++-
+ arch/ia64/include/asm/acpi.h         |    1 
+ arch/ia64/pci/pci.c                  |   17 ++-----
+ arch/mn10300/unit-asb2305/pci.c      |    6 +-
+ arch/powerpc/kernel/pci-common.c     |   11 ++---
+ arch/powerpc/platforms/fsl_uli1575.c |   12 ++---
+ arch/x86/include/asm/pci_x86.h       |    1 
+ arch/x86/pci/acpi.c                  |   82 ++++++++++++++++++++--------------
+ arch/x86/pci/bus_numa.c              |    3 +
+ arch/x86/pci/bus_numa.h              |    3 -
+ arch/x86/pci/common.c                |    3 +
+ drivers/acpi/pci_root.c              |    1 
+ drivers/pci/bus.c                    |   49 +++++++++++++++++++-
+ drivers/pci/hotplug/shpchp_sysfs.c   |    9 +---
+ drivers/pci/pci.c                    |    5 +-
+ drivers/pci/probe.c                  |   68 ++++++++++++++++++++++------
+ drivers/pci/setup-bus.c              |   10 ++--
+ drivers/pcmcia/rsrc_nonstatic.c      |    3 -
+ drivers/pcmcia/yenta_socket.c        |    5 +-
+ include/acpi/acpi_drivers.h          |    1 
+ include/linux/pci.h                  |   36 +++++++++++++--
+ 21 files changed, 226 insertions(+), 108 deletions(-)
