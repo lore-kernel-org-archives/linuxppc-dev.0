@@ -1,19 +1,24 @@
-Return-Path: <eschwab@online.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id CC9D5B7D64
+Return-Path: <rayan@nucleodyne.com>
+Received: from easyspace2.ezspl.net (easyspace2.ezspl.net [66.45.254.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 689FBB7C09
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Feb 2010 03:44:08 +1100 (EST)
-Date: Tue, 16 Feb 2010 17:43:49 +0100
-From: Ernst Schwab <eschwab@online.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] spi: Correct SPI clock frequency setting in spi_mpc8xxx
-Message-Id: <20100216174349.b0ea60ef.eschwab@online.de>
-In-Reply-To: <fa686aa41002160732w1da68f35ifd0d21407b1052e4@mail.gmail.com>
-References: <20100216151240.148f9413.eschwab@online.de>
-	<fa686aa41002160732w1da68f35ifd0d21407b1052e4@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 17 Feb 2010 19:02:22 +1100 (EST)
+Received: from mail-yw0-f201.google.com ([209.85.211.201])
+	by easyspace2.ezspl.net with esmtpsa (TLSv1:RC4-MD5:128) (Exim 4.69)
+	(envelope-from <rayan@nucleodyne.com>) id 1NheYT-0005rO-EB
+	for linuxppc-dev@lists.ozlabs.org; Wed, 17 Feb 2010 02:42:41 -0500
+Received: by ywh39 with SMTP id 39so6009054ywh.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 16 Feb 2010 23:42:37 -0800 (PST)
+MIME-Version: 1.0
+Date: Tue, 16 Feb 2010 23:42:37 -0800
+Message-ID: <5bbdacc81002162342y4f63f22at53bb88505b049bd6@mail.gmail.com>
+Subject: patch-2.6.21-rt8 works for ppc arch?
+From: Ryan <rayan@nucleodyne.com>
+To: ppcdev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,113 +28,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely <grant.likely@secretlab.ca> wrote:
+Hi,
 
-> The change forces the division to always round up instead of down.
-> Please describe (for me now, and for people looking at the commit in
-> the future) the mathematical reason for the changes.
+I'm trying to build a 2.6.21 kernel (ppc arch for a 74xx processor)
+with the PREEMPT_RT patch "patch-2.6.21-rt8". But I'm having some
+compilation errors in the very early stage. The errors are shown
+below.
 
-Ok, here are some infos on the problem I observed, and the fix.
+arch/ppc/kernel/asm-offsets.c: In function 'main':
+arch/ppc/kernel/asm-offsets.c:148: error: 'struct vdso_data' has no
+member named 'tb_orig_stamp'
+arch/ppc/kernel/asm-offsets.c:149: error: 'struct vdso_data' has no
+member named 'tb_ticks_per_sec'
+arch/ppc/kernel/asm-offsets.c:150: error: 'struct vdso_data' has no
+member named 'tb_to_xs'
+arch/ppc/kernel/asm-offsets.c:151: error: 'struct vdso_data' has no
+member named 'stamp_xsec'
+arch/ppc/kernel/asm-offsets.c:152: error: 'struct vdso_data' has no
+member named 'tb_update_count'
+arch/ppc/kernel/asm-offsets.c:153: error: 'struct vdso_data' has no
+member named 'tz_minuteswest'
+arch/ppc/kernel/asm-offsets.c:154: error: 'struct vdso_data' has no
+member named 'tz_dsttime'
+arch/ppc/kernel/asm-offsets.c:156: error: 'struct vdso_data' has no
+member named 'wtom_clock_sec'
+arch/ppc/kernel/asm-offsets.c:157: error: 'struct vdso_data' has no
+member named 'wtom_clock_nsec'
+make[1]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
 
-Example:
+I did dig a little deep to find why this error occurred. It turned out
+these members are explicitly removed by patch-2.6.21-rt8. See below
+exerted from this patch file. It makes me wondering if the PREEMPT_RT
+patch ever worked for ppc arch.
 
-When specifying spi-max-frequency =3D <10000000> in the device tree,
-the resulting frequency was 11.1 MHz, with spibrg being 133333332.=20
+Index: linux/include/asm-powerpc/vdso_datapage.h
+===================================================================
+--- linux.orig/include/asm-powerpc/vdso_datapage.h
++++ linux/include/asm-powerpc/vdso_datapage.h
+@@ -74,11 +74,6 @@ struct vdso_data {
+ 	__u32 icache_size;		/* L1 i-cache size		0x68 */
+ 	__u32 icache_line_size;		/* L1 i-cache line size		0x6C */
 
-According to the freescale datasheet [1], the spi clock rate is
-spiclk =3D spibrg / (4 * (pm+1))
+-	/* those additional ones don't have to be located anywhere
+-	 * special as they were not part of the original systemcfg
+-	 */
+-	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+-	__s32 wtom_clock_nsec;
+    	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ };
+@@ -89,15 +84,6 @@ struct vdso_data {
+  * And here is the simpler 32 bits version
+  */
+ struct vdso_data {
+-	__u64 tb_orig_stamp;		/* Timebase at boot		0x30 */
+-	__u64 tb_ticks_per_sec;		/* Timebase tics / sec		0x38 */
+-	__u64 tb_to_xs;			/* Inverse of TB to 2^20	0x40 */
+-	__u64 stamp_xsec;		/*				0x48 */
+-	__u32 tb_update_count;		/* Timebase atomicity ctr	0x50 */
+-	__u32 tz_minuteswest;		/* Minutes west of Greenwich	0x58 */
+-	__u32 tz_dsttime;		/* Type of dst correction	0x5C */
+-	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+-	__s32 wtom_clock_nsec;
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ };
 
-The existing code calculated =20
-   pm =3D mpc8xxx_spi->spibrg / (hz * 4); pm--;
-resulting in pm =3D (int) (3.3333) - 1 =3D 2,=20
-resulting in spiclk =3D 133333332/(4*(2+1)) =3D 11111111
+The kernel build also had some compilation warnings as follows.
 
-With the fix,=20
-  pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * 4) + 1; pm--;
-resulting in pm =3D (int) (4.3333) - 1 =3D 3,
-resulting in spiclk =3D 133333332/(4*(3+1)) =3D 8333333
+  CC      arch/ppc/kernel/asm-offsets.s
+In file included from arch/ppc/include/asm/hw_irq.h:110,
+                 from include/asm/system.h:10,
+                 from include/linux/list.h:9,
+                 from include/linux/signal.h:8,
+                 from arch/ppc/kernel/asm-offsets.c:11:
+include/linux/irqflags.h:92:1: warning: "raw_local_irq_save" redefined
+In file included from include/asm/system.h:10,
+                 from include/linux/list.h:9,
+                 from include/linux/signal.h:8,
+                 from arch/ppc/kernel/asm-offsets.c:11:
+arch/ppc/include/asm/hw_irq.h:103:1: warning: this is the location of
+the previous definition
+In file included from arch/ppc/include/asm/hw_irq.h:110,
+                 from include/asm/system.h:10,
+                 from include/linux/list.h:9,
+                 from include/linux/signal.h:8,
+                 from arch/ppc/kernel/asm-offsets.c:11:
+include/linux/irqflags.h:97:1: warning: "raw_local_irq_restore" redefined
+In file included from include/asm/system.h:10,
+                 from include/linux/list.h:9,
+                 from include/linux/signal.h:8,
+                 from arch/ppc/kernel/asm-offsets.c:11:
+arch/ppc/include/asm/hw_irq.h:62:1: warning: this is the location of
+the previous definition
+In file included from include/linux/time.h:7,
+                 from include/linux/timex.h:57,
+                 from include/linux/sched.h:51,
+                 from arch/ppc/kernel/asm-offsets.c:12:
+include/linux/seqlock.h: In function '__read_seqretry':
+include/linux/seqlock.h:139: warning: implicit declaration of function
+'local_irq_save'
+include/linux/seqlock.h:140: warning: implicit declaration of function
+'local_irq_restore'
 
-Without the fix, for every desired SPI frequency that=20
-is not exactly deriveable from spibrg, pm will be too=20
-small due to rounding down, resulting in a too high SPI clock,
-so we need a pm which is one higher.
+All the failure makes me doubt the correctness of the PREEMPT_RT patch
+in 2.6.21 for ppc arch. Has anyone made a RT patch work for ppc arch
+in 2.6.21? In other words, is 2.6.21 a good candidate to test a
+PREEMPT_RT patch for ppc arch? I understand that ppc arch will
+eventually replaced by powerpc arch. Is there active work going on in
+ppc arch to support the PREEMPT_RT?
 
-For values that are exactly deriveable, spibrg will
-be divideable by (hz*4) without remainder, and=20
-(int) ((spibrg-1)/(hz*4)) will be one lower than=20
-(int) (spibrg)/(hz*4), which is compensated by adding 1.
-For these values, the fixed version calculates the same pm=20
-as the unfixed version.
-
-For all values that are not exactly deriveable,
-spibrg will be not divideable by (hz*4) without=20
-remainder, and (int) ((spibrg-1)/(hz*4)) will be=20
-the same as (int) (spibrg)/(hz*4), and the calculated pm will
-be one higher than calculated by the unfixed version.
-
-Regards
-Ernst
-
-References:
-[1] http://www.freescale.com/files/32bit/doc/ref_manual/MPC8315ERM.pdf,
-    page 22-10 -> 1398
-"
-pm: Prescale modulus select. Specifies the divide ratio of the=20
-prescale divider in the SPI clock generator. The SPI baud rate generator
-clock source (either system clock or system clock divided by 16,=20
-depending on DIV16 bit) is divided by 4 * ([PM] + 1), a range from 4 to 64.=
-=20
-The clock has a 50% duty cycle. For example, if the prescale
-modulus is set to PM =3D 0011 and DIV16 is set, the system/SPICLK clock=20
-ratio will be 16 * (4 * (0011 + 1)) =3D 256.
-"
-
-
-> >
-> > Signed-off-by: Ernst Schwab <eschwab@online.de>
-> > ---
-> > Tested on MPC8314.
-> >
-> > diff -up linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c linux-2.6.33-r=
-c8/drivers/spi/spi_mpc8xxx.c
-> > --- linux-2.6.33-rc8.orig/drivers/spi/spi_mpc8xxx.c =A0 =A0 2010-02-12 =
-20:07:45.000000000 +0100
-> > +++ linux-2.6.33-rc8/drivers/spi/spi_mpc8xxx.c =A02010-02-15 14:08:33.0=
-00000000 +0100
-> > @@ -365,7 +365,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
-> >
-> > =A0 =A0 =A0 =A0if ((mpc8xxx_spi->spibrg / hz) > 64) {
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cs->hw_mode |=3D SPMODE_DIV16;
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 64);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * =
-64) + 1;
-> >
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0WARN_ONCE(pm > 16, "%s: Requested speed =
-is too low: %d Hz. "
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"Will use %d Hz inst=
-ead.\n", dev_name(&spi->dev),
-> > @@ -373,7 +373,7 @@ int mpc8xxx_spi_setup_transfer(struct sp
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (pm > 16)
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm =3D 16;
-> > =A0 =A0 =A0 =A0} else
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D mpc8xxx_spi->spibrg / (hz * 4);
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm =3D (mpc8xxx_spi->spibrg - 1) / (hz * =
-4) + 1;
-> > =A0 =A0 =A0 =A0if (pm)
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm--;
-> >
-> >
-> >
-> >
-> > --
-> >
-> >
->=20
->=20
->=20
-> --=20
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-
-
---=20
+Thanks a lot in advance for your help.
+-Ryan.
