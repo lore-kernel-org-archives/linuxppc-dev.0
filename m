@@ -1,20 +1,15 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B65FCB7D47
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Feb 2010 23:55:26 +1100 (EST)
-Received: from bzq-79-182-17-112.red.bezeqint.net ([79.182.17.112]:50281
-	helo=[10.0.0.2]) by vega.surpasshosting.com with esmtpa (Exim 4.69)
-	(envelope-from <felix@embedded-sol.com>) id 1NhjR4-0007Tx-LW
-	for linuxppc-dev@ozlabs.org; Wed, 17 Feb 2010 07:55:22 -0500
-Message-ID: <4B7BE719.9070107@embedded-sol.com>
-Date: Wed, 17 Feb 2010 14:54:49 +0200
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Starting bare metal application on second core of P2020
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id B631CB7D5B
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 01:56:57 +1100 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: netdev@vger.kernel.org
+Subject: [net-next-2.6 PATCH v2 0/3] Support for MPC512x FEC
+Date: Wed, 17 Feb 2010 15:55:27 +0100
+Message-Id: <1266418530-2727-1-git-send-email-agust@denx.de>
+Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+These patches attempt to provide support for the Freescale MPC512x
+FEC in the fs_enet driver. The first cleanup patch replaces printk
+by dev_xxx. The second and third attemt to support MPC5121 FEC
+in the FEC driver.
 
-We'd like to run Linux on core0 of P2020 and some bare metal application 
-running without OS
-on core1. Is it possible to start this application from Linux ? I've 
-seen example of running 2 copies
-of Linux in AMP mode, in which case both are started from u-boot. I'd 
-like to leave core1 in
-reset, start Linux on core0 from u-boot and load bare metal application 
-from Linux. If this
-possible, where can I learn about the procedure ?
+Changes since previous version:
 
-Thanks.
+ - don't attempt to provide runtime selection of
+   MPC5121 FEC support in the driver since it doesn't
+   make sence. Select MPC5121 FEC support at compile time.
+ - fix tx buffer alignment workaround patch to align
+   only misaligned buffers.
 
-Felix.
+The patches are based on net-next-2.6 and has been
+tested on the:
+   - Freescale/STX "MPC5121ADS" board (board rev. 4) with
+     a MPC5121e Rev. 2.
+   - TQM860L and TQM855 boards.
+
+Anatolij Gustschin (3):
+  fs_enet: use dev_xxx instead of printk
+  fs_enet: Add support for MPC512x to fs_enet driver
+  fs_enet: add FEC TX buffer alignment workaround for MPC5121
+
+ drivers/net/fs_enet/Kconfig        |   10 +++-
+ drivers/net/fs_enet/fs_enet-main.c |   90 ++++++++++++++++++++++++++----------
+ drivers/net/fs_enet/fs_enet.h      |   49 +++++++++++++++++++-
+ drivers/net/fs_enet/mac-fcc.c      |    5 +-
+ drivers/net/fs_enet/mac-fec.c      |   58 ++++++++++++++---------
+ drivers/net/fs_enet/mac-scc.c      |    9 ++--
+ drivers/net/fs_enet/mii-fec.c      |    4 +-
+ 7 files changed, 166 insertions(+), 59 deletions(-)
