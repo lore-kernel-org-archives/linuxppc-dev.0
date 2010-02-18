@@ -1,19 +1,23 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-In-reply-to: <1266142340.5273.418.camel@laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1265403478.6089.41.camel@jschopp-laptop>
-	<1266142340.5273.418.camel@laptop>
-Date: Thu, 18 Feb 2010 09:20:58 +1100
-Message-ID: <25851.1266445258@neuling.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, ego@in.ibm.com
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 16374B7C7E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Feb 2010 11:22:46 +1100 (EST)
+Date: Wed, 17 Feb 2010 16:22:59 -0800 (PST)
+Message-Id: <20100217.162259.91779007.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1264558256.3601.153.camel@pasglop>
+References: <20100125123849.111fa2d1@jbarnes-piketon>
+	<20100125175025.4c74f412@jbarnes-piketon>
+	<1264558256.3601.153.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-pci@vger.kernel.org, fubar@us.ibm.com, jbarnes@virtuousgeek.org,
+	ron.mercer@qlogic.com, kaneshige.kenji@jp.fujitsu.com,
+	linuxppc-dev@lists.ozlabs.org, leitao@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Suppose for a moment we have 2 threads (hot-unplugged thread 1 and 3, we
-> can construct an equivalent but more complex example for 4 threads), and
-> we have 4 tasks, 3 SCHED_OTHER of equal nice level and 1 SCHED_FIFO, the
-> SCHED_FIFO task will consume exactly 50% walltime of whatever cpu it
-> ends up on.
-> 
-> In that situation, provided that each cpu's cpu_power is of equal
-> measure, scale_rt_power() ensures that we run 2 SCHED_OTHER tasks on the
-> cpu that doesn't run the RT task, and 1 SCHED_OTHER task next to the RT
-> task, so that each task consumes 50%, which is all fair and proper.
-> 
-> However, if you do the above, thread 0 will have +75% = 1.75 and thread
-> 2 will have -75% = 0.25, then if the RT task will land on thread 0,
-> we'll be having: 0.875 vs 0.25, or on thread 3, 1.75 vs 0.125. In either
-> case thread 0 will receive too many (if not all) SCHED_OTHER tasks.
-> 
-> That is, unless these threads 2 and 3 really are _that_ weak, at which
-> point one wonders why IBM bothered with the silicon ;-)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 27 Jan 2010 13:10:56 +1100
 
-Peter,
+> I'll try do make ppc catch up with some of that see how it goes.
 
-2 & 3 aren't weaker than 0 & 1 but.... 
+FWIW I'm taking care of syncing up sparc in this area
+right now.
 
-The core has dynamic SMT mode switching which is controlled by the
-hypervisor (IBM's PHYP).  There are 3 SMT modes:
-	SMT1 uses thread  0
-	SMT2 uses threads 0 & 1
-	SMT4 uses threads 0, 1, 2 & 3
-When in any particular SMT mode, all threads have the same performance
-as each other (ie. at any moment in time, all threads perform the same).  
+I just noticed the ->dma_mask assignment got moved as well.
 
-The SMT mode switching works such that when linux has threads 2 & 3 idle
-and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
-idle loop and the hypervisor will automatically switch to SMT2 for that
-core (independent of other cores).  The opposite is not true, so if
-threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+Really, any change made to drivers/pci/probe.c is going to
+require powerpc and sparc changes these days.
 
-Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
-into SMT1 mode.  
+We should and will commonize our OpenFirmware PCI device probing code
+under driver/pci but until that happens a real effort needs to be put
+in place to at least ping Benjamin and myself when changes are going
+in to drivers/pci/probe.c
 
-If we can get the core into a lower SMT mode (SMT1 is best), the threads
-will perform better (since they share less core resources).  Hence when
-we have idle threads, we want them to be the higher ones.
-
-So to answer your question, threads 2 and 3 aren't weaker than the other
-threads when in SMT4 mode.  It's that if we idle threads 2 & 3, threads
-0 & 1 will speed up since we'll move to SMT2 mode.
-
-I'm pretty vague on linux scheduler details, so I'm a bit at sea as to
-how to solve this.  Can you suggest any mechanisms we currently have in
-the kernel to reflect these properties, or do you think we need to
-develop something new?  If so, any pointers as to where we should look?
-
-Thanks,
-Mikey
+Thanks.
