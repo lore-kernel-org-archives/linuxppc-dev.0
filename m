@@ -2,13 +2,13 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 19CB1B808B
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:31:57 +1100 (EST)
-Message-Id: <20100218122000.265263872@linutronix.de>
-Date: Thu, 18 Feb 2010 12:22:35 -0000
+	by ozlabs.org (Postfix) with ESMTPS id EA2C7B811B
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:31:59 +1100 (EST)
+Message-Id: <20100218122000.431550876@linutronix.de>
+Date: Thu, 18 Feb 2010 12:22:52 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 04/15] powerpc: Convert native_tlbie_lock to raw_spinlock
+Subject: [patch 08/15] powerpc: Convert beatic_irq_mask_lock to raw_spinlock
 References: <20100218121904.620984825@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,78 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-native_tlbie_lock needs to be a real spinlock in RT. Convert it to
+beatic_irq_mask_lock needs to be a real spinlock in RT. Convert it to
 raw_spinlock.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/mm/hash_native_64.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/cell/beat_interrupt.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-tip/arch/powerpc/mm/hash_native_64.c
+Index: linux-2.6-tip/arch/powerpc/platforms/cell/beat_interrupt.c
 ===================================================================
---- linux-2.6-tip.orig/arch/powerpc/mm/hash_native_64.c
-+++ linux-2.6-tip/arch/powerpc/mm/hash_native_64.c
-@@ -37,7 +37,7 @@
+--- linux-2.6-tip.orig/arch/powerpc/platforms/cell/beat_interrupt.c
++++ linux-2.6-tip/arch/powerpc/platforms/cell/beat_interrupt.c
+@@ -30,7 +30,7 @@
+ #include "beat_wrapper.h"
  
- #define HPTE_LOCK_BIT 3
+ #define	MAX_IRQS	NR_IRQS
+-static DEFINE_SPINLOCK(beatic_irq_mask_lock);
++static DEFINE_RAW_SPINLOCK(beatic_irq_mask_lock);
+ static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
+ static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
  
--static DEFINE_SPINLOCK(native_tlbie_lock);
-+static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
- 
- static inline void __tlbie(unsigned long va, int psize, int ssize)
+@@ -65,30 +65,30 @@ static void beatic_mask_irq(unsigned int
  {
-@@ -104,7 +104,7 @@ static inline void tlbie(unsigned long v
- 	if (use_local)
- 		use_local = mmu_psize_defs[psize].tlbiel;
- 	if (lock_tlbie && !use_local)
--		spin_lock(&native_tlbie_lock);
-+		raw_spin_lock(&native_tlbie_lock);
- 	asm volatile("ptesync": : :"memory");
- 	if (use_local) {
- 		__tlbiel(va, psize, ssize);
-@@ -114,7 +114,7 @@ static inline void tlbie(unsigned long v
- 		asm volatile("eieio; tlbsync; ptesync": : :"memory");
- 	}
- 	if (lock_tlbie && !use_local)
--		spin_unlock(&native_tlbie_lock);
-+		raw_spin_unlock(&native_tlbie_lock);
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+ 	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
+ 	beatic_update_irq_mask(irq_plug);
+-	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
  }
  
- static inline void native_lock_hpte(struct hash_pte *hptep)
-@@ -434,7 +434,7 @@ static void native_hpte_clear(void)
- 	/* we take the tlbie lock and hold it.  Some hardware will
- 	 * deadlock if we try to tlbie from two processors at once.
- 	 */
--	spin_lock(&native_tlbie_lock);
-+	raw_spin_lock(&native_tlbie_lock);
+ static void beatic_unmask_irq(unsigned int irq_plug)
+ {
+ 	unsigned long flags;
  
- 	slots = pteg_count * HPTES_PER_GROUP;
- 
-@@ -458,7 +458,7 @@ static void native_hpte_clear(void)
- 	}
- 
- 	asm volatile("eieio; tlbsync; ptesync":::"memory");
--	spin_unlock(&native_tlbie_lock);
-+	raw_spin_unlock(&native_tlbie_lock);
- 	local_irq_restore(flags);
+-	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+ 	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
+ 	beatic_update_irq_mask(irq_plug);
+-	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
  }
  
-@@ -521,7 +521,7 @@ static void native_flush_hash_range(unsi
- 		int lock_tlbie = !cpu_has_feature(CPU_FTR_LOCKLESS_TLBIE);
+ static void beatic_ack_irq(unsigned int irq_plug)
+ {
+ 	unsigned long flags;
  
- 		if (lock_tlbie)
--			spin_lock(&native_tlbie_lock);
-+			raw_spin_lock(&native_tlbie_lock);
+-	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+ 	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
+ 	beatic_update_irq_mask(irq_plug);
+-	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+ }
  
- 		asm volatile("ptesync":::"memory");
- 		for (i = 0; i < number; i++) {
-@@ -536,7 +536,7 @@ static void native_flush_hash_range(unsi
- 		asm volatile("eieio; tlbsync; ptesync":::"memory");
+ static void beatic_end_irq(unsigned int irq_plug)
+@@ -103,10 +103,10 @@ static void beatic_end_irq(unsigned int 
  
- 		if (lock_tlbie)
--			spin_unlock(&native_tlbie_lock);
-+			raw_spin_unlock(&native_tlbie_lock);
+ 		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
  	}
+-	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+ 	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
+ 	beatic_update_irq_mask(irq_plug);
+-	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+ }
  
- 	local_irq_restore(flags);
+ static struct irq_chip beatic_pic = {
