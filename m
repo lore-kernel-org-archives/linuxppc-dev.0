@@ -1,32 +1,40 @@
-Return-Path: <R58495@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1CFE1B7CB8
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 03:15:57 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o1IGFdfl012613
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 09:15:49 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o1IGNGTe017921
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 10:23:17 -0600 (CST)
-Subject: Re: [PATCH v3 09/11] powerpc/mpc5121: shared DIU framebuffer support
-From: York Sun <yorksun@freescale.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
-References: <1265377377-29327-1-git-send-email-agust@denx.de>
-	<1265377377-29327-10-git-send-email-agust@denx.de>
-	<fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 10:15:45 -0600
-Message-ID: <1266509745.25353.16.camel@oslab-l1>
-Mime-Version: 1.0
-Cc: wd@denx.de, dzu@denx.de, John Rigby <jrigby@gmail.com>,
-	linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59EA2B7E4F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Feb 2010 03:28:33 +1100 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o1IGOcub008269
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2010 11:24:38 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o1IGSTfb119444
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2010 11:28:29 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o1IGSTrs014326
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Feb 2010 11:28:29 -0500
+Message-ID: <4B7D6AAB.5080602@austin.ibm.com>
+Date: Thu, 18 Feb 2010 10:28:27 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
+References: <1264017638.5717.121.camel@jschopp-laptop>	
+	<1264017847.5717.132.camel@jschopp-laptop>	
+	<1264548495.12239.56.camel@jschopp-laptop>	
+	<1264720855.9660.22.camel@jschopp-laptop>	
+	<1264721088.10385.1.camel@jschopp-laptop>	
+	<1265403478.6089.41.camel@jschopp-laptop>	
+	<1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
+	<1266499023.26719.597.camel@laptop>
+In-Reply-To: <1266499023.26719.597.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Michael Neuling <mikey@neuling.org>, ego@in.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,58 +44,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-02-16 at 11:06 -0700, Grant Likely wrote:
-> [...]
-> > diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> > index 72d68b3..29c7f31 100644
-> > --- a/drivers/video/fsl-diu-fb.c
-> > +++ b/drivers/video/fsl-diu-fb.c
-> > @@ -34,7 +34,7 @@
-> >  #include <linux/of_platform.h>
-> >
-> >  #include <sysdev/fsl_soc.h>
-> > -#include "fsl-diu-fb.h"
-> > +#include <linux/fsl-diu-fb.h>
-> >
-> >  /*
-> >  * These parameters give default parameters
-> > @@ -178,6 +178,21 @@ static struct fb_videomode __devinitdata fsl_diu_mode_db[] = {
-> >                .sync           = FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-> >                .vmode          = FB_VMODE_NONINTERLACED
-> >        },
-> > +       {
-> > +               .name           = "800x480-60",
-> > +               .refresh        = 60,
-> > +               .xres           = 800,
-> > +               .yres           = 480,
-> > +               .pixclock       = 31250,
-> > +               .left_margin    = 86,
-> > +               .right_margin   = 42,
-> > +               .upper_margin   = 33,
-> > +               .lower_margin   = 10,
-> > +               .hsync_len      = 128,
-> > +               .vsync_len      = 2,
-> > +               .sync           = FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-> > +               .vmode          = FB_VMODE_NONINTERLACED
-> > +       },
-> >  };
-> 
-> This hunk bothers me.  It looks like the type of data that belongs
-> either in some common shared .c file, or encoded into the device tree.
->  It seems to be data about the display panel, instead of data about
-> the framebuffer driver.  I know that the driver already uses this
-> pattern, but before I merge this patch and further rely on that
-> pattern, I think it is worth discussing.
-> 
-> Kumar, York, thoughts?
-> 
-> g.
-> 
+Sorry for the slow reply, was on vacation.  Mikey seems to have answered 
+pretty well though.
 
-It is a hardware related configuration. It is only used during booting
-before other configuration comes available.
+>>> That is, unless these threads 2 and 3 really are _that_ weak, at which
+>>> point one wonders why IBM bothered with the silicon ;-)
+>>>       
+>> Peter,
+>>
+>> 2 & 3 aren't weaker than 0 & 1 but.... 
+>>
+>> The core has dynamic SMT mode switching which is controlled by the
+>> hypervisor (IBM's PHYP).  There are 3 SMT modes:
+>> 	SMT1 uses thread  0
+>> 	SMT2 uses threads 0 & 1
+>> 	SMT4 uses threads 0, 1, 2 & 3
+>> When in any particular SMT mode, all threads have the same performance
+>> as each other (ie. at any moment in time, all threads perform the same).  
+>>
+>> The SMT mode switching works such that when linux has threads 2 & 3 idle
+>> and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
+>> idle loop and the hypervisor will automatically switch to SMT2 for that
+>> core (independent of other cores).  The opposite is not true, so if
+>> threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+>>
+>> Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
+>> into SMT1 mode.  
+>>
+>> If we can get the core into a lower SMT mode (SMT1 is best), the threads
+>> will perform better (since they share less core resources).  Hence when
+>> we have idle threads, we want them to be the higher ones.
+>>     
+>
+> Just out of curiosity, is this a hardware constraint or a hypervisor
+> constraint?
+>   
+hardware
+>   
+>> So to answer your question, threads 2 and 3 aren't weaker than the other
+>> threads when in SMT4 mode.  It's that if we idle threads 2 & 3, threads
+>> 0 & 1 will speed up since we'll move to SMT2 mode.
+>>
+>> I'm pretty vague on linux scheduler details, so I'm a bit at sea as to
+>> how to solve this.  Can you suggest any mechanisms we currently have in
+>> the kernel to reflect these properties, or do you think we need to
+>> develop something new?  If so, any pointers as to where we should look?
+>>     
+>
+>   
+Since the threads speed up we'd need to change their weights at runtime 
+regardless of placement.  It just seems to make sense to let the changed 
+weights affect placement naturally at the same time.
 
-I am OK to move it to anywhere as long as it doesn't get confused or
-lost.
-
-York
+> Well there currently isn't one, and I've been telling people to create a
+> new SD_flag to reflect this and influence the f_b_g() behaviour.
+>
+> Something like the below perhaps, totally untested and without comments
+> so that you'll have to reverse engineer and validate my thinking.
+>
+> There's one fundamental assumption, and one weakness in the
+> implementation.
+>   
+I'm going to guess the weakness is that it doesn't adjust the cpu power 
+so tasks running in SMT1 mode actually get more than they account for?  
+What's the assumption?
