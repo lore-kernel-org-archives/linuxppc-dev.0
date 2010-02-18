@@ -2,23 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 82CBFB7CC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:33:14 +1100 (EST)
-Subject: Re: [PATCH] perf_event: e500 support
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTPS id B4C98B7CBD
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 15:05:38 +1100 (EST)
+Date: Wed, 17 Feb 2010 22:05:24 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4B7436BC.10406@freescale.com>
-Date: Wed, 17 Feb 2010 21:33:06 -0600
-Message-Id: <2035B8E4-B957-4C66-938E-95C0312DABD3@kernel.crashing.org>
-References: <20100115214351.GA2869@loki.buserror.net>
-	<20100210222932.GA9844@brick.ozlabs.ibm.com>
-	<4B7349F2.8030802@freescale.com>
-	<20100211030143.GA11245@brick.ozlabs.ibm.com>
-	<4B7436BC.10406@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git next branch
+Message-ID: <Pine.LNX.4.64.1002172204160.19485@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The following changes since commit efd0f0f385da6ee6d1a22cfe1ac94607ebe2a292:
+  Benjamin Herrenschmidt (1):
+        Merge commit 'jwb/next' into next
 
-On Feb 11, 2010, at 10:56 AM, Scott Wood wrote:
+are available in the git repository at:
 
-> Paul Mackerras wrote:
->> On Wed, Feb 10, 2010 at 06:06:10PM -0600, Scott Wood wrote:
->>> Paul Mackerras wrote:
->>>>> Some limitations:
->>>>> - No threshold support -- need to figure out how to represent it =
-in
->>>>> the event struct from userspace.
->>>> What does "threshold support" mean in this context?  Does it mean
->>>> something different from getting an interrupt after N events have =
-been
->>>> counted?  Or does it mean counting instances where something takes
->>>> longer than a specific number of cycles?
->>> The latter.
->> OK.  I handled that on classic by using some extra high bits in the
->> event config for the threshold value.=20
->=20
-> OK.
->=20
->> If you have a single threshold
->> value in hardware but more than one event that uses that threshold
->> value, then you will need to add a constraint that all threshold
->> events have to specify the same threshold.
->=20
-> There's a separate threshold for each counter.
->=20
->> So, it sounds like you have a class of events which are the
->> thresholding events, and two constraints:
->> * at most two events in the thresholding event class
->> * at most four events in total
->> Are there other constraints?  Apart from the thresholding events, can
->> any event go on any counter, or can some events only be counted on =
-one
->> particular counter?
->=20
-> No, those are the only constraints.
->=20
->> If your constraints are just the two listed above (<=3D 2 threshold
->> events, <=3D 4 events total), then doing it the obvious =
-straightforward
->> way is fine.  If there are other constraints as well, such as certain
->> events only being available on one specific PMC, then you should
->> consider reusing the constraint checking machinery from ppc64.
->=20
-> I'll stick with the straightforward approach then.  If future chips =
-have more complicated constraints we can revisit using the more general =
-scheme.
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-Paul,
+Anton Vorontsov (1):
+      powerpc/85xx: Add NOR, LEDs and PIB support for MPC8568E-MDS boards
 
-Other than splitting the patch did you have any other changes you wanted =
-to see before we'd get an Ack.  I'd like to see this go in for .34.
+Malcolm Crossley (3):
+      powerpc/86xx: Fix GE SBC310 XMC site support
+      powerpc/86xx: Add MSI section to GE SBC610 DTS
+      powerpc/86xx: Add MSI section to GE PPC9A DTS
 
-- k=
+Martyn Welch (5):
+      powerpc/86xx: Add MSI section to GE SBC310 DTS
+      powerpc/86xx: Basic flash support for GE SBC610
+      powerpc/86xx: Switch on highmem support on GE SBC610
+      powerpc/86xx: Enable VME driver on the GE PPC9A
+      powerpc/86xx: Enable VME driver on the GE SBC610
+
+Sebastian Andrzej Siewior (1):
+      powerpc/fsl-booke: replace a hardcoded constant
+
+ arch/powerpc/boot/dts/gef_ppc9a.dts            |   16 ++++++
+ arch/powerpc/boot/dts/gef_sbc310.dts           |   19 +++++++-
+ arch/powerpc/boot/dts/gef_sbc610.dts           |   66 +++++++++++++++++++++---
+ arch/powerpc/boot/dts/mpc8568mds.dts           |   65 ++++++++++++++++++++++-
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig  |   47 ++++++++++++++++-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |   65 +++++++++++++++++++----
+ arch/powerpc/kernel/head_fsl_booke.S           |    4 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c      |    3 +
+ 8 files changed, 259 insertions(+), 26 deletions(-)
