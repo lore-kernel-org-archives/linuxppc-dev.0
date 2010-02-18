@@ -1,13 +1,13 @@
 Return-Path: <anton@ozlabs.org>
-Date: Fri, 19 Feb 2010 09:11:51 +1100
+Date: Fri, 19 Feb 2010 09:29:23 +1100
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Call ibm,os-term if the ibm,extended-os-term is
-	present
-Message-ID: <20100218221151.GB31681@kryten>
+To: mel@csn.ul.ie, benh@kernel.crashing.org, cl@linux-foundation.org
+Subject: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
+	enable zone reclaim
+Message-ID: <20100218222923.GC31681@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,56 +18,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We have had issues in the past with ibm,os-term initiating shutdown of a
-partition. This is confusing to the user, especially if panic_timeout is
-non zero.
+I noticed /proc/sys/vm/zone_reclaim_mode was 0 on a ppc64 NUMA box. It gets
+enabled via this:
 
-The temporary fix was to avoid calling ibm,os-term if a panic_timeout was set
-and since we set it on every boot we basically never call ibm,os-term.
+        /*
+         * If another node is sufficiently far away then it is better
+         * to reclaim pages in a zone before going off node.
+         */
+        if (distance > RECLAIM_DISTANCE)
+                zone_reclaim_mode = 1;
 
-An extended version of ibm,os-term has since been implemented which gives us
-the behaviour we want:
+Since we use the default value of 20 for REMOTE_DISTANCE and 20 for
+RECLAIM_DISTANCE it never kicks in.
 
-  "When the platform supports extended ibm,os-term behavior, the return to the
-  RTAS will always occur unless there is a kernel assisted dump active as
-  initiated by an ibm,configure-kernel-dump call."
+The local to remote bandwidth ratios can be quite large on System p
+machines so it makes sense for us to reclaim clean pagecache locally before
+going off node.
 
-This patch checks for the ibm,extended-os-term property and calls ibm,os-term
-if it exists.
+The patch below sets a smaller value for RECLAIM_DISTANCE and thus enables
+zone reclaim.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/powerpc/kernel/rtas.c
+Index: powerpc.git/arch/powerpc/include/asm/topology.h
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/rtas.c	2010-02-18 20:31:17.283568754 +1100
-+++ linux-cpumask/arch/powerpc/kernel/rtas.c	2010-02-19 09:07:05.735254857 +1100
-@@ -690,10 +690,14 @@ void rtas_os_term(char *str)
- {
- 	int status;
+--- powerpc.git.orig/arch/powerpc/include/asm/topology.h	2010-02-18 14:26:45.736821967 +1100
++++ powerpc.git/arch/powerpc/include/asm/topology.h	2010-02-18 14:51:24.793071748 +1100
+@@ -8,6 +8,16 @@ struct device_node;
  
--	if (panic_timeout)
--		return;
--
--	if (RTAS_UNKNOWN_SERVICE == rtas_token("ibm,os-term"))
-+	/*
-+	 * Firmware with the ibm,extended-os-term property is guaranteed
-+	 * to always return from an ibm,os-term call. Earlier versions without
-+	 * this property may terminate the partition which we want to avoid
-+	 * since it interferes with panic_timeout.
-+	 */
-+	if (RTAS_UNKNOWN_SERVICE == rtas_token("ibm,os-term") ||
-+	    RTAS_UNKNOWN_SERVICE == rtas_token("ibm,extended-os-term"))
- 		return;
+ #ifdef CONFIG_NUMA
  
- 	snprintf(rtas_os_term_buf, 2048, "OS panic: %s", str);
-@@ -704,8 +708,7 @@ void rtas_os_term(char *str)
- 	} while (rtas_busy_delay(status));
++/*
++ * Before going off node we want the VM to try and reclaim from the local
++ * node. It does this if the remote distance is larger than RECLAIM_DISTANCE.
++ * With the default REMOTE_DISTANCE of 20 and the default RECLAIM_DISTANCE of
++ * 20, we never reclaim and go off node straight away.
++ *
++ * To fix this we choose a smaller value of RECLAIM_DISTANCE.
++ */
++#define RECLAIM_DISTANCE 10
++
+ #include <asm/mmzone.h>
  
- 	if (status != 0)
--		printk(KERN_EMERG "ibm,os-term call failed %d\n",
--			       status);
-+		printk(KERN_EMERG "ibm,os-term call failed %d\n", status);
- }
- 
- static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
+ static inline int cpu_to_node(int cpu)
