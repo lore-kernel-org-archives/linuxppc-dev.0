@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 5DE5AB7E77
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 00:43:14 +1100 (EST)
-Date: Thu, 18 Feb 2010 16:43:12 +0300
+	by ozlabs.org (Postfix) with SMTP id CED3AB7D06
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 00:45:13 +1100 (EST)
+Date: Thu, 18 Feb 2010 16:45:12 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] powerpc/qe: Convert qe_ic_lock to raw_spinlock
-Message-ID: <20100218134312.GA5331@oksana.dev.rtsoft.ru>
+Subject: [PATCH] powerpc/85xx: Convert socrates_fpga_pic_lock to raw_spinlock
+Message-ID: <20100218134512.GB5331@oksana.dev.rtsoft.ru>
 References: <20100218121904.620984825@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -24,7 +24,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Interrupt controllers' hooks are executed in the atomic context, so
 they are not permitted to sleep (with RT kernels non-raw spinlocks are
-sleepable). So, qe_ic_lock has to be a real (non-sleepable) spinlock.
+sleepable). So, socrates_fpga_pic_lock has to be a real (non-sleepable)
+spinlock.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
@@ -42,57 +43,145 @@ On Thu, Feb 18, 2010 at 12:22:18PM -0000, Thomas Gleixner wrote:
 > 
 > Please consider to merge into .34.
 
-If nothing has changed in -rt, then qe_ic should be in the same boat.
+Oh, and I guess the same for the socrates fpga pic...
 
- arch/powerpc/sysdev/qe_lib/qe_ic.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c |   34 +++++++++++-----------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 2acc928..9c90a34 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -33,7 +33,7 @@
+diff --git a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+index e5da5f6..678560a 100644
+--- a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
++++ b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+@@ -50,7 +50,7 @@ static struct socrates_fpga_irq_info fpga_irqs[SOCRATES_FPGA_NUM_IRQS] = {
  
- #include "qe_ic.h"
+ #define socrates_fpga_irq_to_hw(virq)    ((unsigned int)irq_map[virq].hwirq)
  
--static DEFINE_SPINLOCK(qe_ic_lock);
-+static DEFINE_RAW_SPINLOCK(qe_ic_lock);
+-static DEFINE_SPINLOCK(socrates_fpga_pic_lock);
++static DEFINE_RAW_SPINLOCK(socrates_fpga_pic_lock);
  
- static struct qe_ic_info qe_ic_info[] = {
- 	[1] = {
-@@ -201,13 +201,13 @@ static void qe_ic_unmask_irq(unsigned int virq)
- 	unsigned long flags;
- 	u32 temp;
+ static void __iomem *socrates_fpga_pic_iobase;
+ static struct irq_host *socrates_fpga_pic_irq_host;
+@@ -80,9 +80,9 @@ static inline unsigned int socrates_fpga_pic_get_irq(unsigned int irq)
+ 	if (i == 3)
+ 		return NO_IRQ;
  
--	spin_lock_irqsave(&qe_ic_lock, flags);
-+	raw_spin_lock_irqsave(&qe_ic_lock, flags);
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	cause = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(i));
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ 	for (i = SOCRATES_FPGA_NUM_IRQS - 1; i >= 0; i--) {
+ 		if (cause >> (i + 16))
+ 			break;
+@@ -116,12 +116,12 @@ static void socrates_fpga_pic_ack(unsigned int virq)
+ 	hwirq = socrates_fpga_irq_to_hw(virq);
  
- 	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
- 	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
- 		    temp | qe_ic_info[src].mask);
- 
--	spin_unlock_irqrestore(&qe_ic_lock, flags);
-+	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
+ 	irq_line = fpga_irqs[hwirq].irq_line;
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
+ 		& SOCRATES_FPGA_IRQ_MASK;
+ 	mask |= (1 << (hwirq + 16));
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
  }
  
- static void qe_ic_mask_irq(unsigned int virq)
-@@ -217,7 +217,7 @@ static void qe_ic_mask_irq(unsigned int virq)
- 	unsigned long flags;
- 	u32 temp;
+ static void socrates_fpga_pic_mask(unsigned int virq)
+@@ -134,12 +134,12 @@ static void socrates_fpga_pic_mask(unsigned int virq)
+ 	hwirq = socrates_fpga_irq_to_hw(virq);
  
--	spin_lock_irqsave(&qe_ic_lock, flags);
-+	raw_spin_lock_irqsave(&qe_ic_lock, flags);
- 
- 	temp = qe_ic_read(qe_ic->regs, qe_ic_info[src].mask_reg);
- 	qe_ic_write(qe_ic->regs, qe_ic_info[src].mask_reg,
-@@ -233,7 +233,7 @@ static void qe_ic_mask_irq(unsigned int virq)
- 	 */
- 	mb();
- 
--	spin_unlock_irqrestore(&qe_ic_lock, flags);
-+	raw_spin_unlock_irqrestore(&qe_ic_lock, flags);
+ 	irq_line = fpga_irqs[hwirq].irq_line;
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
+ 		& SOCRATES_FPGA_IRQ_MASK;
+ 	mask &= ~(1 << hwirq);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
  }
  
- static struct irq_chip qe_ic_irq_chip = {
+ static void socrates_fpga_pic_mask_ack(unsigned int virq)
+@@ -152,13 +152,13 @@ static void socrates_fpga_pic_mask_ack(unsigned int virq)
+ 	hwirq = socrates_fpga_irq_to_hw(virq);
+ 
+ 	irq_line = fpga_irqs[hwirq].irq_line;
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
+ 		& SOCRATES_FPGA_IRQ_MASK;
+ 	mask &= ~(1 << hwirq);
+ 	mask |= (1 << (hwirq + 16));
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ }
+ 
+ static void socrates_fpga_pic_unmask(unsigned int virq)
+@@ -171,12 +171,12 @@ static void socrates_fpga_pic_unmask(unsigned int virq)
+ 	hwirq = socrates_fpga_irq_to_hw(virq);
+ 
+ 	irq_line = fpga_irqs[hwirq].irq_line;
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
+ 		& SOCRATES_FPGA_IRQ_MASK;
+ 	mask |= (1 << hwirq);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ }
+ 
+ static void socrates_fpga_pic_eoi(unsigned int virq)
+@@ -189,12 +189,12 @@ static void socrates_fpga_pic_eoi(unsigned int virq)
+ 	hwirq = socrates_fpga_irq_to_hw(virq);
+ 
+ 	irq_line = fpga_irqs[hwirq].irq_line;
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQMASK(irq_line))
+ 		& SOCRATES_FPGA_IRQ_MASK;
+ 	mask |= (1 << (hwirq + 16));
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(irq_line), mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ }
+ 
+ static int socrates_fpga_pic_set_type(unsigned int virq,
+@@ -220,14 +220,14 @@ static int socrates_fpga_pic_set_type(unsigned int virq,
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	mask = socrates_fpga_pic_read(FPGA_PIC_IRQCFG);
+ 	if (polarity)
+ 		mask |= (1 << hwirq);
+ 	else
+ 		mask &= ~(1 << hwirq);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQCFG, mask);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -314,14 +314,14 @@ void socrates_fpga_pic_init(struct device_node *pic)
+ 
+ 	socrates_fpga_pic_iobase = of_iomap(pic, 0);
+ 
+-	spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
++	raw_spin_lock_irqsave(&socrates_fpga_pic_lock, flags);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(0),
+ 			SOCRATES_FPGA_IRQ_MASK << 16);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(1),
+ 			SOCRATES_FPGA_IRQ_MASK << 16);
+ 	socrates_fpga_pic_write(FPGA_PIC_IRQMASK(2),
+ 			SOCRATES_FPGA_IRQ_MASK << 16);
+-	spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&socrates_fpga_pic_lock, flags);
+ 
+ 	pr_info("FPGA PIC: Setting up Socrates FPGA PIC\n");
+ }
 -- 
 1.6.5.7
