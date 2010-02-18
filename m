@@ -2,16 +2,16 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1E295B7D15
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 03:35:23 +1100 (EST)
-Date: Thu, 18 Feb 2010 17:35:12 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTPS id 0643DB7E5D
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 03:35:45 +1100 (EST)
+Date: Thu, 18 Feb 2010 17:35:37 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] powerpc/86xx: Convert gef_pic_lock to raw_spinlock
-In-Reply-To: <20100218135727.GA18924@oksana.dev.rtsoft.ru>
-Message-ID: <alpine.LFD.2.00.1002181734500.2811@localhost.localdomain>
+Subject: Re: [PATCH] powerpc/82xx: Convert pci_pic_lock to raw_spinlock
+In-Reply-To: <20100218135738.GA16072@oksana.dev.rtsoft.ru>
+Message-ID: <alpine.LFD.2.00.1002181735200.2811@localhost.localdomain>
 References: <20100218121904.620984825@linutronix.de>
-	<20100218135727.GA18924@oksana.dev.rtsoft.ru>
+	<20100218135738.GA16072@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -28,7 +28,7 @@ On Thu, 18 Feb 2010, Anton Vorontsov wrote:
 
 > Interrupt controllers' hooks are executed in the atomic context, so
 > they are not permitted to sleep (with RT kernels non-raw spinlocks are
-> sleepable). So, gef_pic_lock has to be a real (non-sleepable) spinlock.
+> sleepable). So, pci_pic_lock has to be a real (non-sleepable) spinlock.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
