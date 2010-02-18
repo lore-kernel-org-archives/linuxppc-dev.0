@@ -2,18 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 34D7DB7C7E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:10:20 +1100 (EST)
-Subject: Re: [PATCH 1/5] powerpc/head fsl: fix the case where we are not in
-	the first page
+	by ozlabs.org (Postfix) with ESMTPS id 3B934B7CE2
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:12:13 +1100 (EST)
+Subject: Re: [PATCH 2/5] powerpc/head fsl: move the temp 4KiB mapping to TLB0
 Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1263573697-17839-2-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-Date: Wed, 17 Feb 2010 21:07:49 -0600
-Message-Id: <2C4630C6-1537-4653-8F7C-BEE3BB4EDC18@kernel.crashing.org>
+In-Reply-To: <1263573697-17839-3-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+Date: Wed, 17 Feb 2010 21:09:08 -0600
+Message-Id: <4714F80D-5102-4C25-BA62-0034D775C63B@kernel.crashing.org>
 References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
-	<1263573697-17839-2-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+	<1263573697-17839-3-git-send-email-linuxppc-dev@ml.breakpoint.cc>
 To: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
 Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,45 +29,28 @@ On Jan 15, 2010, at 10:41 AM, Sebastian Andrzej Siewior wrote:
 
 > From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 >=20
-> During boot we change the mapping a few times until we have a =
-"defined"
-> mapping. During this procedure a small 4KiB mapping is created and =
-after
-> that one a 64MiB. Currently the offset of the 4KiB page in that we run
-> is zero because the complete startup up code is in first page which
-> starts at RPN zero.
-> If the code is recycled and moved to another location then its =
-execution
-> will fail because the start address in the 64 MiB mapping is computed
-> wrongly. It does not consider the offset to the page from the begin of
-> the memory.
-> This patch fixes this. Usually (system boot) r25 is zero so this does
-> not change anything unless the code is recycled.
+> Right now the setup code takes ESEL of the current mapping and puts =
+the
+> temporary into ESEL (old_ESEL & 1 ) + 1 which is either one or two.
+> This is actually not required since all slots in TLB0 are invalid by =
+now
+> and can be used.
+> This patch moved the temp mapping to TLB0, ESEL[0]. The invalidation =
+of
+> TLB0 does not care about IPPROT so that part can go as well.
+> The benefit is that now the setup code may set every slot of TLB1 =
+while
+> before that it was not allowed to touch ESEL one or two depending on =
+the
+> old_ESEL.
 >=20
 > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > ---
-> arch/powerpc/kernel/head_fsl_booke.S |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
+> arch/powerpc/kernel/head_fsl_booke.S |   20 +++++---------------
+> 1 files changed, 5 insertions(+), 15 deletions(-)
 
-I don't get this.  Why would would we not run at KERNELBASE?
+this is problematic, we can't assume that TLB0 is safe.  It possible =
+some other software is running on a second core and does a broadcast =
+tlbivax which will wipe what's in TLB0.
 
-- k
-
->=20
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S =
-b/arch/powerpc/kernel/head_fsl_booke.S
-> index 7f4bd7f..799ddbe 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -275,6 +275,7 @@ skpinv:	addi	r6,r6,1				=
-/* Increment */
-> 1:	mflr	r9
-> 	rlwimi	r6,r9,0,20,31
-> 	addi	r6,r6,(2f - 1b)
-> +	add	r6, r6, r25
-> 	mtspr	SPRN_SRR0,r6
-> 	mtspr	SPRN_SRR1,r7
-> 	rfi				/* start execution out of =
-TLB1[0] entry */
-> --=20
-> 1.6.2.5
+- k=
