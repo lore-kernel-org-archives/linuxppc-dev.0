@@ -1,20 +1,20 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 94194B7CE2
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 02:04:22 +1100 (EST)
-Message-ID: <2921453.1266505456809.JavaMail.ngmail@webmail09.arcor-online.net>
-Date: Thu, 18 Feb 2010 16:04:16 +0100 (CET)
-From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
-To: joakim.tjernlund@transmode.se
-Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 51AE2B7D05
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 02:31:56 +1100 (EST)
+Date: Thu, 18 Feb 2010 16:31:48 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 00/15] powerpc: raw_spinlock conversions
+In-Reply-To: <alpine.LRH.2.00.1002181341150.25717@mink.sonytel.be>
+Message-ID: <alpine.LFD.2.00.1002181625490.2811@localhost.localdomain>
+References: <20100218121904.620984825@linutronix.de>
+	<alpine.LRH.2.00.1002181341150.25717@mink.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	ben-linux@fluff.org, iws@ovro.caltech.edu
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joakim:
+On Thu, 18 Feb 2010, Geert Uytterhoeven wrote:
 
-[snip]
-> >   static void mpc_i2c_fixup(struct mpc_i2c *i2c)
-> >   {
-> > -   writeccr(i2c, 0);
-> > -   udelay(30);
-> > -   writeccr(i2c, CCR_MEN);
-> > -   udelay(30);
-> > -   writeccr(i2c, CCR_MSTA | CCR_MTX);
-> > -   udelay(30);
-> > -   writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-> > -   udelay(30);
-> > -   writeccr(i2c, CCR_MEN);
-> > -   udelay(30);
-> > +   int k;
-> > +   u32 delay_val =3D 1000000 / i2c->real_clk + 1;
-> > +
-> > +   if (delay_val < 2)
-> > +      delay_val =3D 2;
-> > +
-> > +   for (k =3D 9; k; k--) {
-> > +      writeccr(i2c, 0);
-> > +      writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-> > +      udelay(delay_val);
-> > +      writeccr(i2c, CCR_MEN);
-> > +      udelay(delay_val << 1);
-> > +   }
-> >   }
->=20
-> I am curious, didn't old method work with by just wrapping
-> a for(k=3D9; k; k--) around it? How did the wave form look?
+> On Thu, 18 Feb 2010, Thomas Gleixner wrote:
+> > the following patch series is from preempt-rt. It converts the locks
+> > which need to be real spinlocks in -rt to raw_spinlocks.
+> 
+> None of the patch descriptions mention why the locks need to be real
+> spinlocks in -rt. So can you please elaborate?
 
-Sure does that work!  The waveform was somewhat "streched", mainly due to t=
-he delays between some of the writeccr() calls which don't change the sda/s=
-cl lines.  Unfortunately I didn't take shots from the scope.
+Sorry, forgot that there are people who do not share that particular
+flavour of crazy.
 
-However, for *one* cycle, the old code needed (only counting the udelay's) =
-150 us.  For 9 cycles, it's 1.35 ms, which isn't really nice ;-).  At 375 k=
-Hz real clock rate, delay_val is 3, i.e. each cycle consumes 9 us, or 81 us=
- for the whole fixup procedure.  If the clock is slower, the gain is of cou=
-rse a lot smaller, and at 20.5 kHz each cycle again needs 150 us...
+The locks are protecting low level hardware access (mostly interrupt
+hardware, tlb control, et.c) and need to be taken in hard interrupt
+context, exception handlers or irq disabled regions. Therefor they can
+not be converted to "sleeping spinlocks" like we do for the the bulk
+of the spinlocks in the kernel. We annotate those locks by converting
+them to raw_spinlocks. In mainline there is no difference between
+spinlock and raw_spinlock; spinlock is simply using the raw_spinlock
+implementation. In RT we keep raw_spinlocks as real spinlocks and
+convert spinlocks to the sleeping variant.
 
-My feeling is that the delays used in the old code are just "some" values w=
-hich work for sure, to if you like, my change is basically optimisation...
+Hope that helps.
 
-BTW, related to your earlier question, I checked the timings recorded with =
-the scope at 100 and at 20 kHz against the nxp's "I2C bus specification and=
- user manual", rev. 03 - everything seems to be fine.
-
-Thanks, Albrecht.
-
-Immer auf dem Laufenden! Sport, Auto, Reise, Politik und Promis. Von uns f=
-=FCr Sie: der neue Arcor.de-Newsletter!
-Jetzt anmelden und einfach alles wissen: http://www.arcor.de/rd/footer.news=
-letter
+     tglx
