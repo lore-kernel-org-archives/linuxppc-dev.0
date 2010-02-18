@@ -1,13 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 19 Feb 2010 09:29:23 +1100
-From: Anton Blanchard <anton@samba.org>
-To: mel@csn.ul.ie, benh@kernel.crashing.org, cl@linux-foundation.org
-Subject: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
-	enable zone reclaim
-Message-ID: <20100218222923.GC31681@kryten>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id A0AA5B7D88
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 09:48:14 +1100 (EST)
+Date: Fri, 19 Feb 2010 01:48:12 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] gpiolib: Cosmetic improvements for error handling in
+	gpiochip_add()
+Message-ID: <20100218224812.GA11975@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Bill Gatliff <bgat@billgatliff.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,48 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hopefully it makes the code look nicer and makes it easier to extend
+this function.
 
-I noticed /proc/sys/vm/zone_reclaim_mode was 0 on a ppc64 NUMA box. It gets
-enabled via this:
-
-        /*
-         * If another node is sufficiently far away then it is better
-         * to reclaim pages in a zone before going off node.
-         */
-        if (distance > RECLAIM_DISTANCE)
-                zone_reclaim_mode = 1;
-
-Since we use the default value of 20 for REMOTE_DISTANCE and 20 for
-RECLAIM_DISTANCE it never kicks in.
-
-The local to remote bandwidth ratios can be quite large on System p
-machines so it makes sense for us to reclaim clean pagecache locally before
-going off node.
-
-The patch below sets a smaller value for RECLAIM_DISTANCE and thus enables
-zone reclaim.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Suggested-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
 
-Index: powerpc.git/arch/powerpc/include/asm/topology.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/topology.h	2010-02-18 14:26:45.736821967 +1100
-+++ powerpc.git/arch/powerpc/include/asm/topology.h	2010-02-18 14:51:24.793071748 +1100
-@@ -8,6 +8,16 @@ struct device_node;
+On Tue, Feb 09, 2010 at 10:16:44AM -0700, Grant Likely wrote:
+[...]
+> Rather than doing an else block which will need to be reworked if/when
+> any additional code is added to the bottom of this routine, please
+> rework the if() block to bail on failure instead of implicitly falling
+> through to the return statement.
+
+Here it is.
+
+Andrew,
+
+Please either fold this patch into
+  gpiolib-introduce-chip-addition-removal-notifier.patch
+or, actually these changes can stay in its own patch for better
+sparation of cosmitc/real changes.
+
+Thanks!
+
+ drivers/gpio/gpiolib.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 375c03a..f227c1f 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1099,17 +1099,23 @@ int gpiochip_add(struct gpio_chip *chip)
  
- #ifdef CONFIG_NUMA
- 
-+/*
-+ * Before going off node we want the VM to try and reclaim from the local
-+ * node. It does this if the remote distance is larger than RECLAIM_DISTANCE.
-+ * With the default REMOTE_DISTANCE of 20 and the default RECLAIM_DISTANCE of
-+ * 20, we never reclaim and go off node straight away.
-+ *
-+ * To fix this we choose a smaller value of RECLAIM_DISTANCE.
-+ */
-+#define RECLAIM_DISTANCE 10
+ unlock:
+ 	spin_unlock_irqrestore(&gpio_lock, flags);
+-	if (status == 0)
+-		status = gpiochip_export(chip);
 +
- #include <asm/mmzone.h>
- 
- static inline int cpu_to_node(int cpu)
++	if (status)
++		goto fail;
++
++	status = gpiochip_export(chip);
++	if (status)
++		goto fail;
++
++	blocking_notifier_call_chain(&gpio_notifier, GPIO_NOTIFY_CHIP_ADDED,
++				     chip);
++
++	return 0;
+ fail:
+ 	/* failures here can mean systems won't boot... */
+-	if (status)
+-		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+-			chip->base, chip->base + chip->ngpio - 1,
+-			chip->label ? : "generic");
+-	else
+-		blocking_notifier_call_chain(&gpio_notifier,
+-					     GPIO_NOTIFY_CHIP_ADDED, chip);
++	pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
++		chip->base, chip->base + chip->ngpio - 1,
++		chip->label ? : "generic");
+ 	return status;
+ }
+ EXPORT_SYMBOL_GPL(gpiochip_add);
+-- 
+1.6.5.7
