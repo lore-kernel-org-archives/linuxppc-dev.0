@@ -1,20 +1,29 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0643DB7E5D
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 03:35:45 +1100 (EST)
-Date: Thu, 18 Feb 2010 17:35:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] powerpc/82xx: Convert pci_pic_lock to raw_spinlock
-In-Reply-To: <20100218135738.GA16072@oksana.dev.rtsoft.ru>
-Message-ID: <alpine.LFD.2.00.1002181735200.2811@localhost.localdomain>
-References: <20100218121904.620984825@linutronix.de>
-	<20100218135738.GA16072@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 128D9B7D1E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Feb 2010 04:08:36 +1100 (EST)
+Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
+From: Peter Zijlstra <peterz@infradead.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+In-Reply-To: <4B7D6AAB.5080602@austin.ibm.com>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	<1264017847.5717.132.camel@jschopp-laptop>
+	<1264548495.12239.56.camel@jschopp-laptop>
+	<1264720855.9660.22.camel@jschopp-laptop>
+	<1264721088.10385.1.camel@jschopp-laptop>
+	<1265403478.6089.41.camel@jschopp-laptop>
+	<1266142340.5273.418.camel@laptop>  <25851.1266445258@neuling.org>
+	<1266499023.26719.597.camel@laptop> <4B7D6AAB.5080602@austin.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 18:08:04 +0100
+Message-ID: <1266512884.26719.869.camel@laptop>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, ego@in.ibm.com,
+	linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,12 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 18 Feb 2010, Anton Vorontsov wrote:
+On Thu, 2010-02-18 at 10:28 -0600, Joel Schopp wrote:
+> > There's one fundamental assumption, and one weakness in the
+> > implementation.
+> >   
+> I'm going to guess the weakness is that it doesn't adjust the cpu power 
+> so tasks running in SMT1 mode actually get more than they account for?  
 
-> Interrupt controllers' hooks are executed in the atomic context, so
-> they are not permitted to sleep (with RT kernels non-raw spinlocks are
-> sleepable). So, pci_pic_lock has to be a real (non-sleepable) spinlock.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+No, but you're right, if these SMTx modes are running at different
+frequencies then yes that needs to happen as well.
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+The weakness is failing to do the right thing in the presence of a
+'strategically' placed RT task.
+
+Suppose:
+
+Sibling0, Sibling1, Sibling2, Sibling3
+idle      OTHER     OTHER     FIFO
+
+it might not manage to migrate a task to 0 because it ends up selecting
+3 as busiest. It doesn't at all influence RT placement, but it does look
+at nr_running (which does include RT tasks)
+
+> What's the assumption? 
+
+That cpu_of(Sibling n) < cpu_of(Sibling n+1)
