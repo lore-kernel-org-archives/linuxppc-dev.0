@@ -2,13 +2,13 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C582CB840D
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:11 +1100 (EST)
-Message-Id: <20100218122000.464157003@linutronix.de>
-Date: Thu, 18 Feb 2010 12:22:55 -0000
+	by ozlabs.org (Postfix) with ESMTPS id A0F5EB84BE
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:13 +1100 (EST)
+Message-Id: <20100218122000.546387696@linutronix.de>
+Date: Thu, 18 Feb 2010 12:23:03 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 09/15] powerpc: Convert feature_lock to raw_spinlock
+Subject: [patch 11/15] powerpc: Convert pmac_pic_lock to raw_spinlock
 References: <20100218121904.620984825@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,133 +19,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-feature_lock needs to be a real spinlock in RT. Convert it to
+pmac_pic_lock needs to be a real spinlock in RT. Convert it to
 raw_spinlock.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/include/asm/pmac_feature.h      |    2 +-
- arch/powerpc/platforms/powermac/feature.c    |    6 +++---
- arch/powerpc/platforms/powermac/pfunc_base.c |   24 ++++++++++++------------
- 3 files changed, 16 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/powermac/pic.c |   38 +++++++++++++++++-----------------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
-Index: linux-2.6-tip/arch/powerpc/include/asm/pmac_feature.h
+Index: linux-2.6-tip/arch/powerpc/platforms/powermac/pic.c
 ===================================================================
---- linux-2.6-tip.orig/arch/powerpc/include/asm/pmac_feature.h
-+++ linux-2.6-tip/arch/powerpc/include/asm/pmac_feature.h
-@@ -378,7 +378,7 @@ extern struct macio_chip* macio_find(str
-  * Those are exported by pmac feature for internal use by arch code
-  * only like the platform function callbacks, do not use directly in drivers
-  */
--extern spinlock_t feature_lock;
-+extern raw_spinlock_t feature_lock;
- extern struct device_node *uninorth_node;
- extern u32 __iomem *uninorth_base;
+--- linux-2.6-tip.orig/arch/powerpc/platforms/powermac/pic.c
++++ linux-2.6-tip/arch/powerpc/platforms/powermac/pic.c
+@@ -57,7 +57,7 @@ static int max_irqs;
+ static int max_real_irqs;
+ static u32 level_mask[4];
  
-Index: linux-2.6-tip/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/platforms/powermac/feature.c
-+++ linux-2.6-tip/arch/powerpc/platforms/powermac/feature.c
-@@ -59,10 +59,10 @@ extern struct device_node *k2_skiplist[2
-  * We use a single global lock to protect accesses. Each driver has
-  * to take care of its own locking
-  */
--DEFINE_SPINLOCK(feature_lock);
-+DEFINE_RAW_SPINLOCK(feature_lock);
+-static DEFINE_SPINLOCK(pmac_pic_lock);
++static DEFINE_RAW_SPINLOCK(pmac_pic_lock);
  
--#define LOCK(flags)	spin_lock_irqsave(&feature_lock, flags);
--#define UNLOCK(flags)	spin_unlock_irqrestore(&feature_lock, flags);
-+#define LOCK(flags)	raw_spin_lock_irqsave(&feature_lock, flags);
-+#define UNLOCK(flags)	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ #define NR_MASK_WORDS	((NR_IRQS + 31) / 32)
+ static unsigned long ppc_lost_interrupts[NR_MASK_WORDS];
+@@ -85,7 +85,7 @@ static void pmac_mask_and_ack_irq(unsign
+         int i = src >> 5;
+         unsigned long flags;
  
+-	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+         __clear_bit(src, ppc_cached_irq_mask);
+         if (__test_and_clear_bit(src, ppc_lost_interrupts))
+                 atomic_dec(&ppc_n_lost_interrupts);
+@@ -97,7 +97,7 @@ static void pmac_mask_and_ack_irq(unsign
+                 mb();
+         } while((in_le32(&pmac_irq_hw[i]->enable) & bit)
+                 != (ppc_cached_irq_mask[i] & bit));
+-	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ }
  
- /*
-Index: linux-2.6-tip/arch/powerpc/platforms/powermac/pfunc_base.c
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/platforms/powermac/pfunc_base.c
-+++ linux-2.6-tip/arch/powerpc/platforms/powermac/pfunc_base.c
-@@ -50,13 +50,13 @@ static int macio_do_gpio_write(PMF_STD_A
- 		value = ~value;
+ static void pmac_ack_irq(unsigned int virq)
+@@ -107,12 +107,12 @@ static void pmac_ack_irq(unsigned int vi
+         int i = src >> 5;
+         unsigned long flags;
  
- 	/* Toggle the GPIO */
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	tmp = readb(addr);
- 	tmp = (tmp & ~mask) | (value & mask);
- 	DBG("Do write 0x%02x to GPIO %s (%p)\n",
- 	    tmp, func->node->full_name, addr);
- 	writeb(tmp, addr);
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
+-  	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	if (__test_and_clear_bit(src, ppc_lost_interrupts))
+                 atomic_dec(&ppc_n_lost_interrupts);
+         out_le32(&pmac_irq_hw[i]->ack, bit);
+         (void)in_le32(&pmac_irq_hw[i]->ack);
+-	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ }
+ 
+ static void __pmac_set_irq_mask(unsigned int irq_nr, int nokicklost)
+@@ -152,12 +152,12 @@ static unsigned int pmac_startup_irq(uns
+         unsigned long bit = 1UL << (src & 0x1f);
+         int i = src >> 5;
+ 
+-	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	if ((irq_to_desc(virq)->status & IRQ_LEVEL) == 0)
+ 		out_le32(&pmac_irq_hw[i]->ack, bit);
+         __set_bit(src, ppc_cached_irq_mask);
+         __pmac_set_irq_mask(src, 0);
+-	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
  
  	return 0;
  }
-@@ -145,9 +145,9 @@ static int macio_do_write_reg32(PMF_STD_
- 	struct macio_chip *macio = func->driver_data;
+@@ -167,10 +167,10 @@ static void pmac_mask_irq(unsigned int v
  	unsigned long flags;
+ 	unsigned int src = irq_map[virq].hwirq;
  
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	MACIO_OUT32(offset, (MACIO_IN32(offset) & ~mask) | (value & mask));
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
- 	return 0;
+-  	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+         __clear_bit(src, ppc_cached_irq_mask);
+         __pmac_set_irq_mask(src, 1);
+-  	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
  }
  
-@@ -168,9 +168,9 @@ static int macio_do_write_reg8(PMF_STD_A
- 	struct macio_chip *macio = func->driver_data;
+ static void pmac_unmask_irq(unsigned int virq)
+@@ -178,19 +178,19 @@ static void pmac_unmask_irq(unsigned int
  	unsigned long flags;
+ 	unsigned int src = irq_map[virq].hwirq;
  
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	MACIO_OUT8(offset, (MACIO_IN8(offset) & ~mask) | (value & mask));
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
- 	return 0;
+-	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	__set_bit(src, ppc_cached_irq_mask);
+         __pmac_set_irq_mask(src, 0);
+-  	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
  }
  
-@@ -223,12 +223,12 @@ static int macio_do_write_reg32_slm(PMF_
- 	if (args == NULL || args->count == 0)
- 		return -EINVAL;
- 
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	tmp = MACIO_IN32(offset);
- 	val = args->u[0].v << shift;
- 	tmp = (tmp & ~mask) | (val & mask);
- 	MACIO_OUT32(offset, tmp);
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
- 	return 0;
- }
- 
-@@ -243,12 +243,12 @@ static int macio_do_write_reg8_slm(PMF_S
- 	if (args == NULL || args->count == 0)
- 		return -EINVAL;
- 
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	tmp = MACIO_IN8(offset);
- 	val = args->u[0].v << shift;
- 	tmp = (tmp & ~mask) | (val & mask);
- 	MACIO_OUT8(offset, tmp);
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
- 	return 0;
- }
- 
-@@ -278,12 +278,12 @@ static int unin_do_write_reg32(PMF_STD_A
+ static int pmac_retrigger(unsigned int virq)
  {
  	unsigned long flags;
  
--	spin_lock_irqsave(&feature_lock, flags);
-+	raw_spin_lock_irqsave(&feature_lock, flags);
- 	/* This is fairly bogus in darwin, but it should work for our needs
- 	 * implemeted that way:
- 	 */
- 	UN_OUT(offset, (UN_IN(offset) & ~mask) | (value & mask));
--	spin_unlock_irqrestore(&feature_lock, flags);
-+	raw_spin_unlock_irqrestore(&feature_lock, flags);
- 	return 0;
+-  	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	__pmac_retrigger(irq_map[virq].hwirq);
+-  	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ 	return 1;
  }
  
+@@ -210,7 +210,7 @@ static irqreturn_t gatwick_action(int cp
+ 	int irq, bits;
+ 	int rc = IRQ_NONE;
+ 
+-  	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	for (irq = max_irqs; (irq -= 32) >= max_real_irqs; ) {
+ 		int i = irq >> 5;
+ 		bits = in_le32(&pmac_irq_hw[i]->event) | ppc_lost_interrupts[i];
+@@ -220,12 +220,12 @@ static irqreturn_t gatwick_action(int cp
+ 		if (bits == 0)
+ 			continue;
+ 		irq += __ilog2(bits);
+-		spin_unlock_irqrestore(&pmac_pic_lock, flags);
++		raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ 		generic_handle_irq(irq);
+-		spin_lock_irqsave(&pmac_pic_lock, flags);
++		raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 		rc = IRQ_HANDLED;
+ 	}
+-  	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ 	return rc;
+ }
+ 
+@@ -244,7 +244,7 @@ static unsigned int pmac_pic_get_irq(voi
+ 		return NO_IRQ_IGNORE;	/* ignore, already handled */
+         }
+ #endif /* CONFIG_SMP */
+-  	spin_lock_irqsave(&pmac_pic_lock, flags);
++	raw_spin_lock_irqsave(&pmac_pic_lock, flags);
+ 	for (irq = max_real_irqs; (irq -= 32) >= 0; ) {
+ 		int i = irq >> 5;
+ 		bits = in_le32(&pmac_irq_hw[i]->event) | ppc_lost_interrupts[i];
+@@ -256,7 +256,7 @@ static unsigned int pmac_pic_get_irq(voi
+ 		irq += __ilog2(bits);
+ 		break;
+ 	}
+-  	spin_unlock_irqrestore(&pmac_pic_lock, flags);
++	raw_spin_unlock_irqrestore(&pmac_pic_lock, flags);
+ 	if (unlikely(irq < 0))
+ 		return NO_IRQ;
+ 	return irq_linear_revmap(pmac_pic_host, irq);
