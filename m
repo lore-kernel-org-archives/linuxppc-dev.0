@@ -2,13 +2,13 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E59C7B7D50
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:09 +1100 (EST)
-Message-Id: <20100218122000.155547081@linutronix.de>
-Date: Thu, 18 Feb 2010 12:22:24 -0000
+	by ozlabs.org (Postfix) with ESMTPS id C582CB840D
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:11 +1100 (EST)
+Message-Id: <20100218122000.464157003@linutronix.de>
+Date: Thu, 18 Feb 2010 12:22:55 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 01/15] powerpc: Convert big_irq_lock to raw_spinlock
+Subject: [patch 09/15] powerpc: Convert feature_lock to raw_spinlock
 References: <20100218121904.620984825@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,111 +19,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-big_irq_lock needs to be a real spinlock in RT. Convert it to
+feature_lock needs to be a real spinlock in RT. Convert it to
 raw_spinlock.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/kernel/irq.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/pmac_feature.h      |    2 +-
+ arch/powerpc/platforms/powermac/feature.c    |    6 +++---
+ arch/powerpc/platforms/powermac/pfunc_base.c |   24 ++++++++++++------------
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
-Index: linux-2.6-tip/arch/powerpc/kernel/irq.c
+Index: linux-2.6-tip/arch/powerpc/include/asm/pmac_feature.h
 ===================================================================
---- linux-2.6-tip.orig/arch/powerpc/kernel/irq.c
-+++ linux-2.6-tip/arch/powerpc/kernel/irq.c
-@@ -474,7 +474,7 @@ void do_softirq(void)
+--- linux-2.6-tip.orig/arch/powerpc/include/asm/pmac_feature.h
++++ linux-2.6-tip/arch/powerpc/include/asm/pmac_feature.h
+@@ -378,7 +378,7 @@ extern struct macio_chip* macio_find(str
+  * Those are exported by pmac feature for internal use by arch code
+  * only like the platform function callbacks, do not use directly in drivers
   */
+-extern spinlock_t feature_lock;
++extern raw_spinlock_t feature_lock;
+ extern struct device_node *uninorth_node;
+ extern u32 __iomem *uninorth_base;
  
- static LIST_HEAD(irq_hosts);
--static DEFINE_SPINLOCK(irq_big_lock);
-+static DEFINE_RAW_SPINLOCK(irq_big_lock);
- static unsigned int revmap_trees_allocated;
- static DEFINE_MUTEX(revmap_trees_mutex);
- struct irq_map_entry irq_map[NR_IRQS];
-@@ -520,14 +520,14 @@ struct irq_host *irq_alloc_host(struct d
- 	if (host->ops->match == NULL)
- 		host->ops->match = default_irq_host_match;
+Index: linux-2.6-tip/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-2.6-tip.orig/arch/powerpc/platforms/powermac/feature.c
++++ linux-2.6-tip/arch/powerpc/platforms/powermac/feature.c
+@@ -59,10 +59,10 @@ extern struct device_node *k2_skiplist[2
+  * We use a single global lock to protect accesses. Each driver has
+  * to take care of its own locking
+  */
+-DEFINE_SPINLOCK(feature_lock);
++DEFINE_RAW_SPINLOCK(feature_lock);
  
--	spin_lock_irqsave(&irq_big_lock, flags);
-+	raw_spin_lock_irqsave(&irq_big_lock, flags);
+-#define LOCK(flags)	spin_lock_irqsave(&feature_lock, flags);
+-#define UNLOCK(flags)	spin_unlock_irqrestore(&feature_lock, flags);
++#define LOCK(flags)	raw_spin_lock_irqsave(&feature_lock, flags);
++#define UNLOCK(flags)	raw_spin_unlock_irqrestore(&feature_lock, flags);
  
- 	/* If it's a legacy controller, check for duplicates and
- 	 * mark it as allocated (we use irq 0 host pointer for that
+ 
+ /*
+Index: linux-2.6-tip/arch/powerpc/platforms/powermac/pfunc_base.c
+===================================================================
+--- linux-2.6-tip.orig/arch/powerpc/platforms/powermac/pfunc_base.c
++++ linux-2.6-tip/arch/powerpc/platforms/powermac/pfunc_base.c
+@@ -50,13 +50,13 @@ static int macio_do_gpio_write(PMF_STD_A
+ 		value = ~value;
+ 
+ 	/* Toggle the GPIO */
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	tmp = readb(addr);
+ 	tmp = (tmp & ~mask) | (value & mask);
+ 	DBG("Do write 0x%02x to GPIO %s (%p)\n",
+ 	    tmp, func->node->full_name, addr);
+ 	writeb(tmp, addr);
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -145,9 +145,9 @@ static int macio_do_write_reg32(PMF_STD_
+ 	struct macio_chip *macio = func->driver_data;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	MACIO_OUT32(offset, (MACIO_IN32(offset) & ~mask) | (value & mask));
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -168,9 +168,9 @@ static int macio_do_write_reg8(PMF_STD_A
+ 	struct macio_chip *macio = func->driver_data;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	MACIO_OUT8(offset, (MACIO_IN8(offset) & ~mask) | (value & mask));
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -223,12 +223,12 @@ static int macio_do_write_reg32_slm(PMF_
+ 	if (args == NULL || args->count == 0)
+ 		return -EINVAL;
+ 
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	tmp = MACIO_IN32(offset);
+ 	val = args->u[0].v << shift;
+ 	tmp = (tmp & ~mask) | (val & mask);
+ 	MACIO_OUT32(offset, tmp);
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -243,12 +243,12 @@ static int macio_do_write_reg8_slm(PMF_S
+ 	if (args == NULL || args->count == 0)
+ 		return -EINVAL;
+ 
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	tmp = MACIO_IN8(offset);
+ 	val = args->u[0].v << shift;
+ 	tmp = (tmp & ~mask) | (val & mask);
+ 	MACIO_OUT8(offset, tmp);
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 	return 0;
+ }
+ 
+@@ -278,12 +278,12 @@ static int unin_do_write_reg32(PMF_STD_A
+ {
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&feature_lock, flags);
++	raw_spin_lock_irqsave(&feature_lock, flags);
+ 	/* This is fairly bogus in darwin, but it should work for our needs
+ 	 * implemeted that way:
  	 */
- 	if (revmap_type == IRQ_HOST_MAP_LEGACY) {
- 		if (irq_map[0].host != NULL) {
--			spin_unlock_irqrestore(&irq_big_lock, flags);
-+			raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- 			/* If we are early boot, we can't free the structure,
- 			 * too bad...
- 			 * this will be fixed once slab is made available early
-@@ -541,7 +541,7 @@ struct irq_host *irq_alloc_host(struct d
- 	}
- 
- 	list_add(&host->link, &irq_hosts);
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- 
- 	/* Additional setups per revmap type */
- 	switch(revmap_type) {
-@@ -592,13 +592,13 @@ struct irq_host *irq_find_host(struct de
- 	 * the absence of a device node. This isn't a problem so far
- 	 * yet though...
- 	 */
--	spin_lock_irqsave(&irq_big_lock, flags);
-+	raw_spin_lock_irqsave(&irq_big_lock, flags);
- 	list_for_each_entry(h, &irq_hosts, link)
- 		if (h->ops->match(h, node)) {
- 			found = h;
- 			break;
- 		}
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- 	return found;
- }
- EXPORT_SYMBOL_GPL(irq_find_host);
-@@ -967,7 +967,7 @@ unsigned int irq_alloc_virt(struct irq_h
- 	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
- 		return NO_IRQ;
- 
--	spin_lock_irqsave(&irq_big_lock, flags);
-+	raw_spin_lock_irqsave(&irq_big_lock, flags);
- 
- 	/* Use hint for 1 interrupt if any */
- 	if (count == 1 && hint >= NUM_ISA_INTERRUPTS &&
-@@ -991,7 +991,7 @@ unsigned int irq_alloc_virt(struct irq_h
- 		}
- 	}
- 	if (found == NO_IRQ) {
--		spin_unlock_irqrestore(&irq_big_lock, flags);
-+		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- 		return NO_IRQ;
- 	}
-  hint_found:
-@@ -1000,7 +1000,7 @@ unsigned int irq_alloc_virt(struct irq_h
- 		smp_wmb();
- 		irq_map[i].host = host;
- 	}
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- 	return found;
+ 	UN_OUT(offset, (UN_IN(offset) & ~mask) | (value & mask));
+-	spin_unlock_irqrestore(&feature_lock, flags);
++	raw_spin_unlock_irqrestore(&feature_lock, flags);
+ 	return 0;
  }
  
-@@ -1012,7 +1012,7 @@ void irq_free_virt(unsigned int virq, un
- 	WARN_ON (virq < NUM_ISA_INTERRUPTS);
- 	WARN_ON (count == 0 || (virq + count) > irq_virq_count);
- 
--	spin_lock_irqsave(&irq_big_lock, flags);
-+	raw_spin_lock_irqsave(&irq_big_lock, flags);
- 	for (i = virq; i < (virq + count); i++) {
- 		struct irq_host *host;
- 
-@@ -1025,7 +1025,7 @@ void irq_free_virt(unsigned int virq, un
- 		smp_wmb();
- 		irq_map[i].host = NULL;
- 	}
--	spin_unlock_irqrestore(&irq_big_lock, flags);
-+	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
- }
- 
- int arch_early_irq_init(void)
