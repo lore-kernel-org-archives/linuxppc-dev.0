@@ -1,20 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E73A3B7CF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 09:01:34 +1100 (EST)
-Subject: Re: [PATCH] powerpc/86xx: Convert gef_pic_lock to raw_spinlock
-Mime-Version: 1.0 (Apple Message framework v1077)
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 19 Feb 2010 09:11:51 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Call ibm,os-term if the ibm,extended-os-term is
+	present
+Message-ID: <20100218221151.GB31681@kryten>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100218135727.GA18924@oksana.dev.rtsoft.ru>
-Date: Thu, 18 Feb 2010 16:01:25 -0600
-Message-Id: <BBED50BD-6A31-4AD0-8642-A527426CC08B@kernel.crashing.org>
-References: <20100218121904.620984825@linutronix.de>
-	<20100218135727.GA18924@oksana.dev.rtsoft.ru>
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +18,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 18, 2010, at 7:57 AM, Anton Vorontsov wrote:
+We have had issues in the past with ibm,os-term initiating shutdown of a
+partition. This is confusing to the user, especially if panic_timeout is
+non zero.
 
-> Interrupt controllers' hooks are executed in the atomic context, so
-> they are not permitted to sleep (with RT kernels non-raw spinlocks are
-> sleepable). So, gef_pic_lock has to be a real (non-sleepable) spinlock.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/platforms/86xx/gef_pic.c |   14 +++++++-------
-> 1 files changed, 7 insertions(+), 7 deletions(-)
+The temporary fix was to avoid calling ibm,os-term if a panic_timeout was set
+and since we set it on every boot we basically never call ibm,os-term.
 
-applied to next
+An extended version of ibm,os-term has since been implemented which gives us
+the behaviour we want:
 
-- k
+  "When the platform supports extended ibm,os-term behavior, the return to the
+  RTAS will always occur unless there is a kernel assisted dump active as
+  initiated by an ibm,configure-kernel-dump call."
+
+This patch checks for the ibm,extended-os-term property and calls ibm,os-term
+if it exists.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-cpumask/arch/powerpc/kernel/rtas.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/kernel/rtas.c	2010-02-18 20:31:17.283568754 +1100
++++ linux-cpumask/arch/powerpc/kernel/rtas.c	2010-02-19 09:07:05.735254857 +1100
+@@ -690,10 +690,14 @@ void rtas_os_term(char *str)
+ {
+ 	int status;
+ 
+-	if (panic_timeout)
+-		return;
+-
+-	if (RTAS_UNKNOWN_SERVICE == rtas_token("ibm,os-term"))
++	/*
++	 * Firmware with the ibm,extended-os-term property is guaranteed
++	 * to always return from an ibm,os-term call. Earlier versions without
++	 * this property may terminate the partition which we want to avoid
++	 * since it interferes with panic_timeout.
++	 */
++	if (RTAS_UNKNOWN_SERVICE == rtas_token("ibm,os-term") ||
++	    RTAS_UNKNOWN_SERVICE == rtas_token("ibm,extended-os-term"))
+ 		return;
+ 
+ 	snprintf(rtas_os_term_buf, 2048, "OS panic: %s", str);
+@@ -704,8 +708,7 @@ void rtas_os_term(char *str)
+ 	} while (rtas_busy_delay(status));
+ 
+ 	if (status != 0)
+-		printk(KERN_EMERG "ibm,os-term call failed %d\n",
+-			       status);
++		printk(KERN_EMERG "ibm,os-term call failed %d\n", status);
+ }
+ 
+ static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
