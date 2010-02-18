@@ -1,23 +1,21 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
-	[69.89.21.11]) by ozlabs.org (Postfix) with SMTP id 6F238B6F08
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Feb 2010 11:31:39 +1100 (EST)
-Date: Wed, 17 Feb 2010 16:29:38 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC PATCH] PCI-E broken on PPC (regression)
-Message-ID: <20100217162938.3044c9c8@jbarnes-piketon>
-In-Reply-To: <20100217.162259.91779007.davem@davemloft.net>
-References: <20100125123849.111fa2d1@jbarnes-piketon>
-	<20100125175025.4c74f412@jbarnes-piketon>
-	<1264558256.3601.153.camel@pasglop>
-	<20100217.162259.91779007.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: fubar@us.ibm.com, linux-pci@vger.kernel.org, ron.mercer@qlogic.com,
-	kaneshige.kenji@jp.fujitsu.com, linuxppc-dev@lists.ozlabs.org,
-	leitao@linux.vnet.ibm.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 34D7DB7C7E
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:10:20 +1100 (EST)
+Subject: Re: [PATCH 1/5] powerpc/head fsl: fix the case where we are not in
+	the first page
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1263573697-17839-2-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+Date: Wed, 17 Feb 2010 21:07:49 -0600
+Message-Id: <2C4630C6-1537-4653-8F7C-BEE3BB4EDC18@kernel.crashing.org>
+References: <1263573697-17839-1-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+	<1263573697-17839-2-git-send-email-linuxppc-dev@ml.breakpoint.cc>
+To: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 17 Feb 2010 16:22:59 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Wed, 27 Jan 2010 13:10:56 +1100
-> 
-> > I'll try do make ppc catch up with some of that see how it goes.
-> 
-> FWIW I'm taking care of syncing up sparc in this area
-> right now.
-> 
-> I just noticed the ->dma_mask assignment got moved as well.
-> 
-> Really, any change made to drivers/pci/probe.c is going to
-> require powerpc and sparc changes these days.
-> 
-> We should and will commonize our OpenFirmware PCI device probing code
-> under driver/pci but until that happens a real effort needs to be put
-> in place to at least ping Benjamin and myself when changes are going
-> in to drivers/pci/probe.c
+On Jan 15, 2010, at 10:41 AM, Sebastian Andrzej Siewior wrote:
 
-Ok I'll include you guys on further changes.
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>=20
+> During boot we change the mapping a few times until we have a =
+"defined"
+> mapping. During this procedure a small 4KiB mapping is created and =
+after
+> that one a 64MiB. Currently the offset of the 4KiB page in that we run
+> is zero because the complete startup up code is in first page which
+> starts at RPN zero.
+> If the code is recycled and moved to another location then its =
+execution
+> will fail because the start address in the 64 MiB mapping is computed
+> wrongly. It does not consider the offset to the page from the begin of
+> the memory.
+> This patch fixes this. Usually (system boot) r25 is zero so this does
+> not change anything unless the code is recycled.
+>=20
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+> arch/powerpc/kernel/head_fsl_booke.S |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I don't get this.  Why would would we not run at KERNELBASE?
+
+- k
+
+>=20
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S =
+b/arch/powerpc/kernel/head_fsl_booke.S
+> index 7f4bd7f..799ddbe 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -275,6 +275,7 @@ skpinv:	addi	r6,r6,1				=
+/* Increment */
+> 1:	mflr	r9
+> 	rlwimi	r6,r9,0,20,31
+> 	addi	r6,r6,(2f - 1b)
+> +	add	r6, r6, r25
+> 	mtspr	SPRN_SRR0,r6
+> 	mtspr	SPRN_SRR1,r7
+> 	rfi				/* start execution out of =
+TLB1[0] entry */
+> --=20
+> 1.6.2.5
