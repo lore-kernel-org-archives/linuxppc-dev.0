@@ -1,20 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 18 Feb 2010 20:27:06 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] perf_event: e500 support
-Message-ID: <20100218092706.GD24823@brick.ozlabs.ibm.com>
-References: <20100115214351.GA2869@loki.buserror.net>
-	<20100210222932.GA9844@brick.ozlabs.ibm.com>
-	<4B7349F2.8030802@freescale.com>
-	<20100211030143.GA11245@brick.ozlabs.ibm.com>
-	<4B7436BC.10406@freescale.com>
-	<2035B8E4-B957-4C66-938E-95C0312DABD3@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2035B8E4-B957-4C66-938E-95C0312DABD3@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2FAD1B7CE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:31:45 +1100 (EST)
+Message-Id: <20100218121904.620984825@linutronix.de>
+Date: Thu, 18 Feb 2010 12:22:18 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [patch 00/15] powerpc: raw_spinlock conversions
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +18,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2010 at 09:33:06PM -0600, Kumar Gala wrote:
-> Other than splitting the patch did you have any other changes you
-> wanted to see before we'd get an Ack.  I'd like to see this go in
-> for .34.
+Ben,
 
-I thought it was a bit ugly having two different definitions of struct
-power_pmu in perf_event.h with ifdefs.  Either give the two structs
-different names or put them in different files.  That plus the
-splitting out of the perf_callchain patch were my two main concerns.
+the following patch series is from preempt-rt. It converts the locks
+which need to be real spinlocks in -rt to raw_spinlocks.
 
-Paul.
+There is no behaviourial change for !RT kernels because spinlocks and
+raw_spinlocks are the same on !RT. So for mainline this is a pure
+annotation while having it in mainline takes the burden of keeping up
+with the code changes from the RT patch set.
+
+Please consider to merge into .34.
+
+Thanks,
+
+	tglx
