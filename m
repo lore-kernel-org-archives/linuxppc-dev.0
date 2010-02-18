@@ -2,13 +2,13 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F02F8B832A
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:07 +1100 (EST)
-Message-Id: <20100218122000.390998094@linutronix.de>
-Date: Thu, 18 Feb 2010 12:22:47 -0000
+	by ozlabs.org (Postfix) with ESMTPS id E59C7B7D50
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:32:09 +1100 (EST)
+Message-Id: <20100218122000.155547081@linutronix.de>
+Date: Thu, 18 Feb 2010 12:22:24 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 07/15] powerpc: Convert beat_htab_lock to raw_spinlock
+Subject: [patch 01/15] powerpc: Convert big_irq_lock to raw_spinlock
 References: <20100218121904.620984825@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,105 +19,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-beat_htab_lock needs to be a real spinlock in RT. Convert it to
+big_irq_lock needs to be a real spinlock in RT. Convert it to
 raw_spinlock.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/platforms/cell/beat_htab.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/irq.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-Index: linux-2.6-tip/arch/powerpc/platforms/cell/beat_htab.c
+Index: linux-2.6-tip/arch/powerpc/kernel/irq.c
 ===================================================================
---- linux-2.6-tip.orig/arch/powerpc/platforms/cell/beat_htab.c
-+++ linux-2.6-tip/arch/powerpc/platforms/cell/beat_htab.c
-@@ -40,7 +40,7 @@
- #define DBG_LOW(fmt...) do { } while (0)
- #endif
+--- linux-2.6-tip.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6-tip/arch/powerpc/kernel/irq.c
+@@ -474,7 +474,7 @@ void do_softirq(void)
+  */
  
--static DEFINE_SPINLOCK(beat_htab_lock);
-+static DEFINE_RAW_SPINLOCK(beat_htab_lock);
+ static LIST_HEAD(irq_hosts);
+-static DEFINE_SPINLOCK(irq_big_lock);
++static DEFINE_RAW_SPINLOCK(irq_big_lock);
+ static unsigned int revmap_trees_allocated;
+ static DEFINE_MUTEX(revmap_trees_mutex);
+ struct irq_map_entry irq_map[NR_IRQS];
+@@ -520,14 +520,14 @@ struct irq_host *irq_alloc_host(struct d
+ 	if (host->ops->match == NULL)
+ 		host->ops->match = default_irq_host_match;
  
- static inline unsigned int beat_read_mask(unsigned hpte_group)
- {
-@@ -114,18 +114,18 @@ static long beat_lpar_hpte_insert(unsign
- 	if (rflags & _PAGE_NO_CACHE)
- 		hpte_r &= ~_PAGE_COHERENT;
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	raw_spin_lock_irqsave(&irq_big_lock, flags);
  
--	spin_lock(&beat_htab_lock);
-+	raw_spin_lock(&beat_htab_lock);
- 	lpar_rc = beat_read_mask(hpte_group);
- 	if (lpar_rc == 0) {
- 		if (!(vflags & HPTE_V_BOLTED))
- 			DBG_LOW(" full\n");
--		spin_unlock(&beat_htab_lock);
-+		raw_spin_unlock(&beat_htab_lock);
- 		return -1;
+ 	/* If it's a legacy controller, check for duplicates and
+ 	 * mark it as allocated (we use irq 0 host pointer for that
+ 	 */
+ 	if (revmap_type == IRQ_HOST_MAP_LEGACY) {
+ 		if (irq_map[0].host != NULL) {
+-			spin_unlock_irqrestore(&irq_big_lock, flags);
++			raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+ 			/* If we are early boot, we can't free the structure,
+ 			 * too bad...
+ 			 * this will be fixed once slab is made available early
+@@ -541,7 +541,7 @@ struct irq_host *irq_alloc_host(struct d
  	}
  
- 	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
- 		hpte_v, hpte_r, &slot);
--	spin_unlock(&beat_htab_lock);
-+	raw_spin_unlock(&beat_htab_lock);
+ 	list_add(&host->link, &irq_hosts);
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
  
- 	/*
- 	 * Since we try and ioremap PHBs we don't own, the pte insert
-@@ -198,17 +198,17 @@ static long beat_lpar_hpte_updatepp(unsi
- 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
- 		want_v & HPTE_V_AVPN, slot, psize, newpp);
- 
--	spin_lock(&beat_htab_lock);
-+	raw_spin_lock(&beat_htab_lock);
- 	dummy0 = beat_lpar_hpte_getword0(slot);
- 	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
- 		DBG_LOW("not found !\n");
--		spin_unlock(&beat_htab_lock);
-+		raw_spin_unlock(&beat_htab_lock);
- 		return -1;
- 	}
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
- 					&dummy1);
--	spin_unlock(&beat_htab_lock);
-+	raw_spin_unlock(&beat_htab_lock);
- 	if (lpar_rc != 0 || dummy0 == 0) {
- 		DBG_LOW("not found !\n");
- 		return -1;
-@@ -262,13 +262,13 @@ static void beat_lpar_hpte_updateboltedp
- 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
- 	va = (vsid << 28) | (ea & 0x0fffffff);
- 
--	spin_lock(&beat_htab_lock);
-+	raw_spin_lock(&beat_htab_lock);
- 	slot = beat_lpar_hpte_find(va, psize);
- 	BUG_ON(slot == -1);
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
- 		&dummy0, &dummy1);
--	spin_unlock(&beat_htab_lock);
-+	raw_spin_unlock(&beat_htab_lock);
- 
- 	BUG_ON(lpar_rc != 0);
+ 	/* Additional setups per revmap type */
+ 	switch(revmap_type) {
+@@ -592,13 +592,13 @@ struct irq_host *irq_find_host(struct de
+ 	 * the absence of a device node. This isn't a problem so far
+ 	 * yet though...
+ 	 */
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	raw_spin_lock_irqsave(&irq_big_lock, flags);
+ 	list_for_each_entry(h, &irq_hosts, link)
+ 		if (h->ops->match(h, node)) {
+ 			found = h;
+ 			break;
+ 		}
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+ 	return found;
  }
-@@ -285,18 +285,18 @@ static void beat_lpar_hpte_invalidate(un
- 		slot, va, psize, local);
- 	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
+ EXPORT_SYMBOL_GPL(irq_find_host);
+@@ -967,7 +967,7 @@ unsigned int irq_alloc_virt(struct irq_h
+ 	if (count == 0 || count > (irq_virq_count - NUM_ISA_INTERRUPTS))
+ 		return NO_IRQ;
  
--	spin_lock_irqsave(&beat_htab_lock, flags);
-+	raw_spin_lock_irqsave(&beat_htab_lock, flags);
- 	dummy1 = beat_lpar_hpte_getword0(slot);
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	raw_spin_lock_irqsave(&irq_big_lock, flags);
  
- 	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
- 		DBG_LOW("not found !\n");
--		spin_unlock_irqrestore(&beat_htab_lock, flags);
-+		raw_spin_unlock_irqrestore(&beat_htab_lock, flags);
- 		return;
+ 	/* Use hint for 1 interrupt if any */
+ 	if (count == 1 && hint >= NUM_ISA_INTERRUPTS &&
+@@ -991,7 +991,7 @@ unsigned int irq_alloc_virt(struct irq_h
+ 		}
  	}
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
- 		&dummy1, &dummy2);
--	spin_unlock_irqrestore(&beat_htab_lock, flags);
-+	raw_spin_unlock_irqrestore(&beat_htab_lock, flags);
- 
- 	BUG_ON(lpar_rc != 0);
+ 	if (found == NO_IRQ) {
+-		spin_unlock_irqrestore(&irq_big_lock, flags);
++		raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+ 		return NO_IRQ;
+ 	}
+  hint_found:
+@@ -1000,7 +1000,7 @@ unsigned int irq_alloc_virt(struct irq_h
+ 		smp_wmb();
+ 		irq_map[i].host = host;
+ 	}
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+ 	return found;
  }
+ 
+@@ -1012,7 +1012,7 @@ void irq_free_virt(unsigned int virq, un
+ 	WARN_ON (virq < NUM_ISA_INTERRUPTS);
+ 	WARN_ON (count == 0 || (virq + count) > irq_virq_count);
+ 
+-	spin_lock_irqsave(&irq_big_lock, flags);
++	raw_spin_lock_irqsave(&irq_big_lock, flags);
+ 	for (i = virq; i < (virq + count); i++) {
+ 		struct irq_host *host;
+ 
+@@ -1025,7 +1025,7 @@ void irq_free_virt(unsigned int virq, un
+ 		smp_wmb();
+ 		irq_map[i].host = NULL;
+ 	}
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
++	raw_spin_unlock_irqrestore(&irq_big_lock, flags);
+ }
+ 
+ int arch_early_irq_init(void)
