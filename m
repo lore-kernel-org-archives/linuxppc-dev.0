@@ -1,18 +1,21 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from pophost.sonytel.be (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id D43EEB7DA1
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 23:41:52 +1100 (EST)
-Date: Thu, 18 Feb 2010 13:41:50 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/15] powerpc: raw_spinlock conversions
-In-Reply-To: <20100218121904.620984825@linutronix.de>
-Message-ID: <alpine.LRH.2.00.1002181341150.25717@mink.sonytel.be>
-References: <20100218121904.620984825@linutronix.de>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 191CEB7CB8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Feb 2010 00:15:46 +1100 (EST)
+Date: Thu, 18 Feb 2010 14:15:41 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Ryan <rayan@nucleodyne.com>
+Subject: Re: State of PREEMPT_RT in PPC arch
+Message-ID: <20100218131541.GB18514@pengutronix.de>
+References: <5bbdacc81002172233x64a05ae2m4ecdbddf85dac8c0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
+In-Reply-To: <5bbdacc81002172233x64a05ae2m4ecdbddf85dac8c0@mail.gmail.com>
+Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 18 Feb 2010, Thomas Gleixner wrote:
-> the following patch series is from preempt-rt. It converts the locks
-> which need to be real spinlocks in -rt to raw_spinlocks.
 
-None of the patch descriptions mention why the locks need to be real
-spinlocks in -rt. So can you please elaborate?
+--cvVnyQ+4j833TQvp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With kind regards,
+> I'm soliciting comments from the community. Thanks in advance for
+> sharing your thoughts.
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+Mainline your driver and you are free from such problems :)
 
-Technology and Software Centre Europe
-The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Belgium
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+--cvVnyQ+4j833TQvp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 =B7 RPR Brussels
-Fortis =B7 BIC GEBABEBB =B7 IBAN BE41293037680010
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkt9PX0ACgkQD27XaX1/VRtx3ACgycS4X1NiPXuwuh+/6u2RXYwU
+oKYAn3Qes3E6Gpb1Quj/ghvk6Ek6Jd3G
+=QJ/k
+-----END PGP SIGNATURE-----
+
+--cvVnyQ+4j833TQvp--
