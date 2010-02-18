@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94DC5B7CF2
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:29:48 +1100 (EST)
-Subject: Re: [PATCH] perf_event: e500 support
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4B7349F2.8030802@freescale.com>
-Date: Wed, 17 Feb 2010 21:29:39 -0600
-Message-Id: <2E4FC058-0455-4467-BDE4-BFB18EDCA059@kernel.crashing.org>
-References: <20100115214351.GA2869@loki.buserror.net>
-	<20100210222932.GA9844@brick.ozlabs.ibm.com>
-	<4B7349F2.8030802@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTPS id 25175B7C67
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Feb 2010 14:31:31 +1100 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <3033DBDF-FFD6-4AA5-ADDF-71FE7E0E04E7@kernel.crashing.org>
+References: <Pine.LNX.4.64.1002172120310.13512@localhost.localdomain>
+	<1266463484.16346.382.camel@pasglop>
+	<3033DBDF-FFD6-4AA5-ADDF-71FE7E0E04E7@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 14:30:53 +1100
+Message-ID: <1266463853.16346.384.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Feb 10, 2010, at 6:06 PM, Scott Wood wrote:
-
->>> 
->>> --- a/arch/powerpc/kernel/Makefile
->>> +++ b/arch/powerpc/kernel/Makefile
->>> @@ -98,7 +98,10 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
->>>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
->>> obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
->>> -obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o perf_callchain.o
->>> +obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
->>> +obj-$(CONFIG_FSL_EMB_PERF_EVENT) += perf_event_fsl_emb.o
->>> +obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o
->>> +obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
->> This is because we want perf_callchain.o even if we don't have
->> hardware PMU support, is it?  If so this is a separate fix that
->> deserves its own patch.
+On Wed, 2010-02-17 at 21:26 -0600, Kumar Gala wrote:
+> On Feb 17, 2010, at 9:24 PM, Benjamin Herrenschmidt wrote:
 > 
-> OK.
+> > On Wed, 2010-02-17 at 21:21 -0600, Kumar Gala wrote:
+> >> Ben,
+> >> 
+> >> These are two minor fixes that should go into 2.6.33.
+> > 
+> > It's a bit late for such fixes, but it's your platforms and your call
+> > here so I'll pull and push out to Linus.
+> > 
+> > Cheers,
+> > Ben.
+> 
+> Yeah, I've been swamped with other stuff and haven't found time to push them out. 
+> Was also hoping to find another oops that was reported but I cant reproduce it.
 
-You going to repost with this broken up into two patches?
+Ok, done. Linus, feel free to pull from either Kumar's tree or mine:
 
-- k
+The following changes since commit b0483e78e5c4c9871fc5541875b3bc006846d46b:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/tty-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Vorontsov (1):
+      powerpc/85xx: Fix oops during MSI driver probe on MPC85xxMDS boards
+
+Peter Tyser (1):
+      powerpc/85xx: Fix SMP when "cpu-release-addr" is in lowmem
+
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    3 ++-
+ arch/powerpc/platforms/85xx/smp.c         |   21 +++++++++++++++++++--
+ 2 files changed, 21 insertions(+), 3 deletions(-)
