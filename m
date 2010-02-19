@@ -1,23 +1,28 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3E49BB7CF5
+	by ozlabs.org (Postfix) with ESMTPS id 52E85B7CEF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Feb 2010 19:54:56 +1100 (EST)
-Date: Fri, 19 Feb 2010 09:54:50 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Ryan <rayan@nucleodyne.com>
-Subject: Re: State of PREEMPT_RT in PPC arch
-Message-ID: <20100219085450.GA10674@pengutronix.de>
-References: <5bbdacc81002172233x64a05ae2m4ecdbddf85dac8c0@mail.gmail.com>
-	<20100218131541.GB18514@pengutronix.de>
-	<5bbdacc81002182134l64c46bf1mc2a4b4fc268e6eee@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
-In-Reply-To: <5bbdacc81002182134l64c46bf1mc2a4b4fc268e6eee@mail.gmail.com>
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>
+	Fri, 19 Feb 2010 21:01:43 +1100 (EST)
+Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <14639.1266559532@neuling.org>
+References: <1264017638.5717.121.camel@jschopp-laptop>
+	<1264017847.5717.132.camel@jschopp-laptop>
+	<1264548495.12239.56.camel@jschopp-laptop>
+	<1264720855.9660.22.camel@jschopp-laptop>
+	<1264721088.10385.1.camel@jschopp-laptop>
+	<1265403478.6089.41.camel@jschopp-laptop>
+	<1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
+	<1266499023.26719.597.camel@laptop>  <14639.1266559532@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Feb 2010 11:01:12 +0100
+Message-ID: <1266573672.1806.70.camel@laptop>
+Mime-Version: 1.0
+Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, ego@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +32,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2010-02-19 at 17:05 +1100, Michael Neuling wrote:
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> >  include/linux/sched.h |    2 +-
+> >  kernel/sched_fair.c   |   61 +++++++++++++++++++++++++++++++++++++++++++++--
+> -
+> >  2 files changed, 58 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 0eef87b..42fa5c6 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -849,7 +849,7 @@ enum cpu_idle_type {
+> >  #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
+> >  #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg
+>  resources */
+> >  #define SD_SERIALIZE		0x0400	/* Only a single load balancing instanc
+> e */
+> > -
+> > +#define SD_ASYM_PACKING		0x0800
+> 
+> Would we eventually add this to SD_SIBLING_INIT in a arch specific hook,
+> or is this ok to add it generically?
 
-On Thu, Feb 18, 2010 at 09:34:28PM -0800, Ryan wrote:
-> On Thu, Feb 18, 2010 at 5:15 AM, Wolfram Sang <w.sang@pengutronix.de> wro=
-te:
-> >
-> > > I'm soliciting comments from the community. Thanks in advance for
-> > > sharing your thoughts.
-> >
-> > Mainline your driver and you are free from such problems :)
->=20
-> Shouldn't it be the opposite way? That is, get drivers working first
-> then mainline them? I even don't have a working driver with RT patch.
+I'd think we'd want to keep that limited to architectures that actually
+need it.
 
-If you have problems getting your driver to mainline, the lists are there to
-help. Of course, this implies working with a recent kernel (which also answ=
-ers
-your initial question a bit). Most people don't want to supprt old kernels =
-like
-2.6.2x in their freetime. You can get commercial support for such tasks (be=
- it
-my employer or other consultants on this list).
+>  
+> > +static int update_sd_pick_busiest(struct sched_domain *sd,
+> > +	       			  struct sd_lb_stats *sds,
+> > +				  struct sched_group *sg,
+> > +			  	  struct sg_lb_stats *sgs)
+> > +{
+> > +	if (sgs->sum_nr_running > sgs->group_capacity)
+> > +		return 1;
+> > +
+> > +	if (sgs->group_imb)
+> > +		return 1;
+> > +
+> > +	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
+> > +		if (!sds->busiest)
+> > +			return 1;
+> > +
+> > +		if (group_first_cpu(sds->busiest) < group_first_cpu(group))
+> 
+> "group" => "sg" here? (I get a compile error otherwise)
 
-> and discussions about them, kinda dedicated to active developers. Is
-> there a place that users or not-so-active developers can post
-> technical questions and get some relatively quick answers or comments?
+Oh, quite ;-)
 
-The list was apropriate. As all people are busy by default, getting no resp=
-onse
-is not that exceptional. If you need a fast response, you should consider
-commercial support.
+> > +static int check_asym_packing(struct sched_domain *sd,
+> > +				    struct sd_lb_stats *sds, 
+> > +				    int cpu, unsigned long *imbalance)
+> > +{
+> > +	int i, cpu, busiest_cpu;
+> 
+> Redefining cpu here.  Looks like the cpu parameter is not really needed?
 
-Regards,
+Seems that way indeed, I went back and forth a few times on the actual
+implementation of this function (which started out live as a copy of
+check_power_save_busiest_group), its amazing there were only these two
+compile glitches ;-)
 
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---sm4nu43k4a2Rpi4c
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkt+UdoACgkQD27XaX1/VRtEwQCgtBJtltOS6KGUwmFVQcWdJsiW
-UOgAn1asO9vl7HqYl21pesbNP+SBkHDe
-=gmty
------END PGP SIGNATURE-----
-
---sm4nu43k4a2Rpi4c--
+> > +
+> > +	if (!(sd->flags & SD_ASYM_PACKING))
+> > +		return 0;
+> > +
+> > +	if (!sds->busiest)
+> > +		return 0;
+> > +
+> > +	i = 0;
+> > +	busiest_cpu = group_first_cpu(sds->busiest);
+> > +	for_each_cpu(cpu, sched_domain_span(sd)) {
+> > +		i++;
+> > +		if (cpu == busiest_cpu)
+> > +			break;
+> > +	}
+> > +
+> > +	if (sds->total_nr_running > i)
+> > +		return 0;
+> > +
+> > +	*imbalance = sds->max_load;
+> > +	return 1;
+> > +}
