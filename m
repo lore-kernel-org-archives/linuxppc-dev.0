@@ -1,26 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-px0-f189.google.com (mail-px0-f189.google.com
-	[209.85.216.189]) by ozlabs.org (Postfix) with ESMTP id 38696B7C98
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 183EAB7CC1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Feb 2010 02:41:29 +1100 (EST)
-Received: by pxi27 with SMTP id 27so287381pxi.2
+	Sat, 20 Feb 2010 02:43:17 +1100 (EST)
+Received: by pwi9 with SMTP id 9so169270pwi.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Feb 2010 07:41:27 -0800 (PST)
+	Fri, 19 Feb 2010 07:43:16 -0800 (PST)
 MIME-Version: 1.0
 Sender: bsingharora@gmail.com
-In-Reply-To: <alpine.DEB.2.00.1002190906190.7486@router.home>
-References: <20100218222923.GC31681@kryten> <20100219000730.GD31681@kryten>
-	<20100219145523.GN30258@csn.ul.ie>
-	<alpine.DEB.2.00.1002190906190.7486@router.home>
-Date: Fri, 19 Feb 2010 21:11:27 +0530
-Message-ID: <661de9471002190741k34ddb1acidf64d089bf9ff284@mail.gmail.com>
+In-Reply-To: <20100218222923.GC31681@kryten>
+References: <20100218222923.GC31681@kryten>
+Date: Fri, 19 Feb 2010 21:13:16 +0530
+Message-ID: <661de9471002190743t5385d97hf38c544f0007879c@mail.gmail.com>
 Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
 	enable zone reclaim
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
+To: Anton Blanchard <anton@samba.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@lists.ozlabs.org,
-	Anton Blanchard <anton@samba.org>
+Cc: mel@csn.ul.ie, cl@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 19, 2010 at 8:42 PM, Christoph Lameter
-<cl@linux-foundation.org> wrote:
-> On Fri, 19 Feb 2010, Mel Gorman wrote:
+On Fri, Feb 19, 2010 at 3:59 AM, Anton Blanchard <anton@samba.org> wrote:
 >
->> > > The patch below sets a smaller value for RECLAIM_DISTANCE and thus e=
-nables
->> > > zone reclaim.
->> >
->>
->> I've no problem with the patch anyway.
+> I noticed /proc/sys/vm/zone_reclaim_mode was 0 on a ppc64 NUMA box. It ge=
+ts
+> enabled via this:
 >
-> Nor do I.
+> =A0 =A0 =A0 =A0/*
+> =A0 =A0 =A0 =A0 * If another node is sufficiently far away then it is bet=
+ter
+> =A0 =A0 =A0 =A0 * to reclaim pages in a zone before going off node.
+> =A0 =A0 =A0 =A0 */
+> =A0 =A0 =A0 =A0if (distance > RECLAIM_DISTANCE)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0zone_reclaim_mode =3D 1;
 >
->> > - We seem to end up racing between zone_watermark_ok, zone_reclaim and
->> > =A0 buffered_rmqueue. Since everyone is in here the memory one thread =
-reclaims
->> > =A0 may be stolen by another thread.
->> >
->>
->> You're pretty much on the button here. Only one thread at a time enters
->> zone_reclaim. The others back off and try the next zone in the zonelist
->> instead. I'm not sure what the original intention was but most likely it
->> was to prevent too many parallel reclaimers in the same zone potentially
->> dumping out way more data than necessary.
+> Since we use the default value of 20 for REMOTE_DISTANCE and 20 for
+> RECLAIM_DISTANCE it never kicks in.
 >
-> Yes it was to prevent concurrency slowing down reclaim. At that time the
-> number of processors per NUMA node was 2 or so. The number of pages that
-> are reclaimed is limited to avoid tossing too many page cache pages.
+> The local to remote bandwidth ratios can be quite large on System p
+> machines so it makes sense for us to reclaim clean pagecache locally befo=
+re
+> going off node.
+>
+> The patch below sets a smaller value for RECLAIM_DISTANCE and thus enable=
+s
+> zone reclaim.
 >
 
-That is interesting, I always thought it was to try and free page
-cache first. For example with zone->min_unmapped_pages, if
-zone_pagecache_reclaimable is greater than unmapped pages, we start
-reclaim the cached pages first. The min_unmapped_pages almost sounds
-like the higher level watermark - or am I misreading the code.
+A reclaim distance of 10 implies a ratio of 1, that means we'll always
+do zone_reclaim() to free page cache and slab cache before moving on
+to another node?
 
-Balbir Singh
+Balbir Singh.
