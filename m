@@ -1,24 +1,38 @@
-Return-Path: <linasvepstas@gmail.com>
-Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
-	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id 653B1B7CEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Feb 2010 04:05:48 +1100 (EST)
-Received: by ywh14 with SMTP id 14so269945ywh.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Feb 2010 09:05:47 -0800 (PST)
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7A170B7C33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 20 Feb 2010 04:39:35 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o1JHdZGA010417
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2010 04:39:35 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o1JHYBW4823356
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2010 04:34:11 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o1JHdYdM005134
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Feb 2010 04:39:34 +1100
+Date: Fri, 19 Feb 2010 23:09:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
+	enable zone reclaim
+Message-ID: <20100219173932.GX5612@balbir.in.ibm.com>
+References: <20100218222923.GC31681@kryten> <20100219000730.GD31681@kryten>
+	<20100219145523.GN30258@csn.ul.ie>
+	<alpine.DEB.2.00.1002190906190.7486@router.home>
+	<661de9471002190741k34ddb1acidf64d089bf9ff284@mail.gmail.com>
+	<alpine.DEB.2.00.1002190948200.26567@router.home>
 MIME-Version: 1.0
-In-Reply-To: <4B7EBF9A.7020801@linux.vnet.ibm.com>
-References: <1264789719-15591-1-git-send-email-leitao@linux.vnet.ibm.com>
-	<4B6864F4.1030106@linux.vnet.ibm.com>
-	<20100202180503.GL4757@pengutronix.de>
-	<4B699CB9.3030605@linux.vnet.ibm.com>
-	<4B7EBF9A.7020801@linux.vnet.ibm.com>
-From: Linas Vepstas <linasvepstas@gmail.com>
-Date: Fri, 19 Feb 2010 11:05:27 -0600
-Message-ID: <3ae3aa421002190905l67e9f235he9537aeb0e56790e@mail.gmail.com>
-Subject: Re: [PATCH] eeh: Fixing a bug when pci structure is null
-To: Breno Leitao <leitao@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: linasvepstas@gmail.com
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <alpine.DEB.2.00.1002190948200.26567@router.home>
+Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@lists.ozlabs.org,
+	Anton Blanchard <anton@samba.org>
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul, Breno,
+* Christoph Lameter <cl@linux-foundation.org> [2010-02-19 09:51:12]:
 
-Some confusion -- I've been out of the loop for a while -- I assume
-its still Paul who is pushing
-these patches upstream, and not Ben?  So Breno, maybe you should
-resend the patch to Paul?
+> On Fri, 19 Feb 2010, Balbir Singh wrote:
+> 
+> > >> zone_reclaim. The others back off and try the next zone in the zonelist
+> > >> instead. I'm not sure what the original intention was but most likely it
+> > >> was to prevent too many parallel reclaimers in the same zone potentially
+> > >> dumping out way more data than necessary.
+> > >
+> > > Yes it was to prevent concurrency slowing down reclaim. At that time the
+> > > number of processors per NUMA node was 2 or so. The number of pages that
+> > > are reclaimed is limited to avoid tossing too many page cache pages.
+> > >
+> >
+> > That is interesting, I always thought it was to try and free page
+> > cache first. For example with zone->min_unmapped_pages, if
+> > zone_pagecache_reclaimable is greater than unmapped pages, we start
+> > reclaim the cached pages first. The min_unmapped_pages almost sounds
+> > like the higher level watermark - or am I misreading the code.
+> 
+> Indeed the purpose is to free *old* page cache pages.
+> 
+> The min_unmapped_pages is to protect a mininum of the page cache pages /
+> fs metadata from zone reclaim so that ongoing file I/O is not impacted.
 
---linas
+Thanks for the explanation!
 
-On 19 February 2010 10:43, Breno Leitao <leitao@linux.vnet.ibm.com> wrote:
-> Hi Ben,
->
-> I'd like to ask about this patch ? Should I re-submit ?
->
-> Thanks,
->
-> Breno Leitao wrote:
->> During a EEH recover, the pci_dev structure can be null, mainly if an
->> eeh event is detected during cpi config operation. In this case, the
->> pci_dev will not be known (and will be null) the kernel will crash
->> with the following message:
->
+-- 
+	Three Cheers,
+	Balbir
