@@ -1,21 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-In-reply-to: <1266573672.1806.70.camel@laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1265403478.6089.41.camel@jschopp-laptop>
-	<1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
-	<1266499023.26719.597.camel@laptop> <14639.1266559532@neuling.org>
-	<1266573672.1806.70.camel@laptop>
-Date: Fri, 19 Feb 2010 22:01:16 +1100
-Message-ID: <24165.1266577276@neuling.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, ego@in.ibm.com
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id CAE1EB7CC2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 20 Feb 2010 02:04:27 +1100 (EST)
+Date: Fri, 19 Feb 2010 14:55:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
+	enable zone reclaim
+Message-ID: <20100219145523.GN30258@csn.ul.ie>
+References: <20100218222923.GC31681@kryten> <20100219000730.GD31681@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20100219000730.GD31681@kryten>
+Cc: cl@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,265 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1266573672.1806.70.camel@laptop> you wrote:
-> On Fri, 2010-02-19 at 17:05 +1100, Michael Neuling wrote:
-> > >  include/linux/sched.h |    2 +-
-> > >  kernel/sched_fair.c   |   61 +++++++++++++++++++++++++++++++++++++++++++
-++--
-> > -
-> > >  2 files changed, 58 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > > index 0eef87b..42fa5c6 100644
-> > > --- a/include/linux/sched.h
-> > > +++ b/include/linux/sched.h
-> > > @@ -849,7 +849,7 @@ enum cpu_idle_type {
-> > >  #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
-> > >  #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg
-> >  resources */
-> > >  #define SD_SERIALIZE		0x0400	/* Only a single load balancing
- instanc
-> > e */
-> > > -
-> > > +#define SD_ASYM_PACKING		0x0800
-> > 
-> > Would we eventually add this to SD_SIBLING_INIT in a arch specific hook,
-> > or is this ok to add it generically?
+On Fri, Feb 19, 2010 at 11:07:30AM +1100, Anton Blanchard wrote:
 > 
-> I'd think we'd want to keep that limited to architectures that actually
-> need it.
-
-OK
-
-> >  
-> > > +static int update_sd_pick_busiest(struct sched_domain *sd,
-> > > +	       			  struct sd_lb_stats *sds,
-> > > +				  struct sched_group *sg,
-> > > +			  	  struct sg_lb_stats *sgs)
-> > > +{
-> > > +	if (sgs->sum_nr_running > sgs->group_capacity)
-> > > +		return 1;
-> > > +
-> > > +	if (sgs->group_imb)
-> > > +		return 1;
-> > > +
-> > > +	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
-> > > +		if (!sds->busiest)
-> > > +			return 1;
-> > > +
-> > > +		if (group_first_cpu(sds->busiest) < group_first_cpu(group))
-> > 
-> > "group" => "sg" here? (I get a compile error otherwise)
+> Hi,
 > 
-> Oh, quite ;-)
+> > The patch below sets a smaller value for RECLAIM_DISTANCE and thus enables
+> > zone reclaim.
 > 
-> > > +static int check_asym_packing(struct sched_domain *sd,
-> > > +				    struct sd_lb_stats *sds, 
-> > > +				    int cpu, unsigned long *imbalance)
-> > > +{
-> > > +	int i, cpu, busiest_cpu;
-> > 
-> > Redefining cpu here.  Looks like the cpu parameter is not really needed?
+
+I've no problem with the patch anyway.
+
+> FYI even with this enabled I could trip it up pretty easily with a multi
+> threaded application. I tried running stream across all threads in node 0. The
+> machine looks like:
 > 
-> Seems that way indeed, I went back and forth a few times on the actual
-> implementation of this function (which started out live as a copy of
-> check_power_save_busiest_group), its amazing there were only these two
-> compile glitches ;-)
+> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+> node 0 free: 30254 MB
+> node 1 cpus: 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+> node 1 free: 31832 MB
+> 
+> Now create some clean pagecache on node 0:
+> 
+> # taskset -c 0 dd if=/dev/zero of=/tmp/bigfile bs=1G count=16
+> # sync
+> 
+> node 0 free: 12880 MB
+> node 1 free: 31830 MB
+> 
+> I built stream to use about 25GB of memory. I then ran stream across all
+> threads in node 0:
+> 
+> # OMP_NUM_THREADS=16 taskset -c 0-15 ./stream
+> 
+> We exhaust all memory on node 0, and start using memory on node 1:
+> 
+> node 0 free: 0 MB
+> node 1 free: 20795 MB
+> 
+> ie about 10GB of node 1. Now if we run the same test with one thread:
+> 
+> # OMP_NUM_THREADS=1 taskset -c 0 ./stream
+> 
+> things are much better:
+> 
+> node 0 free: 11 MB
+> node 1 free: 31552 MB
+> 
+> Interestingly enough it takes two goes to get completely onto node 0, even
+> with one thread. The second run looks like:
+> 
+> node 0 free: 14 MB
+> node 1 free: 31811 MB
+> 
+> I had a quick look at the page allocation logic and I think I understand why
+> we would have issues with multple threads all trying to allocate at once.
+> 
+> - The ZONE_RECLAIM_LOCKED flag allows only one thread into zone reclaim at
+>   a time, and whatever thread is in zone reclaim probably only frees a small
+>   amount of memory. Certainly not enough to satisfy all 16 threads.
+> 
+> - We seem to end up racing between zone_watermark_ok, zone_reclaim and
+>   buffered_rmqueue. Since everyone is in here the memory one thread reclaims
+>   may be stolen by another thread.
+> 
 
-:-)
+You're pretty much on the button here. Only one thread at a time enters
+zone_reclaim. The others back off and try the next zone in the zonelist
+instead. I'm not sure what the original intention was but most likely it
+was to prevent too many parallel reclaimers in the same zone potentially
+dumping out way more data than necessary.
 
-Below are the cleanups + the arch specific bits.  It doesn't change your
-logic at all.  Obviously the PPC arch bits would need to be split into a
-separate patch.
+> I'm not sure if there is an easy way to fix this without penalising other
+> workloads though.
+> 
 
-Compiles and boots against linux-next.
+You could experiment with waiting on the bit if the GFP flags allowi it? The
+expectation would be that the reclaim operation does not take long. Wait
+on the bit, if you are making the forward progress, recheck the
+watermarks before continueing.
 
-Mikey
----
- arch/powerpc/include/asm/cputable.h |    3 +
- arch/powerpc/kernel/process.c       |    7 +++
- include/linux/sched.h               |    4 +-
- include/linux/topology.h            |    1 
- kernel/sched_fair.c                 |   64 ++++++++++++++++++++++++++++++++++--
- 5 files changed, 74 insertions(+), 5 deletions(-)
-
-Index: linux-next/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-next.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-next/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYM_SMT4		LONG_ASM_CONST(0x0100000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT4)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-Index: linux-next/arch/powerpc/kernel/process.c
-===================================================================
---- linux-next.orig/arch/powerpc/kernel/process.c
-+++ linux-next/arch/powerpc/kernel/process.c
-@@ -1265,3 +1265,10 @@ unsigned long randomize_et_dyn(unsigned 
- 
- 	return ret;
- }
-+
-+int arch_sd_asym_packing(void)
-+{
-+	if (cpu_has_feature(CPU_FTR_ASYM_SMT4))
-+		return SD_ASYM_PACKING;
-+	return 0;
-+}
-Index: linux-next/include/linux/sched.h
-===================================================================
---- linux-next.orig/include/linux/sched.h
-+++ linux-next/include/linux/sched.h
-@@ -849,7 +849,7 @@ enum cpu_idle_type {
- #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
- #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
- #define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
--
-+#define SD_ASYM_PACKING		0x0800  /* Asymetric SMT packing */
- #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
- 
- enum powersavings_balance_level {
-@@ -881,6 +881,8 @@ static inline int sd_balance_for_package
- 	return SD_PREFER_SIBLING;
- }
- 
-+extern int arch_sd_asym_packing(void);
-+
- /*
-  * Optimise SD flags for power savings:
-  * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
-Index: linux-next/include/linux/topology.h
-===================================================================
---- linux-next.orig/include/linux/topology.h
-+++ linux-next/include/linux/topology.h
-@@ -102,6 +102,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
- 				| 0*SD_PREFER_SIBLING			\
-+				| arch_sd_asym_packing()		\
- 				,					\
- 	.last_balance		= jiffies,				\
- 	.balance_interval	= 1,					\
-Index: linux-next/kernel/sched_fair.c
-===================================================================
---- linux-next.orig/kernel/sched_fair.c
-+++ linux-next/kernel/sched_fair.c
-@@ -2086,6 +2086,7 @@ struct sd_lb_stats {
- 	struct sched_group *this;  /* Local group in this sd */
- 	unsigned long total_load;  /* Total load of all groups in sd */
- 	unsigned long total_pwr;   /*	Total power of all groups in sd */
-+	unsigned long total_nr_running;
- 	unsigned long avg_load;	   /* Average load across all groups in sd */
- 
- 	/** Statistics of this group */
-@@ -2493,6 +2494,28 @@ static inline void update_sg_lb_stats(st
- 		DIV_ROUND_CLOSEST(group->cpu_power, SCHED_LOAD_SCALE);
- }
- 
-+static int update_sd_pick_busiest(struct sched_domain *sd,
-+	       			  struct sd_lb_stats *sds,
-+				  struct sched_group *sg,
-+			  	  struct sg_lb_stats *sgs)
-+{
-+	if (sgs->sum_nr_running > sgs->group_capacity)
-+		return 1;
-+
-+	if (sgs->group_imb)
-+		return 1;
-+
-+	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
-+		if (!sds->busiest)
-+			return 1;
-+
-+		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * update_sd_lb_stats - Update sched_group's statistics for load balancing.
-  * @sd: sched_domain whose statistics are to be updated.
-@@ -2533,6 +2556,7 @@ static inline void update_sd_lb_stats(st
- 
- 		sds->total_load += sgs.group_load;
- 		sds->total_pwr += group->cpu_power;
-+		sds->total_nr_running += sgs.sum_nr_running;
- 
- 		/*
- 		 * In case the child domain prefers tasks go to siblings
-@@ -2547,9 +2571,8 @@ static inline void update_sd_lb_stats(st
- 			sds->this = group;
- 			sds->this_nr_running = sgs.sum_nr_running;
- 			sds->this_load_per_task = sgs.sum_weighted_load;
--		} else if (sgs.avg_load > sds->max_load &&
--			   (sgs.sum_nr_running > sgs.group_capacity ||
--				sgs.group_imb)) {
-+		} else if (sgs.avg_load >= sds->max_load &&
-+			   update_sd_pick_busiest(sd, sds, group, &sgs)) {
- 			sds->max_load = sgs.avg_load;
- 			sds->busiest = group;
- 			sds->busiest_nr_running = sgs.sum_nr_running;
-@@ -2562,6 +2585,38 @@ static inline void update_sd_lb_stats(st
- 	} while (group != sd->groups);
- }
- 
-+int __weak sd_asym_packing_arch(void)
-+{
-+	return 0;
-+}
-+
-+static int check_asym_packing(struct sched_domain *sd,
-+				    struct sd_lb_stats *sds,
-+				    unsigned long *imbalance)
-+{
-+	int i, cpu, busiest_cpu;
-+
-+	if (!(sd->flags & SD_ASYM_PACKING))
-+		return 0;
-+
-+	if (!sds->busiest)
-+		return 0;
-+
-+	i = 0;
-+	busiest_cpu = group_first_cpu(sds->busiest);
-+	for_each_cpu(cpu, sched_domain_span(sd)) {
-+		i++;
-+		if (cpu == busiest_cpu)
-+			break;
-+	}
-+
-+	if (sds->total_nr_running > i)
-+		return 0;
-+
-+	*imbalance = sds->max_load;
-+	return 1;
-+}
-+
- /**
-  * fix_small_imbalance - Calculate the minor imbalance that exists
-  *			amongst the groups of a sched_domain, during
-@@ -2761,6 +2816,9 @@ find_busiest_group(struct sched_domain *
- 	return sds.busiest;
- 
- out_balanced:
-+	if (check_asym_packing(sd, &sds, imbalance))
-+		return sds.busiest;
-+
- 	/*
- 	 * There is no obvious imbalance. But check if we can do some balancing
- 	 * to save power.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
