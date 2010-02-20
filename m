@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 90522B7BEE
+Return-Path: <z.mouni14@hotmail.fr>
+Received: from blu0-omc3-s20.blu0.hotmail.com (blu0-omc3-s20.blu0.hotmail.com
+	[65.55.116.95]) by ozlabs.org (Postfix) with ESMTP id 0C6AAB7CD7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 21 Feb 2010 08:07:33 +1100 (EST)
-Subject: Re: hrtimers in powerpc arch?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Xiaogeng Jin <xiaogeng.jin@gmail.com>
-In-Reply-To: <5bbdacc81002191716q4929f72ao30215859bd080465@mail.gmail.com>
-References: <5bbdacc81002191716q4929f72ao30215859bd080465@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 21 Feb 2010 08:07:25 +1100
-Message-ID: <1266700045.23523.1575.camel@pasglop>
-Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@lists.ozlabs.org>
+	Sat, 20 Feb 2010 19:15:27 +1100 (EST)
+Message-ID: <BLU133-W1CA05E2983D07AF546E2A9B450@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_9501f89c-3193-490b-be01-e178dfccc30c_"
+From: ahmed zemoji <z.mouni14@hotmail.fr>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: i need to patch form powerpc405
+Date: Sat, 20 Feb 2010 08:10:12 +0000
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-19 at 17:16 -0800, Xiaogeng Jin wrote:
-> Is hrtimers supported in the powerpc arch and used in embedded powerpc
-> drivers? I greped ktime_t and hrtimer_start() under arch/powerpc and
-> found not two many calls. Does it indicate the powerpc world doesn't
-> use hrtimers? 
+--_9501f89c-3193-490b-be01-e178dfccc30c_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-They are there and should work just fine. Why would we "use" them from
-arch code ?
 
-Cheers,
-Ben.
+help me !!!!=20
+
+i like emmbedded a kernel linux 2.6 to processor powerpc405 of card ML403
+
+please
+
+please=20
+
+..
+
+help me=20
+ 		 	   		 =20
+_________________________________________________________________
+Hotmail : une messagerie fiable avec une protection anti-spam performante
+https://signup.live.com/signup.aspx?id=3D60969=
+
+--_9501f89c-3193-490b-be01-e178dfccc30c_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+help me !!!! <BR>
+i like emmbedded a kernel linux 2.6 to processor powerpc405 of card ML403<B=
+R>
+please<BR>
+please <BR>
+..<BR>
+help me <BR> 		 	   		  <br /><hr />Hotmail : une messagerie fiable avec un=
+e protection anti-spam performante <a href=3D'https://signup.live.com/signu=
+p.aspx?id=3D60969' target=3D'_new'>Inscrivez-vous</a></body>
+</html>=
+
+--_9501f89c-3193-490b-be01-e178dfccc30c_--
