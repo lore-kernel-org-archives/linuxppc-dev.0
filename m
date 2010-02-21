@@ -1,23 +1,13 @@
-Return-Path: <bonbons@linux-vserver.org>
-Received: from legolas.restena.lu (legolas.restena.lu [158.64.1.34])
-	by ozlabs.org (Postfix) with ESMTP id 3A78DB7BFA
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Feb 2010 10:40:25 +1100 (EST)
-Date: Sun, 21 Feb 2010 00:18:51 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman
-	<gregkh@suse.de>
-Subject: [PATCH 2/3] backlight: mark struct backlight_ops const
-Message-ID: <20100221001851.673db863@neptune.home>
-In-Reply-To: <20100221001049.2f63f5d6@neptune.home>
-References: <20100221001049.2f63f5d6@neptune.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	acpi4asus-user@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-	linux-omap@vger.kernel.org, dri-devel@lists.sourceforge.net,
-	ibm-acpi-devel@lists.sourceforge.net
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [-next Feb 18] PowerPC boot failure (Unknowd ADD relocation :26)
+In-reply-to: <4B7E118C.7060208@in.ibm.com>
+References: <4B7E118C.7060208@in.ibm.com>
+Date: Mon, 22 Feb 2010 07:35:39 +1100
+Message-ID: <505.1266784539@neuling.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, linux-next@vger.kernel.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,457 +18,300 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
----
- drivers/acpi/video.c                            |    2 +-
- drivers/gpu/drm/nouveau/nouveau_backlight.c     |    4 ++--
- drivers/macintosh/via-pmu-backlight.c           |    4 ++--
- drivers/platform/x86/acer-wmi.c                 |    2 +-
- drivers/platform/x86/asus-laptop.c              |    2 +-
- drivers/platform/x86/asus_acpi.c                |    2 +-
- drivers/platform/x86/classmate-laptop.c         |    2 +-
- drivers/platform/x86/compal-laptop.c            |    2 +-
- drivers/platform/x86/dell-laptop.c              |    2 +-
- drivers/platform/x86/eeepc-laptop.c             |    2 +-
- drivers/platform/x86/fujitsu-laptop.c           |    2 +-
- drivers/platform/x86/msi-laptop.c               |    2 +-
- drivers/platform/x86/msi-wmi.c                  |    2 +-
- drivers/platform/x86/panasonic-laptop.c         |    2 +-
- drivers/platform/x86/sony-laptop.c              |    2 +-
- drivers/platform/x86/thinkpad_acpi.c            |    2 +-
- drivers/platform/x86/toshiba_acpi.c             |    2 +-
- drivers/staging/samsung-laptop/samsung-laptop.c |    2 +-
- drivers/usb/misc/appledisplay.c                 |    2 +-
- drivers/video/atmel_lcdfb.c                     |    2 +-
- drivers/video/aty/aty128fb.c                    |    2 +-
- drivers/video/aty/atyfb_base.c                  |    2 +-
- drivers/video/aty/radeon_backlight.c            |    2 +-
- drivers/video/bf54x-lq043fb.c                   |    2 +-
- drivers/video/bfin-t350mcqb-fb.c                |    2 +-
- drivers/video/nvidia/nv_backlight.c             |    2 +-
- drivers/video/omap2/displays/panel-taal.c       |    2 +-
- drivers/video/riva/fbdev.c                      |    2 +-
- 28 files changed, 30 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index b765790..c86c401 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -366,7 +366,7 @@ static int acpi_video_set_brightness(struct backlight_d=
-evice *bd)
- 				vd->brightness->levels[request_level]);
- }
-=20
--static struct backlight_ops acpi_backlight_ops =3D {
-+static const struct backlight_ops acpi_backlight_ops =3D {
- 	.get_brightness =3D acpi_video_get_brightness,
- 	.update_status  =3D acpi_video_set_brightness,
- };
-diff --git a/drivers/gpu/drm/nouveau/nouveau_backlight.c b/drivers/gpu/drm/=
-nouveau/nouveau_backlight.c
-index 20564f8..9a8c990 100644
---- a/drivers/gpu/drm/nouveau/nouveau_backlight.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_backlight.c
-@@ -58,7 +58,7 @@ static int nv40_set_intensity(struct backlight_device *bd)
- 	return 0;
- }
-=20
--static struct backlight_ops nv40_bl_ops =3D {
-+static const struct backlight_ops nv40_bl_ops =3D {
- 	.options =3D BL_CORE_SUSPENDRESUME,
- 	.get_brightness =3D nv40_get_intensity,
- 	.update_status =3D nv40_set_intensity,
-@@ -81,7 +81,7 @@ static int nv50_set_intensity(struct backlight_device *bd)
- 	return 0;
- }
-=20
--static struct backlight_ops nv50_bl_ops =3D {
-+static const struct backlight_ops nv50_bl_ops =3D {
- 	.options =3D BL_CORE_SUSPENDRESUME,
- 	.get_brightness =3D nv50_get_intensity,
- 	.update_status =3D nv50_set_intensity,
-diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-=
-pmu-backlight.c
-index a348bb0..ecd9b3f 100644
---- a/drivers/macintosh/via-pmu-backlight.c
-+++ b/drivers/macintosh/via-pmu-backlight.c
-@@ -15,7 +15,7 @@
-=20
- #define MAX_PMU_LEVEL 0xFF
-=20
--static struct backlight_ops pmu_backlight_data;
-+static const struct backlight_ops pmu_backlight_data;
- static DEFINE_SPINLOCK(pmu_backlight_lock);
- static int sleeping, uses_pmu_bl;
- static u8 bl_curve[FB_BACKLIGHT_LEVELS];
-@@ -115,7 +115,7 @@ static int pmu_backlight_get_brightness(struct backligh=
-t_device *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops pmu_backlight_data =3D {
-+static const struct backlight_ops pmu_backlight_data =3D {
- 	.get_brightness	=3D pmu_backlight_get_brightness,
- 	.update_status	=3D pmu_backlight_update_status,
-=20
-diff --git a/drivers/platform/x86/acer-wmi.c b/drivers/platform/x86/acer-wm=
-i.c
-index 07d14df..f70bd41 100644
---- a/drivers/platform/x86/acer-wmi.c
-+++ b/drivers/platform/x86/acer-wmi.c
-@@ -915,7 +915,7 @@ static int update_bl_status(struct backlight_device *bd)
- 	return 0;
- }
-=20
--static struct backlight_ops acer_bl_ops =3D {
-+static const struct backlight_ops acer_bl_ops =3D {
- 	.get_brightness =3D read_brightness,
- 	.update_status =3D update_bl_status,
- };
-diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus=
--laptop.c
-index 61a1c75..88e8554 100644
---- a/drivers/platform/x86/asus-laptop.c
-+++ b/drivers/platform/x86/asus-laptop.c
-@@ -251,7 +251,7 @@ static struct backlight_device *asus_backlight_device;
-  */
- static int read_brightness(struct backlight_device *bd);
- static int update_bl_status(struct backlight_device *bd);
--static struct backlight_ops asusbl_ops =3D {
-+static const struct backlight_ops asusbl_ops =3D {
- 	.get_brightness =3D read_brightness,
- 	.update_status =3D update_bl_status,
- };
-diff --git a/drivers/platform/x86/asus_acpi.c b/drivers/platform/x86/asus_a=
-cpi.c
-index c1d2aee..9980d51 100644
---- a/drivers/platform/x86/asus_acpi.c
-+++ b/drivers/platform/x86/asus_acpi.c
-@@ -1464,7 +1464,7 @@ static int asus_hotk_remove(struct acpi_device *devic=
-e, int type)
- 	return 0;
- }
-=20
--static struct backlight_ops asus_backlight_data =3D {
-+static const struct backlight_ops asus_backlight_data =3D {
- 	.get_brightness =3D read_brightness,
- 	.update_status  =3D set_brightness_status,
- };
-diff --git a/drivers/platform/x86/classmate-laptop.c b/drivers/platform/x86=
-/classmate-laptop.c
-index ed90082..bfae789 100644
---- a/drivers/platform/x86/classmate-laptop.c
-+++ b/drivers/platform/x86/classmate-laptop.c
-@@ -452,7 +452,7 @@ static int cmpc_bl_update_status(struct backlight_devic=
-e *bd)
- 		return -1;
- }
-=20
--static struct backlight_ops cmpc_bl_ops =3D {
-+static const struct backlight_ops cmpc_bl_ops =3D {
- 	.get_brightness =3D cmpc_bl_get_brightness,
- 	.update_status =3D cmpc_bl_update_status
- };
-diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platform/x86/co=
-mpal-laptop.c
-index 1a387e7..2bd6c65 100644
---- a/drivers/platform/x86/compal-laptop.c
-+++ b/drivers/platform/x86/compal-laptop.c
-@@ -162,7 +162,7 @@ static int bl_update_status(struct backlight_device *b)
- 	return set_lcd_level(b->props.brightness);
- }
-=20
--static struct backlight_ops compalbl_ops =3D {
-+static const struct backlight_ops compalbl_ops =3D {
- 	.get_brightness =3D bl_get_brightness,
- 	.update_status	=3D bl_update_status,
- };
-diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell=
--laptop.c
-index 3780994..55640e5 100644
---- a/drivers/platform/x86/dell-laptop.c
-+++ b/drivers/platform/x86/dell-laptop.c
-@@ -333,7 +333,7 @@ static int dell_get_intensity(struct backlight_device *=
-bd)
- 	return buffer.output[1];
- }
-=20
--static struct backlight_ops dell_ops =3D {
-+static const struct backlight_ops dell_ops =3D {
- 	.get_brightness =3D dell_get_intensity,
- 	.update_status  =3D dell_send_intensity,
- };
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eee=
-pc-laptop.c
-index e2be6bb..4f77774 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -1096,7 +1096,7 @@ static int update_bl_status(struct backlight_device *=
-bd)
- 	return set_brightness(bd, bd->props.brightness);
- }
-=20
--static struct backlight_ops eeepcbl_ops =3D {
-+static const struct backlight_ops eeepcbl_ops =3D {
- 	.get_brightness =3D read_brightness,
- 	.update_status =3D update_bl_status,
- };
-diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/f=
-ujitsu-laptop.c
-index 5f3320d..b6a0941 100644
---- a/drivers/platform/x86/fujitsu-laptop.c
-+++ b/drivers/platform/x86/fujitsu-laptop.c
-@@ -436,7 +436,7 @@ static int bl_update_status(struct backlight_device *b)
- 	return ret;
- }
-=20
--static struct backlight_ops fujitsubl_ops =3D {
-+static const struct backlight_ops fujitsubl_ops =3D {
- 	.get_brightness =3D bl_get_brightness,
- 	.update_status =3D bl_update_status,
- };
-diff --git a/drivers/platform/x86/msi-laptop.c b/drivers/platform/x86/msi-l=
-aptop.c
-index 759763d..1093ba2 100644
---- a/drivers/platform/x86/msi-laptop.c
-+++ b/drivers/platform/x86/msi-laptop.c
-@@ -161,7 +161,7 @@ static int bl_update_status(struct backlight_device *b)
- 	return set_lcd_level(b->props.brightness);
- }
-=20
--static struct backlight_ops msibl_ops =3D {
-+static const struct backlight_ops msibl_ops =3D {
- 	.get_brightness =3D bl_get_brightness,
- 	.update_status  =3D bl_update_status,
- };
-diff --git a/drivers/platform/x86/msi-wmi.c b/drivers/platform/x86/msi-wmi.c
-index f5f70d4..5f7cff1 100644
---- a/drivers/platform/x86/msi-wmi.c
-+++ b/drivers/platform/x86/msi-wmi.c
-@@ -138,7 +138,7 @@ static int bl_set_status(struct backlight_device *bd)
- 	return msi_wmi_set_block(0, backlight_map[bright]);
- }
-=20
--static struct backlight_ops msi_backlight_ops =3D {
-+static const struct backlight_ops msi_backlight_ops =3D {
- 	.get_brightness	=3D bl_get,
- 	.update_status	=3D bl_set_status,
- };
-diff --git a/drivers/platform/x86/panasonic-laptop.c b/drivers/platform/x86=
-/panasonic-laptop.c
-index fe7cf01..9012d8d 100644
---- a/drivers/platform/x86/panasonic-laptop.c
-+++ b/drivers/platform/x86/panasonic-laptop.c
-@@ -352,7 +352,7 @@ static int bl_set_status(struct backlight_device *bd)
- 	return acpi_pcc_write_sset(pcc, SINF_DC_CUR_BRIGHT, bright);
- }
-=20
--static struct backlight_ops pcc_backlight_ops =3D {
-+static const struct backlight_ops pcc_backlight_ops =3D {
- 	.get_brightness	=3D bl_get,
- 	.update_status	=3D bl_set_status,
- };
-diff --git a/drivers/platform/x86/sony-laptop.c b/drivers/platform/x86/sony=
--laptop.c
-index 3f71a60..75481e6 100644
---- a/drivers/platform/x86/sony-laptop.c
-+++ b/drivers/platform/x86/sony-laptop.c
-@@ -853,7 +853,7 @@ static int sony_backlight_get_brightness(struct backlig=
-ht_device *bd)
- }
-=20
- static struct backlight_device *sony_backlight_device;
--static struct backlight_ops sony_backlight_ops =3D {
-+static const struct backlight_ops sony_backlight_ops =3D {
- 	.update_status =3D sony_backlight_update_status,
- 	.get_brightness =3D sony_backlight_get_brightness,
- };
-diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/th=
-inkpad_acpi.c
-index e67e4fe..950a2f7 100644
---- a/drivers/platform/x86/thinkpad_acpi.c
-+++ b/drivers/platform/x86/thinkpad_acpi.c
-@@ -6112,7 +6112,7 @@ static void tpacpi_brightness_notify_change(void)
- 			       BACKLIGHT_UPDATE_HOTKEY);
- }
-=20
--static struct backlight_ops ibm_backlight_data =3D {
-+static const struct backlight_ops ibm_backlight_data =3D {
- 	.get_brightness =3D brightness_get,
- 	.update_status  =3D brightness_update_status,
- };
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/tos=
-hiba_acpi.c
-index 77bf5d8..0f0b69e 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -706,7 +706,7 @@ static acpi_status remove_device(void)
- 	return AE_OK;
- }
-=20
--static struct backlight_ops toshiba_backlight_data =3D {
-+static const struct backlight_ops toshiba_backlight_data =3D {
-         .get_brightness =3D get_lcd,
-         .update_status  =3D set_lcd_status,
- };
-diff --git a/drivers/staging/samsung-laptop/samsung-laptop.c b/drivers/stag=
-ing/samsung-laptop/samsung-laptop.c
-index 4877138..0cf2d58 100644
---- a/drivers/staging/samsung-laptop/samsung-laptop.c
-+++ b/drivers/staging/samsung-laptop/samsung-laptop.c
-@@ -268,7 +268,7 @@ static int update_status(struct backlight_device *bd)
- 	return 0;
- }
-=20
--static struct backlight_ops backlight_ops =3D {
-+static const struct backlight_ops backlight_ops =3D {
- 	.get_brightness	=3D get_brightness,
- 	.update_status	=3D update_status,
- };
-diff --git a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledispla=
-y.c
-index 1eb9e41..ef79ca2 100644
---- a/drivers/usb/misc/appledisplay.c
-+++ b/drivers/usb/misc/appledisplay.c
-@@ -179,7 +179,7 @@ static int appledisplay_bl_get_brightness(struct backli=
-ght_device *bd)
- 		return pdata->msgdata[1];
- }
-=20
--static struct backlight_ops appledisplay_bl_data =3D {
-+static const struct backlight_ops appledisplay_bl_data =3D {
- 	.get_brightness	=3D appledisplay_bl_get_brightness,
- 	.update_status	=3D appledisplay_bl_update_status,
- };
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 3d886c6..22ee7f8 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -110,7 +110,7 @@ static int atmel_bl_get_brightness(struct backlight_dev=
-ice *bl)
- 	return lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
- }
-=20
--static struct backlight_ops atmel_lcdc_bl_ops =3D {
-+static const struct backlight_ops atmel_lcdc_bl_ops =3D {
- 	.update_status =3D atmel_bl_update_status,
- 	.get_brightness =3D atmel_bl_get_brightness,
- };
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index e4e4d43..137cd34 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -1787,7 +1787,7 @@ static int aty128_bl_get_brightness(struct backlight_=
-device *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops aty128_bl_data =3D {
-+static const struct backlight_ops aty128_bl_data =3D {
- 	.get_brightness	=3D aty128_bl_get_brightness,
- 	.update_status	=3D aty128_bl_update_status,
- };
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 1ddeb4c..fc4e221 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2225,7 +2225,7 @@ static int aty_bl_get_brightness(struct backlight_dev=
-ice *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops aty_bl_data =3D {
-+static const struct backlight_ops aty_bl_data =3D {
- 	.get_brightness =3D aty_bl_get_brightness,
- 	.update_status	=3D aty_bl_update_status,
- };
-diff --git a/drivers/video/aty/radeon_backlight.c b/drivers/video/aty/radeo=
-n_backlight.c
-index 1a056ad..221bd6a 100644
---- a/drivers/video/aty/radeon_backlight.c
-+++ b/drivers/video/aty/radeon_backlight.c
-@@ -127,7 +127,7 @@ static int radeon_bl_get_brightness(struct backlight_de=
-vice *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops radeon_bl_data =3D {
-+static const struct backlight_ops radeon_bl_data =3D {
- 	.get_brightness =3D radeon_bl_get_brightness,
- 	.update_status	=3D radeon_bl_update_status,
- };
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index e49ae5e..db4e6f7 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -463,7 +463,7 @@ static int bl_get_brightness(struct backlight_device *b=
-d)
- 	return 0;
- }
-=20
--static struct backlight_ops bfin_lq043fb_bl_ops =3D {
-+static const struct backlight_ops bfin_lq043fb_bl_ops =3D {
- 	.get_brightness =3D bl_get_brightness,
- };
-=20
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb=
--fb.c
-index 2549c53..bc204c6 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -381,7 +381,7 @@ static int bl_get_brightness(struct backlight_device *b=
-d)
- 	return 0;
- }
-=20
--static struct backlight_ops bfin_lq043fb_bl_ops =3D {
-+static const struct backlight_ops bfin_lq043fb_bl_ops =3D {
- 	.get_brightness =3D bl_get_brightness,
- };
-=20
-diff --git a/drivers/video/nvidia/nv_backlight.c b/drivers/video/nvidia/nv_=
-backlight.c
-index 443e3c8..c443d6a 100644
---- a/drivers/video/nvidia/nv_backlight.c
-+++ b/drivers/video/nvidia/nv_backlight.c
-@@ -87,7 +87,7 @@ static int nvidia_bl_get_brightness(struct backlight_devi=
-ce *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops nvidia_bl_ops =3D {
-+static const struct backlight_ops nvidia_bl_ops =3D {
- 	.get_brightness =3D nvidia_bl_get_brightness,
- 	.update_status	=3D nvidia_bl_update_status,
- };
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap=
-2/displays/panel-taal.c
-index 1f01dfc..a5f7f82 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -313,7 +313,7 @@ static int taal_bl_get_intensity(struct backlight_devic=
-e *dev)
- 	return 0;
- }
-=20
--static struct backlight_ops taal_bl_ops =3D {
-+static const struct backlight_ops taal_bl_ops =3D {
- 	.get_brightness =3D taal_bl_get_intensity,
- 	.update_status  =3D taal_bl_update_status,
- };
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index d94c57f..912984c 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -331,7 +331,7 @@ static int riva_bl_get_brightness(struct backlight_devi=
-ce *bd)
- 	return bd->props.brightness;
- }
-=20
--static struct backlight_ops riva_bl_ops =3D {
-+static const struct backlight_ops riva_bl_ops =3D {
- 	.get_brightness =3D riva_bl_get_brightness,
- 	.update_status	=3D riva_bl_update_status,
- };
---=20
-1.6.4.4
+In message <4B7E118C.7060208@in.ibm.com> you wrote:
+> This is a multi-part message in MIME format.
+> --------------020408070005080107030800
+> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+> Content-Transfer-Encoding: 7bit
+> 
+> Yesterday's next failed to boot on various powerpc boxes
+> with following error :
+> 
+> NET: Registered protocol family 15
+> registered taskstats version 1
+> Freeing unused kernel memory: 640k freed
+> doing fast boot
+> scsi_mod: Unknown ADD relocation: 26
+> WARNING: Error inserting scsi_mod (/lib/modules/2.6.33-rc8-autotest-next-2010
+0218/kernel/drivers/scsi/scsi_mod.ko): Invalid module format
+> scsi_tgt: Unknown symbol scsi_release_buffers
+> scsi_tgt: Unknown symbol scsi_host_put
+> scsi_tgt: Unknown symbol __scsi_put_command
+> scsi_tgt: Unknown symbol scsi_host_lookup
+> scsi_tgt: Unknown symbol __scsi_get_command
+> scsi_tgt: Unknown symbol scsi_init_io
+> scsi_tgt: Unknown symbol __scsi_alloc_queue
+> 
+> and many more such modules related errors.
+> I have attached the boot log here.
+
+Can you attached the .config as well for this??
+
+Mikey
+
+> 
+> Next Feb 17th was OK. Haven't yet tried the git bisect.
+> Will try that out today.
+> 
+> Thanks
+> -Sachin
+> 
+> 
+> -- 
+> 
+> ---------------------------------
+> Sachin Sant
+> IBM Linux Technology Center
+> India Systems and Technology Labs
+> Bangalore, India
+> ---------------------------------
+> 
+> 
+> --------------020408070005080107030800
+> Content-Type: text/plain;
+>  name="boot-log"
+> Content-Transfer-Encoding: 7bit
+> Content-Disposition: inline;
+>  filename="boot-log"
+> 
+> Using 00825420 bytes for initrd buffer
+> Please wait, loading kernel...
+> Allocated 00f00000 bytes for kernel @ 00d00000
+>    Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded 00825420 @ 034d0000
+> OF stdout device is: /vdevice/vty@30000000
+> Preparing to boot Linux version 2.6.33-rc8-autotest-next-20100218 (root@llm62
+) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #1 SMP Thu
+ Feb 18 17:49:40 IST 2010
+> Max number of cores passed to firmware: 0x0000000000000200
+> Calling ibm,client-architecture-support... done
+> command line: root=/dev/sda5 IDENT=1266496633 
+> memory layout at init:
+>   memory_limit : 0000000000000000 (16 MB aligned)
+>   alloc_bottom : 0000000003d00000
+>   alloc_top    : 0000000008000000
+>   alloc_top_hi : 0000000008000000
+>   rmo_top      : 0000000008000000
+>   ram_top      : 0000000008000000
+> instantiating rtas at 0x00000000074e0000... done
+> boot cpu hw idx 0000000000000000
+> starting cpu hw idx 0000000000000002... done
+> copying OF device tree...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x0000000003d10000 -> 0x0000000003d115fa
+> Device tree struct  0x0000000003d20000 -> 0x0000000003d40000
+> Calling quiesce...
+> returning from prom_init
+> Using pSeries machine description
+> Using 1TB segments
+> Found initrd at 0xc0000000034d0000:0xc000000003cf5420
+> bootconsole [udbg0] enabled
+> Partition configured for 4 cpus.
+> CPU maps initialized for 2 threads per core
+> Starting Linux PPC64 #1 SMP Thu Feb 18 17:49:40 IST 2010
+> -----------------------------------------------------
+> ppc64_pft_size                = 0x1a
+> physicalMemorySize            = 0x100000000
+> htab_hash_mask                = 0x7ffff
+> -----------------------------------------------------
+> Initializing cgroup subsys cpuset
+> Initializing cgroup subsys cpu
+> Linux version 2.6.33-rc8-autotest-next-20100218 (root@llm62) (gcc version 4.3
+.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #1 SMP Thu Feb 18 17:49:40 I
+ST 2010
+> [boot]0012 Setup Arch
+> EEH: No capable adapters found
+> PPC64 nvram contains 15360 bytes
+> Zone PFN ranges:
+>   DMA      0x00000000 -> 0x00010000
+>   Normal   0x00010000 -> 0x00010000
+> Movable zone start PFN for each node
+> early_node_map[1] active PFN ranges
+>     1: 0x00000000 -> 0x00010000
+> Could not find start_pfn for node 0
+> [boot]0015 Setup Done
+> PERCPU: Embedded 2 pages/cpu @c000000000f00000 s89768 r0 d41304 u262144
+> pcpu-alloc: s89768 r0 d41304 u262144 alloc=1*1048576
+> pcpu-alloc: [0] 0 1 2 3 
+> Built 2 zonelists in Node order, mobility grouping on.  Total pages: 65480
+> Policy zone: DMA
+> Kernel command line: root=/dev/sda5 IDENT=1266496633 
+> PID hash table entries: 4096 (order: -1, 32768 bytes)
+> freeing bootmem node 1
+> Memory: 4142272k/4194304k available (9280k kernel code, 52032k reserved, 2624
+k data, 2287k bss, 640k init)
+> Hierarchical RCU implementation.
+> RCU-based detection of stalled CPUs is enabled.
+> NR_IRQS:512 nr_irqs:512
+> [boot]0020 XICS Init
+> [boot]0021 XICS Done
+> clocksource: timebase mult[7d0000] shift[22] registered
+> Console: colour dummy device 80x25
+> console [hvc0] enabled, bootconsole disabled
+> console [hvc0] enabled, bootconsole disabled
+> allocated 2621440 bytes of page_cgroup
+> please try 'cgroup_disable=memory' option if you don't want memory cgroups
+> Security Framework initialized
+> SELinux:  Disabled at boot.
+> Dentry cache hash table entries: 524288 (order: 6, 4194304 bytes)
+> Inode-cache hash table entries: 262144 (order: 5, 2097152 bytes)
+> Mount-cache hash table entries: 4096
+> Initializing cgroup subsys ns
+> Initializing cgroup subsys cpuacct
+> Initializing cgroup subsys memory
+> Initializing cgroup subsys devices
+> Initializing cgroup subsys freezer
+> Initializing cgroup subsys blkio
+> Processor 1 found.
+> Processor 2 found.
+> Processor 3 found.
+> Brought up 4 CPUs
+> devtmpfs: initialized
+> NET: Registered protocol family 16
+> IBM eBus Device Driver
+> POWER6 performance monitor hardware support registered
+> PCI: Probing PCI hardware
+> bio: create slab <bio-0> at 0
+> vgaarb: loaded
+> usbcore: registered new interface driver usbfs
+> usbcore: registered new interface driver hub
+> usbcore: registered new device driver usb
+> Switching to clocksource timebase
+> NET: Registered protocol family 2
+> IP route cache hash table entries: 32768 (order: 2, 262144 bytes)
+> TCP established hash table entries: 131072 (order: 5, 2097152 bytes)
+> TCP bind hash table entries: 65536 (order: 4, 1048576 bytes)
+> TCP: Hash tables configured (established 131072 bind 65536)
+> TCP reno registered
+> UDP hash table entries: 2048 (order: 0, 65536 bytes)
+> UDP-Lite hash table entries: 2048 (order: 0, 65536 bytes)
+> NET: Registered protocol family 1
+> Unpacking initramfs...
+> Freeing initrd memory: 8341k freed
+> IOMMU table initialized, virtual merging enabled
+> audit: initializing netlink socket (disabled)
+> type=2000 audit(1266496684.180:1): initialized
+> rcu-torture:--- Start of test: nreaders=8 nfakewriters=4 stat_interval=0 verb
+ose=0 test_no_idle_hz=0 shuffle_interval=3 stutter=5 irqreader=1 fqs_duration=0
+ fqs_holdoff=0 fqs_stutter=3
+> HugeTLB registered 16 MB page size, pre-allocated 0 pages
+> HugeTLB registered 16 GB page size, pre-allocated 0 pages
+> VFS: Disk quotas dquot_6.5.2
+> Dquot-cache hash table entries: 8192 (order 0, 65536 bytes)
+> msgmni has been set to 8104
+> alg: No test for stdrng (krng)
+> Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+> io scheduler noop registered
+> io scheduler deadline registered
+> io scheduler cfq registered (default)
+> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+> rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+> Generic RTC Driver v1.07
+> Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+> pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
+> Uniform Multi-Platform E-IDE driver
+> ide-gd driver 1.18
+> ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+> ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+> mice: PS/2 mouse device common for all mice
+> EDAC MC: Ver: 2.1.0 Feb 18 2010
+> usbcore: registered new interface driver hiddev
+> usbcore: registered new interface driver usbhid
+> usbhid: USB HID core driver
+> TCP cubic registered
+> NET: Registered protocol family 15
+> registered taskstats version 1
+> Freeing unused kernel memory: 640k freed
+> doing fast boot
+> scsi_mod: Unknown ADD relocation: 26
+> WARNING: Error inserting scsi_mod (/lib/modules/2.6.33-rc8-autotest-next-2010
+0218/kernel/drivers/scsi/scsi_mod.ko): Invalid module format
+> scsi_tgt: Unknown symbol scsi_release_buffers
+> scsi_tgt: Unknown symbol scsi_host_put
+> scsi_tgt: Unknown symbol __scsi_put_command
+> scsi_tgt: Unknown symbol scsi_host_lookup
+> scsi_tgt: Unknown symbol __scsi_get_command
+> scsi_tgt: Unknown symbol scsi_init_io
+> scsi_tgt: Unknown symbol __scsi_alloc_queue
+> WARNING: Error inserting scsi_tgt (/lib/modules/2.6.33-rc8-autotest-next-2010
+0218/kernel/drivers/scsi/scsi_tgt.ko): Unknown symbol in module, or unknown par
+ameter (see dmesg)
+> scsi_transport_srp: Unknown symbol scsi_tgt_it_nexus_destroy
+> scsi_transport_srp: Unknown symbol scsi_tgt_it_nexus_create
+> scsi_transport_srp: Unknown symbol scsi_is_host_device
+> WARNING: Error inserting scsi_transport_srp (/lib/modules/2.6.33-rc8-autotest
+-next-20100218/kernel/drivers/scsi/scsi_transport_srp.ko): Unknown symbol in mo
+dule, or unknown parameter (see dmesg)
+> ibmvscsic: Unknown symbol scsi_block_requests
+> ibmvscsic: Unknown symbol scsi_scan_host
+> ibmvscsic: Unknown symbol scsi_dma_unmap
+> ibmvscsic: Unknown symbol scsi_add_host_with_dma
+> ibmvscsic: Unknown symbol scsi_host_put
+> ibmvscsic: Unknown symbol srp_release_transport
+> ibmvscsic: Unknown symbol scsi_dma_map
+> ibmvscsic: Unknown symbol srp_remove_host
+> ibmvscsic: Unknown symbol srp_attach_transport
+> ibmvscsic: Unknown symbol scsi_unblock_requests
+> ibmvscsic: Unknown symbol scsi_remove_host
+> ibmvscsic: Unknown symbol srp_rport_add
+> ibmvscsic: Unknown symbol scsi_adjust_queue_depth
+> ibmvscsic: Unknown symbol scsi_host_alloc
+> FATAL: Error inserting ibmvscsic (/lib/modules/2.6.33-rc8-autotest-next-20100
+218/kernel/drivers/scsi/ibmvscsi/ibmvscsic.ko): Unknown symbol in module, or un
+known parameter (see dmesg)
+> Creating device nodes with udev
+> udevd version 128 started
+> scsi_mod: Unknown ADD relocation: 26
+> scsi_tgt: Unknown symbol scsi_release_buffers
+> scsi_tgt: Unknown symbol scsi_host_put
+> scsi_tgt: Unknown symbol __scsi_put_command
+> scsi_tgt: Unknown symbol scsi_host_lookup
+> scsi_tgt: Unknown symbol __scsi_get_command
+> scsi_tgt: Unknown symbol scsi_init_io
+> scsi_tgt: Unknown symbol __scsi_alloc_queue
+> scsi_transport_srp: Unknown symbol scsi_tgt_it_nexus_destroy
+> scsi_transport_srp: Unknown symbol scsi_tgt_it_nexus_create
+> scsi_transport_srp: Unknown symbol scsi_is_host_device
+> ibmvscsic: Unknown symbol scsi_block_requests
+> ibmvscsic: Unknown symbol scsi_scan_host
+> ibmvscsic: Unknown symbol scsi_dma_unmap
+> ibmvscsic: Unknown symbol scsi_add_host_with_dma
+> ibmvscsic: Unknown symbol scsi_host_put
+> ibmvscsic: Unknown symbol srp_release_transport
+> ibmvscsic: Unknown symbol scsi_dma_map
+> ibmvscsic: Unknown symbol srp_remove_host
+> ibmvscsic: Unknown symbol srp_attach_transport
+> ibmvscsic: Unknown symbol scsi_unblock_requests
+> ibmvscsic: Unknown symbol scsi_remove_host
+> ibmvscsic: Unknown symbol srp_rport_add
+> ibmvscsic: Unknown symbol scsi_adjust_queue_depth
+> ibmvscsic: Unknown symbol scsi_host_alloc
+> Boot logging started on /dev/hvc0(/dev/console) at Thu Feb 18 12:38:04 2010
+> resume device  not found (ignoring)
+> Waiting for device /dev/sda5 to appear: ..............................Could n
+ot find /dev/sda5.
+> Want me to fall back to /dev/sda5? (Y/n) 
+> -- 0:conmux-control -- time-stamp -- Feb/18/10  4:41:54 --
+> -- 0:conmux-control -- time-stamp -- Feb/18/10  6:00:16 --
+> (user:ssant@in.ibm.com) connected
+> 
+> Waiting for device /dev/sda5 to appear: ..............................not fou
+nd -- exiting to /bin/sh
+> 
+> 
+> --------------020408070005080107030800
+> Content-Type: text/plain; charset="us-ascii"
+> MIME-Version: 1.0
+> Content-Transfer-Encoding: 7bit
+> Content-Disposition: inline
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> --------------020408070005080107030800--
+> 
