@@ -1,18 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0BD73B7CB9
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 22:37:29 +1100 (EST)
-Date: Mon, 22 Feb 2010 12:37:24 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: "David S. Miller" <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 572A8B7CA6
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 22:44:36 +1100 (EST)
+Date: Mon, 22 Feb 2010 03:44:52 -0800 (PST)
+Message-Id: <20100222.034452.193720264.davem@davemloft.net>
+To: agust@denx.de
 Subject: Re: [net-next-2.6 PATCH v2 0/3] Support for MPC512x FEC
-Message-ID: <20100222123724.67a7b862@wker>
-In-Reply-To: <1266418530-2727-1-git-send-email-agust@denx.de>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100222123724.67a7b862@wker>
 References: <1266418530-2727-1-git-send-email-agust@denx.de>
+	<20100222123724.67a7b862@wker>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+From: Anatolij Gustschin <agust@denx.de>
+Date: Mon, 22 Feb 2010 12:37:24 +0100
 
-On Wed, 17 Feb 2010 15:55:27 +0100
-Anatolij Gustschin <agust@denx.de> wrote:
+> Could you please comment on this patch series.
 
-> These patches attempt to provide support for the Freescale MPC512x
-> FEC in the fs_enet driver. The first cleanup patch replaces printk
-> by dev_xxx. The second and third attemt to support MPC5121 FEC
-> in the FEC driver.
+It's in the net-next-2.6 tree.
 
-Could you please comment on this patch series. The patches
-have been acked by Grant and I slightly reworked third patch
-to address Eric's comments, so there is v3 for this patch now.
-
-Thanks,
-
-Anatolij
+If you need to make any more changes, they need to be relative
+to what went into my tree.
