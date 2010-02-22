@@ -1,19 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 572A8B7CA6
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 22:44:36 +1100 (EST)
-Date: Mon, 22 Feb 2010 03:44:52 -0800 (PST)
-Message-Id: <20100222.034452.193720264.davem@davemloft.net>
-To: agust@denx.de
-Subject: Re: [net-next-2.6 PATCH v2 0/3] Support for MPC512x FEC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100222123724.67a7b862@wker>
-References: <1266418530-2727-1-git-send-email-agust@denx.de>
-	<20100222123724.67a7b862@wker>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E6D3FB7BFA
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 23:23:11 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id 147072597C7
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 13:23:07 +0100 (CET)
+Subject: default stack size for threads changed
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF21CCB5A6.CDFDB6C1-ONC12576D2.00430B25-C12576D2.0043C4BB@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 22 Feb 2010 13:20:12 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,12 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anatolij Gustschin <agust@denx.de>
-Date: Mon, 22 Feb 2010 12:37:24 +0100
 
-> Could you please comment on this patch series.
+With current, 2.6.33-rc6, linux the default stack size changed from unlimited
+to 8MB:
+# > ulimit -s
+8192
 
-It's in the net-next-2.6 tree.
+This makes NPTL allocate a 8MB stack for each thread that is created.
+This breaks in our embedded system. Although this
+can be fixed in our app I wonder if this is intentional?
 
-If you need to make any more changes, they need to be relative
-to what went into my tree.
+ Jocke
