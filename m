@@ -1,22 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
-	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id 8A247B7CE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 04:34:04 +1100 (EST)
-Received: by ywh14 with SMTP id 14so979661ywh.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 09:34:03 -0800 (PST)
+Return-Path: <vapier.adi@gmail.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 54B29B7CE4
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 06:35:49 +1100 (EST)
+Received: by gwj20 with SMTP id 20so614152gwj.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 11:35:47 -0800 (PST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <201002221705.30700.matthias.fuchs@esd-electronics.com>
-References: <201001281448.42965.matthias.fuchs@esd-electronics.com>
-	<fa686aa41002161119x6eb41203rb73b888176ce5040@mail.gmail.com>
-	<201002221705.30700.matthias.fuchs@esd-electronics.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 22 Feb 2010 10:33:43 -0700
-Message-ID: <fa686aa41002220933u40079737je3230ac4cfb4945f@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/mpc512x: Add gpio driver
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20100221001851.673db863@neptune.home>
+References: <20100221001049.2f63f5d6@neptune.home>
+	<20100221001851.673db863@neptune.home>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 22 Feb 2010 14:35:27 -0500
+Message-ID: <8bd0f97a1002221135n6c52a657i1817063d2664bfda@mail.gmail.com>
+Subject: Re: [PATCH 2/3] backlight: mark struct backlight_ops const
+To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org,
+	acpi4asus-user@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, dri-devel@lists.sourceforge.net,
+	ibm-acpi-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +30,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 22, 2010 at 9:05 AM, Matthias Fuchs
-<matthias.fuchs@esd-electronics.com> wrote:
-> Hi Grant,
->
-> thanks for comments. I will post an updated version soon.
->
->
-> On Tuesday 16 February 2010 20:19, Grant Likely wrote:
->> > + =A0 =A0 =A0 return 0;
->> > +}
->> > +arch_initcall(mpc512x_add_gpiochips);
->>
->> Don't do this. =A0Either make this a proper of_platform device driver,
->> or call mpc512x_add_gpiochips() explicitly from the arch platform
->> setup code. =A0Otherwise, if the kernel is built for multiplatform, this
->> function will get executed regardless of the platform.
-> In this case I prefer moving the call to the platform code.
-> I tested the driver on one of our 5123 boards. Shall I add it
-> to mpc5121_ads.c:mpc5121_ads_setup_arch() also? So it's at least called
-> on the reference board? I not sure if there are some LEDs or buttons
-> that could use it.
-
-Yes, make sure all 5121 platforms call it.
-
-Thanks,
-g.
+T24gU2F0LCBGZWIgMjAsIDIwMTAgYXQgMTg6MTgsIEJydW5vIFByw6ltb250IHdyb3RlOgo+IMKg
+ZHJpdmVycy92aWRlby9iZjU0eC1scTA0M2ZiLmMgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+fCDCoCDCoDIgKy0KPiDCoGRyaXZlcnMvdmlkZW8vYmZpbi10MzUwbWNxYi1mYi5jIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgfCDCoCDCoDIgKy0KCkFja2VkLWJ5OiBNaWtlIEZyeXNpbmdlciA8dmFw
+aWVyQGdlbnRvby5vcmc+Ci1taWtlCg==
