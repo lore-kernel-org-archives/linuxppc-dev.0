@@ -1,30 +1,18 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BEB6FB7CE2
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 19:19:42 +1100 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id o1M8Jc9b030360
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 13:49:38 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1M8JcOQ2850904
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 13:49:38 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o1M8JcB5027339
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 13:49:38 +0530
-Date: Mon, 22 Feb 2010 13:49:30 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	Anton Blanchard <anton@au1.ibm.com>
-Subject: [PATCH] powerpc: reset kernel stack on cpu online from cede state
-Message-ID: <20100222081930.GK5268@dirshya.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: svaidy@linux.vnet.ibm.com
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0BD73B7CB9
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 22:37:29 +1100 (EST)
+Date: Mon, 22 Feb 2010 12:37:24 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [net-next-2.6 PATCH v2 0/3] Support for MPC512x FEC
+Message-ID: <20100222123724.67a7b862@wker>
+In-Reply-To: <1266418530-2727-1-git-send-email-agust@denx.de>
+References: <1266418530-2727-1-git-send-email-agust@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,71 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    	powerpc: reset kernel stack on cpu online from cede state
-    
-    	Cpu hotplug (offline) without dlpar operation will place cpu
-    	in cede state and the extended_cede_processor() function will
-    	return when resumed.
-    
-    	Kernel stack pointer needs to be reset before
-    	start_secondary() is called to continue the online operation.
-    
-    	Added new function start_secondary_resume() to do the above
-    	steps.
-    
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Hi David,
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 9258074..567cd57 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -615,6 +615,17 @@ _GLOBAL(start_secondary_prolog)
- 	std	r3,0(r1)		/* Zero the stack frame pointer	*/
- 	bl	.start_secondary
- 	b	.
-+/*
-+ * Reset stack pointer and call start_secondary
-+ * to continue with online operation when woken up
-+ * from cede in cpu offline.
-+ */
-+_GLOBAL(start_secondary_resume)
-+	ld	r1,PACAKSAVE(r13)	/* Reload kernel stack pointer */
-+	li	r3,0
-+	std	r3,0(r1)		/* Zero the stack frame pointer	*/
-+	bl	.start_secondary
-+	b	.
- #endif
- 
- /*
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 6ea4698..9be7af4 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -146,12 +146,11 @@ static void pseries_mach_cpu_die(void)
- 		unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
- 
- 		/*
--		 * NOTE: Calling start_secondary() here for now to
--		 * start new context.
--		 * However, need to do it cleanly by resetting the
--		 * stack pointer.
-+		 * Call to start_secondary_resume() will not return.
-+		 * Kernel stack will be reset and start_secondary()
-+		 * will be called to continue the online operation.
- 		 */
--		start_secondary();
-+		start_secondary_resume();
- 
- 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
- 
-diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
-index 22574e0..da07256 100644
---- a/arch/powerpc/platforms/pseries/offline_states.h
-+++ b/arch/powerpc/platforms/pseries/offline_states.h
-@@ -14,5 +14,5 @@ extern void set_cpu_current_state(int cpu, enum cpu_state_vals state);
- extern enum cpu_state_vals get_preferred_offline_state(int cpu);
- extern void set_preferred_offline_state(int cpu, enum cpu_state_vals state);
- extern void set_default_offline_state(int cpu);
--extern int start_secondary(void);
-+extern void start_secondary_resume(void);
- #endif
+On Wed, 17 Feb 2010 15:55:27 +0100
+Anatolij Gustschin <agust@denx.de> wrote:
+
+> These patches attempt to provide support for the Freescale MPC512x
+> FEC in the fs_enet driver. The first cleanup patch replaces printk
+> by dev_xxx. The second and third attemt to support MPC5121 FEC
+> in the FEC driver.
+
+Could you please comment on this patch series. The patches
+have been acked by Grant and I slightly reworked third patch
+to address Eric's comments, so there is v3 for this patch now.
+
+Thanks,
+
+Anatolij
