@@ -1,20 +1,25 @@
-Return-Path: <prvs=16695eb497=steve@digidescorp.com>
-Received: from digidescorp.com (mail.digidescorp.com [66.244.163.200])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 464C1B7CE6
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 04:48:48 +1100 (EST)
-Received: from localhost.localdomain by digidescorp.com (Cipher
-	TLSv1:RC4-MD5:128) (MDaemon PRO v10.1.1)
-	with ESMTP id md50001203881.msg
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Feb 2010 11:40:35 -0600
-From: "Steven J. Magnani" <steve@digidescorp.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: [async_tx-next PATCH 1/2] fsldma: Fix cookie issues
-Date: Mon, 22 Feb 2010 11:40:31 -0600
-Message-Id: <1266860431-17310-1-git-send-email-steve@digidescorp.com>
-Cc: Zhang Wei <zw@zh-kernel.org>, linux-kernel@vger.kernel.org,
-	"Steven J. Magnani" <steve@digidescorp.com>, linuxppc-dev@ozlabs.org
+Return-Path: <jbarnes@virtuousgeek.org>
+Received: from outboundproxy6.bluehost.com (outbound-mail-313.bluehost.com
+	[67.222.54.6]) by ozlabs.org (Postfix) with SMTP id 0D44DB7CED
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 11:26:25 +1100 (EST)
+Date: Mon, 22 Feb 2010 16:23:56 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH v4 1/5] PCI: split up pci_read_bridge_bases()
+Message-ID: <20100222162356.2e4b3a19@jbarnes-piketon>
+In-Reply-To: <20100217201952.4013.62534.stgit@bob.kio>
+References: <20100217201654.4013.70201.stgit@bob.kio>
+	<20100217201952.4013.62534.stgit@bob.kio>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
+	Peter Haight <peterh@sapros.com>,
+	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+	Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fsl_dma_tx_submit() only sets the cookie on the first descriptor of a
-transaction. It should set the cookie on all.
+On Wed, 17 Feb 2010 13:19:52 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
----
-diff -uprN a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
---- a/drivers/dma/fsldma.c	2010-02-22 11:16:36.000000000 -0600
-+++ b/drivers/dma/fsldma.c	2010-02-22 11:24:01.000000000 -0600
-@@ -362,7 +362,7 @@ static dma_cookie_t fsl_dma_tx_submit(st
- 		if (cookie < 0)
- 			cookie = 1;
- 
--		desc->async_tx.cookie = cookie;
-+		child->async_tx.cookie = cookie;
- 	}
- 
- 	chan->common.cookie = cookie;
+> 
+> No functional change; this breaks up pci_read_bridge_bases() into separate
+> pieces for the I/O, memory, and prefetchable memory windows, similar to how
+> Yinghai recently split up pci_setup_bridge() in 68e84ff3bdc.
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> ---
+
+Applied this series, thanks Bjorn.  Hopefully this one will
+successfully run the linux-next gauntlet too. :)
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
