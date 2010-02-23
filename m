@@ -1,12 +1,12 @@
 Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outboundproxy6.bluehost.com (outbound-mail-313.bluehost.com
-	[67.222.54.6]) by ozlabs.org (Postfix) with SMTP id 0D44DB7CED
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 11:26:25 +1100 (EST)
-Date: Mon, 22 Feb 2010 16:23:56 -0800
+Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
+	[69.89.21.11]) by ozlabs.org (Postfix) with SMTP id DDC89B7CFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 12:22:11 +1100 (EST)
+Date: Mon, 22 Feb 2010 17:13:01 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Subject: Re: [PATCH v4 1/5] PCI: split up pci_read_bridge_bases()
-Message-ID: <20100222162356.2e4b3a19@jbarnes-piketon>
+Message-ID: <20100222171301.32329c94@jbarnes-piketon>
 In-Reply-To: <20100217201952.4013.62534.stgit@bob.kio>
 References: <20100217201654.4013.70201.stgit@bob.kio>
 	<20100217201952.4013.62534.stgit@bob.kio>
@@ -40,8 +40,17 @@ Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 > ---
 
-Applied this series, thanks Bjorn.  Hopefully this one will
-successfully run the linux-next gauntlet too. :)
+Had to drop these again, got:
+
+Kernel: arch/x86/boot/bzImage is ready  (#16)
+  MODPOST 2245 modules
+ERROR: "pci_bus_resource_n" [drivers/pcmcia/yenta_socket.ko] undefined!
+ERROR: "pci_bus_resource_n" [drivers/pcmcia/rsrc_nonstatic.ko] undefined!
+ERROR: "pci_bus_resource_n" [drivers/pci/hotplug/shpchp.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+
+when building.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
