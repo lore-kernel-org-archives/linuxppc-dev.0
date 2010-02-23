@@ -1,39 +1,22 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <BATV+54e4ee8a974e2d9aaca0+2375+infradead.org+dwmw2@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95302B7CFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 21:57:23 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id o1NArrpJ004130
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 21:53:53 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1NApsJN1593448
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 21:51:54 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o1NAvLEA012743
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Feb 2010 21:57:22 +1100
-Date: Tue, 23 Feb 2010 16:27:15 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100223105715.GA17358@in.ibm.com>
-References: <20100215055605.GB3670@in.ibm.com>
-	<20100215055914.GA6017@in.ibm.com> <20100221010130.GA5187@nowhere>
-	<20100222131746.GA3228@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100222131746.GA3228@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
-	Will Deacon <will.deacon@arm.com>,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org,
-	Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 75528B7D09
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Feb 2010 23:47:16 +1100 (EST)
+Subject: Re: [PATCH 1/4] Add ps3_storage module alias
+From: David Woodhouse <dwmw2@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <alpine.LRH.2.00.1002051446280.5981@mink.sonytel.be>
+References: <20100205133552.GF12001@hansolo.jdub.homelinux.org>
+	<20100205134235.GG12001@hansolo.jdub.homelinux.org>
+	<alpine.LRH.2.00.1002051446280.5981@mink.sonytel.be>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Feb 2010 12:47:09 +0000
+Message-ID: <1266929229.30247.2579.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,66 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 22, 2010 at 06:47:46PM +0530, K.Prasad wrote:
-> On Sun, Feb 21, 2010 at 02:01:37AM +0100, Frederic Weisbecker wrote:
-> > On Mon, Feb 15, 2010 at 11:29:14AM +0530, K.Prasad wrote:
-[snipped]
-> > Also, do you think addr/len/type is enough to abstract out
-> > any ppc breakpoints?
+On Fri, 2010-02-05 at 14:49 +0100, Geert Uytterhoeven wrote:
+> On Fri, 5 Feb 2010, Josh Boyer wrote:
+> > This allows the upgrade path from older kernel releases to work
+> > with the Fedora mkinitrd tool.
 > > 
-> > This looks enough to me to express range breakpoints and
-> > simple breakpoints. But what about value comparison?
-> > (And still, there may be other trickier implementations
-> > I don't know in ppc).
+> > ---
 > > 
+> > --- linux-2.6.22.ppc64/drivers/block/ps3disk.c~       2007-07-25 16:06:16.000000000 +0100
+> > +++ linux-2.6.22.ppc64/drivers/block/ps3disk.c        2007-07-26 08:49:44.000000000 +0100
+> > @@ -628,3 +628,4 @@ MODULE_LICENSE("GPL");
+> >  MODULE_DESCRIPTION("PS3 Disk Storage Driver");
+> >  MODULE_AUTHOR("Sony Corporation");
+> >  MODULE_ALIAS(PS3_MODULE_ALIAS_STOR_DISK);
+> > +MODULE_ALIAS("ps3_storage");
 > 
-> The above implementation is for PPC64 architecture that supports only
-> 'simple' breakpoints of fixed length (no range breakpoints, no value
-> comparison). More on that below.
->
+> NAKed-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> ps3_storage was replaced by 3 drivers: ps3disk, ps3rom, and ps3flash. These are
+> automatically loaded by udev.
+> 
+> How does mkinitrd determine the driver for the root file system on other
+> systems? Does it really contain a big list of e.g. all SCSI drivers?
 
-Looks like I forgot the 'more on that below' part :-)....here are some
-thoughts...
+It pokes about in sysfs and works out the driver which is used for the
+current root devices.
 
-Architectures like PPC Book-E have support for a variety of
-sophisticated debug features and our generic framework, in its present
-form, cannot easily port itself to these processors. In order to extend
-the framework for PPC Book-E, I intend the following to begin with:
+This hack was only needed for the upgrade -- when you were running a
+kernel with the ps3_storage kernel and you first installed a kernel with
+the new ps3disk driver, you needed it to find the right module.
 
-- Implement support for data breakpoints through DAC registers with all
-  the 'bells and whistles'...support for instruction breakpoints through
-  IAC can come in later (without precluding its use through ptrace).
+I think we can drop it now.
 
-- Embed the flags/variables to store DVC, masked address mode, etc. in
-  'struct arch_hw_breakpoint', which will be populated by the user of
-  register_breakpoint interface.
-
-Apart from the above extensions to the framework, changes in the generic
-code would be required as described in an earlier LKML mail (ref:
-message-id: 20091127190705.GB18408@in.ibm.com)....relevant contents
-pasted below:
-
-"I think the register_<> interfaces can become wrappers around functions
-that do the following:
-
-- arch_validate(): Validate request by invoking an arch-dependant
-  routine. Proceed if returned valid.
-- arch-specific debugreg availability: Do something like
-  if (arch_hw_breakpoint_availabile())
-        bp = perf_event_create_kernel_counter();
-
-  perf_event_create_kernel_counter()--->arch_install_hw_breakpoint();
-
-This way, all book-keeping related work (no. of pinned/flexible/per-cpu)
-will be moved to arch-specific files (will be helpful for PPC Book-E
-implementation having two types of debug registers). Every new
-architecture that intends to port to the new hw-breakpoint
-implementation must define their arch_validate(),
-arch_hw_breakpoint_available() and an arch_install_hw_breakpoint(),
-while the hw-breakpoint code will be flexible enough to extend itself to
-each of these archs."
-
-Let me know what you think of the above.
-
-Thanks,
-K.Prasad
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
