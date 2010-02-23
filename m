@@ -1,30 +1,25 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <bjorn.helgaas@hp.com>
+Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9194AB7D13
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Feb 2010 03:30:44 +1100 (EST)
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <1266942281.11845.521.camel@laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1265403478.6089.41.camel@jschopp-laptop>
-	<1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
-	<1266499023.26719.597.camel@laptop> <14639.1266559532@neuling.org>
-	<1266573672.1806.70.camel@laptop> <24165.1266577276@neuling.org>
-	<23662.1266905307@neuling.org>  <1266942281.11845.521.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 23 Feb 2010 17:30:26 +0100
-Message-ID: <1266942626.11845.527.camel@laptop>
-Mime-Version: 1.0
-Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, ego@in.ibm.com
+	(Client CN "smtp1.hp.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 83D98B7CF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 04:24:23 +1100 (EST)
+Subject: [PATCH v5 0/5] PCI: try "pci=use_crs" again
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date: Tue, 23 Feb 2010 10:24:15 -0700
+Message-ID: <20100223172355.17242.55927.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
+	Peter Haight <peterh@sapros.com>,
+	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+	Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-02-23 at 17:24 +0100, Peter Zijlstra wrote:
-> 
->         busiest_cpu = group_first_cpu(sds->busiest);
->         if (cpu_rq(this_cpu)->nr_running || this_cpu > busiest_cpu)
->                 return 0; 
+Historically, Linux has assumed a single PCI host bridge, with that bridge
+claiming all the address space left after RAM and legacy devices are taken out.
 
-Hmm, we could change the bit in find_busiest_group() to:
+If the system contains multiple host bridges, we can no longer operate under
+that assumption.  We have to know what parts of the address space are claimed
+by each bridge so that when we assign resources to a PCI device, we take them
+from a range claimed by the upstream host bridge.
 
-  if (idle == CPU_IDLE && check_asym_packing())
+On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in the
+system, and part of the host bridge description is the "_CRS" (current resource
+settings" property, which lists the address space used by the bridge.  On x86,
+we currently ignore most of the _CRS information.  This patch series changes
+this, so we will use _CRS to learn about the host bridge windows.
 
-and skip the nr_running test..
+Since most x86 machines with multiple host bridges are relatively new, this
+series only turns this on for machines with BIOS dates of 2008 or newer.
+
+Changes from v4 to v5:
+    - Add EXPORT_SYMBOL_GPL(pci_bus_resource_n) for module builds.
+
+Changes from v3 to v4:
+    - Keep the bus->resource[] table to avoid having to change all arches
+      at once, but reduce it to size 4 (minimum required for P2P & CardBus
+      bridges).
+    - Store additional host bridge or subtractive decode windows in a list.
+    - Add pci_bus_for_each_resource() iterator to hide PCI_BUS_NUM_RESOURCES
+      and the table/list split.  This reduces the size of the main patch.
+    - Remove tidy-up patches completely; they feel like distractions to this
+      series.
+
+Changes from v2 to v3:
+    - Fix alpha, powerpc, and mn10300 references to pci_bus resource table
+    - Turn on "pci=use_crs" for 2008 and newer, not 2010 and newer
+    - Remove Toshiba A355 quirk (BIOS date is 2009, so automatically included)
+    - Remove IBM x3850 and x3950 quirks (BIOS dates in 2008, so automatically
+      included)
+    - Leave IBM x3800 quirk (pre-2008 BIOS)
+    - Use "bool" for pci_use_crs (new to me, but I see akpm suggesting it)
+    - Reorder so the important patches are first
+
+Changes from v1 to v2:
+    - Rebase to be6e9f7853e
+    - Add patch to clean up "disabled window" printk
+    - Add bugzilla reference comment in use_crs DMI quirk
+---
+
+Bjorn Helgaas (5):
+      PCI: split up pci_read_bridge_bases()
+      PCI: read bridge windows before filling in subtractive decode resources
+      PCI: add pci_bus_for_each_resource(), remove direct bus->resource[] refs
+      PCI: augment bus resource table with a list
+      x86/PCI: use host bridge _CRS info by default on 2008 and newer machines
+
+
+ Documentation/kernel-parameters.txt  |    8 ++-
+ arch/ia64/include/asm/acpi.h         |    1 
+ arch/ia64/pci/pci.c                  |   17 ++-----
+ arch/mn10300/unit-asb2305/pci.c      |    6 +-
+ arch/powerpc/kernel/pci-common.c     |   11 ++---
+ arch/powerpc/platforms/fsl_uli1575.c |   12 ++---
+ arch/x86/include/asm/pci_x86.h       |    1 
+ arch/x86/pci/acpi.c                  |   82 ++++++++++++++++++++--------------
+ arch/x86/pci/bus_numa.c              |    3 +
+ arch/x86/pci/bus_numa.h              |    3 -
+ arch/x86/pci/common.c                |    3 +
+ drivers/acpi/pci_root.c              |    1 
+ drivers/pci/bus.c                    |   49 +++++++++++++++++++-
+ drivers/pci/hotplug/shpchp_sysfs.c   |    9 +---
+ drivers/pci/pci.c                    |    5 +-
+ drivers/pci/probe.c                  |   68 ++++++++++++++++++++++------
+ drivers/pci/setup-bus.c              |   10 ++--
+ drivers/pcmcia/rsrc_nonstatic.c      |    3 -
+ drivers/pcmcia/yenta_socket.c        |    5 +-
+ include/acpi/acpi_drivers.h          |    1 
+ include/linux/pci.h                  |   36 +++++++++++++--
+ 21 files changed, 226 insertions(+), 108 deletions(-)
