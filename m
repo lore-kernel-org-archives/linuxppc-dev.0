@@ -1,24 +1,13 @@
-Return-Path: <jbarnes@virtuousgeek.org>
-Received: from outboundproxy6.bluehost.com (outbound-mail-313.bluehost.com
-	[67.222.54.6]) by ozlabs.org (Postfix) with SMTP id 06736B6F08
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 05:06:31 +1100 (EST)
-Date: Tue, 23 Feb 2010 10:06:26 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH v5 0/5] PCI: try "pci=use_crs" again
-Message-ID: <20100223100626.693b50b6@jbarnes-piketon>
-In-Reply-To: <20100223172355.17242.55927.stgit@bob.kio>
-References: <20100223172355.17242.55927.stgit@bob.kio>
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/booke: Fix a couple typos in the advanced ptrace code
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
+References: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 23 Feb 2010 13:43:17 -0600
+Message-Id: <1266954197.11207.20.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-	linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org,
-	Peter Haight <peterh@sapros.com>,
-	Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org, linux-am33-list@redhat.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-	Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 23 Feb 2010 10:24:15 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+powerpc/booke: Fix a couple typos in the advanced ptrace code
 
-> Historically, Linux has assumed a single PCI host bridge, with that
-> bridge claiming all the address space left after RAM and legacy
-> devices are taken out.
-> 
-> If the system contains multiple host bridges, we can no longer
-> operate under that assumption.  We have to know what parts of the
-> address space are claimed by each bridge so that when we assign
-> resources to a PCI device, we take them from a range claimed by the
-> upstream host bridge.
-> 
-> On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in
-> the system, and part of the host bridge description is the
-> "_CRS" (current resource settings" property, which lists the address
-> space used by the bridge.  On x86, we currently ignore most of the
-> _CRS information.  This patch series changes this, so we will use
-> _CRS to learn about the host bridge windows.
-> 
-> Since most x86 machines with multiple host bridges are relatively
-> new, this series only turns this on for machines with BIOS dates of
-> 2008 or newer.
-> 
-> Changes from v4 to v5:
->     - Add EXPORT_SYMBOL_GPL(pci_bus_resource_n) for module builds.
+Found and fixed a couple typos in the advanced ptrace patches.
+(These patches are currently in benh's next tree.)
 
-Thanks, it built this time.  Pushed to my linux-next branch.
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+---
+
+diff --git a/arch/powerpc/include/asm/reg_booke.h
+b/arch/powerpc/include/asm/reg_booke.h
+index 126cb05..96c2ce8 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -421,8 +421,8 @@
+ /* Bit definitions related to the DBCR2. */
+ #define DBCR2_DAC1US	0xC0000000	/* Data Addr Cmp 1 Sup/User   */
+ #define DBCR2_DAC1ER	0x30000000	/* Data Addr Cmp 1 Eff/Real */
+-#define DBCR2_DAC2US	0x00000000	/* Data Addr Cmp 2 Sup/User   */
+-#define DBCR2_DAC2ER	0x00000000	/* Data Addr Cmp 2 Eff/Real */
++#define DBCR2_DAC2US	0x0C000000	/* Data Addr Cmp 2 Sup/User   */
++#define DBCR2_DAC2ER	0x03000000	/* Data Addr Cmp 2 Eff/Real */
+ #define DBCR2_DAC12M	0x00800000	/* DAC 1-2 range enable */
+ #define DBCR2_DAC12MM	0x00400000	/* DAC 1-2 Mask mode*/
+ #define DBCR2_DAC12MX	0x00C00000	/* DAC 1-2 range eXclusive */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index d9b0586..0efa2e3 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1070,7 +1070,7 @@ static int del_dac(struct task_struct *child, int
+slot)
+ 		child->thread.dvc1 = 0;
+ #endif
+ 	} else if (slot == 2) {
+-		if (child->thread.dac1 == 0)
++		if (child->thread.dac2 == 0)
+ 			return -ENOENT;
+ 
+ #ifdef CONFIG_PPC_ADV_DEBUG_DAC_RANGE
