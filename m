@@ -1,16 +1,12 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 23 Feb 2010 12:38:38 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
-	enable zone reclaim
-Message-ID: <20100223013838.GF31681@kryten>
-References: <20100218222923.GC31681@kryten>
-	<661de9471002190743t5385d97hf38c544f0007879c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <661de9471002190743t5385d97hf38c544f0007879c@mail.gmail.com>
-Cc: mel@csn.ul.ie, cl@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: default stack size for threads changed
+In-reply-to: <OF21CCB5A6.CDFDB6C1-ONC12576D2.00430B25-C12576D2.0043C4BB@transmode.se>
+References: <OF21CCB5A6.CDFDB6C1-ONC12576D2.00430B25-C12576D2.0043C4BB@transmode.se>
+Date: Tue, 23 Feb 2010 12:58:16 +1100
+Message-ID: <14321.1266890296@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,15 +16,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Balbir,
+In message <OF21CCB5A6.CDFDB6C1-ONC12576D2.00430B25-C12576D2.0043C4BB@transmode.se> you wrote:
+> 
+> With current, 2.6.33-rc6, linux the default stack size changed from unlimited
+> to 8MB:
+> # > ulimit -s
+> 8192
+> 
+> This makes NPTL allocate a 8MB stack for each thread that is created.
+> This breaks in our embedded system. Although this
+> can be fixed in our app I wonder if this is intentional?
 
-> A reclaim distance of 10 implies a ratio of 1, that means we'll always
-> do zone_reclaim() to free page cache and slab cache before moving on
-> to another node?
+When did this change from unlimited?
 
-I want to make an effort to reclaim local pagecache before ever going
-off node. As an example, a completely off node stream result is almost 3x
-slower than on node on my test box.
+It's unlikely but this might be related
+803bf5ec259941936262d10ecc84511b76a20921 (post rc7).  You'll also need
+to grab this http://patchwork.kernel.org/patch/79365/.
 
-Anton
+Mikey
+
+> 
+>  Jocke
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
