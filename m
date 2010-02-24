@@ -1,20 +1,29 @@
-Return-Path: <alexb@tundra.com>
-Received: from mx2.tundra.com (mail2.tundra.com [142.46.200.162])
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.tundra.com", Issuer "mail.tundra.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8A2EBB7CE2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Feb 2010 02:38:27 +1100 (EST)
-Date: Wed, 24 Feb 2010 10:37:51 -0500
-From: Alexandre Bounine <alexb@tundra.com>
-To: mporter@kernel.crashing.org
-Subject: [PATCH 7/7] powerpc/85xx: Fix the RapidIO maintenance access functions
-Message-ID: <20100224153751.GG13661@kaneng01.tundra.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: abounine@idt.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, thomas.moll.ext@nsn.com,
-	thomas.moll@sysgo.com
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F87BB7CF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 05:49:26 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o1OInN1C020152
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 11:49:23 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o1OIvEJt011167
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 12:57:14 -0600 (CST)
+Message-ID: <4B85746F.3020200@freescale.com>
+Date: Wed, 24 Feb 2010 12:48:15 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Gary Thomas <gary@mlbassoc.com>
+Subject: Re: PCI on 834x
+References: <4B854A93.7030405@mlbassoc.com>
+In-Reply-To: <4B854A93.7030405@mlbassoc.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Gary Thomas wrote:
+> Does anyone have experience setting up the PCI controller on
+> the MPC8349?  I have it running fine when my system has 128MB
+> or less of main memory, but when I have 256MB or more, it all
+> falls apart :-(
+> 
+> Any indication of the pertinent settings would be appreciated.
 
-From: Thomas Moll <thomas.moll@sysgo.com>
+Check the inbound PCI translation registers, especially PIWARn.
 
-Fix the maintenance access functions to farend RapidIO devices.
-1. Fixed shift of the given offset, to open the maintenance window
-2. Mask offset to limit access to the opened maintenance window
-3. Added extended destid part to rowtear register, required for 16bit mode
-
-For easier handling of the access routines, the access was limited to aligned
-memory regions. This should be no problem because all registers are 32bit
-wide.
-
-Signed-off-by: Thomas Moll <thomas.moll@sysgo.com>
----
-
- fsl_rio.c |   34 ++++++++++++++++++++++++++++------
- 1 file changed, 28 insertions(+), 6 deletions(-)
-
-diff -purN linux-base/arch/powerpc/sysdev/fsl_rio.c linux-new/arch/powerpc/sysdev/fsl_rio.c
---- linux-base/arch/powerpc/sysdev/fsl_rio.c	2010-02-24 08:37:05.000000000 +0100
-+++ linux-new/arch/powerpc/sysdev/fsl_rio.c	2010-02-24 08:45:27.000000000 +0100
-@@ -1,6 +1,10 @@
- /*
-  * Freescale MPC85xx/MPC86xx RapidIO support
-  *
-+ * Copyright 2009 Sysgo AG
-+ * Thomas Moll <thomas.moll@sysgo.com>
-+ * - fixed maintenance access routines, check for aligned access
-+ *
-  * Copyright 2009 Integrated Device Technology, Inc.
-  * Alex Bounine <alexandre.bounine@idt.com>
-  * - Added Port-Write message handling
-@@ -370,10 +374,17 @@ fsl_rio_config_read(struct rio_mport *mp
- 	pr_debug
- 	    ("fsl_rio_config_read: index %d destid %d hopcount %d offset %8.8x len %d\n",
- 	     index, destid, hopcount, offset, len);
-+
-+	/* 16MB maintenance window possible */
-+	/* allow only aligned access to maintenance registers */
-+	if (offset > (0x1000000 - len) || !IS_ALIGNED(offset, len))
-+		return -EINVAL;
-+
- 	out_be32(&priv->maint_atmu_regs->rowtar,
--		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-+		 (destid << 22) | (hopcount << 12) | (offset >> 12));
-+	out_be32(&priv->maint_atmu_regs->rowtear,  (destid >> 10));
- 
--	data = (u8 *) priv->maint_win + offset;
-+	data = (u8 *) priv->maint_win + (offset & 0x3FFFFF);
- 	switch (len) {
- 	case 1:
- 		__fsl_read_rio_config(rval, data, err, "lbz");
-@@ -381,9 +392,11 @@ fsl_rio_config_read(struct rio_mport *mp
- 	case 2:
- 		__fsl_read_rio_config(rval, data, err, "lhz");
- 		break;
--	default:
-+	case 4:
- 		__fsl_read_rio_config(rval, data, err, "lwz");
- 		break;
-+	default:
-+		return -EINVAL;
- 	}
- 
- 	if (err) {
-@@ -418,10 +431,17 @@ fsl_rio_config_write(struct rio_mport *m
- 	pr_debug
- 	    ("fsl_rio_config_write: index %d destid %d hopcount %d offset %8.8x len %d val %8.8x\n",
- 	     index, destid, hopcount, offset, len, val);
-+
-+	/* 16MB maintenance windows possible */
-+	/* allow only aligned access to maintenance registers */
-+	if (offset > (0x1000000 - len) || !IS_ALIGNED(offset, len))
-+		return -EINVAL;
-+
- 	out_be32(&priv->maint_atmu_regs->rowtar,
--		 (destid << 22) | (hopcount << 12) | ((offset & ~0x3) >> 9));
-+		 (destid << 22) | (hopcount << 12) | (offset >> 12));
-+	out_be32(&priv->maint_atmu_regs->rowtear,  (destid >> 10));
- 
--	data = (u8 *) priv->maint_win + offset;
-+	data = (u8 *) priv->maint_win + (offset & 0x3FFFFF);
- 	switch (len) {
- 	case 1:
- 		out_8((u8 *) data, val);
-@@ -429,9 +449,11 @@ fsl_rio_config_write(struct rio_mport *m
- 	case 2:
- 		out_be16((u16 *) data, val);
- 		break;
--	default:
-+	case 4:
- 		out_be32((u32 *) data, val);
- 		break;
-+	default:
-+		return -EINVAL;
- 	}
- 
- 	return 0;
-
----
-
-Important Notice: This message is intended for the use of the individual to whom it is addressed and may contain information which is privileged, confidential and/or exempt from disclosure under applicable law. If the reader of this message is not the intended recipient, or is not the employee or agent responsible for delivering the message to the intended recipient, you are hereby notified that any dissemination, distribution, or copying of this communication is strictly prohibited. If you have received this communication in error, please notify the sender immediately by telephone or return e-mail and delete the original message from your systems. Thank you. 
+-Scott
