@@ -1,21 +1,21 @@
-Return-Path: <meissner@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 867D3B7CEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 00:44:00 +1100 (EST)
-Date: Wed, 24 Feb 2010 14:43:55 +0100
-From: Marcus Meissner <meissner@suse.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Fixed statement without effect by using a correct empty
-	instruction
-Message-ID: <20100224134355.GA1024@suse.de>
-References: <20100224085137.GA25801@suse.de>
-	<fa686aa41002240540s2044ecaaj3ce04021719a51ef@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <fa686aa41002240540s2044ecaaj3ce04021719a51ef@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, albrecht.dress@arcor.de
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id E7629B7C98
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 02:21:45 +1100 (EST)
+Received: by gyf1 with SMTP id 1so725263gyf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 07:21:43 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <fa686aa41002172237l1d3976avc7f88fd38755ca5e@mail.gmail.com>
+References: <fa686aa41002172237l1d3976avc7f88fd38755ca5e@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 24 Feb 2010 08:21:22 -0700
+Message-ID: <fa686aa41002240721s43755142ma702692aa61b8941@mail.gmail.com>
+Subject: Re: Please pull mpc5xxx support for -next
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ernst Schwab <eschwab@online.de>, Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +25,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 24, 2010 at 06:40:37AM -0700, Grant Likely wrote:
-> On Wed, Feb 24, 2010 at 1:51 AM, Marcus Meissner <meissner@suse.de> wrote:
-> > This fixes this build failure:
-> > cc1: warnings being treated as errors
-> > /usr/src/packages/BUILD/kernel-default-2.6.33/linux-2.6.32/arch/powerpc/platforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_gpt_probe':
-> > /usr/src/packages/BUILD/kernel-default-2.6.33/linux-2.6.32/arch/powerpc/platforms/52xx/mpc52xx_gpt.c:761:3: error: statement with no effect
-> >
-> > Signed-off-by: Marcus Meissner <meissner@suse.de>
-> 
-> Hi Marcus, thanks for the patch.  One comment below...
-> 
-> > ---
-> >  arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> > index 6f8ebe1..88231d8 100644
-> > --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> > +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> > @@ -711,7 +711,7 @@ static int __devinit mpc52xx_gpt_wdt_init(void)
-> >        return 0;
-> >  }
-> >
-> > -#define mpc52xx_gpt_wdt_setup(x, y)            (0)
-> > +#define mpc52xx_gpt_wdt_setup(x, y)            do { } while (0)
-> 
-> As Andrew likes to say, we should be programming in C instead of preprocessor.
-> 
-> -#define mpc52xx_gpt_wdt_setup(x, y)            (0)
-> +static inline void mpc52xx_gpt_wdt_setup(struct mpc52xx_gpt_priv
-> *gpt, const u32 *period) { }
+Hi Ben,
 
-Sounds good to me too. :)
+Just sending a reminder on this pull request.  I haven't seen these
+commits show up in your -next branch yet.
 
-Ciao, Marcus
+Thanks,
+g.
+
+On Wed, Feb 17, 2010 at 11:37 PM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> Hi Ben,
+>
+> Here's all the stuff I've got queued up for 2.6.34. =A0Mostly mpc5121
+> support, but some 5200 stuff too. =A0These commits have already had some
+> time in linux-next.
+>
+> Cheers,
+> g.
+>
+> The following changes since commit 724e6d3fe8003c3f60bf404bf22e4e331327c5=
+96:
+> =A0Linus Torvalds (1):
+> =A0 =A0 =A0 =A0Linux 2.6.33-rc8
+>
+> are available in the git repository at:
+>
+> =A0git://git.secretlab.ca/git/linux-2.6.git next
+>
+> Anatolij Gustschin (10):
+> =A0 =A0 =A0powerpc/mpc5121: avoid using arch_initcall for clock init
+> =A0 =A0 =A0powerpc/mpc5121: Add machine restart support
+> =A0 =A0 =A0rtc: Add MPC5121 Real time clock driver
+> =A0 =A0 =A0powerpc/mpc5121: create and register NFC device
+> =A0 =A0 =A0powerpc/mpc5121: update mpc5121ads DTS
+> =A0 =A0 =A0powerpc/mpc5121: Add default config for MPC5121
+> =A0 =A0 =A0serial: mpc52xx_uart: re-enable mpc5121 PSC UART support
+> =A0 =A0 =A0powerpc: doc/dts-bindings: document mpc5121 psc uart dts-bindi=
+ngs
+> =A0 =A0 =A0powerpc/mpc5121: enable support for more PSC UARTs
+> =A0 =A0 =A0powerpc/mpc5121: correct DIU compatible property
+>
+> Ernst Schwab (1):
+> =A0 =A0 =A0powerpc/of: added documentation for spi chipselects
+>
+> =A0.../powerpc/dts-bindings/fsl/mpc5121-psc.txt =A0 =A0 =A0 | =A0 70 +
+> =A0Documentation/powerpc/dts-bindings/fsl/spi.txt =A0 =A0 | =A0 =A07 +
+> =A0arch/powerpc/boot/dts/mpc5121ads.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+ 55 +-
+> =A0arch/powerpc/configs/mpc512x_defconfig =A0 =A0 =A0 =A0 =A0 =A0 | 1694 =
+++++++++++++++++++++
+> =A0arch/powerpc/include/asm/mpc5121.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
+=A0 24 +
+> =A0arch/powerpc/include/asm/mpc52xx_psc.h =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
+=A04 +
+> =A0arch/powerpc/platforms/512x/clock.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
+=A0 =A06 +-
+> =A0arch/powerpc/platforms/512x/mpc5121_ads.c =A0 =A0 =A0 =A0 =A0| =A0 =A0=
+3 +-
+> =A0arch/powerpc/platforms/512x/mpc5121_generic.c =A0 =A0 =A0| =A0 =A03 +-
+> =A0arch/powerpc/platforms/512x/mpc512x.h =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0=
+ =A03 +
+> =A0arch/powerpc/platforms/512x/mpc512x_shared.c =A0 =A0 =A0 | =A0 43 +
+> =A0drivers/rtc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0| =A0 10 +
+> =A0drivers/rtc/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 | =A0 =A01 +
+> =A0drivers/rtc/rtc-mpc5121.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0| =A0387 +++++
+> =A0drivers/serial/mpc52xx_uart.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0251 +++-
+> =A0drivers/video/fsl-diu-fb.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 | =A0 =A05 +
+> =A016 files changed, 2522 insertions(+), 44 deletions(-)
+> =A0create mode 100644 Documentation/powerpc/dts-bindings/fsl/mpc5121-psc.=
+txt
+> =A0create mode 100644 arch/powerpc/configs/mpc512x_defconfig
+> =A0create mode 100644 arch/powerpc/include/asm/mpc5121.h
+> =A0create mode 100644 drivers/rtc/rtc-mpc5121.c
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
