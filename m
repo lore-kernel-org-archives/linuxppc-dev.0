@@ -1,30 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E4378B7CB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 06:32:53 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o1OJWptJ022127
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 12:32:51 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o1OJWt7K005053
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 13:32:55 -0600 (CST)
-Message-ID: <4B857EA1.6030605@freescale.com>
-Date: Wed, 24 Feb 2010 13:31:45 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <micha@neli.hopto.org>
+Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.221])
+	by ozlabs.org (Postfix) with ESMTP id 672F3B7080
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 25 Feb 2010 06:42:50 +1100 (EST)
+Received: from neli.hopto.org (unknown [88.159.215.98])
+	by edu-smtp-01.edutel.nl (Postfix) with ESMTP id B8BC6687EF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Feb 2010 20:15:21 +0100 (CET)
+Received: from conroe.local ([90.0.0.126] ident=micha)
+	by neli.hopto.org with esmtp (Exim 4.69)
+	(envelope-from <micha@neli.hopto.org>) id 1NkMhd-0007Fv-8T
+	for linuxppc-dev@lists.ozlabs.org; Wed, 24 Feb 2010 20:15:21 +0100
+Message-ID: <4B857AC1.7020907@neli.hopto.org>
+Date: Wed, 24 Feb 2010 20:15:13 +0100
+From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
-To: Gary Thomas <gary@mlbassoc.com>
-Subject: Re: PCI on 834x
-References: <4B854A93.7030405@mlbassoc.com> <4B85746F.3020200@freescale.com>
-	<4B857AA8.9000208@mlbassoc.com>
-In-Reply-To: <4B857AA8.9000208@mlbassoc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/7] RapidIO: Add switch locking during discovery
+References: <20100224152050.GB13661@kaneng01.tundra.com>
+In-Reply-To: <20100224152050.GB13661@kaneng01.tundra.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gary Thomas wrote:
-> On 02/24/2010 11:48 AM, Scott Wood wrote:
->> Gary Thomas wrote:
->>> Does anyone have experience setting up the PCI controller on
->>> the MPC8349? I have it running fine when my system has 128MB
->>> or less of main memory, but when I have 256MB or more, it all
->>> falls apart :-(
->>>
->>> Any indication of the pertinent settings would be appreciated.
->>
->> Check the inbound PCI translation registers, especially PIWARn.
-> 
-> Yes, I set it to 256MB (the size of RAM).
-> I also set PCI_AR0 to a 512MB window (when it's set to 256, I
-> get address [segmentation violation] errors when accessing my
-> devices that end up at the high end of the logical address space)
-> Finally, I set POCMR0 to a 512MB window (corresponding to PCI_AR0)
+Alexandre Bounine wrote:
+> +				/* Attempt to acquire device lock */
+> +				rio_mport_write_config_32(port, destid,
+> +							  hopcount,
+> +							  RIO_HOST_DID_LOCK_CSR,
+> +							  port->host_deviceid);
+> +				rio_mport_read_config_32(port, destid, hopcount,
+> +					RIO_HOST_DID_LOCK_CSR, &result);
+> +				while (result != port->host_deviceid) {
 
-I don't see what the outbound window size has to do with RAM size... are 
-there any other differences between the 128MiB and 256MiB setups?  Same 
-exact software?  What happens if you take the 256MiB setup and restrict 
-the kernel to using the lower 128MiB ("mem=128M" on the kernel 
-bootargs), with no other changes?  What happens if you use a 512MiB 
-outbound window on the 128MiB setup?
+It's better to abstract the locking of a device into a new function,
+rio_lock_device / rio_unlock_device.
 
-Is this behavior consistent across multiple boards (i.e. could there be 
-a hardware problem)?
+Then you can use those in rio_get_route_entry and rio_add_route_entry.
 
-Are there any errors indicated in the device, the PCI controller, the 
-arbiter, etc?
+> @@ -1027,6 +1090,13 @@ int __devinit rio_disc_mport(struct rio_
+> +
+> +		/* Read DestID assigned by enumerator */
+> +		rio_local_read_config_32(mport, RIO_DID_CSR,
+> +					 &mport->host_deviceid);
+> +		mport->host_deviceid = RIO_GET_DID(mport->sys_size,
+> +						   mport->host_deviceid);
+> +
 
--Scott
+This fixes something else, should be a separate patch.
+
+Regards, Micha
