@@ -1,25 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-In-reply-to: <11927.1267010024@neuling.org>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	<1264017847.5717.132.camel@jschopp-laptop>
-	<1264548495.12239.56.camel@jschopp-laptop>
-	<1264720855.9660.22.camel@jschopp-laptop>
-	<1264721088.10385.1.camel@jschopp-laptop>
-	<1265403478.6089.41.camel@jschopp-laptop>
-	<1266142340.5273.418.camel@laptop> <25851.1266445258@neuling.org>
-	<1266499023.26719.597.camel@laptop> <14639.1266559532@neuling.org>
-	<1266573672.1806.70.camel@laptop>
-	<24165.1266577276@neuling.org> <23662.1266905307@neuling.org>
-	<1266942281.11845.521.camel@laptop>
-	<4886.1266991633@neuling.org> <11927.1267010024@neuling.org>
-Date: Wed, 24 Feb 2010 22:58:26 +1100
-Message-ID: <15672.1267012706@neuling.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, ego@in.ibm.com,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f175.google.com (mail-yx0-f175.google.com
+	[209.85.210.175]) by ozlabs.org (Postfix) with ESMTP id 2C8E2B6ED0
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 00:40:59 +1100 (EST)
+Received: by yxe5 with SMTP id 5so1379447yxe.17
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 05:40:57 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100224085137.GA25801@suse.de>
+References: <20100224085137.GA25801@suse.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 24 Feb 2010 06:40:37 -0700
+Message-ID: <fa686aa41002240540s2044ecaaj3ce04021719a51ef@mail.gmail.com>
+Subject: Re: [PATCH] Fixed statement without effect by using a correct empty
+	instruction
+To: Marcus Meissner <meissner@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, albrecht.dress@arcor.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <11927.1267010024@neuling.org> you wrote:
-> > > If there's less the group will normally be balanced and we fall out and
-> > > end up in check_asym_packing().
-> > > 
-> > > So what I tried doing with that loop is detect if there's a hole in the
-> > > packing before busiest. Now that I think about it, what we need to check
-> > > is if this_cpu (the removed cpu argument) is idle and less than busiest.
-> > > 
-> > > So something like:
-> > > 
-> > > static int check_asym_pacing(struct sched_domain *sd,
-> > >                              struct sd_lb_stats *sds,
-> > >                              int this_cpu, unsigned long *imbalance)
-> > > {
-> > > 	int busiest_cpu;
-> > > 
-> > > 	if (!(sd->flags & SD_ASYM_PACKING))
-> > > 		return 0;
-> > > 
-> > > 	if (!sds->busiest)
-> > > 		return 0;
-> > > 
-> > > 	busiest_cpu = group_first_cpu(sds->busiest);
-> > > 	if (cpu_rq(this_cpu)->nr_running || this_cpu > busiest_cpu)
-> > > 		return 0;
-> > > 
-> > > 	*imbalance = (sds->max_load * sds->busiest->cpu_power) /
-> > > 			SCHED_LOAD_SCALE;
-> > > 	return 1;
-> > > }
-> > > 
-> > > Does that make sense?
-> > 
-> > I think so.
-> > 
-> > I'm seeing check_asym_packing do the right thing with the simple SMT2
-> > with 1 process case.  It marks cpu0 as imbalanced when cpu0 is idle and
-> > cpu1 is busy.
-> > 
-> > Unfortunately the process doesn't seem to be get migrated down though.
-> > Do we need to give *imbalance a higher value? 
-> 
-> So with ego help, I traced this down a bit more.  
-> 
-> In my simple test case (SMT2, t0 idle, t1 active) if f_b_g() hits our
-> new case in check_asym_packing(), load_balance then runs f_b_q().
-> f_b_q() has this:
-> 
->   		if (capacity && rq->nr_running == 1 && wl > imbalance)
-> 			continue;
-> 
-> when check_asym_packing() hits, wl = 1783 and imbalance = 1024, so we
-> continue and busiest remains NULL. 
-> 
-> load_balance then does "goto out_balanced" and it doesn't attempt to
-> move the task.
-> 
-> Based on this and on egos suggestion I pulled in Suresh Siddha patch
-> from: http://lkml.org/lkml/2010/2/12/352.  This fixes the problem.  The
-> process is moved down to t0.  
-> 
-> I've only tested SMT2 so far.  
+On Wed, Feb 24, 2010 at 1:51 AM, Marcus Meissner <meissner@suse.de> wrote:
+> This fixes this build failure:
+> cc1: warnings being treated as errors
+> /usr/src/packages/BUILD/kernel-default-2.6.33/linux-2.6.32/arch/powerpc/p=
+latforms/52xx/mpc52xx_gpt.c: In function 'mpc52xx_gpt_probe':
+> /usr/src/packages/BUILD/kernel-default-2.6.33/linux-2.6.32/arch/powerpc/p=
+latforms/52xx/mpc52xx_gpt.c:761:3: error: statement with no effect
+>
+> Signed-off-by: Marcus Meissner <meissner@suse.de>
 
-SMT4 also works in the simple test case of a single process being pulled
-down to thread 0.  
+Hi Marcus, thanks for the patch.  One comment below...
 
-As you suspected though, unfortunately this is only working with
-CONFIG_NO_HZ off.  If I turn NO_HZ on, my single process gets bounced
-around the core.  
+> ---
+> =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.c | =A0 =A02 +-
+> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/pla=
+tforms/52xx/mpc52xx_gpt.c
+> index 6f8ebe1..88231d8 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+> @@ -711,7 +711,7 @@ static int __devinit mpc52xx_gpt_wdt_init(void)
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> -#define mpc52xx_gpt_wdt_setup(x, y) =A0 =A0 =A0 =A0 =A0 =A0(0)
+> +#define mpc52xx_gpt_wdt_setup(x, y) =A0 =A0 =A0 =A0 =A0 =A0do { } while =
+(0)
 
-Did you think of any ideas for how to fix the NO_HZ interaction?
+As Andrew likes to say, we should be programming in C instead of preprocess=
+or.
 
-Mikey
+-#define mpc52xx_gpt_wdt_setup(x, y)            (0)
++static inline void mpc52xx_gpt_wdt_setup(struct mpc52xx_gpt_priv
+*gpt, const u32 *period) { }
