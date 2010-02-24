@@ -1,35 +1,25 @@
-Return-Path: <mmlnx@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D76AEB7B98
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 09:14:58 +1100 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o1OMC1H4009493
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 15:12:01 -0700
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1OMEcKh021144
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 15:14:46 -0700
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o1OMGsbP026022
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Feb 2010 15:16:55 -0700
-Message-ID: <4B85A48F.6090607@us.ibm.com>
-Date: Wed, 24 Feb 2010 14:13:35 -0800
-From: Mike Mason <mmlnx@us.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] eeh: Fixing a bug when pci structure is null
-References: <1264789719-15591-1-git-send-email-leitao@linux.vnet.ibm.com>
-	<4B6864F4.1030106@linux.vnet.ibm.com>	<20100202180503.GL4757@pengutronix.de>
-	<4B699CB9.3030605@linux.vnet.ibm.com>	<4B7EBF9A.7020801@linux.vnet.ibm.com>
-	<1266616485.23523.1026.camel@pasglop>
-In-Reply-To: <1266616485.23523.1026.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Linas Vepstas <linasvepstas@gmail.com>,
-	Breno Leitao <leitao@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 80537B7CB6
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 09:25:59 +1100 (EST)
+Subject: Re: PCI on 834x
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4B85A4C2.6090007@mlbassoc.com>
+Date: Wed, 24 Feb 2010 16:25:36 -0600
+Message-Id: <A0F7894F-8B88-4646-8B81-830F67E39489@kernel.crashing.org>
+References: <4B854A93.7030405@mlbassoc.com>
+	<4B85746F.3020200@freescale.com>	<4B857AA8.9000208@mlbassoc.com>
+	<4B857EA1.6030605@freescale.com>	<4B858243.8010908@mlbassoc.com>
+	<4B858B6C.4020809@freescale.com>
+	<20100224205159.GA6555@oksana.dev.rtsoft.ru>
+	<4B85A4C2.6090007@mlbassoc.com>
+To: Gary Thomas <gary@mlbassoc.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,32 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/19/2010 1:54 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2010-02-19 at 14:43 -0200, Breno Leitao wrote:
->> Hi Ben,
->>
->> I'd like to ask about this patch ? Should I re-submit ?
->>
->> Thanks,
->>
->> Breno Leitao wrote:
->>> During a EEH recover, the pci_dev structure can be null, mainly if an
->>> eeh event is detected during cpi config operation. In this case, the
->>> pci_dev will not be known (and will be null) the kernel will crash
->>> with the following message:
->
-> It should be in -next, can you dbl check ?
 
-I just confirmed the patch is in the -next tree.
+On Feb 24, 2010, at 4:14 PM, Gary Thomas wrote:
 
-Mike
+> On 02/24/2010 01:51 PM, Anton Vorontsov wrote:
+>> On Wed, Feb 24, 2010 at 02:26:20PM -0600, Scott Wood wrote:
+>>> Gary Thomas wrote:
+>>>> Yes, I'm using the exact same kernel with these two different PCI
+>>>> setups (done by the boot loader).
+>>>>=20
+>>>> Restricting the memory via mem=3D128M has no effect - the PCI =
+layout
+>>>> is the same.
+>>>>=20
+>>>> I think the outbound window size is required because of how the =
+Linux PCI
+>>>> remaps the space (note in my dumps that it put the MMIO of the
+>>>> boards starting
+>>>> at 0xD0000000 when the inbound window is 0x10000000)
+>>>=20
+>>> I see where the amount of RAM is mattering -- Linux is assigning
+>>> outbound I/O space to the PCI controller itself (device 00:00.0) and
+>>> the amount that it asks for seems to differ based on memory size.
+>>> Linux ought to skip that device when assigning resources.  Some
+>>> platforms do this (search for pci_exclude_device), but it seems to
+>>> be missing on 83xx.
+>>=20
+>> Actually, 83xx had these exclude_device hooks, but they were removed:
+>>=20
+>> commit d8f1324a5063c833862328ceafabc53ac3cc4f71
+>> Author: Kumar Gala<galak@kernel.crashing.org>
+>> Date:   Wed Sep 12 22:14:10 2007 -0500
+>>=20
+>>     [POWERPC] 83xx: Removed PCI exclude of PHB
+>>=20
+>>     Now that the generic code doesn't assign resources for Freescale
+>>     PHBs we dont have to explicitly exclude it.
+>>=20
+>>     Signed-off-by: Kumar Gala<galak@kernel.crashing.org>
+>>=20
+>>=20
+>> May be the generic code started to assign the resources again?
+>>=20
+>=20
+> That cracked it; I re-enabled the exclusion of the bridge and now
+> it's all working fine.
+>=20
+> Thanks for the help
+>=20
+> Note: I'm working with a fairly old kernel, so these results would
+> have to be reworked against the latest.
 
->
-> Cheers,
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Odd that the generic code isn't dealing with that for you.
+
+- k=
