@@ -2,7 +2,7 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-In-reply-to: <4886.1266991633@neuling.org>
+In-reply-to: <11927.1267010024@neuling.org>
 References: <1264017638.5717.121.camel@jschopp-laptop>
 	<1264017847.5717.132.camel@jschopp-laptop>
 	<1264548495.12239.56.camel@jschopp-laptop>
@@ -13,9 +13,10 @@ References: <1264017638.5717.121.camel@jschopp-laptop>
 	<1266499023.26719.597.camel@laptop> <14639.1266559532@neuling.org>
 	<1266573672.1806.70.camel@laptop>
 	<24165.1266577276@neuling.org> <23662.1266905307@neuling.org>
-	<1266942281.11845.521.camel@laptop> <4886.1266991633@neuling.org>
-Date: Wed, 24 Feb 2010 22:13:44 +1100
-Message-ID: <11927.1267010024@neuling.org>
+	<1266942281.11845.521.camel@laptop>
+	<4886.1266991633@neuling.org> <11927.1267010024@neuling.org>
+Date: Wed, 24 Feb 2010 22:58:26 +1100
+Message-ID: <15672.1267012706@neuling.org>
 Cc: Suresh Siddha <suresh.b.siddha@intel.com>, ego@in.ibm.com,
 	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
 	linuxppc-dev@lists.ozlabs.org
@@ -28,66 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > If there's less the group will normally be balanced and we fall out and
-> > end up in check_asym_packing().
+In message <11927.1267010024@neuling.org> you wrote:
+> > > If there's less the group will normally be balanced and we fall out and
+> > > end up in check_asym_packing().
+> > > 
+> > > So what I tried doing with that loop is detect if there's a hole in the
+> > > packing before busiest. Now that I think about it, what we need to check
+> > > is if this_cpu (the removed cpu argument) is idle and less than busiest.
+> > > 
+> > > So something like:
+> > > 
+> > > static int check_asym_pacing(struct sched_domain *sd,
+> > >                              struct sd_lb_stats *sds,
+> > >                              int this_cpu, unsigned long *imbalance)
+> > > {
+> > > 	int busiest_cpu;
+> > > 
+> > > 	if (!(sd->flags & SD_ASYM_PACKING))
+> > > 		return 0;
+> > > 
+> > > 	if (!sds->busiest)
+> > > 		return 0;
+> > > 
+> > > 	busiest_cpu = group_first_cpu(sds->busiest);
+> > > 	if (cpu_rq(this_cpu)->nr_running || this_cpu > busiest_cpu)
+> > > 		return 0;
+> > > 
+> > > 	*imbalance = (sds->max_load * sds->busiest->cpu_power) /
+> > > 			SCHED_LOAD_SCALE;
+> > > 	return 1;
+> > > }
+> > > 
+> > > Does that make sense?
 > > 
-> > So what I tried doing with that loop is detect if there's a hole in the
-> > packing before busiest. Now that I think about it, what we need to check
-> > is if this_cpu (the removed cpu argument) is idle and less than busiest.
+> > I think so.
 > > 
-> > So something like:
+> > I'm seeing check_asym_packing do the right thing with the simple SMT2
+> > with 1 process case.  It marks cpu0 as imbalanced when cpu0 is idle and
+> > cpu1 is busy.
 > > 
-> > static int check_asym_pacing(struct sched_domain *sd,
-> >                              struct sd_lb_stats *sds,
-> >                              int this_cpu, unsigned long *imbalance)
-> > {
-> > 	int busiest_cpu;
-> > 
-> > 	if (!(sd->flags & SD_ASYM_PACKING))
-> > 		return 0;
-> > 
-> > 	if (!sds->busiest)
-> > 		return 0;
-> > 
-> > 	busiest_cpu = group_first_cpu(sds->busiest);
-> > 	if (cpu_rq(this_cpu)->nr_running || this_cpu > busiest_cpu)
-> > 		return 0;
-> > 
-> > 	*imbalance = (sds->max_load * sds->busiest->cpu_power) /
-> > 			SCHED_LOAD_SCALE;
-> > 	return 1;
-> > }
-> > 
-> > Does that make sense?
+> > Unfortunately the process doesn't seem to be get migrated down though.
+> > Do we need to give *imbalance a higher value? 
 > 
-> I think so.
+> So with ego help, I traced this down a bit more.  
 > 
-> I'm seeing check_asym_packing do the right thing with the simple SMT2
-> with 1 process case.  It marks cpu0 as imbalanced when cpu0 is idle and
-> cpu1 is busy.
+> In my simple test case (SMT2, t0 idle, t1 active) if f_b_g() hits our
+> new case in check_asym_packing(), load_balance then runs f_b_q().
+> f_b_q() has this:
 > 
-> Unfortunately the process doesn't seem to be get migrated down though.
-> Do we need to give *imbalance a higher value? 
+>   		if (capacity && rq->nr_running == 1 && wl > imbalance)
+> 			continue;
+> 
+> when check_asym_packing() hits, wl = 1783 and imbalance = 1024, so we
+> continue and busiest remains NULL. 
+> 
+> load_balance then does "goto out_balanced" and it doesn't attempt to
+> move the task.
+> 
+> Based on this and on egos suggestion I pulled in Suresh Siddha patch
+> from: http://lkml.org/lkml/2010/2/12/352.  This fixes the problem.  The
+> process is moved down to t0.  
+> 
+> I've only tested SMT2 so far.  
 
-So with ego help, I traced this down a bit more.  
+SMT4 also works in the simple test case of a single process being pulled
+down to thread 0.  
 
-In my simple test case (SMT2, t0 idle, t1 active) if f_b_g() hits our
-new case in check_asym_packing(), load_balance then runs f_b_q().
-f_b_q() has this:
+As you suspected though, unfortunately this is only working with
+CONFIG_NO_HZ off.  If I turn NO_HZ on, my single process gets bounced
+around the core.  
 
-  		if (capacity && rq->nr_running == 1 && wl > imbalance)
-			continue;
-
-when check_asym_packing() hits, wl = 1783 and imbalance = 1024, so we
-continue and busiest remains NULL. 
-
-load_balance then does "goto out_balanced" and it doesn't attempt to
-move the task.
-
-Based on this and on egos suggestion I pulled in Suresh Siddha patch
-from: http://lkml.org/lkml/2010/2/12/352.  This fixes the problem.  The
-process is moved down to t0.  
-
-I've only tested SMT2 so far.  
+Did you think of any ideas for how to fix the NO_HZ interaction?
 
 Mikey
