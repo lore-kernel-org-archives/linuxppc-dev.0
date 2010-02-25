@@ -1,22 +1,37 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.221])
-	by ozlabs.org (Postfix) with ESMTP id C42DAB7CB9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Feb 2010 08:02:57 +1100 (EST)
-Message-ID: <4B86E572.6090101@neli.hopto.org>
-Date: Thu, 25 Feb 2010 22:02:42 +0100
-From: Micha Nelissen <micha@neli.hopto.org>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B4A67B7CF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 08:03:39 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o1PL3bhu027843
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 14:03:37 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o1PL3eQw026171
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 15:03:41 -0600 (CST)
+Message-ID: <4B86E5A7.9090607@freescale.com>
+Date: Thu, 25 Feb 2010 15:03:35 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-Subject: Re: [PATCH 3/7] RapidIO: Add Port-Write handling for EM
-References: <20100224152401.GC13661@kaneng01.tundra.com>
-	<4B85894A.6040406@neli.hopto.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552A5508A@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552A5508A@CORPEXCH1.na.ads.idt.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Alexandre Bounine <alexb@tundra.com>, linux-kernel@vger.kernel.org,
-	thomas.moll@sysgo.com, linuxppc-dev@lists.ozlabs.org,
-	thomas.moll.ext@nsn.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI on 834x
+References: <4B854A93.7030405@mlbassoc.com>	<4B85746F.3020200@freescale.com>	
+	<4B857AA8.9000208@mlbassoc.com>	<4B857EA1.6030605@freescale.com>	
+	<4B858243.8010908@mlbassoc.com>	<4B858B6C.4020809@freescale.com>	
+	<20100224205159.GA6555@oksana.dev.rtsoft.ru>	
+	<4B85A4C2.6090007@mlbassoc.com>	
+	<A0F7894F-8B88-4646-8B81-830F67E39489@kernel.crashing.org>	
+	<4B85B182.2030508@mlbassoc.com> <4B86886B.5000304@mlbassoc.com>
+	<1267130982.23523.1728.camel@pasglop>
+In-Reply-To: <1267130982.23523.1728.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, avorontsov@ru.mvista.com,
+	Gary Thomas <gary@mlbassoc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +41,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bounine, Alexandre wrote:
-> Micha Nelissen wrote:
->> Alexandre Bounine wrote:
->>>  /**
->>> + * rio_em_set_ops- Sets Error Managment operations for a particular
-> vendor switch
->>> + * @rdev: RIO device
->>> + *
->>> + * Searches the RIO EM ops table for known switch types. If the vid
->>> + * and did match a switch table entry, then set the em_init() and
->>> + * em_handle() ops to the table entry values.
->> Shouldn't any RIO device be able to support error management, not just
->> switches?
+Benjamin Herrenschmidt wrote:
+> On Thu, 2010-02-25 at 07:25 -0700, Gary Thomas wrote:
+>> I may have been too hasty pronouncing this fixed.  Indeed, the
+>> SATA interface now works, but my video card (Fujitsu Coral-P)
+>> does not work when it's mapped at the bottom of the PCI space :-(
+>>
+>> With the bridge mapped, the video ends up at a non-zero address
+>> (0xC8000000..0xCFFFFFFF).  If it gets mapped to 0xC0000000, it
+>> fails to respond to MMIO accesses.
+>>
+>> Any ideas how I might get around this?  Is there a way to force
+>> the PCI allocator to start somewhere other than [relative] zero?
 > 
-> Only if a device reports this capability by having Error Management
-> Extended Features block.
-> Ideally, we have to provide default handler for every such device (I am
-> planning it for some future updates). It should be the same as for
-> routing operations - if the standard feature exists, it has to be used
-> unless something else takes over.
+> I'm not familiar with the way the FSL bridge works, but it would
+> be possible to invert MMIO and DMA on your PCI bus. IE. Have MMIO go
+> from 0....2G and DMA from 2G..4G for example. Provided the FSL bridge
+> can offset the DMA back down to 0 (memory). Can it ?
 
-Yes, therefore I thought that: or the EM_OPS are per driver, or they can 
-be integrated in the switch hooks list.
+It can, but I don't see how that would help, if the problem is that the 
+video card doesn't like the low 30 bits of its MMIO address being zero.
 
-> For now I keep all port-write messages from end-points serviced by their
-> individual drivers. One of reasons for this: the EM PW message format
+Gary, can you check that the MMIO addresses are going to the PCI bus 
+as-is, and aren't being translated down to zero?  I.e. POTARn should 
+equal POBARn, and likewise in the device tree's pci node's ranges.
 
-Maybe have a generic rio function that can be called by any driver that 
-knows a particular port-write was due to error management causes? This 
-function would read the standard defined EF block registers. Then the 
-driver part can be quite small.
-
->>> +	if (port->ops->pwenable)
->>> +		port->ops->pwenable(port, enable);
->>> +}
->>> +
->> Maybe this can be done by switch->init function?
-> 
-> This is not per-switch function. This function enables mport to receive
-> incoming PW messages. Per-switch PW enable is done in switch->init as
-> for Tsi57x. 
-
-Oops, I meant this comment for the em_init function call.
-
->>> +			rio_mport_write_config_32(mport, destid,
-> hopcount,
->>> +				rdev->phys_efptr +
->>> +					RIO_PORT_N_ACK_STS_CSR(portnum),
->>> +				RIO_PORT_N_ACK_CLEAR);
->> This doesn't work for the 568; but the 568 has no special handling?
-> 
-> Tsi568 will not send EM PW message. Tsi568 PWs are disabled in its
-> em_init().
-
-Why?
-
->>> +DECLARE_RIO_EM_OPS(RIO_VID_TUNDRA, RIO_DID_TSI578, tsi57x_em_init,
-> tsi57x_em_handler);
->> Why not declare these along with the other ops?
-> 
-> Because the EM extensions is a separate capability. It is not guaranteed
-> to be in every switch.
-
-They might initialize them with NULL to indicate they don't support it?
-
-Micha
+-Scott
