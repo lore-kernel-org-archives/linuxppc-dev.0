@@ -1,17 +1,18 @@
 Return-Path: <avorontsov@dev.rtsoft.ru>
 Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id 346D0B7080
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 03:51:42 +1100 (EST)
-Date: Thu, 25 Feb 2010 19:51:41 +0300
+	by ozlabs.org (Postfix) with SMTP id 5CEF6B7CA6
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 04:49:36 +1100 (EST)
+Date: Thu, 25 Feb 2010 20:49:35 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Martyn Welch <martyn.welch@ge.com>
 Subject: Re: Gianfar driver failing on MPC8641D based board
-Message-ID: <20100225165141.GA9686@oksana.dev.rtsoft.ru>
+Message-ID: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
 References: <4B6C2488.3060403@ge.com> <4B865176.7080806@ge.com>
 	<4B86A97E.6050509@ge.com>
+	<20100225165141.GA9686@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4B86A97E.6050509@ge.com>
+In-Reply-To: <20100225165141.GA9686@oksana.dev.rtsoft.ru>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
@@ -25,26 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 25, 2010 at 04:46:54PM +0000, Martyn Welch wrote:
-[...]
-> > nfs: server 192.168.0.1 not responding, still trying
-> >   
+On Thu, Feb 25, 2010 at 07:51:41PM +0300, Anton Vorontsov wrote:
+> On Thu, Feb 25, 2010 at 04:46:54PM +0000, Martyn Welch wrote:
+> [...]
+> > > nfs: server 192.168.0.1 not responding, still trying
+> > >   
+> > 
+> > Further testing has shown that this isn't restricted to warm reboots, it
+> > happens from cold as well. In addition, the exact timing of the failure
+> > seems to vary, some boots have got further before failing.
 > 
-> Further testing has shown that this isn't restricted to warm reboots, it
-> happens from cold as well. In addition, the exact timing of the failure
-> seems to vary, some boots have got further before failing.
+> Unfortunately I don't have any 8641 boards near me, so I can't
+> debug this myself. Though, I tested gianfar on MPC8568E-MDS with
+> 2.6.33 kernel, and it seems to work just fine.
+> 
+> I see you use SMP. Can you try to turn it off? If that will fix
+> the issue, then it'll be a good data point.
+> 
+> Meanwhile, I'll try SMP kernel on MPC8568 (UP), and let you
+> know the results.
 
-Unfortunately I don't have any 8641 boards near me, so I can't
-debug this myself. Though, I tested gianfar on MPC8568E-MDS with
-2.6.33 kernel, and it seems to work just fine.
-
-I see you use SMP. Can you try to turn it off? If that will fix
-the issue, then it'll be a good data point.
-
-Meanwhile, I'll try SMP kernel on MPC8568 (UP), and let you
-know the results.
-
-Thanks,
+Nope, no luck. Can't trigger the issue. :-/
+Tested with NFS boot, TCP and UDP netperf tests.
 
 -- 
 Anton Vorontsov
