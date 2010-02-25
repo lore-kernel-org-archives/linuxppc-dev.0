@@ -1,18 +1,21 @@
-Return-Path: <nhillery@sixisinc.com>
-Received: from asp.reflexion.net (asp-submit.reflexion.net [69.84.129.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EA10EB7080
+Return-Path: <vbendeb@gmail.com>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id 18D4CB7C98
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Feb 2010 16:41:37 +1100 (EST)
+	Thu, 25 Feb 2010 18:00:50 +1100 (EST)
+Received: by pvg16 with SMTP id 16so377115pvg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Feb 2010 23:00:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CAB5DC.424DABC6"
-Subject: TBI interface
-Date: Thu, 25 Feb 2010 00:34:52 -0500
-Message-ID: <DA601BED1671C24093F284F75082C99340B6CE@rtpwbee01.SIXIS.NS>
-From: "Hillery, Nathan" <nhillery@sixisinc.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <DA601BED1671C24093F284F75082C99340B6CE@rtpwbee01.SIXIS.NS>
+References: <DA601BED1671C24093F284F75082C99340B6CE@rtpwbee01.SIXIS.NS>
+From: Vadim Bendebury <vbendeb@gmail.com>
+Date: Wed, 24 Feb 2010 23:00:29 -0800
+Message-ID: <f608b67d1002242300j3bd5d581l7e2376d2e96d7bbc@mail.gmail.com>
+Subject: Re: TBI interface
+To: "Hillery, Nathan" <nhillery@sixisinc.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,442 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01CAB5DC.424DABC6
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-I have a system with an SGMII interface on an MPC8536E, attached to a
-Marvel 88E6152 Ethernet switch chip.  I can access Ethernet from u-boot,
-if I initially configure the MII "phy" and the switch port PHY to
-disable auto-negotiation and assert link up.  The link speed is 10Mbps
-and it is half-duplex.  When u-boot starts, reports that it didn't
-recognize a PHY 0xFFFF id, and says it will assume a generic phy.
-
-=20
-
-Obviously, I'd like to run without having to manually configure and have
-it run at 1gbps, full-duplex.
-
-=20
-
-However, I am not able to get linux to recognize the device - it reports
-that a ten-bit interface (TBI) is required for SGMII and it can't find
-one.  I have a tbi-phy entry in the device-tree file.  Here's the
-relevant snippet:
-
-=20
-
-                mdio@24520 {
-
-                        #address-cells =3D <1>;
-
-                        #size-cells =3D <0>;
-
-                        compatible =3D "fsl,gianfar-tbi";
-
-                        reg =3D <0x24520 0x20>;
-
-=20
-
-                        phy0: ethernet-phy@0x10 {
-
-                                interrupt-parent =3D <&mpic>;
-
-                                interrupts =3D <10 0x1>;
-
-                                reg =3D <0x10>;
-
-                                device_type =3D "ethernet-phy";
-
-                        };
-
-=20
-
-                        tbi0: tbi-phy@4 {
-
-                                reg =3D <0x4>;
-
-                                device_type =3D "tbi-phy";
-
-                        };
-
-                };
-
-                                enet0: ethernet@24000 {
-
-                                                cell-index =3D <0>;
-
-                                                device_type =3D =
-"network";
-
-                                                model =3D "eTSEC";
-
-                                                compatible =3D =
-"gianfar";
-
-                                                reg =3D <0x24000 =
-0x1000>;
-
-                                                local-mac-address =3D [ =
-00
-00 00 00 00 00 ];
-
-                                                interrupts =3D <29 2 30 =
-2
-34 2>;
-
-                                                interrupt-parent =3D
-<&mpic>;
-
-                                                tbi-handle =3D <&tbi0>;
-
-                                                phy-handle =3D <&phy0>;
-
-                                                phy-connection-type =3D
-"sgmii";
-
-                                                fsl,magic-packet;
-
-                                                fsl,wake-on-filer;
-
-                                };
-
-=20
-
-The processor has an MDIO interface to the switch.  The switch port PHYs
-are 0x10, 0x11, 0x12, 0x13, 0x17, and 0x19. I picked 4 for the TBI
-arbitrarily (but seeking to avoid conflicting a PHY address).
-
-=20
-
-Any hints will be appreciated.
-
-
-------_=_NextPart_001_01CAB5DC.424DABC6
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal>I have a system with an SGMII interface on an =
-MPC8536E,
-attached to a Marvel 88E6152 Ethernet switch chip.&nbsp; I can access =
-Ethernet
-from u-boot, if I initially configure the MII &#8220;phy&#8221; and the =
-switch
-port PHY to disable auto-negotiation and assert link up.&nbsp; The link =
-speed
-is 10Mbps and it is half-duplex. &nbsp;When u-boot starts, reports that =
-it didn&#8217;t
-recognize a PHY 0xFFFF id, and says it will assume a generic =
-phy.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>Obviously, I&#8217;d like to run without having to =
-manually
-configure and have it run at 1gbps, full-duplex.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>However, I am not able to get linux to recognize =
-the device &#8211;
-it reports that a ten-bit interface (TBI) is required for SGMII and it =
-can&#8217;t
-find one.&nbsp; I have a tbi-phy entry in the device-tree file.&nbsp; =
-Here&#8217;s
-the relevant snippet:<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-mdio@24520 {<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-#address-cells =3D &lt;1&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-#size-cells =3D &lt;0&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-compatible =3D &quot;fsl,gianfar-tbi&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-reg =3D &lt;0x24520 0x20&gt;;<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;phy0:
-ethernet-phy@0x10 {<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-interrupt-parent =3D &lt;&amp;mpic&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-interrupts =3D &lt;10 0x1&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-reg =3D &lt;0x10&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-device_type =3D &quot;ethernet-phy&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-};<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-tbi0: tbi-phy@4 {<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-reg =3D &lt;0x4&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-device_type =3D &quot;tbi-phy&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-};<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-};<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; enet0:
-ethernet@24000 {<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; cell-index
-=3D &lt;0&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; device_type
-=3D &quot;network&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; model
-=3D &quot;eTSEC&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; compatible
-=3D &quot;gianfar&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; reg
-=3D &lt;0x24000 0x1000&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; local-mac-address
-=3D [ 00 00 00 00 00 00 ];<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; interrupts
-=3D &lt;29 2 30 2 34 2&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; interrupt-parent
-=3D &lt;&amp;mpic&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; tbi-handle
-=3D &lt;&amp;tbi0&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; phy-handle
-=3D &lt;&amp;phy0&gt;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; phy-connection-type
-=3D &quot;sgmii&quot;;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; fsl,magic-packet;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp; fsl,wake-on-filer;<o:p></o:p></p>
-
-<p =
-class=3DMsoNormal>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-};<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>The processor has an MDIO interface to the =
-switch.&nbsp; The
-switch port PHYs are 0x10, 0x11, 0x12, 0x13, 0x17, and 0x19. I picked 4 =
-for the
-TBI arbitrarily (but seeking to avoid conflicting a PHY =
-address).<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>Any hints will be appreciated.<o:p></o:p></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01CAB5DC.424DABC6--
+V2l0aG91dCBnb2luZyBpbnRvIG11Y2ggZGV0YWlscyBvZiB5b3VyIHBhcnRpY3VsYXIgY2FzZSwg
+SSBjYW4gc2hhcmUKbXkgZXhwZXJpZW5jZSBkb2luZyBhIHNpbWlsYXIgdGhpbmcgd2l0aCBhIGRp
+ZmZlcmVudCBmcmVlc2NhbGUgQ1BVOgoKLSBDT05GSUdfRklYRURfUEhZIG5lZWRzIHRvIGJlIGVu
+YWJsZWQgKHRoaXMgYWN0aXZhdGVzIGEgInBzZXVkbyBwaHkiKQoKLSB0aGUgVEJJICh0ZW4gYml0
+IGludGVyZmFjZSkgaXMgYW4gaW50ZXJuYWwgZGV2aWNlIGF0dGFjaGVkIHRvIHRoZQpNSUkgaW50
+ZXJmYWNlIGFzc29jaWF0ZWQgd2l0aCB0aGUgZXRoZXJuZXQgaW50ZXJmYWNlLiBUaGUgTUlJIGJ1
+cwphZGRyZXNzIG9mIHRoZSBUQkkgaXMgY29uZmlndXJhYmxlLCB1LWJvb3Qgc2V0cyBpdCB0byBD
+RkdfVEJJUEFfVkFMVUUKKGVhY2ggZXRoZXJuZXQgaW50ZXJmYWNlIGFzc2lnbnMgdGhpcyBzZXBh
+cmF0ZWx5IGFzIGludGVybmFsbHkgdGhleQphbGwgaGF2ZSBzZXBhcmF0ZSBNSUkgYnVzZXMpLiBU
+aGUgc2FtZSBDRkdfVEJJUEFfVkFMVUUgIHZhbHVlIG5lZWRzIHRvCmJlIGxpc3RlZCBpbiB0aGUg
+cmVnPD4gcHJvcGVydHkgb2YgdGhlIGFwcHJvcHJpYXRlIHRiaS1waHkgbm9kZXMgaW4KdGhlIGRl
+dmljZSB0cmVlLgoKCmdvb2QgbHVjayEKCi92YgoKCk9uIFdlZCwgRmViIDI0LCAyMDEwIGF0IDk6
+MzQgUE0sIEhpbGxlcnksIE5hdGhhbiA8bmhpbGxlcnlAc2l4aXNpbmMuY29tPiB3cm90ZToKPiBJ
+IGhhdmUgYSBzeXN0ZW0gd2l0aCBhbiBTR01JSSBpbnRlcmZhY2Ugb24gYW4gTVBDODUzNkUsIGF0
+dGFjaGVkIHRvIGEgTWFydmVsCj4gODhFNjE1MiBFdGhlcm5ldCBzd2l0Y2ggY2hpcC6gIEkgY2Fu
+IGFjY2VzcyBFdGhlcm5ldCBmcm9tIHUtYm9vdCwgaWYgSQo+IGluaXRpYWxseSBjb25maWd1cmUg
+dGhlIE1JSSCTcGh5lCBhbmQgdGhlIHN3aXRjaCBwb3J0IFBIWSB0byBkaXNhYmxlCj4gYXV0by1u
+ZWdvdGlhdGlvbiBhbmQgYXNzZXJ0IGxpbmsgdXAuoCBUaGUgbGluayBzcGVlZCBpcyAxME1icHMg
+YW5kIGl0IGlzCj4gaGFsZi1kdXBsZXguIKBXaGVuIHUtYm9vdCBzdGFydHMsIHJlcG9ydHMgdGhh
+dCBpdCBkaWRuknQgcmVjb2duaXplIGEgUEhZCj4gMHhGRkZGIGlkLCBhbmQgc2F5cyBpdCB3aWxs
+IGFzc3VtZSBhIGdlbmVyaWMgcGh5Lgo+Cj4KPgo+IE9idmlvdXNseSwgSZJkIGxpa2UgdG8gcnVu
+IHdpdGhvdXQgaGF2aW5nIHRvIG1hbnVhbGx5IGNvbmZpZ3VyZSBhbmQgaGF2ZSBpdAo+IHJ1biBh
+dCAxZ2JwcywgZnVsbC1kdXBsZXguCj4KPgo+Cj4gSG93ZXZlciwgSSBhbSBub3QgYWJsZSB0byBn
+ZXQgbGludXggdG8gcmVjb2duaXplIHRoZSBkZXZpY2UgliBpdCByZXBvcnRzCj4gdGhhdCBhIHRl
+bi1iaXQgaW50ZXJmYWNlIChUQkkpIGlzIHJlcXVpcmVkIGZvciBTR01JSSBhbmQgaXQgY2FuknQg
+ZmluZCBvbmUuCj4gSSBoYXZlIGEgdGJpLXBoeSBlbnRyeSBpbiB0aGUgZGV2aWNlLXRyZWUgZmls
+ZS6gIEhlcmWScyB0aGUgcmVsZXZhbnQKPiBzbmlwcGV0Ogo+Cj4KPgo+IKCgoKCgoKCgoKCgoKCg
+oCBtZGlvQDI0NTIwIHsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgICNhZGRyZXNzLWNlbGxz
+ID0gPDE+Owo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgI3NpemUtY2VsbHMgPSA8MD47Cj4K
+PiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBjb21wYXRpYmxlID0gImZzbCxnaWFuZmFyLXRiaSI7
+Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCByZWcgPSA8MHgyNDUyMCAweDIwPjsKPgo+Cj4K
+PiCgoKCgoKCgIKCgoKCgoKCgoKCgoKCgoKBwaHkwOiBldGhlcm5ldC1waHlAMHgxMCB7Cj4KPiCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGludGVycnVwdC1wYXJlbnQgPSA8Jm1waWM+
+Owo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBpbnRlcnJ1cHRzID0gPDEwIDB4
+MT47Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIHJlZyA9IDwweDEwPjsKPgo+
+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgZGV2aWNlX3R5cGUgPSAiZXRoZXJuZXQt
+cGh5IjsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIH07Cj4KPgo+Cj4goKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKAgdGJpMDogdGJpLXBoeUA0IHsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgcmVnID0gPDB4ND47Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IGRldmljZV90eXBlID0gInRiaS1waHkiOwo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgfTsK
+Pgo+IKCgoKCgoKCgoKCgoKCgoCB9Owo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oCBlbmV0MDogZXRoZXJuZXRAMjQwMDAgewo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKAgY2VsbC1pbmRleCA9IDwwPjsKPgo+IKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIGRldmljZV90eXBlID0gIm5ldHdvcmsi
+Owo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgbW9k
+ZWwgPSAiZVRTRUMiOwo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKAgY29tcGF0aWJsZSA9ICJnaWFuZmFyIjsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIHJlZyA9IDwweDI0MDAwIDB4MTAwMD47Cj4KPiCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBsb2NhbC1tYWMt
+YWRkcmVzcyA9IFsgMDAgMDAKPiAwMCAwMCAwMCAwMCBdOwo+Cj4goKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgaW50ZXJydXB0cyA9IDwyOSAyIDMwIDIgMzQK
+PiAyPjsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IGludGVycnVwdC1wYXJlbnQgPSA8Jm1waWM+Owo+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgdGJpLWhhbmRsZSA9IDwmdGJpMD47Cj4KPiCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBwaHktaGFuZGxlID0gPCZw
+aHkwPjsKPgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+IHBoeS1jb25uZWN0aW9uLXR5cGUgPQo+ICJzZ21paSI7Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCBmc2wsbWFnaWMtcGFja2V0Owo+Cj4goKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgZnNsLHdha2Utb24tZmls
+ZXI7Cj4KPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgIH07Cj4KPgo+Cj4gVGhlIHBy
+b2Nlc3NvciBoYXMgYW4gTURJTyBpbnRlcmZhY2UgdG8gdGhlIHN3aXRjaC6gIFRoZSBzd2l0Y2gg
+cG9ydCBQSFlzIGFyZQo+IDB4MTAsIDB4MTEsIDB4MTIsIDB4MTMsIDB4MTcsIGFuZCAweDE5LiBJ
+IHBpY2tlZCA0IGZvciB0aGUgVEJJIGFyYml0cmFyaWx5Cj4gKGJ1dCBzZWVraW5nIHRvIGF2b2lk
+IGNvbmZsaWN0aW5nIGEgUEhZIGFkZHJlc3MpLgo+Cj4KPgo+IEFueSBoaW50cyB3aWxsIGJlIGFw
+cHJlY2lhdGVkLgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Cj4gTGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmcKPiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
+Cj4K
