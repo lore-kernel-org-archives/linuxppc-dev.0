@@ -1,20 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 99C25B7CE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 06:25:41 +1100 (EST)
-Date: Thu, 25 Feb 2010 11:25:39 -0800
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [async_tx-next PATCH 2/2] fsldma: Fix cookie issues
-Message-ID: <20100225192539.GB32092@ovro.caltech.edu>
-References: <1266860439-17352-1-git-send-email-steve@digidescorp.com>
-	<Pine.LNX.4.64.1002222123350.4120@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.1002222123350.4120@axis700.grange>
-Cc: Zhang Wei <zw@zh-kernel.org>, Dan Williams <dan.j.williams@intel.com>,
-	linux-kernel@vger.kernel.org, "Steven J. Magnani" <steve@digidescorp.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <prvs=1672ac1db0=steve@digidescorp.com>
+Received: from digidescorp.com (mail.digidescorp.com [66.244.163.200])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 78DEFB7CE2
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 06:39:39 +1100 (EST)
+Received: from localhost.localdomain by digidescorp.com (Cipher
+	TLSv1:RC4-MD5:128) (MDaemon PRO v10.1.1)
+	with ESMTP id md50001207274.msg
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 13:39:34 -0600
+From: "Steven J. Magnani" <steve@digidescorp.com>
+To: Li Yang <leoli@freescale.com>
+Subject: [async_tx-next PATCH v2 1/2] fsldma: Fix cookie issues
+Date: Thu, 25 Feb 2010 13:39:30 -0600
+Message-Id: <1267126770-21497-1-git-send-email-steve@digidescorp.com>
+Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Zhang Wei <zw@zh-kernel.org>,
+	"Steven J. Magnani" <steve@digidescorp.com>,
+	Dan Williams <dan.j.williams@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 22, 2010 at 09:26:13PM +0100, Guennadi Liakhovetski wrote:
-> On Mon, 22 Feb 2010, Steven J. Magnani wrote:
-> 
-> > diff -uprN a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-> > --- a/include/linux/dmaengine.h	2010-02-22 11:18:11.000000000 -0600
-> > +++ b/include/linux/dmaengine.h	2010-02-22 11:18:30.000000000 -0600
-> > @@ -31,6 +31,8 @@
-> >   * if dma_cookie_t is >0 it's a DMA request cookie, <0 it's an error code
-> >   */
-> >  typedef s32 dma_cookie_t;
-> > +#define DMA_MIN_COOKIE	1
-> > +#define DMA_MAX_COOKIE	2147483647
-> 
-> Taking into account, that dma_cookie_t is 32 bits:
-> 
-> +#define DMA_MAX_COOKIE		((1 << 31) - 1)
-> 
+fsl_dma_tx_submit() only sets the cookie on the first descriptor of a
+transaction. It should set the cookie on all.
 
-Steven,
-
-After you take Guennadi's comment into acount, the rest of the patch
-looks good. I'm sure I've never rolled the cookie around during testing.
-
-Ira
+Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+---
+diff -uprN a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+--- a/drivers/dma/fsldma.c	2010-02-22 11:16:36.000000000 -0600
++++ b/drivers/dma/fsldma.c	2010-02-22 11:24:01.000000000 -0600
+@@ -362,7 +362,7 @@ static dma_cookie_t fsl_dma_tx_submit(st
+ 		if (cookie < 0)
+ 			cookie = 1;
+ 
+-		desc->async_tx.cookie = cookie;
++		child->async_tx.cookie = cookie;
+ 	}
+ 
+ 	chan->common.cookie = cookie;
