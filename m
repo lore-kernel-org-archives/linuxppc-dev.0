@@ -1,24 +1,15 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.mainstreet.net (mxout.mainstreet.net [207.5.0.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B828B7B98
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Feb 2010 01:53:18 +1100 (EST)
+Return-Path: <jeffm@suse.com>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id CABF4B7C67
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 05:49:49 +1100 (EST)
+Message-ID: <4B86C64A.2050508@suse.com>
+Date: Thu, 25 Feb 2010 13:49:46 -0500
+From: Jeff Mahoney <jeffm@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/7] RapidIO: Add switch locking during discovery
-Date: Thu, 25 Feb 2010 06:53:04 -0800
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552A54EA1@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <4B857A53.30106@neli.hopto.org>
-References: <20100224152050.GB13661@kaneng01.tundra.com>
-	<4B857A53.30106@neli.hopto.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Micha Nelissen" <micha@neli.hopto.org>
-Cc: Alexandre Bounine <alexb@tundra.com>, linux-kernel@vger.kernel.org,
-	thomas.moll@sysgo.com, linuxppc-dev@lists.ozlabs.org,
-	thomas.moll.ext@nsn.com
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: fix handling of strnlen with zero len
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Steven Rostedt <rostedt@goodmis.org>, Christian_Sellars@symantec.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Micha Nelissen wrote:
->=20
-> Alexandre Bounine wrote:
-> > +				/* Attempt to acquire device lock */
-> > +				rio_mport_write_config_32(port, destid,
-> > +							  hopcount,
-> > +
-RIO_HOST_DID_LOCK_CSR,
-> > +
-port->host_deviceid);
-> > +				rio_mport_read_config_32(port, destid,
-hopcount,
-> > +					RIO_HOST_DID_LOCK_CSR, &result);
-> > +				while (result !=3D port->host_deviceid) {
->=20
-> It's better to abstract the locking of a device into a new function,
-> rio_lock_device / rio_unlock_device.
->=20
-> Then you can use those in rio_get_route_entry and rio_add_route_entry.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Agree. Plus, adding a "lock" parameter to
-rio_get_route_entry/rio_add_route_entry to avoid excessive locking
-requests when scanning entire table. I will do it in next version or as
-additional patch: I have to address locking anyway for future changes.
-   =20
->=20
-> > @@ -1027,6 +1090,13 @@ int __devinit rio_disc_mport(struct rio_
-> > +
-> > +		/* Read DestID assigned by enumerator */
-> > +		rio_local_read_config_32(mport, RIO_DID_CSR,
-> > +					 &mport->host_deviceid);
-> > +		mport->host_deviceid =3D RIO_GET_DID(mport->sys_size,
-> > +
-mport->host_deviceid);
-> > +
->=20
-> This fixes something else, should be a separate patch.
+ Commit 0119536c, which added the assembly version of strncmp to
+ powerpc, mentions that it adds two instructions to the version from
+ boot/string.S to allow it to handle len=0. Unfortunately, it doesn't
+ always return 0 when that is the case. The length is passed in r5, but
+ the return value is passed back in r3. In certain cases, this will
+ happen to work. Otherwise it will pass back the address of the first
+ string as the return value.
 
-This sets an ID used for locking during discovery. On a startup only
-enumerator's ID is set to the specified value. All discovering agents
-have this ID set to -1. After enumeration is completed it is safe to
-initialize host_deviceid for agents as well.
+ This patch lifts the len <= 0 handling code from memcpy to handle that case.
 
-Alex.
+Reported by: Christian_Sellars@symantec.com
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+- ---
+ arch/powerpc/lib/string.S |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+- --- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -71,7 +71,7 @@ _GLOBAL(strcmp)
+ 
+ _GLOBAL(strncmp)
+ 	PPC_LCMPI r5,0
+- -	beqlr
++	ble-	2f
+ 	mtctr	r5
+ 	addi	r5,r3,-1
+ 	addi	r4,r4,-1
+@@ -82,6 +82,8 @@ _GLOBAL(strncmp)
+ 	beqlr	1
+ 	bdnzt	eq,1b
+ 	blr
++2:	li	r3,0
++	blr
+ 
+ _GLOBAL(strlen)
+ 	addi	r4,r3,-1
+- -- 
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkuGxkoACgkQLPWxlyuTD7LzfQCeKAaKtyEfbabuGzZyAEEnb8Mq
+KEsAn1tKZtVSQ2A68TjwU/JN2LC3Mop7
+=/CaR
+-----END PGP SIGNATURE-----
