@@ -1,27 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9C421B7C7E
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 07:41:18 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o1PKf0HR018949
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 13:41:10 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o1PKlWWY023087
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Feb 2010 14:47:32 -0600 (CST)
-Message-ID: <4B86E05A.1080705@freescale.com>
-Date: Thu, 25 Feb 2010 14:40:58 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: CONFIG_ISA_DMA_API without CONFIG_GENERIC_ISA_DMA
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9B1E9B7CF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 07:49:58 +1100 (EST)
+Subject: Re: PCI on 834x
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gary Thomas <gary@mlbassoc.com>
+In-Reply-To: <4B86886B.5000304@mlbassoc.com>
+References: <4B854A93.7030405@mlbassoc.com>	<4B85746F.3020200@freescale.com>
+	<4B857AA8.9000208@mlbassoc.com>	<4B857EA1.6030605@freescale.com>
+	<4B858243.8010908@mlbassoc.com>	<4B858B6C.4020809@freescale.com>
+	<20100224205159.GA6555@oksana.dev.rtsoft.ru>
+	<4B85A4C2.6090007@mlbassoc.com>
+	<A0F7894F-8B88-4646-8B81-830F67E39489@kernel.crashing.org>
+	<4B85B182.2030508@mlbassoc.com>  <4B86886B.5000304@mlbassoc.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 26 Feb 2010 07:49:42 +1100
+Message-ID: <1267130982.23523.1728.camel@pasglop>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I tried building a kernel using mpc85xx_smp_defconfig, but with all 
-platforms but p4080ds removed.  This was the result:
+On Thu, 2010-02-25 at 07:25 -0700, Gary Thomas wrote:
+> I may have been too hasty pronouncing this fixed.  Indeed, the
+> SATA interface now works, but my video card (Fujitsu Coral-P)
+> does not work when it's mapped at the bottom of the PCI space :-(
+> 
+> With the bridge mapped, the video ends up at a non-zero address
+> (0xC8000000..0xCFFFFFFF).  If it gets mapped to 0xC0000000, it
+> fails to respond to MMIO accesses.
+> 
+> Any ideas how I might get around this?  Is there a way to force
+> the PCI allocator to start somewhere other than [relative] zero?
 
->   LD      .tmp_vmlinux1
-> sound/built-in.o: In function `claim_dma_lock':
-> /home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: undefined reference to `dma_spin_lock'
-> /home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: undefined reference to `dma_spin_lock'
-> /home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: undefined reference to `dma_spin_lock'
-> /home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: undefined reference to `dma_spin_lock'
-> /home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: undefined reference to `dma_spin_lock'
-> sound/built-in.o:/home/scott/git/fsl/linux/upstream/arch/powerpc/include/asm/dma.h:179: more undefined references to `dma_spin_lock' follow
-> make: *** [.tmp_vmlinux1] Error 1
+I'm not familiar with the way the FSL bridge works, but it would
+be possible to invert MMIO and DMA on your PCI bus. IE. Have MMIO go
+from 0....2G and DMA from 2G..4G for example. Provided the FSL bridge
+can offset the DMA back down to 0 (memory). Can it ?
 
-Commit fb4f0e8832e0075849b41b65f6bb9fdfa7593b99 (Enable GENERIC_ISA_DMA 
-if FSL_ULI1575 to fix compile issue) tries to deal with this, but it 
-ties it to CONFIG_FSL_ULI1575, which is not selected in a p4080ds-only 
-config.
-
-It seems that ULI isn't really relevant to the actual problem, which is 
-that we enable ISA DMA API support without selecting an implementation. 
-  Whether a certain chip is on the board that has an actual ISA 
-interface is irrelevant to the build breakage.
-
-Where did the dependency list for GENERIC_ISA_DMA come from?  Are there 
-any legitimate cases on powerpc where we want to select ISA_DMA_API but 
-not GENERIC_ISA_DMA (i.e. we have an alternate implementation)?
-
--Scott
+Cheers,
+Ben.
