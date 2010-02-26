@@ -1,24 +1,28 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8B770B7C59
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 02:33:12 +1100 (EST)
-Message-ID: <4B87E9EF.3010604@ge.com>
-Date: Fri, 26 Feb 2010 15:34:07 +0000
-From: Martyn Welch <martyn.welch@ge.com>
-MIME-Version: 1.0
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id 5F160B7CFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 03:11:01 +1100 (EST)
+Date: Fri, 26 Feb 2010 19:10:59 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Martyn Welch <martyn.welch@ge.com>
 Subject: Re: Gianfar driver failing on MPC8641D based board
-References: <4B6C2488.3060403@ge.com>
-	<4B865176.7080806@ge.com>	<4B86A97E.6050509@ge.com>	<20100225165141.GA9686@oksana.dev.rtsoft.ru>	<20100225174935.GA32370@oksana.dev.rtsoft.ru>	<7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>	<20100226031452.GA11319@oksana.dev.rtsoft.ru>	<4B87B937.6010204@ge.com>	<20100226143532.GA31622@oksana.dev.rtsoft.ru>	<4B87E01E.4070704@windriver.com>
-	<4B87E662.3080106@ge.com>
-In-Reply-To: <4B87E662.3080106@ge.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
-	avorontsov@ru.mvista.com, davem@davemloft.net
+Message-ID: <20100226161058.GA22954@oksana.dev.rtsoft.ru>
+References: <4B86A97E.6050509@ge.com>
+	<20100225165141.GA9686@oksana.dev.rtsoft.ru>
+	<20100225174935.GA32370@oksana.dev.rtsoft.ru>
+	<7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+	<20100226031452.GA11319@oksana.dev.rtsoft.ru>
+	<4B87B937.6010204@ge.com>
+	<20100226143532.GA31622@oksana.dev.rtsoft.ru>
+	<4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com>
+	<4B87E9EF.3010604@ge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4B87E9EF.3010604@ge.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +32,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Martyn Welch wrote:
-> Paul Gortmaker wrote:
->   
->> On 10-02-26 09:35 AM, Anton Vorontsov wrote:
->>   
->>     
->>> On Fri, Feb 26, 2010 at 12:06:15PM +0000, Martyn Welch wrote:
->>>     
->>>       
->>>> Anton Vorontsov wrote:
->>>>       
->>>>         
->>>>> On Thu, Feb 25, 2010 at 07:53:30PM -0500, Paul Gortmaker wrote:
->>>>> [...]
->>>>>
->>>>>         
->>>>>           
->>>>>> I was able to reproduce it on an 8641D and bisected it down to this:
->>>>>>
->>>>>> -----------
->>>>>> commit a3bc1f11e9b867a4f49505ecac486a33af248b2e
->>>>>> Author: Anton Vorontsov<avorontsov@ru.mvista.com>
->>>>>> Date:   Tue Nov 10 14:11:10 2009 +0000
->>>>>>
->>>>>>      gianfar: Revive SKB recycling
->>>>>>
->>>>>>           
->>>>>>             
->>>>> Thanks for the bisect. I have a guess why tx hangs in
->>>>> SMP case. Could anyone try the patch down below?
->>>>>
->>>>>         
->>>>>           
->>>> Yup, no problem. I'm afraid it doesn't resolve the problem for me.
->>>>       
->>>>         
->>> Hm.. I found a p2020 board and I was able to reproduce the issue.
->>> The patch down below fixed it completely for me... hm.
->>>     
->>>       
->> Interesting. I just tested the patch on the sbc8641d, and it
->> still has the issue with your patch applied.  I'm using NFSroot
->> just like Martyn was and it still appears bound up on that
->> gianfar tx lock.  I'll see if I can get a SysRq backtrace in
->> case that will help you see how it manages to get there...
->>   
->>     
->
-> I've got a p2020ds here as well, so I'll give NFSroot on that a try with
-> your patch.
->   
+On Fri, Feb 26, 2010 at 03:34:07PM +0000, Martyn Welch wrote:
+[...]
+> Out of 10 boot attempts, 7 failed.
 
-Out of 10 boot attempts, 7 failed.
-
-Martyn
-
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+OK, I see why. With ip=on (dhcp boot) it's much harder to trigger
+it. With static ip config can I see the same.
