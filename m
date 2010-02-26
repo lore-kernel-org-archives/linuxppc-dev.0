@@ -1,18 +1,32 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id AAB78B8055
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 09:01:43 +1100 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: netdev@vger.kernel.org
-Subject: [net-next-2.6 PATCH v3 3/3] fs_enet: add FEC TX buffer alignment
-	workaround for MPC5121
-Date: Fri, 26 Feb 2010 23:00:49 +0100
-Message-Id: <1267221649-22754-4-git-send-email-agust@denx.de>
-In-Reply-To: <1267221649-22754-1-git-send-email-agust@denx.de>
-References: <1267221649-22754-1-git-send-email-agust@denx.de>
-Cc: Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
-	"David S. Miller" <davem@davemloft.net>, Piotr Ziecik <kosmo@semihalf.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id BE69EB7D41
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 09:12:53 +1100 (EST)
+Message-ID: <4B884757.2070205@windriver.com>
+Date: Fri, 26 Feb 2010 17:12:39 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: Gianfar driver failing on MPC8641D based board
+References: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+	<7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+	<20100226031452.GA11319@oksana.dev.rtsoft.ru>
+	<4B87B937.6010204@ge.com>
+	<20100226143532.GA31622@oksana.dev.rtsoft.ru>
+	<4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com>
+	<4B87E9EF.3010604@ge.com>
+	<20100226161058.GA22954@oksana.dev.rtsoft.ru>
+	<4B87F67E.5070601@windriver.com>
+	<20100226213825.GA32363@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100226213825.GA32363@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Martyn Welch <martyn.welch@ge.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,88 +36,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC5121 FEC requeries 4-byte alignmnent for TX data buffers.
-This patch is a work around that copies misaligned tx packets
-to an aligned skb before sending.
+On 10-02-26 04:38 PM, Anton Vorontsov wrote:
 
-Signed-off-by: John Rigby <jcrigby@gmail.com>
-Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-Signed-off-by: Wolfgang Denk <wd@denx.de>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
----
-Changes since v2:
- - ratelimit warning message
- - use skb->len + 4 as size for allocation of the new skb
-   with aligned buffer.
+> OK, I think I found what's happening in gianfar.
+> 
+> Some background...
+> 
+> start_xmit() prepares new skb for transmitting, generally it does
+> three things:
+> 
+> 1. sets up all BDs (marks them ready to send), except the first one.
+> 2. stores skb into tx_queue->tx_skbuff so that clean_tx_ring()
+>     would cleanup it later.
+> 3. sets up the first BD, i.e. marks it ready.
+> 
+> Here is what clean_tx_ring() does:
+> 
+> 1. reads skbs from tx_queue->tx_skbuff
+> 2. Checks if the *last* BD is ready. If it's still ready [to send]
+>     then it it isn't transmitted, so clean_tx_ring() returns.
+>     Otherwise it actually cleanups BDs. All is OK.
+> 
+> Now, if there is just one BD, code flow:
+> 
+> - start_xmit(): stores skb into tx_skbuff. Note that the first BD
+>    (which is also the last one) isn't marked as ready, yet.
+> - clean_tx_ring(): sees that skb is not null, *and* its lstatus
+>    says that it is NOT ready (like if BD was sent), so it cleans
+>    it up (bad!)
+> - start_xmit(): marks BD as ready [to send], but it's too late.
+> 
+> We can fix this simply by reordering lstatus/tx_skbuff writes.
+> 
+> It works flawlessly on my p2020, please try it.
 
- drivers/net/fs_enet/fs_enet-main.c |   47 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 47 insertions(+), 0 deletions(-)
+I've skipped right to the test part (I'll think about the description
+more later) and it passed 5 out of 5 boot tests on NFSroot sbc8641d.
+Looks like you've got a solution.
 
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-index 4297021..0770e2f 100644
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -580,6 +580,40 @@ void fs_cleanup_bds(struct net_device *dev)
- 
- /**********************************************************************************/
- 
-+#ifdef CONFIG_FS_ENET_MPC5121_FEC
-+/*
-+ * MPC5121 FEC requeries 4-byte alignment for TX data buffer!
-+ */
-+static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
-+					       struct sk_buff *skb)
-+{
-+	struct sk_buff *new_skb;
-+	struct fs_enet_private *fep = netdev_priv(dev);
-+
-+	/* Alloc new skb */
-+	new_skb = dev_alloc_skb(skb->len + 4);
-+	if (!new_skb) {
-+		if (net_ratelimit()) {
-+			dev_warn(fep->dev,
-+				 "Memory squeeze, dropping tx packet.\n");
-+		}
-+		return NULL;
-+	}
-+
-+	/* Make sure new skb is properly aligned */
-+	skb_align(new_skb, 4);
-+
-+	/* Copy data to new skb ... */
-+	skb_copy_from_linear_data(skb, new_skb->data, skb->len);
-+	skb_put(new_skb, skb->len);
-+
-+	/* ... and free an old one */
-+	dev_kfree_skb_any(skb);
-+
-+	return new_skb;
-+}
-+#endif
-+
- static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
-@@ -588,6 +622,19 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	u16 sc;
- 	unsigned long flags;
- 
-+#ifdef CONFIG_FS_ENET_MPC5121_FEC
-+	if (((unsigned long)skb->data) & 0x3) {
-+		skb = tx_skb_align_workaround(dev, skb);
-+		if (!skb) {
-+			/*
-+			 * We have lost packet due to memory allocation error
-+			 * in tx_skb_align_workaround(). Hopefully original
-+			 * skb is still valid, so try transmit it later.
-+			 */
-+			return NETDEV_TX_BUSY;
-+		}
-+	}
-+#endif
- 	spin_lock_irqsave(&fep->tx_lock, flags);
- 
- 	/*
--- 
-1.6.3.3
+Paul.
+
+> 
+> Thanks!
+> 
+> 
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 8bd3c9f..cccb409 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>   	}
+> 
+>   	/* setup the TxBD length and buffer pointer for the first BD */
+> -	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+>   	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+>   			skb_headlen(skb), DMA_TO_DEVICE);
+> 
+> @@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+> 
+>   	txbdp_start->lstatus = lstatus;
+> 
+> +	eieio(); /* force lstatus write before tx_skbuff */
+> +
+> +	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+> +
+>   	/* Update the current skb pointer to the next entry we will use
+>   	 * (wrapping if necessary) */
+>   	tx_queue->skb_curtx = (tx_queue->skb_curtx + 1)&
