@@ -1,22 +1,14 @@
-Return-Path: <joakim.tjernlund@transmode.com>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CDE96B7CE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 19:39:17 +1100 (EST)
-Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
-	by gw1.transmode.se (Postfix) with ESMTP id 7CA89650008
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 09:29:56 +0100 (CET)
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4] 8xx: Use SPRG2 and DAR registers to stash r11 and cr.
-Date: Fri, 26 Feb 2010 09:29:43 +0100
-Message-Id: <1267172983-28721-5-git-send-email-Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1267172983-28721-4-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1267172983-28721-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-4-git-send-email-Joakim.Tjernlund@transmode.se>
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 73D2AB7080
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 22:47:53 +1100 (EST)
+From: Amit Shah <amit.shah@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] hvc_console: Fix a race between hvc_close and hvc_remove
+Date: Fri, 26 Feb 2010 17:16:26 +0530
+Message-Id: <1267184786-4377-1-git-send-email-amit.shah@redhat.com>
+Cc: Amit Shah <amit.shah@redhat.com>, linuxppc-dev@ozlabs.org,
+	Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,137 +18,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This avoids storing these registers in memory.
-CPU6 errata will still use the old way.
-Remove some G2 leftover accesses from 2.4
----
- arch/powerpc/kernel/head_8xx.S |   49 +++++++++++++++++++++++++++++----------
- 1 files changed, 36 insertions(+), 13 deletions(-)
+Alan pointed out a race in the code where hvc_remove is invoked. The
+recent virtio_console work is the first user of hvc_remove().
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 6478a96..1f1a04b 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -71,9 +71,6 @@ _ENTRY(_start);
-  * in the first level table, but that would require many changes to the
-  * Linux page directory/table functions that I don't want to do right now.
-  *
-- * I used to use SPRG2 for a temporary register in the TLB handler, but it
-- * has since been put to other uses.  I now use a hack to save a register
-- * and the CCR at memory location 0.....Someday I'll fix this.....
-  *	-- Dan
-  */
- 	.globl	__start
-@@ -302,8 +299,13 @@ InstructionTLBMiss:
- 	DO_8xx_CPU6(0x3f80, r3)
- 	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
- 	mfcr	r10
-+#ifdef CONFIG_8xx_CPU6
- 	stw	r10, 0(r0)
- 	stw	r11, 4(r0)
-+#else
-+	mtspr	SPRN_DAR, r10
-+	mtspr	SPRN_SPRG2, r11
-+#endif
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU15
- 	addi	r11, r10, 0x1000
-@@ -359,13 +361,19 @@ InstructionTLBMiss:
- 	DO_8xx_CPU6(0x2d80, r3)
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+Alan describes it thus:
+
+The hvc_console assumes that a close and remove call can't occur at the
+same time.
+
+In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+itself....
+
+So this can happen
+
+        hvc_close                               hvc_remove
+        hung up ? - no
+                                                lock
+                                                tty = hp->tty
+                                                unlock
+        lock
+	hp->tty = NULL
+        unlock
+	notify del
+        kref_put the hvc struct
+        close completes
+        tty is destroyed
+                                                tty_hangup dead tty
+                                                tty->ops will be NULL
+                                                NULL->...
+
+This patch adds some tty krefs and also converts to using tty_vhangup()
+before putting the tty kref.
+
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linuxppc-dev@ozlabs.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+---
+
+I can't be sure if this is all that's needed. tty people, please take
+a look!
+
+ drivers/char/hvc_console.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index d8dac58..3983e32 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -106,6 +106,7 @@ static struct hvc_struct *hvc_get_by_index(int index)
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		if (hp->index == index) {
+ 			kref_get(&hp->kref);
++			tty_kref_get(hp->tty);
+ 			spin_unlock_irqrestore(&hp->lock, flags);
+ 			spin_unlock(&hvc_structs_lock);
+ 			return hp;
+@@ -390,6 +391,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 	}
  
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	/* Restore registers */
-+#ifndef CONFIG_8xx_CPU6
-+	mfspr	r10, SPRN_DAR
-+	mtcr	r10
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG2
-+#else
- 	lwz	r11, 0(r0)
- 	mtcr	r11
- 	lwz	r11, 4(r0)
--#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
-+	mfspr	r10, SPRN_M_TW
- 	rfi
- 2:
- 	mfspr	r11, SPRN_SRR1
-@@ -375,13 +383,20 @@ InstructionTLBMiss:
- 	rlwinm	r11, r11, 0, 0xffff
- 	mtspr	SPRN_SRR1, r11
+ 	kref_put(&hp->kref, destroy_hvc_struct);
++	tty_kref_put(tty);
+ }
  
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	/* Restore registers */
-+#ifndef CONFIG_8xx_CPU6
-+	mfspr	r10, SPRN_DAR
-+	mtcr	r10
-+	li	r11, 0x00f0
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG2
-+#else
- 	lwz	r11, 0(r0)
- 	mtcr	r11
- 	lwz	r11, 4(r0)
--#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
-+	mfspr	r10, SPRN_M_TW
- 	b	InstructionAccess
+ static void hvc_hangup(struct tty_struct *tty)
+@@ -806,6 +808,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	unsigned long flags;
+ 	struct tty_struct *tty;
  
- 	. = 0x1200
-@@ -392,8 +407,13 @@ DataStoreTLBMiss:
- 	DO_8xx_CPU6(0x3f80, r3)
- 	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
- 	mfcr	r10
-+#ifdef CONFIG_8xx_CPU6
- 	stw	r10, 0(r0)
- 	stw	r11, 4(r0)
-+#else
-+	mtspr	SPRN_DAR, r10
-+	mtspr	SPRN_SPRG2, r11
-+#endif
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table entry address */
++	tty_kref_get(hp->tty);
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	tty = hp->tty;
  
- 	/* If we are faulting a kernel address, we have to use the
-@@ -461,18 +481,24 @@ DataStoreTLBMiss:
- 	 * of the MMU.
+@@ -830,7 +833,9 @@ int hvc_remove(struct hvc_struct *hp)
+ 	 * cleaned up the hvc_struct.
  	 */
- 2:	li	r11, 0x00f0
--	mtspr	SPRN_DAR,r11	/* Tag DAR */
- 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
- 	DO_8xx_CPU6(0x3d80, r3)
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
- 
--	mfspr	r10, SPRN_M_TW	/* Restore registers */
-+	/* Restore registers */
-+#ifndef CONFIG_8xx_CPU6
-+	mfspr	r10, SPRN_DAR
-+	mtcr	r10
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG2
-+#else
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	lwz	r11, 0(r0)
- 	mtcr	r11
- 	lwz	r11, 4(r0)
--#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
-+	mfspr	r10, SPRN_M_TW
- 	rfi
- 
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-@@ -684,9 +710,6 @@ start_here:
- 	tophys(r4,r2)
- 	addi	r4,r4,THREAD	/* init task's THREAD */
- 	mtspr	SPRN_SPRG_THREAD,r4
--	li	r3,0
--	/* XXX What is that for ? SPRG2 appears otherwise unused on 8xx */
--	mtspr	SPRN_SPRG2,r3	/* 0 => r1 has kernel sp */
- 
- 	/* stack */
- 	lis	r1,init_thread_union@ha
+ 	if (tty)
+-		tty_hangup(tty);
++		tty_vhangup(tty);
++
++	tty_kref_put(hp->tty);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(hvc_remove);
 -- 
-1.6.4.4
+1.6.2.5
