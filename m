@@ -1,12 +1,18 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 26 Feb 2010 17:18:46 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org
-Subject: powerpc: bump SECTION_SIZE_BITS from 16MB to 256MB
-Message-ID: <20100226061846.GE475@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C02AFB7CBD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Feb 2010 18:30:21 +1100 (EST)
+Subject: [PATCH] powerpc: Fix lwsync feature fixup vs. modules on 64-bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 26 Feb 2010 18:30:07 +1100
+Message-ID: <1267169407.23523.1798.camel@pasglop>
+Mime-Version: 1.0
+Cc: Anton Blanchard <anton@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,59 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Anton's commit enabling the use of the lwsync fixup mechanism on 64-bit
+breaks modules. The lwsync fixup section uses .long instead of the
+FTR_ENTRY_OFFSET macro used by other fixups sections, and thus will
+generate 32-bit relocations that our module loader cannot resolve.
 
-The current setting for SECTION_SIZE_BITS is quite small compared to
-everyone else:
+This changes it to use the same type as other feature sections.
 
-arch/powerpc/include/asm/sparsemem.h:#define SECTION_SIZE_BITS  24
+Note however that we might want to consider using 32-bit for all the
+feature fixup offsets and add support for R_PPC_REL32 to module_64.c
+instead as that would reduce the size of the kernel image. I'll leave
+that as an exercise for the reader for now...
 
-arch/sparc/include/asm/sparsemem.h:#define SECTION_SIZE_BITS    30
-arch/ia64/include/asm/sparsemem.h:#define SECTION_SIZE_BITS     (30)
-arch/s390/include/asm/sparsemem.h:#define SECTION_SIZE_BITS     28
-arch/x86/include/asm/sparsemem.h:# define SECTION_SIZE_BITS     27 
-
-And it has proven to be an issue during boot on very large machines.
-If hotplug memory is enabled, drivers/base/memory.c does this:
-
-       for (i = 0; i < NR_MEM_SECTIONS; i++) {
-                if (!present_section_nr(i))
-                        continue;
-                err = add_memory_block(0, __nr_to_section(i), MEM_ONLINE,
-                                        0, BOOT);
-                if (!ret)
-                        ret = err;
-        }
-
-Which creates a sysfs directory for every 16MB of memory. As a result
-I'm seeing up to 30 minutes spent here during boot:
-
-c000000000248ee0 .__sysfs_add_one+0x28/0x128
-c0000000002492a8 .sysfs_add_one+0x38/0x188
-c000000000249c88 .create_dir+0x70/0x138
-c000000000249d98 .sysfs_create_dir+0x48/0x78
-c00000000032bad8 .kobject_add_internal+0x140/0x308
-c00000000032beb4 .kobject_init_and_add+0x4c/0x68
-c00000000046c2c0 .sysdev_register+0xa0/0x220
-c00000000047b1dc .add_memory_block+0x124/0x1e8
-c0000000008d1f28 .memory_dev_init+0xf4/0x168
-c0000000008d1b64 .driver_init+0x50/0x64
-c000000000890378 .do_basic_setup+0x40/0xd4
-
-I assume there are some O(n^2) issues in sysfs as we add all the memory
-nodes. Bumping SECTION_SIZE_BITS to 256 MB drops the time to about 10
-seconds and results in a much smaller /sys.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+ arch/powerpc/include/asm/feature-fixups.h |    2 +-
+ arch/powerpc/lib/feature-fixups.c         |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
---- linux-2.6.33/arch/powerpc/include/asm/sparsemem.h~	2010-02-25 22:53:54.000000000 -0600
-+++ linux-2.6.33/arch/powerpc/include/asm/sparsemem.h	2010-02-25 22:54:06.000000000 -0600
-@@ -8,7 +8,7 @@
-  * MAX_PHYSADDR_BITS		2^N: how much physical address space we have
-  * MAX_PHYSMEM_BITS		2^N: how much memory we can have in that space
-  */
--#define SECTION_SIZE_BITS       24
-+#define SECTION_SIZE_BITS       28
+diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
+index cbd4dfa..96a7d06 100644
+--- a/arch/powerpc/include/asm/feature-fixups.h
++++ b/arch/powerpc/include/asm/feature-fixups.h
+@@ -165,7 +165,7 @@ label##2:						\
+ 	.pushsection sect,"a";				\
+ 	.align 2;					\
+ label##3:					       	\
+-	.long label##1b-label##3b;			\
++	FTR_ENTRY_OFFSET label##1b-label##3b;		\
+ 	.popsection;
  
- #define MAX_PHYSADDR_BITS       44
- #define MAX_PHYSMEM_BITS        44
+ #endif /* __ASM_POWERPC_FEATURE_FIXUPS_H */
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 4dee652..e640175 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -112,7 +112,8 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ 
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ {
+-	int *start, *end, *dest;
++	long *start, *end;
++	unsigned int *dest;
+ 
+ 	if (!(value & CPU_FTR_LWSYNC))
+ 		return ;
