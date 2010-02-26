@@ -1,30 +1,12 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8B35DB7CBD
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 17:05:13 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id o1Q61gal002876
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 17:01:42 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o1Q5xeT51175728
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 16:59:40 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o1Q65B5T030283
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Feb 2010 17:05:11 +1100
-Date: Fri, 26 Feb 2010 11:35:03 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc: export data from new hcall H_EM_GET_PARMS
-Message-ID: <20100226060503.GA19115@dirshya.in.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 26 Feb 2010 17:18:46 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: powerpc: bump SECTION_SIZE_BITS from 16MB to 256MB
+Message-ID: <20100226061846.GE475@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: svaidy@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,89 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-A new hcall H_EM_GET_PARMS as been added to obtain power mode data
-from the platform.  This data can be used by user space administrative
-tools for better power management.
+The current setting for SECTION_SIZE_BITS is quite small compared to
+everyone else:
 
-The following patch add data from this new hcall into the lparcfg
-driver and exports to user space along with other existing lpar data
-in /proc/powerpc/lparcfg
+arch/powerpc/include/asm/sparsemem.h:#define SECTION_SIZE_BITS  24
 
-Please review and include in powerpc tree.
+arch/sparc/include/asm/sparsemem.h:#define SECTION_SIZE_BITS    30
+arch/ia64/include/asm/sparsemem.h:#define SECTION_SIZE_BITS     (30)
+arch/s390/include/asm/sparsemem.h:#define SECTION_SIZE_BITS     28
+arch/x86/include/asm/sparsemem.h:# define SECTION_SIZE_BITS     27 
 
-Thanks,
-Vaidy
+And it has proven to be an issue during boot on very large machines.
+If hotplug memory is enabled, drivers/base/memory.c does this:
 
+       for (i = 0; i < NR_MEM_SECTIONS; i++) {
+                if (!present_section_nr(i))
+                        continue;
+                err = add_memory_block(0, __nr_to_section(i), MEM_ONLINE,
+                                        0, BOOT);
+                if (!ret)
+                        ret = err;
+        }
+
+Which creates a sysfs directory for every 16MB of memory. As a result
+I'm seeing up to 30 minutes spent here during boot:
+
+c000000000248ee0 .__sysfs_add_one+0x28/0x128
+c0000000002492a8 .sysfs_add_one+0x38/0x188
+c000000000249c88 .create_dir+0x70/0x138
+c000000000249d98 .sysfs_create_dir+0x48/0x78
+c00000000032bad8 .kobject_add_internal+0x140/0x308
+c00000000032beb4 .kobject_init_and_add+0x4c/0x68
+c00000000046c2c0 .sysdev_register+0xa0/0x220
+c00000000047b1dc .add_memory_block+0x124/0x1e8
+c0000000008d1f28 .memory_dev_init+0xf4/0x168
+c0000000008d1b64 .driver_init+0x50/0x64
+c000000000890378 .do_basic_setup+0x40/0xd4
+
+I assume there are some O(n^2) issues in sysfs as we add all the memory
+nodes. Bumping SECTION_SIZE_BITS to 256 MB drops the time to about 10
+seconds and results in a much smaller /sys.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
-    	powerpc: export data from new hcall H_EM_GET_PARMS
-    
-        Add support for H_EM_GET_PARM hcall that will return data
-        related to power modes from the platform.  Export the data
-        directly to user space for administrative tools to interpret
-        and use.
-    
-    	cat /proc/powerpc/lparcfg will export power mode data
-    
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hvcall.h |    1 +
- arch/powerpc/kernel/lparcfg.c     |   19 ++++++++++++++++++-
- 2 files changed, 19 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index f027581..ebe7493 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -228,6 +228,7 @@
- #define H_JOIN			0x298
- #define H_VASI_STATE            0x2A4
- #define H_ENABLE_CRQ		0x2B0
-+#define H_GET_EM_PARMS		0x2B8
- #define H_SET_MPP		0x2D0
- #define H_GET_MPP		0x2D4
- #define MAX_HCALL_OPCODE	H_GET_MPP
-diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
-index 79a00bb..2e7dd7e 100644
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -37,7 +37,7 @@
- #include <asm/vio.h>
- #include <asm/mmu.h>
+--- linux-2.6.33/arch/powerpc/include/asm/sparsemem.h~	2010-02-25 22:53:54.000000000 -0600
++++ linux-2.6.33/arch/powerpc/include/asm/sparsemem.h	2010-02-25 22:54:06.000000000 -0600
+@@ -8,7 +8,7 @@
+  * MAX_PHYSADDR_BITS		2^N: how much physical address space we have
+  * MAX_PHYSMEM_BITS		2^N: how much memory we can have in that space
+  */
+-#define SECTION_SIZE_BITS       24
++#define SECTION_SIZE_BITS       28
  
--#define MODULE_VERS "1.8"
-+#define MODULE_VERS "1.9"
- #define MODULE_NAME "lparcfg"
- 
- /* #define LPARCFG_DEBUG */
-@@ -486,6 +486,21 @@ static void splpar_dispatch_data(struct seq_file *m)
- 	seq_printf(m, "dispatch_dispersions=%lu\n", dispatch_dispersions);
- }
- 
-+
-+static void parse_em_data(struct seq_file *m)
-+{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	rc = plpar_hcall(H_GET_EM_PARMS, retbuf);
-+
-+	if (rc != H_SUCCESS)
-+		return;
-+
-+	seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
-+	return;
-+
-+}
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
- {
- 	int partition_potential_processors;
-@@ -540,6 +555,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- 
-+	parse_em_data(m);
-+
- 	return 0;
- }
+ #define MAX_PHYSADDR_BITS       44
+ #define MAX_PHYSMEM_BITS        44
