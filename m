@@ -1,18 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Proposal to move PCI out of arch/powerpc and into drivers/of
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <20100226154425.00dde291@jbarnes-piketon>
-References: <27bab769-0788-4b48-96a7-ced65e40144c@SG2EHSMHS007.ehs.local>
-	<20100226154425.00dde291@jbarnes-piketon>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 28 Feb 2010 11:33:06 +1100
-Message-ID: <1267317186.23523.1860.camel@pasglop>
-Mime-Version: 1.0
-Cc: devicetree-discuss@ozlabs.org, michal.simek@petalogix.com,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>,
-	John Williams <john.williams@petalogix.com>
+Return-Path: <andrea.gelmini@gmail.com>
+Received: from mail-bw0-f211.google.com (mail-bw0-f211.google.com
+	[209.85.218.211]) by ozlabs.org (Postfix) with ESMTP id 365DBB7D78
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 03:56:15 +1100 (EST)
+Received: by bwz3 with SMTP id 3so771336bwz.9
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 08:56:13 -0800 (PST)
+Sender: Andrea Gelmini <andrea.gelmini@gmail.com>
+From: Andrea Gelmini <andrea.gelmini@gelma.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 44/66] arch/powerpc/sysdev/cpm2_pic.h: Checkpatch cleanup
+Date: Sat, 27 Feb 2010 17:51:25 +0100
+Message-Id: <1267289508-31031-45-git-send-email-andrea.gelmini@gelma.net>
+In-Reply-To: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
+References: <1267289508-31031-1-git-send-email-andrea.gelmini@gelma.net>
+Cc: Andrea Gelmini <andrea.gelmini@gelma.net>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-26 at 15:44 -0800, Jesse Barnes wrote:
-> 
-> Dave and Ben have been talking about this for awhile; seems like a
-> good
-> excuse to do it.  IIRC they had even thought about just dumping the
-> code directly into drivers/pci so that API updates won't get
-> missed... 
+arch/powerpc/sysdev/cpm2_pic.h:6: ERROR: "(foo*)" should be "(foo *)"
 
-Depends which part. Not -all- of our PCI code as John seems to want.
+Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+---
+ arch/powerpc/sysdev/cpm2_pic.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The bits that generate PCI devices from the device-tree, for sure,
-though again, even there, there are quite a few dependencies on
-constructs and data structures that are powerpc specific, or even ppc64
-specific in some cases, and that would have to be cleaned up and/or
-abstracted first.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/sysdev/cpm2_pic.h b/arch/powerpc/sysdev/cpm2_pic.h
+index 30e5828..2c5f70c 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.h
++++ b/arch/powerpc/sysdev/cpm2_pic.h
+@@ -3,6 +3,6 @@
+ 
+ extern unsigned int cpm2_get_irq(void);
+ 
+-extern void cpm2_pic_init(struct device_node*);
++extern void cpm2_pic_init(struct device_node *);
+ 
+ #endif /* _PPC_KERNEL_CPM2_H */
+-- 
+1.7.0.90.g251a4
