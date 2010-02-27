@@ -1,21 +1,25 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99A9FB7D77
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 12:56:19 +1100 (EST)
-Date: Sat, 27 Feb 2010 01:33:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Amit Shah <amit.shah@redhat.com>
-Subject: Re: [PATCH] hvc_console: Fix a race between hvc_close and hvc_remove
-Message-ID: <20100227013359.5e50f032@lxorguk.ukuu.org.uk>
-In-Reply-To: <1267184786-4377-1-git-send-email-amit.shah@redhat.com>
-References: <1267184786-4377-1-git-send-email-amit.shah@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
+	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id 50B04B7D06
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 12:57:35 +1100 (EST)
+Received: from mail13-sin (localhost [127.0.0.1])	by mail13-sin-R.bigfish.com
+	(Postfix) with ESMTP id 5658C112807E	for <linuxppc-dev@ozlabs.org>;
+	Sat, 27 Feb 2010 01:56:22 +0000 (UTC)
+Received: from SG2EHSMHS006.bigfish.com (unknown [10.210.100.247])	by
+	mail13-sin.bigfish.com (Postfix) with ESMTP id 0E87D1C3004E	for
+	<linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 01:56:21 +0000 (UTC)
+Received: from unknown-38-66.xilinx.com ([149.199.38.66]
+	helo=xsj-smtp1.xilinx.com)	by xsj-gw1 with esmtp (Exim
+	4.63)	(envelope-from
+	<John.Linn@xilinx.com>)	id 1NlBvt-0003Lm-Ab	for linuxppc-dev@ozlabs.org;
+	Fri, 26 Feb 2010 17:57:29 -0800
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: PCI NIC for powerpc system
+Date: Fri, 26 Feb 2010 18:57:23 -0700
+From: John Linn <John.Linn@xilinx.com>
+To: <linuxppc-dev@ozlabs.org>
+Message-ID: <8f766422-4c34-416e-9ae1-95fac2586cdb@SG2EHSMHS006.ehs.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> +	tty_kref_get(hp->tty);
->  	spin_lock_irqsave(&hp->lock, flags);
->  	tty = hp->tty;
->  
-> @@ -830,7 +833,9 @@ int hvc_remove(struct hvc_struct *hp)
->  	 * cleaned up the hvc_struct.
->  	 */
->  	if (tty)
-> -		tty_hangup(tty);
-> +		tty_vhangup(tty);
-> +
-> +	tty_kref_put(hp->tty);
+Hi,
 
-You need to deref hp->tty, take the kref under the lock (and indeed do
-all assignments to it that way too), then tty_kref_put(tty), otherwise
-what stops hp->tty changing during the remove ?
+I should apologize ahead of time for my lack of knowledge with PCI.
 
-Take a look how tty_port_tty_get() and tty_port.c does it ...
+I'm trying to better understand if I can run a standard off the shelf
+PCI NIC with a powerpc kernel as the PCI with device tree is not clear
+to me.
 
-Alan
+I don't see many Ethernet drivers having OF support in them so maybe
+devices on the PCI bus are discovered by the kernel such that the
+drivers don't need to be OF aware.
+
+Any advice is appreciated.
+
+Thanks,
+John
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
