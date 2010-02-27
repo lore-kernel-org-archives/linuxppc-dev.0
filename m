@@ -1,23 +1,21 @@
-Return-Path: <pppeterpppan@gmail.com>
-Received: from qw-out-1920.google.com (qw-out-1920.google.com [74.125.92.146])
-	by ozlabs.org (Postfix) with ESMTP id 4A50EB7D65
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Feb 2010 12:12:07 +1100 (EST)
-Received: by qw-out-1920.google.com with SMTP id 5so140707qwf.50
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Feb 2010 17:12:05 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20100226183559.GA17941@loki.buserror.net>
-References: <48abf2c21002251808v4d40ea42s869b1307dfc3817@mail.gmail.com>
-	<20100226183559.GA17941@loki.buserror.net>
-Date: Sat, 27 Feb 2010 09:12:05 +0800
-Message-ID: <48abf2c21002261712m2ca34388g7e95dce346e87cfc@mail.gmail.com>
-Subject: Re: Does Linux 2.6.32 support NAND flash connect with MPC8247 through
-	localbus with GPCM mode?
-From: Peter Pan <pppeterpppan@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 99A9FB7D77
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 12:56:19 +1100 (EST)
+Date: Sat, 27 Feb 2010 01:33:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH] hvc_console: Fix a race between hvc_close and hvc_remove
+Message-ID: <20100227013359.5e50f032@lxorguk.ukuu.org.uk>
+In-Reply-To: <1267184786-4377-1-git-send-email-amit.shah@redhat.com>
+References: <1267184786-4377-1-git-send-email-amit.shah@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/2/27 Scott Wood <scottwood@freescale.com>:
-> On Fri, Feb 26, 2010 at 10:08:09AM +0800, Peter Pan wrote:
-> There isn't one. =A0I was not under the impression that such a configurat=
-ion
-> was even possible (how do you control ALE/CLE, for example?). =A0There is=
- a
-> NAND driver that uses UPM, though -- perhaps you could use that?
->
-> How specifically is NAND connected to the SoC on your board? =A0What abou=
-t it
-> suggests GPCM?
->
-> -Scott
->
-Our custom board is originally running VxWorks, and there is a full
-solution on NAND
-flash connected through GPCM. Because of this, our Linux can only try
-to adapt to this.
+> +	tty_kref_get(hp->tty);
+>  	spin_lock_irqsave(&hp->lock, flags);
+>  	tty = hp->tty;
+>  
+> @@ -830,7 +833,9 @@ int hvc_remove(struct hvc_struct *hp)
+>  	 * cleaned up the hvc_struct.
+>  	 */
+>  	if (tty)
+> -		tty_hangup(tty);
+> +		tty_vhangup(tty);
+> +
+> +	tty_kref_put(hp->tty);
 
-I'm now writing GPCM NAND driver from the UPM NAND driver. Most function ca=
-n be
-copied from our U-Boot port. Now the NAND flash can be recognized, but ther=
-e is
-some bug in my driver, the kernel will oops for access 0x00000000, I
-will continue
-writing the driver next monday.
+You need to deref hp->tty, take the kref under the lock (and indeed do
+all assignments to it that way too), then tty_kref_put(tty), otherwise
+what stops hp->tty changing during the remove ?
+
+Take a look how tty_port_tty_get() and tty_port.c does it ...
+
+Alan
