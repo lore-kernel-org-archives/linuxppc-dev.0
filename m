@@ -1,12 +1,12 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id CC746B7DAA
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 08:59:31 +1100 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 6EC7CB7F7F
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 08:59:40 +1100 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)
-Date: Sat, 27 Feb 2010 22:58:19 +0100
-Message-Id: <1267307902-31939-1-git-send-email-agust@denx.de>
+Subject: [PATCH 1/3] video: add support for getting video mode from device tree
+Date: Sat, 27 Feb 2010 22:58:20 +0100
+Message-Id: <1267307902-31939-2-git-send-email-agust@denx.de>
 In-Reply-To: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
 References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
 Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com,
@@ -20,39 +20,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series rework DIU support patch submitted
-previously with the patch series for updating MPC5121
-support in mainline. It doesn't add new panel timing data
-to the framebuffer driver anymore. Instead we now allow
-encoding this data in the device tree. First two patches
-add this support.
+Framebuffer drivers may want to get panel timing info
+from the device tree. This patch adds appropriate support.
+Subsequent patch for FSL DIU frame buffer driver makes use
+of this functionality.
 
-The third patch for DIU support is rebased, but still
-depends on patches for adding MPC5121 USB support (because
-it touches shared platform code).
-
-It is intended for inclusion in 2.6.34, since without
-DIU support patch framebuffer doesn't work on mpc5121.
-
-Anatolij Gustschin (3):
-  video: add support for getting video mode from device tree
-  fbdev: fsl-diu-fb.c: allow setting panel video mode from DT
-  powerpc/mpc5121: shared DIU framebuffer support
-
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
- arch/powerpc/platforms/512x/mpc5121_generic.c |   13 ++
- arch/powerpc/platforms/512x/mpc512x.h         |    3 +
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  282 +++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.h                 |    1 +
- drivers/video/Kconfig                         |    6 +
- drivers/video/Makefile                        |    1 +
- drivers/video/fsl-diu-fb.c                    |   88 +++++---
- drivers/video/fsl-diu-fb.h                    |  223 -------------------
- drivers/video/ofmode.c                        |   95 +++++++++
- drivers/video/ofmode.h                        |    6 +
- include/linux/fsl-diu-fb.h                    |  223 +++++++++++++++++++
- 12 files changed, 693 insertions(+), 255 deletions(-)
- delete mode 100644 drivers/video/fsl-diu-fb.h
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/Kconfig  |    5 +++
+ drivers/video/Makefile |    1 +
+ drivers/video/ofmode.c |   95 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/ofmode.h |    6 +++
+ 4 files changed, 107 insertions(+), 0 deletions(-)
  create mode 100644 drivers/video/ofmode.c
  create mode 100644 drivers/video/ofmode.h
- create mode 100644 include/linux/fsl-diu-fb.h
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5a5c303..dc1beb0 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -203,6 +203,11 @@ config FB_MACMODES
+        depends on FB
+        default n
+ 
++config FB_OF_MODE
++       tristate
++       depends on FB && OF
++       default n
++
+ config FB_BACKLIGHT
+ 	bool
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 4ecb30c..c4a912b 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_MACMODES)      += macmodes.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+ obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
++obj-$(CONFIG_FB_OF_MODE)       += ofmode.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p_planar.o
+diff --git a/drivers/video/ofmode.c b/drivers/video/ofmode.c
+new file mode 100644
+index 0000000..78caad1
+--- /dev/null
++++ b/drivers/video/ofmode.c
+@@ -0,0 +1,95 @@
++/*
++ * Get video mode settings from Flattened Device Tree.
++ *
++ * Copyright (C) 2010 DENX Software Engineering.
++ * Anatolij Gustschin <agust@denx.de>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License version 2. See the file COPYING in the main directory
++ * of this archive for more details.
++ */
++
++#include <linux/fb.h>
++#include <linux/of.h>
++
++int __devinit of_get_video_mode(struct device_node *np,
++				struct fb_info *info)
++{
++	struct fb_videomode dt_mode;
++	const u32 *prop;
++	unsigned int len;
++
++	if (!np || !info)
++		return -EINVAL;
++
++	prop = of_get_property(np, "width", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.xres = *prop;
++
++	prop = of_get_property(np, "height", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.yres = *prop;
++
++	prop = of_get_property(np, "depth", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	info->var.bits_per_pixel = *prop;
++
++	prop = of_get_property(np, "linebytes", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	info->fix.line_length = *prop;
++
++	prop = of_get_property(np, "refresh", &len);
++	if (prop && len == sizeof(u32))
++		dt_mode.refresh = *prop; /* optional */
++
++	prop = of_get_property(np, "pixclock", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.pixclock = *prop;
++
++	prop = of_get_property(np, "left_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.left_margin = *prop;
++
++	prop = of_get_property(np, "right_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.right_margin = *prop;
++
++	prop = of_get_property(np, "upper_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.upper_margin = *prop;
++
++	prop = of_get_property(np, "lower_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.lower_margin = *prop;
++
++	prop = of_get_property(np, "hsync_len", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.hsync_len = *prop;
++
++	prop = of_get_property(np, "vsync_len", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.vsync_len = *prop;
++
++	prop = of_get_property(np, "sync", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.sync = *prop;
++
++	fb_videomode_to_var(&info->var, &dt_mode);
++
++	return 0;
++err:
++	pr_err("%s: Can't find expected mode entry\n", np->full_name);
++	return -EINVAL;
++}
+diff --git a/drivers/video/ofmode.h b/drivers/video/ofmode.h
+new file mode 100644
+index 0000000..9a13bec
+--- /dev/null
++++ b/drivers/video/ofmode.h
+@@ -0,0 +1,6 @@
++#ifndef _OFMODE_H
++#define _OFMODE_H
++
++extern int __devinit of_get_video_mode(struct device_node *np,
++					struct fb_info *info);
++#endif
+-- 
+1.6.3.3
