@@ -1,18 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A273CB7D9D
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Feb 2010 21:34:40 +1100 (EST)
-Date: Sat, 27 Feb 2010 02:34:57 -0800 (PST)
-Message-Id: <20100227.023457.174832003.davem@davemloft.net>
-To: agust@denx.de
-Subject: Re: [net-next-2.6 PATCH v3 0/3] Support for MPC512x FEC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1267221649-22754-1-git-send-email-agust@denx.de>
-References: <1267221649-22754-1-git-send-email-agust@denx.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: wd@denx.de, dzu@denx.de, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8199EB7D79
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 02:23:59 +1100 (EST)
+In-Reply-To: <20100226195018.GA26867@loki.buserror.net>
+References: <1267172983-28721-1-git-send-email-Joakim.Tjernlund@transmode.se>
+	<1267172983-28721-2-git-send-email-Joakim.Tjernlund@transmode.se>
+	<20100226195018.GA26867@loki.buserror.net>
+Subject: Re: [PATCH 1/4] 8xx: Optimze TLB Miss handlers
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OFB2EA86C9.2E362C10-ONC12576D7.00542469-C12576D7.00549115@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 27 Feb 2010 16:23:41 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,14 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 26 Feb 2010 23:00:46 +0100
 
-> These patches attempt to provide support for the Freescale MPC512x
-> FEC in the fs_enet driver. The first cleanup patch replaces printk
-> by dev_xxx. The second and third attemt to support MPC5121 FEC
-> in the FEC driver.
+Scott Wood <scottwood@freescale.com> wrote on 2010/02/26 20:50:18:
+>
+> On Fri, Feb 26, 2010 at 09:29:40AM +0100, Joakim Tjernlund wrote:
+> > This removes a couple of insn's from the TLB Miss
+> > handlers whithout changing functionality.
+> > ---
+>
+> Did a quick test of the patchset, seems to work OK (without CONFIG_SWAP or
+> CONFIG_MODULES).  Didn't try with CONFIG_8xx_CPU6.
 
-Applied, for real this time! :-)
+Cool, thanks a lot!
 
-Thanks.
+Not sure anyone is using 2.6 with CPU6 errata. Seems it was fixed years ago.
+
+Should I resend the whole series with SOB line or just include it here?
+
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
