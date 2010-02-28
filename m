@@ -1,18 +1,17 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-iw0-f188.google.com (mail-iw0-f188.google.com
-	[209.85.223.188]) by ozlabs.org (Postfix) with ESMTP id 4F69FB7D59
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 21:59:11 +1100 (EST)
-Received: by iwn26 with SMTP id 26so1706545iwn.9
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 02:59:09 -0800 (PST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: use __ratelimit
-Date: Sun, 28 Feb 2010 19:58:16 +0900
-Message-Id: <1267354697-6456-4-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-References: <1267354697-6456-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, Akinobu Mita <akinobu.mita@gmail.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp138.mail.ukl.yahoo.com (smtp138.mail.ukl.yahoo.com
+	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id 7E27DB7D22
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Mar 2010 01:08:23 +1100 (EST)
+From: Albert Herranz <albert_herranz@yahoo.es>
+To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-usb@vger.kernel.org
+Subject: [RFC PATCH v2 1/9] powerpc: add per-device dma coherent support
+Date: Sun, 28 Feb 2010 15:07:54 +0100
+Message-Id: <1267366082-15248-2-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
+References: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace open-coded rate limiting logic with __ratelimit().
+Use the generic per-device dma coherent allocator on powerpc.
+This allows a driver to declare coherent memory area from where
+a device can allocate coherent memory chunks.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/powerpc/platforms/iseries/pci.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h |    1 +
+ arch/powerpc/kernel/dma.c              |    5 +++++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 175aac8..5873a47 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/of.h>
-+#include <linux/ratelimit.h>
- 
- #include <asm/types.h>
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 80a973b..18ecec8 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -17,6 +17,7 @@
+ #include <linux/dma-debug.h>
  #include <asm/io.h>
-@@ -583,14 +584,9 @@ static inline struct device_node *xlate_iomm_address(
+ #include <asm/swiotlb.h>
++#include <asm-generic/dma-coherent.h>
  
- 	orig_addr = (unsigned long __force)addr;
- 	if ((orig_addr < BASE_IO_MEMORY) || (orig_addr >= max_io_memory)) {
--		static unsigned long last_jiffies;
--		static int num_printed;
-+		static DEFINE_RATELIMIT_STATE(ratelimit, 60 * HZ, 10);
+ #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
  
--		if (time_after(jiffies, last_jiffies + 60 * HZ)) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
-+		if (__ratelimit(&ratelimit))
- 			printk(KERN_ERR
- 				"iSeries_%s: invalid access at IO address %p\n",
- 				func, addr);
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 6215062..83d5232 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -27,6 +27,9 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ {
+ 	void *ret;
+ #ifdef CONFIG_NOT_COHERENT_CACHE
++	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
++		return ret;
++
+ 	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
+ 	if (ret == NULL)
+ 		return NULL;
+@@ -54,6 +57,8 @@ void dma_direct_free_coherent(struct device *dev, size_t size,
+ 			      void *vaddr, dma_addr_t dma_handle)
+ {
+ #ifdef CONFIG_NOT_COHERENT_CACHE
++	if (dma_release_from_coherent(dev, get_order(size), vaddr))
++		return;
+ 	__dma_free_coherent(size, vaddr);
+ #else
+ 	free_pages((unsigned long)vaddr, get_order(size));
 -- 
-1.6.0.6
+1.6.3.3
