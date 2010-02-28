@@ -1,15 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp138.mail.ukl.yahoo.com (smtp138.mail.ukl.yahoo.com
-	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id E3B1FB7E93
+	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id 1A028B7EEF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Mar 2010 01:08:30 +1100 (EST)
+	Mon,  1 Mar 2010 01:08:31 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	linux-usb@vger.kernel.org
-Subject: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
-	driver flag
-Date: Sun, 28 Feb 2010 15:08:01 +0100
-Message-Id: <1267366082-15248-9-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH v2 9/9] wii: hollywood ehci controller support
+Date: Sun, 28 Feb 2010 15:08:02 +0100
+Message-Id: <1267366082-15248-10-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
 References: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -22,198 +21,345 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The HCD_NO_COHERENT_MEM USB host controller driver flag can be enabled
-to instruct the USB stack to avoid allocating coherent memory for USB
-buffers.
-
-This flag is useful to overcome some esoteric memory access restrictions
-found in some platforms.
-For example, the Nintendo Wii video game console is a NOT_COHERENT_CACHE
-platform that is unable to safely perform non-32 bit uncached writes
-to RAM because the byte enables are not connected to the bus.
-Thus, in that platform, "coherent" DMA buffers cannot be directly used
-by the kernel code unless it guarantees that all write accesses
-to said buffers are done in 32 bit chunks (which is not the case in the
-USB subsystem).
-
-To avoid this unwanted behaviour HCD_NO_COHERENT_MEM can be enabled at
-the HCD controller, causing USB buffer allocations to be satisfied from
-normal kernel memory. In this case, the USB stack will make sure that
-the buffers get properly mapped/unmapped for DMA transfers using the DMA
-streaming mapping API.
-
-Note that other parts of the USB stack may also use coherent memory,
-like for example the hardware descriptors used in the EHCI controllers.
-This needs to be checked and addressed separately. In the EHCI example,
-hardware descriptors are accessed in 32-bit (or 64-bit) chunks, causing
-no problems in the described scenario.
+Add support for the USB Enhanced Host Controller Interface included
+in the "Hollywood" chipset of the Nintendo Wii video game console.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- drivers/usb/core/buffer.c |   15 ++++++++-----
- drivers/usb/core/hcd.c    |   50 +++++++++++++++++++++++++++++++++++++-------
- drivers/usb/core/hcd.h    |   13 ++++++-----
- 3 files changed, 58 insertions(+), 20 deletions(-)
+ arch/powerpc/platforms/embedded6xx/Kconfig |    1 +
+ drivers/usb/host/Kconfig                   |    8 +
+ drivers/usb/host/ehci-hcd.c                |    5 +
+ drivers/usb/host/ehci-hlwd.c               |  233 ++++++++++++++++++++++++++++
+ drivers/usb/host/ehci.h                    |   23 +++
+ 5 files changed, 270 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/host/ehci-hlwd.c
 
-diff --git a/drivers/usb/core/buffer.c b/drivers/usb/core/buffer.c
-index 3ba2fff..fede7a0 100644
---- a/drivers/usb/core/buffer.c
-+++ b/drivers/usb/core/buffer.c
-@@ -53,8 +53,9 @@ int hcd_buffer_create(struct usb_hcd *hcd)
- 	char		name[16];
- 	int 		i, size;
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index 4d33755..0eb56a7 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -121,6 +121,7 @@ config WII
+ 	select GAMECUBE_COMMON
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_DMABOUNCE
++	select USB_ARCH_HAS_EHCI
+ 	help
+ 	  Select WII if configuring for the Nintendo Wii.
+ 	  More information at: <http://gc-linux.sourceforge.net/>
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 2678a16..342954f 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -131,6 +131,14 @@ config USB_EHCI_HCD_PPC_OF
+ 	  Enables support for the USB controller present on the PowerPC
+ 	  OpenFirmware platform bus.
  
--	if (!hcd->self.controller->dma_mask &&
--	    !(hcd->driver->flags & HCD_LOCAL_MEM))
-+	if ((!hcd->self.controller->dma_mask &&
-+	    !(hcd->driver->flags & HCD_LOCAL_MEM)) ||
-+	    (hcd->driver->flags & HCD_NO_COHERENT_MEM))
- 		return 0;
++config USB_EHCI_HCD_HLWD
++	bool "Nintendo Wii (Hollywood) EHCI USB controller support"
++	depends on USB_EHCI_HCD && WII
++	default y
++	---help---
++	  Say Y here to support the EHCI USB controller found in the
++	  Hollywood chipset of the Nintendo Wii video game console.
++
+ config USB_W90X900_EHCI
+ 	bool "W90X900(W90P910) EHCI support"
+ 	depends on USB_EHCI_HCD && ARCH_W90X900
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 1ec3857..395c6a1 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -1133,6 +1133,11 @@ MODULE_LICENSE ("GPL");
+ #define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
+ #endif
  
- 	for (i = 0; i < HCD_BUFFER_POOLS; i++) {
-@@ -109,8 +110,9 @@ void *hcd_buffer_alloc(
- 	int 			i;
++#ifdef CONFIG_USB_EHCI_HCD_HLWD
++#include "ehci-hlwd.c"
++#define OF_PLATFORM_DRIVER	ehci_hcd_hlwd_driver
++#endif
++
+ #ifdef CONFIG_XPS_USB_HCD_XILINX
+ #include "ehci-xilinx-of.c"
+ #define OF_PLATFORM_DRIVER	ehci_hcd_xilinx_of_driver
+diff --git a/drivers/usb/host/ehci-hlwd.c b/drivers/usb/host/ehci-hlwd.c
+new file mode 100644
+index 0000000..129e96b
+--- /dev/null
++++ b/drivers/usb/host/ehci-hlwd.c
+@@ -0,0 +1,233 @@
++/*
++ * drivers/usb/host/ehci-hlwd.c
++ *
++ * Nintendo Wii (Hollywood) USB Enhanced Host Controller Interface.
++ * Copyright (C) 2009-2010 The GameCube Linux Team
++ * Copyright (C) 2009,2010 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or (at
++ * your option) any later version.
++ *
++ * Based on ehci-ppc-of.c
++ *
++ * EHCI HCD (Host Controller Driver) for USB.
++ *
++ * Bus Glue for PPC On-Chip EHCI driver on the of_platform bus
++ * Tested on AMCC PPC 440EPx
++ *
++ * Valentine Barshak <vbarshak@ru.mvista.com>
++ *
++ * Based on "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
++ * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
++ *
++ * This file is licenced under the GPL.
++ */
++
++#include <linux/signal.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <asm/wii.h>
++
++#define DRV_MODULE_NAME "ehci-hlwd"
++#define DRV_DESCRIPTION "Nintendo Wii EHCI Host Controller"
++#define DRV_AUTHOR      "Albert Herranz"
++
++/*
++ * Non-standard registers.
++ */
++#define HLWD_EHCI_CTL		0x00cc	/* Controller Control */
++#define HLWD_EHCI_CTL_INTE	(1<<15)	/* Notify EHCI interrupts */
++
++/* called during probe() after chip reset completes */
++static int ehci_hlwd_reset(struct usb_hcd *hcd)
++{
++	struct ehci_hcd	*ehci = hcd_to_ehci(hcd);
++	int error;
++
++	dbg_hcs_params(ehci, "reset");
++	dbg_hcc_params(ehci, "reset");
++
++	error = ehci_halt(ehci);
++	if (error)
++		goto out;
++
++	error = ehci_init(hcd);
++	if (error)
++		goto out;
++
++	/* enable notification of EHCI interrupts */
++	setbits32(hcd->regs + HLWD_EHCI_CTL, HLWD_EHCI_CTL_INTE);
++
++	ehci->sbrn = 0x20;
++	error = ehci_reset(ehci);
++	ehci_port_power(ehci, 0);
++out:
++	return error;
++}
++
++static const struct hc_driver ehci_hlwd_hc_driver = {
++	.description		= hcd_name,
++	.product_desc		= "Nintendo Wii EHCI Host Controller",
++	.hcd_priv_size		= sizeof(struct ehci_hcd),
++
++	/*
++	 * generic hardware linkage
++	 */
++	.irq			= ehci_irq,
++	.flags			= HCD_USB2 | HCD_NO_COHERENT_MEM,
++
++	/*
++	 * basic lifecycle operations
++	 */
++	.reset			= ehci_hlwd_reset,
++	.start			= ehci_run,
++	.stop			= ehci_stop,
++	.shutdown		= ehci_shutdown,
++
++	/*
++	 * managing i/o requests and associated device resources
++	 */
++	.urb_enqueue		= ehci_urb_enqueue,
++	.urb_dequeue		= ehci_urb_dequeue,
++	.endpoint_disable	= ehci_endpoint_disable,
++	.endpoint_reset		= ehci_endpoint_reset,
++
++	/*
++	 * scheduling support
++	 */
++	.get_frame_number	= ehci_get_frame,
++
++	/*
++	 * root hub support
++	 */
++	.hub_status_data	= ehci_hub_status_data,
++	.hub_control		= ehci_hub_control,
++#ifdef	CONFIG_PM
++	.bus_suspend		= ehci_bus_suspend,
++	.bus_resume		= ehci_bus_resume,
++#endif
++	.relinquish_port	= ehci_relinquish_port,
++	.port_handed_over	= ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
++};
++
++static int __devinit
++ehci_hcd_hlwd_probe(struct of_device *op, const struct of_device_id *match)
++{
++	struct device_node *dn = op->node;
++	struct usb_hcd *hcd;
++	struct ehci_hcd	*ehci = NULL;
++	struct resource res;
++	int irq;
++	int error = -ENODEV;
++
++	if (usb_disabled())
++		goto out;
++
++	dev_dbg(&op->dev, "initializing " DRV_MODULE_NAME " USB Controller\n");
++
++	error = of_address_to_resource(dn, 0, &res);
++	if (error)
++		goto out;
++
++	hcd = usb_create_hcd(&ehci_hlwd_hc_driver, &op->dev, DRV_MODULE_NAME);
++	if (!hcd) {
++		error = -ENOMEM;
++		goto out;
++	}
++
++	hcd->rsrc_start = res.start;
++	hcd->rsrc_len = resource_size(&res);
++
++	irq = irq_of_parse_and_map(dn, 0);
++	if (irq == NO_IRQ) {
++		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
++		error = -EBUSY;
++		goto err_irq;
++	}
++
++	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
++	if (!hcd->regs) {
++		printk(KERN_ERR __FILE__ ": ioremap failed\n");
++		error = -EBUSY;
++		goto err_ioremap;
++	}
++
++	/* this device requires MEM2 DMA buffers */
++	error = wii_set_mem2_dma_constraints(&op->dev);
++	if (error)
++		goto err_mem2_constraints;
++
++	ehci = hcd_to_ehci(hcd);
++	ehci->caps = hcd->regs;
++	ehci->regs = hcd->regs +
++			HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
++
++	/* cache this readonly data; minimize chip reads */
++	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
++
++	error = usb_add_hcd(hcd, irq, 0);
++	if (error == 0)
++		return 0;
++
++err_mem2_constraints:
++	iounmap(hcd->regs);
++err_ioremap:
++	irq_dispose_mapping(irq);
++err_irq:
++	usb_put_hcd(hcd);
++out:
++	return error;
++}
++
++
++static int ehci_hcd_hlwd_remove(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++	dev_set_drvdata(&op->dev, NULL);
++
++	dev_dbg(&op->dev, "stopping " DRV_MODULE_NAME " USB Controller\n");
++
++	usb_remove_hcd(hcd);
++	wii_clear_mem2_dma_constraints(&op->dev);
++	iounmap(hcd->regs);
++	irq_dispose_mapping(hcd->irq);
++	usb_put_hcd(hcd);
++
++	return 0;
++}
++
++
++static int ehci_hcd_hlwd_shutdown(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++	if (hcd->driver->shutdown)
++		hcd->driver->shutdown(hcd);
++
++	return 0;
++}
++
++
++static struct of_device_id ehci_hcd_hlwd_match[] = {
++	{ .compatible = "nintendo,hollywood-usb-ehci", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, ehci_hcd_hlwd_match);
++
++static struct of_platform_driver ehci_hcd_hlwd_driver = {
++	.name		= DRV_MODULE_NAME,
++	.match_table	= ehci_hcd_hlwd_match,
++	.probe		= ehci_hcd_hlwd_probe,
++	.remove		= ehci_hcd_hlwd_remove,
++	.shutdown	= ehci_hcd_hlwd_shutdown,
++	.driver		= {
++		.name	= DRV_MODULE_NAME,
++		.owner	= THIS_MODULE,
++	},
++};
++
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index 2d85e21..8fb519b 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -599,6 +599,27 @@ ehci_port_speed(struct ehci_hcd *ehci, unsigned int portsc)
+ #define ehci_big_endian_mmio(e)		0
+ #endif
  
- 	/* some USB hosts just use PIO */
--	if (!bus->controller->dma_mask &&
--	    !(hcd->driver->flags & HCD_LOCAL_MEM)) {
-+	if ((!bus->controller->dma_mask &&
-+	    !(hcd->driver->flags & HCD_LOCAL_MEM)) ||
-+	    (hcd->driver->flags & HCD_NO_COHERENT_MEM)) {
- 		*dma = ~(dma_addr_t) 0;
- 		return kmalloc(size, mem_flags);
- 	}
-@@ -135,8 +137,9 @@ void hcd_buffer_free(
- 	if (!addr)
- 		return;
- 
--	if (!bus->controller->dma_mask &&
--	    !(hcd->driver->flags & HCD_LOCAL_MEM)) {
-+	if ((!bus->controller->dma_mask &&
-+	    !(hcd->driver->flags & HCD_LOCAL_MEM)) ||
-+	    (hcd->driver->flags & HCD_NO_COHERENT_MEM)) {
- 		kfree(addr);
- 		return;
- 	}
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 80995ef..c2596c5 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1260,6 +1260,34 @@ static void hcd_free_coherent(struct usb_bus *bus, dma_addr_t *dma_handle,
- 	*dma_handle = 0;
++#ifdef CONFIG_USB_EHCI_HCD_HLWD
++
++/*
++ * The Nintendo Wii video game console has no PCI hardware.
++ * The USB controllers are part of the "Hollywood" chipset and are
++ * accessed via the platform internal I/O accessors.
++ */
++static inline unsigned int ehci_readl(const struct ehci_hcd *ehci,
++				      __u32 __iomem *regs)
++{
++	return in_be32(regs);
++}
++
++static inline void ehci_writel(const struct ehci_hcd *ehci,
++			       const unsigned int val, __u32 __iomem *regs)
++{
++	out_be32(regs, val);
++}
++
++#else
++
+ /*
+  * Big-endian read/write functions are arch-specific.
+  * Other arches can be added if/when they're needed.
+@@ -632,6 +653,8 @@ static inline void ehci_writel(const struct ehci_hcd *ehci,
+ #endif
  }
  
-+static int urb_needs_setup_dma_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	return !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP) ||
-+	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+		urb->setup_dma == ~(dma_addr_t)0);
-+}
++#endif /* CONFIG_USB_EHCI_HCD_HLWD */
 +
-+static int urb_needs_setup_dma_unmap(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	return !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP) ||
-+	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+		urb->setup_dma && urb->setup_dma != ~(dma_addr_t)0);
-+}
-+
-+static int urb_needs_transfer_dma_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	return !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP) ||
-+	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+		urb->transfer_dma == ~(dma_addr_t)0);
-+}
-+
-+static int urb_needs_transfer_dma_unmap(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	return !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP) ||
-+	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+		urb->transfer_dma && urb->transfer_dma != ~(dma_addr_t)0);
-+}
-+
- static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 			   gfp_t mem_flags)
- {
-@@ -1275,7 +1303,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 		return 0;
- 
- 	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-+	    && urb_needs_setup_dma_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->setup_dma = dma_map_single(
- 					hcd->self.controller,
-@@ -1296,7 +1324,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
- 	if (ret == 0 && urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
-+	    && urb_needs_transfer_dma_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->transfer_dma = dma_map_single (
- 					hcd->self.controller,
-@@ -1334,12 +1362,15 @@ static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
- 		return;
- 
- 	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
--		if (hcd->self.uses_dma)
-+	    && urb_needs_setup_dma_unmap(hcd, urb)) {
-+		if (hcd->self.uses_dma) {
- 			dma_unmap_single(hcd->self.controller, urb->setup_dma,
- 					sizeof(struct usb_ctrlrequest),
- 					DMA_TO_DEVICE);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
-+			if ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+			    (urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
-+				urb->setup_dma = ~(dma_addr_t)0;
-+		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
- 			hcd_free_coherent(urb->dev->bus, &urb->setup_dma,
- 					(void **)&urb->setup_packet,
- 					sizeof(struct usb_ctrlrequest),
-@@ -1348,13 +1379,16 @@ static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
- 
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
- 	if (urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
--		if (hcd->self.uses_dma)
-+	    && urb_needs_transfer_dma_unmap(hcd, urb)) {
-+		if (hcd->self.uses_dma) {
- 			dma_unmap_single(hcd->self.controller,
- 					urb->transfer_dma,
- 					urb->transfer_buffer_length,
- 					dir);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
-+			if ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
-+			    (urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
-+				urb->transfer_dma = ~(dma_addr_t)0;
-+		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
- 			hcd_free_coherent(urb->dev->bus, &urb->transfer_dma,
- 					&urb->transfer_buffer,
- 					urb->transfer_buffer_length,
-diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
-index bbe2b92..cde42f3 100644
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -183,12 +183,13 @@ struct hc_driver {
- 	irqreturn_t	(*irq) (struct usb_hcd *hcd);
- 
- 	int	flags;
--#define	HCD_MEMORY	0x0001		/* HC regs use memory (else I/O) */
--#define	HCD_LOCAL_MEM	0x0002		/* HC needs local memory */
--#define	HCD_USB11	0x0010		/* USB 1.1 */
--#define	HCD_USB2	0x0020		/* USB 2.0 */
--#define	HCD_USB3	0x0040		/* USB 3.0 */
--#define	HCD_MASK	0x0070
-+#define	HCD_MEMORY		0x0001	/* HC regs use memory (else I/O) */
-+#define	HCD_LOCAL_MEM		0x0002	/* HC needs local memory */
-+#define	HCD_NO_COHERENT_MEM	0x0004	/* HC avoids use of "coherent" mem */
-+#define	HCD_USB11		0x0010	/* USB 1.1 */
-+#define	HCD_USB2		0x0020	/* USB 2.0 */
-+#define	HCD_USB3		0x0040	/* USB 3.0 */
-+#define	HCD_MASK		0x0070
- 
- 	/* called to init HCD and root hub */
- 	int	(*reset) (struct usb_hcd *hcd);
+ /*
+  * On certain ppc-44x SoC there is a HW issue, that could only worked around with
+  * explicit suspend/operate of OHCI. This function hereby makes sense only on that arch.
 -- 
 1.6.3.3
