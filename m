@@ -1,14 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp138.mail.ukl.yahoo.com (smtp138.mail.ukl.yahoo.com
-	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id 762AEB7D22
+	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id ABED1B7DB0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Mar 2010 01:08:26 +1100 (EST)
+	Mon,  1 Mar 2010 01:08:27 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	linux-usb@vger.kernel.org
-Subject: [RFC PATCH v2 4/9] add generic dmabounce support
-Date: Sun, 28 Feb 2010 15:07:57 +0100
-Message-Id: <1267366082-15248-5-git-send-email-albert_herranz@yahoo.es>
+Subject: [RFC PATCH v2 5/9] arm: use generic dmabounce support
+Date: Sun, 28 Feb 2010 15:07:58 +0100
+Message-Id: <1267366082-15248-6-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
 References: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -21,556 +21,616 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch makes part of the ARM dmabounce code available to other
-architectures as a generic API.
-See included kernel-doc annotations for the actual API implemented.
-
-An architecture can opt-in for generic dmabounce support by defining
-HAVE_DMABOUNCE.
-
-This support will be used later to address DMA memory access restrictions
-on the Nintendo Wii video game console.
+Update ARM dmabounce to use the generic dmabounce support.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/Kconfig              |    3 +
- include/linux/dmabounce.h |   77 +++++++++
- lib/Kconfig               |   10 ++
- lib/Makefile              |    2 +
- lib/dmabounce.c           |  395 +++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 487 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/dmabounce.h
- create mode 100644 lib/dmabounce.c
+ arch/arm/Kconfig              |    4 +-
+ arch/arm/common/Kconfig       |    6 +-
+ arch/arm/common/dmabounce.c   |  376 +++++++---------------------------------
+ arch/arm/include/asm/device.h |    2 +-
+ include/linux/dmabounce.h     |    6 -
+ lib/dmabounce.c               |    6 -
+ 6 files changed, 70 insertions(+), 330 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 9d055b4..98ff26d 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -130,6 +130,9 @@ config HAVE_CLK
- config HAVE_DMA_API_DEBUG
- 	bool
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 184a6bd..25fe1d0 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -417,7 +417,7 @@ config ARCH_IXP4XX
+ 	select GENERIC_GPIO
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
+-	select DMABOUNCE if PCI
++	select HAVE_DMABOUNCE if PCI
+ 	help
+ 	  Support for Intel's IXP4XX (XScale) family of processors.
  
-+config HAVE_DMABOUNCE
-+	bool
-+
- config HAVE_DEFAULT_NO_SPIN_MUTEXES
+@@ -974,7 +974,7 @@ config PCI_HOST_ITE8152
  	bool
+ 	depends on PCI && MACH_ARMCORE
+ 	default y
+-	select DMABOUNCE
++	select HAVE_DMABOUNCE
+ 
+ source "drivers/pci/Kconfig"
+ 
+diff --git a/arch/arm/common/Kconfig b/arch/arm/common/Kconfig
+index 4efbb9d..01869a5 100644
+--- a/arch/arm/common/Kconfig
++++ b/arch/arm/common/Kconfig
+@@ -20,11 +20,7 @@ config ICST307
+ 
+ config SA1111
+ 	bool
+-	select DMABOUNCE if !ARCH_PXA
+-
+-config DMABOUNCE
+-	bool
+-	select ZONE_DMA
++	select HAVE_DMABOUNCE if !ARCH_PXA
+ 
+ config TIMER_ACORN
+ 	bool
+diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
+index cc32c1e..a114ee1 100644
+--- a/arch/arm/common/dmabounce.c
++++ b/arch/arm/common/dmabounce.c
+@@ -31,203 +31,38 @@
+ #include <linux/dmapool.h>
+ #include <linux/list.h>
+ #include <linux/scatterlist.h>
++#include <linux/dmabounce.h>
+ 
+ #include <asm/cacheflush.h>
+ 
+-#undef STATS
+-
+-#ifdef STATS
+-#define DO_STATS(X) do { X ; } while (0)
+-#else
+-#define DO_STATS(X) do { } while (0)
+-#endif
+-
+-/* ************************************************** */
+-
+-struct safe_buffer {
+-	struct list_head node;
+-
+-	/* original request */
+-	void		*ptr;
+-	size_t		size;
+-	int		direction;
+-
+-	/* safe buffer info */
+-	struct dmabounce_pool *pool;
+-	void		*safe;
+-	dma_addr_t	safe_dma_addr;
+-};
+-
+-struct dmabounce_pool {
+-	unsigned long	size;
+-	struct dma_pool	*pool;
+-#ifdef STATS
+-	unsigned long	allocs;
+-#endif
+-};
+-
+-struct dmabounce_device_info {
+-	struct device *dev;
+-	struct list_head safe_buffers;
+-#ifdef STATS
+-	unsigned long total_allocs;
+-	unsigned long map_op_count;
+-	unsigned long bounce_count;
+-	int attr_res;
+-#endif
+-	struct dmabounce_pool	small;
+-	struct dmabounce_pool	large;
+-
+-	rwlock_t lock;
+-};
+-
+-#ifdef STATS
+-static ssize_t dmabounce_show(struct device *dev, struct device_attribute *attr,
+-			      char *buf)
+-{
+-	struct dmabounce_device_info *device_info = dev->archdata.dmabounce;
+-	return sprintf(buf, "%lu %lu %lu %lu %lu %lu\n",
+-		device_info->small.allocs,
+-		device_info->large.allocs,
+-		device_info->total_allocs - device_info->small.allocs -
+-			device_info->large.allocs,
+-		device_info->total_allocs,
+-		device_info->map_op_count,
+-		device_info->bounce_count);
+-}
+-
+-static DEVICE_ATTR(dmabounce_stats, 0400, dmabounce_show, NULL);
+-#endif
+-
+-
+-/* allocate a 'safe' buffer and keep track of it */
+-static inline struct safe_buffer *
+-alloc_safe_buffer(struct dmabounce_device_info *device_info, void *ptr,
+-		  size_t size, enum dma_data_direction dir)
+-{
+-	struct safe_buffer *buf;
+-	struct dmabounce_pool *pool;
+-	struct device *dev = device_info->dev;
+-	unsigned long flags;
+-
+-	dev_dbg(dev, "%s(ptr=%p, size=%d, dir=%d)\n",
+-		__func__, ptr, size, dir);
+-
+-	if (size <= device_info->small.size) {
+-		pool = &device_info->small;
+-	} else if (size <= device_info->large.size) {
+-		pool = &device_info->large;
+-	} else {
+-		pool = NULL;
+-	}
+-
+-	buf = kmalloc(sizeof(struct safe_buffer), GFP_ATOMIC);
+-	if (buf == NULL) {
+-		dev_warn(dev, "%s: kmalloc failed\n", __func__);
+-		return NULL;
+-	}
+-
+-	buf->ptr = ptr;
+-	buf->size = size;
+-	buf->direction = dir;
+-	buf->pool = pool;
+-
+-	if (pool) {
+-		buf->safe = dma_pool_alloc(pool->pool, GFP_ATOMIC,
+-					   &buf->safe_dma_addr);
+-	} else {
+-		buf->safe = dma_alloc_coherent(dev, size, &buf->safe_dma_addr,
+-					       GFP_ATOMIC);
+-	}
+-
+-	if (buf->safe == NULL) {
+-		dev_warn(dev,
+-			 "%s: could not alloc dma memory (size=%d)\n",
+-			 __func__, size);
+-		kfree(buf);
+-		return NULL;
+-	}
+-
+-#ifdef STATS
+-	if (pool)
+-		pool->allocs++;
+-	device_info->total_allocs++;
+-#endif
+-
+-	write_lock_irqsave(&device_info->lock, flags);
+-	list_add(&buf->node, &device_info->safe_buffers);
+-	write_unlock_irqrestore(&device_info->lock, flags);
+-
+-	return buf;
+-}
+-
+-/* determine if a buffer is from our "safe" pool */
+-static inline struct safe_buffer *
+-find_safe_buffer(struct dmabounce_device_info *device_info, dma_addr_t safe_dma_addr)
+-{
+-	struct safe_buffer *b, *rb = NULL;
+-	unsigned long flags;
+-
+-	read_lock_irqsave(&device_info->lock, flags);
+-
+-	list_for_each_entry(b, &device_info->safe_buffers, node)
+-		if (b->safe_dma_addr == safe_dma_addr) {
+-			rb = b;
+-			break;
+-		}
+-
+-	read_unlock_irqrestore(&device_info->lock, flags);
+-	return rb;
+-}
+-
+-static inline void
+-free_safe_buffer(struct dmabounce_device_info *device_info, struct safe_buffer *buf)
+-{
+-	unsigned long flags;
+-
+-	dev_dbg(device_info->dev, "%s(buf=%p)\n", __func__, buf);
+-
+-	write_lock_irqsave(&device_info->lock, flags);
+-
+-	list_del(&buf->node);
+-
+-	write_unlock_irqrestore(&device_info->lock, flags);
+-
+-	if (buf->pool)
+-		dma_pool_free(buf->pool->pool, buf->safe, buf->safe_dma_addr);
+-	else
+-		dma_free_coherent(device_info->dev, buf->size, buf->safe,
+-				    buf->safe_dma_addr);
+-
+-	kfree(buf);
+-}
+-
+-/* ************************************************** */
+-
+-static struct safe_buffer *find_safe_buffer_dev(struct device *dev,
+-		dma_addr_t dma_addr, const char *where)
++static struct dmabounce_buffer *
++find_safe_buffer_dev(struct device *dev, dma_addr_t dma_addr, size_t size,
++		     enum dma_data_direction dir, const char *where)
+ {
+ 	if (!dev || !dev->archdata.dmabounce)
+ 		return NULL;
+ 	if (dma_mapping_error(dev, dma_addr)) {
+ 		if (dev)
+ 			dev_err(dev, "Trying to %s invalid mapping\n", where);
+-		else
+-			pr_err("unknown device: Trying to %s invalid mapping\n", where);
++		else {
++			pr_err("unknown device: "
++			       "Trying to %s invalid mapping\n", where);
++		}
+ 		return NULL;
+ 	}
+-	return find_safe_buffer(dev->archdata.dmabounce, dma_addr);
++	return dmabounce_find_buffer(dev->archdata.dmabounce, dma_addr,
++				     size, dir);
+ }
+ 
+ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+ 		enum dma_data_direction dir)
+ {
+-	struct dmabounce_device_info *device_info = dev->archdata.dmabounce;
++	struct dmabounce_info *info = dev->archdata.dmabounce;
+ 	dma_addr_t dma_addr;
+ 	int needs_bounce = 0;
+ 
+-	if (device_info)
+-		DO_STATS ( device_info->map_op_count++ );
++	if (info)
++		DMABOUNCE_DO_STATS(info, map_op_count++);
+ 
+ 	dma_addr = virt_to_dma(dev, ptr);
+ 
+@@ -248,11 +83,11 @@ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+ 		needs_bounce = (dma_addr | (dma_addr + size - 1)) & ~mask;
+ 	}
+ 
+-	if (device_info && (needs_bounce || dma_needs_bounce(dev, dma_addr, size))) {
+-		struct safe_buffer *buf;
++	if (info && (needs_bounce || dma_needs_bounce(dev, dma_addr, size))) {
++		struct dmabounce_buffer *bb;
+ 
+-		buf = alloc_safe_buffer(device_info, ptr, size, dir);
+-		if (buf == 0) {
++		bb = dmabounce_alloc_buffer(info, ptr, size, dir, GFP_ATOMIC);
++		if (!bb) {
+ 			dev_err(dev, "%s: unable to map unsafe buffer %p!\n",
+ 			       __func__, ptr);
+ 			return 0;
+@@ -260,18 +95,17 @@ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+ 
+ 		dev_dbg(dev,
+ 			"%s: unsafe buffer %p (dma=%#x) mapped to %p (dma=%#x)\n",
+-			__func__, buf->ptr, virt_to_dma(dev, buf->ptr),
+-			buf->safe, buf->safe_dma_addr);
++			__func__, bb->buf, virt_to_dma(dev, bb->buf),
++			bb->bounce_buf, bb->bounce_buf_dma);
+ 
+ 		if ((dir == DMA_TO_DEVICE) ||
+ 		    (dir == DMA_BIDIRECTIONAL)) {
+ 			dev_dbg(dev, "%s: copy unsafe %p to safe %p, size %d\n",
+-				__func__, ptr, buf->safe, size);
+-			memcpy(buf->safe, ptr, size);
++				__func__, ptr, bb->bounce_buf, size);
++			memcpy(bb->bounce_buf, ptr, size);
+ 		}
+-		ptr = buf->safe;
+ 
+-		dma_addr = buf->safe_dma_addr;
++		dma_addr = bb->bounce_buf_dma;
+ 	} else {
+ 		/*
+ 		 * We don't need to sync the DMA buffer since
+@@ -286,26 +120,25 @@ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+ static inline void unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 		size_t size, enum dma_data_direction dir)
+ {
+-	struct safe_buffer *buf = find_safe_buffer_dev(dev, dma_addr, "unmap");
+-
+-	if (buf) {
+-		BUG_ON(buf->size != size);
+-		BUG_ON(buf->direction != dir);
++	struct dmabounce_buffer *bb;
+ 
++	bb = find_safe_buffer_dev(dev, dma_addr, size, dir, "unmap");
++	if (bb) {
+ 		dev_dbg(dev,
+-			"%s: unsafe buffer %p (dma=%#x) mapped to %p (dma=%#x)\n",
+-			__func__, buf->ptr, virt_to_dma(dev, buf->ptr),
+-			buf->safe, buf->safe_dma_addr);
++			"%s: unsafe buffer %p (dma=%#x) mapped to"
++			" %p (dma=%#x)\n",
++			__func__, bb->buf, virt_to_dma(dev, bb->buf),
++			bb->bounce_buf, bb->bounce_buf_dma);
+ 
+-		DO_STATS(dev->archdata.dmabounce->bounce_count++);
++		DMABOUNCE_DO_STATS(dev->archdata.dmabounce, bounce_count++);
+ 
+ 		if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL) {
+-			void *ptr = buf->ptr;
++			void *ptr = bb->buf;
+ 
+ 			dev_dbg(dev,
+ 				"%s: copy back safe %p to unsafe %p size %d\n",
+-				__func__, buf->safe, ptr, size);
+-			memcpy(ptr, buf->safe, size);
++				__func__, bb->bounce_buf, ptr, size);
++			memcpy(ptr, bb->bounce_buf, size);
+ 
+ 			/*
+ 			 * Since we may have written to a page cache page,
+@@ -314,7 +147,7 @@ static inline void unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 			 */
+ 			__cpuc_flush_dcache_area(ptr, size);
+ 		}
+-		free_safe_buffer(dev->archdata.dmabounce, buf);
++		dmabounce_free_buffer(dev->archdata.dmabounce, bb);
+ 	}
+ }
+ 
+@@ -391,27 +224,25 @@ EXPORT_SYMBOL(dma_unmap_page);
+ int dmabounce_sync_for_cpu(struct device *dev, dma_addr_t addr,
+ 		unsigned long off, size_t sz, enum dma_data_direction dir)
+ {
+-	struct safe_buffer *buf;
++	struct dmabounce_buffer *bb;
+ 
+ 	dev_dbg(dev, "%s(dma=%#x,off=%#lx,sz=%zx,dir=%x)\n",
+ 		__func__, addr, off, sz, dir);
+ 
+-	buf = find_safe_buffer_dev(dev, addr, __func__);
+-	if (!buf)
++	bb = find_safe_buffer_dev(dev, addr, 0, dir, __func__);
++	if (!bb)
+ 		return 1;
+ 
+-	BUG_ON(buf->direction != dir);
+-
+ 	dev_dbg(dev, "%s: unsafe buffer %p (dma=%#x) mapped to %p (dma=%#x)\n",
+-		__func__, buf->ptr, virt_to_dma(dev, buf->ptr),
+-		buf->safe, buf->safe_dma_addr);
++		__func__, bb->buf, virt_to_dma(dev, bb->buf),
++		bb->bounce_buf, bb->bounce_buf_dma);
+ 
+-	DO_STATS(dev->archdata.dmabounce->bounce_count++);
++	DMABOUNCE_DO_STATS(dev->archdata.dmabounce, bounce_count++);
+ 
+ 	if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL) {
+ 		dev_dbg(dev, "%s: copy back safe %p to unsafe %p size %d\n",
+-			__func__, buf->safe + off, buf->ptr + off, sz);
+-		memcpy(buf->ptr + off, buf->safe + off, sz);
++			__func__, bb->bounce_buf + off, bb->buf + off, sz);
++		memcpy(bb->buf + off, bb->bounce_buf + off, sz);
+ 	}
+ 	return 0;
+ }
+@@ -420,135 +251,60 @@ EXPORT_SYMBOL(dmabounce_sync_for_cpu);
+ int dmabounce_sync_for_device(struct device *dev, dma_addr_t addr,
+ 		unsigned long off, size_t sz, enum dma_data_direction dir)
+ {
+-	struct safe_buffer *buf;
++	struct dmabounce_buffer *bb;
+ 
+ 	dev_dbg(dev, "%s(dma=%#x,off=%#lx,sz=%zx,dir=%x)\n",
+ 		__func__, addr, off, sz, dir);
+ 
+-	buf = find_safe_buffer_dev(dev, addr, __func__);
+-	if (!buf)
++	bb = find_safe_buffer_dev(dev, addr, 0, dir, __func__);
++	if (!bb)
+ 		return 1;
+ 
+-	BUG_ON(buf->direction != dir);
+-
+ 	dev_dbg(dev, "%s: unsafe buffer %p (dma=%#x) mapped to %p (dma=%#x)\n",
+-		__func__, buf->ptr, virt_to_dma(dev, buf->ptr),
+-		buf->safe, buf->safe_dma_addr);
++		__func__, bb->buf, virt_to_dma(dev, bb->buf),
++		bb->bounce_buf, bb->bounce_buf_dma);
+ 
+-	DO_STATS(dev->archdata.dmabounce->bounce_count++);
++	DMABOUNCE_DO_STATS(dev->archdata.dmabounce, bounce_count++);
+ 
+ 	if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL) {
+ 		dev_dbg(dev, "%s: copy out unsafe %p to safe %p, size %d\n",
+-			__func__,buf->ptr + off, buf->safe + off, sz);
+-		memcpy(buf->safe + off, buf->ptr + off, sz);
++			__func__, bb->buf + off, bb->bounce_buf + off, sz);
++		memcpy(bb->bounce_buf + off, bb->buf + off, sz);
+ 	}
+ 	return 0;
+ }
+ EXPORT_SYMBOL(dmabounce_sync_for_device);
+ 
+-static int dmabounce_init_pool(struct dmabounce_pool *pool, struct device *dev,
+-		const char *name, unsigned long size)
+-{
+-	pool->size = size;
+-	DO_STATS(pool->allocs = 0);
+-	pool->pool = dma_pool_create(name, dev, size,
+-				     0 /* byte alignment */,
+-				     0 /* no page-crossing issues */);
+-
+-	return pool->pool ? 0 : -ENOMEM;
+-}
+-
+ int dmabounce_register_dev(struct device *dev, unsigned long small_buffer_size,
+ 		unsigned long large_buffer_size)
+ {
+-	struct dmabounce_device_info *device_info;
+-	int ret;
+-
+-	device_info = kmalloc(sizeof(struct dmabounce_device_info), GFP_ATOMIC);
+-	if (!device_info) {
+-		dev_err(dev,
+-			"Could not allocated dmabounce_device_info\n");
+-		return -ENOMEM;
+-	}
+-
+-	ret = dmabounce_init_pool(&device_info->small, dev,
+-				  "small_dmabounce_pool", small_buffer_size);
+-	if (ret) {
+-		dev_err(dev,
+-			"dmabounce: could not allocate DMA pool for %ld byte objects\n",
+-			small_buffer_size);
+-		goto err_free;
+-	}
+-
+-	if (large_buffer_size) {
+-		ret = dmabounce_init_pool(&device_info->large, dev,
+-					  "large_dmabounce_pool",
+-					  large_buffer_size);
+-		if (ret) {
+-			dev_err(dev,
+-				"dmabounce: could not allocate DMA pool for %ld byte objects\n",
+-				large_buffer_size);
+-			goto err_destroy;
+-		}
+-	}
+-
+-	device_info->dev = dev;
+-	INIT_LIST_HEAD(&device_info->safe_buffers);
+-	rwlock_init(&device_info->lock);
+-
+-#ifdef STATS
+-	device_info->total_allocs = 0;
+-	device_info->map_op_count = 0;
+-	device_info->bounce_count = 0;
+-	device_info->attr_res = device_create_file(dev, &dev_attr_dmabounce_stats);
+-#endif
+-
+-	dev->archdata.dmabounce = device_info;
+-
+-	dev_info(dev, "dmabounce: registered device\n");
+-
+-	return 0;
+-
+- err_destroy:
+-	dma_pool_destroy(device_info->small.pool);
+- err_free:
+-	kfree(device_info);
+-	return ret;
++	struct dmabounce_info *info;
++	int error = -ENOMEM;
++
++	info = dmabounce_info_alloc(dev, small_buffer_size, large_buffer_size,
++				    0, 0);
++	if (!info)
++		goto out;
++	error = dmabounce_info_register(dev, info);
++	if (error)
++		dmabounce_info_free(info);
++out:
++	return error;
+ }
+ EXPORT_SYMBOL(dmabounce_register_dev);
+ 
+ void dmabounce_unregister_dev(struct device *dev)
+ {
+-	struct dmabounce_device_info *device_info = dev->archdata.dmabounce;
+-
+-	dev->archdata.dmabounce = NULL;
++	struct dmabounce_info *info = dev->archdata.dmabounce;
+ 
+-	if (!device_info) {
++	if (!info) {
+ 		dev_warn(dev,
+ 			 "Never registered with dmabounce but attempting"
+ 			 "to unregister!\n");
+ 		return;
+ 	}
+-
+-	if (!list_empty(&device_info->safe_buffers)) {
+-		dev_err(dev,
+-			"Removing from dmabounce with pending buffers!\n");
+-		BUG();
+-	}
+-
+-	if (device_info->small.pool)
+-		dma_pool_destroy(device_info->small.pool);
+-	if (device_info->large.pool)
+-		dma_pool_destroy(device_info->large.pool);
+-
+-#ifdef STATS
+-	if (device_info->attr_res == 0)
+-		device_remove_file(dev, &dev_attr_dmabounce_stats);
+-#endif
+-
+-	kfree(device_info);
+-
+-	dev_info(dev, "dmabounce: device unregistered\n");
++	dmabounce_info_unregister(dev);
++	dmabounce_info_free(info);
+ }
+ EXPORT_SYMBOL(dmabounce_unregister_dev);
+ 
+diff --git a/arch/arm/include/asm/device.h b/arch/arm/include/asm/device.h
+index 9f390ce..709d501 100644
+--- a/arch/arm/include/asm/device.h
++++ b/arch/arm/include/asm/device.h
+@@ -8,7 +8,7 @@
+ 
+ struct dev_archdata {
+ #ifdef CONFIG_DMABOUNCE
+-	struct dmabounce_device_info *dmabounce;
++	struct dmabounce_info *dmabounce;
+ #endif
+ };
  
 diff --git a/include/linux/dmabounce.h b/include/linux/dmabounce.h
-new file mode 100644
-index 0000000..d60dc04
---- /dev/null
+index d60dc04..dc3ad5b 100644
+--- a/include/linux/dmabounce.h
 +++ b/include/linux/dmabounce.h
-@@ -0,0 +1,77 @@
-+#ifndef _LINUX_DMABOUNCE_H
-+#define _LINUX_DMABOUNCE_H
-+
-+/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
-+#ifndef CONFIG_ARM
-+
-+#ifdef CONFIG_DMABOUNCE
-+
-+#include <linux/dmapool.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/list.h>
-+#include <linux/types.h>
-+#include <linux/device.h>
-+
-+struct dmabounce_info;
-+
-+#ifdef CONFIG_DMABOUNCE_STATS
-+struct dmabounce_stats {
-+	unsigned long total_allocs;
-+	unsigned long map_op_count;
-+	unsigned long bounce_count;
-+};
-+extern struct dmabounce_stats *dmabounce_get_stats(struct dmabounce_info *);
-+#define DMABOUNCE_DO_STATS(i, X) do { dmabounce_get_stats(i)->X ; } while (0)
-+#else
-+#define DMABOUNCE_DO_STATS(i, X) do { } while (0)
-+#endif /* CONFIG_DMABOUNCE_STATS */
-+
-+struct dmabounce_pool {
-+	unsigned long	size;
-+	struct dma_pool	*pool;
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	unsigned long allocs;
-+#endif
-+};
-+
-+struct dmabounce_buffer {
-+	struct list_head node;
-+
-+	/* original buffer */
-+	void		*buf;
-+	size_t		size;
-+	enum dma_data_direction dir;
-+
-+	/* bounced buffer */
-+	void		*bounce_buf;
-+	dma_addr_t	bounce_buf_dma;
-+
-+	struct dmabounce_pool	*pool;
-+};
-+
-+extern struct dmabounce_buffer *
-+dmabounce_alloc_buffer(struct dmabounce_info *info,
-+		       void *buf, size_t size, enum dma_data_direction dir,
-+		       gfp_t gfp);
-+extern void dmabounce_free_buffer(struct dmabounce_info *info,
-+				  struct dmabounce_buffer *bb);
-+extern struct dmabounce_buffer *
-+dmabounce_find_buffer(struct dmabounce_info *info, dma_addr_t bounce_buf_dma,
-+		      size_t size, enum dma_data_direction dir);
-+
-+extern struct dmabounce_info *
-+dmabounce_info_alloc(struct device *dev,
-+		     size_t small_buffer_size, size_t large_buffer_size,
-+		     size_t align, size_t boundary);
-+extern void dmabounce_info_free(struct dmabounce_info *info);
-+
-+extern int dmabounce_info_register(struct device *dev,
-+				   struct dmabounce_info *info);
-+extern void dmabounce_info_unregister(struct device *dev);
-+
-+#endif /* CONFIG_DMABOUNCE */
-+
-+/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
-+#endif /* !CONFIG_ARM */
-+
-+#endif /* _LINUX_DMABOUNCE_H */
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 97b136f..b53b7dc 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -207,4 +207,14 @@ config GENERIC_ATOMIC64
- config LRU_CACHE
- 	tristate
+@@ -1,9 +1,6 @@
+ #ifndef _LINUX_DMABOUNCE_H
+ #define _LINUX_DMABOUNCE_H
  
-+config DMABOUNCE
-+	bool
-+	depends on HAVE_DMABOUNCE
-+	select ZONE_DMA if ARM
-+	default y
-+
-+config DMABOUNCE_STATS
-+	bool "Track dmabounce statistics"
-+	depends on DMABOUNCE
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 3b0b4a6..097c2ed 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -100,6 +100,8 @@ obj-$(CONFIG_GENERIC_CSUM) += checksum.o
+-/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
+-#ifndef CONFIG_ARM
+-
+ #ifdef CONFIG_DMABOUNCE
  
- obj-$(CONFIG_GENERIC_ATOMIC64) += atomic64.o
+ #include <linux/dmapool.h>
+@@ -71,7 +68,4 @@ extern void dmabounce_info_unregister(struct device *dev);
  
-+obj-$(CONFIG_DMABOUNCE) += dmabounce.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
+ #endif /* CONFIG_DMABOUNCE */
  
+-/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
+-#endif /* !CONFIG_ARM */
+-
+ #endif /* _LINUX_DMABOUNCE_H */
 diff --git a/lib/dmabounce.c b/lib/dmabounce.c
-new file mode 100644
-index 0000000..620d314
---- /dev/null
+index 620d314..7cb4740 100644
+--- a/lib/dmabounce.c
 +++ b/lib/dmabounce.c
-@@ -0,0 +1,395 @@
-+/*
-+ * lib/dmabounce.c
-+ *
-+ * Generic DMA bounce buffer functions.
-+ * Copyright (C) 2010 Albert Herranz <albert_herranz@yahoo.es>
-+ *
-+ * Based on arch/arm/common/dmabounce.c
-+ *
-+ * Original version by Brad Parker (brad@heeltoe.com)
-+ * Re-written by Christopher Hoover <ch@murgatroid.com>
-+ * Made generic by Deepak Saxena <dsaxena@plexity.net>
-+ *
-+ * Copyright (C) 2002 Hewlett Packard Company.
-+ * Copyright (C) 2004 MontaVista Software, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ */
-+
-+/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
-+#ifndef CONFIG_ARM
-+
-+#define DRV_MODULE_NAME "dmabounce"
-+#define DRV_DESCRIPTION "Generic DMA bounce buffer functions"
-+#define DRV_AUTHOR      "Christopher Hoover <ch@hpl.hp.com>, " \
-+			"Deepak Saxena <dsaxena@plexity.net>, " \
-+			"Albert Herranz <albert_herranz@yahoo.es>"
-+
-+#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
-+#include <linux/kernel.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/dmapool.h>
-+#include <linux/dmabounce.h>
-+
-+
-+struct dmabounce_info {
-+	struct device *dev;
-+	struct list_head bounce_buffers;
-+
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	struct dmabounce_stats stats;
-+	int attr_res;
-+#endif
-+	struct dmabounce_pool	small;
-+	struct dmabounce_pool	large;
-+
-+	rwlock_t lock;
-+};
-+
-+#ifdef CONFIG_DMABOUNCE_STATS
-+struct dmabounce_stats *dmabounce_get_stats(struct dmabounce_info *info)
-+{
-+	return &info->stats;
-+}
-+
-+static ssize_t dmabounce_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct dmabounce_info *info = dev->archdata.dmabounce;
-+	return sprintf(buf, "%lu %lu %lu %lu %lu %lu\n",
-+		       info->small.allocs,
-+		       info->large.allocs,
-+		       info->stats.total_allocs -
-+				info->small.allocs - info->large.allocs,
-+		       info->stats.total_allocs,
-+		       info->stats.map_op_count,
-+		       info->stats.bounce_count);
-+}
-+
-+static DEVICE_ATTR(dmabounce_stats, 0400, dmabounce_show, NULL);
-+#endif /* CONFIG_DMABOUNCE_STATS */
-+
-+/**
-+ * dmabounce_alloc_buffer() - try to allocate a coherent DMA bounce buffer
-+ * @info:	This dmabounce_info.
-+ * @buf:	Original buffer virtual address.
-+ * @size:	Original buffer length.
-+ * @dir:	Direction of DMA transfer for this buffer.
-+ * @gfp:	Flags used for memory allocations.
-+ *
-+ * Use this function to allocate a coherent buffer of size @size associated
-+ * to a dmabounce_info structure @info.
-+ * The allocation will be performed using the @gfp allocation flags.
-+ *
-+ * The coherent buffer can be used later to bounce data from/to the
-+ * corresponding normal buffer @buf with the specified direction @dir.
-+ *
-+ * If the buffer cannot be allocated the function returns NULL.
-+ * Otherwise, the allocated buffer is returned.
-+ */
-+struct dmabounce_buffer *
-+dmabounce_alloc_buffer(struct dmabounce_info *info,
-+		       void *buf, size_t size, enum dma_data_direction dir,
-+		       gfp_t gfp)
-+{
-+	struct device *dev = info->dev;
-+	struct dmabounce_pool *pool = NULL;
-+	struct dmabounce_buffer *bb;
-+	unsigned long flags;
-+
-+	dev_dbg(dev, "%s(buf=%p, size=%d, dir=%d)\n", __func__, buf, size, dir);
-+
-+	if (size <= info->small.size)
-+		pool = &info->small;
-+	else if (size <= info->large.size)
-+		pool = &info->large;
-+
-+	bb = kzalloc(sizeof(*bb), gfp);
-+	if (!bb) {
-+		dev_err(dev, "%s: kmalloc failed\n", __func__);
-+		goto out;
-+	}
-+
-+	if (pool) {
-+		bb->bounce_buf = dma_pool_alloc(pool->pool, gfp,
-+						&bb->bounce_buf_dma);
-+	} else {
-+		bb->bounce_buf = dma_alloc_coherent(dev, size,
-+						    &bb->bounce_buf_dma, gfp);
-+	}
-+
-+	if (!bb->bounce_buf) {
-+		dev_err(dev, "%s: error allocating DMA memory (size=%d)\n",
-+			__func__, size);
-+		kfree(bb);
-+		bb = NULL;
-+		goto out;
-+	}
-+
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	if (pool)
-+		pool->allocs++;
-+#endif
-+	DMABOUNCE_DO_STATS(info, total_allocs++);
-+
-+	bb->buf = buf;
-+	bb->size = size;
-+	bb->dir = dir;
-+	bb->pool = pool;
-+
-+	write_lock_irqsave(&info->lock, flags);
-+	list_add(&bb->node, &info->bounce_buffers);
-+	write_unlock_irqrestore(&info->lock, flags);
-+out:
-+	return bb;
-+}
-+EXPORT_SYMBOL(dmabounce_alloc_buffer);
-+
-+/**
-+ * dmabounce_free_buffer() - free a coherent DMA bounce buffer
-+ * @info:	This dmabounce_info.
-+ * @bb:		The coherent DMA bounce buffer to free.
-+ *
-+ * Free a previously allocated coherent DMA bounce buffer @bb from its
-+ * associated dmabounce_info structure @info.
-+ *
-+ * The coherent DMA bounce buffer @bb must have been previously allocated
-+ * using dmabounce_alloc_buffer().
-+ */
-+void
-+dmabounce_free_buffer(struct dmabounce_info *info, struct dmabounce_buffer *bb)
-+{
-+	unsigned long flags;
-+
-+	dev_dbg(info->dev, "%s(buf=%p)\n", __func__, bb->buf);
-+
-+	write_lock_irqsave(&info->lock, flags);
-+	list_del(&bb->node);
-+	write_unlock_irqrestore(&info->lock, flags);
-+
-+	if (bb->pool)
-+		dma_pool_free(bb->pool->pool, bb->bounce_buf,
-+			      bb->bounce_buf_dma);
-+	else {
-+		dma_free_coherent(info->dev, bb->size, bb->bounce_buf,
-+				  bb->bounce_buf_dma);
-+	}
-+
-+	kfree(bb);
-+}
-+EXPORT_SYMBOL(dmabounce_free_buffer);
-+
-+/**
-+ * dmabounce_find_buffer() - locate an existing coherent DMA bounce buffer
-+ * @info:		This dmabounce_info.
-+ * @bounce_buf_dma:	DMA handle for the bounce buffer to find.
-+ * @size:		Size of the bounce buffer to find.
-+ * @dir:		Direction of DMA transfer for the buffer to find.
-+ *
-+ * Finds a previously allocated coherent DMA bounce buffer associated
-+ * to a dmabounce_info structure @info.
-+ *
-+ * The coherent DMA bounce buffer searched must have the given
-+ * @bounce_buf_dma DMA handle, @size size and DMA direction @dir.
-+ * If @size is zero, the searched buffer can have any size.
-+ *
-+ * If no matching coherent DMA bounce buffer is found the function returns
-+ * NULL. Otherwise, the matching buffer is returned.
-+ */
-+struct dmabounce_buffer *
-+dmabounce_find_buffer(struct dmabounce_info *info, dma_addr_t bounce_buf_dma,
-+		      size_t size, enum dma_data_direction dir)
-+{
-+	struct dmabounce_buffer *bb, *needle = NULL;
-+	unsigned long flags;
-+
-+	read_lock_irqsave(&info->lock, flags);
-+
-+	list_for_each_entry(bb, &info->bounce_buffers, node) {
-+		if (bb->bounce_buf_dma == bounce_buf_dma) {
-+			/* we should get a perfect match here */
-+			BUG_ON((size && bb->size != size) || bb->dir != dir);
-+
-+			needle = bb;
-+			break;
-+		}
-+	}
-+
-+	read_unlock_irqrestore(&info->lock, flags);
-+	return needle;
-+}
-+EXPORT_SYMBOL(dmabounce_find_buffer);
-+
-+static int dmabounce_init_pool(struct dmabounce_pool *pool,
-+			       struct device *dev, const char *name,
-+			       size_t size, size_t align, size_t boundary)
-+{
-+	pool->size = size;
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	pool->allocs = 0;
-+#endif
-+	pool->pool = dma_pool_create(name, dev, size, align, boundary);
-+
-+	return pool->pool ? 0 : -ENOMEM;
-+}
-+
-+/**
-+ * dmabounce_info_alloc() - allocate a dmabounce_info structure
-+ * @dev:		Device for which coherent memory allocations are done.
-+ * @small_buffer_size:	Buffer size for allocations from the small pool.
-+ * @large_buffer_size:	Buffer size for allocations from the large pool.
-+ * @align:		Alignment for pool based allocations.
-+ * @boundary:		Boundary for pool based allocations.
-+ *
-+ * Use this function to allocate a dmabounce_info structure.
-+ * A dmabounce_info structure can be used to manage a set of related
-+ * coherent DMA bounce buffers.
-+ *
-+ * Memory for the coherent DMA bounce buffers will be allocated for the
-+ * specified device @dev.
-+ * If @small_buffer_size or @large_buffer_size are non-zero, allocations
-+ * will be tried from the closest associated DMA pool which has a size
-+ * greater or equal than the specified @size size. Allocations from DMA
-+ * pools will honor the alignment and boundary crossing restrictions
-+ * specified in @align and @boundary.
-+ * Otherwise, allocations will be performed from non-pool coherent memory.
-+ *
-+ * If the dmabounce_info structure cannot be allocated the function
-+ * returns NULL. Otherwise, the allocated dmabounce_info structure is returned.
-+ */
-+struct dmabounce_info *
-+dmabounce_info_alloc(struct device *dev,
-+		     size_t small_buffer_size, size_t large_buffer_size,
-+		     size_t align, size_t boundary)
-+{
-+	struct dmabounce_info *info;
-+	int error;
-+
-+	info = kzalloc(sizeof(*info), GFP_KERNEL);
-+	if (!info) {
-+		dev_err(dev, "%s: allocation error\n", __func__);
-+		goto out;
-+	}
-+
-+	if (small_buffer_size) {
-+		error = dmabounce_init_pool(&info->small, dev,
-+					    "small_dmabounce_pool",
-+					    small_buffer_size, align, boundary);
-+		if (error) {
-+			dev_err(dev, "error %d allocating DMA pool for %zu"
-+				" byte objects\n", error, small_buffer_size);
-+			goto err_alloc_small;
-+		}
-+	}
-+
-+	if (large_buffer_size) {
-+		error = dmabounce_init_pool(&info->large, dev,
-+					    "large_dmabounce_pool",
-+					    large_buffer_size, align, boundary);
-+		if (error) {
-+			dev_err(dev, "error %d allocating DMA pool for %zu"
-+				" byte objects\n", error, large_buffer_size);
-+			goto err_alloc_large;
-+		}
-+	}
-+
-+	info->dev = dev;
-+	INIT_LIST_HEAD(&info->bounce_buffers);
-+	rwlock_init(&info->lock);
-+
-+	DMABOUNCE_DO_STATS(info, total_allocs = 0);
-+	DMABOUNCE_DO_STATS(info, map_op_count = 0);
-+	DMABOUNCE_DO_STATS(info, bounce_count = 0);
-+	goto out;
-+
-+err_alloc_large:
-+	dma_pool_destroy(info->small.pool);
-+err_alloc_small:
-+	kfree(info);
-+	info = NULL;
-+out:
-+	return info;
-+}
-+EXPORT_SYMBOL(dmabounce_info_alloc);
-+
-+/**
-+ * dmabounce_info_free() - free a dmabounce_info
-+ * @info:	This dmabounce_info.
-+ *
-+ * Free a previously allocated dmabounce_info structure @info.
-+ *
-+ * The dmabounce_info structure @info must have been previously allocated
-+ * using dmabounce_info_alloc().
-+ */
-+void dmabounce_info_free(struct dmabounce_info *info)
-+{
-+	if (!list_empty(&info->bounce_buffers)) {
-+		dev_err(info->dev, "freeing dmabounce with pending buffers!\n");
-+		BUG();
-+	}
-+
-+	if (info->small.pool)
-+		dma_pool_destroy(info->small.pool);
-+	if (info->large.pool)
-+		dma_pool_destroy(info->large.pool);
-+
-+	kfree(info);
-+}
-+EXPORT_SYMBOL(dmabounce_info_free);
-+
-+/**
-+ * dmabounce_info_register() - register a dmabounce_info for a device
-+ * @dev:	Device for which the dmabounce_info is registered.
-+ * @info:	dmabounce_info to register.
-+ *
-+ * Use this function to register a given dmabounce_info @info into a
-+ * device @dev.
-+ *
-+ * A device can only have one dmabounce_info registered with.
-+ * The same dmabounce_info may be registered for many devices.
-+ */
-+int dmabounce_info_register(struct device *dev, struct dmabounce_info *info)
-+{
-+	if (dev->archdata.dmabounce)
-+		return -EBUSY;
-+
-+	dev->archdata.dmabounce = info;
-+
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	info->attr_res = device_create_file(dev, &dev_attr_dmabounce_stats);
-+#endif
-+
-+	dev_info(dev, pr_fmt("device registered\n"));
-+	return 0;
-+}
-+EXPORT_SYMBOL(dmabounce_info_register);
-+
-+/**
-+ * dmabounce_info_unregister() - unregister the dmabounce_info from a device
-+ * @dev:	Device for which the dmabounce_info is unregistered.
-+ *
-+ * Use this function to unregister a previously registered dmabounce_info
-+ * from a device @dev.
-+ */
-+void dmabounce_info_unregister(struct device *dev)
-+{
-+#ifdef CONFIG_DMABOUNCE_STATS
-+	struct dmabounce_info *info = dev->archdata.dmabounce;
-+
-+	if (info && info->attr_res == 0)
-+		device_remove_file(dev, &dev_attr_dmabounce_stats);
-+#endif
-+	dev->archdata.dmabounce = NULL;
-+
-+	dev_info(dev, pr_fmt("device unregistered\n"));
-+}
-+EXPORT_SYMBOL(dmabounce_info_unregister);
-+
-+MODULE_AUTHOR(DRV_AUTHOR);
-+MODULE_DESCRIPTION(DRV_DESCRIPTION);
-+MODULE_LICENSE("GPL");
-+
-+/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
-+#endif /* !CONFIG_ARM */
+@@ -18,9 +18,6 @@
+  * version 2 as published by the Free Software Foundation.
+  */
+ 
+-/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
+-#ifndef CONFIG_ARM
+-
+ #define DRV_MODULE_NAME "dmabounce"
+ #define DRV_DESCRIPTION "Generic DMA bounce buffer functions"
+ #define DRV_AUTHOR      "Christopher Hoover <ch@hpl.hp.com>, " \
+@@ -390,6 +387,3 @@ EXPORT_SYMBOL(dmabounce_info_unregister);
+ MODULE_AUTHOR(DRV_AUTHOR);
+ MODULE_DESCRIPTION(DRV_DESCRIPTION);
+ MODULE_LICENSE("GPL");
+-
+-/* FIXME remove later when arch/arm/common/dmabounce.c is updated */
+-#endif /* !CONFIG_ARM */
 -- 
 1.6.3.3
