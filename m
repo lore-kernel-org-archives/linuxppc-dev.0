@@ -1,27 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 034E6B7D5D
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 01:47:54 +1100 (EST)
-Received: by gwj20 with SMTP id 20so825540gwj.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 06:47:53 -0800 (PST)
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp126.mail.ukl.yahoo.com (smtp126.mail.ukl.yahoo.com
+	[77.238.184.57]) by ozlabs.org (Postfix) with SMTP id E7AF8B7D65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon,  1 Mar 2010 03:37:13 +1100 (EST)
+Message-ID: <4B8A9BB2.3080202@yahoo.es>
+Date: Sun, 28 Feb 2010 17:37:06 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4B8A2CD7.7070305@firmworks.com>
-References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
-	<1267307902-31939-2-git-send-email-agust@denx.de>
-	<fa686aa41002272230s7f900c0fv1aabf0e26ccbf84c@mail.gmail.com>
-	<4B8A2CD7.7070305@firmworks.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 28 Feb 2010 07:47:32 -0700
-Message-ID: <fa686aa41002280647q55e7940ej137ba3df052313c5@mail.gmail.com>
-Subject: Re: [PATCH 1/3] video: add support for getting video mode from device
-	tree
-To: Mitch Bradley <wmb@firmworks.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC PATCH v2 4/9] add generic dmabounce support
+References: <1267366082-15248-1-git-send-email-albert_herranz@yahoo.es>
+	<1267366082-15248-5-git-send-email-albert_herranz@yahoo.es>
+	<20100228142046.GA16745@n2100.arm.linux.org.uk>
+In-Reply-To: <20100228142046.GA16745@n2100.arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
-	yorksun@freescale.com
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,35 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 28, 2010 at 1:44 AM, Mitch Bradley <wmb@firmworks.com> wrote:
-> Grant Likely Wrote:
->> On Sat, Feb 27, 2010 at 2:58 PM, Anatolij Gustschin <agust@denx.de> wrot=
-e:
->> Also, since you're now in the realm of describing a video display,
->> which is separate from the display controller, you should consider
->> describing the display in a separate device tree node. =A0Maybe
->> something like this...
->>
->> video {
->> =A0 =A0 =A0 =A0compatible =3D "fsl,mpc5121-diu";
->> =A0 =A0 =A0 =A0display {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "<vendor>,<model>";
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0edid =3D [edid-data];
->> =A0 =A0 =A0 =A0};
->> };
->>
->
->
-> As it turns out, I'm doing exactly that - exporting verbatim EDID data as
-> the value of the "edid" property - for the display node on the Via versio=
-n
-> of the OLPC machine. =A0The kernel driver uses it instead of trying to ob=
-tain
-> the EDID data from the monitor, because the builtin OLPC display cannot
-> supply EDID data through the usual hardware interfaces.
+Russell King - ARM Linux wrote:
+> On Sun, Feb 28, 2010 at 03:07:57PM +0100, Albert Herranz wrote:
+>> This patch makes part of the ARM dmabounce code available to other
+>> architectures as a generic API.
+> 
+> There is already a generic dma bounce implementation - it's called
+> swiotlb - lib/swiotlb.c.  We should eventually switch the ARM
+> dmabounce stuff over to that instead of keeping dmabounce around.
+> 
+> The only problem I forsee is that on ARM, we have devices which can
+> only address the least significant N bits of RAM, but there may be
+> an offset on the base address of RAM on the bus which isn't included
+> in these N bits.
+> 
+> Even more fun is where we have a DMA controller which can address
+> N bits of RAM, except for bit M which must be zero... (where N > M).
+> 
 
-Cool.  That sounds sane then.  How do you go about generating the EDID
-data?  Is there a tool that can do that?  Or did you hand craft it?
+In the Wii we have several limitations:
+- it is a NOT_COHERENT_CACHE platform
+- write accesses to coherent memory from the main processor must be done always in 32-bit chunks
+- some devices can only reliably perform DMA to/from a specific region of memory (the second block of RAM, 64MB at 0x10000000, called MEM2)
 
-Cheers,
-g.
+So if swiotlb is the way to go I can try to adapt it to take into account these cases:
+- it should allocate the io_tlb_start and io_tlb_overflow_buffer areas from MEM2 (add allocation/freeing hooks for these areas?)
+- it should copy data from coherent memory in 32-bit chunks (add copy to/from coherent hooks?)
+- it should decide to bounce buffers sitting in MEM1 (add a dma_needs_bounce() hook?)
+
+Thanks,
+Albert
