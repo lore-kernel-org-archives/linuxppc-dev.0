@@ -1,19 +1,29 @@
-Return-Path: <stefani@seibold.net>
-Received: from www84.your-server.de (www84.your-server.de [213.133.104.84])
+Return-Path: <R58495@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 15DDBB7D8F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Mar 2010 10:00:43 +1100 (EST)
-Subject: [PATCH] fix PHY polling system blocking
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sun, 28 Feb 2010 23:39:09 +0100
-Message-ID: <1267396749.20057.62.camel@wall-e>
-Mime-Version: 1.0
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3A819B7D4B
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 01:32:17 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o1SEWEIT000579
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 07:32:14 -0700 (MST)
+Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
+	[10.64.32.10])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o1SEeDtk022314
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Feb 2010 08:40:14 -0600 (CST)
+Message-ID: <10cb201cab882$d0026955$0c23400a@fsl.freescale.net>
+Content-Type: text/plain;
+	charset="utf-8"
+From: "sun york-R58495" <R58495@freescale.com>
+To: "Anatolij Gustschin" <agust@denx.de>
+Subject: RE: [PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)
+MIME-Version: 1.0
+Date: Sun, 28 Feb 2010 08:32:06 -0600
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,73 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fix the PHY poller, which can block the whole system. On a
-Freescale PPC 834x this result in a delay of 450 us due the slow
-communication with the PHY chip.
+I agree device tree is the right direction to go.=0A=
+=0A=
+Sent from my Android phone=0A=
+----- Original Message -----=0A=
+From:"Anatolij Gustschin" <agust@denx.de>=0A=
+To:"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>=0A=
+Cc:"grant.likely@secretlab.ca" <grant.likely@secretlab.ca>, =
+"linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, =
+"yorksun@freescale.com" <yorksun@freescale.com>, "dzu@denx.de" =
+<dzu@denx.de>, "wd@denx.de" <wd@denx.de>, "jrigby@gmail.com" =
+<jrigby@gmail.com>, "Anatolij Gustschin" <agust@denx.de>=0A=
+Sent:02-27-2010 16:00=0A=
+Subject:[PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)=0A=
+=0A=
+=0A=
+This patch series rework DIU support patch submitted
+previously with the patch series for updating MPC5121
+support in mainline. It doesn't add new panel timing data
+to the framebuffer driver anymore. Instead we now allow
+encoding this data in the device tree. First two patches
+add this support.
 
-For PHY chips without interrupts, the status of the ethernet will be
-polled every 2 sec. The poll function will read some register of the MII
-PHY. The time between the sending the MII_READ_COMMAND and receiving the
-result is more the 100 us on a PPC 834x.
-   
-The patch modifies the poller a lit bit. Only a link status state change
-will result in a successive detection of the connection type. The poll
-cycle on the other hand will be increased to every seconds.
+The third patch for DIU support is rebased, but still
+depends on patches for adding MPC5121 USB support (because
+it touches shared platform code).
 
-Together this patch will prevent a blocking of nearly 400 us every two
-seconds of the whole system on a PPC 834x.
+It is intended for inclusion in 2.6.34, since without
+DIU support patch framebuffer doesn't work on mpc5121.
 
-The patch is against kernel 2.6.33. Please merge it.
+Anatolij Gustschin (3):
+  video: add support for getting video mode from device tree
+  fbdev: fsl-diu-fb.c: allow setting panel video mode from DT
+  powerpc/mpc5121: shared DIU framebuffer support
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- phy.c        |    5 ++---
- phy_device.c |   12 +++++++++---
- 2 files changed, 11 insertions(+), 6 deletions(-)
-
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy.c linux-2.6.33/drivers/net//phy/phy.c
---- linux-2.6.33.orig/drivers/net/phy/phy.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net//phy/phy.c	2010-02-28 22:53:14.725464101 +0100
-@@ -871,9 +871,8 @@ void phy_state_machine(struct work_struc
- 		case PHY_RUNNING:
- 			/* Only register a CHANGE if we are
- 			 * polling */
--			if (PHY_POLL == phydev->irq)
--				phydev->state = PHY_CHANGELINK;
--			break;
-+			if (PHY_POLL != phydev->irq)
-+				break;
- 		case PHY_CHANGELINK:
- 			err = phy_read_status(phydev);
- 
-diff -u -N -r -p linux-2.6.33.orig/drivers/net/phy/phy_device.c linux-2.6.33/drivers/net//phy/phy_device.c
---- linux-2.6.33.orig/drivers/net/phy/phy_device.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-2.6.33/drivers/net//phy/phy_device.c	2010-02-28 22:53:14.726464145 +0100
-@@ -161,7 +161,7 @@ struct phy_device* phy_device_create(str
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
--	dev->link = 1;
-+	dev->link = 0;
- 	dev->interface = PHY_INTERFACE_MODE_GMII;
- 
- 	dev->autoneg = AUTONEG_ENABLE;
-@@ -694,10 +694,16 @@ int genphy_update_link(struct phy_device
- 	if (status < 0)
- 		return status;
- 
--	if ((status & BMSR_LSTATUS) == 0)
-+	if ((status & BMSR_LSTATUS) == 0) {
-+		if (phydev->link==0)
-+			return 1;
- 		phydev->link = 0;
--	else
-+	}
-+	else {
-+		if (phydev->link==1)
-+			return 1;
- 		phydev->link = 1;
-+	}
- 
- 	return 0;
- }
+ arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
+ arch/powerpc/platforms/512x/mpc5121_generic.c |   13 ++
+ arch/powerpc/platforms/512x/mpc512x.h         |    3 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c  |  282 =
++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h                 |    1 +
+ drivers/video/Kconfig                         |    6 +
+ drivers/video/Makefile                        |    1 +
+ drivers/video/fsl-diu-fb.c                    |   88 +++++---
+ drivers/video/fsl-diu-fb.h                    |  223 =
+-------------------
+ drivers/video/ofmode.c                        |   95 +++++++++
+ drivers/video/ofmode.h                        |    6 +
+ include/linux/fsl-diu-fb.h                    |  223 =
++++++++++++++++++++
+ 12 files changed, 693 insertions(+), 255 deletions(-)
+ delete mode 100644 drivers/video/fsl-diu-fb.h
+ create mode 100644 drivers/video/ofmode.c
+ create mode 100644 drivers/video/ofmode.h
+ create mode 100644 include/linux/fsl-diu-fb.h
