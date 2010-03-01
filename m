@@ -1,23 +1,20 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3C4D0B7DB0
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp131.mail.ukl.yahoo.com (smtp131.mail.ukl.yahoo.com
+	[77.238.184.62]) by ozlabs.org (Postfix) with SMTP id 07480B7DA0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  2 Mar 2010 08:23:45 +1100 (EST)
-Date: Mon, 1 Mar 2010 16:23:24 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] 8250: add workaround for MPC8[356]xx UART break IRQ storm
-Message-ID: <20100301212324.GA1738@windriver.com>
-References: <1267212301-26851-1-git-send-email-paul.gortmaker@windriver.com>
-	<EB2B2912-24C3-46C9-B894-0A84D593570F@kernel.crashing.org>
-	<20100226202335.GA28844@loki.buserror.net>
+	Tue,  2 Mar 2010 09:55:29 +1100 (EST)
+Message-ID: <4B8C45DF.50607@yahoo.es>
+Date: Mon, 01 Mar 2010 23:55:27 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100226202335.GA28844@loki.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
+	driver flag
+References: <Pine.LNX.4.44L0.1003011528240.1341-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1003011528240.1341-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,199 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Re: [PATCH] 8250: add workaround for MPC8[356]xx UART break IRQ storm] On 26/02/2010 (Fri 14:23) Scott Wood wrote:
-
-> On Fri, Feb 26, 2010 at 01:42:39PM -0600, Kumar Gala wrote:
-> > 
-> > On Feb 26, 2010, at 1:25 PM, Paul Gortmaker wrote:
-> > 
-> > > Sending a break on the SOC UARTs found in some MPC83xx/85xx/86xx
-> > > chips seems to cause a short lived IRQ storm (/proc/interrupts
-> > > typically shows somewhere between 300 and 1500 events).  Unfortunately
-> > > this renders SysRQ over the serial console completely inoperable.
-> > > Testing with obvious things like ACKing the event doesn't seem to
-> > > change anything vs. a completely dumb approach of just ignoring
-> > > it and waiting for it to stop, so that is what is implemented here.
-> > > 
-> > > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> > > ---
-> > > 
-> > > This is a refresh of a patch I'd done earlier -- I've tried to make
-> > > the bug support as generic as possible to minimize having board
-> > > specific ifdef crap in 8250.c -- any suggestions on how to further
-> > > improve it are welcome.
-> > > 
-> > > drivers/serial/8250.c      |    6 ++++++
-> > > drivers/serial/8250.h      |   20 ++++++++++++++++++++
-> > > drivers/serial/Kconfig     |   14 ++++++++++++++
-> > > include/linux/serial_reg.h |    2 ++
-> > > 4 files changed, 42 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> > > index e9b15c3..850b0e9 100644
-> > > --- a/drivers/serial/8250.c
-> > > +++ b/drivers/serial/8250.c
-> > > @@ -1531,6 +1531,11 @@ static void serial8250_handle_port(struct uart_8250_port *up)
-> > > 
-> > > 	status = serial_inp(up, UART_LSR);
-> > > 
-> > > +	if ((up->bugs & UART_BUG_PPC) && (status == UART_LSR_RFE_ERROR_BITS)) {
-> > > +		spin_unlock_irqrestore(&up->port.lock, flags);
-> > > +		return;
-> > > +	}
+Alan Stern wrote:
+> On Mon, 1 Mar 2010, Albert Herranz wrote:
 > 
-> Will LSR always be 0xf1 when this problem hits?  At least the transmit bits
-> shouldn't be relevant.
-
-It was, based only on the emperical data I collected.  I agree that
-the Tx data shouldn't really matter.  But it is a moot point now that
-I know about the errata workaround...
-
+>>>> Am I on the right path?
+>>> More or less.  I would do it somewhat differently:
+>>>
+>>> 	If URB_NO_TRANSFER_DMA_MAP is set then no map is needed.
+>>> 	Otherwise if num_sgs > 0 then no map is needed.
+>>> 	Otherwise if HCD_NO_COHERENT_MEM is set then use
+>>> 		hcd_alloc_coherent().
+>>> 	Otherwise if transfer_buffer_length > 0 then use
+>>> 		dma_map_single().
+>>>
+>> I think that logic is not quite right.
+>> Remember that the final goal is to avoid allocating USB buffers from coherent memory (because the USB drivers access USB buffers without access restrictions but the platform I'm working on can't write to coherent memory unless it is done in 32-bit chunks).
 > 
-> This has been listed as an erratum in some of the newer chips (e.g.
-> mpc8568).
+> Actually the final goal is to make the mapping/unmapping algorithms 
+> clear and correct.  One of the subgoals involves avoiding coherent USB 
+> buffers, but there are others as well (if you look back the through the 
+> linux-usb mailing list for the last few weeks you'll see a discussion 
+> about a controller which has to use PIO for control transfers but can 
+> use DMA for other types).
 > 
-> The suggested as workaround is to, upon seeing a break condition:
-> - read RBR
-> - delay at least one character period
-> - read RBR again
+
+Well, I was talking about our particular case here. I did not imply that we should forget about the other cases.
+
+>> And we want to avoid bouncing at the USB layer too (that's what v1 did).
+>>
+>> The strategy so far is:
+>> - we have modified the USB buffer allocation routines hcd_buffer_alloc()/hcd_buffer_free() to always return normal kernel memory when HCD_NO_COHERENT_MEM is set on the host controller.
+>> - during map_urb_for_dma()/unmap_urb_for_dma() we need to make sure that those USB buffers are sync'ed, even if we are told USB_NO_{SETUP,TRANSFER}_DMA_MAP
+>>
+>> So the logic would be:
+>>
+>>  	If URB_NO_TRANSFER_DMA_MAP is _cleared_ then do the mapping
 > 
-> If I'm interpreting this correctly, it could be implemented by doing the
-> normal break handling on the first interrupt, plus setting a flag so that the
-> next interrupt simply reads RBR, clears the flag, and returns, without ever
-> reading LSR.
+> No, that's wrong because it ignores the HCD_LOCAL_MEM flag.
+> 
 
-Thanks for the info -- that makes for a better fix (in that the storm
-gets averted completely) so your interpretation is on the money.
+When I said "do the mapping" there I meant to do a dma_map_single() if self.uses_dma, else if HCD_LOCAL_MEM is set then do a hcd_alloc_coherent().
+I should have been more clear on that.
 
-The only question that remains is whether we:
-(a) deploy it everywhere, or
-(b) leave it as a config option and update Kconfig with select on
-   the boards of interest, or
-(c) implement dynamic enablement based on something like adding a
-   detect_arch_bugs() to 8250.c and then for powerpc, we iterate over
-   of_flat_dt_is_compatible(root, blacklist[i]) looking for a match.
+>> 	- this case covers normal kernel memory used as a buffer and not already DMA mapped by a USB driver
+>>
+>>  	Otherwise if HCD_NO_COHERENT_MEM is set _and_ num_sgs == 0 _and_ transfer_buffer_length > 0 then do the mapping too
+>> 	- this case covers USB buffers allocated via usb_buffer_alloc() and marked URB_NO_TRANSFER_DMA_MAP by a USB driver, which are allocated from normal kernel memory when HCD_NO_COHERENT_MEM is set (we avoid bouncing buffers here too, at least if they sit already within MEM2 in the Wii, but anyway that's part of the platform DMA mapping code)
+>>
+>> 	s-g urbs do not need a mapping as they have already been mapped, marked URB_NO_TRANSFER_DMA_MAP and have num_sgs > 0
+> 
+> Actually the test for transfer_buffer_length == 0 should be done first, 
+> since obviously no mapping is needed if there's no data.  (And in fact 
+> the current code does do this; I was wrong earlier when I said it 
+> doesn't.)
+> 
+> So let's make things a little easier by first testing the conditions 
+> under which no mapping is needed:
+> 
+> 	If transfer_buffer_length is 0 then do nothing.
+> 	Otherwise if num_sgs > 0 then do nothing.
+> 	Otherwise if URB_NO_TRANSFER_DMA_MAP and transfer_dma
+> 		are both set (this avoids your HCD_NO_COHERENT_MEM
+> 		case) then do nothing.
+> 
 
-Paul.
+I see. This case would include the PIO case too (for which dma_handle is set to all 1s).
 
- From c77b1600975b5fc596b2baebf43e28b66969181f Mon Sep 17 00:00:00 2001
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Fri, 26 Feb 2010 10:29:46 -0500
-Subject: [PATCH] 8250: add workaround for MPC8[356]xx UART break IRQ storm
+So this assumes that transfer_dma should be set initially to 0 when allocating USB buffers for HCD_NO_COHERENT_MEM.
 
-Sending a break on the SOC UARTs found in some MPC83xx/85xx/86xx
-chips seems to cause a short lived IRQ storm (/proc/interrupts
-typically shows somewhere between 300 and 1500 events).  Unfortunately
-this renders SysRQ over the serial console completely inoperable.
+> The remaining cases all need mapping and/or bounce buffers:
+> 
+> 	Otherwise if HCD_LOCAL_MEM is set then call hcd_alloc_coherent.
+> 	Otherwise call dma_map_single.
+> 
+> Finally, the unmapping tests can be simplified greatly if the kind of
+> mapping is recorded in the URB flags.
+> 
 
-The suggested workaround in the errata is to read the Rx register,
-wait one character period, and then read the Rx register again.
-We achieve this by tracking the old LSR value, and on the subsequent
-interrupt event after a break, we don't read LSR, instead we just
-read the RBR again and return immediately.
+Good point.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- drivers/serial/8250.c  |   11 ++++++++++-
- drivers/serial/8250.h  |   20 ++++++++++++++++++++
- drivers/serial/Kconfig |   14 ++++++++++++++
- 3 files changed, 44 insertions(+), 1 deletions(-)
+> Alan Stern
+> 
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index e9b15c3..645cf9b 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -143,6 +143,7 @@ struct uart_8250_port {
- 	unsigned char		mcr_mask;	/* mask of user bits */
- 	unsigned char		mcr_force;	/* mask of forced bits */
- 	unsigned char		cur_iotype;	/* Running I/O type */
-+	unsigned char		lsr_last;	/* LSR of last IRQ event */
- 
- 	/*
- 	 * Some bits in registers are cleared on a read, so they must
-@@ -1529,7 +1530,14 @@ static void serial8250_handle_port(struct uart_8250_port *up)
- 
- 	spin_lock_irqsave(&up->port.lock, flags);
- 
--	status = serial_inp(up, UART_LSR);
-+	if (unlikely(up->lsr_last & UART_LSR_BI && up->bugs & UART_BUG_PPC)) {
-+		up->lsr_last &= ~UART_LSR_BI;
-+		serial_inp(up, UART_RX);
-+		spin_unlock_irqrestore(&up->port.lock, flags);
-+		return;
-+	}
-+
-+	status = up->lsr_last = serial_inp(up, UART_LSR);
- 
- 	DEBUG_INTR("status = %x...", status);
- 
-@@ -1948,6 +1956,7 @@ static int serial8250_startup(struct uart_port *port)
- 
- 	up->capabilities = uart_config[up->port.type].flags;
- 	up->mcr = 0;
-+	up->bugs |= UART_KNOWN_BUGS;
- 
- 	if (up->port.iotype != up->cur_iotype)
- 		set_io_from_upio(port);
-diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
-index 6e19ea3..2074ce1 100644
---- a/drivers/serial/8250.h
-+++ b/drivers/serial/8250.h
-@@ -49,6 +49,7 @@ struct serial8250_config {
- #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
- #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
- #define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
-+#define UART_BUG_PPC	(1 << 4)	/* UART has buggy PPC break IRQ storm */
- 
- #define PROBE_RSA	(1 << 0)
- #define PROBE_ANY	(~0)
-@@ -78,3 +79,22 @@ struct serial8250_config {
- #else
- #define ALPHA_KLUDGE_MCR 0
- #endif
-+
-+/*
-+ * The following UART bugs are currently dynamically detected and not
-+ * required to be contingent on any particular compile time options.
-+ */
-+#define HAS_BUG_QUOT	0	/* assign UART_BUG_QUOT to enable */
-+#define HAS_BUG_TXEN	0	/* assign UART_BUG_TXEN to enable */
-+#define HAS_BUG_NOMSR	0	/* assign UART_BUG_NOMSR to enable */
-+#define HAS_BUG_THRE	0	/* assign UART_BUG_THRE to enable */
-+
-+#ifdef CONFIG_SERIAL_8250_PPC_BUG
-+#define HAS_BUG_PPC	UART_BUG_PPC
-+#else
-+#define HAS_BUG_PPC	0
-+#endif
-+
-+#define UART_KNOWN_BUGS (HAS_BUG_QUOT | HAS_BUG_TXEN | HAS_BUG_NOMSR | \
-+			HAS_BUG_THRE | HAS_BUG_PPC)
-+
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 9ff47db..5e58a1a 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -70,6 +70,20 @@ config SERIAL_8250_CONSOLE
- 
- 	  If unsure, say N.
- 
-+config SERIAL_8250_PPC_BUG
-+	bool "Fix 8250/16550 to handle IRQ storm after receipt of a break"
-+	depends on SERIAL_8250 && PPC32
-+	---help---
-+	  If you say Y here, additional checks will be added to handling of
-+	  interrupts on the serial ports which will prevent ill effects of
-+	  an interrupt storm triggered by a break on the serial line. Without
-+	  this enabled, a Sysrq via the serial console can be unusable on
-+	  some systems.
-+
-+	  This is commonly observed on PPC32 MPC83xx/85xx/86xx based boards.
-+
-+	  If unsure, say N.
-+
- config FIX_EARLYCON_MEM
- 	bool
- 	depends on X86
--- 
-1.6.5.2
+Thanks for your comments,
+Albert
