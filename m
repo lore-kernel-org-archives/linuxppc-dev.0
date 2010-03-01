@@ -1,15 +1,15 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC: PATCH 06/13] powerpc/4xx: Simple platform for the ISS
-	4xx simulator
+Subject: Re: [RFC: PATCH 08/13] powerpc/476: define specific cpu table
+	entry for DD1 and DD1.1 cores
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20100301202910.GC8963@zod.rchland.ibm.com>
+In-Reply-To: <20100301202409.GB8963@zod.rchland.ibm.com>
 References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-	<20100301191337.20987.58130.sendpatchset@norville.austin.ibm.com>
-	<20100301202910.GC8963@zod.rchland.ibm.com>
+	<20100301191351.20987.49730.sendpatchset@norville.austin.ibm.com>
+	<20100301202409.GB8963@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Mon, 01 Mar 2010 17:33:38 -0600
-Message-Id: <1267486418.26041.48.camel@norville.austin.ibm.com>
+Date: Mon, 01 Mar 2010 17:43:36 -0600
+Message-Id: <1267487016.26041.58.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,29 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-03-01 at 15:29 -0500, Josh Boyer wrote:
-> On Mon, Mar 01, 2010 at 12:16:00PM -0700, Dave Kleikamp wrote:
-> >diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-> >index 1dfc1c1..915c295 100644
-> >--- a/arch/powerpc/platforms/44x/Kconfig
-> >+++ b/arch/powerpc/platforms/44x/Kconfig
-> >@@ -162,6 +162,17 @@ config YOSEMITE
-> > 	help
-> > 	  This option enables support for the AMCC PPC440EP evaluation board.
+On Mon, 2010-03-01 at 15:24 -0500, Josh Boyer wrote:
+> On Mon, Mar 01, 2010 at 02:13:52PM -0500, Dave Kleikamp wrote:
+> >powerpc/476: define specific cpu table entry for DD1 and DD1.1 cores
 > >
-> >+config ISS4xx
-> >+	bool "ISS 4xx Simulator"
-> >+	depends on (44x || 40x)
-> >+	default n
-> >+	select 405GP if 40x
-> >+	select 440GP if 44x
+> >From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >
+> >There are still some unstable bits on the DD1 and DD1.1 cores.  Don't use
+> >the FPU or the tlbivax operation.  Define CPU_FTR_476_DD1 and
+> >CPU_FTR_476_DD1_1 for additional workarounds in later patches.
+> >
+> >The DD1 core requires workarounds triggered by both CPU_FTR_476_DD1
+> >and CPU_FTR_476_DD1_1.  the DD1.1 core only needs CPU_FTR_476_DD1_1
+> >defined.
 > 
-> Won't that now build a 44x_46x kernel due to the 'select 440GP' there?  If so,
-> doesn't that cause issues for 476?  Confused...
+> DD1, DD1.1, and all others have the same PVR value?  How do you tell which
+> core version you have?
 
-I hadn't really noticed this because it's been working.  When both 44GP
-and PPC_47x are defined, it doesn't cause any problems for the 476.
-It's not right though.
+I seemed to have lost the change to the DD1.1 PVR value.  I originally
+coded it this way while I was waiting to find out what it was.  DD1.1 is
+0x11A52040.  I don't know a value for the future versions, so that will
+have to be filled in later.  Actually, I should probably use 0x11A52000,
+since that's what's defined in reg.h.
 
 Thanks,
 Shaggy
