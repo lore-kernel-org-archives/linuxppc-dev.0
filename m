@@ -1,27 +1,26 @@
 Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 555C0B7EC2
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 23:58:13 +1100 (EST)
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0F873B8133
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 23:58:20 +1100 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o21CwA9W004884
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:58:10 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id o21Csek8021248
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:54:40 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o21CqfbQ1458250
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:52:41 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o21CwCIO023789
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:58:12 +1100
-Subject: [PATCH v2 1/3] powerpc: reset kernel stack on cpu online from cede
-	state
+	o21CqmEN1646618
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:52:48 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o21CwJSv024171
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:58:19 +1100
+Subject: [PATCH v2 2/3] powerpc: move checks in pseries_mach_cpu_die()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Anton Blanchard <anton@samba.org>
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Mon, 01 Mar 2010 18:28:09 +0530
-Message-ID: <20100301125809.26066.71578.stgit@drishya.in.ibm.com>
+Date: Mon, 01 Mar 2010 18:28:16 +0530
+Message-ID: <20100301125816.26066.34262.stgit@drishya.in.ibm.com>
 In-Reply-To: <20100301123519.26066.8639.stgit@drishya.in.ibm.com>
 References: <20100301123519.26066.8639.stgit@drishya.in.ibm.com>
 MIME-Version: 1.0
@@ -36,75 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Cpu hotplug (offline) without dlpar operation will place cpu
-	in cede state and the extended_cede_processor() function will
-	return when resumed.
-
-	Kernel stack pointer needs to be reset before
-	start_secondary() is called to continue the online operation.
-
-	Added new function start_secondary_resume() to do the above
-	steps.
+	Rearrange condition checks for better code readability and
+	prevention of possible race conditions when
+	preferred_offline_state can potentially change during the
+	execution of pseries_mach_cpu_die().  The patch will make
+	pseries_mach_cpu_die() put cpu in one of the consistent states
+	and not hit the run over BUG()
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Cc: Gautham R Shenoy <ego@in.ibm.com>
 ---
- arch/powerpc/kernel/head_64.S                   |   11 +++++++++++
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |    9 ++++-----
- arch/powerpc/platforms/pseries/offline_states.h |    2 +-
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   30 +++++++++++++-------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 9258074..567cd57 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -615,6 +615,17 @@ _GLOBAL(start_secondary_prolog)
- 	std	r3,0(r1)		/* Zero the stack frame pointer	*/
- 	bl	.start_secondary
- 	b	.
-+/*
-+ * Reset stack pointer and call start_secondary
-+ * to continue with online operation when woken up
-+ * from cede in cpu offline.
-+ */
-+_GLOBAL(start_secondary_resume)
-+	ld	r1,PACAKSAVE(r13)	/* Reload kernel stack pointer */
-+	li	r3,0
-+	std	r3,0(r1)		/* Zero the stack frame pointer	*/
-+	bl	.start_secondary
-+	b	.
- #endif
- 
- /*
 diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 6ea4698..9be7af4 100644
+index 9be7af4..39ecb40 100644
 --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
 +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -146,12 +146,11 @@ static void pseries_mach_cpu_die(void)
- 		unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
+@@ -140,25 +140,25 @@ static void pseries_mach_cpu_die(void)
+ 		if (!get_lppaca()->shared_proc)
+ 			get_lppaca()->donate_dedicated_cpu = 0;
+ 		get_lppaca()->idle = 0;
+-	}
  
- 		/*
--		 * NOTE: Calling start_secondary() here for now to
--		 * start new context.
--		 * However, need to do it cleanly by resetting the
--		 * stack pointer.
-+		 * Call to start_secondary_resume() will not return.
-+		 * Kernel stack will be reset and start_secondary()
-+		 * will be called to continue the online operation.
- 		 */
--		start_secondary();
-+		start_secondary_resume();
+-	if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
+-		unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
++		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
++			unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
  
- 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
+-		/*
+-		 * Call to start_secondary_resume() will not return.
+-		 * Kernel stack will be reset and start_secondary()
+-		 * will be called to continue the online operation.
+-		 */
+-		start_secondary_resume();
++			/*
++			 * Call to start_secondary_resume() will not return.
++			 * Kernel stack will be reset and start_secondary()
++			 * will be called to continue the online operation.
++			 */
++			start_secondary_resume();
++		}
++	}
  
-diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
-index 22574e0..da07256 100644
---- a/arch/powerpc/platforms/pseries/offline_states.h
-+++ b/arch/powerpc/platforms/pseries/offline_states.h
-@@ -14,5 +14,5 @@ extern void set_cpu_current_state(int cpu, enum cpu_state_vals state);
- extern enum cpu_state_vals get_preferred_offline_state(int cpu);
- extern void set_preferred_offline_state(int cpu, enum cpu_state_vals state);
- extern void set_default_offline_state(int cpu);
--extern int start_secondary(void);
-+extern void start_secondary_resume(void);
- #endif
+-	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
++	/* Requested state is CPU_STATE_OFFLINE at this point */
++	WARN_ON(get_preferred_offline_state(cpu) != CPU_STATE_OFFLINE);
+ 
+-		set_cpu_current_state(cpu, CPU_STATE_OFFLINE);
+-		unregister_slb_shadow(hard_smp_processor_id(),
+-					__pa(get_slb_shadow()));
+-		rtas_stop_self();
+-	}
++	set_cpu_current_state(cpu, CPU_STATE_OFFLINE);
++	unregister_slb_shadow(hwcpu, __pa(get_slb_shadow()));
++	rtas_stop_self();
+ 
+ 	/* Should never get here... */
+ 	BUG();
