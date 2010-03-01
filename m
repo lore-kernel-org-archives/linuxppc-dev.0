@@ -1,15 +1,15 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC: PATCH 04/13] powerpc/476: add machine check handler for
-	47x core
+Subject: Re: [RFC: PATCH 06/13] powerpc/4xx: Simple platform for the ISS
+	4xx simulator
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20100301210811.GA6699@lixom.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20100301202910.GC8963@zod.rchland.ibm.com>
 References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-	<20100301191323.20987.13284.sendpatchset@norville.austin.ibm.com>
-	<20100301210811.GA6699@lixom.net>
+	<20100301191337.20987.58130.sendpatchset@norville.austin.ibm.com>
+	<20100301202910.GC8963@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Mon, 01 Mar 2010 17:22:47 -0600
-Message-Id: <1267485767.26041.41.camel@norville.austin.ibm.com>
+Date: Mon, 01 Mar 2010 17:33:38 -0600
+Message-Id: <1267486418.26041.48.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,45 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-03-01 at 15:08 -0600, Olof Johansson wrote:
-> On Mon, Mar 01, 2010 at 05:13:23AM -0700, Dave Kleikamp wrote:
-> > powerpc/476: add machine check handler for 47x core
-> > 
-> > From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> > 
-> > The 47x core's MCSR varies from 44x, so it needs it's own machine check
-> > handler.
+On Mon, 2010-03-01 at 15:29 -0500, Josh Boyer wrote:
+> On Mon, Mar 01, 2010 at 12:16:00PM -0700, Dave Kleikamp wrote:
+> >diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+> >index 1dfc1c1..915c295 100644
+> >--- a/arch/powerpc/platforms/44x/Kconfig
+> >+++ b/arch/powerpc/platforms/44x/Kconfig
+> >@@ -162,6 +162,17 @@ config YOSEMITE
+> > 	help
+> > 	  This option enables support for the AMCC PPC440EP evaluation board.
+> >
+> >+config ISS4xx
+> >+	bool "ISS 4xx Simulator"
+> >+	depends on (44x || 40x)
+> >+	default n
+> >+	select 405GP if 40x
+> >+	select 440GP if 44x
 > 
-> 
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -376,6 +376,44 @@ int machine_check_440A(struct pt_regs *regs)
-> >  	}
-> >  	return 0;
-> >  }
-> > +
-> > +int machine_check_47x(struct pt_regs *regs)
-> > +{
-> > +	unsigned long reason = get_mc_reason(regs);
-> > +
-> > +	printk("Machine check in kernel mode.\n");
-> 
-> It's quite possible that the other machine check handlers don't have
-> printk KERN_-levels on them but it would be a good idea to use them here.
+> Won't that now build a 44x_46x kernel due to the 'select 440GP' there?  If so,
+> doesn't that cause issues for 476?  Confused...
 
-Right.  As it's new code, it should be as correct as possible.
-
-> > +	if (reason & ESR_IMCP){
-> > +		printk("Instruction Synchronous Machine Check exception\n");
-> > +		mtspr(SPRN_ESR, reason & ~ESR_IMCP);
-> > +	}
-> > +	else {
-> 
-> } else {
-> 
-> Or, rather, add an early return above and you can just remove one level of indentation below.
-
-agreed.
+I hadn't really noticed this because it's been working.  When both 44GP
+and PPC_47x are defined, it doesn't cause any problems for the 476.
+It's not right though.
 
 Thanks,
 Shaggy
