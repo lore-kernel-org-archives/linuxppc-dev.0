@@ -1,13 +1,19 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Mon, 1 Mar 2010 12:14:25 -0700
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20100301191425.20987.46086.sendpatchset@norville.austin.ibm.com>
-In-Reply-To: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC: PATCH 13/13] powerpc/476: Add dci instruction to async
-	interrupt handlers on DD1 core
-Cc: Torez Smith <torez@us.ibm.com>
+Return-Path: <stern+4b9b024c@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id 40548B7DBD
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Mar 2010 06:23:23 +1100 (EST)
+Date: Mon, 1 Mar 2010 14:23:22 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Subject: Re: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
+	driver flag
+In-Reply-To: <4B8C099B.30504@yahoo.es>
+Message-ID: <Pine.LNX.4.44L0.1003011356040.1341-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,69 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/476: Add dci instruction to async interrupt handlers on DD1 core
+On Mon, 1 Mar 2010, Albert Herranz wrote:
 
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> > Also, I can't help thinking that the corresponding *_map() and 
+> > *_unmap() routines are so similar, it ought to be possible to combine 
+> > them.  The only difference is a check for a NULL DMA address, and it's 
+> > not clear to me why it is present.  It's also not clear why the test 
+> > for a DMA address of all ones is present.  Maybe they both can be 
+> > removed.
+> > 
+> 
+> I think too that I can simplify that logic.
+> I added those checks in a defensive way seeking robustness while I
+> familiarize with the USB stack innards. So far, those cases are just
+> avoiding mappings when
+> urb_needs_transfer_dma_map()/urb_needs_transfer_dma_unmap() are
+> called with urb->transfer_buffer == 0 and urb->transfer_dma == 0.
+> 
+> I guess that those cases are related to scatterlist-based urb requests.
+> What should be the correct way to check if a urb has already been
+> scatter/gather-mapped?
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
----
+If urb->num_sgs > 0 then urb has been s-g mapped.  Although we don't
+currently check for it, quite a few URBs have transfer_buffer_length ==
+0 (a number of control requests are like this, for example) so they
+don't need a mapping either.
 
- arch/powerpc/include/asm/asm-compat.h |    5 +++++
- arch/powerpc/kernel/head_booke.h      |    3 +++
- 2 files changed, 8 insertions(+), 0 deletions(-)
+> The final logic would be something like:
+> - map if URB_NO_TRANSFER_DMA_MAP is cleared
+> - otherwise (URB_TRANSFER_NO_DMA_MAP is set so) map if
+> HCD_NO_COHERENT_MEM is set _and_ it's not a scatter/gather request
+> (as that should have been mapped already by usb_buffer_map_sg())
+> 
+> Am I on the right path?
 
+More or less.  I would do it somewhat differently:
 
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index fd16e3a..43e9d1b 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -71,6 +71,10 @@
- 		lwsync;				\
- 	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
- #define PPC476_ERR_MTPID PPC476_ERR_DCBx
-+#define PPC476_ERR_DCI()			\
-+	BEGIN_FTR_SECTION;			\
-+		dci;				\
-+	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1)
- #define PPC476_ERR_ISYNC()			\
- 	BEGIN_FTR_SECTION;			\
- 		isync;				\
-@@ -78,6 +82,7 @@
- #else	/* ! CONFIG_PPC_47x */
- #define PPC476_ERR_DCBx()
- #define PPC476_ERR_MTPID()
-+#define PPC476_ERR_DCI()
- #define PPC476_ERR_ISYNC()
- #endif /* CONFIG_PPC_47x */
- 
-diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-index 6b1ad61..d247c1c 100644
---- a/arch/powerpc/kernel/head_booke.h
-+++ b/arch/powerpc/kernel/head_booke.h
-@@ -175,12 +175,14 @@ label:									     \
- 
- #define EXCEPTION(n, label, hdlr, xfer)				\
- 	START_EXCEPTION(label);					\
-+	PPC476_ERR_DCI();					\
- 	NORMAL_EXCEPTION_PROLOG;				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	xfer(n, hdlr)
- 
- #define CRITICAL_EXCEPTION(n, label, hdlr)			\
- 	START_EXCEPTION(label);					\
-+	PPC476_ERR_DCI();					\
- 	CRITICAL_EXCEPTION_PROLOG;				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
-@@ -380,6 +382,7 @@ label:									     \
- 
- #define DECREMENTER_EXCEPTION						      \
- 	START_EXCEPTION(Decrementer)					      \
-+	PPC476_ERR_DCI();						      \
- 	NORMAL_EXCEPTION_PROLOG;					      \
- 	lis     r0,TSR_DIS@h;           /* Setup the DEC interrupt mask */    \
- 	mtspr   SPRN_TSR,r0;		/* Clear the DEC interrupt */	      \
+	If URB_NO_TRANSFER_DMA_MAP is set then no map is needed.
+	Otherwise if num_sgs > 0 then no map is needed.
+	Otherwise if HCD_NO_COHERENT_MEM is set then use
+		hcd_alloc_coherent().
+	Otherwise if transfer_buffer_length > 0 then use
+		dma_map_single().
 
--- 
-Dave Kleikamp
-IBM Linux Technology Center
+Similar logic is needed for the setup buffer mapping, but you can 
+assume that control URBs never use scatter-gather so there's no need to 
+check num_sgs (and there's no need to check the transfer length, since 
+setup packets are always 8 bytes long).
+
+In fact, I think URB_NO_SETUP_DMA_MAP doesn't really offer any
+worthwhile advantages.  (About the only place where multiple control
+requests are used in rapid succession is during firmware transfers, and
+those aren't time-constrained.)  It is currently used in a few
+drivers, but we ought to be able to remove it without too much effort.  
+That might make a good project.
+
+Alan Stern
