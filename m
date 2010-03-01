@@ -1,14 +1,10 @@
-Return-Path: <ron_madrid@sbcglobal.net>
-Received: from web83507.mail.sp1.yahoo.com (web83507.mail.sp1.yahoo.com
-	[216.252.120.163]) by ozlabs.org (Postfix) with SMTP id 60F0FB7D9E
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Mar 2010 05:43:58 +1100 (EST)
-Message-ID: <248783.45498.qm@web83507.mail.sp1.yahoo.com>
-Date: Mon, 1 Mar 2010 10:43:57 -0800 (PST)
-From: Ron Madrid <ron_madrid@sbcglobal.net>
-Subject: JFFS2 warnings
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Mon, 1 Mar 2010 16:12:55 -0300
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
+Subject: [RFC: PATCH 00/13] powerpc/47x: Support for 476 core
+Cc: Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,30 +14,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm getting a bunch of these after I 'reboot' or 'poweroff'
-several times.
+These patches add support for the 476 core.  The goal is to have a single
+binary that will run on both 44x and 47x, but we still have some details to
+work out.  The biggest is that the L1 cache line size differs on the two
+platforms, but it's currently a compile-time option.
 
-Empty flash at 0x0056205c ends at 0x00562800
-Empty flash at 0x00565334 ends at 0x00565800
-Empty flash at 0x00576104 ends at 0x00576800
+The code was originally written by Ben Herrenschmidt and Torez Smith, but
+I've been maintaining it.  I'll take responsibility for the content, but I
+can't take all the credit.
 
-JFFS2 notice: (848) check_node_data: wrong data CRC
-in data node at 0x00577034: read 0xe6adad18, calculated
-0x202a305c.
-JFFS2 notice: (848) check_node_data: wrong data CRC
-in data node at 0x00575768: read 0xe6adad18, calculated
-0xfc64f8a3.
+The first patch is a generic bookE feature.  Patches 2-5 add base 47x
+support.  Patches 6 & 7 add a platform to support the ISS simulator, and
+patches 8-13 add workarounds for DD1 and DD1.1 hardware bugs.
 
-I'm not too sure why I'm getting these, but recently
-they seem to have caused a few problems with parts of
-my filesystem (i.e. programs not running correctly).
-
-Can someone tell me what these are or what could be
-causing them?
-
-I'm using 2.6.33rc1 and this is on an mpc8313 based board.
-Not sure what other info would be useful.
-
-Thanks,
-
-Ron
+-- 
+Dave Kleikamp
+IBM Linux Technology Center
