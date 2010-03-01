@@ -1,12 +1,12 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Mon, 1 Mar 2010 12:14:18 -0700
+Date: Mon, 1 Mar 2010 12:14:12 -0700
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20100301191418.20987.25520.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20100301191411.20987.82569.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
 References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC: PATCH 12/13] powerpc/476: Workaround for DD1.1: Issue lwsync
-	after mtpid
+Subject: [RFC: PATCH 11/13] powerpc/476: Software workaround to fix dcr
+	read/write sequencing.
 Cc: Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,48 +17,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/476: Workaround for DD1.1: Issue lwsync after mtpid
+powerpc/476: Software workaround to fix dcr read/write sequencing.
 
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+Copy the register containing the dcr address to a spr before mfdcrx or
+mtdcrx instruction.  SPRN_SPRG_WSCRATCH_CRIT seems safe enough to use
+as a dummy register, as it is only otherwise used by critical interrupts,
+and we don't care if what we write is overwritten.
+
+Ideally, would only do this when CPU_FTR_476_DD1_1 is set, but I'm not
+getting the feature macros working in inlined assembler.  The dummy store
+is pretty cheap though, so I'm doing it unconditionally for 47x.
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/include/asm/asm-compat.h |    2 ++
- arch/powerpc/kernel/head_44x.S        |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/dcr-native.h |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
 
 
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index 1890fbf..fd16e3a 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -70,12 +70,14 @@
- 	BEGIN_FTR_SECTION;			\
- 		lwsync;				\
- 	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
-+#define PPC476_ERR_MTPID PPC476_ERR_DCBx
- #define PPC476_ERR_ISYNC()			\
- 	BEGIN_FTR_SECTION;			\
- 		isync;				\
- 	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
- #else	/* ! CONFIG_PPC_47x */
- #define PPC476_ERR_DCBx()
-+#define PPC476_ERR_MTPID()
- #define PPC476_ERR_ISYNC()
- #endif /* CONFIG_PPC_47x */
+diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
+index 7d2e623..768ce50 100644
+--- a/arch/powerpc/include/asm/dcr-native.h
++++ b/arch/powerpc/include/asm/dcr-native.h
+@@ -50,14 +50,34 @@ extern unsigned int __mfdcr(unsigned int reg);
+ static inline unsigned int mfdcrx(unsigned int reg)
+ {
+ 	unsigned int ret;
+-	asm volatile(".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
++	asm volatile(
++#ifdef CONFIG_PPC_47x
++		/*
++		 * Workaround: move reg to an spr prior to mfdcrx instruction
++		 */
++		     /* __stringify(BEGIN_FTR_SECTION) */
++		     "mtspr "__stringify(SPRN_SPRG_WSCRATCH_CRIT)",%1;"
++		     /* __stringify(END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)) */
++#endif
++		     ".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
+ 		     : "=r" (ret) : "r" (reg));
+ 	return ret;
+ }
  
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index a96796d..c27b0cd 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -705,6 +705,7 @@ _GLOBAL(set_context)
- 	stw	r4, 0x4(r5)
- #endif
- 	mtspr	SPRN_PID,r3
-+	PPC476_ERR_MTPID()
- 	isync			/* Force context change */
- 	blr
+ static inline void mtdcrx(unsigned int reg, unsigned int val)
+ {
+-	asm volatile(".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
++	asm volatile(
++#ifdef CONFIG_PPC_47x
++		/*
++		 * Workaround: move reg to an spr prior to mtdcrx instruction.
++		 * (Would love to get the FTR_SECTION macros working for
++		 * inlined assembler -- shaggy)
++		 */
++		     /* __stringify(BEGIN_FTR_SECTION) */
++		     "mtspr "__stringify(SPRN_SPRG_WSCRATCH_CRIT)",%1;"
++		     /* __stringify(END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)) */
++#endif
++		     ".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
+ 		     : : "r" (val), "r" (reg));
+ }
  
 
 -- 
