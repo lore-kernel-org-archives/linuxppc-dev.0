@@ -1,31 +1,30 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E60C7B833F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 23:58:26 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id o21CtLrD018590
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:55:21 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o21CwQGi1749120
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:58:26 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o21CwQrs000725
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 23:58:26 +1100
-Subject: [PATCH v2 3/3] powerpc: reduce printk from pseries_mach_cpu_die()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Anton Blanchard <anton@samba.org>
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Mon, 01 Mar 2010 18:28:23 +0530
-Message-ID: <20100301125823.26066.12047.stgit@drishya.in.ibm.com>
-In-Reply-To: <20100301123519.26066.8639.stgit@drishya.in.ibm.com>
-References: <20100301123519.26066.8639.stgit@drishya.in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 436D0B7D44
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Mar 2010 00:06:38 +1100 (EST)
+Message-ID: <4B8BBC14.9010705@ge.com>
+Date: Mon, 01 Mar 2010 13:07:32 +0000
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, Gautham R Shenoy <ego@in.ibm.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Gianfar driver failing on MPC8641D based board
+References: <20100225174935.GA32370@oksana.dev.rtsoft.ru>
+	<7d1d9c251002251653n6473f01ex2d43933ec6aa010b@mail.gmail.com>
+	<20100226031452.GA11319@oksana.dev.rtsoft.ru>
+	<4B87B937.6010204@ge.com>
+	<20100226143532.GA31622@oksana.dev.rtsoft.ru>
+	<4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com>
+	<4B87E9EF.3010604@ge.com>
+	<20100226161058.GA22954@oksana.dev.rtsoft.ru>
+	<4B87F67E.5070601@windriver.com>
+	<20100226213825.GA32363@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100226213825.GA32363@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, davem@davemloft.net,
+	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Remove debug printks in pseries_mach_cpu_die().  These are
-	noisy at runtime.  Traceevents can be added to instrument this
-	section of code.
+Anton Vorontsov wrote:
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 8bd3c9f..cccb409 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  	}
+>  
+>  	/* setup the TxBD length and buffer pointer for the first BD */
+> -	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+>  	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+>  			skb_headlen(skb), DMA_TO_DEVICE);
+>  
+> @@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  
+>  	txbdp_start->lstatus = lstatus;
+>  
+> +	eieio(); /* force lstatus write before tx_skbuff */
+> +
+> +	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+> +
+>  	/* Update the current skb pointer to the next entry we will use
+>  	 * (wrapping if necessary) */
+>  	tx_queue->skb_curtx = (tx_queue->skb_curtx + 1) &
+>   
+I can confirm 10/10 successful boots on p2020ds and mpc8641_hpcn.
 
-	The following KERN_INFO printks are removed:
+Martyn
 
-	cpu 62 (hwid 62) returned from cede.
-	Decrementer value = b2802fff Timebase value = 2fa8f95035f4a
-	cpu 62 (hwid 62) got prodded to go online
-	cpu 58 (hwid 58) ceding for offline with hint 2
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 39ecb40..b842378 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -122,21 +122,10 @@ static void pseries_mach_cpu_die(void)
- 		if (!get_lppaca()->shared_proc)
- 			get_lppaca()->donate_dedicated_cpu = 1;
- 
--		printk(KERN_INFO
--			"cpu %u (hwid %u) ceding for offline with hint %d\n",
--			cpu, hwcpu, cede_latency_hint);
- 		while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
- 			extended_cede_processor(cede_latency_hint);
--			printk(KERN_INFO "cpu %u (hwid %u) returned from cede.\n",
--				cpu, hwcpu);
--			printk(KERN_INFO
--			"Decrementer value = %x Timebase value = %llx\n",
--			get_dec(), get_tb());
- 		}
- 
--		printk(KERN_INFO "cpu %u (hwid %u) got prodded to go online\n",
--			cpu, hwcpu);
--
- 		if (!get_lppaca()->shared_proc)
- 			get_lppaca()->donate_dedicated_cpu = 0;
- 		get_lppaca()->idle = 0;
+-- 
+Martyn Welch (Principal Software Engineer)   |   Registered in England and
+GE Intelligent Platforms                     |   Wales (3828642) at 100
+T +44(0)127322748                            |   Barbirolli Square, Manchester,
+E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
