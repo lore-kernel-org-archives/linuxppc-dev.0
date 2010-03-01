@@ -1,17 +1,19 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 00131B7D1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Mar 2010 01:39:02 +1100 (EST)
-From: Martyn Welch <martyn.welch@ge.com>
-Subject: [PATCH] powerpc: Renaming following split of GE Fanuc joint venture
-To: kumar.gala@freescale.com
-Date: Mon, 01 Mar 2010 14:41:59 +0000
-Message-ID: <20100301144159.23431.18196.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Return-Path: <stern+4b9b024c@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id AA43CB7D23
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Mar 2010 01:49:50 +1100 (EST)
+Date: Mon, 1 Mar 2010 09:49:48 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Subject: Re: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
+	driver flag
+In-Reply-To: <1267366082-15248-9-git-send-email-albert_herranz@yahoo.es>
+Message-ID: <Pine.LNX.4.44L0.1003010943480.1645-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,286 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch renames GE Fanuc boards following the split-up of the GE Fanuc joint venture. These boards are now made by GE Intelligent platorms.
+On Sun, 28 Feb 2010, Albert Herranz wrote:
 
-Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
----
+> The HCD_NO_COHERENT_MEM USB host controller driver flag can be enabled
+> to instruct the USB stack to avoid allocating coherent memory for USB
+> buffers.
+> 
+> This flag is useful to overcome some esoteric memory access restrictions
+> found in some platforms.
+> For example, the Nintendo Wii video game console is a NOT_COHERENT_CACHE
+> platform that is unable to safely perform non-32 bit uncached writes
+> to RAM because the byte enables are not connected to the bus.
+> Thus, in that platform, "coherent" DMA buffers cannot be directly used
+> by the kernel code unless it guarantees that all write accesses
+> to said buffers are done in 32 bit chunks (which is not the case in the
+> USB subsystem).
+> 
+> To avoid this unwanted behaviour HCD_NO_COHERENT_MEM can be enabled at
+> the HCD controller, causing USB buffer allocations to be satisfied from
+> normal kernel memory. In this case, the USB stack will make sure that
+> the buffers get properly mapped/unmapped for DMA transfers using the DMA
+> streaming mapping API.
+> 
+> Note that other parts of the USB stack may also use coherent memory,
+> like for example the hardware descriptors used in the EHCI controllers.
+> This needs to be checked and addressed separately. In the EHCI example,
+> hardware descriptors are accessed in 32-bit (or 64-bit) chunks, causing
+> no problems in the described scenario.
 
- arch/powerpc/boot/dts/gef_ppc9a.dts      |    4 ++--
- arch/powerpc/boot/dts/gef_sbc310.dts     |    4 ++--
- arch/powerpc/boot/dts/gef_sbc610.dts     |    4 ++--
- arch/powerpc/platforms/86xx/Kconfig      |   12 ++++++------
- arch/powerpc/platforms/86xx/gef_gpio.c   |   10 +++++-----
- arch/powerpc/platforms/86xx/gef_pic.c    |    6 +++---
- arch/powerpc/platforms/86xx/gef_ppc9a.c  |   12 ++++++------
- arch/powerpc/platforms/86xx/gef_sbc310.c |   12 ++++++------
- arch/powerpc/platforms/86xx/gef_sbc610.c |   12 ++++++------
- 9 files changed, 38 insertions(+), 38 deletions(-)
+> --- a/drivers/usb/core/hcd.c
+> +++ b/drivers/usb/core/hcd.c
+> @@ -1260,6 +1260,34 @@ static void hcd_free_coherent(struct usb_bus *bus, dma_addr_t *dma_handle,
+>  	*dma_handle = 0;
+>  }
+>  
+> +static int urb_needs_setup_dma_map(struct usb_hcd *hcd, struct urb *urb)
+> +{
+> +	return !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP) ||
+> +	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
+> +		urb->setup_dma == ~(dma_addr_t)0);
+> +}
+> +
+> +static int urb_needs_setup_dma_unmap(struct usb_hcd *hcd, struct urb *urb)
+> +{
+> +	return !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP) ||
+> +	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
+> +		urb->setup_dma && urb->setup_dma != ~(dma_addr_t)0);
+> +}
+> +
+> +static int urb_needs_transfer_dma_map(struct usb_hcd *hcd, struct urb *urb)
+> +{
+> +	return !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP) ||
+> +	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
+> +		urb->transfer_dma == ~(dma_addr_t)0);
+> +}
+> +
+> +static int urb_needs_transfer_dma_unmap(struct usb_hcd *hcd, struct urb *urb)
+> +{
+> +	return !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP) ||
+> +	       ((hcd->driver->flags & HCD_NO_COHERENT_MEM) &&
+> +		urb->transfer_dma && urb->transfer_dma != ~(dma_addr_t)0);
+> +}
+> +
 
-diff --git a/arch/powerpc/boot/dts/gef_ppc9a.dts b/arch/powerpc/boot/dts/gef_ppc9a.dts
-index 977f260..83f4b79 100644
---- a/arch/powerpc/boot/dts/gef_ppc9a.dts
-+++ b/arch/powerpc/boot/dts/gef_ppc9a.dts
-@@ -1,7 +1,7 @@
- /*
-- * GE Fanuc PPC9A Device Tree Source
-+ * GE PPC9A Device Tree Source
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-diff --git a/arch/powerpc/boot/dts/gef_sbc310.dts b/arch/powerpc/boot/dts/gef_sbc310.dts
-index 8e4efff..fc3a331 100644
---- a/arch/powerpc/boot/dts/gef_sbc310.dts
-+++ b/arch/powerpc/boot/dts/gef_sbc310.dts
-@@ -1,7 +1,7 @@
- /*
-- * GE Fanuc SBC310 Device Tree Source
-+ * GE SBC310 Device Tree Source
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-diff --git a/arch/powerpc/boot/dts/gef_sbc610.dts b/arch/powerpc/boot/dts/gef_sbc610.dts
-index bb70600..c0671cc 100644
---- a/arch/powerpc/boot/dts/gef_sbc610.dts
-+++ b/arch/powerpc/boot/dts/gef_sbc610.dts
-@@ -1,7 +1,7 @@
- /*
-- * GE Fanuc SBC610 Device Tree Source
-+ * GE SBC610 Device Tree Source
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 2bbfd53..fbe9f36 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -33,32 +33,32 @@ config MPC8610_HPCD
- 	  This option enables support for the MPC8610 HPCD board.
- 
- config GEF_PPC9A
--	bool "GE Fanuc PPC9A"
-+	bool "GE PPC9A"
- 	select DEFAULT_UIMAGE
- 	select MMIO_NVRAM
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
- 	help
--	  This option enables support for GE Fanuc's PPC9A.
-+	  This option enables support for the GE PPC9A.
- 
- config GEF_SBC310
--	bool "GE Fanuc SBC310"
-+	bool "GE SBC310"
- 	select DEFAULT_UIMAGE
- 	select MMIO_NVRAM
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
- 	help
--	  This option enables support for GE Fanuc's SBC310.
-+	  This option enables support for the GE SBC310.
- 
- config GEF_SBC610
--	bool "GE Fanuc SBC610"
-+	bool "GE SBC610"
- 	select DEFAULT_UIMAGE
- 	select MMIO_NVRAM
- 	select GENERIC_GPIO
- 	select ARCH_REQUIRE_GPIOLIB
- 	select HAS_RAPIDIO
- 	help
--	  This option enables support for GE Fanuc's SBC610.
-+	  This option enables support for the GE SBC610.
- 
- endif
- 
-diff --git a/arch/powerpc/platforms/86xx/gef_gpio.c b/arch/powerpc/platforms/86xx/gef_gpio.c
-index b2ea887..11f7b2b 100644
---- a/arch/powerpc/platforms/86xx/gef_gpio.c
-+++ b/arch/powerpc/platforms/86xx/gef_gpio.c
-@@ -1,9 +1,9 @@
- /*
-- * Driver for GE Fanuc's FPGA based GPIO pins
-+ * Driver for GE FPGA based GPIO
-  *
-- * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ * Author: Martyn Welch <martyn.welch@ge.com>
-  *
-- * 2008 (c) GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * 2008 (c) GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This file is licensed under the terms of the GNU General Public License
-  * version 2.  This program is licensed "as is" without any warranty of any
-@@ -164,6 +164,6 @@ static int __init gef_gpio_init(void)
- };
- arch_initcall(gef_gpio_init);
- 
--MODULE_DESCRIPTION("GE Fanuc I/O FPGA GPIO driver");
--MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com");
-+MODULE_DESCRIPTION("GE I/O FPGA GPIO driver");
-+MODULE_AUTHOR("Martyn Welch <martyn.welch@ge.com");
- MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/platforms/86xx/gef_pic.c b/arch/powerpc/platforms/86xx/gef_pic.c
-index 0110a87..c92d5fb 100644
---- a/arch/powerpc/platforms/86xx/gef_pic.c
-+++ b/arch/powerpc/platforms/86xx/gef_pic.c
-@@ -1,9 +1,9 @@
- /*
-- * Interrupt handling for GE Fanuc's FPGA based PIC
-+ * Interrupt handling for GE FPGA based PIC
-  *
-- * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ * Author: Martyn Welch <martyn.welch@ge.com>
-  *
-- * 2008 (c) GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * 2008 (c) GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This file is licensed under the terms of the GNU General Public License
-  * version 2.  This program is licensed "as is" without any warranty of any
-diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
-index a792e5d..60ce07e 100644
---- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
-+++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
-@@ -1,9 +1,9 @@
- /*
-- * GE Fanuc PPC9A board support
-+ * GE PPC9A board support
-  *
-- * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ * Author: Martyn Welch <martyn.welch@ge.com>
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -82,7 +82,7 @@ static void __init gef_ppc9a_setup_arch(void)
- 	}
- #endif
- 
--	printk(KERN_INFO "GE Fanuc Intelligent Platforms PPC9A 6U VME SBC\n");
-+	printk(KERN_INFO "GE Intelligent Platforms PPC9A 6U VME SBC\n");
- 
- #ifdef CONFIG_SMP
- 	mpc86xx_smp_init();
-@@ -151,7 +151,7 @@ static void gef_ppc9a_show_cpuinfo(struct seq_file *m)
- {
- 	uint svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
-+	seq_printf(m, "Vendor\t\t: GE Intelligent Platforms\n");
- 
- 	seq_printf(m, "Revision\t: %u%c\n", gef_ppc9a_get_pcb_rev(),
- 		('A' + gef_ppc9a_get_board_rev()));
-@@ -235,7 +235,7 @@ static int __init declare_of_platform_devices(void)
- machine_device_initcall(gef_ppc9a, declare_of_platform_devices);
- 
- define_machine(gef_ppc9a) {
--	.name			= "GE Fanuc PPC9A",
-+	.name			= "GE PPC9A",
- 	.probe			= gef_ppc9a_probe,
- 	.setup_arch		= gef_ppc9a_setup_arch,
- 	.init_IRQ		= gef_ppc9a_init_irq,
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
-index 6a1a613..3ecee25 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc310.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
-@@ -1,9 +1,9 @@
- /*
-- * GE Fanuc SBC310 board support
-+ * GE SBC310 board support
-  *
-- * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ * Author: Martyn Welch <martyn.welch@ge.com>
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -82,7 +82,7 @@ static void __init gef_sbc310_setup_arch(void)
- 	}
- #endif
- 
--	printk(KERN_INFO "GE Fanuc Intelligent Platforms SBC310 6U VPX SBC\n");
-+	printk(KERN_INFO "GE Intelligent Platforms SBC310 6U VPX SBC\n");
- 
- #ifdef CONFIG_SMP
- 	mpc86xx_smp_init();
-@@ -142,7 +142,7 @@ static void gef_sbc310_show_cpuinfo(struct seq_file *m)
- {
- 	uint svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
-+	seq_printf(m, "Vendor\t\t: GE Intelligent Platforms\n");
- 
- 	seq_printf(m, "Board ID\t: 0x%2.2x\n", gef_sbc310_get_board_id());
- 	seq_printf(m, "Revision\t: %u%c\n", gef_sbc310_get_pcb_rev(),
-@@ -223,7 +223,7 @@ static int __init declare_of_platform_devices(void)
- machine_device_initcall(gef_sbc310, declare_of_platform_devices);
- 
- define_machine(gef_sbc310) {
--	.name			= "GE Fanuc SBC310",
-+	.name			= "GE SBC310",
- 	.probe			= gef_sbc310_probe,
- 	.setup_arch		= gef_sbc310_setup_arch,
- 	.init_IRQ		= gef_sbc310_init_irq,
-diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index e10688a..5090d60 100644
---- a/arch/powerpc/platforms/86xx/gef_sbc610.c
-+++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
-@@ -1,9 +1,9 @@
- /*
-- * GE Fanuc SBC610 board support
-+ * GE SBC610 board support
-  *
-- * Author: Martyn Welch <martyn.welch@gefanuc.com>
-+ * Author: Martyn Welch <martyn.welch@ge.com>
-  *
-- * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
-+ * Copyright 2008 GE Intelligent Platforms Embedded Systems, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -82,7 +82,7 @@ static void __init gef_sbc610_setup_arch(void)
- 	}
- #endif
- 
--	printk(KERN_INFO "GE Fanuc Intelligent Platforms SBC610 6U VPX SBC\n");
-+	printk(KERN_INFO "GE Intelligent Platforms SBC610 6U VPX SBC\n");
- 
- #ifdef CONFIG_SMP
- 	mpc86xx_smp_init();
-@@ -133,7 +133,7 @@ static void gef_sbc610_show_cpuinfo(struct seq_file *m)
- {
- 	uint svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "Vendor\t\t: GE Fanuc Intelligent Platforms\n");
-+	seq_printf(m, "Vendor\t\t: GE Intelligent Platforms\n");
- 
- 	seq_printf(m, "Revision\t: %u%c\n", gef_sbc610_get_pcb_rev(),
- 		('A' + gef_sbc610_get_board_rev() - 1));
-@@ -212,7 +212,7 @@ static int __init declare_of_platform_devices(void)
- machine_device_initcall(gef_sbc610, declare_of_platform_devices);
- 
- define_machine(gef_sbc610) {
--	.name			= "GE Fanuc SBC610",
-+	.name			= "GE SBC610",
- 	.probe			= gef_sbc610_probe,
- 	.setup_arch		= gef_sbc610_setup_arch,
- 	.init_IRQ		= gef_sbc610_init_irq,
+These functions would be a lot easier to understand if they were 
+expanded into multiple test and return statements, rather than 
+squeezing all the Boolean manipulations into single expressions.  (Not 
+to mention the fact that other developement is going to make them even 
+more complicated than they are now...)
 
+Also, I can't help thinking that the corresponding *_map() and 
+*_unmap() routines are so similar, it ought to be possible to combine 
+them.  The only difference is a check for a NULL DMA address, and it's 
+not clear to me why it is present.  It's also not clear why the test 
+for a DMA address of all ones is present.  Maybe they both can be 
+removed.
 
---
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+Alan Stern
