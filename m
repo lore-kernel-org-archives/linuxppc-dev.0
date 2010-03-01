@@ -1,22 +1,29 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5456DB7D86
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  1 Mar 2010 23:06:54 +1100 (EST)
-Date: Mon, 1 Mar 2010 12:06:32 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
-	enable zone reclaim
-Message-ID: <20100301120632.GB3852@csn.ul.ie>
-References: <20100218222923.GC31681@kryten> <20100219000730.GD31681@kryten>
-	<20100219145523.GN30258@csn.ul.ie> <20100223015551.GG31681@kryten>
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A5516B7C33
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Mar 2010 23:58:08 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp03.in.ibm.com (8.14.3/8.13.1) with ESMTP id o21Cw6fQ030577
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 18:28:06 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o21Cw5Sb2924796
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 18:28:06 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o21Cw5rg020211
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Mar 2010 18:28:05 +0530
+Subject: [PATCH v2 0/3] powerpc: bug fixes in pseries_mach_cpu_die()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Anton Blanchard <anton@samba.org>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Mon, 01 Mar 2010 18:28:03 +0530
+Message-ID: <20100301123519.26066.8639.stgit@drishya.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20100223015551.GG31681@kryten>
-Cc: cl@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, Gautham R Shenoy <ego@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,129 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 23, 2010 at 12:55:51PM +1100, Anton Blanchard wrote:
->  
-> Hi Mel,
-> 
+Hi Ben,
 
-I'm back but a bit vague. Am on painkillers for the bashing I gave
-myself down the hills.
+The following set of patches fixes kernel stack reset issue and also
+potential race conditions.
 
-> > You're pretty much on the button here. Only one thread at a time enters
-> > zone_reclaim. The others back off and try the next zone in the zonelist
-> > instead. I'm not sure what the original intention was but most likely it
-> > was to prevent too many parallel reclaimers in the same zone potentially
-> > dumping out way more data than necessary.
-> > 
-> > > I'm not sure if there is an easy way to fix this without penalising other
-> > > workloads though.
-> > > 
-> > 
-> > You could experiment with waiting on the bit if the GFP flags allowi it? The
-> > expectation would be that the reclaim operation does not take long. Wait
-> > on the bit, if you are making the forward progress, recheck the
-> > watermarks before continueing.
-> 
-> Thanks to you and Christoph for some suggestions to try. Attached is a
-> chart showing the results of the following tests:
-> 
-> 
-> baseline.txt
-> The current ppc64 default of zone_reclaim_mode = 0. As expected we see
-> no change in remote node memory usage even after 10 iterations.
-> 
-> zone_reclaim_mode.txt
-> Now we set zone_reclaim_mode = 1. On each iteration we continue to improve,
-> but even after 10 runs of stream we have > 10% remote node memory usage.
-> 
+This fix should be applied in 2.6.33 stable tree onwards.
 
-Ok, so how reasonable would it be to expect that the rate of "improvement"
-to be related to the ratio between "available free node memory at start -
-how many pages the benchmark requires" and the number of pages zone_reclaim
-reclaims on the local node?
+Problem description:
 
-The exact rate of improvement is complicated by multiple threads so it
-won't be exact.
+(1) Repeated offline/online operation on pseries with extended cede
+processor feature will run over the kernel stack and crash since the
+stack was not reset on resume from cede processor.
 
-> reclaim_4096_pages.txt
-> Instead of reclaiming 32 pages at a time, we try for a much larger batch
-> of 4096. The slope is much steeper but it still takes around 6 iterations
-> to get almost all local node memory.
-> 
-> wait_on_busy_flag.txt
-> Here we busy wait if the ZONE_RECLAIM_LOCKED flag is set. As you suggest
-> we would need to check the GFP flags etc, but so far it looks the most
-> promising. We only get a few percent of remote node memory on the first
-> iteration and get all local node by the second.
-> 
+(2) The 'if' conditions and code has been slightly rearranged to avoid
+any possible race conditions where preferred_offline_state can change
+while the cpu is still executing the condition checks in
+pseries_mach_cpu_die().  The new code has the CPU_STATE_OFFLINE as
+default and also improved readability.  Thanks to Anton Blanchard for
+pointing this out.
 
-If the above expectation is reasonable, a better alternative may be to adapt
-the number of pages reclaimed to the number of callers to
-__zone_reclaim() and allow parallel reclaimers.
+(3) There were too many noisy KERN_INFO printks on offline/online
+operation.  Removed the printk's for now.  Other debug methods or
+traceevents can be introduced at a later point.
 
-e.g. 
-	1 thread	 128
-	2 threads	  64
-	3 threads	  32
-	4 threads	  16
-etc
+The patch has been tested on large POWER machine with both
+cede_offline=off case and the default cede_offline=on case.
 
-The exact starting batch count needs more careful thinking than what I'm
-giving it currently and maybe the decay ratio too to work out what the
-worst-case scenario for dumping node-local memory is but you get the idea.
+Please apply in powerpc.git tree and push upstream.
 
-The downside is that this requires a per-zone counter to count the
-number of parallel reclaimers.
+Previous version of the patch can be found at:
 
-> 
-> Perhaps a combination of larger batch size and waiting on the busy
-> flag is the way to go?
-> 
+[PATCH] powerpc: reset kernel stack on cpu online from cede state
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080515.html
 
-I think a static increase on the batch size runs three risks. The first of
-parallel reclaimers dumping too much of local memory although it could be
-mitigated by checking the watermarks after waiting on the bit lock. The
-second is that the thread doing the reclaiming is penalised with higher
-reclaim costs while other CPUs remain idle. The third is that there
-could be latency snags with a thread spinning that would previously have
-gone off-node.
+Thanks,
+Vaidy
 
-Not sure what the impact of the third risk but it might be noticeable on
-latency-sensitive machines where the off-node cost is not significant
-enough to justify a delay.
+---
 
-Christoph, how feasible would it be to allow parallel reclaimers in
-__zone_reclaim() that back off at a rate depending on the number of
-reclaimers?
-
-> --- mm/vmscan.c~	2010-02-21 23:47:14.000000000 -0600
-> +++ mm/vmscan.c	2010-02-22 03:22:01.000000000 -0600
-> @@ -2534,7 +2534,7 @@
->  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
->  		.may_swap = 1,
->  		.nr_to_reclaim = max_t(unsigned long, nr_pages,
-> -				       SWAP_CLUSTER_MAX),
-> +				       4096),
->  		.gfp_mask = gfp_mask,
->  		.swappiness = vm_swappiness,
->  		.order = order,
-
-> --- mm/vmscan.c~	2010-02-21 23:47:14.000000000 -0600
-> +++ mm/vmscan.c	2010-02-21 23:47:31.000000000 -0600
-> @@ -2634,8 +2634,8 @@
->  	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
->  		return ZONE_RECLAIM_NOSCAN;
->  
-> -	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
-> -		return ZONE_RECLAIM_NOSCAN;
-> +	while (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
-> +		cpu_relax();
->  
->  	ret = __zone_reclaim(zone, gfp_mask, order);
->  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+Vaidyanathan Srinivasan (3):
+      powerpc: reset kernel stack on cpu online from cede state
+      powerpc: move checks in pseries_mach_cpu_die()
+      powerpc: reduce printk from pseries_mach_cpu_die()
 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ arch/powerpc/kernel/head_64.S                   |   11 ++++++
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   42 ++++++++---------------
+ arch/powerpc/platforms/pseries/offline_states.h |    2 +
+ 3 files changed, 27 insertions(+), 28 deletions(-)
