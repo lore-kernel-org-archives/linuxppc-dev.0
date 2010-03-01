@@ -1,12 +1,12 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Mon, 1 Mar 2010 12:14:12 -0700
+Date: Mon, 1 Mar 2010 12:14:25 -0700
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20100301191411.20987.82569.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20100301191425.20987.46086.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
 References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-Subject: [RFC: PATCH 11/13] powerpc/476: Software workaround to fix dcr
-	read/write sequencing.
+Subject: [RFC: PATCH 13/13] powerpc/476: Add dci instruction to async
+	interrupt handlers on DD1 core
 Cc: Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,67 +17,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/476: Software workaround to fix dcr read/write sequencing.
+powerpc/476: Add dci instruction to async interrupt handlers on DD1 core
 
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-Copy the register containing the dcr address to a spr before mfdcrx or
-mtdcrx instruction.  SPRN_SPRG_WSCRATCH_CRIT seems safe enough to use
-as a dummy register, as it is only otherwise used by critical interrupts,
-and we don't care if what we write is overwritten.
-
-Ideally, would only do this when CPU_FTR_476_DD1_1 is set, but I'm not
-getting the feature macros working in inlined assembler.  The dummy store
-is pretty cheap though, so I'm doing it unconditionally for 47x.
 
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/include/asm/dcr-native.h |   24 ++++++++++++++++++++++--
- 1 files changed, 22 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/asm-compat.h |    5 +++++
+ arch/powerpc/kernel/head_booke.h      |    3 +++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
 
-diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
-index 7d2e623..768ce50 100644
---- a/arch/powerpc/include/asm/dcr-native.h
-+++ b/arch/powerpc/include/asm/dcr-native.h
-@@ -50,14 +50,34 @@ extern unsigned int __mfdcr(unsigned int reg);
- static inline unsigned int mfdcrx(unsigned int reg)
- {
- 	unsigned int ret;
--	asm volatile(".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
-+	asm volatile(
-+#ifdef CONFIG_PPC_47x
-+		/*
-+		 * Workaround: move reg to an spr prior to mfdcrx instruction
-+		 */
-+		     /* __stringify(BEGIN_FTR_SECTION) */
-+		     "mtspr "__stringify(SPRN_SPRG_WSCRATCH_CRIT)",%1;"
-+		     /* __stringify(END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)) */
-+#endif
-+		     ".long 0x7c000206 | (%0 << 21) | (%1 << 16)"
- 		     : "=r" (ret) : "r" (reg));
- 	return ret;
- }
+diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
+index fd16e3a..43e9d1b 100644
+--- a/arch/powerpc/include/asm/asm-compat.h
++++ b/arch/powerpc/include/asm/asm-compat.h
+@@ -71,6 +71,10 @@
+ 		lwsync;				\
+ 	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
+ #define PPC476_ERR_MTPID PPC476_ERR_DCBx
++#define PPC476_ERR_DCI()			\
++	BEGIN_FTR_SECTION;			\
++		dci;				\
++	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1)
+ #define PPC476_ERR_ISYNC()			\
+ 	BEGIN_FTR_SECTION;			\
+ 		isync;				\
+@@ -78,6 +82,7 @@
+ #else	/* ! CONFIG_PPC_47x */
+ #define PPC476_ERR_DCBx()
+ #define PPC476_ERR_MTPID()
++#define PPC476_ERR_DCI()
+ #define PPC476_ERR_ISYNC()
+ #endif /* CONFIG_PPC_47x */
  
- static inline void mtdcrx(unsigned int reg, unsigned int val)
- {
--	asm volatile(".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
-+	asm volatile(
-+#ifdef CONFIG_PPC_47x
-+		/*
-+		 * Workaround: move reg to an spr prior to mtdcrx instruction.
-+		 * (Would love to get the FTR_SECTION macros working for
-+		 * inlined assembler -- shaggy)
-+		 */
-+		     /* __stringify(BEGIN_FTR_SECTION) */
-+		     "mtspr "__stringify(SPRN_SPRG_WSCRATCH_CRIT)",%1;"
-+		     /* __stringify(END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)) */
-+#endif
-+		     ".long 0x7c000306 | (%0 << 21) | (%1 << 16)"
- 		     : : "r" (val), "r" (reg));
- }
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 6b1ad61..d247c1c 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -175,12 +175,14 @@ label:									     \
  
+ #define EXCEPTION(n, label, hdlr, xfer)				\
+ 	START_EXCEPTION(label);					\
++	PPC476_ERR_DCI();					\
+ 	NORMAL_EXCEPTION_PROLOG;				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	xfer(n, hdlr)
+ 
+ #define CRITICAL_EXCEPTION(n, label, hdlr)			\
+ 	START_EXCEPTION(label);					\
++	PPC476_ERR_DCI();					\
+ 	CRITICAL_EXCEPTION_PROLOG;				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+@@ -380,6 +382,7 @@ label:									     \
+ 
+ #define DECREMENTER_EXCEPTION						      \
+ 	START_EXCEPTION(Decrementer)					      \
++	PPC476_ERR_DCI();						      \
+ 	NORMAL_EXCEPTION_PROLOG;					      \
+ 	lis     r0,TSR_DIS@h;           /* Setup the DEC interrupt mask */    \
+ 	mtspr   SPRN_TSR,r0;		/* Clear the DEC interrupt */	      \
 
 -- 
 Dave Kleikamp
