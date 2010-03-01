@@ -1,14 +1,21 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/booke: Fix breakpoint/watchpoint one-shot behavior
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-In-Reply-To: <1266954197.11207.20.camel@norville.austin.ibm.com>
-References: <20100208215049.17930.8586.sendpatchset@norville.austin.ibm.com>
-	<1266954197.11207.20.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Mon, 01 Mar 2010 08:57:34 -0600
-Message-Id: <1267455454.15030.9.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
+Return-Path: <cl@linux-foundation.org>
+Received: from nlpi157.prodigy.net (nlpi157.sbcis.sbc.com [207.115.36.171])
+	by ozlabs.org (Postfix) with ESMTP id C29E3B7CF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Mar 2010 02:19:42 +1100 (EST)
+Date: Mon, 1 Mar 2010 09:19:15 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] powerpc: Set a smaller value for RECLAIM_DISTANCE to
+	enable zone reclaim
+In-Reply-To: <20100301120632.GB3852@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.1003010859480.1309@router.home>
+References: <20100218222923.GC31681@kryten> <20100219000730.GD31681@kryten>
+	<20100219145523.GN30258@csn.ul.ie> <20100223015551.GG31681@kryten>
+	<20100301120632.GB3852@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,77 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Another fix for the extended ptrace patches in the -next tree.
+On Mon, 1 Mar 2010, Mel Gorman wrote:
 
-The handling of breakpoints and watchpoints is inconsistent.  When a
-breakpoint or watchpoint is hit, the interrupt handler is clearing the
-proper bits in the dbcr* registers, but leaving the dac* and iac* registers
-alone.  The ptrace code to delete the break/watchpoints checks the dac* and
-iac* registers for zero to determine if they are enabled.  Instead, they
-should check the dbcr* bits.
+> Christoph, how feasible would it be to allow parallel reclaimers in
+> __zone_reclaim() that back off at a rate depending on the number of
+> reclaimers?
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
----
-
- arch/powerpc/kernel/ptrace.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 0efa2e3..ed2cfe1 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -940,7 +940,7 @@ static int del_instruction_bp(struct task_struct *child, int slot)
- {
- 	switch (slot) {
- 	case 1:
--		if (child->thread.iac1 == 0)
-+		if ((child->thread.dbcr0 & DBCR0_IAC1) == 0)
- 			return -ENOENT;
- 
- 		if (dbcr_iac_range(child) & DBCR_IAC12MODE) {
-@@ -952,7 +952,7 @@ static int del_instruction_bp(struct task_struct *child, int slot)
- 		child->thread.dbcr0 &= ~DBCR0_IAC1;
- 		break;
- 	case 2:
--		if (child->thread.iac2 == 0)
-+		if ((child->thread.dbcr0 & DBCR0_IAC2) == 0)
- 			return -ENOENT;
- 
- 		if (dbcr_iac_range(child) & DBCR_IAC12MODE)
-@@ -963,7 +963,7 @@ static int del_instruction_bp(struct task_struct *child, int slot)
- 		break;
- #if CONFIG_PPC_ADV_DEBUG_IACS > 2
- 	case 3:
--		if (child->thread.iac3 == 0)
-+		if ((child->thread.dbcr0 & DBCR0_IAC3) == 0)
- 			return -ENOENT;
- 
- 		if (dbcr_iac_range(child) & DBCR_IAC34MODE) {
-@@ -975,7 +975,7 @@ static int del_instruction_bp(struct task_struct *child, int slot)
- 		child->thread.dbcr0 &= ~DBCR0_IAC3;
- 		break;
- 	case 4:
--		if (child->thread.iac4 == 0)
-+		if ((child->thread.dbcr0 & DBCR0_IAC4) == 0)
- 			return -ENOENT;
- 
- 		if (dbcr_iac_range(child) & DBCR_IAC34MODE)
-@@ -1054,7 +1054,7 @@ static int set_dac(struct task_struct *child, struct ppc_hw_breakpoint *bp_info)
- static int del_dac(struct task_struct *child, int slot)
- {
- 	if (slot == 1) {
--		if (child->thread.dac1 == 0)
-+		if ((dbcr_dac(child) & (DBCR_DAC1R | DBCR_DAC1W)) == 0)
- 			return -ENOENT;
- 
- 		child->thread.dac1 = 0;
-@@ -1070,7 +1070,7 @@ static int del_dac(struct task_struct *child, int slot)
- 		child->thread.dvc1 = 0;
- #endif
- 	} else if (slot == 2) {
--		if (child->thread.dac2 == 0)
-+		if ((dbcr_dac(child) & (DBCR_DAC2R | DBCR_DAC2W)) == 0)
- 			return -ENOENT;
- 
- #ifdef CONFIG_PPC_ADV_DEBUG_DAC_RANGE
+Not too hard. Zone locking is there but there may be a lot of bouncing
+cachelines if you run it concurrently.
