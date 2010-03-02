@@ -1,21 +1,28 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 39AC0B7D05
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 00:27:52 +1100 (EST)
-Received: from bzq-79-176-44-225.red.bezeqint.net ([79.176.44.225]:50590
-	helo=felix-laptop.lan)
-	by vega.surpasshosting.com with esmtpa (Exim 4.69)
-	(envelope-from <felix@embedded-sol.com>) id 1NmS8Z-0000Aa-LH
-	for linuxppc-dev@ozlabs.org; Tue, 02 Mar 2010 08:27:48 -0500
-Message-ID: <4B8D125B.8030503@embedded-sol.com>
-Date: Tue, 02 Mar 2010 15:27:55 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id B3E6FB7D29
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 01:02:36 +1100 (EST)
+Date: Tue, 2 Mar 2010 17:02:33 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gopalpet-B05799 <B05799@freescale.com>
+Subject: Re: Gianfar driver failing on MPC8641D based board
+Message-ID: <20100302140233.GA14488@oksana.dev.rtsoft.ru>
+References: <20100226031452.GA11319@oksana.dev.rtsoft.ru>
+	<4B87B937.6010204@ge.com>
+	<20100226143532.GA31622@oksana.dev.rtsoft.ru>
+	<4B87E01E.4070704@windriver.com> <4B87E662.3080106@ge.com>
+	<4B87E9EF.3010604@ge.com>
+	<20100226161058.GA22954@oksana.dev.rtsoft.ru>
+	<4B87F67E.5070601@windriver.com>
+	<20100226213825.GA32363@oksana.dev.rtsoft.ru>
+	<9F4C7D19E8361D4C94921B95BE08B81BC93EC3@zin33exm22.fsl.freescale.net>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Problem with PCI bus rescan on 460EX
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <9F4C7D19E8361D4C94921B95BE08B81BC93EC3@zin33exm22.fsl.freescale.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Martyn Welch <martyn.welch@ge.com>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>, davem@davemloft.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,146 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi!
 
-I'm running linux-2.6.33 on a custom board based on 460EX.
-There's a PCI-PCI bridge on this board, PLX 6254, and a single
-hot-pluggable device behind the bridge.
+On Sat, Feb 27, 2010 at 11:05:32AM +0530, Kumar Gopalpet-B05799 wrote:
+[...]
+> Understood, and thanks for the explanation. Am I correct in saying that
+> this is
+> due to the out-of-order execution capability on powerpc ?
 
-When this device is plugged in before system boots everything works
-fine: bridge and device are properly recognized by kernel, resources are
-allocated and device memory regions are accessible. Below is relevant
-kernel messages and lspci output:
+Nope, that was just a logic issue in the driver. 
 
-PCI: Probing PCI hardware
-pci_bus 0000:00: scanning bus
-pci 0000:00:02.0: found [3388:0020] class 000604 header type 01
-pci 0000:00:02.0: calling pcibios_fixup_resources+0x0/0xf4
-pci 0000:00:02.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
-pci 0000:00:02.0: calling quirk_resource_alignment+0x0/0x200
-pci 0000:00:02.0: supports D1 D2
-pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot
-pci 0000:00:02.0: PME# disabled
-pci_bus 0000:00: fixups for bus
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
-pci_bus 0000:01: scanning bus
-pci 0000:01:00.0: found [1575:0002] class 00ff00 header type 00
-pci 0000:01:00.0: reg 10: [mem 0x80000000-0x800fffff]
-pci 0000:01:00.0: reg 14: [mem 0x84000000-0x87ffffff]
-pci 0000:01:00.0: reg 18: [mem 0x88000000-0x8bffffff]
-pci 0000:01:00.0: reg 1c: [mem 0x8c000000-0x8c003fff]
-pci 0000:01:00.0: calling pcibios_fixup_resources+0x0/0xf4
-pci 0000:01:00.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
-pci 0000:01:00.0: calling quirk_resource_alignment+0x0/0x200
-pci_bus 0000:01: fixups for bus
-pci 0000:00:02.0: PCI bridge to [bus 01-01]
-pci 0000:00:02.0:   bridge window [mem 0x80000000-0x8c0fffff]
-pci_bus 0000:01: bus scan returning with max=01
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
-pci_bus 0000:00: bus scan returning with max=01
-pci 0000:00:02.0: BAR 8: assigned [mem 0xd80000000-0xd89ffffff]
-pci 0000:01:00.0: BAR 1: assigned [mem 0xd80000000-0xd83ffffff]
-pci 0000:01:00.0: BAR 1: set to [mem 0xd80000000-0xd83ffffff] (PCI 
-address [0x80000000-0x83ffffff]
-pci 0000:01:00.0: BAR 2: assigned [mem 0xd84000000-0xd87ffffff]
-pci 0000:01:00.0: BAR 2: set to [mem 0xd84000000-0xd87ffffff] (PCI 
-address [0x84000000-0x87ffffff]
-pci 0000:01:00.0: BAR 0: assigned [mem 0xd88000000-0xd880fffff]
-pci 0000:01:00.0: BAR 0: set to [mem 0xd88000000-0xd880fffff] (PCI 
-address [0x88000000-0x880fffff]
-pci 0000:01:00.0: BAR 3: assigned [mem 0xd88100000-0xd88103fff]
-pci 0000:01:00.0: BAR 3: set to [mem 0xd88100000-0xd88103fff] (PCI 
-address [0x88100000-0x88103fff]
-pci 0000:00:02.0: PCI bridge to [bus 01-01]
-pci 0000:00:02.0:   bridge window [io  disabled]
-pci 0000:00:02.0:   bridge window [mem 0xd80000000-0xd89ffffff]
-pci 0000:00:02.0:   bridge window [mem pref disabled]
-pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
-pci_bus 0000:00: resource 1 [mem 0xd80000000-0xdffffffff]
-pci_bus 0000:01: resource 1 [mem 0xd80000000-0xd89ffffff]
+Though, with the patch, the eieio() is needed so that compiler (or CPU)
+won't reorder lstatus and skbuff writes.
 
-00:02.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (transparent 
-mode) (rev 04)
-00: 88 33 20 00 87 00 b0 02 04 00 04 06 08 80 01 00
-10: 00 00 00 00 00 00 00 00 00 01 01 00 f1 01 a0 02
-20: 00 80 f0 89 f1 ff 01 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 dc 00 00 00 00 00 00 00 00 00 00 00
+> I have one more question, why don't we use use atomic_t for num_txbdfree
+> and
+> completely  do away with spin_locks in gfar_clean_tx_ring() and
+> gfar_start_xmit().
+> In an non-SMP, scenario I would feel there is absolutely no requirement
+> of spin_locks
+> and in case of SMP atomic operation would be much more safer on powerpc
+> rather than spin_locks.
+> 
+> What is your suggestion ?
 
+I think that's a good idea.
 
-The problem arises when device is plugged in after boot. After doing
-echo 1 > /sys/bus/pci/rescan
-the device is identified, but bridge memory window is not allocated,
-and reads from device memory regions return 0xffffffff. Below is
-relevant output:
+However, in start_xmit() we'll have to keep the spinlock anyway
+since it also protects from gfar_error(), which can modify
+regs->tstat.
 
-PCI: Probing PCI hardware
-pci_bus 0000:00: scanning bus
-pci 0000:00:02.0: found [3388:0020] class 000604 header type 01
-pci 0000:00:02.0: calling pcibios_fixup_resources+0x0/0xf4
-pci 0000:00:02.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
-pci 0000:00:02.0: calling quirk_resource_alignment+0x0/0x200
-pci 0000:00:02.0: supports D1 D2
-pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot
-pci 0000:00:02.0: PME# disabled
-pci_bus 0000:00: fixups for bus
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
-pci_bus 0000:01: scanning bus
-pci_bus 0000:01: fixups for bus
-pci 0000:00:02.0: PCI bridge to [bus 01-01]
-pci_bus 0000:01: bus scan returning with max=01
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
-pci_bus 0000:00: bus scan returning with max=01
-pci 0000:00:02.0: PCI bridge to [bus 01-01]
-pci 0000:00:02.0:   bridge window [io  disabled]
-pci 0000:00:02.0:   bridge window [mem disabled]
-pci 0000:00:02.0:   bridge window [mem pref disabled]
-pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
-pci_bus 0000:00: resource 1 [mem 0xd80000000-0xdffffffff]
-pci 0000:00:02.0: calling quirk_cardbus_legacy+0x0/0x54
-pci 0000:00:02.0: calling quirk_usb_early_handoff+0x0/0x6cc
-PCI: CLS 32 bytes, default 32
+Thanks!
 
-pci_bus 0000:00: scanning bus
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
-pci_bus 0000:01: scanning bus
-pci 0000:01:00.0: found [1575:0002] class 00ff00 header type 00
-pci 0000:01:00.0: reg 10: [mem 0x00000000-0x000fffff]
-pci 0000:01:00.0: reg 14: [mem 0x00000000-0x03ffffff]
-pci 0000:01:00.0: reg 18: [mem 0x00000000-0x03ffffff]
-pci 0000:01:00.0: reg 1c: [mem 0x00000000-0x00003fff]
-pci 0000:01:00.0: calling pcibios_fixup_resources+0x0/0xf4
-pci 0000:01:00.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
-pci 0000:01:00.0: calling quirk_resource_alignment+0x0/0x200
-pci_bus 0000:01: bus scan returning with max=01
-pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
-pci_bus 0000:00: bus scan returning with max=01
-pci 0000:00:02.0: BAR 8: assigned [mem 0xd80000000-0xd89ffffff]
-pci 0000:01:00.0: BAR 1: assigned [mem 0xd80000000-0xd83ffffff]
-pci 0000:01:00.0: BAR 1: set to [mem 0xd80000000-0xd83ffffff] (PCI 
-address [0x80000000-0x83ffffff]
-pci 0000:01:00.0: BAR 2: assigned [mem 0xd84000000-0xd87ffffff]
-pci 0000:01:00.0: BAR 2: set to [mem 0xd84000000-0xd87ffffff] (PCI 
-address [0x84000000-0x87ffffff]
-pci 0000:01:00.0: BAR 0: assigned [mem 0xd88000000-0xd880fffff]
-pci 0000:01:00.0: BAR 0: set to [mem 0xd88000000-0xd880fffff] (PCI 
-address [0x88000000-0x880fffff]
-pci 0000:01:00.0: BAR 3: assigned [mem 0xd88100000-0xd88103fff]
-pci 0000:01:00.0: BAR 3: set to [mem 0xd88100000-0xd88103fff] (PCI 
-address [0x88100000-0x88103fff]
-
-00:02.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (transparent 
-mode) (rev 04)
-00: 88 33 20 00 87 00 b0 02 04 00 04 06 08 80 01 00
-10: 00 00 00 00 00 00 00 00 00 01 01 00 f1 01 a0 02
-20: f0 ff 00 00 f1 ff 01 00 00 00 00 00 00 00 00 00
-30: 00 00 00 00 dc 00 00 00 00 00 00 00 00 00 00 00
-
-As you can see, the PLX BAR at address 0x20 is not properly configured.
-Writing the value 0x89f08000 using setpci fixes access to hot-plugged 
-device.
-
-Any idea why PCI bus rescan fails to allocate bridge memory window ?
-
-Thanks a lot.
-
-Felix.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
