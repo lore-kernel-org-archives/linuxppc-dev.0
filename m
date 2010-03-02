@@ -1,17 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Mon, 1 Mar 2010 19:47:06 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC: PATCH 03/13] powerpc/47x: Base ppc476 support
-Message-ID: <20100302004706.GD8963@zod.rchland.ibm.com>
-References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-	<20100301191315.20987.48063.sendpatchset@norville.austin.ibm.com>
-	<20100301201900.GA8963@zod.rchland.ibm.com>
-	<1267485089.26041.30.camel@norville.austin.ibm.com>
+Return-Path: <pppeterpppan@gmail.com>
+Received: from mail-qy0-f185.google.com (mail-qy0-f185.google.com
+	[209.85.221.185]) by ozlabs.org (Postfix) with ESMTP id 20209B7DDE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  2 Mar 2010 13:20:28 +1100 (EST)
+Received: by qyk15 with SMTP id 15so2212156qyk.10
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 01 Mar 2010 18:20:26 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1267485089.26041.30.camel@norville.austin.ibm.com>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
+Date: Tue, 2 Mar 2010 10:20:26 +0800
+Message-ID: <48abf2c21003011820k4e259734ma5b1d0fd79fc4af9@mail.gmail.com>
+Subject: something gets odd when I set the mtd.dev.parent
+From: Peter Pan <pppeterpppan@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,21 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 01, 2010 at 05:11:29PM -0600, Dave Kleikamp wrote:
->On Mon, 2010-03-01 at 15:19 -0500, Josh Boyer wrote:
->> Overall I'm just going to trust you that things aren't broken on 47x :)
->> 
->> A few minor comments below.  Also, if Torez and Benh contributed to this code,
->> then their S-o-b lines should be included as well (same goes for any other
->> patch).
->
->Right, wanted to make sure they approved of the current state of the
->patches.  They'll go through Ben anyway.
+2010/2/27 Peter Pan <pppeterpppan@gmail.com>:
+> 2010/2/27 Scott Wood <scottwood@freescale.com>:
+>> On Fri, Feb 26, 2010 at 10:08:09AM +0800, Peter Pan wrote:
+>> There isn't one. =A0I was not under the impression that such a configura=
+tion
+>> was even possible (how do you control ALE/CLE, for example?). =A0There i=
+s a
+>> NAND driver that uses UPM, though -- perhaps you could use that?
+>>
+>> How specifically is NAND connected to the SoC on your board? =A0What abo=
+ut it
+>> suggests GPCM?
+>>
+>> -Scott
+>>
 
-Oh.  I guess it doesn't matter much but I would like to test my tree with them
-applied first.
+We use Address A20 and A21 connect to ALE and CLE, the data bus is
+connected through a buffer.
+The RE is OE AND with CS. the WE is PBS0 AND with CS. CE pin is
+connect to ground. It works
+fine in VxWorks. And also in our previous Linux version 2.6.22.
 
-(That's not a distrust that you haven't.  It's me attempting to be a decent
-maintainer for 4xx.)
+Now, I get a odd problem. My GPCM Nand flash driver is mostly copied
+from fsl_upm.c. In the fun_probe
+function, I have printed out the of_device pointer status as follows:
+ofdev=3D 0xcf851ca0
+ofdev->dev=3D 0xcf851cb0
+ofdev->dev.class=3D 0xcf851d50
 
-josh
+Then I set the &ofdev->dev to mtd.dev.parent using
+fun->mtd.dev.parent =3D &ofdev->dev;
+
+Then I print out the values:
+fun->mtd.dev.parent=3D 0xcf851cb0
+fun->mtd.dev.parent->class=3D 0x0
+
+The parent pointer is identical, but the class member is NULL, which
+makes the access of NULL pointer oops
+later.
+
+I'm wondering why this could happen. The pointer points at the same
+address, shouldn't all the members be the
+same?
