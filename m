@@ -1,26 +1,23 @@
-Return-Path: <jhansen@cardaccess-inc.com>
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-	by ozlabs.org (Postfix) with ESMTP id E85B7B7D57
+Return-Path: <vb@vsbe.com>
+Received: from mout.perfora.net (mout.perfora.net [74.208.4.195])
+	by ozlabs.org (Postfix) with ESMTP id 63B20B7D56
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Mar 2010 08:11:59 +1100 (EST)
-Received: from in01.mta.xmission.com ([166.70.13.51])
-	by out02.mta.xmission.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) (envelope-from <jhansen@cardaccess-inc.com>)
-	id 1NmYSq-0002tl-Cj
-	for linuxppc-dev@lists.ozlabs.org; Tue, 02 Mar 2010 13:13:08 -0700
-Received: from 174-23-157-249.slkc.qwest.net ([174.23.157.249]
-	helo=[172.9.0.2])
-	by in01.mta.xmission.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.69) (envelope-from <jhansen@cardaccess-inc.com>)
-	id 1NmYSo-0001mg-HR
-	for linuxppc-dev@lists.ozlabs.org; Tue, 02 Mar 2010 13:13:08 -0700
-Message-ID: <4B8D714F.8040904@cardaccess-inc.com>
-Date: Tue, 02 Mar 2010 13:13:03 -0700
-From: Jeff Hansen <jhansen@cardaccess-inc.com>
+	Wed,  3 Mar 2010 08:22:13 +1100 (EST)
+Received: by pvg16 with SMTP id 16so183521pvg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 02 Mar 2010 13:22:09 -0800 (PST)
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: OProfile on the MPC8313 / e300 core
+In-Reply-To: <4B8D3C59.4080504@windriver.com>
+References: <1267212301-26851-1-git-send-email-paul.gortmaker@windriver.com>
+	<f608b67d1003011503h57b88742md889ba8d6da652bc@mail.gmail.com>
+	<4B8D3C59.4080504@windriver.com>
+From: vb@vsbe.com
+Date: Tue, 2 Mar 2010 13:21:49 -0800
+Message-ID: <f608b67d1003021321h549cfb2bj1e3b217b94c3960c@mail.gmail.com>
+Subject: Re: [PATCH] 8250: add workaround for MPC8[356]xx UART break IRQ storm
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,125 +27,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, Mar 2, 2010 at 8:27 AM, Paul Gortmaker
+<paul.gortmaker@windriver.com> wrote:
+> On 10-03-01 06:03 PM, vb@vsbe.com wrote:
+>> sounds very much like this issue:
+>>
+>> http://linux.derkeiler.com/Mailing-Lists/Kernel/2010-02/msg09470.html
+>
+> Thanks for the link.
+>
+>>
+>> (interrupt storm on the second port which is hit with breaks).
+>>
+>> It's not the uart driver problem per se, the below fixes it:
+>
+> Actually, it is a uart *hardware* problem -- see in this same
+> thread where Scott Wood described an errata, and when I
+> implemented his interpretation of what the fix should look
+> like, things just worked. =A0You might want to try out that patch
+> and see if it helps you, since from the link above, I see you
+> are also on a powerpc board.
+>
+> Paul.
+>
 
-I am running 2.6.31.4 on an MPC8313 (e300/PPC6xx core) platform running 
-OpenWRT.  I am getting non-recoverable exceptions in random functions 
-shortly after I start profiling using OProfile (within a few minutes).  
-The exception usually happens in cpu_idle, but not always.  The oops 
-usually shows that exception 0xf00 (performance counter) precedes the 
-non-recoverable condition.  Even if it doesn't show the 0xf00 exception 
-in the stack trace, the following entry_32.S's _switch function always 
-detects the non-recoverable condition (when this happens):
+yeah, I was not aware of the hardware bug you are describing, it's
+just the scenario I encountered is very similar: the serial interface
+is flooded with breaks, after a while the prot generates an IRQ storm.
+But the storm happens only after the port gets shut down (by getty in
+my case).
 
-    andi.    r10,r9,MSR_RI        /* check for recoverable interrupt */
+In my case this behavior is due to a SW bug, you might be hitting the
+HW problem, I have not seen it yet,
 
-The MSR's RI bit is not set, and so the kernel assumes the worst.  I've 
-tried disabling the above check as well, but other strange oopses still 
-occur, so something is definitely wrong with the CPU.  If I leave things 
-alone I *always* get a non-recoverable exception within a few minutes.
+cheers,
+/vb
 
-This only occurs under heavy interrupt load (I do a short packet ping 
-flood from three hosts on the Ethernet).  I don't think trying 2.6.33 
-will help because I haven't seen any bug-fixes related to 
-oprofile/ppc/e300 since 2.6.31.  But of course if somebody thinks 2.6.33 
-will help, I can try it out.  I've also tried powersave=off and 
-idle=poll on the kernel command line, with the same results.
 
-Does anyone have any ideas as to why this is happening?  Is it a bug in 
-the PowerPC oprofile implementation?  Or a bug in the performance 
-counter core in the MPC8313?  It's making it very hard to profile things 
-under heavy load since it oopses so soon.
-
-Here is one of the oopses with a GPL-only kernel with heavy load on the 
-gianfar driver:
-
-Non-recoverable exception at PC=c0186704 MSR=1000
-Oops: nonrecoverable exception, sig: 9 [#1]
-MPC831x RDB
-Modules linked in: oprofile nf_nat_tftp nf_conntrack_tftp nf_nat_irc 
-nf_conntrack_irc nf_nat_ftp nf_conntrack_ftp ipt_MASQUERADE iptable_nat 
-nf_nat xt_NOTRACK iptable_raw xt_state nf_conntrack_ipv4 nf_defrag_ipv4 
-nf_conntrack ipt_REJECT xt_TCPMSS ipt_LOG xt_multiport xt_mac xt_limit 
-iptable_mangle iptable_filter ip_tables xt_tcpudp x_tables nfs ppp_async 
-ppp_generic slhc auth_rpcgss lockd sunrpc crc_ccitt netconsole ipv6
-NIP: c0186704 LR: c01866f4 CTR: 00000000
-REGS: c036dc80 TRAP: 0f00   Not tainted  (2.6.31.4)
-MSR: 00001000 <ME>  CR: 84004022  XER: 00000000
-TASK = c03433e8[0] 'swapper' THREAD: c036c000
-GPR00: 00000089 c036dd30 c03433e8 c7844190 00000000 00000000 c72d2f9c 
-c03716dc
-GPR08: 00000000 c7844180 c720e880 c720e840 44004022 ffff8000 000000ff 
-00000000
-GPR16: c02ef210 0000000a c02ef1fc c02ef1e8 00000001 00000000 c783eb64 
-c1661800
-GPR24: c036c000 00000000 0000003f c72d2f00 c1661c48 c783e800 c783eae0 
-c783eae0
-NIP [c0186704] gfar_clean_rx_ring+0xe0/0x4ec
-LR [c01866f4] gfar_clean_rx_ring+0xd0/0x4ec
-Call Trace:
-[c036dd30] [c01866f4] gfar_clean_rx_ring+0xd0/0x4ec (unreliable)
-[c036dd80] [c0186dc8] gfar_poll+0x2b8/0x3b4
-[c036ddd0] [c01dbf64] net_rx_action+0x11c/0x2d8
-[c036de30] [c00332f0] __do_softirq+0x130/0x23c
-[c036de90] [c000661c] do_softirq+0x40/0x58
-[c036dea0] [c0032d74] irq_exit+0x38/0x48
-[c036deb0] [c00066c0] do_IRQ+0x8c/0xac
-[c036ded0] [c00120f0] ret_from_except+0x0/0x14
---- Exception: 501 at cpu_idle+0xc8/0xe0
-    LR = cpu_idle+0xdc/0xe0
-[c036dfb0] [c0003fc8] rest_init+0x5c/0x74
-[c036dfc0] [c03187f8] start_kernel+0x2b0/0x2d0
-[c036dff0] [00003440] 0x3440
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX 3aa00000 XXXXXXXX XXXXXXXX XXXXXXXX 4bfffe95
-XXXXXXXX XXXXXXXX XXXXXXXX 34690010 XXXXXXXX XXXXXXXX XXXXXXXX 7fcb002e
-
-And another oops with the proprietary modules I am working with:
-
-Non-recoverable exception at PC=c0009724 MSR=1000
-Oops: nonrecoverable exception, sig: 9 [#1]
-MPC831x RDB
-Modules linked in: oprofile ... nf_nat_tftp nf_conntrack_tftp nf_nat_irc 
-nf_conntrack_irc nf_nat_ftp nf_conntrack_ftp ipt_MASQUERADE iptable_nat 
-nf_nat xt_NOTRACK iptable_raw xt_state nf_conntrack_ipv4 nf_defrag_ipv4 
-nf_conntrack ipt_REJECT xt_TCPMSS ipt_LOG xt_multiport xt_mac xt_limit 
-iptable_mangle iptable_filter ip_tables xt_tcpudp x_tables nfs ppp_async 
-ppp_generic slhc auth_rpcgss lockd sunrpc floader crc_ccitt netconsole ipv6
-NIP: c0009724 LR: c0009724 CTR: c000cd20
-REGS: c036dee0 TRAP: 0f00   Tainted: P ...  (2.6.31.4)
-MSR: 00001000 <ME>  CR: 24002028  XER: 20000000
-TASK = c03433e8[0] 'swapper' THREAD: c036c000
-GPR00: 00000000 c036df90 c03433e8 00800000 8090c000 00e00000 8a23c64a 
-00049032
-GPR08: 00000001 c036c000 24002022 c1796000 ae8b6fd7 ffff8000 07ffb000 
-09fbc000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000002 00000002 
-00000001
-GPR24: 00000000 003ab000 40100000 00000020 c037465c c037465c 00000008 
-c036c03c
-NIP [c0009724] cpu_idle+0xa0/0xe0
-LR [c0009724] cpu_idle+0xa0/0xe0
-Call Trace:
-[c036df90] [c0009760] cpu_idle+0xdc/0xe0 (unreliable)
-[c036dfb0] [c0003fc8] rest_init+0x5c/0x74
-[c036dfc0] [c03187f8] start_kernel+0x2b0/0x2d0
-[c036dff0] [00003440] 0x3440
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX 7c0000a6 XXXXXXXX XXXXXXXX XXXXXXXX 70090004
-XXXXXXXX XXXXXXXX XXXXXXXX 4e800421 XXXXXXXX XXXXXXXX XXXXXXXX 7c00f828
-Kernel panic - not syncing: Fatal exception
-Call Trace:
-[c036de30] [c0008764] show_stack+0x78/0x1a4 (unreliable)
-[c036de60] [c0258adc] panic+0x98/0x174
-[c036deb0] [c000f748] die+0x15c/0x168
-[c036ded0] [c0012330] nonrecoverable+0xa4/0xa8
---- Exception: f00 at cpu_idle+0xa0/0xe0
-    LR = cpu_idle+0xa0/0xe0
-[c036df90] [c0009760] cpu_idle+0xdc/0xe0 (unreliable)
-[c036dfb0] [c0003fc8] rest_init+0x5c/0x74
-[c036dfc0] [c03187f8] start_kernel+0x2b0/0x2d0
-[c036dff0] [00003440] 0x3440
-Rebooting in 3 seconds..
-
--Jeff
+>>
+>> *** linux/drivers/serial/serial_core.c#1 =A0 =A0 =A0 =A0Wed Feb 24 17:46=
+:22 2010
+>> --- =A0linux/drivers/serial/serial_core.c#2 =A0 =A0 =A0 =A0Mon Mar =A01 =
+15:00:29 2010
+>> ***************
+>> *** 622,632 ****
+>> =A0 =A0 =A0 =A0 =A0struct uart_port *port =3D state->port;
+>>
+>> =A0 =A0 =A0 =A0 =A0if (I_IXOFF(tty)) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (port->x_char)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0port->x_char =3D 0;
+>> ! =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0uart_send_xchar(tty, =
+START_CHAR(tty));
+>> =A0 =A0 =A0 =A0 =A0}
+>>
+>> =A0 =A0 =A0 =A0 =A0if (tty->termios->c_cflag& =A0CRTSCTS)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0uart_set_mctrl(port, TIOCM_RTS);
+>> --- 622,632 ----
+>> =A0 =A0 =A0 =A0 =A0struct uart_port *port =3D state->port;
+>>
+>> =A0 =A0 =A0 =A0 =A0if (I_IXOFF(tty)) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (port->x_char)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0port->x_char =3D 0;
+>> ! =A0 =A0 =A0 =A0 =A0 =A0 =A0 else if (!(tty->flags& =A0(1<< =A0TTY_IO_E=
+RROR)))
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0uart_send_xchar(tty, =
+START_CHAR(tty));
+>> =A0 =A0 =A0 =A0 =A0}
+>>
+>> =A0 =A0 =A0 =A0 =A0if (tty->termios->c_cflag& =A0CRTSCTS)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0uart_set_mctrl(port, TIOCM_RTS);
+>> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^=
+^^^^^^^^^^^^^^^^^^^^^^
+>>
+>> I did not get to trying to submit it, but it sure gets rid o the storm.
+>>
+>> cheers,
+>> /vb
+>>
+>> On Fri, Feb 26, 2010 at 11:25 AM, Paul Gortmaker
+>> <paul.gortmaker@windriver.com> =A0wrote:
+>>> Sending a break on the SOC UARTs found in some MPC83xx/85xx/86xx
+>>> chips seems to cause a short lived IRQ storm (/proc/interrupts
+>>> typically shows somewhere between 300 and 1500 events). =A0Unfortunatel=
+y
+>>> this renders SysRQ over the serial console completely inoperable.
+>>> Testing with obvious things like ACKing the event doesn't seem to
+>>> change anything vs. a completely dumb approach of just ignoring
+>>> it and waiting for it to stop, so that is what is implemented here.
+>>>
+>>> Signed-off-by: Paul Gortmaker<paul.gortmaker@windriver.com>
+>>> ---
+>>>
+>>> This is a refresh of a patch I'd done earlier -- I've tried to make
+>>> the bug support as generic as possible to minimize having board
+>>> specific ifdef crap in 8250.c -- any suggestions on how to further
+>>> improve it are welcome.
+>>>
+>>> =A0 drivers/serial/8250.c =A0 =A0 =A0| =A0 =A06 ++++++
+>>> =A0 drivers/serial/8250.h =A0 =A0 =A0| =A0 20 ++++++++++++++++++++
+>>> =A0 drivers/serial/Kconfig =A0 =A0 | =A0 14 ++++++++++++++
+>>> =A0 include/linux/serial_reg.h | =A0 =A02 ++
+>>> =A0 4 files changed, 42 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+>>> index e9b15c3..850b0e9 100644
+>>> --- a/drivers/serial/8250.c
+>>> +++ b/drivers/serial/8250.c
+>>> @@ -1531,6 +1531,11 @@ static void serial8250_handle_port(struct uart_8=
+250_port *up)
+>>>
+>>> =A0 =A0 =A0 =A0 status =3D serial_inp(up, UART_LSR);
+>>>
+>>> + =A0 =A0 =A0 if ((up->bugs& =A0UART_BUG_PPC)&& =A0(status =3D=3D UART_=
+LSR_RFE_ERROR_BITS)) {
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock_irqrestore(&up->port.lock, fl=
+ags);
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+>>> + =A0 =A0 =A0 }
+>>> +
+>>> =A0 =A0 =A0 =A0 DEBUG_INTR("status =3D %x...", status);
+>>>
+>>> =A0 =A0 =A0 =A0 if (status& =A0(UART_LSR_DR | UART_LSR_BI))
+>>> @@ -1948,6 +1953,7 @@ static int serial8250_startup(struct uart_port *p=
+ort)
+>>>
+>>> =A0 =A0 =A0 =A0 up->capabilities =3D uart_config[up->port.type].flags;
+>>> =A0 =A0 =A0 =A0 up->mcr =3D 0;
+>>> + =A0 =A0 =A0 up->bugs |=3D UART_KNOWN_BUGS;
+>>>
+>>> =A0 =A0 =A0 =A0 if (up->port.iotype !=3D up->cur_iotype)
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 set_io_from_upio(port);
+>>> diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+>>> index 6e19ea3..2074ce1 100644
+>>> --- a/drivers/serial/8250.h
+>>> +++ b/drivers/serial/8250.h
+>>> @@ -49,6 +49,7 @@ struct serial8250_config {
+>>> =A0 #define UART_BUG_TXEN =A0(1<< =A01) =A0 =A0 =A0 =A0/* UART has bugg=
+y TX IIR status */
+>>> =A0 #define UART_BUG_NOMSR (1<< =A02) =A0 =A0 =A0 =A0/* UART has buggy =
+MSR status bits (Au1x00) */
+>>> =A0 #define UART_BUG_THRE =A0(1<< =A03) =A0 =A0 =A0 =A0/* UART has bugg=
+y THRE reassertion */
+>>> +#define UART_BUG_PPC =A0 (1<< =A04) =A0 =A0 =A0 =A0/* UART has buggy P=
+PC break IRQ storm */
+>>>
+>>> =A0 #define PROBE_RSA =A0 =A0 =A0(1<< =A00)
+>>> =A0 #define PROBE_ANY =A0 =A0 =A0(~0)
+>>> @@ -78,3 +79,22 @@ struct serial8250_config {
+>>> =A0 #else
+>>> =A0 #define ALPHA_KLUDGE_MCR 0
+>>> =A0 #endif
+>>> +
+>>> +/*
+>>> + * The following UART bugs are currently dynamically detected and not
+>>> + * required to be contingent on any particular compile time options.
+>>> + */
+>>> +#define HAS_BUG_QUOT =A0 0 =A0 =A0 =A0 /* assign UART_BUG_QUOT to enab=
+le */
+>>> +#define HAS_BUG_TXEN =A0 0 =A0 =A0 =A0 /* assign UART_BUG_TXEN to enab=
+le */
+>>> +#define HAS_BUG_NOMSR =A00 =A0 =A0 =A0 /* assign UART_BUG_NOMSR to ena=
+ble */
+>>> +#define HAS_BUG_THRE =A0 0 =A0 =A0 =A0 /* assign UART_BUG_THRE to enab=
+le */
+>>> +
+>>> +#ifdef CONFIG_SERIAL_8250_PPC_BUG
+>>> +#define HAS_BUG_PPC =A0 =A0UART_BUG_PPC
+>>> +#else
+>>> +#define HAS_BUG_PPC =A0 =A00
+>>> +#endif
+>>> +
+>>> +#define UART_KNOWN_BUGS (HAS_BUG_QUOT | HAS_BUG_TXEN | HAS_BUG_NOMSR |=
+ \
+>>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 HAS_BUG_THRE | HAS_BUG_PP=
+C)
+>>> +
+>>> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+>>> index 9ff47db..e01a411 100644
+>>> --- a/drivers/serial/Kconfig
+>>> +++ b/drivers/serial/Kconfig
+>>> @@ -70,6 +70,20 @@ config SERIAL_8250_CONSOLE
+>>>
+>>> =A0 =A0 =A0 =A0 =A0 If unsure, say N.
+>>>
+>>> +config SERIAL_8250_PPC_BUG
+>>> + =A0 =A0 =A0 bool "Fix 8250/16550 to handle IRQ storm after receipt of=
+ a break"
+>>> + =A0 =A0 =A0 depends on SERIAL_8250&& =A0PPC32
+>>> + =A0 =A0 =A0 ---help---
+>>> + =A0 =A0 =A0 =A0 If you say Y here, addional checks will be added in t=
+he handling of
+>>> + =A0 =A0 =A0 =A0 interrupts on the serial ports which will prevent ill=
+ effects of
+>>> + =A0 =A0 =A0 =A0 an interrupt storm triggered by a break on the serial=
+ line. Without
+>>> + =A0 =A0 =A0 =A0 this enabled, a Sysrq via the serial console can be u=
+nusable on
+>>> + =A0 =A0 =A0 =A0 some systems.
+>>> +
+>>> + =A0 =A0 =A0 =A0 This is commonly observed on PPC32 MPC83xx/85xx/86xx =
+based boards.
+>>> +
+>>> + =A0 =A0 =A0 =A0 If unsure, say N.
+>>> +
+>>> =A0 config FIX_EARLYCON_MEM
+>>> =A0 =A0 =A0 =A0 bool
+>>> =A0 =A0 =A0 =A0 depends on X86
+>>> diff --git a/include/linux/serial_reg.h b/include/linux/serial_reg.h
+>>> index cf9327c..010174f 100644
+>>> --- a/include/linux/serial_reg.h
+>>> +++ b/include/linux/serial_reg.h
+>>> @@ -111,6 +111,7 @@
+>>> =A0 #define UART_MCR_DTR =A0 =A0 =A0 =A0 =A0 0x01 /* DTR complement */
+>>>
+>>> =A0 #define UART_LSR =A0 =A0 =A0 5 =A0 =A0 =A0 /* In: =A0Line Status Re=
+gister */
+>>> +#define UART_LSR_RFE =A0 =A0 =A0 =A0 =A0 0x80 /* Rx FIFO Error (BE, FE=
+, or PE) */
+>>> =A0 #define UART_LSR_TEMT =A0 =A0 =A0 =A0 =A00x40 /* Transmitter empty =
+*/
+>>> =A0 #define UART_LSR_THRE =A0 =A0 =A0 =A0 =A00x20 /* Transmit-hold-regi=
+ster empty */
+>>> =A0 #define UART_LSR_BI =A0 =A0 =A0 =A0 =A0 =A00x10 /* Break interrupt =
+indicator */
+>>> @@ -119,6 +120,7 @@
+>>> =A0 #define UART_LSR_OE =A0 =A0 =A0 =A0 =A0 =A00x02 /* Overrun error in=
+dicator */
+>>> =A0 #define UART_LSR_DR =A0 =A0 =A0 =A0 =A0 =A00x01 /* Receiver data re=
+ady */
+>>> =A0 #define UART_LSR_BRK_ERROR_BITS =A0 =A0 =A0 =A00x1E /* BI, FE, PE, =
+OE bits */
+>>> +#define UART_LSR_RFE_ERROR_BITS =A0 =A0 =A0 =A00xF1 /* RFE, TEMT, THRE=
+, BI, DR bits */
+>>>
+>>> =A0 #define UART_MSR =A0 =A0 =A0 6 =A0 =A0 =A0 /* In: =A0Modem Status R=
+egister */
+>>> =A0 #define UART_MSR_DCD =A0 =A0 =A0 =A0 =A0 0x80 /* Data Carrier Detec=
+t */
+>>> --
+>>> 1.6.5.2
+>>>
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>>
+>
+>
