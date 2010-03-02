@@ -1,18 +1,17 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp137.mail.ukl.yahoo.com (smtp137.mail.ukl.yahoo.com
-	[77.238.184.68]) by ozlabs.org (Postfix) with SMTP id D8D8EB7D4B
+Return-Path: <stern+4b9b024c@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id C8CCBB7D09
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Mar 2010 04:02:38 +1100 (EST)
-Message-ID: <4B8D44A7.7030302@yahoo.es>
-Date: Tue, 02 Mar 2010 18:02:31 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
+	Wed,  3 Mar 2010 04:43:34 +1100 (EST)
+Date: Tue, 2 Mar 2010 12:43:33 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Albert Herranz <albert_herranz@yahoo.es>
 Subject: Re: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
 	driver flag
-References: <Pine.LNX.4.44L0.1003021034190.1730-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003021034190.1730-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <4B8D44A7.7030302@yahoo.es>
+Message-ID: <Pine.LNX.4.44L0.1003021236560.1375-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,48 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Stern wrote:
-> On Mon, 1 Mar 2010, Albert Herranz wrote:
-> 
->>> 	If transfer_buffer_length is 0 then do nothing.
->>> 	Otherwise if num_sgs > 0 then do nothing.
->>> 	Otherwise if URB_NO_TRANSFER_DMA_MAP and transfer_dma
->>> 		are both set (this avoids your HCD_NO_COHERENT_MEM
->>> 		case) then do nothing.
->>>
->> I see. This case would include the PIO case too (for which dma_handle
->> is set to all 1s).
-> 
-> The test above should be transfer_dma != ~0, not transfer_dma != 0,
-> since ~0 means the DMA address isn't set.  In fact I forgot to 
-> include the PIO case; it should be handled by changing the remaining 
-> tests as follows:
-> 
-> 	Otherwise if hcd->self.uses_dma is set then
-> 		If this URB doesn't require PIO then call dma_map_single
-> 	Otherwise if HCD_LOCAL_MEM is set then call hcd_alloc_coherent
-> 	Otherwise do nothing (PIO case).
-> 
-> Currently "this URB doesn't require PIO" is always true, but in the 
-> future it won't be.
-> 
+On Tue, 2 Mar 2010, Albert Herranz wrote:
 
-Can this be currently tested?
-Should I make provisions for this check now too?
-
->> So this assumes that transfer_dma should be set initially to 0 when
->> allocating USB buffers for HCD_NO_COHERENT_MEM.
+> > Currently "this URB doesn't require PIO" is always true, but in the 
+> > future it won't be.
+> > 
 > 
-> No, it should be set to ~0, the same as when buffers are allocated for 
-> a PIO-based controller.
-> 
+> Can this be currently tested?
 
-This logic now resembles more the one in my v2 proposal although with different formal checks.
-I think I'll code and post another iteration of the 8/9 patch with your proposed checks and then we can continue further discussion on it.
-I'll try to add explanatory comments for each check.
+Not yet, but soon.  You can follow the gory details in this email 
+thread:
 
-> Alan Stern
-> 
+	http://marc.info/?l=linux-usb&m=126477569707174&w=2
 
-Thanks a lot for your input,
-Albert
+See especially this email:
+
+	http://marc.info/?l=linux-usb&m=126630714002200&w=2
+
+> Should I make provisions for this check now too?
+
+Don't worry about it.  If you structure the code as I described, it 
+will be easy to insert the check later on.
+
+Alan Stern
