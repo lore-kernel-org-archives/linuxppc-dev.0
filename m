@@ -1,19 +1,21 @@
-Return-Path: <stern+4b9b024c@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
-	by ozlabs.org (Postfix) with SMTP id C8CCBB7D09
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  3 Mar 2010 04:43:34 +1100 (EST)
-Date: Tue, 2 Mar 2010 12:43:33 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Albert Herranz <albert_herranz@yahoo.es>
-Subject: Re: [RFC PATCH v2 8/9] USB: add HCD_NO_COHERENT_MEM host controller
-	driver flag
-In-Reply-To: <4B8D44A7.7030302@yahoo.es>
-Message-ID: <Pine.LNX.4.44L0.1003021236560.1375-100000@iolanthe.rowland.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id E0975B7CED
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 07:07:05 +1100 (EST)
+Received: by gwj20 with SMTP id 20so321327gwj.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Mar 2010 12:07:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <14429243.1267517383754.JavaMail.ngmail@webmail14.arcor-online.net>
+References: <14429243.1267517383754.JavaMail.ngmail@webmail14.arcor-online.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 2 Mar 2010 13:06:44 -0700
+Message-ID: <fa686aa41003021206v773b30d1vef6362704dca9e61@mail.gmail.com>
+Subject: Re: [Patch] mpc5200b: improve baud rate calculation (reach high baud
+	rates, better accuracy)
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2 Mar 2010, Albert Herranz wrote:
+On Tue, Mar 2, 2010 at 1:09 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> w=
+rote:
+>> > + =A0 /* Check only once if we are running on a mpc5200b or not */
+>> > + =A0 if (is_mpc5200b =3D=3D -1) {
+>> > + =A0 =A0 =A0 =A0 =A0 struct device_node *np;
+>> > +
+>> > + =A0 =A0 =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, "fsl,=
+mpc5200b-immr");
+>>
+>> This should be handled using a new compatible-entry
+>> "fsl,mpc5200b-psc-uart".
+>
+> I agree that this would be a lot cleaner, but it's also a lot more intrus=
+ive. =A0CC'ing the device tree discussion list here... comments, please!!
 
-> > Currently "this URB doesn't require PIO" is always true, but in the 
-> > future it won't be.
-> > 
-> 
-> Can this be currently tested?
+fsl,mpc5200b-psc-uart is already in the compatible list for all
+MPC500b boards currently in the kernel tree.
 
-Not yet, but soon.  You can follow the gory details in this email 
-thread:
+>> > + =A0 =A0 =A0 =A0 =A0 if (np) {
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 is_mpc5200b =3D 1;
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(&op->dev, "mpc5200b: usi=
+ng /4 prescaler\n");
+>>
+>> Does this message respect the fallback case?
+>
+> See comment above...
+>
+>> You could also have a set_divisor-function for 5200 and 5200B and set it
+>> here
+>> in the function struct (one reason less for the static ;))
+>
+> Hmmm, but then I would need a 'static struct psc_ops mpc5200b_psc_ops', w=
+here only two functions differ from the generic 52xx struct as it is implem=
+ented now. =A0Using the static int needs less space. =A0However, in combina=
+tion with the new compatible entry, it would of course make sense.
+>
+> Again, any insight from the device tree gurus would be appreciated!
 
-	http://marc.info/?l=linux-usb&m=126477569707174&w=2
+Wolfram is correct, you should set the correct divisor function in the
+ops structure.  Much clearer code that way.
 
-See especially this email:
-
-	http://marc.info/?l=linux-usb&m=126630714002200&w=2
-
-> Should I make provisions for this check now too?
-
-Don't worry about it.  If you structure the code as I described, it 
-will be easy to insert the check later on.
-
-Alan Stern
+g.
