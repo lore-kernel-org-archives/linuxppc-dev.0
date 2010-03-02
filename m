@@ -1,23 +1,21 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from mail-in-16.arcor-online.net (mail-in-16.arcor-online.net
-	[151.189.21.56])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 21A9BB7D2B
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Mar 2010 19:56:54 +1100 (EST)
-Message-ID: <22132814.1267520208614.JavaMail.ngmail@webmail14.arcor-online.net>
-Date: Tue, 2 Mar 2010 09:56:48 +0100 (CET)
-From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
-To: w.sang@pengutronix.de
-Subject: Re: [Patch] mpc5200b: improve baud rate calculation (reach high
-	baud rates, better accuracy)
-In-Reply-To: <20100302082858.GA4087@pengutronix.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 39AC0B7D05
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 00:27:52 +1100 (EST)
+Received: from bzq-79-176-44-225.red.bezeqint.net ([79.176.44.225]:50590
+	helo=felix-laptop.lan)
+	by vega.surpasshosting.com with esmtpa (Exim 4.69)
+	(envelope-from <felix@embedded-sol.com>) id 1NmS8Z-0000Aa-LH
+	for linuxppc-dev@ozlabs.org; Tue, 02 Mar 2010 08:27:48 -0500
+Message-ID: <4B8D125B.8030503@embedded-sol.com>
+Date: Tue, 02 Mar 2010 15:27:55 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20100302082858.GA4087@pengutronix.de>
-	<14429243.1267517383754.JavaMail.ngmail@webmail14.arcor-online.net>
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Problem with PCI bus rescan on 460EX
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,67 +25,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wolfram:
+Hi,
 
-[snip]
-> > Yes, but I do all /calculations/ with the /4 prescaler for higher
-> accuracy.
-> > If the divisor exceeds the available 16 bits of the counter reg, I roun=
-d
-> > (divisor / 8) to use the /32 prescaler.  Think of a 19-bit counter valu=
-e,
-> > where I can choose to use either the lower or the higher 16 bits for th=
-e
-> > counter reg.
->=20
-> Okay, now I got it. (Maybe this is an indication for another comment abov=
-e
-> the
-> set divisor function?)
+I'm running linux-2.6.33 on a custom board based on 460EX.
+There's a PCI-PCI bridge on this board, PLX 6254, and a single
+hot-pluggable device behind the bridge.
 
-O.k., I will add that comment...
+When this device is plugged in before system boots everything works
+fine: bridge and device are properly recognized by kernel, resources are
+allocated and device memory regions are accessible. Below is relevant
+kernel messages and lspci output:
 
-> > Remember also that using the higher 16 bits (/32 prescaler) is
-> > probably the exceptional case - with an IPB frequency of 132 MHz this
-> will
-> > happen only for standard baud rates B300 and slower.
->=20
-> Even the rare cases have to be correct ;)
+PCI: Probing PCI hardware
+pci_bus 0000:00: scanning bus
+pci 0000:00:02.0: found [3388:0020] class 000604 header type 01
+pci 0000:00:02.0: calling pcibios_fixup_resources+0x0/0xf4
+pci 0000:00:02.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
+pci 0000:00:02.0: calling quirk_resource_alignment+0x0/0x200
+pci 0000:00:02.0: supports D1 D2
+pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot
+pci 0000:00:02.0: PME# disabled
+pci_bus 0000:00: fixups for bus
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
+pci_bus 0000:01: scanning bus
+pci 0000:01:00.0: found [1575:0002] class 00ff00 header type 00
+pci 0000:01:00.0: reg 10: [mem 0x80000000-0x800fffff]
+pci 0000:01:00.0: reg 14: [mem 0x84000000-0x87ffffff]
+pci 0000:01:00.0: reg 18: [mem 0x88000000-0x8bffffff]
+pci 0000:01:00.0: reg 1c: [mem 0x8c000000-0x8c003fff]
+pci 0000:01:00.0: calling pcibios_fixup_resources+0x0/0xf4
+pci 0000:01:00.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
+pci 0000:01:00.0: calling quirk_resource_alignment+0x0/0x200
+pci_bus 0000:01: fixups for bus
+pci 0000:00:02.0: PCI bridge to [bus 01-01]
+pci 0000:00:02.0:   bridge window [mem 0x80000000-0x8c0fffff]
+pci_bus 0000:01: bus scan returning with max=01
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
+pci_bus 0000:00: bus scan returning with max=01
+pci 0000:00:02.0: BAR 8: assigned [mem 0xd80000000-0xd89ffffff]
+pci 0000:01:00.0: BAR 1: assigned [mem 0xd80000000-0xd83ffffff]
+pci 0000:01:00.0: BAR 1: set to [mem 0xd80000000-0xd83ffffff] (PCI 
+address [0x80000000-0x83ffffff]
+pci 0000:01:00.0: BAR 2: assigned [mem 0xd84000000-0xd87ffffff]
+pci 0000:01:00.0: BAR 2: set to [mem 0xd84000000-0xd87ffffff] (PCI 
+address [0x84000000-0x87ffffff]
+pci 0000:01:00.0: BAR 0: assigned [mem 0xd88000000-0xd880fffff]
+pci 0000:01:00.0: BAR 0: set to [mem 0xd88000000-0xd880fffff] (PCI 
+address [0x88000000-0x880fffff]
+pci 0000:01:00.0: BAR 3: assigned [mem 0xd88100000-0xd88103fff]
+pci 0000:01:00.0: BAR 3: set to [mem 0xd88100000-0xd88103fff] (PCI 
+address [0x88100000-0x88103fff]
+pci 0000:00:02.0: PCI bridge to [bus 01-01]
+pci 0000:00:02.0:   bridge window [io  disabled]
+pci 0000:00:02.0:   bridge window [mem 0xd80000000-0xd89ffffff]
+pci 0000:00:02.0:   bridge window [mem pref disabled]
+pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
+pci_bus 0000:00: resource 1 [mem 0xd80000000-0xdffffffff]
+pci_bus 0000:01: resource 1 [mem 0xd80000000-0xd89ffffff]
 
-I agree - will make the debug output and comments clearer...
+00:02.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (transparent 
+mode) (rev 04)
+00: 88 33 20 00 87 00 b0 02 04 00 04 06 08 80 01 00
+10: 00 00 00 00 00 00 00 00 00 01 01 00 f1 01 a0 02
+20: 00 80 f0 89 f1 ff 01 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 dc 00 00 00 00 00 00 00 00 00 00 00
 
-[snip]
-> > > This should be handled using a new compatible-entry
-> > > "fsl,mpc5200b-psc-uart".
-> >=20
->=20
-> > I agree that this would be a lot cleaner, but it's also a lot more
-> intrusive.
-> > CC'ing the device tree discussion list here... comments, please!!
->=20
-> Why intrusive? Maybe I miss something?
 
-Not for the source file, but for all the dts files, if they want to benefit=
- from the detection of the '5200B.  Basically, *all* files have to be check=
-ed and touched if necessary.  Again, I agree that this would be the clean a=
-pproach, but I wanted to avoid that effort.  Grant???
+The problem arises when device is plugged in after boot. After doing
+echo 1 > /sys/bus/pci/rescan
+the device is identified, but bridge memory window is not allocated,
+and reads from device memory regions return 0xffffffff. Below is
+relevant output:
 
-[snip]
-> Leave those two function pointers empty and fill them during probe (probe
-> has
-> access to the compatible-property it was matched against, see its
-> arguments).
-> So it should be a matter of:
->=20
-> if (matched_property =3D=3D 5200b)
-> =09ops->func =3D this_one;
-> else
-> =09ops->func =3D that_one;
+PCI: Probing PCI hardware
+pci_bus 0000:00: scanning bus
+pci 0000:00:02.0: found [3388:0020] class 000604 header type 01
+pci 0000:00:02.0: calling pcibios_fixup_resources+0x0/0xf4
+pci 0000:00:02.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
+pci 0000:00:02.0: calling quirk_resource_alignment+0x0/0x200
+pci 0000:00:02.0: supports D1 D2
+pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot
+pci 0000:00:02.0: PME# disabled
+pci_bus 0000:00: fixups for bus
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
+pci_bus 0000:01: scanning bus
+pci_bus 0000:01: fixups for bus
+pci 0000:00:02.0: PCI bridge to [bus 01-01]
+pci_bus 0000:01: bus scan returning with max=01
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
+pci_bus 0000:00: bus scan returning with max=01
+pci 0000:00:02.0: PCI bridge to [bus 01-01]
+pci 0000:00:02.0:   bridge window [io  disabled]
+pci 0000:00:02.0:   bridge window [mem disabled]
+pci 0000:00:02.0:   bridge window [mem pref disabled]
+pci_bus 0000:00: resource 0 [io  0x0000-0xffff]
+pci_bus 0000:00: resource 1 [mem 0xd80000000-0xdffffffff]
+pci 0000:00:02.0: calling quirk_cardbus_legacy+0x0/0x54
+pci 0000:00:02.0: calling quirk_usb_early_handoff+0x0/0x6cc
+PCI: CLS 32 bytes, default 32
 
-Umm, yes, that's true of course.  Will pick it up.
+pci_bus 0000:00: scanning bus
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 0
+pci_bus 0000:01: scanning bus
+pci 0000:01:00.0: found [1575:0002] class 00ff00 header type 00
+pci 0000:01:00.0: reg 10: [mem 0x00000000-0x000fffff]
+pci 0000:01:00.0: reg 14: [mem 0x00000000-0x03ffffff]
+pci 0000:01:00.0: reg 18: [mem 0x00000000-0x03ffffff]
+pci 0000:01:00.0: reg 1c: [mem 0x00000000-0x00003fff]
+pci 0000:01:00.0: calling pcibios_fixup_resources+0x0/0xf4
+pci 0000:01:00.0: calling fixup_ppc4xx_pci_bridge+0x0/0x154
+pci 0000:01:00.0: calling quirk_resource_alignment+0x0/0x200
+pci_bus 0000:01: bus scan returning with max=01
+pci 0000:00:02.0: scanning behind bridge, config 010100, pass 1
+pci_bus 0000:00: bus scan returning with max=01
+pci 0000:00:02.0: BAR 8: assigned [mem 0xd80000000-0xd89ffffff]
+pci 0000:01:00.0: BAR 1: assigned [mem 0xd80000000-0xd83ffffff]
+pci 0000:01:00.0: BAR 1: set to [mem 0xd80000000-0xd83ffffff] (PCI 
+address [0x80000000-0x83ffffff]
+pci 0000:01:00.0: BAR 2: assigned [mem 0xd84000000-0xd87ffffff]
+pci 0000:01:00.0: BAR 2: set to [mem 0xd84000000-0xd87ffffff] (PCI 
+address [0x84000000-0x87ffffff]
+pci 0000:01:00.0: BAR 0: assigned [mem 0xd88000000-0xd880fffff]
+pci 0000:01:00.0: BAR 0: set to [mem 0xd88000000-0xd880fffff] (PCI 
+address [0x88000000-0x880fffff]
+pci 0000:01:00.0: BAR 3: assigned [mem 0xd88100000-0xd88103fff]
+pci 0000:01:00.0: BAR 3: set to [mem 0xd88100000-0xd88103fff] (PCI 
+address [0x88100000-0x88103fff]
 
-Thanks, Albrecht.
+00:02.0 PCI bridge: Hint Corp HB6 Universal PCI-PCI bridge (transparent 
+mode) (rev 04)
+00: 88 33 20 00 87 00 b0 02 04 00 04 06 08 80 01 00
+10: 00 00 00 00 00 00 00 00 00 01 01 00 f1 01 a0 02
+20: f0 ff 00 00 f1 ff 01 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 dc 00 00 00 00 00 00 00 00 00 00 00
 
-Tolle Dekollet=E9s oder scharfe Tatoos? Vote jetzt ... oder mach selbst mit=
- und zeige Deine Schokoladenseite
-bei Topp oder Hopp von Arcor: http://www.arcor.de/rd/footer.toh
+As you can see, the PLX BAR at address 0x20 is not properly configured.
+Writing the value 0x89f08000 using setpci fixes access to hot-plugged 
+device.
+
+Any idea why PCI bus rescan fails to allocate bridge memory window ?
+
+Thanks a lot.
+
+Felix.
