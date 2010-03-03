@@ -1,18 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2F4E0B7D67
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 11:25:53 +1100 (EST)
+Date: Wed, 3 Mar 2010 09:25:38 +0900
+To: michael@ellerman.id.au
 Subject: Re: [PATCH] powerpc: remove IOMMU_VMERGE config option
-From: Michael Ellerman <michael@ellerman.id.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1267575232.7814.21.camel@concordia>
 References: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-wpioZUw2UKI5VfpEQVHU"
-Date: Wed, 03 Mar 2010 11:13:52 +1100
-Message-ID: <1267575232.7814.21.camel@concordia>
+	<1267575232.7814.21.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, davem@davemloft.net, linux-kernel@vger.kernel.org,
-	arnd@arndb.de, benh@kernel.crashing.or
-Reply-To: michael@ellerman.id.au
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100303092518X.fujita.tomonori@lab.ntt.co.jp>
+Cc: arnd@arndb.de, linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+	linuxppc-dev@ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 03 Mar 2010 11:13:52 +1100
+Michael Ellerman <michael@ellerman.id.au> wrote:
 
---=-wpioZUw2UKI5VfpEQVHU
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> On Wed, 2010-03-03 at 08:54 +0900, FUJITA Tomonori wrote:
+> > Seems that IOMMU_VMERGE option description gives the false
+> > information:
+> > 
+> > http://marc.info/?l=linux-sparc&m=126753808727669&w=2
+> > http://marc.info/?l=linux-sparc&m=126753880528825&w=2
+> > 
+> > IOMMU_VMERGE is unnecessary nowadays so how about removing it?
+> 
+> Except you didn't remove it, you just made it uneditable? Why not get
+> rid of it entirely.
 
-On Wed, 2010-03-03 at 08:54 +0900, FUJITA Tomonori wrote:
-> Seems that IOMMU_VMERGE option description gives the false
-> information:
->=20
-> http://marc.info/?l=3Dlinux-sparc&m=3D126753808727669&w=3D2
-> http://marc.info/?l=3Dlinux-sparc&m=3D126753880528825&w=3D2
->=20
-> IOMMU_VMERGE is unnecessary nowadays so how about removing it?
+Oops, yeah, I should have. Here's the second version.
 
-Except you didn't remove it, you just made it uneditable? Why not get
-rid of it entirely.
+Thanks,
 
-cheers
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 155d571..2dfa83b 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -314,17 +314,8 @@ config 8XX_MINIMAL_FPEMU
->  	  It is recommended that you build a soft-float userspace instead.
-> =20
->  config IOMMU_VMERGE
-> -	bool "Enable IOMMU virtual merging"
-> +	def_bool y
->  	depends on PPC64
-> -	default y
-> -	help
-> -	  Cause IO segments sent to a device for DMA to be merged virtually
-> -	  by the IOMMU when they happen to have been allocated contiguously.
-> -	  This doesn't add pressure to the IOMMU allocator. However, some
-> -	  drivers don't support getting large merged segments coming back
-> -	  from *_map_sg().
-> -
-> -	  Most drivers don't have this problem; it is safe to say Y here.
-> =20
->  config IOMMU_HELPER
->  	def_bool PPC64
+The description says:
 
+ Cause IO segments sent to a device for DMA to be merged virtually
+ by the IOMMU when they happen to have been allocated contiguously.
+ This doesn't add pressure to the IOMMU allocator. However, some
+ drivers don't support getting large merged segments coming back
+ from *_map_sg().
 
+ Most drivers don't have this problem; it is safe to say Y here.
 
---=-wpioZUw2UKI5VfpEQVHU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+It's out of date. Long ago, drivers didn't have a way to tell IOMMUs
+about their segment length limit (that is, the maximum segment length
+that they can handle). So IOMMUs merged as many segments as possible
+and gave too large segments to drivers.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+dma_get_max_seg_size() was introduced to solve the above
+problem. Device drives can use the API to tell IOMMU about the maximum
+segment length that they can handle. In addition, the default limit
+(64K) should be safe for everyone.
 
-iEYEABECAAYFAkuNqboACgkQdSjSd0sB4dIQrwCfX8idcGbc4vLkHhYgq4Yn64Ul
-GloAn2ATMOaBvF7cbtEVTwCPOOLCNsnB
-=FP/9
------END PGP SIGNATURE-----
+So this config option seems to be unnecessary.
 
---=-wpioZUw2UKI5VfpEQVHU--
+Note that this config option just enables users to disable the virtual
+merging by default. Users can still disable the virtual merging by the
+boot parameter.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/powerpc/Kconfig        |   13 -------------
+ arch/powerpc/kernel/iommu.c |    7 +------
+ 2 files changed, 1 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 155d571..c984bc5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -313,19 +313,6 @@ config 8XX_MINIMAL_FPEMU
+ 
+ 	  It is recommended that you build a soft-float userspace instead.
+ 
+-config IOMMU_VMERGE
+-	bool "Enable IOMMU virtual merging"
+-	depends on PPC64
+-	default y
+-	help
+-	  Cause IO segments sent to a device for DMA to be merged virtually
+-	  by the IOMMU when they happen to have been allocated contiguously.
+-	  This doesn't add pressure to the IOMMU allocator. However, some
+-	  drivers don't support getting large merged segments coming back
+-	  from *_map_sg().
+-
+-	  Most drivers don't have this problem; it is safe to say Y here.
+-
+ config IOMMU_HELPER
+ 	def_bool PPC64
+ 
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 5547ae6..ec94f90 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -42,12 +42,7 @@
+ 
+ #define DBG(...)
+ 
+-#ifdef CONFIG_IOMMU_VMERGE
+-static int novmerge = 0;
+-#else
+-static int novmerge = 1;
+-#endif
+-
++static int novmerge;
+ static int protect4gb = 1;
+ 
+ static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned int);
+-- 
+1.6.5
