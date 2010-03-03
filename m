@@ -1,30 +1,18 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0F240B7CEE
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 05:18:36 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id o23IIWRg007159
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Mar 2010 23:48:32 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o23IIW8N2486318
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Mar 2010 23:48:32 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o23IIVoX016100
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Mar 2010 23:48:32 +0530
-Date: Wed, 3 Mar 2010 23:48:22 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Subject: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
-Message-ID: <20100303181822.GH5439@dirshya.in.ibm.com>
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id 13710B7D27
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 05:19:01 +1100 (EST)
+Date: Wed, 3 Mar 2010 21:18:58 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] gianfar: Fix TX ring processing on SMP machines
+Message-ID: <20100303181858.GA458@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: svaidy@linux.vnet.ibm.com
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Martyn Welch <martyn.welch@ge.com>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>,
+	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,375 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Starting with commit a3bc1f11e9b867a4f49505 ("gianfar: Revive SKB
+recycling") gianfar driver sooner or later stops transmitting any
+packets on SMP machines.
 
-A new hypervisor call H_BEST_ENERGY is supported in IBM pseries ppc64
-platform in order to exports platform energy management capabilities
-to user space administrative tools.
+start_xmit() prepares new skb for transmitting, generally it does
+three things:
 
-This hypervisor calls provides hints or suggested list of cpus to
-activate or deactivate for optimized energy management.  The following
-patch add a new pseries specific device driver that will export such
-platform energy management related information over sysfs interface
-for use by user space administrative tools.
+1. sets up all BDs (marks them ready to send), except the first one.
+2. stores skb into tx_queue->tx_skbuff so that clean_tx_ring()
+   would cleanup it later.
+3. sets up the first BD, i.e. marks it ready.
 
-The device driver exports the following sysfs files:
+Here is what clean_tx_ring() does:
 
-/sys/device/system/cpu/pseries_(de)activate_hint_list and
-/sys/device/system/cpu/cpuN/pseries_(de)activate_hint.
+1. reads skbs from tx_queue->tx_skbuff
+2. checks if the *last* BD is ready. If it's still ready [to send]
+   then it it isn't transmitted, so clean_tx_ring() returns.
+   Otherwise it actually cleanups BDs. All is OK.
 
-Typical usage:
+Now, if there is just one BD, code flow:
 
-# cat /sys/devices/system/cpu/pseries_activate_hint_list
-16,20,24
-# cat /sys/devices/system/cpu/pseries_deactivate_hint_list
-0,4,8,12
+- start_xmit(): stores skb into tx_skbuff. Note that the first BD
+  (which is also the last one) isn't marked as ready, yet.
+- clean_tx_ring(): sees that skb is not null, *and* its lstatus
+  says that it is NOT ready (like if BD was sent), so it cleans
+  it up (bad!)
+- start_xmit(): marks BD as ready [to send], but it's too late.
 
-Comma separated list of recommended cpu numbers to activate or
-deactivate.
+We can fix this simply by reordering lstatus/tx_skbuff writes.
 
-cat /sys/device/system/cpu/cpuN/pseries_(de)activate_hint
-will provide a single integer value returned by the platform
-for that cpu.
-
-Please let me know your comments and suggestions.
-
-Thanks,
-Vaidy
+Reported-by: Martyn Welch <martyn.welch@ge.com>
+Bisected-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Tested-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Tested-by: Martyn Welch <martyn.welch@ge.com>
+Cc: Sandeep Gopalpet <Sandeep.Kumar@freescale.com>
+Cc: Stable <stable@vger.kernel.org> [2.6.33]
 ---
-        powerpc: add support for new hcall H_BEST_ENERGY
+ drivers/net/gianfar.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-	Create sysfs interface to export data from H_BEST_ENERGY hcall
-	that can be used by administrative tools on supported pseries
-	platforms for energy management	optimizations.
-
-	/sys/device/system/cpu/pseries_(de)activate_hint_list and
-	/sys/device/system/cpu/cpuN/pseries_(de)activate_hint will provide
-	hints for activation and deactivation of cpus respectively.
-
-	Added new driver module
-		arch/powerpc/platforms/pseries/pseries_energy.c
-	under new config option CONFIG_PSERIES_ENERGY
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hvcall.h               |    3 
- arch/powerpc/kernel/setup-common.c              |    2 
- arch/powerpc/platforms/pseries/Kconfig          |   10 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/pseries_energy.c |  246 +++++++++++++++++++++++
- 5 files changed, 261 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/pseries_energy.c
-
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index f027581..396599f 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -230,7 +230,8 @@
- #define H_ENABLE_CRQ		0x2B0
- #define H_SET_MPP		0x2D0
- #define H_GET_MPP		0x2D4
--#define MAX_HCALL_OPCODE	H_GET_MPP
-+#define H_BEST_ENERGY		0x2F4
-+#define MAX_HCALL_OPCODE	H_BEST_ENERGY
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 8bd3c9f..cccb409 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	}
  
- #ifndef __ASSEMBLY__
+ 	/* setup the TxBD length and buffer pointer for the first BD */
+-	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
+ 	txbdp_start->bufPtr = dma_map_single(&priv->ofdev->dev, skb->data,
+ 			skb_headlen(skb), DMA_TO_DEVICE);
  
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 03dd6a2..fbd93e3 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -359,6 +359,8 @@ void __init check_for_initrd(void)
- #ifdef CONFIG_SMP
+@@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
  
- int threads_per_core, threads_shift;
-+EXPORT_SYMBOL_GPL(threads_per_core);
-+
- cpumask_t threads_core_mask;
+ 	txbdp_start->lstatus = lstatus;
  
- static void __init cpu_init_thread_core_maps(int tpc)
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index c667f0f..b3dd108 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -33,6 +33,16 @@ config PSERIES_MSI
-        depends on PCI_MSI && EEH
-        default y
- 
-+config PSERIES_ENERGY
-+	tristate "pseries energy management capabilities driver"
-+	depends on PPC_PSERIES
-+	default y
-+	help
-+	  Provides interface to platform energy management capabilities
-+	  on supported PSERIES platforms.
-+	  Provides: /sys/devices/system/cpu/pseries_(de)activation_hint_list
-+	  and /sys/devices/system/cpu/cpuN/pseries_(de)activation_hint
++	eieio(); /* force lstatus write before tx_skbuff */
 +
- config SCANLOG
- 	tristate "Scanlog dump interface"
- 	depends on RTAS_PROC && PPC_PSERIES
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 0ff5174..3813977 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o eeh_sysfs.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
- obj-$(CONFIG_PSERIES_MSI)	+= msi.o
-+obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
- 
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
- obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-new file mode 100644
-index 0000000..0390188
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -0,0 +1,246 @@
-+/*
-+ * POWER platform energy management driver
-+ * Copyright (C) 2010 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This pseries platform device driver provides access to
-+ * platform energy management capabilities.
-+ */
++	tx_queue->tx_skbuff[tx_queue->skb_curtx] = skb;
 +
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/seq_file.h>
-+#include <linux/sysdev.h>
-+#include <linux/cpu.h>
-+#include <linux/of.h>
-+#include <asm/cputhreads.h>
-+#include <asm/page.h>
-+#include <asm/hvcall.h>
-+
-+
-+#define MODULE_VERS "1.0"
-+#define MODULE_NAME "pseries_energy"
-+
-+/* Helper Routines to convert between drc_index to cpu numbers */
-+
-+static u32 cpu_to_drc_index(int cpu)
-+{
-+	struct device_node *dn = NULL;
-+	const int *indexes;
-+	int i;
-+	dn = of_find_node_by_name(dn, "cpus");
-+	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+	/* Convert logical cpu number to core number */
-+	i = cpu / threads_per_core;
-+	/*
-+	 * The first element indexes[0] is the number of drc_indexes
-+	 * returned in the list.  Hence i+1 will get the drc_index
-+	 * corresponding to core number i.
-+	 */
-+	WARN_ON(i > indexes[0]);
-+	return indexes[i + 1];
-+}
-+
-+static int drc_index_to_cpu(u32 drc_index)
-+{
-+	struct device_node *dn = NULL;
-+	const int *indexes;
-+	int i, cpu;
-+	dn = of_find_node_by_name(dn, "cpus");
-+	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+	/*
-+	 * First element in the array is the number of drc_indexes
-+	 * returned.  Search through the list to find the matching
-+	 * drc_index and get the core number
-+	 */
-+	for (i = 0; i < indexes[0]; i++) {
-+		if (indexes[i + 1] == drc_index)
-+			break;
-+	}
-+	/* Convert core number to logical cpu number */
-+	cpu = i * threads_per_core;
-+	return cpu;
-+}
-+
-+/*
-+ * pseries hypervisor call H_BEST_ENERGY provides hints to OS on
-+ * preferred logical cpus to activate or deactivate for optimized
-+ * energy consumption.
-+ */
-+
-+#define FLAGS_MODE1	0x004E200000080E01
-+#define FLAGS_MODE2	0x004E200000080401
-+#define FLAGS_ACTIVATE  0x100
-+
-+static ssize_t get_best_energy_list(char *page, int activate)
-+{
-+	int rc, cnt, i, cpu;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long flags = 0;
-+	u32 *buf_page;
-+	char *s = page;
-+
-+	buf_page = (u32 *) get_zeroed_page(GFP_KERNEL);
-+
-+	if (!buf_page)
-+		return 0;
-+
-+	flags = FLAGS_MODE1;
-+	if (activate)
-+		flags |= FLAGS_ACTIVATE;
-+
-+	rc = plpar_hcall9(H_BEST_ENERGY, retbuf, flags, 0, __pa(buf_page),
-+				0, 0, 0, 0, 0, 0);
-+
-+	if (rc != H_SUCCESS) {
-+		free_page((unsigned long) buf_page);
-+		return -EINVAL;
-+	}
-+
-+	cnt = retbuf[0];
-+	for (i = 0; i < cnt; i++) {
-+		cpu = drc_index_to_cpu(buf_page[2*i+1]);
-+		if ((cpu_online(cpu) && !activate) ||
-+		    (!cpu_online(cpu) && activate))
-+			s += sprintf(s, "%d,", cpu);
-+	}
-+	if (s > page) { /* Something to show */
-+		s--; /* Suppress last comma */
-+		s += sprintf(s, "\n");
-+	}
-+
-+	free_page((unsigned long) buf_page);
-+	return s-page;
-+}
-+
-+static ssize_t get_best_energy_data(struct sys_device *dev,
-+					char *page, int activate)
-+{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long flags = 0;
-+
-+	flags = FLAGS_MODE2;
-+	if (activate)
-+		flags |= FLAGS_ACTIVATE;
-+
-+	rc = plpar_hcall9(H_BEST_ENERGY, retbuf, flags,
-+				cpu_to_drc_index(dev->id),
-+				0, 0, 0, 0, 0, 0, 0);
-+
-+	if (rc != H_SUCCESS)
-+		return -EINVAL;
-+
-+	return sprintf(page, "%lu\n", retbuf[1] >> 32);
-+}
-+
-+/* Wrapper functions */
-+
-+static ssize_t cpu_activate_hint_list_show(struct sysdev_class *class,
-+						char *page)
-+{
-+	return get_best_energy_list(page, 1);
-+}
-+
-+static ssize_t cpu_deactivate_hint_list_show(struct sysdev_class *class,
-+						char *page)
-+{
-+	return get_best_energy_list(page, 0);
-+}
-+
-+static ssize_t percpu_activate_hint_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *page)
-+{
-+	return get_best_energy_data(dev, page, 1);
-+}
-+
-+static ssize_t percpu_deactivate_hint_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *page)
-+{
-+	return get_best_energy_data(dev, page, 0);
-+}
-+
-+/*
-+ * Create sysfs interface:
-+ * /sys/devices/system/cpu/pseries_activate_hint_list
-+ * /sys/devices/system/cpu/pseries_deactivate_hint_list
-+ * 	Comma separated list of cpus to activate or deactivate
-+ * /sys/devices/system/cpu/cpuN/pseries_activate_hint
-+ * /sys/devices/system/cpu/cpuN/pseries_deactivate_hint
-+ *	Per-cpu value of the hint
-+ */
-+
-+struct sysdev_class_attribute attr_cpu_activate_hint_list =
-+		_SYSDEV_CLASS_ATTR(pseries_activate_hint_list, 0444,
-+		cpu_activate_hint_list_show, NULL);
-+
-+struct sysdev_class_attribute attr_cpu_deactivate_hint_list =
-+		_SYSDEV_CLASS_ATTR(pseries_deactivate_hint_list, 0444,
-+		cpu_deactivate_hint_list_show, NULL);
-+
-+struct sysdev_attribute attr_percpu_activate_hint =
-+		_SYSDEV_ATTR(pseries_activate_hint, 0444,
-+		percpu_activate_hint_show, NULL);
-+
-+struct sysdev_attribute attr_percpu_deactivate_hint =
-+		_SYSDEV_ATTR(pseries_deactivate_hint, 0444,
-+		percpu_deactivate_hint_show, NULL);
-+
-+static int __init pseries_energy_init(void)
-+{
-+	int cpu, err;
-+	struct sys_device *cpu_sys_dev;
-+
-+	/* Create the sysfs files */
-+	err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_activate_hint_list.attr);
-+	if (!err)
-+		err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_deactivate_hint_list.attr);
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_sys_dev = get_cpu_sysdev(cpu);
-+		err = sysfs_create_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_activate_hint.attr);
-+		if (err)
-+			break;
-+		err = sysfs_create_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_deactivate_hint.attr);
-+		if (err)
-+			break;
-+	}
-+	return err;
-+
-+}
-+
-+static void __exit pseries_energy_cleanup(void)
-+{
-+	int cpu;
-+	struct sys_device *cpu_sys_dev;
-+
-+	/* Remove the sysfs files */
-+	sysfs_remove_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_activate_hint_list.attr);
-+
-+	sysfs_remove_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_deactivate_hint_list.attr);
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_sys_dev = get_cpu_sysdev(cpu);
-+		sysfs_remove_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_activate_hint.attr);
-+		sysfs_remove_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_deactivate_hint.attr);
-+	}
-+}
-+
-+module_init(pseries_energy_init);
-+module_exit(pseries_energy_cleanup);
-+MODULE_DESCRIPTION("Driver for pseries platform energy management");
-+MODULE_AUTHOR("Vaidyanathan Srinivasan");
-+MODULE_LICENSE("GPL");
+ 	/* Update the current skb pointer to the next entry we will use
+ 	 * (wrapping if necessary) */
+ 	tx_queue->skb_curtx = (tx_queue->skb_curtx + 1) &
+-- 
+1.7.0
