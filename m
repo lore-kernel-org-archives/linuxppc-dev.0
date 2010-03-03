@@ -1,18 +1,18 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0804AB7D1D
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 11:01:35 +1100 (EST)
-Date: Wed, 3 Mar 2010 08:54:45 +0900
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 70EA4B7D30
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  3 Mar 2010 11:10:31 +1100 (EST)
+Date: Wed, 3 Mar 2010 11:10:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: linux-next: possible recursive locking detected
+Message-Id: <20100303111027.03ab3c15.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20100303085404R.fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.or, arnd@arndb.de,
-	davem@davemloft.net
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__3_Mar_2010_11_10_27_+1100_uFNhYnIKVqvGjR/j"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,72 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Seems that IOMMU_VMERGE option description gives the false
-information:
+--Signature=_Wed__3_Mar_2010_11_10_27_+1100_uFNhYnIKVqvGjR/j
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-http://marc.info/?l=linux-sparc&m=126753808727669&w=2
-http://marc.info/?l=linux-sparc&m=126753880528825&w=2
+Hi all,
 
-IOMMU_VMERGE is unnecessary nowadays so how about removing it?
+next-20100302 (and next-20100301) produce this log during boot on a
+Power5 lpar.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] powerpc: remove IOMMU_VMERGE config option
+calling  .hvc_vio_init+0x0/0x34 @ 1
 
-The description says:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+[ INFO: possible recursive locking detected ]
+2.6.33-autokern1 #1
+---------------------------------------------
+swapper/1 is trying to acquire lock:
+ (&dev->mutex){+.+...}, at: [<c000000000345490>] .__driver_attach+0x80/0xe0
 
- Cause IO segments sent to a device for DMA to be merged virtually
- by the IOMMU when they happen to have been allocated contiguously.
- This doesn't add pressure to the IOMMU allocator. However, some
- drivers don't support getting large merged segments coming back
- from *_map_sg().
+but task is already holding lock:
+ (&dev->mutex){+.+...}, at: [<c000000000345480>] .__driver_attach+0x70/0xe0
 
- Most drivers don't have this problem; it is safe to say Y here.
+other info that might help us debug this:
+1 lock held by swapper/1:
+ #0:  (&dev->mutex){+.+...}, at: [<c000000000345480>] .__driver_attach+0x70=
+/0xe0
 
-It's out of date. Long ago, drivers didn't have a way to tell IOMMUs
-about their segment length limit (that is, the maximum segment length
-that they can handle). So IOMMUs merged as many segments as possible
-and gave too large segments to drivers.
+stack backtrace:
+Call Trace:
+[c0000000400cf590] [c000000000010780] .show_stack+0x70/0x184 (unreliable)
+[c0000000400cf640] [c000000000096c24] .validate_chain+0x6e4/0xf2c
+[c0000000400cf750] [c000000000097d8c] .__lock_acquire+0x920/0x9e4
+[c0000000400cf850] [c000000000097ef8] .lock_acquire+0xa8/0xec
+[c0000000400cf920] [c000000000567fc4] .mutex_lock_nested+0x5c/0x468
+[c0000000400cfa00] [c000000000345490] .__driver_attach+0x80/0xe0
+[c0000000400cfa90] [c000000000343f0c] .bus_for_each_dev+0x84/0xdc
+[c0000000400cfb40] [c000000000344e6c] .driver_attach+0x28/0x40
+[c0000000400cfbc0] [c0000000003448ec] .bus_add_driver+0xd8/0x2b0
+[c0000000400cfc70] [c000000000345830] .driver_register+0xd4/0x1a8
+[c0000000400cfd20] [c00000000002225c] .vio_register_driver+0x40/0x5c
+[c0000000400cfdb0] [c0000000007ff4d4] .hvc_vio_init+0x1c/0x34
+[c0000000400cfe30] [c0000000000094c0] .do_one_initcall+0x9c/0x1cc
+[c0000000400cfee0] [c0000000007d6d2c] .kernel_init+0x218/0x294
+[c0000000400cff90] [c000000000026c00] .kernel_thread+0x54/0x70
+initcall .hvc_vio_init+0x0/0x34 returned 0 after 1904 usecs
 
-dma_get_max_seg_size() was introduced to solve the above
-problem. Device drives can use the API to tell IOMMU about the maximum
-segment length that they can handle. The powerpc IOMMU supports
-dma_get_max_seg_size() properly. In addition, the default limit (64K)
-should be safe for everyone.
+Any ideas?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-So this config option seems to be unnecessary.
+--Signature=_Wed__3_Mar_2010_11_10_27_+1100_uFNhYnIKVqvGjR/j
+Content-Type: application/pgp-signature
 
-Note that this config option just enables users to disable the virtual
-merging by default (powerpc enables it by default). Users can still
-disable the virtual merging by the boot parameter.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/powerpc/Kconfig |   11 +----------
- 1 files changed, 1 insertions(+), 10 deletions(-)
+iEYEARECAAYFAkuNqPMACgkQjjKRsyhoI8z5PQCfbWDaxg00Xlql6CuzXX7rk2kE
+PbIAnjwEwX6CVCX0KBNb6T6IJwrJZgOg
+=aDoc
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 155d571..2dfa83b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -314,17 +314,8 @@ config 8XX_MINIMAL_FPEMU
- 	  It is recommended that you build a soft-float userspace instead.
- 
- config IOMMU_VMERGE
--	bool "Enable IOMMU virtual merging"
-+	def_bool y
- 	depends on PPC64
--	default y
--	help
--	  Cause IO segments sent to a device for DMA to be merged virtually
--	  by the IOMMU when they happen to have been allocated contiguously.
--	  This doesn't add pressure to the IOMMU allocator. However, some
--	  drivers don't support getting large merged segments coming back
--	  from *_map_sg().
--
--	  Most drivers don't have this problem; it is safe to say Y here.
- 
- config IOMMU_HELPER
- 	def_bool PPC64
--- 
-1.6.5
+--Signature=_Wed__3_Mar_2010_11_10_27_+1100_uFNhYnIKVqvGjR/j--
