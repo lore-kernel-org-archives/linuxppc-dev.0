@@ -1,22 +1,14 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6FD89B7CCD
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Mar 2010 21:39:16 +1100 (EST)
-In-Reply-To: <4B8E3582.8060003@denx.de>
-References: <4B8E17A7.10509@denx.de>
-	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
-	<4B8E3582.8060003@denx.de>
-Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-To: hs@denx.de
-Message-ID: <OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 3 Mar 2010 11:38:55 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id E65A9B7CE8
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 02:31:18 +1100 (EST)
+From: Amit Shah <amit.shah@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] hvc_console: Fix race between hvc_close and hvc_remove
+Date: Wed,  3 Mar 2010 20:59:48 +0530
+Message-Id: <1267630188-30824-1-git-send-email-amit.shah@redhat.com>
+Cc: Amit Shah <amit.shah@redhat.com>, linuxppc-dev@ozlabs.org,
+	Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +18,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Heiko Schocher <hs@denx.de> wrote on 2010/03/03 11:10:10:
->
-> Hello Joakim,
->
-> Joakim Tjernlund wrote:
-> > Heiko Schocher <hs@denx.de> wrote on 2010/03/03 09:02:47:
-> [...]
-> >> Here the results:
-> >> (The first 4 rows are the results for the kernel without your patches,
-> >>  the next 4 rows are the results for the kernel with your patches)
-> >>
-> >> make[1]: Entering directory `/home/hs/lmbench-3.0-a9/results'
-> >
-> > I see both ups and downs in this test, don't quite understand why.
-> > What is your config w.r.t SWAP, MODULES, CPU6 and CPU15?
->
-> Sorry, forgot to say, where to find the sources. You can find them
-> here:
->
-> http://git.denx.de/?p=linux-2.6-denx.git;a=shortlog;h=refs/heads/tqm8xx
+Alan pointed out a race in the code where hvc_remove is invoked. The
+recent virtio_console work is the first user of hvc_remove().
 
-OK, so you got SWAP=no, MODULES=yes, CPU6=no, CPU15=no
-PIN_TLB isn't listed in you def config so I assume
-it is no?
+Alan describes it thus:
 
-MODULES=yes nullifies one optimization.
+The hvc_console assumes that a close and remove call can't occur at the
+same time.
 
-I don't understand the bad numbers for Prot Fault:
-File & VM system latencies in microseconds - smaller is better
--------------------------------------------------------------------------------
-Host                 OS   0K File      10K File     Mmap    Prot   Page   100fd
-                        Create Delete Create Delete Latency Fault  Fault  selct
---------- ------------- ------ ------ ------ ------ ------- ----- ------- -----
-tqm8xx    Linux 2.6.33- 5917.2 3968.3  31.2K 4329.0  4147.0  18.8    34.1 135.2
-tqm8xx    Linux 2.6.33- 5714.3 3937.0  32.3K 6060.6  4210.0  14.2    34.5 131.4
-tqm8xx    Linux 2.6.33- 5747.1 4000.0  31.2K 4329.0  4114.0 7.692    34.0 133.1
-tqm8xx    Linux 2.6.33- 5747.1 4081.6  30.3K 4273.5  4100.0  18.2    34.2 135.0
-tqm8xx    Linux 2.6.33- 5714.3 3952.6  31.2K 4273.5  4130.0  33.5    35.1 136.1
-tqm8xx    Linux 2.6.33- 5714.3 3906.2  31.2K 6060.6  4105.0  25.7    35.5 135.9
-tqm8xx    Linux 2.6.33- 5681.8 3921.6  32.3K 4255.3  4144.0  23.5    35.0 134.9
-tqm8xx    Linux 2.6.33- 5649.7 3937.0  30.3K 4237.3  4116.0  21.6    35.3 135.3
+In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+itself....
 
-Could you try reverting patch:
-  8xx: Don't touch ACCESSED when no SWAP.
-and see if that makes a difference?
+So this can happen
 
-Turning on pinned TLBs(you must turn on ADVANCED_OPTIONS first) could be an improvement,
-regardless of my patches.
+        hvc_close                               hvc_remove
+        hung up ? - no
+                                                lock
+                                                tty = hp->tty
+                                                unlock
+        lock
+        hp->tty = NULL
+        unlock
+        notify del
+        kref_put the hvc struct
+        close completes
+        tty is destroyed
+                                                tty_hangup dead tty
+                                                tty->ops will be NULL
+                                                NULL->...
 
-    Jocke
+This patch adds some tty krefs and also converts to using tty_vhangup().
+
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linuxppc-dev@ozlabs.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+---
+
+Alan, how does this version look?
+
+I've tested with multiple virtio_console ports.
+
+There's some other bug in the hvc_remove code that's unrelated:
+hot-removal of one console port results in all other hvc consoles to
+stop working. I'll look at that once this is finalised.
+
+ drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 4c3b59b..7e94b3c 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->count++ > 0) {
++		tty_kref_get(tty);
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 		hvc_kick();
+ 		return 0;
+@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 
+ 	tty->driver_data = hp;
+ 
+-	hp->tty = tty;
++	hp->tty = tty_kref_get(tty);
+ 
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
++		tty_kref_put(tty);
+ 		tty->driver_data = NULL;
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		return;
+ 
+ 	hp = tty->driver_data;
++
+ 	spin_lock_irqsave(&hp->lock, flags);
++	tty_kref_get(tty);
+ 
+ 	if (--hp->count == 0) {
+ 		/* We are done with the tty pointer now. */
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
++		/* Put the ref obtained in hvc_open() */
++		tty_kref_put(tty);
++
+ 		if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
+ 
+@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 	}
+ 
++	tty_kref_put(tty);
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ }
+ 
+@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+ 	if (hp->ops->notifier_hangup)
+-			hp->ops->notifier_hangup(hp, hp->data);
++		hp->ops->notifier_hangup(hp, hp->data);
+ 
+ 	while(temp_open_count) {
+ 		--temp_open_count;
++		tty_kref_put(tty);
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 	}
+ }
+@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 	}
+ 
+ 	/* No tty attached, just skip */
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 	if (tty == NULL)
+ 		goto bail;
+ 
+@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
+ 
+ 		tty_flip_buffer_push(tty);
+ 	}
++	if (tty)
++		tty_kref_put(tty);
+ 
+ 	return poll_mask;
+ }
+@@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	struct tty_struct *tty;
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+@@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
+ 	/*
+ 	 * We 'put' the instance that was grabbed when the kref instance
+ 	 * was initialized using kref_init().  Let the last holder of this
+-	 * kref cause it to be removed, which will probably be the tty_hangup
++	 * kref cause it to be removed, which will probably be the tty_vhangup
+ 	 * below.
+ 	 */
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ 
+ 	/*
+-	 * This function call will auto chain call hvc_hangup.  The tty should
+-	 * always be valid at this time unless a simultaneous tty close already
+-	 * cleaned up the hvc_struct.
++	 * This function call will auto chain call hvc_hangup.
+ 	 */
+-	if (tty)
+-		tty_hangup(tty);
++	if (tty) {
++		tty_vhangup(tty);
++		tty_kref_put(tty);
++	}
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(hvc_remove);
+-- 
+1.6.2.5
