@@ -1,23 +1,19 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 61C69B6EEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 20:56:51 +1100 (EST)
-Message-ID: <16827431.1267696606015.JavaMail.ngmail@webmail13.arcor-online.net>
-Date: Thu, 4 Mar 2010 10:56:46 +0100 (CET)
-From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
-To: grant.likely@secretlab.ca, albrecht.dress@arcor.de
-Subject: Re: [Patch v.2] mpc5200b/uart: improve baud rate calculation (reach
-	high baud rates, better accuracy)
-In-Reply-To: <fa686aa41003031307j79e004cfk49297e419a65f5da@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EFFC1B6ED0
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 21:30:15 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id 231F4650009
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Mar 2010 11:30:10 +0100 (CET)
+Subject: Strange OOPS in 2.6.33
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OFCCEB0071.2A524538-ONC12576DC.00390771-C12576DC.0039ACAE@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 4 Mar 2010 11:29:57 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa41003031307j79e004cfk49297e419a65f5da@mail.gmail.com>
-	<1267640583.4760.0@antares>
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant:
 
-Thanks a lot for your input!
+Got this OOPS a few times after coldstarting out
+board a few times:
 
-[snip]
-> Save yourself some duplicated code here.  The above 14 lines can be
-> shared between the 512x, 52xx and 5200b versions.  Create yourself an
-> internal __mpc5xxx_psc_set_divisor() function that is passed the *psc,
-> the divisor, and the clock select register setting (both the 5200 and
-> the 5121 have the clock select register).
+Unable to handle kernel paging request for unknown fault
+Faulting instruction address: 0xc020e2b4
+Oops: Kernel access of bad area, sig: 11 [#1]
+TMCUTU
+Modules linked in:
+NIP: c020e2b4 LR: c020e274 CTR: 00000000
+REGS: c7a41b40 TRAP: 0600   Not tainted  (2.6.33)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 28002424  XER: 00000000
+DAR: 09f52312, DSISR: 00000120
+TASK = c7889940[420] 'syslogd' THREAD: c7a40000
+GPR00: 09f52312 c7a41bf0 c7889940 00000000 00000002 c7a41c40 c02734ac c78acc68
+GPR08: c7a41c00 c78acc00 00000000 09f5214b c796e3d4 1001f444 00000000 bfe78700
+GPR16: bfe77400 bfe77ee0 bfe773f8 00000021 0ffef130 00000000 c7a41df0 00000000
+GPR24: 00000000 c7a41cf0 c7a41c70 00000011 7f000001 09f5214a c034a5cc c7a41c00
+NIP [c020e2b4] ip_dev_find+0x90/0xf0
+LR [c020e274] ip_dev_find+0x50/0xf0
+Call Trace:
+[c7a41bf0] [c020e274] ip_dev_find+0x50/0xf0 (unreliable)
+[c7a41c60] [c01dd86c] __ip_route_output_key+0x8d4/0xb00
+[c7a41d50] [c01ddab8] ip_route_output_flow+0x1c/0xa0
+[c7a41d60] [c01ff8a0] ip4_datagram_connect+0x17c/0x2b8
+[c7a41e30] [c020a75c] inet_dgram_connect+0x5c/0xa8
+[c7a41e50] [c01a5030] sys_connect+0x7c/0xcc
+[c7a41f00] [c01a6008] sys_socketcall+0x128/0x214
+[c7a41f40] [c0011800] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff6e004
+    LR = 0xfe2dac0
+Instruction dump:
+bb810060 38210070 7c0803a6 4e800020 88010052 2f800002 409e0028 81210054
+83a90068 2f9d0000 419e0018 381d01c8 <7d200028> 31290001 7d20012d 40a2fff4
+---[ end trace 0824e85bac28e7e4 ]---
 
-Hmm, yes, that's true.  Will look into that.
+gdb says:
+(gdb) list *0xc020e2b4
+0xc020e2b4 is in ip_dev_find (/usr/local/src/BUILD/trunk/os2kernel/arch/powerpc/include/asm/atomic.h:106).
+101
+102	static __inline__ void atomic_inc(atomic_t *v)
+103	{
+104		int t;
+105
+106		__asm__ __volatile__(
+107	"1:	lwarx	%0,0,%2		# atomic_inc\n\
+108		addic	%0,%0,1\n"
+109		PPC405_ERR77(0,%2)
+110	"	stwcx.	%0,0,%2 \n\
 
-[snip]
-> > @@ -604,7 +676,6 @@ mpc52xx_uart_set_termios(struct uart_por
-> >
-> > =A0 =A0 =A0 =A0baud =3D uart_get_baud_rate(port, new, old, 0, port->uar=
-tclk/16);
->=20
-> I'm probably nitpicking, because I don't know if the io pin will
-> handle this speed but uartclk/16 is no longer the maximum baudrate if
-> a /4 prescaler is used.
+gdb) disass 0xc020e2b4 0xc020e2c4
+Dump of assembler code from 0xc020e2b4 to 0xc020e2c4:
+0xc020e2b4 <ip_dev_find+144>:	lwarx   r9,0,r0
+0xc020e2b8 <ip_dev_find+148>:	addic   r9,r9,1
+0xc020e2bc <ip_dev_find+152>:	stwcx.  r9,0,r0
+0xc020e2c0 <ip_dev_find+156>:	bne-    0xc020e2b4 <ip_dev_find+144>
 
-Yes, you are right. Must of course be fixed.
+This is on a MPC8321 CPU
+gcc 3.4.6
 
-[snip]
-> > @@ -635,8 +706,7 @@ mpc52xx_uart_set_termios(struct uart_por
-> > =A0 =A0 =A0 =A0out_8(&psc->command, MPC52xx_PSC_SEL_MODE_REG_1);
-> > =A0 =A0 =A0 =A0out_8(&psc->mode, mr1);
-> > =A0 =A0 =A0 =A0out_8(&psc->mode, mr2);
-> > - =A0 =A0 =A0 out_8(&psc->ctur, ctr >> 8);
-> > - =A0 =A0 =A0 out_8(&psc->ctlr, ctr & 0xff);
-> > + =A0 =A0 =A0 psc_ops->set_divisor(port, quot);
->=20
-> Hmmm.  The divisor calculations have some tricky bits to them.  I
-> would consider changing the set_divisor() function to accept a baud
-> rate, and modify the set_divisor function to call uart_get_divisor().
+Any ideas?
 
-That sounds like a good idea to me.  I will change the code that way.
-
-> That way each set_divisor() can do whatever makes the most sense for
-> the divisors available to it.  The 5121 for example has both a /10 and
-> a /32 divisor, plus it can use an external clock.
-
-Ouch.  I don't have a 512x, but isn't the current code plain wrong then?  I=
-t uses mpc5xxx_get_bus_frequency() as input for the baud rate calculation, =
-and if the serial code assumes /16 instead of /10, the result must be terri=
-bly off.  Or did I miss something here?
-
-Best, Albrecht.
-
-Tolle Dekollet=E9s oder scharfe Tatoos? Vote jetzt ... oder mach selbst mit=
- und zeige Deine Schokoladenseite
-bei Topp oder Hopp von Arcor: http://www.arcor.de/rd/footer.toh
+  Jocke
