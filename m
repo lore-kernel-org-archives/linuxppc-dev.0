@@ -1,27 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD937B7CFC
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 21:42:04 +1100 (EST)
-In-Reply-To: <4B8FE00F.4030405@denx.de>
-References: <4B8E17A7.10509@denx.de>
-	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
-	<4B8E3582.8060003@denx.de>
-	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
-	<4B8F8BB4.6070201@denx.de>
-	<20100304121656.6758A28BBC@gemini.denx.de>
-	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
-	<4B8FE00F.4030405@denx.de>
-Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-To: hs@denx.de
-Message-ID: <OF342998FA.F0D2DAE1-ONC12576DD.003A3D7E-C12576DD.003AA365@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 5 Mar 2010 11:40:29 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [RFC: PATCH 08/13] powerpc/476: define specific cpu table
+	entry for DD1 and DD1.1 cores
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <C84D9A35-C618-47FB-A95C-73B8B940BC7C@kernel.crashing.org>
+References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
+	<20100301191351.20987.49730.sendpatchset@norville.austin.ibm.com>
+	<fb412d761003040906i57842fc3t48693d5e5e777176@mail.gmail.com>
+	<C84D9A35-C618-47FB-A95C-73B8B940BC7C@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 05 Mar 2010 07:18:50 -0600
+Message-Id: <1267795130.28250.7.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>,
+	Hollis Blanchard <hollis@penguinppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,120 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Heiko Schocher <hs@denx.de> wrote on 2010/03/04 17:30:07:
->
-> Hello Joakim,
->
-> Joakim Tjernlund wrote:
-> > Wolfgang Denk <wd@denx.de> wrote on 2010/03/04 13:16:56:
-> >> From: Wolfgang Denk <wd@denx.de>
-> >> To: hs@denx.de
-> >> Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>, Klaus-J=FCrg=
-en
-> >> <heydeck@kieback-peter.de>, linuxppc-dev@ozlabs.org, Scott Wood
-> >> <scottwood@freescale.com>
-> >> Date: 2010/03/04 13:17
-> >> Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-> >>
-> >> Dear Heiko,
-> >>
-> >> thanks for running the tests.
-> >>
-> >> In message <4B8F8BB4.6070201@denx.de> you wrote:
-> >>> here the results:
-> >>>
-> >>> run   version
-> >>>
-> >>> 1-4   2.6.33-rc6 without your patches
-> >>> 5-8   2.6.33-rc6 with all your patches
-> >>> 9-12   2.6.33-rc6 with patches 1,2 and 4 (without 8xx: Don't touc=
-h ACCESSED
-> >> when no SWAP)
-> >>> 13-16   2.6.33-rc6 with all your patches and CONFIG_PIN_TLB=3Dy
-> >> So CONFIG_PIN_TLB imroves the performance as expected, while the o=
-ther
-> >> patches don;t show any measurable improvememt - or am I reading th=
-e
-> >> results incorrectly?
-> >
-> > Close but not quite. What stands out most is:
-> >
-> > Memory latencies in nanoseconds - smaller is better
-> >     (WARNING - may not be correct, check graphs)
-> > -------------------------------------------------------------------=
------------
-> > Host                 OS   Mhz   L1 $   L2 $    Main mem    Rand mem=
-    Guesses
-> > --------- -------------   ---   ----   ----    --------    --------=
-    -------
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.0       184.0      1165.7=
+On Fri, 2010-03-05 at 03:15 -0600, Kumar Gala wrote:
+> On Mar 4, 2010, at 11:06 AM, Hollis Blanchard wrote:
+> 
+> > On Mon, Mar 1, 2010 at 11:13 AM, Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+> > powerpc/476: define specific cpu table entry for DD1 and DD1.1 cores
+> > 
+> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > There are still some unstable bits on the DD1 and DD1.1 cores.  Don't use
+> > the FPU or the tlbivax operation.  Define CPU_FTR_476_DD1 and
+> > CPU_FTR_476_DD1_1 for additional workarounds in later patches.
+> > 
+> > The DD1 core requires workarounds triggered by both CPU_FTR_476_DD1
+> > and CPU_FTR_476_DD1_1.  the DD1.1 core only needs CPU_FTR_476_DD1_1
+> > defined.
+> > 
+> > Isn't the policy generally not to commit workarounds for
+> early/errataful hardware which will not be seen in the real world?
+> Otherwise, every new half-broken core could burn a bunch of feature
+> bits...
+> > 
+> > -Hollis
+> 
+> I'm with Hollis.  Cluttering the code with non-production errata could
+> get very ugly as well as burning feature bits up like made.
 
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.2       184.2      1165.3=
+Ben's going to make the decision on whether or not these patches should
+be included into mainline.  I'd be happy maintaining them separately if
+not.  I'm separating out the DD1 workaround from the others, since it's
+less likely that one will be needed long-term.
 
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.3       184.3      1165.6=
-
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.3       184.2      1166.2=
-
-> >
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.0       171.8      1100.5=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.0       171.8      1102.5=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.0       171.8      1101.7=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.0       171.8      1101.6=
-    No L2 cache?
-> >
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.1       173.4      1149.1=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  141.1       173.4      1149.0=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.7  141.1       173.4      1148.7=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.7  141.1       173.4      1148.2=
-    No L2 cache?
-> >
-> > tqm8xx    Linux 2.6.33-    66   31.8  171.1       171.7      1099.8=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  171.1       171.6      1100.5=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.7  171.0       171.7      1101.0=
-    No L2 cache?
-> > tqm8xx    Linux 2.6.33-    66   31.8  171.0       171.6      1101.3=
-    No L2 cache?
-> >
-> >
-> > Besides the numbers, note how the first group doesn't have a Guesse=
-s entry.
-> > Is there something odd with the results for the first group?
->
-> Hmm.. just to be safe, I made this test again, but it shows also no e=
-ntry in
-> "Guesses" ... Hardware, Linux Source, rootFS, lmbench sources, all th=
-e
-> same ...
-
-OK
-
->
-> > Also, since you are using MODULES, patch 2 is nullified.
-> > Patch 1 is very minor and should not show I think.
-> > This leaves patches 3 & 4.
-> > There appears to be something funny with patch 3,Don't touch ACCESS=
-ED when no SWAP, as
-> > it yields bad numbers for Prot Fault so perhaps I am missing someth=
-ing that
-> needs ACCESSED
-> > even if NO_SWAP. Perhaps a someone that knows MM in Linux knows?
-> > Is there any messages in the kernel log(dmesg)?
->
-> I couldn;t find something in the output with dmesg ... but if you
-> want this output, I can send it to you.
-
-No, if you can't find anything in there, I won't either.
-
-What would be interesting is to skip patch 3 and turn off
-MODULES add PIN_TLB and compare that against your unpatched .33 but
-with MODULES off and PIN_TLB on
-
- Jocke=
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
