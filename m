@@ -1,11 +1,11 @@
 Return-Path: <shaggy@linux.vnet.ibm.com>
-Date: Fri, 5 Mar 2010 13:45:54 -0700
+Date: Fri, 5 Mar 2010 17:43:47 -0300
 From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
-Message-Id: <20100305204329.18424.26544.sendpatchset@norville.austin.ibm.com>
+Message-Id: <20100305204347.18424.1181.sendpatchset@norville.austin.ibm.com>
 In-Reply-To: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
 References: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
-Subject: [PATCH 06/13] powerpc/4xx: Simple platform for the ISS 4xx simulator
+Subject: [PATCH 09/13] powerpc/476: Workaround for dcbf/dcbz workaround on DD1
 Cc: Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -16,681 +16,359 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/4xx: Simple platform for the ISS 4xx simulator
+powerpc/476: Workaround for dcbf/dcbz workaround on DD1
 
-From: Torez Smith <lnxtorez@linux.vnet.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This is a trivial 4xx plaform that uses the new simple bsp from
-Josh and is handy to use in simulators such as ISS or even Mambo
-who don't properly implement most of the actual devices in the
-SoC but really only the core.
+On the DD1.1 core, the dcbf and dcbz instructions need to be preceded and
+followed by an lwsync.  We must trap user-space to ensure that this occurs
+there too.
 
-Signed-off-by: Torez Smith  <lnxtorez@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/boot/Makefile            |    5 +
- arch/powerpc/boot/dts/iss4xx-mpic.dts |  155 +++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/iss4xx.dts      |  116 +++++++++++++++++++++++
- arch/powerpc/boot/treeboot-iss4xx.c   |   56 +++++++++++
- arch/powerpc/boot/wrapper             |    3 +
- arch/powerpc/include/asm/reg.h        |    3 +
- arch/powerpc/kernel/cputable.c        |   15 +++
- arch/powerpc/kernel/head_44x.S        |    2 
- arch/powerpc/platforms/44x/Kconfig    |   11 ++
- arch/powerpc/platforms/44x/Makefile   |    1 
- arch/powerpc/platforms/44x/iss4xx.c   |  165 +++++++++++++++++++++++++++++++++
- 11 files changed, 531 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/iss4xx-mpic.dts
- create mode 100644 arch/powerpc/boot/dts/iss4xx.dts
- create mode 100644 arch/powerpc/boot/treeboot-iss4xx.c
- create mode 100644 arch/powerpc/platforms/44x/iss4xx.c
+ arch/powerpc/include/asm/asm-compat.h |   10 +++++++
+ arch/powerpc/include/asm/ppc-opcode.h |    4 +++
+ arch/powerpc/include/asm/reg_booke.h  |    9 +++++++
+ arch/powerpc/kernel/entry_32.S        |   35 +++++++++++++++++++++++---
+ arch/powerpc/kernel/head_44x.S        |    9 +++++++
+ arch/powerpc/kernel/misc_32.S         |   32 ++++++++++++++++++++++-
+ arch/powerpc/kernel/traps.c           |   45 +++++++++++++++++++++++++++++++++
+ arch/powerpc/lib/copy_32.S            |    7 ++++-
+ 8 files changed, 145 insertions(+), 6 deletions(-)
 
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index bb2465b..997196e 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -44,6 +44,7 @@ $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=405
- $(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=405
- $(obj)/cuboot-acadia.o: BOOTCFLAGS += -mcpu=405
- $(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
-+$(obj)/treeboot-iss4xx.o: BOOTCFLAGS += -mcpu=405
- $(obj)/virtex405-head.o: BOOTAFLAGS += -mcpu=405
+diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
+index 8f0fe79..bee05ec 100644
+--- a/arch/powerpc/include/asm/asm-compat.h
++++ b/arch/powerpc/include/asm/asm-compat.h
+@@ -64,6 +64,16 @@
+ #define PPC405_ERR77(ra,rb)
+ #define PPC405_ERR77_SYNC
+ #endif
++
++#ifdef CONFIG_PPC_47x
++#define PPC476_ERR_DCBx()			\
++	BEGIN_FTR_SECTION;			\
++		lwsync;				\
++	END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
++#else
++#define PPC476_ERR_DCBx()
++#endif /* CONFIG_PPC_47x */
++
+ #endif
  
+ #endif /* _ASM_POWERPC_ASM_COMPAT_H */
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index ef9aa84..629b1fe 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -19,6 +19,10 @@
+ #define PPC_INST_DCBA			0x7c0005ec
+ #define PPC_INST_DCBA_MASK		0xfc0007fe
+ #define PPC_INST_DCBAL			0x7c2005ec
++#define PPC_INST_DCBF			0x7c0000ac
++#define PPC_INST_DCBF_MASK		0xfc0007fe
++#define PPC_INST_DCBZ			0x7c0007ec
++#define PPC_INST_DCBZ_MASK		0xfc0007fe
+ #define PPC_INST_DCBZL			0x7c2007ec
+ #define PPC_INST_ISEL			0x7c00001e
+ #define PPC_INST_ISEL_MASK		0xfc00003e
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index ee61a9d..8153093 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -276,6 +276,8 @@
+ #define ESR_IMCN	0x40000000	/* Instr. Machine Check - Non-config */
+ #define ESR_IMCB	0x20000000	/* Instr. Machine Check - Bus error */
+ #define ESR_IMCT	0x10000000	/* Instr. Machine Check - Timeout */
++#define ESR_POT1	0x20000000	/* 476 - IOCR1 trap */
++#define ESR_POT2	0x10000000	/* 476 - IOCR2 trap */
+ #define ESR_PIL		0x08000000	/* Program Exception - Illegal */
+ #define ESR_PPR		0x04000000	/* Program Exception - Privileged */
+ #define ESR_PTR		0x02000000	/* Program Exception - Trap */
+@@ -535,6 +537,13 @@
+ #define MMUBE1_VBE3		0x00000004
+ #define MMUBE1_VBE4		0x00000002
+ #define MMUBE1_VBE5		0x00000001
++#define SPRN_IOCCR	860
++#define		IOCCR_IOCR1EN		0x80000000
++#define		IOCCR_IOCR1M		0x40000000
++#define		IOCCR_IOCR2EN		0x20000000
++#define		IOCCR_IOCR2M		0x10000000
++#define SPRN_IOCR1	861
++#define SPRN_IOCR2	862
  
-@@ -77,7 +78,7 @@ src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c
- 		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
- 		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
- 		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
--		gamecube-head.S gamecube.c wii-head.S wii.c
-+		gamecube-head.S gamecube.c wii-head.S wii.c treeboot-iss4xx.c
- src-boot := $(src-wlib) $(src-plat) empty.c
+ #endif /* __ASM_POWERPC_REG_BOOKE_H__ */
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index ed4aeb9..57b7893 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -142,6 +142,12 @@ transfer_to_handler:
+ 	addi	r2,r12,-THREAD
+ 	tovirt(r2,r2)			/* set r2 to current */
+ 	beq	2f			/* if from user, fix up THREAD.regs */
++#ifdef CONFIG_PPC_47x
++BEGIN_FTR_SECTION
++	li	r11,0
++	mtspr	SPRN_IOCCR,r11
++END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
++#endif /* CONFIG_PPC_47x */
+ 	addi	r11,r1,STACK_FRAME_OVERHEAD
+ 	stw	r11,PT_REGS(r12)
+ #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+@@ -280,6 +286,12 @@ stack_ovf:
+ 0:
  
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -206,6 +207,8 @@ image-$(CONFIG_TAISHAN)			+= cuImage.taishan
- image-$(CONFIG_KATMAI)			+= cuImage.katmai
- image-$(CONFIG_WARP)			+= cuImage.warp
- image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
-+image-$(CONFIG_ISS4xx)			+= treeImage.iss4xx \
-+					   treeImage.iss4xx-mpic
+ _GLOBAL(DoSyscall)
++#ifdef CONFIG_PPC_47x
++BEGIN_FTR_SECTION
++	li	r11,0
++	mtspr	SPRN_IOCCR,r11
++END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
++#endif /* CONFIG_PPC_47x */
+ 	stw	r3,ORIG_GPR3(r1)
+ 	li	r12,0
+ 	stw	r12,RESULT(r1)
+@@ -381,6 +393,16 @@ BEGIN_MMU_FTR_SECTION
+ 1:
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_47x)
+ #endif /* CONFIG_44x */
++#ifdef CONFIG_PPC_47x
++BEGIN_FTR_SECTION
++	lwz	r7,_MSR(r1)
++	andi.	r5,r7,MSR_PR
++	beq	11f
++	lis	r4,(IOCCR_IOCR1EN|IOCCR_IOCR2EN)@h
++	mtspr	SPRN_IOCCR,r4
++11:
++END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
++#endif /* CONFIG_PPC_47x */
+ BEGIN_FTR_SECTION
+ 	lwarx	r7,0,r1
+ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
+@@ -716,9 +738,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
+ fast_exception_return:
+ #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ 	andi.	r10,r9,MSR_RI		/* check for recoverable interrupt */
+-	beq	1f			/* if not, we've got problems */
++	beq	try_recov_exception	/* if not, we've got problems */
+ #endif
+-
+ 2:	REST_4GPRS(3, r11)
+ 	lwz	r10,_CCR(r11)
+ 	REST_GPR(1, r11)
+@@ -736,7 +757,8 @@ fast_exception_return:
  
- # Board ports in arch/powerpc/platform/8xx/Kconfig
- image-$(CONFIG_MPC86XADS)		+= cuImage.mpc866ads
-diff --git a/arch/powerpc/boot/dts/iss4xx-mpic.dts b/arch/powerpc/boot/dts/iss4xx-mpic.dts
-new file mode 100644
-index 0000000..23e9d9b
---- /dev/null
-+++ b/arch/powerpc/boot/dts/iss4xx-mpic.dts
-@@ -0,0 +1,155 @@
-+/*
-+ * Device Tree Source for IBM Embedded PPC 476 Platform
-+ *
-+ * Copyright 2010 Torez Smith, IBM Corporation.
-+ *
-+ * Based on earlier code:
-+ *     Copyright (c) 2006, 2007 IBM Corp.
-+ *     Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/dts-v1/;
-+
-+/memreserve/ 0x01f00000 0x00100000;
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "ibm,iss-4xx";
-+	compatible = "ibm,iss-4xx";
-+	dcr-parent = <&{/cpus/cpu@0}>;
-+
-+	aliases {
-+		serial0 = &UART0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,4xx"; // real CPU changed in sim
-+			reg = <0>;
-+			clock-frequency = <100000000>; // 100Mhz :-)
-+			timebase-frequency = <100000000>;
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+			status = "ok";
-+		};
-+		cpu@1 {
-+			device_type = "cpu";
-+			model = "PowerPC,4xx"; // real CPU changed in sim
-+			reg = <1>;
-+			clock-frequency = <100000000>; // 100Mhz :-)
-+			timebase-frequency = <100000000>;
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+			status = "disabled";
-+			enable-method = "spin-table";
-+			cpu-release-addr = <0 0x01f00100>;
-+		};
-+		cpu@2 {
-+			device_type = "cpu";
-+			model = "PowerPC,4xx"; // real CPU changed in sim
-+			reg = <2>;
-+			clock-frequency = <100000000>; // 100Mhz :-)
-+			timebase-frequency = <100000000>;
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+			status = "disabled";
-+			enable-method = "spin-table";
-+			cpu-release-addr = <0 0x01f00200>;
-+		};
-+		cpu@3 {
-+			device_type = "cpu";
-+			model = "PowerPC,4xx"; // real CPU changed in sim
-+			reg = <3>;
-+			clock-frequency = <100000000>; // 100Mhz :-)
-+			timebase-frequency = <100000000>;
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <32768>;
-+			d-cache-size = <32768>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+			status = "disabled";
-+			enable-method = "spin-table";
-+			cpu-release-addr = <0 0x01f00300>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg =  <0x00000000 0x00000000 0x00000000>; // Filled in by zImage
-+
-+	};
-+
-+	MPIC: interrupt-controller {
-+		compatible = "chrp,open-pic";
-+		interrupt-controller;
-+		dcr-reg = <0xffc00000 0x00030000>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-4xx", "ibm,plb4"; /* Could be PLB6, doesn't matter */
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; // Filled in by zImage
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-4xx", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			/* Wish there was a nicer way of specifying a full 32-bit
-+			   range */
-+			ranges = <0x00000000 0x00000001 0x00000000 0x80000000
-+				  0x80000000 0x00000001 0x80000000 0x80000000>;
-+			clock-frequency = <0>; // Filled in by zImage
-+			UART0: serial@40000200 {
-+				device_type = "serial";
-+				compatible = "ns16550a";
-+				reg = <0x40000200 0x00000008>;
-+				virtual-reg = <0xe0000200>;
-+				clock-frequency = <11059200>;
-+				current-speed = <115200>;
-+				interrupt-parent = <&MPIC>;
-+				interrupts = <0x0 0x2>;
-+			};
-+		};
-+	};
-+
-+	nvrtc {
-+		compatible = "ds1743-nvram", "ds1743", "rtc-ds1743";
-+		reg = <0 0xEF703000 0x2000>;
-+	};
-+	iss-block {
-+		compatible = "ibm,iss-sim-block-device";
-+		reg = <0 0xEF701000 0x1000>;
-+	};
-+
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@40000200";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/iss4xx.dts b/arch/powerpc/boot/dts/iss4xx.dts
-new file mode 100644
-index 0000000..4ff6555
---- /dev/null
-+++ b/arch/powerpc/boot/dts/iss4xx.dts
-@@ -0,0 +1,116 @@
-+/*
-+ * Device Tree Source for IBM Embedded PPC 476 Platform
-+ *
-+ * Copyright 2010 Torez Smith, IBM Corporation.
-+ *
-+ * Based on earlier code:
-+ *    Copyright (c) 2006, 2007 IBM Corp.
-+ *    Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "ibm,iss-4xx";
-+	compatible = "ibm,iss-4xx";
-+	dcr-parent = <&{/cpus/cpu@0}>;
-+
-+	aliases {
-+		serial0 = &UART0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,4xx"; // real CPU changed in sim
-+			reg = <0x00000000>;
-+			clock-frequency = <100000000>; // 100Mhz :-)
-+			timebase-frequency = <100000000>;
-+			i-cache-line-size = <32>; // may need fixup in sim
-+			d-cache-line-size = <32>; // may need fixup in sim
-+			i-cache-size = <32768>; /* may need fixup in sim */
-+			d-cache-size = <32768>; /* may need fixup in sim */
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x00000000 0x00000000>; // Filled in by zImage
-+	};
-+
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-4xx", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0x0c0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-4xx", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0x0d0 0x009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-4xx", "ibm,plb4"; /* Could be PLB6, doesn't matter */
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; // Filled in by zImage
-+
-+		POB0: opb {
-+			compatible = "ibm,opb-4xx", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			/* Wish there was a nicer way of specifying a full 32-bit
-+			   range */
-+			ranges = <0x00000000 0x00000001 0x00000000 0x80000000
-+				  0x80000000 0x00000001 0x80000000 0x80000000>;
-+			clock-frequency = <0>; // Filled in by zImage
-+			UART0: serial@40000200 {
-+				device_type = "serial";
-+				compatible = "ns16550a";
-+				reg = <0x40000200 0x00000008>;
-+				virtual-reg = <0xe0000200>;
-+				clock-frequency = <11059200>;
-+				current-speed = <115200>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0x0 0x4>;
-+			};
-+		};
-+	};
-+
-+	nvrtc {
-+		compatible = "ds1743-nvram", "ds1743", "rtc-ds1743";
-+		reg = <0 0xEF703000 0x2000>;
-+	};
-+	iss-block {
-+		compatible = "ibm,iss-sim-block-device";
-+		reg = <0 0xEF701000 0x1000>;
-+	};
-+
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@40000200";
-+	};
-+};
-diff --git a/arch/powerpc/boot/treeboot-iss4xx.c b/arch/powerpc/boot/treeboot-iss4xx.c
-new file mode 100644
-index 0000000..fcc4495
---- /dev/null
-+++ b/arch/powerpc/boot/treeboot-iss4xx.c
-@@ -0,0 +1,56 @@
-+/*
-+ * Copyright 2010 Ben. Herrenschmidt, IBM Corporation.
-+ *
-+ * Based on earlier code:
-+ *   Copyright (C) Paul Mackerras 1997.
-+ *
-+ *   Matt Porter <mporter@kernel.crashing.org>
-+ *   Copyright 2002-2005 MontaVista Software Inc.
-+ *
-+ *   Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ *   Copyright (c) 2003, 2004 Zultys Technologies
-+ *
-+ *    Copyright 2007 David Gibson, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+#include "reg.h"
-+#include "io.h"
-+#include "dcr.h"
-+#include "4xx.h"
-+#include "44x.h"
-+#include "libfdt.h"
-+
-+BSS_STACK(4096);
-+
-+static void iss_4xx_fixups(void)
-+{
-+	ibm4xx_sdram_fixup_memsize();
-+}
-+
-+#define SPRN_PIR	0x11E	/* Processor Indentification Register */
-+void platform_init(void)
-+{
-+	unsigned long end_of_ram = 0x08000000;
-+	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
-+	u32 pir_reg;
-+
-+	simple_alloc_init(_end, avail_ram, 128, 64);
-+	platform_ops.fixups = iss_4xx_fixups;
-+	platform_ops.exit = ibm44x_dbcr_reset;
-+	pir_reg = mfspr(SPRN_PIR);
-+	fdt_set_boot_cpuid_phys(_dtb_start, pir_reg);
-+	fdt_init(_dtb_start);
-+	serial_console_init();
-+}
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index f4594ed..d3216a3 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -237,6 +237,9 @@ gamecube|wii)
-     link_address='0x600000'
-     platformo="$object/$platform-head.o $object/$platform.o"
-     ;;
-+treeboot-iss4xx-mpic)
-+    platformo="$object/treeboot-iss4xx.o"
-+    ;;
- esac
+ #if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ /* check if the exception happened in a restartable section */
+-1:	lis	r3,exc_exit_restart_end@ha
++try_recov_exception:
++	lis	r3,exc_exit_restart_end@ha
+ 	addi	r3,r3,exc_exit_restart_end@l
+ 	cmplw	r12,r3
+ 	bge	3f
+@@ -809,6 +831,13 @@ restore_user:
+ 	andis.	r10,r0,DBCR0_IDM@h
+ 	bnel-	load_dbcr0
+ #endif
++#ifdef CONFIG_PPC_47x
++BEGIN_FTR_SECTION
++	lis	r0,(IOCCR_IOCR1EN|IOCCR_IOCR2EN)@h
++	mtspr	SPRN_IOCCR,r0
++1:
++END_FTR_SECTION_IFSET(CPU_FTR_476_DD1_1)
++#endif /* CONFIG_PPC_47x */
  
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 4af1c28..bd1c3ab 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -850,6 +850,9 @@
- #define PVR_8245	0x80811014
- #define PVR_8260	PVR_8240
- 
-+/* 476 Simulator seems to currently have the PVR of the 602... */
-+#define PVR_476_ISS	0x00052000
-+
- /* 64-bit processors */
- /* XXX the prefix should be PVR_, we'll do a global sweep to fix it one day */
- #define PV_NORTHSTAR	0x0033
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 7b2a67c..a06e6d3 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1715,6 +1715,21 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_47x,
- 		.platform		= "ppc470",
- 	},
-+	{ /* 476 iss */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x00050000,
-+		.cpu_name		= "476",
-+		.cpu_features		= CPU_FTRS_47X,
-+		.cpu_user_features	= COMMON_USER_BOOKE |
-+			PPC_FEATURE_HAS_FPU,
-+		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.mmu_features		= MMU_FTR_TYPE_47x |
-+			MMU_FTR_USE_TLBIVAX_BCAST | MMU_FTR_LOCK_BCAST_INVAL,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 128,
-+		.machine_check		= machine_check_47x,
-+		.platform		= "ppc470",
-+	},
- 	{	/* default match */
- 		.pvr_mask		= 0x00000000,
- 		.pvr_value		= 0x00000000,
+ #ifdef CONFIG_PREEMPT
+ 	b	restore
 diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 992e9d5..af3a9e1 100644
+index af3a9e1..a96796d 100644
 --- a/arch/powerpc/kernel/head_44x.S
 +++ b/arch/powerpc/kernel/head_44x.S
-@@ -721,6 +721,8 @@ _GLOBAL(init_cpu_state)
- 	srwi	r3,r3,16
- 	cmplwi	cr0,r3,PVR_476@h
- 	beq	head_start_47x
-+	cmplwi	cr0,r3,PVR_476_ISS@h
-+	beq	head_start_47x
+@@ -1113,6 +1113,15 @@ clear_utlb_entry:
+ 	mtspr	SPRN_CCR0,r3
+ 	isync
+ 
++	/* XXX DD1.1 workaround, trap on dcbz & dcbf. We pre-configure
++	 *     IOCR1 and 2 but we don't enable them in IOCCR, this will
++	 *     be done on kernel entry/exit
++	 */
++	LOAD_REG_IMMEDIATE(r3, (31 << 26) | (  86 << 1))	/* dcbf */
++	LOAD_REG_IMMEDIATE(r4, (31 << 26) | (1014 << 1))	/* dcbz */
++	mtspr	SPRN_IOCR1, r3
++	mtspr	SPRN_IOCR2, r4
++
  #endif /* CONFIG_PPC_47x */
  
  /*
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 9365e53..eeba0a7 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -160,6 +160,17 @@ config YOSEMITE
- 	help
- 	  This option enables support for the AMCC PPC440EP evaluation board.
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 8043d1b..db6b115 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -393,7 +393,9 @@ _GLOBAL(flush_dcache_range)
+ 	beqlr
+ 	mtctr	r4
  
-+config ISS4xx
-+	bool "ISS 4xx Simulator"
-+	depends on (44x || 40x)
-+	default n
-+	select 405GP if 40x
-+	select 440GP if 44x && !PPC_47x
-+	select PPC_FPU
-+	select OF_RTC
-+	help
-+	  This option enables support for the IBM ISS simulation environment
+-1:	dcbf	0,r3
++1:	PPC476_ERR_DCBx()
++	dcbf	0,r3
++	PPC476_ERR_DCBx()
+ 	addi	r3,r3,L1_CACHE_BYTES
+ 	bdnz	1b
+ 	sync				/* wait for dcbst's to get to ram */
+@@ -507,7 +509,9 @@ _GLOBAL(clear_pages)
+ 	li	r0,PAGE_SIZE/L1_CACHE_BYTES
+ 	slw	r0,r0,r4
+ 	mtctr	r0
+-1:	dcbz	0,r3
++1:	PPC476_ERR_DCBx()
++	dcbz	0,r3
++	PPC476_ERR_DCBx()
+ 	addi	r3,r3,L1_CACHE_BYTES
+ 	bdnz	1b
+ 	blr
+@@ -551,7 +555,9 @@ _GLOBAL(copy_page)
+ 	mtctr	r0
+ 1:
+ 	dcbt	r11,r4
++	PPC476_ERR_DCBx()
+ 	dcbz	r5,r3
++	PPC476_ERR_DCBx()
+ 	COPY_16_BYTES
+ #if L1_CACHE_BYTES >= 32
+ 	COPY_16_BYTES
+@@ -807,3 +813,25 @@ relocate_new_kernel_end:
+ relocate_new_kernel_size:
+ 	.long relocate_new_kernel_end - relocate_new_kernel
+ #endif
 +
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index ee6185a..82ff326 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_SAM440EP) 	+= sam440ep.o
- obj-$(CONFIG_WARP)	+= warp.o
- obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
- obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
-+obj-$(CONFIG_ISS4xx)	+= iss4xx.o
-diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
-new file mode 100644
-index 0000000..c9a13c6
---- /dev/null
-+++ b/arch/powerpc/platforms/44x/iss4xx.c
-@@ -0,0 +1,165 @@
-+/*
-+ * PPC476 board specific routines
-+ *
-+ * Copyright 2010 Torez Smith, IBM Corporation.
-+ *
-+ * Based on earlier code:
-+ *    Matt Porter <mporter@kernel.crashing.org>
-+ *    Copyright 2002-2005 MontaVista Software Inc.
-+ *
-+ *    Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ *    Copyright (c) 2003-2005 Zultys Technologies
-+ *
-+ *    Rewritten and ported to the merged powerpc tree:
-+ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++#ifdef CONFIG_PPC_47x
++_GLOBAL(__dcbf)
++	lwsync
++1:	dcbf	0,r3
++	lwsync
++	li	r3,0
++	blr
++_GLOBAL(__dcbz)
++	lwsync
++2:	dcbz	0,r3
++	lwsync
++	li	r3,0
++	blr
++3:	li	r3,-EFAULT
++	blr
++	.section __ex_table,"a"
++	.align	2
++	.long	1b,3b
++	.long	2b,3b
++	.text
++#endif /* CONFIG_PPC_47x */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 9957c44..2f89c7f 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -772,6 +772,31 @@ static int emulate_isel(struct pt_regs *regs, u32 instword)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC_47x
 +
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+#include <linux/rtc.h>
++extern int __dcbf(unsigned long ea);
++extern int __dcbz(unsigned long ea);
 +
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/ppc4xx.h>
-+#include <asm/mpic.h>
-+#include <asm/mmu.h>
-+
-+static __initdata struct of_device_id iss4xx_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,plb6", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
-+
-+static int __init iss4xx_device_probe(void)
++static int emulate_dcbf(struct pt_regs *regs, u32 instword)
 +{
-+	of_platform_bus_probe(NULL, iss4xx_of_bus, NULL);
-+	of_instantiate_rtc();
++	u8 rA = (instword >> 16) & 0x1f;
++	u8 rB = (instword >> 11) & 0x1f;
++	unsigned long ea = regs->gpr[rB] + ((rA == 0) ? 0 : regs->gpr[rA]);
 +
-+	return 0;
-+}
-+machine_device_initcall(iss4xx, iss4xx_device_probe);
-+
-+/* We can have either UICs or MPICs */
-+static void __init iss4xx_init_irq(void)
-+{
-+	struct device_node *np;
-+
-+	/* Find top level interrupt controller */
-+	for_each_node_with_property(np, "interrupt-controller") {
-+		if (of_get_property(np, "interrupts", NULL) == NULL)
-+			break;
-+	}
-+	if (np == NULL)
-+		panic("Can't find top level interrupt controller");
-+
-+	/* Check type and do appropriate initialization */
-+	if (of_device_is_compatible(np, "ibm,uic")) {
-+		uic_init_tree();
-+		ppc_md.get_irq = uic_get_irq;
-+	} else if (of_device_is_compatible(np, "chrp,open-pic")) {
-+		/* The MPIC driver will get everything it needs from the
-+		 * device-tree, just pass 0 to all arguments
-+		 */
-+		struct mpic *mpic = mpic_alloc(np, 0, MPIC_PRIMARY, 0, 0,
-+					       " MPIC     ");
-+		BUG_ON(mpic == NULL);
-+		mpic_init(mpic);
-+		ppc_md.get_irq = mpic_get_irq;
-+	} else
-+		panic("Unrecognized top level interrupt controller");
++	return __dcbf(ea);
 +}
 +
-+#ifdef CONFIG_SMP
-+static void __cpuinit smp_iss4xx_setup_cpu(int cpu)
++static int emulate_dcbz(struct pt_regs *regs, u32 instword)
 +{
-+	mpic_setup_this_cpu();
++	u8 rA = (instword >> 16) & 0x1f;
++	u8 rB = (instword >> 11) & 0x1f;
++	unsigned long ea = regs->gpr[rB] + ((rA == 0) ? 0 : regs->gpr[rA]);
++
++	return __dcbz(ea);
 +}
 +
-+static void __cpuinit smp_iss4xx_kick_cpu(int cpu)
-+{
-+	struct device_node *cpunode = of_get_cpu_node(cpu, NULL);
-+	const u64 *spin_table_addr_prop;
-+	u32 *spin_table;
-+	extern void start_secondary_47x(void);
++#endif /* CONFIG_PPC_47x */
 +
-+	BUG_ON(cpunode == NULL);
-+
-+	/* Assume spin table. We could test for the enable-method in
-+	 * the device-tree but currently there's little point as it's
-+	 * our only supported method
-+	 */
-+	spin_table_addr_prop = of_get_property(cpunode, "cpu-release-addr",
-+					       NULL);
-+	if (spin_table_addr_prop == NULL) {
-+		pr_err("CPU%d: Can't start, missing cpu-release-addr !\n", cpu);
-+		return;
+ static int emulate_instruction(struct pt_regs *regs)
+ {
+ 	u32 instword;
+@@ -827,6 +852,18 @@ static int emulate_instruction(struct pt_regs *regs)
+ 		return emulate_isel(regs, instword);
+ 	}
+ 
++#ifdef CONFIG_PPC_47x
++	/* Emulate dcbf instruction */
++	if ((instword & PPC_INST_DCBF_MASK) == PPC_INST_DCBF) {
++		return emulate_dcbf(regs, instword);
 +	}
 +
-+	/* Assume it's mapped as part of the linear mapping. This is a bit
-+	 * fishy but will work fine for now
++	/* Emulate dcbz instruction */
++	if ((instword & PPC_INST_DCBZ_MASK) == PPC_INST_DCBZ) {
++		return emulate_dcbz(regs, instword);
++	}
++#endif /* CONFIG_47x */
++
+ 	return -EINVAL;
+ }
+ 
+@@ -842,6 +879,14 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 
+ 	/* We can now get here via a FP Unavailable exception if the core
+ 	 * has no FPU, in that case the reason flags will be 0 */
++#ifdef CONFIG_PPC_47x
++	/* Make IOC instruction traps look like illegal instructions
++	 * so we hit the proper emulation code path
 +	 */
-+	spin_table = (u32 *)__va(*spin_table_addr_prop);
-+	pr_debug("CPU%d: Spin table mapped at %p\n", cpu, spin_table);
-+
-+	spin_table[3] = cpu;
-+	smp_wmb();
-+	spin_table[1] = __pa(start_secondary_47x);
-+	mb();
-+}
-+
-+static struct smp_ops_t iss_smp_ops = {
-+	.probe		= smp_mpic_probe,
-+	.message_pass	= smp_mpic_message_pass,
-+	.setup_cpu	= smp_iss4xx_setup_cpu,
-+	.kick_cpu	= smp_iss4xx_kick_cpu,
-+	.give_timebase	= smp_generic_give_timebase,
-+	.take_timebase	= smp_generic_take_timebase,
-+};
-+
-+static void __init iss4xx_smp_init(void)
-+{
-+	if (mmu_has_feature(MMU_FTR_TYPE_47x))
-+		smp_ops = &iss_smp_ops;
-+}
-+
-+#else /* CONFIG_SMP */
-+static void __init iss4xx_smp_init(void) { }
-+#endif /* CONFIG_SMP */
-+
-+static void __init iss4xx_setup_arch(void)
-+{
-+	iss4xx_smp_init();
-+}
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init iss4xx_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "ibm,iss-4xx"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+define_machine(iss4xx) {
-+	.name			= "ISS-4xx",
-+	.probe			= iss4xx_probe,
-+	.progress		= udbg_progress,
-+	.init_IRQ		= iss4xx_init_irq,
-+	.setup_arch		= iss4xx_setup_arch,
-+	.restart		= ppc4xx_reset_system,
-+	.calibrate_decr		= generic_calibrate_decr,
-+};
++	if (mmu_has_feature(MMU_FTR_TYPE_47x) &&
++	    (reason & (ESR_POT1 | ESR_POT2)))
++		reason |= ESR_PIL;
++#endif /* CONFIG_PPC_47x */
+ 
+ 	if (reason & REASON_FP) {
+ 		/* IEEE FP exception */
+diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+index 74a7f41..d649609 100644
+--- a/arch/powerpc/lib/copy_32.S
++++ b/arch/powerpc/lib/copy_32.S
+@@ -12,6 +12,7 @@
+ #include <asm/cache.h>
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
++#include <asm/cputable.h>
+ 
+ #define COPY_16_BYTES		\
+ 	lwz	r7,4(r4);	\
+@@ -98,7 +99,9 @@ _GLOBAL(cacheable_memzero)
+ 	bdnz	4b
+ 3:	mtctr	r9
+ 	li	r7,4
+-10:	dcbz	r7,r6
++10:	PPC476_ERR_DCBx()
++	dcbz	r7,r6
++	PPC476_ERR_DCBx()
+ 	addi	r6,r6,CACHELINE_BYTES
+ 	bdnz	10b
+ 	clrlwi	r5,r8,32-LG_CACHELINE_BYTES
+@@ -368,7 +371,9 @@ _GLOBAL(__copy_tofrom_user)
+ 	mtctr	r8
+ 
+ 53:	dcbt	r3,r4
++	PPC476_ERR_DCBx()
+ 54:	dcbz	r11,r6
++	PPC476_ERR_DCBx()
+ 	.section __ex_table,"a"
+ 	.align	2
+ 	.long	54b,105f
 
 -- 
 Dave Kleikamp
