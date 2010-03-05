@@ -1,21 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 077B2B7CCD
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 21:02:01 +1100 (EST)
-Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
-	by gw1.transmode.se (Postfix) with ESMTP id E167D2597D9
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 11:01:55 +0100 (CET)
-In-Reply-To: <OFCCEB0071.2A524538-ONC12576DC.00390771-C12576DC.0039ACAE@transmode.se>
-References: <OFCCEB0071.2A524538-ONC12576DC.00390771-C12576DC.0039ACAE@transmode.se>
-Subject: Re: Strange OOPS in 2.6.33
-Message-ID: <OFE3B58EED.E50D3E8B-ONC12576DD.00363000-C12576DD.0036D647@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 5 Mar 2010 10:58:57 +0100
+Return-Path: <matthias.fuchs@esd.eu>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 601E3B7CCD
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 19:30:10 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by comm-neu.esd (Postfix) with ESMTP id 572391362D9
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 09:29:34 +0100 (CET)
+Received: from comm-neu.esd ([127.0.0.1])
+	by localhost (comm [127.0.0.1]) (amavisd-new, port 10024) with LMTP
+	id 08097-05 for <linuxppc-dev@ozlabs.org>;
+	Fri,  5 Mar 2010 09:29:22 +0100 (CET)
+Received: from debby.esd (debby.esd [10.0.0.190])
+	by comm-neu.esd (Postfix) with ESMTP id 19DE91362CC
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 09:29:22 +0100 (CET)
+From: Matthias Fuchs <matthias.fuchs@esd.eu>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH V2] powerpc/mpc512x: Add gpio driver
+Date: Fri, 5 Mar 2010 09:29:21 +0100
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201003050929.21647.matthias.fuchs@esd.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,100 +29,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->
->
-> Got this OOPS a few times after coldstarting out
-> board a few times:
->
-> Unable to handle kernel paging request for unknown fault
-> Faulting instruction address: 0xc020e2b4
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> TMCUTU
-> Modules linked in:
-> NIP: c020e2b4 LR: c020e274 CTR: 00000000
-> REGS: c7a41b40 TRAP: 0600   Not tainted  (2.6.33)
-> MSR: 00009032 <EE,ME,IR,DR>  CR: 28002424  XER: 00000000
-> DAR: 09f52312, DSISR: 00000120
-> TASK = c7889940[420] 'syslogd' THREAD: c7a40000
-> GPR00: 09f52312 c7a41bf0 c7889940 00000000 00000002 c7a41c40 c02734ac c78acc68
-> GPR08: c7a41c00 c78acc00 00000000 09f5214b c796e3d4 1001f444 00000000 bfe78700
-> GPR16: bfe77400 bfe77ee0 bfe773f8 00000021 0ffef130 00000000 c7a41df0 00000000
-> GPR24: 00000000 c7a41cf0 c7a41c70 00000011 7f000001 09f5214a c034a5cc c7a41c00
-> NIP [c020e2b4] ip_dev_find+0x90/0xf0
-> LR [c020e274] ip_dev_find+0x50/0xf0
-> Call Trace:
-> [c7a41bf0] [c020e274] ip_dev_find+0x50/0xf0 (unreliable)
-> [c7a41c60] [c01dd86c] __ip_route_output_key+0x8d4/0xb00
-> [c7a41d50] [c01ddab8] ip_route_output_flow+0x1c/0xa0
-> [c7a41d60] [c01ff8a0] ip4_datagram_connect+0x17c/0x2b8
-> [c7a41e30] [c020a75c] inet_dgram_connect+0x5c/0xa8
-> [c7a41e50] [c01a5030] sys_connect+0x7c/0xcc
-> [c7a41f00] [c01a6008] sys_socketcall+0x128/0x214
-> [c7a41f40] [c0011800] ret_from_syscall+0x0/0x38
-> --- Exception: c01 at 0xff6e004
->     LR = 0xfe2dac0
-> Instruction dump:
-> bb810060 38210070 7c0803a6 4e800020 88010052 2f800002 409e0028 81210054
-> 83a90068 2f9d0000 419e0018 381d01c8 <7d200028> 31290001 7d20012d 40a2fff4
-> ---[ end trace 0824e85bac28e7e4 ]---
->
-> gdb says:
-> (gdb) list *0xc020e2b4
-> 0xc020e2b4 is in ip_dev_find (/usr/local/src/BUILD/trunk/os2kernel/arch/
-> powerpc/include/asm/atomic.h:106).
-> 101
-> 102   static __inline__ void atomic_inc(atomic_t *v)
-> 103   {
-> 104      int t;
-> 105
-> 106      __asm__ __volatile__(
-> 107   "1:   lwarx   %0,0,%2      # atomic_inc\n\
-> 108      addic   %0,%0,1\n"
-> 109      PPC405_ERR77(0,%2)
-> 110   "   stwcx.   %0,0,%2 \n\
->
-> gdb) disass 0xc020e2b4 0xc020e2c4
-> Dump of assembler code from 0xc020e2b4 to 0xc020e2c4:
-> 0xc020e2b4 <ip_dev_find+144>:   lwarx   r9,0,r0
-> 0xc020e2b8 <ip_dev_find+148>:   addic   r9,r9,1
-> 0xc020e2bc <ip_dev_find+152>:   stwcx.  r9,0,r0
-> 0xc020e2c0 <ip_dev_find+156>:   bne-    0xc020e2b4 <ip_dev_find+144>
->
-> This is on a MPC8321 CPU
-> gcc 3.4.6
->
-> Any ideas?
+This patch adds a gpio driver for MPC512X PowerPCs.
 
-Got a bit further, turn out that the dev ptr returned from
-dev = FIB_RES_DEV(res) is bogus in ip_dev_find:
+It has been tested on our CAN-CBX-CPU5201 module that
+uses a MPC5121 CPU. This platform comes with a couple of
+LEDs and configuration switches that have been used for testing.
 
-struct net_device * ip_dev_find(struct net *net, __be32 addr)
-{
-	struct flowi fl = { .nl_u = { .ip4_u = { .daddr = addr } } };
-	struct fib_result res;
-	struct net_device *dev = NULL;
-	struct fib_table *local_table;
+Signed-off-by: Matthias Fuchs <matthias.fuchs@esd.eu>
+---
+v2: - move driver to arch/powerpc/platforms/512x directory
+    - Kconfig changes are now in arch/powerpc/platform/512x/Kconfig
+    - put struct mpc512x_gpio_regs in driver's .c file
+    - rename GPIO_MASK into MPC512x_GPIO_MASK
+    - use shadow registers instead of r/m/w-operations
+    - don't use arch_initcall but call mpc512x_add_gpiochips()
+      from mpc512x platform setup code.
 
-#ifdef CONFIG_IP_MULTIPLE_TABLES
-	res.r = NULL;
-#endif
+ arch/powerpc/platforms/512x/Kconfig          |    9 ++
+ arch/powerpc/platforms/512x/Makefile         |    1 +
+ arch/powerpc/platforms/512x/mpc512x.h        |    3 +
+ arch/powerpc/platforms/512x/mpc512x_gpio.c   |  198 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/512x/mpc512x_shared.c |    3 +
+ 5 files changed, 214 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/512x/mpc512x_gpio.c
 
-	local_table = fib_get_table(net, RT_TABLE_LOCAL);
-	if (!local_table || fib_table_lookup(local_table, &fl, &res))
-		return NULL;
-	if (res.type != RTN_LOCAL)
-		goto out;
-	dev = FIB_RES_DEV(res);
-
-	if (dev)
-		dev_hold(dev);
-out:
-	fib_res_put(&res);
-	return dev;
-}
-
-I have no idea how to proceed from here. Problem happens when user space
-makes its first access to eth0, in this case ntpdate. It is very hard to repeat
-the problem so it feels like a race somewhere in interface bringup
-
-     Jocke
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index 4dac9b0..840c6b4 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -10,6 +10,15 @@ config PPC_MPC5121
+ 	bool
+ 	select PPC_MPC512x
+ 
++config MPC512x_GPIO
++	bool "MPC512x GPIO support"
++	depends on PPC_MPC512x
++	select GENERIC_GPIO
++	select ARCH_REQUIRE_GPIOLIB
++	help
++	  Say Y here if you're going to use hardware that connects to the
++	  MPC512x GPIOs.
++
+ config MPC5121_ADS
+ 	bool "Freescale MPC5121E ADS"
+ 	depends on 6xx
+diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
+index 90be2f5..12518e3 100644
+--- a/arch/powerpc/platforms/512x/Makefile
++++ b/arch/powerpc/platforms/512x/Makefile
+@@ -4,3 +4,4 @@
+ obj-y				+= clock.o mpc512x_shared.o
+ obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
+ obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
++obj-$(CONFIG_MPC512x_GPIO)	+= mpc512x_gpio.o
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index b2daca0..4c67990 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -16,4 +16,7 @@ extern void __init mpc512x_init(void);
+ extern int __init mpc5121_clk_init(void);
+ void __init mpc512x_declare_of_platform_devices(void);
+ extern void mpc512x_restart(char *cmd);
++#ifdef CONFIG_MPC512x_GPIO
++extern int __init mpc512x_add_gpiochips(void);
++#endif
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc512x_gpio.c b/arch/powerpc/platforms/512x/mpc512x_gpio.c
+new file mode 100644
+index 0000000..fc6ad82
+--- /dev/null
++++ b/arch/powerpc/platforms/512x/mpc512x_gpio.c
+@@ -0,0 +1,198 @@
++/*
++ * MPC512x gpio driver
++ *
++ * Copyright (c) 2010 Matthias Fuchs <matthias.fuchs@esd.eu>, esd gmbh
++ *
++ * derived from ppc4xx gpio driver
++ *
++ * Copyright (c) 2008 Harris Corporation
++ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Steve Falco <sfalco@harris.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/gpio.h>
++#include <linux/types.h>
++
++#define MPC512x_GPIO_MASK(gpio) (0x80000000 >> (gpio))
++
++struct mpc512x_gpio_regs {
++	u32 gpdir;
++	u32 gpodr;
++	u32 gpdat;
++	u32 gpier;
++	u32 gpimr;
++	u32 gpicr1;
++	u32 gpicr2;
++};
++
++struct mpc512x_chip {
++	struct of_mm_gpio_chip mm_gc;
++	spinlock_t lock;
++
++	/* shadow registers */
++	u32 dat;
++	u32 odr;
++	u32 dir;
++};
++
++/*
++ * GPIO LIB API implementation for GPIOs
++ *
++ * There are a maximum of 32 gpios in each gpio controller.
++ */
++static inline struct mpc512x_chip *
++to_mpc512x_gpiochip(struct of_mm_gpio_chip *mm_gc)
++{
++	return container_of(mm_gc, struct mpc512x_chip, mm_gc);
++}
++
++static int mpc512x_gpio_get(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
++
++	return in_be32(&regs->gpdat) & MPC512x_GPIO_MASK(gpio);
++}
++
++static inline void
++__mpc512x_gpio_set(struct of_mm_gpio_chip *mm_gc, unsigned int gpio, int val)
++{
++	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
++	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
++
++
++	if (val)
++		chip->dat |= MPC512x_GPIO_MASK(gpio);
++	else
++		chip->dat &= ~MPC512x_GPIO_MASK(gpio);
++
++	out_be32(&regs->gpdat, chip->dat);
++}
++
++static void
++mpc512x_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	__mpc512x_gpio_set(mm_gc, gpio, val);
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++}
++
++static int mpc512x_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
++	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* Disable open-drain function */
++	chip->odr &= ~MPC512x_GPIO_MASK(gpio);
++	out_be32(&regs->gpodr, chip->odr);
++
++	/* Float the pin */
++	chip->dir &= ~MPC512x_GPIO_MASK(gpio);
++	out_be32(&regs->gpdir, chip->dir);
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	return 0;
++}
++
++static int
++mpc512x_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
++	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->lock, flags);
++
++	/* First set initial value */
++	__mpc512x_gpio_set(mm_gc, gpio, val);
++
++	/* Disable open-drain function */
++	chip->odr &= ~MPC512x_GPIO_MASK(gpio);
++	out_be32(&regs->gpodr, chip->odr);
++
++	/* Drive the pin */
++	chip->dir |= MPC512x_GPIO_MASK(gpio);
++	out_be32(&regs->gpdir, chip->dir);
++
++	spin_unlock_irqrestore(&chip->lock, flags);
++
++	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
++
++	return 0;
++}
++
++void __init mpc512x_add_gpiochips(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "fsl,mpc5121-gpio") {
++		int ret;
++		struct mpc512x_chip *chip;
++		struct of_mm_gpio_chip *mm_gc;
++		struct of_gpio_chip *of_gc;
++		struct gpio_chip *gc;
++
++		chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++		if (!chip) {
++			ret = -ENOMEM;
++			goto err;
++		}
++
++		spin_lock_init(&chip->lock);
++
++		mm_gc = &chip->mm_gc;
++		of_gc = &mm_gc->of_gc;
++		gc = &of_gc->gc;
++
++		gc->ngpio = 32;
++		gc->direction_input = mpc512x_gpio_dir_in;
++		gc->direction_output = mpc512x_gpio_dir_out;
++		gc->get = mpc512x_gpio_get;
++		gc->set = mpc512x_gpio_set;
++
++		ret = of_mm_gpiochip_add(np, mm_gc);
++		if (ret)
++			goto err;
++		continue;
++err:
++		pr_err("%s: registration failed with status %d\n",
++		       np->full_name, ret);
++		kfree(chip);
++		/* try others anyway */
++	}
++}
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index b7f518a..42320ab 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -100,4 +100,7 @@ void __init mpc512x_init(void)
+ 	mpc512x_declare_of_platform_devices();
+ 	mpc5121_clk_init();
+ 	mpc512x_restart_init();
++#ifdef CONFIG_MPC512x_GPIO
++	mpc512x_add_gpiochips();
++#endif
+ }
+-- 
+1.6.1
