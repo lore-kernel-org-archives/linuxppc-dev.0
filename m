@@ -1,18 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [RFC: PATCH 08/13] powerpc/476: define specific cpu table entry
-	for DD1 and DD1.1 cores
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <fb412d761003040906i57842fc3t48693d5e5e777176@mail.gmail.com>
-Date: Fri, 5 Mar 2010 03:15:11 -0600
-Message-Id: <C84D9A35-C618-47FB-A95C-73B8B940BC7C@kernel.crashing.org>
-References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-	<20100301191351.20987.49730.sendpatchset@norville.austin.ibm.com>
-	<fb412d761003040906i57842fc3t48693d5e5e777176@mail.gmail.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 077B2B7CCD
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 21:02:01 +1100 (EST)
+Received: from sesr04.transmode.se (sesr04.transmode.se [192.168.201.15])
+	by gw1.transmode.se (Postfix) with ESMTP id E167D2597D9
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Mar 2010 11:01:55 +0100 (CET)
+In-Reply-To: <OFCCEB0071.2A524538-ONC12576DC.00390771-C12576DC.0039ACAE@transmode.se>
+References: <OFCCEB0071.2A524538-ONC12576DC.00390771-C12576DC.0039ACAE@transmode.se>
+Subject: Re: Strange OOPS in 2.6.33
+Message-ID: <OFE3B58EED.E50D3E8B-ONC12576DD.00363000-C12576DD.0036D647@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 5 Mar 2010 10:58:57 +0100
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>
+>
+> Got this OOPS a few times after coldstarting out
+> board a few times:
+>
+> Unable to handle kernel paging request for unknown fault
+> Faulting instruction address: 0xc020e2b4
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> TMCUTU
+> Modules linked in:
+> NIP: c020e2b4 LR: c020e274 CTR: 00000000
+> REGS: c7a41b40 TRAP: 0600   Not tainted  (2.6.33)
+> MSR: 00009032 <EE,ME,IR,DR>  CR: 28002424  XER: 00000000
+> DAR: 09f52312, DSISR: 00000120
+> TASK = c7889940[420] 'syslogd' THREAD: c7a40000
+> GPR00: 09f52312 c7a41bf0 c7889940 00000000 00000002 c7a41c40 c02734ac c78acc68
+> GPR08: c7a41c00 c78acc00 00000000 09f5214b c796e3d4 1001f444 00000000 bfe78700
+> GPR16: bfe77400 bfe77ee0 bfe773f8 00000021 0ffef130 00000000 c7a41df0 00000000
+> GPR24: 00000000 c7a41cf0 c7a41c70 00000011 7f000001 09f5214a c034a5cc c7a41c00
+> NIP [c020e2b4] ip_dev_find+0x90/0xf0
+> LR [c020e274] ip_dev_find+0x50/0xf0
+> Call Trace:
+> [c7a41bf0] [c020e274] ip_dev_find+0x50/0xf0 (unreliable)
+> [c7a41c60] [c01dd86c] __ip_route_output_key+0x8d4/0xb00
+> [c7a41d50] [c01ddab8] ip_route_output_flow+0x1c/0xa0
+> [c7a41d60] [c01ff8a0] ip4_datagram_connect+0x17c/0x2b8
+> [c7a41e30] [c020a75c] inet_dgram_connect+0x5c/0xa8
+> [c7a41e50] [c01a5030] sys_connect+0x7c/0xcc
+> [c7a41f00] [c01a6008] sys_socketcall+0x128/0x214
+> [c7a41f40] [c0011800] ret_from_syscall+0x0/0x38
+> --- Exception: c01 at 0xff6e004
+>     LR = 0xfe2dac0
+> Instruction dump:
+> bb810060 38210070 7c0803a6 4e800020 88010052 2f800002 409e0028 81210054
+> 83a90068 2f9d0000 419e0018 381d01c8 <7d200028> 31290001 7d20012d 40a2fff4
+> ---[ end trace 0824e85bac28e7e4 ]---
+>
+> gdb says:
+> (gdb) list *0xc020e2b4
+> 0xc020e2b4 is in ip_dev_find (/usr/local/src/BUILD/trunk/os2kernel/arch/
+> powerpc/include/asm/atomic.h:106).
+> 101
+> 102   static __inline__ void atomic_inc(atomic_t *v)
+> 103   {
+> 104      int t;
+> 105
+> 106      __asm__ __volatile__(
+> 107   "1:   lwarx   %0,0,%2      # atomic_inc\n\
+> 108      addic   %0,%0,1\n"
+> 109      PPC405_ERR77(0,%2)
+> 110   "   stwcx.   %0,0,%2 \n\
+>
+> gdb) disass 0xc020e2b4 0xc020e2c4
+> Dump of assembler code from 0xc020e2b4 to 0xc020e2c4:
+> 0xc020e2b4 <ip_dev_find+144>:   lwarx   r9,0,r0
+> 0xc020e2b8 <ip_dev_find+148>:   addic   r9,r9,1
+> 0xc020e2bc <ip_dev_find+152>:   stwcx.  r9,0,r0
+> 0xc020e2c0 <ip_dev_find+156>:   bne-    0xc020e2b4 <ip_dev_find+144>
+>
+> This is on a MPC8321 CPU
+> gcc 3.4.6
+>
+> Any ideas?
 
-On Mar 4, 2010, at 11:06 AM, Hollis Blanchard wrote:
+Got a bit further, turn out that the dev ptr returned from
+dev = FIB_RES_DEV(res) is bogus in ip_dev_find:
 
-> On Mon, Mar 1, 2010 at 11:13 AM, Dave Kleikamp =
-<shaggy@linux.vnet.ibm.com> wrote:
-> powerpc/476: define specific cpu table entry for DD1 and DD1.1 cores
->=20
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
-> There are still some unstable bits on the DD1 and DD1.1 cores.  Don't =
-use
-> the FPU or the tlbivax operation.  Define CPU_FTR_476_DD1 and
-> CPU_FTR_476_DD1_1 for additional workarounds in later patches.
->=20
-> The DD1 core requires workarounds triggered by both CPU_FTR_476_DD1
-> and CPU_FTR_476_DD1_1.  the DD1.1 core only needs CPU_FTR_476_DD1_1
-> defined.
->=20
-> Isn't the policy generally not to commit workarounds for =
-early/errataful hardware which will not be seen in the real world? =
-Otherwise, every new half-broken core could burn a bunch of feature =
-bits...
->=20
-> -Hollis
+struct net_device * ip_dev_find(struct net *net, __be32 addr)
+{
+	struct flowi fl = { .nl_u = { .ip4_u = { .daddr = addr } } };
+	struct fib_result res;
+	struct net_device *dev = NULL;
+	struct fib_table *local_table;
 
-I'm with Hollis.  Cluttering the code with non-production errata could =
-get very ugly as well as burning feature bits up like made.
+#ifdef CONFIG_IP_MULTIPLE_TABLES
+	res.r = NULL;
+#endif
 
-- k=
+	local_table = fib_get_table(net, RT_TABLE_LOCAL);
+	if (!local_table || fib_table_lookup(local_table, &fl, &res))
+		return NULL;
+	if (res.type != RTN_LOCAL)
+		goto out;
+	dev = FIB_RES_DEV(res);
+
+	if (dev)
+		dev_hold(dev);
+out:
+	fib_res_put(&res);
+	return dev;
+}
+
+I have no idea how to proceed from here. Problem happens when user space
+makes its first access to eth0, in this case ntpdate. It is very hard to repeat
+the problem so it feels like a race somewhere in interface bringup
+
+     Jocke
