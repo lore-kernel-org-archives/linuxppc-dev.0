@@ -1,24 +1,10 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id F1FFEB7CA6
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 07:30:27 +1100 (EST)
-Date: Fri, 5 Mar 2010 23:30:24 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
-Message-ID: <20100305203024.GA28132@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-	<20100205203232.GA1475@oksana.dev.rtsoft.ru>
-	<fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
-	<20100305115918.f6c75b12.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100305115918.f6c75b12.akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bill Gatliff <bgat@billgatliff.com>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Date: Fri, 5 Mar 2010 17:42:56 -0300
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: linuxppc-dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
+Subject: [PATCH 00/13] powerpc/47x: Support for 476 core - Version 2
+Cc: Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +14,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 05, 2010 at 11:59:18AM -0800, Andrew Morton wrote:
-[...]
-> > > /**
-> > > * gpiochip_add() - register a gpio_chip
-> > > * @chip: the chip to register, with chip->base initialized
-> > > @@ -1103,6 +1107,9 @@ fail:
-> > >        pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
-> > >            chip->base, chip->base + chip->ngpio - 1,
-> > >            chip->label ? : "generic");
-> > > +    else
-> > > +        blocking_notifier_call_chain(&gpio_notifier,
-> > > +                      GPIO_NOTIFY_CHIP_ADDED, chip);
-> > 
-> > Rather than doing an else block which will need to be reworked if/when
-> > any additional code is added to the bottom of this routine, please
-> > rework the if() block to bail on failure instead of implicitly falling
-> > through to the return statement.
-> 
-> This still hasn't happened.
+These patches add support for the 476 core.  The goal is to have a single
+binary that will run on both 44x and 47x, but we still have some details to
+work out.  The biggest is that the L1 cache line size differs on the two
+platforms, but it's currently a compile-time option.
 
-It's in your tree already :-)
+The code was originally written by Ben Herrenschmidt and Torez Smith, but
+I've been maintaining it.  I'll take responsibility for the content, but I
+can't take all the credit.
 
-gpiolib-cosmetic-improvements-for-error-handling-in-gpiochip_add.patch
+The first patch is a generic bookE feature.  Patches 2-5 add base 47x
+support.  Patches 6 & 7 add a platform to support the ISS simulator, and
+patches 8-13 add workarounds for DD1 and DD1.1 hardware bugs.
+
+It's not yet decided if the workaround patches will make it into mainline.
+Most likely the last one will not, since it applies only to the earlier DD1
+hardware which probably won't be in use nearly as long as the DD1.1 chips.
+
+These patches are also available via git from the "version2" branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/ppc476.git
+
+Changes since first posting on March 1, 2010:
+
+- Added KERN level to printk's in machine_check_47x and reduced the indent
+- fixed PVR values in cputable.c
+- replaced re-definition of STACK_FRAME_REGS_MARKER with include of ptrace.h
+- removed PPC_44x_46x config option
+- Kconfig: ISS4xx shouldn't select 440GP for 47x
+- Separate out DD1 workaround from DD1.1 workarounds
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Dave Kleikamp
+IBM Linux Technology Center
