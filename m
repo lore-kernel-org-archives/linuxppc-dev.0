@@ -1,19 +1,32 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [RFC: PATCH 08/13] powerpc/476: define specific cpu table
-	entry for DD1 and DD1.1 cores
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C84D9A35-C618-47FB-A95C-73B8B940BC7C@kernel.crashing.org>
-References: <20100301191255.20987.84668.sendpatchset@norville.austin.ibm.com>
-	<20100301191351.20987.49730.sendpatchset@norville.austin.ibm.com>
-	<fb412d761003040906i57842fc3t48693d5e5e777176@mail.gmail.com>
-	<C84D9A35-C618-47FB-A95C-73B8B940BC7C@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 05 Mar 2010 07:18:50 -0600
-Message-Id: <1267795130.28250.7.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>,
-	Hollis Blanchard <hollis@penguinppc.org>
+Return-Path: <dipankar@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 11B0FB7CA6
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 06:18:20 +1100 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id o25JIIUI022289
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 00:48:18 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o25JIHGx2621514
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 00:48:17 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o25JIH7x020829
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 06:18:17 +1100
+Date: Sat, 6 Mar 2010 00:48:11 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
+Message-ID: <20100305191810.GA10402@in.ibm.com>
+References: <20100303181822.GH5439@dirshya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100303181822.GH5439@dirshya.in.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	linuxppc-dev@ozlabs.org
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-03-05 at 03:15 -0600, Kumar Gala wrote:
-> On Mar 4, 2010, at 11:06 AM, Hollis Blanchard wrote:
+On Wed, Mar 03, 2010 at 11:48:22PM +0530, Vaidyanathan Srinivasan wrote:
+>  static void __init cpu_init_thread_core_maps(int tpc)
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index c667f0f..b3dd108 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -33,6 +33,16 @@ config PSERIES_MSI
+>         depends on PCI_MSI && EEH
+>         default y
 > 
-> > On Mon, Mar 1, 2010 at 11:13 AM, Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
-> > powerpc/476: define specific cpu table entry for DD1 and DD1.1 cores
-> > 
-> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > There are still some unstable bits on the DD1 and DD1.1 cores.  Don't use
-> > the FPU or the tlbivax operation.  Define CPU_FTR_476_DD1 and
-> > CPU_FTR_476_DD1_1 for additional workarounds in later patches.
-> > 
-> > The DD1 core requires workarounds triggered by both CPU_FTR_476_DD1
-> > and CPU_FTR_476_DD1_1.  the DD1.1 core only needs CPU_FTR_476_DD1_1
-> > defined.
-> > 
-> > Isn't the policy generally not to commit workarounds for
-> early/errataful hardware which will not be seen in the real world?
-> Otherwise, every new half-broken core could burn a bunch of feature
-> bits...
-> > 
-> > -Hollis
-> 
-> I'm with Hollis.  Cluttering the code with non-production errata could
-> get very ugly as well as burning feature bits up like made.
+> +config PSERIES_ENERGY
+> +	tristate "pseries energy management capabilities driver"
+> +	depends on PPC_PSERIES
+> +	default y
+> +	help
+> +	  Provides interface to platform energy management capabilities
+> +	  on supported PSERIES platforms.
+> +	  Provides: /sys/devices/system/cpu/pseries_(de)activation_hint_list
+> +	  and /sys/devices/system/cpu/cpuN/pseries_(de)activation_hint
+> +
+>  config SCANLOG
+>  	tristate "Scanlog dump interface"
+>  	depends on RTAS_PROC && PPC_PSERIES
 
-Ben's going to make the decision on whether or not these patches should
-be included into mainline.  I'd be happy maintaining them separately if
-not.  I'm separating out the DD1 workaround from the others, since it's
-less likely that one will be needed long-term.
+.....
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+> +static int __init pseries_energy_init(void)
+> +{
+> +	int cpu, err;
+> +	struct sys_device *cpu_sys_dev;
+> +
+> +	/* Create the sysfs files */
+> +	err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+> +				&attr_cpu_activate_hint_list.attr);
+> +	if (!err)
+> +		err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+> +				&attr_cpu_deactivate_hint_list.attr);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		cpu_sys_dev = get_cpu_sysdev(cpu);
+> +		err = sysfs_create_file(&cpu_sys_dev->kobj,
+> +				&attr_percpu_activate_hint.attr);
+> +		if (err)
+> +			break;
+> +		err = sysfs_create_file(&cpu_sys_dev->kobj,
+> +				&attr_percpu_deactivate_hint.attr);
+> +		if (err)
+> +			break;
+> +	}
+> +	return err;
+> +
+> +}
+
+Shouldn't we create this only for supported platforms ?
+
+Thanks
+Dipankar
