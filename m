@@ -1,32 +1,27 @@
-Return-Path: <dipankar@in.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp02.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 11B0FB7CA6
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 06:18:20 +1100 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp02.in.ibm.com (8.14.3/8.13.1) with ESMTP id o25JIIUI022289
-	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 00:48:18 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o25JIHGx2621514
-	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 00:48:17 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o25JIH7x020829
-	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 06:18:17 +1100
-Date: Sat, 6 Mar 2010 00:48:11 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
-Message-ID: <20100305191810.GA10402@in.ibm.com>
-References: <20100303181822.GH5439@dirshya.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100303181822.GH5439@dirshya.in.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	linuxppc-dev@ozlabs.org
-Reply-To: dipankar@in.ibm.com
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A5E13B7BEE
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 06:59:27 +1100 (EST)
+Date: Fri, 5 Mar 2010 11:59:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/4] gpiolib: Introduce chip addition/removal notifier
+Message-Id: <20100305115918.f6c75b12.akpm@linux-foundation.org>
+In-Reply-To: <fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
+References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+	<20100205203232.GA1475@oksana.dev.rtsoft.ru>
+	<fa686aa41002090916w613efcb9te15e4969a880f724@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Bill Gatliff <bgat@billgatliff.com>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,60 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 03, 2010 at 11:48:22PM +0530, Vaidyanathan Srinivasan wrote:
->  static void __init cpu_init_thread_core_maps(int tpc)
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index c667f0f..b3dd108 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -33,6 +33,16 @@ config PSERIES_MSI
->         depends on PCI_MSI && EEH
->         default y
+On Tue, 9 Feb 2010 10:16:44 -0700
+Grant Likely <grant.likely@secretlab.ca> wrote:
+
+> On Fri, Feb 5, 2010 at 1:32 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Some platforms (e.g. OpenFirmware) want to know when a particular chip
+> > added or removed, so that the platforms could add their specifics for
+> > non-platform devices, like I2C or SPI GPIO chips.
+> >
+> > This patch implements the notifier for chip addition and removal events.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> > drivers/gpio/gpiolib.c   |  14 ++++++++++++++
+> > include/asm-generic/gpio.h |  8 ++++++++
+> > 2 files changed, 22 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> > index 350842a..375c03a 100644
+> > --- a/drivers/gpio/gpiolib.c
+> > +++ b/drivers/gpio/gpiolib.c
+> > @@ -9,6 +9,7 @@
+> > #include <linux/seq_file.h>
+> > #include <linux/gpio.h>
+> > #include <linux/idr.h>
+> > +#include <linux/notifier.h>
+> >
+> >
+> > /* Optional implementation infrastructure for GPIO interfaces.
+> > @@ -1029,6 +1030,9 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
+> >
+> > #endif /* CONFIG_GPIO_SYSFS */
+> >
+> > +BLOCKING_NOTIFIER_HEAD(gpio_notifier);
+> > +EXPORT_SYMBOL_GPL(gpio_notifier);
+> > +
+> > /**
+> > * gpiochip_add() - register a gpio_chip
+> > * @chip: the chip to register, with chip->base initialized
+> > @@ -1103,6 +1107,9 @@ fail:
+> >        pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+> >            chip->base, chip->base + chip->ngpio - 1,
+> >            chip->label ? : "generic");
+> > +    else
+> > +        blocking_notifier_call_chain(&gpio_notifier,
+> > +                      GPIO_NOTIFY_CHIP_ADDED, chip);
 > 
-> +config PSERIES_ENERGY
-> +	tristate "pseries energy management capabilities driver"
-> +	depends on PPC_PSERIES
-> +	default y
-> +	help
-> +	  Provides interface to platform energy management capabilities
-> +	  on supported PSERIES platforms.
-> +	  Provides: /sys/devices/system/cpu/pseries_(de)activation_hint_list
-> +	  and /sys/devices/system/cpu/cpuN/pseries_(de)activation_hint
-> +
->  config SCANLOG
->  	tristate "Scanlog dump interface"
->  	depends on RTAS_PROC && PPC_PSERIES
+> Rather than doing an else block which will need to be reworked if/when
+> any additional code is added to the bottom of this routine, please
+> rework the if() block to bail on failure instead of implicitly falling
+> through to the return statement.
 
-.....
+This still hasn't happened.
 
-> +static int __init pseries_energy_init(void)
-> +{
-> +	int cpu, err;
-> +	struct sys_device *cpu_sys_dev;
-> +
-> +	/* Create the sysfs files */
-> +	err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-> +				&attr_cpu_activate_hint_list.attr);
-> +	if (!err)
-> +		err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-> +				&attr_cpu_deactivate_hint_list.attr);
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_sys_dev = get_cpu_sysdev(cpu);
-> +		err = sysfs_create_file(&cpu_sys_dev->kobj,
-> +				&attr_percpu_activate_hint.attr);
-> +		if (err)
-> +			break;
-> +		err = sysfs_create_file(&cpu_sys_dev->kobj,
-> +				&attr_percpu_deactivate_hint.attr);
-> +		if (err)
-> +			break;
-> +	}
-> +	return err;
-> +
-> +}
+> Otherwise, this patch looks okay to me, so you can go ahead and add my:
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
 
-Shouldn't we create this only for supported platforms ?
-
-Thanks
-Dipankar
+I'll merge it anyway and will ask you guys to keep track of this issue,
+thanks.
