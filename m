@@ -1,31 +1,28 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id BFC1DB7CE8
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 16:05:38 +1100 (EST)
-Date: Sat, 6 Mar 2010 08:05:36 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-Message-ID: <20100306050536.GA20539@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
-	<fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com>
-	<20100209191620.GA24539@oksana.dev.rtsoft.ru>
-	<20100305120015.a2008f46.akpm@linux-foundation.org>
-	<fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com>
-	<20100305123527.d6d68e56.akpm@linux-foundation.org>
-	<fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
-	<20100306002823.GA22095@oksana.dev.rtsoft.ru>
-	<fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 26C33B7CF1
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 19:10:51 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id o268Aoag021620
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 19:10:50 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o26858qS1065206
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 19:05:09 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o268AoJs021700
+	for <linuxppc-dev@ozlabs.org>; Sat, 6 Mar 2010 19:10:50 +1100
+Message-ID: <4B920E06.4060508@in.ibm.com>
+Date: Sat, 06 Mar 2010 13:40:46 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bill Gatliff <bgat@billgatliff.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: avorontsov@ru.mvista.com
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: [PowerPC] 2.6.33-git11 : Badness at kernel/kprobes.c:264
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mhiramat@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,102 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 05, 2010 at 08:54:56PM -0700, Grant Likely wrote:
-[...]
-> The last version of the patches were posted on Feb 8.  -rc8 was
-> released on Feb 12.  For changes to common code, that is a little late
-> for getting queued up for the merge window.  If it was a subsystem
-> that I maintain, say SPI, then I doubt I would have picked it up for
-> 2.6.34.
+With latest 33 git(2.6.33-git11 : 64096c1741...) on a POWER6 box
 
-And of course the part of the OF rework, which was first posted
-for *review* on Feb 03, is a completely different story?
+type=2000 audit(1267853400.180:1): initialized
+Kprobe smoke test started
+------------[ cut here ]------------
+Badness at kernel/kprobes.c:264
+NIP: c0000000006251e0 LR: c000000000625190 CTR: c00000000007914c
+REGS: c0000000fecc3680 TRAP: 0700   Not tainted  (2.6.33-git11-autotest)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000048  XER: 2000000b
+TASK = c0000000feca0000[1] 'swapper' THREAD: c0000000fecc0000 CPU: 2
+GPR00: 0000000000000001 c0000000fecc3900 c000000000b297b0 c0000000fc680000
+GPR04: 0000000000000004 0000000000000000 0000000024022024 c000000000a2b9d0
+GPR08: 0000000000004000 c0000000fc680004 0000000000010000 0000000000000004
+GPR12: 0000000022000024 c000000000bc2b00 0000000000051bc3 0000000000051aa1
+GPR16: 0000000000051bbb 0000000000d00000 c0000000008011f8 c0000000007f1ba1
+GPR20: 00000000015e87a8 c0000000008e87a8 c0000000fecc3cc8 c0000000fecc3cd0
+GPR24: c0000000fecc3cd8 c0000000fecc3cc0 c0000000fecc3be0 0000000000000000
+GPR28: 0000000000000000 c000000000a2b8b8 c000000000a94888 d000000000bd0004
+NIP [c0000000006251e0] .free_insn_slot+0x84/0x12c
+LR [c000000000625190] .free_insn_slot+0x34/0x12c
+Call Trace:
+[c0000000fecc3900] [c000000000625190] .free_insn_slot+0x34/0x12c (unreliable)
+[c0000000fecc3990] [c000000000622050] .arch_remove_kprobe+0x28/0x48
+[c0000000fecc3a10] [c000000000623f58] .__unregister_kprobe_bottom+0x28/0x8c
+[c0000000fecc3aa0] [c00000000062419c] .unregister_kprobes+0xc0/0xf0
+[c0000000fecc3b40] [c0000000006241ec] .unregister_kprobe+0x20/0x30
+[c0000000fecc3bb0] [c0000000000e081c] .init_test_probes+0xc4/0x66c
+[c0000000fecc3c50] [c0000000008c288c] .init_kprobes+0x1f0/0x230
+[c0000000fecc3e30] [c0000000000097a4] .do_one_initcall+0x88/0x1bc
+[c0000000fecc3ee0] [c0000000008a0490] .kernel_init+0x220/0x2dc
+[c0000000fecc3f90] [c00000000002c4d0] .kernel_thread+0x54/0x70
+Instruction dump:
+7c00f850 7c804b92 2fa40000 419c007c 7d0a5b92 7fa44000 409c0070 7d232214
+88090020 68000002 7c0000d0 78000fe0 <0b000000> 2fbc0000 419e0044 8123001c
 
- 48 files changed, 317 insertions(+), 575 deletions(-)
+2.6.33-git10(64ba99267...) was OK.
 
-It's in Linus' tree now.
+This WARN_ON was introduced by commit 4610ee1d36...
 
-And the other part of the OF rework that was posted for review
-on Feb 13 is another story too? It's in Linus' tree as well.
+kprobes: Introduce generic insn_slot framework
 
-Your patches touch 3 architectures, and a lot of the code that
-is used by all the OF drivers, still 03 and 13 Feb was OK for
-them.
+Thanks
+-Sachin
 
-> But I am not the GPIO maintainer.
-
-David is. And I heard only positive feedback on the patches
-last time.
-
-> For the record, my main concerns are:
-> - Now that I see the implementation, I think that it is too complex.
-> The bus notifiers really aren't needed and it can be done with much
-> lower impact on the core gpiolib code.
-
-That's a non-argument, what is "lower impact"? Do I touch any
-hot paths? And if nothing has changed, David (again, the gpiolib
-maintainer) is happy with the notifiers approach, why would you
-care?
-
-Anyhow, changing the notifier to a direct call is a matter of
-a trivial patch that we can queue anytime in 2.6.35.
-
-> - Using notifiers adds an unnecessary race condition, however unlikely.
-
-Where? Is it a real one? I see a lot of race conditions, but none of
-them because of the notifiers approach.
-
-> > Is there any punishment ready for that? ;-) I see one: apply
-> > these patches, and rework this stuff as you like when you have some
-> > time?
-> 
-> Changes to common code don't work that way.  Sometimes things just
-> don't get enough attention and they wait another cycle, get reworked,
-> or get dropped entirely.
-
-See above wrt OF rework patches.
-
-> > Or tell me your idea, and I'll do the rework for you, in
-> > 2.6.35.
-> >
-> > But in the meantime, these patches can be nicely used to support
-> > I2C/SPI GPIO controllers.
-> 
-> ...and anyone who need it immediately is welcome to pull your changes
-> into their private tree.  Skipping a cycle is not the end of the
-> world.
-
-Using notifiers is not the end of the world either.
-
-> >> Combine that with the changes being made to drivers/of right now and
-> >> the addition device tree to ARM and other architectures, my preference
-> >> is to let this patch series lie fallow for one more merge cycle so
-> >> that things can settle out in the OF infrastructure code.
-> >
-> > How exactly OF rework affects these patches?
-> 
-> For one, the device node pointer is moving out of archdata into
-> 'struct device' proper and I've got patches adding OF hooks into the
-> core of the platform bus.  If those patches look good to GregKH, then
-> I'll be pursing the same pattern for the other bus types (i2c, spi,
-> etc), and it will be further argument for putting the OF hooks
-> directly into gpiolib instead of using a notifier.  I'll be posting
-> the patches as soon as the merge window closes.
-
-I don't get it. Why is it a problem to change your patches that
-ought to be queued for 2.6.*35*?
-
-> > And why some rework
-> > should be used as an excuse for not adding a hardware support?
-> 
-> If this was a standalone device driver then I'd agree.  However, this
-> is an infrastructure change.  Infrastructure changes get more scrutiny
-> and are always harder to merge.  Especially just before the merge
-> window opens with very little linux-next exposure.
-
-See above wrt OF rework patches.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
