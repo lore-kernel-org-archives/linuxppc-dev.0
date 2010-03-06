@@ -1,12 +1,12 @@
-Return-Path: <avorontsov@dev.rtsoft.ru>
-Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
-	by ozlabs.org (Postfix) with SMTP id A6F35B7CE7
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 11:28:25 +1100 (EST)
-Date: Sat, 6 Mar 2010 03:28:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-Message-ID: <20100306002823.GA22095@oksana.dev.rtsoft.ru>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id EA0F4B7CE7
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Mar 2010 14:55:19 +1100 (EST)
+Received: by gyf3 with SMTP id 3so1782055gyf.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 05 Mar 2010 19:55:17 -0800 (PST)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100306002823.GA22095@oksana.dev.rtsoft.ru>
 References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
 	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
 	<fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com>
@@ -15,15 +15,18 @@ References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
 	<fa686aa41003051228w38579483yd4e95bb8eacf40f7@mail.gmail.com>
 	<20100305123527.d6d68e56.akpm@linux-foundation.org>
 	<fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa41003051547u1f499902w1d3efc614a9b20b6@mail.gmail.com>
+	<20100306002823.GA22095@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 5 Mar 2010 20:54:56 -0700
+Message-ID: <fa686aa41003051954y3ea8ebebxa915efb74c58dcbb@mail.gmail.com>
+Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
+To: avorontsov@ru.mvista.com
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Bill Gatliff <bgat@billgatliff.com>,
 	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +36,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 05, 2010 at 04:47:06PM -0700, Grant Likely wrote:
-[...]
-> >> I'm not really very comfortable with the whole
-> >> approach being taken.  And, while I acked the first patch in the
-> >> series, that patch isn't needed by anything except patches 2, 3 & 4.
+On Fri, Mar 5, 2010 at 5:28 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Fri, Mar 05, 2010 at 04:47:06PM -0700, Grant Likely wrote:
+> [...]
+>> >> I'm not really very comfortable with the whole
+>> >> approach being taken. =A0And, while I acked the first patch in the
+>> >> series, that patch isn't needed by anything except patches 2, 3 & 4.
+>
+> But you didn't answer my replies, ie were sitting silent like for
+> a month? So you didn't give my any chance to make them comfortable
+> to you.
 
-But you didn't answer my replies, ie were sitting silent like for
-a month? So you didn't give my any chance to make them comfortable
-to you.
+The last version of the patches were posted on Feb 8.  -rc8 was
+released on Feb 12.  For changes to common code, that is a little late
+for getting queued up for the merge window.  If it was a subsystem
+that I maintain, say SPI, then I doubt I would have picked it up for
+2.6.34.
 
-Is there any punishment ready for that? ;-) I see one: apply
-these patches, and rework this stuff as you like when you have some
-time? Or tell me your idea, and I'll do the rework for you, in
-2.6.35.
+But I am not the GPIO maintainer.  I've stated my case, I'm not fond
+of the approach, and I'd rather have another merge cycle before
+committing to the method of making OF gpio bindings more generic.  I
+missed your request to merge this via the powerpc tree and I had
+higher priority concerns, so I really didn't think much of it.  I
+assumed that David would look at the arguments and make his own
+decision.
 
-But in the meantime, these patches can be nicely used to support
-I2C/SPI GPIO controllers.
+For the record, my main concerns are:
+- Now that I see the implementation, I think that it is too complex.
+The bus notifiers really aren't needed and it can be done with much
+lower impact on the core gpiolib code.
+- Using notifiers adds an unnecessary race condition, however unlikely.
 
-> >> Also, the OF stuff is a moving target at the moment with all the
-> >> rework is being undertaken.  I'd rather let this series sit out for
-> >> another merge cycle so that the underlying OF stuff can settle down.
-> >
-> > OK, please take it up on-list?
-> 
-> Okay.  I'm making this reply on list.
-> 
-> Anton, as I've stated before, I'm not thrilled with the approach.
+> Is there any punishment ready for that? ;-) I see one: apply
+> these patches, and rework this stuff as you like when you have some
+> time?
 
-Again, great timing for telling that, I must say. Yes, you said
-it once with some minor arguments (doubts and questions), to which
-I replied long ago. Then nothing.
+Changes to common code don't work that way.  Sometimes things just
+don't get enough attention and they wait another cycle, get reworked,
+or get dropped entirely.
 
-> Combine that with the changes being made to drivers/of right now and
-> the addition device tree to ARM and other architectures, my preference
-> is to let this patch series lie fallow for one more merge cycle so
-> that things can settle out in the OF infrastructure code.
+> Or tell me your idea, and I'll do the rework for you, in
+> 2.6.35.
+>
+> But in the meantime, these patches can be nicely used to support
+> I2C/SPI GPIO controllers.
 
-How exactly OF rework affects these patches? And why some rework
-should be used as an excuse for not adding a hardware support?
+...and anyone who need it immediately is welcome to pull your changes
+into their private tree.  Skipping a cycle is not the end of the
+world.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+>> Combine that with the changes being made to drivers/of right now and
+>> the addition device tree to ARM and other architectures, my preference
+>> is to let this patch series lie fallow for one more merge cycle so
+>> that things can settle out in the OF infrastructure code.
+>
+> How exactly OF rework affects these patches?
+
+For one, the device node pointer is moving out of archdata into
+'struct device' proper and I've got patches adding OF hooks into the
+core of the platform bus.  If those patches look good to GregKH, then
+I'll be pursing the same pattern for the other bus types (i2c, spi,
+etc), and it will be further argument for putting the OF hooks
+directly into gpiolib instead of using a notifier.  I'll be posting
+the patches as soon as the merge window closes.
+
+> And why some rework
+> should be used as an excuse for not adding a hardware support?
+
+If this was a standalone device driver then I'd agree.  However, this
+is an infrastructure change.  Infrastructure changes get more scrutiny
+and are always harder to merge.  Especially just before the merge
+window opens with very little linux-next exposure.
+
+g.
