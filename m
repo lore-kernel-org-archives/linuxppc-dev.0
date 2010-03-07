@@ -1,27 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EAFE3B7CBD
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 03:06:15 +1100 (EST)
-In-Reply-To: <4B8FE00F.4030405@denx.de>
-References: <4B8E17A7.10509@denx.de>
-	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
-	<4B8E3582.8060003@denx.de>
-	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
-	<4B8F8BB4.6070201@denx.de>
-	<20100304121656.6758A28BBC@gemini.denx.de>
-	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
-	<4B8FE00F.4030405@denx.de>
-Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-To: hs@denx.de
-Message-ID: <OF27863334.BCE2FAFA-ONC12576DF.0057DB90-C12576DF.00583BDC@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sun, 7 Mar 2010 17:03:44 +0100
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 83FBDB7CCD
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 03:15:32 +1100 (EST)
+Received: from antares (xdsl-89-0-133-48.netcologne.de [89.0.133.48])
+	by smtp6.netcologne.de (Postfix) with ESMTP id 769902A0B61
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Mar 2010 17:15:30 +0100 (CET)
+Received: from antares (localhost [127.0.0.1])
+	by antares (Postfix) with ESMTPS id 0C13ABA03E
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Mar 2010 17:15:30 +0100 (CET)
+Date: Sun, 07 Mar 2010 17:15:21 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: mpc512x uart: testers wanted
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Message-Id: <1267978529.2306.0@antares>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Wolfgang Denk <wd@denx.de>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-qyyQ4bzHLTNOOn8Mpqeg"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Heiko Schocher <hs@denx.de> wrote on 2010/03/04 17:30:07:
+--=-qyyQ4bzHLTNOOn8Mpqeg
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> From: Heiko Schocher <hs@denx.de>
-> To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-> Cc: Wolfgang Denk <wd@denx.de>, Klaus-J=FCrgen <heydeck@kieback-peter=
-.de>,
-> linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>
-> Date: 2010/03/04 17:30
-> Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
->
-> Hello Joakim,
->
-> Joakim Tjernlund wrote:
-> > Wolfgang Denk <wd@denx.de> wrote on 2010/03/04 13:16:56:
-> >> From: Wolfgang Denk <wd@denx.de>
-> >> To: hs@denx.de
-> >> Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>, Klaus-J=FCrg=
-en
-> >> <heydeck@kieback-peter.de>, linuxppc-dev@ozlabs.org, Scott Wood
-> >> <scottwood@freescale.com>
-> >> Date: 2010/03/04 13:17
-> >> Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-> >>
-> >> Dear Heiko,
-> >>
-> >> thanks for running the tests.
-> >>
-> >> In message <4B8F8BB4.6070201@denx.de> you wrote:
-> >>> here the results:
-> >>>
-> >>> run   version
-> >>>
-> >>> 1-4   2.6.33-rc6 without your patches
-> >>> 5-8   2.6.33-rc6 with all your patches
-> >>> 9-12   2.6.33-rc6 with patches 1,2 and 4 (without 8xx: Don't touc=
-h ACCESSED
-> >> when no SWAP)
-> >>> 13-16   2.6.33-rc6 with all your patches and CONFIG_PIN_TLB=3Dy
-> >> So CONFIG_PIN_TLB imroves the performance as expected, while the o=
-ther
-> >> patches don;t show any measurable improvememt - or am I reading th=
-e
-> >> results incorrectly?
+Hi all,
 
-BTW, I have impl. all of the newer 2.6 TLB/MMU fixes(including the dcbX=
- fixup) for 2.4 as well.
-If there is any interest I can polish them and submit for 2.4? I do nee=
-d an external tester
-for that though.
+I recently posted a patch which improves the baud rate calculation on the m=
+pc5200b.  Following requests by Grant and Wolfram, I added changes which do=
+ also affect the mpc512x.
 
- Jocke=
+Unfortunately, I don't have access to such a system, but IMHO the code (bot=
+h the old implementation and my changes) contradict the data sheet.  Thus, =
+it would be really helpful if you give give the code a try and report your =
+experiences:
+
+<http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/080815.html>
+
+Thanks in advance,
+Albrecht.
+
+--=-qyyQ4bzHLTNOOn8Mpqeg
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBLk9Ehn/9unNAn/9ERAtc3AJ9lk7DSko33MryTSBMC/ZtgBxs+BwCggkTf
+4LeXR/UXruB9GZ16wN56b3A=
+=4jap
+-----END PGP SIGNATURE-----
+
+--=-qyyQ4bzHLTNOOn8Mpqeg--
