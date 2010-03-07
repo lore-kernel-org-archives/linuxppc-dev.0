@@ -1,14 +1,13 @@
 Return-Path: <nm127@freemail.hu>
-Received: from relay02.digicable.hu (relay02.digicable.hu [92.249.128.188])
-	by ozlabs.org (Postfix) with ESMTP id B4EF7B7067
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Mar 2010 19:44:01 +1100 (EST)
-Message-ID: <4B93674B.4090708@freemail.hu>
-Date: Sun, 07 Mar 2010 09:43:55 +0100
+Received: from relay01.digicable.hu (relay01.digicable.hu [92.249.128.189])
+	by ozlabs.org (Postfix) with ESMTP id 403EFB7067
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Mar 2010 21:00:47 +1100 (EST)
+Message-ID: <4B937947.4080306@freemail.hu>
+Date: Sun, 07 Mar 2010 11:00:39 +0100
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: do not call prink when CONFIG_PRINTK is not defined
+To: Per-Erik Johansson <perka@dtek.chalmers.se>
+Subject: Re: Linux on Freescale e200
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,34 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Márton Németh <nm127@freemail.hu>
+Hi Per-Erik,
 
-When printk() is disabled (CONFIG_PRINTK) at menu item
- General setup
- -> Configure standard kernel features (for small systems)
-    -> Enable support for printk
-then there should be no printk() calls at all.
+I found your message at
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2007-December/048539.html
+back from Dec 2007.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -upr linux-2.6.33.orig/arch/powerpc/kernel/head_fsl_booke.S linux/arch/powerpc/kernel/head_fsl_booke.S
---- linux-2.6.33.orig/arch/powerpc/kernel/head_fsl_booke.S	2010-02-24 19:52:17.000000000 +0100
-+++ linux/arch/powerpc/kernel/head_fsl_booke.S	2010-03-07 09:28:05.000000000 +0100
-@@ -887,13 +887,17 @@ KernelSPE:
- 	lwz	r3,_MSR(r1)
- 	oris	r3,r3,MSR_SPE@h
- 	stw	r3,_MSR(r1)	/* enable use of SPE after return */
-+#ifdef CONFIG_PRINTK
- 	lis	r3,87f@h
- 	ori	r3,r3,87f@l
- 	mr	r4,r2		/* current */
- 	lwz	r5,_NIP(r1)
- 	bl	printk
-+#endif
- 	b	ret_from_except
-+#ifdef CONFIG_PRINTK
- 87:	.string	"SPE used in kernel  (task=%p, pc=%x)  \n"
-+#endif
- 	.align	4,0
+Have you managed to run Linux on phyCORE-MPC5554 since then?
 
- #endif /* CONFIG_SPE */
+Regards,
+
+	Márton Németh
+
+>>> Hi
+>>>
+>>> I'm wondering if someone has ever tried to get Linux running on a
+>>> Freescale e200 core?
+>>> I found a patch to the Linux kernel from back in 2005:
+>>> (http://linux.derkeiler.com/Mailing-Lists/Kernel/2005-06/5731.html)
+>>> And it is listed as a processor type in Linux-2.6.23.11
+>>> I know that there has been some confusion about e200 and e500 cores,
+>>> old
+>>> e200 renamed to e500, but from what I understand the e200 core now
+>>> listed
+>>> in the kernel is the one currently being used in MPC55xx
+>>>
+>>> I'm having a MPC5554, e200z6 core, that I'm supposed to get Linux
+>>> running
+>>> on (master thesis) and any pointers and tips are appreciated.
+>>> Just finished porting/tweaking the Redboot boot loader, and I'm now
+>>> moving
+>>> on to the Linux (porting?) part.
+>>
+>> I'd suggest looking at getting u-boot running instead since that's we
+>> use on the majority of freescale PPCs.
+>>
+>> We did a port a while back to the e200.. so most of the basic bits
+>> should be there.  There might be some bit rot from its like of usage.
+>>
+>> What peripheral set are you looking to get working on the 5554?
+>>
+>> - k
+>>
+>
+> Had a look into UBoot at first but didn't find any port for the
+> MPC55xx/e200, so when we stumbled upon a "working" ecos/redboot port we
+> went with that..
+> Do you know where I could find the uboot port for the e200?
+>
+> We have phycore dev. kit
+> (http://www.phytec.com/products/rdk/PowerPC/phyCORE-MPC5554.html)
+> Just supposed to get it up and running, so peripherals will just be
+> serial, ethernet and maybe CAN.
+>
+> / Per-Erik
