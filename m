@@ -1,29 +1,32 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D9FFAB7CE6
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 19:47:20 +1100 (EST)
-In-Reply-To: <4B94AB55.3020308@denx.de>
+Return-Path: <hs@denx.de>
+Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
+	by ozlabs.org (Postfix) with ESMTP id 60498B7CA6
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 20:06:45 +1100 (EST)
+Received: from mailgw2.invitel.net (mailgw2.invitel.net [91.82.208.35])
+	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
+	880E511A4BD
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 10:06:41 +0100 (CET)
+Date: Mon, 08 Mar 2010 10:06:39 +0100
+From: Heiko Schocher <hs@denx.de>
+Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
+In-reply-to: <OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-id: <4B94BE1F.8030203@denx.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
 References: <4B8E17A7.10509@denx.de>
 	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
 	<4B8E3582.8060003@denx.de>
 	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
-	<4B8F8BB4.6070201@denx.de>
-	<20100304121656.6758A28BBC@gemini.denx.de>
+	<4B8F8BB4.6070201@denx.de> <20100304121656.6758A28BBC@gemini.denx.de>
 	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
 	<4B8FE00F.4030405@denx.de>
 	<OF342998FA.F0D2DAE1-ONC12576DD.003A3D7E-C12576DD.003AA365@transmode.se>
 	<4B94AB55.3020308@denx.de>
-Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
-To: hs@denx.de
-Message-ID: <OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 8 Mar 2010 09:44:14 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	<OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
 Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
 	Wolfgang Denk <wd@denx.de>
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,42 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Heiko Schocher <hs@denx.de> wrote on 2010/03/08 08:46:29:
->
-> Hello Joakim,
->
-> Joakim Tjernlund wrote:
-> [...]
-> > What would be interesting is to skip patch 3 and turn off
-> > MODULES add PIN_TLB and compare that against your unpatched .33 but
-> > with MODULES off and PIN_TLB on
->
-> run     version
->
-> 1-4   Linux2.6.33-rc without module support and PIN_TLB=on
-> 5-8   Linux2.6.33-rc without module support and PIN_TLB=on + patches 1,2,4
->
->                  L M B E N C H  3 . 0   S U M M A R Y
->                  ------------------------------------
->        (Alpha software, do not distribute)
+Hello Joakim,
 
-hmm, these results varies a lot. The only stable result I can see is:
+Joakim Tjernlund wrote:
+> Heiko Schocher <hs@denx.de> wrote on 2010/03/08 08:46:29:
+>> Hello Joakim,
+>>
+>> Joakim Tjernlund wrote:
+>> [...]
+>>> What would be interesting is to skip patch 3 and turn off
+>>> MODULES add PIN_TLB and compare that against your unpatched .33 but
+>>> with MODULES off and PIN_TLB on
+>> run     version
+>>
+>> 1-4   Linux2.6.33-rc without module support and PIN_TLB=on
+>> 5-8   Linux2.6.33-rc without module support and PIN_TLB=on + patches 1,2,4
+>>
+>>                  L M B E N C H  3 . 0   S U M M A R Y
+>>                  ------------------------------------
+>>        (Alpha software, do not distribute)
+> 
+> hmm, these results varies a lot. The only stable result I can see is:
+> 
+>> Memory latencies in nanoseconds - smaller is better
+>>     (WARNING - may not be correct, check graphs)
+>> ------------------------------------------------------------------------------
+>> Host                 OS   Mhz   L1 $   L2 $    Main mem    Rand mem    Guesses
+>> --------- -------------   ---   ----   ----    --------    --------    -------
+>> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.0    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1164.8    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.2    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.7  183.2       183.8      1163.7    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.8  172.4       173.2      1147.3    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1148.3    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.1      1146.9    No L2 cache?
+>> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1147.3    No L2 cache?
+> 
+> I don't see why the other results vary so much. Are you using NFS or having much network
+> traffic?
 
-> Memory latencies in nanoseconds - smaller is better
->     (WARNING - may not be correct, check graphs)
-> ------------------------------------------------------------------------------
-> Host                 OS   Mhz   L1 $   L2 $    Main mem    Rand mem    Guesses
-> --------- -------------   ---   ----   ----    --------    --------    -------
-> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.0    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1164.8    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.2    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.7  183.2       183.8      1163.7    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.8  172.4       173.2      1147.3    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1148.3    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.1      1146.9    No L2 cache?
-> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1147.3    No L2 cache?
+I use NFS.
 
-I don't see why the other results vary so much. Are you using NFS or having much network
-traffic?
-
-      Jocke
+bye
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
