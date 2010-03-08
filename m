@@ -1,22 +1,23 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A261AB7CF5
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 03:32:33 +1100 (EST)
-Message-ID: <27310604.1268065948452.JavaMail.ngmail@webmail08.arcor-online.net>
-Date: Mon, 8 Mar 2010 17:32:28 +0100 (CET)
-From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
-To: agust@denx.de, grant.likely@secretlab.ca
-Subject: Re: mpc512x uart: testers wanted
-In-Reply-To: <20100308151912.14847a74@wker>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
+	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id BBBE0B7CED
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 03:54:10 +1100 (EST)
+Received: by ywh14 with SMTP id 14so3085547ywh.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Mar 2010 08:54:09 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20100308151912.14847a74@wker> <1267978529.2306.0@antares>
+Sender: glikely@secretlab.ca
+In-Reply-To: <27310604.1268065948452.JavaMail.ngmail@webmail08.arcor-online.net>
+References: <1267978529.2306.0@antares>
 	<fa686aa41003071645x70dff5d7s89db66416bcc4a0d@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	<20100308151912.14847a74@wker>
+	<27310604.1268065948452.JavaMail.ngmail@webmail08.arcor-online.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 8 Mar 2010 09:53:49 -0700
+Message-ID: <fa686aa41003080853q521b4f81s5c7488ebcc8dfb63@mail.gmail.com>
+Subject: Re: mpc512x uart: testers wanted
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, agust@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anatolij:
+On Mon, Mar 8, 2010 at 9:32 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> w=
+rote:
+> Hi Anatolij:
+>
+>> > Anatolij, could you please look into this?
+>>
+>> I'll look into this tomorrow, need to finish USB support now.
+>> Unfortunately the patch doesn't apply on top of Linus' tree as
+>> patches for reworked MPC5121 PSC UART support have been merged.
+>> Albrecht, could you please rebase your patch?
+>
+> Against linux/kernel/git/torvalds/linux-2.6.git? =A0Will do that tomorrow=
+... =A0Grant, do you need a patch against Linus' tree, or against a release=
+d version, or against your tree?
 
-> > Anatolij, could you please look into this?
-> 
-> I'll look into this tomorrow, need to finish USB support now.
-> Unfortunately the patch doesn't apply on top of Linus' tree as
-> patches for reworked MPC5121 PSC UART support have been merged.
-> Albrecht, could you please rebase your patch?
+I won't be picking this up until after -rc1 or -rc2 anyway, and it
+won't get merged into Linus' tree until the 2.6.35 merge window, so
+I'm not going to even touch it for a couple of weeks.  When I do get
+to it I'll need it against Linus' tree.
 
-Against linux/kernel/git/torvalds/linux-2.6.git?  Will do that tomorrow...  Grant, do you need a patch against Linus' tree, or against a released version, or against your tree?
+g.
 
-> BTW, the prescaler /16 or /10 was mentioned in the MPC5121e
-> Preliminary Reference Manual, Rev.0. This seems to be the
-> reason for the usage of /16 prescaler in the code. Since
-> newer manuals only mention /32 or /10 prescaler, this should
-> be corrected/tested. I'll test it later.
-
-Dumb question: do you use U-Boot to boot your processor?  If I interpret the code [1] correctly, it also uses the /16 prescaler!  Or did I miss something?
-
-Best, Albrecht.
-
-[1] <http://git.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=cpu/mpc512x/serial.c;h=ec2f41bb36dcfa9079d7890866a3aeec716ea124;hb=HEAD>
-
-Sexy Stars bei den Oscars! Fotostrecken und alle aktuellen Infos zu Filmen und Preisen jetzt im Oscar-Special von Arcor.de: http://www.arcor.de/rd/footer.oscar
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
