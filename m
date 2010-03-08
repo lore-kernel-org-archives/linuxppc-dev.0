@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 24E16B7CB9
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 11:45:44 +1100 (EST)
-Received: by gyd10 with SMTP id 10so419141gyd.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 07 Mar 2010 16:45:43 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1267978529.2306.0@antares>
-References: <1267978529.2306.0@antares>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 7 Mar 2010 17:45:23 -0700
-Message-ID: <fa686aa41003071645x70dff5d7s89db66416bcc4a0d@mail.gmail.com>
-Subject: Re: mpc512x uart: testers wanted
-To: Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	=?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id D23B5B7CB9
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 14:40:01 +1100 (EST)
+From: Amit Shah <amit.shah@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 (resend)] hvc_console: Fix race between hvc_close and
+	hvc_remove
+Date: Mon,  8 Mar 2010 09:08:17 +0530
+Message-Id: <1268019497-6164-1-git-send-email-amit.shah@redhat.com>
+In-Reply-To: <20100304024427.GB31594@amit-x200.redhat.com>
+References: <20100304024427.GB31594@amit-x200.redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org,
+	greg@kroah.com, Amit Shah <amit.shah@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +22,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anatolij, could you please look into this?
+Alan pointed out a race in the code where hvc_remove is invoked. The
+recent virtio_console work is the first user of hvc_remove().
 
-Thanks,
-g.
+Alan describes it thus:
 
-On Sun, Mar 7, 2010 at 9:15 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> w=
-rote:
-> Hi all,
->
-> I recently posted a patch which improves the baud rate calculation on the
-> mpc5200b. =A0Following requests by Grant and Wolfram, I added changes whi=
-ch do
-> also affect the mpc512x.
->
-> Unfortunately, I don't have access to such a system, but IMHO the code (b=
-oth
-> the old implementation and my changes) contradict the data sheet. =A0Thus=
-, it
-> would be really helpful if you give give the code a try and report your
-> experiences:
->
-> <http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/080815.html>
->
-> Thanks in advance,
-> Albrecht.
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+The hvc_console assumes that a close and remove call can't occur at the
+same time.
 
+In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+itself....
 
+So this can happen
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+        hvc_close                               hvc_remove
+        hung up ? - no
+                                                lock
+                                                tty = hp->tty
+                                                unlock
+        lock
+        hp->tty = NULL
+        unlock
+        notify del
+        kref_put the hvc struct
+        close completes
+        tty is destroyed
+                                                tty_hangup dead tty
+                                                tty->ops will be NULL
+                                                NULL->...
+
+This patch adds some tty krefs and also converts to using tty_vhangup().
+
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linuxppc-dev@ozlabs.org
+CC: Rusty Russell <rusty@rustcorp.com.au>
+---
+
+I didn't receive a reply from the linuxppc folks to take this patch via
+their tree. Greg, can you please take this in your tty tree? It's needed
+for 2.6.34, but since hvc_remove() was exported in 2.6.33, it might make
+sense for stable as well.
+
+ drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 4c3b59b..7e94b3c 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->count++ > 0) {
++		tty_kref_get(tty);
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 		hvc_kick();
+ 		return 0;
+@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 
+ 	tty->driver_data = hp;
+ 
+-	hp->tty = tty;
++	hp->tty = tty_kref_get(tty);
+ 
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
++		tty_kref_put(tty);
+ 		tty->driver_data = NULL;
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		return;
+ 
+ 	hp = tty->driver_data;
++
+ 	spin_lock_irqsave(&hp->lock, flags);
++	tty_kref_get(tty);
+ 
+ 	if (--hp->count == 0) {
+ 		/* We are done with the tty pointer now. */
+ 		hp->tty = NULL;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
++		/* Put the ref obtained in hvc_open() */
++		tty_kref_put(tty);
++
+ 		if (hp->ops->notifier_del)
+ 			hp->ops->notifier_del(hp, hp->data);
+ 
+@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 	}
+ 
++	tty_kref_put(tty);
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ }
+ 
+@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+ 	if (hp->ops->notifier_hangup)
+-			hp->ops->notifier_hangup(hp, hp->data);
++		hp->ops->notifier_hangup(hp, hp->data);
+ 
+ 	while(temp_open_count) {
+ 		--temp_open_count;
++		tty_kref_put(tty);
+ 		kref_put(&hp->kref, destroy_hvc_struct);
+ 	}
+ }
+@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 	}
+ 
+ 	/* No tty attached, just skip */
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 	if (tty == NULL)
+ 		goto bail;
+ 
+@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
+ 
+ 		tty_flip_buffer_push(tty);
+ 	}
++	if (tty)
++		tty_kref_put(tty);
+ 
+ 	return poll_mask;
+ }
+@@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
+ 	struct tty_struct *tty;
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+-	tty = hp->tty;
++	tty = tty_kref_get(hp->tty);
+ 
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+@@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
+ 	/*
+ 	 * We 'put' the instance that was grabbed when the kref instance
+ 	 * was initialized using kref_init().  Let the last holder of this
+-	 * kref cause it to be removed, which will probably be the tty_hangup
++	 * kref cause it to be removed, which will probably be the tty_vhangup
+ 	 * below.
+ 	 */
+ 	kref_put(&hp->kref, destroy_hvc_struct);
+ 
+ 	/*
+-	 * This function call will auto chain call hvc_hangup.  The tty should
+-	 * always be valid at this time unless a simultaneous tty close already
+-	 * cleaned up the hvc_struct.
++	 * This function call will auto chain call hvc_hangup.
+ 	 */
+-	if (tty)
+-		tty_hangup(tty);
++	if (tty) {
++		tty_vhangup(tty);
++		tty_kref_put(tty);
++	}
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(hvc_remove);
+-- 
+1.6.2.5
