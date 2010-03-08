@@ -1,34 +1,21 @@
-Return-Path: <dipankar@in.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 51361B7CFB
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 06:28:37 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id o28IhMoG031397
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 00:13:23 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o28JSZqc2957366
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 00:58:35 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
-	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o28JSY2Q025470
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 06:28:34 +1100
-Date: Tue, 9 Mar 2010 00:58:26 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
-Message-ID: <20100308192826.GJ10402@in.ibm.com>
-References: <20100303181822.GH5439@dirshya.in.ibm.com>
-	<20100305191810.GA10402@in.ibm.com>
-	<20100308065006.GA6281@dirshya.in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0A001B7D03
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 07:41:51 +1100 (EST)
+Message-ID: <53452.84.105.60.153.1268080871.squirrel@gate.crashing.org>
+In-Reply-To: <4B9546CD.1000008@freemail.hu>
+References: <4B934CCA.8030608@freemail.hu>
+	<9859E645-954D-4D07-8003-FFCD2391AB6E@kernel.crashing.org>
+	<4B9546CD.1000008@freemail.hu>
+Date: Mon, 8 Mar 2010 21:41:11 +0100 (CET)
+Subject: Re: cross-compiling Linux for PowerPC e200 core?
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100308065006.GA6281@dirshya.in.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-	linuxppc-dev@ozlabs.org
-Reply-To: dipankar@in.ibm.com
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,19 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 08, 2010 at 12:20:06PM +0530, Vaidyanathan Srinivasan wrote:
-> * Dipankar Sarma <dipankar@in.ibm.com> [2010-03-06 00:48:11]:
-> 
-> > Shouldn't we create this only for supported platforms ?
-> 
-> Hi Dipankar,
-> 
-> Yes we will need a check like
-> firmware_has_feature(FW_FEATURE_BEST_ENERGY) to avoid sysfs files in
-> unsupported platforms.  I will add that check in the next iteration.
+>>> Assembler messages:
+>>> Error: invalid switch -me200
+>>> Error: unrecognized option -me200
+>>
+>> No version of mainline binutils supports this.
+>>
+>> This kernel code was added in 2005, in 33d9e9b, by FSL; perhaps
+>> they have a fork of binutils that supports it, maybe they forgot
+>> to submit the changes upstream?
+>
+> I'm a bit new on the topic, could you please describe what FSL means?
 
-Also, given that this module isn't likely to provide anything on
-older platforms, it should get loaded only on newer platforms.
+Freescale
 
-Thanks
-Dipankar
+> I'm also having problems finding the commit 33d9e9b in the git repository
+> at http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git .
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33d9e9b
+
+There is no obvious way to get there via clicking afaics, the "commit"
+search box doesn't work at least.  Hrm.
+
+
+Segher
