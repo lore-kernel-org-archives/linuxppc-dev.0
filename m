@@ -1,18 +1,33 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id D23B5B7CB9
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 14:40:01 +1100 (EST)
-From: Amit Shah <amit.shah@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 (resend)] hvc_console: Fix race between hvc_close and
-	hvc_remove
-Date: Mon,  8 Mar 2010 09:08:17 +0530
-Message-Id: <1268019497-6164-1-git-send-email-amit.shah@redhat.com>
-In-Reply-To: <20100304024427.GB31594@amit-x200.redhat.com>
-References: <20100304024427.GB31594@amit-x200.redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@ozlabs.org,
-	greg@kroah.com, Amit Shah <amit.shah@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0011EB7CE4
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 17:50:15 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp06.in.ibm.com (8.14.3/8.13.1) with ESMTP id o286oCoX007098
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 12:20:12 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o286oCSd2617568
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 12:20:12 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o286oBtT026676
+	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 12:20:12 +0530
+Date: Mon, 8 Mar 2010 12:20:06 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Dipankar Sarma <dipankar@in.ibm.com>
+Subject: Re: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
+Message-ID: <20100308065006.GA6281@dirshya.in.ibm.com>
+References: <20100303181822.GH5439@dirshya.in.ibm.com>
+	<20100305191810.GA10402@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20100305191810.GA10402@in.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	linuxppc-dev@ozlabs.org
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,172 +37,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan pointed out a race in the code where hvc_remove is invoked. The
-recent virtio_console work is the first user of hvc_remove().
+* Dipankar Sarma <dipankar@in.ibm.com> [2010-03-06 00:48:11]:
 
-Alan describes it thus:
+> On Wed, Mar 03, 2010 at 11:48:22PM +0530, Vaidyanathan Srinivasan wrote:
+> >  static void __init cpu_init_thread_core_maps(int tpc)
+> > diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> > index c667f0f..b3dd108 100644
+> > --- a/arch/powerpc/platforms/pseries/Kconfig
+> > +++ b/arch/powerpc/platforms/pseries/Kconfig
+> > @@ -33,6 +33,16 @@ config PSERIES_MSI
+> >         depends on PCI_MSI && EEH
+> >         default y
+> > 
+> > +config PSERIES_ENERGY
+> > +	tristate "pseries energy management capabilities driver"
+> > +	depends on PPC_PSERIES
+> > +	default y
+> > +	help
+> > +	  Provides interface to platform energy management capabilities
+> > +	  on supported PSERIES platforms.
+> > +	  Provides: /sys/devices/system/cpu/pseries_(de)activation_hint_list
+> > +	  and /sys/devices/system/cpu/cpuN/pseries_(de)activation_hint
+> > +
+> >  config SCANLOG
+> >  	tristate "Scanlog dump interface"
+> >  	depends on RTAS_PROC && PPC_PSERIES
+> 
+> .....
+> 
+> > +static int __init pseries_energy_init(void)
+> > +{
+> > +	int cpu, err;
+> > +	struct sys_device *cpu_sys_dev;
+> > +
+> > +	/* Create the sysfs files */
+> > +	err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+> > +				&attr_cpu_activate_hint_list.attr);
+> > +	if (!err)
+> > +		err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+> > +				&attr_cpu_deactivate_hint_list.attr);
+> > +
+> > +	for_each_possible_cpu(cpu) {
+> > +		cpu_sys_dev = get_cpu_sysdev(cpu);
+> > +		err = sysfs_create_file(&cpu_sys_dev->kobj,
+> > +				&attr_percpu_activate_hint.attr);
+> > +		if (err)
+> > +			break;
+> > +		err = sysfs_create_file(&cpu_sys_dev->kobj,
+> > +				&attr_percpu_deactivate_hint.attr);
+> > +		if (err)
+> > +			break;
+> > +	}
+> > +	return err;
+> > +
+> > +}
+> 
+> Shouldn't we create this only for supported platforms ?
 
-The hvc_console assumes that a close and remove call can't occur at the
-same time.
+Hi Dipankar,
 
-In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
-itself....
+Yes we will need a check like
+firmware_has_feature(FW_FEATURE_BEST_ENERGY) to avoid sysfs files in
+unsupported platforms.  I will add that check in the next iteration.
 
-So this can happen
-
-        hvc_close                               hvc_remove
-        hung up ? - no
-                                                lock
-                                                tty = hp->tty
-                                                unlock
-        lock
-        hp->tty = NULL
-        unlock
-        notify del
-        kref_put the hvc struct
-        close completes
-        tty is destroyed
-                                                tty_hangup dead tty
-                                                tty->ops will be NULL
-                                                NULL->...
-
-This patch adds some tty krefs and also converts to using tty_vhangup().
-
-Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linuxppc-dev@ozlabs.org
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
-
-I didn't receive a reply from the linuxppc folks to take this patch via
-their tree. Greg, can you please take this in your tty tree? It's needed
-for 2.6.34, but since hvc_remove() was exported in 2.6.33, it might make
-sense for stable as well.
-
- drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 4c3b59b..7e94b3c 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	spin_lock_irqsave(&hp->lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->count++ > 0) {
-+		tty_kref_get(tty);
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 		hvc_kick();
- 		return 0;
-@@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 
- 	tty->driver_data = hp;
- 
--	hp->tty = tty;
-+	hp->tty = tty_kref_get(tty);
- 
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
-@@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 		spin_lock_irqsave(&hp->lock, flags);
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
-+		tty_kref_put(tty);
- 		tty->driver_data = NULL;
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
-@@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		return;
- 
- 	hp = tty->driver_data;
-+
- 	spin_lock_irqsave(&hp->lock, flags);
-+	tty_kref_get(tty);
- 
- 	if (--hp->count == 0) {
- 		/* We are done with the tty pointer now. */
- 		hp->tty = NULL;
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		/* Put the ref obtained in hvc_open() */
-+		tty_kref_put(tty);
-+
- 		if (hp->ops->notifier_del)
- 			hp->ops->notifier_del(hp, hp->data);
- 
-@@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 	}
- 
-+	tty_kref_put(tty);
- 	kref_put(&hp->kref, destroy_hvc_struct);
- }
- 
-@@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
- 	if (hp->ops->notifier_hangup)
--			hp->ops->notifier_hangup(hp, hp->data);
-+		hp->ops->notifier_hangup(hp, hp->data);
- 
- 	while(temp_open_count) {
- 		--temp_open_count;
-+		tty_kref_put(tty);
- 		kref_put(&hp->kref, destroy_hvc_struct);
- 	}
- }
-@@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
- 	}
- 
- 	/* No tty attached, just skip */
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 	if (tty == NULL)
- 		goto bail;
- 
-@@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
- 
- 		tty_flip_buffer_push(tty);
- 	}
-+	if (tty)
-+		tty_kref_put(tty);
- 
- 	return poll_mask;
- }
-@@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
- 	struct tty_struct *tty;
- 
- 	spin_lock_irqsave(&hp->lock, flags);
--	tty = hp->tty;
-+	tty = tty_kref_get(hp->tty);
- 
- 	if (hp->index < MAX_NR_HVC_CONSOLES)
- 		vtermnos[hp->index] = -1;
-@@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
- 	/*
- 	 * We 'put' the instance that was grabbed when the kref instance
- 	 * was initialized using kref_init().  Let the last holder of this
--	 * kref cause it to be removed, which will probably be the tty_hangup
-+	 * kref cause it to be removed, which will probably be the tty_vhangup
- 	 * below.
- 	 */
- 	kref_put(&hp->kref, destroy_hvc_struct);
- 
- 	/*
--	 * This function call will auto chain call hvc_hangup.  The tty should
--	 * always be valid at this time unless a simultaneous tty close already
--	 * cleaned up the hvc_struct.
-+	 * This function call will auto chain call hvc_hangup.
- 	 */
--	if (tty)
--		tty_hangup(tty);
-+	if (tty) {
-+		tty_vhangup(tty);
-+		tty_kref_put(tty);
-+	}
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(hvc_remove);
--- 
-1.6.2.5
+Thanks,
+Vaidy
