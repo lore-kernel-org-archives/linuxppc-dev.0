@@ -1,20 +1,27 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp149.mail.ukl.yahoo.com (smtp149.mail.ukl.yahoo.com
-	[77.238.184.80]) by ozlabs.org (Postfix) with SMTP id B1996B7D0F
+Return-Path: <konrad.wilk@oracle.com>
+Received: from acsinet14.oracle.com (acsinet14.oracle.com [141.146.126.236])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "acsinet14.oracle.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 57D5BB7D14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Mar 2010 05:38:06 +1100 (EST)
-Message-ID: <4B96958B.3010403@yahoo.es>
-Date: Tue, 09 Mar 2010 19:38:03 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
-MIME-Version: 1.0
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [LKML] [RFC PATCH v3 05/11] swiotlb:
-	add	swiotlb_set_default_size()
+	Wed, 10 Mar 2010 02:31:05 +1100 (EST)
+Received: from acsinet11.oracle.com (acsinet11.oracle.com [141.146.126.233])
+	by acsinet14.oracle.com (Sentrion-MP-4.0.0/Sentrion-MP-4.0.0) with
+	ESMTP id o29FUvDF016469
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Mar 2010 15:31:02 GMT
+Date: Mon, 8 Mar 2010 11:55:00 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Albert Herranz <albert_herranz@yahoo.es>
+Subject: Re: [LKML] [RFC PATCH v3 04/11] swiotlb: support
+	NOT_COHERENT_CACHE PowerPC platforms
+Message-ID: <20100308165500.GB4568@phenom.dumpdata.com>
 References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es>
-	<1267963912-984-6-git-send-email-albert_herranz@yahoo.es>
-	<20100308165940.GC4568@phenom.dumpdata.com>
-In-Reply-To: <20100308165940.GC4568@phenom.dumpdata.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
 Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,37 +33,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Konrad Rzeszutek Wilk wrote:
-> On Sun, Mar 07, 2010 at 01:11:46PM +0100, Albert Herranz wrote:
->> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
->> This size can be influenced using a kernel command line parameter "swiotlb".
->> Unfortunately, the parsing of the kernel command line is done _after_ the
->> swiotlb is initialized on some architectures.
+On Sun, Mar 07, 2010 at 01:11:45PM +0100, Albert Herranz wrote:
+> The current SWIOTLB code does not support NOT_COHERENT_CACHE platforms.
+> This patch adds support for NOT_COHERENT_CACHE platforms to SWIOTLB by
+> adding two platform specific functions swiotlb_dma_sync_page() and
+> swiotlb_dma_sync() which can be used to explicitly manage cache coherency.
+
+Hey Albert,
+
+I've been doing some posting in this area to split the physical / bus
+address translation so that multiple platforms can utilize it. I was
+wondering if it makes sense to utilize some of those concepts (ie, extend it
+for DMA coherency) for your code:
+
+https://lists.linux-foundation.org/pipermail/iommu/2010-February/002066.html
+
+And here is the git tree that goes on top of those patches:
+git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git xen-swiotlb-0.5
+
+
 > 
-> Why can't it be moved up? I mean move the parsing of the kernel
-> parameters before the PCI subsystem?
-
-(In my case there's no PCI subsystem, this is an embedded platform without PCI support).
-
-Currently, in the PowerPC tree a platform wanting to use the swiotlb just sets the global ppc_swiotlb_enable variable to true in its setup_arch() function.
-The PowerPC setup code then calls swiotlb_init(1) just after setup_arch() when SWIOTLB and ppc_swiotlb_enable is true.
-At this point the kernel command line is not yet parsed.
-
-So, at least in PowerPC linux, the early swiotlb initialization is not influenced by the kernel command line.
-
-Maybe switching swiotlb from __setup to early_param would help too.
-
->> This patch adds a new function swiotlb_set_default_size() which can be used
->> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
->>
->> This will be used later to implement a smaller IO TLB on the Nintendo Wii
->> video game console which just comes with 24MB + 64MB of RAM.
+> On PowerPC these functions are mapped to their corresponding
+> __dma_sync_page() and __dma_sync() functions.
+> On other architectures using SWIOTLB these functions are optimized out.
 > 
-> Use the io_tlb_nslabs, which is what swiotlb_init_with_default_size uses
-> (the passed in argument is only used if io_tlb_nslabs is not set).
+> This will be used later to support SWIOTLB on the Nintendo Wii video game
+> console.
 > 
-
-True, thanks.
-
-Cheers,
-Albert
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-kernel@vger.kernel.org
+> CC: x86@kernel.org
+> CC: linux-ia64@vger.kernel.org
+> ---
+>  arch/ia64/include/asm/swiotlb.h    |   10 ++++++++++
+>  arch/powerpc/include/asm/swiotlb.h |    3 +++
+>  arch/x86/include/asm/swiotlb.h     |   10 ++++++++++
+>  lib/swiotlb.c                      |   30 ++++++++++++++++++++++++------
+>  4 files changed, 47 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
+> index f0acde6..6722090 100644
+> --- a/arch/ia64/include/asm/swiotlb.h
+> +++ b/arch/ia64/include/asm/swiotlb.h
+> @@ -14,4 +14,14 @@ static inline void pci_swiotlb_init(void)
+>  }
+>  #endif
+>  
+> +static inline void swiotlb_dma_sync_page(struct page *page,
+> +					 unsigned long offset,
+> +					 size_t size, int direction)
+> +{
+> +}
+> +
+> +static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
+> +{
+> +}
+> +
+>  #endif /* ASM_IA64__SWIOTLB_H */
+> diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+> index 8979d4c..603b343 100644
+> --- a/arch/powerpc/include/asm/swiotlb.h
+> +++ b/arch/powerpc/include/asm/swiotlb.h
+> @@ -22,4 +22,7 @@ int __init swiotlb_setup_bus_notifier(void);
+>  
+>  extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+>  
+> +#define swiotlb_dma_sync_page __dma_sync_page
+> +#define swiotlb_dma_sync __dma_sync
+> +
+>  #endif /* __ASM_SWIOTLB_H */
+> diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+> index 8085277..e5f6d9c 100644
+> --- a/arch/x86/include/asm/swiotlb.h
+> +++ b/arch/x86/include/asm/swiotlb.h
+> @@ -20,4 +20,14 @@ static inline void pci_swiotlb_init(void)
+>  
+>  static inline void dma_mark_clean(void *addr, size_t size) {}
+>  
+> +static inline void swiotlb_dma_sync_page(struct page *page,
+> +					 unsigned long offset,
+> +					 size_t size, int direction)
+> +{
+> +}
+> +
+> +static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
+> +{
+> +}
+> +
+>  #endif /* _ASM_X86_SWIOTLB_H */
+> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> index 94db5df..8f2dad9 100644
+> --- a/lib/swiotlb.c
+> +++ b/lib/swiotlb.c
+> @@ -346,10 +346,13 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+>  			local_irq_save(flags);
+>  			buffer = kmap_atomic(pfn_to_page(pfn),
+>  					     KM_BOUNCE_READ);
+> -			if (dir == DMA_TO_DEVICE)
+> +			if (dir == DMA_TO_DEVICE) {
+>  				memcpy(dma_addr, buffer + offset, sz);
+> -			else
+> +				swiotlb_dma_sync(dma_addr, sz, dir);
+> +			} else {
+> +				swiotlb_dma_sync(dma_addr, sz, dir);
+>  				memcpy(buffer + offset, dma_addr, sz);
+> +			}
+>  			kunmap_atomic(buffer, KM_BOUNCE_READ);
+>  			local_irq_restore(flags);
+>  
+> @@ -359,10 +362,14 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+>  			offset = 0;
+>  		}
+>  	} else {
+> -		if (dir == DMA_TO_DEVICE)
+> +		if (dir == DMA_TO_DEVICE) {
+>  			memcpy(dma_addr, phys_to_virt(phys), size);
+> -		else
+> +			swiotlb_dma_sync(dma_addr, size, dir);
+> +
+> +		} else {
+> +			swiotlb_dma_sync(dma_addr, size, dir);
+>  			memcpy(phys_to_virt(phys), dma_addr, size);
+> +		}
+>  	}
+>  }
+>  
+> @@ -542,6 +549,8 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+>  	}
+>  }
+>  
+> +#ifndef CONFIG_NOT_COHERENT_CACHE
+> +
+>  void *
+>  swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+>  		       dma_addr_t *dma_handle, gfp_t flags)
+> @@ -606,6 +615,8 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+>  }
+>  EXPORT_SYMBOL(swiotlb_free_coherent);
+>  
+> +#endif /* !CONFIG_NOT_COHERENT_CACHE */
+> +
+>  static void
+>  swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+>  {
+> @@ -652,8 +663,10 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+>  	 * we can safely return the device addr and not worry about bounce
+>  	 * buffering it.
+>  	 */
+> -	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
+> +	if (dma_capable(dev, dev_addr, size) && !swiotlb_force) {
+> +		swiotlb_dma_sync_page(page, offset, size, dir);
+>  		return dev_addr;
+> +	}
+>  
+>  	/*
+>  	 * Oh well, have to allocate and map a bounce buffer.
+> @@ -739,6 +752,8 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+>  		return;
+>  	}
+>  
+> +	swiotlb_dma_sync(phys_to_virt(paddr), size, dir);
+> +
+>  	if (dir != DMA_FROM_DEVICE)
+>  		return;
+>  
+> @@ -835,8 +850,11 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+>  				return 0;
+>  			}
+>  			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+> -		} else
+> +		} else {
+> +			swiotlb_dma_sync_page(sg_page(sg), sg->offset,
+> +					      sg->length, dir);
+>  			sg->dma_address = dev_addr;
+> +		}
+>  		sg->dma_length = sg->length;
+>  	}
+>  	return nelems;
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
