@@ -1,16 +1,22 @@
-Return-Path: <henk.stegeman@gmail.com>
-Received: from mail-bw0-f211.google.com (mail-bw0-f211.google.com
-	[209.85.218.211]) by ozlabs.org (Postfix) with ESMTP id 5CC8CB7CF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 01:20:57 +1100 (EST)
-Received: by bwz3 with SMTP id 3so910238bwz.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Mar 2010 06:20:55 -0800 (PST)
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A261AB7CF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 03:32:33 +1100 (EST)
+Message-ID: <27310604.1268065948452.JavaMail.ngmail@webmail08.arcor-online.net>
+Date: Mon, 8 Mar 2010 17:32:28 +0100 (CET)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: agust@denx.de, grant.likely@secretlab.ca
+Subject: Re: mpc512x uart: testers wanted
+In-Reply-To: <20100308151912.14847a74@wker>
 MIME-Version: 1.0
-Date: Mon, 8 Mar 2010 15:20:53 +0100
-Message-ID: <ae4f76fd1003080620o5598778cv221f05bf331768c8@mail.gmail.com>
-Subject: IRQ's missing with MPC5200 GPT as an interrupt controller
-From: Henk Stegeman <henk.stegeman@gmail.com>
-To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
+References: <20100308151912.14847a74@wker> <1267978529.2306.0@antares>
+	<fa686aa41003071645x70dff5d7s89db66416bcc4a0d@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,93 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm trying to make use of the GPT as interrupt controller.
-My driver is getting most, but not all of the interrupts, besides that
-I'm getting a whole bunch of spurious IRQs, so I'm trying to figure
-out what's wrong.
+Hi Anatolij:
 
-		gpt6: timer@660 {	
-			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-			reg = <0x660 0x10>;
-			interrupts = <1 15 0>;
-			interrupt-controller;
-			#interrupt-cells = <1>;
-		};
+> > Anatolij, could you please look into this?
+> 
+> I'll look into this tomorrow, need to finish USB support now.
+> Unfortunately the patch doesn't apply on top of Linus' tree as
+> patches for reworked MPC5121 PSC UART support have been merged.
+> Albrecht, could you please rebase your patch?
 
-My device has the interrupt-parent property which links it to the
-above interrupt controller.
+Against linux/kernel/git/torvalds/linux-2.6.git?  Will do that tomorrow...  Grant, do you need a patch against Linus' tree, or against a released version, or against your tree?
 
-		spi@f00 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-			reg = <0xf00 0x20>;
-			interrupts = <2 13 0 2 14 0>;
+> BTW, the prescaler /16 or /10 was mentioned in the MPC5121e
+> Preliminary Reference Manual, Rev.0. This seems to be the
+> reason for the usage of /16 prescaler in the code. Since
+> newer manuals only mention /32 or /10 prescaler, this should
+> be corrected/tested. I'll test it later.
 
-			io-controller@0 {
-				compatible = "microkey,smc4000io";
-				linux,modalias = "of_smc4000io";
-				spi-max-frequency = <800000>;
-				spi-cpha;
-				reg = <0>;
-				word-delay-us = <30>;
-				interrupt-parent = <&gpt6>;
-				interrupts = <2>; // And make it edge falling
-			};
+Dumb question: do you use U-Boot to boot your processor?  If I interpret the code [1] correctly, it also uses the /16 prescaler!  Or did I miss something?
 
-There are two things I find suspicious:
-- First of all my interrupt is listed as virq# 16, shouldn't it be
-virq# 0x50 ? (16 is te L2 value virq# 0x50 of mpc52xx_irqhost_map)
-- Secondly in mpc52xx_gpt.c  mpc52xx_gpt_irq_mask() and
-mpc52xx_gpt_irq_unmask() resp. clear and set the IrqEn bit of the GPT,
-which is described in the MPC5200B_UM as "enables interrupt generation
-to the CPU for all modes". The word 'generation' makes me suspicious,
-because it could mean that while irqEn is cleared an edge on the GPT's
-input does not even request an IRQ immediately after the bit is
-cleared.  Or in other words, clearing the bit could do more that just
-masking.
+Best, Albrecht.
 
-~ # cat /proc/interrupts
-           CPU0
- 16:    1338686   MPC52xx GPT      Edge         smc4000io
-129:      83224   MPC52xx Peripherals Level        mpc52xx_psc_uart
-130:          1   MPC52xx Peripherals Level        mpc52xx_psc_uart
-133:          0   MPC52xx Peripherals Level        mpc52xx-fec_ctrl
-134:          0   MPC52xx Peripherals Level        ohci_hcd:usb1
-135:      16127   MPC52xx Peripherals Level        mpc52xx_ata
-141:          0   MPC52xx Peripherals Level        mpc5200-spi-modf
-142:      79184   MPC52xx Peripherals Level        mpc5200-spi-spif
-192:          0   MPC52xx SDMA     Level        ATA task
-193:         15   MPC52xx SDMA     Level        mpc52xx-fec_rx
-194:      35615   MPC52xx SDMA     Level        mpc52xx-fec_tx
-LOC:     134286   Local timer interrupts
-SPU:     576958   Spurious interrupts
-CNT:          0   Performance monitoring interrupts
-MCE:          0   Machine check exceptions
+[1] <http://git.denx.de/cgi-bin/gitweb.cgi?p=u-boot.git;a=blob;f=cpu/mpc512x/serial.c;h=ec2f41bb36dcfa9079d7890866a3aeec716ea124;hb=HEAD>
 
-~ # dmesg |grep 660
-[    1.975928] irq: irq 0 on host /soc5200@f0000000/timer@660 mapped
-to virtual irq 16
-
-~ # dmesg | grep host_map
-[    0.000000] mpc52xx_irqhost_map: virq=81, l1=2, l2=1
-[    0.319272] mpc52xx_irqhost_map: External IRQ1 virq=41, hw=41. type=8
-[    0.376117] mpc52xx_irqhost_map: virq=49, l1=1, l2=9
-[    0.417213] mpc52xx_irqhost_map: virq=4a, l1=1, l2=10
-[    0.452119] mpc52xx_irqhost_map: virq=4b, l1=1, l2=11
-[    0.487031] mpc52xx_irqhost_map: virq=4c, l1=1, l2=12
-[    0.529899] mpc52xx_irqhost_map: virq=4d, l1=1, l2=13
-[    0.564821] mpc52xx_irqhost_map: virq=4e, l1=1, l2=14
-[    0.599744] mpc52xx_irqhost_map: virq=4f, l1=1, l2=15
-[    0.634669] mpc52xx_irqhost_map: virq=50, l1=1, l2=16
-[    1.629764] mpc52xx_irqhost_map: virq=82, l1=2, l2=2
-[    1.667194] mpc52xx_irqhost_map: virq=84, l1=2, l2=4
-[    1.763299] mpc52xx_irqhost_map: virq=87, l1=2, l2=7
-[    1.790510] mpc52xx_irqhost_map: virq=c0, l1=3, l2=0
-[    1.909341] mpc52xx_irqhost_map: virq=8d, l1=2, l2=13
-[    1.936712] mpc52xx_irqhost_map: virq=8e, l1=2, l2=14
-[    2.055579] mpc52xx_irqhost_map: virq=c1, l1=3, l2=1
-[    2.083018] mpc52xx_irqhost_map: virq=c2, l1=3, l2=2
-[    2.110345] mpc52xx_irqhost_map: virq=85, l1=2, l2=5
-[    2.211890] mpc52xx_irqhost_map: virq=86, l1=2, l2=6
-~
+Sexy Stars bei den Oscars! Fotostrecken und alle aktuellen Infos zu Filmen und Preisen jetzt im Oscar-Special von Arcor.de: http://www.arcor.de/rd/footer.oscar
