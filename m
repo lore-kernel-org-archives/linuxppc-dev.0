@@ -1,22 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
-	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 75B6BB7CF6
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 06:08:38 +1100 (EST)
-Received: by gxk28 with SMTP id 28so5238872gxk.2
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Mar 2010 11:08:37 -0800 (PST)
+Return-Path: <dipankar@in.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 51361B7CFB
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 06:28:37 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id o28IhMoG031397
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 00:13:23 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o28JSZqc2957366
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 00:58:35 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o28JSY2Q025470
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Mar 2010 06:28:34 +1100
+Date: Tue, 9 Mar 2010 00:58:26 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [RFC] powerpc: add support for new hcall H_BEST_ENERGY
+Message-ID: <20100308192826.GJ10402@in.ibm.com>
+References: <20100303181822.GH5439@dirshya.in.ibm.com>
+	<20100305191810.GA10402@in.ibm.com>
+	<20100308065006.GA6281@dirshya.in.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4B95458A.4000304@freemail.hu>
-References: <4B934CCA.8030608@freemail.hu>
-	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
-	<4B95458A.4000304@freemail.hu>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 8 Mar 2010 12:08:17 -0700
-Message-ID: <fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
-Subject: Re: cross-compiling Linux for PowerPC e200 core?
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100308065006.GA6281@dirshya.in.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	linuxppc-dev@ozlabs.org
+Reply-To: dipankar@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/3/8 N=E9meth M=E1rton <nm127@freemail.hu>:
-> Grant Likely wrote:
->> 2010/3/6 N=E9meth M=E1rton <nm127@freemail.hu>:
->>> Hi,
->>>
->>> I'm trying to cross-compile Linux 2.6.33 for Freescale MPC5554 [1][2]. =
-This
->>> microcontroller is based on the e200z6 core. I could build the cross-de=
-velopment
->>> tools, but I could miss something because I get an error message when b=
-uilding
->>> Linux for PowerPC e200 core. Here are the steps I used:
->>
->> I doubt you'll have much luck with the mpc5554. =A0Linux doesn't include
->> any support for the MPC5554, and I don't think anybody is working on
->> it. =A0Any of the mpc5554 systems I've see don't have enough ram to run
->> Linux well.
->
-> I'm ready to work a bit more than just compiling the kernel and run it on=
- MPC5554.
-> On my target system there is a possibility to use external RAM connected =
-to the
-> External Bus Interface, so I don't see this would be a problem in my case=
-.
->
-> However, I have not much experience running Linux on PowerPC environment.=
- Could
-> you suggest a PowerPC port which would be a good starting point to make s=
-upport
-> for MPC5554?
+On Mon, Mar 08, 2010 at 12:20:06PM +0530, Vaidyanathan Srinivasan wrote:
+> * Dipankar Sarma <dipankar@in.ibm.com> [2010-03-06 00:48:11]:
+> 
+> > Shouldn't we create this only for supported platforms ?
+> 
+> Hi Dipankar,
+> 
+> Yes we will need a check like
+> firmware_has_feature(FW_FEATURE_BEST_ENERGY) to avoid sysfs files in
+> unsupported platforms.  I will add that check in the next iteration.
 
-I'd use the MPC5200 board support as a starting point
-(arch/powerpc/platforms/52xx).  Create yourself a new directory for
-this platform (arch/powerpc/platforms/55xx)
+Also, given that this module isn't likely to provide anything on
+older platforms, it should get loaded only on newer platforms.
 
-> As far as I could find out I'll need to create a device tree as documente=
-d in
-> the linux/Documentation/powerpc/booting-without-of.txt file.
-
-Yes, you'll need to create a device tree file for the board.  Again,
-start from an existing 5200 .dts file.  You won't need very much in it
-to get started.  I'd be happy to help you get the structure right.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks
+Dipankar
