@@ -1,33 +1,31 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.17.164])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 24A49B7CEF
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 21:11:47 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.1/8.13.1) with ESMTP id o28ABfVJ005780
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 10:11:41 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id o28ABfod1720330
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 11:11:41 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id o28ABeRR006827
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Mar 2010 11:11:41 +0100
-Date: Mon, 8 Mar 2010 11:11:52 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: [PowerPC] 2.6.33-git11 : Badness at kernel/kprobes.c:264
-Message-ID: <20100308101152.GA2557@osiris.boeblingen.de.ibm.com>
-References: <4B920E06.4060508@in.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B74A8B7CF1
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Mar 2010 21:42:28 +1100 (EST)
+In-Reply-To: <4B94BE1F.8030203@denx.de>
+References: <4B8E17A7.10509@denx.de>
+	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
+	<4B8E3582.8060003@denx.de>
+	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
+	<4B8F8BB4.6070201@denx.de>
+	<20100304121656.6758A28BBC@gemini.denx.de>
+	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
+	<4B8FE00F.4030405@denx.de>
+	<OF342998FA.F0D2DAE1-ONC12576DD.003A3D7E-C12576DD.003AA365@transmode.se>
+	<4B94AB55.3020308@denx.de>
+	<OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
+	<4B94BE1F.8030203@denx.de>
+Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
+To: hs@denx.de
+Message-ID: <OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 8 Mar 2010 11:42:22 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4B920E06.4060508@in.ibm.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>, mhiramat@redhat.com
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,46 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 06, 2010 at 01:40:46PM +0530, Sachin Sant wrote:
-> With latest 33 git(2.6.33-git11 : 64096c1741...) on a POWER6 box
-> 
-> type=2000 audit(1267853400.180:1): initialized
-> Kprobe smoke test started
-> ------------[ cut here ]------------
-> Badness at kernel/kprobes.c:264
-> NIP: c0000000006251e0 LR: c000000000625190 CTR: c00000000007914c
-> REGS: c0000000fecc3680 TRAP: 0700   Not tainted  (2.6.33-git11-autotest)
-> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 24000048  XER: 2000000b
-> TASK = c0000000feca0000[1] 'swapper' THREAD: c0000000fecc0000 CPU: 2
-> GPR00: 0000000000000001 c0000000fecc3900 c000000000b297b0 c0000000fc680000
-> GPR04: 0000000000000004 0000000000000000 0000000024022024 c000000000a2b9d0
-> GPR08: 0000000000004000 c0000000fc680004 0000000000010000 0000000000000004
-> GPR12: 0000000022000024 c000000000bc2b00 0000000000051bc3 0000000000051aa1
-> GPR16: 0000000000051bbb 0000000000d00000 c0000000008011f8 c0000000007f1ba1
-> GPR20: 00000000015e87a8 c0000000008e87a8 c0000000fecc3cc8 c0000000fecc3cd0
-> GPR24: c0000000fecc3cd8 c0000000fecc3cc0 c0000000fecc3be0 0000000000000000
-> GPR28: 0000000000000000 c000000000a2b8b8 c000000000a94888 d000000000bd0004
-> NIP [c0000000006251e0] .free_insn_slot+0x84/0x12c
-> LR [c000000000625190] .free_insn_slot+0x34/0x12c
-> Call Trace:
-> [c0000000fecc3900] [c000000000625190] .free_insn_slot+0x34/0x12c (unreliable)
-> [c0000000fecc3990] [c000000000622050] .arch_remove_kprobe+0x28/0x48
-> [c0000000fecc3a10] [c000000000623f58] .__unregister_kprobe_bottom+0x28/0x8c
-> [c0000000fecc3aa0] [c00000000062419c] .unregister_kprobes+0xc0/0xf0
-> [c0000000fecc3b40] [c0000000006241ec] .unregister_kprobe+0x20/0x30
-> [c0000000fecc3bb0] [c0000000000e081c] .init_test_probes+0xc4/0x66c
-> [c0000000fecc3c50] [c0000000008c288c] .init_kprobes+0x1f0/0x230
-> [c0000000fecc3e30] [c0000000000097a4] .do_one_initcall+0x88/0x1bc
-> [c0000000fecc3ee0] [c0000000008a0490] .kernel_init+0x220/0x2dc
-> [c0000000fecc3f90] [c00000000002c4d0] .kernel_thread+0x54/0x70
-> Instruction dump:
-> 7c00f850 7c804b92 2fa40000 419c007c 7d0a5b92 7fa44000 409c0070 7d232214
-> 88090020 68000002 7c0000d0 78000fe0 <0b000000> 2fbc0000 419e0044 8123001c
-> 
-> 2.6.33-git10(64ba99267...) was OK.
-> 
-> This WARN_ON was introduced by commit 4610ee1d36...
-> 
-> kprobes: Introduce generic insn_slot framework
+Heiko Schocher <hs@denx.de> wrote on 2010/03/08 10:06:39:
+>
+> Hello Joakim,
+>
+> Joakim Tjernlund wrote:
+> > Heiko Schocher <hs@denx.de> wrote on 2010/03/08 08:46:29:
+> >> Hello Joakim,
+> >>
+> >> Joakim Tjernlund wrote:
+> >> [...]
+> >>> What would be interesting is to skip patch 3 and turn off
+> >>> MODULES add PIN_TLB and compare that against your unpatched .33 but
+> >>> with MODULES off and PIN_TLB on
+> >> run     version
+> >>
+> >> 1-4   Linux2.6.33-rc without module support and PIN_TLB=on
+> >> 5-8   Linux2.6.33-rc without module support and PIN_TLB=on + patches 1,2,4
+> >>
+> >>                  L M B E N C H  3 . 0   S U M M A R Y
+> >>                  ------------------------------------
+> >>        (Alpha software, do not distribute)
+> >
+> > hmm, these results varies a lot. The only stable result I can see is:
+> >
+> >> Memory latencies in nanoseconds - smaller is better
+> >>     (WARNING - may not be correct, check graphs)
+> >> ------------------------------------------------------------------------------
+> >> Host                 OS   Mhz   L1 $   L2 $    Main mem    Rand mem    Guesses
+> >> --------- -------------   ---   ----   ----    --------    --------    -------
+> >> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.0    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1164.8    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.7  183.2       184.0      1163.2    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.7  183.2       183.8      1163.7    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.8  172.4       173.2      1147.3    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1148.3    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.1      1146.9    No L2 cache?
+> >> tqm8xx    Linux 2.6.33-    66   31.8  172.5       173.2      1147.3    No L2 cache?
+> >
+> > I don't see why the other results vary so much. Are you using NFS or having
+> much network
+> > traffic?
+>
+> I use NFS.
 
-FWIW, same on s390...
+Then I think it is possible NFS gets in the way for stable measurements. Anyone
+have experience with running lmbench on NFS?
+
+        Jocke
