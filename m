@@ -1,18 +1,22 @@
-Return-Path: <nm127@freemail.hu>
-Received: from relay01.digicable.hu (relay01.digicable.hu [92.249.128.189])
-	by ozlabs.org (Postfix) with ESMTP id 4231CB7CFD
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 05:49:54 +1100 (EST)
-Message-ID: <4B9546CD.1000008@freemail.hu>
-Date: Mon, 08 Mar 2010 19:49:49 +0100
-From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f228.google.com (mail-gx0-f228.google.com
+	[209.85.217.228]) by ozlabs.org (Postfix) with ESMTP id 75B6BB7CF6
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 06:08:38 +1100 (EST)
+Received: by gxk28 with SMTP id 28so5238872gxk.2
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Mar 2010 11:08:37 -0800 (PST)
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: cross-compiling Linux for PowerPC e200 core?
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B95458A.4000304@freemail.hu>
 References: <4B934CCA.8030608@freemail.hu>
-	<9859E645-954D-4D07-8003-FFCD2391AB6E@kernel.crashing.org>
-In-Reply-To: <9859E645-954D-4D07-8003-FFCD2391AB6E@kernel.crashing.org>
+	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
+	<4B95458A.4000304@freemail.hu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 8 Mar 2010 12:08:17 -0700
+Message-ID: <fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
+Subject: Re: cross-compiling Linux for PowerPC e200 core?
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-Segher Boessenkool wrote:
->> Assembler messages:
->> Error: invalid switch -me200
->> Error: unrecognized option -me200
-> 
-> No version of mainline binutils supports this.
-> 
-> This kernel code was added in 2005, in 33d9e9b, by FSL; perhaps
-> they have a fork of binutils that supports it, maybe they forgot
-> to submit the changes upstream?
+2010/3/8 N=E9meth M=E1rton <nm127@freemail.hu>:
+> Grant Likely wrote:
+>> 2010/3/6 N=E9meth M=E1rton <nm127@freemail.hu>:
+>>> Hi,
+>>>
+>>> I'm trying to cross-compile Linux 2.6.33 for Freescale MPC5554 [1][2]. =
+This
+>>> microcontroller is based on the e200z6 core. I could build the cross-de=
+velopment
+>>> tools, but I could miss something because I get an error message when b=
+uilding
+>>> Linux for PowerPC e200 core. Here are the steps I used:
+>>
+>> I doubt you'll have much luck with the mpc5554. =A0Linux doesn't include
+>> any support for the MPC5554, and I don't think anybody is working on
+>> it. =A0Any of the mpc5554 systems I've see don't have enough ram to run
+>> Linux well.
+>
+> I'm ready to work a bit more than just compiling the kernel and run it on=
+ MPC5554.
+> On my target system there is a possibility to use external RAM connected =
+to the
+> External Bus Interface, so I don't see this would be a problem in my case=
+.
+>
+> However, I have not much experience running Linux on PowerPC environment.=
+ Could
+> you suggest a PowerPC port which would be a good starting point to make s=
+upport
+> for MPC5554?
 
-I'm a bit new on the topic, could you please describe what FSL means?
+I'd use the MPC5200 board support as a starting point
+(arch/powerpc/platforms/52xx).  Create yourself a new directory for
+this platform (arch/powerpc/platforms/55xx)
 
-I'm also having problems finding the commit 33d9e9b in the git repository
-at http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git .
+> As far as I could find out I'll need to create a device tree as documente=
+d in
+> the linux/Documentation/powerpc/booting-without-of.txt file.
 
-Regards,
+Yes, you'll need to create a device tree file for the board.  Again,
+start from an existing 5200 .dts file.  You won't need very much in it
+to get started.  I'd be happy to help you get the structure right.
 
-	Márton Németh
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
