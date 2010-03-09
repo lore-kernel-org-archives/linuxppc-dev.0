@@ -1,29 +1,22 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id 3085FB7D11
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 04:31:18 +1100 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.69)
-	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
-	id 1Np2x1-0003Zc-3a
-	for linuxppc-dev@ozlabs.org; Tue, 09 Mar 2010 18:10:35 +0100
-Received: from p4ff0552a.dip.t-dialin.net ([79.240.85.42])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Mar 2010 18:10:35 +0100
-Received: from dzu by p4ff0552a.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Mar 2010 18:10:35 +0100
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: cross-compiling Linux for PowerPC e200 core?
-Date: Tue, 09 Mar 2010 15:24:57 +0100
-Message-ID: <m2y6i1h8sm.fsf@ohwell.denx.de>
-References: <4B934CCA.8030608@freemail.hu>
-	<9859E645-954D-4D07-8003-FFCD2391AB6E@kernel.crashing.org>
-	<4B9546CD.1000008@freemail.hu>
-	<53452.84.105.60.153.1268080871.squirrel__48847.2990495667$1268080944$gmane$org@gate.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp124.mail.ukl.yahoo.com (smtp124.mail.ukl.yahoo.com
+	[77.238.184.55]) by ozlabs.org (Postfix) with SMTP id DA6BCB7D13
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 10 Mar 2010 05:07:32 +1100 (EST)
+Message-ID: <4B968E5D.5060708@yahoo.es>
+Date: Tue, 09 Mar 2010 19:07:25 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
+MIME-Version: 1.0
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [LKML] [RFC PATCH v3 04/11] swiotlb: support	NOT_COHERENT_CACHE
+	PowerPC platforms
+References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es>
+	<1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
+	<20100308165500.GB4568@phenom.dumpdata.com>
+In-Reply-To: <20100308165500.GB4568@phenom.dumpdata.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,24 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Segher,
+Konrad Rzeszutek Wilk wrote:
+> Hey Albert,
+> 
+> I've been doing some posting in this area to split the physical / bus
+> address translation so that multiple platforms can utilize it. I was
+> wondering if it makes sense to utilize some of those concepts (ie, extend it
+> for DMA coherency) for your code:
+> 
+> https://lists.linux-foundation.org/pipermail/iommu/2010-February/002066.html
+> 
+> And here is the git tree that goes on top of those patches:
+> git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git xen-swiotlb-0.5
+> 
 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33d9e9b
->
-> There is no obvious way to get there via clicking afaics, the "commit"
-> search box doesn't work at least.  Hrm.
+Hi Konrad,
 
-It works, but not like one would expect, i.e. check out the help:
+Thanks for your comments.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=search_help
+In my case, I'd like to re-use as much code from swiotlb as possible.
+Adding a few function calls at strategic spots (which are optimized out for cache coherent platforms) to maintain cache coherency is currently enough for me if that's acceptable.
+A more general approach would involve making swiotlb_bounce() platform-dependent (or at least the actual code for copying the buffers), and re-implementing map_page, sync_single and map_sg at the platform DMA code again.
 
-Last I checked the gitweb code, there was no easy way other than what
-you did by manipulating the URL directly.
+I've whipped through your patches. If I undestood them, you make available a kind of swiotlb "library" core on top of which you can build alternate swiotlb-based dma ops.
+Wouldn't it be a good idea to split the "library" code from the default swiotlb dma ops?
+A(n embedded) platform may just want the "library" code to implement its own dma ops, without having to pay for the extra default swiotlb dma ops implementation.
 
-Cheers
-  Detlev
-
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+Thanks,
+Albert
