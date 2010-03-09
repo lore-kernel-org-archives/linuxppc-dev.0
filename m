@@ -1,19 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0F05B7D13
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 13:33:39 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Mar 2010 13:33:01 +1100
-Message-ID: <1268101981.22204.140.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1E351B7D15
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 17:30:28 +1100 (EST)
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se>
+References: <4B8E17A7.10509@denx.de>
+	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
+	<4B8E3582.8060003@denx.de>
+	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
+	<4B8F8BB4.6070201@denx.de>
+	<20100304121656.6758A28BBC@gemini.denx.de>
+	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
+	<4B8FE00F.4030405@denx.de>
+	<OF342998FA.F0D2DAE1-ONC12576DD.003A3D7E-C12576DD.003AA365@transmode.se>
+	<4B94AB55.3020308@denx.de>
+	<OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
+	<4B94BE1F.8030203@denx.de>
+	<OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se>
+Date: Tue, 09 Mar 2010 07:30:24 +0100
+Message-Id: <20100309063024.B603EEA5BDA@gemini.denx.de>
+Cc: Scott Wood <scottwood@freescale.com>, hs@denx.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,106 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Dear Joakim Tjernlund,
 
-Ideally this should have reached you earlier last week but I was
-bogged down in meetings and then away on an extended week-end.
+In message <OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se> you wrote:
+>
+> > I use NFS.
+> 
+> Then I think it is possible NFS gets in the way for stable measurements. Anyone
+> have experience with running lmbench on NFS?
 
-It's mostly a few bug fixes, some trivial raw spinlock conversions,
-and a couple of "features" that I didn't have in my previous merge
-request for all the wrong reasons, which are the e500 perf support
-and the dynamic PACA stuff from Michael.
+NFS may have some influence here, but I doubt it is the primary cause
+for these variations. The network where Heiko is running these tests
+is mostly idle, so it should provide fairly constant conditions. Of
+coursem the use of the network on the MPC8xx itself will add to the
+variation, but again I would not expect so big differences.
 
-Cheers,
-Ben.
+Heiko - there is a 10 GB disk attached to the "tqm8xx" system; I
+think there should be a usable root file system on it, but I cannot
+remember the actual state. Maybe we can use that. Please contact me
+on jabber this afternoon!
 
-The following changes since commit 57d54889cd00db2752994b389ba714138652e60c:
-  Linus Torvalds (1):
-        Linux 2.6.34-rc1
+Best regards,
 
-are available in the git repository at:
+Wolfgang Denk
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Adam Lackorzynski (1):
-      powerpc: Fix SMP build with disabled CPU hotplugging.
-
-Andrea Gelmini (1):
-      powerpc/cpm2: Checkpatch cleanup
-
-Anton Vorontsov (4):
-      powerpc/85xx: Convert socrates_fpga_pic_lock to raw_spinlock
-      powerpc/82xx: Convert pci_pic_lock to raw_spinlock
-      powerpc/qe: Convert qe_ic_lock to raw_spinlock
-      powerpc/86xx: Convert gef_pic_lock to raw_spinlock
-
-Benjamin Herrenschmidt (1):
-      Merge commit 'kumar/next' into merge
-
-Dave Kleikamp (2):
-      powerpc/booke: Fix a couple typos in the advanced ptrace code
-      powerpc/booke: Fix breakpoint/watchpoint one-shot behavior
-
-Josh Boyer (1):
-      powerpc: Fix G5 thermal shutdown
-
-Mark Nelson (1):
-      powerpc/pseries: Pass CPPR value to H_XIRR hcall
-
-Martyn Welch (1):
-      powerpc/86xx: Renaming following split of GE Fanuc joint venture
-
-Michael Ellerman (1):
-      powerpc: Dynamically allocate pacas
-
-Scott Wood (2):
-      powerpc/perf: Build callchain code regardless of hardware event support.
-      powerpc/perf: e500 support
-
-Vaidyanathan Srinivasan (3):
-      powerpc: Reset kernel stack on cpu online from cede state
-      powerpc: Move checks in pseries_mach_cpu_die()
-      powerpc: Reduce printk from pseries_mach_cpu_die()
-
- arch/powerpc/boot/dts/gef_ppc9a.dts             |    4 +-
- arch/powerpc/boot/dts/gef_sbc310.dts            |    4 +-
- arch/powerpc/boot/dts/gef_sbc610.dts            |    4 +-
- arch/powerpc/include/asm/paca.h                 |   18 +-
- arch/powerpc/include/asm/perf_event.h           |  109 +----
- arch/powerpc/include/asm/perf_event_fsl_emb.h   |   50 ++
- arch/powerpc/include/asm/perf_event_server.h    |  110 ++++
- arch/powerpc/include/asm/reg_booke.h            |    4 +-
- arch/powerpc/include/asm/reg_fsl_emb.h          |    2 +-
- arch/powerpc/kernel/Makefile                    |    7 +-
- arch/powerpc/kernel/cputable.c                  |    2 +-
- arch/powerpc/kernel/e500-pmu.c                  |  129 +++++
- arch/powerpc/kernel/head_64.S                   |   17 +-
- arch/powerpc/kernel/paca.c                      |   93 +++-
- arch/powerpc/kernel/perf_event_fsl_emb.c        |  654 +++++++++++++++++++++++
- arch/powerpc/kernel/prom.c                      |    3 +
- arch/powerpc/kernel/ptrace.c                    |   12 +-
- arch/powerpc/kernel/setup-common.c              |    3 +
- arch/powerpc/kernel/setup_64.c                  |   12 +-
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |   10 +-
- arch/powerpc/platforms/85xx/socrates_fpga_pic.c |   34 +-
- arch/powerpc/platforms/86xx/Kconfig             |   12 +-
- arch/powerpc/platforms/86xx/gef_gpio.c          |   10 +-
- arch/powerpc/platforms/86xx/gef_pic.c           |   20 +-
- arch/powerpc/platforms/86xx/gef_ppc9a.c         |   12 +-
- arch/powerpc/platforms/86xx/gef_sbc310.c        |   12 +-
- arch/powerpc/platforms/86xx/gef_sbc610.c        |   12 +-
- arch/powerpc/platforms/Kconfig.cputype          |   10 +
- arch/powerpc/platforms/iseries/exception.S      |   25 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |   42 +-
- arch/powerpc/platforms/pseries/offline_states.h |   23 +-
- arch/powerpc/platforms/pseries/plpar_wrappers.h |    4 +-
- arch/powerpc/platforms/pseries/xics.c           |    7 +-
- arch/powerpc/sysdev/cpm2_pic.h                  |    2 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.c              |   10 +-
- drivers/macintosh/therm_pm72.c                  |   30 +-
- drivers/macintosh/therm_pm72.h                  |    2 +-
- 37 files changed, 1250 insertions(+), 264 deletions(-)
- create mode 100644 arch/powerpc/include/asm/perf_event_fsl_emb.h
- create mode 100644 arch/powerpc/include/asm/perf_event_server.h
- create mode 100644 arch/powerpc/kernel/e500-pmu.c
- create mode 100644 arch/powerpc/kernel/perf_event_fsl_emb.c
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Living on Earth may be expensive, but it includes an annual free trip
+around the Sun.
