@@ -1,19 +1,19 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp124.mail.ukl.yahoo.com (smtp124.mail.ukl.yahoo.com
-	[77.238.184.55]) by ozlabs.org (Postfix) with SMTP id DA6BCB7D13
+Received: from smtp149.mail.ukl.yahoo.com (smtp149.mail.ukl.yahoo.com
+	[77.238.184.80]) by ozlabs.org (Postfix) with SMTP id B1996B7D0F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 10 Mar 2010 05:07:32 +1100 (EST)
-Message-ID: <4B968E5D.5060708@yahoo.es>
-Date: Tue, 09 Mar 2010 19:07:25 +0100
+	Wed, 10 Mar 2010 05:38:06 +1100 (EST)
+Message-ID: <4B96958B.3010403@yahoo.es>
+Date: Tue, 09 Mar 2010 19:38:03 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [LKML] [RFC PATCH v3 04/11] swiotlb: support	NOT_COHERENT_CACHE
-	PowerPC platforms
+Subject: Re: [LKML] [RFC PATCH v3 05/11] swiotlb:
+	add	swiotlb_set_default_size()
 References: <1267963912-984-1-git-send-email-albert_herranz@yahoo.es>
-	<1267963912-984-5-git-send-email-albert_herranz@yahoo.es>
-	<20100308165500.GB4568@phenom.dumpdata.com>
-In-Reply-To: <20100308165500.GB4568@phenom.dumpdata.com>
+	<1267963912-984-6-git-send-email-albert_herranz@yahoo.es>
+	<20100308165940.GC4568@phenom.dumpdata.com>
+In-Reply-To: <20100308165940.GC4568@phenom.dumpdata.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -27,30 +27,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Konrad Rzeszutek Wilk wrote:
-> Hey Albert,
+> On Sun, Mar 07, 2010 at 01:11:46PM +0100, Albert Herranz wrote:
+>> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
+>> This size can be influenced using a kernel command line parameter "swiotlb".
+>> Unfortunately, the parsing of the kernel command line is done _after_ the
+>> swiotlb is initialized on some architectures.
 > 
-> I've been doing some posting in this area to split the physical / bus
-> address translation so that multiple platforms can utilize it. I was
-> wondering if it makes sense to utilize some of those concepts (ie, extend it
-> for DMA coherency) for your code:
+> Why can't it be moved up? I mean move the parsing of the kernel
+> parameters before the PCI subsystem?
+
+(In my case there's no PCI subsystem, this is an embedded platform without PCI support).
+
+Currently, in the PowerPC tree a platform wanting to use the swiotlb just sets the global ppc_swiotlb_enable variable to true in its setup_arch() function.
+The PowerPC setup code then calls swiotlb_init(1) just after setup_arch() when SWIOTLB and ppc_swiotlb_enable is true.
+At this point the kernel command line is not yet parsed.
+
+So, at least in PowerPC linux, the early swiotlb initialization is not influenced by the kernel command line.
+
+Maybe switching swiotlb from __setup to early_param would help too.
+
+>> This patch adds a new function swiotlb_set_default_size() which can be used
+>> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
+>>
+>> This will be used later to implement a smaller IO TLB on the Nintendo Wii
+>> video game console which just comes with 24MB + 64MB of RAM.
 > 
-> https://lists.linux-foundation.org/pipermail/iommu/2010-February/002066.html
-> 
-> And here is the git tree that goes on top of those patches:
-> git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git xen-swiotlb-0.5
+> Use the io_tlb_nslabs, which is what swiotlb_init_with_default_size uses
+> (the passed in argument is only used if io_tlb_nslabs is not set).
 > 
 
-Hi Konrad,
+True, thanks.
 
-Thanks for your comments.
-
-In my case, I'd like to re-use as much code from swiotlb as possible.
-Adding a few function calls at strategic spots (which are optimized out for cache coherent platforms) to maintain cache coherency is currently enough for me if that's acceptable.
-A more general approach would involve making swiotlb_bounce() platform-dependent (or at least the actual code for copying the buffers), and re-implementing map_page, sync_single and map_sg at the platform DMA code again.
-
-I've whipped through your patches. If I undestood them, you make available a kind of swiotlb "library" core on top of which you can build alternate swiotlb-based dma ops.
-Wouldn't it be a good idea to split the "library" code from the default swiotlb dma ops?
-A(n embedded) platform may just want the "library" code to implement its own dma ops, without having to pay for the extra default swiotlb dma ops implementation.
-
-Thanks,
+Cheers,
 Albert
