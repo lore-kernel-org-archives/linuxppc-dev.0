@@ -1,29 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1E351B7D15
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 17:30:28 +1100 (EST)
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 0/4] 8xx: Optimize TLB Miss code.
+Return-Path: <nm127@freemail.hu>
+Received: from relay01.digicable.hu (relay01.digicable.hu [92.249.128.189])
+	by ozlabs.org (Postfix) with ESMTP id D5D7AB7CF7
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Mar 2010 18:02:55 +1100 (EST)
+Message-ID: <4B95F298.5040000@freemail.hu>
+Date: Tue, 09 Mar 2010 08:02:48 +0100
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se>
-References: <4B8E17A7.10509@denx.de>
-	<OF5AEF2DED.4E6AA5A2-ONC12576DB.002FD2D9-C12576DB.00305B81@transmode.se>
-	<4B8E3582.8060003@denx.de>
-	<OF1C3DEF4A.B7A4D572-ONC12576DB.003876E8-C12576DB.003A7EEF@transmode.se>
-	<4B8F8BB4.6070201@denx.de>
-	<20100304121656.6758A28BBC@gemini.denx.de>
-	<OF22F52BE0.FB3F104E-ONC12576DC.00469DB5-C12576DC.004808C4@transmode.se>
-	<4B8FE00F.4030405@denx.de>
-	<OF342998FA.F0D2DAE1-ONC12576DD.003A3D7E-C12576DD.003AA365@transmode.se>
-	<4B94AB55.3020308@denx.de>
-	<OF7533FA9E.2786BF7B-ONC12576E0.002FB5D8-C12576E0.002FFEE9@transmode.se>
-	<4B94BE1F.8030203@denx.de>
-	<OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se>
-Date: Tue, 09 Mar 2010 07:30:24 +0100
-Message-Id: <20100309063024.B603EEA5BDA@gemini.denx.de>
-Cc: Scott Wood <scottwood@freescale.com>, hs@denx.de, linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: cross-compiling Linux for PowerPC e200 core?
+References: <4B934CCA.8030608@freemail.hu>
+	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
+	<4B95458A.4000304@freemail.hu>
+	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
+In-Reply-To: <fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +24,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Joakim Tjernlund,
-
-In message <OF1413A940.58E7B20E-ONC12576E0.003A9000-C12576E0.003ACFB7@transmode.se> you wrote:
->
-> > I use NFS.
+Hi,
+Grant Likely wrote:
+> 2010/3/8 Németh Márton <nm127@freemail.hu>:
+>> Grant Likely wrote:
+>>> 2010/3/6 Németh Márton <nm127@freemail.hu>:
+>>>> Hi,
+>>>>
+>>>> I'm trying to cross-compile Linux 2.6.33 for Freescale MPC5554 [1][2]. This
+>>>> microcontroller is based on the e200z6 core. I could build the cross-development
+>>>> tools, but I could miss something because I get an error message when building
+>>>> Linux for PowerPC e200 core. Here are the steps I used:
+>>> I doubt you'll have much luck with the mpc5554.  Linux doesn't include
+>>> any support for the MPC5554, and I don't think anybody is working on
+>>> it.  Any of the mpc5554 systems I've see don't have enough ram to run
+>>> Linux well.
+>> I'm ready to work a bit more than just compiling the kernel and run it on MPC5554.
+>> On my target system there is a possibility to use external RAM connected to the
+>> External Bus Interface, so I don't see this would be a problem in my case.
+>>
+>> However, I have not much experience running Linux on PowerPC environment. Could
+>> you suggest a PowerPC port which would be a good starting point to make support
+>> for MPC5554?
 > 
-> Then I think it is possible NFS gets in the way for stable measurements. Anyone
-> have experience with running lmbench on NFS?
+> I'd use the MPC5200 board support as a starting point
+> (arch/powerpc/platforms/52xx).  Create yourself a new directory for
+> this platform (arch/powerpc/platforms/55xx)
+> 
+>> As far as I could find out I'll need to create a device tree as documented in
+>> the linux/Documentation/powerpc/booting-without-of.txt file.
+> 
+> Yes, you'll need to create a device tree file for the board.  Again,
+> start from an existing 5200 .dts file.  You won't need very much in it
+> to get started.  I'd be happy to help you get the structure right.
 
-NFS may have some influence here, but I doubt it is the primary cause
-for these variations. The network where Heiko is running these tests
-is mostly idle, so it should provide fairly constant conditions. Of
-coursem the use of the network on the MPC8xx itself will add to the
-variation, but again I would not expect so big differences.
+I tried to create a first draft of the deveice tree for MPC5554. It is
+compilable with dtc. I based this .dts file on Figure 1-1 on page 1-3 and
+Table 1-2 on page 1-21 of http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf .
 
-Heiko - there is a 10 GB disk attached to the "tqm8xx" system; I
-think there should be a usable root file system on it, but I cannot
-remember the actual state. Maybe we can use that. Please contact me
-on jabber this afternoon!
+I'm not sure about the following points:
+1. Where should be the on-chip FLASH described? This memory is read-only from
+   view of software and can be used to store read-only data or execute code directly
+   from there.
 
-Best regards,
+2. Should the co-processor (eTPU in this case) also listed in section "cpus"
+   or not? This co-processor is not able to run code like the e200z6.
 
-Wolfgang Denk
+3. There are three on-chip buses on MPC5554:
+   - Crossbar Switch (XBAR)
+   - Peripheral Bridge A (PBRIDGE_A)
+   - Peripheral Bridge B (PBRIDGE_B)
+   I used PBRIDGE_A and PRIDGE_B to create two /soc<SOCname> entries. Is this possible?
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Living on Earth may be expensive, but it includes an annual free trip
-around the Sun.
+4. There are modules which have multiple instances at different base addresses. These
+   are DSPI, SCI and FlexCAN. I used the same name for them but with different addresses.
+   Is this correct?
+
+Regards,
+
+	Márton Németh
+---
+From: Márton Németh <nm127@freemail.hu>
+
+Add device tree for Freescale MPC5554.
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -uprN linux-2.6.33.orig/arch/powerpc/boot/dts/mpc5554.dts linux/arch/powerpc/boot/dts/mpc5554.dts
+--- linux-2.6.33.orig/arch/powerpc/boot/dts/mpc5554.dts	1970-01-01 01:00:00.000000000 +0100
++++ linux/arch/powerpc/boot/dts/mpc5554.dts	2010-03-09 07:40:46.000000000 +0100
+@@ -0,0 +1,197 @@
++/*
++ * Freescale MPC5554 Device Tree Source
++ *
++ * Based on MPC5553/5554 Microcontroller Reference Manual, Rev. 4.0, 04/2007
++ * http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf
++ *
++ * Copyright 2010 Márton Németh
++ * Márton Németh <nm127@freemail.hu>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/dts-v1/;
++
++/ {
++	model = "MPC5554";
++	compatible = "MPC5554";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,5554@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <32>;
++			i-cache-line-size = <32>;
++			d-cache-size = <0x8000>;	// L1, 32KiB
++			i-cache-size = <0x8000>;	// L1, 32KiB
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
++
++	flash {	// read-only FLASH
++		device_type = "memory";
++		reg = <0x00000000 0x200000>;	// 2MiB internal FLASH
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x40000000 0x10000>;	// 32KiB internal SRAM
++	};
++
++	soc5554BridgeA@c0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5554-bridgea";
++		ranges = <0 0xc0000000 0x20000000>;
++		reg = <0xc0000000 0x20000000>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		bridgea@3f00000 {
++			compatible = "fsl,mpc5554-bridgea";
++			reg = <0x03f00000 0x4000>;
++		};
++
++		fmpll@3f80000 {		// Frequency Modulated PLL
++			compatible = "fsl,mpc5554-fmpll";
++			reg = <0x03f80000 0x4000>;
++		};
++
++		flashconfig@3f88000 {	// Flash Configuration
++			compatible = "fsl,mpc5554-flashconfig";
++			reg = <0x03f88000 0x4000>;
++		};
++
++		siu@3f89000 {		// System Integration Unit
++			compatible = "fsl,mpc5554-siu";
++			reg = <0x03f90000 0x4000>;
++		};
++
++		emios@3fa0000 {		// Modular Timer System
++			compatible = "fsl,mpc5554-emios";
++			reg = <0x03fa0000 0x4000>;
++		};
++
++		etpu@3fc0000 {		// Enhanced Time Processing Unit
++			compatible = "fsl,mpc5554-etpu";
++			reg = <0x03fc0000 0x4000>;
++		};
++
++		etpudata@3fc8000 {	// eTPU Shared Data Memory (Parameter RAM)
++			compatible = "fsl,mpc5554-etpudata";
++			reg = <0x03fc8000 0x4000>;
++		};
++
++		etpudata@3fcc000 {	// eTPU Shared Data Memory (Parameter RAM) mirror
++			compatible = "fsl,mpc5554-etpudata";
++			reg = <0x03fcc000 0x4000>;
++		};
++
++		etpucode@3fd0000 {		// eTPU Shared Code RAM
++			compatible = "fsl,mpc5554-etpucode";
++			reg = <0x03fd0000 0x4000>;
++		};
++	};
++
++	soc5554BridgeB@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5554-bridgeb";
++		ranges = <0 0xe0000000 0x20000000>;
++		reg = <0xe0000000 0x20000000>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		bridgeb@1ff00000 {
++			compatible = "fsl,mpc5554-bridgeb";
++			reg = <0x1ff00000 0x4000>;
++		};
++
++		xbar@1ff04000 {		// System Bus Crossbar Switch (XBAR)
++			compatible = "fsl,mpc5554-xbar";
++			reg = <0x1ff04000 0x4000>;
++		};
++
++		ecsm@1ff40000 {		// Error Correction Status Module (ECSM)
++			compatible = "fsl,mpc5554-ecsm";
++			reg = <0x1ff40000 0x4000>;
++		};
++
++		edma@1ff44000 {		// Enhanced DMA Controller (eDMA)
++			compatible = "fsl,mpc5554-edma";
++			reg = <0x1ff44000 0x4000>;
++		};
++
++		intc@1ff48000 {		// Interrupt Controller (INTC)
++			compatible = "fsl,mpc5554-intc";
++			reg = <0x1ff48000 0x4000>;
++		};
++
++		eqadc@1ff80000 {	// Enhanced Queued Analog-to-Digital Converter (eQADC)
++			compatible = "fsl,mpc5554-eqacd";
++			reg = <0x1ff80000 0x4000>;
++		};
++
++		dspi@1ff90000 {		// Deserial Serial Peripheral Interface (DSPI_A)
++			compatible = "fsl,mpc5554-dspi";
++			reg = <0x1ff90000 0x4000>;
++		};
++
++		dspi@1ff94000 {		// Deserial Serial Peripheral Interface (DSPI_B)
++			compatible = "fsl,mpc5554-dspi";
++			reg = <0x1ff94000 0x4000>;
++		};
++
++		dspi@1ff98000 {		// Deserial Serial Peripheral Interface (DSPI_C)
++			compatible = "fsl,mpc5554-dspi";
++			reg = <0x1ff98000 0x4000>;
++		};
++
++		dspi@1ff9c000 {		// Deserial Serial Peripheral Interface (DSPI_D)
++			compatible = "fsl,mpc5554-dspi";
++			reg = <0x1ff9c000 0x4000>;
++		};
++
++		sci@1ffb0000 {		// Serial Communications Interface (SCI_A)
++			compatible = "fsl,mpc5554-sci";
++			reg = <0x1ffb0000 0x4000>;
++		};
++
++		sci@1ffb4000 {		// Serial Communications Interface (SCI_A)
++			compatible = "fsl,mpc5554-sci";
++			reg = <0x1ffb4000 0x4000>;
++		};
++
++		can@1ffc0000 {		// Controller Area Network (FlexCAN_A)
++			compatible = "fsl,mpc5554-flexcan";
++			reg = <0x1ffc0000 0x4000>;
++		};
++
++		can@1ffc4000 {		// Controller Area Network (FlexCAN_B)
++			compatible = "fsl,mpc5554-flexcan";
++			reg = <0x1ffc4000 0x4000>;
++		};
++
++		can@1ffc8000 {		// Controller Area Network (FlexCAN_C)
++			compatible = "fsl,mpc5554-flexcan";
++			reg = <0x1ffc8000 0x4000>;
++		};
++
++		bam@1fffc000 {		// Boot Assist Module (BAM)
++			compatible = "fsl,mpc5554-bam";
++			reg = <0x1fffc000 0x4000>;
++		};
++
++	};
++
++};
