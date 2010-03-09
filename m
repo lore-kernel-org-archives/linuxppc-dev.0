@@ -1,20 +1,21 @@
 Return-Path: <mbeards2@uoregon.edu>
-Received: from smtp.uoregon.edu (cc-mserv4.uoregon.edu [128.223.142.129])
+Received: from smtp.uoregon.edu (oh-mserv1.uoregon.edu [128.223.142.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "smtp.uoregon.edu",
 	Issuer "GlobalSign Organization Validation CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 48288B7D18
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 09:11:06 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 58C69B7CF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 09:14:14 +1100 (EST)
 From: Michael Beardsworth <mbeards2@uoregon.edu>
-To: mbeards2@uoregon.edu, benh@kernel.crashing.org, fthain@telegraphics.com.au,
-	grant.likely@secretlab.ca, geert@linux-m68k.org, monstr@monstr.eu
-Subject: [PATCH 2/2] Macintosh: fix coding style issues in adb.c This is a
-	patch to the adb.c file that cleans up many warnings found by
-	the checkpatch.pl tool. Signed-off-by: Michael Beardsworth
+To: benh@kernel.crashing.or, mbeards2@uoregon.edu
+Subject: [PATCH] Macintosh: fix brace and trailing statement coding style
+	issues in adb-iop.c This is a patch to the adb-iop.c file that
+	cleans up brace and trailing statement warnings found by the
+	checkpatch.pl tool. Signed-off-by: Michael Beardsworth
 	<mbeards2@uoregon.edu>
-Date: Tue,  9 Mar 2010 14:07:18 -0800
-Message-Id: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Tue,  9 Mar 2010 13:46:20 -0800
+Message-Id: <1268171180-75624-1-git-send-email-mbeards2@uoregon.edu>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Michael Beardsworth <mbeards@mbeards-mbp.lulzzzzzzz.info>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,272 +25,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
----
- drivers/macintosh/adb.c |   73 +++++++++++++++++++++++------------------------
- 1 files changed, 36 insertions(+), 37 deletions(-)
+From: Michael Beardsworth <mbeards@mbeards-mbp.lulzzzzzzz.info>
 
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 1c4ee6e..1f7a4f6 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -115,27 +115,27 @@ static DEFINE_RWLOCK(adb_handler_lock);
- #if 0
- static void printADBreply(struct adb_request *req)
+---
+ drivers/macintosh/adb-iop.c |   41 +++++++++++++++++++++++------------------
+ 1 files changed, 23 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
+index 4446966..e813589 100644
+--- a/drivers/macintosh/adb-iop.c
++++ b/drivers/macintosh/adb-iop.c
+@@ -19,13 +19,13 @@
+ #include <linux/init.h>
+ #include <linux/proc_fs.h>
+ 
+-#include <asm/macintosh.h> 
+-#include <asm/macints.h> 
++#include <asm/macintosh.h>
++#include <asm/macints.h>
+ #include <asm/mac_iop.h>
+ #include <asm/mac_oss.h>
+ #include <asm/adb_iop.h>
+ 
+-#include <linux/adb.h> 
++#include <linux/adb.h>
+ 
+ /*#define DEBUG_ADB_IOP*/
+ 
+@@ -67,7 +67,8 @@ static void adb_iop_end_req(struct adb_request *req, int state)
  {
--        int i;
-+		int i;
- 
--        printk("adb reply (%d)", req->reply_len);
--        for(i = 0; i < req->reply_len; i++)
--                printk(" %x", req->reply[i]);
--        printk("\n");
-+		printk("adb reply (%d)", req->reply_len);
-+		for (i = 0; i < req->reply_len; i++)
-+			printk(" %x", req->reply[i]);
-+		printk("\n");
- 
+ 	req->complete = 1;
+ 	current_req = req->next;
+-	if (req->done) (*req->done)(req);
++	if (req->done)
++		(*req->done)(req);
+ 	adb_iop_state = state;
  }
- #endif
  
- static int adb_scan_bus(void)
+@@ -85,9 +86,8 @@ static void adb_iop_complete(struct iop_msg *msg)
+ 	local_irq_save(flags);
+ 
+ 	req = current_req;
+-	if ((adb_iop_state == sending) && req && req->reply_expected) {
++	if ((adb_iop_state == sending) && req && req->reply_expected)
+ 		adb_iop_state = awaiting_reply;
+-	}
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -113,8 +113,8 @@ static void adb_iop_listen(struct iop_msg *msg)
+ 	req = current_req;
+ 
+ #ifdef DEBUG_ADB_IOP
+-	printk("adb_iop_listen %p: rcvd packet, %d bytes: %02X %02X", req,
+-		(uint) amsg->count + 2, (uint) amsg->flags, (uint) amsg->cmd);
++	printk(KERN_WARNING "adb_iop_listen %p: rcvd packet, %d bytes: %02X %02X",
++		req, (uint) amsg->count + 2, (uint) amsg->flags, (uint) amsg->cmd);
+ 	for (i = 0; i < amsg->count; i++)
+ 		printk(" %02X", (uint) amsg->data[i]);
+ 	printk("\n");
+@@ -130,9 +130,8 @@ static void adb_iop_listen(struct iop_msg *msg)
+ 		msg->reply[0] = ADB_IOP_TIMEOUT | ADB_IOP_AUTOPOLL;
+ 		msg->reply[1] = 0;
+ 		msg->reply[2] = 0;
+-		if (req && (adb_iop_state != idle)) {
++		if (req && (adb_iop_state != idle))
+ 			adb_iop_end_req(req, idle);
+-		}
+ 	} else {
+ 		/* TODO: is it possible for more than one chunk of data  */
+ 		/*       to arrive before the timeout? If so we need to */
+@@ -169,12 +168,13 @@ static void adb_iop_start(void)
+ 
+ 	/* get the packet to send */
+ 	req = current_req;
+-	if (!req) return;
++	if (!req)
++		return;
+ 
+ 	local_irq_save(flags);
+ 
+ #ifdef DEBUG_ADB_IOP
+-	printk("adb_iop_start %p: sending packet, %d bytes:", req, req->nbytes);
++	printk(KERN_WARNING "adb_iop_start %p: sending packet, %d bytes:", req, req->nbytes);
+ 	for (i = 0 ; i < req->nbytes ; i++)
+ 		printk(" %02X", (uint) req->data[i]);
+ 	printk("\n");
+@@ -203,13 +203,14 @@ static void adb_iop_start(void)
+ 
+ int adb_iop_probe(void)
  {
--	int i, highFree=0, noMovement;
-+	int i, highFree = 0, noMovement;
- 	int devmask = 0;
- 	struct adb_request req;
--	
-+
- 	/* assumes adb_handler[] is all zeroes at this point */
- 	for (i = 1; i < 16; i++) {
- 		/* see if there is anything at address i */
- 		adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
--                            (i << 4) | 0xf);
-+				(i << 4) | 0xf);
- 		if (req.reply_len > 1)
- 			/* one or more devices at this address */
- 			adb_handler[i].original_address = i;
-@@ -161,7 +161,7 @@ static int adb_scan_bus(void)
- 			 * this only moves one device.
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC, 3,
--				    (i<< 4) | 0xb, (highFree | 0x60), 0xfe);
-+					(i << 4) | 0xb, (highFree | 0x60), 0xfe);
- 			/*
- 			 * See if anybody actually moved. This is suggested
- 			 * by HW TechNote 01:
-@@ -170,7 +170,8 @@ static int adb_scan_bus(void)
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 				    (highFree << 4) | 0xf);
--			if (req.reply_len <= 1) continue;
-+			if (req.reply_len <= 1)
-+				continue;
- 			/*
- 			 * Test whether there are any device(s) left
- 			 * at address i.
-@@ -193,8 +194,7 @@ static int adb_scan_bus(void)
- 					break;
+-	if (!iop_ism_present) return -ENODEV;
++	if (!iop_ism_present)
++		return -ENODEV;
+ 	return 0;
+ }
  
- 				noMovement = 0;
--			}
--			else {
-+			} else {
- 				/*
- 				 * No devices left at address i; move the
- 				 * one(s) we moved to `highFree' back to i.
-@@ -203,7 +203,7 @@ static int adb_scan_bus(void)
- 					    (highFree << 4) | 0xb,
- 					    (i | 0x60), 0xfe);
- 			}
--		}	
-+		}
+ int adb_iop_init(void)
+ {
+-	printk("adb: IOP ISM driver v0.4 for Unified ADB.\n");
++	printk(KERN_MESSAGE "adb: IOP ISM driver v0.4 for Unified ADB.\n");
+ 	iop_listen(ADB_IOP, ADB_CHAN, adb_iop_listen, "ADB");
+ 	return 0;
+ }
+@@ -219,10 +220,12 @@ int adb_iop_send_request(struct adb_request *req, int sync)
+ 	int err;
+ 
+ 	err = adb_iop_write(req);
+-	if (err) return err;
++	if (err)
++		return err;
+ 
+ 	if (sync) {
+-		while (!req->complete) adb_iop_poll();
++		while (!req->complete)
++			adb_iop_poll();
+ 	}
+ 	return 0;
+ }
+@@ -252,7 +255,8 @@ static int adb_iop_write(struct adb_request *req)
  	}
  
- 	/* Now fill in the handler_id field of the adb_handler entries. */
-@@ -307,7 +307,7 @@ static int __init adb_init(void)
- 	if (adb_inited)
- 		return 0;
- 	adb_inited = 1;
--		
-+
- 	adb_controller = NULL;
- 
- 	i = 0;
-@@ -341,10 +341,10 @@ static int
- do_adb_reset_bus(void)
- {
- 	int ret;
--	
-+
- 	if (adb_controller == NULL)
- 		return -ENXIO;
--		
-+
- 	if (adb_controller->autopoll)
- 		adb_controller->autopoll(0);
- 
-@@ -381,14 +381,14 @@ do_adb_reset_bus(void)
- 
- 	blocking_notifier_call_chain(&adb_client_list,
- 		ADB_MSG_POST_RESET, NULL);
--	
-+
- 	return ret;
+ 	local_irq_restore(flags);
+-	if (adb_iop_state == idle) adb_iop_start();
++	if (adb_iop_state == idle)
++		adb_iop_start();
+ 	return 0;
  }
  
- void
- adb_poll(void)
- {
--	if ((adb_controller == NULL)||(adb_controller->poll == NULL))
-+	if ((adb_controller == NULL) || (adb_controller->poll == NULL))
- 		return;
- 	adb_controller->poll();
- }
-@@ -459,7 +459,7 @@ adb_register(int default_id, int handler_id, struct adb_ids *ids,
- 	ids->nids = 0;
- 	for (i = 1; i < 16; i++) {
- 		if ((adb_handler[i].original_address == default_id) &&
--		    (!handler_id || (handler_id == adb_handler[i].handler_id) || 
-+		    (!handler_id || (handler_id == adb_handler[i].handler_id) ||
- 		    try_handler_change(i, handler_id))) {
- 			if (adb_handler[i].handler != 0) {
- 				printk(KERN_ERR
-@@ -485,7 +485,7 @@ adb_unregister(int index)
- 	mutex_lock(&adb_handler_mutex);
- 	write_lock_irq(&adb_handler_lock);
- 	if (adb_handler[index].handler) {
--		while(adb_handler[index].busy) {
-+		while (adb_handler[index].busy) {
- 			write_unlock_irq(&adb_handler_lock);
- 			yield();
- 			write_lock_irq(&adb_handler_lock);
-@@ -504,7 +504,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	int i, id;
- 	static int dump_adb_input = 0;
- 	unsigned long flags;
--	
-+
- 	void (*handler)(unsigned char *, int, int);
+@@ -264,7 +268,8 @@ int adb_iop_autopoll(int devs)
  
- 	/* We skip keystrokes and mouse moves when the sleep process
-@@ -512,7 +512,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	 */
- 	if (adb_got_sleep)
- 		return;
--		
-+
- 	id = buf[0] >> 4;
- 	if (dump_adb_input) {
- 		printk(KERN_INFO "adb packet: ");
-@@ -530,7 +530,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 		wmb();
- 		adb_handler[id].busy = 0;
- 	}
--		
-+
+ void adb_iop_poll(void)
+ {
+-	if (adb_iop_state == idle) adb_iop_start();
++	if (adb_iop_state == idle)
++		adb_iop_start();
+ 	iop_ism_irq(0, (void *) ADB_IOP);
  }
  
- /* Try to change handler to new_id. Will return 1 if successful. */
-@@ -539,15 +539,15 @@ static int try_handler_change(int address, int new_id)
- 	struct adb_request req;
- 
- 	if (adb_handler[address].handler_id == new_id)
--	    return 1;
-+		return 1;
- 	adb_request(&req, NULL, ADBREQ_SYNC, 3,
- 	    ADB_WRITEREG(address, 3), address | 0x20, new_id);
- 	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 	    ADB_READREG(address, 3));
- 	if (req.reply_len < 2)
--	    return 0;
-+		return 0;
- 	if (req.reply[2] != new_id)
--	    return 0;
-+		return 0;
- 	adb_handler[address].handler_id = req.reply[2];
- 
- 	return 1;
-@@ -586,7 +586,7 @@ struct adbdev_state {
- 	spinlock_t	lock;
- 	atomic_t	n_pending;
- 	struct adb_request *completed;
--  	wait_queue_head_t wait_queue;
-+	wait_queue_head_t wait_queue;
- 	int		inuse;
- };
- 
-@@ -624,8 +624,7 @@ do_adb_query(struct adb_request *req)
- {
- 	int	ret = -EINVAL;
- 
--	switch(req->data[1])
--	{
-+	switch (req->data[1]) {
- 	case ADB_QUERY_GETDEVINFO:
- 		if (req->nbytes < 3)
- 			break;
-@@ -697,7 +696,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	int ret = 0;
- 	struct adbdev_state *state = file->private_data;
- 	struct adb_request *req;
--	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait,current);
-+	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
- 	unsigned long flags;
- 
- 	if (count < 2)
-@@ -720,7 +719,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 			ret = -EIO;
- 		if (req != NULL || ret != 0)
- 			break;
--		
-+
- 		if (file->f_flags & O_NONBLOCK) {
- 			ret = -EAGAIN;
- 			break;
-@@ -737,7 +736,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	current->state = TASK_RUNNING;
- 	remove_wait_queue(&state->wait_queue, &wait);
- 	spin_unlock_irqrestore(&state->lock, flags);
--	
-+
- 	if (ret)
- 		return ret;
- 
-@@ -774,14 +773,14 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	req->done = adb_write_done;
- 	req->arg = (void *) state;
- 	req->complete = 0;
--	
-+
- 	ret = -EFAULT;
- 	if (copy_from_user(req->data, buf, count))
- 		goto out;
- 
- 	atomic_inc(&state->n_pending);
- 
--	/* If a probe is in progress or we are sleeping, wait for it to complete */
-+	/* If a probe is in progress or we are sleeping, wait until complete */
- 	down(&adb_probe_mutex);
- 
- 	/* Queries are special requests sent to the ADB driver itself */
-@@ -794,15 +793,15 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	}
- 	/* Special case for ADB_BUSRESET request, all others are sent to
- 	   the controller */
--	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
--		&&(req->data[1] == ADB_BUSRESET)) {
-+	else if ((req->data[0] == ADB_PACKET) && (count > 1)
-+		&& (req->data[1] == ADB_BUSRESET)) {
- 		ret = do_adb_reset_bus();
- 		up(&adb_probe_mutex);
- 		atomic_dec(&state->n_pending);
- 		if (ret == 0)
- 			ret = count;
- 		goto out;
--	} else {	
-+	} else {
- 		req->reply_expected = ((req->data[1] & 0xc) == 0xc);
- 		if (adb_controller && adb_controller->send_request)
- 			ret = adb_controller->send_request(req, 0);
 -- 
 1.6.5
