@@ -1,19 +1,15 @@
-Return-Path: <nagaten@gmail.com>
-Received: from mail-fx0-f214.google.com (mail-fx0-f214.google.com
-	[209.85.220.214]) by ozlabs.org (Postfix) with ESMTP id 60479B7D1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 06:29:12 +1100 (EST)
-Received: by fxm6 with SMTP id 6so1018810fxm.22
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Mar 2010 11:29:09 -0800 (PST)
-From: Nick Savage <nagaten@gmail.com>
-To: benh@kernel.crashing.org, fthain@telegraphics.com.au,
-	grant.likely@secretlab.ca, geert@linux-m68k.org, monstr@monstr.eu
-Subject: [PATCH] Staging: macintosh: fix whitespace and style in adb.c This is
-	a patch to the adb.c file,
-	fixing the formatting of braces and tabs. Signed-off-by: Nick Savage
-Date: Tue,  9 Mar 2010 14:28:35 -0500
-Message-Id: <1268162915-12767-1-git-send-email-nagaten@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Nick Savage <nagaten@gmail.com>
+Return-Path: <jgunthorpe@obsidianresearch.com>
+Received: from quartz.orcorp.ca (quartz.orcorp.ca [139.142.54.143])
+	by ozlabs.org (Postfix) with ESMTP id A3F63B7D1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 07:01:38 +1100 (EST)
+Date: Tue, 9 Mar 2010 13:01:35 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: tpmdd-devel@lists.sourceforge.net
+Subject: [PATCH] TPM: Provide a tpm_tis OF driver
+Message-ID: <20100309200135.GF30462@obsidianresearch.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,264 +19,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
----
- drivers/macintosh/adb.c |   71 +++++++++++++++++++++++------------------------
- 1 files changed, 35 insertions(+), 36 deletions(-)
+This provides an open firwmare driver binding for tpm_tis. OF
+is useful on arches where PNP is not used.
 
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 1c4ee6e..89891bb 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -115,27 +115,27 @@ static DEFINE_RWLOCK(adb_handler_lock);
- #if 0
- static void printADBreply(struct adb_request *req)
+Allow the tpm_tis driver to be selected if PNP or OF are compiled in.
+
+Tested on a PPC405 with a winbond LPC TPM.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+---
+ drivers/char/tpm/Kconfig   |    2 +-
+ drivers/char/tpm/tpm_tis.c |   75 +++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 69 insertions(+), 8 deletions(-)
+
+I had previously sent a patch to make the platform device more useful,
+but this one is better for PPC...
+
+Thanks
+
+diff --git a/drivers/char/tpm/Kconfig b/drivers/char/tpm/Kconfig
+index f5fc64f..e4ab74f 100644
+--- a/drivers/char/tpm/Kconfig
++++ b/drivers/char/tpm/Kconfig
+@@ -24,7 +24,7 @@ if TCG_TPM
+ 
+ config TCG_TIS
+ 	tristate "TPM Interface Specification 1.2 Interface"
+-	depends on PNP
++	depends on PNP || OF
+ 	---help---
+ 	  If you have a TPM security chip that is compliant with the
+ 	  TCG TIS 1.2 TPM specification say Yes and it will be accessible
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index 2405f17..37e45f1 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -24,6 +24,7 @@
+ #include <linux/pnp.h>
+ #include <linux/interrupt.h>
+ #include <linux/wait.h>
++#include <linux/of_platform.h>
+ #include "tpm.h"
+ 
+ #define TPM_HEADER_SIZE 10
+@@ -439,7 +440,7 @@ module_param(interrupts, bool, 0444);
+ MODULE_PARM_DESC(interrupts, "Enable interrupts");
+ 
+ static int tpm_tis_init(struct device *dev, resource_size_t start,
+-			resource_size_t len, unsigned int irq)
++			resource_size_t len, int irq)
  {
--        int i;
-+	int i;
- 
--        printk("adb reply (%d)", req->reply_len);
--        for(i = 0; i < req->reply_len; i++)
--                printk(" %x", req->reply[i]);
--        printk("\n");
-+	printk("adb reply (%d)", req->reply_len);
-+	for (i = 0; i < req->reply_len; i++)
-+		printk(" %x", req->reply[i]);
-+	printk("\n");
- 
+ 	u32 vendor, intfcaps, intmask;
+ 	int rc, i;
+@@ -515,9 +516,11 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+ 	iowrite32(intmask,
+ 		  chip->vendor.iobase +
+ 		  TPM_INT_ENABLE(chip->vendor.locality));
+-	if (interrupts)
++	if (!interrupts)
++		irq = -1;
++	if (irq != -1)
+ 		chip->vendor.irq = irq;
+-	if (interrupts && !chip->vendor.irq) {
++	if (irq == 0) {
+ 		chip->vendor.irq =
+ 		    ioread8(chip->vendor.iobase +
+ 			    TPM_INT_VECTOR(chip->vendor.locality));
+@@ -598,11 +601,12 @@ out_err:
+ 	return rc;
  }
- #endif
  
- static int adb_scan_bus(void)
++#ifdef CONFIG_PNP
+ static int __devinit tpm_tis_pnp_init(struct pnp_dev *pnp_dev,
+ 				      const struct pnp_device_id *pnp_id)
  {
--	int i, highFree=0, noMovement;
-+	int i, highFree = 0, noMovement;
- 	int devmask = 0;
- 	struct adb_request req;
--	
-+
- 	/* assumes adb_handler[] is all zeroes at this point */
- 	for (i = 1; i < 16; i++) {
- 		/* see if there is anything at address i */
- 		adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
--                            (i << 4) | 0xf);
-+			(i << 4) | 0xf);
- 		if (req.reply_len > 1)
- 			/* one or more devices at this address */
- 			adb_handler[i].original_address = i;
-@@ -161,7 +161,7 @@ static int adb_scan_bus(void)
- 			 * this only moves one device.
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC, 3,
--				    (i<< 4) | 0xb, (highFree | 0x60), 0xfe);
-+				    (i << 4) | 0xb, (highFree | 0x60), 0xfe);
- 			/*
- 			 * See if anybody actually moved. This is suggested
- 			 * by HW TechNote 01:
-@@ -170,7 +170,8 @@ static int adb_scan_bus(void)
- 			 */
- 			adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 				    (highFree << 4) | 0xf);
--			if (req.reply_len <= 1) continue;
-+			if (req.reply_len <= 1)
-+				continue;
- 			/*
- 			 * Test whether there are any device(s) left
- 			 * at address i.
-@@ -193,8 +194,7 @@ static int adb_scan_bus(void)
- 					break;
+ 	resource_size_t start, len;
+-	unsigned int irq = 0;
++	int irq = 0;
  
- 				noMovement = 0;
--			}
--			else {
-+			} else {
- 				/*
- 				 * No devices left at address i; move the
- 				 * one(s) we moved to `highFree' back to i.
-@@ -203,7 +203,7 @@ static int adb_scan_bus(void)
- 					    (highFree << 4) | 0xb,
- 					    (i | 0x60), 0xfe);
- 			}
--		}	
-+		}
+ 	start = pnp_mem_start(pnp_dev, 0);
+ 	len = pnp_mem_len(pnp_dev, 0);
+@@ -610,7 +614,7 @@ static int __devinit tpm_tis_pnp_init(struct pnp_dev *pnp_dev,
+ 	if (pnp_irq_valid(pnp_dev, 0))
+ 		irq = pnp_irq(pnp_dev, 0);
+ 	else
+-		interrupts = 0;
++		irq = -1;
+ 
+ 	return tpm_tis_init(&pnp_dev->dev, start, len, irq);
+ }
+@@ -662,6 +666,7 @@ static struct pnp_driver tis_pnp_driver = {
+ module_param_string(hid, tpm_pnp_tbl[TIS_HID_USR_IDX].id,
+ 		    sizeof(tpm_pnp_tbl[TIS_HID_USR_IDX].id), 0444);
+ MODULE_PARM_DESC(hid, "Set additional specific HID for this driver to probe");
++#endif
+ 
+ static int tpm_tis_suspend(struct platform_device *dev, pm_message_t msg)
+ {
+@@ -683,6 +688,45 @@ static struct platform_driver tis_drv = {
+ 
+ static struct platform_device *pdev;
+ 
++#ifdef CONFIG_OF
++static int __devinit tis_of_init_one(struct of_device *ofdev,
++				     const struct of_device_id *match)
++{
++	struct resource res;
++	int ret;
++	int irq;
++
++	ret = of_address_to_resource(ofdev->node, 0, &res);
++	if (ret)
++		return ret;
++
++	irq = irq_of_parse_and_map(ofdev->node, 0);
++	if (irq == NO_IRQ)
++		irq = -1;
++	return tpm_tis_init(&ofdev->dev, res.start, res.end - res.start + 1, irq);
++}
++
++static int __devexit tis_of_remove_one(struct of_device *odev)
++{
++	struct tpm_chip *chip = dev_get_drvdata(&odev->dev);
++	tpm_dev_vendor_release(chip);
++	kfree(chip);
++	return 0;
++}
++
++static struct of_device_id tis_of_platform_match[] = {
++	{.compatible = "tcg,tpm_tis"},
++	{},
++};
++static struct of_platform_driver tis_of_driver = {
++	.name = "tpm_tis",
++	.match_table = tis_of_platform_match,
++	.probe = tis_of_init_one,
++	.remove = __devexit_p(tis_of_remove_one)
++};
++
++#endif
++
+ static int force;
+ module_param(force, bool, 0444);
+ MODULE_PARM_DESC(force, "Force device probe rather than using ACPI entry");
+@@ -703,7 +747,17 @@ static int __init init_tis(void)
+ 		return rc;
  	}
  
- 	/* Now fill in the handler_id field of the adb_handler entries. */
-@@ -307,7 +307,7 @@ static int __init adb_init(void)
- 	if (adb_inited)
- 		return 0;
- 	adb_inited = 1;
--		
-+
- 	adb_controller = NULL;
- 
- 	i = 0;
-@@ -341,10 +341,10 @@ static int
- do_adb_reset_bus(void)
- {
- 	int ret;
--	
-+
- 	if (adb_controller == NULL)
- 		return -ENXIO;
--		
-+
- 	if (adb_controller->autopoll)
- 		adb_controller->autopoll(0);
- 
-@@ -381,14 +381,14 @@ do_adb_reset_bus(void)
- 
- 	blocking_notifier_call_chain(&adb_client_list,
- 		ADB_MSG_POST_RESET, NULL);
--	
-+
- 	return ret;
+-	return pnp_register_driver(&tis_pnp_driver);
++#ifdef CONFIG_OF
++	rc = of_register_platform_driver(&tis_of_driver);
++	if (rc)
++		return rc;
++#endif
++#ifdef CONFIG_PNP
++	rc = pnp_register_driver(&tis_pnp_driver);
++	if (rc)
++		return rc;
++#endif
++	return 0;
  }
  
- void
- adb_poll(void)
- {
--	if ((adb_controller == NULL)||(adb_controller->poll == NULL))
-+	if ((adb_controller == NULL) || (adb_controller->poll == NULL))
- 		return;
- 	adb_controller->poll();
- }
-@@ -459,7 +459,7 @@ adb_register(int default_id, int handler_id, struct adb_ids *ids,
- 	ids->nids = 0;
- 	for (i = 1; i < 16; i++) {
- 		if ((adb_handler[i].original_address == default_id) &&
--		    (!handler_id || (handler_id == adb_handler[i].handler_id) || 
-+		    (!handler_id || (handler_id == adb_handler[i].handler_id) ||
- 		    try_handler_change(i, handler_id))) {
- 			if (adb_handler[i].handler != 0) {
- 				printk(KERN_ERR
-@@ -485,7 +485,7 @@ adb_unregister(int index)
- 	mutex_lock(&adb_handler_mutex);
- 	write_lock_irq(&adb_handler_lock);
- 	if (adb_handler[index].handler) {
--		while(adb_handler[index].busy) {
-+		while (adb_handler[index].busy) {
- 			write_unlock_irq(&adb_handler_lock);
- 			yield();
- 			write_lock_irq(&adb_handler_lock);
-@@ -504,7 +504,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	int i, id;
- 	static int dump_adb_input = 0;
- 	unsigned long flags;
--	
-+
- 	void (*handler)(unsigned char *, int, int);
- 
- 	/* We skip keystrokes and mouse moves when the sleep process
-@@ -512,7 +512,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 	 */
- 	if (adb_got_sleep)
- 		return;
--		
-+
- 	id = buf[0] >> 4;
- 	if (dump_adb_input) {
- 		printk(KERN_INFO "adb packet: ");
-@@ -530,7 +530,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
- 		wmb();
- 		adb_handler[id].busy = 0;
+ static void __exit cleanup_tis(void)
+@@ -728,11 +782,18 @@ static void __exit cleanup_tis(void)
  	}
--		
+ 	spin_unlock(&tis_lock);
+ 
++#ifdef CONFIG_OF
++	of_unregister_platform_driver(&tis_of_driver);
++#endif
 +
- }
- 
- /* Try to change handler to new_id. Will return 1 if successful. */
-@@ -539,15 +539,15 @@ static int try_handler_change(int address, int new_id)
- 	struct adb_request req;
- 
- 	if (adb_handler[address].handler_id == new_id)
--	    return 1;
-+		return 1;
- 	adb_request(&req, NULL, ADBREQ_SYNC, 3,
- 	    ADB_WRITEREG(address, 3), address | 0x20, new_id);
- 	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
- 	    ADB_READREG(address, 3));
- 	if (req.reply_len < 2)
--	    return 0;
-+		return 0;
- 	if (req.reply[2] != new_id)
--	    return 0;
-+		return 0;
- 	adb_handler[address].handler_id = req.reply[2];
- 
- 	return 1;
-@@ -586,7 +586,7 @@ struct adbdev_state {
- 	spinlock_t	lock;
- 	atomic_t	n_pending;
- 	struct adb_request *completed;
--  	wait_queue_head_t wait_queue;
-+	wait_queue_head_t wait_queue;
- 	int		inuse;
- };
- 
-@@ -624,8 +624,7 @@ do_adb_query(struct adb_request *req)
- {
- 	int	ret = -EINVAL;
- 
--	switch(req->data[1])
--	{
-+	switch (req->data[1]) {
- 	case ADB_QUERY_GETDEVINFO:
- 		if (req->nbytes < 3)
- 			break;
-@@ -697,7 +696,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	int ret = 0;
- 	struct adbdev_state *state = file->private_data;
- 	struct adb_request *req;
--	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait,current);
-+	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
- 	unsigned long flags;
- 
- 	if (count < 2)
-@@ -720,7 +719,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 			ret = -EIO;
- 		if (req != NULL || ret != 0)
- 			break;
--		
-+
- 		if (file->f_flags & O_NONBLOCK) {
- 			ret = -EAGAIN;
- 			break;
-@@ -737,7 +736,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	current->state = TASK_RUNNING;
- 	remove_wait_queue(&state->wait_queue, &wait);
- 	spin_unlock_irqrestore(&state->lock, flags);
--	
-+
- 	if (ret)
- 		return ret;
- 
-@@ -774,7 +773,7 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	req->done = adb_write_done;
- 	req->arg = (void *) state;
- 	req->complete = 0;
--	
-+
- 	ret = -EFAULT;
- 	if (copy_from_user(req->data, buf, count))
- 		goto out;
-@@ -794,15 +793,15 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
- 	}
- 	/* Special case for ADB_BUSRESET request, all others are sent to
- 	   the controller */
--	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
--		&&(req->data[1] == ADB_BUSRESET)) {
-+	else if ((req->data[0] == ADB_PACKET) && (count > 1)
-+		&& (req->data[1] == ADB_BUSRESET)) {
- 		ret = do_adb_reset_bus();
- 		up(&adb_probe_mutex);
- 		atomic_dec(&state->n_pending);
- 		if (ret == 0)
- 			ret = count;
- 		goto out;
--	} else {	
+ 	if (force) {
+ 		platform_device_unregister(pdev);
+ 		platform_driver_unregister(&tis_drv);
+-	} else
 +	} else {
- 		req->reply_expected = ((req->data[1] & 0xc) == 0xc);
- 		if (adb_controller && adb_controller->send_request)
- 			ret = adb_controller->send_request(req, 0);
++#ifdef CONFIG_PNP
+ 		pnp_unregister_driver(&tis_pnp_driver);
++#endif
++	}
+ }
+ 
+ module_init(init_tis);
 -- 
-1.7.0.1
+1.5.4.2
