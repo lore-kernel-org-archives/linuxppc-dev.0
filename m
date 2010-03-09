@@ -1,15 +1,20 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [139.142.54.143])
-	by ozlabs.org (Postfix) with ESMTP id B5F9BB7D19
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 07:12:05 +1100 (EST)
-Date: Tue, 9 Mar 2010 12:30:21 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PPC: Skip over OF_DT_NOP when unflattening the device tree
-Message-ID: <20100309193021.GD30462@obsidianresearch.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org
+Return-Path: <mbeards2@uoregon.edu>
+Received: from smtp.uoregon.edu (cc-mserv4.uoregon.edu [128.223.142.129])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.uoregon.edu",
+	Issuer "GlobalSign Organization Validation CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 48288B7D18
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 09:11:06 +1100 (EST)
+From: Michael Beardsworth <mbeards2@uoregon.edu>
+To: mbeards2@uoregon.edu, benh@kernel.crashing.org, fthain@telegraphics.com.au,
+	grant.likely@secretlab.ca, geert@linux-m68k.org, monstr@monstr.eu
+Subject: [PATCH 2/2] Macintosh: fix coding style issues in adb.c This is a
+	patch to the adb.c file that cleans up many warnings found by
+	the checkpatch.pl tool. Signed-off-by: Michael Beardsworth
+	<mbeards2@uoregon.edu>
+Date: Tue,  9 Mar 2010 14:07:18 -0800
+Message-Id: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +24,272 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NOPs within the property section are skipped, but NOPs between
-OF_DT_END_NODE and OF_DT_BEGIN_NODE were not. My firmware NOPs out
-entire nodes depending on various environment parameters.
-
-of_scan_flat_dt already handles NOP more generally..
-
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 ---
- arch/powerpc/kernel/prom.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/macintosh/adb.c |   73 +++++++++++++++++++++++------------------------
+ 1 files changed, 36 insertions(+), 37 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 4ec3008..92137b2 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -408,8 +408,11 @@ static unsigned long __init unflatten_dt_node(unsigned long mem,
- 		if (!np->type)
- 			np->type = "<NULL>";
+diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index 1c4ee6e..1f7a4f6 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -115,27 +115,27 @@ static DEFINE_RWLOCK(adb_handler_lock);
+ #if 0
+ static void printADBreply(struct adb_request *req)
+ {
+-        int i;
++		int i;
+ 
+-        printk("adb reply (%d)", req->reply_len);
+-        for(i = 0; i < req->reply_len; i++)
+-                printk(" %x", req->reply[i]);
+-        printk("\n");
++		printk("adb reply (%d)", req->reply_len);
++		for (i = 0; i < req->reply_len; i++)
++			printk(" %x", req->reply[i]);
++		printk("\n");
+ 
+ }
+ #endif
+ 
+ static int adb_scan_bus(void)
+ {
+-	int i, highFree=0, noMovement;
++	int i, highFree = 0, noMovement;
+ 	int devmask = 0;
+ 	struct adb_request req;
+-	
++
+ 	/* assumes adb_handler[] is all zeroes at this point */
+ 	for (i = 1; i < 16; i++) {
+ 		/* see if there is anything at address i */
+ 		adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+-                            (i << 4) | 0xf);
++				(i << 4) | 0xf);
+ 		if (req.reply_len > 1)
+ 			/* one or more devices at this address */
+ 			adb_handler[i].original_address = i;
+@@ -161,7 +161,7 @@ static int adb_scan_bus(void)
+ 			 * this only moves one device.
+ 			 */
+ 			adb_request(&req, NULL, ADBREQ_SYNC, 3,
+-				    (i<< 4) | 0xb, (highFree | 0x60), 0xfe);
++					(i << 4) | 0xb, (highFree | 0x60), 0xfe);
+ 			/*
+ 			 * See if anybody actually moved. This is suggested
+ 			 * by HW TechNote 01:
+@@ -170,7 +170,8 @@ static int adb_scan_bus(void)
+ 			 */
+ 			adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+ 				    (highFree << 4) | 0xf);
+-			if (req.reply_len <= 1) continue;
++			if (req.reply_len <= 1)
++				continue;
+ 			/*
+ 			 * Test whether there are any device(s) left
+ 			 * at address i.
+@@ -193,8 +194,7 @@ static int adb_scan_bus(void)
+ 					break;
+ 
+ 				noMovement = 0;
+-			}
+-			else {
++			} else {
+ 				/*
+ 				 * No devices left at address i; move the
+ 				 * one(s) we moved to `highFree' back to i.
+@@ -203,7 +203,7 @@ static int adb_scan_bus(void)
+ 					    (highFree << 4) | 0xb,
+ 					    (i | 0x60), 0xfe);
+ 			}
+-		}	
++		}
  	}
--	while (tag == OF_DT_BEGIN_NODE) {
--		mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
-+	while (tag == OF_DT_BEGIN_NODE || tag == OF_DT_NOP) {
-+		if (tag == OF_DT_NOP)
-+			*p += 4;
-+		else
-+			mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
- 		tag = *((u32 *)(*p));
+ 
+ 	/* Now fill in the handler_id field of the adb_handler entries. */
+@@ -307,7 +307,7 @@ static int __init adb_init(void)
+ 	if (adb_inited)
+ 		return 0;
+ 	adb_inited = 1;
+-		
++
+ 	adb_controller = NULL;
+ 
+ 	i = 0;
+@@ -341,10 +341,10 @@ static int
+ do_adb_reset_bus(void)
+ {
+ 	int ret;
+-	
++
+ 	if (adb_controller == NULL)
+ 		return -ENXIO;
+-		
++
+ 	if (adb_controller->autopoll)
+ 		adb_controller->autopoll(0);
+ 
+@@ -381,14 +381,14 @@ do_adb_reset_bus(void)
+ 
+ 	blocking_notifier_call_chain(&adb_client_list,
+ 		ADB_MSG_POST_RESET, NULL);
+-	
++
+ 	return ret;
+ }
+ 
+ void
+ adb_poll(void)
+ {
+-	if ((adb_controller == NULL)||(adb_controller->poll == NULL))
++	if ((adb_controller == NULL) || (adb_controller->poll == NULL))
+ 		return;
+ 	adb_controller->poll();
+ }
+@@ -459,7 +459,7 @@ adb_register(int default_id, int handler_id, struct adb_ids *ids,
+ 	ids->nids = 0;
+ 	for (i = 1; i < 16; i++) {
+ 		if ((adb_handler[i].original_address == default_id) &&
+-		    (!handler_id || (handler_id == adb_handler[i].handler_id) || 
++		    (!handler_id || (handler_id == adb_handler[i].handler_id) ||
+ 		    try_handler_change(i, handler_id))) {
+ 			if (adb_handler[i].handler != 0) {
+ 				printk(KERN_ERR
+@@ -485,7 +485,7 @@ adb_unregister(int index)
+ 	mutex_lock(&adb_handler_mutex);
+ 	write_lock_irq(&adb_handler_lock);
+ 	if (adb_handler[index].handler) {
+-		while(adb_handler[index].busy) {
++		while (adb_handler[index].busy) {
+ 			write_unlock_irq(&adb_handler_lock);
+ 			yield();
+ 			write_lock_irq(&adb_handler_lock);
+@@ -504,7 +504,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 	int i, id;
+ 	static int dump_adb_input = 0;
+ 	unsigned long flags;
+-	
++
+ 	void (*handler)(unsigned char *, int, int);
+ 
+ 	/* We skip keystrokes and mouse moves when the sleep process
+@@ -512,7 +512,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 	 */
+ 	if (adb_got_sleep)
+ 		return;
+-		
++
+ 	id = buf[0] >> 4;
+ 	if (dump_adb_input) {
+ 		printk(KERN_INFO "adb packet: ");
+@@ -530,7 +530,7 @@ adb_input(unsigned char *buf, int nb, int autopoll)
+ 		wmb();
+ 		adb_handler[id].busy = 0;
  	}
- 	if (tag != OF_DT_END_NODE) {
+-		
++
+ }
+ 
+ /* Try to change handler to new_id. Will return 1 if successful. */
+@@ -539,15 +539,15 @@ static int try_handler_change(int address, int new_id)
+ 	struct adb_request req;
+ 
+ 	if (adb_handler[address].handler_id == new_id)
+-	    return 1;
++		return 1;
+ 	adb_request(&req, NULL, ADBREQ_SYNC, 3,
+ 	    ADB_WRITEREG(address, 3), address | 0x20, new_id);
+ 	adb_request(&req, NULL, ADBREQ_SYNC | ADBREQ_REPLY, 1,
+ 	    ADB_READREG(address, 3));
+ 	if (req.reply_len < 2)
+-	    return 0;
++		return 0;
+ 	if (req.reply[2] != new_id)
+-	    return 0;
++		return 0;
+ 	adb_handler[address].handler_id = req.reply[2];
+ 
+ 	return 1;
+@@ -586,7 +586,7 @@ struct adbdev_state {
+ 	spinlock_t	lock;
+ 	atomic_t	n_pending;
+ 	struct adb_request *completed;
+-  	wait_queue_head_t wait_queue;
++	wait_queue_head_t wait_queue;
+ 	int		inuse;
+ };
+ 
+@@ -624,8 +624,7 @@ do_adb_query(struct adb_request *req)
+ {
+ 	int	ret = -EINVAL;
+ 
+-	switch(req->data[1])
+-	{
++	switch (req->data[1]) {
+ 	case ADB_QUERY_GETDEVINFO:
+ 		if (req->nbytes < 3)
+ 			break;
+@@ -697,7 +696,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 	int ret = 0;
+ 	struct adbdev_state *state = file->private_data;
+ 	struct adb_request *req;
+-	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait,current);
++	wait_queue_t wait = __WAITQUEUE_INITIALIZER(wait, current);
+ 	unsigned long flags;
+ 
+ 	if (count < 2)
+@@ -720,7 +719,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 			ret = -EIO;
+ 		if (req != NULL || ret != 0)
+ 			break;
+-		
++
+ 		if (file->f_flags & O_NONBLOCK) {
+ 			ret = -EAGAIN;
+ 			break;
+@@ -737,7 +736,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
+ 	current->state = TASK_RUNNING;
+ 	remove_wait_queue(&state->wait_queue, &wait);
+ 	spin_unlock_irqrestore(&state->lock, flags);
+-	
++
+ 	if (ret)
+ 		return ret;
+ 
+@@ -774,14 +773,14 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+ 	req->done = adb_write_done;
+ 	req->arg = (void *) state;
+ 	req->complete = 0;
+-	
++
+ 	ret = -EFAULT;
+ 	if (copy_from_user(req->data, buf, count))
+ 		goto out;
+ 
+ 	atomic_inc(&state->n_pending);
+ 
+-	/* If a probe is in progress or we are sleeping, wait for it to complete */
++	/* If a probe is in progress or we are sleeping, wait until complete */
+ 	down(&adb_probe_mutex);
+ 
+ 	/* Queries are special requests sent to the ADB driver itself */
+@@ -794,15 +793,15 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+ 	}
+ 	/* Special case for ADB_BUSRESET request, all others are sent to
+ 	   the controller */
+-	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
+-		&&(req->data[1] == ADB_BUSRESET)) {
++	else if ((req->data[0] == ADB_PACKET) && (count > 1)
++		&& (req->data[1] == ADB_BUSRESET)) {
+ 		ret = do_adb_reset_bus();
+ 		up(&adb_probe_mutex);
+ 		atomic_dec(&state->n_pending);
+ 		if (ret == 0)
+ 			ret = count;
+ 		goto out;
+-	} else {	
++	} else {
+ 		req->reply_expected = ((req->data[1] & 0xc) == 0xc);
+ 		if (adb_controller && adb_controller->send_request)
+ 			ret = adb_controller->send_request(req, 0);
 -- 
-1.5.4.2
+1.6.5
