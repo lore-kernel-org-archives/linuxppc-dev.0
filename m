@@ -1,30 +1,28 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 16CE1B7CE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 23:19:34 +1100 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id o2ABXvg4013201
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 17:03:57 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2ACJXhl3022902
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 17:49:33 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2ACJWNr012262
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 17:49:32 +0530
-Date: Wed, 10 Mar 2010 17:49:25 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Subject: [PATCH v2] powerpc: export data from new hcall H_EM_GET_PARMS
-Message-ID: <20100310121925.GB15046@dirshya.in.ibm.com>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "*.citrix.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 685DCB7CCD
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 23:51:22 +1100 (EST)
+Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
+	irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Yinghai Lu <yinghai@kernel.org>
+In-Reply-To: <86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
+References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+	<86802c441003100406t70dd854fx491f0ee9a6fce62b@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Mar 2010 12:51:13 +0000
+Message-ID: <1268225473.11737.69196.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: svaidy@linux.vnet.ibm.com
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "x86@kernel.org" <x86@kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>, "H. Peter
+	Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,91 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Wed, 2010-03-10 at 12:06 +0000, Yinghai Lu wrote:
+> On Wed, Mar 10, 2010 at 2:55 AM,  <ijc@hellion.org.uk> wrote:
+> > From: Ian Campbell <ian.campbell@citrix.com>
+> >
+> > Move arch_init_copy_chip_data and arch_free_chip_data into function
+> > pointers in struct irq_chip since they operate on irq_desc->chip_data.
+> >
+> > arch_init_chip_data cannot be moved into struct irq_chip at this time
+> > because irq_desc->chip is not known at the time the irq_desc is
+> > setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
+> > PowerPC, the only other user, whose usage better matches the new name)
+> > and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
+> > call this whenever the IO APIC code allocates a new IRQ.
+> >
+> > I've retained the chip_data behaviour for uv_irq although it isn't
+> > clear to me if these interrupt types support migration or how closely
+> > related to the APIC modes they really are. If it weren't for this the
+> > ioapic_{init,copy,free}_chip_data functions could be static to
+> > io_apic.c.
+> >
+> > I've tested by booting on a 64 bit system, but it's not clear to me
+> > what actions I need to take to actually exercise some of these code
+> > paths.
+> >
+> 
+> can you just add another pointer field in irq_desc?
+> 
+> some kind of *irq_info etc.
 
-I have cleaned up the code from the previous post:
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080630.html
+I think I don't understand what you are suggesting.
 
-Changes from v1:
-* Removed redundant return statements and rearranged code
+There is already a pointer for irq_chip specific use i.e.
+irq_desc->chip_data. This patchset is just about ensuring that the field
+really is available to any chip implementation rather than just assuming
+it is always used for the acpi chip types (on x86 at least).
 
-Description:
+Does adding a second pointer with the same (intended?) semantics as the
+existing one buy us anything?
 
-A new hcall H_EM_GET_PARMS as been added to obtain power mode data
-from the platform.  This data can be used by user space administrative
-tools for better power management.
-
-The following patch add data from this new hcall into the lparcfg
-driver and exports to user space along with other existing lpar data
-in /proc/powerpc/lparcfg
-
-Please review and include in powerpc -next tree.
-
-Thanks,
-Vaidy
-
----
-	powerpc: export data from new hcall H_EM_GET_PARMS
-
-	Add support for H_EM_GET_PARMS hcall that will return data
-	related to power modes from the platform.  Export the data
-	directly to user space for administrative tools to interpret
-	and use.
-
-	cat /proc/powerpc/lparcfg will export power mode data
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hvcall.h |    1 +
- arch/powerpc/kernel/lparcfg.c     |   12 +++++++++++-
- 2 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index f027581..ebe7493 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -228,6 +228,7 @@
- #define H_JOIN			0x298
- #define H_VASI_STATE            0x2A4
- #define H_ENABLE_CRQ		0x2B0
-+#define H_GET_EM_PARMS		0x2B8
- #define H_SET_MPP		0x2D0
- #define H_GET_MPP		0x2D4
- #define MAX_HCALL_OPCODE	H_GET_MPP
-diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
-index d09d1c6..ff698fb 100644
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -37,7 +37,7 @@
- #include <asm/vio.h>
- #include <asm/mmu.h>
- 
--#define MODULE_VERS "1.8"
-+#define MODULE_VERS "1.9"
- #define MODULE_NAME "lparcfg"
- 
- /* #define LPARCFG_DEBUG */
-@@ -486,6 +486,14 @@ static void splpar_dispatch_data(struct seq_file *m)
- 	seq_printf(m, "dispatch_dispersions=%lu\n", dispatch_dispersions);
- }
- 
-+static void parse_em_data(struct seq_file *m)
-+{
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	if (plpar_hcall(H_GET_EM_PARMS, retbuf) == H_SUCCESS)
-+		seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
-+}
-+
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
- {
- 	int partition_potential_processors;
-@@ -540,6 +548,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- 
-+	parse_em_data(m);
-+
- 	return 0;
- }
- 
+Ian.
