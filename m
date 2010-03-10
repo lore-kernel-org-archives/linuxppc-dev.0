@@ -1,17 +1,19 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 05/13] powerpc/476: Add isync after loading mmu and
-	debug spr's
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-In-Reply-To: <fb412d761003071508v15586071wf38bc1ae1ad17480@mail.gmail.com>
-References: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
-	<20100305204324.18424.40814.sendpatchset@norville.austin.ibm.com>
-	<fb412d761003071508v15586071wf38bc1ae1ad17480@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 10 Mar 2010 15:09:05 -0600
-Message-Id: <1268255345.1516.16.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
+Return-Path: <julia@diku.dk>
+Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw1.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 421C8B7D11
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 08:41:22 +1100 (EST)
+Date: Wed, 10 Mar 2010 22:15:01 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/6] arch/powerpc/platforms/pseries: Use kasprintf
+Message-ID: <Pine.LNX.4.64.1003102214430.1672@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-03-07 at 15:08 -0800, Hollis Blanchard wrote:
-> On Fri, Mar 5, 2010 at 12:43 PM, Dave Kleikamp
-> <shaggy@linux.vnet.ibm.com> wrote:
-> >
-> > powerpc/476: Add isync after loading mmu and debug spr's
-> >
-> > From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> >
-> > 476 requires an isync after loading MMU and debug related SPR's.  Some of
-> > these are in performance-critical paths and may need to be optimized, but
-> > initially, we're playing it safe.
-> 
-> Why is there sometimes #ifdef CONFIG_PPC_47x, sometimes not, and never
-> the cputable infrastructure which was intended for this sort of thing?
+From: Julia Lawall <julia@diku.dk>
 
-The places without an ifdef are either in cpu initialization code, where
-the cost of an isync is insignificant or, in one case, in 47x-specific
-code.
+kasprintf combines kmalloc and sprintf, and takes care of the size
+calculation itself.
 
-I was having problems trying to get the cputable infrastructure
-compiling in inline assembly in the *.c files, but I could have used
-that in some places.  Currently, one can't build with CONFIG_PPC_47x for
-a non-47x cpu, and we want to re-evaluate whether we can get by without
-these isyncs.  So basically, I plan to clean this up somehow by the time
-we have a working unified 44x/47x binary kernel.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+// <smpl>
+@@
+expression a,flag;
+expression list args;
+statement S;
+@@
+
+  a =
+-  \(kmalloc\|kzalloc\)(...,flag)
++  kasprintf(flag,args)
+  <... when != a
+  if (a == NULL || ...) S
+  ...>
+- sprintf(a,args);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/powerpc/platforms/pseries/dlpar.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff -u -p a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -78,13 +78,12 @@ static struct device_node *dlpar_parse_c
+ 	 * prepend this to the full_name.
+ 	 */
+ 	name = (char *)ccwa + ccwa->name_offset;
+-	dn->full_name = kmalloc(strlen(name) + 2, GFP_KERNEL);
++	dn->full_name = kasprintf(GFP_KERNEL, "/%s", name);
+ 	if (!dn->full_name) {
+ 		kfree(dn);
+ 		return NULL;
+ 	}
+ 
+-	sprintf(dn->full_name, "/%s", name);
+ 	return dn;
+ }
+ 
+@@ -409,15 +408,13 @@ static ssize_t dlpar_cpu_probe(const cha
+ 	 * directory of the device tree.  CPUs actually live in the
+ 	 * cpus directory so we need to fixup the full_name.
+ 	 */
+-	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus") + 1,
+-			   GFP_KERNEL);
++	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
+ 	if (!cpu_name) {
+ 		dlpar_free_cc_nodes(dn);
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+ 
+-	sprintf(cpu_name, "/cpus%s", dn->full_name);
+ 	kfree(dn->full_name);
+ 	dn->full_name = cpu_name;
+ 
