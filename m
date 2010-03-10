@@ -1,19 +1,25 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw1.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 421C8B7D11
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 08:41:22 +1100 (EST)
-Date: Wed, 10 Mar 2010 22:15:01 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/6] arch/powerpc/platforms/pseries: Use kasprintf
-Message-ID: <Pine.LNX.4.64.1003102214430.1672@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
+	irq_chip.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: ijc@hellion.org.uk
+In-Reply-To: <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
+	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-KHbI5v622dW6ZPGlHLT3"
+Date: Thu, 11 Mar 2010 09:07:18 +1100
+Message-ID: <1268258838.21103.6.camel@concordia>
+Mime-Version: 1.0
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Ian Campbell <ian.campbell@citrix.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Yinghai Lu <yinghai@kernel.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,68 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
 
-kasprintf combines kmalloc and sprintf, and takes care of the size
-calculation itself.
+--=-KHbI5v622dW6ZPGlHLT3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+On Wed, 2010-03-10 at 10:55 +0000, ijc@hellion.org.uk wrote:
+> From: Ian Campbell <ian.campbell@citrix.com>
+>=20
+> Move arch_init_copy_chip_data and arch_free_chip_data into function
+> pointers in struct irq_chip since they operate on irq_desc->chip_data.
+>=20
+> arch_init_chip_data cannot be moved into struct irq_chip at this time
+> because irq_desc->chip is not known at the time the irq_desc is
+> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
+> PowerPC, the only other user, whose usage better matches the new name)
+> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
+> call this whenever the IO APIC code allocates a new IRQ.
 
-// <smpl>
-@@
-expression a,flag;
-expression list args;
-statement S;
-@@
+Ack on the name change, it should be called arch_init_irq_desc(), the
+existing name clearly comes from the fact that sparse IRQ was
+implemented first on x86, and on x86 that routine init's the chip data
+for a new irq_desc.
 
-  a =
--  \(kmalloc\|kzalloc\)(...,flag)
-+  kasprintf(flag,args)
-  <... when != a
-  if (a == NULL || ...) S
-  ...>
-- sprintf(a,args);
-// </smpl>
+But semantically arch_init_irq_desc() is the right name, I was just too
+lazy to change it when I enabled sparse IRQ for powerpc.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Can't comment on the rest of the patch.
 
----
- arch/powerpc/platforms/pseries/dlpar.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+cheers
 
-diff -u -p a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -78,13 +78,12 @@ static struct device_node *dlpar_parse_c
- 	 * prepend this to the full_name.
- 	 */
- 	name = (char *)ccwa + ccwa->name_offset;
--	dn->full_name = kmalloc(strlen(name) + 2, GFP_KERNEL);
-+	dn->full_name = kasprintf(GFP_KERNEL, "/%s", name);
- 	if (!dn->full_name) {
- 		kfree(dn);
- 		return NULL;
- 	}
- 
--	sprintf(dn->full_name, "/%s", name);
- 	return dn;
- }
- 
-@@ -409,15 +408,13 @@ static ssize_t dlpar_cpu_probe(const cha
- 	 * directory of the device tree.  CPUs actually live in the
- 	 * cpus directory so we need to fixup the full_name.
- 	 */
--	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus") + 1,
--			   GFP_KERNEL);
-+	cpu_name = kasprintf(GFP_KERNEL, "/cpus%s", dn->full_name);
- 	if (!cpu_name) {
- 		dlpar_free_cc_nodes(dn);
- 		rc = -ENOMEM;
- 		goto out;
- 	}
- 
--	sprintf(cpu_name, "/cpus%s", dn->full_name);
- 	kfree(dn->full_name);
- 	dn->full_name = cpu_name;
- 
+
+--=-KHbI5v622dW6ZPGlHLT3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkuYGBMACgkQdSjSd0sB4dLN/ACfWZPfIkahPG9Z8x+qpcPmosQV
+dtMAoLEFx5ac475xxZcQm6j/Kym1XVck
+=oYQ0
+-----END PGP SIGNATURE-----
+
+--=-KHbI5v622dW6ZPGlHLT3--
