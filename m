@@ -1,17 +1,17 @@
-Return-Path: <jeffm@suse.com>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 70D57B7CF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 08:03:10 +1100 (EST)
-Received: from relay1.suse.de (charybdis-ext.suse.de [195.135.221.2])
-	by mx2.suse.de (Postfix) with ESMTP id 6F4B58655F
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Mar 2010 22:03:08 +0100 (CET)
-Message-ID: <4B980909.7050501@suse.com>
-Date: Wed, 10 Mar 2010 16:03:05 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Build fix for mpc52xx
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 05/13] powerpc/476: Add isync after loading mmu and
+	debug spr's
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Hollis Blanchard <hollis@penguinppc.org>
+In-Reply-To: <fb412d761003071508v15586071wf38bc1ae1ad17480@mail.gmail.com>
+References: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
+	<20100305204324.18424.40814.sendpatchset@norville.austin.ibm.com>
+	<fb412d761003071508v15586071wf38bc1ae1ad17480@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 10 Mar 2010 15:09:05 -0600
+Message-Id: <1268255345.1516.16.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpc52xx_gpt_wdt_setup is defined as 0, which causes the following build
-failure with gcc 4.5, since it's built with -Werror.
+On Sun, 2010-03-07 at 15:08 -0800, Hollis Blanchard wrote:
+> On Fri, Mar 5, 2010 at 12:43 PM, Dave Kleikamp
+> <shaggy@linux.vnet.ibm.com> wrote:
+> >
+> > powerpc/476: Add isync after loading mmu and debug spr's
+> >
+> > From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> >
+> > 476 requires an isync after loading MMU and debug related SPR's.  Some of
+> > these are in performance-critical paths and may need to be optimized, but
+> > initially, we're playing it safe.
+> 
+> Why is there sometimes #ifdef CONFIG_PPC_47x, sometimes not, and never
+> the cputable infrastructure which was intended for this sort of thing?
 
-arch/powerpc/platforms/52xx/mpc52xx_gpt.c:761:3: error: statement with no effect
+The places without an ifdef are either in cpu initialization code, where
+the cost of an isync is insignificant or, in one case, in 47x-specific
+code.
 
-Defining it as do { } while(0) fixes the problem.
+I was having problems trying to get the cputable infrastructure
+compiling in inline assembly in the *.c files, but I could have used
+that in some places.  Currently, one can't build with CONFIG_PPC_47x for
+a non-47x cpu, and we want to re-evaluate whether we can get by without
+these isyncs.  So basically, I plan to clean this up somehow by the time
+we have a working unified 44x/47x binary kernel.
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -711,7 +711,7 @@ static int __devinit mpc52xx_gpt_wdt_ini
- 	return 0;
- }
- 
--#define mpc52xx_gpt_wdt_setup(x, y)		(0)
-+#define mpc52xx_gpt_wdt_setup(x, y)		do { } while(0)
- 
- #endif	/*  CONFIG_MPC5200_WDT	*/
- 
+Thanks,
+Shaggy
 -- 
-Jeff Mahoney
-SUSE Labs
+David Kleikamp
+IBM Linux Technology Center
