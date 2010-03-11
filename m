@@ -1,31 +1,31 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 607F8102546
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Mar 2010 06:59:26 +1100 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o2BJpDUl023180
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2010 14:51:13 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2BJxKbO1659074
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2010 14:59:20 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2BJxKXZ015675
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Mar 2010 14:59:20 -0500
-Message-ID: <4B994B97.70702@austin.ibm.com>
-Date: Thu, 11 Mar 2010 13:59:19 -0600
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 84E6010D75D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 06:42:27 +1100 (EST)
+Date: Thu, 11 Mar 2010 19:34:58 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 33/37] sound/soc: use .dev.of_node instead of .node in
+	struct of_device
+Message-ID: <20100311193458.GA13289@opensource.wolfsonmicro.com>
+References: <20100311174830.4824.19820.stgit@angua>
+	<20100311180649.4824.10368.stgit@angua>
 MIME-Version: 1.0
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc: Partition hibernation support
-References: <201002240002.o1O02OBe031005@d03av05.boulder.ibm.com>
-In-Reply-To: <201002240002.o1O02OBe031005@d03av05.boulder.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100311180649.4824.10368.stgit@angua>
+Cc: alsa-devel@alsa-project.org, linux-ide@vger.kernel.org,
+	James.Bottomley@suse.de, linux-i2c@vger.kernel.org,
+	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com,
+	sfr@canb.auug.org.au, linux-scsi@vger.kernel.org,
+	jgarzik@pobox.com, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, ben-linux@fluff.org,
+	timur@freescale.com, lrg@slimlogic.co.uk, monstr@monstr.eu,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, gregkh@suse.de,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	dwmw2@infradead.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,82 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Brian King wrote:
-> Enables support for HMC initiated partition hibernation. This is
-> a firmware assisted hibernation, since the firmware handles writing
-> the memory out to disk, along with other partition information,
-> so we just mimic suspend to ram.
+On Thu, Mar 11, 2010 at 11:06:50AM -0700, Grant Likely wrote:
+> .node is being removed
 > 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+
+but please ensure that Liam and especially Timur also check this (both
+CCed).
+
+For enormous patch serieses like this it's really nice if you can ensure
+that each person is only CCed on the patches that they need to review.
+Much less stuff in the inbox.
+
 > ---
 > 
->  arch/powerpc/Kconfig                         |    2 
->  arch/powerpc/include/asm/hvcall.h            |    1 
->  arch/powerpc/include/asm/machdep.h           |    1 
->  arch/powerpc/include/asm/rtas.h              |   10 +
->  arch/powerpc/kernel/rtas.c                   |  118 ++++++++++-----
->  arch/powerpc/platforms/pseries/Makefile      |    1 
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |    6 
->  arch/powerpc/platforms/pseries/suspend.c     |  209 +++++++++++++++++++++++++++
->  8 files changed, 312 insertions(+), 36 deletions(-)
+>  sound/soc/fsl/mpc8610_hpcd.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff -puN /dev/null arch/powerpc/platforms/pseries/suspend.c
-> --- /dev/null	2009-12-15 17:58:07.000000000 -0600
-> +++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/suspend.c	2010-02-23 16:29:25.000000000 -0600
-> @@ -0,0 +1,209 @@
-
--- snip --
-
-> +
-> +static SYSDEV_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
-> +
-> +static struct sysdev_class suspend_sysdev_class = {
-> +	.name = "power",
-> +};
-> +
-> +static struct platform_suspend_ops pseries_suspend_ops = {
-> +	.valid		= suspend_valid_only_mem,
-> +	.begin		= pseries_suspend_begin,
-> +	.prepare_late	= pseries_prepare_late,
-> +	.enter		= pseries_suspend_enter,
-> +};
-> +
-> +/**
-> + * pseries_suspend_sysfs_register - Register with sysfs
-> + *
-> + * Return value:
-> + * 	0 on success / other on failure
-> + **/
-> +static int pseries_suspend_sysfs_register(struct sys_device *sysdev)
-> +{
-> +	int rc;
-> +
-> +	if ((rc = sysdev_class_register(&suspend_sysdev_class)))
-> +		return rc;
-> +
-> +	sysdev->id = 0;
-> +	sysdev->cls = &suspend_sysdev_class;
-> +
-> +	if ((rc = sysdev_register(sysdev)))
-> +		goto class_unregister;
-> +	if ((rc = sysdev_create_file(sysdev, &attr_hibernate)))
-> +		goto fail;
-> +
-
-Could you just do a sysdev_class_create_file(&suspend_sysdev_class, &attr_hibernate)
-call to create the hibernate file instead of the sysdev_register() and
-sysdev_create_file()?  I think this may make it a bit nicer since the file created
-will be /sys/devices/system/power/hibernate instead of 
-/sys/devices/system/power/power0/hibernate.
-
--Nathan
-
-> +	return 0;
-> +
-> +fail:
-> +	sysdev_unregister(sysdev);
-> +class_unregister:
-> +	sysdev_class_unregister(&suspend_sysdev_class);
-> +	return rc;
-> +}
-> +
+> diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+> index ef67d1c..d7e1b9a 100644
+> --- a/sound/soc/fsl/mpc8610_hpcd.c
+> +++ b/sound/soc/fsl/mpc8610_hpcd.c
+> @@ -202,7 +202,7 @@ static struct snd_soc_ops mpc8610_hpcd_ops = {
+>  static int mpc8610_hpcd_probe(struct of_device *ofdev,
+>  	const struct of_device_id *match)
+>  {
+> -	struct device_node *np = ofdev->node;
+> +	struct device_node *np = ofdev->dev.of_node;
+>  	struct device_node *codec_np = NULL;
+>  	struct device_node *guts_np = NULL;
+>  	struct device_node *dma_np = NULL;
+> 
