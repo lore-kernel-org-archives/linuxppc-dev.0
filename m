@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 271DFB82E2
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:57 +1100 (EST)
-Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:57 -0800 (PST)
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 176F4101AC0
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:52 +1100 (EST)
+Received: by pvg11 with SMTP id 11so131850pvg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:52 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 23/27] drivers/infiniband/of: don't use deprecated fields in
+Subject: [PATCH 22/27] drivers/i2c/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:55 -0700
-Message-ID: <20100311182354.13103.40771.stgit@angua>
+Date: Thu, 11 Mar 2010 11:23:49 -0700
+Message-ID: <20100311182349.13103.39322.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,27 +39,70 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/infiniband/hw/ehca/ehca_main.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/i2c/busses/i2c-cpm.c     |   10 +++++-----
+ drivers/i2c/busses/i2c-ibm_iic.c |    7 +++++--
+ drivers/i2c/busses/i2c-mpc.c     |    8 ++++----
+ 3 files changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index 2639185..252489e 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -937,12 +937,13 @@ static struct of_device_id ehca_device_table[] =
- MODULE_DEVICE_TABLE(of, ehca_device_table);
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index 9c2e100..47994d2 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -718,13 +718,13 @@ static const struct of_device_id cpm_i2c_match[] = {
+ MODULE_DEVICE_TABLE(of, cpm_i2c_match);
  
- static struct of_platform_driver ehca_driver = {
--	.name        = "ehca",
--	.match_table = ehca_device_table,
- 	.probe       = ehca_probe,
- 	.remove      = ehca_remove,
--	.driver	     = {
+ static struct of_platform_driver cpm_i2c_driver = {
+-	.match_table	= cpm_i2c_match,
+ 	.probe		= cpm_i2c_probe,
+ 	.remove		= __devexit_p(cpm_i2c_remove),
+-	.driver		= {
+-		.name	= "fsl-i2c-cpm",
+-		.owner	= THIS_MODULE,
+-	}
 +	.driver = {
-+		.name = "ehca",
++		.name = "fsl-i2c-cpm",
 +		.owner = THIS_MODULE,
- 		.groups = ehca_drv_attr_groups,
-+		.of_match_table = ehca_device_table,
++		.of_match_table = cpm_i2c_match,
++	},
+ };
+ 
+ static int __init cpm_i2c_init(void)
+diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+index b1bc6e2..21dba9d 100644
+--- a/drivers/i2c/busses/i2c-ibm_iic.c
++++ b/drivers/i2c/busses/i2c-ibm_iic.c
+@@ -807,8 +807,11 @@ static const struct of_device_id ibm_iic_match[] = {
+ };
+ 
+ static struct of_platform_driver ibm_iic_driver = {
+-	.name	= "ibm-iic",
+-	.match_table = ibm_iic_match,
++	.driver = {
++		.name = "ibm-iic",
++		.owner = THIS_MODULE,
++		.of_match_table = ibm_iic_match,
++	},
+ 	.probe	= iic_probe,
+ 	.remove	= __devexit_p(iic_remove),
+ };
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 0123a6e..6063dc3 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -674,12 +674,12 @@ MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
+ 
+ /* Structure for a device driver */
+ static struct of_platform_driver mpc_i2c_driver = {
+-	.match_table	= mpc_i2c_of_match,
+ 	.probe		= fsl_i2c_probe,
+ 	.remove		= __devexit_p(fsl_i2c_remove),
+-	.driver		= {
+-		.owner	= THIS_MODULE,
+-		.name	= DRV_NAME,
++	.driver = {
++		.owner = THIS_MODULE,
++		.name = DRV_NAME,
++		.of_match_table = mpc_i2c_of_match,
  	},
  };
  
