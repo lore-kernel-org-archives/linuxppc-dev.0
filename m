@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id E14AB10539A
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:35 +1100 (EST)
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id DB7CF105447
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:46 +1100 (EST)
 Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:35 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:46 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 19/27] drivers/pcmcia/of: don't use deprecated field in
+Subject: [PATCH 21/27] drivers/hwmon/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:33 -0700
-Message-ID: <20100311182332.13103.33898.stgit@angua>
+Date: Thu, 11 Mar 2010 11:23:44 -0700
+Message-ID: <20100311182343.13103.98096.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,43 +39,24 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/pcmcia/electra_cf.c  |    7 +++++--
- drivers/pcmcia/m8xx_pcmcia.c |    7 +++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
+ drivers/hwmon/ultra45_env.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/electra_cf.c
-index a4d821f..4ea8530 100644
---- a/drivers/pcmcia/electra_cf.c
-+++ b/drivers/pcmcia/electra_cf.c
-@@ -356,8 +356,11 @@ static const struct of_device_id electra_cf_match[] = {
- MODULE_DEVICE_TABLE(of, electra_cf_match);
+diff --git a/drivers/hwmon/ultra45_env.c b/drivers/hwmon/ultra45_env.c
+index 68e90ab..5da5942 100644
+--- a/drivers/hwmon/ultra45_env.c
++++ b/drivers/hwmon/ultra45_env.c
+@@ -300,8 +300,11 @@ static const struct of_device_id env_match[] = {
+ MODULE_DEVICE_TABLE(of, env_match);
  
- static struct of_platform_driver electra_cf_driver = {
--	.name	   = (char *)driver_name,
--	.match_table    = electra_cf_match,
+ static struct of_platform_driver env_driver = {
+-	.name		= "ultra45_env",
+-	.match_table	= env_match,
 +	.driver = {
-+		.name = (char *)driver_name,
++		.name = "ultra45_env",
 +		.owner = THIS_MODULE,
-+		.of_match_table = electra_cf_match,
++		.of_match_table = env_match,
 +	},
- 	.probe	  = electra_cf_probe,
- 	.remove   = electra_cf_remove,
+ 	.probe		= env_probe,
+ 	.remove		= __devexit_p(env_remove),
  };
-diff --git a/drivers/pcmcia/m8xx_pcmcia.c b/drivers/pcmcia/m8xx_pcmcia.c
-index 61c2159..af60745 100644
---- a/drivers/pcmcia/m8xx_pcmcia.c
-+++ b/drivers/pcmcia/m8xx_pcmcia.c
-@@ -1314,8 +1314,11 @@ static const struct of_device_id m8xx_pcmcia_match[] = {
- MODULE_DEVICE_TABLE(of, m8xx_pcmcia_match);
- 
- static struct of_platform_driver m8xx_pcmcia_driver = {
--	.name = driver_name,
--	.match_table = m8xx_pcmcia_match,
-+	.driver = {
-+		.name = driver_name,
-+		.owner = THIS_MODULE,
-+		.match_table = m8xx_pcmcia_match,
-+	},
- 	.probe = m8xx_probe,
- 	.remove = m8xx_remove,
- 	.suspend = m8xx_suspend,
