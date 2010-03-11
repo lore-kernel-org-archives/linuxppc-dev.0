@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 77FDBB8149
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:03 +1100 (EST)
-Received: by mail-pv0-f170.google.com with SMTP id 11so125073pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:03 -0800 (PST)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 420E4B85E2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:09 +1100 (EST)
+Received: by mail-pw0-f42.google.com with SMTP id 10so170185pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:08 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 24/37] drivers/char: use .dev.of_node instead of .node in
-	struct of_device
+Subject: [PATCH 25/37] drivers/infiniband: use .dev.of_node instead of .node
+	in struct of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
 	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:06:00 -0700
-Message-ID: <20100311180600.4824.44001.stgit@angua>
+Date: Thu, 11 Mar 2010 11:06:06 -0700
+Message-ID: <20100311180605.4824.3613.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 MIME-Version: 1.0
@@ -38,56 +38,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/char/hw_random/n2-drv.c     |    2 +-
- drivers/char/hw_random/pasemi-rng.c |    2 +-
- drivers/char/ipmi/ipmi_si_intf.c    |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_main.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
-index 9b3e09c..4d05003 100644
---- a/drivers/char/hw_random/n2-drv.c
-+++ b/drivers/char/hw_random/n2-drv.c
-@@ -660,7 +660,7 @@ static int __devinit n2rng_probe(struct of_device *op,
- 				np->hvapi_major);
- 			goto out_hvapi_unregister;
- 		}
--		np->num_units = of_getintprop_default(op->node,
-+		np->num_units = of_getintprop_default(op->dev.of_node,
- 						      "rng-#units", 0);
- 		if (!np->num_units) {
- 			dev_err(&op->dev, "VF RNG lacks rng-#units property\n");
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index 7fa61dd..b213855 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -98,7 +98,7 @@ static int __devinit rng_probe(struct of_device *ofdev,
- 			       const struct of_device_id *match)
- {
- 	void __iomem *rng_regs;
--	struct device_node *rng_np = ofdev->node;
-+	struct device_node *rng_np = ofdev->dev.of_node;
- 	struct resource res;
- 	int err = 0;
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 129a6be..2639185 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -291,8 +291,9 @@ static int ehca_sense_attributes(struct ehca_shca *shca)
+ 	};
  
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 176f175..45305f2 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2406,7 +2406,7 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
- 	struct smi_info *info;
- 	struct resource resource;
- 	const int *regsize, *regspacing, *regshift;
--	struct device_node *np = dev->node;
-+	struct device_node *np = dev->dev.of_node;
- 	int ret;
- 	int proplen;
+ 	ehca_gen_dbg("Probing adapter %s...",
+-		     shca->ofdev->node->full_name);
+-	loc_code = of_get_property(shca->ofdev->node, "ibm,loc-code", NULL);
++		     shca->ofdev->dev.of_node->full_name);
++	loc_code = of_get_property(shca->ofdev->dev.of_node, "ibm,loc-code",
++				   NULL);
+ 	if (loc_code)
+ 		ehca_gen_dbg(" ... location lode=%s", loc_code);
  
-@@ -2462,7 +2462,7 @@ static int __devinit ipmi_of_probe(struct of_device *dev,
- 	info->io.regspacing	= regspacing ? *regspacing : DEFAULT_REGSPACING;
- 	info->io.regshift	= regshift ? *regshift : 0;
+@@ -720,16 +721,16 @@ static int __devinit ehca_probe(struct of_device *dev,
+ 	int ret, i, eq_size;
+ 	unsigned long flags;
  
--	info->irq		= irq_of_parse_and_map(dev->node, 0);
-+	info->irq		= irq_of_parse_and_map(dev->dev.of_node, 0);
- 	info->dev		= &dev->dev;
+-	handle = of_get_property(dev->node, "ibm,hca-handle", NULL);
++	handle = of_get_property(dev->dev.of_node, "ibm,hca-handle", NULL);
+ 	if (!handle) {
+ 		ehca_gen_err("Cannot get eHCA handle for adapter: %s.",
+-			     dev->node->full_name);
++			     dev->dev.of_node->full_name);
+ 		return -ENODEV;
+ 	}
  
- 	dev_dbg(&dev->dev, "addr 0x%lx regsize %d spacing %d irq %x\n",
+ 	if (!(*handle)) {
+ 		ehca_gen_err("Wrong eHCA handle for adapter: %s.",
+-			     dev->node->full_name);
++			     dev->dev.of_node->full_name);
+ 		return -ENODEV;
+ 	}
+ 
