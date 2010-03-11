@@ -1,27 +1,29 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 77C69B7F0B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:28 +1100 (EST)
-Date: Thu, 11 Mar 2010 10:23:47 -0800 (PST)
-Message-Id: <20100311.102347.169562565.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100311.102043.40590962.davem@davemloft.net>
-References: <20100311174830.4824.19820.stgit@angua>
-	<20100311.102043.40590962.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, broonie@opensource.wolfsonmicro.com,
-	linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org, gregkh@suse.de,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jeremy.kerr@canonical.com, linuxppc-dev@ozlabs.org,
-	James.Bottomley@suse.de, linux-i2c@vger.kernel.org,
-	ben-linux@fluff.org, microblaze-uclinux@itee.uq.edu.au,
-	sparclinux@vger.kernel.org, akpm@linux-foundation.org,
-	alsa-devel@alsa-project.org, jgarzik@pobox.com, dwmw2@infradead.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
+	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 22F8E1011DA
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:41 +1100 (EST)
+Received: by mail-pz0-f201.google.com with SMTP id 39so178248pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:41 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 20/27] drivers/mmc/of: don't use deprecated field in
+	of_platform_driver
+To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
+	akpm@linux-foundation.org, davem@davemloft.net,
+	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
+	dwmw2@infradead.org, jeremy.kerr@canonical.com,
+	James.Bottomley@suse.de, broonie@opensource.wolfsonmicro.com,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
+	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
+Date: Thu, 11 Mar 2010 11:23:38 -0700
+Message-ID: <20100311182338.13103.88443.stgit@angua>
+In-Reply-To: <20100311181604.13103.30088.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 11 Mar 2010 10:20:43 -0800 (PST)
+.name, .match_table and .owner are duplicated in both of_platform_driver
+and device_driver, so the of_platform_driver copies will be removed soon.
 
-> Three or four of the patches don't apply because only your tree
-> has those "/* temporary */" comments, f.e. in arch/sparc/kernel/pci.c
-> 
-> I took care of this when applying to my tree.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-It also doesn't build, what the heck is this against
-Grant?
+ drivers/mmc/host/sdhci-of-core.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-drivers/of/device.c: In function 'of_match_device':
-drivers/of/device.c:24: error: 'const struct device' has no member named 'of_node'
-drivers/of/device.c:26: error: 'const struct device' has no member named 'of_node'
-
-Please make a patch set against Linus's vanilla tree so
-I and others can test this.
+diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
+index dfe5cea..7802a54 100644
+--- a/drivers/mmc/host/sdhci-of-core.c
++++ b/drivers/mmc/host/sdhci-of-core.c
+@@ -205,8 +205,11 @@ static const struct of_device_id sdhci_of_match[] = {
+ MODULE_DEVICE_TABLE(of, sdhci_of_match);
+ 
+ static struct of_platform_driver sdhci_of_driver = {
+-	.driver.name = "sdhci-of",
+-	.match_table = sdhci_of_match,
++	.driver = {
++		.name = "sdhci-of",
++		.owner = THIS_MODULE,
++		.of_match_table = sdhci_of_match,
++	},
+ 	.probe = sdhci_of_probe,
+ 	.remove = __devexit_p(sdhci_of_remove),
+ 	.suspend = sdhci_of_suspend,
