@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 2E6DCB8A32
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:47 +1100 (EST)
-Received: by pvg11 with SMTP id 11so125453pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:47 -0800 (PST)
+Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
+	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 3B7ADB8616
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:53 +1100 (EST)
+Received: by pzk39 with SMTP id 39so170962pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:53 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 32/37] sound/aoa: use .dev.of_node instead of .node in struct
+Subject: [PATCH 33/37] sound/soc: use .dev.of_node instead of .node in struct
 	of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:06:44 -0700
-Message-ID: <20100311180644.4824.41302.stgit@angua>
+Date: Thu, 11 Mar 2010 11:06:50 -0700
+Message-ID: <20100311180649.4824.10368.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 MIME-Version: 1.0
@@ -38,117 +38,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- sound/aoa/fabrics/layout.c          |    2 +-
- sound/aoa/soundbus/core.c           |    8 ++++----
- sound/aoa/soundbus/i2sbus/control.c |    2 +-
- sound/aoa/soundbus/i2sbus/core.c    |    4 ++--
- sound/aoa/soundbus/sysfs.c          |    4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ sound/soc/fsl/mpc8610_hpcd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
-index 7a437da..da38f2b 100644
---- a/sound/aoa/fabrics/layout.c
-+++ b/sound/aoa/fabrics/layout.c
-@@ -991,7 +991,7 @@ static int aoa_fabric_layout_probe(struct soundbus_dev *sdev)
- 		return -ENODEV;
- 
- 	/* by breaking out we keep a reference */
--	while ((sound = of_get_next_child(sdev->ofdev.node, sound))) {
-+	while ((sound = of_get_next_child(sdev->ofdev.dev.of_node, sound))) {
- 		if (sound->type && strcasecmp(sound->type, "soundchip") == 0)
- 			break;
- 	}
-diff --git a/sound/aoa/soundbus/core.c b/sound/aoa/soundbus/core.c
-index fa8ab28..99ca712 100644
---- a/sound/aoa/soundbus/core.c
-+++ b/sound/aoa/soundbus/core.c
-@@ -74,11 +74,11 @@ static int soundbus_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	of = &soundbus_dev->ofdev;
- 
- 	/* stuff we want to pass to /sbin/hotplug */
--	retval = add_uevent_var(env, "OF_NAME=%s", of->node->name);
-+	retval = add_uevent_var(env, "OF_NAME=%s", of->dev.of_node->name);
- 	if (retval)
- 		return retval;
- 
--	retval = add_uevent_var(env, "OF_TYPE=%s", of->node->type);
-+	retval = add_uevent_var(env, "OF_TYPE=%s", of->dev.of_node->type);
- 	if (retval)
- 		return retval;
- 
-@@ -86,7 +86,7 @@ static int soundbus_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	 * it's not really legal to split it out with commas. We split it
- 	 * up using a number of environment variables instead. */
- 
--	compat = of_get_property(of->node, "compatible", &cplen);
-+	compat = of_get_property(of->dev.of_node, "compatible", &cplen);
- 	while (compat && cplen > 0) {
- 		int tmp = env->buflen;
- 		retval = add_uevent_var(env, "OF_COMPATIBLE_%d=%s", seen, compat);
-@@ -169,7 +169,7 @@ int soundbus_add_one(struct soundbus_dev *dev)
- 
- 	/* sanity checks */
- 	if (!dev->attach_codec ||
--	    !dev->ofdev.node ||
-+	    !dev->ofdev.dev.of_node ||
- 	    dev->pcmname ||
- 	    dev->pcmid != -1) {
- 		printk(KERN_ERR "soundbus: adding device failed sanity check!\n");
-diff --git a/sound/aoa/soundbus/i2sbus/control.c b/sound/aoa/soundbus/i2sbus/control.c
-index 87beb4a..799804d 100644
---- a/sound/aoa/soundbus/i2sbus/control.c
-+++ b/sound/aoa/soundbus/i2sbus/control.c
-@@ -41,7 +41,7 @@ int i2sbus_control_add_dev(struct i2sbus_control *c,
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index ef67d1c..d7e1b9a 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -202,7 +202,7 @@ static struct snd_soc_ops mpc8610_hpcd_ops = {
+ static int mpc8610_hpcd_probe(struct of_device *ofdev,
+ 	const struct of_device_id *match)
  {
- 	struct device_node *np;
- 
--	np = i2sdev->sound.ofdev.node;
-+	np = i2sdev->sound.ofdev.dev.of_node;
- 	i2sdev->enable = pmf_find_function(np, "enable");
- 	i2sdev->cell_enable = pmf_find_function(np, "cell-enable");
- 	i2sdev->clock_enable = pmf_find_function(np, "clock-enable");
-diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-index 4e3b819..ddb1577 100644
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -220,8 +220,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
- 
- 	mutex_init(&dev->lock);
- 	spin_lock_init(&dev->low_lock);
--	dev->sound.ofdev.node = np;
- 	dev->sound.ofdev.dma_mask = macio->ofdev.dma_mask;
-+	dev->sound.ofdev.dev.of_node = np;
- 	dev->sound.ofdev.dev.dma_mask = &dev->sound.ofdev.dma_mask;
- 	dev->sound.ofdev.dev.parent = &macio->ofdev.dev;
- 	dev->sound.ofdev.dev.release = i2sbus_release_dev;
-@@ -345,7 +345,7 @@ static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id *match)
- 		return -ENODEV;
- 	}
- 
--	while ((np = of_get_next_child(dev->ofdev.node, np))) {
-+	while ((np = of_get_next_child(dev->ofdev.dev.of_node, np))) {
- 		if (of_device_is_compatible(np, "i2sbus") ||
- 		    of_device_is_compatible(np, "i2s-modem")) {
- 			got += i2sbus_add_dev(dev, control, np);
-diff --git a/sound/aoa/soundbus/sysfs.c b/sound/aoa/soundbus/sysfs.c
-index f580942..6496e75 100644
---- a/sound/aoa/soundbus/sysfs.c
-+++ b/sound/aoa/soundbus/sysfs.c
-@@ -9,7 +9,7 @@ field##_show (struct device *dev, struct device_attribute *attr,	\
-               char *buf)						\
- {									\
- 	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
--	return sprintf (buf, format_string, mdev->ofdev.node->field);	\
-+	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
- }
- 
- static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
-@@ -25,7 +25,7 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 		length = strlen(buf);
- 	} else {
- 		length = sprintf(buf, "of:N%sT%s\n",
--				 of->node->name, of->node->type);
-+				 of->dev.of_node->name, of->dev.of_node->type);
- 	}
- 
- 	return length;
+-	struct device_node *np = ofdev->node;
++	struct device_node *np = ofdev->dev.of_node;
+ 	struct device_node *codec_np = NULL;
+ 	struct device_node *guts_np = NULL;
+ 	struct device_node *dma_np = NULL;
