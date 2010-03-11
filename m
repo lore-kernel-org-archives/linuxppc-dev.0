@@ -1,32 +1,30 @@
-Return-Path: <jgpobox@gmail.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 34F4A1020F1
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:37:02 +1100 (EST)
-Received: by gwj20 with SMTP id 20so183027gwj.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:37:01 -0800 (PST)
-Sender: Jeff Garzik <jgpobox@gmail.com>
-Message-ID: <4B993847.3030100@pobox.com>
-Date: Thu, 11 Mar 2010 13:36:55 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 1CE99B8368
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:38:17 +1100 (EST)
+Date: Thu, 11 Mar 2010 10:38:36 -0800 (PST)
+Message-Id: <20100311.103836.13755632.davem@davemloft.net>
+To: sshtylyov@mvista.com
 Subject: Re: [PATCH 21/37] drivers/ata: use .dev.of_node instead of .node
 	in struct of_device
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B9936F2.3020105@ru.mvista.com>
 References: <20100311174830.4824.19820.stgit@angua>
 	<20100311180543.4824.70491.stgit@angua>
 	<4B9936F2.3020105@ru.mvista.com>
-In-Reply-To: <4B9936F2.3020105@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: alsa-devel@alsa-project.org, gregkh@suse.de, linux-ide@vger.kernel.org,
 	James.Bottomley@suse.de, linux-i2c@vger.kernel.org,
 	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com,
 	sfr@canb.auug.org.au, linux-scsi@vger.kernel.org,
-	microblaze-uclinux@itee.uq.edu.au,
+	jgarzik@pobox.com, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, ben-linux@fluff.org,
 	monstr@monstr.eu, linuxppc-dev@ozlabs.org,
 	netdev@vger.kernel.org, broonie@opensource.wolfsonmicro.com,
 	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	dwmw2@infradead.org, davem@davemloft.net
+	dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,25 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2010 01:31 PM, Sergei Shtylyov wrote:
-> Hello.
->
-> Grant Likely wrote:
->
->> .node is being removed
->>
->> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->> ---
->>
->> drivers/ata/pata_macio.c | 2 +-
->> drivers/ata/pata_of_platform.c | 2 +-
->> drivers/ide/pmac.c | 10 +++++-----
->> 3 files changed, 7 insertions(+), 7 deletions(-)
->
-> Should probably have been 2 patches instead of one, as drivers/ata/ and
-> drivers/ide/ are different subsystems...
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+Date: Thu, 11 Mar 2010 21:31:14 +0300
 
-Possibly, but these patches should go in via the OF tree anyway, so 
-collecting ACKs should be sufficient.
+>   Should probably have been 2 patches instead of one, as drivers/ata/
+>   and drivers/ide/ are different subsystems...
 
-	Jeff
+No, he should consolidate these changes _MORE_ not less.
+
+The patch set is already too large to review at it is!
