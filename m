@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
-	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 22F8E1011DA
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:41 +1100 (EST)
-Received: by mail-pz0-f201.google.com with SMTP id 39so178248pzk.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:41 -0800 (PST)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id E14AB10539A
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:35 +1100 (EST)
+Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:35 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 20/27] drivers/mmc/of: don't use deprecated field in
+Subject: [PATCH 19/27] drivers/pcmcia/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:38 -0700
-Message-ID: <20100311182338.13103.88443.stgit@angua>
+Date: Thu, 11 Mar 2010 11:23:33 -0700
+Message-ID: <20100311182332.13103.33898.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,24 +39,43 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/mmc/host/sdhci-of-core.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/pcmcia/electra_cf.c  |    7 +++++--
+ drivers/pcmcia/m8xx_pcmcia.c |    7 +++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
-index dfe5cea..7802a54 100644
---- a/drivers/mmc/host/sdhci-of-core.c
-+++ b/drivers/mmc/host/sdhci-of-core.c
-@@ -205,8 +205,11 @@ static const struct of_device_id sdhci_of_match[] = {
- MODULE_DEVICE_TABLE(of, sdhci_of_match);
+diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/electra_cf.c
+index a4d821f..4ea8530 100644
+--- a/drivers/pcmcia/electra_cf.c
++++ b/drivers/pcmcia/electra_cf.c
+@@ -356,8 +356,11 @@ static const struct of_device_id electra_cf_match[] = {
+ MODULE_DEVICE_TABLE(of, electra_cf_match);
  
- static struct of_platform_driver sdhci_of_driver = {
--	.driver.name = "sdhci-of",
--	.match_table = sdhci_of_match,
+ static struct of_platform_driver electra_cf_driver = {
+-	.name	   = (char *)driver_name,
+-	.match_table    = electra_cf_match,
 +	.driver = {
-+		.name = "sdhci-of",
++		.name = (char *)driver_name,
 +		.owner = THIS_MODULE,
-+		.of_match_table = sdhci_of_match,
++		.of_match_table = electra_cf_match,
 +	},
- 	.probe = sdhci_of_probe,
- 	.remove = __devexit_p(sdhci_of_remove),
- 	.suspend = sdhci_of_suspend,
+ 	.probe	  = electra_cf_probe,
+ 	.remove   = electra_cf_remove,
+ };
+diff --git a/drivers/pcmcia/m8xx_pcmcia.c b/drivers/pcmcia/m8xx_pcmcia.c
+index 61c2159..af60745 100644
+--- a/drivers/pcmcia/m8xx_pcmcia.c
++++ b/drivers/pcmcia/m8xx_pcmcia.c
+@@ -1314,8 +1314,11 @@ static const struct of_device_id m8xx_pcmcia_match[] = {
+ MODULE_DEVICE_TABLE(of, m8xx_pcmcia_match);
+ 
+ static struct of_platform_driver m8xx_pcmcia_driver = {
+-	.name = driver_name,
+-	.match_table = m8xx_pcmcia_match,
++	.driver = {
++		.name = driver_name,
++		.owner = THIS_MODULE,
++		.match_table = m8xx_pcmcia_match,
++	},
+ 	.probe = m8xx_probe,
+ 	.remove = m8xx_remove,
+ 	.suspend = m8xx_suspend,
