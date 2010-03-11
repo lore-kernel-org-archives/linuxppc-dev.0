@@ -2,23 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D37FDB7DE3
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 08:45:38 +1100 (EST)
-Subject: Re: madness, was Re: [PATCH 2/2] Macintosh: fix coding style
-	issues in adb.c This is a patch to the adb.c file that cleans up many
-	warnings found by the checkpatch.pl tool
+	by ozlabs.org (Postfix) with ESMTPS id 0B093B7DFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 08:49:46 +1100 (EST)
+Subject: Re: Problem with PCI bus rescan on 460EX
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: fthain@telegraphics.com.au
-In-Reply-To: <alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
-References: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
-	<alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
+To: Felix Radensky <felix@embedded-sol.com>
+In-Reply-To: <4B996375.3010103@embedded-sol.com>
+References: <4B8E6FA3.70503@embedded-sol.com>
+	<20100310225100.GB27324@ldl.fc.hp.com>	<4B989F9B.8060708@embedded-sol.com>
+	<1268339578.22204.708.camel@pasglop>
+	<4B996375.3010103@embedded-sol.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Mar 2010 08:45:10 +1100
-Message-ID: <1268343910.22204.710.camel@pasglop>
+Date: Fri, 12 Mar 2010 08:49:34 +1100
+Message-ID: <1268344174.22204.714.camel@pasglop>
 Mime-Version: 1.0
-Cc: Michael Beardsworth <mbeards2@uoregon.edu>, monstr@monstr.eu,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	geert@linux-m68k.org, Nick Savage <nagaten@gmail.com>
+Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-03-10 at 14:48 +1100, fthain@telegraphics.com.au wrote:
-> On Tue, 9 Mar 2010, Michael Beardsworth wrote:
+On Thu, 2010-03-11 at 23:41 +0200, Felix Radensky wrote:
+> I'm fine with creating a minimal hotplug driver. The device I'm
+> dealing with
+> partially implements Compact PCI hotplug. It generates ENUM#
+> interrupt, but
+> Hotswap Control register layout does not completely follow the
+> standard.
 > 
-> > -	/* If a probe is in progress or we are sleeping, wait for it to complete */
-> > +	/* If a probe is in progress or we are sleeping, wait until complete */
-> 
-> If you must "fix" what aint broke, please try not to damage it. I'm sorry 
-> if your VT52 is limited to 80 cols, but IMNSHO this sort of effort is 
-> misguided.
-> 
-> Maybe I could point out again (I do this periodically) that checkpatch.pl 
-> is great but code that fails it is NOT always wrong.
-> 
-> "Check patch" is a good idea but "check existing code" is a waste of 
-> everyone's time.
+> Should I use drivers/pci/hotplug/cpci_hotplug_core.c as a base, or do 
+> you have
+> something more simple in mind ?
 
-Amen !
+I don't have anything special in mind, but you may need to look at how
+the pseries hotplug driver does to get those fixups and resource
+management things done. That driver is mostly a horrible mess, though I
+did clean quite a bit of it up recently...
+
+The main thing of interest to you is pcibios_add_pci_devices() which
+is called to probe below an existing bridge. It's currently in
+arch/powerpc/platforms/pseries/pci_dlpar.c but we could move it or some
+of it to our common code if needed. You also may safely ignore the eeh_*
+bits on ppc32
 
 Cheers,
 Ben.
