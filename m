@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id DB7CF105447
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:46 +1100 (EST)
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 271DFB82E2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:57 +1100 (EST)
 Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:46 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:57 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 21/27] drivers/hwmon/of: don't use deprecated field in
+Subject: [PATCH 23/27] drivers/infiniband/of: don't use deprecated fields in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:44 -0700
-Message-ID: <20100311182343.13103.98096.stgit@angua>
+Date: Thu, 11 Mar 2010 11:23:55 -0700
+Message-ID: <20100311182354.13103.40771.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,24 +39,27 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/hwmon/ultra45_env.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_main.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/hwmon/ultra45_env.c b/drivers/hwmon/ultra45_env.c
-index 68e90ab..5da5942 100644
---- a/drivers/hwmon/ultra45_env.c
-+++ b/drivers/hwmon/ultra45_env.c
-@@ -300,8 +300,11 @@ static const struct of_device_id env_match[] = {
- MODULE_DEVICE_TABLE(of, env_match);
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 2639185..252489e 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -937,12 +937,13 @@ static struct of_device_id ehca_device_table[] =
+ MODULE_DEVICE_TABLE(of, ehca_device_table);
  
- static struct of_platform_driver env_driver = {
--	.name		= "ultra45_env",
--	.match_table	= env_match,
+ static struct of_platform_driver ehca_driver = {
+-	.name        = "ehca",
+-	.match_table = ehca_device_table,
+ 	.probe       = ehca_probe,
+ 	.remove      = ehca_remove,
+-	.driver	     = {
 +	.driver = {
-+		.name = "ultra45_env",
++		.name = "ehca",
 +		.owner = THIS_MODULE,
-+		.of_match_table = env_match,
-+	},
- 	.probe		= env_probe,
- 	.remove		= __devexit_p(env_remove),
+ 		.groups = ehca_drv_attr_groups,
++		.of_match_table = ehca_device_table,
+ 	},
  };
+ 
