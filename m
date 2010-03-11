@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-px0-f202.google.com (mail-px0-f202.google.com
-	[209.85.216.202]) by ozlabs.org (Postfix) with ESMTP id 33754B7E6A
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:24:09 +1100 (EST)
-Received: by pxi40 with SMTP id 40so4257pxi.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:24:09 -0800 (PST)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 7E67CB7E90
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:24:15 +1100 (EST)
+Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:24:15 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 25/27] arch/powerpc/of: don't use deprecated field in
+Subject: [PATCH 26/27] arch/sparc/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:24:06 -0700
-Message-ID: <20100311182405.13103.14199.stgit@angua>
+Date: Thu, 11 Mar 2010 11:24:11 -0700
+Message-ID: <20100311182411.13103.41274.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,448 +39,321 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/kernel/of_platform.c             |    3 ++-
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c    |   14 ++++++++----
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    7 ++++--
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |    8 ++++---
- arch/powerpc/platforms/82xx/ep8248e.c         |    3 ++-
- arch/powerpc/platforms/83xx/suspend.c         |    7 ++++--
- arch/powerpc/platforms/cell/axon_msi.c        |    7 +++---
- arch/powerpc/platforms/pasemi/gpio_mdio.c     |    7 +++---
- arch/powerpc/sysdev/axonram.c                 |    8 +++----
- arch/powerpc/sysdev/bestcomm/bestcomm.c       |   10 +++-----
- arch/powerpc/sysdev/fsl_msi.c                 |    7 ++++--
- arch/powerpc/sysdev/fsl_pmc.c                 |    7 ++++--
- arch/powerpc/sysdev/fsl_rio.c                 |    7 ++++--
- arch/powerpc/sysdev/pmi.c                     |    7 +++---
- arch/powerpc/sysdev/qe_lib/qe.c               |    7 ++++--
- drivers/dma/fsldma.c                          |   13 +++++++----
- drivers/dma/ppc4xx/adma.c                     |    2 +-
- drivers/edac/mpc85xx_edac.c                   |   30 ++++++++++---------------
- drivers/edac/ppc4xx_edac.c                    |   10 ++++----
- 19 files changed, 95 insertions(+), 69 deletions(-)
+ arch/sparc/include/asm/parport.h |    7 +++++--
+ arch/sparc/kernel/apc.c          |    7 +++++--
+ arch/sparc/kernel/auxio_64.c     |    7 ++++---
+ arch/sparc/kernel/central.c      |   14 ++++++++------
+ arch/sparc/kernel/chmc.c         |    7 +++++--
+ arch/sparc/kernel/pci_fire.c     |    7 +++++--
+ arch/sparc/kernel/pci_psycho.c   |    7 +++++--
+ arch/sparc/kernel/pci_sabre.c    |    7 +++++--
+ arch/sparc/kernel/pci_schizo.c   |    7 +++++--
+ arch/sparc/kernel/pci_sun4v.c    |    7 +++++--
+ arch/sparc/kernel/pmc.c          |    7 +++++--
+ arch/sparc/kernel/power.c        |    7 ++++---
+ arch/sparc/kernel/time_32.c      |    7 ++++---
+ arch/sparc/kernel/time_64.c      |   21 ++++++++++++---------
+ 14 files changed, 77 insertions(+), 42 deletions(-)
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index e047126..c08eb85 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -307,10 +307,11 @@ static struct of_device_id of_pci_phb_ids[] = {
+diff --git a/arch/sparc/include/asm/parport.h b/arch/sparc/include/asm/parport.h
+index 1bb6a41..c333b8d 100644
+--- a/arch/sparc/include/asm/parport.h
++++ b/arch/sparc/include/asm/parport.h
+@@ -232,8 +232,11 @@ static const struct of_device_id ecpp_match[] = {
  };
  
- static struct of_platform_driver of_pci_phb_driver = {
--	.match_table = of_pci_phb_ids,
- 	.probe = of_pci_phb_probe,
- 	.driver = {
- 		.name = "of-pci",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_pci_phb_ids,
- 	},
- };
- 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-index fce30e2..8f65de0 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-@@ -192,8 +192,11 @@ static const struct of_device_id mpc52xx_wkup_gpiochip_match[] = {
- };
- 
- static struct of_platform_driver mpc52xx_wkup_gpiochip_driver = {
--	.name = "gpio_wkup",
--	.match_table = mpc52xx_wkup_gpiochip_match,
+ static struct of_platform_driver ecpp_driver = {
+-	.name			= "ecpp",
+-	.match_table		= ecpp_match,
 +	.driver = {
-+		.name = "gpio_wkup",
++		.name = "ecpp",
 +		.owner = THIS_MODULE,
-+		.of_match_table = mpc52xx_wkup_gpiochip_match,
++		.of_match_table = ecpp_match,
 +	},
- 	.probe = mpc52xx_wkup_gpiochip_probe,
- 	.remove = mpc52xx_gpiochip_remove,
+ 	.probe			= ecpp_probe,
+ 	.remove			= __devexit_p(ecpp_remove),
  };
-@@ -348,8 +351,11 @@ static const struct of_device_id mpc52xx_simple_gpiochip_match[] = {
- };
+diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
+index 71ec90b..b27476c 100644
+--- a/arch/sparc/kernel/apc.c
++++ b/arch/sparc/kernel/apc.c
+@@ -174,8 +174,11 @@ static struct of_device_id __initdata apc_match[] = {
+ MODULE_DEVICE_TABLE(of, apc_match);
  
- static struct of_platform_driver mpc52xx_simple_gpiochip_driver = {
--	.name = "gpio",
--	.match_table = mpc52xx_simple_gpiochip_match,
+ static struct of_platform_driver apc_driver = {
+-	.name		= "apc",
+-	.match_table	= apc_match,
 +	.driver = {
-+		.name = "gpio",
++		.name = "apc",
 +		.owner = THIS_MODULE,
-+		.of_match_table = mpc52xx_simple_gpiochip_match,
++		.of_match_table = apc_match,
 +	},
- 	.probe = mpc52xx_simple_gpiochip_probe,
- 	.remove = mpc52xx_gpiochip_remove,
- };
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index a34bffa..59a58e9 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -779,8 +779,11 @@ static const struct of_device_id mpc52xx_gpt_match[] = {
+ 	.probe		= apc_probe,
  };
  
- static struct of_platform_driver mpc52xx_gpt_driver = {
--	.name = "mpc52xx-gpt",
--	.match_table = mpc52xx_gpt_match,
-+	.driver = {
-+		.name = "mpc52xx-gpt",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc52xx_gpt_match,
-+	},
- 	.probe = mpc52xx_gpt_probe,
- 	.remove = mpc52xx_gpt_remove,
- };
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-index 046d314..35baf0f 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -535,9 +535,11 @@ static struct of_device_id mpc52xx_lpbfifo_match[] __devinitconst = {
- };
+diff --git a/arch/sparc/kernel/auxio_64.c b/arch/sparc/kernel/auxio_64.c
+index bd8421a..ddc8412 100644
+--- a/arch/sparc/kernel/auxio_64.c
++++ b/arch/sparc/kernel/auxio_64.c
+@@ -132,10 +132,11 @@ static int __devinit auxio_probe(struct of_device *dev, const struct of_device_i
+ }
  
- static struct of_platform_driver mpc52xx_lpbfifo_driver = {
--	.owner = THIS_MODULE,
--	.name = "mpc52xx-lpbfifo",
--	.match_table = mpc52xx_lpbfifo_match,
-+	.driver = {
-+		.name = "mpc52xx-lpbfifo",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc52xx_lpbfifo_match,
-+	},
- 	.probe = mpc52xx_lpbfifo_probe,
- 	.remove = __devexit_p(mpc52xx_lpbfifo_remove),
- };
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 3848500..3d1b718 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -169,8 +169,9 @@ static const struct of_device_id ep8248e_mdio_match[] = {
- static struct of_platform_driver ep8248e_mdio_driver = {
- 	.driver = {
- 		.name = "ep8248e-mdio-bitbang",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ep8248e_mdio_match,
- 	},
--	.match_table = ep8248e_mdio_match,
- 	.probe = ep8248e_mdio_probe,
- 	.remove = ep8248e_mdio_remove,
- };
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index aa0b764..ebe6c35 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -423,8 +423,11 @@ static struct of_device_id pmc_match[] = {
- };
- 
- static struct of_platform_driver pmc_driver = {
--	.name = "mpc83xx-pmc",
--	.match_table = pmc_match,
-+	.driver = {
-+		.name = "mpc83xx-pmc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = pmc_match,
-+	},
- 	.probe = pmc_probe,
- 	.remove = pmc_remove
- };
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index e341a70..10b86f6 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -446,11 +446,12 @@ static const struct of_device_id axon_msi_device_id[] = {
- };
- 
- static struct of_platform_driver axon_msi_driver = {
--	.match_table	= axon_msi_device_id,
- 	.probe		= axon_msi_probe,
- 	.shutdown	= axon_msi_shutdown,
+ static struct of_platform_driver auxio_driver = {
+-	.match_table	= auxio_match,
+ 	.probe		= auxio_probe,
 -	.driver		= {
--		.name	= "axon-msi"
+-		.name	= "auxio",
 +	.driver = {
-+		.name = "axon-msi",
++		.name = "auxio",
 +		.owner = THIS_MODULE,
-+		.of_match_table = axon_msi_device_id,
++		.of_match_table = auxio_match,
  	},
  };
  
-diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-index b7027db..4857059 100644
---- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
-+++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-@@ -300,11 +300,12 @@ MODULE_DEVICE_TABLE(of, gpio_mdio_match);
+diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
+index dfc3698..818f62a 100644
+--- a/arch/sparc/kernel/central.c
++++ b/arch/sparc/kernel/central.c
+@@ -148,10 +148,11 @@ static struct of_device_id __initdata clock_board_match[] = {
+ };
  
- static struct of_platform_driver gpio_mdio_driver =
- {
--	.match_table	= gpio_mdio_match,
- 	.probe		= gpio_mdio_probe,
- 	.remove		= gpio_mdio_remove,
+ static struct of_platform_driver clock_board_driver = {
+-	.match_table	= clock_board_match,
+ 	.probe		= clock_board_probe,
 -	.driver		= {
--		.name	= "gpio-mdio-bitbang",
+-		.name	= "clock_board",
 +	.driver = {
-+		.name = "gpio-mdio-bitbang",
++		.name = "clock_board",
 +		.owner = THIS_MODULE,
-+		.of_match_table = gpio_mdio_match,
++		.of_match_table = clock_board_match,
  	},
  };
  
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 88b21fc..402d221 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -327,12 +327,12 @@ static struct of_device_id axon_ram_device_id[] = {
+@@ -253,10 +254,11 @@ static struct of_device_id __initdata fhc_match[] = {
  };
  
- static struct of_platform_driver axon_ram_driver = {
--	.match_table	= axon_ram_device_id,
- 	.probe		= axon_ram_probe,
- 	.remove		= axon_ram_remove,
+ static struct of_platform_driver fhc_driver = {
+-	.match_table	= fhc_match,
+ 	.probe		= fhc_probe,
 -	.driver		= {
--		.owner	= THIS_MODULE,
--		.name	= AXON_RAM_MODULE_NAME,
+-		.name	= "fhc",
 +	.driver = {
-+		.name = AXON_RAM_MODULE_NAME,
++		.name = "fhc",
 +		.owner = THIS_MODULE,
-+		.of_match_table = axon_ram_device_id,
++		.of_match_table = fhc_match,
  	},
  };
  
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-index d32d538..a7c5c47 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -494,14 +494,12 @@ MODULE_DEVICE_TABLE(of, mpc52xx_bcom_of_match);
+diff --git a/arch/sparc/kernel/chmc.c b/arch/sparc/kernel/chmc.c
+index 9368796..870cb65 100644
+--- a/arch/sparc/kernel/chmc.c
++++ b/arch/sparc/kernel/chmc.c
+@@ -811,8 +811,11 @@ static const struct of_device_id us3mc_match[] = {
+ MODULE_DEVICE_TABLE(of, us3mc_match);
  
+ static struct of_platform_driver us3mc_driver = {
+-	.name		= "us3mc",
+-	.match_table	= us3mc_match,
++	.driver = {
++		.name = "us3mc",
++		.owner = THIS_MODULE,
++		.of_match_table = us3mc_match,
++	},
+ 	.probe		= us3mc_probe,
+ 	.remove		= __devexit_p(us3mc_remove),
+ };
+diff --git a/arch/sparc/kernel/pci_fire.c b/arch/sparc/kernel/pci_fire.c
+index ff844ba..51cfa09 100644
+--- a/arch/sparc/kernel/pci_fire.c
++++ b/arch/sparc/kernel/pci_fire.c
+@@ -508,8 +508,11 @@ static struct of_device_id __initdata fire_match[] = {
+ };
  
- static struct of_platform_driver mpc52xx_bcom_of_platform_driver = {
--	.owner		= THIS_MODULE,
+ static struct of_platform_driver fire_driver = {
 -	.name		= DRIVER_NAME,
--	.match_table	= mpc52xx_bcom_of_match,
- 	.probe		= mpc52xx_bcom_probe,
- 	.remove		= mpc52xx_bcom_remove,
--	.driver		= {
--		.name	= DRIVER_NAME,
--		.owner	= THIS_MODULE,
+-	.match_table	= fire_match,
 +	.driver = {
 +		.name = DRIVER_NAME,
 +		.owner = THIS_MODULE,
-+		.of_match_table = mpc52xx_bcom_of_match,
- 	},
- };
- 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index d17841f..7200bdd 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -344,8 +344,11 @@ static const struct of_device_id fsl_of_msi_ids[] = {
- };
- 
- static struct of_platform_driver fsl_of_msi_driver = {
--	.name = "fsl-msi",
--	.match_table = fsl_of_msi_ids,
-+	.driver = {
-+		.name = "fsl-msi",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsl_of_msi_ids,
++		.of_match_table = fire_match,
 +	},
- 	.probe = fsl_of_msi_probe,
+ 	.probe		= fire_probe,
  };
  
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-index 2ebe817..9082eb9 100644
---- a/arch/powerpc/sysdev/fsl_pmc.c
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -76,8 +76,11 @@ static const struct of_device_id pmc_ids[] = {
+diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
+index e675e21..558a705 100644
+--- a/arch/sparc/kernel/pci_psycho.c
++++ b/arch/sparc/kernel/pci_psycho.c
+@@ -602,8 +602,11 @@ static struct of_device_id __initdata psycho_match[] = {
  };
+ 
+ static struct of_platform_driver psycho_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= psycho_match,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = psycho_match,
++	},
+ 	.probe		= psycho_probe,
+ };
+ 
+diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
+index 5048498..6dad8e3 100644
+--- a/arch/sparc/kernel/pci_sabre.c
++++ b/arch/sparc/kernel/pci_sabre.c
+@@ -596,8 +596,11 @@ static struct of_device_id __initdata sabre_match[] = {
+ };
+ 
+ static struct of_platform_driver sabre_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= sabre_match,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = sabre_match,
++	},
+ 	.probe		= sabre_probe,
+ };
+ 
+diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
+index 2f3f921..97a1ae2 100644
+--- a/arch/sparc/kernel/pci_schizo.c
++++ b/arch/sparc/kernel/pci_schizo.c
+@@ -1491,8 +1491,11 @@ static struct of_device_id __initdata schizo_match[] = {
+ };
+ 
+ static struct of_platform_driver schizo_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= schizo_match,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = schizo_match,
++	},
+ 	.probe		= schizo_probe,
+ };
+ 
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 5c11f56..a24af6f 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -1009,8 +1009,11 @@ static struct of_device_id __initdata pci_sun4v_match[] = {
+ };
+ 
+ static struct of_platform_driver pci_sun4v_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= pci_sun4v_match,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = pci_sun4v_match,
++	},
+ 	.probe		= pci_sun4v_probe,
+ };
+ 
+diff --git a/arch/sparc/kernel/pmc.c b/arch/sparc/kernel/pmc.c
+index 5e4563d..9589d8b 100644
+--- a/arch/sparc/kernel/pmc.c
++++ b/arch/sparc/kernel/pmc.c
+@@ -79,8 +79,11 @@ static struct of_device_id __initdata pmc_match[] = {
+ MODULE_DEVICE_TABLE(of, pmc_match);
  
  static struct of_platform_driver pmc_driver = {
--	.driver.name = "fsl-pmc",
--	.match_table = pmc_ids,
+-	.name		= "pmc",
+-	.match_table	= pmc_match,
 +	.driver = {
-+		.name = "fsl-pmc",
++		.name = "pmc",
 +		.owner = THIS_MODULE,
-+		.of_match_table = pmc_ids,
++		.of_match_table = pmc_match,
 +	},
- 	.probe = pmc_probe,
+ 	.probe		= pmc_probe,
  };
  
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 757a83f..67f2653 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1214,8 +1214,11 @@ static const struct of_device_id fsl_of_rio_rpn_ids[] = {
+diff --git a/arch/sparc/kernel/power.c b/arch/sparc/kernel/power.c
+index e3f806a..168d4cb 100644
+--- a/arch/sparc/kernel/power.c
++++ b/arch/sparc/kernel/power.c
+@@ -60,10 +60,11 @@ static struct of_device_id __initdata power_match[] = {
  };
  
- static struct of_platform_driver fsl_of_rio_rpn_driver = {
--	.name = "fsl-of-rio",
--	.match_table = fsl_of_rio_rpn_ids,
-+	.driver = {
-+		.name = "fsl-of-rio",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsl_of_rio_rpn_ids,
-+	},
- 	.probe = fsl_of_rio_rpn_probe,
- };
- 
-diff --git a/arch/powerpc/sysdev/pmi.c b/arch/powerpc/sysdev/pmi.c
-index b92cb3a..738d8aa 100644
---- a/arch/powerpc/sysdev/pmi.c
-+++ b/arch/powerpc/sysdev/pmi.c
-@@ -205,11 +205,12 @@ static int pmi_of_remove(struct of_device *dev)
- }
- 
- static struct of_platform_driver pmi_of_platform_driver = {
--	.match_table	= pmi_match,
- 	.probe		= pmi_of_probe,
- 	.remove		= pmi_of_remove,
+ static struct of_platform_driver power_driver = {
+-	.match_table	= power_match,
+ 	.probe		= power_probe,
 -	.driver		= {
--		.name	= "pmi",
+-		.name	= "power",
 +	.driver = {
-+		.name = "pmi",
++		.name = "power",
 +		.owner = THIS_MODULE,
-+		.of_match_table = pmi_match,
++		.of_match_table = power_match,
  	},
  };
  
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 149393c..093e0ae 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -669,8 +669,11 @@ static const struct of_device_id qe_ids[] = {
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index e0dbed9..217ba27 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -185,10 +185,11 @@ static struct of_device_id __initdata clock_match[] = {
  };
  
- static struct of_platform_driver qe_driver = {
--	.driver.name = "fsl-qe",
--	.match_table = qe_ids,
+ static struct of_platform_driver clock_driver = {
+-	.match_table	= clock_match,
+ 	.probe		= clock_probe,
+-	.driver		= {
+-		.name	= "rtc",
 +	.driver = {
-+		.name = "fsl-qe",
++		.name = "rtc",
 +		.owner = THIS_MODULE,
-+		.of_match_table = qe_ids,
-+	},
- 	.probe = qe_probe,
- 	.resume = qe_resume,
- };
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index bbb4be5..9a2a158 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -1407,11 +1407,14 @@ static const struct of_device_id fsldma_of_ids[] = {
- 	{}
- };
- 
--static struct of_platform_driver fsldma_of_driver = {
--	.name		= "fsl-elo-dma",
--	.match_table	= fsldma_of_ids,
--	.probe		= fsldma_of_probe,
--	.remove		= fsldma_of_remove,
-+static struct of_platform_driver of_fsl_dma_driver = {
-+	.driver = {
-+		.name = "fsl-elo-dma",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsldma_of_ids,
-+	},
-+	.probe = fsldma_of_probe,
-+	.remove = fsldma_of_remove,
- };
- 
- /*----------------------------------------------------------------------------*/
-diff --git a/drivers/dma/ppc4xx/adma.c b/drivers/dma/ppc4xx/adma.c
-index e69d87f..b88f1fa 100644
---- a/drivers/dma/ppc4xx/adma.c
-+++ b/drivers/dma/ppc4xx/adma.c
-@@ -4948,12 +4948,12 @@ static const struct of_device_id ppc440spe_adma_of_match[] __devinitconst = {
- MODULE_DEVICE_TABLE(of, ppc440spe_adma_of_match);
- 
- static struct of_platform_driver ppc440spe_adma_driver = {
--	.match_table = ppc440spe_adma_of_match,
- 	.probe = ppc440spe_adma_probe,
- 	.remove = __devexit_p(ppc440spe_adma_remove),
- 	.driver = {
- 		.name = "PPC440SP(E)-ADMA",
- 		.owner = THIS_MODULE,
-+		.of_match_table = ppc440spe_adma_of_match,
++		.of_match_table = clock_match,
  	},
  };
  
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index ecd5928..4f5ad74 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -339,15 +339,13 @@ static struct of_device_id mpc85xx_pci_err_of_match[] = {
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index ee3fe41..b2cf014 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -462,10 +462,11 @@ static struct of_device_id __initdata rtc_match[] = {
  };
  
- static struct of_platform_driver mpc85xx_pci_err_driver = {
--	.owner = THIS_MODULE,
--	.name = "mpc85xx_pci_err",
--	.match_table = mpc85xx_pci_err_of_match,
- 	.probe = mpc85xx_pci_err_probe,
- 	.remove = __devexit_p(mpc85xx_pci_err_remove),
- 	.driver = {
--		   .name = "mpc85xx_pci_err",
--		   .owner = THIS_MODULE,
--		   },
-+		.name = "mpc85xx_pci_err",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc85xx_pci_err_of_match,
-+	},
- };
- 
- #endif				/* CONFIG_PCI */
-@@ -655,15 +653,13 @@ static struct of_device_id mpc85xx_l2_err_of_match[] = {
- };
- 
- static struct of_platform_driver mpc85xx_l2_err_driver = {
--	.owner = THIS_MODULE,
--	.name = "mpc85xx_l2_err",
--	.match_table = mpc85xx_l2_err_of_match,
- 	.probe = mpc85xx_l2_err_probe,
- 	.remove = mpc85xx_l2_err_remove,
- 	.driver = {
--		   .name = "mpc85xx_l2_err",
--		   .owner = THIS_MODULE,
--		   },
-+		.name = "mpc85xx_l2_err",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc85xx_l2_err_of_match,
-+	},
- };
- 
- /**************************** MC Err device ***************************/
-@@ -992,15 +988,13 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
- };
- 
- static struct of_platform_driver mpc85xx_mc_err_driver = {
--	.owner = THIS_MODULE,
--	.name = "mpc85xx_mc_err",
--	.match_table = mpc85xx_mc_err_of_match,
- 	.probe = mpc85xx_mc_err_probe,
- 	.remove = mpc85xx_mc_err_remove,
- 	.driver = {
--		   .name = "mpc85xx_mc_err",
--		   .owner = THIS_MODULE,
--		   },
-+		.name = "mpc85xx_mc_err",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mpc85xx_mc_err_of_match,
-+	},
- };
- 
- #ifdef CONFIG_MPC85xx
-diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
-index 11f2172..9d6f678 100644
---- a/drivers/edac/ppc4xx_edac.c
-+++ b/drivers/edac/ppc4xx_edac.c
-@@ -202,13 +202,13 @@ static struct of_device_id ppc4xx_edac_match[] = {
- };
- 
- static struct of_platform_driver ppc4xx_edac_driver = {
--	.match_table		= ppc4xx_edac_match,
- 	.probe			= ppc4xx_edac_probe,
- 	.remove			= ppc4xx_edac_remove,
--	.driver			= {
--		.owner	= THIS_MODULE,
--		.name	= PPC4XX_EDAC_MODULE_NAME
--	}
+ static struct of_platform_driver rtc_driver = {
+-	.match_table	= rtc_match,
+ 	.probe		= rtc_probe,
+-	.driver		= {
+-		.name	= "rtc",
 +	.driver = {
++		.name = "rtc",
 +		.owner = THIS_MODULE,
-+		.name = PPC4XX_EDAC_MODULE_NAME
-+		.of_match_table = ppc4xx_edac_match,
-+	},
++		.of_match_table = rtc_match,
+ 	},
  };
  
- /*
+@@ -494,10 +495,11 @@ static struct of_device_id __initdata bq4802_match[] = {
+ };
+ 
+ static struct of_platform_driver bq4802_driver = {
+-	.match_table	= bq4802_match,
+ 	.probe		= bq4802_probe,
+-	.driver		= {
+-		.name	= "bq4802",
++	.driver = {
++		.name = "bq4802",
++		.owner = THIS_MODULE,
++		.of_match_table = bq4802_match,
+ 	},
+ };
+ 
+@@ -557,10 +559,11 @@ static struct of_device_id __initdata mostek_match[] = {
+ };
+ 
+ static struct of_platform_driver mostek_driver = {
+-	.match_table	= mostek_match,
+ 	.probe		= mostek_probe,
+-	.driver		= {
+-		.name	= "mostek",
++	.driver = {
++		.name = "mostek",
++		.owner = THIS_MODULE,
++		.of_match_table = mostek_match,
+ 	},
+ };
+ 
