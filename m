@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 0DEF0B88AA
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:07:09 +1100 (EST)
-Received: by mail-pw0-f42.google.com with SMTP id 10so170185pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:07:09 -0800 (PST)
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 9A07FB7E60
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:07:17 +1100 (EST)
+Received: by mail-pv0-f170.google.com with SMTP id 11so125453pvg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:07:17 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 36/37] arch/microblaze: Remove .archdata.of_node and use
-	.of_node in struct device
+Subject: [PATCH 37/37] arch/sparc: Remove .archdata.of_node and use .of_node
+	in struct device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
 	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:07:06 -0700
-Message-ID: <20100311180706.4824.39674.stgit@angua>
+Date: Thu, 11 Mar 2010 11:07:12 -0700
+Message-ID: <20100311180711.4824.57524.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 MIME-Version: 1.0
@@ -40,62 +40,91 @@ also removes .node from struct of_device for the same reason.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/microblaze/include/asm/device.h    |    8 --------
- arch/microblaze/include/asm/of_device.h |    1 -
- arch/microblaze/kernel/of_device.c      |    4 +---
- 3 files changed, 1 insertions(+), 12 deletions(-)
+ arch/sparc/include/asm/device.h    |    9 ---------
+ arch/sparc/include/asm/of_device.h |    1 -
+ arch/sparc/kernel/of_device_32.c   |    3 ---
+ arch/sparc/kernel/of_device_64.c   |    2 --
+ arch/sparc/kernel/pci.c            |    1 -
+ 5 files changed, 0 insertions(+), 16 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
-index 2370888..8d46822 100644
---- a/arch/microblaze/include/asm/device.h
-+++ b/arch/microblaze/include/asm/device.h
-@@ -12,19 +12,11 @@
- struct device_node;
- 
- struct dev_archdata {
--	/* Optional pointer to an OF device node */
--	struct device_node	*of_node;
- };
- 
- struct pdev_archdata {
+diff --git a/arch/sparc/include/asm/device.h b/arch/sparc/include/asm/device.h
+index 55dadca..d4c4521 100644
+--- a/arch/sparc/include/asm/device.h
++++ b/arch/sparc/include/asm/device.h
+@@ -13,19 +13,10 @@ struct dev_archdata {
+ 	void			*iommu;
+ 	void			*stc;
+ 	void			*host_controller;
+-
+-	struct device_node	*prom_node;
+ 	struct of_device	*op;
+-
+ 	int			numa_node;
  };
  
 -static inline void dev_archdata_set_node(struct dev_archdata *ad,
 -					 struct device_node *np)
 -{
--	ad->of_node = np;
+-	ad->prom_node = np;
 -}
 -
- #endif /* _ASM_MICROBLAZE_DEVICE_H */
- 
- 
-diff --git a/arch/microblaze/include/asm/of_device.h b/arch/microblaze/include/asm/of_device.h
-index ba917cf..ab25a40 100644
---- a/arch/microblaze/include/asm/of_device.h
-+++ b/arch/microblaze/include/asm/of_device.h
-@@ -21,7 +21,6 @@
-  * probed using OF properties.
-  */
- struct of_device {
--	struct device_node	*node; /* to be obsoleted */
- 	u64			dma_mask; /* DMA mask */
- 	struct device		dev; /* Generic device interface */
+ struct pdev_archdata {
  };
-diff --git a/arch/microblaze/kernel/of_device.c b/arch/microblaze/kernel/of_device.c
-index ae165fc..ac7e6e1 100644
---- a/arch/microblaze/kernel/of_device.c
-+++ b/arch/microblaze/kernel/of_device.c
-@@ -49,12 +49,10 @@ struct of_device *of_device_alloc(struct device_node *np,
- 	if (!dev)
+ 
+diff --git a/arch/sparc/include/asm/of_device.h b/arch/sparc/include/asm/of_device.h
+index a5d9811..f320246 100644
+--- a/arch/sparc/include/asm/of_device.h
++++ b/arch/sparc/include/asm/of_device.h
+@@ -14,7 +14,6 @@
+  */
+ struct of_device
+ {
+-	struct device_node		*node;
+ 	struct device			dev;
+ 	struct resource			resource[PROMREG_MAX];
+ 	unsigned int			irqs[PROMINTR_MAX];
+diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
+index 909bee0..37ab163 100644
+--- a/arch/sparc/kernel/of_device_32.c
++++ b/arch/sparc/kernel/of_device_32.c
+@@ -345,12 +345,9 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
  		return NULL;
  
--	dev->node = of_node_get(np);
-+	dev->dev.of_node = of_node_get(np);
- 	dev->dev.dma_mask = &dev->dma_mask;
- 	dev->dev.parent = parent;
- 	dev->dev.release = of_release_dev;
--	dev->dev.archdata.of_node = np; /* temporary; remove after merging */
--	dev->dev.of_node = np;
+ 	sd = &op->dev.archdata;
+-	sd->prom_node = dp; /* temporary */
+ 	sd->op = op;
+ 	op->dev.of_node = dp;
  
- 	if (bus_id)
- 		dev_set_name(&dev->dev, bus_id);
+-	op->node = dp;
+-
+ 	op->clock_freq = of_getintprop_default(dp, "clock-frequency",
+ 					       (25*1000*1000));
+ 	op->portid = of_getintprop_default(dp, "upa-portid", -1);
+diff --git a/arch/sparc/kernel/of_device_64.c b/arch/sparc/kernel/of_device_64.c
+index e436381..1dae807 100644
+--- a/arch/sparc/kernel/of_device_64.c
++++ b/arch/sparc/kernel/of_device_64.c
+@@ -640,11 +640,9 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
+ 		return NULL;
+ 
+ 	sd = &op->dev.archdata;
+-	sd->prom_node = dp; /* temporary */
+ 	sd->op = op;
+ 
+ 	op->dev.of_node = dp;
+-	op->node = dp;
+ 
+ 	op->clock_freq = of_getintprop_default(dp, "clock-frequency",
+ 					       (25*1000*1000));
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index 89c17d0..8a8363a 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -261,7 +261,6 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 	sd->iommu = pbm->iommu;
+ 	sd->stc = &pbm->stc;
+ 	sd->host_controller = pbm;
+-	sd->prom_node = node; /* temporary */
+ 	sd->op = op = of_find_device_by_node(node);
+ 	sd->numa_node = pbm->numa_node;
+ 
