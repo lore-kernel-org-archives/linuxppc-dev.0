@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id EB16DB7F0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:04:43 +1100 (EST)
-Received: by mail-pv0-f170.google.com with SMTP id 11so124255pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:04:43 -0800 (PST)
+Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
+	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 6C0AFB8528
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:04:46 +1100 (EST)
+Received: by mail-pz0-f201.google.com with SMTP id 39so169281pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:04:46 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 09/37] drivers/atm: use .dev.of_node instead of .node in
+Subject: [PATCH 10/37] drivers/video: use .dev.of_node instead of .node in
 	struct of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:04:37 -0700
-Message-ID: <20100311180437.4824.86345.stgit@angua>
+Date: Thu, 11 Mar 2010 11:04:43 -0700
+Message-ID: <20100311180442.4824.14836.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 MIME-Version: 1.0
@@ -38,57 +38,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/atm/fore200e.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/video/cg6.c |    2 +-
+ drivers/video/ffb.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-index f7d6eba..593a03a 100644
---- a/drivers/atm/fore200e.c
-+++ b/drivers/atm/fore200e.c
-@@ -789,7 +789,7 @@ static int __init fore200e_sba_map(struct fore200e *fore200e)
- 	fore200e->bus->write(0x02, fore200e->regs.sba.isr); /* XXX hardwired interrupt level */
- 
- 	/* get the supported DVMA burst sizes */
--	bursts = of_getintprop_default(op->node->parent, "burst-sizes", 0x00);
-+	bursts = of_getintprop_default(op->dev.of_node->parent, "burst-sizes", 0x00);
- 
- 	if (sbus_can_dma_64bit())
- 		sbus_set_sbus64(&op->dev, bursts);
-@@ -820,18 +820,20 @@ static int __init fore200e_sba_prom_read(struct fore200e *fore200e, struct prom_
- 	const u8 *prop;
- 	int len;
- 
--	prop = of_get_property(op->node, "madaddrlo2", &len);
-+	prop = of_get_property(op->dev.of_node, "madaddrlo2", &len);
- 	if (!prop)
- 		return -ENODEV;
- 	memcpy(&prom->mac_addr[4], prop, 4);
- 
--	prop = of_get_property(op->node, "madaddrhi4", &len);
-+	prop = of_get_property(op->dev.of_node, "madaddrhi4", &len);
- 	if (!prop)
- 		return -ENODEV;
- 	memcpy(&prom->mac_addr[2], prop, 4);
- 
--	prom->serial_number = of_getintprop_default(op->node, "serialnumber", 0);
--	prom->hw_revision = of_getintprop_default(op->node, "promversion", 0);
-+	prom->serial_number = of_getintprop_default(op->dev.of_node,
-+						    "serialnumber", 0);
-+	prom->hw_revision = of_getintprop_default(op->dev.of_node,
-+						  "promversion", 0);
-     
- 	return 0;
- }
-@@ -841,10 +843,10 @@ static int fore200e_sba_proc_read(struct fore200e *fore200e, char *page)
- 	struct of_device *op = fore200e->bus_dev;
- 	const struct linux_prom_registers *regs;
- 
--	regs = of_get_property(op->node, "reg", NULL);
-+	regs = of_get_property(op->dev.of_node, "reg", NULL);
- 
- 	return sprintf(page, "   SBUS slot/device:\t\t%d/'%s'\n",
--		       (regs ? regs->which_io : 0), op->node->name);
-+		       (regs ? regs->which_io : 0), op->dev.of_node->name);
- }
- #endif /* CONFIG_SBUS */
- 
+diff --git a/drivers/video/cg6.c b/drivers/video/cg6.c
+index 0d47c60..978c15f 100644
+--- a/drivers/video/cg6.c
++++ b/drivers/video/cg6.c
+@@ -741,7 +741,7 @@ static void cg6_unmap_regs(struct of_device *op, struct fb_info *info,
+ static int __devinit cg6_probe(struct of_device *op,
+ 				const struct of_device_id *match)
+ {
+-	struct device_node *dp = op->node;
++	struct device_node *dp = op->dev.of_node;
+ 	struct fb_info *info;
+ 	struct cg6_par *par;
+ 	int linebytes, err;
+diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
+index 9dbb964..be0c982 100644
+--- a/drivers/video/ffb.c
++++ b/drivers/video/ffb.c
+@@ -897,7 +897,7 @@ static void ffb_init_fix(struct fb_info *info)
+ static int __devinit ffb_probe(struct of_device *op,
+ 			       const struct of_device_id *match)
+ {
+-	struct device_node *dp = op->node;
++	struct device_node *dp = op->dev.of_node;
+ 	struct ffb_fbc __iomem *fbc;
+ 	struct ffb_dac __iomem *dac;
+ 	struct fb_info *info;
