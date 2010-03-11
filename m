@@ -1,21 +1,24 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 35470B7E4B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 08:41:14 +1100 (EST)
-Message-ID: <4B996375.3010103@embedded-sol.com>
-Date: Thu, 11 Mar 2010 23:41:09 +0200
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Problem with PCI bus rescan on 460EX
-References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B989F9B.8060708@embedded-sol.com>
-	<1268339578.22204.708.camel@pasglop>
-In-Reply-To: <1268339578.22204.708.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id D37FDB7DE3
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 08:45:38 +1100 (EST)
+Subject: Re: madness, was Re: [PATCH 2/2] Macintosh: fix coding style
+	issues in adb.c This is a patch to the adb.c file that cleans up many
+	warnings found by the checkpatch.pl tool
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: fthain@telegraphics.com.au
+In-Reply-To: <alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
+References: <1268172438-76422-1-git-send-email-mbeards2@uoregon.edu>
+	<alpine.LNX.2.00.1003101428460.4583@nippy.intranet>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 08:45:10 +1100
+Message-ID: <1268343910.22204.710.camel@pasglop>
+Mime-Version: 1.0
+Cc: Michael Beardsworth <mbeards2@uoregon.edu>, monstr@monstr.eu,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	geert@linux-m68k.org, Nick Savage <nagaten@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Wed, 2010-03-10 at 14:48 +1100, fthain@telegraphics.com.au wrote:
+> On Tue, 9 Mar 2010, Michael Beardsworth wrote:
+> 
+> > -	/* If a probe is in progress or we are sleeping, wait for it to complete */
+> > +	/* If a probe is in progress or we are sleeping, wait until complete */
+> 
+> If you must "fix" what aint broke, please try not to damage it. I'm sorry 
+> if your VT52 is limited to 80 cols, but IMNSHO this sort of effort is 
+> misguided.
+> 
+> Maybe I could point out again (I do this periodically) that checkpatch.pl 
+> is great but code that fails it is NOT always wrong.
+> 
+> "Check patch" is a good idea but "check existing code" is a waste of 
+> everyone's time.
 
-Benjamin Herrenschmidt wrote:
-> Yes, we need to do a resource allocation pass, setup DMA, etc... and
-> that is not done in that manual rescan case I suppose. I have to look.
->
-> Part of the problem is that there is no "proper" hooks in the generic
-> PCI code that I know of for that, but I'll have to double check the
-> code, things might have changed.
->
-> For boot time, we do this after we scan busses and before we add the
-> devices to sysfs. For hotplug, our hotplug drivers do something similar.
-> But that "rescan" sysfs hook seems to go directly into drivers/pci
-> causing a rescan but without a change to re-allocate resources etc...
->
-> You may be better off implementing a minimum hotplug driver I suppose...
->
-> Cheers,
-> Ben.
->
->   
-I'm fine with creating a minimal hotplug driver. The device I'm dealing with
-partially implements Compact PCI hotplug. It generates ENUM# interrupt, but
-Hotswap Control register layout does not completely follow the standard.
+Amen !
 
-Should I use drivers/pci/hotplug/cpci_hotplug_core.c as a base, or do 
-you have
-something more simple in mind ?
-
-Thanks a lot.
-
-Felix.
+Cheers,
+Ben.
