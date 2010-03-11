@@ -1,13 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 7E67CB7E90
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:24:15 +1100 (EST)
-Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:24:15 -0800 (PST)
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 6F830105721
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:24:20 +1100 (EST)
+Received: by mail-pv0-f170.google.com with SMTP id 11so131850pvg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:24:20 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 26/27] arch/sparc/of: don't use deprecated field in
-	of_platform_driver
+Subject: [PATCH 27/27] of: remove obsolete members from of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
 	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
@@ -18,8 +17,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:24:11 -0700
-Message-ID: <20100311182411.13103.41274.stgit@angua>
+Date: Thu, 11 Mar 2010 11:24:17 -0700
+Message-ID: <20100311182416.13103.38891.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -33,327 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-.name, .match_table and .owner are duplicated in both of_platform_driver
-and device_driver, so the of_platform_driver copies will be removed soon.
+.name, .match_table and .owner already exist in struct device_driver.
+Remove the duplication from struct of_platform_driver.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/sparc/include/asm/parport.h |    7 +++++--
- arch/sparc/kernel/apc.c          |    7 +++++--
- arch/sparc/kernel/auxio_64.c     |    7 ++++---
- arch/sparc/kernel/central.c      |   14 ++++++++------
- arch/sparc/kernel/chmc.c         |    7 +++++--
- arch/sparc/kernel/pci_fire.c     |    7 +++++--
- arch/sparc/kernel/pci_psycho.c   |    7 +++++--
- arch/sparc/kernel/pci_sabre.c    |    7 +++++--
- arch/sparc/kernel/pci_schizo.c   |    7 +++++--
- arch/sparc/kernel/pci_sun4v.c    |    7 +++++--
- arch/sparc/kernel/pmc.c          |    7 +++++--
- arch/sparc/kernel/power.c        |    7 ++++---
- arch/sparc/kernel/time_32.c      |    7 ++++---
- arch/sparc/kernel/time_64.c      |   21 ++++++++++++---------
- 14 files changed, 77 insertions(+), 42 deletions(-)
+ drivers/of/platform.c       |    7 -------
+ include/linux/of_platform.h |    4 ----
+ 2 files changed, 0 insertions(+), 11 deletions(-)
 
-diff --git a/arch/sparc/include/asm/parport.h b/arch/sparc/include/asm/parport.h
-index 1bb6a41..c333b8d 100644
---- a/arch/sparc/include/asm/parport.h
-+++ b/arch/sparc/include/asm/parport.h
-@@ -232,8 +232,11 @@ static const struct of_device_id ecpp_match[] = {
- };
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 9fd7f7d..ba402c6 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -385,13 +385,6 @@ int of_bus_type_init(struct bus_type *bus, const char *name)
  
- static struct of_platform_driver ecpp_driver = {
--	.name			= "ecpp",
--	.match_table		= ecpp_match,
-+	.driver = {
-+		.name = "ecpp",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ecpp_match,
-+	},
- 	.probe			= ecpp_probe,
- 	.remove			= __devexit_p(ecpp_remove),
- };
-diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
-index 71ec90b..b27476c 100644
---- a/arch/sparc/kernel/apc.c
-+++ b/arch/sparc/kernel/apc.c
-@@ -174,8 +174,11 @@ static struct of_device_id __initdata apc_match[] = {
- MODULE_DEVICE_TABLE(of, apc_match);
+ int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+ {
+-	/* initialize common driver fields */
+-	if (!drv->driver.name)
+-		drv->driver.name = drv->name;
+-	if (!drv->driver.owner)
+-		drv->driver.owner = drv->owner;
+-	if (!drv->driver.of_match_table)
+-		drv->driver.of_match_table = drv->match_table;
+ 	drv->driver.bus = bus;
  
- static struct of_platform_driver apc_driver = {
--	.name		= "apc",
--	.match_table	= apc_match,
-+	.driver = {
-+		.name = "apc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = apc_match,
-+	},
- 	.probe		= apc_probe,
- };
- 
-diff --git a/arch/sparc/kernel/auxio_64.c b/arch/sparc/kernel/auxio_64.c
-index bd8421a..ddc8412 100644
---- a/arch/sparc/kernel/auxio_64.c
-+++ b/arch/sparc/kernel/auxio_64.c
-@@ -132,10 +132,11 @@ static int __devinit auxio_probe(struct of_device *dev, const struct of_device_i
- }
- 
- static struct of_platform_driver auxio_driver = {
--	.match_table	= auxio_match,
- 	.probe		= auxio_probe,
--	.driver		= {
--		.name	= "auxio",
-+	.driver = {
-+		.name = "auxio",
-+		.owner = THIS_MODULE,
-+		.of_match_table = auxio_match,
- 	},
- };
- 
-diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
-index dfc3698..818f62a 100644
---- a/arch/sparc/kernel/central.c
-+++ b/arch/sparc/kernel/central.c
-@@ -148,10 +148,11 @@ static struct of_device_id __initdata clock_board_match[] = {
- };
- 
- static struct of_platform_driver clock_board_driver = {
--	.match_table	= clock_board_match,
- 	.probe		= clock_board_probe,
--	.driver		= {
--		.name	= "clock_board",
-+	.driver = {
-+		.name = "clock_board",
-+		.owner = THIS_MODULE,
-+		.of_match_table = clock_board_match,
- 	},
- };
- 
-@@ -253,10 +254,11 @@ static struct of_device_id __initdata fhc_match[] = {
- };
- 
- static struct of_platform_driver fhc_driver = {
--	.match_table	= fhc_match,
- 	.probe		= fhc_probe,
--	.driver		= {
--		.name	= "fhc",
-+	.driver = {
-+		.name = "fhc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fhc_match,
- 	},
- };
- 
-diff --git a/arch/sparc/kernel/chmc.c b/arch/sparc/kernel/chmc.c
-index 9368796..870cb65 100644
---- a/arch/sparc/kernel/chmc.c
-+++ b/arch/sparc/kernel/chmc.c
-@@ -811,8 +811,11 @@ static const struct of_device_id us3mc_match[] = {
- MODULE_DEVICE_TABLE(of, us3mc_match);
- 
- static struct of_platform_driver us3mc_driver = {
--	.name		= "us3mc",
--	.match_table	= us3mc_match,
-+	.driver = {
-+		.name = "us3mc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = us3mc_match,
-+	},
- 	.probe		= us3mc_probe,
- 	.remove		= __devexit_p(us3mc_remove),
- };
-diff --git a/arch/sparc/kernel/pci_fire.c b/arch/sparc/kernel/pci_fire.c
-index ff844ba..51cfa09 100644
---- a/arch/sparc/kernel/pci_fire.c
-+++ b/arch/sparc/kernel/pci_fire.c
-@@ -508,8 +508,11 @@ static struct of_device_id __initdata fire_match[] = {
- };
- 
- static struct of_platform_driver fire_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= fire_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = fire_match,
-+	},
- 	.probe		= fire_probe,
- };
- 
-diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
-index e675e21..558a705 100644
---- a/arch/sparc/kernel/pci_psycho.c
-+++ b/arch/sparc/kernel/pci_psycho.c
-@@ -602,8 +602,11 @@ static struct of_device_id __initdata psycho_match[] = {
- };
- 
- static struct of_platform_driver psycho_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= psycho_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = psycho_match,
-+	},
- 	.probe		= psycho_probe,
- };
- 
-diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
-index 5048498..6dad8e3 100644
---- a/arch/sparc/kernel/pci_sabre.c
-+++ b/arch/sparc/kernel/pci_sabre.c
-@@ -596,8 +596,11 @@ static struct of_device_id __initdata sabre_match[] = {
- };
- 
- static struct of_platform_driver sabre_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= sabre_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = sabre_match,
-+	},
- 	.probe		= sabre_probe,
- };
- 
-diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
-index 2f3f921..97a1ae2 100644
---- a/arch/sparc/kernel/pci_schizo.c
-+++ b/arch/sparc/kernel/pci_schizo.c
-@@ -1491,8 +1491,11 @@ static struct of_device_id __initdata schizo_match[] = {
- };
- 
- static struct of_platform_driver schizo_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= schizo_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = schizo_match,
-+	},
- 	.probe		= schizo_probe,
- };
- 
-diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index 5c11f56..a24af6f 100644
---- a/arch/sparc/kernel/pci_sun4v.c
-+++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -1009,8 +1009,11 @@ static struct of_device_id __initdata pci_sun4v_match[] = {
- };
- 
- static struct of_platform_driver pci_sun4v_driver = {
--	.name		= DRIVER_NAME,
--	.match_table	= pci_sun4v_match,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = pci_sun4v_match,
-+	},
- 	.probe		= pci_sun4v_probe,
- };
- 
-diff --git a/arch/sparc/kernel/pmc.c b/arch/sparc/kernel/pmc.c
-index 5e4563d..9589d8b 100644
---- a/arch/sparc/kernel/pmc.c
-+++ b/arch/sparc/kernel/pmc.c
-@@ -79,8 +79,11 @@ static struct of_device_id __initdata pmc_match[] = {
- MODULE_DEVICE_TABLE(of, pmc_match);
- 
- static struct of_platform_driver pmc_driver = {
--	.name		= "pmc",
--	.match_table	= pmc_match,
-+	.driver = {
-+		.name = "pmc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = pmc_match,
-+	},
- 	.probe		= pmc_probe,
- };
- 
-diff --git a/arch/sparc/kernel/power.c b/arch/sparc/kernel/power.c
-index e3f806a..168d4cb 100644
---- a/arch/sparc/kernel/power.c
-+++ b/arch/sparc/kernel/power.c
-@@ -60,10 +60,11 @@ static struct of_device_id __initdata power_match[] = {
- };
- 
- static struct of_platform_driver power_driver = {
--	.match_table	= power_match,
- 	.probe		= power_probe,
--	.driver		= {
--		.name	= "power",
-+	.driver = {
-+		.name = "power",
-+		.owner = THIS_MODULE,
-+		.of_match_table = power_match,
- 	},
- };
- 
-diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
-index e0dbed9..217ba27 100644
---- a/arch/sparc/kernel/time_32.c
-+++ b/arch/sparc/kernel/time_32.c
-@@ -185,10 +185,11 @@ static struct of_device_id __initdata clock_match[] = {
- };
- 
- static struct of_platform_driver clock_driver = {
--	.match_table	= clock_match,
- 	.probe		= clock_probe,
--	.driver		= {
--		.name	= "rtc",
-+	.driver = {
-+		.name = "rtc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = clock_match,
- 	},
- };
- 
-diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
-index ee3fe41..b2cf014 100644
---- a/arch/sparc/kernel/time_64.c
-+++ b/arch/sparc/kernel/time_64.c
-@@ -462,10 +462,11 @@ static struct of_device_id __initdata rtc_match[] = {
- };
- 
- static struct of_platform_driver rtc_driver = {
--	.match_table	= rtc_match,
- 	.probe		= rtc_probe,
--	.driver		= {
--		.name	= "rtc",
-+	.driver = {
-+		.name = "rtc",
-+		.owner = THIS_MODULE,
-+		.of_match_table = rtc_match,
- 	},
- };
- 
-@@ -494,10 +495,11 @@ static struct of_device_id __initdata bq4802_match[] = {
- };
- 
- static struct of_platform_driver bq4802_driver = {
--	.match_table	= bq4802_match,
- 	.probe		= bq4802_probe,
--	.driver		= {
--		.name	= "bq4802",
-+	.driver = {
-+		.name = "bq4802",
-+		.owner = THIS_MODULE,
-+		.of_match_table = bq4802_match,
- 	},
- };
- 
-@@ -557,10 +559,11 @@ static struct of_device_id __initdata mostek_match[] = {
- };
- 
- static struct of_platform_driver mostek_driver = {
--	.match_table	= mostek_match,
- 	.probe		= mostek_probe,
--	.driver		= {
--		.name	= "mostek",
-+	.driver = {
-+		.name = "mostek",
-+		.owner = THIS_MODULE,
-+		.of_match_table = mostek_match,
- 	},
- };
- 
+ 	/* register with core */
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index ac3ae07..1643d37 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -31,10 +31,6 @@ extern struct bus_type of_platform_bus_type;
+  */
+ struct of_platform_driver
+ {
+-	const char		*name;
+-	const struct of_device_id	*match_table;
+-	struct module		*owner;
+-
+ 	int	(*probe)(struct of_device* dev,
+ 			 const struct of_device_id *match);
+ 	int	(*remove)(struct of_device* dev);
