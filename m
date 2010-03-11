@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
-	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 79D70100870
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:19 +1100 (EST)
-Received: by mail-pz0-f201.google.com with SMTP id 39so178248pzk.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:19 -0800 (PST)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 2BDA2101233
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:25 +1100 (EST)
+Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:25 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 16/27] drivers/scsi/of: don't use deprecated field in
+Subject: [PATCH 17/27] drivers/sbus/of: don't use deprecated field in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:16 -0700
-Message-ID: <20100311182316.13103.87138.stgit@angua>
+Date: Thu, 11 Mar 2010 11:23:22 -0700
+Message-ID: <20100311182321.13103.29782.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,43 +39,100 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/scsi/qlogicpti.c |    7 +++++--
- drivers/scsi/sun_esp.c   |    7 +++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
+ drivers/sbus/char/bbc_i2c.c     |    7 +++++--
+ drivers/sbus/char/display7seg.c |    7 +++++--
+ drivers/sbus/char/envctrl.c     |    7 +++++--
+ drivers/sbus/char/flash.c       |    7 +++++--
+ drivers/sbus/char/uctrl.c       |    7 +++++--
+ 5 files changed, 25 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
-index 7374fbe..16dc12e 100644
---- a/drivers/scsi/qlogicpti.c
-+++ b/drivers/scsi/qlogicpti.c
-@@ -1456,8 +1456,11 @@ static const struct of_device_id qpti_match[] = {
- MODULE_DEVICE_TABLE(of, qpti_match);
+diff --git a/drivers/sbus/char/bbc_i2c.c b/drivers/sbus/char/bbc_i2c.c
+index 1543ac3..8bfdd63 100644
+--- a/drivers/sbus/char/bbc_i2c.c
++++ b/drivers/sbus/char/bbc_i2c.c
+@@ -414,8 +414,11 @@ static const struct of_device_id bbc_i2c_match[] = {
+ MODULE_DEVICE_TABLE(of, bbc_i2c_match);
  
- static struct of_platform_driver qpti_sbus_driver = {
--	.name		= "qpti",
--	.match_table	= qpti_match,
+ static struct of_platform_driver bbc_i2c_driver = {
+-	.name		= "bbc_i2c",
+-	.match_table	= bbc_i2c_match,
 +	.driver = {
-+		.name = "qpti",
++		.name = "bbc_i2c",
 +		.owner = THIS_MODULE,
-+		.of_match_table = qpti_match,
++		.of_match_table = bbc_i2c_match,
 +	},
- 	.probe		= qpti_sbus_probe,
- 	.remove		= __devexit_p(qpti_sbus_remove),
+ 	.probe		= bbc_i2c_probe,
+ 	.remove		= __devexit_p(bbc_i2c_remove),
  };
-diff --git a/drivers/scsi/sun_esp.c b/drivers/scsi/sun_esp.c
-index 4369b76..10ba30a 100644
---- a/drivers/scsi/sun_esp.c
-+++ b/drivers/scsi/sun_esp.c
-@@ -632,8 +632,11 @@ static const struct of_device_id esp_match[] = {
- MODULE_DEVICE_TABLE(of, esp_match);
+diff --git a/drivers/sbus/char/display7seg.c b/drivers/sbus/char/display7seg.c
+index d0a10f4..e1db005 100644
+--- a/drivers/sbus/char/display7seg.c
++++ b/drivers/sbus/char/display7seg.c
+@@ -265,8 +265,11 @@ static const struct of_device_id d7s_match[] = {
+ MODULE_DEVICE_TABLE(of, d7s_match);
  
- static struct of_platform_driver esp_sbus_driver = {
--	.name		= "esp",
--	.match_table	= esp_match,
+ static struct of_platform_driver d7s_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= d7s_match,
 +	.driver = {
-+		.name = "esp",
++		.name = DRIVER_NAME,
 +		.owner = THIS_MODULE,
-+		.of_match_table = esp_match,
++		.of_match_table = d7s_match,
 +	},
- 	.probe		= esp_sbus_probe,
- 	.remove		= __devexit_p(esp_sbus_remove),
+ 	.probe		= d7s_probe,
+ 	.remove		= __devexit_p(d7s_remove),
+ };
+diff --git a/drivers/sbus/char/envctrl.c b/drivers/sbus/char/envctrl.c
+index 84a4310..dc9e8ef 100644
+--- a/drivers/sbus/char/envctrl.c
++++ b/drivers/sbus/char/envctrl.c
+@@ -1130,8 +1130,11 @@ static const struct of_device_id envctrl_match[] = {
+ MODULE_DEVICE_TABLE(of, envctrl_match);
+ 
+ static struct of_platform_driver envctrl_driver = {
+-	.name		= DRIVER_NAME,
+-	.match_table	= envctrl_match,
++	.driver = {
++		.name = DRIVER_NAME,
++		.owner = THIS_MODULE,
++		.of_match_table = envctrl_match,
++	},
+ 	.probe		= envctrl_probe,
+ 	.remove		= __devexit_p(envctrl_remove),
+ };
+diff --git a/drivers/sbus/char/flash.c b/drivers/sbus/char/flash.c
+index dc8f95d..0e8ae6b 100644
+--- a/drivers/sbus/char/flash.c
++++ b/drivers/sbus/char/flash.c
+@@ -208,8 +208,11 @@ static const struct of_device_id flash_match[] = {
+ MODULE_DEVICE_TABLE(of, flash_match);
+ 
+ static struct of_platform_driver flash_driver = {
+-	.name		= "flash",
+-	.match_table	= flash_match,
++	.driver = {
++		.name = "flash",
++		.owner = THIS_MODULE,
++		.of_match_table = flash_match,
++	},
+ 	.probe		= flash_probe,
+ 	.remove		= __devexit_p(flash_remove),
+ };
+diff --git a/drivers/sbus/char/uctrl.c b/drivers/sbus/char/uctrl.c
+index acc6738..5f25366 100644
+--- a/drivers/sbus/char/uctrl.c
++++ b/drivers/sbus/char/uctrl.c
+@@ -425,8 +425,11 @@ static const struct of_device_id uctrl_match[] = {
+ MODULE_DEVICE_TABLE(of, uctrl_match);
+ 
+ static struct of_platform_driver uctrl_driver = {
+-	.name		= "uctrl",
+-	.match_table	= uctrl_match,
++	.driver = {
++		.name = "uctrl",
++		.owner = THIS_MODULE,
++		.of_match_table = uctrl_match,
++	},
+ 	.probe		= uctrl_probe,
+ 	.remove		= __devexit_p(uctrl_remove),
  };
