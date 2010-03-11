@@ -1,25 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
-	irq_chip.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: ijc@hellion.org.uk
-In-Reply-To: <1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-References: <1268218524.11737.68547.camel@zakaz.uk.xensource.com>
-	<1268218559-26784-2-git-send-email-ijc@hellion.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-KHbI5v622dW6ZPGlHLT3"
-Date: Thu, 11 Mar 2010 09:07:18 +1100
-Message-ID: <1268258838.21103.6.camel@concordia>
-Mime-Version: 1.0
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	Ian Campbell <ian.campbell@citrix.com>, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Yinghai Lu <yinghai@kernel.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6501BB7D0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 11:32:43 +1100 (EST)
+Date: Thu, 11 Mar 2010 01:32:38 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Albrecht =?iso-8859-15?Q?Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: 5200B: BUG in 2.6.34-rc1-dirty while loading at24 driver
+Message-ID: <20100311003238.GA22565@pengutronix.de>
+References: <1268245563.2375.0@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+In-Reply-To: <1268245563.2375.0@antares>
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +25,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-KHbI5v622dW6ZPGlHLT3
-Content-Type: text/plain; charset="UTF-8"
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2010-03-10 at 10:55 +0000, ijc@hellion.org.uk wrote:
-> From: Ian Campbell <ian.campbell@citrix.com>
->=20
-> Move arch_init_copy_chip_data and arch_free_chip_data into function
-> pointers in struct irq_chip since they operate on irq_desc->chip_data.
->=20
-> arch_init_chip_data cannot be moved into struct irq_chip at this time
-> because irq_desc->chip is not known at the time the irq_desc is
-> setup. For now rename arch_init_chip_data to arch_init_irq_desc (for
-> PowerPC, the only other user, whose usage better matches the new name)
-> and on x86 convert arch_init_chip_data to ioapic_init_chip_data and
-> call this whenever the IO APIC code allocates a new IRQ.
+Hi Albrecht,
 
-Ack on the name change, it should be called arch_init_irq_desc(), the
-existing name clearly comes from the fact that sparse IRQ was
-implemented first on x86, and on x86 that routine init's the chip data
-for a new irq_desc.
+> not sure if this is the right place to ask:  When I boot a custom 5200B (=
+more
 
-But semantically arch_init_irq_desc() is the right name, I was just too
-lazy to change it when I enabled sparse IRQ for powerpc.
+Check MAINTAINERS for AT24 ;)
 
-Can't comment on the rest of the patch.
+> or less Lite-based) board with Linus' git tree (2.6.34-rc1-dirty), I alwa=
+ys
+> get the following bug:
 
-cheers
+Will send a patch in some minutes...
 
+Regards,
 
---=-KHbI5v622dW6ZPGlHLT3
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--EeQfGwPcQSOJBaQU
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkuYGBMACgkQdSjSd0sB4dLN/ACfWZPfIkahPG9Z8x+qpcPmosQV
-dtMAoLEFx5ac475xxZcQm6j/Kym1XVck
-=oYQ0
+iEYEARECAAYFAkuYOiYACgkQD27XaX1/VRu+GwCeIyty77v6mbYNOfpPYudgXs0I
+MQIAnjAinQ2wJhRdtYQGAshZ7vZshWPe
+=nl/3
 -----END PGP SIGNATURE-----
 
---=-KHbI5v622dW6ZPGlHLT3--
+--EeQfGwPcQSOJBaQU--
