@@ -1,15 +1,17 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net
 	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 1B900B856B
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:26:27 +1100 (EST)
-Date: Thu, 11 Mar 2010 10:26:46 -0800 (PST)
-Message-Id: <20100311.102646.06576136.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 8FBE710167A
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:27:21 +1100 (EST)
+Date: Thu, 11 Mar 2010 10:27:40 -0800 (PST)
+Message-Id: <20100311.102740.219949159.davem@davemloft.net>
 To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 00/27] Clean up of_platform drivers
+Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100311181604.13103.30088.stgit@angua>
-References: <20100311181604.13103.30088.stgit@angua>
+In-Reply-To: <fa686aa41003111025n7f059995v9263f13fac1bd1ee@mail.gmail.com>
+References: <20100311.102043.40590962.davem@davemloft.net>
+	<20100311.102347.169562565.davem@davemloft.net>
+	<fa686aa41003111025n7f059995v9263f13fac1bd1ee@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, broonie@opensource.wolfsonmicro.com,
@@ -30,16 +32,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 11 Mar 2010 11:25:46 -0700
 
-Grant you've just posted two enormous patch sets at the SAME EXACT
-TIME to the SAME AREAS of the kernel.
+> Oops, sorry David, I accidentally dropped the top patch.  Give me a
+> moment and I'll send it out.
 
-One has 37 patches and this one has 27.
-
-Not only are these sets enormous, you haven't specified what in the
-world they are against.
-
-The 37 patch set didn't apply cleanly to Linus tree and once I worked
-through the rejects as best I could it didn't even compile.
-
-How are people supposed to test this stuff? :-/
+Sorry, now that you've just bombed us with 27 patches to
+the same area, I've totally lost interest in testing this
+work.
