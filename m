@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id D4AE7104902
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:22:02 +1100 (EST)
-Received: by pvg11 with SMTP id 11so131255pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:22:01 -0800 (PST)
+Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
+	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id EBBEB104A4D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:21:57 +1100 (EST)
+Received: by pzk39 with SMTP id 39so178248pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:21:57 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 02/27] drivers/gpio/of: don't use deprecated fields in
-	of_platform_driver
+Subject: [PATCH 01/27] drivercore: Add of_match_table to the common device
+	drivers
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
 	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:21:59 -0700
-Message-ID: <20100311182158.13103.93206.stgit@angua>
+Date: Thu, 11 Mar 2010 11:21:53 -0700
+Message-ID: <20100311182153.13103.40899.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -33,26 +33,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-.name, .match_table and .owner are duplicated in both of_platform_driver
-and device_driver, so the of_platform_driver copies will be removed soon.
+OF-style matching can be available to any device, on any type of bus.
+This patch allows any driver to provide an OF match table when CONFIG_OF
+is enabled so that drivers can be bound against devices described in
+the device tree.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
 
- drivers/leds/leds-gpio.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/ibmebus.c  |    2 +-
+ drivers/macintosh/macio_asic.c |    5 ++---
+ drivers/of/platform.c          |    7 ++++---
+ include/linux/device.h         |    4 ++++
+ 4 files changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index 7ff758a..0e6e9ac 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -291,8 +291,8 @@ static struct of_platform_driver of_gpio_leds_driver = {
- 	.driver = {
- 		.name = "of_gpio_leds",
- 		.owner = THIS_MODULE,
-+		.of_match_table = of_gpio_leds_match,
- 	},
--	.match_table = of_gpio_leds_match,
- 	.probe = of_gpio_leds_probe,
- 	.remove = __devexit_p(of_gpio_leds_remove),
- };
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 797e9ac..62ded8b 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -201,7 +201,7 @@ static int ibmebus_create_devices(const struct of_device_id *matches)
+ int ibmebus_register_driver(struct of_platform_driver *drv)
+ {
+ 	/* If the driver uses devices that ibmebus doesn't know, add them */
+-	ibmebus_create_devices(drv->match_table);
++	ibmebus_create_devices(drv->driver.of_match_table);
+ 
+ 	return of_register_driver(drv, &ibmebus_bus_type);
+ }
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index 48a5f04..e3ba1d8 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -40,8 +40,7 @@ static struct macio_chip      *macio_on_hold;
+ static int macio_bus_match(struct device *dev, struct device_driver *drv) 
+ {
+ 	struct macio_dev * macio_dev = to_macio_device(dev);
+-	struct macio_driver * macio_drv = to_macio_driver(drv);
+-	const struct of_device_id * matches = macio_drv->match_table;
++	const struct of_device_id * matches = drv->of_match_table;
+ 
+ 	if (!matches) 
+ 		return 0;
+@@ -84,7 +83,7 @@ static int macio_device_probe(struct device *dev)
+ 
+ 	macio_dev_get(macio_dev);
+ 
+-	match = of_match_device(drv->match_table, &macio_dev->ofdev);
++	match = of_match_device(drv->driver.of_match_table, &macio_dev->ofdev);
+ 	if (match)
+ 		error = drv->probe(macio_dev, match);
+ 	if (error)
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index d58ade1..9fd7f7d 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -22,8 +22,7 @@ extern struct device_attribute of_platform_device_attrs[];
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct of_device *of_dev = to_of_device(dev);
+-	struct of_platform_driver *of_drv = to_of_platform_driver(drv);
+-	const struct of_device_id *matches = of_drv->match_table;
++	const struct of_device_id *matches = drv->of_match_table;
+ 
+ 	if (!matches)
+ 		return 0;
+@@ -46,7 +45,7 @@ static int of_platform_device_probe(struct device *dev)
+ 
+ 	of_dev_get(of_dev);
+ 
+-	match = of_match_device(drv->match_table, of_dev);
++	match = of_match_device(drv->driver.of_match_table, of_dev);
+ 	if (match)
+ 		error = drv->probe(of_dev, match);
+ 	if (error)
+@@ -391,6 +390,8 @@ int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+ 		drv->driver.name = drv->name;
+ 	if (!drv->driver.owner)
+ 		drv->driver.owner = drv->owner;
++	if (!drv->driver.of_match_table)
++		drv->driver.of_match_table = drv->match_table;
+ 	drv->driver.bus = bus;
+ 
+ 	/* register with core */
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 7a968bd..cd7534c 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -129,6 +129,10 @@ struct device_driver {
+ 
+ 	bool suppress_bind_attrs;	/* disables bind/unbind via sysfs */
+ 
++#if defined(CONFIG_OF)
++	const struct of_device_id	*of_match_table;
++#endif
++
+ 	int (*probe) (struct device *dev);
+ 	int (*remove) (struct device *dev);
+ 	void (*shutdown) (struct device *dev);
