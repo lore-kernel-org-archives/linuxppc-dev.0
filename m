@@ -1,12 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 176F4101AC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:23:52 +1100 (EST)
-Received: by pvg11 with SMTP id 11so131850pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:23:52 -0800 (PST)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 7BC3AB811B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:24:03 +1100 (EST)
+Received: by mail-pw0-f42.google.com with SMTP id 10so179618pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:24:03 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 22/27] drivers/i2c/of: don't use deprecated field in
+Subject: [PATCH 24/27] sound/of: don't use deprecated fields in
 	of_platform_driver
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:23:49 -0700
-Message-ID: <20100311182349.13103.39322.stgit@angua>
+Date: Thu, 11 Mar 2010 11:24:00 -0700
+Message-ID: <20100311182400.13103.45617.stgit@angua>
 In-Reply-To: <20100311181604.13103.30088.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
 MIME-Version: 1.0
@@ -39,70 +39,120 @@ and device_driver, so the of_platform_driver copies will be removed soon.
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/i2c/busses/i2c-cpm.c     |   10 +++++-----
- drivers/i2c/busses/i2c-ibm_iic.c |    7 +++++--
- drivers/i2c/busses/i2c-mpc.c     |    8 ++++----
- 3 files changed, 14 insertions(+), 11 deletions(-)
+ sound/soc/fsl/mpc5200_psc_ac97.c |    2 +-
+ sound/soc/fsl/mpc5200_psc_i2s.c  |    2 +-
+ sound/soc/fsl/mpc8610_hpcd.c     |    8 +++++---
+ sound/sparc/amd7930.c            |    7 +++++--
+ sound/sparc/cs4231.c             |    7 +++++--
+ sound/sparc/dbri.c               |    7 +++++--
+ 6 files changed, 22 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index 9c2e100..47994d2 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -718,13 +718,13 @@ static const struct of_device_id cpm_i2c_match[] = {
- MODULE_DEVICE_TABLE(of, cpm_i2c_match);
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
+index 3dbc7f7..e2ee220 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -317,12 +317,12 @@ static struct of_device_id psc_ac97_match[] __devinitdata = {
+ MODULE_DEVICE_TABLE(of, psc_ac97_match);
  
- static struct of_platform_driver cpm_i2c_driver = {
--	.match_table	= cpm_i2c_match,
- 	.probe		= cpm_i2c_probe,
- 	.remove		= __devexit_p(cpm_i2c_remove),
--	.driver		= {
--		.name	= "fsl-i2c-cpm",
--		.owner	= THIS_MODULE,
--	}
-+	.driver = {
-+		.name = "fsl-i2c-cpm",
-+		.owner = THIS_MODULE,
-+		.of_match_table = cpm_i2c_match,
-+	},
- };
- 
- static int __init cpm_i2c_init(void)
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index b1bc6e2..21dba9d 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -807,8 +807,11 @@ static const struct of_device_id ibm_iic_match[] = {
- };
- 
- static struct of_platform_driver ibm_iic_driver = {
--	.name	= "ibm-iic",
--	.match_table = ibm_iic_match,
-+	.driver = {
-+		.name = "ibm-iic",
-+		.owner = THIS_MODULE,
-+		.of_match_table = ibm_iic_match,
-+	},
- 	.probe	= iic_probe,
- 	.remove	= __devexit_p(iic_remove),
- };
-diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-index 0123a6e..6063dc3 100644
---- a/drivers/i2c/busses/i2c-mpc.c
-+++ b/drivers/i2c/busses/i2c-mpc.c
-@@ -674,12 +674,12 @@ MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
- 
- /* Structure for a device driver */
- static struct of_platform_driver mpc_i2c_driver = {
--	.match_table	= mpc_i2c_of_match,
- 	.probe		= fsl_i2c_probe,
- 	.remove		= __devexit_p(fsl_i2c_remove),
--	.driver		= {
--		.owner	= THIS_MODULE,
--		.name	= DRV_NAME,
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = DRV_NAME,
-+		.of_match_table = mpc_i2c_of_match,
+ static struct of_platform_driver psc_ac97_driver = {
+-	.match_table = psc_ac97_match,
+ 	.probe = psc_ac97_of_probe,
+ 	.remove = __devexit_p(psc_ac97_of_remove),
+ 	.driver = {
+ 		.name = "mpc5200-psc-ac97",
+ 		.owner = THIS_MODULE,
++		.of_match_table = psc_ac97_match,
  	},
  };
  
+diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+index ce8de90..f6c507c 100644
+--- a/sound/soc/fsl/mpc5200_psc_i2s.c
++++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+@@ -220,12 +220,12 @@ static struct of_device_id psc_i2s_match[] __devinitdata = {
+ MODULE_DEVICE_TABLE(of, psc_i2s_match);
+ 
+ static struct of_platform_driver psc_i2s_driver = {
+-	.match_table = psc_i2s_match,
+ 	.probe = psc_i2s_of_probe,
+ 	.remove = __devexit_p(psc_i2s_of_remove),
+ 	.driver = {
+ 		.name = "mpc5200-psc-i2s",
+ 		.owner = THIS_MODULE,
++		.of_match_table = psc_i2s_match,
+ 	},
+ };
+ 
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index d7e1b9a..511d721 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -579,9 +579,11 @@ static struct of_device_id mpc8610_hpcd_match[] = {
+ MODULE_DEVICE_TABLE(of, mpc8610_hpcd_match);
+ 
+ static struct of_platform_driver mpc8610_hpcd_of_driver = {
+-	.owner  	= THIS_MODULE,
+-	.name   	= "mpc8610_hpcd",
+-	.match_table    = mpc8610_hpcd_match,
++	.driver = {
++		.name = "mpc8610_hpcd",
++		.owner = THIS_MODULE,
++		.of_match_table = mpc8610_hpcd_match,
++	},
+ 	.probe  	= mpc8610_hpcd_probe,
+ 	.remove 	= mpc8610_hpcd_remove,
+ };
+diff --git a/sound/sparc/amd7930.c b/sound/sparc/amd7930.c
+index 574af56..71221fd 100644
+--- a/sound/sparc/amd7930.c
++++ b/sound/sparc/amd7930.c
+@@ -1065,8 +1065,11 @@ static const struct of_device_id amd7930_match[] = {
+ };
+ 
+ static struct of_platform_driver amd7930_sbus_driver = {
+-	.name		= "audio",
+-	.match_table	= amd7930_match,
++	.driver = {
++		.name = "audio",
++		.owner = THIS_MODULE,
++		.of_match_table = amd7930_match,
++	},
+ 	.probe		= amd7930_sbus_probe,
+ };
+ 
+diff --git a/sound/sparc/cs4231.c b/sound/sparc/cs4231.c
+index 14cb87c..47db872 100644
+--- a/sound/sparc/cs4231.c
++++ b/sound/sparc/cs4231.c
+@@ -2110,8 +2110,11 @@ static const struct of_device_id cs4231_match[] = {
+ MODULE_DEVICE_TABLE(of, cs4231_match);
+ 
+ static struct of_platform_driver cs4231_driver = {
+-	.name		= "audio",
+-	.match_table	= cs4231_match,
++	.driver = {
++		.name = "audio",
++		.owner = THIS_MODULE,
++		.of_match_table = cs4231_match,
++	},
+ 	.probe		= cs4231_probe,
+ 	.remove		= __devexit_p(cs4231_remove),
+ };
+diff --git a/sound/sparc/dbri.c b/sound/sparc/dbri.c
+index 2734c36..6e5d1dd 100644
+--- a/sound/sparc/dbri.c
++++ b/sound/sparc/dbri.c
+@@ -2686,8 +2686,11 @@ static const struct of_device_id dbri_match[] = {
+ MODULE_DEVICE_TABLE(of, dbri_match);
+ 
+ static struct of_platform_driver dbri_sbus_driver = {
+-	.name		= "dbri",
+-	.match_table	= dbri_match,
++	.driver = {
++		.name = "dbri",
++		.owner = THIS_MODULE,
++		.of_match_table = dbri_match,
++	},
+ 	.probe		= dbri_probe,
+ 	.remove		= __devexit_p(dbri_remove),
+ };
