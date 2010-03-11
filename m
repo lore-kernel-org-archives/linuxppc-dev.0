@@ -1,13 +1,13 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
-	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 9B67CB898D
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:14 +1100 (EST)
+	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id DEBA6B7DE2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:06:19 +1100 (EST)
 Received: by mail-pz0-f201.google.com with SMTP id 39so169281pzk.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:14 -0800 (PST)
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:06:19 -0800 (PST)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 26/37] drivers/mtd: use .dev.of_node instead of .node in
-	struct of_device
+Subject: [PATCH 27/37] drivers/of: use .dev.of_node instead of .node in struct
+	of_device
 To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	akpm@linux-foundation.org, davem@davemloft.net,
 	sfr@canb.auug.org.au, jgarzik@pobox.com, ben-linux@fluff.org,
@@ -18,8 +18,8 @@ To: monstr@monstr.eu, gregkh@suse.de, benh@kernel.crashing.org,
 	linux-ide@vger.kernel.org, netdev@vger.kernel.org,
 	linux-i2c@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org
-Date: Thu, 11 Mar 2010 11:06:11 -0700
-Message-ID: <20100311180611.4824.60029.stgit@angua>
+Date: Thu, 11 Mar 2010 11:06:17 -0700
+Message-ID: <20100311180616.4824.50413.stgit@angua>
 In-Reply-To: <20100311174830.4824.19820.stgit@angua>
 References: <20100311174830.4824.19820.stgit@angua>
 MIME-Version: 1.0
@@ -38,96 +38,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/mtd/maps/physmap_of.c    |    6 +++---
- drivers/mtd/maps/sun_uflash.c    |    2 +-
- drivers/mtd/nand/fsl_elbc_nand.c |    6 +++---
- drivers/mtd/nand/pasemi_nand.c   |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/of/device.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index 61e4eb4..494af8e 100644
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -142,7 +142,7 @@ static int of_flash_remove(struct of_device *dev)
- static struct mtd_info * __devinit obsolete_probe(struct of_device *dev,
- 						  struct map_info *map)
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index 224ae6b..24068bb 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -21,9 +21,9 @@
+ const struct of_device_id *of_match_device(const struct of_device_id *matches,
+ 					const struct of_device *dev)
  {
--	struct device_node *dp = dev->node;
-+	struct device_node *dp = dev->dev.of_node;
- 	const char *of_probe;
- 	struct mtd_info *mtd;
- 	static const char *rom_probe_types[]
-@@ -179,7 +179,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 	static const char *part_probe_types[]
- 		= { "cmdlinepart", "RedBoot", NULL };
- #endif
--	struct device_node *dp = dev->node;
-+	struct device_node *dp = dev->dev.of_node;
- 	struct resource res;
- 	struct of_flash *info;
- 	const char *probe_type = match->data;
-@@ -203,7 +203,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 	p = of_get_property(dp, "reg", &count);
- 	if (count % reg_tuple_size != 0) {
- 		dev_err(&dev->dev, "Malformed reg property on %s\n",
--				dev->node->full_name);
-+				dev->dev.of_node->full_name);
- 		err = -EINVAL;
- 		goto err_flash_remove;
- 	}
-diff --git a/drivers/mtd/maps/sun_uflash.c b/drivers/mtd/maps/sun_uflash.c
-index fd7a101..365811d 100644
---- a/drivers/mtd/maps/sun_uflash.c
-+++ b/drivers/mtd/maps/sun_uflash.c
-@@ -109,7 +109,7 @@ int uflash_devinit(struct of_device *op, struct device_node *dp)
+-	if (!dev->node)
++	if (!dev->dev.of_node)
+ 		return NULL;
+-	return of_match_node(matches, dev->node);
++	return of_match_node(matches, dev->dev.of_node);
+ }
+ EXPORT_SYMBOL(of_match_device);
  
- static int __devinit uflash_probe(struct of_device *op, const struct of_device_id *match)
+@@ -54,7 +54,7 @@ static ssize_t devspec_show(struct device *dev,
+ 	struct of_device *ofdev;
+ 
+ 	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s\n", ofdev->node->full_name);
++	return sprintf(buf, "%s\n", ofdev->dev.of_node->full_name);
+ }
+ 
+ static ssize_t name_show(struct device *dev,
+@@ -63,7 +63,7 @@ static ssize_t name_show(struct device *dev,
+ 	struct of_device *ofdev;
+ 
+ 	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s\n", ofdev->node->name);
++	return sprintf(buf, "%s\n", ofdev->dev.of_node->name);
+ }
+ 
+ static ssize_t modalias_show(struct device *dev,
+@@ -97,14 +97,14 @@ void of_release_dev(struct device *dev)
+ 	struct of_device *ofdev;
+ 
+ 	ofdev = to_of_device(dev);
+-	of_node_put(ofdev->node);
++	of_node_put(ofdev->dev.of_node);
+ 	kfree(ofdev);
+ }
+ EXPORT_SYMBOL(of_release_dev);
+ 
+ int of_device_register(struct of_device *ofdev)
  {
--	struct device_node *dp = op->node;
-+	struct device_node *dp = op->dev.of_node;
+-	BUG_ON(ofdev->node == NULL);
++	BUG_ON(ofdev->dev.of_node == NULL);
  
- 	/* Flashprom must have the "user" property in order to
- 	 * be used by this driver.
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index ae30fb6..4a60795 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -1030,14 +1030,14 @@ static int __devinit fsl_elbc_ctrl_probe(struct of_device *ofdev,
- 	init_waitqueue_head(&ctrl->controller.wq);
- 	init_waitqueue_head(&ctrl->irq_wait);
+ 	device_initialize(&ofdev->dev);
  
--	ctrl->regs = of_iomap(ofdev->node, 0);
-+	ctrl->regs = of_iomap(ofdev->dev.of_node, 0);
- 	if (!ctrl->regs) {
- 		dev_err(&ofdev->dev, "failed to get memory region\n");
- 		ret = -ENODEV;
- 		goto err;
- 	}
+@@ -112,7 +112,7 @@ int of_device_register(struct of_device *ofdev)
+ 	 * the parent. If there is no parent defined, set the node
+ 	 * explicitly */
+ 	if (!ofdev->dev.parent)
+-		set_dev_node(&ofdev->dev, of_node_to_nid(ofdev->node));
++		set_dev_node(&ofdev->dev, of_node_to_nid(ofdev->dev.of_node));
  
--	ctrl->irq = of_irq_to_resource(ofdev->node, 0, NULL);
-+	ctrl->irq = of_irq_to_resource(ofdev->dev.of_node, 0, NULL);
- 	if (ctrl->irq == NO_IRQ) {
- 		dev_err(&ofdev->dev, "failed to get irq resource\n");
- 		ret = -ENODEV;
-@@ -1058,7 +1058,7 @@ static int __devinit fsl_elbc_ctrl_probe(struct of_device *ofdev,
- 		goto err;
- 	}
+ 	return device_add(&ofdev->dev);
+ }
+@@ -132,11 +132,11 @@ ssize_t of_device_get_modalias(struct of_device *ofdev,
+ 	ssize_t tsize, csize, repend;
  
--	for_each_child_of_node(ofdev->node, child)
-+	for_each_child_of_node(ofdev->dev.of_node, child)
- 		if (of_device_is_compatible(child, "fsl,elbc-fcm-nand"))
- 			fsl_elbc_chip_probe(ctrl, child);
+ 	/* Name & Type */
+-	csize = snprintf(str, len, "of:N%sT%s",
+-				ofdev->node->name, ofdev->node->type);
++	csize = snprintf(str, len, "of:N%sT%s", ofdev->dev.of_node->name,
++			 ofdev->dev.of_node->type);
  
-diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
-index a8b9376..edfc27b 100644
---- a/drivers/mtd/nand/pasemi_nand.c
-+++ b/drivers/mtd/nand/pasemi_nand.c
-@@ -93,7 +93,7 @@ static int __devinit pasemi_nand_probe(struct of_device *ofdev,
- 				      const struct of_device_id *match)
- {
- 	struct pci_dev *pdev;
--	struct device_node *np = ofdev->node;
-+	struct device_node *np = ofdev->dev.of_node;
- 	struct resource res;
- 	struct nand_chip *chip;
- 	int err = 0;
+ 	/* Get compatible property if any */
+-	compat = of_get_property(ofdev->node, "compatible", &cplen);
++	compat = of_get_property(ofdev->dev.of_node, "compatible", &cplen);
+ 	if (!compat)
+ 		return csize;
+ 
