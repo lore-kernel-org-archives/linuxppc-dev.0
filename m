@@ -1,18 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 78231B8069
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 12 Mar 2010 05:10:19 +1100 (EST)
-Date: Thu, 11 Mar 2010 19:09:50 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: CTAG / =?UTF-8?B?TW9pc8OpcyBEb23DrW5ndWV6?= <moises.dominguez@ctag.com>
-Subject: Re: Linus' kernel tree over ads5121-rev4
-Message-ID: <20100311190950.2edddcd8@wker>
-In-Reply-To: <DCD09CE7A7B046EA9AD832CD4648A26E@ctag>
-References: <DCD09CE7A7B046EA9AD832CD4648A26E@ctag>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id BCBAA102079
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:12:22 +1100 (EST)
+Received: by pwi10 with SMTP id 10so174708pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:12:21 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/2] Stuff to make of_device more like platform_device
+To: monstr@monstr.eu, benh@kernel.crashing.org, sfr@canb.auug.org.au,
+	jeremy.kerr@canonical.com, microblaze-uclinux@itee.uq.edu.au,
+	linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Date: Thu, 11 Mar 2010 11:12:18 -0700
+Message-ID: <20100311180952.13022.82694.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+These patches make it possible to use struct platform_device as a drop
+in replacement for struct of_device, which is a stepping stone to
+removing the duplication between the platform bus and the of bus.
 
-On Thu, 11 Mar 2010 13:53:45 +0100
-CTAG / Mois=C3=A9s Dom=C3=ADnguez <moises.dominguez@ctag.com> wrote:
+g.
 
-> Linux is uncompressed and starts right, but when DIU driver probe function
-> is called (exactly when first framebuffer device is registered) linux
-> restarts. This behaviour repeats indefinitely.
->=20
-> (same behaviour with denx kernel tree).
+---
 
-DIU support patch hasn't been merged yet, you can either
-disable DIU frame buffer driver or use the DIU patch [1].
+Grant Likely (2):
+      arch/microblaze: Move dma_mask from of_device into pdev_archdata
+      arch/powerpc: Move dma_mask from of_device into pdev_archdata
 
-> I am using .dts that comes in the Linus=E2=80=99kernel tree. Maybe this .=
-dts board
-> revision dependent?=20
 
-DTS in 2.6.34-rc1 is ok for DIU if you use the patch. Note
-that you need to rebase it as it depends on USB support patches
-which haven't been merged yet.
+ arch/microblaze/include/asm/device.h    |    1 +
+ arch/microblaze/include/asm/of_device.h |    2 +-
+ arch/microblaze/kernel/of_device.c      |    2 +-
+ arch/microblaze/kernel/of_platform.c    |    2 +-
+ arch/powerpc/include/asm/device.h       |    1 +
+ arch/powerpc/include/asm/of_device.h    |    2 +-
+ arch/powerpc/kernel/of_device.c         |    2 +-
+ arch/powerpc/kernel/of_platform.c       |    2 +-
+ drivers/macintosh/macio_asic.c          |    4 ++--
+ sound/aoa/soundbus/i2sbus/core.c        |    4 ++--
+ 10 files changed, 12 insertions(+), 10 deletions(-)
 
-DIU frame buffer support is work in progress, it hopefully will
-be included in 2.6.35.
-
-[1] http://patchwork.ozlabs.org/patch/44639/
+-- 
+Signature
