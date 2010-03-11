@@ -1,23 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0B093B7DFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 08:49:46 +1100 (EST)
-Subject: Re: Problem with PCI bus rescan on 460EX
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Felix Radensky <felix@embedded-sol.com>
-In-Reply-To: <4B996375.3010103@embedded-sol.com>
-References: <4B8E6FA3.70503@embedded-sol.com>
-	<20100310225100.GB27324@ldl.fc.hp.com>	<4B989F9B.8060708@embedded-sol.com>
-	<1268339578.22204.708.camel@pasglop>
-	<4B996375.3010103@embedded-sol.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Mar 2010 08:49:34 +1100
-Message-ID: <1268344174.22204.714.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-ew0-f226.google.com (mail-ew0-f226.google.com
+	[209.85.219.226]) by ozlabs.org (Postfix) with ESMTP id 2996FB81F7
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:33:30 +1100 (EST)
+Received: by ewy26 with SMTP id 26so176165ewy.23
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:33:28 -0800 (PST)
+Message-ID: <4B9936F2.3020105@ru.mvista.com>
+Date: Thu, 11 Mar 2010 21:31:14 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 21/37] drivers/ata: use .dev.of_node instead of .node
+	in	struct of_device
+References: <20100311174830.4824.19820.stgit@angua>
+	<20100311180543.4824.70491.stgit@angua>
+In-Reply-To: <20100311180543.4824.70491.stgit@angua>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: alsa-devel@alsa-project.org, gregkh@suse.de, linux-ide@vger.kernel.org,
+	James.Bottomley@suse.de, linux-i2c@vger.kernel.org,
+	sparclinux@vger.kernel.org, jeremy.kerr@canonical.com,
+	sfr@canb.auug.org.au, linux-scsi@vger.kernel.org,
+	jgarzik@pobox.com, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, ben-linux@fluff.org,
+	monstr@monstr.eu, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org, broonie@opensource.wolfsonmicro.com,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	dwmw2@infradead.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +34,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-03-11 at 23:41 +0200, Felix Radensky wrote:
-> I'm fine with creating a minimal hotplug driver. The device I'm
-> dealing with
-> partially implements Compact PCI hotplug. It generates ENUM#
-> interrupt, but
-> Hotswap Control register layout does not completely follow the
-> standard.
-> 
-> Should I use drivers/pci/hotplug/cpci_hotplug_core.c as a base, or do 
-> you have
-> something more simple in mind ?
+Hello.
 
-I don't have anything special in mind, but you may need to look at how
-the pseries hotplug driver does to get those fixups and resource
-management things done. That driver is mostly a horrible mess, though I
-did clean quite a bit of it up recently...
+Grant Likely wrote:
 
-The main thing of interest to you is pcibios_add_pci_devices() which
-is called to probe below an existing bridge. It's currently in
-arch/powerpc/platforms/pseries/pci_dlpar.c but we could move it or some
-of it to our common code if needed. You also may safely ignore the eeh_*
-bits on ppc32
+> .node is being removed
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+>  drivers/ata/pata_macio.c       |    2 +-
+>  drivers/ata/pata_of_platform.c |    2 +-
+>  drivers/ide/pmac.c             |   10 +++++-----
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+>   
 
-Cheers,
-Ben.
+   Should probably have been 2 patches instead of one, as drivers/ata/ 
+and drivers/ide/ are different subsystems...
+
+MBR, Sergei
