@@ -1,21 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f186.google.com (mail-yx0-f186.google.com
-	[209.85.210.186]) by ozlabs.org (Postfix) with ESMTP id 78EB2100BD5
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:26:08 +1100 (EST)
-Received: by yxe16 with SMTP id 16so207816yxe.9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Mar 2010 10:26:06 -0800 (PST)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100311.102347.169562565.davem@davemloft.net>
-References: <20100311174830.4824.19820.stgit@angua>
-	<20100311.102043.40590962.davem@davemloft.net>
-	<20100311.102347.169562565.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 11 Mar 2010 11:25:46 -0700
-Message-ID: <fa686aa41003111025n7f059995v9263f13fac1bd1ee@mail.gmail.com>
-Subject: Re: [PATCH 00/37] OF: move device node pointer into struct device.
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 1B900B856B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 05:26:27 +1100 (EST)
+Date: Thu, 11 Mar 2010 10:26:46 -0800 (PST)
+Message-Id: <20100311.102646.06576136.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 00/27] Clean up of_platform drivers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100311181604.13103.30088.stgit@angua>
+References: <20100311181604.13103.30088.stgit@angua>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, broonie@opensource.wolfsonmicro.com,
 	linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
 	devicetree-discuss@lists.ozlabs.org, gregkh@suse.de,
@@ -34,30 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 11, 2010 at 11:23 AM, David Miller <davem@davemloft.net> wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 11 Mar 2010 10:20:43 -0800 (PST)
->
->> Three or four of the patches don't apply because only your tree
->> has those "/* temporary */" comments, f.e. in arch/sparc/kernel/pci.c
->>
->> I took care of this when applying to my tree.
->
-> It also doesn't build, what the heck is this against
-> Grant?
->
-> drivers/of/device.c: In function 'of_match_device':
-> drivers/of/device.c:24: error: 'const struct device' has no member named 'of_node'
-> drivers/of/device.c:26: error: 'const struct device' has no member named 'of_node'
->
-> Please make a patch set against Linus's vanilla tree so
-> I and others can test this.
 
-Oops, sorry David, I accidentally dropped the top patch.  Give me a
-moment and I'll send it out.
+Grant you've just posted two enormous patch sets at the SAME EXACT
+TIME to the SAME AREAS of the kernel.
 
-g.
+One has 37 patches and this one has 27.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Not only are these sets enormous, you haven't specified what in the
+world they are against.
+
+The 37 patch set didn't apply cleanly to Linus tree and once I worked
+through the rejects as best I could it didn't even compile.
+
+How are people supposed to test this stuff? :-/
