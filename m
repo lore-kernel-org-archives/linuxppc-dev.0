@@ -1,16 +1,16 @@
 Return-Path: <smaclennan@pikatech.com>
 Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 168FEB7D21
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Mar 2010 04:31:05 +1100 (EST)
-Date: Fri, 12 Mar 2010 12:31:02 -0500
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 18986B7D26
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Mar 2010 04:32:00 +1100 (EST)
+Date: Fri, 12 Mar 2010 12:31:58 -0500
 From: Sean MacLennan <smaclennan@pikatech.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 12/27] drivers/mtd/of: don't use deprecated field in
+Subject: Re: [PATCH 22/27] drivers/i2c/of: don't use deprecated field in
 	of_platform_driver
-Message-ID: <20100312123102.453ff2d0@lappy.seanm.ca>
-In-Reply-To: <20100311182253.13103.92479.stgit@angua>
+Message-ID: <20100312123158.7ed9d9a0@lappy.seanm.ca>
+In-Reply-To: <20100311182349.13103.39322.stgit@angua>
 References: <20100311181604.13103.30088.stgit@angua>
-	<20100311182253.13103.92479.stgit@angua>
+	<20100311182349.13103.39322.stgit@angua>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: alsa-devel@alsa-project.org, gregkh@suse.de, linux-ide@vger.kernel.org,
@@ -32,7 +32,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Mar 2010 11:22:54 -0700
+On Thu, 11 Mar 2010 11:23:49 -0700
 Grant Likely <grant.likely@secretlab.ca> wrote:
 
 > .name, .match_table and .owner are duplicated in both
@@ -41,5 +41,5 @@ Grant Likely <grant.likely@secretlab.ca> wrote:
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-NDFC
+i2c-ibm_iic
 Acked-by: Sean MacLennan <smaclennan@pikatech.com>
