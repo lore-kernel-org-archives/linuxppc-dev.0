@@ -1,24 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 13 Mar 2010 09:36:47 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
-	PowerPC e200 core?)
-Message-ID: <20100312223647.GM11655@yookeroo>
-References: <4B934CCA.8030608@freemail.hu>
-	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
-	<4B95458A.4000304@freemail.hu>
-	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
-	<4B95F298.5040000@freemail.hu>
-	<fa686aa41003082335t5a5d642fi13c81e4b84f7b697@mail.gmail.com>
-	<4B9889AC.4080309@freemail.hu> <20100311062331.GI11655@yookeroo>
-	<4B99DE95.8010304@freemail.hu>
-	<fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B2D91B7D4B
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Mar 2010 10:04:38 +1100 (EST)
+Message-ID: <4B9AC885.3010107@embedded-sol.com>
+Date: Sat, 13 Mar 2010 01:04:37 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org,
-	=?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: Problem with PCI bus rescan on 460EX
+References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>
+	<4B9A07D2.4060801@jp.fujitsu.com>
+In-Reply-To: <4B9A07D2.4060801@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 12, 2010 at 05:14:56AM -0700, Grant Likely wrote:
-> 2010/3/11 Németh Márton <nm127@freemail.hu>:
-[snip]
-> > +
-> > +       cpus {
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               cpu@0 {
-> > +                       device_type = "cpu";
-> > +                       compatible = "PowerPC,5554";
-> 
-> I'd rather see the same convention used here as for all the other
-> compatible values in this file.  ie:
-> 
-> compatible = "fsl,mpc5554-e200z6", "fsl,powerpc-e200z6";
-> 
-> Dave, what do you think?
+Hello Kenji-san,
 
-Well, you could add those too, but "PowerPC,5554" should probably
-remain.
+Kenji Kaneshige wrote:
+> I'm not sure, but I guess pci_setup_bridge() didn't update IO base/limit
+> and Mem base/limit of the bridge (0000:00:02.0) because of the following
+> lines.
+>
+> static void pci_setup_bridge(struct pci_bus *bus)
+> {
+>        struct pci_dev *bridge = bus->self;
+>        struct resource *res;
+>        struct pci_bus_region region;
+>        u32 l, bu, lu, io_upper16;
+>
+>        if (pci_is_enabled(bridge))    
+> <===============================               
+>                return;            <===============================
+>
+>        dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
+>                 bus->secondary, bus->subordinate);
+>     ...
+>
+> It seems the bridge was already enabled by 
+> pci_assign_unassigned_resources()
+> at boot time. Does removing those lines make any change?
+>
 
-The historical background here is that in the original OF spec, driver
-matching was done on node name, and only then on compatible.
-Essentially the node name was treated as an implicit first entry in
-the compatible list.  The the generic names convention came along, and
-instead name became a human readable generic type for the device
-("ethernet", "i2c", etc..).
+Yes, with these lines removed bridge memory window is properly allocated.
+For some reason bridge memory is disabled, but if I enable it via 
+setpci, and
+also enable device memory, then everything works fine. If the system is 
+booted
+when device behind the bridge is plugged in, bridge memory is enabled.
 
-That convention has been widely used since long before flat trees
-existed, but for some reason it was never really used for cpu nodes;
-they remained as "PowerPC,XXXX" or whatever.  Because the varying
-names of cpu nodes was sometimes awkward to deal with in bootloaders,
-we decided it would be sensible to apply the generic names convention
-here too, so "cpu@X".  But then, the previous node name, which was
-treated as being prepended to compatible, should now explicitly be put
-into compatible.
+Thanks a lot for your help.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Felix.
