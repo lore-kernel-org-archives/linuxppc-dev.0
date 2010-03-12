@@ -1,13 +1,13 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp123.mail.ukl.yahoo.com (smtp123.mail.ukl.yahoo.com
-	[77.238.184.54]) by ozlabs.org (Postfix) with SMTP id 1094FB7D21
+	[77.238.184.54]) by ozlabs.org (Postfix) with SMTP id 1586BB7D23
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 13 Mar 2010 06:12:55 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 02/11] powerpc: add min_direct_dma_addr
-Date: Fri, 12 Mar 2010 20:12:37 +0100
-Message-Id: <1268421166-4791-3-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v4 01/11] powerpc: add per-device dma coherent support
+Date: Fri, 12 Mar 2010 20:12:36 +0100
+Message-Id: <1268421166-4791-2-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
 References: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>
@@ -20,45 +20,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds min_direct_dma_addr to struct dev_archdata.
-
-min_direct_dma_addr can be used to define which is the minimum address
-suitable for a DMA operation.
-dma_capable() is updated to use this information in the SWIOTLB case.
-
-This will be used later to support the Nintendo Wii video game console
-which has limitations performing DMA to memory below 0x10000000 (MEM1).
+Use the generic per-device dma coherent allocator on powerpc.
+This allows a driver to declare coherent memory area from where
+a device can allocate coherent memory chunks.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- arch/powerpc/include/asm/device.h      |    1 +
- arch/powerpc/include/asm/dma-mapping.h |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h |    1 +
+ arch/powerpc/kernel/dma.c              |    5 +++++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 6d94d27..23f0009 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -27,6 +27,7 @@ struct dev_archdata {
- 
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
-+	dma_addr_t		min_direct_dma_addr;
- #endif
- };
- 
 diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 18ecec8..eda3ebe 100644
+index 80a973b..18ecec8 100644
 --- a/arch/powerpc/include/asm/dma-mapping.h
 +++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -193,6 +193,8 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+@@ -17,6 +17,7 @@
+ #include <linux/dma-debug.h>
+ #include <asm/io.h>
+ #include <asm/swiotlb.h>
++#include <asm-generic/dma-coherent.h>
  
- 	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
- 		return 0;
-+	if (sd->min_direct_dma_addr && addr < sd->min_direct_dma_addr)
-+		return 0;
- #endif
+ #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
  
- 	if (!dev->dma_mask)
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 6215062..83d5232 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -27,6 +27,9 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ {
+ 	void *ret;
+ #ifdef CONFIG_NOT_COHERENT_CACHE
++	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
++		return ret;
++
+ 	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
+ 	if (ret == NULL)
+ 		return NULL;
+@@ -54,6 +57,8 @@ void dma_direct_free_coherent(struct device *dev, size_t size,
+ 			      void *vaddr, dma_addr_t dma_handle)
+ {
+ #ifdef CONFIG_NOT_COHERENT_CACHE
++	if (dma_release_from_coherent(dev, get_order(size), vaddr))
++		return;
+ 	__dma_free_coherent(size, vaddr);
+ #else
+ 	free_pages((unsigned long)vaddr, get_order(size));
 -- 
 1.6.3.3
