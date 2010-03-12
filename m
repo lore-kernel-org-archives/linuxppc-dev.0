@@ -1,40 +1,23 @@
-Return-Path: <kaneshige.kenji@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
-	by ozlabs.org (Postfix) with ESMTP id 844AFB7D11
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 20:31:40 +1100 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o2C9N4KN028190 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kaneshige.kenji@jp.fujitsu.com); Fri, 12 Mar 2010 18:23:04 +0900
-Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
-	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o2C9N1jZ025445 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kaneshige.kenji@jp.fujitsu.com); Fri, 12 Mar 2010 18:23:02 +0900
-Received: from smail (m6 [127.0.0.1])
-	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 4299345DE53
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 18:23:01 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
-	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 226E745DE4C
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 18:23:01 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 018A31DB8017
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 18:23:01 +0900 (JST)
-Received: from m106.s.css.fujitsu.com (m106.s.css.fujitsu.com [10.249.87.106])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id A22B9E08004
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 18:23:00 +0900 (JST)
-Message-ID: <4B9A07D2.4060801@jp.fujitsu.com>
-Date: Fri, 12 Mar 2010 18:22:26 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "*.citrix.com",
+	Issuer "VeriSign Class 3 Secure Server CA - G2" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 986D5B7D46
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 20:44:57 +1100 (EST)
+Subject: [GITPULL+PATCH 0/2] irq: move some interrupt arch_* functions into
+	struct irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Mar 2010 09:44:51 +0000
+Message-ID: <1268387091.10129.5973.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: Problem with PCI bus rescan on 460EX
-References: <4B8E6FA3.70503@embedded-sol.com>
-	<20100310225100.GB27324@ldl.fc.hp.com>
-	<4B98A0CB.8090103@embedded-sol.com>
-In-Reply-To: <4B98A0CB.8090103@embedded-sol.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "x86@kernel.org" <x86@kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,60 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm not sure, but I guess pci_setup_bridge() didn't update IO base/limit
-and Mem base/limit of the bridge (0000:00:02.0) because of the following
-lines.
+This small series ensures that struct irq_desc->chip_data is available
+for alternative irq_chip implementations.
 
-static void pci_setup_bridge(struct pci_bus *bus)
-{
-        struct pci_dev *bridge = bus->self;
-        struct resource *res;
-        struct pci_bus_region region;
-        u32 l, bu, lu, io_upper16;
+There is an outstanding issue wrt when/how the chip_data field is
+initialised. I am continuing to investigate this but the solution is not
+turning out as easy/low-impact as expected.
 
-        if (pci_is_enabled(bridge))	<===============================				
-                return;			<===============================
+Since last time I've dropped the renaming portion of the series since it
+was basically wrong, the functions I'd implicated as ioapic specific are
+not at all.
 
-        dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
-                 bus->secondary, bus->subordinate);
-	...
+Ian.
 
-It seems the bridge was already enabled by pci_assign_unassigned_resources()
-at boot time. Does removing those lines make any change?
+The following changes since commit 1ebbdcc83e75697c0d75eb091df172b7d93c84c1:
+  Ingo Molnar (1):
+        Merge branch 'perf/urgent'
 
-Thanks,
-Kenji Kaneshige
+are available in the git repository at:
 
+  git://xenbits.xensource.com/people/ianc/linux-2.6.git for-x86/irq
 
+Ian Campbell (2):
+      irq: move some interrupt arch_* functions into struct irq_chip.
+      x86: irq_desc->chip_data is always correct whether or not SPARSE_IRQ is enabled.
 
-
-Felix Radensky wrote:
-> Hi Alex,
-> 
-> Resending, previous attempt was erroneously send as HTML.
-> 
-> Thanks a lot for replying.
-> 
-> Alex Chiang wrote:
->> * Felix Radensky <felix@embedded-sol.com>:
->>  
->>> The problem arises when device is plugged in after boot. After doing
->>> echo 1 > /sys/bus/pci/rescan
->>> the device is identified, but bridge memory window is not allocated,
->>> and reads from device memory regions return 0xffffffff. Below is
->>> relevant output:
->>>     
->>
->> Do you need firmware support on your platform for hotplug?
->>   
-> I don't think so, but I've added powerpc guys to CC to make sure.
->> Can you please send full dmesg during successful boot, full dmesg
->> log during unsuccessful rescan, and contents of /proc/iomem and
->> /proc/ioports during success and failure cases?
->>
->> Be sure you have PCI_CONFIG_DEBUG turned on.
->>   
-> Attached. I really appreciate your help. Thanks a lot.
-> 
-> Felix.
-> 
+ arch/powerpc/kernel/irq.c      |    2 +-
+ arch/x86/include/asm/hw_irq.h  |   11 ++++++-
+ arch/x86/kernel/apic/io_apic.c |   61 ++++++++++++++++++++++++++++++++++-----
+ arch/x86/kernel/uv_irq.c       |    5 +++
+ include/linux/interrupt.h      |    2 +-
+ include/linux/irq.h            |   12 +++++--
+ kernel/irq/handle.c            |    2 +-
+ kernel/irq/numa_migrate.c      |   12 ++++++-
+ kernel/softirq.c               |    3 +-
+ 9 files changed, 90 insertions(+), 20 deletions(-)
