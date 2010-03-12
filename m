@@ -1,16 +1,17 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp123.mail.ukl.yahoo.com (smtp123.mail.ukl.yahoo.com
-	[77.238.184.54]) by ozlabs.org (Postfix) with SMTP id 2FD31B7D76
+	[77.238.184.54]) by ozlabs.org (Postfix) with SMTP id 8EFC1B7D2E
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 13 Mar 2010 06:12:59 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 06/11] USB: refactor unmap_urb_for_dma/map_urb_for_dma
-Date: Fri, 12 Mar 2010 20:12:41 +0100
-Message-Id: <1268421166-4791-7-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v4 04/11] swiotlb: support NOT_COHERENT_CACHE PowerPC platforms
+Date: Fri, 12 Mar 2010 20:12:39 +0100
+Message-Id: <1268421166-4791-5-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
 References: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
-Cc: Albert Herranz <albert_herranz@yahoo.es>
+Cc: Albert Herranz <albert_herranz@yahoo.es>, x86@kernel.org,
+	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,288 +21,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split unmap_urb_for_dma() and map_urb_for_dma() into smaller pieces
-to make the code easier to read and maintain.
+The current SWIOTLB code does not support NOT_COHERENT_CACHE platforms.
+This patch adds support for NOT_COHERENT_CACHE platforms to SWIOTLB by
+adding two platform specific functions swiotlb_dma_sync_page() and
+swiotlb_dma_sync() which can be used to explicitly manage cache coherency.
 
-This patch adds four new URB flags which are used by map_urb_for_dma()
-to mark URBs with the exact method used to map the setup packet and/or the
-transfer buffer.
-These flags are checked too at unmap_urb_for_dma() time to determine how
-to unmap the setup packet and/or the transfer buffer. The flags are cleared
-when the actual unmap happens.
+On PowerPC these functions are mapped to their corresponding
+__dma_sync_page() and __dma_sync() functions.
+On other architectures using SWIOTLB these functions are optimized out.
 
-No functional change.
+This will be used later to support SWIOTLB on the Nintendo Wii video game
+console.
 
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+CC: x86@kernel.org
+CC: linux-ia64@vger.kernel.org
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- drivers/usb/core/hcd.c |  211 +++++++++++++++++++++++++++++++-----------------
- include/linux/usb.h    |    5 +
- 2 files changed, 143 insertions(+), 73 deletions(-)
+ arch/ia64/include/asm/swiotlb.h    |   10 ++++++++++
+ arch/powerpc/include/asm/swiotlb.h |    3 +++
+ arch/x86/include/asm/swiotlb.h     |   10 ++++++++++
+ lib/swiotlb.c                      |   30 ++++++++++++++++++++++++------
+ 4 files changed, 47 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 80995ef..44ad710 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1260,106 +1260,171 @@ static void hcd_free_coherent(struct usb_bus *bus, dma_addr_t *dma_handle,
- 	*dma_handle = 0;
+diff --git a/arch/ia64/include/asm/swiotlb.h b/arch/ia64/include/asm/swiotlb.h
+index f0acde6..6722090 100644
+--- a/arch/ia64/include/asm/swiotlb.h
++++ b/arch/ia64/include/asm/swiotlb.h
+@@ -14,4 +14,14 @@ static inline void pci_swiotlb_init(void)
  }
+ #endif
  
--static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
--			   gfp_t mem_flags)
-+static void unmap_urb_setup_packet(struct usb_hcd *hcd, struct urb *urb)
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
 +{
-+	if (urb->transfer_flags & URB_SETUP_DMA_MAPPED) {
-+		urb->transfer_flags &= ~URB_SETUP_DMA_MAPPED;
-+		dma_unmap_single(hcd->self.controller, urb->setup_dma,
-+				 sizeof(struct usb_ctrlrequest),
-+				 DMA_TO_DEVICE);
-+	} else if (urb->transfer_flags & URB_SETUP_BOUNCE_MAPPED) {
-+		/* bounce from "local" memory */
-+		urb->transfer_flags &= ~URB_SETUP_BOUNCE_MAPPED;
-+		hcd_free_coherent(urb->dev->bus, &urb->setup_dma,
-+				  (void **)&urb->setup_packet,
-+				  sizeof(struct usb_ctrlrequest),
-+				  DMA_TO_DEVICE);
-+	} else {
-+		/* nothing to do for PIO-based controller requests */
-+	}
 +}
 +
-+static void unmap_urb_transfer_buffer(struct usb_hcd *hcd, struct urb *urb)
- {
- 	enum dma_data_direction dir;
--	int ret = 0;
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
++{
++}
++
+ #endif /* ASM_IA64__SWIOTLB_H */
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index 8979d4c..603b343 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -22,4 +22,7 @@ int __init swiotlb_setup_bus_notifier(void);
  
--	/* Map the URB's buffers for DMA access.
--	 * Lower level HCD code should use *_dma exclusively,
--	 * unless it uses pio or talks to another transport,
--	 * or uses the provided scatter gather list for bulk.
--	 */
-+	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
-+	if (urb->transfer_flags & URB_TRANSFER_DMA_MAPPED) {
-+		urb->transfer_flags &= ~URB_TRANSFER_DMA_MAPPED;
-+		dma_unmap_single(hcd->self.controller,
-+				 urb->transfer_dma,
-+				 urb->transfer_buffer_length,
-+				 dir);
-+	} else if (urb->transfer_flags & URB_TRANSFER_BOUNCE_MAPPED) {
-+		/* bounce from "local" memory */
-+		urb->transfer_flags &= ~URB_TRANSFER_BOUNCE_MAPPED;
-+		hcd_free_coherent(urb->dev->bus, &urb->transfer_dma,
-+				  &urb->transfer_buffer,
-+				  urb->transfer_buffer_length,
-+				  dir);
-+	} else {
-+		/* nothing to do for PIO-based controller requests */
-+	}
-+}
-+
-+static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
-+{
- 	if (is_root_hub(urb->dev))
-+		return;
-+
-+	unmap_urb_setup_packet(hcd, urb);
-+	unmap_urb_transfer_buffer(hcd, urb);
-+}
-+
-+static int urb_needs_setup_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	/* setup mappings are required only for control requests */
-+	if (!usb_endpoint_xfer_control(&urb->ep->desc))
-+		return 0;
-+
-+	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
-+	if ((urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int urb_needs_transfer_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	/* don't need to map anything if there's nothing to map */
-+	if (urb->transfer_buffer_length == 0)
- 		return 0;
+ extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
  
--	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-+	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
-+	if ((urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
-+		return 0;
++#define swiotlb_dma_sync_page __dma_sync_page
++#define swiotlb_dma_sync __dma_sync
 +
-+	return 1;
+ #endif /* __ASM_SWIOTLB_H */
+diff --git a/arch/x86/include/asm/swiotlb.h b/arch/x86/include/asm/swiotlb.h
+index 8085277..e5f6d9c 100644
+--- a/arch/x86/include/asm/swiotlb.h
++++ b/arch/x86/include/asm/swiotlb.h
+@@ -20,4 +20,14 @@ static inline void pci_swiotlb_init(void)
+ 
+ static inline void dma_mark_clean(void *addr, size_t size) {}
+ 
++static inline void swiotlb_dma_sync_page(struct page *page,
++					 unsigned long offset,
++					 size_t size, int direction)
++{
 +}
 +
-+static int map_urb_setup_packet(struct usb_hcd *hcd, struct urb *urb,
-+				gfp_t mem_flags)
++static inline void swiotlb_dma_sync(void *vaddr, size_t size, int direction)
 +{
-+	int ret;
++}
 +
-+	if (urb_needs_setup_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->setup_dma = dma_map_single(
--					hcd->self.controller,
--					urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+						hcd->self.controller,
-+						urb->setup_packet,
-+						sizeof(struct usb_ctrlrequest),
-+						DMA_TO_DEVICE);
- 			if (dma_mapping_error(hcd->self.controller,
--						urb->setup_dma))
-+					      urb->setup_dma))
- 				return -EAGAIN;
--		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			ret = hcd_alloc_coherent(
--					urb->dev->bus, mem_flags,
--					&urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+			urb->transfer_flags |= URB_SETUP_DMA_MAPPED;
-+		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
-+			/* bounce to "local" memory */
-+			ret = hcd_alloc_coherent(urb->dev->bus, mem_flags,
-+						 &urb->setup_dma,
-+						 (void **)&urb->setup_packet,
-+						 sizeof(struct usb_ctrlrequest),
-+						 DMA_TO_DEVICE);
-+			if (ret)
-+				return ret;
-+			urb->transfer_flags |= URB_SETUP_BOUNCE_MAPPED;
+ #endif /* _ASM_X86_SWIOTLB_H */
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 94db5df..8f2dad9 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -346,10 +346,13 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			local_irq_save(flags);
+ 			buffer = kmap_atomic(pfn_to_page(pfn),
+ 					     KM_BOUNCE_READ);
+-			if (dir == DMA_TO_DEVICE)
++			if (dir == DMA_TO_DEVICE) {
+ 				memcpy(dma_addr, buffer + offset, sz);
+-			else
++				swiotlb_dma_sync(dma_addr, sz, dir);
++			} else {
++				swiotlb_dma_sync(dma_addr, sz, dir);
+ 				memcpy(buffer + offset, dma_addr, sz);
++			}
+ 			kunmap_atomic(buffer, KM_BOUNCE_READ);
+ 			local_irq_restore(flags);
+ 
+@@ -359,10 +362,14 @@ static void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			offset = 0;
+ 		}
+ 	} else {
+-		if (dir == DMA_TO_DEVICE)
++		if (dir == DMA_TO_DEVICE) {
+ 			memcpy(dma_addr, phys_to_virt(phys), size);
+-		else
++			swiotlb_dma_sync(dma_addr, size, dir);
++
 +		} else {
-+			/* nothing to do for PIO-based controller requests */
++			swiotlb_dma_sync(dma_addr, size, dir);
+ 			memcpy(phys_to_virt(phys), dma_addr, size);
 +		}
  	}
-+	return 0;
-+}
-+
-+static int map_urb_transfer_buffer(struct usb_hcd *hcd, struct urb *urb,
-+				   gfp_t mem_flags)
-+{
-+	enum dma_data_direction dir;
-+	int ret;
- 
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
--	if (ret == 0 && urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
-+	if (urb_needs_transfer_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->transfer_dma = dma_map_single (
--					hcd->self.controller,
--					urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
-+						hcd->self.controller,
-+						urb->transfer_buffer,
-+						urb->transfer_buffer_length,
-+						dir);
- 			if (dma_mapping_error(hcd->self.controller,
--						urb->transfer_dma))
-+					      urb->transfer_dma))
- 				return -EAGAIN;
-+			urb->transfer_flags |= URB_TRANSFER_DMA_MAPPED;
- 		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
--			ret = hcd_alloc_coherent(
--					urb->dev->bus, mem_flags,
--					&urb->transfer_dma,
--					&urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
--
--			if (ret && usb_endpoint_xfer_control(&urb->ep->desc)
--			    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
--				hcd_free_coherent(urb->dev->bus,
--					&urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+			/* bounce to "local" memory */
-+			ret = hcd_alloc_coherent(urb->dev->bus, mem_flags,
-+						 &urb->transfer_dma,
-+						 &urb->transfer_buffer,
-+						 urb->transfer_buffer_length,
-+						 dir);
-+			if (ret)
-+				return ret;
-+			urb->transfer_flags |= URB_TRANSFER_BOUNCE_MAPPED;
-+		} else {
-+			/* nothing to do for PIO-based controller requests */
- 		}
- 	}
--	return ret;
-+	return 0;
  }
  
--static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
-+static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
-+			   gfp_t mem_flags)
+@@ -542,6 +549,8 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+ 	}
+ }
+ 
++#ifndef CONFIG_NOT_COHERENT_CACHE
++
+ void *
+ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		       dma_addr_t *dma_handle, gfp_t flags)
+@@ -606,6 +615,8 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+ }
+ EXPORT_SYMBOL(swiotlb_free_coherent);
+ 
++#endif /* !CONFIG_NOT_COHERENT_CACHE */
++
+ static void
+ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
  {
--	enum dma_data_direction dir;
-+	int error;
+@@ -652,8 +663,10 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 	 * we can safely return the device addr and not worry about bounce
+ 	 * buffering it.
+ 	 */
+-	if (dma_capable(dev, dev_addr, size) && !swiotlb_force)
++	if (dma_capable(dev, dev_addr, size) && !swiotlb_force) {
++		swiotlb_dma_sync_page(page, offset, size, dir);
+ 		return dev_addr;
++	}
  
-+	/* Map the URB's buffers for DMA access.
-+	 * Lower level HCD code should use *_dma exclusively,
-+	 * unless it uses pio or talks to another transport,
-+	 * or uses the provided scatter gather list for bulk.
-+	 */
- 	if (is_root_hub(urb->dev))
--		return;
--
--	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
--		if (hcd->self.uses_dma)
--			dma_unmap_single(hcd->self.controller, urb->setup_dma,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			hcd_free_coherent(urb->dev->bus, &urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
--	}
-+		return 0;
- 
--	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
--	if (urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
--		if (hcd->self.uses_dma)
--			dma_unmap_single(hcd->self.controller,
--					urb->transfer_dma,
--					urb->transfer_buffer_length,
--					dir);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			hcd_free_coherent(urb->dev->bus, &urb->transfer_dma,
--					&urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
-+	error = map_urb_setup_packet(hcd, urb, mem_flags);
-+	if (!error) {
-+		error = map_urb_transfer_buffer(hcd, urb, mem_flags);
-+		if (error)
-+			unmap_urb_setup_packet(hcd, urb);
+ 	/*
+ 	 * Oh well, have to allocate and map a bounce buffer.
+@@ -739,6 +752,8 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+ 		return;
  	}
-+	return error;
- }
  
- /*-------------------------------------------------------------------------*/
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index d7ace1b..5e99cbd 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -985,6 +985,11 @@ extern int usb_disabled(void);
- #define URB_DIR_OUT		0
- #define URB_DIR_MASK		URB_DIR_IN
- 
-+#define URB_SETUP_DMA_MAPPED		0x1000 /* via dma_map_single */
-+#define URB_SETUP_BOUNCE_MAPPED		0x2000 /* via hcd_alloc_coherent */
-+#define URB_TRANSFER_DMA_MAPPED		0x4000 /* via dma_map_single */
-+#define URB_TRANSFER_BOUNCE_MAPPED	0x8000 /* via hcd_alloc_coherent */
++	swiotlb_dma_sync(phys_to_virt(paddr), size, dir);
 +
- struct usb_iso_packet_descriptor {
- 	unsigned int offset;
- 	unsigned int length;		/* expected length */
+ 	if (dir != DMA_FROM_DEVICE)
+ 		return;
+ 
+@@ -835,8 +850,11 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 				return 0;
+ 			}
+ 			sg->dma_address = swiotlb_virt_to_bus(hwdev, map);
+-		} else
++		} else {
++			swiotlb_dma_sync_page(sg_page(sg), sg->offset,
++					      sg->length, dir);
+ 			sg->dma_address = dev_addr;
++		}
+ 		sg->dma_length = sg->length;
+ 	}
+ 	return nelems;
 -- 
 1.6.3.3
