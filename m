@@ -1,26 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-qy0-f172.google.com (mail-qy0-f172.google.com
-	[209.85.221.172]) by ozlabs.org (Postfix) with ESMTP id 20B8FB7D28
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Mar 2010 08:38:25 +1100 (EST)
-Received: by qyk2 with SMTP id 2so1629081qyk.1
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Mar 2010 13:38:23 -0800 (PST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 13 Mar 2010 09:36:47 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
+	PowerPC e200 core?)
+Message-ID: <20100312223647.GM11655@yookeroo>
+References: <4B934CCA.8030608@freemail.hu>
+	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
+	<4B95458A.4000304@freemail.hu>
+	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
+	<4B95F298.5040000@freemail.hu>
+	<fa686aa41003082335t5a5d642fi13c81e4b84f7b697@mail.gmail.com>
+	<4B9889AC.4080309@freemail.hu> <20100311062331.GI11655@yookeroo>
+	<4B99DE95.8010304@freemail.hu>
+	<fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100312130723.43308ccd.akpm@linux-foundation.org>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
-	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
-	<20100312130723.43308ccd.akpm@linux-foundation.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 12 Mar 2010 14:38:02 -0700
-Message-ID: <fa686aa41003121338oe34eb89o22177cb0a309cc85@mail.gmail.com>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-To: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Bill Gatliff <bgat@billgatliff.com>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org,
+	=?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 12, 2010 at 2:07 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 5 Feb 2010 23:32:36 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
->
->> This patch implements GPIOLIB notifier hooks, and thus makes device-enab=
-led
->> GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatica=
-lly
->> attached to the OpenFirmware subsystem. Which means that now we can hand=
-le
->> I2C and SPI GPIO chips almost* transparently.
->>
->> ...
->>
->> +static int of_gpiochip_register_simple(struct gpio_chip *chip,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0struct device_node *np)
->
-> Why is this called "register_simple" but the unregistration function
-> isn't called "unregister_simple"?
->
->> +{
->> + =A0 =A0 struct of_gpio_chip *of_gc;
->> +
->> + =A0 =A0 if (np->data) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 WARN_ON(1);
->> + =A0 =A0 =A0 =A0 =A0 =A0 return -EBUSY;
->> + =A0 =A0 }
->> +
->> + =A0 =A0 of_gc =3D kzalloc(sizeof(*of_gc), GFP_KERNEL);
->> + =A0 =A0 if (!of_gc)
->> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
->> +
->> + =A0 =A0 of_gc->gpio_cells =3D 2;
->> + =A0 =A0 of_gc->xlate =3D of_gpio_simple_xlate;
->> + =A0 =A0 of_gc->chip =3D chip;
->> + =A0 =A0 np->data =3D of_gc;
->> + =A0 =A0 of_node_get(np);
->> +
->> + =A0 =A0 return 0;
->> +}
->> +EXPORT_SYMBOL(of_gpiochip_register_simple);
->
-> Makes no sense to export a static symbol and to provide no declaration
-> of it in a .h file. =A0I assume the export was unintended.
->
->
-> My plot is somewhat lost. =A0Grant, could you please summarise in
-> easy-for-akpm-to-understand terms what your issues are with this
-> patchset and how you think we should proceed?
+On Fri, Mar 12, 2010 at 05:14:56AM -0700, Grant Likely wrote:
+> 2010/3/11 Németh Márton <nm127@freemail.hu>:
+[snip]
+> > +
+> > +       cpus {
+> > +               #address-cells = <1>;
+> > +               #size-cells = <0>;
+> > +
+> > +               cpu@0 {
+> > +                       device_type = "cpu";
+> > +                       compatible = "PowerPC,5554";
+> 
+> I'd rather see the same convention used here as for all the other
+> compatible values in this file.  ie:
+> 
+> compatible = "fsl,mpc5554-e200z6", "fsl,powerpc-e200z6";
+> 
+> Dave, what do you think?
 
-Sure.
-I suggested the notifier approach in the first place, but now that I
-see what is required to implement it I don't like it.  I also don't
-like the potential race condition between registering GPIO devices and
-registering the OF gpio notifier.  It is simpler and less code to put
-the of_gpio hook directly into the GPIO registration path.  If
-CONFIG_OF is not set, then the OF hooks can resolve to empty static
-inline functions.
+Well, you could add those too, but "PowerPC,5554" should probably
+remain.
 
-How to proceed:  I'd like to leave this series out for the 2.6.34
-cycle and I'll pick it into my OF tree before the 2.6.35 merge window,
-but I'll probably modify it to call the OF hooks directly and leave
-out the unnecessary notifier infrastructure.
+The historical background here is that in the original OF spec, driver
+matching was done on node name, and only then on compatible.
+Essentially the node name was treated as an implicit first entry in
+the compatible list.  The the generic names convention came along, and
+instead name became a human readable generic type for the device
+("ethernet", "i2c", etc..).
 
-g.
+That convention has been widely used since long before flat trees
+existed, but for some reason it was never really used for cpu nodes;
+they remained as "PowerPC,XXXX" or whatever.  Because the varying
+names of cpu nodes was sometimes awkward to deal with in bootloaders,
+we decided it would be sensible to apply the generic names convention
+here too, so "cpu@X".  But then, the previous node name, which was
+treated as being prepended to compatible, should now explicitly be put
+into compatible.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
