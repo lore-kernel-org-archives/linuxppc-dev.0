@@ -1,18 +1,30 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 475CDB7D56
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Mar 2010 21:39:45 +1100 (EST)
-Date: Sun, 14 Mar 2010 03:39:39 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: 2.6.34-rc1: Badness at fs/proc/generic.c:316
-In-Reply-To: <20100314065526.GA5353@x200>
-Message-ID: <alpine.DEB.2.01.1003140336280.5493@bogon.housecafe.de>
-References: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
-	<20100314065526.GA5353@x200>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 013D6B7D58
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Mar 2010 21:48:11 +1100 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id o2EAm8Ld014716
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Mar 2010 16:18:08 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2EAm8fs3080252
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Mar 2010 16:18:08 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2EAm8ef015856
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Mar 2010 16:18:08 +0530
+Message-ID: <4B9CBEE6.1090509@in.ibm.com>
+Date: Sun, 14 Mar 2010 16:18:06 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: 34-rc1-git3 build failure with CGROUP_MEM_RES_CTLR_SWAP=y
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: lizf@cn.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 14 Mar 2010 at 08:55, Alexey Dobriyan wrote:
-> > device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
-> > name 'pulses/rev'
-> 
-> Uh-oh.
+On a PowerPC box, latest 34-rc1 git(d89b218b8...) fails to build
+with CGROUPS_MEM_RES_CTRL_SWAP=y. 
 
-Uh-oh? :-)
+LD      init/built-in.o
+LD      .tmp_vmlinux1
+mm/built-in.o: In function __xchg:
+arch/powerpc/include/asm/system.h:331: undefined reference to .__xchg_called_with_bad_pointer
+mm/built-in.o: In function __cmpxchg:
+arch/powerpc/include/asm/system.h:474: undefined reference to .__cmpxchg_called_with_bad_pointer
+make: *** [.tmp_vmlinux1] Error 1
 
->> Is this something to worry about? The machine seems to run fine so far...
-> 
-> Runtime behaviour remains the same, it's just new warning message.
+The code in question was added via commit 024914477e...
 
-So...the laptop probably won't blow up before -rc2 is out? :-)
+memcg: move charges of anonymous swap
 
-Christian.
+Thanks
+-Sachin
+
+
 -- 
-BOFH excuse #298:
 
-Not enough interrupts
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
