@@ -1,26 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 58327B7D41
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:23:01 +1100 (EST)
+Return-Path: <d-nishimura@mtf.biglobe.ne.jp>
+Received: from rcpt-mqugw.biglobe.ne.jp (rcpt-mqugw.biglobe.ne.jp
+	[133.205.19.70]) by ozlabs.org (Postfix) with ESMTP id 51C4EB7BFA
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:55:55 +1100 (EST)
+Received: from rcpt-expgw.biglobe.ne.jp
+	by rcpt-mqugw.biglobe.ne.jp (shby/1111021009) with ESMTP id
+	o2F3EG3d006519
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 12:14:16 +0900
+Date: Mon, 15 Mar 2010 12:16:51 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [BUGFIX][PATCH] memcg: avoid use cmpxchg in swap cgroup
 	maintainance (Was Re: 34-rc1-git3 build failure with
 	CGROUP_MEM_RES_CTLR_SWAP=y
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20100315121651.23daf53f.d-nishimura@mtf.biglobe.ne.jp>
 In-Reply-To: <20100315100202.eb735f59.kamezawa.hiroyu@jp.fujitsu.com>
 References: <4B9CBEE6.1090509@in.ibm.com>
 	<20100315100202.eb735f59.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Mar 2010 14:21:52 +1100
-Message-ID: <1268623312.2209.108.camel@pasglop>
 Mime-Version: 1.0
-Cc: nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com,
-	linux-kernel <linux-kernel@vger.kernel.org>,
+Content-Type: text/plain; charset=US-ASCII
+Cc: d-nishimura@mtf.biglobe.ne.jp,
+	Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+	lizf@cn.fujitsu.com, linux-kernel <linux-kernel@vger.kernel.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
 	Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,17 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 15 Mar 2010 10:02:02 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
+> On Sun, 14 Mar 2010 16:18:06 +0530
+> Sachin Sant <sachinp@in.ibm.com> wrote:
+> 
+> > On a PowerPC box, latest 34-rc1 git(d89b218b8...) fails to build
+> > with CGROUPS_MEM_RES_CTRL_SWAP=y. 
+> > 
+> > LD      init/built-in.o
+> > LD      .tmp_vmlinux1
+> > mm/built-in.o: In function __xchg:
+> > arch/powerpc/include/asm/system.h:331: undefined reference to .__xchg_called_with_bad_pointer
+> > mm/built-in.o: In function __cmpxchg:
+> > arch/powerpc/include/asm/system.h:474: undefined reference to .__cmpxchg_called_with_bad_pointer
+> > make: *** [.tmp_vmlinux1] Error 1
+> > 
+> > The code in question was added via commit 024914477e...
+> > 
+> > memcg: move charges of anonymous swap
+> > 
 > Oh..ok, powerpc (and other archs?) can't do 2byte cmpxchg and xchg.
 > Then, we should use spinlock rather than that.
 > 
 > How about this ? Nishimura-san, could you consider something better ?
 > We need a quick fix.
-
-sparc64 is the same as powerpc in that regard, maybe others. 
-
-Cheers,
-Ben.
+> 
+Thank you for fixing this issue.
+I think it increases the size of swap_cgroup_ctrl a bit,
+but I think it's a good fix.
 
 > ==
 > swap_cgroup uses 2bytes data and uses cmpxchg in a new operation.
@@ -48,6 +71,10 @@ Ben.
 > cmpxchg/xchg with operations under lock.
 > 
 > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Acked-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+Thanks,
+Daisuke Nishimura.
 > ---
 >  mm/page_cgroup.c |   20 ++++++++++++++++----
 >  1 file changed, 16 insertions(+), 4 deletions(-)
@@ -118,7 +145,9 @@ Ben.
 >  		/* memory shortage */
 >  		ctrl->map = NULL;
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
