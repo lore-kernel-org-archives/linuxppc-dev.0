@@ -1,90 +1,18 @@
-Return-Path: <rdunlap@xenotime.net>
-Received: from xenotime.net (xenotime.net [72.52.64.118])
-	by ozlabs.org (Postfix) with SMTP id BAF38B7D4E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:19:54 +1100 (EST)
-Received: from chimera.site ([71.245.98.113]) by xenotime.net for
-	<linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:09:43 -0700
-Message-ID: <4B9EA214.7010203@xenotime.net>
-Date: Mon, 15 Mar 2010 14:09:40 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-MIME-Version: 1.0
-To: Thomas Weber <swirl@gmx.li>
-Subject: Re: [PATCH 0/4] Some typo fixing
-References: <1268686558-28171-1-git-send-email-swirl@gmx.li>
-In-Reply-To: <1268686558-28171-1-git-send-email-swirl@gmx.li>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
-	Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-	Pavel Machek <pavel@suse.cz>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	linux-acpi@vger.kernel.org,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	Rusty Russell <rusty@rustcorp.com.au>, Li Zefan <lizf@cn.fujitsu.com>,
-	Steve Conklin <sconklin@canonical.com>,
-	Ralph Campbell <infinipath@qlogic.com>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>, cbe-oss-dev@ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>, Anthony Liguori <aliguori@us.ibm.com>,
-	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-	Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-	linux-media@vger.kernel.org, Pieter Palmers <pieterp@joow.be>,
-	Anand Gadiyar <gadiyar@ti.com>, alsa-devel@alsa-project.org,
-	linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>,
-	Clemens Ladisch <clemens@ladisch.de>, linux-mm@kvack.org,
-	"James E.J. Bottomley" <James.Bottomley@suse.de>,
-	=?ISO-8859-1?Q?H=E5kan_Johansson?= <f96hajo@chalmers.se>,
-	linux-s390@vger.kernel.org, Markus Heidelberg <markus.heidelberg@web.de>,
-	linuxppc-dev@ozlabs.org, Dave Airlie <airlied@redhat.com>,
-	Tobias Klauser <tklauser@distanz.ch>, dri-devel@lists.sourceforge.net,
-	Hal Rosenstock <hal.rosenstock@gmail.com>,
-	Len Brown <lenb@kernel.org>, linux-kbuild@vger.kernel.org,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Amit Shah <amit.shah@redhat.com>, Daniel Mack <daniel@caiaq.de>,
-	spi-devel-general@lists.sourceforge.net,
-	containers@lists.linux-foundation.org,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-	Michal Sojka <sojkam1@fel.cvut.cz>,
-	Christoph Lameter <cl@linux-foundation.org>, linux-pci@vger.kernel.org,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Sean Hefty <sean.hefty@intel.com>,
-	Sam Ravnborg <sam@ravnborg.org>, linux-rdma@vger.kernel.org,
-	Matthew Wilcox <willy@linux.intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@pobox.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>,
-	Alex Chiang <achiang@hp.com>, Mel Gorman <mel@csn.ul.ie>,
-	Zhenyu Wang <zhenyuw@linux.intel.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, Jing Huang <huangj@brocade.com>,
-	Jiri Kosina <trivial@kernel.org>, Jiri Pirko <jpirko@redhat.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Jean Delvare <khali@linux-fr.org>, Tejun Heo <tj@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	jfs-discussion@lists.sourceforge.net, Jay Fenlason <fenlason@redhat.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Henrik Austad <henrik@austad.us>, linux-ide@vger.kernel.org,
-	Jonathan Cameron <jic23@cam.ac.uk>,
-	Bernhard Schiffner <bernhard@schiffner-limbach.de>,
-	linux1394-devel@lists.sourceforge.net, devel@driverdev.osuosl.org,
-	Amit Kucheria <amit.kucheria@verdurent.com>,
-	Douglas Schilling Landgraf <dougsland@redhat.com>,
-	linux-scsi@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>,
-	=?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-	Shirley Ma <xma@us.ibm.com>,
-	Steve Glendinning <steve.glendinning@smsc.com>,
-	Paul Menage <menage@google.com>, Alan Cox <alan@linux.intel.com>,
-	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
-	Ben Blum <bblum@andrew.cmu.edu>, netdev@vger.kernel.org,
-	Akihiro Tsukada <tskd2@yahoo.co.jp>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Inaky Perez-Gonzalez <inaky@linux.intel.com>,
-	Larry Finger <Larry.Finger@lwfinger.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C8670B7D88
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 16 Mar 2010 10:33:33 +1100 (EST)
+Date: Tue, 16 Mar 2010 10:33:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH] sysdev: the cpu probe/release attributes should be
+	sysdev_class_attributes
+Message-Id: <20100316103332.ade0b5d9.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andi Kleen <andi@firstfloor.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -94,58 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/15/10 13:55, Thomas Weber wrote:
-> I have fixed some typos.
+This fixes these warnings:
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+drivers/base/cpu.c:264: warning: initialization from incompatible pointer type
+drivers/base/cpu.c:265: warning: initialization from incompatible pointer type
 
-Jiri, can you merge these, please, unless someone objects (?).
+Cc: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/base/cpu.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
+Hi Greg,
 
-> Thomas Weber (4):
->   Fix typo: [Ss]ytem => [Ss]ystem
->   Fix typo: udpate => update
->   Fix typo: paramters => parameters
->   Fix typo: orginal => original
-> 
->  Documentation/cgroups/cgroups.txt               |    2 +-
->  Documentation/kbuild/kconfig.txt                |    2 +-
->  Documentation/sysfs-rules.txt                   |    2 +-
->  Documentation/trace/events.txt                  |    8 ++++----
->  drivers/acpi/osl.c                              |    4 ++--
->  drivers/ata/ata_piix.c                          |    2 +-
->  drivers/firewire/ohci.c                         |    2 +-
->  drivers/gpu/drm/drm_bufs.c                      |    2 +-
->  drivers/infiniband/hw/ipath/ipath_iba6110.c     |    2 +-
->  drivers/infiniband/hw/ipath/ipath_iba6120.c     |    4 ++--
->  drivers/infiniband/hw/ipath/ipath_iba7220.c     |    2 +-
->  drivers/isdn/hisax/hfc4s8s_l1.c                 |    2 +-
->  drivers/macintosh/windfarm_pm81.c               |    2 +-
->  drivers/media/dvb/dvb-usb/friio-fe.c            |    2 +-
->  drivers/net/smsc911x.c                          |    4 ++--
->  drivers/pci/hotplug/cpqphp_core.c               |    2 +-
->  drivers/pci/pci.c                               |    2 +-
->  drivers/ps3/ps3-sys-manager.c                   |    2 +-
->  drivers/regulator/core.c                        |    2 +-
->  drivers/s390/char/sclp_cpi_sys.c                |    2 +-
->  drivers/scsi/bfa/include/defs/bfa_defs_cee.h    |    2 +-
->  drivers/scsi/bfa/include/defs/bfa_defs_status.h |    4 ++--
->  drivers/spi/spi_mpc8xxx.c                       |    2 +-
->  drivers/staging/iio/Documentation/overview.txt  |    2 +-
->  drivers/staging/rt2860/rtmp.h                   |    2 +-
->  drivers/staging/rtl8187se/r8180_core.c          |    4 ++--
->  drivers/staging/rtl8187se/r8180_dm.c            |    2 +-
->  drivers/staging/rtl8187se/r8185b_init.c         |    2 +-
->  drivers/virtio/virtio_pci.c                     |    2 +-
->  fs/jfs/jfs_dmap.c                               |    2 +-
->  kernel/cgroup.c                                 |    2 +-
->  mm/page_alloc.c                                 |    2 +-
->  net/wimax/op-rfkill.c                           |    2 +-
->  sound/pci/emu10k1/emu10k1_main.c                |    2 +-
->  34 files changed, 42 insertions(+), 42 deletions(-)
-> 
+Could you pleas send this on to Linuse as this is now a bug in mainline.
 
 Thanks.
 
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 7036e8e..b5242e1 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -79,24 +79,24 @@ void unregister_cpu(struct cpu *cpu)
+ }
+ 
+ #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+-static ssize_t cpu_probe_store(struct sys_device *dev,
+-				struct sysdev_attribute *attr,
+-				const char *buf,
++static ssize_t cpu_probe_store(struct sysdev_class *class,
++			       struct sysdev_class_attribute *attr,
++			       const char *buf,
+ 			       size_t count)
+ {
+ 	return arch_cpu_probe(buf, count);
+ }
+ 
+-static ssize_t cpu_release_store(struct sys_device *dev,
+-				struct sysdev_attribute *attr,
+-				const char *buf,
++static ssize_t cpu_release_store(struct sysdev_class *class,
++				 struct sysdev_class_attribute *attr,
++				 const char *buf,
+ 				 size_t count)
+ {
+ 	return arch_cpu_release(buf, count);
+ }
+ 
+-static SYSDEV_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
+-static SYSDEV_ATTR(release, S_IWUSR, NULL, cpu_release_store);
++static SYSDEV_CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
++static SYSDEV_CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
+ #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
 -- 
-~Randy
+1.7.0
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
