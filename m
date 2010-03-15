@@ -1,21 +1,16 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
-	[207.46.51.75]) by ozlabs.org (Postfix) with ESMTP id A1A05B7D8C
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 04:23:24 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-Date: Mon, 15 Mar 2010 11:23:10 -0600
-In-Reply-To: <977C41F842E66D4CB2E41332313B615009A27BCA@XSJ-EXCHVS1.xlnx.xilinx.com>
-References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
-	<977C41F842E66D4CB2E41332313B615009A27BCA@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Stephen Neuendorffer" <stephenn@xilinx.com>, <netdev@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>, <grant.likely@secretlab.ca>,
-	<jwboyer@linux.vnet.ibm.com>
-Message-ID: <3ce2ca43-5eed-4995-af67-29cff5a764fe@SG2EHSMHS005.ehs.local>
-Cc: michal.simek@petalogix.com, John Tyner <jtyner@cs.ucr.edu>,
-	john.williams@petalogix.com
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc/perf_events: Implement
+	perf_arch_fetch_caller_regs for powerpc
+In-reply-to: <20100315054615.GA6245@drongo>
+References: <20100315054615.GA6245@drongo>
+Date: Mon, 15 Mar 2010 12:36:53 -0500
+Message-ID: <666.1268674613@neuling.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	anton@samba.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,116 +20,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> This implements a powerpc version of perf_arch_fetch_caller_regs.
+> It's implemented in assembly because that way we can be sure there
+> isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
+> C, gcc might or might not create a stack frame for it, which would
+> affect the number of levels we have to skip.  
 
-> -----Original Message-----
-> From: Stephen Neuendorffer
-> Sent: Monday, March 15, 2010 11:03 AM
-> To: John Linn; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-grant.likely@secretlab.ca;
-> jwboyer@linux.vnet.ibm.com
-> Cc: michal.simek@petalogix.com; John Tyner;
-john.williams@petalogix.com
-> Subject: RE: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-> =
+Should we put this comment in the code as well?
 
-> =
+Mikey
 
-> =
-
-> > -----Original Message-----
-> > From:
-linuxppc-dev-bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org
-[mailto:linuxppc-dev-
-> > bounces+stephen=3Dneuendorffer.name@lists.ozlabs.org] On Behalf Of
-John Linn
-> > Sent: Friday, March 12, 2010 5:06 PM
-> > To: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-grant.likely@secretlab.ca;
-> > jwboyer@linux.vnet.ibm.com
-> > Cc: michal.simek@petalogix.com; John Tyner; John Linn;
-john.williams@petalogix.com
-> > Subject: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-> >
-> > This patch adds support for using the LL TEMAC Ethernet driver on
-> > non-Virtex 5 platforms by adding support for accessing the Soft DMA
-> > registers as if they were memory mapped instead of solely through
-the
-> > DCR's (available on the Virtex 5).
-> >
-> > The patch also updates the driver so that it runs on the MicroBlaze.
-> > The changes were tested on the PowerPC 440, PowerPC 405, and the
-> > MicroBlaze platforms.
-> >
-> > Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
-> > Signed-off-by: John Linn <john.linn@xilinx.com>
-> > ---
-> >
-> > V2 - Incorporated comments from Grant and added more logic to allow
-the driver
-> > to work on MicroBlaze.
-> >
-> >  drivers/net/Kconfig         |    1 -
-> >  drivers/net/ll_temac.h      |   17 +++++-
-> >  drivers/net/ll_temac_main.c |  124
-++++++++++++++++++++++++++++++++++---------
-> >  3 files changed, 113 insertions(+), 29 deletions(-)
-> >
-> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> > index 9b6efe1..5402105 100644
-> > --- a/drivers/net/Kconfig
-> > +++ b/drivers/net/Kconfig
-> > @@ -2443,7 +2443,6 @@ config MV643XX_ETH
-> >  config XILINX_LL_TEMAC
-> >  	tristate "Xilinx LL TEMAC (LocalLink Tri-mode Ethernet MAC)
-driver"
-> >  	select PHYLIB
-> > -	depends on PPC_DCR_NATIVE
-> >  	help
-> >  	  This driver supports the Xilinx 10/100/1000 LocalLink TEMAC
-> >  	  core used in Xilinx Spartan and Virtex FPGAs
-> > diff --git a/drivers/net/ll_temac.h b/drivers/net/ll_temac.h
-> > index 1af66a1..915aa34 100644
-> > --- a/drivers/net/ll_temac.h
-> > +++ b/drivers/net/ll_temac.h
-> > @@ -5,8 +5,11 @@
-> >  #include <linux/netdevice.h>
-> >  #include <linux/of.h>
-> >  #include <linux/spinlock.h>
-> > +
-> > +#ifdef CONFIG_PPC_DCR
-> >  #include <asm/dcr.h>
-> >  #include <asm/dcr-regs.h>
-> > +#endif
-> >
-> >  /* packet size info */
-> >  #define XTE_HDR_SIZE			14      /* size of
-Ethernet header */
-> > @@ -290,8 +293,12 @@ This option defaults to enabled (set) */
-> >
-> >  #define TX_CONTROL_CALC_CSUM_MASK   1
-> >
-> > +/* Align the IP data in the packet on word boundaries as MicroBlaze
-> > + * needs it.
-> > + */
-> > +
-> >  #define XTE_ALIGN       32
-> > -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
-> > +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
-> =
-
-> Is '34' really XTE_ALIGN + 2?  (I really have no idea.... it just
-looks like a suspicious change.)
-> =
-
-> Steve
-
-Valid point that it is XTE_ALIGN + 2. As the comment says, it aligns the
-IP data in the packet.
-
--- John
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+> It's not ifdef'd
+> because it is only 14 instructions long.
+> 
+> With this, we see results from perf record -e lock:lock_acquire like
+> this:
+> 
+> # Samples: 24878
+> #
+> # Overhead         Command      Shared Object  Symbol
+> # ........  ..............  .................  ......
+> #
+>     14.99%            perf  [kernel.kallsyms]  [k] ._raw_spin_lock
+>                       |
+>                       --- ._raw_spin_lock
+>                          |          
+>                          |--25.00%-- .alloc_fd
+>                          |          (nil)
+>                          |          |          
+>                          |          |--50.00%-- .anon_inode_getfd
+>                          |          |          .sys_perf_event_open
+>                          |          |          syscall_exit
+>                          |          |          syscall
+>                          |          |          create_counter
+>                          |          |          __cmd_record
+>                          |          |          run_builtin
+>                          |          |          main
+>                          |          |          0xfd2e704
+>                          |          |          0xfd2e8c0
+>                          |          |          (nil)
+> 
+> ... etc.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+>  arch/powerpc/include/asm/asm-compat.h |    2 ++
+>  arch/powerpc/kernel/misc.S            |   20 ++++++++++++++++++++
+>  2 files changed, 22 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm
+/asm-compat.h
+> index c1b475a..a9b91ed 100644
+> --- a/arch/powerpc/include/asm/asm-compat.h
+> +++ b/arch/powerpc/include/asm/asm-compat.h
+> @@ -28,6 +28,7 @@
+>  #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+>  #define PPC_STLCX	stringify_in_c(stdcx.)
+>  #define PPC_CNTLZL	stringify_in_c(cntlzd)
+> +#define PPC_LR_STKOFF	16
+>  
+>  /* Move to CR, single-entry optimized version. Only available
+>   * on POWER4 and later.
+> @@ -51,6 +52,7 @@
+>  #define PPC_STLCX	stringify_in_c(stwcx.)
+>  #define PPC_CNTLZL	stringify_in_c(cntlzw)
+>  #define PPC_MTOCRF	stringify_in_c(mtcrf)
+> +#define PPC_LR_STKOFF	4
+>  
+>  #endif
+>  
+> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+> index 2d29752..4459500 100644
+> --- a/arch/powerpc/kernel/misc.S
+> +++ b/arch/powerpc/kernel/misc.S
+> @@ -127,3 +127,23 @@ _GLOBAL(__setup_cpu_power7)
+>  _GLOBAL(__restore_cpu_power7)
+>  	/* place holder */
+>  	blr
+> +
+> +/*
+> + * Get a minimal set of registers for our caller's nth caller.
+> + * r3 = regs pointer, r5 = n.
+> + */
+> +_GLOBAL(perf_arch_fetch_caller_regs)
+> +	mr	r6,r1
+> +	cmpwi	r5,0
+> +	mflr	r4
+> +	ble	2f
+> +	mtctr	r5
+> +1:	PPC_LL	r6,0(r6)
+> +	bdnz	1b
+> +	PPC_LL	r4,PPC_LR_STKOFF(r6)
+> +2:	PPC_LL	r7,0(r6)
+> +	PPC_LL	r7,PPC_LR_STKOFF(r7)
+> +	PPC_STL	r6,GPR1-STACK_FRAME_OVERHEAD(r3)
+> +	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
+> +	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
+> +	blr
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
