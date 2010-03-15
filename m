@@ -1,37 +1,21 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7EC9AB7D6F
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 17:29:23 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2F6TMK2011374
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 17:29:22 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2F6TMdq1859654
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 17:29:22 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2F6TL0L002462
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 17:29:21 +1100
-Date: Mon, 15 Mar 2010 11:59:09 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100315062909.GA19279@in.ibm.com>
-References: <20100308181232.GA3406@in.ibm.com>
-	<20100308181448.GA5538@in.ibm.com>
-	<1268374776.2209.74.camel@pasglop>
+Return-Path: <michal.simek@petalogix.com>
+Received: from mail-fx0-f214.google.com (mail-fx0-f214.google.com
+	[209.85.220.214]) by ozlabs.org (Postfix) with ESMTP id 433BEB7D76
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 19:39:53 +1100 (EST)
+Received: by fxm6 with SMTP id 6so1409505fxm.22
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 01:39:51 -0700 (PDT)
+Message-ID: <4B9DF254.2030402@petalogix.com>
+Date: Mon, 15 Mar 2010 09:39:48 +0100
+From: Michal Simek <michal.simek@petalogix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1268374776.2209.74.camel@pasglop>
-Cc: Michael Neuling <mikey@neuling.org>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Alan Stern <stern@rowland.harvard.edu>,
-	Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+To: John Linn <john.linn@xilinx.com>
+Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
+In-Reply-To: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-dev@ozlabs.org, john.williams@petalogix.com
+Reply-To: michal.simek@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,688 +25,331 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 12, 2010 at 05:19:36PM +1100, Benjamin Herrenschmidt wrote:
+John Linn wrote:
+> This patch adds support for using the LL TEMAC Ethernet driver on
+> non-Virtex 5 platforms by adding support for accessing the Soft DMA
+> registers as if they were memory mapped instead of solely through the
+> DCR's (available on the Virtex 5).
 > 
-> > Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h
-> > @@ -0,0 +1,54 @@
-> > +#ifndef	_PPC64_HW_BREAKPOINT_H
-> > +#define	_PPC64_HW_BREAKPOINT_H
-> > +
-> > +#ifdef	__KERNEL__
-> > +#define	__ARCH_HW_BREAKPOINT_H
-> > +#ifdef CONFIG_PPC64
-> > +
-> > +struct arch_hw_breakpoint {
-> > +	u8		len; /* length of the target symbol */
+> The patch also updates the driver so that it runs on the MicroBlaze.
+> The changes were tested on the PowerPC 440, PowerPC 405, and the
+> MicroBlaze platforms.
+
+Which git-tree have you tested on? (Of course microblaze)
+
+Michal
+
 > 
-> I don't understand the usage of the word "symbol" above, can you
-> explain ?
->
-
-The word "symbol", here, carries a meaning similar to what is derived from
-its usage in the word "kernel data symbols" - although it is
-used to store lengths for both kernel and user-space breakpoints.
-
-Since the desired length of the breakpoint is typically determined by the
-size of the "symbol" (variable) being monitored (not exceeding 8-Bytes),
-the comment was such. I shall change it to a more descriptive one, such as
-"length of the target kernel/user data symbol" if you prefer that.
- 
-> > +	int		type;
-> > +	unsigned long	address;
-> > +};
-> > +
-> > +#include <linux/kdebug.h>
-> > +#include <asm/reg.h>
-> > +#include <asm/system.h>
-> > +
-> > +/* Total number of available HW breakpoint registers */
-> > +#define HBP_NUM 1
-> > +
-> > +struct perf_event;
-> > +struct pmu;
-> > +struct perf_sample_data;
-> > +
-> > +#define HW_BREAKPOINT_ALIGN 0x7
-> > +/* Maximum permissible length of any HW Breakpoint */
-> > +#define HW_BREAKPOINT_LEN 0x8
+> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+> Signed-off-by: John Linn <john.linn@xilinx.com>
+> ---
 > 
-> That's a lot of server-only hard wired assumptions... I suppose the
-> DABR emulation of BookE will catch but do you intend to provide
-> proper BookE support at some stage ?
+> V2 - Incorporated comments from Grant and added more logic to allow the driver
+> to work on MicroBlaze.
 > 
-
-Yes, I intend to extend support for Book-E sometime soon during which
-the above code would have to be either a) enclosed inside #ifdef PPC64
-or b) a new header file for BookE debug register definitions are used
-(guess Shaggy's code would have many of them done already).
-
-> > +static inline void hw_breakpoint_disable(void)
-> > +{
-> > +	set_dabr(0);
-> > +}
+>  drivers/net/Kconfig         |    1 -
+>  drivers/net/ll_temac.h      |   17 +++++-
+>  drivers/net/ll_temac_main.c |  124 ++++++++++++++++++++++++++++++++++---------
+>  3 files changed, 113 insertions(+), 29 deletions(-)
 > 
-> How much of these set_dabr() I see here are going to interact with
-> ptrace ? Is there some exclusion going on between ptrace and perf
-> event use of the DABR or none at all ? Or are you replacing the ptrace
-> bits ?
-> 
-
-This set_dabr() in hw_breakpoint_disable() is to be called only once during
-machine_kexec() [which I realise is missing in the patch...will add that]
-and will not conflict with ptrace.
-
-The other set_dabr() in arch_<un>install_hw_breakpoint() will perform the
-actual debug register write, while the ptrace_<get><set>_debugreg() requests
-are routed through them (via the hw-breakpoint interfaces for arbitration as
-shown below) and are designed to not conflict with each other.
-
-ptrace_set_debugreg()-->register_user_hw_breakpoint()
-...
-(sched)-->perf_event_task_sched_<in><out>()--->arch_<un>install_hw_breakpoint()
-
-In short, an existing ptrace request will not be overwritten/replaced to
-accommodate a  new kernel/user-space request (which will fail because of DABR
-unavailability).
-
-> > +/*
-> > + * Install a perf counter breakpoint.
-> > + *
-> > + * We seek a free debug address register and use it for this
-> > + * breakpoint.
-> > + *
-> > + * Atomic: we hold the counter->ctx->lock and we only handle variables
-> > + * and registers local to this cpu.
-> > + */
-> > +int arch_install_hw_breakpoint(struct perf_event *bp)
-> > +{
-> > +	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
-> > +	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
-> > +
-> > +	if (!*slot)
-> > +		*slot = bp;
-> > +	else {
-> > +		WARN_ONCE(1, "Can't find any breakpoint slot");
-> > +		return -EBUSY;
-> > +	}
-> > +
-> > +	set_dabr(info->address | info->type | DABR_TRANSLATION);
-> > +	return 0;
-> > +}
-> 
-> Under which circumstances will the upper layer call that more than
-> once ? If it's a legit thing to do, then the WARN_ONCE() is a heavy
-> hammer here. I wouldn't even printk.... or only pr_debug() if it's
-> really worth it.
-> 
-> Or is that something that should just not happen ?
-> 
-
-I don't really see when this can happen in PPC64 with one DABR. The slot
-reservation mechanism wouldn't allow this to happen and the code is here
-since it got inherited from x86.
-
-I shall remove the check and hence the WARN_ONCE.
-
-> I would also use this coding style which is more compact and avoids
-> the horrible (!*slot) :
-> 
-> 	/* Check if the slot is busy */
-> 	if (*slot)
-> 		return -EBUSY;
-> 	set_dabr(...);
-> 
-> > +/*
-> > + * Uninstall the breakpoint contained in the given counter.
-> > + *
-> > + * First we search the debug address register it uses and then we disable
-> > + * it.
-> > + *
-> > + * Atomic: we hold the counter->ctx->lock and we only handle variables
-> > + * and registers local to this cpu.
-> > + */
-> > +void arch_uninstall_hw_breakpoint(struct perf_event *bp)
-> > +{
-> > +	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
-> > +
-> > +	if (*slot == bp)
-> > +		*slot = NULL;
-> > +	else {
-> > +		WARN_ONCE(1, "Can't find the breakpoint slot");
-> > +		return;
-> > +	}
-> > +	set_dabr(0);
-> > +}
-> 
-> Similar coding style issues... That one might be worth the warning
-> as I suppose the core should -really- not try to uninstall a bp that
-> hasn't been installed in the first place.
->
-
-Okay..will change the code style.
- 
-> > +/*
-> > + * Validate the arch-specific HW Breakpoint register settings
-> > + */
-> > +int arch_validate_hwbkpt_settings(struct perf_event *bp,
-> > +						struct task_struct *tsk)
-> > +{
-> > +	int is_kernel, ret = -EINVAL;
-> > +	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
-> > +
-> > +	if (!bp)
-> > +		return ret;
-> > +
-> > +	switch (bp->attr.bp_type) {
-> > +	case HW_BREAKPOINT_R:
-> > +		info->type = DABR_DATA_READ;
-> > +		break;
-> > +	case HW_BREAKPOINT_W:
-> > +		info->type = DABR_DATA_WRITE;
-> > +		break;
-> > +	case HW_BREAKPOINT_R | HW_BREAKPOINT_W:
-> > +		info->type = (DABR_DATA_READ | DABR_DATA_WRITE);
-> > +		break;
-> > +	default:
-> > +		return ret;
-> > +	}
-> 
-> I'm not -too- fan of the above, I suppose I would have written it a bit
-> differently using if's but that's not a big deal... however:
-> 
-> > +	/* TODO: Check for a valid triggered function */
-> > +	/* if (!bp->triggered)
-> > +		return -EINVAL; */
-> 
-> What is that ? Is the patch incomplete ? Don't leave commented out code
-> in there. If you think there's a worthwhile improvement, then add a
-> comment with maybe a bit more explanations, and make it clear that the
-> patch is still useful without the code, but don't just leave commented
-> out code like that without a good reason. A good reason would be some
-> optional debug stuff for example, but then an ifdef is preferrable to
-> comments.
-> 
-
-Thanks for pointing that out....the TODO label here is obsolete..it will
-be removed.
-
-> > +	is_kernel = is_kernel_addr(bp->attr.bp_addr);
-> > +	if ((tsk && is_kernel) || (!tsk && !is_kernel))
-> > +		return -EINVAL;
-> > +
-> > +	info->address = bp->attr.bp_addr;
-> > +	info->len = bp->attr.bp_len;
-> > +
-> > +	/*
-> > +	 * Since breakpoint length can be a maximum of HW_BREAKPOINT_LEN(8)
-> > +	 * and breakpoint addresses are aligned to nearest double-word
-> > +	 * HW_BREAKPOINT_ALIGN by rounding off to the lower address, the
-> > +	 * 'symbolsize' should satisfy the check below.
-> > +	 */
-> > +	if (info->len >
-> > +	    (HW_BREAKPOINT_LEN - (info->address & HW_BREAKPOINT_ALIGN)))
-> > +		return -EINVAL;
-> > +	return 0;
-> > +}
-> > +
-> > +/*
-> > + * Handle debug exception notifications.
-> > + */
-> > +int __kprobes hw_breakpoint_handler(struct die_args *args)
-> > +{
-> > +	int rc = NOTIFY_STOP;
-> > +	struct perf_event *bp;
-> > +	struct pt_regs *regs = args->regs;
-> > +	unsigned long dar = regs->dar;
-> > +	int cpu, is_kernel, stepped = 1;
-> > +	struct arch_hw_breakpoint *info;
-> > +
-> > +	/* Disable breakpoints during exception handling */
-> > +	set_dabr(0);
-> > +	cpu = get_cpu();
-> 
-> So there's something a bit weird here. set_dabr() will clear the DABR on
-> the local CPU, and you do that before you disable preempt. So you may
-> have preempted and be on another CPU, is that allright ? IE. Are you
-> dealing with that original CPU still having the DABR active and you now
-> clearing a different one ?
->
-
-First, the code here is written with the assumption that pre-emption is
-disabled during do_page_fault() and hence hw-breakpoint exception handling.
-If it is not the case (as you've pointed out below) the exception handling
-is bound to go wrong. I will fix it by patching do_hash_page in
-exceptions-64s.S as suggested by you.
-
-Since the comment here (and some of those below) point out the problems that
-may arise when pre-emption occurs (which is not supposed to happen),
-they are all valid but will disappear when do_hash_page is fixed.
- 
-> > +	/*
-> > +	 * The counter may be concurrently released but that can only
-> > +	 * occur from a call_rcu() path. We can then safely fetch
-> > +	 * the breakpoint, use its callback, touch its counter
-> > +	 * while we are in an rcu_read_lock() path.
-> > +	 */
-> > +	rcu_read_lock();
-> > +
-> > +	bp = per_cpu(bp_per_reg, cpu);
-> > +	if (!bp)
-> > +		goto out;
-> 
-> So this is the bp_per_reg of a different CPU if you had migrated
-> earlier. So you -did- hit the BP on, let's say CPU 0, but since you are
-> now on CPU 1 you won't handle it ? Weird...
-> 
-
-Correct...I will fix as stated above.
-
-> > +	info = counter_arch_bp(bp);
-> > +	is_kernel = is_kernel_addr(bp->attr.bp_addr);
-> > +
-> > +	/*
-> > +	 * Verify if dar lies within the address range occupied by the symbol
-> > +	 * being watched to filter extraneous exceptions.
-> > +	 */
-> > +	if (!((bp->attr.bp_addr <= dar) &&
-> > +	    (dar <= (bp->attr.bp_addr + bp->attr.bp_len))))
-> > +		/*
-> > +		 * This exception is triggered not because of a memory access on
-> > +		 * the monitored variable but in the double-word address range
-> > +		 * in which it is contained. We will consume this exception,
-> > +		 * considering it as 'noise'.
-> > +		 */
-> > +		goto restore_bp;
-> > +
-> > +	/*
-> > +	 * Return early after invoking user-callback function without restoring
-> > +	 * DABR if the breakpoint is from ptrace which always operates in
-> > +	 * one-shot mode
-> > +	 */
-> > +	if (bp->overflow_handler == ptrace_triggered) {
-> > +		perf_bp_event(bp, regs);
-> > +		rc = NOTIFY_DONE;
-> > +		goto out;
-> > +	}
-> > +
-> > +	/*
-> > +	 * Do not emulate user-space instructions from kernel-space,
-> > +	 * instead single-step them.
-> > +	 */
-> > +	if (!is_kernel) {
-> > +		current->thread.last_hit_ubp = bp;
-> > +		regs->msr |= MSR_SE;
-> > +		goto out;
-> > +	}
-> 
-> So what is this ? When you hit a bp, you switch to single step ? Out of
-> curiosity, why ?
-> 
-
-For a user-space breakpoint request (which is not from ptrace syscall),
-the behaviour is thus:
-- It operates in 'continuous-trigger' mode (unlike ptrace requests
-  which are 'one-shot'.
-- The causative instruction is not emulated in kernel-space using
-  emulate_step() but is rather executed in user-space.
-- The SIGTRAP signal is sent to user-space 'after' execution of the
-  causative instruction.
-
-Since breakpoint exceptions in ppc64 operate in 'trigger-before-execute'
-fashion, they have to be disabled upon occurrence and then re-enabled
-after single-stepping the causative instruction (inside the single-step
-handler) to avoid being hit by the breakpoint infinitely. I'm not sure
-if I'm missing something obviously wrong that you're trying to point me
-to (in the comment above).
-
-> > +	stepped = emulate_step(regs, regs->nip);
-> > +	/* emulate_step() could not execute it, single-step them */
-> > +	if (stepped == 0) {
-> > +		regs->msr |= MSR_SE;
-> > +		per_cpu(last_hit_bp, cpu) = bp;
-> > +		goto out;
-> > +	}
-> > +	/*
-> > +	 * As a policy, the callback is invoked in a 'trigger-after-execute'
-> > +	 * fashion
-> > +	 */
-> > +	perf_bp_event(bp, regs);
-> > +
-> > +restore_bp:
-> > +	set_dabr(info->address | info->type | DABR_TRANSLATION);
-> 
-> So in my preempt case, you hit the DABR on CPU 0, migrated to CPU 1
-> before you get into this function, and now you are modifying CPU 1
-> DABR... 
-> 
-> I think we need to change the asm so that you are called with interrupts
-> off from handle_page_fault() or so.
-> 
-> Basicallym in do_hash_page, make the andis 0xa450 go out of line, check
-> for DSISR_DABRMATCH specifically, and in this case go to an entirely
-> different function than handle_page_fault->do_page_fault(), something
-> like handle_dabr_fault->do_dabr() which uses DISABLE_INTS instead
-> of ENABLE_INTS :-)
-> 
-
-Sure, will fix this (and other comments) in the subsequent patch that I send.
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index 9b6efe1..5402105 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2443,7 +2443,6 @@ config MV643XX_ETH
+>  config XILINX_LL_TEMAC
+>  	tristate "Xilinx LL TEMAC (LocalLink Tri-mode Ethernet MAC) driver"
+>  	select PHYLIB
+> -	depends on PPC_DCR_NATIVE
+>  	help
+>  	  This driver supports the Xilinx 10/100/1000 LocalLink TEMAC
+>  	  core used in Xilinx Spartan and Virtex FPGAs
+> diff --git a/drivers/net/ll_temac.h b/drivers/net/ll_temac.h
+> index 1af66a1..915aa34 100644
+> --- a/drivers/net/ll_temac.h
+> +++ b/drivers/net/ll_temac.h
+> @@ -5,8 +5,11 @@
+>  #include <linux/netdevice.h>
+>  #include <linux/of.h>
+>  #include <linux/spinlock.h>
+> +
+> +#ifdef CONFIG_PPC_DCR
+>  #include <asm/dcr.h>
+>  #include <asm/dcr-regs.h>
+> +#endif
+>  
+>  /* packet size info */
+>  #define XTE_HDR_SIZE			14      /* size of Ethernet header */
+> @@ -290,8 +293,12 @@ This option defaults to enabled (set) */
+>  
+>  #define TX_CONTROL_CALC_CSUM_MASK   1
+>  
+> +/* Align the IP data in the packet on word boundaries as MicroBlaze
+> + * needs it.
+> + */
+> +
+>  #define XTE_ALIGN       32
+> -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
+> +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
+>  
+>  #define MULTICAST_CAM_TABLE_NUM 4
+>  
+> @@ -335,9 +342,15 @@ struct temac_local {
+>  	struct mii_bus *mii_bus;	/* MII bus reference */
+>  	int mdio_irqs[PHY_MAX_ADDR];	/* IRQs table for MDIO bus */
+>  
+> -	/* IO registers and IRQs */
+> +	/* IO registers, dma functions and IRQs */
+>  	void __iomem *regs;
+> +	void __iomem *sdma_regs;
+> +#ifdef CONFIG_PPC_DCR
+>  	dcr_host_t sdma_dcrs;
+> +#endif
+> +	u32 (*dma_in)(struct temac_local *, int);
+> +	void (*dma_out)(struct temac_local *, int, u32);
+> +
+>  	int tx_irq;
+>  	int rx_irq;
+>  	int emac_num;
+> diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+> index a18e348..9aedf9b 100644
+> --- a/drivers/net/ll_temac_main.c
+> +++ b/drivers/net/ll_temac_main.c
+> @@ -20,9 +20,6 @@
+>   *   or rx, so this should be okay.
+>   *
+>   * TODO:
+> - * - Fix driver to work on more than just Virtex5.  Right now the driver
+> - *   assumes that the locallink DMA registers are accessed via DCR
+> - *   instructions.
+>   * - Factor out locallink DMA code into separate driver
+>   * - Fix multicast assignment.
+>   * - Fix support for hardware checksumming.
+> @@ -115,17 +112,86 @@ void temac_indirect_out32(struct temac_local *lp, int reg, u32 value)
+>  	temac_iow(lp, XTE_CTL0_OFFSET, CNTLREG_WRITE_ENABLE_MASK | reg);
+>  }
+>  
+> +/**
+> + * temac_dma_in32 - Memory mapped DMA read, this function expects a
+> + * register input that is based on DCR word addresses which
+> + * are then converted to memory mapped byte addresses
+> + */
+>  static u32 temac_dma_in32(struct temac_local *lp, int reg)
+>  {
+> -	return dcr_read(lp->sdma_dcrs, reg);
+> +	return in_be32((u32 *)(lp->sdma_regs + (reg << 2)));
+>  }
+>  
+> +/**
+> + * temac_dma_out32 - Memory mapped DMA read, this function expects a
+> + * register input that is based on DCR word addresses which
+> + * are then converted to memory mapped byte addresses
+> + */
+>  static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
+>  {
+> +	out_be32((u32 *)(lp->sdma_regs + (reg << 2)), value);
+> +}
+> +
+> +/* DMA register access functions can be DCR based or memory mapped.
+> + * The PowerPC 440 is DCR based, the PowerPC 405 and MicroBlaze are both
+> + * memory mapped.
+> + */
+> +#ifdef CONFIG_PPC_DCR
+> +
+> +/**
+> + * temac_dma_dcr_in32 - DCR based DMA read
+> + */
+> +static u32 temac_dma_dcr_in(struct temac_local *lp, int reg)
+> +{
+> +	return dcr_read(lp->sdma_dcrs, reg);
+> +}
+> +
+> +/**
+> + * temac_dma_dcr_out32 - DCR based DMA write
+> + */
+> +static void temac_dma_dcr_out(struct temac_local *lp, int reg, u32 value)
+> +{
+>  	dcr_write(lp->sdma_dcrs, reg, value);
+>  }
+>  
+>  /**
+> + * temac_dcr_setup - If the DMA is DCR based, then setup the address and
+> + * I/O  functions
+> + */
+> +static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
+> +				struct device_node *np)
+> +{
+> +	unsigned int dcrs;
+> +
+> +	/* setup the dcr address mapping if it's in the device tree */
+> +
+> +	dcrs = dcr_resource_start(np, 0);
+> +	if (dcrs != 0) {
+> +		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+> +		lp->dma_in = temac_dma_dcr_in;
+> +		lp->dma_out = temac_dma_dcr_out;
+> +		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+> +		return 0;
+> +	}
+> +	/* no DCR in the device tree, indicate a failure */
+> +	return -1;
+> +}
+> +
+> +#else
+> +
+> +/*
+> + * temac_dcr_setup - This is a stub for when DCR is not supported,
+> + * such as with MicroBlaze
+> + */
+> +static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
+> +				struct device_node *np)
+> +{
+> +	return -1;
+> +}
+> +
+> +#endif
+> +
+> +/**
+>   * temac_dma_bd_init - Setup buffer descriptor rings
+>   */
+>  static int temac_dma_bd_init(struct net_device *ndev)
+> @@ -172,23 +238,23 @@ static int temac_dma_bd_init(struct net_device *ndev)
+>  		lp->rx_bd_v[i].app0 = STS_CTRL_APP0_IRQONEND;
+>  	}
+>  
+> -	temac_dma_out32(lp, TX_CHNL_CTRL, 0x10220400 |
+> +	lp->dma_out(lp, TX_CHNL_CTRL, 0x10220400 |
+>  					  CHNL_CTRL_IRQ_EN |
+>  					  CHNL_CTRL_IRQ_DLY_EN |
+>  					  CHNL_CTRL_IRQ_COAL_EN);
+>  	/* 0x10220483 */
+>  	/* 0x00100483 */
+> -	temac_dma_out32(lp, RX_CHNL_CTRL, 0xff010000 |
+> +	lp->dma_out(lp, RX_CHNL_CTRL, 0xff010000 |
+>  					  CHNL_CTRL_IRQ_EN |
+>  					  CHNL_CTRL_IRQ_DLY_EN |
+>  					  CHNL_CTRL_IRQ_COAL_EN |
+>  					  CHNL_CTRL_IRQ_IOE);
+>  	/* 0xff010283 */
+>  
+> -	temac_dma_out32(lp, RX_CURDESC_PTR,  lp->rx_bd_p);
+> -	temac_dma_out32(lp, RX_TAILDESC_PTR,
+> +	lp->dma_out(lp, RX_CURDESC_PTR,  lp->rx_bd_p);
+> +	lp->dma_out(lp, RX_TAILDESC_PTR,
+>  		       lp->rx_bd_p + (sizeof(*lp->rx_bd_v) * (RX_BD_NUM - 1)));
+> -	temac_dma_out32(lp, TX_CURDESC_PTR, lp->tx_bd_p);
+> +	lp->dma_out(lp, TX_CURDESC_PTR, lp->tx_bd_p);
+>  
+>  	return 0;
+>  }
+> @@ -426,9 +492,9 @@ static void temac_device_reset(struct net_device *ndev)
+>  	temac_indirect_out32(lp, XTE_RXC1_OFFSET, val & ~XTE_RXC1_RXEN_MASK);
+>  
+>  	/* Reset Local Link (DMA) */
+> -	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
+> +	lp->dma_out(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
+>  	timeout = 1000;
+> -	while (temac_dma_in32(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
+> +	while (lp->dma_in(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
+>  		udelay(1);
+>  		if (--timeout == 0) {
+>  			dev_err(&ndev->dev,
+> @@ -436,7 +502,7 @@ static void temac_device_reset(struct net_device *ndev)
+>  			break;
+>  		}
+>  	}
+> -	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
+> +	lp->dma_out(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
+>  
+>  	temac_dma_bd_init(ndev);
+>  
+> @@ -597,7 +663,7 @@ static int temac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+>  		lp->tx_bd_tail = 0;
+>  
+>  	/* Kick off the transfer */
+> -	temac_dma_out32(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
+> +	lp->dma_out(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
+>  
+>  	return NETDEV_TX_OK;
+>  }
+> @@ -663,7 +729,7 @@ static void ll_temac_recv(struct net_device *ndev)
+>  		cur_p = &lp->rx_bd_v[lp->rx_bd_ci];
+>  		bdstat = cur_p->app0;
+>  	}
+> -	temac_dma_out32(lp, RX_TAILDESC_PTR, tail_p);
+> +	lp->dma_out(lp, RX_TAILDESC_PTR, tail_p);
+>  
+>  	spin_unlock_irqrestore(&lp->rx_lock, flags);
+>  }
+> @@ -674,8 +740,8 @@ static irqreturn_t ll_temac_tx_irq(int irq, void *_ndev)
+>  	struct temac_local *lp = netdev_priv(ndev);
+>  	unsigned int status;
+>  
+> -	status = temac_dma_in32(lp, TX_IRQ_REG);
+> -	temac_dma_out32(lp, TX_IRQ_REG, status);
+> +	status = lp->dma_in(lp, TX_IRQ_REG);
+> +	lp->dma_out(lp, TX_IRQ_REG, status);
+>  
+>  	if (status & (IRQ_COAL | IRQ_DLY))
+>  		temac_start_xmit_done(lp->ndev);
+> @@ -692,8 +758,8 @@ static irqreturn_t ll_temac_rx_irq(int irq, void *_ndev)
+>  	unsigned int status;
+>  
+>  	/* Read and clear the status registers */
+> -	status = temac_dma_in32(lp, RX_IRQ_REG);
+> -	temac_dma_out32(lp, RX_IRQ_REG, status);
+> +	status = lp->dma_in(lp, RX_IRQ_REG);
+> +	lp->dma_out(lp, RX_IRQ_REG, status);
+>  
+>  	if (status & (IRQ_COAL | IRQ_DLY))
+>  		ll_temac_recv(lp->ndev);
+> @@ -794,7 +860,7 @@ static ssize_t temac_show_llink_regs(struct device *dev,
+>  	int i, len = 0;
+>  
+>  	for (i = 0; i < 0x11; i++)
+> -		len += sprintf(buf + len, "%.8x%s", temac_dma_in32(lp, i),
+> +		len += sprintf(buf + len, "%.8x%s", lp->dma_in(lp, i),
+>  			       (i % 8) == 7 ? "\n" : " ");
+>  	len += sprintf(buf + len, "\n");
+>  
+> @@ -820,7 +886,6 @@ temac_of_probe(struct of_device *op, const struct of_device_id *match)
+>  	struct net_device *ndev;
+>  	const void *addr;
+>  	int size, rc = 0;
+> -	unsigned int dcrs;
+>  
+>  	/* Init network device structure */
+>  	ndev = alloc_etherdev(sizeof(*lp));
+> @@ -870,13 +935,20 @@ temac_of_probe(struct of_device *op, const struct of_device_id *match)
+>  		goto nodev;
+>  	}
+>  
+> -	dcrs = dcr_resource_start(np, 0);
+> -	if (dcrs == 0) {
+> -		dev_err(&op->dev, "could not get DMA register address\n");
+> -		goto nodev;
+> +	/* Setup the DMA register accesses, could be DCR or memory mapped */
+> +	if (temac_dcr_setup(lp, op, np)) {
+> +
+> +		/* no DCR in the device tree, try non-DCR */
+> +		lp->sdma_regs = of_iomap(np, 0);
+> +		if (lp->sdma_regs) {
+> +			lp->dma_in = temac_dma_in32;
+> +			lp->dma_out = temac_dma_out32;
+> +			dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
+> +		} else {
+> +			dev_err(&op->dev, "unable to map DMA registers\n");
+> +			goto nodev;
+> +		}
+>  	}
+> -	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+> -	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+>  
+>  	lp->rx_irq = irq_of_parse_and_map(np, 0);
+>  	lp->tx_irq = irq_of_parse_and_map(np, 1);
 
 
-> We also need the same fix in 32-bit I suppose.
-> 
-> Note while looking at it that it looks like we have a similar issue with
-> program checks. We fixed it on 32-bit but not on 64-bit. We should keep
-> interrupts masked basically when going progranm_check_exception(). It
-> will unmask them if/when needed.
-> 
-> > +out:
-> > +	rcu_read_unlock();
-> > +	put_cpu();
-> > +	return rc;
-> > +}
-> > +
-> > +/*
-> > + * Handle single-step exceptions following a DABR hit.
-> > + */
-> > +int __kprobes single_step_dabr_instruction(struct die_args *args)
-> > +{
-> > +	struct pt_regs *regs = args->regs;
-> > +	int cpu = get_cpu();
-> > +	int ret = NOTIFY_DONE;
-> > +	siginfo_t info;
-> > +	struct perf_event *bp = NULL, *kernel_bp, *user_bp;
-> > +	struct arch_hw_breakpoint *bp_info;
-> > +
-> > +	/*
-> > +	 * Identify the cause of single-stepping and find the corresponding
-> > +	 * breakpoint structure
-> > +	 */
-> > +	user_bp = current->thread.last_hit_ubp;
-> > +	kernel_bp = per_cpu(last_hit_bp, cpu);
-> > +	if (user_bp) {
-> > +		bp = user_bp;
-> > +		current->thread.last_hit_ubp = NULL;
-> > +	} else if (kernel_bp) {
-> > +		bp = kernel_bp;
-> > +		per_cpu(last_hit_bp, cpu) = NULL;
-> > +	}
-> 
-> Hopefully you don't have this problem here, so you probably don't need
-> get/put_cpu() but that won't hurt, since single_step should hopefully
-> always have interrupts off.
-> 
-
-Sure, I could have used smp_processor_id() instead....will use that.
-
-> > +	/*
-> > +	 * Check if we are single-stepping as a result of a
-> > +	 * previous HW Breakpoint exception
-> > +	 */
-> > +	if (!bp)
-> > +		goto out;
-> > +
-> > +	bp_info = counter_arch_bp(bp);
-> > +
-> > +	/*
-> > +	 * We shall invoke the user-defined callback function in the single
-> > +	 * stepping handler to confirm to 'trigger-after-execute' semantics
-> > +	 */
-> > +	perf_bp_event(bp, regs);
-> > +
-> > +	/*
-> > +	 * Do not disable MSR_SE if the process was already in
-> > +	 * single-stepping mode. We cannot reliable detect single-step mode
-> > +	 * for kernel-space breakpoints, so this cannot work along with other
-> > +	 * debuggers (like KGDB, xmon) which may be single-stepping kernel code.
-> > +	 */
-> > +	if (!(user_bp && test_thread_flag(TIF_SINGLESTEP)))
-> > +		regs->msr &= ~MSR_SE;
-> > +
-> > +	/* Deliver signal to user-space */
-> > +	if (user_bp) {
-> > +		info.si_signo = SIGTRAP;
-> > +		info.si_errno = 0;
-> > +		info.si_code = TRAP_HWBKPT;
-> > +		info.si_addr = (void __user *)bp_info->address;
-> > +		force_sig_info(SIGTRAP, &info, current);
-> > +	}
-> > +
-> > +	set_dabr(bp_info->address | bp_info->type | DABR_TRANSLATION);
-> > +	ret = NOTIFY_STOP;
-> > +out:
-> > +	put_cpu();
-> > +	return ret;
-> > +}
-> > +
-> > +/*
-> > + * Handle debug exception notifications.
-> > + */
-> > +int __kprobes hw_breakpoint_exceptions_notify(
-> > +		struct notifier_block *unused, unsigned long val, void *data)
-> > +{
-> > +	int ret = NOTIFY_DONE;
-> > +
-> > +	switch (val) {
-> > +	case DIE_DABR_MATCH:
-> > +		ret = hw_breakpoint_handler(data);
-> > +		break;
-> > +	case DIE_SSTEP:
-> > +		ret = single_step_dabr_instruction(data);
-> > +		break;
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +/*
-> > + * Release the user breakpoints used by ptrace
-> > + */
-> > +void flush_ptrace_hw_breakpoint(struct task_struct *tsk)
-> > +{
-> > +	struct thread_struct *t = &tsk->thread;
-> > +
-> > +	unregister_hw_breakpoint(t->ptrace_bps[0]);
-> > +	t->ptrace_bps[0] = NULL;
-> > +}
-> 
-> Ok, so I see that you call that on context switch. But where do you
-> re-install the breakpoint for the "new" process ?
-> 
-> See below...
-> 
-
-This is being unconditionally invoked inside __switch_to() which is
-wrong. In addition, it also leads to a lockdep warning which I will fix
-in my subsequent patch.
-
-> > +void hw_breakpoint_pmu_read(struct perf_event *bp)
-> > +{
-> > +	/* TODO */
-> > +}
-> > +
-> > +void hw_breakpoint_pmu_unthrottle(struct perf_event *bp)
-> > +{
-> > +	/* TODO */
-> > +}
-> > +
-> > +
-> > Index: linux-2.6.ppc64_test/arch/powerpc/Kconfig
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/Kconfig
-> > +++ linux-2.6.ppc64_test/arch/powerpc/Kconfig
-> > @@ -140,6 +140,7 @@ config PPC
-> >  	select HAVE_SYSCALL_WRAPPERS if PPC64
-> >  	select GENERIC_ATOMIC64 if PPC32
-> >  	select HAVE_PERF_EVENTS
-> > +	select HAVE_HW_BREAKPOINT if PPC64
-> 
-> Why 64-bit only ? ppc32 has DABR too. In fact BookE also provides DABR
-> emulation.
->
-
-HAVE_HW_BREAKPOINT would be too generic, so I guess this can be changed
-to HAVE_HW_BREAKPOINT_DABR (or something similar?). I think you're
-referring to BookE's ability to individually use DAC registers are two
-debug registers - which cannot be handled by this patch and can be done
-during BookE implementation.
-
-> Also, all your PPC64 stuff are going to show up on BookE 64-bit which
-> might not be what you wanted...
->
-
-True...I thought PPC64 would refer to the server class of processors
-(which has just one DABR)...is there a config flag to refer to such
-processors? Or should this patch create one?
- 
-> >  config EARLY_PRINTK
-> >  	bool
-> > Index: linux-2.6.ppc64_test/arch/powerpc/kernel/Makefile
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/Makefile
-> > +++ linux-2.6.ppc64_test/arch/powerpc/kernel/Makefile
-> > @@ -33,7 +33,7 @@ obj-y				:= cputable.o ptrace.o syscalls
-> >  obj-y				+= vdso32/
-> >  obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
-> >  				   signal_64.o ptrace32.o \
-> > -				   paca.o nvram_64.o firmware.o
-> > +				   paca.o nvram_64.o firmware.o hw_breakpoint.o
-> >  obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
-> >  obj64-$(CONFIG_RELOCATABLE)	+= reloc_64.o
-> >  obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o
-> > Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/reg.h
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/reg.h
-> > +++ linux-2.6.ppc64_test/arch/powerpc/include/asm/reg.h
-> > @@ -180,6 +180,7 @@
-> >  #define   CTRL_TE	0x00c00000	/* thread enable */
-> >  #define   CTRL_RUNLATCH	0x1
-> >  #define SPRN_DABR	0x3F5	/* Data Address Breakpoint Register */
-> > +#define   HBP_NUM	1	/* Number of physical HW breakpoint registers */
-> 
-> The above is not quite right. First you already define that in
-> hw_breakpoint.h. Then, this is too short an identifier for such a
-> generic file. Finally, it should not be in reg.h since it can vary
-> from processor to processor. If you want to do things properly, then
-> add some kind of info about the debug capabilities to cputable.
-> 
-> Please sync with Shaggy so it makes sense on BookE as well.
-> 
-
-I think cputable.h would be a fine place to define this...I will move
-HBP_NUM there. However, renaming it would be difficult since the generic
-code in kernel/hw_breakpoint.c (and references in x86) uses this
-constant.
-
-> >  #define   DABR_TRANSLATION	(1UL << 2)
-> >  #define   DABR_DATA_WRITE	(1UL << 1)
-> >  #define   DABR_DATA_READ	(1UL << 0)
-> > Index: linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/mm/fault.c
-> > +++ linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
-> > @@ -137,6 +137,12 @@ int __kprobes do_page_fault(struct pt_re
-> >  		error_code &= 0x48200000;
-> >  	else
-> >  		is_write = error_code & DSISR_ISSTORE;
-> > +
-> > +	if (error_code & DSISR_DABRMATCH) {
-> > +		/* DABR match */
-> > +		do_dabr(regs, address, error_code);
-> > +		return 0;
-> > +	}
-> 
-> Now that's interesting. I have the feeling that the moving up of this
-> might actually be a bug fix :-) But it's still wrong due to interrupts
-> being enabled as I explained earlier. We probably want to make it a
-> different path out of head_*.S
-> 
-
-Agreed, this change would not be required after patching do_hash_page in
-exceptions-64s.S.
-
-> >  #else
-> >  	is_write = error_code & ESR_DST;
-> >  #endif /* CONFIG_4xx || CONFIG_BOOKE */
-> > @@ -151,14 +157,6 @@ int __kprobes do_page_fault(struct pt_re
-> >  	if (!user_mode(regs) && (address >= TASK_SIZE))
-> >  		return SIGSEGV;
-> >  
-> > -#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-> > -  	if (error_code & DSISR_DABRMATCH) {
-> > -		/* DABR match */
-> > -		do_dabr(regs, address, error_code);
-> > -		return 0;
-> > -	}
-> > -#endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
-> > -
-> >  	if (in_atomic() || mm == NULL) {
-> >  		if (!user_mode(regs))
-> >  			return SIGSEGV;
-> > Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/processor.h
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/processor.h
-> > +++ linux-2.6.ppc64_test/arch/powerpc/include/asm/processor.h
-> > @@ -209,6 +209,12 @@ struct thread_struct {
-> >  #ifdef CONFIG_PPC64
-> >  	unsigned long	start_tb;	/* Start purr when proc switched in */
-> >  	unsigned long	accum_tb;	/* Total accumilated purr for process */
-> > +	struct perf_event *ptrace_bps[HBP_NUM];
-> 
-> So you should probably call that MAX_HW_BREAKPOINTS and reflect the fact
-> that it can be bigger. Or you have a pointer to some optional ptrace
-> BP structure that handle what is needed, and can be allocated lazily
-> by ptrace only when needed rather than always carrying this around in
-> the thread_struct.
-> 
-
-Since ptrace's request for debug registers are thread-specific, they are
-stored in 'struct thread_struct' (and is analogous to its implementation
-in x86). In fact previous attempts to store such values outside
-thread_struct were discouraged by the LKML community (refer Ingo's mail
-on LKML here: 20090310143543.GE3850@elte.hu) citing potential locking
-issues when stored outside.
-
-> > +	/*
-> > +	 * Point to the hw-breakpoint last. Helps safe pre-emption and
-> > +	 * hw-breakpoint re-enablement.
-> > +	 */
-> > +	struct perf_event *last_hit_ubp;
-> 
-> The comment doesn't make much sense. Preemption doesn't seem quite right
-> to me unless I missed something and the comment is either too much or
-> not enough to understand what this is for.
->
-
-The single-step exception may arise due to two reasons - (a) a legitimate
-user (like kgdb in kernel-, or ptrace in user-space) decides to
-single-step for debugging purposes or (b) single-stepping enabled by
-hw_breakpoint_handler() to restore the debug register values.
-
-'last_hit_ubp' along with 'per_cpu(last_hit_bp)' are used to distinguish
-single-step exceptions that are triggered because of (b).
-
-These data structures will not be required if pre-emption between
-hw_breakpoint_handler() and single-step exception is disabled, since it
-will be straight-forward to distinguish the source of exception i.e. (a)
-from (b). In such a case, with pre-emption disabled on the CPU that hit
-the breakpoint, single-step exceptions following a hw_breakpoint_handler()
-will always be the result of (b) and vice-versa.
-
-I will make the comment more descriptive as below:
-
-/*
- * Helps identify source of single-step exception and subsequent
- * hw-breakpoint enablement
- */
-
-Thank you for the detailed review - they have helped unearth certain
-important issues with the patch.
-
-As stated before, I will send a subsequent version of the patch with the
-fixes as agreed above.
-
-Thanks,
-K.Prasad
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
