@@ -1,37 +1,26 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 123C8B7D65
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 13:14:27 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp01.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2F2CGxq015358
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 13:12:16 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2F28QJ71523862
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 13:08:30 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2F2EIF9012698
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 13:14:19 +1100
-Date: Mon, 15 Mar 2010 07:44:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 58327B7D41
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:23:01 +1100 (EST)
 Subject: Re: [BUGFIX][PATCH] memcg: avoid use cmpxchg in swap cgroup
 	maintainance (Was Re: 34-rc1-git3 build failure with
 	CGROUP_MEM_RES_CTLR_SWAP=y
-Message-ID: <20100315021414.GH17643@balbir.in.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100315100202.eb735f59.kamezawa.hiroyu@jp.fujitsu.com>
 References: <4B9CBEE6.1090509@in.ibm.com>
 	<20100315100202.eb735f59.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20100315100202.eb735f59.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Mar 2010 14:21:52 +1100
+Message-ID: <1268623312.2209.108.camel@pasglop>
+Mime-Version: 1.0
 Cc: nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	"akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Reply-To: balbir@linux.vnet.ibm.com
+	"akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,39 +30,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-03-15 10:02:02]:
 
-> On Sun, 14 Mar 2010 16:18:06 +0530
-> Sachin Sant <sachinp@in.ibm.com> wrote:
-> 
-> > On a PowerPC box, latest 34-rc1 git(d89b218b8...) fails to build
-> > with CGROUPS_MEM_RES_CTRL_SWAP=y. 
-> > 
-> > LD      init/built-in.o
-> > LD      .tmp_vmlinux1
-> > mm/built-in.o: In function __xchg:
-> > arch/powerpc/include/asm/system.h:331: undefined reference to .__xchg_called_with_bad_pointer
-> > mm/built-in.o: In function __cmpxchg:
-> > arch/powerpc/include/asm/system.h:474: undefined reference to .__cmpxchg_called_with_bad_pointer
-> > make: *** [.tmp_vmlinux1] Error 1
-> > 
-> > The code in question was added via commit 024914477e...
-> > 
-> > memcg: move charges of anonymous swap
-> > 
 > Oh..ok, powerpc (and other archs?) can't do 2byte cmpxchg and xchg.
 > Then, we should use spinlock rather than that.
 > 
 > How about this ? Nishimura-san, could you consider something better ?
 > We need a quick fix.
->
 
-Looks good to me
+sparc64 is the same as powerpc in that regard, maybe others. 
 
- 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
- 
+Cheers,
+Ben.
 
--- 
-	Three Cheers,
-	Balbir
+> ==
+> swap_cgroup uses 2bytes data and uses cmpxchg in a new operation.
+> 2byte cmpxchg/xchg is not available on some archs. This patch replaces
+> cmpxchg/xchg with operations under lock.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/page_cgroup.c |   20 ++++++++++++++++----
+>  1 file changed, 16 insertions(+), 4 deletions(-)
+> 
+> Index: mmotm-2.6.34-Mar11/mm/page_cgroup.c
+> ===================================================================
+> --- mmotm-2.6.34-Mar11.orig/mm/page_cgroup.c
+> +++ mmotm-2.6.34-Mar11/mm/page_cgroup.c
+> @@ -284,6 +284,7 @@ static DEFINE_MUTEX(swap_cgroup_mutex);
+>  struct swap_cgroup_ctrl {
+>  	struct page **map;
+>  	unsigned long length;
+> +	spinlock_t	lock;
+>  };
+>  
+>  struct swap_cgroup_ctrl swap_cgroup_ctrl[MAX_SWAPFILES];
+> @@ -353,16 +354,22 @@ unsigned short swap_cgroup_cmpxchg(swp_e
+>  	struct swap_cgroup_ctrl *ctrl;
+>  	struct page *mappage;
+>  	struct swap_cgroup *sc;
+> +	unsigned long flags;
+> +	unsigned short retval;
+>  
+>  	ctrl = &swap_cgroup_ctrl[type];
+>  
+>  	mappage = ctrl->map[idx];
+>  	sc = page_address(mappage);
+>  	sc += pos;
+> -	if (cmpxchg(&sc->id, old, new) == old)
+> -		return old;
+> +	spin_lock_irqsave(&ctrl->lock, flags);
+> +	retval = sc->id;
+> +	if (retval == old)
+> +		sc->id = new;
+>  	else
+> -		return 0;
+> +		retval = 0;
+> +	spin_unlock_irqrestore(&ctrl->lock, flags);
+> +	return retval;
+>  }
+>  
+>  /**
+> @@ -383,13 +390,17 @@ unsigned short swap_cgroup_record(swp_en
+>  	struct page *mappage;
+>  	struct swap_cgroup *sc;
+>  	unsigned short old;
+> +	unsigned long flags;
+>  
+>  	ctrl = &swap_cgroup_ctrl[type];
+>  
+>  	mappage = ctrl->map[idx];
+>  	sc = page_address(mappage);
+>  	sc += pos;
+> -	old = xchg(&sc->id, id);
+> +	spin_lock_irqsave(&ctrl->lock, flags);
+> +	old = sc->id;
+> +	sc->id = id;
+> +	spin_unlock_irqrestore(&ctrl->lock, flags);
+>  
+>  	return old;
+>  }
+> @@ -441,6 +452,7 @@ int swap_cgroup_swapon(int type, unsigne
+>  	mutex_lock(&swap_cgroup_mutex);
+>  	ctrl->length = length;
+>  	ctrl->map = array;
+> +	spin_lock_init(&ctrl->lock);
+>  	if (swap_cgroup_prepare(type)) {
+>  		/* memory shortage */
+>  		ctrl->map = NULL;
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
