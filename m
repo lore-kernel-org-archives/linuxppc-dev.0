@@ -1,12 +1,18 @@
-Return-Path: <swirl@gmx.li>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 1F3C9B7D8C
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 07:56:19 +1100 (EST)
-From: Thomas Weber <swirl@gmx.li>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] Some typo fixing
-Date: Mon, 15 Mar 2010 21:55:43 +0100
-Message-Id: <1268686558-28171-1-git-send-email-swirl@gmx.li>
+Return-Path: <rdunlap@xenotime.net>
+Received: from xenotime.net (xenotime.net [72.52.64.118])
+	by ozlabs.org (Postfix) with SMTP id BAF38B7D4E
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:19:54 +1100 (EST)
+Received: from chimera.site ([71.245.98.113]) by xenotime.net for
+	<linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:09:43 -0700
+Message-ID: <4B9EA214.7010203@xenotime.net>
+Date: Mon, 15 Mar 2010 14:09:40 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+MIME-Version: 1.0
+To: Thomas Weber <swirl@gmx.li>
+Subject: Re: [PATCH 0/4] Some typo fixing
+References: <1268686558-28171-1-git-send-email-swirl@gmx.li>
+In-Reply-To: <1268686558-28171-1-git-send-email-swirl@gmx.li>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
 	Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
 	Pavel Machek <pavel@suse.cz>,
@@ -20,15 +26,14 @@ Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
 	Anton Vorontsov <avorontsov@ru.mvista.com>, cbe-oss-dev@ozlabs.org,
 	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
 	Liam Girdwood <lrg@slimlogic.co.uk>, Anthony Liguori <aliguori@us.ibm.com>,
-	Jiri Kosina <jkosina@suse.cz>,
-	Randy Dunlap <rdunlap@xenotime.net>, Tejun Heo <tj@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
+	Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+	Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
 	linux-media@vger.kernel.org, Pieter Palmers <pieterp@joow.be>,
 	Anand Gadiyar <gadiyar@ti.com>, alsa-devel@alsa-project.org,
 	linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>,
 	Clemens Ladisch <clemens@ladisch.de>, linux-mm@kvack.org,
 	"James E.J. Bottomley" <James.Bottomley@suse.de>,
-	=?UTF-8?q?H=C3=A5kan=20Johansson?= <f96hajo@chalmers.se>,
+	=?ISO-8859-1?Q?H=E5kan_Johansson?= <f96hajo@chalmers.se>,
 	linux-s390@vger.kernel.org, Markus Heidelberg <markus.heidelberg@web.de>,
 	linuxppc-dev@ozlabs.org, Dave Airlie <airlied@redhat.com>,
 	Tobias Klauser <tklauser@distanz.ch>, dri-devel@lists.sourceforge.net,
@@ -54,11 +59,11 @@ Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
 	Alexey Dobriyan <adobriyan@gmail.com>,
 	Alex Chiang <achiang@hp.com>, Mel Gorman <mel@csn.ul.ie>,
 	Zhenyu Wang <zhenyuw@linux.intel.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Jing Huang <huangj@brocade.com>, Jiri Pirko <jpirko@redhat.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, Jing Huang <huangj@brocade.com>,
+	Jiri Kosina <trivial@kernel.org>, Jiri Pirko <jpirko@redhat.com>,
 	Greg Kroah-Hartman <gregkh@suse.de>,
 	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Jean Delvare <khali@linux-fr.org>, Joe Perches <joe@perches.com>,
+	Jean Delvare <khali@linux-fr.org>, Tejun Heo <tj@kernel.org>,
 	"David S. Miller" <davem@davemloft.net>,
 	jfs-discussion@lists.sourceforge.net, Jay Fenlason <fenlason@redhat.com>,
 	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
@@ -70,8 +75,8 @@ Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
 	Amit Kucheria <amit.kucheria@verdurent.com>,
 	Douglas Schilling Landgraf <dougsland@redhat.com>,
 	linux-scsi@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>,
-	=?UTF-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>,
-	Shirley Ma <xma@us.ibm.com>, Thomas Weber <swirl@gmx.li>,
+	=?ISO-8859-1?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+	Shirley Ma <xma@us.ibm.com>,
 	Steve Glendinning <steve.glendinning@smsc.com>,
 	Paul Menage <menage@google.com>, Alan Cox <alan@linux.intel.com>,
 	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
@@ -89,46 +94,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have fixed some typos.
+On 03/15/10 13:55, Thomas Weber wrote:
+> I have fixed some typos.
 
-Thomas Weber (4):
-  Fix typo: [Ss]ytem => [Ss]ystem
-  Fix typo: udpate => update
-  Fix typo: paramters => parameters
-  Fix typo: orginal => original
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
 
- Documentation/cgroups/cgroups.txt               |    2 +-
- Documentation/kbuild/kconfig.txt                |    2 +-
- Documentation/sysfs-rules.txt                   |    2 +-
- Documentation/trace/events.txt                  |    8 ++++----
- drivers/acpi/osl.c                              |    4 ++--
- drivers/ata/ata_piix.c                          |    2 +-
- drivers/firewire/ohci.c                         |    2 +-
- drivers/gpu/drm/drm_bufs.c                      |    2 +-
- drivers/infiniband/hw/ipath/ipath_iba6110.c     |    2 +-
- drivers/infiniband/hw/ipath/ipath_iba6120.c     |    4 ++--
- drivers/infiniband/hw/ipath/ipath_iba7220.c     |    2 +-
- drivers/isdn/hisax/hfc4s8s_l1.c                 |    2 +-
- drivers/macintosh/windfarm_pm81.c               |    2 +-
- drivers/media/dvb/dvb-usb/friio-fe.c            |    2 +-
- drivers/net/smsc911x.c                          |    4 ++--
- drivers/pci/hotplug/cpqphp_core.c               |    2 +-
- drivers/pci/pci.c                               |    2 +-
- drivers/ps3/ps3-sys-manager.c                   |    2 +-
- drivers/regulator/core.c                        |    2 +-
- drivers/s390/char/sclp_cpi_sys.c                |    2 +-
- drivers/scsi/bfa/include/defs/bfa_defs_cee.h    |    2 +-
- drivers/scsi/bfa/include/defs/bfa_defs_status.h |    4 ++--
- drivers/spi/spi_mpc8xxx.c                       |    2 +-
- drivers/staging/iio/Documentation/overview.txt  |    2 +-
- drivers/staging/rt2860/rtmp.h                   |    2 +-
- drivers/staging/rtl8187se/r8180_core.c          |    4 ++--
- drivers/staging/rtl8187se/r8180_dm.c            |    2 +-
- drivers/staging/rtl8187se/r8185b_init.c         |    2 +-
- drivers/virtio/virtio_pci.c                     |    2 +-
- fs/jfs/jfs_dmap.c                               |    2 +-
- kernel/cgroup.c                                 |    2 +-
- mm/page_alloc.c                                 |    2 +-
- net/wimax/op-rfkill.c                           |    2 +-
- sound/pci/emu10k1/emu10k1_main.c                |    2 +-
- 34 files changed, 42 insertions(+), 42 deletions(-)
+Jiri, can you merge these, please, unless someone objects (?).
+
+
+> Thomas Weber (4):
+>   Fix typo: [Ss]ytem => [Ss]ystem
+>   Fix typo: udpate => update
+>   Fix typo: paramters => parameters
+>   Fix typo: orginal => original
+> 
+>  Documentation/cgroups/cgroups.txt               |    2 +-
+>  Documentation/kbuild/kconfig.txt                |    2 +-
+>  Documentation/sysfs-rules.txt                   |    2 +-
+>  Documentation/trace/events.txt                  |    8 ++++----
+>  drivers/acpi/osl.c                              |    4 ++--
+>  drivers/ata/ata_piix.c                          |    2 +-
+>  drivers/firewire/ohci.c                         |    2 +-
+>  drivers/gpu/drm/drm_bufs.c                      |    2 +-
+>  drivers/infiniband/hw/ipath/ipath_iba6110.c     |    2 +-
+>  drivers/infiniband/hw/ipath/ipath_iba6120.c     |    4 ++--
+>  drivers/infiniband/hw/ipath/ipath_iba7220.c     |    2 +-
+>  drivers/isdn/hisax/hfc4s8s_l1.c                 |    2 +-
+>  drivers/macintosh/windfarm_pm81.c               |    2 +-
+>  drivers/media/dvb/dvb-usb/friio-fe.c            |    2 +-
+>  drivers/net/smsc911x.c                          |    4 ++--
+>  drivers/pci/hotplug/cpqphp_core.c               |    2 +-
+>  drivers/pci/pci.c                               |    2 +-
+>  drivers/ps3/ps3-sys-manager.c                   |    2 +-
+>  drivers/regulator/core.c                        |    2 +-
+>  drivers/s390/char/sclp_cpi_sys.c                |    2 +-
+>  drivers/scsi/bfa/include/defs/bfa_defs_cee.h    |    2 +-
+>  drivers/scsi/bfa/include/defs/bfa_defs_status.h |    4 ++--
+>  drivers/spi/spi_mpc8xxx.c                       |    2 +-
+>  drivers/staging/iio/Documentation/overview.txt  |    2 +-
+>  drivers/staging/rt2860/rtmp.h                   |    2 +-
+>  drivers/staging/rtl8187se/r8180_core.c          |    4 ++--
+>  drivers/staging/rtl8187se/r8180_dm.c            |    2 +-
+>  drivers/staging/rtl8187se/r8185b_init.c         |    2 +-
+>  drivers/virtio/virtio_pci.c                     |    2 +-
+>  fs/jfs/jfs_dmap.c                               |    2 +-
+>  kernel/cgroup.c                                 |    2 +-
+>  mm/page_alloc.c                                 |    2 +-
+>  net/wimax/op-rfkill.c                           |    2 +-
+>  sound/pci/emu10k1/emu10k1_main.c                |    2 +-
+>  34 files changed, 42 insertions(+), 42 deletions(-)
+> 
+
+Thanks.
+
+-- 
+~Randy
