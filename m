@@ -1,16 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-bw0-f211.google.com (mail-bw0-f211.google.com
+	[209.85.218.211]) by ozlabs.org (Postfix) with ESMTP id A0D58B7D8A
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:05:01 +1100 (EST)
+Received: by bwz3 with SMTP id 3so1191640bwz.9
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Mar 2010 14:04:58 -0700 (PDT)
+Date: Mon, 15 Mar 2010 22:04:54 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] powerpc/perf_events: Implement
 	perf_arch_fetch_caller_regs for powerpc
-In-reply-to: <20100315054615.GA6245@drongo>
+Message-ID: <20100315210450.GF5082@nowhere>
 References: <20100315054615.GA6245@drongo>
-Date: Mon, 15 Mar 2010 12:36:53 -0500
-Message-ID: <666.1268674613@neuling.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	anton@samba.org, Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100315054615.GA6245@drongo>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, anton@samba.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Mar 15, 2010 at 04:46:15PM +1100, Paul Mackerras wrote:
 > This implements a powerpc version of perf_arch_fetch_caller_regs.
 > It's implemented in assembly because that way we can be sure there
 > isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
 > C, gcc might or might not create a stack frame for it, which would
-> affect the number of levels we have to skip.  
-
-Should we put this comment in the code as well?
-
-Mikey
-
-> It's not ifdef'd
+> affect the number of levels we have to skip.  It's not ifdef'd
 > because it is only 14 instructions long.
 > 
 > With this, we see results from perf record -e lock:lock_acquire like
@@ -63,13 +63,18 @@ Mikey
 > ... etc.
 > 
 > Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+
+Cool!
+
+
+
 > ---
 >  arch/powerpc/include/asm/asm-compat.h |    2 ++
 >  arch/powerpc/kernel/misc.S            |   20 ++++++++++++++++++++
 >  2 files changed, 22 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm
-/asm-compat.h
+> diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
 > index c1b475a..a9b91ed 100644
 > --- a/arch/powerpc/include/asm/asm-compat.h
 > +++ b/arch/powerpc/include/asm/asm-compat.h
@@ -117,8 +122,3 @@ Mikey
 > +	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
 > +	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
 > +	blr
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
