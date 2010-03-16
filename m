@@ -1,27 +1,24 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
-	by ozlabs.org (Postfix) with ESMTP id A6C79B7D61
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 20:18:39 +1100 (EST)
-To: Ian Campbell <Ian.Campbell@citrix.com>
-Subject: Re: [PATCH] irq: move some interrupt arch_* functions into struct
-	irq_chip.
-References: <1268387091.10129.5973.camel@zakaz.uk.xensource.com>
-	<1268387116-30522-1-git-send-email-ian.campbell@citrix.com>
-	<4B9A954A.40205@kernel.org> <m1ocit5aj1.fsf@fess.ebiederm.org>
-	<1268729412.8652.4254.camel@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 16 Mar 2010 02:18:26 -0700
-In-Reply-To: <1268729412.8652.4254.camel@localhost.localdomain> (Ian
-	Campbell's message of "Tue\, 16 Mar 2010 08\:50\:12 +0000")
-Message-ID: <m1y6hswrod.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "x86@kernel.org" <x86@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Yinghai Lu <yinghai@kernel.org>
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1A8CCB7D65
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 16 Mar 2010 21:08:59 +1100 (EST)
+Date: Tue, 16 Mar 2010 19:08:46 +0900
+To: albert_herranz@yahoo.es
+Subject: Re: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B9F1E11.80201@yahoo.es>
+References: <1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
+	<20100316104440Y.fujita.tomonori@lab.ntt.co.jp>
+	<4B9F1E11.80201@yahoo.es>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100316190805Z.fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org, x86@kernel.org,
+	linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,90 +28,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ian Campbell <Ian.Campbell@citrix.com> writes:
+On Tue, 16 Mar 2010 06:58:41 +0100
+Albert Herranz <albert_herranz@yahoo.es> wrote:
 
-> On Sat, 2010-03-13 at 00:29 +0000, Eric W. Biederman wrote: 
->> [...]
->> > after that xen could use
->> > irq_to_desc_alloc_node_f(irq, node, xen_init_chip_data);
->> >
->> > as need...
->> >
->> > at last we don't need to call x86_init_chip_data everywhere.
->
-> This was one of the things I was considering. It seems like one of the
-> easiest solutions to make work correctly with the current locking in
-> e.g. irq_to_desc_alloc_node since the callback would always happen under
-> the lock taken in that function.
->
->> So trying to evaluate races.  The worse case for this particular piece
->> of code appears to be create_irq_nr.  As this is the only place where
->> we are setting up irqs and possibly repurposing the structure.
->
-> Yes, create_irq_nr was one of the functions I was struggling to solve
-> cleanly. There is a similar construct in the Xen code as well.
->
-> Part of the problem I'm having is the combination of lookup and allocate
-> in irq_to_desc_alloc_node but also the kind of "implicit" repurposing is
-> tricky to deal with. (by implicit I just mean that I can't find where
-> the previous user explicitly says they are finished with it, if you see
-> what I mean)
->
-> What do you think of adding an explicit free operation for the irq_desc
-> structs? (does one already exist? I couldn't find it). This would go
-> along with some tracking of allocation state, trivial in the sparse case
-> where you can treat a NULL node in the radix tree as unallocated, I
-> guess a flag would suffice in the static array non-sparse case?
+> FUJITA Tomonori wrote:
+> > On Fri, 12 Mar 2010 20:12:40 +0100
+> > Albert Herranz <albert_herranz@yahoo.es> wrote:
+> > 
+> >> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
+> >> This size can be influenced using a kernel command line parameter "swiotlb".
+> >> Unfortunately, the parsing of the kernel command line is done _after_ the
+> >> swiotlb is initialized on some architectures.
+> >>
+> >> This patch adds a new function swiotlb_set_default_size() which can be used
+> >> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
+> >>
+> >> This will be used later to implement a smaller IO TLB on the Nintendo Wii
+> >> video game console which just comes with 24MB + 64MB of RAM.
+> >>
+> >> CC: linuxppc-dev@lists.ozlabs.org
+> >> CC: linux-kernel@vger.kernel.org
+> >> CC: x86@kernel.org
+> >> CC: linux-ia64@vger.kernel.org
+> >> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+> >> ---
+> >>  include/linux/swiotlb.h |    2 ++
+> >>  lib/swiotlb.c           |   20 ++++++++++++++++++++
+> >>  2 files changed, 22 insertions(+), 0 deletions(-)
+> > 
+> > Please fix the powerpc swiotlb initialization instead.
+> > 
+> > Calling swiotlb_init() before parsing kernel parameters sounds
+> > wrong. Any reasons why you can't fix it?
+> > 
+> 
+> I think that this would be better asked by a PowerPC maintainer. Ben?
+> 
+> If this is really a problem the swiotlb late init may be a solution too in this particular case.
 
-We have free_one_irq_desc used in the numa irq migration code.
-We have dynamic_irq_cleanup.
+Hmm, why swiotlb_late_init_with_default_size()?
 
-I don't expect it would be fundamentally hard to put all of the pieces
-together.
+Why can't you initialize swiotlb in mem_init() like this (only compile
+tested)? Any time before freeing bootmem works for swiotlb.
 
-> Going further could we split the alloc and lookup functions into
-> separate operations instead of combining them in irq_to_desc_alloc_node?
-> We already have irq_to_desc for the lookup portion so this would largely
-> involve changes to the semantics of irq_to_desc_alloc_node, perhaps
-> returning ERR_PTR(-EBUSY) if the node was already allocated.
->
-> Having a variant which found a free IRQ rather than operating on a
-> specific requested IRQ could also be useful for create_irq_nr as well as
-> find_unbound_irq on the Xen side. I'm not convinced irq_alloc_virt on
-> powerpc isn't implementing broadly the same concept as well, although it
-> seems to work very differently from the other two.
->
->>   Today
->> we figure out if an irq has been assigned by looking at irq_cfg->vector,
->> and if it is non-zero the irq has been assigned.
->
-> Which is tricky to move into generic code hence my suggestions of
-> explicitly freeing the irq_desc and tracking the allocation status in
-> the generic code. 
 
-Agreed.  Getting an allocation assist into the generic code sounds
-nlike something for the next round of patches after your current one.
-At least for msi irqs, hi irqs and other irqs that are totally software
-constructs this makes a lot of sense.
-
-We really need to get to the point on x86 where sparse irq has no penalties
-and stop making it an option.  Otherwise it gets a bit tricky to rely
-on sparse irq for an allocation helper.
-
-I need to go look up my old patchset.  I did something different with
-create_irq(), that I think was cleaner and it may be worth resurrecting.
-At the very least I generalized the msi case and the ht irq case into
-using the same pointer in struct irq_desc.
-
->> The logic in x86_init_chip_data is correct we only assign desc->chip_data
->> if the generic layers are above it.  However we need a lock to ensure that
->> two paths don't race in that comparison and that assignment.  There is
->> no lock in x86_init_chip_data.  Which unfortunately means as it stands
->> this patchset is buggy.
->
-> Yes, unfortunately I think you are right. The callback idea fixes this.
-> I'll respin with that.
-
-Thanks.
-
-Eric
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index b152de3..8f58986 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -39,7 +39,6 @@
+ #include <asm/serial.h>
+ #include <asm/udbg.h>
+ #include <asm/mmu_context.h>
+-#include <asm/swiotlb.h>
+ 
+ #include "setup.h"
+ 
+@@ -343,11 +342,6 @@ void __init setup_arch(char **cmdline_p)
+ 		ppc_md.setup_arch();
+ 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if (ppc_swiotlb_enable)
+-		swiotlb_init(1);
+-#endif
+-
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 6354739..9143891 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -61,7 +61,6 @@
+ #include <asm/xmon.h>
+ #include <asm/udbg.h>
+ #include <asm/kexec.h>
+-#include <asm/swiotlb.h>
+ #include <asm/mmu_context.h>
+ 
+ #include "setup.h"
+@@ -541,11 +540,6 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.setup_arch)
+ 		ppc_md.setup_arch();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if (ppc_swiotlb_enable)
+-		swiotlb_init(1);
+-#endif
+-
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff */
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 311224c..448f972 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -48,6 +48,7 @@
+ #include <asm/sparsemem.h>
+ #include <asm/vdso.h>
+ #include <asm/fixmap.h>
++#include <asm/swiotlb.h>
+ 
+ #include "mmu_decl.h"
+ 
+@@ -320,6 +321,11 @@ void __init mem_init(void)
+ 	struct page *page;
+ 	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+ 
++#ifdef CONFIG_SWIOTLB
++	if (ppc_swiotlb_enable)
++		swiotlb_init(1);
++#endif
++
+ 	num_physpages = lmb.memory.size >> PAGE_SHIFT;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 
