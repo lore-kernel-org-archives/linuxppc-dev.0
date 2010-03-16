@@ -1,24 +1,86 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1A8CCB7D65
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Mar 2010 21:08:59 +1100 (EST)
-Date: Tue, 16 Mar 2010 19:08:46 +0900
-To: albert_herranz@yahoo.es
-Subject: Re: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4B9F1E11.80201@yahoo.es>
-References: <1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
-	<20100316104440Y.fujita.tomonori@lab.ntt.co.jp>
-	<4B9F1E11.80201@yahoo.es>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20100316190805Z.fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <jkosina@suse.cz>
+Date: Tue, 16 Mar 2010 11:32:24 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH 0/4] Some typo fixing
+In-Reply-To: <4B9EA214.7010203@xenotime.net>
+Message-ID: <alpine.LNX.2.00.1003161127340.18642@pobox.suse.cz>
+References: <1268686558-28171-1-git-send-email-swirl@gmx.li>
+	<4B9EA214.7010203@xenotime.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Karsten Keil <isdn@linux-pingi.de>, Lin Ming <ming.m.lin@intel.com>,
+	Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+	Pavel Machek <pavel@suse.cz>,
+	David Brownell <dbrownell@users.sourceforge.net>,
+	linux-acpi@vger.kernel.org,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Rusty Russell <rusty@rustcorp.com.au>, Li Zefan <lizf@cn.fujitsu.com>,
+	Steve Conklin <sconklin@canonical.com>,
+	Ralph Campbell <infinipath@qlogic.com>,
+	Anton Vorontsov <avorontsov@ru.mvista.com>, cbe-oss-dev@ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Liam Girdwood <lrg@slimlogic.co.uk>, Anthony Liguori <aliguori@us.ibm.com>,
+	linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-media@vger.kernel.org, Pieter Palmers <pieterp@joow.be>,
+	Anand Gadiyar <gadiyar@ti.com>, alsa-devel@alsa-project.org,
+	linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>,
+	Clemens Ladisch <clemens@ladisch.de>, linux-mm@kvack.org,
+	"James E.J. Bottomley" <James.Bottomley@suse.de>,
+	=?ISO-8859-15?Q?H=E5kan_Johansson?= <f96hajo@chalmers.se>,
+	linux-s390@vger.kernel.org, Markus Heidelberg <markus.heidelberg@web.de>,
+	linuxppc-dev@ozlabs.org, Dave Airlie <airlied@redhat.com>,
+	Tobias Klauser <tklauser@distanz.ch>, dri-devel@lists.sourceforge.net,
+	Hal Rosenstock <hal.rosenstock@gmail.com>,
+	Len Brown <lenb@kernel.org>, linux-kbuild@vger.kernel.org,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Amit Shah <amit.shah@redhat.com>, Daniel Mack <daniel@caiaq.de>,
+	spi-devel-general@lists.sourceforge.net,
+	containers@lists.linux-foundation.org,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+	Michal Sojka <sojkam1@fel.cvut.cz>,
+	Christoph Lameter <cl@linux-foundation.org>, linux-pci@vger.kernel.org,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Sean Hefty <sean.hefty@intel.com>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-rdma@vger.kernel.org,
+	Matthew Wilcox <willy@linux.intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@pobox.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Alex Chiang <achiang@hp.com>, Mel Gorman <mel@csn.ul.ie>,
+	Zhenyu Wang <zhenyuw@linux.intel.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Jing Huang <huangj@brocade.com>, Jiri Pirko <jpirko@redhat.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Jean Delvare <khali@linux-fr.org>, Tejun Heo <tj@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	jfs-discussion@lists.sourceforge.net, Jay Fenlason <fenlason@redhat.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Henrik Austad <henrik@austad.us>, linux-ide@vger.kernel.org,
+	Jonathan Cameron <jic23@cam.ac.uk>,
+	Bernhard Schiffner <bernhard@schiffner-limbach.de>,
+	linux1394-devel@lists.sourceforge.net, devel@driverdev.osuosl.org,
+	Amit Kucheria <amit.kucheria@verdurent.com>,
+	Douglas Schilling Landgraf <dougsland@redhat.com>,
+	linux-scsi@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>,
+	=?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
+	Shirley Ma <xma@us.ibm.com>, Thomas Weber <swirl@gmx.li>,
+	Steve Glendinning <steve.glendinning@smsc.com>,
+	Paul Menage <menage@google.com>, Alan Cox <alan@linux.intel.com>,
+	Michal Marek <mmarek@suse.cz>, Michal Simek <monstr@monstr.eu>,
+	Ben Blum <bblum@andrew.cmu.edu>, netdev@vger.kernel.org,
+	Akihiro Tsukada <tskd2@yahoo.co.jp>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+	Larry Finger <Larry.Finger@lwfinger.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,119 +90,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 Mar 2010 06:58:41 +0100
-Albert Herranz <albert_herranz@yahoo.es> wrote:
+On Mon, 15 Mar 2010, Randy Dunlap wrote:
 
-> FUJITA Tomonori wrote:
-> > On Fri, 12 Mar 2010 20:12:40 +0100
-> > Albert Herranz <albert_herranz@yahoo.es> wrote:
-> > 
-> >> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
-> >> This size can be influenced using a kernel command line parameter "swiotlb".
-> >> Unfortunately, the parsing of the kernel command line is done _after_ the
-> >> swiotlb is initialized on some architectures.
-> >>
-> >> This patch adds a new function swiotlb_set_default_size() which can be used
-> >> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
-> >>
-> >> This will be used later to implement a smaller IO TLB on the Nintendo Wii
-> >> video game console which just comes with 24MB + 64MB of RAM.
-> >>
-> >> CC: linuxppc-dev@lists.ozlabs.org
-> >> CC: linux-kernel@vger.kernel.org
-> >> CC: x86@kernel.org
-> >> CC: linux-ia64@vger.kernel.org
-> >> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
-> >> ---
-> >>  include/linux/swiotlb.h |    2 ++
-> >>  lib/swiotlb.c           |   20 ++++++++++++++++++++
-> >>  2 files changed, 22 insertions(+), 0 deletions(-)
-> > 
-> > Please fix the powerpc swiotlb initialization instead.
-> > 
-> > Calling swiotlb_init() before parsing kernel parameters sounds
-> > wrong. Any reasons why you can't fix it?
-> > 
+> > I have fixed some typos.
 > 
-> I think that this would be better asked by a PowerPC maintainer. Ben?
+> Acked-by: Randy Dunlap <rdunlap@xenotime.net>
 > 
-> If this is really a problem the swiotlb late init may be a solution too in this particular case.
+> Jiri, can you merge these, please, unless someone objects (?).
 
-Hmm, why swiotlb_late_init_with_default_size()?
+Yes, I will take it, thanks. A couple comments though:
 
-Why can't you initialize swiotlb in mem_init() like this (only compile
-tested)? Any time before freeing bootmem works for swiotlb.
+- [important!] Thomas, it's not necessary to CC zillions of people on such 
+  patches. Just submit them to trivial@kernel.org (and eventually CC 
+  lkml), and that's it. I believe many people might get annoyed by this.
+- I will not be applying the drivers/staging hunks. Staging patches are 
+  moving target, the code is changing quickly (including complete 
+  drops/rewrites) so we'll likely be getting conflicts there. I will 
+  reroute them to Greg.
+- I will fold all the patches into one. We don't need one commit per one 
+  specific typo.
 
-
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index b152de3..8f58986 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -39,7 +39,6 @@
- #include <asm/serial.h>
- #include <asm/udbg.h>
- #include <asm/mmu_context.h>
--#include <asm/swiotlb.h>
- 
- #include "setup.h"
- 
-@@ -343,11 +342,6 @@ void __init setup_arch(char **cmdline_p)
- 		ppc_md.setup_arch();
- 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
- 
--#ifdef CONFIG_SWIOTLB
--	if (ppc_swiotlb_enable)
--		swiotlb_init(1);
--#endif
--
- 	paging_init();
- 
- 	/* Initialize the MMU context management stuff */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6354739..9143891 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -61,7 +61,6 @@
- #include <asm/xmon.h>
- #include <asm/udbg.h>
- #include <asm/kexec.h>
--#include <asm/swiotlb.h>
- #include <asm/mmu_context.h>
- 
- #include "setup.h"
-@@ -541,11 +540,6 @@ void __init setup_arch(char **cmdline_p)
- 	if (ppc_md.setup_arch)
- 		ppc_md.setup_arch();
- 
--#ifdef CONFIG_SWIOTLB
--	if (ppc_swiotlb_enable)
--		swiotlb_init(1);
--#endif
--
- 	paging_init();
- 
- 	/* Initialize the MMU context management stuff */
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 311224c..448f972 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -48,6 +48,7 @@
- #include <asm/sparsemem.h>
- #include <asm/vdso.h>
- #include <asm/fixmap.h>
-+#include <asm/swiotlb.h>
- 
- #include "mmu_decl.h"
- 
-@@ -320,6 +321,11 @@ void __init mem_init(void)
- 	struct page *page;
- 	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
- 
-+#ifdef CONFIG_SWIOTLB
-+	if (ppc_swiotlb_enable)
-+		swiotlb_init(1);
-+#endif
-+
- 	num_physpages = lmb.memory.size >> PAGE_SHIFT;
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
- 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
