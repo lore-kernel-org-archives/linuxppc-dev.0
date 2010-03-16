@@ -1,22 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0C49B7D29
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 08:20:57 +1100 (EST)
-Subject: Re: [PATCH 3/4] 8xx: Don't touch ACCESSED when no SWAP.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-In-Reply-To: <1267172983-28721-4-git-send-email-Joakim.Tjernlund@transmode.se>
-References: <1267172983-28721-1-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-4-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Mar 2010 08:20:52 +1100
-Message-ID: <1268774452.2335.132.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 72A9BB7D20
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 08:40:32 +1100 (EST)
+Message-ID: <4B9FFAD1.8030309@embedded-sol.com>
+Date: Tue, 16 Mar 2010 23:40:33 +0200
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: Problem with PCI bus rescan on 460EX
+References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
+	<4B9DC820.2060100@jp.fujitsu.com>
+	<4B9DCF01.4050709@embedded-sol.com>
+	<4B9DF72F.3040105@jp.fujitsu.com>
+	<4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com>
+In-Reply-To: <4B9F19E2.2090709@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-26 at 09:29 +0100, Joakim Tjernlund wrote:
-> Only the swap function cares about the ACCESSED bit in
-> the pte. Do not waste cycles updateting ACCESSED when swap
-> is not compiled into the kernel.
-> ---
+Hello, Kenji-san
 
-Your changeset comment is a bit misleading since the code isn't actually
-updating ACCESSED... it's testing if ACCESSED is set and goes to the
-higher level fault if not (which might then update ACCESSED).
+Kenji Kaneshige wrote:
+>
+> I misunderstood the problem.
+> My understanding was memory resource was not enabled even though Linux 
+> set
+> the Memory Space bit in the command register. But it was not correct. The
+> bridge memory window was marked unused and Linux didn't try to set Memory
+> Space bit in the command register. Current my understanding is as 
+> follows.
+> Please correct me if I'm still misunderstanding something.
+>
+> 1) Your BIOS doesn't assign any resource to the bridge if its child PCI
+>   hot-plug slot is not occupied.
+>
+> 2) At the boot time, pci_assign_unassigned_resources() try to assign
+>   memory resouces to the bridge using pci_bus_assign_resource(), but
+>   it was disabled because there are no devices require memory resource.
+>
+> 3) And then pci_assign_unassigned_resouces() calls pci_enable_bridge(),
+>   but Memory Space bit in the command register was not set because no
+>   memory resource are assigned to the bridge. At the same time,
+>   pci_dev->enable_cnt was incremented.
+>
+> 4) At the rescan time, pci_setup_bridge() and pci_enable_bridge() doesn't
+>   work because the bridge is already marked "enabled" (i.e.
+>   pci_dev->enable_cnt is not zero).
+>
+> I don't have any concrete idea how to fix that so far, but I can say 
+> my idea
+> (pcibios_enable_device() should return an error) was wrong.
+>
+>
+I was wandering if setting is_hotplug_bridge property for this bridge 
+(e.g. via
+header quirk) can be an acceptable solution. This will allow passing 
+hpmemsize
+kernel parameter, to specify the amount of memory to assign to the bridge.
+I've tested this approach and it seems to work.
 
-Cheers,
-Ben.
+Thanks.
+Felix.
 
->  arch/powerpc/kernel/head_8xx.S |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index 84ca1d9..6478a96 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -343,10 +343,11 @@ InstructionTLBMiss:
->  	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
->  	lwz	r10, 0(r11)	/* Get the pte */
->  
-> +#ifdef CONFIG_SWAP
->  	andi.	r11, r10, _PAGE_ACCESSED | _PAGE_PRESENT
->  	cmpwi	cr0, r11, _PAGE_ACCESSED | _PAGE_PRESENT
->  	bne-	cr0, 2f
-> -
-> +#endif
->  	/* The Linux PTE won't go exactly into the MMU TLB.
->  	 * Software indicator bits 21 and 28 must be clear.
->  	 * Software indicator bits 24, 25, 26, and 27 must be
-> @@ -439,10 +440,11 @@ DataStoreTLBMiss:
->  	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
->  	 * r10 = (r10 & ~PRESENT) | r11;
->  	 */
-> +#ifdef CONFIG_SWAP
->  	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
->  	and	r11, r11, r10
->  	rlwimi	r10, r11, 0, _PAGE_PRESENT
-> -
-> +#endif
->  	/* Honour kernel RO, User NA */
->  	/* 0x200 == Extended encoding, bit 22 */
->  	rlwimi	r10, r10, 32-2, 0x200 /* Copy USER to bit 22, 0x200 */
+Felix.
