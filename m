@@ -1,25 +1,17 @@
-Return-Path: <david.goodenough@btconnect.com>
-Received: from mail.ukfsn.org (mail.ukfsn.org [77.75.108.10])
-	by ozlabs.org (Postfix) with ESMTP id EB983B7D24
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 09:49:04 +1100 (EST)
-Received: from localhost (smtp-filter.ukfsn.org [192.168.54.205])
-	by mail.ukfsn.org (Postfix) with ESMTP id 35474DEBD4
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 22:49:03 +0000 (GMT)
-Received: from mail.ukfsn.org ([192.168.54.25])
-	by localhost (smtp-filter.ukfsn.org [192.168.54.205]) (amavisd-new,
-	port 10024) with ESMTP id 6n-X9e3jom9x for <linuxppc-dev@ozlabs.org>;
-	Tue, 16 Mar 2010 22:49:03 +0000 (GMT)
-Received: from stargate.localnet (unknown [84.45.236.142])
-	by mail.ukfsn.org (Postfix) with ESMTP id 0DCA1DEBB7
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 22:49:03 +0000 (GMT)
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7CE17B7D22
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:16:30 +1100 (EST)
+Date: Wed, 17 Mar 2010 08:16:25 +0900
 To: linuxppc-dev@ozlabs.org
-Subject: Can the OpenRB board descriptions be merged into the mainline kernel?
-From: David Goodenough <david.goodenough@btconnect.com>
-Date: Tue, 16 Mar 2010 22:49:01 +0000
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <201003162249.01700.david.goodenough@btconnect.com>
+Subject: [PATCH] powerpc: fix swiotlb to respect the boot option
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100317081540C.fujita.tomonori@lab.ntt.co.jp>
+Cc: albert_herranz@yahoo.es, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,11 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OpenWRT has some fixes which adds the board descriptions for the OpenRB
-(ppc504 based boards).  Is there any reason why these should not be
-merged into the mainline kernel?  The fixes are all licences GPL2.
+powerpc initializes swiotlb before parsing the kernel boot options so
+swiotlb options (e.g. specifying the swiotlb buffer size) are ignored.
 
-If not do you want the original authors to submit them, or shall I take the
-OpenWRT specific bits out and post them here?
+Any time before freeing bootmem works for swiotlb so this patch moves
+powerpc's swiotlb initialization after parsing the kernel boot
+options, mem_init (as x86 does).
 
-David
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Tested-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/kernel/setup_32.c |    6 ------
+ arch/powerpc/kernel/setup_64.c |    6 ------
+ arch/powerpc/mm/mem.c          |    6 ++++++
+ 3 files changed, 6 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index b152de3..8f58986 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -39,7 +39,6 @@
+ #include <asm/serial.h>
+ #include <asm/udbg.h>
+ #include <asm/mmu_context.h>
+-#include <asm/swiotlb.h>
+ 
+ #include "setup.h"
+ 
+@@ -343,11 +342,6 @@ void __init setup_arch(char **cmdline_p)
+ 		ppc_md.setup_arch();
+ 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if (ppc_swiotlb_enable)
+-		swiotlb_init(1);
+-#endif
+-
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 6354739..9143891 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -61,7 +61,6 @@
+ #include <asm/xmon.h>
+ #include <asm/udbg.h>
+ #include <asm/kexec.h>
+-#include <asm/swiotlb.h>
+ #include <asm/mmu_context.h>
+ 
+ #include "setup.h"
+@@ -541,11 +540,6 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.setup_arch)
+ 		ppc_md.setup_arch();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if (ppc_swiotlb_enable)
+-		swiotlb_init(1);
+-#endif
+-
+ 	paging_init();
+ 
+ 	/* Initialize the MMU context management stuff */
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 311224c..448f972 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -48,6 +48,7 @@
+ #include <asm/sparsemem.h>
+ #include <asm/vdso.h>
+ #include <asm/fixmap.h>
++#include <asm/swiotlb.h>
+ 
+ #include "mmu_decl.h"
+ 
+@@ -320,6 +321,11 @@ void __init mem_init(void)
+ 	struct page *page;
+ 	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+ 
++#ifdef CONFIG_SWIOTLB
++	if (ppc_swiotlb_enable)
++		swiotlb_init(1);
++#endif
++
+ 	num_physpages = lmb.memory.size >> PAGE_SHIFT;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 
+-- 
+1.7.0
