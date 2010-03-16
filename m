@@ -1,25 +1,32 @@
-Return-Path: <david.goodenough@btconnect.com>
-Received: from mail.ukfsn.org (mail.ukfsn.org [77.75.108.10])
-	by ozlabs.org (Postfix) with ESMTP id 73CAEB7DA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 23:53:00 +1100 (EST)
-Received: from localhost (smtp-filter.ukfsn.org [192.168.54.205])
-	by mail.ukfsn.org (Postfix) with ESMTP id AF08CDEBCB
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 12:23:20 +0000 (GMT)
-Received: from mail.ukfsn.org ([192.168.54.25])
-	by localhost (smtp-filter.ukfsn.org [192.168.54.205]) (amavisd-new,
-	port 10024) with ESMTP id LJel8clDngMH for <linuxppc-dev@ozlabs.org>;
-	Tue, 16 Mar 2010 12:23:20 +0000 (GMT)
-Received: from stargate.localnet (unknown [84.45.236.142])
-	by mail.ukfsn.org (Postfix) with ESMTP id 860A1DEBAE
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 12:23:20 +0000 (GMT)
-To: linuxppc-dev@ozlabs.org
-Subject: Can the OpenRB board descriptions be merged into the mainline kernel?
-From: David Goodenough <david.goodenough@btconnect.com>
-Date: Tue, 16 Mar 2010 12:23:19 +0000
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC33CB7D9D
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 01:39:28 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o2GEbtha031728
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:37:55 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o2GEdKDm198968
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:39:21 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o2GEd8jj005429
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 08:39:09 -0600
+Date: Tue, 16 Mar 2010 10:39:03 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Goodenough <david.goodenough@btconnect.com>
+Subject: Re: Can the OpenRB board descriptions be merged into the mainline
+	kernel?
+Message-ID: <20100316143903.GK8963@zod.rchland.ibm.com>
+References: <201003161223.19238.david.goodenough@btconnect.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <201003161223.19238.david.goodenough@btconnect.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201003161223.19238.david.goodenough@btconnect.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,11 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OpenWRT has some fixes which adds the board descriptions for the OpenRB
-(ppc504 based boards).  Is there any reason why these should not be
-merged into the mainline kernel?  The fixes are all licences GPL2.
+On Tue, Mar 16, 2010 at 12:23:19PM +0000, David Goodenough wrote:
+>OpenWRT has some fixes which adds the board descriptions for the OpenRB
+>(ppc504 based boards).  Is there any reason why these should not be
 
-If not do you want the original authors to submit them, or shall I take the
-OpenWRT specific bits out and post them here?
+ppc504?  I've not heard of that one.  Is that a typo for 405?
 
-David
+>merged into the mainline kernel?  The fixes are all licences GPL2.
+>
+>If not do you want the original authors to submit them, or shall I take the
+>OpenWRT specific bits out and post them here?
+
+What exactly do you mean by "board description"?
+
+josh
