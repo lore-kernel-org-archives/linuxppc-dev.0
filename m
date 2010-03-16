@@ -1,25 +1,22 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+Return-Path: <kaloz@openwrt.org>
+Received: from arrakis.dune.hu (arrakis.dune.hu [78.24.191.176])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72A9BB7D20
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 08:40:32 +1100 (EST)
-Message-ID: <4B9FFAD1.8030309@embedded-sol.com>
-Date: Tue, 16 Mar 2010 23:40:33 +0200
-From: Felix Radensky <felix@embedded-sol.com>
+	by ozlabs.org (Postfix) with ESMTPS id B9B0FB7D13
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 09:03:56 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>, "David Goodenough"
+	<david.goodenough@btconnect.com>
+Subject: Re: Can the OpenRB board descriptions be merged into the mainline
+	kernel?
+References: <201003161223.19238.david.goodenough@btconnect.com>
+	<20100316143903.GK8963@zod.rchland.ibm.com>
+Date: Tue, 16 Mar 2010 22:58:00 +0100
 MIME-Version: 1.0
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: Problem with PCI bus rescan on 460EX
-References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
-	<4B9DC820.2060100@jp.fujitsu.com>
-	<4B9DCF01.4050709@embedded-sol.com>
-	<4B9DF72F.3040105@jp.fujitsu.com>
-	<4B9E18A7.2080605@embedded-sol.com>
-	<4B9F19E2.2090709@jp.fujitsu.com>
-In-Reply-To: <4B9F19E2.2090709@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+From: "Imre Kaloz" <kaloz@openwrt.org>
+Message-ID: <op.u9okmyyw2s3iss@ecaz>
+In-Reply-To: <20100316143903.GK8963@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Kenji-san
+On Tue, 16 Mar 2010 15:39:03 +0100, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-Kenji Kaneshige wrote:
+> On Tue, Mar 16, 2010 at 12:23:19PM +0000, David Goodenough wrote:
+>> OpenWRT has some fixes which adds the board descriptions for the OpenRB
+>> (ppc504 based boards).  Is there any reason why these should not be
 >
-> I misunderstood the problem.
-> My understanding was memory resource was not enabled even though Linux 
-> set
-> the Memory Space bit in the command register. But it was not correct. The
-> bridge memory window was marked unused and Linux didn't try to set Memory
-> Space bit in the command register. Current my understanding is as 
-> follows.
-> Please correct me if I'm still misunderstanding something.
->
-> 1) Your BIOS doesn't assign any resource to the bridge if its child PCI
->   hot-plug slot is not occupied.
->
-> 2) At the boot time, pci_assign_unassigned_resources() try to assign
->   memory resouces to the bridge using pci_bus_assign_resource(), but
->   it was disabled because there are no devices require memory resource.
->
-> 3) And then pci_assign_unassigned_resouces() calls pci_enable_bridge(),
->   but Memory Space bit in the command register was not set because no
->   memory resource are assigned to the bridge. At the same time,
->   pci_dev->enable_cnt was incremented.
->
-> 4) At the rescan time, pci_setup_bridge() and pci_enable_bridge() doesn't
->   work because the bridge is already marked "enabled" (i.e.
->   pci_dev->enable_cnt is not zero).
->
-> I don't have any concrete idea how to fix that so far, but I can say 
-> my idea
-> (pcibios_enable_device() should return an error) was wrong.
->
->
-I was wandering if setting is_hotplug_bridge property for this bridge 
-(e.g. via
-header quirk) can be an acceptable solution. This will allow passing 
-hpmemsize
-kernel parameter, to specify the amount of memory to assign to the bridge.
-I've tested this approach and it seems to work.
+> ppc504?  I've not heard of that one.  Is that a typo for 405?
 
-Thanks.
-Felix.
+Typo.
 
-Felix.
+>> merged into the mainline kernel?  The fixes are all licences GPL2.
+>>
+>> If not do you want the original authors to submit them, or shall I take the
+>> OpenWRT specific bits out and post them here?
+>
+> What exactly do you mean by "board description"?
+
+These are part of the patches I've told you about over IRC. The port uses the
+ppc40x_simple stuff with cuImage wrapper. It also has a CF connector, so
+that driver needs to be merged, too..
+
+I'll submit everything when I'm a bit better.. Spent the last two weeks in bed :/
+
+
+Imre
