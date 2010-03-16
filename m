@@ -1,22 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D019FB7D88
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AD660B7D7D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Mar 2010 10:46:43 +1100 (EST)
-Date: Mon, 15 Mar 2010 16:46:25 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] sysdev: the cpu probe/release attributes should be
-	sysdev_class_attributes
-Message-ID: <20100315234625.GA12575@kroah.com>
-References: <20100316103332.ade0b5d9.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100316103332.ade0b5d9.sfr@canb.auug.org.au>
-Cc: Andi Kleen <andi@firstfloor.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Tue, 16 Mar 2010 12:51:37 +1100 (EST)
+Date: Tue, 16 Mar 2010 10:44:59 +0900
+To: albert_herranz@yahoo.es
+Subject: Re: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
+References: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>
+	<1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100316104440Y.fujita.tomonori@lab.ntt.co.jp>
+Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 16, 2010 at 10:33:32AM +1100, Stephen Rothwell wrote:
-> This fixes these warnings:
+On Fri, 12 Mar 2010 20:12:40 +0100
+Albert Herranz <albert_herranz@yahoo.es> wrote:
+
+> The current SWIOTLB code uses a default of 64MB for the IO TLB area.
+> This size can be influenced using a kernel command line parameter "swiotlb".
+> Unfortunately, the parsing of the kernel command line is done _after_ the
+> swiotlb is initialized on some architectures.
 > 
-> drivers/base/cpu.c:264: warning: initialization from incompatible pointer type
-> drivers/base/cpu.c:265: warning: initialization from incompatible pointer type
+> This patch adds a new function swiotlb_set_default_size() which can be used
+> before swiotlb_init() to indicate the desired IO TLB area size in bytes.
 > 
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> This will be used later to implement a smaller IO TLB on the Nintendo Wii
+> video game console which just comes with 24MB + 64MB of RAM.
+> 
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-kernel@vger.kernel.org
+> CC: x86@kernel.org
+> CC: linux-ia64@vger.kernel.org
+> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 > ---
->  drivers/base/cpu.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> Hi Greg,
-> 
-> Could you pleas send this on to Linuse as this is now a bug in mainline.
+>  include/linux/swiotlb.h |    2 ++
+>  lib/swiotlb.c           |   20 ++++++++++++++++++++
+>  2 files changed, 22 insertions(+), 0 deletions(-)
 
-Will do, thanks so much for fixing this up correctly.
+Please fix the powerpc swiotlb initialization instead.
 
-greg k-h
+Calling swiotlb_init() before parsing kernel parameters sounds
+wrong. Any reasons why you can't fix it?
