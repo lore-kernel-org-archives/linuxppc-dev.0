@@ -1,21 +1,25 @@
-Return-Path: <jkosina@suse.cz>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C8943B7D59
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 03:26:07 +1100 (EST)
-Date: Tue, 16 Mar 2010 17:26:01 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Rupjyoti Sarmah <rsarmah@amcc.com>
-Subject: RE: Failure with the 2.6.34-rc1 kernel
-In-Reply-To: <AC311A8E81420D4EBC1F26E6479848FE065B7D5B@SDCEXCHANGE01.ad.amcc.com>
-Message-ID: <alpine.LNX.2.00.1003161725310.18642@pobox.suse.cz>
-References: <AC311A8E81420D4EBC1F26E6479848FE065B7D3D@SDCEXCHANGE01.ad.amcc.com>
-	<alpine.LRH.2.00.1003161646590.26353@twin.jikos.cz>
-	<AC311A8E81420D4EBC1F26E6479848FE065B7D5B@SDCEXCHANGE01.ad.amcc.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A2185B7D76
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 17 Mar 2010 06:31:06 +1100 (EST)
+Message-Id: <C200C089-E6B9-4836-A7B5-3233EB2CE5FB@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100316190805Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
+Date: Tue, 16 Mar 2010 14:28:09 -0500
+References: <1268421166-4791-6-git-send-email-albert_herranz@yahoo.es>
+	<20100316104440Y.fujita.tomonori@lab.ntt.co.jp>
+	<4B9F1E11.80201@yahoo.es>
+	<20100316190805Z.fujita.tomonori@lab.ntt.co.jp>
+Cc: x86@kernel.org, linux-ia64@vger.kernel.org, albert_herranz@yahoo.es,
+	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +29,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 Mar 2010, Rupjyoti Sarmah wrote:
 
-> -----Original Message-----
-> From: Jiri Kosina [mailto:jkosina@suse.cz] 
-> Sent: Tuesday, March 16, 2010 9:18 PM
-> To: Rupjyoti Sarmah
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: Failure with the 2.6.34-rc1 kernel
-> 
-> On Tue, 16 Mar 2010, Rupjyoti Sarmah wrote:
-> 
-> > We are seeing issues in booting some of our boards with this new
-> kernel.
-> > Kernel version upto 2.6.33 works fine on the boards like Canyonlands,
-> > Katmai, Glacier etc.
-> > These boards are not booting with kernel later than 2.6.33. Please let
-> > me know how about fixing these issues ?
-> 
-> You'd need to provide at least dmesg from the working and non-working 
-> cases.
-> 
-> Also git-bisect between 2.6.33 and 2.6.34-rc1 might help you identify
-> the 
-> commit that broke your hardware.
+On Mar 16, 2010, at 5:08 AM, FUJITA Tomonori wrote:
 
-> It has been failing from this commit.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commi
-> t;h=ef1a8de8ea004a689b2aa9f5cefcba2b1a0262f2 .
-> 
-> Also, the u-boot restarts the board very quickly. It does not go to the
-> kernel prompt at all. 
-> 
+> On Tue, 16 Mar 2010 06:58:41 +0100
+> Albert Herranz <albert_herranz@yahoo.es> wrote:
+>
+>> FUJITA Tomonori wrote:
+>>> On Fri, 12 Mar 2010 20:12:40 +0100
+>>> Albert Herranz <albert_herranz@yahoo.es> wrote:
+>>>
+>>>> The current SWIOTLB code uses a default of 64MB for the IO TLB  
+>>>> area.
+>>>> This size can be influenced using a kernel command line parameter  
+>>>> "swiotlb".
+>>>> Unfortunately, the parsing of the kernel command line is done  
+>>>> _after_ the
+>>>> swiotlb is initialized on some architectures.
+>>>>
+>>>> This patch adds a new function swiotlb_set_default_size() which  
+>>>> can be used
+>>>> before swiotlb_init() to indicate the desired IO TLB area size in  
+>>>> bytes.
+>>>>
+>>>> This will be used later to implement a smaller IO TLB on the  
+>>>> Nintendo Wii
+>>>> video game console which just comes with 24MB + 64MB of RAM.
+>>>>
+>>>> CC: linuxppc-dev@lists.ozlabs.org
+>>>> CC: linux-kernel@vger.kernel.org
+>>>> CC: x86@kernel.org
+>>>> CC: linux-ia64@vger.kernel.org
+>>>> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+>>>> ---
+>>>> include/linux/swiotlb.h |    2 ++
+>>>> lib/swiotlb.c           |   20 ++++++++++++++++++++
+>>>> 2 files changed, 22 insertions(+), 0 deletions(-)
+>>>
+>>> Please fix the powerpc swiotlb initialization instead.
+>>>
+>>> Calling swiotlb_init() before parsing kernel parameters sounds
+>>> wrong. Any reasons why you can't fix it?
+>>>
+>>
+>> I think that this would be better asked by a PowerPC maintainer. Ben?
+>>
+>> If this is really a problem the swiotlb late init may be a solution  
+>> too in this particular case.
+>
+> Hmm, why swiotlb_late_init_with_default_size()?
+>
+> Why can't you initialize swiotlb in mem_init() like this (only compile
+> tested)? Any time before freeing bootmem works for swiotlb.
 
-That is a merge commit. There must be actuall non-merge commit that
-introduced the change.
+This is an oops in the original patchset -  I think it should be fine  
+to move the swiotlb_init later as Fujita suggests, at least for 32-bit  
+powerpc.  I just booted this on mpc8641 and everything seems OK.
 
-If you are sure that this particular commit brought in the change that
-broke your system, you can do git bisect between
-00ebfe58b002f0ff387f60c7cd23bc2b274fce1a and
-ef1a8de8ea004a689b2aa9f5cefcba2b1a0262f2 to see which of the 88 commits
-merged as part of ef1a8de8ea004a689b2aa9f5cefcba2b1a0262f2 is the actual
-culprit.
+-Becky
 
-Also adding linuxpcc-dev@ to CC.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+>
+>
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/ 
+> setup_32.c
+> index b152de3..8f58986 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -39,7 +39,6 @@
+> #include <asm/serial.h>
+> #include <asm/udbg.h>
+> #include <asm/mmu_context.h>
+> -#include <asm/swiotlb.h>
+>
+> #include "setup.h"
+>
+> @@ -343,11 +342,6 @@ void __init setup_arch(char **cmdline_p)
+> 		ppc_md.setup_arch();
+> 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
+>
+> -#ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> -#endif
+> -
+> 	paging_init();
+>
+> 	/* Initialize the MMU context management stuff */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/ 
+> setup_64.c
+> index 6354739..9143891 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -61,7 +61,6 @@
+> #include <asm/xmon.h>
+> #include <asm/udbg.h>
+> #include <asm/kexec.h>
+> -#include <asm/swiotlb.h>
+> #include <asm/mmu_context.h>
+>
+> #include "setup.h"
+> @@ -541,11 +540,6 @@ void __init setup_arch(char **cmdline_p)
+> 	if (ppc_md.setup_arch)
+> 		ppc_md.setup_arch();
+>
+> -#ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> -#endif
+> -
+> 	paging_init();
+>
+> 	/* Initialize the MMU context management stuff */
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 311224c..448f972 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -48,6 +48,7 @@
+> #include <asm/sparsemem.h>
+> #include <asm/vdso.h>
+> #include <asm/fixmap.h>
+> +#include <asm/swiotlb.h>
+>
+> #include "mmu_decl.h"
+>
+> @@ -320,6 +321,11 @@ void __init mem_init(void)
+> 	struct page *page;
+> 	unsigned long reservedpages = 0, codesize, initsize, datasize,  
+> bsssize;
+>
+> +#ifdef CONFIG_SWIOTLB
+> +	if (ppc_swiotlb_enable)
+> +		swiotlb_init(1);
+> +#endif
+> +
+> 	num_physpages = lmb.memory.size >> PAGE_SHIFT;
+> 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
