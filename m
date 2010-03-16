@@ -1,21 +1,21 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp120.mail.ukl.yahoo.com (smtp120.mail.ukl.yahoo.com
-	[77.238.184.51]) by ozlabs.org (Postfix) with SMTP id 5C165B7DA9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 16 Mar 2010 17:17:49 +1100 (EST)
-Message-ID: <4B9F228A.8030005@yahoo.es>
-Date: Tue, 16 Mar 2010 07:17:46 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D7239B7D5E
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 19:39:52 +1100 (EST)
+Message-ID: <4B9F43DB.1060801@embedded-sol.com>
+Date: Tue, 16 Mar 2010 10:39:55 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH v4 04/11] swiotlb: support NOT_COHERENT_CACHE PowerPC
-	platforms
-References: <1268421166-4791-1-git-send-email-albert_herranz@yahoo.es>	<1268421166-4791-5-git-send-email-albert_herranz@yahoo.es>	<20100316105423B.fujita.tomonori@lab.ntt.co.jp>
-	<20100316112444D.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100316112444D.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: x86@kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: Problem with PCI bus rescan on 460EX
+References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>	<4B9DC820.2060100@jp.fujitsu.com>	<4B9DCF01.4050709@embedded-sol.com>	<4B9DF72F.3040105@jp.fujitsu.com>	<4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com>
+In-Reply-To: <4B9F19E2.2090709@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FUJITA Tomonori wrote:
-> If we want to make swiotlb generic (make on any architectures), we
-> need to handle more cache issues here, I think. So it's better to have
-> more generic ways instead of adding hooks to some archs.
-> 
+Hello, Kenji-san
 
-Ok. So what would be an acceptable way of handling this in a generic way?
-Should we for example have 2 levels of DMA ops in the swiotlb case (swiotlb and "actual") and call the 2nd level ("actual") from the swiotlb code whenever we need to act on non-bounced buffers?
-Any other ideas?
+Kenji Kaneshige wrote:
+>
+> I misunderstood the problem.
+> My understanding was memory resource was not enabled even though Linux 
+> set
+> the Memory Space bit in the command register. But it was not correct. The
+> bridge memory window was marked unused and Linux didn't try to set Memory
+> Space bit in the command register. Current my understanding is as 
+> follows.
+> Please correct me if I'm still misunderstanding something.
+>
+> 1) Your BIOS doesn't assign any resource to the bridge if its child PCI
+>   hot-plug slot is not occupied.
+>
+> 2) At the boot time, pci_assign_unassigned_resources() try to assign
+>   memory resouces to the bridge using pci_bus_assign_resource(), but
+>   it was disabled because there are no devices require memory resource.
+>
+> 3) And then pci_assign_unassigned_resouces() calls pci_enable_bridge(),
+>   but Memory Space bit in the command register was not set because no
+>   memory resource are assigned to the bridge. At the same time,
+>   pci_dev->enable_cnt was incremented.
+>
+> 4) At the rescan time, pci_setup_bridge() and pci_enable_bridge() doesn't
+>   work because the bridge is already marked "enabled" (i.e.
+>   pci_dev->enable_cnt is not zero).
+>
+> I don't have any concrete idea how to fix that so far, but I can say 
+> my idea
+> (pcibios_enable_device() should return an error) was wrong.
+>
+> BTW, on my PCI hotplug capable system (SHPC and PCIe), I/O and Memory 
+> windows
+> of the bridge are assigned by BIOS regardless of whether hotplug slot(s)
+> behind the bridge is occupied or not. Maybe that is the reason why I have
+> never encountered this problem before.
+>
+> Thanks,
+> Kenji Kaneshige
+>
+>
+Yes, your understanding of the problem is correct. On this platform BIOS 
+(bootloader, u-boot)
+is not required to configure PCI, linux is capable of doing all 
+configuration itself. But both u-boot
+and linux do not assign memory resources to bridge if there's no device 
+behind it.
 
-Thanks,
-Albert
+Thanks a lot.
+
+Felix.
