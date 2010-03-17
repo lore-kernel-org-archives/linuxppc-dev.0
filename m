@@ -1,40 +1,17 @@
-Return-Path: <kaneshige.kenji@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id B1D83B7D4E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 12:03:47 +1100 (EST)
-Received: from m5.gw.fujitsu.co.jp ([10.0.50.75])
-	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o2H13jW0025136 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kaneshige.kenji@jp.fujitsu.com); Wed, 17 Mar 2010 10:03:45 +0900
-Received: from smail (m5 [127.0.0.1])
-	by outgoing.m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 5102745DE54
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:45 +0900 (JST)
-Received: from s5.gw.fujitsu.co.jp (s5.gw.fujitsu.co.jp [10.0.50.95])
-	by m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 1930745DE4F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:45 +0900 (JST)
-Received: from s5.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id EA84FE18009
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:44 +0900 (JST)
-Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
-	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id A1729E18004
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:44 +0900 (JST)
-Message-ID: <4BA02A49.9050101@jp.fujitsu.com>
-Date: Wed, 17 Mar 2010 10:03:05 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Felix Radensky <felix@embedded-sol.com>
-Subject: Re: Problem with PCI bus rescan on 460EX
-References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
-	<4B9DC820.2060100@jp.fujitsu.com>
-	<4B9DCF01.4050709@embedded-sol.com>
-	<4B9DF72F.3040105@jp.fujitsu.com>
-	<4B9E18A7.2080605@embedded-sol.com>
-	<4B9F19E2.2090709@jp.fujitsu.com>
-	<4B9FFAD1.8030309@embedded-sol.com>
-In-Reply-To: <4B9FFAD1.8030309@embedded-sol.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-pci@vger.kernel.org, yinghai@kernel.org, Alex Chiang <achiang@hp.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 14E66B7D4A
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 15:42:01 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o2H4fuCJ002070
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Mar 2010 23:41:57 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl-booke: Get coherent bit from PTE
+Date: Tue, 16 Mar 2010 23:41:56 -0500
+Message-Id: <1268800916-14247-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,52 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Felix Radensky wrote:
-> Hello, Kenji-san
-> 
-> Kenji Kaneshige wrote:
->>
->> I misunderstood the problem.
->> My understanding was memory resource was not enabled even though Linux 
->> set
->> the Memory Space bit in the command register. But it was not correct. The
->> bridge memory window was marked unused and Linux didn't try to set Memory
->> Space bit in the command register. Current my understanding is as 
->> follows.
->> Please correct me if I'm still misunderstanding something.
->>
->> 1) Your BIOS doesn't assign any resource to the bridge if its child PCI
->>   hot-plug slot is not occupied.
->>
->> 2) At the boot time, pci_assign_unassigned_resources() try to assign
->>   memory resouces to the bridge using pci_bus_assign_resource(), but
->>   it was disabled because there are no devices require memory resource.
->>
->> 3) And then pci_assign_unassigned_resouces() calls pci_enable_bridge(),
->>   but Memory Space bit in the command register was not set because no
->>   memory resource are assigned to the bridge. At the same time,
->>   pci_dev->enable_cnt was incremented.
->>
->> 4) At the rescan time, pci_setup_bridge() and pci_enable_bridge() doesn't
->>   work because the bridge is already marked "enabled" (i.e.
->>   pci_dev->enable_cnt is not zero).
->>
->> I don't have any concrete idea how to fix that so far, but I can say 
->> my idea
->> (pcibios_enable_device() should return an error) was wrong.
->>
->>
-> I was wandering if setting is_hotplug_bridge property for this bridge 
-> (e.g. via
-> header quirk) can be an acceptable solution. This will allow passing 
-> hpmemsize
-> kernel parameter, to specify the amount of memory to assign to the bridge.
-> I've tested this approach and it seems to work.
+We shouldn't be always setting 'M' in the TLB entry since its reasonable
+for somethings to be mapped non-coherent.  The PTE should have 'M' set
+properly.
 
-Looks good to me.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/kernel/head_fsl_booke.S |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-By the way, I think Yinghai's bridge resource reallocation patch series
-might help you. It is in Jesse's PCI tree. Please take a look.
-
-Thanks,
-Kenji Kaneshige
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 25793bb..a7cf493 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -747,9 +747,6 @@ finish_tlb_load:
+ #else
+ 	rlwimi	r12, r11, 26, 27, 31	/* extract WIMGE from pte */
+ #endif
+-#ifdef CONFIG_SMP
+-	ori	r12, r12, MAS2_M
+-#endif
+ 	mtspr	SPRN_MAS2, r12
+ 
+ #ifdef CONFIG_PTE_64BIT
+-- 
+1.6.0.6
