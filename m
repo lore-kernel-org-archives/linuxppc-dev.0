@@ -1,19 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9AC84B7D4E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 16:52:15 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o2H5qBUM005139
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 00:52:11 -0500
-Date: Wed, 17 Mar 2010 00:52:11 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [git pull] Please pull powerpc.git merge branch (fwd)
-Message-ID: <Pine.LNX.4.64.1003170052001.14591@localhost.localdomain>
+Return-Path: <rsarmah@amcc.com>
+Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 55BFBB7D52
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 16:55:55 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] 460EX on-chip SATA driver<kernel 2.6.33> < resubmission :
+	01>
+Date: Tue, 16 Mar 2010 22:55:51 -0700
+Message-ID: <AC311A8E81420D4EBC1F26E6479848FE065B7F54@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <20100317155959.208eea21.sfr@canb.auug.org.au>
+References: <1268646854-27387-1-git-send-email-rsarmah@appliedmicro.com><AC311A8E81420D4EBC1F26E6479848FE065B7F30@SDCEXCHANGE01.ad.amcc.com>
+	<20100317155959.208eea21.sfr@canb.auug.org.au>
+From: "Rupjyoti Sarmah" <rsarmah@amcc.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: Rupjyoti Sarmah <rupjyoti.sarmah@gmail.com>, linux-ide@vger.kernel.org,
+	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-forgot to cc the list
+Hi Stephen,
 
----------- Forwarded message ----------
-Date: Wed, 17 Mar 2010 00:13:00 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
+Thanks for your suggestions.=20
+I used git-send-email earlier and emails never appeared in the archive.
+This time I sent through outlook & the message appeared in the archive.
+Looks like outlook did that word wrap.
 
-The following changes since commit 30124d11097e371e42052144d8a3f4a78d26e09f:
-  Dave Kleikamp (1):
-        powerpc/booke: Fix breakpoint/watchpoint one-shot behavior
+I am not sure why the emails from the git-send-email did not get
+delivered. At the time of sending I got message delivered  logs.
 
-are available in the git repository at:
+Regards,
+Rupjyoti Sarmah
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-Kumar Gala (2):
-      powerpc/85xx: Make sure lwarx hint isn't set on ppc32
-      powerpc/fsl-booke: Get coherent bit from PTE
 
- arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
- arch/powerpc/kernel/head_fsl_booke.S  |    3 ---
- 2 files changed, 3 insertions(+), 6 deletions(-)
+
+-----Original Message-----
+From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
+Sent: Wednesday, March 17, 2010 10:30 AM
+To: Rupjyoti Sarmah
+Cc: linux-ide@vger.kernel.org; Jeff Garzik; Rupjyoti Sarmah;
+linuxppc-dev@ozlabs.org; Rupjyoti Sarmah; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 460EX on-chip SATA driver<kernel 2.6.33> <
+resubmission : 01>
+
+Hi,
+
+Just a couple of quick points ...
+
+On Tue, 16 Mar 2010 21:23:16 -0700 "Rupjyoti Sarmah" <rsarmah@amcc.com>
+wrote:
+>
+> This patch enables the on-chip DWC SATA controller of the AppliedMicro
+
+> processor 460EX.
+>=20
+> Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com> ,Mark=20
+> Miesfeld <mmiesfeld@appliedmicro.com>, Prodyut Hazarika=20
+> <phazarika@appliedmicro.com>
+
+Please put one Signed-off-by line per person.
+
+> ---
+>  arch/powerpc/boot/dts/canyonlands.dts |    8 +
+>  drivers/ata/Kconfig                   |    9 +
+>  drivers/ata/Makefile                  |    1 +
+>  drivers/ata/sata_dwc.c                | 1965
+> +++++++++++++++++++++++++++++++++
+>  4 files changed, 1983 insertions(+), 0 deletions(-)  create mode=20
+> 100644 drivers/ata/sata_dwc.c
+
+This patch has been word wrapped by your mailer (or something along the
+way).
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
