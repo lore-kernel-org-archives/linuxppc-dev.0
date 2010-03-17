@@ -1,22 +1,27 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD28FB7D47
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 18:35:57 +1100 (EST)
-In-Reply-To: <1268774376.2335.130.camel@pasglop>
-References: <1267172983-28721-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1267172983-28721-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-3-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1268774376.2335.130.camel@pasglop>
-Subject: Re: [PATCH 2/4] 8xx: Avoid testing for kernel space in ITLB Miss.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF796DDDFE.127D046C-ONC12576E9.00272CEF-C12576E9.0029B630@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 17 Mar 2010 08:35:36 +0100
+	by ozlabs.org (Postfix) with ESMTPS id CEBCCB7D48
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 18:38:22 +1100 (EST)
+Message-ID: <4BA086EF.6080708@embedded-sol.com>
+Date: Wed, 17 Mar 2010 09:38:23 +0200
+From: Felix Radensky <felix@embedded-sol.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: Problem with PCI bus rescan on 460EX
+References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
+	<4B9DC820.2060100@jp.fujitsu.com>
+	<4B9DCF01.4050709@embedded-sol.com>
+	<4B9DF72F.3040105@jp.fujitsu.com>
+	<4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com>
+	<4B9FFAD1.8030309@embedded-sol.com>
+	<4BA02A49.9050101@jp.fujitsu.com>
+In-Reply-To: <4BA02A49.9050101@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, yinghai@kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2010/03/16 22:19:36:
->
-> On Fri, 2010-02-26 at 09:29 +0100, Joakim Tjernlund wrote:
-> > +#ifdef CONFIG_MODULES
-> > +       /* Only modules will cause ITLB Misses as we always
-> > +        * pin the first 8MB of kernel memory */
-> >         andi.   r11, r10, 0x0800        /* Address >= 0x80000000 */
-> >         beq     3f
-> >         lis     r11, swapper_pg_dir@h
-> >         ori     r11, r11, swapper_pg_dir@l
-> >         rlwimi  r10, r11, 0, 2, 19
-> >  3:
-> > +#endif
->
-> You can optimize that further I think...
->
-> You can probably just remove the code above, and add something to
-> do_page_fault() that lazily copies the kernel PGD entries from
-> swapper_pg_dir to the app pgdir. (You can even pre-fill that when
-> creating a new mm).
+Hello Kenj-san
 
-I did look at this at some point and could not figure out how
-to do this.
+Kenji Kaneshige wrote:
+>
+>
+> By the way, I think Yinghai's bridge resource reallocation patch series
+> might help you. It is in Jesse's PCI tree. Please take a look.
+>
+>
+I've tried Jesse's tree on my custom board and on 460EX evaluation board
+(Canyonlands). In both cases the kernel doesn't boot unless PCI support is
+disabled.  Debugging is difficult as the board just resets before 
+anything is
+is printed on console.
+
+Felix.
