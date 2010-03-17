@@ -1,24 +1,40 @@
-Return-Path: <fujita.tomonori@lab.ntt.co.jp>
-Received: from sh.osrg.net (sh.osrg.net [192.16.179.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17133B7DDE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 10:16:33 +1100 (EST)
-Date: Wed, 17 Mar 2010 08:16:23 +0900
-To: beckyb@kernel.crashing.org
-Subject: Re: [PATCH v4 05/11] swiotlb: add swiotlb_set_default_size()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <C200C089-E6B9-4836-A7B5-3233EB2CE5FB@kernel.crashing.org>
-References: <4B9F1E11.80201@yahoo.es>
-	<20100316190805Z.fujita.tomonori@lab.ntt.co.jp>
-	<C200C089-E6B9-4836-A7B5-3233EB2CE5FB@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20100317081003G.fujita.tomonori@lab.ntt.co.jp>
-Cc: x86@kernel.org, linux-ia64@vger.kernel.org, albert_herranz@yahoo.es,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-	fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@lists.ozlabs.org
+Return-Path: <kaneshige.kenji@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id B1D83B7D4E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 12:03:47 +1100 (EST)
+Received: from m5.gw.fujitsu.co.jp ([10.0.50.75])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o2H13jW0025136 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kaneshige.kenji@jp.fujitsu.com); Wed, 17 Mar 2010 10:03:45 +0900
+Received: from smail (m5 [127.0.0.1])
+	by outgoing.m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 5102745DE54
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:45 +0900 (JST)
+Received: from s5.gw.fujitsu.co.jp (s5.gw.fujitsu.co.jp [10.0.50.95])
+	by m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 1930745DE4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:45 +0900 (JST)
+Received: from s5.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id EA84FE18009
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:44 +0900 (JST)
+Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
+	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id A1729E18004
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 10:03:44 +0900 (JST)
+Message-ID: <4BA02A49.9050101@jp.fujitsu.com>
+Date: Wed, 17 Mar 2010 10:03:05 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Felix Radensky <felix@embedded-sol.com>
+Subject: Re: Problem with PCI bus rescan on 460EX
+References: <4B8E6FA3.70503@embedded-sol.com>	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
+	<4B9DC820.2060100@jp.fujitsu.com>
+	<4B9DCF01.4050709@embedded-sol.com>
+	<4B9DF72F.3040105@jp.fujitsu.com>
+	<4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com>
+	<4B9FFAD1.8030309@embedded-sol.com>
+In-Reply-To: <4B9FFAD1.8030309@embedded-sol.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org, yinghai@kernel.org, Alex Chiang <achiang@hp.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,68 +44,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 16 Mar 2010 14:28:09 -0500
-Becky Bruce <beckyb@kernel.crashing.org> wrote:
-
+Felix Radensky wrote:
+> Hello, Kenji-san
 > 
-> On Mar 16, 2010, at 5:08 AM, FUJITA Tomonori wrote:
-> 
-> > On Tue, 16 Mar 2010 06:58:41 +0100
-> > Albert Herranz <albert_herranz@yahoo.es> wrote:
-> >
-> >> FUJITA Tomonori wrote:
-> >>> On Fri, 12 Mar 2010 20:12:40 +0100
-> >>> Albert Herranz <albert_herranz@yahoo.es> wrote:
-> >>>
-> >>>> The current SWIOTLB code uses a default of 64MB for the IO TLB  
-> >>>> area.
-> >>>> This size can be influenced using a kernel command line parameter  
-> >>>> "swiotlb".
-> >>>> Unfortunately, the parsing of the kernel command line is done  
-> >>>> _after_ the
-> >>>> swiotlb is initialized on some architectures.
-> >>>>
-> >>>> This patch adds a new function swiotlb_set_default_size() which  
-> >>>> can be used
-> >>>> before swiotlb_init() to indicate the desired IO TLB area size in  
-> >>>> bytes.
-> >>>>
-> >>>> This will be used later to implement a smaller IO TLB on the  
-> >>>> Nintendo Wii
-> >>>> video game console which just comes with 24MB + 64MB of RAM.
-> >>>>
-> >>>> CC: linuxppc-dev@lists.ozlabs.org
-> >>>> CC: linux-kernel@vger.kernel.org
-> >>>> CC: x86@kernel.org
-> >>>> CC: linux-ia64@vger.kernel.org
-> >>>> Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
-> >>>> ---
-> >>>> include/linux/swiotlb.h |    2 ++
-> >>>> lib/swiotlb.c           |   20 ++++++++++++++++++++
-> >>>> 2 files changed, 22 insertions(+), 0 deletions(-)
-> >>>
-> >>> Please fix the powerpc swiotlb initialization instead.
-> >>>
-> >>> Calling swiotlb_init() before parsing kernel parameters sounds
-> >>> wrong. Any reasons why you can't fix it?
-> >>>
-> >>
-> >> I think that this would be better asked by a PowerPC maintainer. Ben?
-> >>
-> >> If this is really a problem the swiotlb late init may be a solution  
-> >> too in this particular case.
-> >
-> > Hmm, why swiotlb_late_init_with_default_size()?
-> >
-> > Why can't you initialize swiotlb in mem_init() like this (only compile
-> > tested)? Any time before freeing bootmem works for swiotlb.
-> 
-> This is an oops in the original patchset -  I think it should be fine  
-> to move the swiotlb_init later as Fujita suggests, at least for 32-bit  
-> powerpc.  I just booted this on mpc8641 and everything seems OK.
+> Kenji Kaneshige wrote:
+>>
+>> I misunderstood the problem.
+>> My understanding was memory resource was not enabled even though Linux 
+>> set
+>> the Memory Space bit in the command register. But it was not correct. The
+>> bridge memory window was marked unused and Linux didn't try to set Memory
+>> Space bit in the command register. Current my understanding is as 
+>> follows.
+>> Please correct me if I'm still misunderstanding something.
+>>
+>> 1) Your BIOS doesn't assign any resource to the bridge if its child PCI
+>>   hot-plug slot is not occupied.
+>>
+>> 2) At the boot time, pci_assign_unassigned_resources() try to assign
+>>   memory resouces to the bridge using pci_bus_assign_resource(), but
+>>   it was disabled because there are no devices require memory resource.
+>>
+>> 3) And then pci_assign_unassigned_resouces() calls pci_enable_bridge(),
+>>   but Memory Space bit in the command register was not set because no
+>>   memory resource are assigned to the bridge. At the same time,
+>>   pci_dev->enable_cnt was incremented.
+>>
+>> 4) At the rescan time, pci_setup_bridge() and pci_enable_bridge() doesn't
+>>   work because the bridge is already marked "enabled" (i.e.
+>>   pci_dev->enable_cnt is not zero).
+>>
+>> I don't have any concrete idea how to fix that so far, but I can say 
+>> my idea
+>> (pcibios_enable_device() should return an error) was wrong.
+>>
+>>
+> I was wandering if setting is_hotplug_bridge property for this bridge 
+> (e.g. via
+> header quirk) can be an acceptable solution. This will allow passing 
+> hpmemsize
+> kernel parameter, to specify the amount of memory to assign to the bridge.
+> I've tested this approach and it seems to work.
 
-Thanks!
+Looks good to me.
 
-I'll resend this patch in the proper format. This patch fixes the
-problem that powerpc ignores swiotlb boot options so we can merge it
-independent of Albert's patchset.
+By the way, I think Yinghai's bridge resource reallocation patch series
+might help you. It is in Jesse's PCI tree. Please take a look.
+
+Thanks,
+Kenji Kaneshige
