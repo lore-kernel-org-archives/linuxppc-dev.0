@@ -1,25 +1,17 @@
-Return-Path: <rsarmah@amcc.com>
-Received: from sdcmail02.amcc.com (sdcmail02.amcc.com [198.137.200.90])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 55BFBB7D52
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 16:55:55 +1100 (EST)
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp138.mail.ukl.yahoo.com (smtp138.mail.ukl.yahoo.com
+	[77.238.184.69]) by ozlabs.org (Postfix) with SMTP id 7B1B7B7D4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 17:03:50 +1100 (EST)
+Message-ID: <4BA070BF.9000409@yahoo.es>
+Date: Wed, 17 Mar 2010 07:03:43 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] 460EX on-chip SATA driver<kernel 2.6.33> < resubmission :
-	01>
-Date: Tue, 16 Mar 2010 22:55:51 -0700
-Message-ID: <AC311A8E81420D4EBC1F26E6479848FE065B7F54@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <20100317155959.208eea21.sfr@canb.auug.org.au>
-References: <1268646854-27387-1-git-send-email-rsarmah@appliedmicro.com><AC311A8E81420D4EBC1F26E6479848FE065B7F30@SDCEXCHANGE01.ad.amcc.com>
-	<20100317155959.208eea21.sfr@canb.auug.org.au>
-From: "Rupjyoti Sarmah" <rsarmah@amcc.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: Rupjyoti Sarmah <rupjyoti.sarmah@gmail.com>, linux-ide@vger.kernel.org,
-	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] powerpc: fix swiotlb to respect the boot option
+References: <20100317081540C.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100317081540C.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stephen,
+FUJITA Tomonori wrote:
+> powerpc initializes swiotlb before parsing the kernel boot options so
+> swiotlb options (e.g. specifying the swiotlb buffer size) are ignored.
+> 
+> Any time before freeing bootmem works for swiotlb so this patch moves
+> powerpc's swiotlb initialization after parsing the kernel boot
+> options, mem_init (as x86 does).
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Tested-by: Becky Bruce <beckyb@kernel.crashing.org>
 
-Thanks for your suggestions.=20
-I used git-send-email earlier and emails never appeared in the archive.
-This time I sent through outlook & the message appeared in the archive.
-Looks like outlook did that word wrap.
+Thanks!
 
-I am not sure why the emails from the git-send-email did not get
-delivered. At the time of sending I got message delivered  logs.
-
-Regards,
-Rupjyoti Sarmah
-
-
-
-
------Original Message-----
-From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
-Sent: Wednesday, March 17, 2010 10:30 AM
-To: Rupjyoti Sarmah
-Cc: linux-ide@vger.kernel.org; Jeff Garzik; Rupjyoti Sarmah;
-linuxppc-dev@ozlabs.org; Rupjyoti Sarmah; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 460EX on-chip SATA driver<kernel 2.6.33> <
-resubmission : 01>
-
-Hi,
-
-Just a couple of quick points ...
-
-On Tue, 16 Mar 2010 21:23:16 -0700 "Rupjyoti Sarmah" <rsarmah@amcc.com>
-wrote:
->
-> This patch enables the on-chip DWC SATA controller of the AppliedMicro
-
-> processor 460EX.
->=20
-> Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com> ,Mark=20
-> Miesfeld <mmiesfeld@appliedmicro.com>, Prodyut Hazarika=20
-> <phazarika@appliedmicro.com>
-
-Please put one Signed-off-by line per person.
+Tested-by: Albert Herranz <albert_herranz@yahoo.es>
 
 > ---
->  arch/powerpc/boot/dts/canyonlands.dts |    8 +
->  drivers/ata/Kconfig                   |    9 +
->  drivers/ata/Makefile                  |    1 +
->  drivers/ata/sata_dwc.c                | 1965
-> +++++++++++++++++++++++++++++++++
->  4 files changed, 1983 insertions(+), 0 deletions(-)  create mode=20
-> 100644 drivers/ata/sata_dwc.c
-
-This patch has been word wrapped by your mailer (or something along the
-way).
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>  arch/powerpc/kernel/setup_32.c |    6 ------
+>  arch/powerpc/kernel/setup_64.c |    6 ------
+>  arch/powerpc/mm/mem.c          |    6 ++++++
+>  3 files changed, 6 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+> index b152de3..8f58986 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -39,7 +39,6 @@
+>  #include <asm/serial.h>
+>  #include <asm/udbg.h>
+>  #include <asm/mmu_context.h>
+> -#include <asm/swiotlb.h>
+>  
+>  #include "setup.h"
+>  
+> @@ -343,11 +342,6 @@ void __init setup_arch(char **cmdline_p)
+>  		ppc_md.setup_arch();
+>  	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
+>  
+> -#ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> -#endif
+> -
+>  	paging_init();
+>  
+>  	/* Initialize the MMU context management stuff */
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 6354739..9143891 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -61,7 +61,6 @@
+>  #include <asm/xmon.h>
+>  #include <asm/udbg.h>
+>  #include <asm/kexec.h>
+> -#include <asm/swiotlb.h>
+>  #include <asm/mmu_context.h>
+>  
+>  #include "setup.h"
+> @@ -541,11 +540,6 @@ void __init setup_arch(char **cmdline_p)
+>  	if (ppc_md.setup_arch)
+>  		ppc_md.setup_arch();
+>  
+> -#ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> -#endif
+> -
+>  	paging_init();
+>  
+>  	/* Initialize the MMU context management stuff */
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 311224c..448f972 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -48,6 +48,7 @@
+>  #include <asm/sparsemem.h>
+>  #include <asm/vdso.h>
+>  #include <asm/fixmap.h>
+> +#include <asm/swiotlb.h>
+>  
+>  #include "mmu_decl.h"
+>  
+> @@ -320,6 +321,11 @@ void __init mem_init(void)
+>  	struct page *page;
+>  	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
+>  
+> +#ifdef CONFIG_SWIOTLB
+> +	if (ppc_swiotlb_enable)
+> +		swiotlb_init(1);
+> +#endif
+> +
+>  	num_physpages = lmb.memory.size >> PAGE_SHIFT;
+>  	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+>  
