@@ -1,23 +1,28 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D10AB7C09
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 18:40:57 +1100 (EST)
-In-Reply-To: <1268774452.2335.132.camel@pasglop>
-References: <1267172983-28721-1-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1267172983-28721-2-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1267172983-28721-3-git-send-email-Joakim.Tjernlund@transmode.se>	
-	<1267172983-28721-4-git-send-email-Joakim.Tjernlund@transmode.se>
-	<1268774452.2335.132.camel@pasglop>
-Subject: Re: [PATCH 3/4] 8xx: Don't touch ACCESSED when no SWAP.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF67F8524B.B1AEA858-ONC12576E9.0029E36B-C12576E9.002A1FD5@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 17 Mar 2010 08:40:06 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 24005B7C09
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 18:48:03 +1100 (EST)
+Subject: Re: Problem with PCI bus rescan on 460EX
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Felix Radensky <felix@embedded-sol.com>
+In-Reply-To: <4BA086EF.6080708@embedded-sol.com>
+References: <4B8E6FA3.70503@embedded-sol.com>
+	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>
+	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
+	<4B9DC820.2060100@jp.fujitsu.com> <4B9DCF01.4050709@embedded-sol.com>
+	<4B9DF72F.3040105@jp.fujitsu.com> <4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com> <4B9FFAD1.8030309@embedded-sol.com>
+	<4BA02A49.9050101@jp.fujitsu.com> <4BA086EF.6080708@embedded-sol.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Mar 2010 18:47:40 +1100
+Message-ID: <1268812060.2335.174.camel@pasglop>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-pci@vger.kernel.org, yinghai@kernel.org,
+	Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2010/03/16 22:20:52:
->
-> On Fri, 2010-02-26 at 09:29 +0100, Joakim Tjernlund wrote:
-> > Only the swap function cares about the ACCESSED bit in
-> > the pte. Do not waste cycles updateting ACCESSED when swap
-> > is not compiled into the kernel.
-> > ---
->
-> Your changeset comment is a bit misleading since the code isn't actually
-> updating ACCESSED... it's testing if ACCESSED is set and goes to the
-> higher level fault if not (which might then update ACCESSED).
+On Wed, 2010-03-17 at 09:38 +0200, Felix Radensky wrote:
+> Hello Kenj-san
+> 
+> Kenji Kaneshige wrote:
+> >
+> >
+> > By the way, I think Yinghai's bridge resource reallocation patch series
+> > might help you. It is in Jesse's PCI tree. Please take a look.
+> >
+> >
+> I've tried Jesse's tree on my custom board and on 460EX evaluation board
+> (Canyonlands). In both cases the kernel doesn't boot unless PCI support is
+> disabled.  Debugging is difficult as the board just resets before 
+> anything is
+> is printed on console.
 
-Right, I did have one or two variants that did update ACCESSED that
-I experimented with, I guess that I got a bit confused by that.
+This is Jesse tree with the default Canyonlands defconfig ? Hrm... I'll
+have to take a look, somebody mucking with PCI resource allocation is
+very likely to break something :-)
 
-The jury is still out on whether this patch is an improvement or not.
-
-    Jocke
+Cheers,
+Ben.
