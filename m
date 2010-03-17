@@ -1,29 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id E18EDB7D27
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 06:03:20 +1100 (EST)
-Received: by gyf1 with SMTP id 1so626862gyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 12:03:19 -0700 (PDT)
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 5C302B7C48
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 07:03:04 +1100 (EST)
+Received: by gyf1 with SMTP id 1so648527gyf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 13:03:03 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <4B9B7E0A.8090703@freemail.hu>
-References: <4B934CCA.8030608@freemail.hu> <4B95458A.4000304@freemail.hu>
-	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
-	<4B95F298.5040000@freemail.hu>
-	<fa686aa41003082335t5a5d642fi13c81e4b84f7b697@mail.gmail.com>
-	<4B9889AC.4080309@freemail.hu> <20100311062331.GI11655@yookeroo>
-	<4B99DE95.8010304@freemail.hu>
-	<fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
-	<4B9B7E0A.8090703@freemail.hu>
+In-Reply-To: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
+References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 17 Mar 2010 13:02:57 -0600
-Message-ID: <fa686aa41003171202p677bc14g25a6ac38f879ddf1@mail.gmail.com>
-Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
-	PowerPC e200 core?)
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Date: Wed, 17 Mar 2010 14:02:43 -0600
+Message-ID: <fa686aa41003171302v46738069pae51061ba83d0818@mail.gmail.com>
+Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+To: John Linn <john.linn@xilinx.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	John Tyner <jtyner@cs.ucr.edu>, michal.simek@petalogix.com,
+	David Miller <davem@davemloft.net>, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,278 +26,395 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MjAxMC8zLzEzIE7pbWV0aCBN4XJ0b24gPG5tMTI3QGZyZWVtYWlsLmh1PjoKPiBIaSwKPgo+IGhl
-cmUgaXMgYSB2ZXJzaW9uIHdpdGggbW9kaWZpZWQgY3B1IG5vZGUsIHhiYXIgcmFuZ2VzIGFuZCBh
-ZGRlZCBpbnRlcnJ1cHQgc291cmNlcy4KPiBQbGVhc2Ugc2VuZCBjb21tZW50cy4KCkhpIE3hcnRv
-bi4gIEEgZmV3IGNvbW1lbnRzIGJlbG93LgoKPiAtLS0KPiBGcm9tOiBN4XJ0b24gTultZXRoIDxu
-bTEyN0BmcmVlbWFpbC5odT4KPgo+IEFkZCBkZXZpY2UgdHJlZSBmb3IgRnJlZXNjYWxlIE1QQzU1
-NTQuCj4KPiBTaWduZWQtb2ZmLWJ5OiBN4XJ0b24gTultZXRoIDxubTEyN0BmcmVlbWFpbC5odT4K
-PiAtLS0KPiBkaWZmIC11cHJOIGxpbnV4LTIuNi4zMy5vcmlnL2FyY2gvcG93ZXJwYy9ib290L2R0
-cy9tcGM1NTU0LmR0cyBsaW51eC9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvbXBjNTU1NC5kdHMKPiAt
-LS0gbGludXgtMi42LjMzLm9yaWcvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL21wYzU1NTQuZHRzIDE5
-NzAtMDEtMDEgMDE6MDA6MDAuMDAwMDAwMDAwICswMTAwCj4gKysrIGxpbnV4L2FyY2gvcG93ZXJw
-Yy9ib290L2R0cy9tcGM1NTU0LmR0cyCgIKAgMjAxMC0wMy0xMyAxMjo1MjozMi4wMDAwMDAwMDAg
-KzAxMDAKPiBAQCAtMCwwICsxLDQ3MyBAQAo+ICsvKgo+ICsgKiBGcmVlc2NhbGUgTVBDNTU1NCBE
-ZXZpY2UgVHJlZSBTb3VyY2UKPiArICoKPiArICogQmFzZWQgb24gTVBDNTU1My81NTU0IE1pY3Jv
-Y29udHJvbGxlciBSZWZlcmVuY2UgTWFudWFsLCBSZXYuIDQuMCwgMDQvMjAwNwo+ICsgKiBodHRw
-Oi8vd3d3LmZyZWVzY2FsZS5jb20vZmlsZXMvMzJiaXQvZG9jL3JlZl9tYW51YWwvTVBDNTU1M19N
-UEM1NTU0X1JNLnBkZgo+ICsgKiCgLSBCbG9jayBEaWFncmFtOiBwYWdlIDEtMywgRmlndXJlIDEt
-MQo+ICsgKiCgLSBNZW1vcnkgTWFwOiBwYWdlIDEtMjEsIFRhYmxlIDEtMgo+ICsgKiCgLSBJbnRl
-cnJ1cHQgUmVxdWVzdCBTb3VyY2VzOiBwYWdlIDEwLTE2LCBUYWJsZSAxMC05Cj4gKyAqCj4gKyAq
-IENvcHlyaWdodCAyMDEwIE3hcnRvbiBO6W1ldGgKPiArICogTeFydG9uIE7pbWV0aCA8bm0xMjdA
-ZnJlZW1haWwuaHU+Cj4gKyAqCj4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5
-b3UgY2FuIHJlZGlzdHJpYnV0ZSCgaXQgYW5kL29yIG1vZGlmeSBpdAo+ICsgKiB1bmRlciCgdGhl
-IHRlcm1zIG9mIKB0aGUgR05VIEdlbmVyYWwgoFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBi
-eSB0aGUKPiArICogRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyCgZWl0aGVyIHZlcnNpb24gMiBv
-ZiB0aGUgoExpY2Vuc2UsIG9yIChhdCB5b3VyCj4gKyAqIG9wdGlvbikgYW55IGxhdGVyIHZlcnNp
-b24uCj4gKyAqLwo+ICsKPiArL2R0cy12MS87Cj4gKwo+ICsvIHsKPiArIKAgoCCgIG1vZGVsID0g
-Ik1QQzU1NTQiOwo+ICsgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsTVBDNTU1NEVWQiI7IKAgoCCg
-IKAgoC8vIEZyZWVzY2FsZSBNUEM1NTU0IEV2YWx1YXRpb24gQm9hcmQKPiArIKAgoCCgICNhZGRy
-ZXNzLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgI3NpemUtY2VsbHMgPSA8MT47Cj4gKyCgIKAgoCBp
-bnRlcnJ1cHQtcGFyZW50ID0gPCZpbnRjPjsKPiArCj4gKyCgIKAgoCBjcHVzIHsKPiArIKAgoCCg
-IKAgoCCgIKAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gKyCgIKAgoCCgIKAgoCCgICNzaXplLWNl
-bGxzID0gPDA+Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgY3B1QDAgewo+ICsgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIGRldmljZV90eXBlID0gImNwdSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-Y29tcGF0aWJsZSA9ICJQb3dlclBDLDU1NTQiLCAiZnNsLG1wYzU1NTQtZTIwMHo2IiwgImZzbCxw
-b3dlcnBjLWUyMDB6NiI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDA+Owo+ICsg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIGQtY2FjaGUtbGluZS1zaXplID0gPDMyPjsKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCBpLWNhY2hlLWxpbmUtc2l6ZSA9IDwzMj47Cj4gKyCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgZC1jYWNoZS1zaXplID0gPDB4ODAwMD47IKAgoCCgIKAvLyBMMSwgMzJLaUIK
-PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpLWNhY2hlLXNpemUgPSA8MHg4MDAwPjsgoCCgIKAg
-oC8vIEwxLCAzMktpQgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHRpbWViYXNlLWZyZXF1ZW5j
-eSA9IDwwPjsgoCCgIKAgLy8gZnJvbSBib290bG9hZGVyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgYnVzLWZyZXF1ZW5jeSA9IDwwPjsgoCCgIKAgoCCgIKAvLyBmcm9tIGJvb3Rsb2FkZXIKPiAr
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBjbG9jay1mcmVxdWVuY3kgPSA8MD47IKAgoCCgIKAgoC8v
-IGZyb20gYm9vdGxvYWRlcgo+ICsgoCCgIKAgoCCgIKAgoCB9Owo+ICsgoCCgIKAgfTsKPiArCj4g
-KyCgIKAgoCBtZW1vcnlANDAwMDAwMDAgewo+ICsgoCCgIKAgoCCgIKAgoCBkZXZpY2VfdHlwZSA9
-ICJtZW1vcnkiOwo+ICsgoCCgIKAgoCCgIKAgoCByZWcgPSA8MHg0MDAwMDAwMCAweDEwMDAwPjsg
-oCCgIC8vIDMyS2lCIGludGVybmFsIFNSQU0KPiArIKAgoCCgIH07CgpPaC4uLi4gdGhpcyBpcyB0
-aGUgc21hbGwgU1JBTS4gIHllYWgsIHlvdSBzaG91bGQgbW92ZSB0aGlzIHVuZGVyIHRoZQphcHBy
-b3ByaWF0ZSBicmlkZ2Ugbm9kZSwgcmVtb3ZlIHRoZSBkZXZpY2VfdHlwZSBwcm9wZXJ0eSwgYW5k
-IGFkZCBhCmNvbXBhdGlibGUgcHJvcGVydHkuICBNZW1vcnkgbm9kZXMgYXQgdGhlIHJvb3QgbGlr
-ZSB0aGlzIGFyZSB1c2VkIHRvCmRlc2NyaWJlIHdoYXQgaXMgYmFzaWNhbGx5IG1haW4gbWVtb3J5
-ICh3aGF0IExpbnV4IHdpbGwgZXhlY3V0ZSBvdXQKb2YpLiAgWW91J2xsIHdhbnQgYSBuZXcgbWVt
-b3J5IG5vZGUgZm9yIHRoZSBleHRlcm5hbCByYW0gaG9va2VkIHVwIHRvCnRoZSA1NTU0LgoKPiAr
-Cj4gKyCgIKAgoCB4YmFyQGZmZjA0MDAwIHsgoCCgIKAgoCAvLyBTeXN0ZW0gQnVzIENyb3NzYmFy
-IFN3aXRjaCAoWEJBUikKPiArIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1
-NC14YmFyIjsKPiArIKAgoCCgIKAgoCCgIKAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gKyCgIKAg
-oCCgIKAgoCCgICNzaXplLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCAvLyBUaGUgZnVs
-bCBtZW1vcnkgcmFuZ2UgaXMgY292ZXJlZCBieSBYQkFSCj4gKyCgIKAgoCCgIKAgoCCgIHJhbmdl
-czsKPiArIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4ZmZmMDQwMDAgMHg0MDAwPjsKPiArCj4gKyCg
-IKAgoCCgIKAgoCCgIGZsYXNoQDAgeyCgIKAgoCAvLyByZWFkLW9ubHkgRkxBU0gKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWZsYXNoIjsKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCByZWcgPSA8MHgwMDAwMDAwMCAweDIwMDAwMD47IKAgoC8vIDJN
-aUIgaW50ZXJuYWwgRkxBU0gKPiArIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4gKyCgIKAgoCCgIKAg
-oCCgIGJyaWRnZUBjM2YwMDAwMCB7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJs
-ZSA9ICJmc2wsbXBjNTU1NC1wYnJpZGdlLWEiOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgICNh
-ZGRyZXNzLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgICNzaXplLWNlbGxz
-ID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJhbmdlcyA9IDwwIDB4YzAwMDAwMDAg
-MHgyMDAwMDAwMD47Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4YzNmMDAwMDAg
-MHg0MDAwPjsKPiArCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZm1wbGxAM2Y4MDAwMCB7IKAg
-oCCgIKAgLy8gRnJlcXVlbmN5IE1vZHVsYXRlZCBQTEwKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzU1NTQtZm1wbGwiOwo+ICsgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmODAwMDAgMHg0MDAwPjsKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGludGVycnVwdHMgPSA8NDMgMSCgIKAgoC8vIExvc3Mg
-b2YgQ2xvY2sKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-NDQgMT47IKAgoC8vIExvc3Mgb2YgTG9jawo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIH07Cj4g
-Kwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGZsYXNoY29uZmlnQDNmODgwMDAgeyCgIC8vIEZs
-YXNoIENvbmZpZ3VyYXRpb24KPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGNvbXBh
-dGlibGUgPSAiZnNsLG1wYzU1NTQtZmxhc2hjb25maWciOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmODgwMDAgMHg0MDAwPjsKPiArIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCB9Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBzaXVAM2Y4OTAwMCB7IKAg
-oCCgIKAgoCAvLyBTeXN0ZW0gSW50ZWdyYXRpb24gVW5pdAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1NC1zaXUiOwo+ICsgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmOTAwMDAgMHg0MDAwPjsKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGludGVycnVwdHMgPSA8NDUgMSCgIKAgoC8vIEV4dGVy
-bmFsIEludGVycnVwdCBPdmVycnVuIDAtMTUKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgNDYgMSCgIKAgoC8vIEV4dGVybmFsIEludGVycnVwdCAwCj4gKyCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDQ3IDEgoCCgIKAvLyBF
-eHRlcm5hbCBJbnRlcnJ1cHQgMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCA0OCAxIKAgoCCgLy8gRXh0ZXJuYWwgSW50ZXJydXB0IDIKPiArIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNDkgMSCgIKAgoC8vIEV4dGVybmFs
-IEludGVycnVwdCAzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIDUwIDE+OyCgIKAvLyBFeHRlcm5hbCBJbnRlcnJ1cHQgNC0xNQo+ICsgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIH07CgpUaGlzIGRvZXNuJ3QgbG9vayBxdWl0ZSByaWdodC4uLi4gL21lIGdvZXMg
-dG8gbG9vayBhdCB0aGUgNTU1NApyZWZlcmVuY2UgbWFudWFsLi4uLgoKT2theSwgc28gYWxsIHRo
-ZSBleHRlcm5hbCBJUlFzIGdvIHRocm91Z2ggdGhlIFNJVSB0aGVuLCBldmVuIHRob3VnaAp0aGUg
-Zmlyc3QgNCBnZXQgcGFzc2VkIHN0cmFpZ2h0IHRocm91Z2ggdG8gdGhlIGludGM/ICBBbmQgSSBz
-ZWUgdGhhdAphbGwgdGhlIGxldmVsL2VkZ2Ugc2Vuc2luZyBhbmQgbWFza2luZy9hY2tub3dsZWRn
-aW5nIGlzIGRvbmUgYXQgdGhlClNJVSBsZXZlbCwgbm90IHRoZSBpbnRjIGxldmVsLCBjb3JyZWN0
-PyAgU28sIHdoYXQgeW91IGVmZmVjdGl2ZWx5IGhhdmUKaXMgdGhlIFNJVSBpcyAqYW5vdGhlciog
-aW50ZXJydXB0IGNvbnRyb2xsZXIgdGhhdCBpcyBjYXNjYWRlZCB0byB0aGUKaW50Yy4gIFRoZXJl
-Zm9yZSB5b3UgbmVlZCB0byBhZGQgdGhlIGZvbGxvd2luZyB0byB0aGlzIG5vZGU6CgojaW50ZXJy
-dXB0LWNlbGxzID0gPDI+OyAgIC8vIGNlbGwxOmV4dGlycSMsIGNlbGwyOmxldmVsL2VkZ2UgZmxh
-Z3MKaW50ZXJydXB0LWNvbnRyb2xsZXI7CgpBbHNvIGdpdmUgdGhlIG5vZGUgYSBsYWJlbCBzbyB0
-aGF0IG5vZGVzIGZvciBleHRlcm5hbCBkZXZpY2VzIGNhbgpyZWZlcmVuY2UgaXQgZm9yIGhvb2tp
-bmcgdXAgZXh0ZXJuYWwgaXJxcyBieSBvdmVycmlkaW5nIHRoZSB0b3AtbGV2ZWwKaW50ZXJydXB0
-LXBhcmVudCBwcm9wZXJ0eS4KCkFsc28sIGl0IHdvdWxkIGFwcGVhciB0aGF0IGludGMgaW50ZXJy
-dXB0cyBkb24ndCBoYXZlIGFueSBsZXZlbC9lZGdlCmNvbmZpZ3VyYXRpb24gYXNzb2NpYXRlZCB3
-aXRoIHRoZW0uICBUaGV5IGFyZSBlaXRoZXIgYXNzZXJ0ZWQsIG9yIHRoZXkKYXJlIG5vdCwgY29y
-cmVjdD8gIEF0IHRoZSBtb21lbnQgeW91J3JlIHNwZWNpZnlpbmcgZXZlcnkgaW50YwppbnRlcnJ1
-cHQgd2l0aCAyIGNlbGxzLCBhbmQgdGhlIDJuZCBjZWxsIGlzIGFsd2F5cyAnMScuICBJIHRoaW5r
-IHlvdQpjYW4gY2hhbmdlICNpbnRlcnJ1cHQtY2VsbHMgdG8gPDE+IGluIHRoZSBpbnRjIG5vZGUg
-YW5kIGRyb3AgdGhlICcxJwpldmVyeXdoZXJlLgoKV2hlbiB5b3Ugd3JpdGUgeW91ciBpbnRjIGRy
-aXZlciwgeW91J2xsIGFsc28gbmVlZCB0byB3cml0ZSB0aGUKY2FzY2FkZWQgZHJpdmVyIGZvciB0
-aGUgZXh0ZXJuYWwgSVJRcy4KCj4gKwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGVtaW9zQDNm
-YTAwMDAgeyCgIKAgoCCgIC8vIE1vZHVsYXIgVGltZXIgU3lzdGVtCj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWVtaW9zIjsKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmEwMDAwIDB4NDAwMD47Cj4g
-KyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpbnRlcnJ1cHRzID0gPDUxIDEgoCCgIKAv
-LyBDaGFubmVsIDAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgNTIgMSCgIKAgoC8vIENoYW5uZWwgMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCA1MyAxIKAgoCCgLy8gQ2hhbm5lbCAyCj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDU0IDEgoCCgIKAvLyBDaGFubmVsIDMKPiAr
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNTUgMSCgIKAgoC8v
-IENoYW5uZWwgNAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCA1NiAxIKAgoCCgLy8gQ2hhbm5lbCA1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIDU3IDEgoCCgIKAvLyBDaGFubmVsIDYKPiArIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNTggMSCgIKAgoC8vIENoYW5uZWwgNwo+ICsg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA1OSAxIKAgoCCgLy8g
-Q2hhbm5lbCA4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IDYwIDEgoCCgIKAvLyBDaGFubmVsIDkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgNjEgMSCgIKAgoC8vIENoYW5uZWwgMTAKPiArIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjIgMSCgIKAgoC8vIENoYW5uZWwgMTEKPiAr
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjMgMSCgIKAgoC8v
-IENoYW5uZWwgMTIKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgNjQgMSCgIKAgoC8vIENoYW5uZWwgMTMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgNjUgMSCgIKAgoC8vIENoYW5uZWwgMTQKPiArIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjYgMSCgIKAgoC8vIENoYW5uZWwgMTUK
-PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjAyIDEgoCCg
-IC8vIENoYW5uZWwgMTYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgMjAzIDEgoCCgIC8vIENoYW5uZWwgMTcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA0IDEgoCCgIC8vIENoYW5uZWwgMTgKPiArIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA1IDEgoCCgIC8vIENoYW5uZWwg
-MTkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA2IDEg
-oCCgIC8vIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgMjA3IDEgoCCgIC8vIENoYW5uZWwgMjEKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA4IDEgoCCgIC8vIENoYW5uZWwgMjIKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA5IDE+OyCgIC8vIENoYW5u
-ZWwgMjMKClRoZXNlIGxvbmcgbGlzdHMgYm90aGVyIG1lLCBidXQgbG9va2luZyBhdCB0aGUgbWFu
-dWFsIHRoZXkgc2VlbSB0bwpkZXNjcmliZSB0aGUgYWN0dWFsIGhhcmR3YXJlIGFyY2hpdGVjdHVy
-ZSwgc28gSSB0aGluayB0aGV5IGFyZQpwcm9iYWJseSBmaW5lLiAgQnV0IHlvdSBtYXkgd2FudCB0
-byBjb21wYWN0IHlvdXIgZm9ybWF0dGluZyBzb21ld2hhdC4KWW91IGNhbiBwcm9iYWJseSBsaXN0
-IG1vcmUgdGhhbiBvbmUgY2hhbm5lbCBwZXIKc291cmNlIGxpbmUgaW4gdGhlIGZpbGUuCgpEaXR0
-byB0aHJvdWdoIHRoZSByZXN0IG9mIHRoZSBmaWxlLgoKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCB9Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBldHB1QDNmYzAwMDAgeyCgIKAgoCCg
-IKAvLyBFbmhhbmNlZCBUaW1lIFByb2Nlc3NpbmcgVW5pdAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1NC1ldHB1IjsKPiArIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmMwMDAwIDB4NDAwMD47Cj4gKyCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpbnRlcnJ1cHRzID0gPDY3IDEgoCCgIKAvLyBHbG9i
-YWwgRXhjZXB0aW9uCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIDY4IDEgoCCgIKAvLyBBIENoYW5uZWwgMAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCA2OSAxIKAgoCCgLy8gQSBDaGFubmVsIDEKPiArIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNzAgMSCgIKAgoC8vIEEgQ2hhbm5l
-bCAyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDcxIDEg
-oCCgIKAvLyBBIENoYW5uZWwgMwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCA3MiAxIKAgoCCgLy8gQSBDaGFubmVsIDQKPiArIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNzMgMSCgIKAgoC8vIEEgQ2hhbm5lbCA1Cj4gKyCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDc0IDEgoCCgIKAvLyBB
-IENoYW5uZWwgNgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCA3NSAxIKAgoCCgLy8gQSBDaGFubmVsIDcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgNzYgMSCgIKAgoC8vIEEgQ2hhbm5lbCA4Cj4gKyCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDc3IDEgoCCgIKAvLyBBIENoYW5uZWwg
-OQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA3OCAxIKAg
-oCCgLy8gQSBDaGFubmVsIDEwCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIDc5IDEgoCCgIKAvLyBBIENoYW5uZWwgMTEKPiArIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgODAgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxMgo+ICsg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4MSAxIKAgoCCgLy8g
-QSBDaGFubmVsIDEzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIDgyIDEgoCCgIKAvLyBBIENoYW5uZWwgMTQKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgODMgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxNQo+ICsgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4NCAxIKAgoCCgLy8gQSBDaGFu
-bmVsIDE2Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDg1
-IDEgoCCgIKAvLyBBIENoYW5uZWwgMTcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgODYgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxOAo+ICsgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4NyAxIKAgoCCgLy8gQSBDaGFubmVsIDE5
-Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDg4IDEgoCCg
-IKAvLyBBIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgODkgMSCgIKAgoC8vIEEgQ2hhbm5lbCAyMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA5MCAxIKAgoCCgLy8gQSBDaGFubmVsIDIyCj4gKyCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDkxIDEgoCCgIKAvLyBB
-IENoYW5uZWwgMjMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgOTIgMSCgIKAgoC8vIEEgQ2hhbm5lbCAyNAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCA5MyAxIKAgoCCgLy8gQSBDaGFubmVsIDI1Cj4gKyCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDk0IDEgoCCgIKAvLyBBIENoYW5u
-ZWwgMjYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgOTUg
-MSCgIKAgoC8vIEEgQ2hhbm5lbCAyNwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCA5NiAxIKAgoCCgLy8gQSBDaGFubmVsIDI4Cj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDk3IDEgoCCgIKAvLyBBIENoYW5uZWwgMjkK
-PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgOTggMSCgIKAg
-oC8vIEEgQ2hhbm5lbCAzMAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCA5OSAxIKAgoCCgLy8gQSBDaGFubmVsIDMxCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI0MyAxIKAgoCAvLyBCIENoYW5uZWwgMAo+ICsgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNDQgMSCgIKAgLy8gQiBD
-aGFubmVsIDEKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-MjQ1IDEgoCCgIC8vIEIgQ2hhbm5lbCAyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIDI0NiAxIKAgoCAvLyBCIENoYW5uZWwgMwo+ICsgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNDcgMSCgIKAgLy8gQiBDaGFubmVsIDQK
-PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjQ4IDEgoCCg
-IC8vIEIgQ2hhbm5lbCA1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIDI0OSAxIKAgoCAvLyBCIENoYW5uZWwgNgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNTAgMSCgIKAgLy8gQiBDaGFubmVsIDcKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjUxIDEgoCCgIC8vIEIgQ2hh
-bm5lbCA4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1
-MiAxIKAgoCAvLyBCIENoYW5uZWwgOQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCAyNTMgMSCgIKAgLy8gQiBDaGFubmVsIDEwCj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1NCAxIKAgoCAvLyBCIENoYW5uZWwgMTEK
-PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjU1IDEgoCCg
-IC8vIEIgQ2hhbm5lbCAxMgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCAyNTYgMSCgIKAgLy8gQiBDaGFubmVsIDEzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1NyAxIKAgoCAvLyBCIENoYW5uZWwgMTQKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjU4IDEgoCCgIC8vIEIg
-Q2hhbm5lbCAxNQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCAyNTkgMSCgIKAgLy8gQiBDaGFubmVsIDE2Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIDI2MCAxIKAgoCAvLyBCIENoYW5uZWwgMTcKPiArIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjYxIDEgoCCgIC8vIEIgQ2hhbm5l
-bCAxOAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjIg
-MSCgIKAgLy8gQiBDaGFubmVsIDE5Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIDI2MyAxIKAgoCAvLyBCIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjY0IDEgoCCgIC8vIEIgQ2hhbm5lbCAyMQo+
-ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjUgMSCgIKAg
-Ly8gQiBDaGFubmVsIDIyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIDI2NiAxIKAgoCAvLyBCIENoYW5uZWwgMjMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjY3IDEgoCCgIC8vIEIgQ2hhbm5lbCAyNAo+ICsgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjggMSCgIKAgLy8gQiBD
-aGFubmVsIDI1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IDI2OSAxIKAgoCAvLyBCIENoYW5uZWwgMjYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgMjcwIDEgoCCgIC8vIEIgQ2hhbm5lbCAyNwo+ICsgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNzEgMSCgIKAgLy8gQiBDaGFubmVs
-IDI4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI3MiAx
-IKAgoCAvLyBCIENoYW5uZWwgMjkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgMjczIDEgoCCgIC8vIEIgQ2hhbm5lbCAzMAo+ICsgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNzQgMT47IKAgLy8gQiBDaGFubmVsIDMxCgpB
-cmUgQSBhbmQgQiB0d28gaW5zdGFuY2VzIG9mIHRoZSBzYW1lIGhhcmR3YXJlIGJsb2NrPyAgQ29u
-c2lkZXIgaGF2aW5nCmEgc3Vibm9kZSBmb3IgZWFjaCBpbnN0YW5jZSB0byBnaXZlIHNvbWUgbG9n
-aWNhbCBzZXBhcmF0aW9uIHRvIHRoaXMKbGlzdCBhbmQgYXNzb2NpYXRlIHJlZ2lzdGVyIHJhbmdl
-cyB3aXRoIGluc3RhbmNlcy4gIERvaW5nIGl0IHRoYXQgd2F5CmFsc28gbWFrZXMgaXQgZWFzaWVy
-IGZvciBleHRlcm5hbCBkZXZpY2Ugbm9kZXMgdG8gZGVzY3JpYmUgYW4KYXR0YWNobWVudCB0byBh
-IHBhcnRpY3VsYXIgY2hhbm5lbC4KCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4g
-KyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZXRwdWRhdGFAM2ZjODAwMCB7IKAgoCCgLy8gZVRQVSBT
-aGFyZWQgRGF0YSBNZW1vcnkgKFBhcmFtZXRlciBSQU0pCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWV0cHVkYXRhIjsKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmM4MDAwIDB4NDAwMD47Cj4gKyCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZXRw
-dWRhdGFAM2ZjYzAwMCB7IKAgoCCgLy8gZVRQVSBTaGFyZWQgRGF0YSBNZW1vcnkgKFBhcmFtZXRl
-ciBSQU0pIG1pcnJvcgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJs
-ZSA9ICJmc2wsbXBjNTU1NC1ldHB1ZGF0YSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCByZWcgPSA8MHgwM2ZjYzAwMCAweDQwMDA+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IH07Cj4gKwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGV0cHVjb2RlQDNmZDAwMDAgeyCgIKAg
-oCCgIKAgoCCgLy8gZVRQVSBTaGFyZWQgQ29kZSBSQU0KPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzU1NTQtZXRwdWNvZGUiOwo+ICsgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmZDAwMDAgMHg0MDAwPjsKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCB9OwoKU2hvdWxkIGFsbCB0aGlzIGV0cHUgc3R1ZmYgYmUgcGFy
-dCBvZiB0aGUgZXRwdSBub2RlPwoKVGhpcyBsb29rcyBsaWtlIGl0IGlzIGdldHRpbmcgY2xvc2Uu
-ICBPbmNlIHlvdSd2ZSBnb3QgYSB2ZXJzaW9uIHRoYXQKbG9va3MgZ29vZCB0byBldmVyeW9uZSwg
-eW91IGFsc28gbmVlZCB0byBkb2N1bWVudCB3aGF0IHRoZSBuZXcKYmluZGluZ3MgbWVhbi4gIEVz
-c2VudGlhbGx5IHRoaXMgdGFzayBpbnZvbHZlcyB3cml0aW5nIGRvd24gYWxsIHRoZQpuZXcgY29t
-cGF0aWJsZSBwcm9wZXJ0eSB2YWx1ZXMgdGhhdCB5b3UndmUgZGVmaW5lZCwgd2hhdCBkZXZpY2Ug
-ZWFjaApvbmUgZGVzY3JpYmVzLCBhbmQgd2hhdCBwcm9wZXJ0aWVzL3N1Ym5vZGVzIGFyZSBleHBl
-Y3RlZCBmb3IgZWFjaCBuZXcKY29tcGF0aWJsZSB2YWx1ZS4gIERvY3VtZW50YXRpb24gY3VycmVu
-dGx5IGdvZXMgaW4gdGhlCkRvY3VtZW50YXRpb24vcG93ZXJwYy9kdHMtYmluZGluZ3MgZGlyZWN0
-b3J5LCBhbmQgeW91IGNhbiBzZWUgbG90cyBvZgpleGFtcGxlcyB0aGVyZS4gIChIb3dldmVyLCBJ
-J20gaG9waW5nIHRvIG1vdmluZyBpdCB0bwpodHRwOi8vZGV2aWNldHJlZS5vcmcgaW4gdGhlIG5l
-YXIgZnV0dXJlIHNvIGl0IGNhbiBiZSBzaGFyZWQgYnkgb3RoZXIKT1Nlcy4gIEkndmUgY3VycmVu
-dGx5IGdvdCBhIHRlc3Qgc2l0ZSB1cCBhdCBodHRwOi8vZmR0LnNlY3JldGxhYi5jYSkuCgpUaGUg
-cnVsZSBpcyB0aGF0IHdlIHdpbGwgbm90IG1lcmdlIGRyaXZlcnMgdXNpbmcgbmV3IE9GIGJpbmRp
-bmdzIHVudGlsCnRob3NlIGJpbmRpbmdzIGhhdmUgYmVlbiBkb2N1bWVudGVkIGFuZCByZXZpZXdl
-ZC4KCkNoZWVycywKZy4K
+On Fri, Mar 12, 2010 at 7:05 PM, John Linn <john.linn@xilinx.com> wrote:
+> This patch adds support for using the LL TEMAC Ethernet driver on
+> non-Virtex 5 platforms by adding support for accessing the Soft DMA
+> registers as if they were memory mapped instead of solely through the
+> DCR's (available on the Virtex 5).
+>
+> The patch also updates the driver so that it runs on the MicroBlaze.
+> The changes were tested on the PowerPC 440, PowerPC 405, and the
+> MicroBlaze platforms.
+>
+> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+> Signed-off-by: John Linn <john.linn@xilinx.com>
+> ---
+
+I've not booted this, but it looks right, and it compiles fine.  The
+issues that Michal raised need to be delt with too, but they are
+preexisting bugs unrelated to this change which you should fix up in a
+separate patch.
+
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+>
+> V2 - Incorporated comments from Grant and added more logic to allow the d=
+river
+> to work on MicroBlaze.
+>
+> =A0drivers/net/Kconfig =A0 =A0 =A0 =A0 | =A0 =A01 -
+> =A0drivers/net/ll_temac.h =A0 =A0 =A0| =A0 17 +++++-
+> =A0drivers/net/ll_temac_main.c | =A0124 +++++++++++++++++++++++++++++++++=
++---------
+> =A03 files changed, 113 insertions(+), 29 deletions(-)
+>
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index 9b6efe1..5402105 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2443,7 +2443,6 @@ config MV643XX_ETH
+> =A0config XILINX_LL_TEMAC
+> =A0 =A0 =A0 =A0tristate "Xilinx LL TEMAC (LocalLink Tri-mode Ethernet MAC=
+) driver"
+> =A0 =A0 =A0 =A0select PHYLIB
+> - =A0 =A0 =A0 depends on PPC_DCR_NATIVE
+> =A0 =A0 =A0 =A0help
+> =A0 =A0 =A0 =A0 =A0This driver supports the Xilinx 10/100/1000 LocalLink =
+TEMAC
+> =A0 =A0 =A0 =A0 =A0core used in Xilinx Spartan and Virtex FPGAs
+> diff --git a/drivers/net/ll_temac.h b/drivers/net/ll_temac.h
+> index 1af66a1..915aa34 100644
+> --- a/drivers/net/ll_temac.h
+> +++ b/drivers/net/ll_temac.h
+> @@ -5,8 +5,11 @@
+> =A0#include <linux/netdevice.h>
+> =A0#include <linux/of.h>
+> =A0#include <linux/spinlock.h>
+> +
+> +#ifdef CONFIG_PPC_DCR
+> =A0#include <asm/dcr.h>
+> =A0#include <asm/dcr-regs.h>
+> +#endif
+>
+> =A0/* packet size info */
+> =A0#define XTE_HDR_SIZE =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 14 =A0 =A0 =
+=A0/* size of Ethernet header */
+> @@ -290,8 +293,12 @@ This option defaults to enabled (set) */
+>
+> =A0#define TX_CONTROL_CALC_CSUM_MASK =A0 1
+>
+> +/* Align the IP data in the packet on word boundaries as MicroBlaze
+> + * needs it.
+> + */
+> +
+> =A0#define XTE_ALIGN =A0 =A0 =A0 32
+> -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
+> +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
+>
+> =A0#define MULTICAST_CAM_TABLE_NUM 4
+>
+> @@ -335,9 +342,15 @@ struct temac_local {
+> =A0 =A0 =A0 =A0struct mii_bus *mii_bus; =A0 =A0 =A0 =A0/* MII bus referen=
+ce */
+> =A0 =A0 =A0 =A0int mdio_irqs[PHY_MAX_ADDR]; =A0 =A0/* IRQs table for MDIO=
+ bus */
+>
+> - =A0 =A0 =A0 /* IO registers and IRQs */
+> + =A0 =A0 =A0 /* IO registers, dma functions and IRQs */
+> =A0 =A0 =A0 =A0void __iomem *regs;
+> + =A0 =A0 =A0 void __iomem *sdma_regs;
+> +#ifdef CONFIG_PPC_DCR
+> =A0 =A0 =A0 =A0dcr_host_t sdma_dcrs;
+> +#endif
+> + =A0 =A0 =A0 u32 (*dma_in)(struct temac_local *, int);
+> + =A0 =A0 =A0 void (*dma_out)(struct temac_local *, int, u32);
+> +
+> =A0 =A0 =A0 =A0int tx_irq;
+> =A0 =A0 =A0 =A0int rx_irq;
+> =A0 =A0 =A0 =A0int emac_num;
+> diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+> index a18e348..9aedf9b 100644
+> --- a/drivers/net/ll_temac_main.c
+> +++ b/drivers/net/ll_temac_main.c
+> @@ -20,9 +20,6 @@
+> =A0* =A0 or rx, so this should be okay.
+> =A0*
+> =A0* TODO:
+> - * - Fix driver to work on more than just Virtex5. =A0Right now the driv=
+er
+> - * =A0 assumes that the locallink DMA registers are accessed via DCR
+> - * =A0 instructions.
+> =A0* - Factor out locallink DMA code into separate driver
+> =A0* - Fix multicast assignment.
+> =A0* - Fix support for hardware checksumming.
+> @@ -115,17 +112,86 @@ void temac_indirect_out32(struct temac_local *lp, i=
+nt reg, u32 value)
+> =A0 =A0 =A0 =A0temac_iow(lp, XTE_CTL0_OFFSET, CNTLREG_WRITE_ENABLE_MASK |=
+ reg);
+> =A0}
+>
+> +/**
+> + * temac_dma_in32 - Memory mapped DMA read, this function expects a
+> + * register input that is based on DCR word addresses which
+> + * are then converted to memory mapped byte addresses
+> + */
+> =A0static u32 temac_dma_in32(struct temac_local *lp, int reg)
+> =A0{
+> - =A0 =A0 =A0 return dcr_read(lp->sdma_dcrs, reg);
+> + =A0 =A0 =A0 return in_be32((u32 *)(lp->sdma_regs + (reg << 2)));
+> =A0}
+>
+> +/**
+> + * temac_dma_out32 - Memory mapped DMA read, this function expects a
+> + * register input that is based on DCR word addresses which
+> + * are then converted to memory mapped byte addresses
+> + */
+> =A0static void temac_dma_out32(struct temac_local *lp, int reg, u32 value=
+)
+> =A0{
+> + =A0 =A0 =A0 out_be32((u32 *)(lp->sdma_regs + (reg << 2)), value);
+> +}
+> +
+> +/* DMA register access functions can be DCR based or memory mapped.
+> + * The PowerPC 440 is DCR based, the PowerPC 405 and MicroBlaze are both
+> + * memory mapped.
+> + */
+> +#ifdef CONFIG_PPC_DCR
+> +
+> +/**
+> + * temac_dma_dcr_in32 - DCR based DMA read
+> + */
+> +static u32 temac_dma_dcr_in(struct temac_local *lp, int reg)
+> +{
+> + =A0 =A0 =A0 return dcr_read(lp->sdma_dcrs, reg);
+> +}
+> +
+> +/**
+> + * temac_dma_dcr_out32 - DCR based DMA write
+> + */
+> +static void temac_dma_dcr_out(struct temac_local *lp, int reg, u32 value=
+)
+> +{
+> =A0 =A0 =A0 =A0dcr_write(lp->sdma_dcrs, reg, value);
+> =A0}
+>
+> =A0/**
+> + * temac_dcr_setup - If the DMA is DCR based, then setup the address and
+> + * I/O =A0functions
+> + */
+> +static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devi=
+ce_node *np)
+> +{
+> + =A0 =A0 =A0 unsigned int dcrs;
+> +
+> + =A0 =A0 =A0 /* setup the dcr address mapping if it's in the device tree=
+ */
+> +
+> + =A0 =A0 =A0 dcrs =3D dcr_resource_start(np, 0);
+> + =A0 =A0 =A0 if (dcrs !=3D 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->sdma_dcrs =3D dcr_map(np, dcrs, dcr_res=
+ource_len(np, 0));
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->dma_in =3D temac_dma_dcr_in;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->dma_out =3D temac_dma_dcr_out;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 /* no DCR in the device tree, indicate a failure */
+> + =A0 =A0 =A0 return -1;
+> +}
+> +
+> +#else
+> +
+> +/*
+> + * temac_dcr_setup - This is a stub for when DCR is not supported,
+> + * such as with MicroBlaze
+> + */
+> +static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devi=
+ce_node *np)
+> +{
+> + =A0 =A0 =A0 return -1;
+> +}
+> +
+> +#endif
+> +
+> +/**
+> =A0* temac_dma_bd_init - Setup buffer descriptor rings
+> =A0*/
+> =A0static int temac_dma_bd_init(struct net_device *ndev)
+> @@ -172,23 +238,23 @@ static int temac_dma_bd_init(struct net_device *nde=
+v)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0lp->rx_bd_v[i].app0 =3D STS_CTRL_APP0_IRQO=
+NEND;
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 temac_dma_out32(lp, TX_CHNL_CTRL, 0x10220400 |
+> + =A0 =A0 =A0 lp->dma_out(lp, TX_CHNL_CTRL, 0x10220400 |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_EN |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_DLY_EN |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_COAL_EN);
+> =A0 =A0 =A0 =A0/* 0x10220483 */
+> =A0 =A0 =A0 =A0/* 0x00100483 */
+> - =A0 =A0 =A0 temac_dma_out32(lp, RX_CHNL_CTRL, 0xff010000 |
+> + =A0 =A0 =A0 lp->dma_out(lp, RX_CHNL_CTRL, 0xff010000 |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_EN |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_DLY_EN |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_COAL_EN |
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0CHNL_CTRL_IRQ_IOE);
+> =A0 =A0 =A0 =A0/* 0xff010283 */
+>
+> - =A0 =A0 =A0 temac_dma_out32(lp, RX_CURDESC_PTR, =A0lp->rx_bd_p);
+> - =A0 =A0 =A0 temac_dma_out32(lp, RX_TAILDESC_PTR,
+> + =A0 =A0 =A0 lp->dma_out(lp, RX_CURDESC_PTR, =A0lp->rx_bd_p);
+> + =A0 =A0 =A0 lp->dma_out(lp, RX_TAILDESC_PTR,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->rx_bd_p + (sizeof(*lp->rx=
+_bd_v) * (RX_BD_NUM - 1)));
+> - =A0 =A0 =A0 temac_dma_out32(lp, TX_CURDESC_PTR, lp->tx_bd_p);
+> + =A0 =A0 =A0 lp->dma_out(lp, TX_CURDESC_PTR, lp->tx_bd_p);
+>
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+> @@ -426,9 +492,9 @@ static void temac_device_reset(struct net_device *nde=
+v)
+> =A0 =A0 =A0 =A0temac_indirect_out32(lp, XTE_RXC1_OFFSET, val & ~XTE_RXC1_=
+RXEN_MASK);
+>
+> =A0 =A0 =A0 =A0/* Reset Local Link (DMA) */
+> - =A0 =A0 =A0 temac_dma_out32(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
+> + =A0 =A0 =A0 lp->dma_out(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
+> =A0 =A0 =A0 =A0timeout =3D 1000;
+> - =A0 =A0 =A0 while (temac_dma_in32(lp, DMA_CONTROL_REG) & DMA_CONTROL_RS=
+T) {
+> + =A0 =A0 =A0 while (lp->dma_in(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0udelay(1);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (--timeout =3D=3D 0) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(&ndev->dev,
+> @@ -436,7 +502,7 @@ static void temac_device_reset(struct net_device *nde=
+v)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 temac_dma_out32(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
+> + =A0 =A0 =A0 lp->dma_out(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
+>
+> =A0 =A0 =A0 =A0temac_dma_bd_init(ndev);
+>
+> @@ -597,7 +663,7 @@ static int temac_start_xmit(struct sk_buff *skb, stru=
+ct net_device *ndev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0lp->tx_bd_tail =3D 0;
+>
+> =A0 =A0 =A0 =A0/* Kick off the transfer */
+> - =A0 =A0 =A0 temac_dma_out32(lp, TX_TAILDESC_PTR, tail_p); /* DMA start =
+*/
+> + =A0 =A0 =A0 lp->dma_out(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
+>
+> =A0 =A0 =A0 =A0return NETDEV_TX_OK;
+> =A0}
+> @@ -663,7 +729,7 @@ static void ll_temac_recv(struct net_device *ndev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cur_p =3D &lp->rx_bd_v[lp->rx_bd_ci];
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bdstat =3D cur_p->app0;
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 temac_dma_out32(lp, RX_TAILDESC_PTR, tail_p);
+> + =A0 =A0 =A0 lp->dma_out(lp, RX_TAILDESC_PTR, tail_p);
+>
+> =A0 =A0 =A0 =A0spin_unlock_irqrestore(&lp->rx_lock, flags);
+> =A0}
+> @@ -674,8 +740,8 @@ static irqreturn_t ll_temac_tx_irq(int irq, void *_nd=
+ev)
+> =A0 =A0 =A0 =A0struct temac_local *lp =3D netdev_priv(ndev);
+> =A0 =A0 =A0 =A0unsigned int status;
+>
+> - =A0 =A0 =A0 status =3D temac_dma_in32(lp, TX_IRQ_REG);
+> - =A0 =A0 =A0 temac_dma_out32(lp, TX_IRQ_REG, status);
+> + =A0 =A0 =A0 status =3D lp->dma_in(lp, TX_IRQ_REG);
+> + =A0 =A0 =A0 lp->dma_out(lp, TX_IRQ_REG, status);
+>
+> =A0 =A0 =A0 =A0if (status & (IRQ_COAL | IRQ_DLY))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0temac_start_xmit_done(lp->ndev);
+> @@ -692,8 +758,8 @@ static irqreturn_t ll_temac_rx_irq(int irq, void *_nd=
+ev)
+> =A0 =A0 =A0 =A0unsigned int status;
+>
+> =A0 =A0 =A0 =A0/* Read and clear the status registers */
+> - =A0 =A0 =A0 status =3D temac_dma_in32(lp, RX_IRQ_REG);
+> - =A0 =A0 =A0 temac_dma_out32(lp, RX_IRQ_REG, status);
+> + =A0 =A0 =A0 status =3D lp->dma_in(lp, RX_IRQ_REG);
+> + =A0 =A0 =A0 lp->dma_out(lp, RX_IRQ_REG, status);
+>
+> =A0 =A0 =A0 =A0if (status & (IRQ_COAL | IRQ_DLY))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ll_temac_recv(lp->ndev);
+> @@ -794,7 +860,7 @@ static ssize_t temac_show_llink_regs(struct device *d=
+ev,
+> =A0 =A0 =A0 =A0int i, len =3D 0;
+>
+> =A0 =A0 =A0 =A0for (i =3D 0; i < 0x11; i++)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 len +=3D sprintf(buf + len, "%.8x%s", temac=
+_dma_in32(lp, i),
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 len +=3D sprintf(buf + len, "%.8x%s", lp->d=
+ma_in(lp, i),
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (i % 8) =3D=
+=3D 7 ? "\n" : " ");
+> =A0 =A0 =A0 =A0len +=3D sprintf(buf + len, "\n");
+>
+> @@ -820,7 +886,6 @@ temac_of_probe(struct of_device *op, const struct of_=
+device_id *match)
+> =A0 =A0 =A0 =A0struct net_device *ndev;
+> =A0 =A0 =A0 =A0const void *addr;
+> =A0 =A0 =A0 =A0int size, rc =3D 0;
+> - =A0 =A0 =A0 unsigned int dcrs;
+>
+> =A0 =A0 =A0 =A0/* Init network device structure */
+> =A0 =A0 =A0 =A0ndev =3D alloc_etherdev(sizeof(*lp));
+> @@ -870,13 +935,20 @@ temac_of_probe(struct of_device *op, const struct o=
+f_device_id *match)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto nodev;
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 dcrs =3D dcr_resource_start(np, 0);
+> - =A0 =A0 =A0 if (dcrs =3D=3D 0) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "could not get DMA regist=
+er address\n");
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto nodev;
+> + =A0 =A0 =A0 /* Setup the DMA register accesses, could be DCR or memory =
+mapped */
+> + =A0 =A0 =A0 if (temac_dcr_setup(lp, op, np)) {
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* no DCR in the device tree, try non-DCR *=
+/
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->sdma_regs =3D of_iomap(np, 0);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (lp->sdma_regs) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->dma_in =3D temac_dma_in=
+32;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 lp->dma_out =3D temac_dma_o=
+ut32;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_dbg(&op->dev, "MEM base=
+: %p\n", lp->sdma_regs);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "unable t=
+o map DMA registers\n");
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto nodev;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 lp->sdma_dcrs =3D dcr_map(np, dcrs, dcr_resource_len(np, 0)=
+);
+> - =A0 =A0 =A0 dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+>
+> =A0 =A0 =A0 =A0lp->rx_irq =3D irq_of_parse_and_map(np, 0);
+> =A0 =A0 =A0 =A0lp->tx_irq =3D irq_of_parse_and_map(np, 1);
+> --
+> 1.6.2.1
+>
+>
+>
+> This email and any attachments are intended for the sole use of the named=
+ recipient(s) and contain(s) confidential information that may be proprieta=
+ry, privileged or copyrighted under applicable law. If you are not the inte=
+nded recipient, do not read, copy, or forward this email message or any att=
+achments. Delete this email message and any attachments immediately.
+>
+>
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
