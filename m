@@ -1,25 +1,15 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BEF6AB7D00
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 23:03:15 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] 460EX on-chip SATA driver<kernel 2.6.33> < resubmission :
-	01>
-Date: Wed, 17 Mar 2010 13:03:06 +0100
-References: <1268646854-27387-1-git-send-email-rsarmah@appliedmicro.com>
-	<AC311A8E81420D4EBC1F26E6479848FE065B7F30@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <AC311A8E81420D4EBC1F26E6479848FE065B7F30@SDCEXCHANGE01.ad.amcc.com>
+Return-Path: <memorylost@tin.it>
+Received: from smtp-out30.alice.it (smtp-out30.alice.it [85.33.2.30])
+	by ozlabs.org (Postfix) with ESMTP id CE1BDB7D28
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Mar 2010 01:04:20 +1100 (EST)
+Message-ID: <4BA0DF86.8000209@tin.it>
+Date: Wed, 17 Mar 2010 14:56:22 +0100
+From: LD <memorylost@tin.it>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201003171303.06258.sr@denx.de>
-Cc: Rupjyoti Sarmah <rupjyoti.sarmah@appliedmicro.com>, linuxppc-dev@ozlabs.org,
-	Rupjyoti Sarmah <rsarmah@amcc.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, Rupjyoti Sarmah <rupjyoti.sarmah@gmail.com>,
-	Jeff Garzik <jgarzik@pobox.com>
+To: Linux ppc mailing list <linuxppc-dev@lists.ozlabs.org>
+Subject: MPC5121e - using both USB modules
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rup,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Wednesday 17 March 2010 05:23:16 Rupjyoti Sarmah wrote:
-> This patch enables the on-chip DWC SATA controller of the AppliedMicro
-> processor 460EX.
+Hi all,
+I am working on a custom MPC5121e board, adapting 2.6.24 kernel.
+The board has two USB ports:
+- - cell-index 0 uses internal phy
+- - cell-index 1 uses external phy
 
-Apart from the other comments, did you take a look at the latest version of 
-this driver in our linux-2.6-denx repository? We did some work on this driver 
-for a new Canyonlands release last year. It's hard to check this for me now, 
-with this line wrapped patch (the drivers diverged somewhat). So either check 
-for yourself, or send a new, not line-wrapped, patch version so that I can 
-better check myself.
+For mechanical/commercial reasons I cannot use Mini-A / Mini-B connectors, so I
+have two "host" connectors, but the board should be capable of doing host or
+device by dip-switch selection and using an external M/M connector adapter.
 
-BTW: It would be nice if you would add me to Cc on DWC-SATA related patches, 
-since I've been involved in the development at some time.
+First I enabled cell-index 0 only in dts file, dr_mode = "otg", used OTG kernel
+modules ; I succeeded in switching from host to device mode : port 0 is working.
 
-Thanks.
+Cell-index 1: disabled cell 0 and wrote some tweaks in drivers to enable correct
+USB clocks (I saw some recent patches about this), then realized that the
+hardware people have chosen a wrong ULPI phy (CY7C68003), which is capable of
+doing only device, not host (arrrggghh !!) ; next boards will have a different
+phy (capable of OTG).
+I have some preliminary boards with this Cypress phy and tried enabling this
+cell in otg mode to try and see if I can work in device mode, but strange things
+- - ehci_hub_control complains. I suppose the phy is not ok to work this way.
 
-Cheers,
-Stefan
+Now I am trying to arrive to something like:
+cell-0 : dr_mode = otg
+cell-1 : dr_mode = peripheral
 
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
+This way I could save the preliminary boards, with cell-1 working only as a usb
+device. I am having problems with processor reset in inserting modules, still
+not clear what is happening.
+
+Anyway, final target will be (new boards):
+cell-0 : dr_mode = otg
+cell-1 : dr_mode = otg
+Each port will have its dip-switch to select host or device mode.
+
+So, here we are:
+- - anyone having some suggestions or link to documentation please ?
+- - is it possible to have two ports working as "peripheral" ? Not necessary for
+me, but just to understand the "linux" constraints (if any).
+I could, for example, use file_storage to one USB cell and ethernet-dev to the
+other...
+I also have to investigate how to tell file_storage which USB cell to use : map
+both USB cells to the same pseudo-disk seems not good.
+
+
+Thanks,
+best regards
+
+Lucio Dona'
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iD8DBQFLoN+FvxHCsvXy9okRAtvfAJ4pEaBgPfmKLVRgczx3C1yYlQ8QdwCfYoyO
+0KCTXBxZrALLHG/7BziuZpA=
+=W1D6
+-----END PGP SIGNATURE-----
