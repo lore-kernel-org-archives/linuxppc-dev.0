@@ -1,34 +1,19 @@
-Return-Path: <josh@joshtriplett.org>
-Received: from slow3-v.mail.gandi.net (slow3-v.mail.gandi.net [217.70.178.89])
-	by ozlabs.org (Postfix) with ESMTP id C503AB7D4C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 16:28:38 +1100 (EST)
-Received: from relay4-v.mail.gandi.net (relay4-v.mail.gandi.net
-	[217.70.178.78])
-	by slow3-v.mail.gandi.net (Postfix) with ESMTP id 680D43852D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 06:17:39 +0100 (CET)
-Received: from mfilter4-v.gandi.net (mfilter4-v.gandi.net [217.70.178.38])
-	by relay4-v.mail.gandi.net (Postfix) with ESMTP id 7C9DDBA1F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 06:17:33 +0100 (CET)
-Received: from relay4-v.mail.gandi.net ([217.70.178.78])
-	by mfilter4-v.gandi.net (mfilter4-v.gandi.net [217.70.178.38])
-	(amavisd-new, port 10024)
-	with ESMTP id aiPVmvwNdwNd for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 06:17:33 +0100 (CET)
-Received: from feather (host-246-209.pubnet.pdx.edu [131.252.246.209])
-	(Authenticated sender: josh@joshtriplett.org)
-	by relay4-v.mail.gandi.net (Postfix) with ESMTP id ADE9CBA17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 17 Mar 2010 06:17:32 +0100 (CET)
-Date: Tue, 16 Mar 2010 22:17:27 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Failing to get DMA working with MPC5200 (TQM5200) and CompactFlash
-Message-ID: <20100317051521.GA16826@feather>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9AC84B7D4E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 16:52:15 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o2H5qBUM005139
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 00:52:11 -0500
+Date: Wed, 17 Mar 2010 00:52:11 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [git pull] Please pull powerpc.git merge branch (fwd)
+Message-ID: <Pine.LNX.4.64.1003170052001.14591@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+forgot to cc the list
 
-We've tried both 2.6.33 and DENX-v2.6.33.1, and we haven't managed to
-successfully use any form of DMA with the TQM5200 and a CompactFlash
-card.  We know the CF card supports DMA (or, at least, it says "UDMA"
-right on the card, and various reports say Lexar Professional CF cards
-do DMA), but the kernel always puts the card in PIO4 mode.  We tried
-libata.force=mwdma2 and libata.force=udma2 , and many other modes, but
-this always led to failures like this:
+---------- Forwarded message ----------
+Date: Wed, 17 Mar 2010 00:13:00 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
 
-[   31.994311] ata1: lost interrupt (Status 0x58)
-[   32.020435] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-[   32.027712] ata1.00: failed command: READ DMA
-[   32.032236] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
-[   32.032249]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-[   32.047212] ata1.00: status: { DRDY }
-[   32.051050] ata1: soft resetting link
-[   32.218796] ata1.00: FORCE: xfer_mask set to udma2
-[   32.230618] ata1.00: configured for UDMA/33
-[   32.235000] ata1.00: device reported invalid CHS sector 0
-[   32.240629] ata1: EH complete
-[   62.994310] ata1: lost interrupt (Status 0x58)
-[   63.020443] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-[   63.027722] ata1.00: failed command: READ DMA
-[   63.032246] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
-[   63.032259]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-[   63.047221] ata1.00: status: { DRDY }
-[   63.051060] ata1: soft resetting link
-[   63.218778] ata1.00: FORCE: xfer_mask set to udma2
-[   63.238603] ata1.00: configured for UDMA/33
-[   63.242978] ata1.00: device reported invalid CHS sector 0
-[   63.248609] ata1: EH complete
+The following changes since commit 30124d11097e371e42052144d8a3f4a78d26e09f:
+  Dave Kleikamp (1):
+        powerpc/booke: Fix breakpoint/watchpoint one-shot behavior
 
-We have the MPC5200C revision of the silicon.
+are available in the git repository at:
 
-Does this sound like a known issue?  Can we do anything to troubleshoot
-this further?
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-Thanks,
-Josh Triplett and Jamey Sharp
-Portland State Aerospace Society
+Kumar Gala (2):
+      powerpc/85xx: Make sure lwarx hint isn't set on ppc32
+      powerpc/fsl-booke: Get coherent bit from PTE
+
+ arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
+ arch/powerpc/kernel/head_fsl_booke.S  |    3 ---
+ 2 files changed, 3 insertions(+), 6 deletions(-)
