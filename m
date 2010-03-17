@@ -1,19 +1,13 @@
-Return-Path: <nm127@freemail.hu>
-Received: from relay02.digicable.hu (relay02.digicable.hu [92.249.128.188])
-	by ozlabs.org (Postfix) with ESMTP id EEEFEB7D0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 05:12:18 +1100 (EST)
-Message-ID: <4BA11B7B.1080807@freemail.hu>
-Date: Wed, 17 Mar 2010 19:12:11 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id E18EDB7D27
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 06:03:20 +1100 (EST)
+Received: by gyf1 with SMTP id 1so626862gyf.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 12:03:19 -0700 (PDT)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>,
-	David Gibson <david@gibson.dropbear.id.au>,
-	Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
-	PowerPC e200 core?)
-References: <4B934CCA.8030608@freemail.hu>
-	<fa686aa41003080934q5d5bebabl7d582d1264da4dcd@mail.gmail.com>
-	<4B95458A.4000304@freemail.hu>
+Sender: glikely@secretlab.ca
+In-Reply-To: <4B9B7E0A.8090703@freemail.hu>
+References: <4B934CCA.8030608@freemail.hu> <4B95458A.4000304@freemail.hu>
 	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
 	<4B95F298.5040000@freemail.hu>
 	<fa686aa41003082335t5a5d642fi13c81e4b84f7b697@mail.gmail.com>
@@ -21,9 +15,15 @@ References: <4B934CCA.8030608@freemail.hu>
 	<4B99DE95.8010304@freemail.hu>
 	<fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
 	<4B9B7E0A.8090703@freemail.hu>
-In-Reply-To: <4B9B7E0A.8090703@freemail.hu>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 17 Mar 2010 13:02:57 -0600
+Message-ID: <fa686aa41003171202p677bc14g25a6ac38f879ddf1@mail.gmail.com>
+Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
+	PowerPC e200 core?)
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,506 +33,278 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant, David and Segher,
-
-is there any comments or suggestions about this MPC5554 device tree?
-
-Regards,
-
-	Márton Németh
-
-Németh Márton wrote:
-> Hi,
-> 
-> here is a version with modified cpu node, xbar ranges and added interrupt sources.
-> Please send comments.
-> 
-> Regards,
-> 
-> 	Márton Németh
-> 
-> ---
-> From: Márton Németh <nm127@freemail.hu>
-> 
-> Add device tree for Freescale MPC5554.
-> 
-> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> ---
-> diff -uprN linux-2.6.33.orig/arch/powerpc/boot/dts/mpc5554.dts linux/arch/powerpc/boot/dts/mpc5554.dts
-> --- linux-2.6.33.orig/arch/powerpc/boot/dts/mpc5554.dts	1970-01-01 01:00:00.000000000 +0100
-> +++ linux/arch/powerpc/boot/dts/mpc5554.dts	2010-03-13 12:52:32.000000000 +0100
-> @@ -0,0 +1,473 @@
-> +/*
-> + * Freescale MPC5554 Device Tree Source
-> + *
-> + * Based on MPC5553/5554 Microcontroller Reference Manual, Rev. 4.0, 04/2007
-> + * http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf
-> + *  - Block Diagram: page 1-3, Figure 1-1
-> + *  - Memory Map: page 1-21, Table 1-2
-> + *  - Interrupt Request Sources: page 10-16, Table 10-9
-> + *
-> + * Copyright 2010 Márton Németh
-> + * Márton Németh <nm127@freemail.hu>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/ {
-> +	model = "MPC5554";
-> +	compatible = "fsl,MPC5554EVB";		// Freescale MPC5554 Evaluation Board
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	interrupt-parent = <&intc>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "PowerPC,5554", "fsl,mpc5554-e200z6", "fsl,powerpc-e200z6";
-> +			reg = <0>;
-> +			d-cache-line-size = <32>;
-> +			i-cache-line-size = <32>;
-> +			d-cache-size = <0x8000>;	// L1, 32KiB
-> +			i-cache-size = <0x8000>;	// L1, 32KiB
-> +			timebase-frequency = <0>;	// from bootloader
-> +			bus-frequency = <0>;		// from bootloader
-> +			clock-frequency = <0>;		// from bootloader
-> +		};
-> +	};
-> +
-> +	memory@40000000 {
-> +		device_type = "memory";
-> +		reg = <0x40000000 0x10000>;	// 32KiB internal SRAM
-> +	};
-> +
-> +	xbar@fff04000 {		// System Bus Crossbar Switch (XBAR)
-> +		compatible = "fsl,mpc5554-xbar";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		// The full memory range is covered by XBAR
-> +		ranges;
-> +		reg = <0xfff04000 0x4000>;
-> +
-> +		flash@0 {	// read-only FLASH
-> +			compatible = "fsl,mpc5554-flash";
-> +			reg = <0x00000000 0x200000>;	// 2MiB internal FLASH
-> +		};
-> +
-> +		bridge@c3f00000 {
-> +			compatible = "fsl,mpc5554-pbridge-a";
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <0 0xc0000000 0x20000000>;
-> +			reg = <0xc3f00000 0x4000>;
-> +
-> +			fmpll@3f80000 {		// Frequency Modulated PLL
-> +				compatible = "fsl,mpc5554-fmpll";
-> +				reg = <0x03f80000 0x4000>;
-> +				interrupts = <43 1	// Loss of Clock
-> +					      44 1>;	// Loss of Lock
-> +			};
-> +
-> +			flashconfig@3f88000 {	// Flash Configuration
-> +				compatible = "fsl,mpc5554-flashconfig";
-> +				reg = <0x03f88000 0x4000>;
-> +			};
-> +
-> +			siu@3f89000 {		// System Integration Unit
-> +				compatible = "fsl,mpc5554-siu";
-> +				reg = <0x03f90000 0x4000>;
-> +				interrupts = <45 1	// External Interrupt Overrun 0-15
-> +					      46 1	// External Interrupt 0
-> +					      47 1	// External Interrupt 1
-> +					      48 1	// External Interrupt 2
-> +					      49 1	// External Interrupt 3
-> +					      50 1>;	// External Interrupt 4-15
-> +			};
-> +
-> +			emios@3fa0000 {		// Modular Timer System
-> +				compatible = "fsl,mpc5554-emios";
-> +				reg = <0x03fa0000 0x4000>;
-> +				interrupts = <51 1	// Channel 0
-> +					      52 1	// Channel 1
-> +					      53 1	// Channel 2
-> +					      54 1	// Channel 3
-> +					      55 1	// Channel 4
-> +					      56 1	// Channel 5
-> +					      57 1	// Channel 6
-> +					      58 1	// Channel 7
-> +					      59 1	// Channel 8
-> +					      60 1	// Channel 9
-> +					      61 1	// Channel 10
-> +					      62 1	// Channel 11
-> +					      63 1	// Channel 12
-> +					      64 1	// Channel 13
-> +					      65 1	// Channel 14
-> +					      66 1	// Channel 15
-> +					      202 1	// Channel 16
-> +					      203 1	// Channel 17
-> +					      204 1	// Channel 18
-> +					      205 1	// Channel 19
-> +					      206 1	// Channel 20
-> +					      207 1	// Channel 21
-> +					      208 1	// Channel 22
-> +					      209 1>;	// Channel 23
-> +			};
-> +
-> +			etpu@3fc0000 {		// Enhanced Time Processing Unit
-> +				compatible = "fsl,mpc5554-etpu";
-> +				reg = <0x03fc0000 0x4000>;
-> +				interrupts = <67 1	// Global Exception
-> +					      68 1	// A Channel 0
-> +					      69 1	// A Channel 1
-> +					      70 1	// A Channel 2
-> +					      71 1	// A Channel 3
-> +					      72 1	// A Channel 4
-> +					      73 1	// A Channel 5
-> +					      74 1	// A Channel 6
-> +					      75 1	// A Channel 7
-> +					      76 1	// A Channel 8
-> +					      77 1	// A Channel 9
-> +					      78 1	// A Channel 10
-> +					      79 1	// A Channel 11
-> +					      80 1	// A Channel 12
-> +					      81 1	// A Channel 13
-> +					      82 1	// A Channel 14
-> +					      83 1	// A Channel 15
-> +					      84 1	// A Channel 16
-> +					      85 1	// A Channel 17
-> +					      86 1	// A Channel 18
-> +					      87 1	// A Channel 19
-> +					      88 1	// A Channel 20
-> +					      89 1	// A Channel 21
-> +					      90 1	// A Channel 22
-> +					      91 1	// A Channel 23
-> +					      92 1	// A Channel 24
-> +					      93 1	// A Channel 25
-> +					      94 1	// A Channel 26
-> +					      95 1	// A Channel 27
-> +					      96 1	// A Channel 28
-> +					      97 1	// A Channel 29
-> +					      98 1	// A Channel 30
-> +					      99 1	// A Channel 31
-> +					      243 1	// B Channel 0
-> +					      244 1	// B Channel 1
-> +					      245 1	// B Channel 2
-> +					      246 1	// B Channel 3
-> +					      247 1	// B Channel 4
-> +					      248 1	// B Channel 5
-> +					      249 1	// B Channel 6
-> +					      250 1	// B Channel 7
-> +					      251 1	// B Channel 8
-> +					      252 1	// B Channel 9
-> +					      253 1	// B Channel 10
-> +					      254 1	// B Channel 11
-> +					      255 1	// B Channel 12
-> +					      256 1	// B Channel 13
-> +					      257 1	// B Channel 14
-> +					      258 1	// B Channel 15
-> +					      259 1	// B Channel 16
-> +					      260 1	// B Channel 17
-> +					      261 1	// B Channel 18
-> +					      262 1	// B Channel 19
-> +					      263 1	// B Channel 20
-> +					      264 1	// B Channel 21
-> +					      265 1	// B Channel 22
-> +					      266 1	// B Channel 23
-> +					      267 1	// B Channel 24
-> +					      268 1	// B Channel 25
-> +					      269 1	// B Channel 26
-> +					      270 1	// B Channel 27
-> +					      271 1	// B Channel 28
-> +					      272 1	// B Channel 29
-> +					      273 1	// B Channel 30
-> +					      274 1>;	// B Channel 31
-> +			};
-> +
-> +			etpudata@3fc8000 {	// eTPU Shared Data Memory (Parameter RAM)
-> +				compatible = "fsl,mpc5554-etpudata";
-> +				reg = <0x03fc8000 0x4000>;
-> +			};
-> +
-> +			etpudata@3fcc000 {	// eTPU Shared Data Memory (Parameter RAM) mirror
-> +				compatible = "fsl,mpc5554-etpudata";
-> +				reg = <0x03fcc000 0x4000>;
-> +			};
-> +
-> +			etpucode@3fd0000 {		// eTPU Shared Code RAM
-> +				compatible = "fsl,mpc5554-etpucode";
-> +				reg = <0x03fd0000 0x4000>;
-> +			};
-> +		};
-> +
-> +		bridge@fff00000 {
-> +			compatible = "fsl,mpc5554-pbridge-b";
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <0 0xe0000000 0x20000000>;
-> +			reg = <0xfff00000 0x4000>;
-> +
-> +			ecsm@fff40000 {		// Error Correction Status Module (ECSM)
-> +				compatible = "fsl,mpc5554-ecsm";
-> +				reg = <0xfff40000 0x4000>;
-> +				interrupts = <8 1	// Software Watchdog Interrupt
-> +					      9 1>;	// Combined: Internal SRAM Non-Correctable Error, Flash Non-Correctable Error
-> +			};
-> +
-> +			edma@fff44000 {		// Enhanced DMA Controller (eDMA)
-> +				compatible = "fsl,mpc5554-edma";
-> +				reg = <0xfff44000 0x4000>;
-> +				interrupts = <10 1	// Channel Error 0-31
-> +					      11 1	// Channel 0
-> +					      12 1	// Channel 1
-> +					      13 1	// Channel 2
-> +					      14 1	// Channel 3
-> +					      15 1	// Channel 4
-> +					      16 1	// Channel 5
-> +					      17 1	// Channel 6
-> +					      18 1	// Channel 7
-> +					      19 1	// Channel 8
-> +					      20 1	// Channel 9
-> +					      21 1	// Channel 10
-> +					      22 1	// Channel 11
-> +					      23 1	// Channel 12
-> +					      24 1	// Channel 13
-> +					      25 1	// Channel 14
-> +					      26 1	// Channel 15
-> +					      27 1	// Channel 16
-> +					      28 1	// Channel 17
-> +					      29 1	// Channel 18
-> +					      30 1	// Channel 19
-> +					      31 1	// Channel 20
-> +					      32 1	// Channel 21
-> +					      33 1	// Channel 22
-> +					      34 1	// Channel 23
-> +					      35 1	// Channel 24
-> +					      36 1	// Channel 25
-> +					      37 1	// Channel 26
-> +					      38 1	// Channel 27
-> +					      39 1	// Channel 28
-> +					      40 1	// Channel 29
-> +					      41 1	// Channel 30
-> +					      42 1	// Channel 31
-> +					      210 1	// Channel Error 32-63
-> +					      211 1	// Channel 32
-> +					      212 1	// Channel 33
-> +					      213 1	// Channel 34
-> +					      214 1	// Channel 35
-> +					      215 1	// Channel 36
-> +					      216 1	// Channel 37
-> +					      217 1	// Channel 38
-> +					      218 1	// Channel 39
-> +					      219 1	// Channel 40
-> +					      220 1	// Channel 41
-> +					      221 1	// Channel 42
-> +					      222 1	// Channel 43
-> +					      223 1	// Channel 44
-> +					      224 1	// Channel 45
-> +					      225 1	// Channel 46
-> +					      226 1	// Channel 47
-> +					      227 1	// Channel 48
-> +					      228 1	// Channel 49
-> +					      229 1	// Channel 50
-> +					      230 1	// Channel 51
-> +					      231 1	// Channel 52
-> +					      232 1	// Channel 53
-> +					      233 1	// Channel 54
-> +					      234 1	// Channel 55
-> +					      235 1	// Channel 56
-> +					      236 1	// Channel 57
-> +					      237 1	// Channel 58
-> +					      238 1	// Channel 59
-> +					      239 1	// Channel 60
-> +					      240 1	// Channel 61
-> +					      241 1	// Channel 62
-> +					      242 1>;	// Channel 63
-> +			};
-> +
-> +			intc: intc@fff48000 {		// Interrupt Controller (INTC)
-> +				compatible = "fsl,mpc5554-intc";
-> +				interrupt-controller;
-> +				#interrupt-cells = <2>;
-> +				reg = <0xfff48000 0x4000>;
-> +			};
-> +
-> +			eqadc@fff80000 {	// Enhanced Queued Analog-to-Digital Converter (eQADC)
-> +				compatible = "fsl,mpc5554-eqacd";
-> +				reg = <0xfff80000 0x4000>;
-> +				interrupts = <100 1	// Combined: Trigger Overrun, Receive FIFO Overflow, Command FIFO Underflow
-> +					      101 1	// Command FIFO 0 Non-Coherency
-> +					      102 1	// Command FIFO 0 Pause
-> +					      103 1	// Command FIFO 0 End of Queue
-> +					      104 1	// Command FIFO 0 Fill
-> +					      105 1	// Command FIFO 0 Drain
-> +					      106 1	// Command FIFO 1 Non-Coherency
-> +					      107 1	// Command FIFO 1 Pause
-> +					      108 1	// Command FIFO 1 End of Queue
-> +					      109 1	// Command FIFO 1 Fill
-> +					      111 1	// Command FIFO 1 Drain
-> +					      111 1	// Command FIFO 2 Non-Coherency
-> +					      112 1	// Command FIFO 2 Pause
-> +					      113 1	// Command FIFO 2 End of Queue
-> +					      114 1	// Command FIFO 2 Fill
-> +					      115 1	// Command FIFO 2 Drain
-> +					      116 1	// Command FIFO 3 Non-Coherency
-> +					      117 1	// Command FIFO 3 Pause
-> +					      118 1	// Command FIFO 3 End of Queue
-> +					      119 1	// Command FIFO 3 Fill
-> +					      120 1	// Command FIFO 3 Drain
-> +					      121 1	// Command FIFO 4 Non-Coherency
-> +					      122 1	// Command FIFO 4 Pause
-> +					      123 1	// Command FIFO 4 End of Queue
-> +					      124 1	// Command FIFO 4 Fill
-> +					      125 1	// Command FIFO 4 Drain
-> +					      126 1	// Command FIFO 5 Non-Coherency
-> +					      127 1	// Command FIFO 5 Pause
-> +					      128 1	// Command FIFO 5 End of Queue
-> +					      129 1	// Command FIFO 5 Fill
-> +					      130 1>;	// Command FIFO 5 Drain
-> +			};
-> +
-> +			dspi@fff90000 {		// Deserial Serial Peripheral Interface (DSPI_A)
-> +				compatible = "fsl,mpc5554-dspi";
-> +				reg = <0xfff90000 0x4000>;
-> +				interrupts = <275 1	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-> +					      276 1	// Transmit FIFO End of Queue
-> +					      277 1	// Transmit FIFO Fill Flag
-> +					      278 1	// Transfer Complete
-> +					      279 1>;	// Receive FIFO Drain
-> +			};
-> +
-> +			dspi@fff94000 {		// Deserial Serial Peripheral Interface (DSPI_B)
-> +				compatible = "fsl,mpc5554-dspi";
-> +				reg = <0xfff94000 0x4000>;
-> +				interrupts = <131 1	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-> +					      132 1	// Transmit FIFO End of Queue
-> +					      133 1	// Transmit FIFO Fill Flag
-> +					      134 1	// Transfer Complete
-> +					      135 1>;	// Receive FIFO Drain
-> +			};
-> +
-> +			dspi@fff98000 {		// Deserial Serial Peripheral Interface (DSPI_C)
-> +				compatible = "fsl,mpc5554-dspi";
-> +				reg = <0xfff98000 0x4000>;
-> +				interrupts = <136 1	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-> +					      137 1	// Transmit FIFO End of Queue
-> +					      138 1	// Transmit FIFO Fill Flag
-> +					      139 1	// Transfer Complete
-> +					      140 1>;	// Receive FIFO Drain
-> +			};
-> +
-> +			dspi@fff9c000 {		// Deserial Serial Peripheral Interface (DSPI_D)
-> +				compatible = "fsl,mpc5554-dspi";
-> +				reg = <0xfff9c000 0x4000>;
-> +				interrupts = <141 1	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-> +					      142 1	// Transmit FIFO End of Queue
-> +					      143 1	// Transmit FIFO Fill Flag
-> +					      144 1	// Transfer Complete
-> +					      145 1>;	// Receive FIFO Drain
-> +			};
-> +
-> +			esci@fffb0000 {		// Serial Communications Interface (SCI_A)
-> +				compatible = "fsl,mpc5554-esci";
-> +				reg = <0xfffb0000 0x4000>;
-> +				interrupts = <146 1>;	// Combined request for all SCI_A interrupts
-> +			};
-> +
-> +			esci@fffb4000 {		// Serial Communications Interface (SCI_B)
-> +				compatible = "fsl,mpc5554-esci";
-> +				reg = <0xfffb4000 0x4000>;
-> +				interrupts = <149 1>;	// Combined request for all SCI_A interrupts
-> +			};
-> +
-> +			can@fffc0000 {		// Controller Area Network (FlexCAN_A)
-> +				compatible = "fsl,mpc5554-flexcan";
-> +				reg = <0xfffc0000 0x4000>;
-> +				interrupts = <152 1	// Bus off
-> +					      153 1	// Error
-> +					      155 1	// Buffer 0
-> +					      156 1	// Buffer 1
-> +					      157 1	// Buffer 2
-> +					      158 1	// Buffer 3
-> +					      159 1	// Buffer 4
-> +					      160 1	// Buffer 5
-> +					      161 1	// Buffer 6
-> +					      162 1	// Buffer 7
-> +					      163 1	// Buffer 8
-> +					      164 1	// Buffer 9
-> +					      165 1	// Buffer 10
-> +					      166 1	// Buffer 11
-> +					      167 1	// Buffer 12
-> +					      168 1	// Buffer 13
-> +					      169 1	// Buffer 14
-> +					      170 1	// Buffer 15
-> +					      171 1	// Buffers 16-31
-> +					      172 1>;	// Buffers 32-63
-> +			};
-> +
-> +			can@fffc4000 {		// Controller Area Network (FlexCAN_B)
-> +				compatible = "fsl,mpc5554-flexcan";
-> +				reg = <0xfffc4000 0x4000>;
-> +				interrupts = <280 1	// Bus off
-> +					      281 1	// Error
-> +					      283 1	// Buffer 0
-> +					      284 1	// Buffer 1
-> +					      285 1	// Buffer 2
-> +					      286 1	// Buffer 3
-> +					      287 1	// Buffer 4
-> +					      288 1	// Buffer 5
-> +					      289 1	// Buffer 6
-> +					      290 1	// Buffer 7
-> +					      291 1	// Buffer 8
-> +					      292 1	// Buffer 9
-> +					      293 1	// Buffer 10
-> +					      294 1	// Buffer 11
-> +					      295 1	// Buffer 12
-> +					      296 1	// Buffer 13
-> +					      297 1	// Buffer 14
-> +					      298 1	// Buffer 15
-> +					      299 1	// Buffers 16-31
-> +					      300 1>;	// Buffers 32-63
-> +			};
-> +
-> +			can@fffc8000 {		// Controller Area Network (FlexCAN_C)
-> +				compatible = "fsl,mpc5554-flexcan";
-> +				reg = <0xfffc8000 0x4000>;
-> +				interrupts = <173 1	// Bus off
-> +					      174 1	// Error
-> +					      176 1	// Buffer 0
-> +					      177 1	// Buffer 1
-> +					      178 1	// Buffer 2
-> +					      179 1	// Buffer 3
-> +					      180 1	// Buffer 4
-> +					      181 1	// Buffer 5
-> +					      182 1	// Buffer 6
-> +					      183 1	// Buffer 7
-> +					      184 1	// Buffer 8
-> +					      185 1	// Buffer 9
-> +					      186 1	// Buffer 10
-> +					      187 1	// Buffer 11
-> +					      188 1	// Buffer 12
-> +					      189 1	// Buffer 13
-> +					      190 1	// Buffer 14
-> +					      191 1	// Buffer 15
-> +					      192 1	// Buffers 16-31
-> +					      193 1>;	// Buffers 32-63
-> +			};
-> +
-> +			bam@ffffc000 {		// Boot Assist Module (BAM)
-> +				compatible = "fsl,mpc5554-bam";
-> +				reg = <0xffffc000 0x4000>;
-> +			};
-> +
-> +		};
-> +
-> +	};
-> +
-> +};
-> 
+MjAxMC8zLzEzIE7pbWV0aCBN4XJ0b24gPG5tMTI3QGZyZWVtYWlsLmh1PjoKPiBIaSwKPgo+IGhl
+cmUgaXMgYSB2ZXJzaW9uIHdpdGggbW9kaWZpZWQgY3B1IG5vZGUsIHhiYXIgcmFuZ2VzIGFuZCBh
+ZGRlZCBpbnRlcnJ1cHQgc291cmNlcy4KPiBQbGVhc2Ugc2VuZCBjb21tZW50cy4KCkhpIE3hcnRv
+bi4gIEEgZmV3IGNvbW1lbnRzIGJlbG93LgoKPiAtLS0KPiBGcm9tOiBN4XJ0b24gTultZXRoIDxu
+bTEyN0BmcmVlbWFpbC5odT4KPgo+IEFkZCBkZXZpY2UgdHJlZSBmb3IgRnJlZXNjYWxlIE1QQzU1
+NTQuCj4KPiBTaWduZWQtb2ZmLWJ5OiBN4XJ0b24gTultZXRoIDxubTEyN0BmcmVlbWFpbC5odT4K
+PiAtLS0KPiBkaWZmIC11cHJOIGxpbnV4LTIuNi4zMy5vcmlnL2FyY2gvcG93ZXJwYy9ib290L2R0
+cy9tcGM1NTU0LmR0cyBsaW51eC9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvbXBjNTU1NC5kdHMKPiAt
+LS0gbGludXgtMi42LjMzLm9yaWcvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL21wYzU1NTQuZHRzIDE5
+NzAtMDEtMDEgMDE6MDA6MDAuMDAwMDAwMDAwICswMTAwCj4gKysrIGxpbnV4L2FyY2gvcG93ZXJw
+Yy9ib290L2R0cy9tcGM1NTU0LmR0cyCgIKAgMjAxMC0wMy0xMyAxMjo1MjozMi4wMDAwMDAwMDAg
+KzAxMDAKPiBAQCAtMCwwICsxLDQ3MyBAQAo+ICsvKgo+ICsgKiBGcmVlc2NhbGUgTVBDNTU1NCBE
+ZXZpY2UgVHJlZSBTb3VyY2UKPiArICoKPiArICogQmFzZWQgb24gTVBDNTU1My81NTU0IE1pY3Jv
+Y29udHJvbGxlciBSZWZlcmVuY2UgTWFudWFsLCBSZXYuIDQuMCwgMDQvMjAwNwo+ICsgKiBodHRw
+Oi8vd3d3LmZyZWVzY2FsZS5jb20vZmlsZXMvMzJiaXQvZG9jL3JlZl9tYW51YWwvTVBDNTU1M19N
+UEM1NTU0X1JNLnBkZgo+ICsgKiCgLSBCbG9jayBEaWFncmFtOiBwYWdlIDEtMywgRmlndXJlIDEt
+MQo+ICsgKiCgLSBNZW1vcnkgTWFwOiBwYWdlIDEtMjEsIFRhYmxlIDEtMgo+ICsgKiCgLSBJbnRl
+cnJ1cHQgUmVxdWVzdCBTb3VyY2VzOiBwYWdlIDEwLTE2LCBUYWJsZSAxMC05Cj4gKyAqCj4gKyAq
+IENvcHlyaWdodCAyMDEwIE3hcnRvbiBO6W1ldGgKPiArICogTeFydG9uIE7pbWV0aCA8bm0xMjdA
+ZnJlZW1haWwuaHU+Cj4gKyAqCj4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5
+b3UgY2FuIHJlZGlzdHJpYnV0ZSCgaXQgYW5kL29yIG1vZGlmeSBpdAo+ICsgKiB1bmRlciCgdGhl
+IHRlcm1zIG9mIKB0aGUgR05VIEdlbmVyYWwgoFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBi
+eSB0aGUKPiArICogRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyCgZWl0aGVyIHZlcnNpb24gMiBv
+ZiB0aGUgoExpY2Vuc2UsIG9yIChhdCB5b3VyCj4gKyAqIG9wdGlvbikgYW55IGxhdGVyIHZlcnNp
+b24uCj4gKyAqLwo+ICsKPiArL2R0cy12MS87Cj4gKwo+ICsvIHsKPiArIKAgoCCgIG1vZGVsID0g
+Ik1QQzU1NTQiOwo+ICsgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsTVBDNTU1NEVWQiI7IKAgoCCg
+IKAgoC8vIEZyZWVzY2FsZSBNUEM1NTU0IEV2YWx1YXRpb24gQm9hcmQKPiArIKAgoCCgICNhZGRy
+ZXNzLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgI3NpemUtY2VsbHMgPSA8MT47Cj4gKyCgIKAgoCBp
+bnRlcnJ1cHQtcGFyZW50ID0gPCZpbnRjPjsKPiArCj4gKyCgIKAgoCBjcHVzIHsKPiArIKAgoCCg
+IKAgoCCgIKAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gKyCgIKAgoCCgIKAgoCCgICNzaXplLWNl
+bGxzID0gPDA+Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgY3B1QDAgewo+ICsgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIGRldmljZV90eXBlID0gImNwdSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+Y29tcGF0aWJsZSA9ICJQb3dlclBDLDU1NTQiLCAiZnNsLG1wYzU1NTQtZTIwMHo2IiwgImZzbCxw
+b3dlcnBjLWUyMDB6NiI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDA+Owo+ICsg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIGQtY2FjaGUtbGluZS1zaXplID0gPDMyPjsKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCBpLWNhY2hlLWxpbmUtc2l6ZSA9IDwzMj47Cj4gKyCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgZC1jYWNoZS1zaXplID0gPDB4ODAwMD47IKAgoCCgIKAvLyBMMSwgMzJLaUIK
+PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpLWNhY2hlLXNpemUgPSA8MHg4MDAwPjsgoCCgIKAg
+oC8vIEwxLCAzMktpQgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHRpbWViYXNlLWZyZXF1ZW5j
+eSA9IDwwPjsgoCCgIKAgLy8gZnJvbSBib290bG9hZGVyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgYnVzLWZyZXF1ZW5jeSA9IDwwPjsgoCCgIKAgoCCgIKAvLyBmcm9tIGJvb3Rsb2FkZXIKPiAr
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBjbG9jay1mcmVxdWVuY3kgPSA8MD47IKAgoCCgIKAgoC8v
+IGZyb20gYm9vdGxvYWRlcgo+ICsgoCCgIKAgoCCgIKAgoCB9Owo+ICsgoCCgIKAgfTsKPiArCj4g
+KyCgIKAgoCBtZW1vcnlANDAwMDAwMDAgewo+ICsgoCCgIKAgoCCgIKAgoCBkZXZpY2VfdHlwZSA9
+ICJtZW1vcnkiOwo+ICsgoCCgIKAgoCCgIKAgoCByZWcgPSA8MHg0MDAwMDAwMCAweDEwMDAwPjsg
+oCCgIC8vIDMyS2lCIGludGVybmFsIFNSQU0KPiArIKAgoCCgIH07CgpPaC4uLi4gdGhpcyBpcyB0
+aGUgc21hbGwgU1JBTS4gIHllYWgsIHlvdSBzaG91bGQgbW92ZSB0aGlzIHVuZGVyIHRoZQphcHBy
+b3ByaWF0ZSBicmlkZ2Ugbm9kZSwgcmVtb3ZlIHRoZSBkZXZpY2VfdHlwZSBwcm9wZXJ0eSwgYW5k
+IGFkZCBhCmNvbXBhdGlibGUgcHJvcGVydHkuICBNZW1vcnkgbm9kZXMgYXQgdGhlIHJvb3QgbGlr
+ZSB0aGlzIGFyZSB1c2VkIHRvCmRlc2NyaWJlIHdoYXQgaXMgYmFzaWNhbGx5IG1haW4gbWVtb3J5
+ICh3aGF0IExpbnV4IHdpbGwgZXhlY3V0ZSBvdXQKb2YpLiAgWW91J2xsIHdhbnQgYSBuZXcgbWVt
+b3J5IG5vZGUgZm9yIHRoZSBleHRlcm5hbCByYW0gaG9va2VkIHVwIHRvCnRoZSA1NTU0LgoKPiAr
+Cj4gKyCgIKAgoCB4YmFyQGZmZjA0MDAwIHsgoCCgIKAgoCAvLyBTeXN0ZW0gQnVzIENyb3NzYmFy
+IFN3aXRjaCAoWEJBUikKPiArIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1
+NC14YmFyIjsKPiArIKAgoCCgIKAgoCCgIKAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gKyCgIKAg
+oCCgIKAgoCCgICNzaXplLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCAvLyBUaGUgZnVs
+bCBtZW1vcnkgcmFuZ2UgaXMgY292ZXJlZCBieSBYQkFSCj4gKyCgIKAgoCCgIKAgoCCgIHJhbmdl
+czsKPiArIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4ZmZmMDQwMDAgMHg0MDAwPjsKPiArCj4gKyCg
+IKAgoCCgIKAgoCCgIGZsYXNoQDAgeyCgIKAgoCAvLyByZWFkLW9ubHkgRkxBU0gKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWZsYXNoIjsKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCByZWcgPSA8MHgwMDAwMDAwMCAweDIwMDAwMD47IKAgoC8vIDJN
+aUIgaW50ZXJuYWwgRkxBU0gKPiArIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4gKyCgIKAgoCCgIKAg
+oCCgIGJyaWRnZUBjM2YwMDAwMCB7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJs
+ZSA9ICJmc2wsbXBjNTU1NC1wYnJpZGdlLWEiOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgICNh
+ZGRyZXNzLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgICNzaXplLWNlbGxz
+ID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJhbmdlcyA9IDwwIDB4YzAwMDAwMDAg
+MHgyMDAwMDAwMD47Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4YzNmMDAwMDAg
+MHg0MDAwPjsKPiArCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZm1wbGxAM2Y4MDAwMCB7IKAg
+oCCgIKAgLy8gRnJlcXVlbmN5IE1vZHVsYXRlZCBQTEwKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzU1NTQtZm1wbGwiOwo+ICsgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmODAwMDAgMHg0MDAwPjsKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGludGVycnVwdHMgPSA8NDMgMSCgIKAgoC8vIExvc3Mg
+b2YgQ2xvY2sKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+NDQgMT47IKAgoC8vIExvc3Mgb2YgTG9jawo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIH07Cj4g
+Kwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGZsYXNoY29uZmlnQDNmODgwMDAgeyCgIC8vIEZs
+YXNoIENvbmZpZ3VyYXRpb24KPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGNvbXBh
+dGlibGUgPSAiZnNsLG1wYzU1NTQtZmxhc2hjb25maWciOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmODgwMDAgMHg0MDAwPjsKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCB9Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBzaXVAM2Y4OTAwMCB7IKAg
+oCCgIKAgoCAvLyBTeXN0ZW0gSW50ZWdyYXRpb24gVW5pdAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1NC1zaXUiOwo+ICsgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmOTAwMDAgMHg0MDAwPjsKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGludGVycnVwdHMgPSA8NDUgMSCgIKAgoC8vIEV4dGVy
+bmFsIEludGVycnVwdCBPdmVycnVuIDAtMTUKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgNDYgMSCgIKAgoC8vIEV4dGVybmFsIEludGVycnVwdCAwCj4gKyCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDQ3IDEgoCCgIKAvLyBF
+eHRlcm5hbCBJbnRlcnJ1cHQgMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCA0OCAxIKAgoCCgLy8gRXh0ZXJuYWwgSW50ZXJydXB0IDIKPiArIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNDkgMSCgIKAgoC8vIEV4dGVybmFs
+IEludGVycnVwdCAzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIDUwIDE+OyCgIKAvLyBFeHRlcm5hbCBJbnRlcnJ1cHQgNC0xNQo+ICsgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIH07CgpUaGlzIGRvZXNuJ3QgbG9vayBxdWl0ZSByaWdodC4uLi4gL21lIGdvZXMg
+dG8gbG9vayBhdCB0aGUgNTU1NApyZWZlcmVuY2UgbWFudWFsLi4uLgoKT2theSwgc28gYWxsIHRo
+ZSBleHRlcm5hbCBJUlFzIGdvIHRocm91Z2ggdGhlIFNJVSB0aGVuLCBldmVuIHRob3VnaAp0aGUg
+Zmlyc3QgNCBnZXQgcGFzc2VkIHN0cmFpZ2h0IHRocm91Z2ggdG8gdGhlIGludGM/ICBBbmQgSSBz
+ZWUgdGhhdAphbGwgdGhlIGxldmVsL2VkZ2Ugc2Vuc2luZyBhbmQgbWFza2luZy9hY2tub3dsZWRn
+aW5nIGlzIGRvbmUgYXQgdGhlClNJVSBsZXZlbCwgbm90IHRoZSBpbnRjIGxldmVsLCBjb3JyZWN0
+PyAgU28sIHdoYXQgeW91IGVmZmVjdGl2ZWx5IGhhdmUKaXMgdGhlIFNJVSBpcyAqYW5vdGhlciog
+aW50ZXJydXB0IGNvbnRyb2xsZXIgdGhhdCBpcyBjYXNjYWRlZCB0byB0aGUKaW50Yy4gIFRoZXJl
+Zm9yZSB5b3UgbmVlZCB0byBhZGQgdGhlIGZvbGxvd2luZyB0byB0aGlzIG5vZGU6CgojaW50ZXJy
+dXB0LWNlbGxzID0gPDI+OyAgIC8vIGNlbGwxOmV4dGlycSMsIGNlbGwyOmxldmVsL2VkZ2UgZmxh
+Z3MKaW50ZXJydXB0LWNvbnRyb2xsZXI7CgpBbHNvIGdpdmUgdGhlIG5vZGUgYSBsYWJlbCBzbyB0
+aGF0IG5vZGVzIGZvciBleHRlcm5hbCBkZXZpY2VzIGNhbgpyZWZlcmVuY2UgaXQgZm9yIGhvb2tp
+bmcgdXAgZXh0ZXJuYWwgaXJxcyBieSBvdmVycmlkaW5nIHRoZSB0b3AtbGV2ZWwKaW50ZXJydXB0
+LXBhcmVudCBwcm9wZXJ0eS4KCkFsc28sIGl0IHdvdWxkIGFwcGVhciB0aGF0IGludGMgaW50ZXJy
+dXB0cyBkb24ndCBoYXZlIGFueSBsZXZlbC9lZGdlCmNvbmZpZ3VyYXRpb24gYXNzb2NpYXRlZCB3
+aXRoIHRoZW0uICBUaGV5IGFyZSBlaXRoZXIgYXNzZXJ0ZWQsIG9yIHRoZXkKYXJlIG5vdCwgY29y
+cmVjdD8gIEF0IHRoZSBtb21lbnQgeW91J3JlIHNwZWNpZnlpbmcgZXZlcnkgaW50YwppbnRlcnJ1
+cHQgd2l0aCAyIGNlbGxzLCBhbmQgdGhlIDJuZCBjZWxsIGlzIGFsd2F5cyAnMScuICBJIHRoaW5r
+IHlvdQpjYW4gY2hhbmdlICNpbnRlcnJ1cHQtY2VsbHMgdG8gPDE+IGluIHRoZSBpbnRjIG5vZGUg
+YW5kIGRyb3AgdGhlICcxJwpldmVyeXdoZXJlLgoKV2hlbiB5b3Ugd3JpdGUgeW91ciBpbnRjIGRy
+aXZlciwgeW91J2xsIGFsc28gbmVlZCB0byB3cml0ZSB0aGUKY2FzY2FkZWQgZHJpdmVyIGZvciB0
+aGUgZXh0ZXJuYWwgSVJRcy4KCj4gKwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGVtaW9zQDNm
+YTAwMDAgeyCgIKAgoCCgIC8vIE1vZHVsYXIgVGltZXIgU3lzdGVtCj4gKyCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWVtaW9zIjsKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmEwMDAwIDB4NDAwMD47Cj4g
+KyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpbnRlcnJ1cHRzID0gPDUxIDEgoCCgIKAv
+LyBDaGFubmVsIDAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgNTIgMSCgIKAgoC8vIENoYW5uZWwgMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCA1MyAxIKAgoCCgLy8gQ2hhbm5lbCAyCj4gKyCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDU0IDEgoCCgIKAvLyBDaGFubmVsIDMKPiAr
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNTUgMSCgIKAgoC8v
+IENoYW5uZWwgNAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCA1NiAxIKAgoCCgLy8gQ2hhbm5lbCA1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIDU3IDEgoCCgIKAvLyBDaGFubmVsIDYKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNTggMSCgIKAgoC8vIENoYW5uZWwgNwo+ICsg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA1OSAxIKAgoCCgLy8g
+Q2hhbm5lbCA4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IDYwIDEgoCCgIKAvLyBDaGFubmVsIDkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgNjEgMSCgIKAgoC8vIENoYW5uZWwgMTAKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjIgMSCgIKAgoC8vIENoYW5uZWwgMTEKPiAr
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjMgMSCgIKAgoC8v
+IENoYW5uZWwgMTIKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgNjQgMSCgIKAgoC8vIENoYW5uZWwgMTMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgNjUgMSCgIKAgoC8vIENoYW5uZWwgMTQKPiArIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNjYgMSCgIKAgoC8vIENoYW5uZWwgMTUK
+PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjAyIDEgoCCg
+IC8vIENoYW5uZWwgMTYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgMjAzIDEgoCCgIC8vIENoYW5uZWwgMTcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA0IDEgoCCgIC8vIENoYW5uZWwgMTgKPiArIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA1IDEgoCCgIC8vIENoYW5uZWwg
+MTkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA2IDEg
+oCCgIC8vIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgMjA3IDEgoCCgIC8vIENoYW5uZWwgMjEKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA4IDEgoCCgIC8vIENoYW5uZWwgMjIKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjA5IDE+OyCgIC8vIENoYW5u
+ZWwgMjMKClRoZXNlIGxvbmcgbGlzdHMgYm90aGVyIG1lLCBidXQgbG9va2luZyBhdCB0aGUgbWFu
+dWFsIHRoZXkgc2VlbSB0bwpkZXNjcmliZSB0aGUgYWN0dWFsIGhhcmR3YXJlIGFyY2hpdGVjdHVy
+ZSwgc28gSSB0aGluayB0aGV5IGFyZQpwcm9iYWJseSBmaW5lLiAgQnV0IHlvdSBtYXkgd2FudCB0
+byBjb21wYWN0IHlvdXIgZm9ybWF0dGluZyBzb21ld2hhdC4KWW91IGNhbiBwcm9iYWJseSBsaXN0
+IG1vcmUgdGhhbiBvbmUgY2hhbm5lbCBwZXIKc291cmNlIGxpbmUgaW4gdGhlIGZpbGUuCgpEaXR0
+byB0aHJvdWdoIHRoZSByZXN0IG9mIHRoZSBmaWxlLgoKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCB9Owo+ICsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBldHB1QDNmYzAwMDAgeyCgIKAgoCCg
+IKAvLyBFbmhhbmNlZCBUaW1lIFByb2Nlc3NpbmcgVW5pdAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsbXBjNTU1NC1ldHB1IjsKPiArIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmMwMDAwIDB4NDAwMD47Cj4gKyCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpbnRlcnJ1cHRzID0gPDY3IDEgoCCgIKAvLyBHbG9i
+YWwgRXhjZXB0aW9uCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIDY4IDEgoCCgIKAvLyBBIENoYW5uZWwgMAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCA2OSAxIKAgoCCgLy8gQSBDaGFubmVsIDEKPiArIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNzAgMSCgIKAgoC8vIEEgQ2hhbm5l
+bCAyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDcxIDEg
+oCCgIKAvLyBBIENoYW5uZWwgMwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCA3MiAxIKAgoCCgLy8gQSBDaGFubmVsIDQKPiArIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgNzMgMSCgIKAgoC8vIEEgQ2hhbm5lbCA1Cj4gKyCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDc0IDEgoCCgIKAvLyBB
+IENoYW5uZWwgNgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCA3NSAxIKAgoCCgLy8gQSBDaGFubmVsIDcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgNzYgMSCgIKAgoC8vIEEgQ2hhbm5lbCA4Cj4gKyCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDc3IDEgoCCgIKAvLyBBIENoYW5uZWwg
+OQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA3OCAxIKAg
+oCCgLy8gQSBDaGFubmVsIDEwCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIDc5IDEgoCCgIKAvLyBBIENoYW5uZWwgMTEKPiArIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgODAgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxMgo+ICsg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4MSAxIKAgoCCgLy8g
+QSBDaGFubmVsIDEzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIDgyIDEgoCCgIKAvLyBBIENoYW5uZWwgMTQKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgODMgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxNQo+ICsgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4NCAxIKAgoCCgLy8gQSBDaGFu
+bmVsIDE2Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDg1
+IDEgoCCgIKAvLyBBIENoYW5uZWwgMTcKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgODYgMSCgIKAgoC8vIEEgQ2hhbm5lbCAxOAo+ICsgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA4NyAxIKAgoCCgLy8gQSBDaGFubmVsIDE5
+Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDg4IDEgoCCg
+IKAvLyBBIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgODkgMSCgIKAgoC8vIEEgQ2hhbm5lbCAyMQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCA5MCAxIKAgoCCgLy8gQSBDaGFubmVsIDIyCj4gKyCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDkxIDEgoCCgIKAvLyBB
+IENoYW5uZWwgMjMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgOTIgMSCgIKAgoC8vIEEgQ2hhbm5lbCAyNAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCA5MyAxIKAgoCCgLy8gQSBDaGFubmVsIDI1Cj4gKyCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDk0IDEgoCCgIKAvLyBBIENoYW5u
+ZWwgMjYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgOTUg
+MSCgIKAgoC8vIEEgQ2hhbm5lbCAyNwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCA5NiAxIKAgoCCgLy8gQSBDaGFubmVsIDI4Cj4gKyCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDk3IDEgoCCgIKAvLyBBIENoYW5uZWwgMjkK
+PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgOTggMSCgIKAg
+oC8vIEEgQ2hhbm5lbCAzMAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCA5OSAxIKAgoCCgLy8gQSBDaGFubmVsIDMxCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI0MyAxIKAgoCAvLyBCIENoYW5uZWwgMAo+ICsgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNDQgMSCgIKAgLy8gQiBD
+aGFubmVsIDEKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+MjQ1IDEgoCCgIC8vIEIgQ2hhbm5lbCAyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIDI0NiAxIKAgoCAvLyBCIENoYW5uZWwgMwo+ICsgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNDcgMSCgIKAgLy8gQiBDaGFubmVsIDQK
+PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjQ4IDEgoCCg
+IC8vIEIgQ2hhbm5lbCA1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIDI0OSAxIKAgoCAvLyBCIENoYW5uZWwgNgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNTAgMSCgIKAgLy8gQiBDaGFubmVsIDcKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjUxIDEgoCCgIC8vIEIgQ2hh
+bm5lbCA4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1
+MiAxIKAgoCAvLyBCIENoYW5uZWwgOQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCAyNTMgMSCgIKAgLy8gQiBDaGFubmVsIDEwCj4gKyCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1NCAxIKAgoCAvLyBCIENoYW5uZWwgMTEK
+PiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjU1IDEgoCCg
+IC8vIEIgQ2hhbm5lbCAxMgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCAyNTYgMSCgIKAgLy8gQiBDaGFubmVsIDEzCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI1NyAxIKAgoCAvLyBCIENoYW5uZWwgMTQKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjU4IDEgoCCgIC8vIEIg
+Q2hhbm5lbCAxNQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCAyNTkgMSCgIKAgLy8gQiBDaGFubmVsIDE2Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIDI2MCAxIKAgoCAvLyBCIENoYW5uZWwgMTcKPiArIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjYxIDEgoCCgIC8vIEIgQ2hhbm5l
+bCAxOAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjIg
+MSCgIKAgLy8gQiBDaGFubmVsIDE5Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIDI2MyAxIKAgoCAvLyBCIENoYW5uZWwgMjAKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjY0IDEgoCCgIC8vIEIgQ2hhbm5lbCAyMQo+
+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjUgMSCgIKAg
+Ly8gQiBDaGFubmVsIDIyCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIDI2NiAxIKAgoCAvLyBCIENoYW5uZWwgMjMKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgMjY3IDEgoCCgIC8vIEIgQ2hhbm5lbCAyNAo+ICsgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNjggMSCgIKAgLy8gQiBD
+aGFubmVsIDI1Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IDI2OSAxIKAgoCAvLyBCIENoYW5uZWwgMjYKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgMjcwIDEgoCCgIC8vIEIgQ2hhbm5lbCAyNwo+ICsgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNzEgMSCgIKAgLy8gQiBDaGFubmVs
+IDI4Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIDI3MiAx
+IKAgoCAvLyBCIENoYW5uZWwgMjkKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgMjczIDEgoCCgIC8vIEIgQ2hhbm5lbCAzMAo+ICsgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAyNzQgMT47IKAgLy8gQiBDaGFubmVsIDMxCgpB
+cmUgQSBhbmQgQiB0d28gaW5zdGFuY2VzIG9mIHRoZSBzYW1lIGhhcmR3YXJlIGJsb2NrPyAgQ29u
+c2lkZXIgaGF2aW5nCmEgc3Vibm9kZSBmb3IgZWFjaCBpbnN0YW5jZSB0byBnaXZlIHNvbWUgbG9n
+aWNhbCBzZXBhcmF0aW9uIHRvIHRoaXMKbGlzdCBhbmQgYXNzb2NpYXRlIHJlZ2lzdGVyIHJhbmdl
+cyB3aXRoIGluc3RhbmNlcy4gIERvaW5nIGl0IHRoYXQgd2F5CmFsc28gbWFrZXMgaXQgZWFzaWVy
+IGZvciBleHRlcm5hbCBkZXZpY2Ugbm9kZXMgdG8gZGVzY3JpYmUgYW4KYXR0YWNobWVudCB0byBh
+IHBhcnRpY3VsYXIgY2hhbm5lbC4KCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4g
+KyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZXRwdWRhdGFAM2ZjODAwMCB7IKAgoCCgLy8gZVRQVSBT
+aGFyZWQgRGF0YSBNZW1vcnkgKFBhcmFtZXRlciBSQU0pCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCBjb21wYXRpYmxlID0gImZzbCxtcGM1NTU0LWV0cHVkYXRhIjsKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwweDAzZmM4MDAwIDB4NDAwMD47Cj4gKyCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgfTsKPiArCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZXRw
+dWRhdGFAM2ZjYzAwMCB7IKAgoCCgLy8gZVRQVSBTaGFyZWQgRGF0YSBNZW1vcnkgKFBhcmFtZXRl
+ciBSQU0pIG1pcnJvcgo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJs
+ZSA9ICJmc2wsbXBjNTU1NC1ldHB1ZGF0YSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCByZWcgPSA8MHgwM2ZjYzAwMCAweDQwMDA+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IH07Cj4gKwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGV0cHVjb2RlQDNmZDAwMDAgeyCgIKAg
+oCCgIKAgoCCgLy8gZVRQVSBTaGFyZWQgQ29kZSBSQU0KPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzU1NTQtZXRwdWNvZGUiOwo+ICsgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDNmZDAwMDAgMHg0MDAwPjsKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCB9OwoKU2hvdWxkIGFsbCB0aGlzIGV0cHUgc3R1ZmYgYmUgcGFy
+dCBvZiB0aGUgZXRwdSBub2RlPwoKVGhpcyBsb29rcyBsaWtlIGl0IGlzIGdldHRpbmcgY2xvc2Uu
+ICBPbmNlIHlvdSd2ZSBnb3QgYSB2ZXJzaW9uIHRoYXQKbG9va3MgZ29vZCB0byBldmVyeW9uZSwg
+eW91IGFsc28gbmVlZCB0byBkb2N1bWVudCB3aGF0IHRoZSBuZXcKYmluZGluZ3MgbWVhbi4gIEVz
+c2VudGlhbGx5IHRoaXMgdGFzayBpbnZvbHZlcyB3cml0aW5nIGRvd24gYWxsIHRoZQpuZXcgY29t
+cGF0aWJsZSBwcm9wZXJ0eSB2YWx1ZXMgdGhhdCB5b3UndmUgZGVmaW5lZCwgd2hhdCBkZXZpY2Ug
+ZWFjaApvbmUgZGVzY3JpYmVzLCBhbmQgd2hhdCBwcm9wZXJ0aWVzL3N1Ym5vZGVzIGFyZSBleHBl
+Y3RlZCBmb3IgZWFjaCBuZXcKY29tcGF0aWJsZSB2YWx1ZS4gIERvY3VtZW50YXRpb24gY3VycmVu
+dGx5IGdvZXMgaW4gdGhlCkRvY3VtZW50YXRpb24vcG93ZXJwYy9kdHMtYmluZGluZ3MgZGlyZWN0
+b3J5LCBhbmQgeW91IGNhbiBzZWUgbG90cyBvZgpleGFtcGxlcyB0aGVyZS4gIChIb3dldmVyLCBJ
+J20gaG9waW5nIHRvIG1vdmluZyBpdCB0bwpodHRwOi8vZGV2aWNldHJlZS5vcmcgaW4gdGhlIG5l
+YXIgZnV0dXJlIHNvIGl0IGNhbiBiZSBzaGFyZWQgYnkgb3RoZXIKT1Nlcy4gIEkndmUgY3VycmVu
+dGx5IGdvdCBhIHRlc3Qgc2l0ZSB1cCBhdCBodHRwOi8vZmR0LnNlY3JldGxhYi5jYSkuCgpUaGUg
+cnVsZSBpcyB0aGF0IHdlIHdpbGwgbm90IG1lcmdlIGRyaXZlcnMgdXNpbmcgbmV3IE9GIGJpbmRp
+bmdzIHVudGlsCnRob3NlIGJpbmRpbmdzIGhhdmUgYmVlbiBkb2N1bWVudGVkIGFuZCByZXZpZXdl
+ZC4KCkNoZWVycywKZy4K
