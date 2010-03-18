@@ -1,24 +1,13 @@
-Return-Path: <edgar.iglesias@gmail.com>
-Received: from mail-ew0-f210.google.com (mail-ew0-f210.google.com
-	[209.85.219.210]) by ozlabs.org (Postfix) with ESMTP id 3D056B7D0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 11:46:40 +1100 (EST)
-Received: by ewy2 with SMTP id 2so1097601ewy.20
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 17:46:38 -0700 (PDT)
-Date: Thu, 18 Mar 2010 01:46:35 +0100
-From: "Edgar E. Iglesias" <edgar.iglesias@gmail.com>
-To: Michal Simek <michal.simek@petalogix.com>
-Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-Message-ID: <20100318004635.GB3201@laped.iglesias.mooo.com>
-References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
-	<4B9DF254.2030402@petalogix.com>
-	<2d2cb4b6-627a-4e42-bc59-7845bbb6b680@SG2EHSMHS004.ehs.local>
-	<4B9E46B5.1060508@petalogix.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 18 Mar 2010 16:05:13 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, benh@kernel.crashing.org
+Subject: [PATCH v2] powerpc/perf_events: Implement perf_arch_fetch_caller_regs
+Message-ID: <20100318050513.GA6575@drongo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4B9E46B5.1060508@petalogix.com>
-Cc: netdev@vger.kernel.org, John Tyner <jtyner@cs.ucr.edu>,
-	linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>,
-	john.williams@petalogix.com
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +17,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 15, 2010 at 03:39:49PM +0100, Michal Simek wrote:
-> John Linn wrote:
-> >> -----Original Message-----
-> >> From: Michal Simek [mailto:michal.simek@petalogix.com]
-> >> Sent: Monday, March 15, 2010 2:40 AM
-> >> To: John Linn
-> >> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-> > grant.likely@secretlab.ca;
-> >> jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com; John Tyner
-> >> Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-> >>
-> >> John Linn wrote:
-> >>> This patch adds support for using the LL TEMAC Ethernet driver on
-> >>> non-Virtex 5 platforms by adding support for accessing the Soft DMA
-> >>> registers as if they were memory mapped instead of solely through
-> > the
-> >>> DCR's (available on the Virtex 5).
-> >>>
-> >>> The patch also updates the driver so that it runs on the MicroBlaze.
-> >>> The changes were tested on the PowerPC 440, PowerPC 405, and the
-> >>> MicroBlaze platforms.
-> >> Which git-tree have you tested on? (Of course microblaze)
-> > 
-> > It was tested on the Xilinx tree for MicroBlaze which is based on the
-> > mainline and the Petalogix tree as DMA was needed. I tried to build
-> > against the mainline head but got errors with the DMA routines. I guess
-> > it's possible that it was a configuration issue there as I didn't dig
-> > real deep.
-> 
-> New dma api is in for-linus branch.
-> I tested it on that version and I am seeing some weird things. :-(
-> Access to bad area. I will try your tree.
-> 
-> The second thing which I see is in ll_temac_recv function.
-> On the following line is read a packet length which could be 0-16k.
-> 		length = cur_p->app4 & 0x3FFF;
-> 
-> But allocated skb has max size XTE_MAX_JUMBO_FRAME_SIZE + XTE_ALIGN.
-> 
-> What happen if driver get packet greater than 9kB?
-> I got it (I don't know how) but skb_put has one checking mechanism which 
-> will cal skb_over_panic which caused panic.
-> That's why I think that will be good always to check that length is less 
-> than XTE_MAX_JUMBO_FRAME_SIZE + XTE_ALIGN.
-> 
-> What do you think?
+This implements a powerpc version of perf_arch_fetch_caller_regs.
+It's implemented in assembly because that way we can be sure there
+isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
+C, gcc might or might not create a stack frame for it, which would
+affect the number of levels we have to skip.
 
-I agree. IIRC the LLTEMAC when configured to accept jumboframes will
-accepts packets up to 16K and the driver should handle that without
-raising panics.
+With this, we see results from perf record -e lock:lock_acquire like
+this:
 
-I remeber beeing a bit surprised about that when hacking the QEMU model.
-Not sure if I remember correctly though.
+# Samples: 24878
+#
+# Overhead         Command      Shared Object  Symbol
+# ........  ..............  .................  ......
+#
+    14.99%            perf  [kernel.kallsyms]  [k] ._raw_spin_lock
+                      |
+                      --- ._raw_spin_lock
+                         |
+                         |--25.00%-- .alloc_fd
+                         |          (nil)
+                         |          |
+                         |          |--50.00%-- .anon_inode_getfd
+                         |          |          .sys_perf_event_open
+                         |          |          syscall_exit
+                         |          |          syscall
+                         |          |          create_counter
+                         |          |          __cmd_record
+                         |          |          run_builtin
+                         |          |          main
+                         |          |          0xfd2e704
+                         |          |          0xfd2e8c0
+                         |          |          (nil)
 
-Cheers
+... etc.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/asm-compat.h |    2 ++
+ arch/powerpc/kernel/misc.S            |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
+index c1b475a..a9b91ed 100644
+--- a/arch/powerpc/include/asm/asm-compat.h
++++ b/arch/powerpc/include/asm/asm-compat.h
+@@ -28,6 +28,7 @@
+ #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
++#define PPC_LR_STKOFF	16
+ 
+ /* Move to CR, single-entry optimized version. Only available
+  * on POWER4 and later.
+@@ -51,6 +52,7 @@
+ #define PPC_STLCX	stringify_in_c(stwcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzw)
+ #define PPC_MTOCRF	stringify_in_c(mtcrf)
++#define PPC_LR_STKOFF	4
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+index 2d29752..b485a87 100644
+--- a/arch/powerpc/kernel/misc.S
++++ b/arch/powerpc/kernel/misc.S
+@@ -127,3 +127,31 @@ _GLOBAL(__setup_cpu_power7)
+ _GLOBAL(__restore_cpu_power7)
+ 	/* place holder */
+ 	blr
++
++#ifdef CONFIG_EVENT_TRACING
++/*
++ * Get a minimal set of registers for our caller's nth caller.
++ * r3 = regs pointer, r5 = n.
++ *
++ * We only get R1 (stack pointer), NIP (next instruction pointer)
++ * and LR (link register).  These are all we can get in the
++ * general case without doing complicated stack unwinding, but
++ * fortunately they are enough to do a stack backtrace, which
++ * is all we need them for.
++ */
++_GLOBAL(perf_arch_fetch_caller_regs)
++	mr	r6,r1
++	cmpwi	r5,0
++	mflr	r4
++	ble	2f
++	mtctr	r5
++1:	PPC_LL	r6,0(r6)
++	bdnz	1b
++	PPC_LL	r4,PPC_LR_STKOFF(r6)
++2:	PPC_LL	r7,0(r6)
++	PPC_LL	r7,PPC_LR_STKOFF(r7)
++	PPC_STL	r6,GPR1-STACK_FRAME_OVERHEAD(r3)
++	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
++	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
++	blr
++#endif /* CONFIG_EVENT_TRACING */
