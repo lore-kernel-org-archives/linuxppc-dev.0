@@ -1,14 +1,18 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 1B132B7D09
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 03:42:13 +1100 (EST)
-Message-ID: <4BA257DF.2040300@harris.com>
-Date: Thu, 18 Mar 2010 12:42:07 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <michal.simek@petalogix.com>
+Message-ID: <4BA25CE7.5040204@petalogix.com>
+Date: Thu, 18 Mar 2010 18:03:35 +0100
+From: Michal Simek <michal.simek@petalogix.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: PPC405EX PCI CPU vs bus address mapping question
-Content-Type: text/plain; charset=UTF-8
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/of: Fix comparison of "compatible" properties
+References: <1268870941.2335.214.camel@pasglop>
+	<fa686aa41003171735v1e9b62bci9273b6ae0e7b7a15@mail.gmail.com>
+In-Reply-To: <fa686aa41003171735v1e9b62bci9273b6ae0e7b7a15@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	David Miller <davem@davemloft.net>, microblaze-uclinux@itee.uq.edu.au
+Reply-To: michal.simek@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,43 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have a Kilauea board with one custom PCIE card plugged
-into the PCIE1 slot.  The custom card contains four PCI
-devices which are connected via a PCIE-PCI bridge to the
-Kilauea.
+Grant Likely wrote:
+> On Wed, Mar 17, 2010 at 6:09 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>> Commit 7c7b60cb87547b1664a4385c187f029bf514a737
+>> "of: put default string compare and #a/s-cell values into common header"
+>>
+>> Breaks various things on powerpc due to using strncasecmp instead of
+>> strcasecmp for comparing against "compatible" strings.
+>>
+>> This causes things like the 4xx PCI code to fail miserably due to the
+>> partial matches in code like this:
+>>
+>>        for_each_compatible_node(np, NULL, "ibm,plb-pcix")
+>>                ppc4xx_probe_pcix_bridge(np);
+>>        for_each_compatible_node(np, NULL, "ibm,plb-pci")
+>>                ppc4xx_probe_pci_bridge(np);
+>>
+>> This reverts us to use strcasecmp. I do wonder why microblase and sparc
+>> want the partial matches though. For sparc it could be historical, but
+>> microblaze might want to change.
+>>
+>> It's not quite right to do partial name match. Entries in a compatible
+>> list are meant to be matched whole. If a device is compatible with both
+>> "foo" and "foo1", then the device should have both strings in its
+>> "compatible" property.
+> 
+> Hmmm.  That's a mistake I made then in commit 7c7b60cb.  I had meant
+> to use strcasecmp(), and had missed that microblaze was doing it
+> differently.  I certainly don't want to carry over partial name match
+> when other architectures pick up device tree support.  If anything,
+> microblaze should have the exception and the common code fixed.
+> 
+> Michal, why does microblaze differ from powerpc on this point?
 
-These devices need to communicate directly with each other.
-This is done by telling each device the PCI bus address of
-its partners.
+As I wrote. Microblaze doesn't need any partial name match.
 
-I tried using pci_resource_start() to get the bus address,
-but that apparently gives me the cpu address.
+Michal
 
-Specifically, pci_resource_start() returns the following
-addresses for the four devices:
+> 
+> Cheers,
+> g.
+> 
+>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> ---
+>>  arch/powerpc/include/asm/prom.h |    8 ++++++++
+>>  1 files changed, 8 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+>> index ddd408a..47ce796 100644
+>> --- a/arch/powerpc/include/asm/prom.h
+>> +++ b/arch/powerpc/include/asm/prom.h
+>> @@ -23,6 +23,14 @@
+>>  #include <asm/irq.h>
+>>  #include <asm/atomic.h>
+>>
+>> +/* We do -not- want the generic "strncasecmp" here for of_compat_cmp.
+>> + * We have cases where we could otherwise mismatch "pcix" and "pci"
+>> + * and similar.
+>> + */
+>> +#define of_compat_cmp(s1, s2, l)       strcasecmp((s1), (s2))
+>> +#define of_prop_cmp(s1, s2)            strcmp((s1), (s2))
+>> +#define of_node_cmp(s1, s2)            strcasecmp((s1), (s2))
+>> +
+>>  #define HAVE_ARCH_DEVTREE_FIXUPS
+>>
+>>  #ifdef CONFIG_PPC32
+>>
+>>
+>>
+>>
+> 
+> 
+> 
 
-0x0000000090000000, 0x0000000094000000,
-0x0000000098000000, and 0x000000009c000000.
 
-However, if I look at the BAR registers in config space, they
-are set to 80000000, 84000000, 88000000, and 8c000000.
-
-During boot, I see:
-
-PCI host bridge /plb/pciex@0c0000000 (primary) ranges:
- MEM 0x0000000090000000..0x000000009fffffff -> 0x0000000080000000
-
-And that does correspond to the "ranges" line in my dts file.
-
-So there is clearly an offset of 0x10000000 between the CPU and
-bus address.
-
-My question is:  What is the correct way for the driver to learn
-of this offset, so that it can tell the devices where to find
-their partners?
-
-I see in pci_process_bridge_OF_ranges() that hose->pci_mem_offset
-is calculated.  That is probably the value I want, but I don't
-see a "clean" way to access it.
-
-	Steve
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
