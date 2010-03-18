@@ -1,24 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f177.google.com (mail-yw0-f177.google.com
-	[209.85.211.177]) by ozlabs.org (Postfix) with ESMTP id 61D0DB7D1A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Mar 2010 01:28:49 +1100 (EST)
-Received: by ywh7 with SMTP id 7so943011ywh.26
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Mar 2010 07:28:47 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <fa686aa41003111311w2a2c2707yddfe90c953b92be@mail.gmail.com>
-References: <fa686aa41003111311w2a2c2707yddfe90c953b92be@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 18 Mar 2010 08:28:27 -0600
-Message-ID: <fa686aa41003180728r4867fedei67c664815679f542@mail.gmail.com>
-Subject: [git pull updated] driver bug fixes and mpc5200 defconfig updates
-To: linuxppc-dev@lists.ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: David Miller <davem@davemloft.net>, Scott Ellis <scott@jumpnowtek.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 93A0FB7D1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 01:53:21 +1100 (EST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl: Add multiple MSI bank support
+Date: Thu, 18 Mar 2010 09:53:13 -0500
+Message-Id: <1268923993-26689-1-git-send-email-galak@kernel.crashing.org>
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +19,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,  I've updated my merge branch to add a build fix (mpc52xx)
-and an OF regression (fix comparison...).  Please pull.
+From: Lan Chunhe-B25806 <B25806@freescale.com>
 
-Thanks,
-g.
+Freescale QorIQ P4080 has three MSI banks and the original code
+can not work well. This patch adds multiple MSI banks support for
+Freescale processor.
 
-The following changes since commit 57d54889cd00db2752994b389ba714138652e60c=
-:
-  Linus Torvalds (1):
-        Linux 2.6.34-rc1
+Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c |   42 ++++++++++++++++++++++++++--------------
+ 1 files changed, 27 insertions(+), 15 deletions(-)
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 merge
-
-David Miller (1):
-      uartlite: Fix build on sparc.
-
-Grant Likely (3):
-      powerpc/52xx: update defconfigs
-      of: Fix comparison of "compatible" properties
-      powerpc/5200: Build fix for mpc52xx watchdog timer code
-
-Scott Ellis (2):
-      spi/omap2_mcspi: fix NULL pointer dereference
-      spi/omap2_mcspi: Use transaction speed if provided
-
- arch/powerpc/configs/52xx/cm5200_defconfig    |   24 ++--
- arch/powerpc/configs/52xx/lite5200b_defconfig |   28 +++--
- arch/powerpc/configs/52xx/motionpro_defconfig |   25 +++--
- arch/powerpc/configs/52xx/pcm030_defconfig    |   27 +++---
- arch/powerpc/configs/52xx/tqm5200_defconfig   |   28 +++---
- arch/powerpc/configs/mpc5200_defconfig        |  134 ++++++++++++++++-----=
-----
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    6 +-
- drivers/serial/uartlite.c                     |   10 +-
- drivers/spi/omap2_mcspi.c                     |   18 ++-
- include/linux/of.h                            |    2 +-
- 10 files changed, 183 insertions(+), 119 deletions(-)
-
-
-On Thu, Mar 11, 2010 at 3:11 PM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> Hi Linus,
->
-> Here are some driver bug fixes, and the requisite powerpc-mpc5200
-> defconfig updates. =A0The defconfig updates would normally go through
-> Ben's tree, but since that is the only change I have that would go
-> through his tree I'm hoping that it is okay to have it here.
->
-> Cheers,
-> g.
->
-> The following changes since commit 57d54889cd00db2752994b389ba714138652e6=
-0c:
-> =A0Linus Torvalds (1):
-> =A0 =A0 =A0 =A0Linux 2.6.34-rc1
->
-> are available in the git repository at:
->
-> =A0git://git.secretlab.ca/git/linux-2.6 merge
->
-> David Miller (1):
-> =A0 =A0 =A0uartlite: Fix build on sparc.
->
-> Grant Likely (1):
-> =A0 =A0 =A0powerpc/52xx: update defconfigs
->
-> Scott Ellis (2):
-> =A0 =A0 =A0spi/omap2_mcspi: fix NULL pointer dereference
-> =A0 =A0 =A0spi/omap2_mcspi: Use transaction speed if provided
->
-> =A0arch/powerpc/configs/52xx/cm5200_defconfig =A0 =A0| =A0 24 ++--
-> =A0arch/powerpc/configs/52xx/lite5200b_defconfig | =A0 28 +++--
-> =A0arch/powerpc/configs/52xx/motionpro_defconfig | =A0 25 +++--
-> =A0arch/powerpc/configs/52xx/pcm030_defconfig =A0 =A0| =A0 27 +++---
-> =A0arch/powerpc/configs/52xx/tqm5200_defconfig =A0 | =A0 28 +++---
-> =A0arch/powerpc/configs/mpc5200_defconfig =A0 =A0 =A0 =A0| =A0134 +++++++=
-+++++++++---------
-> =A0drivers/serial/uartlite.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 10 +-
-> =A0drivers/spi/omap2_mcspi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 18 ++-
-> =A08 files changed, 177 insertions(+), 117 deletions(-)
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 4108713..5c7e68d 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2007-2009 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2007-2010 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Author: Tony Li <tony.li@freescale.com>
+  *	   Jason Jin <Jason.jin@freescale.com>
+@@ -29,7 +29,6 @@ struct fsl_msi_feature {
+ 	u32 msiir_offset;
+ };
+ 
+-static struct fsl_msi *fsl_msi;
+ 
+ static inline u32 fsl_msi_read(u32 __iomem *base, unsigned int reg)
+ {
+@@ -54,10 +53,12 @@ static struct irq_chip fsl_msi_chip = {
+ static int fsl_msi_host_map(struct irq_host *h, unsigned int virq,
+ 				irq_hw_number_t hw)
+ {
++	struct fsl_msi *msi_data = h->host_data;
+ 	struct irq_chip *chip = &fsl_msi_chip;
+ 
+ 	get_irq_desc(virq)->status |= IRQ_TYPE_EDGE_FALLING;
+ 
++	set_irq_chip_data(virq, msi_data);
+ 	set_irq_chip_and_handler(virq, chip, handle_edge_irq);
+ 
+ 	return 0;
+@@ -96,11 +97,12 @@ static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
+ static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
+ {
+ 	struct msi_desc *entry;
+-	struct fsl_msi *msi_data = fsl_msi;
++	struct fsl_msi *msi_data;
+ 
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
++		msi_data = get_irq_chip_data(entry->irq);
+ 		set_irq_msi(entry->irq, NULL);
+ 		msi_bitmap_free_hwirqs(&msi_data->bitmap,
+ 				       virq_to_hw(entry->irq), 1);
+@@ -111,9 +113,10 @@ static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
+ }
+ 
+ static int fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+-				  struct msi_msg *msg)
++				struct msi_msg *msg,
++				struct fsl_msi *fsl_msi_data)
+ {
+-	struct fsl_msi *msi_data = fsl_msi;
++	struct fsl_msi *msi_data = fsl_msi_data;
+ 
+ 	if ((msi_data->feature & FSL_PIC_IP_MASK) == FSL_PIC_IP_VMPIC) {
+ 		const u32* reg;
+@@ -146,9 +149,13 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	unsigned int virq;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+-	struct fsl_msi *msi_data = fsl_msi;
++	struct fsl_msi *msi_data;
+ 
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++		msi_data = get_irq_chip_data(entry->irq);
++
+ 		hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
+ 		if (hwirq < 0) {
+ 			rc = hwirq;
+@@ -168,7 +175,7 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		}
+ 		set_irq_msi(virq, entry);
+ 
+-		rc = fsl_compose_msi_msg(pdev, hwirq, &msg);
++		rc = fsl_compose_msi_msg(pdev, hwirq, &msg, msi_data);
+ 		if (rc < 0)
+ 			goto out_free;
+ 		write_msi_msg(virq, &msg);
+@@ -182,7 +189,7 @@ out_free:
+ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ {
+ 	unsigned int cascade_irq;
+-	struct fsl_msi *msi_data = fsl_msi;
++	struct fsl_msi *msi_data = get_irq_chip_data(irq);
+ 	int msir_index = -1;
+ 	u32 msir_value = 0;
+ 	u32 intr_index;
+@@ -207,7 +214,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 		cascade_irq = NO_IRQ;
+ 
+ 	desc->status |= IRQ_INPROGRESS;
+-	switch (fsl_msi->feature & FSL_PIC_IP_MASK) {
++	switch (msi_data->feature & FSL_PIC_IP_MASK) {
+ 	case FSL_PIC_IP_MPIC:
+ 		msir_value = fsl_msi_read(msi_data->msi_regs,
+ 			msir_index * 0x10);
+@@ -327,15 +334,20 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 		if (virt_msir != NO_IRQ) {
+ 			set_irq_data(virt_msir, (void *)i);
+ 			set_irq_chained_handler(virt_msir, fsl_msi_cascade);
++			set_irq_chip_data(virt_msir, msi);
+ 		}
+ 	}
+ 
+-	fsl_msi = msi;
+-
+-	WARN_ON(ppc_md.setup_msi_irqs);
+-	ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
+-	ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
+-	ppc_md.msi_check_device = fsl_msi_check_device;
++	/* The multiple setting ppc_md.setup_msi_irqs will not harm things */
++	if (!ppc_md.setup_msi_irqs) {
++		ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
++		ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
++		ppc_md.msi_check_device = fsl_msi_check_device;
++	} else if (ppc_md.setup_msi_irqs != fsl_setup_msi_irqs) {
++		dev_err(&dev->dev, "Different MSI driver already installed!\n");
++		err = -EBUSY; /* or some other error code */
++		goto error_out;
++	}
+ 	return 0;
+ error_out:
+ 	kfree(msi);
+-- 
+1.6.0.6
