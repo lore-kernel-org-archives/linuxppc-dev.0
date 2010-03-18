@@ -1,25 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id AC645B7E93
+Return-Path: <avorontsov@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+	by ozlabs.org (Postfix) with SMTP id EA5E8B7DCD
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Mar 2010 02:35:53 +1100 (EST)
-Received: by gyd10 with SMTP id 10so1084193gyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 18 Mar 2010 08:35:51 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100318144836.21082.93040.stgit@angua>
+	Fri, 19 Mar 2010 02:54:30 +1100 (EST)
+Date: Thu, 18 Mar 2010 18:47:47 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [V2 PATCH 08/10] arch/powerpc: Remove obsolete
+	dev_archdata.of_node and of_devce.node
+Message-ID: <20100318154747.GA7767@oksana.dev.rtsoft.ru>
 References: <20100318144836.21082.93040.stgit@angua>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 18 Mar 2010 09:35:30 -0600
-Message-ID: <fa686aa41003180835k5af2d0e4o11f8ab9ca2e905ed@mail.gmail.com>
-Subject: Re: [V2 PATCH 00/10] of: Consolidate scattered device node pointers
-	in struct device
-To: davem@davemloft.net, benh@kernel.crashing.org,
-	linux-kernel@vger.kernel.org, michal.simek@petalogix.com,
-	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	microblaze-uclinux@itee.uq.edu.au
-Content-Type: text/plain; charset=ISO-8859-1
+	<20100318152250.21082.35352.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20100318152250.21082.35352.stgit@angua>
+Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 18, 2010 at 9:22 AM, Grant Likely <grant.likely@secretlab.ca> w=
-rote:
-> Currently, each of_device has a copy of the device tree node pointer in b=
-oth
-> .node, and in .dev.archdata.of_node (microblaze and powerpc) or
-> .dev.archdata.prom_node (sparc). =A0Also, other architectures will be add=
-ing
-> CONFIG_OF support, and they will also need a reference to the device tree
-> node pointer from struct device.
->
-> This series consolidates the device node pointer by adding .of_node to
-> struct device (conditional on CONFIG_OF) and removing the archdata.of_nod=
-e,
-> archdata.prom_node and of_device.node users. =A0The pointer is moved out =
-of
-> dev_archdata and into struct device proper so that of_node doesn't need t=
-o
-> get manually added to archdata for each architecture that enables CONFIG_=
-OF.
+Hi Grant,
 
-This series is also available in my git tree:
+On Thu, Mar 18, 2010 at 09:22:50AM -0600, Grant Likely wrote:
+> Both dev_archdata.of_node and of_device.node are duplications of the
+> device.of_node value.  This patch removes them.
 
-git://git.secretlab.ca/git/linux-2.6 experimental-devicetree
+Yeah, they're plain duplications since you introduced dev.of_node.
+I wonder what was the problem with using dev.archdata.of_node?
+Why dev.of_node is better?
+
+Also, by using dev.of_node directly you have to introduce ugly
+#ifdefs in the non-OF code (as in i2c patch), which you don't
+need with transparent archdata and accessors, which you've just
+removed:
+
+> -static inline void dev_archdata_set_node(struct dev_archdata *ad,
+> -					 struct device_node *np)
+> -{
+> -	ad->of_node = np;
+> -}
+> -
+> -static inline struct device_node *
+> -dev_archdata_get_node(const struct dev_archdata *ad)
+> -{
+> -	return ad->of_node;
+> -}
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
