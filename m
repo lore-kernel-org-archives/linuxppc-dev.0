@@ -1,18 +1,22 @@
-Return-Path: <michal.simek@petalogix.com>
-Message-ID: <4BA25CE7.5040204@petalogix.com>
-Date: Thu, 18 Mar 2010 18:03:35 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-MIME-Version: 1.0
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id C5C13B7D41
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 04:06:22 +1100 (EST)
+Date: Thu, 18 Mar 2010 12:59:39 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/of: Fix comparison of "compatible" properties
-References: <1268870941.2335.214.camel@pasglop>
-	<fa686aa41003171735v1e9b62bci9273b6ae0e7b7a15@mail.gmail.com>
-In-Reply-To: <fa686aa41003171735v1e9b62bci9273b6ae0e7b7a15@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	David Miller <davem@davemloft.net>, microblaze-uclinux@itee.uq.edu.au
-Reply-To: michal.simek@petalogix.com
+Subject: Re: [V2 PATCH 06/10] of/drivers: Always use struct device.of_node
+	to get node pointer
+Message-ID: <20100318125939.2b39d7f2@lappy.seanm.ca>
+In-Reply-To: <20100318152238.21082.10985.stgit@angua>
+References: <20100318144836.21082.93040.stgit@angua>
+	<20100318152238.21082.10985.stgit@angua>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com,
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Mar 17, 2010 at 6:09 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> Commit 7c7b60cb87547b1664a4385c187f029bf514a737
->> "of: put default string compare and #a/s-cell values into common header"
->>
->> Breaks various things on powerpc due to using strncasecmp instead of
->> strcasecmp for comparing against "compatible" strings.
->>
->> This causes things like the 4xx PCI code to fail miserably due to the
->> partial matches in code like this:
->>
->>        for_each_compatible_node(np, NULL, "ibm,plb-pcix")
->>                ppc4xx_probe_pcix_bridge(np);
->>        for_each_compatible_node(np, NULL, "ibm,plb-pci")
->>                ppc4xx_probe_pci_bridge(np);
->>
->> This reverts us to use strcasecmp. I do wonder why microblase and sparc
->> want the partial matches though. For sparc it could be historical, but
->> microblaze might want to change.
->>
->> It's not quite right to do partial name match. Entries in a compatible
->> list are meant to be matched whole. If a device is compatible with both
->> "foo" and "foo1", then the device should have both strings in its
->> "compatible" property.
-> 
-> Hmmm.  That's a mistake I made then in commit 7c7b60cb.  I had meant
-> to use strcasecmp(), and had missed that microblaze was doing it
-> differently.  I certainly don't want to carry over partial name match
-> when other architectures pick up device tree support.  If anything,
-> microblaze should have the exception and the common code fixed.
-> 
-> Michal, why does microblaze differ from powerpc on this point?
+On Thu, 18 Mar 2010 09:22:39 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-As I wrote. Microblaze doesn't need any partial name match.
+> The following structure elements duplicate the information in
+> 'struct device.of_node' and so are being eliminated.  This patches
+> makes all readers of the following elements use device.of_node
+> instead.
 
-Michal
+The NDFC driver also needs a patch... or at least the version from your
+last of_patch set does. I am included the patch I needed to get it to
+compile.
 
-> 
-> Cheers,
-> g.
-> 
->> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> ---
->>  arch/powerpc/include/asm/prom.h |    8 ++++++++
->>  1 files changed, 8 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
->> index ddd408a..47ce796 100644
->> --- a/arch/powerpc/include/asm/prom.h
->> +++ b/arch/powerpc/include/asm/prom.h
->> @@ -23,6 +23,14 @@
->>  #include <asm/irq.h>
->>  #include <asm/atomic.h>
->>
->> +/* We do -not- want the generic "strncasecmp" here for of_compat_cmp.
->> + * We have cases where we could otherwise mismatch "pcix" and "pci"
->> + * and similar.
->> + */
->> +#define of_compat_cmp(s1, s2, l)       strcasecmp((s1), (s2))
->> +#define of_prop_cmp(s1, s2)            strcmp((s1), (s2))
->> +#define of_node_cmp(s1, s2)            strcasecmp((s1), (s2))
->> +
->>  #define HAVE_ARCH_DEVTREE_FIXUPS
->>
->>  #ifdef CONFIG_PPC32
->>
->>
->>
->>
-> 
-> 
-> 
+Cheers,
+   Sean
 
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+index 19d94a2..5a232ec 100644
+--- a/drivers/mtd/nand/ndfc.c
++++ b/drivers/mtd/nand/ndfc.c
+@@ -238,14 +238,14 @@ static int __devinit ndfc_probe(struct of_device *ofdev,
+ 	dev_set_drvdata(&ofdev->dev, ndfc);
+ 
+ 	/* Read the reg property to get the chip select */
+-	reg = of_get_property(ofdev->node, "reg", &len);
++	reg = of_get_property(ofdev->dev.of_node, "reg", &len);
+ 	if (reg == NULL || len != 12) {
+ 		dev_err(&ofdev->dev, "unable read reg property (%d)\n", len);
+ 		return -ENOENT;
+ 	}
+ 	ndfc->chip_select = reg[0];
+ 
+-	ndfc->ndfcbase = of_iomap(ofdev->node, 0);
++	ndfc->ndfcbase = of_iomap(ofdev->dev.of_node, 0);
+ 	if (!ndfc->ndfcbase) {
+ 		dev_err(&ofdev->dev, "failed to get memory\n");
+ 		return -EIO;
+@@ -254,20 +254,20 @@ static int __devinit ndfc_probe(struct of_device *ofdev,
+ 	ccr = NDFC_CCR_BS(ndfc->chip_select);
+ 
+ 	/* It is ok if ccr does not exist - just default to 0 */
+-	reg = of_get_property(ofdev->node, "ccr", NULL);
++	reg = of_get_property(ofdev->dev.of_node, "ccr", NULL);
+ 	if (reg)
+ 		ccr |= *reg;
+ 
+ 	out_be32(ndfc->ndfcbase + NDFC_CCR, ccr);
+ 
+ 	/* Set the bank settings if given */
+-	reg = of_get_property(ofdev->node, "bank-settings", NULL);
++	reg = of_get_property(ofdev->dev.of_node, "bank-settings", NULL);
+ 	if (reg) {
+ 		int offset = NDFC_BCFG0 + (ndfc->chip_select << 2);
+ 		out_be32(ndfc->ndfcbase + offset, *reg);
+ 	}
+ 
+-	err = ndfc_chip_init(ndfc, ofdev->node);
++	err = ndfc_chip_init(ndfc, ofdev->dev.of_node);
+ 	if (err) {
+ 		iounmap(ndfc->ndfcbase);
+ 		return err;
