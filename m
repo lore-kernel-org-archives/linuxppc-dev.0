@@ -1,21 +1,22 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id A9232B7D15
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 06:30:47 +1100 (EST)
-Received: by pvg6 with SMTP id 6so1386960pvg.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 12:30:46 -0700 (PDT)
-Date: Thu, 18 Mar 2010 20:30:48 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] powerpc/perf_events: Implement
-	perf_arch_fetch_caller_regs
-Message-ID: <20100318193046.GD5103@nowhere>
-References: <20100318050513.GA6575@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100318050513.GA6575@drongo>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, anton@samba.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 50A05B7C33
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 10:35:31 +1100 (EST)
+Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stef Simoens <stef.simoens@numericable.be>
+In-Reply-To: <4BA2B570.2010202@numericable.be>
+References: <4A68E1CE.4040307@scarlet.be> <1248425553.25467.20.camel@pasglop>
+	<7704005f23c1dfcbfdc8f1963b290d98.squirrel@www.loft5.bisse17-21.be>
+	<4BA2B570.2010202@numericable.be>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Mar 2010 10:35:24 +1100
+Message-ID: <1268955324.2335.237.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,132 +26,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 18, 2010 at 04:05:13PM +1100, Paul Mackerras wrote:
-> This implements a powerpc version of perf_arch_fetch_caller_regs.
-> It's implemented in assembly because that way we can be sure there
-> isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
-> C, gcc might or might not create a stack frame for it, which would
-> affect the number of levels we have to skip.
+On Fri, 2010-03-19 at 00:21 +0100, Stef Simoens wrote:
+> Hello,
 > 
-> With this, we see results from perf record -e lock:lock_acquire like
-> this:
+> Some time ago (July 24th 2009 my mailbox says) I emailed you and the
+> linuxppc-dev list about my problems booting from the mesh SCSI
+> controller.
 > 
-> # Samples: 24878
-> #
-> # Overhead         Command      Shared Object  Symbol
-> # ........  ..............  .................  ......
-> #
->     14.99%            perf  [kernel.kallsyms]  [k] ._raw_spin_lock
->                       |
->                       --- ._raw_spin_lock
->                          |
->                          |--25.00%-- .alloc_fd
->                          |          (nil)
->                          |          |
->                          |          |--50.00%-- .anon_inode_getfd
->                          |          |          .sys_perf_event_open
->                          |          |          syscall_exit
->                          |          |          syscall
->                          |          |          create_counter
->                          |          |          __cmd_record
->                          |          |          run_builtin
->                          |          |          main
->                          |          |          0xfd2e704
->                          |          |          0xfd2e8c0
->                          |          |          (nil)
+> I just compiled 2.6.31 (actually, gentoo-sources-2.6.31-r10); but the
+> problem remains
+> I know that 2.6.33 is out, but as I didn't see any changes to the
+> mesh-driver I guess that the problem is still there ...
+
+Sadly I haven't had a chance to look. The MESH driver is a pretty
+complicated thing that I didn't write and am not familiar with, so it's
+going to take some work to sort out what's going on, and so far I
+haven't had time to dedicate to this.
+
+Cheers,
+Ben.
+
+> This is the logging I get when I boot (2.6.31):
 > 
-> ... etc.
+> mesh_abort(ef8501e0)
+> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
+>     ct=   1 seq=47 bs=4027 fc= 0 exc= 0 err= 0 im= 7 int= 0 sp=f0
+>     dma stat=e0 cmdptr=2f8c2010
+>     phase=5 msgphase=0 conn_tgt=0 data_ptr=0
+>     dma_st=0 dma_ct=0 n_msgout=0
+>     target 0: req=ef85901e0 goes_out=0 saved_ptr=0
+> mesh_abort(ef850280)
+> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
+>     ct=   1 seq=47 bs=4027 fc= 0 exc= 0 err= 0 im= 7 int= 0 sp=f0
+>     dma stat=e0 cmdptr=2f8c2010
+>     phase=5 msgphase=0 conn_tgt=0 data_ptr=0
+>     dma_st=0 dma_ct=0 n_msgout=0
+>     target 0: req=ef8501e0 goes_out=0 saved_ptr=0
+> mesh_host_reset
+> mesh_abort(ef8501e0)
+> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
+>     ct=   0 seq=6a bs=4026 fc= 5 exc= 0 err= 0 im= 7 int= 0 sp= 2
+>  fifo data=c0
+>  fifo data=01
+>  fifo data=03
+>  fifo data=01
+>  fifo data=19
+>     dma stat=e0 cmdptr=2f8c2010
+>     phase=3 msgphase=1 conn_tgt=0 data_ptr=0
+>     dma_st=0 dma_ct=0 n_msgout=6
+>     target 0: req=ef8501e0 goes_out=0 saved_ptr=0
+> mesh_host_reset
+> ...
+> [afterwards, it "disconnects" all the disks and then it panics as it
+> cannot find the root partition]
 > 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/include/asm/asm-compat.h |    2 ++
->  arch/powerpc/kernel/misc.S            |   28 ++++++++++++++++++++++++++++
->  2 files changed, 30 insertions(+)
+> 2.6.29 runs fine ... but I guess that at some point, I would like to
+> upgrade to the latest stable kernel.
 > 
-> diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-> index c1b475a..a9b91ed 100644
-> --- a/arch/powerpc/include/asm/asm-compat.h
-> +++ b/arch/powerpc/include/asm/asm-compat.h
-> @@ -28,6 +28,7 @@
->  #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
->  #define PPC_STLCX	stringify_in_c(stdcx.)
->  #define PPC_CNTLZL	stringify_in_c(cntlzd)
-> +#define PPC_LR_STKOFF	16
->  
->  /* Move to CR, single-entry optimized version. Only available
->   * on POWER4 and later.
-> @@ -51,6 +52,7 @@
->  #define PPC_STLCX	stringify_in_c(stwcx.)
->  #define PPC_CNTLZL	stringify_in_c(cntlzw)
->  #define PPC_MTOCRF	stringify_in_c(mtcrf)
-> +#define PPC_LR_STKOFF	4
->  
->  #endif
->  
-> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-> index 2d29752..b485a87 100644
-> --- a/arch/powerpc/kernel/misc.S
-> +++ b/arch/powerpc/kernel/misc.S
-> @@ -127,3 +127,31 @@ _GLOBAL(__setup_cpu_power7)
->  _GLOBAL(__restore_cpu_power7)
->  	/* place holder */
->  	blr
-> +
-> +#ifdef CONFIG_EVENT_TRACING
-> +/*
-> + * Get a minimal set of registers for our caller's nth caller.
-> + * r3 = regs pointer, r5 = n.
-> + *
-> + * We only get R1 (stack pointer), NIP (next instruction pointer)
-> + * and LR (link register).  These are all we can get in the
-> + * general case without doing complicated stack unwinding, but
-> + * fortunately they are enough to do a stack backtrace, which
-> + * is all we need them for.
-> + */
-> +_GLOBAL(perf_arch_fetch_caller_regs)
-> +	mr	r6,r1
-> +	cmpwi	r5,0
-> +	mflr	r4
-> +	ble	2f
-> +	mtctr	r5
-> +1:	PPC_LL	r6,0(r6)
-> +	bdnz	1b
-> +	PPC_LL	r4,PPC_LR_STKOFF(r6)
-> +2:	PPC_LL	r7,0(r6)
-> +	PPC_LL	r7,PPC_LR_STKOFF(r7)
-> +	PPC_STL	r6,GPR1-STACK_FRAME_OVERHEAD(r3)
-> +	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
-> +	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
-> +	blr
-> +#endif /* CONFIG_EVENT_TRACING */
-
-
-Ingo has reported me that context-switches software events
-(not the trace event version) have crappy callchains.
-
-So, while looking into it:
-
-- PERF_COUNT_SW_CPU_MIGRATIONS provides no regs.
-Heh, and it event doesn't work because of this perf_swevent_add
-give up if regs are NULL.
-Has PERF_COUNT_SW_CPU_MIGRATIONS ever worked?
-
-- PERF_COUNT_SW_CONTEXT_SWITCHES uses task_pt_regs(). This
-seems a very wrong thing. We don't want the regs when a user
-task was interrupted or before a syscall.
-That notwithstanding task_pt_regs() on kernel threads
-has insane effects.
-
-What we want for both is a hot regs snapshot.
-I'm going to fix this. But it means the CONFIG_EVENT_TRACING
-dependency is not true anymore. So I can't keep the exported
-symbol of perf_arch_fetch_caller_regs() in trace_event_perf.c.
-
-The ideal would be to put the EXPORT_SYMBOL in perf_event.c
-but doing so in the same file a weak symbol is defined has
-unpredictable effects. So I'm going to make it a macro as I
-don't have the choice. I'll update ppc at the same time but I
-can't guarantee it will even build :)
-
-Thanks.
+> The machine is a PowerPC9600 with a 740 upgrade card, 1GB memory,
+> kernel compiled with GCC 4.3.4 ...
+> 
+> Of course I am willing to offer you all assistance you need to help
+> you pin-point the problem...
+> 
+> Thanks for your help
+> 
+> Stef
+> 
+> Stef Simoens schreef: 
+> > Hello Ben,
+> > 
+> > Thank you for your reply.
+> >   
+> > > On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
+> > >     
+> > > > I tried the latest 2.6.31-rc3-git3 (without any other patch).
+> > > > However, I have the same behaviour as the patched 2.6.30 (so: no BUG,
+> > > > but the mesh_abort messages).
+> > > >       
+> > > Would it be possible for you to roughly find out at what kernel version
+> > > it stopped working ? (Some kernels may need my patch to avoid crashing)
+> > >     
+> > 
+> > I am currently running 2.6.29-gentoo-r5 (that's somewhere at the end of
+> > 2.6.29, probably 2.6.29.5).
+> > 
+> > I compiled 2.6.30 as soon as it came 'stable'.
+> > In any version of 2.6.30,  I encounter the BUG (dma-mapping.h:218).
+> > 
+> > I didn't react immediately, I actually guessed that the problem would have
+> > been reported and solved in another 2.6.30.x.
+> > Because it didn't, I started browsing the mailing-list (and found your
+> > patch).
+> > 2.6.30-gentoo-r3 with your patch applied doesn't give the bug,
+> > but gives the mesh_abort.
+> > 
+> > Before asking the question, I wanted to build the latest 2.6.31-rc
+> > available to make sure my problem didn't get solved in the meantime.
+> > 2.6.31-rc3 gives the same mesh_abort.
+> > 
+> > Would you like me to try all the linux-2.6.30-rc?
+> > Could you give me your best guess starting-point?
+> > 
+> > I know that there exists something as git-disect ... but I have never used
+> > git (there always needs to be the first time, of course).
+> > 
+> > Kind regards,
+> > 
+> > Stef
+> >   
+> -- 
+> Stef Simoens                                 stef.simoens@numericable.be
+> +32 486 577 963                         http://users.numericable.be/stef
