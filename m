@@ -1,20 +1,24 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 7E19FB7D0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 01:12:02 +1100 (EST)
-Received: by gyf1 with SMTP id 1so1067237gyf.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 07:12:01 -0700 (PDT)
+Received: from mail-yw0-f177.google.com (mail-yw0-f177.google.com
+	[209.85.211.177]) by ozlabs.org (Postfix) with ESMTP id 61D0DB7D1A
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 01:28:49 +1100 (EST)
+Received: by ywh7 with SMTP id 7so943011ywh.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Mar 2010 07:28:47 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <4B980909.7050501@suse.com>
-References: <4B980909.7050501@suse.com>
+In-Reply-To: <fa686aa41003111311w2a2c2707yddfe90c953b92be@mail.gmail.com>
+References: <fa686aa41003111311w2a2c2707yddfe90c953b92be@mail.gmail.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 18 Mar 2010 08:11:41 -0600
-Message-ID: <fa686aa41003180711v7ef387a9t1fed1c1de1352dd3@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Build fix for mpc52xx
-To: Jeff Mahoney <jeffm@suse.com>
+Date: Thu, 18 Mar 2010 08:28:27 -0600
+Message-ID: <fa686aa41003180728r4867fedei67c664815679f542@mail.gmail.com>
+Subject: [git pull updated] driver bug fixes and mpc5200 defconfig updates
+To: linuxppc-dev@lists.ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Cc: David Miller <davem@davemloft.net>, Scott Ellis <scott@jumpnowtek.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,63 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 10, 2010 at 3:03 PM, Jeff Mahoney <jeffm@suse.com> wrote:
-> mpc52xx_gpt_wdt_setup is defined as 0, which causes the following build
-> failure with gcc 4.5, since it's built with -Werror.
->
-> arch/powerpc/platforms/52xx/mpc52xx_gpt.c:761:3: error: statement with no=
- effect
->
-> Defining it as do { } while(0) fixes the problem.
+Hi Linus,  I've updated my merge branch to add a build fix (mpc52xx)
+and an OF regression (fix comparison...).  Please pull.
 
-Hi Jeff, thanks for the patch.  I've picked it up with a change.
-Instead of a #define, I've changed it to an empty static inline.
-As akpm likes to say, we should try to program in C, not pre-processor.  :-=
-)
+Thanks,
+g.
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-b/arch/powerpc/platforms/52x
-index 072b948..5d7cc88 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -711,7 +711,11 @@ static int __devinit mpc52xx_gpt_wdt_init(void)
-        return 0;
- }
+The following changes since commit 57d54889cd00db2752994b389ba714138652e60c=
+:
+  Linus Torvalds (1):
+        Linux 2.6.34-rc1
 
--#define mpc52xx_gpt_wdt_setup(x, y)            (0)
-+static inline int mpc52xx_gpt_wdt_setup(struct mpc52xx_gpt_priv *gpt,
-+                                       const u32 *period)
-+{
-+       return 0;
-+}
+are available in the git repository at:
 
- #endif /*  CONFIG_MPC5200_WDT  */
+  git://git.secretlab.ca/git/linux-2.6 merge
 
+David Miller (1):
+      uartlite: Fix build on sparc.
+
+Grant Likely (3):
+      powerpc/52xx: update defconfigs
+      of: Fix comparison of "compatible" properties
+      powerpc/5200: Build fix for mpc52xx watchdog timer code
+
+Scott Ellis (2):
+      spi/omap2_mcspi: fix NULL pointer dereference
+      spi/omap2_mcspi: Use transaction speed if provided
+
+ arch/powerpc/configs/52xx/cm5200_defconfig    |   24 ++--
+ arch/powerpc/configs/52xx/lite5200b_defconfig |   28 +++--
+ arch/powerpc/configs/52xx/motionpro_defconfig |   25 +++--
+ arch/powerpc/configs/52xx/pcm030_defconfig    |   27 +++---
+ arch/powerpc/configs/52xx/tqm5200_defconfig   |   28 +++---
+ arch/powerpc/configs/mpc5200_defconfig        |  134 ++++++++++++++++-----=
+----
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    6 +-
+ drivers/serial/uartlite.c                     |   10 +-
+ drivers/spi/omap2_mcspi.c                     |   18 ++-
+ include/linux/of.h                            |    2 +-
+ 10 files changed, 183 insertions(+), 119 deletions(-)
+
+
+On Thu, Mar 11, 2010 at 3:11 PM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> Hi Linus,
 >
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-> ---
-> =A0arch/powerpc/platforms/52xx/mpc52xx_gpt.c | =A0 =A02 +-
-> =A01 file changed, 1 insertion(+), 1 deletion(-)
+> Here are some driver bug fixes, and the requisite powerpc-mpc5200
+> defconfig updates. =A0The defconfig updates would normally go through
+> Ben's tree, but since that is the only change I have that would go
+> through his tree I'm hoping that it is okay to have it here.
 >
-> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-> @@ -711,7 +711,7 @@ static int __devinit mpc52xx_gpt_wdt_ini
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
+> Cheers,
+> g.
 >
-> -#define mpc52xx_gpt_wdt_setup(x, y) =A0 =A0 =A0 =A0 =A0 =A0(0)
-> +#define mpc52xx_gpt_wdt_setup(x, y) =A0 =A0 =A0 =A0 =A0 =A0do { } while(=
-0)
+> The following changes since commit 57d54889cd00db2752994b389ba714138652e6=
+0c:
+> =A0Linus Torvalds (1):
+> =A0 =A0 =A0 =A0Linux 2.6.34-rc1
 >
-> =A0#endif /* =A0CONFIG_MPC5200_WDT =A0*/
+> are available in the git repository at:
+>
+> =A0git://git.secretlab.ca/git/linux-2.6 merge
+>
+> David Miller (1):
+> =A0 =A0 =A0uartlite: Fix build on sparc.
+>
+> Grant Likely (1):
+> =A0 =A0 =A0powerpc/52xx: update defconfigs
+>
+> Scott Ellis (2):
+> =A0 =A0 =A0spi/omap2_mcspi: fix NULL pointer dereference
+> =A0 =A0 =A0spi/omap2_mcspi: Use transaction speed if provided
+>
+> =A0arch/powerpc/configs/52xx/cm5200_defconfig =A0 =A0| =A0 24 ++--
+> =A0arch/powerpc/configs/52xx/lite5200b_defconfig | =A0 28 +++--
+> =A0arch/powerpc/configs/52xx/motionpro_defconfig | =A0 25 +++--
+> =A0arch/powerpc/configs/52xx/pcm030_defconfig =A0 =A0| =A0 27 +++---
+> =A0arch/powerpc/configs/52xx/tqm5200_defconfig =A0 | =A0 28 +++---
+> =A0arch/powerpc/configs/mpc5200_defconfig =A0 =A0 =A0 =A0| =A0134 +++++++=
++++++++++---------
+> =A0drivers/serial/uartlite.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
+=A0 10 +-
+> =A0drivers/spi/omap2_mcspi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
+=A0 18 ++-
+> =A08 files changed, 177 insertions(+), 117 deletions(-)
+>
 >
 > --
-> Jeff Mahoney
-> SUSE Labs
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
 >
 
 
