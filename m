@@ -1,18 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <edgar.iglesias@gmail.com>
+Received: from mail-ew0-f210.google.com (mail-ew0-f210.google.com
+	[209.85.219.210]) by ozlabs.org (Postfix) with ESMTP id 3D056B7D0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 11:46:40 +1100 (EST)
+Received: by ewy2 with SMTP id 2so1097601ewy.20
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Mar 2010 17:46:38 -0700 (PDT)
+Date: Thu, 18 Mar 2010 01:46:35 +0100
+From: "Edgar E. Iglesias" <edgar.iglesias@gmail.com>
+To: Michal Simek <michal.simek@petalogix.com>
+Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+Message-ID: <20100318004635.GB3201@laped.iglesias.mooo.com>
+References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
+	<4B9DF254.2030402@petalogix.com>
+	<2d2cb4b6-627a-4e42-bc59-7845bbb6b680@SG2EHSMHS004.ehs.local>
+	<4B9E46B5.1060508@petalogix.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1268870941.2335.214.camel@pasglop>
-References: <1268870941.2335.214.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 17 Mar 2010 18:35:03 -0600
-Message-ID: <fa686aa41003171735v1e9b62bci9273b6ae0e7b7a15@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/of: Fix comparison of "compatible" properties
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michal Simek <michal.simek@petalogix.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4B9E46B5.1060508@petalogix.com>
+Cc: netdev@vger.kernel.org, John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-dev@ozlabs.org, John Linn <John.Linn@xilinx.com>,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,76 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 17, 2010 at 6:09 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> Commit 7c7b60cb87547b1664a4385c187f029bf514a737
-> "of: put default string compare and #a/s-cell values into common header"
->
-> Breaks various things on powerpc due to using strncasecmp instead of
-> strcasecmp for comparing against "compatible" strings.
->
-> This causes things like the 4xx PCI code to fail miserably due to the
-> partial matches in code like this:
->
-> =A0 =A0 =A0 =A0for_each_compatible_node(np, NULL, "ibm,plb-pcix")
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ppc4xx_probe_pcix_bridge(np);
-> =A0 =A0 =A0 =A0for_each_compatible_node(np, NULL, "ibm,plb-pci")
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ppc4xx_probe_pci_bridge(np);
->
-> This reverts us to use strcasecmp. I do wonder why microblase and sparc
-> want the partial matches though. For sparc it could be historical, but
-> microblaze might want to change.
->
-> It's not quite right to do partial name match. Entries in a compatible
-> list are meant to be matched whole. If a device is compatible with both
-> "foo" and "foo1", then the device should have both strings in its
-> "compatible" property.
+On Mon, Mar 15, 2010 at 03:39:49PM +0100, Michal Simek wrote:
+> John Linn wrote:
+> >> -----Original Message-----
+> >> From: Michal Simek [mailto:michal.simek@petalogix.com]
+> >> Sent: Monday, March 15, 2010 2:40 AM
+> >> To: John Linn
+> >> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
+> > grant.likely@secretlab.ca;
+> >> jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com; John Tyner
+> >> Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+> >>
+> >> John Linn wrote:
+> >>> This patch adds support for using the LL TEMAC Ethernet driver on
+> >>> non-Virtex 5 platforms by adding support for accessing the Soft DMA
+> >>> registers as if they were memory mapped instead of solely through
+> > the
+> >>> DCR's (available on the Virtex 5).
+> >>>
+> >>> The patch also updates the driver so that it runs on the MicroBlaze.
+> >>> The changes were tested on the PowerPC 440, PowerPC 405, and the
+> >>> MicroBlaze platforms.
+> >> Which git-tree have you tested on? (Of course microblaze)
+> > 
+> > It was tested on the Xilinx tree for MicroBlaze which is based on the
+> > mainline and the Petalogix tree as DMA was needed. I tried to build
+> > against the mainline head but got errors with the DMA routines. I guess
+> > it's possible that it was a configuration issue there as I didn't dig
+> > real deep.
+> 
+> New dma api is in for-linus branch.
+> I tested it on that version and I am seeing some weird things. :-(
+> Access to bad area. I will try your tree.
+> 
+> The second thing which I see is in ll_temac_recv function.
+> On the following line is read a packet length which could be 0-16k.
+> 		length = cur_p->app4 & 0x3FFF;
+> 
+> But allocated skb has max size XTE_MAX_JUMBO_FRAME_SIZE + XTE_ALIGN.
+> 
+> What happen if driver get packet greater than 9kB?
+> I got it (I don't know how) but skb_put has one checking mechanism which 
+> will cal skb_over_panic which caused panic.
+> That's why I think that will be good always to check that length is less 
+> than XTE_MAX_JUMBO_FRAME_SIZE + XTE_ALIGN.
+> 
+> What do you think?
 
-Hmmm.  That's a mistake I made then in commit 7c7b60cb.  I had meant
-to use strcasecmp(), and had missed that microblaze was doing it
-differently.  I certainly don't want to carry over partial name match
-when other architectures pick up device tree support.  If anything,
-microblaze should have the exception and the common code fixed.
+I agree. IIRC the LLTEMAC when configured to accept jumboframes will
+accepts packets up to 16K and the driver should handle that without
+raising panics.
 
-Michal, why does microblaze differ from powerpc on this point?
+I remeber beeing a bit surprised about that when hacking the QEMU model.
+Not sure if I remember correctly though.
 
-Cheers,
-g.
-
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> =A0arch/powerpc/include/asm/prom.h | =A0 =A08 ++++++++
-> =A01 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/p=
-rom.h
-> index ddd408a..47ce796 100644
-> --- a/arch/powerpc/include/asm/prom.h
-> +++ b/arch/powerpc/include/asm/prom.h
-> @@ -23,6 +23,14 @@
-> =A0#include <asm/irq.h>
-> =A0#include <asm/atomic.h>
->
-> +/* We do -not- want the generic "strncasecmp" here for of_compat_cmp.
-> + * We have cases where we could otherwise mismatch "pcix" and "pci"
-> + * and similar.
-> + */
-> +#define of_compat_cmp(s1, s2, l) =A0 =A0 =A0 strcasecmp((s1), (s2))
-> +#define of_prop_cmp(s1, s2) =A0 =A0 =A0 =A0 =A0 =A0strcmp((s1), (s2))
-> +#define of_node_cmp(s1, s2) =A0 =A0 =A0 =A0 =A0 =A0strcasecmp((s1), (s2)=
-)
-> +
-> =A0#define HAVE_ARCH_DEVTREE_FIXUPS
->
-> =A0#ifdef CONFIG_PPC32
->
->
->
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers
