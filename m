@@ -1,13 +1,29 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/of: Fix comparison of "compatible" properties
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EDE9CB7D15
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 11:10:15 +1100 (EST)
+Subject: Re: Problem with PCI bus rescan on 460EX
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Felix Radensky <felix@embedded-sol.com>
+In-Reply-To: <4BA08B61.5000406@embedded-sol.com>
+References: <4B8E6FA3.70503@embedded-sol.com>
+	<20100310225100.GB27324@ldl.fc.hp.com>	<4B98A0CB.8090103@embedded-sol.com>
+	<4B9A07D2.4060801@jp.fujitsu.com>	<4B9AC885.3010107@embedded-sol.com>
+	<4B9DC820.2060100@jp.fujitsu.com> <4B9DCF01.4050709@embedded-sol.com>
+	<4B9DF72F.3040105@jp.fujitsu.com> <4B9E18A7.2080605@embedded-sol.com>
+	<4B9F19E2.2090709@jp.fujitsu.com> <4B9FFAD1.8030309@embedded-sol.com>
+	<4BA02A49.9050101@jp.fujitsu.com> <4BA086EF.6080708@embedded-sol.com>
+	<1268812060.2335.174.camel@pasglop> <4BA08B61.5000406@embedded-sol.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Mar 2010 11:09:01 +1100
-Message-ID: <1268870941.2335.214.camel@pasglop>
+Date: Thu, 18 Mar 2010 11:09:52 +1100
+Message-ID: <1268870992.2335.216.camel@pasglop>
 Mime-Version: 1.0
-Cc: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	David Miller <davem@davemloft.net>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linux-pci@vger.kernel.org, yinghai@kernel.org,
+	Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,50 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 7c7b60cb87547b1664a4385c187f029bf514a737
-"of: put default string compare and #a/s-cell values into common header"
 
-Breaks various things on powerpc due to using strncasecmp instead of
-strcasecmp for comparing against "compatible" strings.
+> > This is Jesse tree with the default Canyonlands defconfig ? Hrm... I'll
+> > have to take a look, somebody mucking with PCI resource allocation is
+> > very likely to break something :-)
+> >
+> >
+> >   
+> 
+> Yep, default Canyonlands defconfig and default DTS.
 
-This causes things like the 4xx PCI code to fail miserably due to the
-partial matches in code like this:
+Ok so Jesse is innocent :-)
 
-	for_each_compatible_node(np, NULL, "ibm,plb-pcix")
-		ppc4xx_probe_pcix_bridge(np);
-	for_each_compatible_node(np, NULL, "ibm,plb-pci")
-		ppc4xx_probe_pci_bridge(np);
+See the patch I just posted:
 
-This reverts us to use strcasecmp. I do wonder why microblase and sparc
-want the partial matches though. For sparc it could be historical, but
-microblaze might want to change.
+http://patchwork.ozlabs.org/patch/47976/
 
-It's not quite right to do partial name match. Entries in a compatible
-list are meant to be matched whole. If a device is compatible with both
-"foo" and "foo1", then the device should have both strings in its
-"compatible" property.
+That fixes it here.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/prom.h |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index ddd408a..47ce796 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -23,6 +23,14 @@
- #include <asm/irq.h>
- #include <asm/atomic.h>
- 
-+/* We do -not- want the generic "strncasecmp" here for of_compat_cmp.
-+ * We have cases where we could otherwise mismatch "pcix" and "pci"
-+ * and similar.
-+ */
-+#define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
-+#define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
-+#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
-+
- #define HAVE_ARCH_DEVTREE_FIXUPS
- 
- #ifdef CONFIG_PPC32
+Cheers,
+Ben.
