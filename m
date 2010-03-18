@@ -1,15 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 93A0FB7D1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 01:53:21 +1100 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl: Add multiple MSI bank support
-Date: Thu, 18 Mar 2010 09:53:13 -0500
-Message-Id: <1268923993-26689-1-git-send-email-galak@kernel.crashing.org>
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f202.google.com (mail-pz0-f202.google.com
+	[209.85.222.202]) by ozlabs.org (Postfix) with ESMTP id 02FBCB7D43
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 02:22:10 +1100 (EST)
+Received: by pzk40 with SMTP id 40so1629671pzk.26
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 18 Mar 2010 08:22:09 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [V2 PATCH 00/10] of: Consolidate scattered device node pointers in
+	struct device
+To: davem@davemloft.net, benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+	michal.simek@petalogix.com, linuxppc-dev@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
+Date: Thu, 18 Mar 2010 09:22:05 -0600
+Message-ID: <20100318144836.21082.93040.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,145 +26,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lan Chunhe-B25806 <B25806@freescale.com>
+Currently, each of_device has a copy of the device tree node pointer in both
+.node, and in .dev.archdata.of_node (microblaze and powerpc) or
+.dev.archdata.prom_node (sparc).  Also, other architectures will be adding
+CONFIG_OF support, and they will also need a reference to the device tree
+node pointer from struct device.
 
-Freescale QorIQ P4080 has three MSI banks and the original code
-can not work well. This patch adds multiple MSI banks support for
-Freescale processor.
+This series consolidates the device node pointer by adding .of_node to
+struct device (conditional on CONFIG_OF) and removing the archdata.of_node,
+archdata.prom_node and of_device.node users.  The pointer is moved out of
+dev_archdata and into struct device proper so that of_node doesn't need to
+get manually added to archdata for each architecture that enables CONFIG_OF.
 
-Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Based on v2.6.34-rc1
+
+Series should be fully bisectable.
+ - Patch 1 adds the new device.of_node pointer and sets the value in all the
+   needed places.
+ - Patches 2-6 eliminate all readers of the old values
+ - Patch 7 removes references to the archdata stuff from drivers/of (there
+   are no more users at this point)
+ - Patches 8-10 finally remove the old versions.
+
+My goal is to get patches 1-5 into linux-next as soon as I've collected acks.
+Dave, Michal and Ben, it would be fantastic if you're able to give this
+series a spin.  Once I've gotten the okay from you I can then start merging
+the driver changes from patch 6 as I receive acks from the various subsystem
+maintainers (I'm still maintaining the drivers changes in a large series of
+per-subsystem patches so I can add them to linux-next as maintainers
+respond, but for this posting I've rolled them all up to make it easy to
+handle.)  I'll add the last 4 patches to linux-next once all the driver
+changes are committed.
+
+Build tested on powerpc (32 & 64 bit), sparc (32 & 64), microblaze.  Booted
+on MPC5200.
+
+Difference from v1:
+ - some cleanups and fixed more references to the old properties.
+ - rolled all the drivers/ and sound/ changes into a single patch to
+   simplify review.
 ---
- arch/powerpc/sysdev/fsl_msi.c |   42 ++++++++++++++++++++++++++--------------
- 1 files changed, 27 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 4108713..5c7e68d 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2009 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2007-2010 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Author: Tony Li <tony.li@freescale.com>
-  *	   Jason Jin <Jason.jin@freescale.com>
-@@ -29,7 +29,6 @@ struct fsl_msi_feature {
- 	u32 msiir_offset;
- };
- 
--static struct fsl_msi *fsl_msi;
- 
- static inline u32 fsl_msi_read(u32 __iomem *base, unsigned int reg)
- {
-@@ -54,10 +53,12 @@ static struct irq_chip fsl_msi_chip = {
- static int fsl_msi_host_map(struct irq_host *h, unsigned int virq,
- 				irq_hw_number_t hw)
- {
-+	struct fsl_msi *msi_data = h->host_data;
- 	struct irq_chip *chip = &fsl_msi_chip;
- 
- 	get_irq_desc(virq)->status |= IRQ_TYPE_EDGE_FALLING;
- 
-+	set_irq_chip_data(virq, msi_data);
- 	set_irq_chip_and_handler(virq, chip, handle_edge_irq);
- 
- 	return 0;
-@@ -96,11 +97,12 @@ static int fsl_msi_check_device(struct pci_dev *pdev, int nvec, int type)
- static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
- {
- 	struct msi_desc *entry;
--	struct fsl_msi *msi_data = fsl_msi;
-+	struct fsl_msi *msi_data;
- 
- 	list_for_each_entry(entry, &pdev->msi_list, list) {
- 		if (entry->irq == NO_IRQ)
- 			continue;
-+		msi_data = get_irq_chip_data(entry->irq);
- 		set_irq_msi(entry->irq, NULL);
- 		msi_bitmap_free_hwirqs(&msi_data->bitmap,
- 				       virq_to_hw(entry->irq), 1);
-@@ -111,9 +113,10 @@ static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
- }
- 
- static int fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
--				  struct msi_msg *msg)
-+				struct msi_msg *msg,
-+				struct fsl_msi *fsl_msi_data)
- {
--	struct fsl_msi *msi_data = fsl_msi;
-+	struct fsl_msi *msi_data = fsl_msi_data;
- 
- 	if ((msi_data->feature & FSL_PIC_IP_MASK) == FSL_PIC_IP_VMPIC) {
- 		const u32* reg;
-@@ -146,9 +149,13 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 	unsigned int virq;
- 	struct msi_desc *entry;
- 	struct msi_msg msg;
--	struct fsl_msi *msi_data = fsl_msi;
-+	struct fsl_msi *msi_data;
- 
- 	list_for_each_entry(entry, &pdev->msi_list, list) {
-+		if (entry->irq == NO_IRQ)
-+			continue;
-+		msi_data = get_irq_chip_data(entry->irq);
-+
- 		hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
- 		if (hwirq < 0) {
- 			rc = hwirq;
-@@ -168,7 +175,7 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 		}
- 		set_irq_msi(virq, entry);
- 
--		rc = fsl_compose_msi_msg(pdev, hwirq, &msg);
-+		rc = fsl_compose_msi_msg(pdev, hwirq, &msg, msi_data);
- 		if (rc < 0)
- 			goto out_free;
- 		write_msi_msg(virq, &msg);
-@@ -182,7 +189,7 @@ out_free:
- static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- {
- 	unsigned int cascade_irq;
--	struct fsl_msi *msi_data = fsl_msi;
-+	struct fsl_msi *msi_data = get_irq_chip_data(irq);
- 	int msir_index = -1;
- 	u32 msir_value = 0;
- 	u32 intr_index;
-@@ -207,7 +214,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
- 		cascade_irq = NO_IRQ;
- 
- 	desc->status |= IRQ_INPROGRESS;
--	switch (fsl_msi->feature & FSL_PIC_IP_MASK) {
-+	switch (msi_data->feature & FSL_PIC_IP_MASK) {
- 	case FSL_PIC_IP_MPIC:
- 		msir_value = fsl_msi_read(msi_data->msi_regs,
- 			msir_index * 0x10);
-@@ -327,15 +334,20 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 		if (virt_msir != NO_IRQ) {
- 			set_irq_data(virt_msir, (void *)i);
- 			set_irq_chained_handler(virt_msir, fsl_msi_cascade);
-+			set_irq_chip_data(virt_msir, msi);
- 		}
- 	}
- 
--	fsl_msi = msi;
--
--	WARN_ON(ppc_md.setup_msi_irqs);
--	ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
--	ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
--	ppc_md.msi_check_device = fsl_msi_check_device;
-+	/* The multiple setting ppc_md.setup_msi_irqs will not harm things */
-+	if (!ppc_md.setup_msi_irqs) {
-+		ppc_md.setup_msi_irqs = fsl_setup_msi_irqs;
-+		ppc_md.teardown_msi_irqs = fsl_teardown_msi_irqs;
-+		ppc_md.msi_check_device = fsl_msi_check_device;
-+	} else if (ppc_md.setup_msi_irqs != fsl_setup_msi_irqs) {
-+		dev_err(&dev->dev, "Different MSI driver already installed!\n");
-+		err = -EBUSY; /* or some other error code */
-+		goto error_out;
-+	}
- 	return 0;
- error_out:
- 	kfree(msi);
+Grant Likely (10):
+      arch/sparc: Remove obsolete dev_archdata.prom_node and of_devce.node
+      arch/microblaze: Remove obsolete dev_archdata.of_node and of_devce.node
+      arch/powerpc: Remove obsolete dev_archdata.of_node and of_devce.node
+      of: eliminate calls to dev_archdata_set_node()
+      of/drivers: Always use struct device.of_node to get node pointer
+      arch/microblaze: Always use 'struct device.of_node' to get device node pointer.
+      arch/powerpc: Always use 'struct device.of_node' to get device node pointer.
+      arch/sparc: Always use 'struct device.of_node' to get device node pointer.
+      i2c/of: Allow device node to be passed via i2c_board_info
+      driver-core: Add device node pointer to struct device
+
+
+ arch/microblaze/include/asm/device.h          |   14 ------------
+ arch/microblaze/include/asm/of_device.h       |    1 -
+ arch/microblaze/kernel/of_device.c            |   11 ++++-----
+ arch/microblaze/kernel/of_platform.c          |    4 ++-
+ arch/powerpc/include/asm/device.h             |   15 -------------
+ arch/powerpc/include/asm/macio.h              |    2 +-
+ arch/powerpc/include/asm/of_device.h          |    1 -
+ arch/powerpc/kernel/ibmebus.c                 |    4 ++-
+ arch/powerpc/kernel/of_device.c               |   11 ++++-----
+ arch/powerpc/kernel/of_platform.c             |   16 +++++++-------
+ arch/powerpc/kernel/pci-common.c              |    4 ++-
+ arch/powerpc/kernel/vio.c                     |   18 ++++++++--------
+ arch/powerpc/platforms/52xx/mpc52xx_gpio.c    |    4 ++-
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |   16 +++++++-------
+ arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |    6 +++--
+ arch/powerpc/platforms/82xx/ep8248e.c         |    6 +++--
+ arch/powerpc/platforms/83xx/suspend.c         |    2 +-
+ arch/powerpc/platforms/cell/axon_msi.c        |    2 +-
+ arch/powerpc/platforms/cell/iommu.c           |    5 ++--
+ arch/powerpc/platforms/pasemi/gpio_mdio.c     |    2 +-
+ arch/powerpc/platforms/pasemi/setup.c         |    4 ++-
+ arch/powerpc/platforms/ps3/system-bus.c       |    2 +-
+ arch/powerpc/platforms/pseries/iommu.c        |    2 +-
+ arch/powerpc/sysdev/axonram.c                 |    6 +++--
+ arch/powerpc/sysdev/bestcomm/bestcomm.c       |    8 +++----
+ arch/powerpc/sysdev/fsl_msi.c                 |   14 ++++++------
+ arch/powerpc/sysdev/fsl_pmc.c                 |    2 +-
+ arch/powerpc/sysdev/pmi.c                     |    2 +-
+ arch/sparc/include/asm/device.h               |   15 -------------
+ arch/sparc/include/asm/fb.h                   |    2 +-
+ arch/sparc/include/asm/floppy_64.h            |    4 ++-
+ arch/sparc/include/asm/of_device.h            |    1 -
+ arch/sparc/include/asm/parport.h              |    2 +-
+ arch/sparc/kernel/auxio_64.c                  |    2 +-
+ arch/sparc/kernel/central.c                   |    4 ++-
+ arch/sparc/kernel/chmc.c                      |   10 ++++-----
+ arch/sparc/kernel/ioport.c                    |    2 +-
+ arch/sparc/kernel/of_device_32.c              |   17 +++++++--------
+ arch/sparc/kernel/of_device_64.c              |   29 ++++++++++++-------------
+ arch/sparc/kernel/of_device_common.c          |    4 ++-
+ arch/sparc/kernel/pci.c                       |   14 +++++-------
+ arch/sparc/kernel/pci_common.c                |    9 ++++----
+ arch/sparc/kernel/pci_fire.c                  |    4 ++-
+ arch/sparc/kernel/pci_msi.c                   |   18 ++++++++--------
+ arch/sparc/kernel/pci_psycho.c                |    4 ++-
+ arch/sparc/kernel/pci_sabre.c                 |    4 ++-
+ arch/sparc/kernel/pci_schizo.c                |   14 ++++++------
+ arch/sparc/kernel/pci_sun4v.c                 |    8 +++----
+ arch/sparc/kernel/power.c                     |    4 ++-
+ arch/sparc/kernel/psycho_common.c             |    2 +-
+ arch/sparc/kernel/sbus.c                      |   16 +++++++-------
+ arch/sparc/kernel/time_32.c                   |    2 +-
+ arch/sparc/kernel/time_64.c                   |    6 +++--
+ drivers/ata/pata_macio.c                      |    2 +-
+ drivers/ata/pata_mpc52xx.c                    |   10 ++++-----
+ drivers/ata/pata_of_platform.c                |    2 +-
+ drivers/atm/fore200e.c                        |   16 ++++++++------
+ drivers/block/xsysace.c                       |    8 +++----
+ drivers/cdrom/viocd.c                         |    2 +-
+ drivers/char/hw_random/n2-drv.c               |    2 +-
+ drivers/char/hw_random/pasemi-rng.c           |    2 +-
+ drivers/char/ipmi/ipmi_si_intf.c              |    4 ++-
+ drivers/char/viotape.c                        |    2 +-
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c    |    6 +++--
+ drivers/gpio/pca953x.c                        |    2 +-
+ drivers/i2c/busses/i2c-ibm_iic.c              |    4 ++-
+ drivers/i2c/busses/i2c-mpc.c                  |   17 ++++++++-------
+ drivers/i2c/i2c-core.c                        |    3 +++
+ drivers/ide/pmac.c                            |   10 ++++-----
+ drivers/infiniband/hw/ehca/ehca_main.c        |   11 +++++----
+ drivers/input/serio/i8042-sparcio.h           |    2 +-
+ drivers/input/serio/xilinx_ps2.c              |    8 +++----
+ drivers/leds/leds-gpio.c                      |    2 +-
+ drivers/macintosh/macio_asic.c                |   16 +++++++-------
+ drivers/macintosh/macio_sysfs.c               |    6 +++--
+ drivers/macintosh/rack-meter.c                |    4 ++-
+ drivers/macintosh/therm_pm72.c                |    2 +-
+ drivers/mmc/host/of_mmc_spi.c                 |    4 ++-
+ drivers/mmc/host/sdhci-of-core.c              |    2 +-
+ drivers/mtd/maps/physmap_of.c                 |    6 +++--
+ drivers/mtd/maps/sun_uflash.c                 |    2 +-
+ drivers/mtd/nand/fsl_elbc_nand.c              |    6 +++--
+ drivers/mtd/nand/pasemi_nand.c                |    2 +-
+ drivers/net/can/sja1000/sja1000_of_platform.c |    4 ++-
+ drivers/net/ehea/ehea_main.c                  |   14 ++++++------
+ drivers/net/fec_mpc52xx.c                     |   12 +++++-----
+ drivers/net/fec_mpc52xx_phy.c                 |    4 ++-
+ drivers/net/greth.c                           |    3 ++-
+ drivers/net/ibm_newemac/core.c                |   13 ++++++-----
+ drivers/net/ibm_newemac/debug.c               |    9 ++++----
+ drivers/net/ibm_newemac/debug.h               |    4 ++-
+ drivers/net/ibm_newemac/mal.c                 |   28 ++++++++++++------------
+ drivers/net/ibm_newemac/rgmii.c               |   12 +++++-----
+ drivers/net/ibm_newemac/tah.c                 |    7 +++---
+ drivers/net/ibm_newemac/zmii.c                |    9 ++++----
+ drivers/net/ll_temac_main.c                   |   10 ++++-----
+ drivers/net/myri_sbus.c                       |    2 +-
+ drivers/net/niu.c                             |   10 ++++-----
+ drivers/net/phy/mdio-gpio.c                   |    6 +++--
+ drivers/net/sunbmac.c                         |    6 +++--
+ drivers/net/sunhme.c                          |    8 +++----
+ drivers/net/sunlance.c                        |    6 +++--
+ drivers/net/sunqe.c                           |    6 +++--
+ drivers/net/xilinx_emaclite.c                 |   10 ++++-----
+ drivers/of/device.c                           |   20 +++++++++--------
+ drivers/of/of_i2c.c                           |    4 ++-
+ drivers/of/of_mdio.c                          |    6 +++--
+ drivers/of/of_spi.c                           |    2 +-
+ drivers/pcmcia/electra_cf.c                   |    2 +-
+ drivers/sbus/char/bbc_envctrl.c               |    4 ++-
+ drivers/sbus/char/bbc_i2c.c                   |    4 ++-
+ drivers/sbus/char/display7seg.c               |    2 +-
+ drivers/sbus/char/envctrl.c                   |    2 +-
+ drivers/sbus/char/flash.c                     |    4 ++-
+ drivers/sbus/char/uctrl.c                     |    2 +-
+ drivers/scsi/ibmvscsi/ibmvfc.c                |    2 +-
+ drivers/scsi/ibmvscsi/ibmvscsi.c              |    2 +-
+ drivers/scsi/qlogicpti.c                      |   10 ++++-----
+ drivers/scsi/sun_esp.c                        |   16 +++++++-------
+ drivers/serial/apbuart.c                      |    2 +-
+ drivers/serial/mpc52xx_uart.c                 |    8 +++----
+ drivers/serial/nwpserial.c                    |    2 +-
+ drivers/serial/of_serial.c                    |    4 ++-
+ drivers/serial/pmac_zilog.c                   |    2 +-
+ drivers/serial/sunhv.c                        |    2 +-
+ drivers/serial/sunsab.c                       |    6 +++--
+ drivers/serial/sunsu.c                        |    6 +++--
+ drivers/serial/sunzilog.c                     |    8 +++----
+ drivers/serial/uartlite.c                     |    6 +++--
+ drivers/spi/mpc52xx_psc_spi.c                 |   11 +++++----
+ drivers/spi/mpc52xx_spi.c                     |   14 ++++++------
+ drivers/spi/spi_mpc8xxx.c                     |    6 +++--
+ drivers/usb/host/ehci-ppc-of.c                |    2 +-
+ drivers/usb/host/isp1760-if.c                 |    2 +-
+ drivers/usb/host/ohci-ppc-of.c                |    2 +-
+ drivers/video/cg6.c                           |    2 +-
+ drivers/video/ffb.c                           |    2 +-
+ drivers/video/fsl-diu-fb.c                    |    2 +-
+ drivers/video/xilinxfb.c                      |   18 ++++++++--------
+ drivers/watchdog/cpwd.c                       |    2 +-
+ include/linux/device.h                        |    4 +++
+ include/linux/i2c.h                           |    4 +++
+ sound/aoa/fabrics/layout.c                    |    2 +-
+ sound/aoa/soundbus/core.c                     |    8 +++----
+ sound/aoa/soundbus/i2sbus/control.c           |    2 +-
+ sound/aoa/soundbus/i2sbus/core.c              |    4 ++-
+ sound/aoa/soundbus/sysfs.c                    |    4 ++-
+ sound/soc/fsl/mpc8610_hpcd.c                  |    2 +-
+ sound/sparc/cs4231.c                          |    6 +++--
+ sound/sparc/dbri.c                            |    2 +-
+ 150 files changed, 463 insertions(+), 495 deletions(-)
+
 -- 
-1.6.0.6
+Signature
