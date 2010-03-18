@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f189.google.com (mail-yx0-f189.google.com
-	[209.85.210.189]) by ozlabs.org (Postfix) with ESMTP id 8E449B7CE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 05:03:10 +1100 (EST)
-Received: by yxe27 with SMTP id 27so1222951yxe.17
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 11:03:09 -0700 (PDT)
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id A9232B7D15
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 06:30:47 +1100 (EST)
+Received: by pvg6 with SMTP id 6so1386960pvg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 12:30:46 -0700 (PDT)
+Date: Thu, 18 Mar 2010 20:30:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2] powerpc/perf_events: Implement
+	perf_arch_fetch_caller_regs
+Message-ID: <20100318193046.GD5103@nowhere>
+References: <20100318050513.GA6575@drongo>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <ae4f76fd1003080620o5598778cv221f05bf331768c8@mail.gmail.com>
-References: <ae4f76fd1003080620o5598778cv221f05bf331768c8@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 18 Mar 2010 12:02:49 -0600
-Message-ID: <fa686aa41003181102i2a702c61h8ecfe05568c2a42e@mail.gmail.com>
-Subject: Re: IRQ's missing with MPC5200 GPT as an interrupt controller
-To: Henk Stegeman <henk.stegeman@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100318050513.GA6575@drongo>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, anton@samba.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,136 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Henk,
+On Thu, Mar 18, 2010 at 04:05:13PM +1100, Paul Mackerras wrote:
+> This implements a powerpc version of perf_arch_fetch_caller_regs.
+> It's implemented in assembly because that way we can be sure there
+> isn't a stack frame for perf_arch_fetch_caller_regs.  If it was in
+> C, gcc might or might not create a stack frame for it, which would
+> affect the number of levels we have to skip.
+> 
+> With this, we see results from perf record -e lock:lock_acquire like
+> this:
+> 
+> # Samples: 24878
+> #
+> # Overhead         Command      Shared Object  Symbol
+> # ........  ..............  .................  ......
+> #
+>     14.99%            perf  [kernel.kallsyms]  [k] ._raw_spin_lock
+>                       |
+>                       --- ._raw_spin_lock
+>                          |
+>                          |--25.00%-- .alloc_fd
+>                          |          (nil)
+>                          |          |
+>                          |          |--50.00%-- .anon_inode_getfd
+>                          |          |          .sys_perf_event_open
+>                          |          |          syscall_exit
+>                          |          |          syscall
+>                          |          |          create_counter
+>                          |          |          __cmd_record
+>                          |          |          run_builtin
+>                          |          |          main
+>                          |          |          0xfd2e704
+>                          |          |          0xfd2e8c0
+>                          |          |          (nil)
+> 
+> ... etc.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/include/asm/asm-compat.h |    2 ++
+>  arch/powerpc/kernel/misc.S            |   28 ++++++++++++++++++++++++++++
+>  2 files changed, 30 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
+> index c1b475a..a9b91ed 100644
+> --- a/arch/powerpc/include/asm/asm-compat.h
+> +++ b/arch/powerpc/include/asm/asm-compat.h
+> @@ -28,6 +28,7 @@
+>  #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+>  #define PPC_STLCX	stringify_in_c(stdcx.)
+>  #define PPC_CNTLZL	stringify_in_c(cntlzd)
+> +#define PPC_LR_STKOFF	16
+>  
+>  /* Move to CR, single-entry optimized version. Only available
+>   * on POWER4 and later.
+> @@ -51,6 +52,7 @@
+>  #define PPC_STLCX	stringify_in_c(stwcx.)
+>  #define PPC_CNTLZL	stringify_in_c(cntlzw)
+>  #define PPC_MTOCRF	stringify_in_c(mtcrf)
+> +#define PPC_LR_STKOFF	4
+>  
+>  #endif
+>  
+> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+> index 2d29752..b485a87 100644
+> --- a/arch/powerpc/kernel/misc.S
+> +++ b/arch/powerpc/kernel/misc.S
+> @@ -127,3 +127,31 @@ _GLOBAL(__setup_cpu_power7)
+>  _GLOBAL(__restore_cpu_power7)
+>  	/* place holder */
+>  	blr
+> +
+> +#ifdef CONFIG_EVENT_TRACING
+> +/*
+> + * Get a minimal set of registers for our caller's nth caller.
+> + * r3 = regs pointer, r5 = n.
+> + *
+> + * We only get R1 (stack pointer), NIP (next instruction pointer)
+> + * and LR (link register).  These are all we can get in the
+> + * general case without doing complicated stack unwinding, but
+> + * fortunately they are enough to do a stack backtrace, which
+> + * is all we need them for.
+> + */
+> +_GLOBAL(perf_arch_fetch_caller_regs)
+> +	mr	r6,r1
+> +	cmpwi	r5,0
+> +	mflr	r4
+> +	ble	2f
+> +	mtctr	r5
+> +1:	PPC_LL	r6,0(r6)
+> +	bdnz	1b
+> +	PPC_LL	r4,PPC_LR_STKOFF(r6)
+> +2:	PPC_LL	r7,0(r6)
+> +	PPC_LL	r7,PPC_LR_STKOFF(r7)
+> +	PPC_STL	r6,GPR1-STACK_FRAME_OVERHEAD(r3)
+> +	PPC_STL	r4,_NIP-STACK_FRAME_OVERHEAD(r3)
+> +	PPC_STL	r7,_LINK-STACK_FRAME_OVERHEAD(r3)
+> +	blr
+> +#endif /* CONFIG_EVENT_TRACING */
 
-On Mon, Mar 8, 2010 at 8:20 AM, Henk Stegeman <henk.stegeman@gmail.com> wro=
-te:
-> I'm trying to make use of the GPT as interrupt controller.
-> My driver is getting most, but not all of the interrupts, besides that
-> I'm getting a whole bunch of spurious IRQs, so I'm trying to figure
-> out what's wrong.
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0gpt6: timer@660 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc520=
-0b-gpt","fsl,mpc5200-gpt";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x660 0x10>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <1 15 0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-controller;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#interrupt-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> My device has the interrupt-parent property which links it to the
-> above interrupt controller.
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0spi@f00 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <0>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc520=
-0b-spi","fsl,mpc5200-spi";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0xf00 0x20>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <2 13 0 2 1=
-4 0>;
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0io-controller@0 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible=
- =3D "microkey,smc4000io";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0linux,moda=
-lias =3D "of_smc4000io";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0spi-max-fr=
-equency =3D <800000>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0spi-cpha;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0=
->;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0word-delay=
--us =3D <30>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-=
-parent =3D <&gpt6>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts=
- =3D <2>; // And make it edge falling
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->
-> There are two things I find suspicious:
-> - First of all my interrupt is listed as virq# 16, shouldn't it be
-> virq# 0x50 ? (16 is te L2 value virq# 0x50 of mpc52xx_irqhost_map)
 
-The GPT irq registered as a different IRQ controller, so it will be
-assigned an entirely different number within the virq range.
+Ingo has reported me that context-switches software events
+(not the trace event version) have crappy callchains.
 
-> - Secondly in mpc52xx_gpt.c =A0mpc52xx_gpt_irq_mask() and
-> mpc52xx_gpt_irq_unmask() resp. clear and set the IrqEn bit of the GPT,
-> which is described in the MPC5200B_UM as "enables interrupt generation
-> to the CPU for all modes". The word 'generation' makes me suspicious,
-> because it could mean that while irqEn is cleared an edge on the GPT's
-> input does not even request an IRQ immediately after the bit is
-> cleared. =A0Or in other words, clearing the bit could do more that just
-> masking.
+So, while looking into it:
 
-Could be, the IRQ support has not gotten extensive testing.  It may
-require additional work.
+- PERF_COUNT_SW_CPU_MIGRATIONS provides no regs.
+Heh, and it event doesn't work because of this perf_swevent_add
+give up if regs are NULL.
+Has PERF_COUNT_SW_CPU_MIGRATIONS ever worked?
 
-> ~ # cat /proc/interrupts
-> =A0 =A0 =A0 =A0 =A0 CPU0
-> =A016: =A0 =A01338686 =A0 MPC52xx GPT =A0 =A0 =A0Edge =A0 =A0 =A0 =A0 smc=
-4000io
-> 129: =A0 =A0 =A083224 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mpc52x=
-x_psc_uart
-> 130: =A0 =A0 =A0 =A0 =A01 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mp=
-c52xx_psc_uart
-> 133: =A0 =A0 =A0 =A0 =A00 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mp=
-c52xx-fec_ctrl
-> 134: =A0 =A0 =A0 =A0 =A00 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0oh=
-ci_hcd:usb1
-> 135: =A0 =A0 =A016127 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mpc52x=
-x_ata
-> 141: =A0 =A0 =A0 =A0 =A00 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mp=
-c5200-spi-modf
-> 142: =A0 =A0 =A079184 =A0 MPC52xx Peripherals Level =A0 =A0 =A0 =A0mpc520=
-0-spi-spif
-> 192: =A0 =A0 =A0 =A0 =A00 =A0 MPC52xx SDMA =A0 =A0 Level =A0 =A0 =A0 =A0A=
-TA task
-> 193: =A0 =A0 =A0 =A0 15 =A0 MPC52xx SDMA =A0 =A0 Level =A0 =A0 =A0 =A0mpc=
-52xx-fec_rx
-> 194: =A0 =A0 =A035615 =A0 MPC52xx SDMA =A0 =A0 Level =A0 =A0 =A0 =A0mpc52=
-xx-fec_tx
-> LOC: =A0 =A0 134286 =A0 Local timer interrupts
-> SPU: =A0 =A0 576958 =A0 Spurious interrupts
-> CNT: =A0 =A0 =A0 =A0 =A00 =A0 Performance monitoring interrupts
-> MCE: =A0 =A0 =A0 =A0 =A00 =A0 Machine check exceptions
->
-> ~ # dmesg |grep 660
-> [ =A0 =A01.975928] irq: irq 0 on host /soc5200@f0000000/timer@660 mapped
-> to virtual irq 16
->
-> ~ # dmesg | grep host_map
-> [ =A0 =A00.000000] mpc52xx_irqhost_map: virq=3D81, l1=3D2, l2=3D1
-> [ =A0 =A00.319272] mpc52xx_irqhost_map: External IRQ1 virq=3D41, hw=3D41.=
- type=3D8
-> [ =A0 =A00.376117] mpc52xx_irqhost_map: virq=3D49, l1=3D1, l2=3D9
-> [ =A0 =A00.417213] mpc52xx_irqhost_map: virq=3D4a, l1=3D1, l2=3D10
-> [ =A0 =A00.452119] mpc52xx_irqhost_map: virq=3D4b, l1=3D1, l2=3D11
-> [ =A0 =A00.487031] mpc52xx_irqhost_map: virq=3D4c, l1=3D1, l2=3D12
-> [ =A0 =A00.529899] mpc52xx_irqhost_map: virq=3D4d, l1=3D1, l2=3D13
-> [ =A0 =A00.564821] mpc52xx_irqhost_map: virq=3D4e, l1=3D1, l2=3D14
-> [ =A0 =A00.599744] mpc52xx_irqhost_map: virq=3D4f, l1=3D1, l2=3D15
-> [ =A0 =A00.634669] mpc52xx_irqhost_map: virq=3D50, l1=3D1, l2=3D16
-> [ =A0 =A01.629764] mpc52xx_irqhost_map: virq=3D82, l1=3D2, l2=3D2
-> [ =A0 =A01.667194] mpc52xx_irqhost_map: virq=3D84, l1=3D2, l2=3D4
-> [ =A0 =A01.763299] mpc52xx_irqhost_map: virq=3D87, l1=3D2, l2=3D7
-> [ =A0 =A01.790510] mpc52xx_irqhost_map: virq=3Dc0, l1=3D3, l2=3D0
-> [ =A0 =A01.909341] mpc52xx_irqhost_map: virq=3D8d, l1=3D2, l2=3D13
-> [ =A0 =A01.936712] mpc52xx_irqhost_map: virq=3D8e, l1=3D2, l2=3D14
-> [ =A0 =A02.055579] mpc52xx_irqhost_map: virq=3Dc1, l1=3D3, l2=3D1
-> [ =A0 =A02.083018] mpc52xx_irqhost_map: virq=3Dc2, l1=3D3, l2=3D2
-> [ =A0 =A02.110345] mpc52xx_irqhost_map: virq=3D85, l1=3D2, l2=3D5
-> [ =A0 =A02.211890] mpc52xx_irqhost_map: virq=3D86, l1=3D2, l2=3D6
+- PERF_COUNT_SW_CONTEXT_SWITCHES uses task_pt_regs(). This
+seems a very wrong thing. We don't want the regs when a user
+task was interrupted or before a syscall.
+That notwithstanding task_pt_regs() on kernel threads
+has insane effects.
 
-This grep only shows the output from mpc52xx_intc.c.  The GPT driver
-has its own IRQ mapping function; mpc52xx_gpt_irq_map(), which is why
-you're not seeing your IRQ map debug message.
+What we want for both is a hot regs snapshot.
+I'm going to fix this. But it means the CONFIG_EVENT_TRACING
+dependency is not true anymore. So I can't keep the exported
+symbol of perf_arch_fetch_caller_regs() in trace_event_perf.c.
 
-Cheers,
-g.
+The ideal would be to put the EXPORT_SYMBOL in perf_event.c
+but doing so in the same file a weak symbol is defined has
+unpredictable effects. So I'm going to make it a macro as I
+don't have the choice. I'll update ppc at the same time but I
+can't guarantee it will even build :)
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks.
