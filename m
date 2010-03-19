@@ -1,23 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f184.google.com (mail-yw0-f184.google.com
-	[209.85.211.184]) by ozlabs.org (Postfix) with ESMTP id 528DFB7080
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 17:18:39 +1100 (EST)
-Received: by ywh14 with SMTP id 14so1371497ywh.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Mar 2010 23:18:37 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100319060621.GC28042@obsidianresearch.com>
-References: <20100309193021.GD30462@obsidianresearch.com>
-	<1268977838.8599.53.camel@pasglop>
-	<20100319060621.GC28042@obsidianresearch.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 19 Mar 2010 00:18:17 -0600
-Message-ID: <fa686aa41003182318t72827aa9s2856c34f8f67bc61@mail.gmail.com>
-Subject: Re: [PATCH] PPC: Skip over OF_DT_NOP when unflattening the device
-	tree
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D3A79B7C09
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 18:19:01 +1100 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Mar 2010 18:18:50 +1100
+Message-ID: <1268983130.8599.56.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 19, 2010 at 12:06 AM, Jason Gunthorpe
-<jgunthorpe@obsidianresearch.com> wrote:
-> On Fri, Mar 19, 2010 at 04:50:38PM +1100, Benjamin Herrenschmidt wrote:
->> On Tue, 2010-03-09 at 12:30 -0700, Jason Gunthorpe wrote:
->> > NOPs within the property section are skipped, but NOPs between
->> > OF_DT_END_NODE and OF_DT_BEGIN_NODE were not. My firmware NOPs out
->> > entire nodes depending on various environment parameters.
->> >
->> > of_scan_flat_dt already handles NOP more generally..
->>
->> Good catch, though that code has now moved over to drivers/of
->> and is a bit different. Grant is going to fix it up though.
->
-> Ah, I based the patch off 2.6.33..
->
-> Grant: let me know if you need some help/testing, nice to run into you
-> again.
+Hi Linus !
 
-Would be nice if you could respin and test your patch against 2.6.34-rc1.  :-)
+Here's a handful of powerpc fixes for 2.6.34, along with a patch
+from Fujita Tomonori to remove a config option that is mostly
+useless nowadays.
 
-Otherwise I'll look at it tomorrow.
+Cheers,
+Ben.
 
-g.
+The following changes since commit 39710479303fd3affb3e204e9a7a75cc676977b5:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../vapier/blackfin
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Benjamin Herrenschmidt (1):
+      Merge commit 'kumar/merge' into merge
+
+FUJITA Tomonori (2):
+      powerpc: Fix swiotlb to respect the boot option
+      powerpc: Remove IOMMU_VMERGE config option
+
+Kumar Gala (2):
+      powerpc/85xx: Make sure lwarx hint isn't set on ppc32
+      powerpc/fsl-booke: Get coherent bit from PTE
+
+Márton Németh (1):
+      powerpc: Do not call prink when CONFIG_PRINTK is not defined
+
+Nathan Lynch (1):
+      powerpc: Use correct ccr bit for syscall error status
+
+ arch/powerpc/Kconfig                  |   13 -------------
+ arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
+ arch/powerpc/include/asm/syscall.h    |    6 +++---
+ arch/powerpc/kernel/head_fsl_booke.S  |    7 ++++---
+ arch/powerpc/kernel/iommu.c           |    7 +------
+ arch/powerpc/kernel/setup_32.c        |    6 ------
+ arch/powerpc/kernel/setup_64.c        |    6 ------
+ arch/powerpc/mm/mem.c                 |    6 ++++++
+ 8 files changed, 17 insertions(+), 40 deletions(-)
