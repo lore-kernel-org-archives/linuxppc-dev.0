@@ -1,14 +1,14 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp133.mail.ukl.yahoo.com (smtp133.mail.ukl.yahoo.com
-	[77.238.184.64]) by ozlabs.org (Postfix) with SMTP id D4B96B7CE4
+	[77.238.184.64]) by ozlabs.org (Postfix) with SMTP id D488CB7C67
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Mar 2010 05:32:52 +1100 (EST)
+	Sat, 20 Mar 2010 05:32:53 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	iommu@lists.linux-foundation.org
-Subject: [PATCH v5 01/10] swiotbl: add back swiotlb_alloc_boot()
-Date: Fri, 19 Mar 2010 19:32:17 +0100
-Message-Id: <1269023546-25534-2-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v5 02/10] swiotlb: make swiotlb_bounce() __weak
+Date: Fri, 19 Mar 2010 19:32:18 +0100
+Message-Id: <1269023546-25534-3-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
 References: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>, konrad.wilk@oracle.com
@@ -21,66 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch makes swiotlb_alloc_boot() available again.
-
-This weak function can be overloaded to modify slightly how the SWIOTLB
-and the overflow areas are allocated during boot.
+This patch converts swiotlb_bounce() into a weak function making it
+overloadable by platform support code.
 
 This will be used later to support the Nintendo Wii video game console,
-which requires placing the SWIOTLB area above 0x10000000 (MEM2).
+which is a NOT_COHERENT_CACHE platform and requires explicit cache handling
+when dealing with the swiotlb bounce buffers.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- include/linux/swiotlb.h |    1 +
- lib/swiotlb.c           |   10 ++++++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ lib/swiotlb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 8550d6b..c769939 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -54,6 +54,7 @@ extern void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
- 			   enum dma_data_direction dir);
- extern void swiotlb_full(struct device *dev, size_t size, int dir, int do_panic);
- 
-+extern void __init *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
- #endif
- 
- /* swiotlb.c: dma_ops functions. */
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index c6bfa5d..ab1622a 100644
+index ab1622a..9ce5cd2 100644
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -136,6 +136,11 @@ void swiotlb_print_info(void)
- 	       (unsigned long long)pend);
- }
- 
-+void * __weak __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-+{
-+	return alloc_bootmem_low_pages(size);
-+}
-+
+@@ -328,7 +328,7 @@ EXPORT_SYMBOL_GPL(is_swiotlb_buffer);
  /*
-  * Statically reserve bounce buffer space and initialize bounce buffer data
-  * structures for the software IO TLB used to implement the DMA API.
-@@ -155,7 +160,7 @@ swiotlb_init_with_default_size(size_t default_size, int verbose)
- 	/*
- 	 * Get IO TLB memory from the low pages
- 	 */
--	swiotlb_bk_start = alloc_bootmem_low_pages(bytes);
-+	swiotlb_bk_start = swiotlb_alloc_boot(bytes, swiotlb_bk_nslabs);
- 	if (!swiotlb_bk_start)
- 		panic("Cannot allocate SWIOTLB buffer");
- 	swiotlb_bk_end = swiotlb_bk_start + bytes;
-@@ -175,7 +180,8 @@ swiotlb_init_with_default_size(size_t default_size, int verbose)
- 	/*
- 	 * Get the overflow emergency buffer
- 	 */
--	swiotlb_bk_overflow_buffer = alloc_bootmem_low(swiotlb_bk_overflow);
-+	swiotlb_bk_overflow_buffer = swiotlb_alloc_boot(swiotlb_bk_overflow,
-+							swiotlb_bk_nslabs);
- 	if (!swiotlb_bk_overflow_buffer)
- 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
- 	if (verbose)
+  * Bounce: copy the swiotlb buffer back to the original dma location
+  */
+-void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
++void __weak swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			   enum dma_data_direction dir)
+ {
+ 	unsigned long pfn = PFN_DOWN(phys);
 -- 
 1.6.3.3
