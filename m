@@ -1,14 +1,15 @@
 Return-Path: <albert_herranz@yahoo.es>
 Received: from smtp133.mail.ukl.yahoo.com (smtp133.mail.ukl.yahoo.com
-	[77.238.184.64]) by ozlabs.org (Postfix) with SMTP id AAE61B7C67
+	[77.238.184.64]) by ozlabs.org (Postfix) with SMTP id DB28EB7D1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Mar 2010 05:32:57 +1100 (EST)
+	Sat, 20 Mar 2010 05:32:58 +1100 (EST)
 From: Albert Herranz <albert_herranz@yahoo.es>
 To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	iommu@lists.linux-foundation.org
-Subject: [PATCH v5 05/10] USB: refactor unmap_urb_for_dma/map_urb_for_dma
-Date: Fri, 19 Mar 2010 19:32:21 +0100
-Message-Id: <1269023546-25534-6-git-send-email-albert_herranz@yahoo.es>
+Subject: [PATCH v5 06/10] USB: add HCD_NO_COHERENT_MEM host controller driver
+	flag
+Date: Fri, 19 Mar 2010 19:32:22 +0100
+Message-Id: <1269023546-25534-7-git-send-email-albert_herranz@yahoo.es>
 In-Reply-To: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
 References: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
 Cc: Albert Herranz <albert_herranz@yahoo.es>, konrad.wilk@oracle.com
@@ -21,288 +22,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split unmap_urb_for_dma() and map_urb_for_dma() into smaller pieces
-to make the code easier to read and maintain.
+The HCD_NO_COHERENT_MEM USB host controller driver flag can be enabled
+to instruct the USB stack to avoid allocating coherent memory for USB
+buffers.
 
-This patch adds four new URB flags which are used by map_urb_for_dma()
-to mark URBs with the exact method used to map the setup packet and/or the
-transfer buffer.
-These flags are checked too at unmap_urb_for_dma() time to determine how
-to unmap the setup packet and/or the transfer buffer. The flags are cleared
-when the actual unmap happens.
+This flag is useful to overcome some esoteric memory access restrictions
+found in some platforms.
+For example, the Nintendo Wii video game console is a NOT_COHERENT_CACHE
+platform that is unable to safely perform non-32 bit uncached writes
+to RAM because the byte enables are not connected to the bus.
+Thus, in that platform, "coherent" DMA buffers cannot be directly used
+by the kernel code unless it guarantees that all write accesses
+to said buffers are done in 32 bit chunks (which is not the case in the
+USB subsystem).
 
-No functional change.
+To avoid this unwanted behaviour HCD_NO_COHERENT_MEM can be enabled at
+the HCD controller, causing USB buffer allocations to be satisfied from
+normal kernel memory. In this case, the USB stack will make sure that
+the buffers get properly mapped/unmapped for DMA transfers using the DMA
+streaming mapping API.
+
+Note that other parts of the USB stack may also use coherent memory,
+like for example the hardware descriptors used in the EHCI controllers.
+This needs to be checked and addressed separately. In the EHCI example,
+hardware descriptors are accessed in 32-bit (or 64-bit) chunks, causing
+no problems in the described scenario.
 
 Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- drivers/usb/core/hcd.c |  211 +++++++++++++++++++++++++++++++-----------------
- include/linux/usb.h    |    5 +
- 2 files changed, 143 insertions(+), 73 deletions(-)
+ drivers/usb/core/buffer.c |   29 +++++++++++++++++++++++------
+ drivers/usb/core/hcd.c    |   32 +++++++++++++++++++++++++++-----
+ drivers/usb/core/hcd.h    |   13 +++++++------
+ 3 files changed, 57 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 80995ef..44ad710 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1260,106 +1260,171 @@ static void hcd_free_coherent(struct usb_bus *bus, dma_addr_t *dma_handle,
- 	*dma_handle = 0;
- }
+diff --git a/drivers/usb/core/buffer.c b/drivers/usb/core/buffer.c
+index 3ba2fff..10cd11d 100644
+--- a/drivers/usb/core/buffer.c
++++ b/drivers/usb/core/buffer.c
+@@ -36,6 +36,26 @@ static const size_t	pool_max [HCD_BUFFER_POOLS] = {
  
--static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
--			   gfp_t mem_flags)
-+static void unmap_urb_setup_packet(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	if (urb->transfer_flags & URB_SETUP_DMA_MAPPED) {
-+		urb->transfer_flags &= ~URB_SETUP_DMA_MAPPED;
-+		dma_unmap_single(hcd->self.controller, urb->setup_dma,
-+				 sizeof(struct usb_ctrlrequest),
-+				 DMA_TO_DEVICE);
-+	} else if (urb->transfer_flags & URB_SETUP_BOUNCE_MAPPED) {
-+		/* bounce from "local" memory */
-+		urb->transfer_flags &= ~URB_SETUP_BOUNCE_MAPPED;
-+		hcd_free_coherent(urb->dev->bus, &urb->setup_dma,
-+				  (void **)&urb->setup_packet,
-+				  sizeof(struct usb_ctrlrequest),
-+				  DMA_TO_DEVICE);
-+	} else {
-+		/* nothing to do for PIO-based controller requests */
-+	}
-+}
-+
-+static void unmap_urb_transfer_buffer(struct usb_hcd *hcd, struct urb *urb)
- {
- 	enum dma_data_direction dir;
--	int ret = 0;
+ /* SETUP primitives */
  
--	/* Map the URB's buffers for DMA access.
--	 * Lower level HCD code should use *_dma exclusively,
--	 * unless it uses pio or talks to another transport,
--	 * or uses the provided scatter gather list for bulk.
--	 */
-+	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
-+	if (urb->transfer_flags & URB_TRANSFER_DMA_MAPPED) {
-+		urb->transfer_flags &= ~URB_TRANSFER_DMA_MAPPED;
-+		dma_unmap_single(hcd->self.controller,
-+				 urb->transfer_dma,
-+				 urb->transfer_buffer_length,
-+				 dir);
-+	} else if (urb->transfer_flags & URB_TRANSFER_BOUNCE_MAPPED) {
-+		/* bounce from "local" memory */
-+		urb->transfer_flags &= ~URB_TRANSFER_BOUNCE_MAPPED;
-+		hcd_free_coherent(urb->dev->bus, &urb->transfer_dma,
-+				  &urb->transfer_buffer,
-+				  urb->transfer_buffer_length,
-+				  dir);
-+	} else {
-+		/* nothing to do for PIO-based controller requests */
-+	}
++static inline int hcd_uses_pio(struct usb_hcd *hcd)
++{
++	if ((!hcd->self.controller->dma_mask &&
++	    !(hcd->driver->flags & HCD_LOCAL_MEM)))
++		return 1;
++	return 0;
 +}
 +
-+static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
++static inline int hcd_needs_non_dma_mem(struct usb_hcd *hcd)
 +{
- 	if (is_root_hub(urb->dev))
-+		return;
-+
-+	unmap_urb_setup_packet(hcd, urb);
-+	unmap_urb_transfer_buffer(hcd, urb);
++	/*
++	 * PIO-based and HCD_NO_COHERENT_MEM-based controllers use
++	 * normal kernel memory.
++	 * The rest want DMA memory.
++	 */
++	if (hcd_uses_pio(hcd) || (hcd->driver->flags & HCD_NO_COHERENT_MEM))
++		return 1;
++	return 0;
 +}
 +
-+static int urb_needs_setup_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	/* setup mappings are required only for control requests */
-+	if (!usb_endpoint_xfer_control(&urb->ep->desc))
-+		return 0;
-+
-+	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
-+	if ((urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int urb_needs_transfer_map(struct usb_hcd *hcd, struct urb *urb)
-+{
-+	/* don't need to map anything if there's nothing to map */
-+	if (urb->transfer_buffer_length == 0)
+ /**
+  * hcd_buffer_create - initialize buffer pools
+  * @hcd: the bus whose buffer pools are to be initialized
+@@ -53,8 +73,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
+ 	char		name[16];
+ 	int 		i, size;
+ 
+-	if (!hcd->self.controller->dma_mask &&
+-	    !(hcd->driver->flags & HCD_LOCAL_MEM))
++	if (hcd_needs_non_dma_mem(hcd))
  		return 0;
  
--	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-+	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
-+	if ((urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int map_urb_setup_packet(struct usb_hcd *hcd, struct urb *urb,
-+				gfp_t mem_flags)
-+{
-+	int ret;
-+
-+	if (urb_needs_setup_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->setup_dma = dma_map_single(
--					hcd->self.controller,
--					urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+						hcd->self.controller,
-+						urb->setup_packet,
-+						sizeof(struct usb_ctrlrequest),
-+						DMA_TO_DEVICE);
- 			if (dma_mapping_error(hcd->self.controller,
--						urb->setup_dma))
-+					      urb->setup_dma))
- 				return -EAGAIN;
--		} else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			ret = hcd_alloc_coherent(
--					urb->dev->bus, mem_flags,
--					&urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+			urb->transfer_flags |= URB_SETUP_DMA_MAPPED;
-+		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
-+			/* bounce to "local" memory */
-+			ret = hcd_alloc_coherent(urb->dev->bus, mem_flags,
-+						 &urb->setup_dma,
-+						 (void **)&urb->setup_packet,
-+						 sizeof(struct usb_ctrlrequest),
-+						 DMA_TO_DEVICE);
-+			if (ret)
-+				return ret;
-+			urb->transfer_flags |= URB_SETUP_BOUNCE_MAPPED;
-+		} else {
-+			/* nothing to do for PIO-based controller requests */
-+		}
- 	}
-+	return 0;
-+}
-+
-+static int map_urb_transfer_buffer(struct usb_hcd *hcd, struct urb *urb,
-+				   gfp_t mem_flags)
-+{
-+	enum dma_data_direction dir;
-+	int ret;
+ 	for (i = 0; i < HCD_BUFFER_POOLS; i++) {
+@@ -109,8 +128,7 @@ void *hcd_buffer_alloc(
+ 	int 			i;
  
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
--	if (ret == 0 && urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
-+	if (urb_needs_transfer_map(hcd, urb)) {
- 		if (hcd->self.uses_dma) {
- 			urb->transfer_dma = dma_map_single (
--					hcd->self.controller,
--					urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
-+						hcd->self.controller,
-+						urb->transfer_buffer,
-+						urb->transfer_buffer_length,
-+						dir);
- 			if (dma_mapping_error(hcd->self.controller,
--						urb->transfer_dma))
-+					      urb->transfer_dma))
- 				return -EAGAIN;
-+			urb->transfer_flags |= URB_TRANSFER_DMA_MAPPED;
- 		} else if (hcd->driver->flags & HCD_LOCAL_MEM) {
--			ret = hcd_alloc_coherent(
--					urb->dev->bus, mem_flags,
--					&urb->transfer_dma,
--					&urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
+ 	/* some USB hosts just use PIO */
+-	if (!bus->controller->dma_mask &&
+-	    !(hcd->driver->flags & HCD_LOCAL_MEM)) {
++	if (hcd_needs_non_dma_mem(hcd)) {
+ 		*dma = ~(dma_addr_t) 0;
+ 		return kmalloc(size, mem_flags);
+ 	}
+@@ -135,8 +153,7 @@ void hcd_buffer_free(
+ 	if (!addr)
+ 		return;
+ 
+-	if (!bus->controller->dma_mask &&
+-	    !(hcd->driver->flags & HCD_LOCAL_MEM)) {
++	if (hcd_needs_non_dma_mem(hcd)) {
+ 		kfree(addr);
+ 		return;
+ 	}
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 44ad710..174853a 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -1316,9 +1316,19 @@ static int urb_needs_setup_map(struct usb_hcd *hcd, struct urb *urb)
+ 	/* setup mappings are required only for control requests */
+ 	if (!usb_endpoint_xfer_control(&urb->ep->desc))
+ 		return 0;
 -
--			if (ret && usb_endpoint_xfer_control(&urb->ep->desc)
--			    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
--				hcd_free_coherent(urb->dev->bus,
--					&urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
-+			/* bounce to "local" memory */
-+			ret = hcd_alloc_coherent(urb->dev->bus, mem_flags,
-+						 &urb->transfer_dma,
-+						 &urb->transfer_buffer,
-+						 urb->transfer_buffer_length,
-+						 dir);
-+			if (ret)
-+				return ret;
-+			urb->transfer_flags |= URB_TRANSFER_BOUNCE_MAPPED;
-+		} else {
-+			/* nothing to do for PIO-based controller requests */
- 		}
- 	}
--	return ret;
-+	return 0;
- }
- 
--static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
-+static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
-+			   gfp_t mem_flags)
- {
--	enum dma_data_direction dir;
-+	int error;
- 
-+	/* Map the URB's buffers for DMA access.
-+	 * Lower level HCD code should use *_dma exclusively,
-+	 * unless it uses pio or talks to another transport,
-+	 * or uses the provided scatter gather list for bulk.
+-	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
+-	if ((urb->transfer_flags & URB_NO_SETUP_DMA_MAP))
++	/*
++	 * Setup packets are 8 bytes long and don't use scatter/gather.
++	 *
++	 * If the caller sets URB_NO_SETUP_DMA_MAP and urb->setup_dma
++	 * contains a valid DMA handle then it is already mapped, except
++	 * if the controller can't use coherent memory (HCD_NO_COHERENT_MEM).
++	 *
++	 * urb->setup_dma is set to ~0 when allocating USB buffers for
++	 * PIO-based or HCD_NO_COHERENT_MEM-based controllers.
 +	 */
- 	if (is_root_hub(urb->dev))
--		return;
--
--	if (usb_endpoint_xfer_control(&urb->ep->desc)
--	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
--		if (hcd->self.uses_dma)
--			dma_unmap_single(hcd->self.controller, urb->setup_dma,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			hcd_free_coherent(urb->dev->bus, &urb->setup_dma,
--					(void **)&urb->setup_packet,
--					sizeof(struct usb_ctrlrequest),
--					DMA_TO_DEVICE);
--	}
++	if ((urb->transfer_flags & URB_NO_SETUP_DMA_MAP) &&
++	    urb->setup_dma != ~(dma_addr_t)0 &&
++	    !(hcd->driver->flags & HCD_NO_COHERENT_MEM))
+ 		return 0;
+ 
+ 	return 1;
+@@ -1330,8 +1340,20 @@ static int urb_needs_transfer_map(struct usb_hcd *hcd, struct urb *urb)
+ 	if (urb->transfer_buffer_length == 0)
+ 		return 0;
+ 
+-	/* If the caller set URB_NO_SETUP_DMA_MAP then no mapping is needed */
+-	if ((urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))
++	/* if this is a scatter/gather request, it should be already mapped */
++	if (urb->num_sgs > 0)
 +		return 0;
++	/*
++	 * If the caller sets URB_NO_TRANSFER_DMA_MAP and urb->transfer_dma
++	 * contains a valid DMA handle then it is already mapped, except
++	 * if the controller can't use coherent memory (HCD_NO_COHERENT_MEM).
++	 *
++	 * urb->transfer_dma is set to ~0 when allocating USB buffers for
++	 * PIO-based or HCD_NO_COHERENT_MEM-based controllers.
++	 */
++	if ((urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP) &&
++	    urb->transfer_dma != ~(dma_addr_t)0 &&
++	    !(hcd->driver->flags & HCD_NO_COHERENT_MEM))
+ 		return 0;
  
--	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
--	if (urb->transfer_buffer_length != 0
--	    && !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)) {
--		if (hcd->self.uses_dma)
--			dma_unmap_single(hcd->self.controller,
--					urb->transfer_dma,
--					urb->transfer_buffer_length,
--					dir);
--		else if (hcd->driver->flags & HCD_LOCAL_MEM)
--			hcd_free_coherent(urb->dev->bus, &urb->transfer_dma,
--					&urb->transfer_buffer,
--					urb->transfer_buffer_length,
--					dir);
-+	error = map_urb_setup_packet(hcd, urb, mem_flags);
-+	if (!error) {
-+		error = map_urb_transfer_buffer(hcd, urb, mem_flags);
-+		if (error)
-+			unmap_urb_setup_packet(hcd, urb);
- 	}
-+	return error;
- }
+ 	return 1;
+diff --git a/drivers/usb/core/hcd.h b/drivers/usb/core/hcd.h
+index bbe2b92..cde42f3 100644
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -183,12 +183,13 @@ struct hc_driver {
+ 	irqreturn_t	(*irq) (struct usb_hcd *hcd);
  
- /*-------------------------------------------------------------------------*/
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index d7ace1b..5e99cbd 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -985,6 +985,11 @@ extern int usb_disabled(void);
- #define URB_DIR_OUT		0
- #define URB_DIR_MASK		URB_DIR_IN
+ 	int	flags;
+-#define	HCD_MEMORY	0x0001		/* HC regs use memory (else I/O) */
+-#define	HCD_LOCAL_MEM	0x0002		/* HC needs local memory */
+-#define	HCD_USB11	0x0010		/* USB 1.1 */
+-#define	HCD_USB2	0x0020		/* USB 2.0 */
+-#define	HCD_USB3	0x0040		/* USB 3.0 */
+-#define	HCD_MASK	0x0070
++#define	HCD_MEMORY		0x0001	/* HC regs use memory (else I/O) */
++#define	HCD_LOCAL_MEM		0x0002	/* HC needs local memory */
++#define	HCD_NO_COHERENT_MEM	0x0004	/* HC avoids use of "coherent" mem */
++#define	HCD_USB11		0x0010	/* USB 1.1 */
++#define	HCD_USB2		0x0020	/* USB 2.0 */
++#define	HCD_USB3		0x0040	/* USB 3.0 */
++#define	HCD_MASK		0x0070
  
-+#define URB_SETUP_DMA_MAPPED		0x1000 /* via dma_map_single */
-+#define URB_SETUP_BOUNCE_MAPPED		0x2000 /* via hcd_alloc_coherent */
-+#define URB_TRANSFER_DMA_MAPPED		0x4000 /* via dma_map_single */
-+#define URB_TRANSFER_BOUNCE_MAPPED	0x8000 /* via hcd_alloc_coherent */
-+
- struct usb_iso_packet_descriptor {
- 	unsigned int offset;
- 	unsigned int length;		/* expected length */
+ 	/* called to init HCD and root hub */
+ 	int	(*reset) (struct usb_hcd *hcd);
 -- 
 1.6.3.3
