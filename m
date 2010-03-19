@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D3A79B7C09
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 18:19:01 +1100 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Mar 2010 18:18:50 +1100
-Message-ID: <1268983130.8599.56.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 8A499B7C8E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 19:15:59 +1100 (EST)
+Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
+	[192.168.5.33])
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id 2A528B453F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 19 Mar 2010 09:15:48 +0100 (CET)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: BestComm BD tasks, buffer done flag question
+MIME-Version: 1.0
+Message-ID: <201003190915.47713.roman.fietze@telemotive.de>
+Date: Fri, 19 Mar 2010 09:15:47 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Hello,
 
-Here's a handful of powerpc fixes for 2.6.34, along with a patch
-from Fujita Tomonori to remove a config option that is mostly
-useless nowadays.
+I'm using Grant's platform SCLPC/BestComm driver to transfer data from
+an FPGA (to disk). Very often I get a negative result from
+bcom_buffer_done because BCOM_BD_READY is not set.
 
-Cheers,
-Ben.
+When searching for a solution I found this mail from Rob Broersen
+talking about a similar promlem in the MPC5200's FEC interrupt
+handler:
 
-The following changes since commit 39710479303fd3affb3e204e9a7a75cc676977b5:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../vapier/blackfin
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg16324.html
 
-are available in the git repository at:
+When I now do something ugly like
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+	if (!bcom_buffer_done(lpbfifo->bcom_cur_task))
+		mdelay(1);
 
-Benjamin Herrenschmidt (1):
-      Merge commit 'kumar/merge' into merge
+	/* retry */
+	if (!bcom_buffer_done(lpbfifo->bcom_cur_task)) {
+		ERROR!!!
+		return IRQ_HANDLED;
+	}
 
-FUJITA Tomonori (2):
-      powerpc: Fix swiotlb to respect the boot option
-      powerpc: Remove IOMMU_VMERGE config option
+	HANDLE BD
 
-Kumar Gala (2):
-      powerpc/85xx: Make sure lwarx hint isn't set on ppc32
-      powerpc/fsl-booke: Get coherent bit from PTE
+in the ISR I always succeed, even in the cases where the first check
+fails and I call the mdelay. Before that I very often ran into the
+ERROR!!! case and my transfer "failed".
 
-Márton Németh (1):
-      powerpc: Do not call prink when CONFIG_PRINTK is not defined
+Is there a better solution? Does the FEC interrupt handler really work
+fine as it is right now? I ask, because when I assume that there would
+be just one active DB (as it always is with the SCLPC platform driver)
+this one would evt. stall if there wasn't a second interrupt causing
+the loop to handle it in this second interrupt.
 
-Nathan Lynch (1):
-      powerpc: Use correct ccr bit for syscall error status
 
- arch/powerpc/Kconfig                  |   13 -------------
- arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
- arch/powerpc/include/asm/syscall.h    |    6 +++---
- arch/powerpc/kernel/head_fsl_booke.S  |    7 ++++---
- arch/powerpc/kernel/iommu.c           |    7 +------
- arch/powerpc/kernel/setup_32.c        |    6 ------
- arch/powerpc/kernel/setup_64.c        |    6 ------
- arch/powerpc/mm/mem.c                 |    6 ++++++
- 8 files changed, 17 insertions(+), 40 deletions(-)
+Roman
+
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
