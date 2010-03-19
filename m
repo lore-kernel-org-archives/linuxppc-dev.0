@@ -1,19 +1,19 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 41231B7D18
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 12:08:22 +1100 (EST)
-Date: Fri, 19 Mar 2010 12:08:13 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/6] powerpc: Rename LWSYNC_ON_SMP to
-	PPC_RELEASE_BARRIER, ISYNC_ON_SMP to PPC_ACQUIRE_BARRIER
-Message-ID: <20100319010813.GF25636@laptop>
-References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
-	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100210110406.GD3399@kryten>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/9] wireless: Use macros from wireless.h
+Date: Thu, 18 Mar 2010 18:29:31 -0700
+Message-Id: <cover.1268961559.git.joe@perches.com>
+Cc: orinoco-users@lists.sourceforge.net, Zhu Yi <yi.zhu@intel.com>,
+	Reinette Chatre <reinette.chatre@intel.com>,
+	David Gibson <hermes@gibson.dropbear.id.au>,
+	netdev@vger.kernel.org, orinoco-devel@lists.sourceforge.net,
+	linux-wireless@vger.kernel.org, cbe-oss-dev@ozlabs.org,
+	Intel Linux Wireless <ilw@linux.intel.com>, linuxppc-dev@ozlabs.org,
+	Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Richard Kennedy <richard@rsk.demon.co.uk>,
+	"David S. Miller" <davem@davemloft.net>, Pavel Roskin <proski@gnu.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,34 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 10, 2010 at 10:04:06PM +1100, Anton Blanchard wrote:
-> 
-> For performance reasons we are about to change ISYNC_ON_SMP to sometimes be
-> lwsync. Now that the macro name doesn't make sense, change it and LWSYNC_ON_SMP
-> to better explain what the barriers are doing.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: powerpc.git/arch/powerpc/include/asm/atomic.h
-> ===================================================================
-> --- powerpc.git.orig/arch/powerpc/include/asm/atomic.h	2010-02-10 17:12:30.264322204 +1100
-> +++ powerpc.git/arch/powerpc/include/asm/atomic.h	2010-02-10 17:13:05.355571902 +1100
-> @@ -49,13 +49,13 @@ static __inline__ int atomic_add_return(
->  	int t;
->  
->  	__asm__ __volatile__(
-> -	LWSYNC_ON_SMP
-> +	PPC_RELEASE_BARRIER
->  "1:	lwarx	%0,0,%2		# atomic_add_return\n\
->  	add	%0,%1,%0\n"
->  	PPC405_ERR77(0,%2)
->  "	stwcx.	%0,0,%2 \n\
->  	bne-	1b"
-> -	ISYNC_ON_SMP
-> +	PPC_ACQUIRE_BARRIER
+Create a IW_HANDLER macro for iw_handler array entries in wireless.h
+Use the wireless.h macros in various wireless files
+Use starting index define SIOCIWFIRST where appropriate 
+Remove local #defines of IW_IOCTL
+Remove STD_IW_HANDLER macro in orinoco, use IW_HANDLER instead
 
-I wonder if this shouldn't be called PPC_ISYNC_ACQUIRE_BARRIER ?
+Joe Perches (9):
+  include/linux/wireless.h: Add IW_HANDLER macro to initialize array entry
+  wireless.h: Use SIOCIWFIRST not SIOCSIWCOMMIT for range check
+  include/net/iw_handler.h: Use SIOCIWFIRST not SIOCSIWCOMMIT in comment
+  net/wireless/wext_core.c: Use IW_IOCTL_IDX macro
+  net/wireless/wext-core.c: Use IW_EVENT_IDX macro
+  drivers/net/wireless: Use IW_HANDLER macro
+  drivers/net: Remove local #define IW_IOCTL, use IW_HANDLER
+  orinoco/wext.c: Remove local #define STD_IW_HANDLER
+  drivers/net/wireless/ray_cs.c: Use iw_handler function prototypes
 
-Unlike PPC_RELEASE_BARRIER, it is not an acquire barrier unless it
-is used like an isync.
+ drivers/net/ps3_gelic_wireless.c       |   35 +++---
+ drivers/net/wireless/ipw2x00/ipw2200.c |   83 ++++++-------
+ drivers/net/wireless/orinoco/wext.c    |   94 +++++++-------
+ drivers/net/wireless/ray_cs.c          |  212 +++++++++++++++-----------------
+ drivers/net/wireless/wl3501_cs.c       |   52 ++++----
+ include/linux/wireless.h               |    4 +-
+ include/net/iw_handler.h               |    2 +-
+ net/wireless/wext-core.c               |  134 ++++++++++----------
+ 8 files changed, 298 insertions(+), 318 deletions(-)
