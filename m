@@ -1,23 +1,16 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 8A499B7C8E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Mar 2010 19:15:59 +1100 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 2A528B453F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Mar 2010 09:15:48 +0100 (CET)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: BestComm BD tasks, buffer done flag question
+Return-Path: <dcb314@hotmail.com>
+Received: from blu0-omc3-s11.blu0.hotmail.com (blu0-omc3-s11.blu0.hotmail.com
+	[65.55.116.86]) by ozlabs.org (Postfix) with ESMTP id 5BA7CB7CB6
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 20:06:48 +1100 (EST)
+Message-ID: <BLU108-W19BF72C9933FC2647F761B9C2A0@phx.gbl>
+Content-Type: multipart/mixed;
+	boundary="_fa8e6bc2-9363-4a7a-8119-fef352e42553_"
+From: d binderman <dcb314@hotmail.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH]: Minor quibble in macintosh/windfarm_pm81.c
+Date: Fri, 19 Mar 2010 09:01:42 +0000
 MIME-Version: 1.0
-Message-ID: <201003190915.47713.roman.fietze@telemotive.de>
-Date: Fri, 19 Mar 2010 09:15:47 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-I'm using Grant's platform SCLPC/BestComm driver to transfer data from
-an FPGA (to disk). Very often I get a negative result from
-bcom_buffer_done because BCOM_BD_READY is not set.
-
-When searching for a solution I found this mail from Rob Broersen
-talking about a similar promlem in the MPC5200's FEC interrupt
-handler:
-
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg16324.html
-
-When I now do something ugly like
-
-	if (!bcom_buffer_done(lpbfifo->bcom_cur_task))
-		mdelay(1);
-
-	/* retry */
-	if (!bcom_buffer_done(lpbfifo->bcom_cur_task)) {
-		ERROR!!!
-		return IRQ_HANDLED;
-	}
-
-	HANDLE BD
-
-in the ISR I always succeed, even in the cases where the first check
-fails and I call the mdelay. Before that I very often ran into the
-ERROR!!! case and my transfer "failed".
-
-Is there a better solution? Does the FEC interrupt handler really work
-fine as it is right now? I ask, because when I assume that there would
-be just one active DB (as it always is with the SCLPC platform driver)
-this one would evt. stall if there wasn't a second interrupt causing
-the loop to handle it in this second interrupt.
+--_fa8e6bc2-9363-4a7a-8119-fef352e42553_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
-Roman
 
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+Hello there=2C
+
+I just ran the sourceforge tool cppcheck over the source code of the
+new Linux kernel 2.6.34-rc1
+
+It said
+
+[./macintosh/windfarm_pm81.c:760]: (style) Redundant condition. It is safe =
+to deallocate a NULL poin
+ter
+[./macintosh/windfarm_pm81.c:762]: (style) Redundant condition. It is safe =
+to deallocate a NULL poin
+ter
+
+The source code is
+
+=A0=A0=A0=A0=A0=A0=A0 /* Destroy control loops state structures */
+=A0=A0=A0=A0=A0=A0=A0 if (wf_smu_sys_fans)
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 kfree(wf_smu_sys_fans)=3B
+=A0=A0=A0=A0=A0=A0=A0 if (wf_smu_cpu_fans)
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 kfree(wf_smu_cpu_fans)=3B
+
+Proposed patch file attached.
+
+Regards
+
+David Binderman
+
+ 		 	   		 =20
+_________________________________________________________________
+Send us your Hotmail stories and be featured in our newsletter
+http://clk.atdmt.com/UKM/go/195013117/direct/01/=
+
+--_fa8e6bc2-9363-4a7a-8119-fef352e42553_
+Content-Type: text/x-patch
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="bug39.patch"
+
+ClNpZ25lZC1vZmYtYnk6IERhdmlkIEJpbmRlcm1hbiA8ZGNiMzE0QGhvdG1haWwuY29tPgoKLS0t
+IG1hY2ludG9zaC93aW5kZmFybV9wbTgxLmMuc2F2CTIwMTAtMDMtMTkgMDg6NTc6MjIuMDAwMDAw
+MDAwICswMDAwCisrKyBtYWNpbnRvc2gvd2luZGZhcm1fcG04MS5jCTIwMTAtMDMtMTkgMDg6NTc6
+MzQuMDAwMDAwMDAwICswMDAwCkBAIC03NTcsMTAgKzc1Nyw4IEBAIHN0YXRpYyBpbnQgX19kZXZl
+eGl0IHdmX3NtdV9yZW1vdmUoc3RydWMKIAkJd2ZfcHV0X2NvbnRyb2woY3B1ZnJlcV9jbGFtcCk7
+CiAKIAkvKiBEZXN0cm95IGNvbnRyb2wgbG9vcHMgc3RhdGUgc3RydWN0dXJlcyAqLwotCWlmICh3
+Zl9zbXVfc3lzX2ZhbnMpCi0JCWtmcmVlKHdmX3NtdV9zeXNfZmFucyk7Ci0JaWYgKHdmX3NtdV9j
+cHVfZmFucykKLQkJa2ZyZWUod2Zfc211X2NwdV9mYW5zKTsKKwlrZnJlZSh3Zl9zbXVfc3lzX2Zh
+bnMpOworCWtmcmVlKHdmX3NtdV9jcHVfZmFucyk7CiAKIAlyZXR1cm4gMDsKIH0K
+
+--_fa8e6bc2-9363-4a7a-8119-fef352e42553_--
