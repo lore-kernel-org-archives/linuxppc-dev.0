@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 50A05B7C33
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 19 Mar 2010 10:35:31 +1100 (EST)
-Subject: Re: BUG in dma-mapping.h:218 // MESH SCSI driver not working
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef Simoens <stef.simoens@numericable.be>
-In-Reply-To: <4BA2B570.2010202@numericable.be>
-References: <4A68E1CE.4040307@scarlet.be> <1248425553.25467.20.camel@pasglop>
-	<7704005f23c1dfcbfdc8f1963b290d98.squirrel@www.loft5.bisse17-21.be>
-	<4BA2B570.2010202@numericable.be>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 19 Mar 2010 10:35:24 +1100
-Message-ID: <1268955324.2335.237.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 41231B7D18
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 12:08:22 +1100 (EST)
+Date: Fri, 19 Mar 2010 12:08:13 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 4/6] powerpc: Rename LWSYNC_ON_SMP to
+	PPC_RELEASE_BARRIER, ISYNC_ON_SMP to PPC_ACQUIRE_BARRIER
+Message-ID: <20100319010813.GF25636@laptop>
+References: <20100210105728.GA3399@kryten> <20100210110236.GB3399@kryten>
+	<20100210110306.GC3399@kryten> <20100210110406.GD3399@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100210110406.GD3399@kryten>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,115 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-03-19 at 00:21 +0100, Stef Simoens wrote:
-> Hello,
+On Wed, Feb 10, 2010 at 10:04:06PM +1100, Anton Blanchard wrote:
 > 
-> Some time ago (July 24th 2009 my mailbox says) I emailed you and the
-> linuxppc-dev list about my problems booting from the mesh SCSI
-> controller.
+> For performance reasons we are about to change ISYNC_ON_SMP to sometimes be
+> lwsync. Now that the macro name doesn't make sense, change it and LWSYNC_ON_SMP
+> to better explain what the barriers are doing.
 > 
-> I just compiled 2.6.31 (actually, gentoo-sources-2.6.31-r10); but the
-> problem remains
-> I know that 2.6.33 is out, but as I didn't see any changes to the
-> mesh-driver I guess that the problem is still there ...
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: powerpc.git/arch/powerpc/include/asm/atomic.h
+> ===================================================================
+> --- powerpc.git.orig/arch/powerpc/include/asm/atomic.h	2010-02-10 17:12:30.264322204 +1100
+> +++ powerpc.git/arch/powerpc/include/asm/atomic.h	2010-02-10 17:13:05.355571902 +1100
+> @@ -49,13 +49,13 @@ static __inline__ int atomic_add_return(
+>  	int t;
+>  
+>  	__asm__ __volatile__(
+> -	LWSYNC_ON_SMP
+> +	PPC_RELEASE_BARRIER
+>  "1:	lwarx	%0,0,%2		# atomic_add_return\n\
+>  	add	%0,%1,%0\n"
+>  	PPC405_ERR77(0,%2)
+>  "	stwcx.	%0,0,%2 \n\
+>  	bne-	1b"
+> -	ISYNC_ON_SMP
+> +	PPC_ACQUIRE_BARRIER
 
-Sadly I haven't had a chance to look. The MESH driver is a pretty
-complicated thing that I didn't write and am not familiar with, so it's
-going to take some work to sort out what's going on, and so far I
-haven't had time to dedicate to this.
+I wonder if this shouldn't be called PPC_ISYNC_ACQUIRE_BARRIER ?
 
-Cheers,
-Ben.
-
-> This is the logging I get when I boot (2.6.31):
-> 
-> mesh_abort(ef8501e0)
-> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
->     ct=   1 seq=47 bs=4027 fc= 0 exc= 0 err= 0 im= 7 int= 0 sp=f0
->     dma stat=e0 cmdptr=2f8c2010
->     phase=5 msgphase=0 conn_tgt=0 data_ptr=0
->     dma_st=0 dma_ct=0 n_msgout=0
->     target 0: req=ef85901e0 goes_out=0 saved_ptr=0
-> mesh_abort(ef850280)
-> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
->     ct=   1 seq=47 bs=4027 fc= 0 exc= 0 err= 0 im= 7 int= 0 sp=f0
->     dma stat=e0 cmdptr=2f8c2010
->     phase=5 msgphase=0 conn_tgt=0 data_ptr=0
->     dma_st=0 dma_ct=0 n_msgout=0
->     target 0: req=ef8501e0 goes_out=0 saved_ptr=0
-> mesh_host_reset
-> mesh_abort(ef8501e0)
-> mesh: state at ef9eaa50, regs at f1010000, dma at f1014a00
->     ct=   0 seq=6a bs=4026 fc= 5 exc= 0 err= 0 im= 7 int= 0 sp= 2
->  fifo data=c0
->  fifo data=01
->  fifo data=03
->  fifo data=01
->  fifo data=19
->     dma stat=e0 cmdptr=2f8c2010
->     phase=3 msgphase=1 conn_tgt=0 data_ptr=0
->     dma_st=0 dma_ct=0 n_msgout=6
->     target 0: req=ef8501e0 goes_out=0 saved_ptr=0
-> mesh_host_reset
-> ...
-> [afterwards, it "disconnects" all the disks and then it panics as it
-> cannot find the root partition]
-> 
-> 2.6.29 runs fine ... but I guess that at some point, I would like to
-> upgrade to the latest stable kernel.
-> 
-> The machine is a PowerPC9600 with a 740 upgrade card, 1GB memory,
-> kernel compiled with GCC 4.3.4 ...
-> 
-> Of course I am willing to offer you all assistance you need to help
-> you pin-point the problem...
-> 
-> Thanks for your help
-> 
-> Stef
-> 
-> Stef Simoens schreef: 
-> > Hello Ben,
-> > 
-> > Thank you for your reply.
-> >   
-> > > On Fri, 2009-07-24 at 00:18 +0200, Stef Simoens wrote:
-> > >     
-> > > > I tried the latest 2.6.31-rc3-git3 (without any other patch).
-> > > > However, I have the same behaviour as the patched 2.6.30 (so: no BUG,
-> > > > but the mesh_abort messages).
-> > > >       
-> > > Would it be possible for you to roughly find out at what kernel version
-> > > it stopped working ? (Some kernels may need my patch to avoid crashing)
-> > >     
-> > 
-> > I am currently running 2.6.29-gentoo-r5 (that's somewhere at the end of
-> > 2.6.29, probably 2.6.29.5).
-> > 
-> > I compiled 2.6.30 as soon as it came 'stable'.
-> > In any version of 2.6.30,  I encounter the BUG (dma-mapping.h:218).
-> > 
-> > I didn't react immediately, I actually guessed that the problem would have
-> > been reported and solved in another 2.6.30.x.
-> > Because it didn't, I started browsing the mailing-list (and found your
-> > patch).
-> > 2.6.30-gentoo-r3 with your patch applied doesn't give the bug,
-> > but gives the mesh_abort.
-> > 
-> > Before asking the question, I wanted to build the latest 2.6.31-rc
-> > available to make sure my problem didn't get solved in the meantime.
-> > 2.6.31-rc3 gives the same mesh_abort.
-> > 
-> > Would you like me to try all the linux-2.6.30-rc?
-> > Could you give me your best guess starting-point?
-> > 
-> > I know that there exists something as git-disect ... but I have never used
-> > git (there always needs to be the first time, of course).
-> > 
-> > Kind regards,
-> > 
-> > Stef
-> >   
-> -- 
-> Stef Simoens                                 stef.simoens@numericable.be
-> +32 486 577 963                         http://users.numericable.be/stef
+Unlike PPC_RELEASE_BARRIER, it is not an acquire barrier unless it
+is used like an isync.
