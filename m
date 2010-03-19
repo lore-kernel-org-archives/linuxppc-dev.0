@@ -1,17 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/fsl: Add multiple MSI bank support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1268923993-26689-1-git-send-email-galak@kernel.crashing.org>
-References: <1268923993-26689-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-vxicX2TT0WebdPaxZDvG"
-Date: Fri, 19 Mar 2010 14:06:54 +1100
-Message-ID: <1268968014.30747.136.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id F1B36B7C67
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Mar 2010 16:50:54 +1100 (EST)
+Subject: Re: [PATCH] PPC: Skip over OF_DT_NOP when unflattening the device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+In-Reply-To: <20100309193021.GD30462@obsidianresearch.com>
+References: <20100309193021.GD30462@obsidianresearch.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Mar 2010 16:50:38 +1100
+Message-ID: <1268977838.8599.53.camel@pasglop>
 Mime-Version: 1.0
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2010-03-09 at 12:30 -0700, Jason Gunthorpe wrote:
+> NOPs within the property section are skipped, but NOPs between
+> OF_DT_END_NODE and OF_DT_BEGIN_NODE were not. My firmware NOPs out
+> entire nodes depending on various environment parameters.
+> 
+> of_scan_flat_dt already handles NOP more generally..
 
---=-vxicX2TT0WebdPaxZDvG
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Good catch, though that code has now moved over to drivers/of
+and is a bit different. Grant is going to fix it up though.
 
-On Thu, 2010-03-18 at 09:53 -0500, Kumar Gala wrote:
-> From: Lan Chunhe-B25806 <B25806@freescale.com>
->=20
-> Freescale QorIQ P4080 has three MSI banks and the original code
-> can not work well. This patch adds multiple MSI banks support for
-> Freescale processor.
->=20
-> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Cheers,
+Ben.
 
-> @@ -146,9 +149,13 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, =
-int nvec, int type)
->  	unsigned int virq;
->  	struct msi_desc *entry;
->  	struct msi_msg msg;
-> -	struct fsl_msi *msi_data =3D fsl_msi;
-> +	struct fsl_msi *msi_data;
-> =20
->  	list_for_each_entry(entry, &pdev->msi_list, list) {
-> +		if (entry->irq =3D=3D NO_IRQ)
-> +			continue;
-
-This looks wrong, entry->irq should always be 0 here because it was just
-kzalloc'ed - you should only be doing this check in teardown.
-
-> -	WARN_ON(ppc_md.setup_msi_irqs);
-> -	ppc_md.setup_msi_irqs =3D fsl_setup_msi_irqs;
-> -	ppc_md.teardown_msi_irqs =3D fsl_teardown_msi_irqs;
-> -	ppc_md.msi_check_device =3D fsl_msi_check_device;
-> +	/* The multiple setting ppc_md.setup_msi_irqs will not harm things */
-> +	if (!ppc_md.setup_msi_irqs) {
-> +		ppc_md.setup_msi_irqs =3D fsl_setup_msi_irqs;
-> +		ppc_md.teardown_msi_irqs =3D fsl_teardown_msi_irqs;
-> +		ppc_md.msi_check_device =3D fsl_msi_check_device;
-> +	} else if (ppc_md.setup_msi_irqs !=3D fsl_setup_msi_irqs) {
-> +		dev_err(&dev->dev, "Different MSI driver already installed!\n");
-> +		err =3D -EBUSY; /* or some other error code */
-> +		goto error_out;
-> +	}
-
-I liked it the way it was, because having two competing MSI backends
-means something's probably not going to work. But it's your driver so
-whatever you like.
-
-cheers
-
---=-vxicX2TT0WebdPaxZDvG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkui6koACgkQdSjSd0sB4dIR5QCcCC/wye210zQXQ4dNARwxbuJI
-/+oAoKUdFPxnXz4++4eImybBKdREERu/
-=41wG
------END PGP SIGNATURE-----
-
---=-vxicX2TT0WebdPaxZDvG--
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> ---
+>  arch/powerpc/kernel/prom.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 4ec3008..92137b2 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -408,8 +408,11 @@ static unsigned long __init unflatten_dt_node(unsigned long mem,
+>  		if (!np->type)
+>  			np->type = "<NULL>";
+>  	}
+> -	while (tag == OF_DT_BEGIN_NODE) {
+> -		mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
+> +	while (tag == OF_DT_BEGIN_NODE || tag == OF_DT_NOP) {
+> +		if (tag == OF_DT_NOP)
+> +			*p += 4;
+> +		else
+> +			mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
+>  		tag = *((u32 *)(*p));
+>  	}
+>  	if (tag != OF_DT_END_NODE) {
