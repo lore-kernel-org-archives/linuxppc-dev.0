@@ -1,19 +1,14 @@
-Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp149.mail.ukl.yahoo.com (smtp149.mail.ukl.yahoo.com
-	[77.238.184.80]) by ozlabs.org (Postfix) with SMTP id A62FEB7DAB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Mar 2010 06:13:48 +1100 (EST)
-Message-ID: <4BA3CCE3.1010907@yahoo.es>
-Date: Fri, 19 Mar 2010 20:13:39 +0100
-From: Albert Herranz <albert_herranz@yahoo.es>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [v2 PATCH] of/flattree: Fix unhandled OF_DT_NOP tag when unflattening
+	the device tree
+To: devicetree-discuss@lists.ozlabs.org, benh@kernel.crashing.org,
+	monstr@monstr.eu, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 19 Mar 2010 14:01:49 -0600
+Message-ID: <20100319200049.5195.97171.stgit@angua>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v5 00/10] wii: add usb 2.0 support
-References: <Pine.LNX.4.44L0.1003191452310.18602-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003191452310.18602-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, konrad.wilk@oracle.com
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan Stern wrote:
->> Alan: I think you are also working in a patchset to make {un}map_urb_for_dma
->> remember how the urb was mapped, right?
-> 
-> Yes; you can see an initial version here:
-> 
-> 	http://marc.info/?l=linux-usb&m=126901183419219&w=2
-> 
-> This is a bug fix, so it's likely to be merged before your work.
-> 
-> It's a messy situation, with two people changing the same code at the
-> same time.  I think the best approach will be to wait until the bug-fix
-> patch is tested and accepted; then I can create a version of your 5/10
-> and 6/10 patches adding HCD_NO_COHERENT_MEM and the corresponding
-> behavior.  That can stand by itself, and once it is accepted the rest
-> of your series should go through with no difficulty (at least, no
-> difficulties involving the USB core!).
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
-Agreed. I'll keep an eye on these developments.
+NOPs within the property section are skipped, but NOPs between
+OF_DT_END_NODE and OF_DT_BEGIN_NODE were not. My firmware NOPs out
+entire nodes depending on various environment parameters.
 
-> 
-> Alan Stern
-> 
+of_scan_flat_dt already handles NOP more generally.
 
-Thanks a lot,
-Albert
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+v2 - adapted to new location of unflatten_dt_node().
+
+Jason, please test against 2.6.34-rc1
+
+ drivers/of/fdt.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 406757a..dee4fb5 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -376,8 +376,11 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+ 		if (!np->type)
+ 			np->type = "<NULL>";
+ 	}
+-	while (tag == OF_DT_BEGIN_NODE) {
+-		mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
++	while (tag == OF_DT_BEGIN_NODE || tag == OF_DT_NOP) {
++		if (tag == OF_DT_NOP)
++			*p += 4;
++		else
++			mem = unflatten_dt_node(mem, p, np, allnextpp, fpsize);
+ 		tag = be32_to_cpup((__be32 *)(*p));
+ 	}
+ 	if (tag != OF_DT_END_NODE) {
