@@ -1,16 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 20 Mar 2010 11:24:07 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [v2 PATCH] of/flattree: Fix unhandled OF_DT_NOP tag when
-	unflattening the device tree
-Message-ID: <20100320002407.GA15222@yookeroo>
-References: <20100319200049.5195.97171.stgit@angua>
+Return-Path: <albert_herranz@yahoo.es>
+Received: from smtp147.mail.ukl.yahoo.com (smtp147.mail.ukl.yahoo.com
+	[77.238.184.78]) by ozlabs.org (Postfix) with SMTP id 17BA5B7D17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 20 Mar 2010 11:58:13 +1100 (EST)
+Message-ID: <4BA41D9D.4060904@yahoo.es>
+Date: Sat, 20 Mar 2010 01:58:05 +0100
+From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100319200049.5195.97171.stgit@angua>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
-	monstr@monstr.eu
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH v5 08/10] wii: add mem2 dma mapping ops
+References: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
+	<1269023546-25534-9-git-send-email-albert_herranz@yahoo.es>
+	<20100319195114.GD31908@phenom.dumpdata.com>
+In-Reply-To: <20100319195114.GD31908@phenom.dumpdata.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 19, 2010 at 02:01:49PM -0600, Grant Likely wrote:
-> From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Konrad Rzeszutek Wilk wrote:
+>> +/*
+>> + * The mem2_dma "device".
+>> + *
+>> + * This device "owns" a pool of coherent MEM2 memory that can be shared among
+>> + * several devices requiring MEM2 DMA buffers, instead of dedicating specific
+>> + * pools for each device.
+>> + *
+>> + * A device can use the shared coherent MEM2 memory pool by calling
+>> + * wii_set_mem2_dma_constraints().
+>> + *
+>> + */
+>> +
+>> +struct mem2_dma {
+>> +	struct platform_device *pdev;
+>> +
 > 
-> NOPs within the property section are skipped, but NOPs between
-> OF_DT_END_NODE and OF_DT_BEGIN_NODE were not. My firmware NOPs out
-> entire nodes depending on various environment parameters.
+> The space there isn't neccessary.
 > 
-> of_scan_flat_dt already handles NOP more generally.
 
-Fwiw, there's a test program in the libfdt/dtc tree called "nopulate"
-which will liberally spread NOPs through a device tree blob (one
-between every other tag), which might be useful for testing this
+Yes. Having it or not is just a matter of formatting style taste.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>> +	dma_addr_t dma_base;
+> 
+> I think you need only one of them. You don't seem to use 'base'
+>> +	void *base;
+>> +	size_t size;
+>> +};
+> 
+
+I can even get rid of the whole struct mem2_dma and just use a struct platform_device now that there's no mem2_dma_exit() function.
+I'll do that on the next iteration.
+
+Thanks for your comments.
+
+Cheers,
+Albert
