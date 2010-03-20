@@ -1,18 +1,18 @@
 Return-Path: <albert_herranz@yahoo.es>
-Received: from smtp147.mail.ukl.yahoo.com (smtp147.mail.ukl.yahoo.com
-	[77.238.184.78]) by ozlabs.org (Postfix) with SMTP id 17BA5B7D17
+Received: from smtp136.mail.ukl.yahoo.com (smtp136.mail.ukl.yahoo.com
+	[77.238.184.67]) by ozlabs.org (Postfix) with SMTP id BE7C4B7D50
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 20 Mar 2010 11:58:13 +1100 (EST)
-Message-ID: <4BA41D9D.4060904@yahoo.es>
-Date: Sat, 20 Mar 2010 01:58:05 +0100
+	Sat, 20 Mar 2010 11:59:24 +1100 (EST)
+Message-ID: <4BA41DE7.70406@yahoo.es>
+Date: Sat, 20 Mar 2010 01:59:19 +0100
 From: Albert Herranz <albert_herranz@yahoo.es>
 MIME-Version: 1.0
 To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 Subject: Re: [PATCH v5 08/10] wii: add mem2 dma mapping ops
 References: <1269023546-25534-1-git-send-email-albert_herranz@yahoo.es>
 	<1269023546-25534-9-git-send-email-albert_herranz@yahoo.es>
-	<20100319195114.GD31908@phenom.dumpdata.com>
-In-Reply-To: <20100319195114.GD31908@phenom.dumpdata.com>
+	<20100319195013.GC31908@phenom.dumpdata.com>
+In-Reply-To: <20100319195013.GC31908@phenom.dumpdata.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -26,39 +26,22 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Konrad Rzeszutek Wilk wrote:
->> +/*
->> + * The mem2_dma "device".
->> + *
->> + * This device "owns" a pool of coherent MEM2 memory that can be shared among
->> + * several devices requiring MEM2 DMA buffers, instead of dedicating specific
->> + * pools for each device.
->> + *
->> + * A device can use the shared coherent MEM2 memory pool by calling
->> + * wii_set_mem2_dma_constraints().
->> + *
->> + */
+>> +int wii_set_mem2_dma_constraints(struct device *dev)
+>> +{
+>> +	struct dev_archdata *sd;
 >> +
->> +struct mem2_dma {
->> +	struct platform_device *pdev;
+>> +	sd = &dev->archdata;
+>> +	sd->max_direct_dma_addr = 0;
+>> +	sd->min_direct_dma_addr = wii_hole_start + wii_hole_size;
 >> +
+>> +	set_dma_ops(dev, &wii_mem2_dma_ops);
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL(wii_set_mem2_dma_constraints);
 > 
-> The space there isn't neccessary.
-> 
+> Can you make them EXPORT_SYMBOL_GPL?
 
-Yes. Having it or not is just a matter of formatting style taste.
+Sure. I don't know why I didn't use the *_GPL flavour on first place.
 
->> +	dma_addr_t dma_base;
-> 
-> I think you need only one of them. You don't seem to use 'base'
->> +	void *base;
->> +	size_t size;
->> +};
-> 
-
-I can even get rid of the whole struct mem2_dma and just use a struct platform_device now that there's no mem2_dma_exit() function.
-I'll do that on the next iteration.
-
-Thanks for your comments.
-
-Cheers,
+Thanks,
 Albert
