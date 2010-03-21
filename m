@@ -1,26 +1,19 @@
-Return-Path: <andi@firstfloor.org>
-Received: from one.firstfloor.org (one.firstfloor.org [213.235.205.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 324AFB7CF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Mar 2010 06:33:23 +1100 (EST)
-To: Ben Hutchings <ben@decadent.org.uk>
-Subject: Re: [PATCH 2/4] panic: Allow taint flag for warnings to be changed
-	from TAINT_WARN
-From: Andi Kleen <andi@firstfloor.org>
-References: <1269126097.18314.111.camel@localhost>
-	<1269126340.18314.115.camel@localhost>
-Date: Sun, 21 Mar 2010 20:10:43 +0100
-In-Reply-To: <1269126340.18314.115.camel@localhost> (Ben Hutchings's message
-	of "Sat, 20 Mar 2010 23:05:40 +0000")
-Message-ID: <87y6hlebik.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-pci@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, linuxppc-dev@ozlabs.org,
-	David Woodhouse <dwmw2@infradead.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/fsl: Add multiple MSI bank support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <03F1ACA1-0A02-4FD6-9FE6-AD44E0EFFD0F@kernel.crashing.org>
+References: <1268923993-26689-1-git-send-email-galak@kernel.crashing.org>
+	<1268968014.30747.136.camel@concordia>
+	<03F1ACA1-0A02-4FD6-9FE6-AD44E0EFFD0F@kernel.crashing.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ErMP4t67sz3uq6r7TddG"
+Date: Mon, 22 Mar 2010 10:04:56 +1100
+Message-ID: <1269212696.3534.3.camel@concordia>
+Mime-Version: 1.0
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben Hutchings <ben@decadent.org.uk> writes:
 
-> WARN() is used in some places to report firmware or hardware bugs that
-> are then worked-around.  These bugs do not affect the stability of the
-> kernel and should not set the usual TAINT_WARN flag.  To allow for
-> this, add WARN_TAINT() and WARN_TAINT_ONCE() macros that take a taint
-> flag as argument.
->
-> Architectures that implement warnings using trap instructions instead
-> of calls to warn_slowpath_*() must now implement __WARN_TAINT(taint)
-> instead of __WARN().
+--=-ErMP4t67sz3uq6r7TddG
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I guess this should enforce that at least some taint flag is set?
-(e.g. with a BUILD_BUG_ON)
+On Fri, 2010-03-19 at 10:15 -0500, Kumar Gala wrote:
+> On Mar 18, 2010, at 10:06 PM, Michael Ellerman wrote:
+>=20
+> > On Thu, 2010-03-18 at 09:53 -0500, Kumar Gala wrote:
+> >> From: Lan Chunhe-B25806 <B25806@freescale.com>
+> >>=20
+> >> Freescale QorIQ P4080 has three MSI banks and the original code
+> >> can not work well. This patch adds multiple MSI banks support for
+> >> Freescale processor.
+> >>=20
+> >> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> >> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> >=20
+> >> @@ -146,9 +149,13 @@ static int fsl_setup_msi_irqs(struct pci_dev *pde=
+v, int nvec, int type)
+> >> 	unsigned int virq;
+> >> 	struct msi_desc *entry;
+> >> 	struct msi_msg msg;
+> >> -	struct fsl_msi *msi_data =3D fsl_msi;
+> >> +	struct fsl_msi *msi_data;
+> >>=20
+> >> 	list_for_each_entry(entry, &pdev->msi_list, list) {
+> >> +		if (entry->irq =3D=3D NO_IRQ)
+> >> +			continue;
+> >=20
+> > This looks wrong, entry->irq should always be 0 here because it was jus=
+t
+> > kzalloc'ed - you should only be doing this check in teardown.
 
--Andi
+This was the important comment, the rest was nit-picking :)
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> >> -	WARN_ON(ppc_md.setup_msi_irqs);
+> >> -	ppc_md.setup_msi_irqs =3D fsl_setup_msi_irqs;
+> >> -	ppc_md.teardown_msi_irqs =3D fsl_teardown_msi_irqs;
+> >> -	ppc_md.msi_check_device =3D fsl_msi_check_device;
+> >> +	/* The multiple setting ppc_md.setup_msi_irqs will not harm things *=
+/
+> >> +	if (!ppc_md.setup_msi_irqs) {
+> >> +		ppc_md.setup_msi_irqs =3D fsl_setup_msi_irqs;
+> >> +		ppc_md.teardown_msi_irqs =3D fsl_teardown_msi_irqs;
+> >> +		ppc_md.msi_check_device =3D fsl_msi_check_device;
+> >> +	} else if (ppc_md.setup_msi_irqs !=3D fsl_setup_msi_irqs) {
+> >> +		dev_err(&dev->dev, "Different MSI driver already installed!\n");
+> >> +		err =3D -EBUSY; /* or some other error code */
+> >> +		goto error_out;
+> >> +	}
+> >=20
+> > I liked it the way it was, because having two competing MSI backends
+> > means something's probably not going to work. But it's your driver so
+> > whatever you like.
+>=20
+> The previous WARN_ON() is problematic when we have multiple (of the
+> same type) MSI blocks.  The check was intended to do exactly what you
+> are suggesting.  If you think its doing something else let us know.
+
+Right, yeah I see what you mean - dev_err() is a bit harder to spot than
+a WARN() but it's probably sufficient.
+
+cheers
+
+
+--=-ErMP4t67sz3uq6r7TddG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkumphQACgkQdSjSd0sB4dI+kQCgvFobvDG4FJ2fGIf/Wh3iUzR3
+PLgAniK7wBxQcC2SeEOSjLE8rQQSO8ZA
+=3o4a
+-----END PGP SIGNATURE-----
+
+--=-ErMP4t67sz3uq6r7TddG--
