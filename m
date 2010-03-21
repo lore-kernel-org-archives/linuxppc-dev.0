@@ -1,24 +1,26 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id D2F4EB7CEE
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Mar 2010 15:39:39 +1100 (EST)
-Date: Sun, 21 Mar 2010 10:07:25 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100321043725.GA21566@amit-x200.redhat.com>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1269119079.8599.65.camel@pasglop>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
+Return-Path: <yinghai@kernel.org>
+From: Yinghai Lu <yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH 07/20] irq: move some interrupt arch_* functions into struct
+	irq_chip.
+Date: Sun, 21 Mar 2010 00:13:08 -0700
+Message-Id: <1269155601-18247-8-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1269155601-18247-1-git-send-email-yinghai@kernel.org>
+References: <1269155601-18247-1-git-send-email-yinghai@kernel.org>
+Cc: linux-arch@vger.kernel.org, lguest@ozlabs.org,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
 	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Anton Blanchard <anton@samba.org>, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Ian Campbell <ian.campbell@citrix.com>,
+	Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,1395 +30,466 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Sun) Mar 21 2010 [08:04:39], Benjamin Herrenschmidt wrote:
-> On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
-> > From: Amit Shah <amit.shah@redhat.com>
-> > 
-> > Alan pointed out a race in the code where hvc_remove is invoked. The
-> > recent virtio_console work is the first user of hvc_remove().
-> 
-> This causes hangs during boot on pseries machines. Haven't had a chance
-> to track that down yet, but please revert
-> e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
+From: Ian Campbell <ian.campbell@citrix.com>
 
-I tested this with the virtio-console driver with multiple consoles on
-Linux-2.6.34-rc2 inside a KVM VM. I didn't face any lockups / badness,
-but the following popped up once on -smp 4.
+Move arch_init_copy_chip_data and arch_free_chip_data into function
+pointers in struct irq_chip since they operate on irq_desc->chip_data.
 
-Could this be the same bug that's causing a lockup for you?
+arch_init_chip_data cannot be moved into struct irq_chip because
+irq_desc->chip is not known at the time the irq_desc is setup. Instead
+rename arch_init_chip_data to arch_init_irq_desc for PowerPC, the
+only other user, whose usage better matches the new name.
 
-Since the virtio-console isn't the primary console on my VM, I didn't
-see a lockup but maybe powerpc uses this as the primary console and the
-lockup is a result of this?
+To replace the x86 arch_init_chip_data functionality
+irq_to_desc_alloc_node now takes a pointer to a function to allocate
+the chip data. This is necessary to ensure the allocation happens
+under the correct locking at the core level. On PowerPC and SH
+architectures (the other users of irq_to_desc_alloc_node) pass in NULL
+which retains existing chip_data behaviour.
 
-I've not investigated this; I might get around to it next week, but
-CC'ing the sched people on this one.
+I've retained the chip_data behaviour for uv_irq although it isn't
+clear to me if these interrupt types support migration or how closely
+related to the APIC modes they really are. If it weren't for this the
+x86_{init,copy,free}_chip_data functions could be static to
+io_apic.c.
 
-(My .config is after the oops.)
+I've tested by booting on an 64 bit x86 system with sparse IRQ enabled
+and 32 bit without, but it's not clear to me what actions I need to
+take to actually exercise some of these code paths.
 
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff8101f4dc>] task_is_waking+0x1/0x1f
-PGD 3d261067 PUD 3d013067 PMD 0 
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-last sysfs file: /sys/devices/virtual/block/ram13/removable
-CPU 0 
-Modules linked in:
+-v4: yinghai add irq_to_desc_alloc_node_x...
+     so could leave default path not changed...
 
-Pid: 573, comm: console_check Not tainted 2.6.34-rc2 #102 /Bochs
-RIP: 0010:[<ffffffff8101f4dc>]  [<ffffffff8101f4dc>]
-task_is_waking+0x1/0x1f
-RSP: 0018:ffff88003bdf5b48  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffff81646e30
-RDX: ffff88003bdf5b78 RSI: ffff88003bdf5ba0 RDI: 0000000000000000
-RBP: ffff88003bdf5b78 R08: 0000000000000000 R09: ffffffff81646e08
-R10: 0000000000000046 R11: 0000000000001130 R12: 00000000001d1d00
-R13: 0000000000000000 R14: ffff88003bdf5ba0 R15: 000000000000000f
-FS:  00007f330731b6f0(0000) GS:ffff880003800000(0000)
-knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000000 CR3: 000000003be78000 CR4: 00000000000006b0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process console_check (pid: 573, threadinfo ffff88003bdf4000, task
-ffff88003bc3a2d0)
-Stack:
- ffff88003bdf5b78 ffffffff8102058e 0000000000000000 0000000000000000
-<0> 0000000000000000 0000000000000000 ffff88003bdf5bd8 ffffffff81026f03
-<0> ffff88003ead8cd8 ffff88003eb10490 ffff88003bdf5bd8 ffffffff8118cea9
-Call Trace:
- [<ffffffff8102058e>] ? task_rq_lock+0x24/0x98
- [<ffffffff81026f03>] try_to_wake_up+0x4b/0x33b
- [<ffffffff8118cea9>] ? resize_console+0x25/0x95
- [<ffffffff8102721f>] wake_up_process+0x10/0x12
- [<ffffffff8118c18e>] hvc_kick+0x1a/0x1c
- [<ffffffff8118cbb4>] hvc_open+0xf6/0x102
- [<ffffffff81179f7d>] tty_open+0x369/0x4f0
- [<ffffffff810a47e8>] chrdev_open+0x127/0x148
- [<ffffffff810a46c1>] ? chrdev_open+0x0/0x148
- [<ffffffff810a066b>] __dentry_open+0x154/0x28a
- [<ffffffff810a0866>] nameidata_to_filp+0x3a/0x4b
- [<ffffffff810ab9cb>] do_last+0x473/0x5ba
- [<ffffffff810abd12>] do_filp_open+0x200/0x602
- [<ffffffff8104e43b>] ? get_lock_stats+0x20/0x4c
- [<ffffffff8124fa30>] ? _raw_spin_unlock+0x45/0x52
- [<ffffffff810b4d68>] ? spin_unlock+0x9/0xb
- [<ffffffff810b5455>] ? alloc_fd+0x111/0x123
- [<ffffffff810a045a>] do_sys_open+0x57/0xd7
- [<ffffffff810a0503>] sys_open+0x1b/0x1d
- [<ffffffff81001ec2>] system_call_fastpath+0x16/0x1b
-Code: c5 e8 ef 9b 09 00 48 83 c3 08 48 83 3b 00 75 c4 4c 89 e7 48 c7 c6
-87 a7 4c 81 e8 69 95 09 00 41 58 31 c0 5b 41 5c 41 5d c9 c3 55 <48> 8b
-17 31 c0 48 89 e5 48 81 fa 00 01 00 00 75 0b 8b 47 14 d1 
-RIP  [<ffffffff8101f4dc>] task_is_waking+0x1/0x1f
- RSP <ffff88003bdf5b48>
-CR2: 0000000000000000
----[ end trace a8d89f6ae287538e ]---
-note: console_check[573] exited with preempt_count 2
-BUG: scheduling while atomic: console_check/573/0x10000002
-INFO: lockdep is turned off.
-Modules linked in:
-Pid: 573, comm: console_check Tainted: G      D    2.6.34-rc2 #102
-Call Trace:
- [<ffffffff8104f44e>] ? __debug_show_held_locks+0x1b/0x24
- [<ffffffff81024f1b>] __schedule_bug+0x72/0x77
- [<ffffffff8124d073>] schedule+0xcc/0x69f
- [<ffffffff81027f95>] __cond_resched+0x13/0x1f
- [<ffffffff8124d6e8>] _cond_resched+0x16/0x1d
- [<ffffffff81085874>] unmap_vmas+0x733/0x7b1
- [<ffffffff8108a474>] exit_mmap+0x88/0xdc
- [<ffffffff8102b1ce>] mmput+0x43/0xb4
- [<ffffffff8102ed92>] exit_mm+0x103/0x110
- [<ffffffff8118b138>] ? spin_unlock_irq+0x9/0xb
- [<ffffffff8103067d>] do_exit+0x1e7/0x68c
- [<ffffffff8102d4ca>] ? spin_unlock_irqrestore+0x9/0xb
- [<ffffffff8102e14c>] ? kmsg_dump+0x150/0x16a
- [<ffffffff810059be>] ? oops_end+0x44/0x94
- [<ffffffff81005a09>] oops_end+0x8f/0x94
- [<ffffffff81019f80>] no_context+0x1f7/0x206
- [<ffffffff81017450>] ? kvm_clock_read+0x3e/0x5c
- [<ffffffff8101a11c>] __bad_area_nosemaphore+0x18d/0x1b0
- [<ffffffff8101a31d>] ? do_page_fault+0xaa/0x295
- [<ffffffff8101a14d>] bad_area_nosemaphore+0xe/0x10
- [<ffffffff8101a3bc>] do_page_fault+0x149/0x295
- [<ffffffff81250435>] page_fault+0x25/0x30
- [<ffffffff8101f4dc>] ? task_is_waking+0x1/0x1f
- [<ffffffff8124fa7f>] ? _raw_spin_unlock_irqrestore+0x42/0x79
- [<ffffffff8102058e>] ? task_rq_lock+0x24/0x98
- [<ffffffff81026f03>] try_to_wake_up+0x4b/0x33b
- [<ffffffff8118cea9>] ? resize_console+0x25/0x95
- [<ffffffff8102721f>] wake_up_process+0x10/0x12
- [<ffffffff8118c18e>] hvc_kick+0x1a/0x1c
- [<ffffffff8118cbb4>] hvc_open+0xf6/0x102
- [<ffffffff81179f7d>] tty_open+0x369/0x4f0
- [<ffffffff810a47e8>] chrdev_open+0x127/0x148
- [<ffffffff810a46c1>] ? chrdev_open+0x0/0x148
- [<ffffffff810a066b>] __dentry_open+0x154/0x28a
- [<ffffffff810a0866>] nameidata_to_filp+0x3a/0x4b
- [<ffffffff810ab9cb>] do_last+0x473/0x5ba
- [<ffffffff810abd12>] do_filp_open+0x200/0x602
- [<ffffffff8104e43b>] ? get_lock_stats+0x20/0x4c
- [<ffffffff8124fa30>] ? _raw_spin_unlock+0x45/0x52
- [<ffffffff810b4d68>] ? spin_unlock+0x9/0xb
- [<ffffffff810b5455>] ? alloc_fd+0x111/0x123
- [<ffffffff810a045a>] do_sys_open+0x57/0xd7
- [<ffffffff810a0503>] sys_open+0x1b/0x1d
- [<ffffffff81001ec2>] system_call_fastpath+0x16/0x1b
-EXT4-fs (sda1): mounted filesystem with ordered data mode
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff8101f4dc>] task_is_waking+0x1/0x1f
-PGD 3e7ab067 PUD 3ce84067 PMD 0 
-Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
-last sysfs file:
-/sys/devices/pci0000:00/0000:00:01.1/host0/target0:0:0/0:0:0:0/block/sda/sda2/dev
-CPU 1 
-Modules linked in:
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Acked-by: Michael Ellerman <michael@ellerman.id.au> [PowerPC rename portion]
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: x86@kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: lguest@ozlabs.org
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org
+---
+ arch/powerpc/kernel/irq.c      |    2 +-
+ arch/x86/include/asm/hw_irq.h  |    7 +++++-
+ arch/x86/kernel/apic/io_apic.c |   49 ++++++++++++++++++++++++++++++++++++---
+ arch/x86/kernel/uv_irq.c       |    3 ++
+ drivers/xen/events.c           |    7 +++++-
+ include/linux/interrupt.h      |    1 -
+ include/linux/irq.h            |   21 +++++++++++++----
+ kernel/irq/chip.c              |    7 +++++
+ kernel/irq/handle.c            |   13 ++++++----
+ kernel/irq/numa_migrate.c      |   12 ++++++++-
+ kernel/softirq.c               |    5 ----
+ 11 files changed, 102 insertions(+), 25 deletions(-)
 
-Pid: 951, comm: agetty Tainted: G      D    2.6.34-rc2 #102 /Bochs
-RIP: 0010:[<ffffffff8101f4dc>]  [<ffffffff8101f4dc>]
-task_is_waking+0x1/0x1f
-RSP: 0018:ffff88003cdd9b48  EFLAGS: 00010246
-RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000000
-RDX: ffff88003cdd9bb8 RSI: ffff88003cdd9ba0 RDI: 0000000000000000
-RBP: ffff88003cdd9b78 R08: ffff88003f80d168 R09: ffff88003ef60018
-R10: 0000000000000046 R11: 0000000000000292 R12: 00000000001d1d00
-R13: 0000000000000000 R14: ffff88003cdd9ba0 R15: 000000000000000f
-FS:  00007fd200b486f0(0000) GS:ffff880003a00000(0000)
-knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000000 CR3: 000000003f189000 CR4: 00000000000006a0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process agetty (pid: 951, threadinfo ffff88003cdd8000, task
-ffff88003d2f8000)
-Stack:
- ffff88003cdd9b78 ffffffff8102058e 0000000000000000 0000000000000000
-<0> 0000000000000000 0000000000000001 ffff88003cdd9bd8 ffffffff81026f03
-<0> 0000000000000000 0000000000000046 ffff88003ef60018 0000000000000046
-Call Trace:
- [<ffffffff8102058e>] ? task_rq_lock+0x24/0x98
- [<ffffffff81026f03>] try_to_wake_up+0x4b/0x33b
- [<ffffffff8102721f>] wake_up_process+0x10/0x12
- [<ffffffff8118c18e>] hvc_kick+0x1a/0x1c
- [<ffffffff8118cb1b>] hvc_open+0x5d/0x102
- [<ffffffff81179f7d>] tty_open+0x369/0x4f0
- [<ffffffff810a47e8>] chrdev_open+0x127/0x148
- [<ffffffff810a2899>] ? spin_unlock+0x9/0xb
- [<ffffffff810a46c1>] ? chrdev_open+0x0/0x148
- [<ffffffff810a066b>] __dentry_open+0x154/0x28a
- [<ffffffff810a0866>] nameidata_to_filp+0x3a/0x4b
- [<ffffffff810ab9cb>] do_last+0x473/0x5ba
- [<ffffffff810abd12>] do_filp_open+0x200/0x602
- [<ffffffff8124fa30>] ? _raw_spin_unlock+0x45/0x52
- [<ffffffff810b4d68>] ? spin_unlock+0x9/0xb
- [<ffffffff810b5455>] ? alloc_fd+0x111/0x123
- [<ffffffff810a045a>] do_sys_open+0x57/0xd7
- [<ffffffff810a0503>] sys_open+0x1b/0x1d
- [<ffffffff81001ec2>] system_call_fastpath+0x16/0x1b
-Code: c5 e8 ef 9b 09 00 48 83 c3 08 48 83 3b 00 75 c4 4c 89 e7 48 c7 c6
-87 a7 4c 81 e8 69 95 09 00 41 58 31 c0 5b 41 5c 41 5d c9 c3 55 <48> 8b
-17 31 c0 48 89 e5 48 81 fa 00 01 00 00 75 0b 8b 47 14 d1 
-RIP  [<ffffffff8101f4dc>] task_is_waking+0x1/0x1f
- RSP <ffff88003cdd9b48>
-CR2: 0000000000000000
----[ end trace a8d89f6ae287538f ]---
-note: agetty[951] exited with preempt_count 2
-
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.34-rc1
-# Fri Mar 19 12:49:57 2010
-#
-CONFIG_64BIT=y
-# CONFIG_X86_32 is not set
-CONFIG_X86_64=y
-CONFIG_X86=y
-CONFIG_OUTPUT_FORMAT="elf64-x86-64"
-CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_NEED_DMA_MAP_STATE=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_ARCH_HAS_DEFAULT_IDLE=y
-CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
-CONFIG_HAVE_SETUP_PER_CPU_AREA=y
-CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK=y
-CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK=y
-CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-CONFIG_ZONE_DMA32=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
-CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_HAVE_EARLY_RES=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_USE_GENERIC_SMP_HELPERS=y
-CONFIG_X86_64_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_TRAMPOLINE=y
-# CONFIG_KTIME_SCALAR is not set
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_CONSTRUCTORS=y
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_HAVE_KERNEL_GZIP=y
-CONFIG_HAVE_KERNEL_BZIP2=y
-CONFIG_HAVE_KERNEL_LZMA=y
-CONFIG_HAVE_KERNEL_LZO=y
-# CONFIG_KERNEL_GZIP is not set
-# CONFIG_KERNEL_BZIP2 is not set
-CONFIG_KERNEL_LZMA=y
-# CONFIG_KERNEL_LZO is not set
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_POSIX_MQUEUE_SYSCTL=y
-CONFIG_BSD_PROCESS_ACCT=y
-# CONFIG_BSD_PROCESS_ACCT_V3 is not set
-# CONFIG_TASKSTATS is not set
-CONFIG_AUDIT=y
-CONFIG_AUDITSYSCALL=y
-CONFIG_AUDIT_TREE=y
-
-#
-# RCU Subsystem
-#
-CONFIG_TREE_RCU=y
-# CONFIG_TREE_PREEMPT_RCU is not set
-# CONFIG_TINY_RCU is not set
-# CONFIG_RCU_TRACE is not set
-CONFIG_RCU_FANOUT=64
-# CONFIG_RCU_FANOUT_EXACT is not set
-# CONFIG_RCU_FAST_NO_HZ is not set
-# CONFIG_TREE_RCU_TRACE is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=17
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-# CONFIG_CGROUPS is not set
-# CONFIG_SYSFS_DEPRECATED_V2 is not set
-CONFIG_RELAY=y
-CONFIG_NAMESPACES=y
-CONFIG_UTS_NS=y
-CONFIG_IPC_NS=y
-CONFIG_USER_NS=y
-CONFIG_PID_NS=y
-CONFIG_NET_NS=y
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_RD_GZIP=y
-CONFIG_RD_BZIP2=y
-CONFIG_RD_LZMA=y
-CONFIG_RD_LZO=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_ANON_INODES=y
-# CONFIG_EMBEDDED is not set
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_KALLSYMS_EXTRA_PASS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_PCSPKR_PLATFORM=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_AIO=y
-CONFIG_HAVE_PERF_EVENTS=y
-
-#
-# Kernel Performance Events And Counters
-#
-CONFIG_PERF_EVENTS=y
-# CONFIG_PERF_COUNTERS is not set
-# CONFIG_DEBUG_PERF_USE_VMALLOC is not set
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_PCI_QUIRKS=y
-CONFIG_SLUB_DEBUG=y
-# CONFIG_COMPAT_BRK is not set
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-# CONFIG_PROFILING is not set
-CONFIG_HAVE_OPROFILE=y
-# CONFIG_KPROBES is not set
-CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-CONFIG_HAVE_IOREMAP_PROT=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-CONFIG_HAVE_OPTPROBES=y
-CONFIG_HAVE_ARCH_TRACEHOOK=y
-CONFIG_HAVE_DMA_ATTRS=y
-CONFIG_HAVE_REGS_AND_STACK_ACCESS_API=y
-CONFIG_HAVE_DMA_API_DEBUG=y
-CONFIG_HAVE_HW_BREAKPOINT=y
-CONFIG_HAVE_USER_RETURN_NOTIFIER=y
-
-#
-# GCOV-based kernel profiling
-#
-# CONFIG_GCOV_KERNEL is not set
-# CONFIG_SLOW_WORK is not set
-# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-# CONFIG_MODULE_FORCE_LOAD is not set
-CONFIG_MODULE_UNLOAD=y
-# CONFIG_MODULE_FORCE_UNLOAD is not set
-# CONFIG_MODVERSIONS is not set
-CONFIG_MODULE_SRCVERSION_ALL=y
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-CONFIG_BLK_DEV_BSG=y
-CONFIG_BLK_DEV_INTEGRITY=y
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-# CONFIG_IOSCHED_DEADLINE is not set
-# CONFIG_IOSCHED_CFQ is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-CONFIG_DEFAULT_NOOP=y
-CONFIG_DEFAULT_IOSCHED="noop"
-# CONFIG_INLINE_SPIN_TRYLOCK is not set
-# CONFIG_INLINE_SPIN_TRYLOCK_BH is not set
-# CONFIG_INLINE_SPIN_LOCK is not set
-# CONFIG_INLINE_SPIN_LOCK_BH is not set
-# CONFIG_INLINE_SPIN_LOCK_IRQ is not set
-# CONFIG_INLINE_SPIN_LOCK_IRQSAVE is not set
-# CONFIG_INLINE_SPIN_UNLOCK is not set
-# CONFIG_INLINE_SPIN_UNLOCK_BH is not set
-# CONFIG_INLINE_SPIN_UNLOCK_IRQ is not set
-# CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE is not set
-# CONFIG_INLINE_READ_TRYLOCK is not set
-# CONFIG_INLINE_READ_LOCK is not set
-# CONFIG_INLINE_READ_LOCK_BH is not set
-# CONFIG_INLINE_READ_LOCK_IRQ is not set
-# CONFIG_INLINE_READ_LOCK_IRQSAVE is not set
-# CONFIG_INLINE_READ_UNLOCK is not set
-# CONFIG_INLINE_READ_UNLOCK_BH is not set
-# CONFIG_INLINE_READ_UNLOCK_IRQ is not set
-# CONFIG_INLINE_READ_UNLOCK_IRQRESTORE is not set
-# CONFIG_INLINE_WRITE_TRYLOCK is not set
-# CONFIG_INLINE_WRITE_LOCK is not set
-# CONFIG_INLINE_WRITE_LOCK_BH is not set
-# CONFIG_INLINE_WRITE_LOCK_IRQ is not set
-# CONFIG_INLINE_WRITE_LOCK_IRQSAVE is not set
-# CONFIG_INLINE_WRITE_UNLOCK is not set
-# CONFIG_INLINE_WRITE_UNLOCK_BH is not set
-# CONFIG_INLINE_WRITE_UNLOCK_IRQ is not set
-# CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE is not set
-# CONFIG_MUTEX_SPIN_ON_OWNER is not set
-# CONFIG_FREEZER is not set
-
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_SMP=y
-# CONFIG_SPARSE_IRQ is not set
-# CONFIG_X86_MPPARSE is not set
-# CONFIG_X86_EXTENDED_PLATFORM is not set
-CONFIG_SCHED_OMIT_FRAME_POINTER=y
-CONFIG_PARAVIRT_GUEST=y
-# CONFIG_XEN is not set
-CONFIG_KVM_CLOCK=y
-CONFIG_KVM_GUEST=y
-CONFIG_PARAVIRT=y
-# CONFIG_PARAVIRT_SPINLOCKS is not set
-CONFIG_PARAVIRT_CLOCK=y
-# CONFIG_PARAVIRT_DEBUG is not set
-CONFIG_NO_BOOTMEM=y
-# CONFIG_MEMTEST is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-CONFIG_MCORE2=y
-# CONFIG_MATOM is not set
-# CONFIG_GENERIC_CPU is not set
-CONFIG_X86_CPU=y
-CONFIG_X86_INTERNODE_CACHE_SHIFT=6
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_XADD=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_P6_NOP=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=64
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_CPU_SUP_INTEL=y
-CONFIG_CPU_SUP_AMD=y
-CONFIG_CPU_SUP_CENTAUR=y
-# CONFIG_X86_DS is not set
-CONFIG_HPET_TIMER=y
-CONFIG_DMI=y
-CONFIG_GART_IOMMU=y
-# CONFIG_CALGARY_IOMMU is not set
-# CONFIG_AMD_IOMMU is not set
-CONFIG_SWIOTLB=y
-CONFIG_IOMMU_HELPER=y
-# CONFIG_IOMMU_API is not set
-# CONFIG_MAXSMP is not set
-CONFIG_NR_CPUS=4
-# CONFIG_SCHED_SMT is not set
-# CONFIG_SCHED_MC is not set
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-CONFIG_PREEMPT=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS=y
-# CONFIG_X86_MCE is not set
-# CONFIG_I8K is not set
-# CONFIG_MICROCODE is not set
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
-CONFIG_DIRECT_GBPAGES=y
-# CONFIG_NUMA is not set
-CONFIG_ARCH_PROC_KCORE_TEXT=y
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
-CONFIG_SELECT_MEMORY_MODEL=y
-# CONFIG_FLATMEM_MANUAL is not set
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-CONFIG_SPARSEMEM_MANUAL=y
-CONFIG_SPARSEMEM=y
-CONFIG_HAVE_MEMORY_PRESENT=y
-CONFIG_SPARSEMEM_EXTREME=y
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
-CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER=y
-CONFIG_SPARSEMEM_VMEMMAP=y
-# CONFIG_MEMORY_HOTPLUG is not set
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=999999
-CONFIG_PHYS_ADDR_T_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-# CONFIG_KSM is not set
-CONFIG_DEFAULT_MMAP_MIN_ADDR=32768
-# CONFIG_X86_CHECK_BIOS_CORRUPTION is not set
-CONFIG_X86_RESERVE_LOW_64K=y
-CONFIG_MTRR=y
-CONFIG_MTRR_SANITIZER=y
-CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
-CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-CONFIG_X86_PAT=y
-CONFIG_ARCH_USES_PG_UNCACHED=y
-# CONFIG_EFI is not set
-CONFIG_SECCOMP=y
-# CONFIG_CC_STACKPROTECTOR is not set
-# CONFIG_HZ_100 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=250
-CONFIG_SCHED_HRTICK=y
-# CONFIG_KEXEC is not set
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PHYSICAL_START=0x1000000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x1000000
-# CONFIG_HOTPLUG_CPU is not set
-# CONFIG_CMDLINE_BOOL is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-
-#
-# Power management and ACPI options
-#
-CONFIG_PM=y
-# CONFIG_PM_DEBUG is not set
-# CONFIG_SUSPEND is not set
-# CONFIG_HIBERNATION is not set
-# CONFIG_PM_RUNTIME is not set
-CONFIG_ACPI=y
-# CONFIG_ACPI_PROCFS is not set
-# CONFIG_ACPI_PROCFS_POWER is not set
-# CONFIG_ACPI_SYSFS_POWER is not set
-# CONFIG_ACPI_PROC_EVENT is not set
-# CONFIG_ACPI_AC is not set
-# CONFIG_ACPI_BATTERY is not set
-# CONFIG_ACPI_BUTTON is not set
-# CONFIG_ACPI_FAN is not set
-CONFIG_ACPI_DOCK=y
-CONFIG_ACPI_PROCESSOR=y
-# CONFIG_ACPI_PROCESSOR_AGGREGATOR is not set
-# CONFIG_ACPI_THERMAL is not set
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-# CONFIG_ACPI_DEBUG is not set
-# CONFIG_ACPI_PCI_SLOT is not set
-CONFIG_X86_PM_TIMER=y
-# CONFIG_ACPI_CONTAINER is not set
-# CONFIG_ACPI_SBS is not set
-# CONFIG_SFI is not set
-
-#
-# CPU Frequency scaling
-#
-# CONFIG_CPU_FREQ is not set
-CONFIG_CPU_IDLE=y
-CONFIG_CPU_IDLE_GOV_LADDER=y
-CONFIG_CPU_IDLE_GOV_MENU=y
-
-#
-# Memory power savings
-#
-# CONFIG_I7300_IDLE is not set
-
-#
-# Bus options (PCI etc.)
-#
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-# CONFIG_PCI_MMCONFIG is not set
-CONFIG_PCI_DOMAINS=y
-# CONFIG_DMAR is not set
-# CONFIG_INTR_REMAP is not set
-# CONFIG_PCIEPORTBUS is not set
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-# CONFIG_PCI_DEBUG is not set
-# CONFIG_PCI_STUB is not set
-CONFIG_HT_IRQ=y
-# CONFIG_PCI_IOV is not set
-CONFIG_PCI_IOAPIC=y
-CONFIG_ISA_DMA_API=y
-CONFIG_K8_NB=y
-# CONFIG_PCCARD is not set
-CONFIG_HOTPLUG_PCI=y
-# CONFIG_HOTPLUG_PCI_FAKE is not set
-# CONFIG_HOTPLUG_PCI_ACPI is not set
-# CONFIG_HOTPLUG_PCI_CPCI is not set
-# CONFIG_HOTPLUG_PCI_SHPC is not set
-
-#
-# Executable file formats / Emulations
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
-# CONFIG_HAVE_AOUT is not set
-# CONFIG_BINFMT_MISC is not set
-# CONFIG_IA32_EMULATION is not set
-# CONFIG_COMPAT_FOR_U64_ALIGNMENT is not set
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=y
-CONFIG_UNIX=y
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_LRO is not set
-# CONFIG_INET_DIAG is not set
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_RDS is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_NET_DSA is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_PHONET is not set
-# CONFIG_IEEE802154 is not set
-# CONFIG_NET_SCHED is not set
-# CONFIG_DCB is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_CAN is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
-# CONFIG_WIRELESS is not set
-# CONFIG_WIMAX is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH=""
-# CONFIG_DEVTMPFS is not set
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-# CONFIG_FIRMWARE_IN_KERNEL is not set
-CONFIG_EXTRA_FIRMWARE=""
-# CONFIG_DEBUG_DRIVER is not set
-CONFIG_DEBUG_DEVRES=y
-# CONFIG_SYS_HYPERVISOR is not set
-# CONFIG_CONNECTOR is not set
-# CONFIG_MTD is not set
-# CONFIG_PARPORT is not set
-CONFIG_PNP=y
-CONFIG_PNP_DEBUG_MESSAGES=y
-
-#
-# Protocols
-#
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-
-#
-# DRBD disabled because PROC_FS, INET or CONNECTOR not selected
-#
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=16384
-# CONFIG_BLK_DEV_XIP is not set
-# CONFIG_CDROM_PKTCDVD is not set
-# CONFIG_ATA_OVER_ETH is not set
-CONFIG_VIRTIO_BLK=y
-# CONFIG_BLK_DEV_HD is not set
-# CONFIG_MISC_DEVICES is not set
-CONFIG_HAVE_IDE=y
-# CONFIG_IDE is not set
-
-#
-# SCSI device support
-#
-CONFIG_SCSI_MOD=y
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_SCSI_PROC_FS is not set
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=y
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-# CONFIG_BLK_DEV_SR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
-# CONFIG_SCSI_MULTI_LUN is not set
-# CONFIG_SCSI_CONSTANTS is not set
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-# CONFIG_SCSI_SPI_ATTRS is not set
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-# CONFIG_SCSI_SRP_ATTRS is not set
-# CONFIG_SCSI_LOWLEVEL is not set
-# CONFIG_SCSI_DH is not set
-# CONFIG_SCSI_OSD_INITIATOR is not set
-CONFIG_ATA=y
-# CONFIG_ATA_NONSTANDARD is not set
-# CONFIG_ATA_VERBOSE_ERROR is not set
-# CONFIG_ATA_ACPI is not set
-# CONFIG_SATA_PMP is not set
-# CONFIG_SATA_AHCI is not set
-# CONFIG_SATA_SIL24 is not set
-CONFIG_ATA_SFF=y
-# CONFIG_SATA_SVW is not set
-CONFIG_ATA_PIIX=y
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-# CONFIG_PATA_ALI is not set
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATP867X is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-# CONFIG_PATA_JMICRON is not set
-# CONFIG_PATA_LEGACY is not set
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NINJA32 is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_NS87415 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RDC is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_TOSHIBA is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-# CONFIG_PATA_SCH is not set
-# CONFIG_MD is not set
-# CONFIG_FUSION is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-
-#
-# You can enable one or both FireWire driver stacks.
-#
-
-#
-# The newer stack is recommended.
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-# CONFIG_VETH is not set
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-# CONFIG_NET_ETHERNET is not set
-CONFIG_NETDEV_1000=y
-# CONFIG_ACENIC is not set
-# CONFIG_DL2K is not set
-# CONFIG_E1000 is not set
-CONFIG_E1000E=y
-# CONFIG_IP1000 is not set
-# CONFIG_IGB is not set
-# CONFIG_IGBVF is not set
-# CONFIG_NS83820 is not set
-# CONFIG_HAMACHI is not set
-# CONFIG_YELLOWFIN is not set
-# CONFIG_R8169 is not set
-# CONFIG_SIS190 is not set
-# CONFIG_SKGE is not set
-# CONFIG_SKY2 is not set
-# CONFIG_VIA_VELOCITY is not set
-# CONFIG_TIGON3 is not set
-# CONFIG_BNX2 is not set
-# CONFIG_CNIC is not set
-# CONFIG_QLA3XXX is not set
-# CONFIG_ATL1 is not set
-# CONFIG_ATL1E is not set
-# CONFIG_ATL1C is not set
-# CONFIG_JME is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-# CONFIG_WLAN is not set
-
-#
-# Enable WiMAX (Networking options) to see the WiMAX drivers
-#
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-CONFIG_VIRTIO_NET=y
-# CONFIG_VMXNET3 is not set
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-# CONFIG_INPUT_POLLDEV is not set
-# CONFIG_INPUT_SPARSEKMAP is not set
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-# CONFIG_INPUT_JOYDEV is not set
-# CONFIG_INPUT_EVDEV is not set
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_OPENCORES is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_INPUT_MOUSE is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TABLET is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-# CONFIG_INPUT_MISC is not set
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_SERPORT=y
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-CONFIG_SERIO_RAW=y
-# CONFIG_SERIO_ALTERA_PS2 is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_CONSOLE_TRANSLATIONS=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-# CONFIG_DEVKMEM is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-# CONFIG_NOZOMI is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=32
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_8250_EXTENDED=y
-CONFIG_SERIAL_8250_MANY_PORTS=y
-CONFIG_SERIAL_8250_SHARE_IRQ=y
-CONFIG_SERIAL_8250_DETECT_IRQ=y
-CONFIG_SERIAL_8250_RSA=y
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_SERIAL_JSM=m
-# CONFIG_SERIAL_TIMBERDALE is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
-# CONFIG_LEGACY_PTYS is not set
-CONFIG_HVC_DRIVER=y
-CONFIG_VIRTIO_CONSOLE=y
-# CONFIG_IPMI_HANDLER is not set
-# CONFIG_HW_RANDOM is not set
-CONFIG_NVRAM=y
-# CONFIG_RTC is not set
-# CONFIG_GEN_RTC is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-CONFIG_RAW_DRIVER=y
-CONFIG_MAX_RAW_DEVS=8192
-# CONFIG_HPET is not set
-# CONFIG_HANGCHECK_TIMER is not set
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-# CONFIG_I2C is not set
-# CONFIG_SPI is not set
-
-#
-# PPS support
-#
-# CONFIG_PPS is not set
-CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-# CONFIG_GPIOLIB is not set
-# CONFIG_W1 is not set
-# CONFIG_POWER_SUPPLY is not set
-# CONFIG_HWMON is not set
-CONFIG_THERMAL=y
-# CONFIG_WATCHDOG is not set
-CONFIG_SSB_POSSIBLE=y
-
-#
-# Sonics Silicon Backplane
-#
-# CONFIG_SSB is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_CORE is not set
-# CONFIG_MFD_SM501 is not set
-# CONFIG_HTC_PASIC3 is not set
-# CONFIG_MFD_TMIO is not set
-# CONFIG_LPC_SCH is not set
-# CONFIG_REGULATOR is not set
-# CONFIG_MEDIA_SUPPORT is not set
-
-#
-# Graphics support
-#
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-# CONFIG_AGP_INTEL is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_VIA is not set
-CONFIG_VGA_ARB=y
-CONFIG_VGA_ARB_MAX_GPUS=1
-# CONFIG_VGA_SWITCHEROO is not set
-# CONFIG_DRM is not set
-# CONFIG_VGASTATE is not set
-# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-# CONFIG_FB is not set
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-CONFIG_VGACON_SOFT_SCROLLBACK=y
-CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=64
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_SOUND is not set
-# CONFIG_HID_SUPPORT is not set
-# CONFIG_USB_SUPPORT is not set
-# CONFIG_UWB is not set
-# CONFIG_MMC is not set
-# CONFIG_MEMSTICK is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_ACCESSIBILITY is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-# CONFIG_RTC_CLASS is not set
-# CONFIG_DMADEVICES is not set
-# CONFIG_AUXDISPLAY is not set
-# CONFIG_UIO is not set
-
-#
-# TI VLYNQ
-#
-# CONFIG_STAGING is not set
-# CONFIG_X86_PLATFORM_DEVICES is not set
-
-#
-# Firmware Drivers
-#
-# CONFIG_EDD is not set
-CONFIG_FIRMWARE_MEMMAP=y
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-# CONFIG_DMIID is not set
-# CONFIG_ISCSI_IBFT_FIND is not set
-
-#
-# File systems
-#
-# CONFIG_EXT2_FS is not set
-# CONFIG_EXT3_FS is not set
-CONFIG_EXT4_FS=y
-CONFIG_EXT4_USE_FOR_EXT23=y
-CONFIG_EXT4_FS_XATTR=y
-CONFIG_EXT4_FS_POSIX_ACL=y
-CONFIG_EXT4_FS_SECURITY=y
-# CONFIG_EXT4_DEBUG is not set
-CONFIG_JBD2=y
-CONFIG_JBD2_DEBUG=y
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_BTRFS_FS is not set
-# CONFIG_NILFS2_FS is not set
-CONFIG_FILE_LOCKING=y
-# CONFIG_FSNOTIFY is not set
-# CONFIG_DNOTIFY is not set
-CONFIG_INOTIFY=y
-# CONFIG_INOTIFY_USER is not set
-# CONFIG_QUOTA is not set
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
-CONFIG_GENERIC_ACL=y
-
-#
-# Caches
-#
-# CONFIG_FSCACHE is not set
-
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_HUGETLBFS=y
-CONFIG_HUGETLB_PAGE=y
-CONFIG_CONFIGFS_FS=y
-# CONFIG_MISC_FILESYSTEMS is not set
-# CONFIG_NETWORK_FILESYSTEMS is not set
-
-#
-# Partition Types
-#
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
-CONFIG_MSDOS_PARTITION=y
-CONFIG_BSD_DISKLABEL=y
-CONFIG_MINIX_SUBPARTITION=y
-CONFIG_SOLARIS_X86_PARTITION=y
-CONFIG_UNIXWARE_DISKLABEL=y
-# CONFIG_LDM_PARTITION is not set
-# CONFIG_SGI_PARTITION is not set
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
-# CONFIG_SYSV68_PARTITION is not set
-# CONFIG_NLS is not set
-# CONFIG_DLM is not set
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_PRINTK_TIME is not set
-# CONFIG_ENABLE_WARN_DEPRECATED is not set
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_FRAME_WARN=2048
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_STRIP_ASM_SYMS is not set
-CONFIG_UNUSED_SYMBOLS=y
-CONFIG_DEBUG_FS=y
-CONFIG_HEADERS_CHECK=y
-CONFIG_DEBUG_KERNEL=y
-# CONFIG_DEBUG_SHIRQ is not set
-CONFIG_DETECT_SOFTLOCKUP=y
-# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-CONFIG_DETECT_HUNG_TASK=y
-# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
-CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
-CONFIG_TIMER_STATS=y
-# CONFIG_DEBUG_OBJECTS is not set
-CONFIG_SLUB_DEBUG_ON=y
-# CONFIG_SLUB_STATS is not set
-CONFIG_DEBUG_KMEMLEAK=y
-CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE=400
-# CONFIG_DEBUG_KMEMLEAK_TEST is not set
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-# CONFIG_PROVE_RCU is not set
-CONFIG_LOCKDEP=y
-CONFIG_LOCK_STAT=y
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_VIRTUAL is not set
-# CONFIG_DEBUG_WRITECOUNT is not set
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_DEBUG_LIST=y
-CONFIG_DEBUG_SG=y
-# CONFIG_DEBUG_NOTIFIERS is not set
-# CONFIG_DEBUG_CREDENTIALS is not set
-CONFIG_ARCH_WANT_FRAME_POINTERS=y
-CONFIG_FRAME_POINTER=y
-CONFIG_BOOT_PRINTK_DELAY=y
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-# CONFIG_BACKTRACE_SELF_TEST is not set
-# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
-# CONFIG_LKDTM is not set
-# CONFIG_FAULT_INJECTION is not set
-CONFIG_LATENCYTOP=y
-# CONFIG_SYSCTL_SYSCALL_CHECK is not set
-CONFIG_DEBUG_PAGEALLOC=y
-CONFIG_USER_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
-CONFIG_TRACING_SUPPORT=y
-# CONFIG_FTRACE is not set
-# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
-# CONFIG_BUILD_DOCSRC is not set
-# CONFIG_DYNAMIC_DEBUG is not set
-# CONFIG_DMA_API_DEBUG is not set
-# CONFIG_SAMPLES is not set
-CONFIG_HAVE_ARCH_KGDB=y
-# CONFIG_KGDB is not set
-CONFIG_HAVE_ARCH_KMEMCHECK=y
-CONFIG_STRICT_DEVMEM=y
-# CONFIG_X86_VERBOSE_BOOTUP is not set
-CONFIG_EARLY_PRINTK=y
-# CONFIG_EARLY_PRINTK_DBGP is not set
-CONFIG_DEBUG_STACKOVERFLOW=y
-# CONFIG_DEBUG_STACK_USAGE is not set
-# CONFIG_DEBUG_PER_CPU_MAPS is not set
-# CONFIG_X86_PTDUMP is not set
-CONFIG_DEBUG_RODATA=y
-CONFIG_DEBUG_RODATA_TEST=y
-# CONFIG_DEBUG_NX_TEST is not set
-# CONFIG_IOMMU_DEBUG is not set
-# CONFIG_IOMMU_STRESS is not set
-CONFIG_HAVE_MMIOTRACE_SUPPORT=y
-CONFIG_IO_DELAY_TYPE_0X80=0
-CONFIG_IO_DELAY_TYPE_0XED=1
-CONFIG_IO_DELAY_TYPE_UDELAY=2
-CONFIG_IO_DELAY_TYPE_NONE=3
-CONFIG_IO_DELAY_0X80=y
-# CONFIG_IO_DELAY_0XED is not set
-# CONFIG_IO_DELAY_UDELAY is not set
-# CONFIG_IO_DELAY_NONE is not set
-CONFIG_DEFAULT_IO_DELAY_TYPE=0
-CONFIG_DEBUG_BOOT_PARAMS=y
-# CONFIG_CPA_DEBUG is not set
-CONFIG_OPTIMIZE_INLINING=y
-# CONFIG_DEBUG_STRICT_USER_COPY_CHECKS is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITYFS is not set
-# CONFIG_DEFAULT_SECURITY_SELINUX is not set
-# CONFIG_DEFAULT_SECURITY_SMACK is not set
-# CONFIG_DEFAULT_SECURITY_TOMOYO is not set
-CONFIG_DEFAULT_SECURITY_DAC=y
-CONFIG_DEFAULT_SECURITY=""
-# CONFIG_CRYPTO is not set
-CONFIG_HAVE_KVM=y
-CONFIG_VIRTUALIZATION=y
-# CONFIG_KVM is not set
-# CONFIG_VHOST_NET is not set
-CONFIG_VIRTIO=y
-CONFIG_VIRTIO_RING=y
-CONFIG_VIRTIO_PCI=y
-CONFIG_VIRTIO_BALLOON=y
-# CONFIG_BINARY_PRINTF is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-CONFIG_GENERIC_FIND_FIRST_BIT=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_FIND_LAST_BIT=y
-# CONFIG_CRC_CCITT is not set
-CONFIG_CRC16=y
-CONFIG_CRC_T10DIF=y
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_ZLIB_INFLATE=y
-CONFIG_LZO_DECOMPRESS=y
-CONFIG_DECOMPRESS_GZIP=y
-CONFIG_DECOMPRESS_BZIP2=y
-CONFIG_DECOMPRESS_LZMA=y
-CONFIG_DECOMPRESS_LZO=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_NLATTR=y
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 64f6f20..cafd378 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -1088,7 +1088,7 @@ int arch_early_irq_init(void)
+ 	return 0;
+ }
+ 
+-int arch_init_chip_data(struct irq_desc *desc, int node)
++int arch_init_irq_desc(struct irq_desc *desc, int node, init_chip_data_fn fn)
+ {
+ 	desc->status |= IRQ_NOREQUEST;
+ 	return 0;
+diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
+index 46c0fe0..767d3f8 100644
+--- a/arch/x86/include/asm/hw_irq.h
++++ b/arch/x86/include/asm/hw_irq.h
+@@ -20,9 +20,9 @@
+ #include <linux/percpu.h>
+ #include <linux/profile.h>
+ #include <linux/smp.h>
++#include <linux/irq.h>
+ 
+ #include <asm/atomic.h>
+-#include <asm/irq.h>
+ #include <asm/sections.h>
+ 
+ /* Interrupt handlers registered during init_IRQ */
+@@ -61,6 +61,11 @@ extern void init_VISWS_APIC_irqs(void);
+ extern void setup_IO_APIC(void);
+ extern void disable_IO_APIC(void);
+ 
++extern void x86_copy_chip_data(struct irq_desc *old_desc,
++				  struct irq_desc *desc, int node);
++extern void x86_free_chip_data(struct irq_desc *old_desc,
++				  struct irq_desc *desc);
++
+ struct io_apic_irq_attr {
+ 	int ioapic;
+ 	int ioapic_pin;
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 463de9a..a917fdf 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -211,7 +211,7 @@ static struct irq_cfg *get_one_free_irq_cfg(int node)
+ 	return cfg;
+ }
+ 
+-int arch_init_chip_data(struct irq_desc *desc, int node)
++static int x86_init_chip_data(struct irq_desc *desc, int node)
+ {
+ 	struct irq_cfg *cfg;
+ 
+@@ -287,8 +287,8 @@ static void free_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg)
+ 	old_cfg->irq_2_pin = NULL;
+ }
+ 
+-void arch_init_copy_chip_data(struct irq_desc *old_desc,
+-				 struct irq_desc *desc, int node)
++void x86_copy_chip_data(struct irq_desc *old_desc,
++			   struct irq_desc *desc, int node)
+ {
+ 	struct irq_cfg *cfg;
+ 	struct irq_cfg *old_cfg;
+@@ -312,7 +312,7 @@ static void free_irq_cfg(struct irq_cfg *old_cfg)
+ 	kfree(old_cfg);
+ }
+ 
+-void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
++void x86_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
+ {
+ 	struct irq_cfg *old_cfg, *cfg;
+ 
+@@ -329,6 +329,14 @@ void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
+ 	}
+ }
+ /* end for move_irq_desc */
++int arch_init_irq_desc(struct irq_desc *desc, int node,
++			 init_chip_data_fn init_chip_data)
++{
++	if (!init_chip_data)
++		return x86_init_chip_data(desc, node);
++
++	return init_chip_data(desc, node);
++}
+ 
+ #else
+ struct irq_cfg *irq_cfg(unsigned int irq)
+@@ -336,6 +344,15 @@ struct irq_cfg *irq_cfg(unsigned int irq)
+ 	return irq < nr_irqs ? irq_cfgx + irq : NULL;
+ }
+ 
++void x86_copy_chip_data(struct irq_desc *old_desc,
++			   struct irq_desc *desc, int node)
++{
++}
++
++void x86_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
++{
++}
++
+ #endif
+ 
+ struct io_apic {
+@@ -2747,6 +2764,9 @@ static struct irq_chip ioapic_chip __read_mostly = {
+ 	.set_affinity	= set_ioapic_affinity_irq,
+ #endif
+ 	.retrigger	= ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ static struct irq_chip ir_ioapic_chip __read_mostly = {
+@@ -2762,6 +2782,9 @@ static struct irq_chip ir_ioapic_chip __read_mostly = {
+ #endif
+ #endif
+ 	.retrigger	= ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ static inline void init_IO_APIC_traps(void)
+@@ -3474,6 +3497,9 @@ static struct irq_chip msi_chip = {
+ 	.set_affinity	= set_msi_irq_affinity,
+ #endif
+ 	.retrigger	= ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ static struct irq_chip msi_ir_chip = {
+@@ -3487,6 +3513,9 @@ static struct irq_chip msi_ir_chip = {
+ #endif
+ #endif
+ 	.retrigger	= ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ /*
+@@ -3646,6 +3675,9 @@ static struct irq_chip dmar_msi_type = {
+ 	.set_affinity = dmar_msi_set_affinity,
+ #endif
+ 	.retrigger = ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ int arch_setup_dmar_msi(unsigned int irq)
+@@ -3703,6 +3735,9 @@ static struct irq_chip ir_hpet_msi_type = {
+ #endif
+ #endif
+ 	.retrigger = ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ static struct irq_chip hpet_msi_type = {
+@@ -3714,6 +3749,9 @@ static struct irq_chip hpet_msi_type = {
+ 	.set_affinity = hpet_msi_set_affinity,
+ #endif
+ 	.retrigger = ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
+@@ -3800,6 +3838,9 @@ static struct irq_chip ht_irq_chip = {
+ 	.set_affinity	= set_ht_irq_affinity,
+ #endif
+ 	.retrigger	= ioapic_retrigger_irq,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ int arch_setup_ht_irq(unsigned int irq, struct pci_dev *dev)
+diff --git a/arch/x86/kernel/uv_irq.c b/arch/x86/kernel/uv_irq.c
+index ece73d8..4c61f1b 100644
+--- a/arch/x86/kernel/uv_irq.c
++++ b/arch/x86/kernel/uv_irq.c
+@@ -55,6 +55,9 @@ struct irq_chip uv_irq_chip = {
+ 	.eoi		= uv_ack_apic,
+ 	.end		= uv_noop,
+ 	.set_affinity	= uv_set_irq_affinity,
++
++	.copy_chip_data = x86_copy_chip_data,
++	.free_chip_data = x86_free_chip_data,
+ };
+ 
+ /*
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 2f84137..64cbbe4 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -329,6 +329,11 @@ static void unmask_evtchn(int port)
+ 	put_cpu();
+ }
+ 
++static int xen_init_chip_data(struct irq_desc *desc, int node)
++{
++	return 0;
++}
++
+ static int find_unbound_irq(void)
+ {
+ 	int irq;
+@@ -341,7 +346,7 @@ static int find_unbound_irq(void)
+ 	if (irq == nr_irqs)
+ 		panic("No available IRQ to bind to: increase nr_irqs!\n");
+ 
+-	desc = irq_to_desc_alloc_node(irq, 0);
++	desc = irq_to_desc_alloc_node_x(irq, 0, xen_init_chip_data);
+ 	if (WARN_ON(desc == NULL))
+ 		return -1;
+ 
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 75f3f00..0b0d679 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -611,6 +611,5 @@ struct irq_desc;
+ extern int early_irq_init(void);
+ extern int arch_probe_nr_irqs(void);
+ extern int arch_early_irq_init(void);
+-extern int arch_init_chip_data(struct irq_desc *desc, int node);
+ 
+ #endif
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 707ab12..60f3368 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -140,6 +140,13 @@ struct irq_chip {
+ 	 * Will disappear.
+ 	 */
+ 	const char	*typename;
++
++	/* for move_irq_desc */
++	void		(*copy_chip_data)(struct irq_desc *old_desc,
++					  struct irq_desc *desc, int node);
++	void		(*free_chip_data)(struct irq_desc *old_desc,
++					  struct irq_desc *desc);
++
+ };
+ 
+ struct timer_rand_state;
+@@ -208,10 +215,6 @@ struct irq_desc {
+ 	const char		*name;
+ } ____cacheline_internodealigned_in_smp;
+ 
+-extern void arch_init_copy_chip_data(struct irq_desc *old_desc,
+-					struct irq_desc *desc, int node);
+-extern void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc);
+-
+ #ifndef CONFIG_SPARSE_IRQ
+ extern struct irq_desc irq_desc[NR_IRQS];
+ #endif
+@@ -225,7 +228,15 @@ static inline struct irq_desc *move_irq_desc(struct irq_desc *desc, int node)
+ }
+ #endif
+ 
+-extern struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node);
++typedef int (*init_chip_data_fn)(struct irq_desc *, int node);
++int arch_init_irq_desc(struct irq_desc *desc, int node, init_chip_data_fn fn);
++struct irq_desc *irq_to_desc_alloc_node_x(unsigned int irq, int node,
++					       init_chip_data_fn fn);
++static inline struct irq_desc *irq_to_desc_alloc_node(unsigned int irq,
++							 int node)
++{
++	return irq_to_desc_alloc_node_x(irq, node, NULL);
++}
+ 
+ /*
+  * Pick up the arch-dependent methods:
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index bbba585..3dcdd2f 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -758,3 +758,10 @@ void __init set_irq_probe(unsigned int irq)
+ 	desc->status &= ~IRQ_NOPROBE;
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+ }
++
++int __weak arch_init_irq_desc(struct irq_desc *desc, int node,
++				 init_chip_data_fn init_chip_data)
++{
++	return 0;
++}
++
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 76d5a67..f30c9c7 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -100,7 +100,8 @@ void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
+ 	}
+ }
+ 
+-static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
++static void init_one_irq_desc(int irq, struct irq_desc *desc, int node,
++			      init_chip_data_fn init_chip_data)
+ {
+ 	memcpy(desc, &irq_desc_init, sizeof(struct irq_desc));
+ 
+@@ -120,7 +121,7 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+ 		BUG_ON(1);
+ 	}
+ 	init_desc_masks(desc);
+-	arch_init_chip_data(desc, node);
++	arch_init_irq_desc(desc, node, init_chip_data);
+ }
+ 
+ /*
+@@ -198,7 +199,8 @@ int __init early_irq_init(void)
+ 	return arch_early_irq_init();
+ }
+ 
+-struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
++struct irq_desc * __ref irq_to_desc_alloc_node_x(unsigned int irq, int node,
++					       init_chip_data_fn init_chip_data)
+ {
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+@@ -227,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 		printk(KERN_ERR "can not alloc irq_desc\n");
+ 		BUG_ON(1);
+ 	}
+-	init_one_irq_desc(irq, desc, node);
++	init_one_irq_desc(irq, desc, node, init_chip_data);
+ 
+ 	set_irq_desc(irq, desc);
+ 
+@@ -277,7 +279,8 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ 	return (irq < NR_IRQS) ? irq_desc + irq : NULL;
+ }
+ 
+-struct irq_desc *irq_to_desc_alloc_node(unsigned int irq, int node)
++struct irq_desc *irq_to_desc_alloc_node_x(unsigned int irq, int node,
++					init_chip_data_fn init_chip_data)
+ {
+ 	return irq_to_desc(irq);
+ }
+diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
+index 963559d..9ea09c9 100644
+--- a/kernel/irq/numa_migrate.c
++++ b/kernel/irq/numa_migrate.c
+@@ -47,7 +47,8 @@ static bool init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
+ 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+ 	init_copy_kstat_irqs(old_desc, desc, node, nr_cpu_ids);
+ 	init_copy_desc_masks(old_desc, desc);
+-	arch_init_copy_chip_data(old_desc, desc, node);
++	if (desc->chip->copy_chip_data)
++		desc->chip->copy_chip_data(old_desc, desc, node);
+ 	return true;
+ }
+ 
+@@ -55,7 +56,8 @@ static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
+ {
+ 	free_kstat_irqs(old_desc, desc);
+ 	free_desc_masks(old_desc, desc);
+-	arch_free_chip_data(old_desc, desc);
++	if (desc->chip->free_chip_data)
++		desc->chip->free_chip_data(old_desc, desc);
+ }
+ 
+ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+@@ -107,9 +109,15 @@ out_unlock:
+ 
+ struct irq_desc *move_irq_desc(struct irq_desc *desc, int node)
+ {
++
+ 	/* those static or target node is -1, do not move them */
+ 	if (desc->irq < NR_IRQS_LEGACY || node == -1)
+ 		return desc;
++	/* IRQ chip does not support movement */
++	if (desc->chip_data &&
++	    (desc->chip->copy_chip_data == NULL ||
++	     desc->chip->free_chip_data == NULL))
++		return desc;
+ 
+ 	if (desc->node != node)
+ 		desc = __real_move_irq_desc(desc, node);
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 7c1a67e..7df0209 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -895,8 +895,3 @@ int __init __weak arch_early_irq_init(void)
+ {
+ 	return 0;
+ }
+-
+-int __weak arch_init_chip_data(struct irq_desc *desc, int node)
+-{
+-	return 0;
+-}
+-- 
+1.6.4.2
