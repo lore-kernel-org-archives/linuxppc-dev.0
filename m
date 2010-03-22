@@ -1,34 +1,19 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4A44BB7CE7
+Return-Path: <fdiakh@gmail.com>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id E6B60B7CF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 05:12:40 +1100 (EST)
-Date: Mon, 22 Mar 2010 11:07:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: ppc64 sys_ipc breakage in 2.6.34-rc2
-In-Reply-To: <m2ocigkzij.fsf@igel.home>
-Message-ID: <alpine.LFD.2.00.1003221102050.18017@i5.linux-foundation.org>
-References: <20100322064759.GE24064@kryten> <m2ocigkzij.fsf@igel.home>
+	Tue, 23 Mar 2010 04:46:13 +1100 (EST)
+Received: by pwj7 with SMTP id 7so3680060pwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Mar 2010 10:46:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@lst.de>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Hirokazu Takata <takata@linux-m32r.org>, James Morris <jmorris@namei.org>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Ingo Molnar <mingo@elte.hu>, Arnd Bergmann <arnd@arndb.de>,
-	Jeff Dike <jdike@addtoit.com>, Anton Blanchard <anton@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>, "Luck,
-	Tony" <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
-	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>
+From: =?UTF-8?Q?Fran=C3=A7ois_Diakhate?= <fdiakh@gmail.com>
+Date: Mon, 22 Mar 2010 18:45:47 +0100
+Message-ID: <6ad07c641003221045m10ee5c84x3a92436582600f21@mail.gmail.com>
+Subject: Virtio_console usage of early printk
+To: virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary=005045017e419e6ec9048267458a
+Cc: amit.shah@redhat.com, fdiakh@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,36 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--005045017e419e6ec9048267458a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-On Mon, 22 Mar 2010, Andreas Schwab wrote:
-> 
-> ipc/syscall.c:17: error: conflicting types for ¡sys_ipc¢
-> include/linux/syscalls.h:691: note: previous declaration of ¡sys_ipc¢ was here
+As far as I can see, early_put_chars is not used by virtio_console
+because it checks whether there is a port available before using it.
+If I understand correctly, this makes it useless because once we have
+a port, we can use the regular virtio transport to output things to
+the console. Does the attached patch seem valid ? Feedback from s390
+and powerpc users who use this functionality would be appreciated.
 
-Hmm. Right you are. Why don't I see this? (I already applied the patch)
+Thanks,
+Fran=C3=A7ois
 
-Ahh. Because this only triggers with __ARCH_WANT_SYS_IPC. But why didn't 
-Anton see it then? 
+--005045017e419e6ec9048267458a
+Content-Type: text/x-patch; charset=US-ASCII;
+	name="0001-virtio-console-Fix-early_put_chars-usage.patch"
+Content-Disposition: attachment;
+	filename="0001-virtio-console-Fix-early_put_chars-usage.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g73k71k70
 
-Anyway, I assume the following fixes it. Can you verify?
-
-		Linus
-
----
- include/linux/syscalls.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index f994ae5..057929b 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -688,7 +688,7 @@ asmlinkage long sys_shmat(int shmid, char __user *shmaddr, int shmflg);
- asmlinkage long sys_shmget(key_t key, size_t size, int flag);
- asmlinkage long sys_shmdt(char __user *shmaddr);
- asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
--asmlinkage long sys_ipc(unsigned int call, int first, int second,
-+asmlinkage long sys_ipc(unsigned int call, int first, unsigned long second,
- 		unsigned long third, void __user *ptr, long fifth);
- 
- asmlinkage long sys_mq_open(const char __user *name, int oflag, mode_t mode, struct mq_attr __user *attr);
+RnJvbSAzOTYxZjM4MGJiZTg0YTEwMzZkZGZjODIzMDM5Y2JlZTMxYjQ0ZGNiIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiA9P3V0Zi04P3E/RnJhbj1DMz1BN29pcz0yMERpYWtoYXQ9QzM9
+QTk/PSA8ZmRpYWtoQGdtYWlsLmNvbT4KRGF0ZTogVGh1LCAxOCBNYXIgMjAxMCAxNDo0ODoyMCAr
+MDEwMApTdWJqZWN0OiB2aXJ0aW86IGNvbnNvbGU6IEZpeCBlYXJseV9wdXRfY2hhcnMgdXNhZ2UK
+CkN1cnJlbnRseSBlYXJseV9wdXRfY2hhcnMgaXMgbm90IHVzZWQgYnkgdmlydGlvX2NvbnNvbGUg
+YmVjYXVzZSBpdCBjYW4gb25seSBiZSB1c2VkIG9uY2UgYSBwb3J0IGhhcyBiZWVuIGZvdW5kLCBh
+dCB3aGljaCBwb2ludCBpdCdzIHRvbyBsYXRlIGJlY2F1c2UgaXQgaXMgbm8gbG9uZ2VyIG5lZWRl
+ZC4gVGhpcyBwYXRjaCBzaG91bGQgZml4IGl0LgotLS0KIGRyaXZlcnMvY2hhci92aXJ0aW9fY29u
+c29sZS5jIHwgICAgNiArKystLS0KIDEgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAz
+IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci92aXJ0aW9fY29uc29sZS5j
+IGIvZHJpdmVycy9jaGFyL3ZpcnRpb19jb25zb2xlLmMKaW5kZXggZjQwNGNjZi4uNjkxYmEyMSAx
+MDA2NDQKLS0tIGEvZHJpdmVycy9jaGFyL3ZpcnRpb19jb25zb2xlLmMKKysrIGIvZHJpdmVycy9j
+aGFyL3ZpcnRpb19jb25zb2xlLmMKQEAgLTY0NSwxMyArNjQ1LDEzIEBAIHN0YXRpYyBpbnQgcHV0
+X2NoYXJzKHUzMiB2dGVybW5vLCBjb25zdCBjaGFyICpidWYsIGludCBjb3VudCkKIHsKIAlzdHJ1
+Y3QgcG9ydCAqcG9ydDsKIAorCWlmICh1bmxpa2VseShlYXJseV9wdXRfY2hhcnMpKQorCQlyZXR1
+cm4gZWFybHlfcHV0X2NoYXJzKHZ0ZXJtbm8sIGJ1ZiwgY291bnQpOworCiAJcG9ydCA9IGZpbmRf
+cG9ydF9ieV92dGVybW5vKHZ0ZXJtbm8pOwogCWlmICghcG9ydCkKIAkJcmV0dXJuIDA7CiAKLQlp
+ZiAodW5saWtlbHkoZWFybHlfcHV0X2NoYXJzKSkKLQkJcmV0dXJuIGVhcmx5X3B1dF9jaGFycyh2
+dGVybW5vLCBidWYsIGNvdW50KTsKLQogCXJldHVybiBzZW5kX2J1Zihwb3J0LCAodm9pZCAqKWJ1
+ZiwgY291bnQpOwogfQogCi0tIAoxLjYuMS4zCgo=
+--005045017e419e6ec9048267458a--
