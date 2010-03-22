@@ -1,26 +1,28 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 22 Mar 2010 17:47:59 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Christoph Hellwig <hch@lst.de>, Ralf Baechle <ralf@linux-mips.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mundt <lethal@linux-sh.org>, Jeff Dike <jdike@addtoit.com>,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, Al Viro <viro@zeniv.linux.org.uk>,
-	Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	"Luck, Tony" <tony.luck@intel.com>, James Morris <jmorris@namei.org>,
-	Andreas Schwab <schwab@linux-m68k.org>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	David Howells <dhowells@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: ppc64 sys_ipc breakage in 2.6.34-rc2
-Message-ID: <20100322064759.GE24064@kryten>
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5BBB0B7CE4
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Mar 2010 19:55:13 +1100 (EST)
+Date: Mon, 22 Mar 2010 09:54:29 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] device_attributes: add sysfs_attr_init() for dynamic
+	attributes
+Message-ID: <20100322085429.GA15063@pengutronix.de>
+References: <1269238878-991-1-git-send-email-w.sang@pengutronix.de>
+	<20100322064027.GG31621@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
+In-Reply-To: <20100322064027.GG31621@core.coreip.homeip.net>
+Cc: platform-driver-x86@vger.kernel.org, Greg KH <gregkh@suse.de>,
+	kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Mauro Carvalho Chehab <mchehab@infradead.org>, linuxppc-dev@ozlabs.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Sujith Thomas <sujith.thomas@intel.com>,
+	linux-media@vger.kernel.org, Mike Isely <isely@pobox.com>,
+	Matthew Garrett <mjg@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,36 +33,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-I chased down a fail on ppc64 on 2.6.34-rc2 where an application that uses
-shared memory was getting a SEGV.
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Commit baed7fc9b580bd3fb8252ff1d9b36eaf1f86b670 (Add generic sys_ipc wrapper)
-changed the second argument from an unsigned long to an int. When we call
-shmget the system call wrappers for sys_ipc will sign extend second (ie the
-size) which truncates it. It took a while to track down because the call
-succeeds and strace shows the untruncated size :)
+On Sun, Mar 21, 2010 at 11:40:28PM -0700, Dmitry Torokhov wrote:
 
-The patch below changes second from an int to an unsigned long which fixes
-shmget on ppc64 (and I assume s390, sparc64 and mips64).
+> My standard question - are all of these need to be dynamically
+> allocated?
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
---
+I have my doubts for a few of them. Still, this would be a more intrusive
+change than just fixing the BUG appearance, so I'd like to leave that task =
+for
+those having the proper setup. Regarding thermal_sys.c, which has two bug
+reports already, it needs to be dynamic as the attribute name depends on the
+device.
 
-I assume the function prototypes for the other IPC methods would cause us
-to sign or zero extend second where appropriate (avoiding any security
-issues). Come to think of it, the syscall wrappers for each method should do
-that for us as well.
+Regards,
 
-diff --git a/ipc/syscall.c b/ipc/syscall.c
-index 355a3da..1d6f53f 100644
---- a/ipc/syscall.c
-+++ b/ipc/syscall.c
-@@ -13,7 +13,7 @@
- #include <linux/syscalls.h>
- #include <linux/uaccess.h>
- 
--SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, int, second,
-+SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, unsigned long, second,
- 		unsigned long, third, void __user *, ptr, long, fifth)
- {
- 	int version, ret;
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkunMEUACgkQD27XaX1/VRsGjQCgteCT6utOHw1aT5jKNRJnqWa2
+uqIAn0gXBpowL23wFc6gSgABp3M5T/oZ
+=eDuH
+-----END PGP SIGNATURE-----
+
+--liOOAslEiF7prFVr--
