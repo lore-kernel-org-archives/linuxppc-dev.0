@@ -1,30 +1,24 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 08C11B7CF8
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Mar 2010 21:20:12 +1100 (EST)
-Date: Mon, 22 Mar 2010 11:19:29 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 01/10] irq: move some interrupt arch_* functions into
-	struct irq_chip.
-In-Reply-To: <1269221770-9667-2-git-send-email-yinghai@kernel.org>
-Message-ID: <alpine.LFD.2.00.1003220950570.3147@localhost.localdomain>
-References: <1269221770-9667-1-git-send-email-yinghai@kernel.org>
-	<1269221770-9667-2-git-send-email-yinghai@kernel.org>
+Return-Path: <r.goyet@gmail.com>
+Received: from mail-fx0-f221.google.com (mail-fx0-f221.google.com
+	[209.85.220.221]) by ozlabs.org (Postfix) with ESMTP id 547D2B7CA6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Mar 2010 23:21:59 +1100 (EST)
+Received: by fxm21 with SMTP id 21so1628185fxm.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 22 Mar 2010 05:21:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: lguest@ozlabs.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Ian Campbell <ian.campbell@citrix.com>,
-	Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1254826312.6035.8.camel@pasglop>
+References: <8028e5750910060216x134a8a9cm461fa5a6e87eb6bb@mail.gmail.com>
+	<1254823882.6035.5.camel@pasglop>
+	<8028e5750910060331m42ea795bi441eb7a9b39837f8@mail.gmail.com>
+	<1254826312.6035.8.camel@pasglop>
+Date: Mon, 22 Mar 2010 13:21:52 +0100
+Message-ID: <8028e5751003220521h24292eddwa7d940f103221a5@mail.gmail.com>
+Subject: Re: SMU-base PowerMac and server_mode
+From: Romain Goyet <r.goyet@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 21 Mar 2010, Yinghai Lu wrote:
+Hi Ben,
 
-> From: Ian Campbell <ian.campbell@citrix.com>
-> 
-> Move arch_init_copy_chip_data and arch_free_chip_data into function
-> pointers in struct irq_chip since they operate on irq_desc->chip_data.
+So, I'm coming back to you about setting "server_mode" on SMU-based
+PPC machines. You know, so that the machine reboots after a power
+failure. Would you have a little time now ? Thanks a lot !
 
-Not sure about that. These functions are solely used by x86 and there
-is really no need to generalize them. The problem you try to solve is
-x86/xen specific and can be solved by x86_platform_ops as well w/o
-adding extra function pointers to irq_chip.
+ - Romain
 
-> arch_init_chip_data cannot be moved into struct irq_chip because
-> irq_desc->chip is not known at the time the irq_desc is setup. Instead
-> rename arch_init_chip_data to arch_init_irq_desc for PowerPC, the
-> only other user, whose usage better matches the new name.
-> 
-> To replace the x86 arch_init_chip_data functionality
-> irq_to_desc_alloc_node now takes a pointer to a function to allocate
-> the chip data. This is necessary to ensure the allocation happens
-> under the correct locking at the core level. On PowerPC and SH
 
-Err, that argument is totally bogus. The calling convention of
-irq_to_desc_alloc_node and arch_init_chip_data/arch_init_irq_desc is
-still the same. It does not explain why the heck we need that function
-pointer at all.
-
-AFAICT the function pointer to irq_to_desc_alloc_node is completely
-pointless. It just solves a Xen/x86 specific problem which can be
-solved by using x86_platform_ops and keeps the churn x86 internal.
-
-> architectures (the other users of irq_to_desc_alloc_node) pass in NULL
-> which retains existing chip_data behaviour.
- 
-> I've retained the chip_data behaviour for uv_irq although it isn't
-> clear to me if these interrupt types support migration or how closely
-> related to the APIC modes they really are. If it weren't for this the
-> x86_{init,copy,free}_chip_data functions could be static to
-> io_apic.c.
-> 
-> I've tested by booting on an 64 bit x86 system with sparse IRQ enabled
-> and 32 bit without, but it's not clear to me what actions I need to
-> take to actually exercise some of these code paths.
-> 
-> -v4: yinghai add irq_to_desc_alloc_node_x...
-
-Aside of the general objection against this, please use descriptive
-function names and do not distinguish functions by adding random
-characters which tell us absolutely nothing about the purpose.
-
-Thanks,
-
-	tglx
+On Tue, Oct 6, 2009 at 11:51 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2009-10-06 at 12:31 +0200, Romain Goyet wrote:
+>> Hi Benjamin !
+>>
+>>
+>> =C2=A0 Actually I saw a post where you mentioned this tool on Google. I
+>> then searched it for like an hour or so, but really couldn't find it.
+>> That's why I ended up posting on this mailing list. I'm really glad
+>> you're on it by the way ! Anyway, like I said : I really looked for
+>> this tool, but couldn't find it=E2=80=A6
+>
+> Hrm... ok. I'll have to figure it out again. No time right now, but
+> get back to me next month after Kernel Summit and I'll see what i can
+> do.
+>
+> Cheers,
+> Ben.
+>
+>>
+>> Thanks a lot !
+>>
+>>
+>> =C2=A0- Romain
+>>
+>>
+>> On Tue, Oct 6, 2009 at 12:11 PM, Benjamin Herrenschmidt
+>> <benh@kernel.crashing.org> wrote:
+>>
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 On Tue, 2009-10-06 at 11:16 +0200, Romain Go=
+yet wrote:
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > Hi there,
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 >
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 >
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > =C2=A0 I have this Quad G5 here, running G=
+entooPPC64. Runs fine.
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 Had a hard
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > time getting it to boot without a screen a=
+ttached, but I
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 eventually
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > managed to (yaboot was the culprit). Howev=
+er, this machine
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 is
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > SMU-based, and I couldn't find a way to en=
+able the
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 equivalent of the
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > PMU's "server_mode" (i.e. automatically re=
+boot after a power
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 failure).
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 > Is there any known way to do that ?
+>>
+>>
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 I'm pretty sure I reverse engineered the nec=
+essary command a
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 while back
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 and somebody wrote a userland tool to set it=
+, but I can't find
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 it
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 anymore :-)
+>>
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 Google may help. Let me know if you can't fi=
+nd it.
+>>
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 Cheers,
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 Ben.
+>>
+>>
+>>
+>>
+>
+>
+>
