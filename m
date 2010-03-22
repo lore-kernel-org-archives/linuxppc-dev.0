@@ -1,19 +1,32 @@
-Return-Path: <fdiakh@gmail.com>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id E6B60B7CF7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 04:46:13 +1100 (EST)
-Received: by pwj7 with SMTP id 7so3680060pwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 22 Mar 2010 10:46:12 -0700 (PDT)
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 25ED3B7CF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 06:52:37 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp01.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2MJoSPk013774
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 06:50:28 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2MJqaqI1507442
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 06:52:36 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2MJqaDG009653
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 06:52:36 +1100
+Date: Tue, 23 Mar 2010 01:22:23 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH v2] powerpc: export data from new hcall H_EM_GET_PARMS
+Message-ID: <20100322195223.GA22770@dirshya.in.ibm.com>
+References: <20100310121925.GB15046@dirshya.in.ibm.com>
 MIME-Version: 1.0
-From: =?UTF-8?Q?Fran=C3=A7ois_Diakhate?= <fdiakh@gmail.com>
-Date: Mon, 22 Mar 2010 18:45:47 +0100
-Message-ID: <6ad07c641003221045m10ee5c84x3a92436582600f21@mail.gmail.com>
-Subject: Virtio_console usage of early printk
-To: virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/mixed; boundary=005045017e419e6ec9048267458a
-Cc: amit.shah@redhat.com, fdiakh@gmail.com
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20100310121925.GB15046@dirshya.in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +36,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---005045017e419e6ec9048267458a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2010-03-10 17:49:25]:
 
-Hi all,
+> Hi Ben,
+> 
+> I have cleaned up the code from the previous post:
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080630.html
+> 
+> Changes from v1:
+> * Removed redundant return statements and rearranged code
+> 
+> Description:
+> 
+> A new hcall H_EM_GET_PARMS as been added to obtain power mode data
+> from the platform.  This data can be used by user space administrative
+> tools for better power management.
+> 
+> The following patch add data from this new hcall into the lparcfg
+> driver and exports to user space along with other existing lpar data
+> in /proc/powerpc/lparcfg
+> 
+> Please review and include in powerpc -next tree.
 
-As far as I can see, early_put_chars is not used by virtio_console
-because it checks whether there is a port available before using it.
-If I understand correctly, this makes it useless because once we have
-a port, we can use the regular virtio transport to output things to
-the console. Does the attached patch seem valid ? Feedback from s390
-and powerpc users who use this functionality would be appreciated.
+Hi Ben,
+
+Looks like you have not opened the -next tree after the merge window
+yet.  The current git tree status is same as -merge.  Please review
+and include in powerpc next tree.  
 
 Thanks,
-Fran=C3=A7ois
+Vaidy
 
---005045017e419e6ec9048267458a
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-virtio-console-Fix-early_put_chars-usage.patch"
-Content-Disposition: attachment;
-	filename="0001-virtio-console-Fix-early_put_chars-usage.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g73k71k70
-
-RnJvbSAzOTYxZjM4MGJiZTg0YTEwMzZkZGZjODIzMDM5Y2JlZTMxYjQ0ZGNiIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiA9P3V0Zi04P3E/RnJhbj1DMz1BN29pcz0yMERpYWtoYXQ9QzM9
-QTk/PSA8ZmRpYWtoQGdtYWlsLmNvbT4KRGF0ZTogVGh1LCAxOCBNYXIgMjAxMCAxNDo0ODoyMCAr
-MDEwMApTdWJqZWN0OiB2aXJ0aW86IGNvbnNvbGU6IEZpeCBlYXJseV9wdXRfY2hhcnMgdXNhZ2UK
-CkN1cnJlbnRseSBlYXJseV9wdXRfY2hhcnMgaXMgbm90IHVzZWQgYnkgdmlydGlvX2NvbnNvbGUg
-YmVjYXVzZSBpdCBjYW4gb25seSBiZSB1c2VkIG9uY2UgYSBwb3J0IGhhcyBiZWVuIGZvdW5kLCBh
-dCB3aGljaCBwb2ludCBpdCdzIHRvbyBsYXRlIGJlY2F1c2UgaXQgaXMgbm8gbG9uZ2VyIG5lZWRl
-ZC4gVGhpcyBwYXRjaCBzaG91bGQgZml4IGl0LgotLS0KIGRyaXZlcnMvY2hhci92aXJ0aW9fY29u
-c29sZS5jIHwgICAgNiArKystLS0KIDEgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAz
-IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci92aXJ0aW9fY29uc29sZS5j
-IGIvZHJpdmVycy9jaGFyL3ZpcnRpb19jb25zb2xlLmMKaW5kZXggZjQwNGNjZi4uNjkxYmEyMSAx
-MDA2NDQKLS0tIGEvZHJpdmVycy9jaGFyL3ZpcnRpb19jb25zb2xlLmMKKysrIGIvZHJpdmVycy9j
-aGFyL3ZpcnRpb19jb25zb2xlLmMKQEAgLTY0NSwxMyArNjQ1LDEzIEBAIHN0YXRpYyBpbnQgcHV0
-X2NoYXJzKHUzMiB2dGVybW5vLCBjb25zdCBjaGFyICpidWYsIGludCBjb3VudCkKIHsKIAlzdHJ1
-Y3QgcG9ydCAqcG9ydDsKIAorCWlmICh1bmxpa2VseShlYXJseV9wdXRfY2hhcnMpKQorCQlyZXR1
-cm4gZWFybHlfcHV0X2NoYXJzKHZ0ZXJtbm8sIGJ1ZiwgY291bnQpOworCiAJcG9ydCA9IGZpbmRf
-cG9ydF9ieV92dGVybW5vKHZ0ZXJtbm8pOwogCWlmICghcG9ydCkKIAkJcmV0dXJuIDA7CiAKLQlp
-ZiAodW5saWtlbHkoZWFybHlfcHV0X2NoYXJzKSkKLQkJcmV0dXJuIGVhcmx5X3B1dF9jaGFycyh2
-dGVybW5vLCBidWYsIGNvdW50KTsKLQogCXJldHVybiBzZW5kX2J1Zihwb3J0LCAodm9pZCAqKWJ1
-ZiwgY291bnQpOwogfQogCi0tIAoxLjYuMS4zCgo=
---005045017e419e6ec9048267458a--
+> ---
+> 	powerpc: export data from new hcall H_EM_GET_PARMS
+> 
+> 	Add support for H_EM_GET_PARMS hcall that will return data
+> 	related to power modes from the platform.  Export the data
+> 	directly to user space for administrative tools to interpret
+> 	and use.
+> 
+> 	cat /proc/powerpc/lparcfg will export power mode data
+> 
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/hvcall.h |    1 +
+>  arch/powerpc/kernel/lparcfg.c     |   12 +++++++++++-
+>  2 files changed, 12 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+> index f027581..ebe7493 100644
+> --- a/arch/powerpc/include/asm/hvcall.h
+> +++ b/arch/powerpc/include/asm/hvcall.h
+> @@ -228,6 +228,7 @@
+>  #define H_JOIN			0x298
+>  #define H_VASI_STATE            0x2A4
+>  #define H_ENABLE_CRQ		0x2B0
+> +#define H_GET_EM_PARMS		0x2B8
+>  #define H_SET_MPP		0x2D0
+>  #define H_GET_MPP		0x2D4
+>  #define MAX_HCALL_OPCODE	H_GET_MPP
+> diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+> index d09d1c6..ff698fb 100644
+> --- a/arch/powerpc/kernel/lparcfg.c
+> +++ b/arch/powerpc/kernel/lparcfg.c
+> @@ -37,7 +37,7 @@
+>  #include <asm/vio.h>
+>  #include <asm/mmu.h>
+> 
+> -#define MODULE_VERS "1.8"
+> +#define MODULE_VERS "1.9"
+>  #define MODULE_NAME "lparcfg"
+> 
+>  /* #define LPARCFG_DEBUG */
+> @@ -486,6 +486,14 @@ static void splpar_dispatch_data(struct seq_file *m)
+>  	seq_printf(m, "dispatch_dispersions=%lu\n", dispatch_dispersions);
+>  }
+> 
+> +static void parse_em_data(struct seq_file *m)
+> +{
+> +	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+> +
+> +	if (plpar_hcall(H_GET_EM_PARMS, retbuf) == H_SUCCESS)
+> +		seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
+> +}
+> +
+>  static int pseries_lparcfg_data(struct seq_file *m, void *v)
+>  {
+>  	int partition_potential_processors;
+> @@ -540,6 +548,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+> 
+>  	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
+> 
+> +	parse_em_data(m);
+> +
+>  	return 0;
+>  }
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
