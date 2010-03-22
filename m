@@ -1,27 +1,21 @@
-Return-Path: <yinghai@kernel.org>
-Message-ID: <4BA6E4D1.6080704@kernel.org>
-Date: Sun, 21 Mar 2010 20:32:33 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 01/10] irq: move some interrupt arch_* functions into
-	struct irq_chip.
-References: <1269221770-9667-1-git-send-email-yinghai@kernel.org>	
-	<1269221770-9667-2-git-send-email-yinghai@kernel.org>
-	<1269222962.3534.12.camel@concordia>
-In-Reply-To: <1269222962.3534.12.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: lguest@ozlabs.org, x86@kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-sh@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>,
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 872ACB7C67
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Mar 2010 17:25:32 +1100 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: kernel-janitors@vger.kernel.org
+Date: Mon, 22 Mar 2010 07:21:17 +0100
+Message-Id: <1269238878-991-1-git-send-email-w.sang@pengutronix.de>
+Subject: [PATCH] device_attributes: add sysfs_attr_init() for dynamic
+	attributes
+Cc: platform-driver-x86@vger.kernel.org, Greg KH <gregkh@suse.de>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>, linuxppc-dev@ozlabs.org,
 	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Ian Campbell <ian.campbell@citrix.com>
+	Sujith Thomas <sujith.thomas@intel.com>,
+	linux-media@vger.kernel.org, Mike Isely <isely@pobox.com>,
+	linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,80 +25,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/21/2010 06:56 PM, Michael Ellerman wrote:
-> On Sun, 2010-03-21 at 18:36 -0700, Yinghai Lu wrote:
->> From: Ian Campbell <ian.campbell@citrix.com>
-> ...
->> To replace the x86 arch_init_chip_data functionality
->> irq_to_desc_alloc_node now takes a pointer to a function to allocate
->> the chip data. This is necessary to ensure the allocation happens
->> under the correct locking at the core level. On PowerPC and SH
->> architectures (the other users of irq_to_desc_alloc_node) pass in NULL
->> which retains existing chip_data behaviour.
-> ...
->>
->> -v4: yinghai add irq_to_desc_alloc_node_x...
->>      so could leave default path not changed...
-> 
-> Apologies for not noticing this sooner, but ..
-> 
->> --- a/arch/powerpc/kernel/irq.c
->> +++ b/arch/powerpc/kernel/irq.c
->> @@ -1088,7 +1088,7 @@ int arch_early_irq_init(void)
->>  	return 0;
->>  }
->>  
->> -int arch_init_chip_data(struct irq_desc *desc, int node)
->> +int arch_init_irq_desc(struct irq_desc *desc, int node, init_chip_data_fn fn)
->>  {
->>  	desc->status |= IRQ_NOREQUEST;
->>  	return 0;
-> 
-> This is a bit feral, that is the init_chip_data_fn.
-> 
-> It seems like it only exists to support the following on x86:
-> 
->> +int arch_init_irq_desc(struct irq_desc *desc, int node,
->> +			 init_chip_data_fn init_chip_data)
->> +{
->> +	if (!init_chip_data)
->> +		return x86_init_chip_data(desc, node);
->> +
->> +	return init_chip_data(desc, node);
->> +}
-> 
-> Which is really just a hack to avoid an if (xen) check isn't it?
+Made necessary by 6992f5334995af474c2b58d010d08bc597f0f2fe.
 
- arch/powerpc/kernel/irq.c      |    2 +-
+Found by this semantic patch:
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 64f6f20..cafd378 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -1088,7 +1088,7 @@ int arch_early_irq_init(void)
- 	return 0;
- }
+@ init @
+type T;
+identifier A;
+@@
+
+        T {
+                ...
+                struct device_attribute A;
+                ...
+        };
+
+@ main extends init @
+expression E;
+statement S;
+identifier err;
+T *name;
+@@
+
+        ... when != sysfs_attr_init(&name->A.attr);
+(
++       sysfs_attr_init(&name->A.attr);
+        if (device_create_file(E, &name->A))
+                S
+|
++       sysfs_attr_init(&name->A.attr);
+        err = device_create_file(E, &name->A);
+)
+
+While reviewing, I put the initialization to apropriate places.
+
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Mike Isely <isely@pobox.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Sujith Thomas <sujith.thomas@intel.com>
+Cc: Matthew Garrett <mjg@redhat.com>
+---
+
+The thermal-sys.c-part should fix bugs #15548 and #15584.
+
+ drivers/macintosh/windfarm_core.c           |    1 +
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    8 ++++++++
+ drivers/platform/x86/intel_menlow.c         |    1 +
+ drivers/thermal/thermal_sys.c               |    1 +
+ drivers/video/fsl-diu-fb.c                  |    1 +
+ 5 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index 419795f..f447642 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -209,6 +209,7 @@ int wf_register_control(struct wf_control *new_ct)
+ 	kref_init(&new_ct->ref);
+ 	list_add(&new_ct->link, &wf_controls);
  
--int arch_init_chip_data(struct irq_desc *desc, int node)
-+int arch_init_irq_desc(struct irq_desc *desc, int node, init_chip_data_fn fn)
- {
- 	desc->status |= IRQ_NOREQUEST;
- 	return 0;
-
-so this patch only change one line with powerpc code. 
-> 
-> It looks to me like this should just be done via a current machine
-> vector or platform routine, in the same way as powerpc and (I think)
-> ia64, ie:
-> 
->> +int arch_init_irq_desc(struct irq_desc *desc, int node)
->> +{
->> +	return current_machine->init_chip_data(desc, node);
->> +}
-> 
-looks like xen in same run time, some irqs need x86_init_chip_data,
-and some may need xen_init_chip_data later.
-
-Thanks
-
-Yinghai
++	sysfs_attr_init(&new_ct->attr.attr);
+ 	new_ct->attr.attr.name = new_ct->name;
+ 	new_ct->attr.attr.mode = 0644;
+ 	new_ct->attr.show = wf_show_control;
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+index 6c23456..71f5056 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+@@ -423,10 +423,12 @@ static void pvr2_sysfs_add_debugifc(struct pvr2_sysfs *sfp)
+ 
+ 	dip = kzalloc(sizeof(*dip),GFP_KERNEL);
+ 	if (!dip) return;
++	sysfs_attr_init(&dip->attr_debugcmd.attr);
+ 	dip->attr_debugcmd.attr.name = "debugcmd";
+ 	dip->attr_debugcmd.attr.mode = S_IRUGO|S_IWUSR|S_IWGRP;
+ 	dip->attr_debugcmd.show = debugcmd_show;
+ 	dip->attr_debugcmd.store = debugcmd_store;
++	sysfs_attr_init(&dip->attr_debuginfo.attr);
+ 	dip->attr_debuginfo.attr.name = "debuginfo";
+ 	dip->attr_debuginfo.attr.mode = S_IRUGO;
+ 	dip->attr_debuginfo.show = debuginfo_show;
+@@ -644,6 +646,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		return;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_v4l_minor_number.attr);
+ 	sfp->attr_v4l_minor_number.attr.name = "v4l_minor_number";
+ 	sfp->attr_v4l_minor_number.attr.mode = S_IRUGO;
+ 	sfp->attr_v4l_minor_number.show = v4l_minor_number_show;
+@@ -658,6 +661,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->v4l_minor_number_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_v4l_radio_minor_number.attr);
+ 	sfp->attr_v4l_radio_minor_number.attr.name = "v4l_radio_minor_number";
+ 	sfp->attr_v4l_radio_minor_number.attr.mode = S_IRUGO;
+ 	sfp->attr_v4l_radio_minor_number.show = v4l_radio_minor_number_show;
+@@ -672,6 +676,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->v4l_radio_minor_number_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_unit_number.attr);
+ 	sfp->attr_unit_number.attr.name = "unit_number";
+ 	sfp->attr_unit_number.attr.mode = S_IRUGO;
+ 	sfp->attr_unit_number.show = unit_number_show;
+@@ -685,6 +690,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->unit_number_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_bus_info.attr);
+ 	sfp->attr_bus_info.attr.name = "bus_info_str";
+ 	sfp->attr_bus_info.attr.mode = S_IRUGO;
+ 	sfp->attr_bus_info.show = bus_info_show;
+@@ -699,6 +705,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->bus_info_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_hdw_name.attr);
+ 	sfp->attr_hdw_name.attr.name = "device_hardware_type";
+ 	sfp->attr_hdw_name.attr.mode = S_IRUGO;
+ 	sfp->attr_hdw_name.show = hdw_name_show;
+@@ -713,6 +720,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->hdw_name_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_hdw_desc.attr);
+ 	sfp->attr_hdw_desc.attr.name = "device_hardware_description";
+ 	sfp->attr_hdw_desc.attr.mode = S_IRUGO;
+ 	sfp->attr_hdw_desc.show = hdw_desc_show;
+diff --git a/drivers/platform/x86/intel_menlow.c b/drivers/platform/x86/intel_menlow.c
+index f0a90a6..90ba5d7 100644
+--- a/drivers/platform/x86/intel_menlow.c
++++ b/drivers/platform/x86/intel_menlow.c
+@@ -396,6 +396,7 @@ static int intel_menlow_add_one_attribute(char *name, int mode, void *show,
+ 	if (!attr)
+ 		return -ENOMEM;
+ 
++	sysfs_attr_init(&attr->attr.attr); /* That's consistent naming :D */
+ 	attr->attr.attr.name = name;
+ 	attr->attr.attr.mode = mode;
+ 	attr->attr.show = show;
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 5066de5..d4fec47 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -725,6 +725,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 		goto release_idr;
+ 
+ 	sprintf(dev->attr_name, "cdev%d_trip_point", dev->id);
++	sysfs_attr_init(&dev->attr.attr);
+ 	dev->attr.attr.name = dev->attr_name;
+ 	dev->attr.attr.mode = 0444;
+ 	dev->attr.show = thermal_cooling_device_trip_point_show;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 4637bcb..994358a 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1536,6 +1536,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 		goto error;
+ 	}
+ 
++	sysfs_attr_init(&machine_data->dev_attr.attr);
+ 	machine_data->dev_attr.attr.name = "monitor";
+ 	machine_data->dev_attr.attr.mode = S_IRUGO|S_IWUSR;
+ 	machine_data->dev_attr.show = show_monitor;
+-- 
+1.7.0
