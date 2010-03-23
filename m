@@ -1,20 +1,36 @@
-Return-Path: <liu.yaojin@zte.com.cn>
-Received: from mx7.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
-	by ozlabs.org (Postfix) with ESMTP id 34F6AB7CE2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 18:13:35 +1100 (EST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
-	by mse2.zte.com.cn with ESMTP id o2N7BvW2070003
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 15:11:58 +0800 (CST)
-	(envelope-from liu.yaojin@zte.com.cn)
-To: linuxppc-dev@lists.ozlabs.org
-Subject: The GPIO problem on MPC8323?
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4C2C4B7CEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 18:29:02 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2N7PilO006745
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 18:25:44 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2N7N2DZ1659034
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 18:23:03 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2N7T191003269
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 18:29:01 +1100
+Date: Tue, 23 Mar 2010 12:58:54 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [Patch 1/1] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+Message-ID: <20100323072854.GA3365@in.ibm.com>
+References: <20100308181232.GA3406@in.ibm.com>
+	<20100308181448.GA5538@in.ibm.com> <20100323053301.GA28676@drongo>
 MIME-Version: 1.0
-Message-ID: <OFAA998E02.C84A631E-ON482576EF.00270F1D-482576EF.00279F48@zte.com.cn>
-From: liu.yaojin@zte.com.cn
-Date: Tue, 23 Mar 2010 15:07:49 +0800
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100323053301.GA28676@drongo>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi,all:
+On Tue, Mar 23, 2010 at 04:33:01PM +1100, Paul Mackerras wrote:
+> On Mon, Mar 08, 2010 at 11:44:48PM +0530, K.Prasad wrote:
+> 
+> > @@ -479,6 +483,7 @@ struct task_struct *__switch_to(struct t
+> >  		old_thread->accum_tb += (current_tb - start_tb);
+> >  		new_thread->start_tb = current_tb;
+> >  	}
+> > +	flush_ptrace_hw_breakpoint(current);
+> >  #endif
+> >  
+> >  	local_irq_save(flags);
+> 
+> This line should be in flush_thread(), not __switch_to().  In fact it
+> may not be necessary at all given that flush_ptrace_hw_breakpoint()
+> gets called in do_exit().
+> 
+> Paul.
 
-i saw peter's mpc8xxx_gpio.c in kernel 2.6.31. it seems that file can only 
-be used on 831x and others, but not mpc8323. my platform is mpc8323, how 
-can i use the GPIO?
-i also found "QE GPIO Support" and "Support for simple, memory-mapped GPIO 
-controllers" selection,  how can i use it and test in user space?
+Yes, I did realise it. The unintended movement of
+flush_ptrace_hw_breakpoint() from flush_thread() is a result of a
+patching error (while forward porting).
 
-thanks, best regards.
+A fix for this issue along with those pointed out by BenH will be a part
+of the next version of the patch, that I intend to send very soon.
 
-evan.
+Thanks for reviewing them.
 
-
---------------------------------------------------------
-ZTE Information Security Notice: The information contained in this mail is solely property of the sender's organization. This mail communication is confidential. Recipients named above are obligated to maintain secrecy and are not permitted to disclose the contents of this communication to others.
-This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you have received this email in error please notify the originator of the message. Any views expressed in this message are those of the individual sender.
-This message has been scanned for viruses and Spam by ZTE Anti-Spam system.
+-- K.Prasad
