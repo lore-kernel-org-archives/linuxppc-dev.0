@@ -1,31 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DD363B7CE2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Mar 2010 04:13:41 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o2NHDMeh024261 for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 10:13:32 -0700 (MST)
-Received: from b07421-ec1.am.freescale.net (b07421-ec1.am.freescale.net
-	[10.82.121.43])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o2NHKdi2008793
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 12:20:39 -0500 (CDT)
-Date: Tue, 23 Mar 2010 12:13:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: liu.yaojin@zte.com.cn
-Subject: Re: The GPIO problem on MPC8323?
-Message-ID: <20100323171321.GA27601@b07421-ec1.am.freescale.net>
-References: <OFAA998E02.C84A631E-ON482576EF.00270F1D-482576EF.00279F48@zte.com.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFAA998E02.C84A631E-ON482576EF.00270F1D-482576EF.00279F48@zte.com.cn>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 00573B7CB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 06:44:04 +1100 (EST)
+To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Linux patches for XIP on MPC8xx?
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <4BA865D4.1090403@freemail.hu>
+References: <4BA865D4.1090403@freemail.hu>
+Date: Tue, 23 Mar 2010 20:44:01 +0100
+Message-Id: <20100323194401.0B7724C022@gemini.denx.de>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 23, 2010 at 03:07:49PM +0800, liu.yaojin@zte.com.cn wrote:
-> hi,all:
-> 
-> i saw peter's mpc8xxx_gpio.c in kernel 2.6.31. it seems that file can only 
-> be used on 831x and others, but not mpc8323. my platform is mpc8323, how 
-> can i use the GPIO?
-> i also found "QE GPIO Support" and "Support for simple, memory-mapped GPIO 
-> controllers" selection,  how can i use it and test in user space?
-> 
-> thanks, best regards.
+Dear Márton Németh,
 
-This is the same e-mail that you sent yesterday...  Yes, you want the QE
-GPIO driver for QE chips.  It should work the same as other GPIO drivers. 
-Check the documentation or the code for how to use the interface.
+in message <4BA865D4.1090403@freemail.hu> you wrote:
+> 
+> I found your homepage at
+> http://www.denx.de/wiki/bin/view/DULG/ConfigureLinuxForXIP back
+> from 2003. Was there any follow up of your patch for kernel 2.4.4?
 
--Scott
+There were very few tests done with later kernel versions, and in all
+practical system configurations we tested we found that XIP did not
+give real benefits. Usually execution from flash was slower than when
+running from RAM, and even booting a (inevitably uncompressed) kernel
+from flash is typically slower than loading a compressed image to RUM
+and booting from there.
+
+So except for some highly specialized applications (you may also call
+these "exotic" configurations) XIP for the Linux kernel does not make
+much sense to me.
+
+I am aware that there are reports which come to completely different
+conclusions - see for example http://www.elinux.org/Kernel_XIP ; but
+then look carefully - the examples come from hardware with really
+slow processors, which are probably not typical any more.
+
+Actually this is the first thing you should check: the ratio of
+processor speed versus flash memory bandwidth versus RAM bandwidth.
+Today you can usually expect CPU clocks way over 400 MHz, and many
+systems use DDR, while NOR flash speed has noch changed much.
+
+Also check if it is possible to map the flash memory cached for your
+system (which you definitly want when using XIP from flash); this may
+prevent some flash access methods from working.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Doubt isn't the opposite of faith; it is an element of faith.
+- Paul Tillich, German theologian and historian
