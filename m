@@ -1,27 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 23 Mar 2010 09:01:38 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ppc64 sys_ipc breakage in 2.6.34-rc2
-Message-ID: <20100322220138.GF24064@kryten>
-References: <20100322064759.GE24064@kryten> <m2ocigkzij.fsf@igel.home>
-	<alpine.LFD.2.00.1003221102050.18017@i5.linux-foundation.org>
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 2F72FB7C48
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 23 Mar 2010 13:18:00 +1100 (EST)
+Date: Tue, 23 Mar 2010 07:46:20 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: =?iso-8859-1?Q?Fran=E7ois?= Diakhate <fdiakh@gmail.com>
+Subject: Re: Virtio_console usage of early printk
+Message-ID: <20100323021620.GA4088@amit-x200.redhat.com>
+References: <6ad07c641003221045m10ee5c84x3a92436582600f21@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <alpine.LFD.2.00.1003221102050.18017@i5.linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Andreas Schwab <schwab@linux-m68k.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@lst.de>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	Hirokazu Takata <takata@linux-m32r.org>, James Morris <jmorris@namei.org>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Ingo Molnar <mingo@elte.hu>, Arnd Bergmann <arnd@arndb.de>,
-	Jeff Dike <jdike@addtoit.com>, Al Viro <viro@zeniv.linux.org.uk>,
-	Thomas Gleixner <tglx@linutronix.de>, "Luck,
-	Tony" <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
-	Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <6ad07c641003221045m10ee5c84x3a92436582600f21@mail.gmail.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-> > ipc/syscall.c:17: error: conflicting types for ‘sys_ipc’
-> > include/linux/syscalls.h:691: note: previous declaration of ‘sys_ipc’ was here
+On (Mon) Mar 22 2010 [18:45:47], Fran�ois Diakhate wrote:
+> Hi all,
 > 
-> Hmm. Right you are. Why don't I see this? (I already applied the patch)
-> 
-> Ahh. Because this only triggers with __ARCH_WANT_SYS_IPC. But why didn't 
-> Anton see it then? 
-> 
-> Anyway, I assume the following fixes it. Can you verify?
+> As far as I can see, early_put_chars is not used by virtio_console
+> because it checks whether there is a port available before using it.
+> If I understand correctly, this makes it useless because once we have
+> a port, we can use the regular virtio transport to output things to
+> the console. Does the attached patch seem valid ? Feedback from s390
+> and powerpc users who use this functionality would be appreciated.
 
-Sorry, I forgot to quilt add. Stupid screw up, thanks Andreas for catching
-it so quickly.
+Looks OK to me, Christian, others, could you comment on this please?
 
-Anton
+> Thanks,
+> Fran�ois
+
+> From 3961f380bbe84a1036ddfc823039cbee31b44dcb Mon Sep 17 00:00:00 2001
+> From: =?utf-8?q?Fran=C3=A7ois=20Diakhat=C3=A9?= <fdiakh@gmail.com>
+> Date: Thu, 18 Mar 2010 14:48:20 +0100
+> Subject: virtio: console: Fix early_put_chars usage
+> 
+> Currently early_put_chars is not used by virtio_console because it can only be used once a port has been found, at which point it's too late because it is no longer needed. This patch should fix it.
+> ---
+>  drivers/char/virtio_console.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+> index f404ccf..691ba21 100644
+> --- a/drivers/char/virtio_console.c
+> +++ b/drivers/char/virtio_console.c
+> @@ -645,13 +645,13 @@ static int put_chars(u32 vtermno, const char *buf, int count)
+>  {
+>  	struct port *port;
+>  
+> +	if (unlikely(early_put_chars))
+> +		return early_put_chars(vtermno, buf, count);
+> +
+>  	port = find_port_by_vtermno(vtermno);
+>  	if (!port)
+>  		return 0;
+>  
+> -	if (unlikely(early_put_chars))
+> -		return early_put_chars(vtermno, buf, count);
+> -
+>  	return send_buf(port, (void *)buf, count);
+>  }
+>  
+> -- 
+> 1.6.1.3
+> 
+
+
+		Amit
