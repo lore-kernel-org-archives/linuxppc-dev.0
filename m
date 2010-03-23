@@ -1,26 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f217.google.com (mail-gx0-f217.google.com
-	[209.85.217.217]) by ozlabs.org (Postfix) with ESMTP id 07EEBB7CEF
+Return-Path: <liu.yaojin@zte.com.cn>
+Received: from mx7.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
+	by ozlabs.org (Postfix) with ESMTP id 34F6AB7CE2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 18:07:06 +1100 (EST)
-Received: by gxk9 with SMTP id 9so740996gxk.8
+	Tue, 23 Mar 2010 18:13:35 +1100 (EST)
+Received: from notes_smtp.zte.com.cn ([10.30.1.239])
+	by mse2.zte.com.cn with ESMTP id o2N7BvW2070003
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 23 Mar 2010 00:07:04 -0700 (PDT)
+	Tue, 23 Mar 2010 15:11:58 +0800 (CST)
+	(envelope-from liu.yaojin@zte.com.cn)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: The GPIO problem on MPC8323?
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1269327424.5953.12.camel@concordia>
-References: <20100318144836.21082.93040.stgit@angua>
-	<1269327424.5953.12.camel@concordia>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 23 Mar 2010 01:06:42 -0600
-Message-ID: <fa686aa41003230006v6098afe7s1bcb64f409f11a5a@mail.gmail.com>
-Subject: Re: [V2 PATCH 00/10] of: Consolidate scattered device node pointers
-	in struct device
-To: michael@ellerman.id.au
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, michal.simek@petalogix.com,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Message-ID: <OFAA998E02.C84A631E-ON482576EF.00270F1D-482576EF.00279F48@zte.com.cn>
+From: liu.yaojin@zte.com.cn
+Date: Tue, 23 Mar 2010 15:07:49 +0800
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 23, 2010 at 12:57 AM, Michael Ellerman
-<michael@ellerman.id.au> wrote:
-> On Thu, 2010-03-18 at 09:22 -0600, Grant Likely wrote:
->> Currently, each of_device has a copy of the device tree node pointer in =
-both
->> .node, and in .dev.archdata.of_node (microblaze and powerpc) or
->> .dev.archdata.prom_node (sparc). =A0Also, other architectures will be ad=
-ding
->> CONFIG_OF support, and they will also need a reference to the device tre=
-e
->> node pointer from struct device.
->
-> Assuming this is similar to your experimental-devicetree branch, as of
-> 96b4b9d7 it causes a few build errors for me:
->
-> http://kisskb.ellerman.id.au/kisskb/head/2688/
->
-> Broken are 86xx/sbc8641d_defconfig, mpc83xx_defconfig,
-> mpc885_ads_defconfig, mpc85xx_defconfig, and pmac32_defconfig.
+hi,all:
 
-Hey Michael,
+i saw peter's mpc8xxx_gpio.c in kernel 2.6.31. it seems that file can only 
+be used on 831x and others, but not mpc8323. my platform is mpc8323, how 
+can i use the GPIO?
+i also found "QE GPIO Support" and "Support for simple, memory-mapped GPIO 
+controllers" selection,  how can i use it and test in user space?
 
-Thanks for the testing.  I haven't built through all the defconfigs
-yet so this doesn't surprise me too much that I've missed some
-drivers.  The failure is caused in the last three commits which remove
-the old variables.  I'll pick through the failing defconfigs, fix and
-test them, and refresh my branch.
+thanks, best regards.
 
-I'll let you know when the branch is updated.
+evan.
 
-Cheers,
-g.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--------------------------------------------------------
+ZTE Information Security Notice: The information contained in this mail is solely property of the sender's organization. This mail communication is confidential. Recipients named above are obligated to maintain secrecy and are not permitted to disclose the contents of this communication to others.
+This email and any files transmitted with it are confidential and intended solely for the use of the individual or entity to whom they are addressed. If you have received this email in error please notify the originator of the message. Any views expressed in this message are those of the individual sender.
+This message has been scanned for viruses and Spam by ZTE Anti-Spam system.
