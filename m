@@ -1,18 +1,23 @@
-Return-Path: <r.goyet@gmail.com>
-Received: from mail-fx0-f228.google.com (mail-fx0-f228.google.com
-	[209.85.220.228]) by ozlabs.org (Postfix) with ESMTP id 42691B7CF6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Mar 2010 21:32:59 +1100 (EST)
-Received: by fxm28 with SMTP id 28so1603024fxm.16
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Mar 2010 03:32:57 -0700 (PDT)
-MIME-Version: 1.0
-Date: Wed, 24 Mar 2010 11:32:57 +0100
-Message-ID: <8028e5751003240332h3f13c2d5w941dda44b4740d7@mail.gmail.com>
-Subject: Booting headless PowerMac G5
-From: Romain Goyet <r.goyet@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 90513B7CF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 21:46:52 +1100 (EST)
+Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1269119079.8599.65.camel@pasglop>
+References: <20100319151326.GC8541@kroah.com>
+	<1269011916-8836-4-git-send-email-gregkh@suse.de>
+	<1269119079.8599.65.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Mar 2010 21:45:44 +1100
+Message-ID: <1269427544.8599.222.camel@pasglop>
+Mime-Version: 1.0
+Cc: Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Amit Shah <amit.shah@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +27,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi there,
+On Sun, 2010-03-21 at 08:04 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
+> > From: Amit Shah <amit.shah@redhat.com>
+> > 
+> > Alan pointed out a race in the code where hvc_remove is invoked. The
+> > recent virtio_console work is the first user of hvc_remove().
+> 
+> This causes hangs during boot on pseries machines. Haven't had a chance
+> to track that down yet, but please revert
+> e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
 
+Linus, any chance you can revert that one for now until we figure out
+what's wrong ?
 
-  Here's a summary about "how to boot a PowerMac G5 without a screen
-attached". As many people have noticed, default yaboot install won't
-boot unless a screen is attached.
+Thanks !
 
-  Actually, the workaround is really simple. Thing is, that's the
-"ofboot.b" script that messes things up. This script is a "bridge",
-that actually either starts yaboot or let you boot off of a CD. I
-don't know what's the point, since OpenFirmware already lets you boot
-off of the CD by pressing C on boot=E2=80=A6
+Cheers,
+Ben.
 
-  So basically, to boot headless, all you have to do is to tell
-OpenFirmware to boot straight off the yaboot binary, and to skip the
-ofboot.b
-Just boot into OpenFirmware (Command-Option-O-F), and type :
-setenv boot-device hd:2,yaboot (where 2 is the number of the partition
-containing yaboot)
-boot
-
-And here you go, you can unplug that useless monitor :-)
-
-References :
-http://saintaardvarkthecarpeted.com/blog/archive/2005/02/THE_WINE_OF_BOOT.h=
-tml
-http://grub.enbug.org/TestingOnPowerPC
-
-By the way, as of writing this, grub2 on PPC from debian gives a "out
-of memory" issue. Known bug.
+> Cheers,
+> Ben.
+> 
+> 
+> > Alan describes it thus:
+> > 
+> > The hvc_console assumes that a close and remove call can't occur at the
+> > same time.
+> > 
+> > In addition tty_hangup(tty) is problematic as tty_hangup is asynchronous
+> > itself....
+> > 
+> > So this can happen
+> > 
+> >         hvc_close                               hvc_remove
+> >         hung up ? - no
+> >                                                 lock
+> >                                                 tty = hp->tty
+> >                                                 unlock
+> >         lock
+> >         hp->tty = NULL
+> >         unlock
+> >         notify del
+> >         kref_put the hvc struct
+> >         close completes
+> >         tty is destroyed
+> >                                                 tty_hangup dead tty
+> >                                                 tty->ops will be NULL
+> >                                                 NULL->...
+> > 
+> > This patch adds some tty krefs and also converts to using tty_vhangup().
+> > 
+> > Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > Signed-off-by: Amit Shah <amit.shah@redhat.com>
+> > CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > CC: linuxppc-dev@ozlabs.org
+> > CC: Rusty Russell <rusty@rustcorp.com.au>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > ---
+> >  drivers/char/hvc_console.c |   31 +++++++++++++++++++++----------
+> >  1 files changed, 21 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+> > index 465185f..ba55bba 100644
+> > --- a/drivers/char/hvc_console.c
+> > +++ b/drivers/char/hvc_console.c
+> > @@ -312,6 +312,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+> >  	spin_lock_irqsave(&hp->lock, flags);
+> >  	/* Check and then increment for fast path open. */
+> >  	if (hp->count++ > 0) {
+> > +		tty_kref_get(tty);
+> >  		spin_unlock_irqrestore(&hp->lock, flags);
+> >  		hvc_kick();
+> >  		return 0;
+> > @@ -319,7 +320,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+> >  
+> >  	tty->driver_data = hp;
+> >  
+> > -	hp->tty = tty;
+> > +	hp->tty = tty_kref_get(tty);
+> >  
+> >  	spin_unlock_irqrestore(&hp->lock, flags);
+> >  
+> > @@ -336,6 +337,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+> >  		spin_lock_irqsave(&hp->lock, flags);
+> >  		hp->tty = NULL;
+> >  		spin_unlock_irqrestore(&hp->lock, flags);
+> > +		tty_kref_put(tty);
+> >  		tty->driver_data = NULL;
+> >  		kref_put(&hp->kref, destroy_hvc_struct);
+> >  		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+> > @@ -363,13 +365,18 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+> >  		return;
+> >  
+> >  	hp = tty->driver_data;
+> > +
+> >  	spin_lock_irqsave(&hp->lock, flags);
+> > +	tty_kref_get(tty);
+> >  
+> >  	if (--hp->count == 0) {
+> >  		/* We are done with the tty pointer now. */
+> >  		hp->tty = NULL;
+> >  		spin_unlock_irqrestore(&hp->lock, flags);
+> >  
+> > +		/* Put the ref obtained in hvc_open() */
+> > +		tty_kref_put(tty);
+> > +
+> >  		if (hp->ops->notifier_del)
+> >  			hp->ops->notifier_del(hp, hp->data);
+> >  
+> > @@ -389,6 +396,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+> >  		spin_unlock_irqrestore(&hp->lock, flags);
+> >  	}
+> >  
+> > +	tty_kref_put(tty);
+> >  	kref_put(&hp->kref, destroy_hvc_struct);
+> >  }
+> >  
+> > @@ -424,10 +432,11 @@ static void hvc_hangup(struct tty_struct *tty)
+> >  	spin_unlock_irqrestore(&hp->lock, flags);
+> >  
+> >  	if (hp->ops->notifier_hangup)
+> > -			hp->ops->notifier_hangup(hp, hp->data);
+> > +		hp->ops->notifier_hangup(hp, hp->data);
+> >  
+> >  	while(temp_open_count) {
+> >  		--temp_open_count;
+> > +		tty_kref_put(tty);
+> >  		kref_put(&hp->kref, destroy_hvc_struct);
+> >  	}
+> >  }
+> > @@ -592,7 +601,7 @@ int hvc_poll(struct hvc_struct *hp)
+> >  	}
+> >  
+> >  	/* No tty attached, just skip */
+> > -	tty = hp->tty;
+> > +	tty = tty_kref_get(hp->tty);
+> >  	if (tty == NULL)
+> >  		goto bail;
+> >  
+> > @@ -672,6 +681,8 @@ int hvc_poll(struct hvc_struct *hp)
+> >  
+> >  		tty_flip_buffer_push(tty);
+> >  	}
+> > +	if (tty)
+> > +		tty_kref_put(tty);
+> >  
+> >  	return poll_mask;
+> >  }
+> > @@ -807,7 +818,7 @@ int hvc_remove(struct hvc_struct *hp)
+> >  	struct tty_struct *tty;
+> >  
+> >  	spin_lock_irqsave(&hp->lock, flags);
+> > -	tty = hp->tty;
+> > +	tty = tty_kref_get(hp->tty);
+> >  
+> >  	if (hp->index < MAX_NR_HVC_CONSOLES)
+> >  		vtermnos[hp->index] = -1;
+> > @@ -819,18 +830,18 @@ int hvc_remove(struct hvc_struct *hp)
+> >  	/*
+> >  	 * We 'put' the instance that was grabbed when the kref instance
+> >  	 * was initialized using kref_init().  Let the last holder of this
+> > -	 * kref cause it to be removed, which will probably be the tty_hangup
+> > +	 * kref cause it to be removed, which will probably be the tty_vhangup
+> >  	 * below.
+> >  	 */
+> >  	kref_put(&hp->kref, destroy_hvc_struct);
+> >  
+> >  	/*
+> > -	 * This function call will auto chain call hvc_hangup.  The tty should
+> > -	 * always be valid at this time unless a simultaneous tty close already
+> > -	 * cleaned up the hvc_struct.
+> > +	 * This function call will auto chain call hvc_hangup.
+> >  	 */
+> > -	if (tty)
+> > -		tty_hangup(tty);
+> > +	if (tty) {
+> > +		tty_vhangup(tty);
+> > +		tty_kref_put(tty);
+> > +	}
+> >  	return 0;
+> >  }
+> >  EXPORT_SYMBOL_GPL(hvc_remove);
+> 
