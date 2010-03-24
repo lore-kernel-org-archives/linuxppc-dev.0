@@ -1,20 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id A0880B7CED
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 17:08:13 +1100 (EST)
-Received: by gyf1 with SMTP id 1so3635247gyf.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Mar 2010 23:08:11 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1269380552-10418-1-git-send-email-timur@freescale.com>
-References: <1269380552-10418-1-git-send-email-timur@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 24 Mar 2010 00:07:51 -0600
-Message-ID: <fa686aa41003232307s39af071bn6377800951d6615c@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8DFD8B7CEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 24 Mar 2010 19:18:35 +1100 (EST)
+Subject: [PATCH 1/2] mm/vmalloc: Export purge_vmap_area_lazy()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Mar 2010 18:56:31 +1100
+Message-ID: <1269417391.8599.188.camel@pasglop>
+Mime-Version: 1.0
+Cc: Nick Piggin <npiggin@suse.de>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,116 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 23, 2010 at 3:42 PM, Timur Tabi <timur@freescale.com> wrote:
-> Define a binding for embedding a QE firmware blob into the device tree. =
-=A0Also
-> define a new property for the QE node that links to a firmware node.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> =A0.../powerpc/dts-bindings/fsl/cpm_qe/qe.txt =A0 =A0 =A0 =A0 | =A0 50 ++=
-++++++++++++++++++
-> =A01 files changed, 50 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt b/Docum=
-entation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-> index 6e37be1..d9d6431 100644
-> --- a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-> +++ b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-> @@ -20,6 +20,14 @@ Required properties:
-> =A0- fsl,qe-num-riscs: define how many RISC engines the QE has.
-> =A0- fsl,qe-num-snums: define how many serial number(SNUM) the QE can use=
- for the
-> =A0 threads.
-> +- fsl,firmware-phandle:
-> + =A0 =A0Usage: required
-> + =A0 =A0Value type: <phandle>
-> + =A0 =A0Definition: Points to a firmware node (see "QE Firmware Node" be=
-low)
-> + =A0 =A0 =A0 =A0that contains the firmware that should be uploaded for t=
-his QE.
-> + =A0 =A0 =A0 =A0The compatible property for the firmware node should say=
-,
-> + =A0 =A0 =A0 =A0"fsl,qe-firmware".
-> +
+Some powerpc code needs to ensure that all previous iounmap/vunmap has
+really been flushed out of the MMU hash table. Without that, various
+hotplug operations may fail when trying to return those pieces to
+the hypervisor due to existing active mappings.
 
-Why the phandle redirection?  Why not just put the firmware blob into
-a property in the QE node, or as a subnode?
+This exports purge_vmap_area_lazy() to allow the powerpc code to perform
+that purge when unplugging devices.
 
-g.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ include/linux/vmalloc.h |    1 +
+ mm/vmalloc.c            |    5 ++---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
->
-> =A0Recommended properties
-> =A0- brg-frequency : the internal clock source frequency for baud-rate
-> @@ -59,3 +67,45 @@ Example:
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0 c000>;
-> =A0 =A0 =A0 =A0};
-> =A0 =A0 =A0};
-> +
-> +* QE Firmware Node
-> +
-> +This node defines a firmware binary that is embedded in the device tree,=
- for
-> +the purpose of passing the firmware from bootloader to the kernel, or fr=
-om
-> +the hypervisor to the guest.
-> +
-> +The firmware node itself contains the firmware binary contents, a compat=
-ible
-> +property, and any firmware-specific properties. =A0The node itself can b=
-e located
-> +anywhere, but should probably be placed at the top level. =A0The QE node
-> +that needs the firmware should define a property that links to the firmw=
-are
-> +node's phandle.
-> +
-> +This node is typically not defined in the DTS. =A0Instead, the boot load=
-er
-> +normally creates the node from scratch, using a firmware binary that is =
-already
-> +located in non-volatile storage or transferred from a tftp server.
-> +
-> +Required properties:
-> + =A0- compatible
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <string>
-> + =A0 =A0 =A0Definition: A standard property. =A0Specify a string that in=
-dicates what
-> + =A0 =A0 =A0 =A0 =A0kind of firmware it is. =A0For QE, this should be "f=
-sl,qe-firmware".
-> +
-> + =A0 - fsl,firmware
-> + =A0 =A0 =A0Usage: required
-> + =A0 =A0 =A0Value type: <prop-encoded-array>, encoded as an array of byt=
-es
-> + =A0 =A0 =A0Definition: A standard property. =A0This property contains t=
-he firmware
-> + =A0 =A0 =A0 =A0 =A0binary "blob".
-> +
-> +Example:
-> + =A0 =A0 =A0 qe@e0080000 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,firmware-phandle =3D <&qe_firmware>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 qe_firmware:qe-firmware {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe-firmware";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,firmware =3D <0x70 0xcd 0x00 0x00 0x01 =
-0x46 0x45 0x63 ...>
-> + =A0 =A0 =A0 }
-> +
-> --
-> 1.6.5
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
->
+Nick, care to give me an Ack so I can get that upstream along with
+the next patch ASAP (and back into distros) ?
 
+Thanks !
+Ben.
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+index 227c2a5..0d0ae4e 100644
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -99,6 +99,7 @@ extern int map_kernel_range_noflush(unsigned long start, unsigned long size,
+ 				    pgprot_t prot, struct page **pages);
+ extern void unmap_kernel_range_noflush(unsigned long addr, unsigned long size);
+ extern void unmap_kernel_range(unsigned long addr, unsigned long size);
++extern void purge_vmap_area_lazy(void);
+ 
+ /* Allocate/destroy a 'vmalloc' VM area. */
+ extern struct vm_struct *alloc_vm_area(size_t size);
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index ae00746..d25c741 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -317,8 +317,6 @@ static void __insert_vmap_area(struct vmap_area *va)
+ 		list_add_rcu(&va->list, &vmap_area_list);
+ }
+ 
+-static void purge_vmap_area_lazy(void);
+-
+ /*
+  * Allocate a region of KVA of the specified size and alignment, within the
+  * vstart and vend.
+@@ -590,12 +588,13 @@ static void try_purge_vmap_area_lazy(void)
+ /*
+  * Kick off a purge of the outstanding lazy areas.
+  */
+-static void purge_vmap_area_lazy(void)
++void purge_vmap_area_lazy(void)
+ {
+ 	unsigned long start = ULONG_MAX, end = 0;
+ 
+ 	__purge_vmap_area_lazy(&start, &end, 1, 0);
+ }
++EXPORT_SYMBOL_GPL(purge_vmap_area_lazy);
+ 
+ /*
+  * Free and unmap a vmap area, caller ensuring flush_cache_vunmap had been
