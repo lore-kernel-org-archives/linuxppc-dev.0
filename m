@@ -1,33 +1,29 @@
-Return-Path: <B04825@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2B0CCB7CEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 04:31:58 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o2OHVt6t020953
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 10:31:56 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o2OHeF09004595
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 12:40:15 -0500 (CDT)
-Message-ID: <4BAA4C8A.70104@freescale.com>
-Date: Wed, 24 Mar 2010 12:31:54 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <tglx@linutronix.de>
+Date: Wed, 24 Mar 2010 18:44:06 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [PATCH 01/10] irq: move some interrupt arch_* functions into
+	struct irq_chip.
+In-Reply-To: <1269437531.10129.67616.camel@zakaz.uk.xensource.com>
+Message-ID: <alpine.LFD.2.00.1003241824500.3147@localhost.localdomain>
+References: <1269221770-9667-1-git-send-email-yinghai@kernel.org>
+	<1269221770-9667-2-git-send-email-yinghai@kernel.org>
+	<alpine.LFD.2.00.1003220950570.3147@localhost.localdomain>
+	<1269437531.10129.67616.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
-References: <1269380552-10418-1-git-send-email-timur@freescale.com>
-	<fa686aa41003232307s39af071bn6377800951d6615c@mail.gmail.com>
-	<ed82fe3e1003240505h59d29c83x6948f8b3b70c4570@mail.gmail.com>
-	<90D93687-940F-47FB-8CEA-F3C065EA611D@kernel.crashing.org>
-	<fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
-In-Reply-To: <fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "lguest@ozlabs.org" <lguest@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, Paul Mundt <lethal@linux-sh.org>,
+	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+	"x86@kernel.org" <x86@kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,80 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Wed, Mar 24, 2010 at 11:00 AM, Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
->>>> Why the phandle redirection?  Why not just put the firmware blob into
->>>> a property in the QE node, or as a subnode?
->>>
->>> Because there might be multiple QE devices on a single chip, and each
->>> will need to upload the same firmware.  So instead of embedding the
->>> firmware multiple times, just embed it once, and have a pointer.
->>
->> You're messing up the binding because of a (perceived) deficiency in
->> the DTB format? 
+On Wed, 24 Mar 2010, Ian Campbell wrote:
 
-Huh?  Who says anything about messing up?  I don't see anything "messed up" about including a blob of data with proper compatible properties, etc.
-
->> Or maybe just the DTS format.  Or maybe you shouldn't
->> even care about size here.  Or really, the device tree is the wrong
->> place to store firmware blobs at all.
+> On Mon, 2010-03-22 at 10:19 +0000, Thomas Gleixner wrote:
+> > On Sun, 21 Mar 2010, Yinghai Lu wrote:
+> > 
+> > > From: Ian Campbell <ian.campbell@citrix.com>
+> > > 
+> > > Move arch_init_copy_chip_data and arch_free_chip_data into function
+> > > pointers in struct irq_chip since they operate on irq_desc->chip_data.
+> > 
+> > Not sure about that. These functions are solely used by x86 and there
+> > is really no need to generalize them.
 > 
-> That is a good question.  Why is it necessary to pass the blob via the
-> tree? 
+> I thought the idea of struct irq_chip was to allow the potential for
+> multiple IRQ controllers in a system? Given that it seems that struct
+> irq_desc->chip_data ought to be available for use by whichever struct
+> irq_chip is managing a given interrupt. At the moment this is not
+> possible because we step around the abstraction using these arch_*
+> methods.
 
-Because sometimes the firmware is needed before networking or serial I/O can function.  Today, we do one of two things on systems with QE (or QE-like microcontrollers):
+Right, but you have exactly _ONE_ irq_chip associated to an irq_desc,
+but that same irq_chip can be associated to several irq_descs. So
+irq_desc->data is there to provide data for the irq_chip functions
+depending on what irq they handle (e.g. base_address ...). 
 
-1) U-Boot uploads the firmware, and may create a DTB node that provides some information about the firmware.
+irq_desc->chip_data is set when the irq_chip is assigned to the
+irq_desc.
 
-2) U-Boot uploads the firmware, but then gives Linux the physical address (in flash) of the firmware so that it can upload it again.
+So there is no point in having functions in irq_chip to set
+irq_desc->chip_data.
 
-> So far we've avoided using firmware blobs in the flat trees.
-> Or to ask in other words; what is the use case that requires passing
-> via the device tree?
+Thanks,
 
-The Fman devices on the Freescale P4080 needs to have the firmware uploaded by the kernel before they will function.  I can't depend on having the firmware on the root file system, and we can't embed it in the kernel itself (because it's proprietary), so where else should I put it?  Today, we just leave it in flash and give the physical address to the Fman Linux driver via a command-line parameter.  But that doesn't work because then it means we have to have flash mapped to every partition that runs Linux.  
-
-> Also, depending on firmware to correctly squirt the firmware blob into
-> the dtb at boot is risky.  Even when firmware is buggy, there is
-> resistance to upgrading firmware on working boards because it could
-> result in a bricked board.
-
-I'm not sure what you're getting at.  This has nothing to do with upgrading firmware.  The firmware is already in flash, I just need a better way of giving it to the kernel.  If you upgrade the firmware in flash, then U-Boot will automatically provide the new version to the kernel via the DTB.  I just don't see how upgrading is a factor.
-
->  In fact, every time we depend on firmware
-> to modify the dtb at boot is risky, so it should only be done when
-> strictly necessary (I would even say that to date we've probably been
-> rather too liberal about getting u-boot to modify the device tree).
-
-Embedding the firmware blob in the DTS is uglier than having U-Boot do it, IMHO.
-
-> I would say that either the firmware should be loaded via the existing
-> (non-dt) firmware loading mechanism, 
-
-That, unfortunately, is not an option.
-
-> or it should be built into the
-> static dtb blob.  Don't try to add it at runtime.
-
-Then how do I distribute the firmware blob?  It's not GPL, so it can't go into arch/powerpc/boot/dts/.  Are you suggesting I do this in the DTS:
-
-/ {
-	model = "MPC8323EMDS";
-	compatible = "MPC8323EMDS", "MPC832xMDS", "MPC83xxMDS";
-	#address-cells = <1>;
-	#size-cells = <1>;
-
-...
-
-	qe_firmware:qe-firmware {
-		compatible = "fsl,qe-firmware";
-		fsl,firmware = <0x70 0xcd 0x00 0x00 0x01 0x46 0x45 0x63 ...>
-	}
-}
-
-Most firmware is 8-12KB, so this will make for one ugly DTS.  Plus, there's the issue of distributing non-GPL firmware data inside a DTS, which is GPL.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+	tglx
