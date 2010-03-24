@@ -1,23 +1,23 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 0BED5B7CFC
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 21:59:04 +1100 (EST)
-Date: Wed, 24 Mar 2010 16:27:10 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100324105710.GD15789@amit-x200.redhat.com>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-	<1269427544.8599.222.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1269427544.8599.222.camel@pasglop>
-Cc: Greg KH <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/4] panic: Allow taint flag for warnings to be changed
+	from TAINT_WARN
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Ben Hutchings <ben@decadent.org.uk>
+In-Reply-To: <1269126340.18314.115.camel@localhost>
+References: <1269126097.18314.111.camel@localhost>
+	<1269126340.18314.115.camel@localhost>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-SQzw8iyBB5lB+1zvqHUK"
+Date: Wed, 24 Mar 2010 22:11:15 +1100
+Message-ID: <1269429075.2500.5.camel@concordia>
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-sh@vger.kernel.org, linux-pci@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, linuxppc-dev@ozlabs.org,
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Wed) Mar 24 2010 [21:45:44], Benjamin Herrenschmidt wrote:
-> On Sun, 2010-03-21 at 08:04 +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
-> > > From: Amit Shah <amit.shah@redhat.com>
-> > > 
-> > > Alan pointed out a race in the code where hvc_remove is invoked. The
-> > > recent virtio_console work is the first user of hvc_remove().
-> > 
-> > This causes hangs during boot on pseries machines. Haven't had a chance
-> > to track that down yet, but please revert
-> > e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
-> 
-> Linus, any chance you can revert that one for now until we figure out
-> what's wrong ?
 
-Ben, can you confirm if the lockup you see is also due to the
-task_is_waking() issue I found in a kvm guest?
+--=-SQzw8iyBB5lB+1zvqHUK
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-That'll help me debug the issue.
+On Sat, 2010-03-20 at 23:05 +0000, Ben Hutchings wrote:
+> WARN() is used in some places to report firmware or hardware bugs that
+> are then worked-around.  These bugs do not affect the stability of the
+> kernel and should not set the usual TAINT_WARN flag.  To allow for
+> this, add WARN_TAINT() and WARN_TAINT_ONCE() macros that take a taint
+> flag as argument.
+..
+> The architecture-specific changes here are untested and need to be
+> reviewed by architecture maintainers.
 
-Thanks.
+I'm not one of them, but this at least builds on powerpc FWIW.
 
-		Amit
+cheers
+
+--=-SQzw8iyBB5lB+1zvqHUK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkup80wACgkQdSjSd0sB4dIztACgqdsQgORNZPCSzn7hLuXW0Lxs
+CgMAn3Q8KMC7wAK7ce/Z3AZ9SQ+1QrUy
+=p3xA
+-----END PGP SIGNATURE-----
+
+--=-SQzw8iyBB5lB+1zvqHUK--
