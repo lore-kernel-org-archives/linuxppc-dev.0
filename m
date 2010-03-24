@@ -1,25 +1,21 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CD32B7CFA
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 22:33:47 +1100 (EST)
-Date: Wed, 24 Mar 2010 11:37:21 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100324113721.008d343e@lxorguk.ukuu.org.uk>
-In-Reply-To: <1269119079.8599.65.camel@pasglop>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Amit Shah <amit.shah@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <timur.tabi@gmail.com>
+Received: from qw-out-2122.google.com (qw-out-2122.google.com [74.125.92.24])
+	by ozlabs.org (Postfix) with ESMTP id 69209B7CBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 23:05:38 +1100 (EST)
+Received: by qw-out-2122.google.com with SMTP id 8so1633884qwh.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 05:05:36 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <fa686aa41003232307s39af071bn6377800951d6615c@mail.gmail.com>
+References: <1269380552-10418-1-git-send-email-timur@freescale.com>
+	<fa686aa41003232307s39af071bn6377800951d6615c@mail.gmail.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 24 Mar 2010 07:05:15 -0500
+Message-ID: <ed82fe3e1003240505h59d29c83x6948f8b3b70c4570@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 21 Mar 2010 08:04:39 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, Mar 24, 2010 at 1:07 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
 
-> On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
-> > From: Amit Shah <amit.shah@redhat.com>
-> > 
-> > Alan pointed out a race in the code where hvc_remove is invoked. The
-> > recent virtio_console work is the first user of hvc_remove().
-> 
-> This causes hangs during boot on pseries machines. Haven't had a chance
-> to track that down yet, but please revert
-> e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
+>> +- fsl,firmware-phandle:
+>> + =A0 =A0Usage: required
+>> + =A0 =A0Value type: <phandle>
+>> + =A0 =A0Definition: Points to a firmware node (see "QE Firmware Node" b=
+elow)
+>> + =A0 =A0 =A0 =A0that contains the firmware that should be uploaded for =
+this QE.
+>> + =A0 =A0 =A0 =A0The compatible property for the firmware node should sa=
+y,
+>> + =A0 =A0 =A0 =A0"fsl,qe-firmware".
+>> +
+>
+> Why the phandle redirection? =A0Why not just put the firmware blob into
+> a property in the QE node, or as a subnode?
 
-Its an exploitable hole so we should revert both the bug fix *and* the
-submission of the virtio console that makes the flaw triggerable, not jus
-tthe security fix.
+Because there might be multiple QE devices on a single chip, and each
+will need to upload the same firmware.  So instead of embedding the
+firmware multiple times, just embed it once, and have a pointer.
 
-Alan
+I could expand the binding to say that a node should look for either
+fsl,firmware-phandle *or* a child fsl,qe-firmware node, but I think
+that overly complicates things.  It also makes it more complicated for
+the boot loader to create the fsl,qe-firmware node, since it has to
+figure out where to put that node.  I can imaging a situation where
+the DTS has the fsl,firmware-phandle properties and an empty
+fsl,qe-firmware node at the root, and the boot loader just fills it
+in.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
