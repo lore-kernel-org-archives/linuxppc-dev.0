@@ -1,30 +1,21 @@
-Return-Path: <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH 01/10] irq: move some interrupt arch_* functions into
-	struct irq_chip.
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <alpine.LFD.2.00.1003241824500.3147@localhost.localdomain>
-References: <1269221770-9667-1-git-send-email-yinghai@kernel.org>
-	<1269221770-9667-2-git-send-email-yinghai@kernel.org>
-	<alpine.LFD.2.00.1003220950570.3147@localhost.localdomain>
-	<1269437531.10129.67616.camel@zakaz.uk.xensource.com>
-	<alpine.LFD.2.00.1003241824500.3147@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Wed, 24 Mar 2010 19:16:03 +0000
-Message-ID: <1269458163.28761.859.camel@localhost.localdomain>
-MIME-Version: 1.0
-Cc: "lguest@ozlabs.org" <lguest@ozlabs.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Rusty Russell <rusty@rustcorp.com.au>, Paul Mundt <lethal@linux-sh.org>,
-	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
-	"x86@kernel.org" <x86@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>, "Eric W.
-	Biederman" <ebiederm@xmission.com>, "H. Peter
-	Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id AD3A5B6EEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 08:11:37 +1100 (EST)
+Date: Wed, 24 Mar 2010 14:11:58 -0700 (PDT)
+Message-Id: <20100324.141158.43422101.davem@davemloft.net>
+To: elendil@planet.nl
+Subject: Re: [PATCH 00/09] net: remove trailing spaces in messages
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201003241840.18701.elendil@planet.nl>
+References: <201003241840.18701.elendil@planet.nl>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: jon.maloy@ericsson.com, samuel@sortiz.org,
+	e1000-devel@lists.sourceforge.net, per.liden@ericsson.com,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, allan.stephens@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-03-24 at 17:44 +0000, Thomas Gleixner wrote: 
-> On Wed, 24 Mar 2010, Ian Campbell wrote:
-> 
-> > On Mon, 2010-03-22 at 10:19 +0000, Thomas Gleixner wrote:
-> > > On Sun, 21 Mar 2010, Yinghai Lu wrote:
-> > > 
-> > > > From: Ian Campbell <ian.campbell@citrix.com>
-> > > > 
-> > > > Move arch_init_copy_chip_data and arch_free_chip_data into function
-> > > > pointers in struct irq_chip since they operate on irq_desc->chip_data.
-> > > 
-> > > Not sure about that. These functions are solely used by x86 and there
-> > > is really no need to generalize them.
-> > 
-> > I thought the idea of struct irq_chip was to allow the potential for
-> > multiple IRQ controllers in a system? Given that it seems that struct
-> > irq_desc->chip_data ought to be available for use by whichever struct
-> > irq_chip is managing a given interrupt. At the moment this is not
-> > possible because we step around the abstraction using these arch_*
-> > methods.
-> 
-> Right, but you have exactly _ONE_ irq_chip associated to an irq_desc,
-> but that same irq_chip can be associated to several irq_descs. So
-> irq_desc->data is there to provide data for the irq_chip functions
-> depending on what irq they handle (e.g. base_address ...). 
-> 
-> irq_desc->chip_data is set when the irq_chip is assigned to the
-> irq_desc.
-> 
-> So there is no point in having functions in irq_chip to set
-> irq_desc->chip_data.
+From: Frans Pop <elendil@planet.nl>
+Date: Wed, 24 Mar 2010 18:40:15 +0100
 
-So how do you know which is the appropriate irq_chip specific function
-to call given an irq_desc that you want to copy/free/migrate? The
-contents of the chip_data pointer will take different forms for
-different irq_chips. The way the generic code is currently structured it
-appears you can't (or at least don't) just do a shallow copy by copying
-the irq_desc->chip_data pointer itself -- you need to do a deep copy
-using a function which understands that type of chip_data.
+> This is the second patchset to remove trailing spaces in kernel messages. 
+> Patches in this set cover networking code, excepting wireless which will be 
+> submitted in a separate set.
+> 
+> Patches have been rebased against current net-next.
+> 
+> Benefits are:
+> - general cleanup and consistency
+> - minor reduction in kernel size and user's log file size
+> - reduced annoyance for people writing logcheck rules
+> 
+> I have run the patches through checkpatch and included some fixes, but in 
+> most cases the files are so horrible in general that fixing the warnings 
+> purely for these changes doesn't make sense.
 
-How is this operation different to having pointers in irq_chip for
-enabling/disabling/masking interrupts for each irq_chip?
+All applied, but I have to make some fixups.
 
-Ian.
+For example, GIT warns about trailing whitespace on any lines that you
+touched so I had to fix those up before putting them into the tree.
+
+Thanks.
