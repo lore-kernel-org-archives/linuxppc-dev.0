@@ -1,23 +1,25 @@
-Return-Path: <hs@denx.de>
-Received: from a.relay.invitel.net (a.relay.invitel.net [62.77.203.3])
-	by ozlabs.org (Postfix) with ESMTP id 18B00B7D15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Mar 2010 22:12:26 +1100 (EST)
-Received: from mailgw2.invitel.net (mailgw2.invitel.net [91.82.208.35])
-	by a.relay.invitel.net (Invitel Core SMTP Transmitter) with ESMTP id
-	6F41011A261 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 24 Mar 2010 12:04:50 +0100 (CET)
-Date: Wed, 24 Mar 2010 12:04:46 +0100
-From: Heiko Schocher <hs@denx.de>
-Subject: Re: Linuxppc-dev Digest, Vol 67, Issue 131
-In-reply-to: <mailman.5997.1269426781.12538.linuxppc-dev@lists.ozlabs.org>
-To: Daniel Ng <daniel.ng1234@gmail.com>
-Message-id: <4BA9F1CE.4020608@denx.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-References: <mailman.5997.1269426781.12538.linuxppc-dev@lists.ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: hs@denx.de
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
+	[81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1CD32B7CFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 22:33:47 +1100 (EST)
+Date: Wed, 24 Mar 2010 11:37:21 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
+Message-ID: <20100324113721.008d343e@lxorguk.ukuu.org.uk>
+In-Reply-To: <1269119079.8599.65.camel@pasglop>
+References: <20100319151326.GC8541@kroah.com>
+	<1269011916-8836-4-git-send-email-gregkh@suse.de>
+	<1269119079.8599.65.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Amit Shah <amit.shah@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Daniel,
+On Sun, 21 Mar 2010 08:04:39 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> Date: Wed, 24 Mar 2010 13:33:48 +1100
-> From: Daniel Ng <daniel.ng1234@gmail.com>
-> To: linuxppc-dev@ozlabs.org
-> Subject: SPI Driver for CPM2 8260 (8272 family)
-> Message-ID:
-> 	<547eba1b1003231933x738b2660u364b12d43bf980c@mail.gmail.com>
-> Content-Type: text/plain; charset=ISO-8859-1
+> On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
+> > From: Amit Shah <amit.shah@redhat.com>
+> > 
+> > Alan pointed out a race in the code where hvc_remove is invoked. The
+> > recent virtio_console work is the first user of hvc_remove().
 > 
-> Hi,
-> 
-> Is there an SPI Driver in Linux for CPM2 8260-based processors?
-> 
-> I'm quite surprised that there doesn't seem to be one. Can someone
-> please explain why this is?
+> This causes hangs during boot on pseries machines. Haven't had a chance
+> to track that down yet, but please revert
+> e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
 
-Try to use drivers/spi/spi_mpc8xxx.c
-It should work on CPM2 based processors.
+Its an exploitable hole so we should revert both the bug fix *and* the
+submission of the virtio console that makes the flaw triggerable, not jus
+tthe security fix.
 
-bye,
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Alan
