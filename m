@@ -1,25 +1,28 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 03E9AB7CBB
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Mar 2010 23:23:00 +1100 (EST)
-Date: Wed, 24 Mar 2010 17:49:02 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100324121902.GJ15789@amit-x200.redhat.com>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-	<20100321043725.GA21566@amit-x200.redhat.com>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Subject: Re: [PATCH 01/10] irq: move some interrupt arch_* functions into
+	struct irq_chip.
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1003220950570.3147@localhost.localdomain>
+References: <1269221770-9667-1-git-send-email-yinghai@kernel.org>
+	<1269221770-9667-2-git-send-email-yinghai@kernel.org>
+	<alpine.LFD.2.00.1003220950570.3147@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Mar 2010 13:32:11 +0000
+Message-ID: <1269437531.10129.67616.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100321043725.GA21566@amit-x200.redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Anton Blanchard <anton@samba.org>, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "lguest@ozlabs.org" <lguest@ozlabs.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>, Paul Mundt <lethal@linux-sh.org>,
+	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+	"x86@kernel.org" <x86@kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>, "Eric W.
+	Biederman" <ebiederm@xmission.com>, "H. Peter
+	Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Sun) Mar 21 2010 [10:07:25], Amit Shah wrote:
-> On (Sun) Mar 21 2010 [08:04:39], Benjamin Herrenschmidt wrote:
-> > On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
-> > > From: Amit Shah <amit.shah@redhat.com>
-> > > 
-> > > Alan pointed out a race in the code where hvc_remove is invoked. The
-> > > recent virtio_console work is the first user of hvc_remove().
+On Mon, 2010-03-22 at 10:19 +0000, Thomas Gleixner wrote:
+> On Sun, 21 Mar 2010, Yinghai Lu wrote:
+> 
+> > From: Ian Campbell <ian.campbell@citrix.com>
 > > 
-> > This causes hangs during boot on pseries machines. Haven't had a chance
-> > to track that down yet, but please revert
-> > e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
+> > Move arch_init_copy_chip_data and arch_free_chip_data into function
+> > pointers in struct irq_chip since they operate on irq_desc->chip_data.
 > 
-> I tested this with the virtio-console driver with multiple consoles on
-> Linux-2.6.34-rc2 inside a KVM VM. I didn't face any lockups / badness,
-> but the following popped up once on -smp 4.
-> 
-> Could this be the same bug that's causing a lockup for you?
-> 
-> Since the virtio-console isn't the primary console on my VM, I didn't
-> see a lockup but maybe powerpc uses this as the primary console and the
-> lockup is a result of this?
-> 
-> I've not investigated this; I might get around to it next week, but
-> CC'ing the sched people on this one.
+> Not sure about that. These functions are solely used by x86 and there
+> is really no need to generalize them.
 
-I just looked at this:
+I thought the idea of struct irq_chip was to allow the potential for
+multiple IRQ controllers in a system? Given that it seems that struct
+irq_desc->chip_data ought to be available for use by whichever struct
+irq_chip is managing a given interrupt. At the moment this is not
+possible because we step around the abstraction using these arch_*
+methods.
 
-> (My .config is after the oops.)
-> 
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: [<ffffffff8101f4dc>] task_is_waking+0x1/0x1f
-> PGD 3d261067 PUD 3d013067 PMD 0 
-> Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> last sysfs file: /sys/devices/virtual/block/ram13/removable
-> CPU 0 
-> Modules linked in:
-> 
-> Pid: 573, comm: console_check Not tainted 2.6.34-rc2 #102 /Bochs
-> RIP: 0010:[<ffffffff8101f4dc>]  [<ffffffff8101f4dc>]
-> task_is_waking+0x1/0x1f
-> RSP: 0018:ffff88003bdf5b48  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffff81646e30
-> RDX: ffff88003bdf5b78 RSI: ffff88003bdf5ba0 RDI: 0000000000000000
-> RBP: ffff88003bdf5b78 R08: 0000000000000000 R09: ffffffff81646e08
-> R10: 0000000000000046 R11: 0000000000001130 R12: 00000000001d1d00
-> R13: 0000000000000000 R14: ffff88003bdf5ba0 R15: 000000000000000f
-> FS:  00007f330731b6f0(0000) GS:ffff880003800000(0000)
-> knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: 0000000000000000 CR3: 000000003be78000 CR4: 00000000000006b0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process console_check (pid: 573, threadinfo ffff88003bdf4000, task
-> ffff88003bc3a2d0)
-> Stack:
->  ffff88003bdf5b78 ffffffff8102058e 0000000000000000 0000000000000000
-> <0> 0000000000000000 0000000000000000 ffff88003bdf5bd8 ffffffff81026f03
-> <0> ffff88003ead8cd8 ffff88003eb10490 ffff88003bdf5bd8 ffffffff8118cea9
-> Call Trace:
->  [<ffffffff8102058e>] ? task_rq_lock+0x24/0x98
->  [<ffffffff81026f03>] try_to_wake_up+0x4b/0x33b
->  [<ffffffff8118cea9>] ? resize_console+0x25/0x95
->  [<ffffffff8102721f>] wake_up_process+0x10/0x12
->  [<ffffffff8118c18e>] hvc_kick+0x1a/0x1c
->  [<ffffffff8118cbb4>] hvc_open+0xf6/0x102
+Although this might be unusual on x86 I think it is not uncommon in the
+embedded world to have an architectural interrupt controller cascading
+through to various different IRQ controllers/multiplexors, from random
+FPGA based things, to GPIO controllers and things like superio chips
+etc.
 
-And this suggests that hvc_kick() is called before hvc_task is
-initialised, ie, before hvc_init() is called.
+Currently the set of architectures which typically have this sort of
+thing are disjoint from the ones which make use of struct
+irq_desc->chip_data but with the growing use of embedded-x86 is this not
+something worth considering? (Genuine question, I've been out of the
+embedded space for a while now so maybe my experiences are out of date
+or I'm overestimating the role of embedded-x86 etc).
 
-Does this help?
+Xen is a bit more of a specialised case than the above since it would
+like to replace the architectural interrupt handling but I think the
+broad requirements on the irq_chip interface are the same. Going forward
+it is possible/likely that we would like to be able to make Xen event
+channels available via a cascade model as well -- demultiplexing one (or
+more?) x86 architectural interrupts into event channels would be part of
+running PV Xen drivers on a fully-virtualised (i.e. native) kernel.
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index ba55bba..50ac983 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -285,6 +285,9 @@ EXPORT_SYMBOL_GPL(hvc_instantiate);
- /* Wake the sleeping khvcd */
- void hvc_kick(void)
- {
-+       if (!hvc_task)
-+               return;
-+
-        hvc_kicked = 1;
-        wake_up_process(hvc_task);
- }
+>  The problem you try to solve is
+> x86/xen specific and can be solved by x86_platform_ops as well w/o
+> adding extra function pointers to irq_chip.
+[...]
+> AFAICT the function pointer to irq_to_desc_alloc_node is completely
+> pointless. It just solves a Xen/x86 specific problem which can be
+> solved by using x86_platform_ops and keeps the churn x86 internal.
 
-		Amit
+I have no problem with that if that is the x86/irq maintainer's
+preference, I just thought it would be nicer to solve what I saw as an
+oddity in the existing abstraction generically in the core.
+
+> Aside of the general objection against this, please use descriptive
+> function names and do not distinguish functions by adding random
+> characters which tell us absolutely nothing about the purpose.
+
+I agree on this one. More generally I would say that the number of
+existing users of this interface is small enough that _if_ we decide we
+need to modify it then we should just bite the bullet and do that
+instead of building compatibility layers around stuff. For this reason I
+think my original patch was preferable to this version (general
+objections not withstanding).
+
+Ian.
