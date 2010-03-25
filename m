@@ -1,18 +1,20 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id D95BDB7C7E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Mar 2010 20:37:37 +1100 (EST)
-Subject: Re: Booting headless PowerMac G5
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Romain Goyet <r.goyet@gmail.com>
-In-Reply-To: <8028e5751003240332h3f13c2d5w941dda44b4740d7@mail.gmail.com>
-References: <8028e5751003240332h3f13c2d5w941dda44b4740d7@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 25 Mar 2010 10:29:01 +0100
-Message-ID: <1269509341.441.2779.camel@thor.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 8B18EB7C7E
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 21:10:26 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Continual reading from the PowerPc time base register is not
+	stable
+Date: Thu, 25 Mar 2010 11:05:09 +0100
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+	<1269505301.8599.238.camel@pasglop>
+In-Reply-To: <1269505301.8599.238.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201003251105.10033.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Csdncannon <csdncannon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-03-24 at 11:32 +0100, Romain Goyet wrote:=20
->=20
->   Here's a summary about "how to boot a PowerMac G5 without a screen
-> attached". As many people have noticed, default yaboot install won't
-> boot unless a screen is attached.
->=20
->   Actually, the workaround is really simple. Thing is, that's the
-> "ofboot.b" script that messes things up. This script is a "bridge",
-> that actually either starts yaboot or let you boot off of a CD. I
-> don't know what's the point, since OpenFirmware already lets you boot
-> off of the CD by pressing C on boot=E2=80=A6
->=20
->   So basically, to boot headless, all you have to do is to tell
-> OpenFirmware to boot straight off the yaboot binary, and to skip the
-> ofboot.b
-> Just boot into OpenFirmware (Command-Option-O-F), and type :
-> setenv boot-device hd:2,yaboot (where 2 is the number of the partition
-> containing yaboot)
-> boot
->=20
-> And here you go, you can unplug that useless monitor :-)
->=20
-> References :
-> http://saintaardvarkthecarpeted.com/blog/archive/2005/02/THE_WINE_OF_BOOT=
-.html
-> http://grub.enbug.org/TestingOnPowerPC
+On Thursday 25 March 2010, Benjamin Herrenschmidt wrote:
+> On Thu, 2010-03-25 at 10:41 +0800, Csdncannon wrote:
+> >          In my program, the value of the 64-bit time base register is
+> > read out, and you will find the later value is even smaller than the
+> > earlier value from the log “log_timebase”. While the kernel depends on
+> > the accuracy of the timebase for the compensation of the lost PIT
+> > interrupt, the negative value between two continual timebase reading
+> > will bring to the jump of the jiffies. And this timebase problem will
+> > bring to the instability of the gettimeofday system call.
+> > 
+> >          Do you have any idea about this problem, thanks for your any
+> > advice. Attached is the code and log.
+> 
+> This is a concern, it should definitely not happen. What machine is
+> that ? is the code compiled 32-bit or 64-bit ? What kernel version ?
+> 
+> Arnd, any chance that could relate to the bug you've been chasing on
+> Cell ?
 
-That's good to know, thanks.
+We're still busy with the problem analysis on Cell, waiting for a time
+slot to run the next test kernel. So far it seems like the timebase
+is actually synchronized at a significant accuracy on QS22 to never
+cause this problem with correct code, however it is possible to
+observe incorrect timebase values on Cell whenever the mftb instruction
+is not serialized with memory accesses, e.g. by using an isync in front
+of the mftb. On Power6 and other CPUs, that problem will not happen.
 
-
-> By the way, as of writing this, grub2 on PPC from debian gives a "out
-> of memory" issue. Known bug.
-
-That's on the G5? It's working on my PowerBook, but I haven't updated
-the grub2 binaries on the bootstrap partition in a while...
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+	Arnd
