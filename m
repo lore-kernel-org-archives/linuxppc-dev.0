@@ -1,14 +1,22 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <B04825@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B6940B7CEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 03:35:01 +1100 (EST)
-Message-ID: <4BAB90B1.9080603@freescale.com>
-Date: Thu, 25 Mar 2010 11:34:57 -0500
-From: Scott Wood <scottwood@freescale.com>
+	by ozlabs.org (Postfix) with ESMTPS id D9D5FB7CED
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 03:36:52 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o2PGaotW028750
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 09:36:50 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o2PGjCbM001564
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 11:45:12 -0500 (CDT)
+Message-ID: <4BAB9120.1060600@freescale.com>
+Date: Thu, 25 Mar 2010 11:36:48 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
@@ -17,13 +25,14 @@ References: <1269380552-10418-1-git-send-email-timur@freescale.com>
 	<ed82fe3e1003240505h59d29c83x6948f8b3b70c4570@mail.gmail.com>
 	<90D93687-940F-47FB-8CEA-F3C065EA611D@kernel.crashing.org>
 	<fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
-	<4BAA4C8A.70104@freescale.com>	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
-	<ed82fe3e1003250742t5affee7dudca651ab3352bc16@mail.gmail.com>
-	<fa686aa41003250910n437e4e73p34645f5627d25784@mail.gmail.com>
-In-Reply-To: <fa686aa41003250910n437e4e73p34645f5627d25784@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+	<4BAA4C8A.70104@freescale.com>
+	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
+	<4BAB7E67.6040707@freescale.com> <4BAB816F.5060405@firmworks.com>
+	<fa686aa41003250916t3d0839e5m42d7f7f6540e821a@mail.gmail.com>
+In-Reply-To: <fa686aa41003250916t3d0839e5m42d7f7f6540e821a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mitch Bradley <wmb@firmworks.com>, Scott Wood <scottwood@freescale.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +43,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Grant Likely wrote:
-> [cc'd David Gibson]
+> On Thu, Mar 25, 2010 at 9:29 AM, Mitch Bradley <wmb@firmworks.com> wrote:
+>> It seems to me that there are plausible use cases for both direct-inclusion
+>> and indirection.  I don't see any real problems with either, so I would vote
+>> for specifying both alternatives.
 > 
-> On Thu, Mar 25, 2010 at 8:42 AM, Timur Tabi <timur@freescale.com> wrote:
->> The initrd thing is a good idea, but it doesn't help non-Linux
->> operating systems.  Then again, those OS's might not have any GPL
->> issues, so it could be a moot point.
-> 
-> The more I think about it, the more I think that the initrd is the
-> better approach.  Non-GPL firmware blobs are not a new problem, other
-> drivers have the same issue and the kernel already has a facility for
-> handling them.  Consistency is worth something here.  As you say, the
-> ideal solution would be to link the blob into the kernel and be done
-> with it.  <grumble>
+> Ugh.  Then this one driver would need to implement both binding for
+> little, if any, actual benefit. 
 
-It would be nice to not have to provide separate copies of the firmware 
-to u-boot and Linux -- not from a space perspective, but support. 
-Instead of having to make sure people have the right firmware in one 
-place, we'd have to make sure they have it in both places.
+Although I agree that I don't like supporting both bindings, we could encapsulate the locating of the firmware node in a function.  The function will first look for a child firmware node, and if it doesn't find it, look for a fsl,firmware property.  It will return a pointer to the firmware node regardless.
 
-It would also be nice to not require an initrd if one wants an NFS root. 
-  That's a lot more complexity than a not-strictly-necessary phandle. :-P
+> I'm sure we can come to an agreement
+> on one method if the firmware absolutely has to be in the tree.
 
-And as Timur pointed out, the device tree is not just for Linux.  I 
-don't think the lack of GPL makes it a moot point, as there's still some 
-maintenance and support benefit to keeping it in one place -- especially 
-since the appropriate firmware version often depends on the specific 
-hardware revision that you have.
+If we have to pick one, then I think the only viable choice is have a separate firmware node and a phandle pointer to it.  Otherwise, I just don't see how we can handle multiple devices needing the same firmware.
 
->>>  With real OF it is trivial to not have
->>> multiple copies of the data if you want a few properties with
->>> the same data.  There is no reason this could not be done in DTB
->>> as well (and some way in DTS to express that, or maybe the tools
->>> could auto-detect it, whatever).
->> So you're suggesting a change to DTC to support an enhanced syntax?
-> 
-> It isn't a problem to change dtc if we've got a good use-case for
-> doing so.  I've cc'd David Gibson.  He's probably got some insight on
-> the best way to handle this without an incompatible .dtb file format
-> change.
+> Personally, my vote lies with direct-inclusion.  However, if
+> indirection is used, then I think it would be wise to define where
+> data-only nodes like this should live.  Under /chosen perhaps?  
 
-What Segher suggested sounds like it's fundamentally a .dtb file format 
-change.
+I personally don't care that much; /chosen is okay with me, but ....
 
--Scott
+> It
+> wouldn't be good to place it somewhere where it will be confused for
+> an actual device node.
+
+... what's wrong with the root node?  
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
