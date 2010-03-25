@@ -1,20 +1,20 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id DE9B4B7C67
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Mar 2010 16:28:22 +1100 (EST)
-Date: Thu, 25 Mar 2010 16:28:14 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] mm/vmalloc: Export purge_vmap_area_lazy()
-Message-ID: <20100325052814.GA7493@laptop.nomadix.com>
-References: <1269417391.8599.188.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1269417391.8599.188.camel@pasglop>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D5380B7CA6
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 19:21:58 +1100 (EST)
+Subject: Re: Continual reading from the PowerPc time base register is not
+	stable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Csdncannon <csdncannon@gmail.com>
+In-Reply-To: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 25 Mar 2010 19:21:41 +1100
+Message-ID: <1269505301.8599.238.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 24, 2010 at 06:56:31PM +1100, Benjamin Herrenschmidt wrote:
-> Some powerpc code needs to ensure that all previous iounmap/vunmap has
-> really been flushed out of the MMU hash table. Without that, various
-> hotplug operations may fail when trying to return those pieces to
-> the hypervisor due to existing active mappings.
+On Thu, 2010-03-25 at 10:41 +0800, Csdncannon wrote:
+>          In my program, the value of the 64-bit time base register is
+> read out, and you will find the later value is even smaller than the
+> earlier value from the log “log_timebase”. While the kernel depends on
+> the accuracy of the timebase for the compensation of the lost PIT
+> interrupt, the negative value between two continual timebase reading
+> will bring to the jump of the jiffies. And this timebase problem will
+> bring to the instability of the gettimeofday system call.
 > 
-> This exports purge_vmap_area_lazy() to allow the powerpc code to perform
-> that purge when unplugging devices.
+>          Do you have any idea about this problem, thanks for your any
+> advice. Attached is the code and log.
 
-You want vm_unmap_aliases(), which also flushes entries in the
-per-cpu vmap allocator (and is already exported for other code
-that has similar problems).
+This is a concern, it should definitely not happen. What machine is
+that ? is the code compiled 32-bit or 64-bit ? What kernel version ?
 
-Thanks,
-Nick
+Arnd, any chance that could relate to the bug you've been chasing on
+Cell ?
+
+Cheers,
+Ben.
+
+> 
+> Thanks
+> 
+> Gino
+> 
+> 
+> 
+>  
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
