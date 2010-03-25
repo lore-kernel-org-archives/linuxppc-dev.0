@@ -1,19 +1,20 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [139.142.54.143])
-	by ozlabs.org (Postfix) with ESMTP id 17825B7C98
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 16:23:38 +1100 (EST)
-Date: Wed, 24 Mar 2010 23:23:28 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Subject: Re: [tpmdd-devel] [PATCH] TPM: Provide a tpm_tis OF driver
-Message-ID: <20100325052328.GB9769@obsidianresearch.com>
-References: <20100309200135.GF30462@obsidianresearch.com>
-	<1269490841.12676.32.camel@blackbox.ibm.com>
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id DE9B4B7C67
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 25 Mar 2010 16:28:22 +1100 (EST)
+Date: Thu, 25 Mar 2010 16:28:14 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] mm/vmalloc: Export purge_vmap_area_lazy()
+Message-ID: <20100325052814.GA7493@laptop.nomadix.com>
+References: <1269417391.8599.188.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1269490841.12676.32.camel@blackbox.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, tpmdd-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <1269417391.8599.188.camel@pasglop>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 25, 2010 at 01:20:41AM -0300, Rajiv Andrade wrote:
-
-> Why not 
+On Wed, Mar 24, 2010 at 06:56:31PM +1100, Benjamin Herrenschmidt wrote:
+> Some powerpc code needs to ensure that all previous iounmap/vunmap has
+> really been flushed out of the MMU hash table. Without that, various
+> hotplug operations may fail when trying to return those pieces to
+> the hypervisor due to existing active mappings.
 > 
-> +#ifdef CONFIG_OF
-> +	return of_register_platform_driver(&tis_of_driver);
-> +#elif CONFIG_PNP
-> +	return pnp_register_driver(&tis_pnp_driver);
-> +#endif
-> 
-> ?
+> This exports purge_vmap_area_lazy() to allow the powerpc code to perform
+> that purge when unplugging devices.
 
-AFAIK they are not exclusive options? I can't imagine anyone building
-a kernel with both, but the rest of the patch is designed to allow
-both at once..
+You want vm_unmap_aliases(), which also flushes entries in the
+per-cpu vmap allocator (and is already exported for other code
+that has similar problems).
 
-> Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-
-Thanks - who can pick this up to feed it upstream?
-
-Jason
+Thanks,
+Nick
