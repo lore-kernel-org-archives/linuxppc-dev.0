@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1C653B7CEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 07:38:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 31BA9B7CF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 08:37:14 +1100 (EST)
+Message-ID: <50040.84.105.60.153.1269553028.squirrel@gate.crashing.org>
+In-Reply-To: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+Date: Thu, 25 Mar 2010 22:37:08 +0100 (CET)
 Subject: Re: Continual reading from the PowerPc time base register is not
 	stable
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Csdncannon <csdncannon@gmail.com>
-In-Reply-To: <43c137a81003250800n660195c5k42c8516068aeda8d@mail.gmail.com>
-References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
-	<1269505301.8599.238.camel@pasglop> <201003251105.10033.arnd@arndb.de>
-	<43c137a81003250800n660195c5k42c8516068aeda8d@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Mar 2010 07:38:44 +1100
-Message-ID: <1269549524.8599.243.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Csdncannon" <csdncannon@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-03-25 at 23:00 +0800, Csdncannon wrote:
-> I am really sorry that the previously attached code is wrong, this one
-> "timebase.c" is the right one, and the "log_timebase" file is the
-> right log.
-> 
-> We are using FreeScale PowerPc 8378, kernel 2.6.28 and compiled as
-> 32-bit.
+>          In my program, the value of the 64-bit time base register is read
+> out, and you will find the later value is even smaller than the earlier
+> value from the log “log_timebase”.
 
-And despite all those sync/isync you can still observe the timebase
-going backward ? That sounds scary. However, at this stage all I can
-suggest is getting freescale folks to have a look, as this should really
-not happen. Maybe there's some setting with that specific SoC that is
-missing or similar...
+>          Do you have any idea about this problem, thanks for your any
+> advice. Attached is the code and log.
 
-Cheers,
-Ben.
+Your code has a problem, you do (upper << 32) | lower, it should
+be ((unsigned long long)upper << 32) | lower .
 
-> 
-> Thanks
-> Gino
-> 
-> 2010/3/25 Arnd Bergmann <arnd@arndb.de>
->         On Thursday 25 March 2010, Benjamin Herrenschmidt wrote:
->         > On Thu, 2010-03-25 at 10:41 +0800, Csdncannon wrote:
->         > >          In my program, the value of the 64-bit time base
->         register is
->         > > read out, and you will find the later value is even
->         smaller than the
->         > > earlier value from the log â€œlog_timebaseâ€. While the
->         kernel depends on
->         > > the accuracy of the timebase for the compensation of the
->         lost PIT
->         > > interrupt, the negative value between two continual
->         timebase reading
->         > > will bring to the jump of the jiffies. And this timebase
->         problem will
->         > > bring to the instability of the gettimeofday system call.
->         > >
->         > >          Do you have any idea about this problem, thanks
->         for your any
->         > > advice. Attached is the code and log.
->         >
->         > This is a concern, it should definitely not happen. What
->         machine is
->         > that ? is the code compiled 32-bit or 64-bit ? What kernel
->         version ?
->         >
->         > Arnd, any chance that could relate to the bug you've been
->         chasing on
->         > Cell ?
->         
->         
->         We're still busy with the problem analysis on Cell, waiting
->         for a time
->         slot to run the next test kernel. So far it seems like the
->         timebase
->         is actually synchronized at a significant accuracy on QS22 to
->         never
->         cause this problem with correct code, however it is possible
->         to
->         observe incorrect timebase values on Cell whenever the mftb
->         instruction
->         is not serialized with memory accesses, e.g. by using an isync
->         in front
->         of the mftb. On Power6 and other CPUs, that problem will not
->         happen.
->         
->                Arnd
-> 
+That is not the problem though: in your TBL, the bit with value
+0x40 is stuck to 1.  Broken hardware?
+
+
+Segher
