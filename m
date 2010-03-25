@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AC581B7CBD
+Return-Path: <mj.embd@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id 3A12BB7BFA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 25 Mar 2010 19:28:22 +1100 (EST)
-Subject: Re: [PATCH 1/2] mm/vmalloc: Export purge_vmap_area_lazy()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20100325052814.GA7493@laptop.nomadix.com>
+	Thu, 25 Mar 2010 19:39:52 +1100 (EST)
+Received: by wyf23 with SMTP id 23so3129049wyf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 25 Mar 2010 01:39:50 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1269417391.8599.188.camel@pasglop>
 References: <1269417391.8599.188.camel@pasglop>
-	<20100325052814.GA7493@laptop.nomadix.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 25 Mar 2010 19:25:59 +1100
-Message-ID: <1269505559.8599.239.camel@pasglop>
-Mime-Version: 1.0
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+Date: Thu, 25 Mar 2010 14:09:49 +0530
+Message-ID: <62fe9ccc1003250139m7e8fecf9g2976a1bc244f6aa5@mail.gmail.com>
+Subject: Re: [PATCH 1/2] mm/vmalloc: Export purge_vmap_area_lazy()
+From: MJ embd <mj.embd@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Nick Piggin <npiggin@suse.de>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,12 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> You want vm_unmap_aliases(), which also flushes entries in the
-> per-cpu vmap allocator (and is already exported for other code
-> that has similar problems).
-
-Ok, I missed that one. I'll update my patch. Thanks.
-
-Cheers,
-Ben.
+On Wed, Mar 24, 2010 at 1:26 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Some powerpc code needs to ensure that all previous iounmap/vunmap has
+> really been flushed out of the MMU hash table. Without that, various
+> hotplug operations may fail when trying to return those pieces to
+> the hypervisor due to existing active mappings.
+Are you talking about KVM or any other hypervisor ?
