@@ -1,20 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 8B18EB7C7E
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 21:10:26 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Continual reading from the PowerPc time base register is not
-	stable
-Date: Thu, 25 Mar 2010 11:05:09 +0100
-References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
-	<1269505301.8599.238.camel@pasglop>
-In-Reply-To: <1269505301.8599.238.camel@pasglop>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-qy0-f178.google.com (mail-qy0-f178.google.com
+	[209.85.221.178]) by ozlabs.org (Postfix) with ESMTP id CDFE6B7C98
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 01:42:52 +1100 (EST)
+Received: by qyk8 with SMTP id 8so781924qyk.4
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 07:42:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201003251105.10033.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Csdncannon <csdncannon@gmail.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
+References: <1269380552-10418-1-git-send-email-timur@freescale.com>
+	<fa686aa41003232307s39af071bn6377800951d6615c@mail.gmail.com>
+	<ed82fe3e1003240505h59d29c83x6948f8b3b70c4570@mail.gmail.com>
+	<90D93687-940F-47FB-8CEA-F3C065EA611D@kernel.crashing.org>
+	<fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
+	<4BAA4C8A.70104@freescale.com>
+	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 25 Mar 2010 09:42:24 -0500
+Message-ID: <ed82fe3e1003250742t5affee7dudca651ab3352bc16@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 25 March 2010, Benjamin Herrenschmidt wrote:
-> On Thu, 2010-03-25 at 10:41 +0800, Csdncannon wrote:
-> >          In my program, the value of the 64-bit time base register is
-> > read out, and you will find the later value is even smaller than the
-> > earlier value from the log “log_timebase”. While the kernel depends on
-> > the accuracy of the timebase for the compensation of the lost PIT
-> > interrupt, the negative value between two continual timebase reading
-> > will bring to the jump of the jiffies. And this timebase problem will
-> > bring to the instability of the gettimeofday system call.
-> > 
-> >          Do you have any idea about this problem, thanks for your any
-> > advice. Attached is the code and log.
-> 
-> This is a concern, it should definitely not happen. What machine is
-> that ? is the code compiled 32-bit or 64-bit ? What kernel version ?
-> 
-> Arnd, any chance that could relate to the bug you've been chasing on
-> Cell ?
+On Wed, Mar 24, 2010 at 8:49 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
 
-We're still busy with the problem analysis on Cell, waiting for a time
-slot to run the next test kernel. So far it seems like the timebase
-is actually synchronized at a significant accuracy on QS22 to never
-cause this problem with correct code, however it is possible to
-observe incorrect timebase values on Cell whenever the mftb instruction
-is not serialized with memory accesses, e.g. by using an isync in front
-of the mftb. On Power6 and other CPUs, that problem will not happen.
+> I do; I consider that indirection thing (and putting firmware blobs
+> in the device tree at all, but to a lesser extent) as making a mess
+> of your device binding.
 
-	Arnd
+I guess we'll just have to agree to disagree.
+
+> Let's forget that I do not like putting a firmware blob in the
+> device tree if you can at all avoid that; Grant is on that already.
+
+The initrd thing is a good idea, but it doesn't help non-Linux
+operating systems.  Then again, those OS's might not have any GPL
+issues, so it could be a moot point.
+
+> As far as I can see, you want that indirection node so that you
+> safe space in the DTB.
+
+No, I want the indirection node so that I can have multiple QE nodes
+point to the same binary data in the DTB.  I don't want to have to do
+this:
+
+qe@e8000000 {
+    fsl,firmware =3D /incbin/("firmware-file-name.bin");
+    ...
+}
+
+qe@e9000000 {
+    fsl,firmware =3D /incbin/("firmware-file-name.bin");
+    ...
+}
+
+In this case, I have an SOC with two QE devices, so it has two QE
+nodes.  Each needs to be initialized by uploading the same microcode
+to it.
+
+>=A0With real OF it is trivial to not have
+> multiple copies of the data if you want a few properties with
+> the same data. =A0There is no reason this could not be done in DTB
+> as well (and some way in DTS to express that, or maybe the tools
+> could auto-detect it, whatever).
+
+So you're suggesting a change to DTC to support an enhanced syntax?
+
+> Or you could just zip the DTB.
+
+Sorry, I don't understand how that would help me.
+
+> Can't you link it into the kernel then? =A0Seems a better place for
+> it to me. =A0Of course you said something about GPL, heh.
+
+Yes, the firmware is not GPL, so I can't link it into the kernel.
+Believe me, it would have solved a lot of problems if we could.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
