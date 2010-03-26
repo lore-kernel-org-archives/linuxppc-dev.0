@@ -1,17 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95370B7CF3
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 09:42:22 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	grant.likely@secretlab.ca
-Subject: [PATCH] [v3] powerpc/fsl: add device tree binding for QE firmware
-Date: Fri, 26 Mar 2010 17:42:17 -0500
-Message-Id: <1269643337-29431-1-git-send-email-timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f217.google.com (mail-gx0-f217.google.com
+	[209.85.217.217]) by ozlabs.org (Postfix) with ESMTP id 0D05CB7CEF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 27 Mar 2010 09:44:57 +1100 (EST)
+Received: by gxk9 with SMTP id 9so197604gxk.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Mar 2010 15:44:56 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100326221707.GA1953@leila.ping.de>
+References: <20100317051521.GA16826@feather>
+	<fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+	<20100326213202.GD5350@feather> <20100326221707.GA1953@leila.ping.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 26 Mar 2010 16:44:32 -0600
+Message-ID: <fa686aa41003261544l5b1a4690xeba4df841c6143d6@mail.gmail.com>
+Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and
+	CompactFlash
+To: Wolfgang Wegner <wolfgang@leila.ping.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Josh Triplett <josh@joshtriplett.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,82 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Define a binding for embedding a QE firmware blob into the device tree.  Also
-define a new property for the QE node that links to a firmware node.
+On Fri, Mar 26, 2010 at 4:17 PM, Wolfgang Wegner <wolfgang@leila.ping.de> w=
+rote:
+> Hi Josh,
+>
+> On Fri, Mar 26, 2010 at 02:32:02PM -0700, Josh Triplett wrote:
+>> On Fri, Mar 26, 2010 at 12:22:32PM -0600, Grant Likely wrote:
+>> >
+>> > Not all CF adapters have all the pins wired up that are needed for
+>> > *DMA modes. =A0That is the most likely problem.
+>>
+>> True, but we bought a card that specifically advertises support for
+>> UDMA, and says UDMA right on the card's label.
+>>
+>> http://store.lexar.com/?productid=3DCF8GB-300-381
+>
+> Grant was referring to the adapter, not the card!
+>
+> In fact I still have to see a single CF-to-IDE adapter that does
+> have the wires needed for (U)DMA without me soldering them in place...
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- .../powerpc/dts-bindings/fsl/cpm_qe/qe.txt         |   54 ++++++++++++++++++++
- 1 files changed, 54 insertions(+), 0 deletions(-)
+I found one at logic supply a while back, but I can't remember which one!
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-index 6e37be1..8b7246b 100644
---- a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
-@@ -21,6 +21,15 @@ Required properties:
- - fsl,qe-num-snums: define how many serial number(SNUM) the QE can use for the
-   threads.
- 
-+Optional properties:
-+- fsl,firmware-phandle:
-+    Usage: required only if there is no fsl,qe-firmware child node
-+    Value type: <phandle>
-+    Definition: Points to a firmware node (see "QE Firmware Node" below)
-+        that contains the firmware that should be uploaded for this QE.
-+        The compatible property for the firmware node should say,
-+        "fsl,qe-firmware".
-+
- Recommended properties
- - brg-frequency : the internal clock source frequency for baud-rate
-   generators in Hz.
-@@ -59,3 +68,48 @@ Example:
- 		reg = <0 c000>;
- 	};
-      };
-+
-+* QE Firmware Node
-+
-+This node defines a firmware binary that is embedded in the device tree, for
-+the purpose of passing the firmware from bootloader to the kernel, or from
-+the hypervisor to the guest.
-+
-+The firmware node itself contains the firmware binary contents, a compatible
-+property, and any firmware-specific properties.  The node should be placed
-+inside a QE node that needs it.  Doing so eliminates the need for a
-+fsl,firmware-phandle property.  Other QE nodes that need the same firmware
-+should define an fsl,firmware-phandle property that points to the firmware node
-+in the first QE node.
-+
-+The fsl,firmware property can be specified in the DTS (possibly using incbin)
-+or can be inserted by the boot loader at boot time.
-+
-+Required properties:
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: A standard property.  Specify a string that indicates what
-+          kind of firmware it is.  For QE, this should be "fsl,qe-firmware".
-+
-+   - fsl,firmware
-+      Usage: required
-+      Value type: <prop-encoded-array>, encoded as an array of bytes
-+      Definition: A standard property.  This property contains the firmware
-+          binary "blob".
-+
-+Example:
-+	qe1@e0080000 {
-+		compatible = "fsl,qe";
-+		qe_firmware:qe-firmware {
-+			compatible = "fsl,qe-firmware";
-+			fsl,firmware = <0x70 0xcd 0x00 0x00 0x01 0x46 0x45 ...>
-+		}
-+		...
-+	}
-+
-+	qe2@e0090000 {
-+		compatible = "fsl,qe";
-+		fsl,firmware-phandle = <&qe_firmware>;
-+		...
-+	}
--- 
-1.6.5
+g.
