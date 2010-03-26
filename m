@@ -1,26 +1,25 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 7E069B7CBD
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 13:03:28 +1100 (EST)
-Date: Fri, 26 Mar 2010 07:31:11 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100326020111.GF8111@amit-x200.redhat.com>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-	<20100321043725.GA21566@amit-x200.redhat.com>
-	<20100324121902.GJ15789@amit-x200.redhat.com>
-	<20100325233031.GC5594@kryten>
+Return-Path: <csdncannon@gmail.com>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 600B5B7CC2
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 13:01:23 +1100 (EST)
+Received: by pvg6 with SMTP id 6so4674145pvg.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 19:01:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100325233031.GC5594@kryten>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <50253.84.105.60.153.1269566569.squirrel@gate.crashing.org>
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+	<1269505301.8599.238.camel@pasglop> <201003251105.10033.arnd@arndb.de>
+	<43c137a81003250800n660195c5k42c8516068aeda8d@mail.gmail.com>
+	<1269549524.8599.243.camel@pasglop>
+	<43c137a81003251811s52ac72eaud921d187e9747098@mail.gmail.com>
+	<50253.84.105.60.153.1269566569.squirrel@gate.crashing.org>
+Date: Fri, 26 Mar 2010 10:01:20 +0800
+Message-ID: <43c137a81003251901h229b873bh7593c59a5ef66ae9@mail.gmail.com>
+Subject: Re: Continual reading from the PowerPc time base register is not
+	stable
+From: Csdncannon <csdncannon@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary=001636b1495d2ad1c50482aa8a7d
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +29,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Fri) Mar 26 2010 [10:30:31], Anton Blanchard wrote:
->  
-> Hi,
-> 
-> > And this suggests that hvc_kick() is called before hvc_task is
-> > initialised, ie, before hvc_init() is called.
-> >
-> > Does this help?
-> 
-> Looks good, tests OK on my POWER5 box. Thanks!
-> 
-> Tested-by: Anton Blanchard <anton@samba.org>
+--001636b1495d2ad1c50482aa8a7d
+Content-Type: multipart/alternative; boundary=001636b1495d2ad1b30482aa8a7b
 
-Thanks. Before I submit this patch, though, I'd like to see why
-hvc_kick() gets called before hvc_init. If I can get to it real quick,
-I'll do it, else I'll just queue this one up.
+--001636b1495d2ad1b30482aa8a7b
+Content-Type: text/plain; charset=ISO-8859-1
 
-> > diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-> > index ba55bba..50ac983 100644
-> > --- a/drivers/char/hvc_console.c
-> > +++ b/drivers/char/hvc_console.c
-> > @@ -285,6 +285,9 @@ EXPORT_SYMBOL_GPL(hvc_instantiate);
-> >  /* Wake the sleeping khvcd */
-> >  void hvc_kick(void)
-> >  {
-> > +       if (!hvc_task)
-> > +               return;
-> > +
-> >         hvc_kicked = 1;
-> >         wake_up_process(hvc_task);
-> >  }
+I enabled the printing of all values. There is bigger gap between two
+reading, it seems isync bring to performance drop.
+Could you elaborate what does "closer that 64 tick together" mean?
 
-		Amit
+You can see the attached log, the 0x40 is not always set.
+
+Thanks
+Gino
+
+2010/3/26 Segher Boessenkool <segher@kernel.crashing.org>
+
+> > After trying the new code with "isync" and unsigned long long convertion,
+> > this problem doesn't happen(I tested for several minutes).
+>
+> Do you now ever get two consecutive time readings that are closer
+> that 64 tick together?  If not, it's simply hiding the problem.
+>
+> Do you ever now read a value that does not have the bit with value
+> 0x40 set?
+>
+>
+> Segher
+>
+
+--001636b1495d2ad1b30482aa8a7b
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+I enabled the printing of all values. There is bigger gap between two readi=
+ng, it seems isync bring to performance drop.<br>Could you elaborate what d=
+oes &quot;closer that 64 tick together&quot; mean?<br><br>You can see the a=
+ttached log, the 0x40 is not always set.<br>
+<br>Thanks<br>Gino<br><br><div class=3D"gmail_quote">2010/3/26 Segher Boess=
+enkool <span dir=3D"ltr">&lt;<a href=3D"mailto:segher@kernel.crashing.org">=
+segher@kernel.crashing.org</a>&gt;</span><br><blockquote class=3D"gmail_quo=
+te" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt=
+ 0.8ex; padding-left: 1ex;">
+<div class=3D"im">&gt; After trying the new code with &quot;isync&quot; and=
+ unsigned long long convertion,<br>
+&gt; this problem doesn&#39;t happen(I tested for several minutes).<br>
+<br>
+</div>Do you now ever get two consecutive time readings that are closer<br>
+that 64 tick together? =A0If not, it&#39;s simply hiding the problem.<br>
+<br>
+Do you ever now read a value that does not have the bit with value<br>
+0x40 set?<br>
+<font color=3D"#888888"><br>
+<br>
+Segher<br>
+</font></blockquote></div><br>
+
+--001636b1495d2ad1b30482aa8a7b--
+
+--001636b1495d2ad1c50482aa8a7d
+Content-Type: application/octet-stream; name=log
+Content-Disposition: attachment; filename=log
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g78cguyh0
+
+VGh1IEphbiAgMSAwMDoyMjo1MCBHTVQgMTk3MAoweDFkNjZmM2IxMmYKMHgxZDY2ZjNiMTU1CjB4
+MWQ2NmYzYjE1ZgoweDFkNjZmM2IxNzEKMHgxZDY2ZjNiMTdiCjB4MWQ2NmYzYjE4NQoweDFkNjZm
+M2IxOGYKMHgxZDY2ZjNiMWEwCjB4MWQ2NmYzYjFhYQoweDFkNjZmM2IxYjQKMHgxZDY2ZjNiMWJl
+CjB4MWQ2NmYzYjFjZgoweDFkNjZmM2IxZDkKMHgxZDY2ZjNiMWUzCjB4MWQ2NmYzYjFlZAoweDFk
+NjZmM2IxZmUKMHgxZDY2ZjNiMjA4CjB4MWQ2NmYzYjIxMgoweDFkNjZmM2IyMWMKMHgxZDY2ZjNi
+MjJkCjB4MWQ2NmYzYjIzNwoweDFkNjZmM2IyNDEKMHgxZDY2ZjNiMjRiCjB4MWQ2NmYzYjI1Ywow
+eDFkNjZmM2IyNjYKMHgxZDY2ZjNiMjcwCjB4MWQ2NmYzYjI3YQoweDFkNjZmM2IyOGIKMHgxZDY2
+ZjNiMjk1CjB4MWQ2NmYzYjI5ZgoweDFkNjZmM2IyYTkKMHgxZDY2ZjNiMmJhCjB4MWQ2NmYzYjJj
+NAoweDFkNjZmM2IyY2UKMHgxZDY2ZjNiMmQ4CjB4MWQ2NmYzYjJlOQoweDFkNjZmM2IyZjMKMHgx
+ZDY2ZjNiMmZkCjB4MWQ2NmYzYjMwNwoweDFkNjZmM2IzMTgKMHgxZDY2ZjNiMzIyCjB4MWQ2NmYz
+YjMyYwoweDFkNjZmM2IzMzYKMHgxZDY2ZjNiMzQ3CjB4MWQ2NmYzYjM1MQoweDFkNjZmM2IzNWIK
+MHgxZDY2ZjNiMzY1CjB4MWQ2NmYzYjM3NgoweDFkNjZmM2IzODAKMHgxZDY2ZjNiMzhhCjB4MWQ2
+NmYzYjM5NAoweDFkNjZmM2IzYTUKMHgxZDY2ZjNiM2FmCjB4MWQ2NmYzYjNiOQoweDFkNjZmM2Iz
+YzMKMHgxZDY2ZjNiM2Q0CjB4MWQ2NmYzYjNkZQoweDFkNjZmM2IzZTgKMHgxZDY2ZjNiM2YyCjB4
+MWQ2NmYzYjQwNAoweDFkNjZmM2I0MGUKMHgxZDY2ZjNiNDE5CjB4MWQ2NmYzYjQyMwotLS0tLS0t
+LS0tLS0tLS0tLS0tLQoweDFkNjZmM2I0MzMKVGh1IEphbiAgMSAwMDoyMjo1MSBHTVQgMTk3MAow
+eDFkNjcyOGQxNzUKMHgxZDY3MjhkMTliCjB4MWQ2NzI4ZDFhNQoweDFkNjcyOGQxYjYKMHgxZDY3
+MjhkMWMwCjB4MWQ2NzI4ZDFjYQoweDFkNjcyOGQxZDQKMHgxZDY3MjhkMWU1CjB4MWQ2NzI4ZDFl
+ZgoweDFkNjcyOGQxZjkKMHgxZDY3MjhkMjAzCjB4MWQ2NzI4ZDIxNAoweDFkNjcyOGQyMWUKMHgx
+ZDY3MjhkMjI4CjB4MWQ2NzI4ZDIzMgoweDFkNjcyOGQyNDMKMHgxZDY3MjhkMjRkCjB4MWQ2NzI4
+ZDI1NwoweDFkNjcyOGQyNjEKMHgxZDY3MjhkMjcyCjB4MWQ2NzI4ZDI3YwoweDFkNjcyOGQyODYK
+MHgxZDY3MjhkMjkwCjB4MWQ2NzI4ZDJhMQoweDFkNjcyOGQyYWIKMHgxZDY3MjhkMmI1CjB4MWQ2
+NzI4ZDJiZgoweDFkNjcyOGQyZDAKMHgxZDY3MjhkMmRhCjB4MWQ2NzI4ZDJlNAoweDFkNjcyOGQy
+ZWUKMHgxZDY3MjhkMmZmCjB4MWQ2NzI4ZDMwOQoweDFkNjcyOGQzMTMKMHgxZDY3MjhkMzFkCjB4
+MWQ2NzI4ZDMyZgoweDFkNjcyOGQzMzkKMHgxZDY3MjhkMzQ0CjB4MWQ2NzI4ZDM0ZQoweDFkNjcy
+OGQzNWUKMHgxZDY3MjhkMzY4CjB4MWQ2NzI4ZDM3MwoweDFkNjcyOGQzN2QKMHgxZDY3MjhkMzhk
+CjB4MWQ2NzI4ZDM5NwoweDFkNjcyOGQzYTIKMHgxZDY3MjhkM2FjCjB4MWQ2NzI4ZDNiYwoweDFk
+NjcyOGQzYzYKMHgxZDY3MjhkM2QxCjB4MWQ2NzI4ZDNkYgoweDFkNjcyOGQzZWIKMHgxZDY3Mjhk
+M2Y1CjB4MWQ2NzI4ZDQwMAoweDFkNjcyOGQ0MGEKMHgxZDY3MjhkNDFhCjB4MWQ2NzI4ZDQyNAow
+eDFkNjcyOGQ0MmYKMHgxZDY3MjhkNDM5CjB4MWQ2NzI4ZDQ0OQoweDFkNjcyOGQ0NTMKMHgxZDY3
+MjhkNDVlCjB4MWQ2NzI4ZDQ2OAotLS0tLS0tLS0tLS0tLS0tLS0tLQoweDFkNjcyOGQ0NzgKVGh1
+IEphbiAgMSAwMDoyMjo1MSBHTVQgMTk3MAoweDFkNjc1ZGYyMTAKMHgxZDY3NWRmMjM2CjB4MWQ2
+NzVkZjI0MAoweDFkNjc1ZGYyNTEKMHgxZDY3NWRmMjViCjB4MWQ2NzVkZjI2NQoweDFkNjc1ZGYy
+NmYKMHgxZDY3NWRmMjgxCjB4MWQ2NzVkZjI4YgoweDFkNjc1ZGYyOTYKMHgxZDY3NWRmMmEwCjB4
+MWQ2NzVkZjJiMAoweDFkNjc1ZGYyYmEKMHgxZDY3NWRmMmM1CjB4MWQ2NzVkZjJjZgoweDFkNjc1
+ZGYyZGYKMHgxZDY3NWRmMmU5CjB4MWQ2NzVkZjJmNAoweDFkNjc1ZGYyZmUKMHgxZDY3NWRmMzBl
+CjB4MWQ2NzVkZjMxOAoweDFkNjc1ZGYzMjMKMHgxZDY3NWRmMzJkCjB4MWQ2NzVkZjMzZAoweDFk
+Njc1ZGYzNDcKMHgxZDY3NWRmMzUyCjB4MWQ2NzVkZjM1YwoweDFkNjc1ZGYzNmMKMHgxZDY3NWRm
+Mzc2CjB4MWQ2NzVkZjM4MQoweDFkNjc1ZGYzOGIKMHgxZDY3NWRmMzliCjB4MWQ2NzVkZjNhNQow
+eDFkNjc1ZGYzYjAKMHgxZDY3NWRmM2JhCjB4MWQ2NzVkZjNjYQoweDFkNjc1ZGYzZDQKMHgxZDY3
+NWRmM2RmCjB4MWQ2NzVkZjNlOQoweDFkNjc1ZGYzZjkKMHgxZDY3NWRmNDAzCjB4MWQ2NzVkZjQw
+ZQoweDFkNjc1ZGY0MTgKMHgxZDY3NWRmNDI4CjB4MWQ2NzVkZjQzMgoweDFkNjc1ZGY0M2QKMHgx
+ZDY3NWRmNDQ3CjB4MWQ2NzVkZjQ1NwoweDFkNjc1ZGY0NjEKMHgxZDY3NWRmNDZjCjB4MWQ2NzVk
+ZjQ3NgoweDFkNjc1ZGY0ODYKMHgxZDY3NWRmNDkwCjB4MWQ2NzVkZjQ5YgoweDFkNjc1ZGY0YTUK
+MHgxZDY3NWRmNGI1CjB4MWQ2NzVkZjRiZgoweDFkNjc1ZGY0Y2EKMHgxZDY3NWRmNGQ0CjB4MWQ2
+NzVkZjRlYwoweDFkNjc1ZGY0ZjYKMHgxZDY3NWRmNTAwCjB4MWQ2NzVkZjUwYQotLS0tLS0tLS0t
+LS0tLS0tLS0tLQoweDFkNjc1ZGY1MWIKVGh1IEphbiAgMSAwMDoyMjo1MSBHTVQgMTk3MAoweDFk
+Njc5MzEwNTUKMHgxZDY3OTMxMDdiCjB4MWQ2NzkzMTA4NQoweDFkNjc5MzEwOTUKMHgxZDY3OTMx
+MDlmCjB4MWQ2NzkzMTBhYQoweDFkNjc5MzEwYjQKMHgxZDY3OTMxMGM0CjB4MWQ2NzkzMTBjZQow
+eDFkNjc5MzEwZDkKMHgxZDY3OTMxMGUzCjB4MWQ2NzkzMTBmMwoweDFkNjc5MzEwZmQKMHgxZDY3
+OTMxMTA4CjB4MWQ2NzkzMTExMgoweDFkNjc5MzExMjIKMHgxZDY3OTMxMTJjCjB4MWQ2NzkzMTEz
+NwoweDFkNjc5MzExNDEKMHgxZDY3OTMxMTUxCjB4MWQ2NzkzMTE1YgoweDFkNjc5MzExNjYKMHgx
+ZDY3OTMxMTcwCjB4MWQ2NzkzMTE4MAoweDFkNjc5MzExOGEKMHgxZDY3OTMxMTk1CjB4MWQ2Nzkz
+MTE5ZgoweDFkNjc5MzExYjEKMHgxZDY3OTMxMWJiCjB4MWQ2NzkzMTFjNQoweDFkNjc5MzExY2YK
+MHgxZDY3OTMxMWUwCjB4MWQ2NzkzMTFlYQoweDFkNjc5MzExZjQKMHgxZDY3OTMxMWZlCjB4MWQ2
+NzkzMTIwZgoweDFkNjc5MzEyMTkKMHgxZDY3OTMxMjIzCjB4MWQ2NzkzMTIyZAoweDFkNjc5MzEy
+M2UKMHgxZDY3OTMxMjQ4CjB4MWQ2NzkzMTI1MgoweDFkNjc5MzEyNWMKMHgxZDY3OTMxMjZkCjB4
+MWQ2NzkzMTI3NwoweDFkNjc5MzEyODEKMHgxZDY3OTMxMjhiCjB4MWQ2NzkzMTI5YwoweDFkNjc5
+MzEyYTYKMHgxZDY3OTMxMmIwCjB4MWQ2NzkzMTJiYQoweDFkNjc5MzEyY2IKMHgxZDY3OTMxMmQ1
+CjB4MWQ2NzkzMTJkZgoweDFkNjc5MzEyZTkKMHgxZDY3OTMxMmZhCjB4MWQ2NzkzMTMwNAoweDFk
+Njc5MzEzMGUKMHgxZDY3OTMxMzE4CjB4MWQ2NzkzMTMyOQoweDFkNjc5MzEzMzMKMHgxZDY3OTMx
+MzNkCjB4MWQ2NzkzMTM0NwotLS0tLS0tLS0tLS0tLS0tLS0tLQoweDFkNjc5MzEzNTgKVGh1IEph
+biAgMSAwMDoyMjo1MSBHTVQgMTk3MAoweDFkNjdjODI2ZjIKMHgxZDY3YzgyNzE4CjB4MWQ2N2M4
+MjcyMgoweDFkNjdjODI3MzMKMHgxZDY3YzgyNzNkCjB4MWQ2N2M4Mjc0NwoweDFkNjdjODI3NTEK
+MHgxZDY3YzgyNzYyCjB4MWQ2N2M4Mjc2YwoweDFkNjdjODI3NzYKMHgxZDY3YzgyNzgwCjB4MWQ2
+N2M4Mjc5MQoweDFkNjdjODI3OWIKMHgxZDY3YzgyN2E1CjB4MWQ2N2M4MjdhZgoweDFkNjdjODI3
+YzAKMHgxZDY3YzgyN2NhCjB4MWQ2N2M4MjdkNAoweDFkNjdjODI3ZGUKMHgxZDY3YzgyN2VmCjB4
+MWQ2N2M4MjdmOQoweDFkNjdjODI4MDMKMHgxZDY3YzgyODBkCjB4MWQ2N2M4MjgxZQoweDFkNjdj
+ODI4MjgKMHgxZDY3YzgyODMyCjB4MWQ2N2M4MjgzYwoweDFkNjdjODI4NGQKMHgxZDY3YzgyODU3
+CjB4MWQ2N2M4Mjg2MQoweDFkNjdjODI4NmIKMHgxZDY3YzgyODdjCjB4MWQ2N2M4Mjg4NgoweDFk
+NjdjODI4OTAKMHgxZDY3YzgyODlhCjB4MWQ2N2M4MjhhYgoweDFkNjdjODI4YjUKMHgxZDY3Yzgy
+OGJmCjB4MWQ2N2M4MjhjOQoweDFkNjdjODI4ZGEKMHgxZDY3YzgyOGU0CjB4MWQ2N2M4MjhlZQow
+eDFkNjdjODI4ZjgKMHgxZDY3YzgyOTA5CjB4MWQ2N2M4MjkxMwoweDFkNjdjODI5MWQKMHgxZDY3
+YzgyOTI3CjB4MWQ2N2M4MjkzOQoweDFkNjdjODI5NDMKMHgxZDY3YzgyOTRlCjB4MWQ2N2M4Mjk1
+OAoweDFkNjdjODI5NjgKMHgxZDY3YzgyOTcyCjB4MWQ2N2M4Mjk3ZAoweDFkNjdjODI5ODcKMHgx
+ZDY3YzgyOTk3CjB4MWQ2N2M4MjlhMQoweDFkNjdjODI5YWMKMHgxZDY3YzgyOWI2CjB4MWQ2N2M4
+MjljNgoweDFkNjdjODI5ZDAKMHgxZDY3YzgyOWRiCjB4MWQ2N2M4MjllNQotLS0tLS0tLS0tLS0t
+LS0tLS0tLQoweDFkNjdjODI5ZjUKVGh1IEphbiAgMSAwMDoyMjo1MSBHTVQgMTk3MAoweDFkNjdm
+ZDY3ZTIKMHgxZDY3ZmQ2ODBiCgo=
+--001636b1495d2ad1c50482aa8a7d
+Content-Type: application/octet-stream; name="timebase.c"
+Content-Disposition: attachment; filename="timebase.c"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g78chdwy1
+
+LyogVFNDIHN5bmMgdGVzdA0KICoJCWJ5OiBqb2huIHN0dWx0eiAoam9obnN0dWxAdXMuaWJtLmNv
+bSkNCiAqCQkoQykgQ29weXJpZ2h0IElCTSAyMDAzLCAyMDA1DQogKgkJTGljZW5zZWQgdW5kZXIg
+dGhlIEdQTA0KICovDQoNCg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVkZSA8c3lzL3RpbWUu
+aD4NCiNpbmNsdWRlIDxzdGRsaWIuaD4NCg0KI2RlZmluZSBDQUxMU19QRVJfTE9PUCA2NA0KDQp2
+b2xhdGlsZSB1bnNpZ25lZCBsb25nIGxvbmcgZ2V0VGltZUJhc2UoKQ0Kew0KCXVuc2lnbmVkIGxv
+bmcgdXBwZXIsbG93ZXIsdXBwZXIyOw0KCWRvIHsNCgkJYXNtIHZvbGF0aWxlKCJzeW5jOyBpc3lu
+YyI6OjoibWVtb3J5Iik7DQoJCWFzbSB2b2xhdGlsZSgibWZ0YnUgJTAiIDogIj1yIiAodXBwZXIp
+KTsNCgkJYXNtIHZvbGF0aWxlKCJzeW5jOyBpc3luYyI6OjoibWVtb3J5Iik7DQoJCWFzbSB2b2xh
+dGlsZSgibWZ0YmwgJTAiIDogIj1yIiAobG93ZXIpKTsNCgkJYXNtIHZvbGF0aWxlKCJzeW5jOyBp
+c3luYyI6OjoibWVtb3J5Iik7DQoJCWFzbSB2b2xhdGlsZSgibWZ0YnUgJTAiIDogIj1yIiAodXBw
+ZXIyKSk7DQoJCWFzbSB2b2xhdGlsZSgic3luYzsgaXN5bmMiOjo6Im1lbW9yeSIpOw0KCX13aGls
+ZSh1cHBlcjIhPXVwcGVyKTsNCg0KCXJldHVybiAoKHVuc2lnbmVkIGxvbmcgbG9uZyl1cHBlcjw8
+MzIpfGxvd2VyOw0KfQ0KDQppbnQgbWFpbihpbnQgYXJnYywgY2hhciAqYXJndltdKQ0Kew0KCXZv
+bGF0aWxlIHVuc2lnbmVkIGxvbmcgbG9uZyBsaXN0W0NBTExTX1BFUl9MT09QXTsNCglib29sIGJh
+ZFtDQUxMU19QRVJfTE9PUF07DQoJaW50IGksIGluY29uc2lzdGVudDsNCg0KDQoJLyogdGltZXN0
+YW1wIHN0YXJ0IG9mIHRlc3QgKi8NCglzeXN0ZW0oImRhdGUiKTsNCgl3aGlsZSgxKXsNCgkJaW5j
+b25zaXN0ZW50ID0gMDsNCg0KCQkvKiBGaWxsIGxpc3QgKi8NCgkJZm9yKGk9MDsgaSA8IENBTExT
+X1BFUl9MT09QOyBpKyspDQoJCQlsaXN0W2ldID0gZ2V0VGltZUJhc2UoKTsNCgkJDQoJCS8qIENo
+ZWNrIGZvciBpbmNvbnNpc3RlbmNpZXMgKi8NCgkJZm9yKGk9MDsgaSA8IENBTExTX1BFUl9MT09Q
+LTE7IGkrKykNCgkJew0KCQkJaWYobGlzdFtpXSA+IGxpc3RbaSsxXSkNCgkJCXsNCgkJCQlpbmNv
+bnNpc3RlbnQgPSBpKzE7DQoJCQkJYmFkW2ldID0gdHJ1ZTsNCgkJCX0NCgkJCWVsc2V7DQoJCQkJ
+YmFkW2ldID0gZmFsc2U7DQoJCQl9DQoJCX0NCgkJaW5jb25zaXN0ZW50ID0gMTsNCgkJLyogZGlz
+cGxheSBpbmNvbnNpc3RlbmN5ICovDQoJCWlmKGluY29uc2lzdGVudCl7DQoJCQlpbmNvbnNpc3Rl
+bnQtLTsNCgkJCWZvcihpPTA7IGkgPCBDQUxMU19QRVJfTE9PUDsgaSsrKXsNCgkJCQlpZihiYWRb
+aV0gPT0gdHJ1ZSkNCgkJCQkJcHJpbnRmKCItLS0tLS0tLS0tLS0tLS0tLS0tLVxuIik7DQoJCQkJ
+cHJpbnRmKCIweCVsbHhcbiIsbGlzdFtpXSk7DQoJCQkJaWYoYmFkW2ktMV0gPT0gdHJ1ZSAmJiBi
+YWRbaV0gPT0gZmFsc2UgKQ0KCQkJCQlwcmludGYoIi0tLS0tLS0tLS0tLS0tLS0tLS0tXG4iKTsN
+CgkJCX0NCgkJCWZmbHVzaCgwKTsNCgkJCS8qIHRpbWVzdGFtcCBpbmNvbnNpc3RlbmN5Ki8NCgkJ
+CXN5c3RlbSgiZGF0ZSIpOwkNCgkJfQ0KDQoJfQ0KCXJldHVybiAwOw0KfQ0KDQo=
+--001636b1495d2ad1c50482aa8a7d--
