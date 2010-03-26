@@ -1,13 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F248DB7CE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 21:54:25 +1100 (EST)
-Date: Fri, 26 Mar 2010 21:54:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 95DC9B7CCD
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 22:42:28 +1100 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2QBd9Qe026279
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 22:39:09 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2QBaKNf1597564
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 22:36:20 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2QBgQr4013410
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 22:42:27 +1100
+Message-ID: <4BAC9D9E.5070901@in.ibm.com>
+Date: Fri, 26 Mar 2010 17:12:22 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+MIME-Version: 1.0
 To: Amit Shah <amit.shah@redhat.com>
 Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-Id: <20100326215416.80d09610.sfr@canb.auug.org.au>
-In-Reply-To: <20100326095821.GA7039@amit-x200.redhat.com>
 References: <20100319151326.GC8541@kroah.com>
 	<1269011916-8836-4-git-send-email-gregkh@suse.de>
 	<1269119079.8599.65.camel@pasglop>
@@ -15,10 +28,8 @@ References: <20100319151326.GC8541@kroah.com>
 	<20100324121902.GJ15789@amit-x200.redhat.com>
 	<4BAC7AD4.4030309@in.ibm.com>
 	<20100326095821.GA7039@amit-x200.redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__26_Mar_2010_21_54_16_+1100_YZLZJcjnOWU7PRW3"
+In-Reply-To: <20100326095821.GA7039@amit-x200.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
 	Rusty Russell <rusty@rustcorp.com.au>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -34,60 +45,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__26_Mar_2010_21_54_16_+1100_YZLZJcjnOWU7PRW3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Amit,
-
-On Fri, 26 Mar 2010 15:28:21 +0530 Amit Shah <amit.shah@redhat.com> wrote:
->
+Amit Shah wrote:
 > On (Fri) Mar 26 2010 [14:43:56], Sachin Sant wrote:
-> >
-> > I too ran into this issue as reported by Anton. Unfortunately in my
-> > case the following suggested patch does not help boot the powerpc
-> > box successfully. The boot still hangs with following messages
-
-I have been getting this on my linux-next boot tests for a while as well.
-
+>   
+>>> And this suggests that hvc_kick() is called before hvc_task is
+>>> initialised, ie, before hvc_init() is called.
+>>>
+>>> Does this help?
+>>>   
+>>>       
+>> Hi Amit,
+>>
+>> I too ran into this issue as reported by Anton. Unfortunately in my
+>> case the following suggested patch does not help boot the powerpc
+>> box successfully. The boot still hangs with following messages
+>>     
+>
 > Was the hang you saw before applying this patch at the same place / for
 > the same reason?
+>   
+Yes the machine hangs at the same place with or without the patch.
 
-I get the same hangs with and without the patch.  Paulus bisected it
-(again) to the commit below and reverting that commit fixes the problem.
-
+>> mount: can't find /root/proc in /etc/fstab or /etc/mtab
+>> /sbin/smart_agetty: can not determine 'console' speed
+>>     
+>
 > OK, this gets even murkier. I don't know why taking a few krefs modifies
 > hvc_console behaviour to such an extent.
->=20
-> > Just to confirm i too am facing same issue as reported by Anton,
-> > reverted commit e74d098c66543d0731de62eb747ccd5b636a6f4c and that allow=
-ed
-> > by box to boot successfully.
->=20
+>   
+Looking at the commit e74d098c66543d0731de62eb747ccd5b636a6f4c,
+i see that for every tty_kref_get() there is a corresponding
+tty_kref_put() except maybe for the one in the following patch snippet
+
+        spin_lock_irqsave(&hp->lock, flags);
+        /* Check and then increment for fast path open. */
+        if (hp->count++ > 0) {
++               tty_kref_get(tty);
+                spin_unlock_irqrestore(&hp->lock, flags);
+                hvc_kick();
+                return 0;
+
+I don't know this code very well but we might be missing a
+corresponding tty_kref_put() some place ?
+
+If i comment out the above tty_kref_get() call, the machine
+boots fine with or without the suggested patch.
+
+Thanks
+-Sachin
+
+
+>   
+>> Just to confirm i too am facing same issue as reported by Anton,
+>> reverted commit e74d098c66543d0731de62eb747ccd5b636a6f4c and that allowed
+>> by box to boot successfully.
+>>     
+>
 > Which module uses hvc_console in your case?
+>
+> 		Amit
+>
+>   
 
-I assume hcv_vio.
 
-I also tested using "init=3D/bin/bash" as a kernel command line option and
-the console worked while I was running bash, but everything was very
-sluggish.  Then when I did "exec /sbin/init" the console hung completely
-- sysrq (^O) didn't even work any more (it did while I was running bash).
+-- 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__26_Mar_2010_21_54_16_+1100_YZLZJcjnOWU7PRW3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkusklgACgkQjjKRsyhoI8z2rgCfdQK7HbJ3o86vDpbSbghLmQwd
-7CEAoI4ZvlWTUDm4FooAu/N5fA3VfHXg
-=wzAl
------END PGP SIGNATURE-----
-
---Signature=_Fri__26_Mar_2010_21_54_16_+1100_YZLZJcjnOWU7PRW3--
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
