@@ -1,25 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f217.google.com (mail-gx0-f217.google.com
-	[209.85.217.217]) by ozlabs.org (Postfix) with ESMTP id 0D05CB7CEF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Mar 2010 09:44:57 +1100 (EST)
-Received: by gxk9 with SMTP id 9so197604gxk.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 15:44:56 -0700 (PDT)
+Received: from mail-yw0-f196.google.com (mail-yw0-f196.google.com
+	[209.85.211.196]) by ozlabs.org (Postfix) with ESMTP id 8AC62B7CF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 09:46:58 +1100 (EST)
+Received: by ywh34 with SMTP id 34so5082168ywh.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:46:57 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20100326221707.GA1953@leila.ping.de>
-References: <20100317051521.GA16826@feather>
-	<fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
-	<20100326213202.GD5350@feather> <20100326221707.GA1953@leila.ping.de>
+In-Reply-To: <1269643337-29431-1-git-send-email-timur@freescale.com>
+References: <1269643337-29431-1-git-send-email-timur@freescale.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 26 Mar 2010 16:44:32 -0600
-Message-ID: <fa686aa41003261544l5b1a4690xeba4df841c6143d6@mail.gmail.com>
-Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and
-	CompactFlash
-To: Wolfgang Wegner <wolfgang@leila.ping.de>
+Date: Fri, 26 Mar 2010 16:46:37 -0600
+Message-ID: <fa686aa41003261546y48812e37xcbda00703781c678@mail.gmail.com>
+Subject: Re: [PATCH] [v3] powerpc/fsl: add device tree binding for QE firmware
+To: Timur Tabi <timur@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Josh Triplett <josh@joshtriplett.org>
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +24,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 26, 2010 at 4:17 PM, Wolfgang Wegner <wolfgang@leila.ping.de> w=
-rote:
-> Hi Josh,
+On Fri, Mar 26, 2010 at 4:42 PM, Timur Tabi <timur@freescale.com> wrote:
+> Define a binding for embedding a QE firmware blob into the device tree. =
+=A0Also
+> define a new property for the QE node that links to a firmware node.
 >
-> On Fri, Mar 26, 2010 at 02:32:02PM -0700, Josh Triplett wrote:
->> On Fri, Mar 26, 2010 at 12:22:32PM -0600, Grant Likely wrote:
->> >
->> > Not all CF adapters have all the pins wired up that are needed for
->> > *DMA modes. =A0That is the most likely problem.
->>
->> True, but we bought a card that specifically advertises support for
->> UDMA, and says UDMA right on the card's label.
->>
->> http://store.lexar.com/?productid=3DCF8GB-300-381
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+> =A0.../powerpc/dts-bindings/fsl/cpm_qe/qe.txt =A0 =A0 =A0 =A0 | =A0 54 ++=
+++++++++++++++++++
+> =A01 files changed, 54 insertions(+), 0 deletions(-)
 >
-> Grant was referring to the adapter, not the card!
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt b/Docum=
+entation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
+> index 6e37be1..8b7246b 100644
+> --- a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
+> +++ b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
+> @@ -21,6 +21,15 @@ Required properties:
+> =A0- fsl,qe-num-snums: define how many serial number(SNUM) the QE can use=
+ for the
+> =A0 threads.
 >
-> In fact I still have to see a single CF-to-IDE adapter that does
-> have the wires needed for (U)DMA without me soldering them in place...
+> +Optional properties:
+> +- fsl,firmware-phandle:
+> + =A0 =A0Usage: required only if there is no fsl,qe-firmware child node
+> + =A0 =A0Value type: <phandle>
+> + =A0 =A0Definition: Points to a firmware node (see "QE Firmware Node" be=
+low)
+> + =A0 =A0 =A0 =A0that contains the firmware that should be uploaded for t=
+his QE.
+> + =A0 =A0 =A0 =A0The compatible property for the firmware node should say=
+,
+> + =A0 =A0 =A0 =A0"fsl,qe-firmware".
+> +
+> =A0Recommended properties
+> =A0- brg-frequency : the internal clock source frequency for baud-rate
+> =A0 generators in Hz.
+> @@ -59,3 +68,48 @@ Example:
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0 c000>;
+> =A0 =A0 =A0 =A0};
+> =A0 =A0 =A0};
+> +
+> +* QE Firmware Node
+> +
+> +This node defines a firmware binary that is embedded in the device tree,=
+ for
+> +the purpose of passing the firmware from bootloader to the kernel, or fr=
+om
+> +the hypervisor to the guest.
+> +
+> +The firmware node itself contains the firmware binary contents, a compat=
+ible
+> +property, and any firmware-specific properties. =A0The node should be pl=
+aced
+> +inside a QE node that needs it. =A0Doing so eliminates the need for a
+> +fsl,firmware-phandle property. =A0Other QE nodes that need the same firm=
+ware
+> +should define an fsl,firmware-phandle property that points to the firmwa=
+re node
+> +in the first QE node.
+> +
+> +The fsl,firmware property can be specified in the DTS (possibly using in=
+cbin)
+> +or can be inserted by the boot loader at boot time.
+> +
+> +Required properties:
+> + =A0- compatible
+> + =A0 =A0 =A0Usage: required
+> + =A0 =A0 =A0Value type: <string>
+> + =A0 =A0 =A0Definition: A standard property. =A0Specify a string that in=
+dicates what
+> + =A0 =A0 =A0 =A0 =A0kind of firmware it is. =A0For QE, this should be "f=
+sl,qe-firmware".
+> +
+> + =A0 - fsl,firmware
+> + =A0 =A0 =A0Usage: required
+> + =A0 =A0 =A0Value type: <prop-encoded-array>, encoded as an array of byt=
+es
+> + =A0 =A0 =A0Definition: A standard property. =A0This property contains t=
+he firmware
+> + =A0 =A0 =A0 =A0 =A0binary "blob".
+> +
+> +Example:
+> + =A0 =A0 =A0 qe1@e0080000 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 qe_firmware:qe-firmware {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe-firm=
+ware";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,firmware =3D <0x70 0xcd=
+ 0x00 0x00 0x01 0x46 0x45 ...>
 
-I found one at logic supply a while back, but I can't remember which one!
+This should actually be square brackets for 8-bit data (as opposed to
+cells).  I'll fix it up when I merge the patch.
 
-g.
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 qe2@e0090000 {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe";
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,firmware-phandle =3D <&qe_firmware>;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
+> + =A0 =A0 =A0 }
+> --
+> 1.6.5
+>
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
