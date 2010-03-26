@@ -1,12 +1,12 @@
 Return-Path: <amit.shah@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id AF106B7CEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 23:46:00 +1100 (EST)
-Date: Fri, 26 Mar 2010 18:13:40 +0530
+	by ozlabs.org (Postfix) with ESMTP id DC65BB7CFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 23:53:16 +1100 (EST)
+Date: Fri, 26 Mar 2010 18:19:01 +0530
 From: Amit Shah <amit.shah@redhat.com>
-To: Sachin Sant <sachinp@in.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100326124340.GB7039@amit-x200.redhat.com>
+Message-ID: <20100326124901.GC7039@amit-x200.redhat.com>
 References: <20100319151326.GC8541@kroah.com>
 	<1269011916-8836-4-git-send-email-gregkh@suse.de>
 	<1269119079.8599.65.camel@pasglop>
@@ -15,15 +15,15 @@ References: <20100319151326.GC8541@kroah.com>
 	<4BAC7AD4.4030309@in.ibm.com>
 	<20100326095821.GA7039@amit-x200.redhat.com>
 	<4BAC9D9E.5070901@in.ibm.com>
+	<20100326115233.30288d3c@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BAC9D9E.5070901@in.ibm.com>
+In-Reply-To: <20100326115233.30288d3c@lxorguk.ukuu.org.uk>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
 	Rusty Russell <rusty@rustcorp.com.au>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Anton Blanchard <anton@samba.org>, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,68 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Fri) Mar 26 2010 [17:12:22], Sachin Sant wrote:
-> Amit Shah wrote:
->> On (Fri) Mar 26 2010 [14:43:56], Sachin Sant wrote:
->>   
->>>> And this suggests that hvc_kick() is called before hvc_task is
->>>> initialised, ie, before hvc_init() is called.
->>>>
->>>> Does this help?
->>>>         
->>> Hi Amit,
->>>
->>> I too ran into this issue as reported by Anton. Unfortunately in my
->>> case the following suggested patch does not help boot the powerpc
->>> box successfully. The boot still hangs with following messages
->>>     
->>
->> Was the hang you saw before applying this patch at the same place / for
->> the same reason?
->>   
-> Yes the machine hangs at the same place with or without the patch.
+On (Fri) Mar 26 2010 [11:52:33], Alan Cox wrote:
+> > >> mount: can't find /root/proc in /etc/fstab or /etc/mtab
+> > >> /sbin/smart_agetty: can not determine 'console' speed
+> > >>     
+> > >
+> > > OK, this gets even murkier. I don't know why taking a few krefs modifies
+> > > hvc_console behaviour to such an extent.
+> 
+> Can you see if the agetty is getting a hangup or open failing. I wonder
+> if its just a timing change ?
 
-OK.
-
->>> mount: can't find /root/proc in /etc/fstab or /etc/mtab
->>> /sbin/smart_agetty: can not determine 'console' speed
->>>     
->>
->> OK, this gets even murkier. I don't know why taking a few krefs modifies
->> hvc_console behaviour to such an extent.
->>   
-> Looking at the commit e74d098c66543d0731de62eb747ccd5b636a6f4c,
-> i see that for every tty_kref_get() there is a corresponding
-> tty_kref_put() except maybe for the one in the following patch snippet
->
->        spin_lock_irqsave(&hp->lock, flags);
->        /* Check and then increment for fast path open. */
->        if (hp->count++ > 0) {
-> +               tty_kref_get(tty);
->                spin_unlock_irqrestore(&hp->lock, flags);
->                hvc_kick();
->                return 0;
->
-> I don't know this code very well but we might be missing a
-> corresponding tty_kref_put() some place ?
-
-See hvc_hangup:
-
-	temp_open_count = hp->count;
-	...
-	while(temp_open_count) {
-		--temp_open_count;
-		tty_kref_put(tty);
-		kref_put(&hp->kref, destroy_hvc_struct);
-	}
-
-> If i comment out the above tty_kref_get() call, the machine
-> boots fine with or without the suggested patch.
-
-Hm, so as Alan suggests, it could be a timing issue in getting the ref
-and returning back from hvc_open(). I don't know how the tty layer
-works, but delays in getting the open() succeed results in badness?
-Guess we'll have to poke at the other drivers to see how they handle
-open() calls.
+Can someone please try this? Looks like it only reproduces on ppc, I
+can't get it to reproduce in my kvm vm. I'm trying to get hold of a ppc
+box, though. (btw ppc, ppc64, both should trigger this, right?)
 
 		Amit
