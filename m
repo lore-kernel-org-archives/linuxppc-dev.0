@@ -1,13 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f201.google.com (mail-pz0-f201.google.com
-	[209.85.222.201]) by ozlabs.org (Postfix) with ESMTP id 7A731B7CED
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 05:45:15 +1100 (EST)
-Received: by pzk39 with SMTP id 39so164061pzk.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 11:45:13 -0700 (PDT)
+Return-Path: <wmb@firmworks.com>
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 151E4B7CA6
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 05:48:23 +1100 (EST)
+Message-ID: <4BAD017F.6090109@firmworks.com>
+Date: Fri, 26 Mar 2010 08:48:31 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4BACFF7B.3010002@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
 References: <1269380552-10418-1-git-send-email-timur@freescale.com>
+	<fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
+	<4BAA4C8A.70104@freescale.com>
 	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
 	<4BAB7E67.6040707@freescale.com> <4BAB816F.5060405@firmworks.com>
 	<fa686aa41003250916t3d0839e5m42d7f7f6540e821a@mail.gmail.com>
@@ -16,14 +21,10 @@ References: <1269380552-10418-1-git-send-email-timur@freescale.com>
 	<4BACD011.5050609@freescale.com>
 	<fa686aa41003261120o15fea3cev8ca625f389bc8664@mail.gmail.com>
 	<4BACFF7B.3010002@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 26 Mar 2010 12:44:52 -0600
-Message-ID: <fa686aa41003261144i61429f23x1217a528fcfb3e66@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mitch Bradley <wmb@firmworks.com>, Scott Wood <scottwood@freescale.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <4BACFF7B.3010002@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 26, 2010 at 12:39 PM, Timur Tabi <timur@freescale.com> wrote:
+Timur Tabi wrote:
 > Grant Likely wrote:
->>> Without the compatible property, the only way I'd know that the child n=
-ode contains a firmware is to look at the actual name of the child node, wh=
-ich (as Scott and I believe) is not better than a compatible property.
+>   
+>>> Without the compatible property, the only way I'd know that the child node contains a firmware is to look at the actual name of the child node, which (as Scott and I believe) is not better than a compatible property.
+>>>       
 >> If it is always a child of a qe node, then I've got no objections.
+>>     
 >
-> I have no problem with putting the firmware node as a child of the QE nod=
-e and skipping the phandle property, but only as long as there's only one Q=
-E node. =A0Would you agree that this is bad:
+> I have no problem with putting the firmware node as a child of the QE node and skipping the phandle property, but only as long as there's only one QE node.  Would you agree that this is bad:
 >
 > qe1: qe@e0080000 {
-> =A0 =A0 =A0 =A0compatible =3D "fsl,qe";
-> =A0 =A0 =A0 =A0qefw: fsl,qe_firmware {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible=3D"fsl,qe-firmware";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,firmware =3D /bininc/("firmware-blob.b=
-in");
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,qe-firmware-eccr =3D <0x00000000 0x000=
-01230>;
-> =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0...
+>         compatible = "fsl,qe";
+>         qefw: fsl,qe_firmware {
+>                 compatible="fsl,qe-firmware";
+>                 fsl,firmware = /bininc/("firmware-blob.bin");
+>                 fsl,qe-firmware-eccr = <0x00000000 0x00001230>;
+>         }
+>         ...
 > }
 >
 > qe2: qe@e0090000 {
-> =A0 =A0 =A0 =A0compatible =3D "fsl,qe";
-> =A0 =A0 =A0 =A0fsl,firmware-phandle =3D <&qefw>;
-> =A0 =A0 =A0 =A0...
+>         compatible = "fsl,qe";
+> 	fsl,firmware-phandle = <&qefw>;
+>         ...
 > }
+>
+>   
 
-Nah.  That looks totally fine.  Not having the firmware under a qe
-node would look bad to me.
+It not any worse than having the firmware blob anywhere else that is not 
+hierarchically related.
 
-g.
+If one insists on purity of hierarchy, one could introduce a node above 
+qe1 and qe2 and put the firmware blob in that parent node.  That 
+captures the assertion that the two qe devices are in fact identical so 
+the same firmware is suitable for both.
