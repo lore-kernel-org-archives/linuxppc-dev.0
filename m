@@ -1,40 +1,26 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2077AB7CB6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 18:08:45 +1100 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2Q78jfS019705
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2010 18:08:45 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2Q72bUT929986
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2010 18:02:38 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2Q78i0S011700
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2010 18:08:44 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o2Q78isT011694
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Mar 2010 18:08:44 +1100
-Received: from ubrain.localnet (haven.au.ibm.com [9.190.164.82])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.au.ibm.com (Postfix) with ESMTP id DD18F73692
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 18:08:43 +1100 (EST)
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Track backing pages used allocated by
-	vmemmap_populate()
-Date: Fri, 26 Mar 2010 18:12:34 +1100
+	by ozlabs.org (Postfix) with ESMTPS id 87E36B7CC2
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 19:52:49 +1100 (EST)
+Message-ID: <51131.84.105.60.153.1269593558.squirrel@gate.crashing.org>
+In-Reply-To: <43c137a81003251901h229b873bh7593c59a5ef66ae9@mail.gmail.com>
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+	<1269505301.8599.238.camel@pasglop> <201003251105.10033.arnd@arndb.de>
+	<43c137a81003250800n660195c5k42c8516068aeda8d@mail.gmail.com>
+	<1269549524.8599.243.camel@pasglop>
+	<43c137a81003251811s52ac72eaud921d187e9747098@mail.gmail.com>
+	<50253.84.105.60.153.1269566569.squirrel@gate.crashing.org>
+	<43c137a81003251901h229b873bh7593c59a5ef66ae9@mail.gmail.com>
+Date: Fri, 26 Mar 2010 09:52:38 +0100 (CET)
+Subject: Re: Continual reading from the PowerPc time base register is not  
+	stable
+From: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Csdncannon" <csdncannon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <201003261812.34095.markn@au1.ibm.com>
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,87 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to keep track of the backing pages that get allocated by
-vmemmap_populate() so that when we use kdump, the dump-capture kernel can
-find these pages in memory.
+[please do not top-post]
 
-We use a linked list of structures that contain the physical address of the
-backing page and corresponding virtual address to track the backing pages.
-And we use a simple spinlock to protect the vmemmap_list.
+>> Do you now ever get two consecutive time readings that are closer
+>> that 64 tick together?  If not, it's simply hiding the problem.
+>>
+>> Do you ever now read a value that does not have the bit with value
+>> 0x40 set?
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/powerpc/include/asm/pgalloc-64.h |    7 +++++++
- arch/powerpc/mm/init_64.c             |   27 +++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+> I enabled the printing of all values. There is bigger gap between two
+> reading, it seems isync bring to performance drop.
 
-Index: upstream/arch/powerpc/include/asm/pgalloc-64.h
-===================================================================
---- upstream.orig/arch/powerpc/include/asm/pgalloc-64.h
-+++ upstream/arch/powerpc/include/asm/pgalloc-64.h
-@@ -10,6 +10,13 @@
- #include <linux/slab.h>
- #include <linux/cpumask.h>
- #include <linux/percpu.h>
-+#include <linux/list.h>
-+
-+struct vmemmap_backing {
-+	unsigned long phys;
-+	unsigned long virt_addr;
-+	struct list_head list;
-+};
- 
- /*
-  * Functions that deal with pagetables that could be at any level of
-Index: upstream/arch/powerpc/mm/init_64.c
-===================================================================
---- upstream.orig/arch/powerpc/mm/init_64.c
-+++ upstream/arch/powerpc/mm/init_64.c
-@@ -42,6 +42,7 @@
- #include <linux/poison.h>
- #include <linux/lmb.h>
- #include <linux/hugetlb.h>
-+#include <linux/list.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/page.h>
-@@ -251,6 +252,30 @@ static void __meminit vmemmap_create_map
- }
- #endif /* CONFIG_PPC_BOOK3E */
- 
-+LIST_HEAD(vmemmap_list);
-+DEFINE_SPINLOCK(vmemmap_list_lock);
-+
-+static __meminit void vmemmap_list_populate(unsigned long phys,
-+					    unsigned long start,
-+					    int node)
-+{
-+	struct vmemmap_backing *vmem_back;
-+
-+	vmem_back = vmemmap_alloc_block(sizeof(struct vmemmap_backing), node);
-+	if (unlikely(!vmem_back)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	vmem_back->phys = phys;
-+	vmem_back->virt_addr = start;
-+	INIT_LIST_HEAD(&vmem_back->list);
-+
-+	spin_lock(&vmemmap_list_lock);
-+	list_add(&vmem_back->list, &vmemmap_list);
-+	spin_unlock(&vmemmap_list_lock);
-+}
-+
- int __meminit vmemmap_populate(struct page *start_page,
- 			       unsigned long nr_pages, int node)
- {
-@@ -275,6 +300,8 @@ int __meminit vmemmap_populate(struct pa
- 		if (!p)
- 			return -ENOMEM;
- 
-+		vmemmap_list_populate(__pa(p), start, node);
-+
- 		pr_debug("      * %016lx..%016lx allocated at %p\n",
- 			 start, start + page_size, p);
- 
+Yes exactly, which is to be expected.
+
+> Could you elaborate what does "closer that 64 tick together" mean?
+
+It means I cannot type -- "closer than 64 ticks".
+
+My concern was that the sync;isync thing might slow down things
+so much that you always get readings 64 or more cycles apart.
+But you don't.
+
+> You can see the attached log, the 0x40 is not always set.
+
+Yes indeed.  Could you post the relevant piece if disassembly from
+your original binary (the one that has the problem)?  Or send me the
+binary (not to the mailing list), I'll do it then.
+
+
+Segher
