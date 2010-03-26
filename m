@@ -1,18 +1,36 @@
-Return-Path: <troy.laramy@gmail.com>
-Received: from mail-fx0-f221.google.com (mail-fx0-f221.google.com
-	[209.85.220.221]) by ozlabs.org (Postfix) with ESMTP id 9077AB7CF1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Mar 2010 06:04:05 +1100 (EST)
-Received: by fxm21 with SMTP id 21so883718fxm.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 12:04:02 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 26 Mar 2010 13:04:02 -0600
-Message-ID: <f9c38d471003261204g2337bce8ja66a3ca46513dd7e@mail.gmail.com>
-Subject: u-boot build errors on LTIB 20100115 for MSP8572DS
-From: Troy Laramy <troy.laramy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001485f795f499bed10482b8d314
+Return-Path: <shaggy@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C9D1CB7CEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 08:11:55 +1100 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o2QL5DZ8014101
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:05:13 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2QLBlj8139946
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:11:47 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o2QLBk7O001796
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:11:47 -0600
+Subject: Re: [RFC Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+In-Reply-To: <20100323140724.GC21836@in.ibm.com>
+References: <20100323140008.954823303@pr> <20100323140724.GC21836@in.ibm.com>
+Content-Type: text/plain
+Date: Fri, 26 Mar 2010 16:11:45 -0500
+Message-Id: <1269637905.4760.34.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org,
+	Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +40,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001485f795f499bed10482b8d314
-Content-Type: text/plain; charset=ISO-8859-1
+On Tue, 2010-03-23 at 19:37 +0530, K.Prasad wrote:
+> plain text document attachment (ppc64_hbkpt_02)
+> Implement perf-events based hw-breakpoint interfaces for PPC64 processors.
+> These interfaces help arbitrate requests from various users and schedules
+> them as appropriate.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 
-Hi, I am having trouble building u-boot (from u-boot-2009.11-mpc8572ds.spec)
-from LTIB for the MPC8572DS platform using just the Makefile and freescale
-cross tools.  The build machine is CentOS 5.3.  This is procedure I am
-following (on LTIB for MPC8572DS, 20100115):
+SNIP
 
-# cd ltib-mpc8572ds-20100115
-# ./ltib -m prep -p u-boot-2009.11-mpc8572ds.spec
-# ./ltib -m scbuild -p u-boot-2009.11-mpc8572ds.spec
-# cd rpm/BUILD/
+> Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/cputable.h
+> ===================================================================
+> --- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/cputable.h
+> +++ linux-2.6.ppc64_test/arch/powerpc/include/asm/cputable.h
+> @@ -511,6 +511,13 @@ static inline int cpu_has_feature(unsign
+>  		& feature);
+>  }
+> 
+> +#define CPU_FTR_HAS_DABR (defined(CONFIG_PPC64) && \
+> +			  !defined(CONFIG_PPC_ADV_DEBUG_REGS))
+> +#ifdef CPU_FTR_HAS_DABR
+> +/* Number of physical HW breakpoint registers */
+> +#define HBP_NUM 1
+> +#endif
+> +
+>  #endif /* !__ASSEMBLY__ */
+> 
+>  #endif /* __KERNEL__ */
 
-2. confirm configuration and make
-# cd u-boot-2009.11-rc1-19
-# make ARCH=powerpc CROSS_COMPILE=/......../bin/powerpc-none-linux-gnuspe-
-MPC8572DS_NAND_config
-# make ARCH=powerpc CROSS_COMPILE=/......../bin/powerpc-none-linux-gnuspe-
-all
+These new defines don't really correlate to the cpu table.  One would
+expect cpu_has_feature(CPU_FTR_HAS_DABR) to have meaning, but it would
+have to be defined similar to the other CPU_FTR_ constants, and or-ed
+with CPU_FTRS_ALWAYS (when appropriate).
 
-but i'm getting (several) compile errors from the make.  It goes for a
-while, then gets errors at different points, depending on how much it has to
-build:
-Usually, just syntax errors or something like:
-make -C lib_powerpc/
-make: *** lib_powerpc/: No such file or directory.  Stop.
-make: *** [lib_powerpc/libpowerpc.a] Error 2
-....however I can still build using ./ltib???
-shouldn't I be able to build from make?  (as per the MPC8572DS NAND
-bootloader User Manual HTML doc)?    Is there some other way I should be
-building?  Any help would be much appreciated!
+Similarly, I would expect the cpu_spec structure to have a new field,
+hbp_num, which is initialized in cputable.c.  Maybe a longer name would
+be better, num_hw_brkpts?
 
-Thanks very much,
-Troy
+When I added the PPC_ADV_DEBUG config options for the bookE features, I
+didn't see an immediate need to clutter the cputable since their values
+are fixed at compile time.  We should be consistent with these, but
+unless we are going to determine any of these at run-time, I don't know
+that they belong in the cpu table.
 
---001485f795f499bed10482b8d314
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div>Hi, I am having trouble building u-boot (from u-boot-2009.11-mpc8572ds=
-.spec) from LTIB for the MPC8572DS platform using just the Makefile and fre=
-escale cross tools.=A0 The build machine is CentOS 5.3.=A0 This is procedur=
-e I am following (on LTIB for MPC8572DS, 20100115):</div>
-
-<div>=A0</div>
-<div># cd ltib-mpc8572ds-20100115<br># ./ltib -m prep -p u-boot-2009.11-mpc=
-8572ds.spec<br># ./ltib -m scbuild -p u-boot-2009.11-mpc8572ds.spec<br># cd=
- rpm/BUILD/ </div>
-<p></p>
-<p>2. confirm configuration and make</p>
-<div># cd u-boot-2009.11-rc1-19</div>
-<div><font size=3D"2" face=3D"tahoma"># make ARCH=3Dpowerpc CROSS_COMPILE=
-=3D/......../bin/powerpc-none-linux-gnuspe- MPC8572DS_NAND_config</font><br=
-># <font size=3D"2">make ARCH=3Dpowerpc CROSS_COMPILE=3D/......../bin/power=
-pc-none-linux-gnuspe- all</font></div>
-
-<div>=A0</div>
-<div><font size=3D"2" face=3D"tahoma">but i&#39;m getting (several) compile=
- errors from the make.=A0 It goes for a while, then gets errors at differen=
-t points, depending on how much it has to build:</font></div>
-<div><font size=3D"2" face=3D"tahoma">Usually, just syntax errors or someth=
-ing like:</font></div>
-<div><font size=3D"2" face=3D"tahoma">make -C lib_powerpc/<br>make: *** lib=
-_powerpc/: No such file or directory.=A0 Stop.<br>make: *** [lib_powerpc/li=
-bpowerpc.a] Error 2<br>....however I can still build using ./ltib???</font>=
-=A0</div>
-
-<div><font size=3D"2" face=3D"tahoma">shouldn&#39;t I be able to build from=
- make?=A0 (as per the MPC8572DS NAND bootloader User Manual HTML doc)?=A0=
-=A0=A0 Is there some other way I should be building?=A0 Any help would be m=
-uch appreciated!</font></div>
-
-<div><font face=3D"Tahoma"></font>=A0</div>
-<div><font face=3D"Tahoma">Thanks very much,</font></div>
-<div><font face=3D"Tahoma">Troy</font></div>
-
---001485f795f499bed10482b8d314--
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
