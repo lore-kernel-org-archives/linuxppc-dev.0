@@ -1,29 +1,39 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sachinp@in.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2C21EB7CC2
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 20:01:29 +1100 (EST)
-Message-ID: <51142.84.105.60.153.1269594081.squirrel@gate.crashing.org>
-In-Reply-To: <51131.84.105.60.153.1269593558.squirrel@gate.crashing.org>
-References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
-	<1269505301.8599.238.camel@pasglop> <201003251105.10033.arnd@arndb.de>
-	<43c137a81003250800n660195c5k42c8516068aeda8d@mail.gmail.com>
-	<1269549524.8599.243.camel@pasglop>
-	<43c137a81003251811s52ac72eaud921d187e9747098@mail.gmail.com>
-	<50253.84.105.60.153.1269566569.squirrel@gate.crashing.org>
-	<43c137a81003251901h229b873bh7593c59a5ef66ae9@mail.gmail.com>
-	<51131.84.105.60.153.1269593558.squirrel@gate.crashing.org>
-Date: Fri, 26 Mar 2010 10:01:21 +0100 (CET)
-Subject: Re: Continual reading from the PowerPc time base register is not   
-	stable
-From: "Segher Boessenkool" <segher@kernel.crashing.org>
-To: "Csdncannon" <csdncannon@gmail.com>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	linuxppc-dev@ozlabs.org, "Arnd Bergmann" <arnd@arndb.de>
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8F4A7B7C48
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 20:14:03 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp09.in.ibm.com (8.14.3/8.13.1) with ESMTP id o2Q8Scl0023140
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 13:58:38 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2Q9Dw6k852074
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 14:43:58 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2Q9DvuW022882
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 20:13:58 +1100
+Message-ID: <4BAC7AD4.4030309@in.ibm.com>
+Date: Fri, 26 Mar 2010 14:43:56 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
+References: <20100319151326.GC8541@kroah.com>
+	<1269011916-8836-4-git-send-email-gregkh@suse.de>
+	<1269119079.8599.65.camel@pasglop>
+	<20100321043725.GA21566@amit-x200.redhat.com>
+	<20100324121902.GJ15789@amit-x200.redhat.com>
+In-Reply-To: <20100324121902.GJ15789@amit-x200.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Anton Blanchard <anton@samba.org>, tglx@linutronix.de,
+	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,23 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Yes indeed.  Could you post the relevant piece if disassembly from
-> your original binary (the one that has the problem)?  Or send me the
-> binary (not to the mailing list), I'll do it then.
+Amit Shah wrote:
+> On (Sun) Mar 21 2010 [10:07:25], Amit Shah wrote:
+>   
+>> On (Sun) Mar 21 2010 [08:04:39], Benjamin Herrenschmidt wrote:
+>>     
+>>> On Fri, 2010-03-19 at 08:18 -0700, Greg Kroah-Hartman wrote:
+>>>       
+>>>> From: Amit Shah <amit.shah@redhat.com>
+>>>>
+>>>> Alan pointed out a race in the code where hvc_remove is invoked. The
+>>>> recent virtio_console work is the first user of hvc_remove().
+>>>>         
+>>> This causes hangs during boot on pseries machines. Haven't had a chance
+>>> to track that down yet, but please revert
+>>> e74d098c66543d0731de62eb747ccd5b636a6f4c for now.
+>>>       
+<SNIP>
 
-Ah scratch that.  I compiled your original code (after fixing the
-compile errors -- there is no such type as "bool" in C).
+>
+>
+> And this suggests that hvc_kick() is called before hvc_task is
+> initialised, ie, before hvc_init() is called.
+>
+> Does this help?
+>   
+Hi Amit,
 
-The problem is that  (upper << 32) | lower  thing.  "upper" is a 32-bit
-type, so shifting it by 32 or more bits is undefined.  GCC compiles this
-to (shortened):
+I too ran into this issue as reported by Anton. Unfortunately in my
+case the following suggested patch does not help boot the powerpc
+box successfully. The boot still hangs with following messages
 
-0: mftbu 9 ; mftbl 11 ; mftbu 0 ; cmpw 0,9 ; bne 0b  # so far so good
-   slwi 0,0,0 ; or 4,0,11 ; li 3,0 ; blr
+/dev/sda5: clean, 229739/2097152 files, 2485598/8377888 blocks (check in 4 mounts)
+fsck succeeded. Mounting root device read-write.
+Mounting root /dev/sda5
+mount -o rw,acl,user_xattr -t ext3 /dev/sda5 /root
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs (sda5): using internal journal
+EXT3-fs (sda5): mounted filesystem with writeback data mode
+mount: can't find /root/proc in /etc/fstab or /etc/mtab
+/sbin/smart_agetty: can not determine 'console' speed
 
-so it shifts by 0, i.e. it does  upper | lower .
 
-Case closed, no hardware problem :-)
+Just to confirm i too am facing same issue as reported by Anton,
+reverted commit e74d098c66543d0731de62eb747ccd5b636a6f4c and that allowed
+by box to boot successfully.
+
+Thanks
+-Sachin
+
+> diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+> index ba55bba..50ac983 100644
+> --- a/drivers/char/hvc_console.c
+> +++ b/drivers/char/hvc_console.c
+> @@ -285,6 +285,9 @@ EXPORT_SYMBOL_GPL(hvc_instantiate);
+>  /* Wake the sleeping khvcd */
+>  void hvc_kick(void)
+>  {
+> +       if (!hvc_task)
+> +               return;
+> +
+>         hvc_kicked = 1;
+>         wake_up_process(hvc_task);
+>  }
+>
+> 		Amit
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>   
 
 
-Segher
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
