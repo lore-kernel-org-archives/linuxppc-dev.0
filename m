@@ -1,36 +1,19 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C9D1CB7CEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 08:11:55 +1100 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o2QL5DZ8014101
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:05:13 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2QLBlj8139946
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:11:47 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o2QLBk7O001796
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 15:11:47 -0600
-Subject: Re: [RFC Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-In-Reply-To: <20100323140724.GC21836@in.ibm.com>
-References: <20100323140008.954823303@pr> <20100323140724.GC21836@in.ibm.com>
-Content-Type: text/plain
-Date: Fri, 26 Mar 2010 16:11:45 -0500
-Message-Id: <1269637905.4760.34.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Alan Stern <stern@rowland.harvard.edu>, paulus@samba.org,
-	Roland McGrath <roland@redhat.com>
+Return-Path: <josh@joshtriplett.org>
+Received: from relay2-v.mail.gandi.net (relay2-v.mail.gandi.net
+	[217.70.178.76]) by ozlabs.org (Postfix) with ESMTP id 9B20BB7CB9
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 27 Mar 2010 08:32:13 +1100 (EST)
+Date: Fri, 26 Mar 2010 14:32:02 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and CompactFlash
+Message-ID: <20100326213202.GD5350@feather>
+References: <20100317051521.GA16826@feather>
+	<fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,52 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-03-23 at 19:37 +0530, K.Prasad wrote:
-> plain text document attachment (ppc64_hbkpt_02)
-> Implement perf-events based hw-breakpoint interfaces for PPC64 processors.
-> These interfaces help arbitrate requests from various users and schedules
-> them as appropriate.
+On Fri, Mar 26, 2010 at 12:22:32PM -0600, Grant Likely wrote:
+> On Tue, Mar 16, 2010 at 11:17 PM, Josh Triplett <josh@joshtriplett.org> wrote:
+> > Hello,
+> >
+> > We've tried both 2.6.33 and DENX-v2.6.33.1, and we haven't managed to
+> > successfully use any form of DMA with the TQM5200 and a CompactFlash
+> > card.  We know the CF card supports DMA (or, at least, it says "UDMA"
+> > right on the card, and various reports say Lexar Professional CF cards
+> > do DMA), but the kernel always puts the card in PIO4 mode.  We tried
+> > libata.force=mwdma2 and libata.force=udma2 , and many other modes, but
+> > this always led to failures like this:
+> >
+> > [   31.994311] ata1: lost interrupt (Status 0x58)
+> > [   32.020435] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> > [   32.027712] ata1.00: failed command: READ DMA
+> > [   32.032236] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+> > [   32.032249]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> > [   32.047212] ata1.00: status: { DRDY }
+> > [   32.051050] ata1: soft resetting link
+> > [   32.218796] ata1.00: FORCE: xfer_mask set to udma2
+> > [   32.230618] ata1.00: configured for UDMA/33
+> > [   32.235000] ata1.00: device reported invalid CHS sector 0
+> > [   32.240629] ata1: EH complete
+> > [   62.994310] ata1: lost interrupt (Status 0x58)
+> > [   63.020443] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> > [   63.027722] ata1.00: failed command: READ DMA
+> > [   63.032246] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 dma 4096 in
+> > [   63.032259]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> > [   63.047221] ata1.00: status: { DRDY }
+> > [   63.051060] ata1: soft resetting link
+> > [   63.218778] ata1.00: FORCE: xfer_mask set to udma2
+> > [   63.238603] ata1.00: configured for UDMA/33
+> > [   63.242978] ata1.00: device reported invalid CHS sector 0
+> > [   63.248609] ata1: EH complete
+> >
+> > We have the MPC5200C revision of the silicon.
+> >
+> > Does this sound like a known issue?  Can we do anything to troubleshoot
+> > this further?
 > 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> Not all CF adapters have all the pins wired up that are needed for
+> *DMA modes.  That is the most likely problem.
 
-SNIP
+True, but we bought a card that specifically advertises support for
+UDMA, and says UDMA right on the card's label.
 
-> Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/cputable.h
-> ===================================================================
-> --- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/cputable.h
-> +++ linux-2.6.ppc64_test/arch/powerpc/include/asm/cputable.h
-> @@ -511,6 +511,13 @@ static inline int cpu_has_feature(unsign
->  		& feature);
->  }
-> 
-> +#define CPU_FTR_HAS_DABR (defined(CONFIG_PPC64) && \
-> +			  !defined(CONFIG_PPC_ADV_DEBUG_REGS))
-> +#ifdef CPU_FTR_HAS_DABR
-> +/* Number of physical HW breakpoint registers */
-> +#define HBP_NUM 1
-> +#endif
-> +
->  #endif /* !__ASSEMBLY__ */
-> 
->  #endif /* __KERNEL__ */
+http://store.lexar.com/?productid=CF8GB-300-381
 
-These new defines don't really correlate to the cpu table.  One would
-expect cpu_has_feature(CPU_FTR_HAS_DABR) to have meaning, but it would
-have to be defined similar to the other CPU_FTR_ constants, and or-ed
-with CPU_FTRS_ALWAYS (when appropriate).
+It seems unlikely, though not impossible, that they would have screwed
+up that badly. :)
 
-Similarly, I would expect the cpu_spec structure to have a new field,
-hbp_num, which is initialized in cputable.c.  Maybe a longer name would
-be better, num_hw_brkpts?
+By the way, we've also tested an IDE hard drive on this board, and it
+does UDMA2 just fine.
 
-When I added the PPC_ADV_DEBUG config options for the bookE features, I
-didn't see an immediate need to clutter the cputable since their values
-are fixed at compile time.  We should be consistent with these, but
-unless we are going to determine any of these at run-time, I don't know
-that they belong in the cpu table.
+Any thoughts on how we could try to solve this problem?
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+- Josh Triplett
