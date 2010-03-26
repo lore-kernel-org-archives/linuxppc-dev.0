@@ -1,29 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 5480EB7BEE
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 05:20:55 +1100 (EST)
-Received: by pvg6 with SMTP id 6so5072105pvg.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 11:20:54 -0700 (PDT)
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id 32CF8B7CED
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 27 Mar 2010 05:22:53 +1100 (EST)
+Received: by pvg12 with SMTP id 12so4537208pvg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 26 Mar 2010 11:22:52 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <4BACD011.5050609@freescale.com>
-References: <1269380552-10418-1-git-send-email-timur@freescale.com>
-	<fa686aa41003241007mf6052d5s4643795f4a87cdcf@mail.gmail.com>
-	<4BAA4C8A.70104@freescale.com>
-	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
-	<4BAB7E67.6040707@freescale.com> <4BAB816F.5060405@firmworks.com>
-	<fa686aa41003250916t3d0839e5m42d7f7f6540e821a@mail.gmail.com>
-	<4BAB9120.1060600@freescale.com>
-	<fa686aa41003251826m16ea94dfy422fae14fec81204@mail.gmail.com>
-	<4BACD011.5050609@freescale.com>
+In-Reply-To: <20100317051521.GA16826@feather>
+References: <20100317051521.GA16826@feather>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 26 Mar 2010 12:20:34 -0600
-Message-ID: <fa686aa41003261120o15fea3cev8ca625f389bc8664@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
-To: Timur Tabi <timur@freescale.com>
+Date: Fri, 26 Mar 2010 12:22:32 -0600
+Message-ID: <fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and
+	CompactFlash
+To: Josh Triplett <josh@joshtriplett.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mitch Bradley <wmb@firmworks.com>, Scott Wood <scottwood@freescale.com>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 26, 2010 at 9:17 AM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
+On Tue, Mar 16, 2010 at 11:17 PM, Josh Triplett <josh@joshtriplett.org> wro=
+te:
+> Hello,
 >
->> +- fsl,firmware:
->> + =A0 =A0Usage: Optional.
->> + =A0 =A0Value type: <prop-encoded-array>, encoded array of bytes
->> + =A0 =A0Definition: Contains the QUICC engine firmware blob.
->> [plus any other properties needed for firmware metadata]
+> We've tried both 2.6.33 and DENX-v2.6.33.1, and we haven't managed to
+> successfully use any form of DMA with the TQM5200 and a CompactFlash
+> card. =A0We know the CF card supports DMA (or, at least, it says "UDMA"
+> right on the card, and various reports say Lexar Professional CF cards
+> do DMA), but the kernel always puts the card in PIO4 mode. =A0We tried
+> libata.force=3Dmwdma2 and libata.force=3Dudma2 , and many other modes, bu=
+t
+> this always led to failures like this:
 >
-> This would place the firmware metadata properties inside the QE node itse=
-lf, which would break the QE binding.
+> [ =A0 31.994311] ata1: lost interrupt (Status 0x58)
+> [ =A0 32.020435] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x=
+6 frozen
+> [ =A0 32.027712] ata1.00: failed command: READ DMA
+> [ =A0 32.032236] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 d=
+ma 4096 in
+> [ =A0 32.032249] =A0 =A0 =A0 =A0 =A0res 40/00:00:00:00:00/00:00:00:00:00/=
+00 Emask 0x4 (timeout)
+> [ =A0 32.047212] ata1.00: status: { DRDY }
+> [ =A0 32.051050] ata1: soft resetting link
+> [ =A0 32.218796] ata1.00: FORCE: xfer_mask set to udma2
+> [ =A0 32.230618] ata1.00: configured for UDMA/33
+> [ =A0 32.235000] ata1.00: device reported invalid CHS sector 0
+> [ =A0 32.240629] ata1: EH complete
+> [ =A0 62.994310] ata1: lost interrupt (Status 0x58)
+> [ =A0 63.020443] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x=
+6 frozen
+> [ =A0 63.027722] ata1.00: failed command: READ DMA
+> [ =A0 63.032246] ata1.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 d=
+ma 4096 in
+> [ =A0 63.032259] =A0 =A0 =A0 =A0 =A0res 40/00:00:00:00:00/00:00:00:00:00/=
+00 Emask 0x4 (timeout)
+> [ =A0 63.047221] ata1.00: status: { DRDY }
+> [ =A0 63.051060] ata1: soft resetting link
+> [ =A0 63.218778] ata1.00: FORCE: xfer_mask set to udma2
+> [ =A0 63.238603] ata1.00: configured for UDMA/33
+> [ =A0 63.242978] ata1.00: device reported invalid CHS sector 0
+> [ =A0 63.248609] ata1: EH complete
+>
+> We have the MPC5200C revision of the silicon.
+>
+> Does this sound like a known issue? =A0Can we do anything to troubleshoot
+> this further?
 
-Not really true.  Adding extra properties seldom breaks a binding.
-It's a wash when compared with compared with adding a node.  But
-that's not really an important debate.
-
-> Here, the fsl,qe-firmware-eccr property is associated with the QE itself.=
- =A0This is why I want a compatible property for the firmware node, no matt=
-er where it is. =A0Then you can do this:
->
-> =A0 =A0 =A0 qe1: qe@e0080000 {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,qe";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,qe_firmware {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible=3D"fsl,qe-firmware=
-";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,firmware =3D /bininc/("fi=
-rmware-blob.bin");
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,qe-firmware-eccr =3D <0x0=
-0000000 0x00001230>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 ...
-> =A0 =A0 =A0 }
->
-> Without the compatible property, the only way I'd know that the child nod=
-e contains a firmware is to look at the actual name of the child node, whic=
-h (as Scott and I believe) is not better than a compatible property.
-
-If it is always a child of a qe node, then I've got no objections.
+Not all CF adapters have all the pins wired up that are needed for
+*DMA modes.  That is the most likely problem.
 
 g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
