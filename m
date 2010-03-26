@@ -1,20 +1,29 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id 1282CB7CEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 23:23:39 +1100 (EST)
-Subject: Re: Booting headless PowerMac G5
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: Romain Goyet <r.goyet@gmail.com>
-In-Reply-To: <8028e5751003260320i37fee6a9l74379c3279850c9e@mail.gmail.com>
-References: <8028e5751003240332h3f13c2d5w941dda44b4740d7@mail.gmail.com>
-	<1269509341.441.2779.camel@thor.local>
-	<8028e5751003260320i37fee6a9l74379c3279850c9e@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Mar 2010 13:23:32 +0100
-Message-ID: <1269606212.4274.14.camel@thor.local>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id AF106B7CEF
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 23:46:00 +1100 (EST)
+Date: Fri, 26 Mar 2010 18:13:40 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
+Message-ID: <20100326124340.GB7039@amit-x200.redhat.com>
+References: <20100319151326.GC8541@kroah.com>
+	<1269011916-8836-4-git-send-email-gregkh@suse.de>
+	<1269119079.8599.65.camel@pasglop>
+	<20100321043725.GA21566@amit-x200.redhat.com>
+	<20100324121902.GJ15789@amit-x200.redhat.com>
+	<4BAC7AD4.4030309@in.ibm.com>
+	<20100326095821.GA7039@amit-x200.redhat.com>
+	<4BAC9D9E.5070901@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4BAC9D9E.5070901@in.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Anton Blanchard <anton@samba.org>, tglx@linutronix.de,
+	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-03-26 at 11:20 +0100, Romain Goyet wrote:=20
-> 2010/3/25 Michel D=C3=A4nzer <michel@daenzer.net>:
-> > On Wed, 2010-03-24 at 11:32 +0100, Romain Goyet wrote:
-> >>
-> >> By the way, as of writing this, grub2 on PPC from debian gives a "out
-> >> of memory" issue. Known bug.
-> >
-> > That's on the G5? It's working on my PowerBook, but I haven't updated
-> > the grub2 binaries on the bootstrap partition in a while...
->=20
-> Yeah, that's on a PowerMac QuadG5.
-> I think that's a known issue :
-> http://www.mail-archive.com/grub-devel@gnu.org/msg04455.html
-> However it might be another one since it's working for you. I'm using
-> grub2 from Debian stable.
+On (Fri) Mar 26 2010 [17:12:22], Sachin Sant wrote:
+> Amit Shah wrote:
+>> On (Fri) Mar 26 2010 [14:43:56], Sachin Sant wrote:
+>>   
+>>>> And this suggests that hvc_kick() is called before hvc_task is
+>>>> initialised, ie, before hvc_init() is called.
+>>>>
+>>>> Does this help?
+>>>>         
+>>> Hi Amit,
+>>>
+>>> I too ran into this issue as reported by Anton. Unfortunately in my
+>>> case the following suggested patch does not help boot the powerpc
+>>> box successfully. The boot still hangs with following messages
+>>>     
+>>
+>> Was the hang you saw before applying this patch at the same place / for
+>> the same reason?
+>>   
+> Yes the machine hangs at the same place with or without the patch.
 
-According to http://packages.debian.org/stable/grub2 that's version 1.96
-+20080724-16, which is pretty old. Current in sid is 1.98, and it's only
-become usable for me in the course of the last year or so.
+OK.
 
+>>> mount: can't find /root/proc in /etc/fstab or /etc/mtab
+>>> /sbin/smart_agetty: can not determine 'console' speed
+>>>     
+>>
+>> OK, this gets even murkier. I don't know why taking a few krefs modifies
+>> hvc_console behaviour to such an extent.
+>>   
+> Looking at the commit e74d098c66543d0731de62eb747ccd5b636a6f4c,
+> i see that for every tty_kref_get() there is a corresponding
+> tty_kref_put() except maybe for the one in the following patch snippet
+>
+>        spin_lock_irqsave(&hp->lock, flags);
+>        /* Check and then increment for fast path open. */
+>        if (hp->count++ > 0) {
+> +               tty_kref_get(tty);
+>                spin_unlock_irqrestore(&hp->lock, flags);
+>                hvc_kick();
+>                return 0;
+>
+> I don't know this code very well but we might be missing a
+> corresponding tty_kref_put() some place ?
 
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+See hvc_hangup:
+
+	temp_open_count = hp->count;
+	...
+	while(temp_open_count) {
+		--temp_open_count;
+		tty_kref_put(tty);
+		kref_put(&hp->kref, destroy_hvc_struct);
+	}
+
+> If i comment out the above tty_kref_get() call, the machine
+> boots fine with or without the suggested patch.
+
+Hm, so as Alan suggests, it could be a timing issue in getting the ref
+and returning back from hvc_open(). I don't know how the tty layer
+works, but delays in getting the open() succeed results in badness?
+Guess we'll have to poke at the other drivers to see how they handle
+open() calls.
+
+		Amit
