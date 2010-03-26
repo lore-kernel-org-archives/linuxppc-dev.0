@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 57E34B7CB9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 27 Mar 2010 06:24:22 +1100 (EST)
-Received: by pwj7 with SMTP id 7so6157273pwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 26 Mar 2010 12:24:21 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <b268a2e41003171430m4e6b9178odd005273df6eb5c8@mail.gmail.com>
-References: <b268a2e41003171430m4e6b9178odd005273df6eb5c8@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 26 Mar 2010 13:24:01 -0600
-Message-ID: <fa686aa41003261224s2549e752i6003d7534a5e661d@mail.gmail.com>
-Subject: Re: Getting MPC5200 up and running - Media5200 and 2.6.33.1
-To: Mark Schaefer <mark@markschaefer.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D504AB7BEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 06:35:53 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+	grant.likely@secretlab.ca, wmb@firmworks.com,
+	segher@kernel.crashing.org, scottwood@freescale.com
+Subject: [PATCH] [v2] powerpc/fsl: add device tree binding for QE firmware
+Date: Fri, 26 Mar 2010 14:35:45 -0500
+Message-Id: <1269632145-28462-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[cc'ing linuxppc-dev@lists.ozlabs.org]
+Define a binding for embedding a QE firmware blob into the device tree.  Also
+define a new property for the QE node that links to a firmware node.
 
-On Wed, Mar 17, 2010 at 3:30 PM, Mark Schaefer <mark@markschaefer.org> wrot=
-e:
-> Hi Grant,
->
-> =A0=A0=A0=A0 I was able to get kernel 2.6.16 running on a Media5200 using=
- ltib, but
-> what I would really like to do is build a current kernel with SocketCAN.
-> I've read and read the various groups and I know that I have to do
-> cuImage.media5200 to get around the ancient u-boot, but I still get nothi=
-ng
-> after the kernel is uncompressed.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ .../powerpc/dts-bindings/fsl/cpm_qe/qe.txt         |   54 ++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
 
-There are probably some properties that you need to add to the device
-tree so that the kernel can find the console.  I can't remember off
-the top of my head exactly what you need to do here.  But even then
-the cuImage was very unstable on the media5200.  I ended up having to
-upgrade U-Boot on the media5200 because it just couldn't reliably boot
-the kernel.
-
-Unfortunately I lost the source to the u-boot port, so I'd have to do it ov=
-er.
-
->=A0 The Media5200 runs u-boot 1.1.5, so my
-> options are limited.=A0 What I'm really trying to do, however, is get it =
-up on
-> a custom 5200 board that has u-boot 1.3 running on it.=A0 My thought was =
-that
-> if I could get the kernel up on a well-known board I would have a much
-> better time getting it on a custom board.
->
-> Questions:
-> 1) is there a "board startup" guide for powerpc?
-
-Not really.  I kind of did a presentation on this for ELC last year.
-Here's are the links:
-
-http://www.embeddedlinuxconference.com/elc_2009/sessions.html#Likely
-http://free-electrons.com/blog/elc-2009-videos/
-
-> 2) What is the best recent kernel to work from?=A0 I definitely like the
-> additional low-level 5200 drivers, but what are they being tested against=
-?
-
-Use Linus' mainline.
-
-> 3) How far am I going to be able to get without a BDI3000 / JTAG emulator=
-?
-
-Not very far.  You need to get firmware on the board and without JTAG
-you're either by doing nasty tricks with the bus on reset (which you
-need to build custom hardware to do) or popping flash chips off the
-board for reprogramming.
-
-> P.S.=A0 I would be happy to put this on a mailing list if you think other=
-s
-> will benefit.=A0 Just wasn't sure which list is best.
-
-linuxppc-dev@lists.ozlabs.org
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
+index 6e37be1..865a2ef 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe.txt
+@@ -21,6 +21,15 @@ Required properties:
+ - fsl,qe-num-snums: define how many serial number(SNUM) the QE can use for the
+   threads.
+ 
++Optional properties:
++- fsl,firmware-phandle:
++    Usage: required only if there is no fsl,qe-firmware child node
++    Value type: <phandle>
++    Definition: Points to a firmware node (see "QE Firmware Node" below)
++        that contains the firmware that should be uploaded for this QE.
++        The compatible property for the firmware node should say,
++        "fsl,qe-firmware".
++
+ Recommended properties
+ - brg-frequency : the internal clock source frequency for baud-rate
+   generators in Hz.
+@@ -59,3 +68,48 @@ Example:
+ 		reg = <0 c000>;
+ 	};
+      };
++
++* QE Firmware Node
++
++This node defines a firmware binary that is embedded in the device tree, for
++the purpose of passing the firmware from bootloader to the kernel, or from
++the hypervisor to the guest.
++
++The firmware node itself contains the firmware binary contents, a compatible
++property, and any firmware-specific properties.  The node itself can be located
++anywhere, but should probably be placed inside a QE node.  Doing so eliminates
++the need for a fsl,firmware-phandle property.  Other QE nodes that need the
++firmware should define a fsl,firmware-phandle property that points to the
++firmware node in the first QE node.
++
++The fsl,firmware property can be specified in the DTS (possibly using incbin)
++or can be inserted by the boot loader at boot time.
++
++Required properties:
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: A standard property.  Specify a string that indicates what
++          kind of firmware it is.  For QE, this should be "fsl,qe-firmware".
++
++   - fsl,firmware
++      Usage: required
++      Value type: <prop-encoded-array>, encoded as an array of bytes
++      Definition: A standard property.  This property contains the firmware
++          binary "blob".
++
++Example:
++	qe1@e0080000 {
++		compatible = "fsl,qe";
++		qe_firmware:qe-firmware {
++			compatible = "fsl,qe-firmware";
++			fsl,firmware = <0x70 0xcd 0x00 0x00 0x01 0x46 0x45 ...>
++		}
++		...
++	}
++
++	qe2@e0090000 {
++		compatible = "fsl,qe";
++		fsl,firmware-phandle = <&qe_firmware>;
++		...
++	}
+-- 
+1.6.5
