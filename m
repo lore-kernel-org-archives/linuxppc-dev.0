@@ -1,20 +1,22 @@
-Return-Path: <imp@bsdimp.com>
-Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7374EB7D15
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 10:59:04 +1100 (EST)
-Date: Thu, 25 Mar 2010 17:53:43 -0600 (MDT)
-Message-Id: <20100325.175343.706994262324563953.imp@bsdimp.com>
-To: timur@freescale.com
-Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <ed82fe3e1003250742t5affee7dudca651ab3352bc16@mail.gmail.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-fx0-f221.google.com (mail-fx0-f221.google.com
+	[209.85.220.221]) by ozlabs.org (Postfix) with ESMTP id 781D0B7CEF
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Mar 2010 11:22:30 +1100 (EST)
+Received: by fxm21 with SMTP id 21so10570fxm.22
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Mar 2010 17:22:28 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20100325.175343.706994262324563953.imp@bsdimp.com>
 References: <4BAA4C8A.70104@freescale.com>
 	<65327.84.105.60.153.1269481760.squirrel@gate.crashing.org>
 	<ed82fe3e1003250742t5affee7dudca651ab3352bc16@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	<20100325.175343.706994262324563953.imp@bsdimp.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 25 Mar 2010 19:22:08 -0500
+Message-ID: <ed82fe3e1003251722o784f6b96paf140e76cfdaf93@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fsl: add device tree binding for QE firmware
+To: "M. Warner Losh" <imp@bsdimp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,17 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message: <ed82fe3e1003250742t5affee7dudca651ab3352bc16@mail.gmail.com>
-            Timur Tabi <timur@freescale.com> writes:
-: The initrd thing is a good idea, but it doesn't help non-Linux
-: operating systems.  Then again, those OS's might not have any GPL
-: issues, so it could be a moot point.
+On Thu, Mar 25, 2010 at 6:53 PM, M. Warner Losh <imp@bsdimp.com> wrote:
 
-Most !linux systems are not GPL'd.  They are BSDL, primarily, or some
-private license between seller and buyer.  In any event, other OSes
-likely won't have the GPL issue.
+> Most !linux systems are not GPL'd. =A0They are BSDL, primarily, or some
+> private license between seller and buyer. =A0In any event, other OSes
+> likely won't have the GPL issue.
 
-But I'm confused.  If you can't distribute the binary firmware, why
-can you distribute the hex dump of the firmware?
+You're probably right.
 
-Warner
+> But I'm confused. =A0If you can't distribute the binary firmware, why
+> can you distribute the hex dump of the firmware?
+
+We can distribute the binary firmware.  We just can't embed it in the
+Linux kernel, since it's not GPL.  So it needs to be delivered to the
+kernel at boot time via a non-GPL mechanism.  The device tree is one
+option.  An initrd is another.  The problem Freescale has is that
+modifying our BSP to use an initrd is not a trivial task, and it's a
+lot more complicated than using the device tree.  For example, there's
+the possibility that U-Boot and Linux will use different microcode
+binaries, and it also means that the initrd becomes SOC-specific.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
