@@ -1,21 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f221.google.com (mail-gx0-f221.google.com
-	[209.85.217.221]) by ozlabs.org (Postfix) with ESMTP id B4B11B7CE7
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Mar 2010 01:34:02 +1100 (EST)
-Received: by gxk21 with SMTP id 21so755576gxk.2
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Mar 2010 07:34:00 -0700 (PDT)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 9496BB7CF7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 28 Mar 2010 04:45:00 +1100 (EST)
+To: Josh Triplett <josh@joshtriplett.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and CompactFlash
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1269696561.2245.2@antares>
-References: <fa686aa41003261910uf5c3612pf275d034237ba997@mail.gmail.com>
-	<1269696561.2245.2@antares>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 27 Mar 2010 08:33:40 -0600
-Message-ID: <fa686aa41003270733r2b20fbeemd2f5beb163c8e218@mail.gmail.com>
-Subject: Re: mpc512x uart: testers wanted
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, agust@denx.de
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20100326225916.GA5690@feather>
+References: <20100317051521.GA16826@feather>
+	<fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+	<20100326213202.GD5350@feather>
+	<20100326221707.GA1953@leila.ping.de>
+	<20100326225916.GA5690@feather>
+Date: Sat, 27 Mar 2010 18:44:55 +0100
+Message-Id: <20100327174455.1888CEAD184@gemini.denx.de>
+Cc: Wolfgang Wegner <wolfgang@leila.ping.de>, linuxppc-dev@lists.ozlabs.org,
+	Andrew Greenberg <andrew@psas.pdx.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 27, 2010 at 7:29 AM, Albrecht Dre=DF <albrecht.dress@arcor.de> =
-wrote:
-> Dear Grant:
->
-> Am 27.03.10 03:10 schrieb(en) Grant Likely:
->>
->> Ping? =A0I was looking at this tonight but it of course doesn't apply. H=
-ave
->> you gotten a chance to rebase this patch yet?
->
-> Thanks for the reminder - I sent Anatolij the rebased patch off-list (as =
-I
-> didn't want to clutter the list again with the same patch) 2=BD weeks ago=
-, but
-> didn't get any testing results from him yet. =A0If you want to see the pa=
-tch
-> in the list, too, please just drop me a note.
+Dear Josh Triplett,
 
-Yes, please post it to the list.  Then I can also add it to my testing bran=
-ch.
+In message <20100326225916.GA5690@feather> you wrote:
+>
+> However, according to one of our hardware hackers, Andrew Greenberg
+> (CCed), the STK5200 development breakout board for the TQM5200 *does*
+> have the DMA pins wired up correctly, at least according to its
+> schematic.  That doesn't guarantee that the board matches the schematic,
+> of course.
 
-g.
+We tested CF cards for DMA support some time ago, and IIRC this
+included the STK5200. Situation was that only very few CF cards
+actually support DMA (even if they advertise it on the label).
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I wish Captain Vimes were here. He wouldn't have  known  what  to  do
+either, but he's got a much better vocabulary to be baffled in.
+                                 - Terry Pratchett, _Guards! Guards!_
