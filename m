@@ -1,19 +1,18 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 44D6EB7CBD
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Mar 2010 00:29:13 +1100 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <18162.1269696414@redhat.com>
-References: <18162.1269696414@redhat.com>
-	<Pine.LNX.4.64.1003262303080.6480@ask.diku.dk>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 5/7] arch/powerpc/kernel: Use set_cpus_allowed_ptr
-Date: Sat, 27 Mar 2010 13:28:37 +0000
-Message-ID: <18215.1269696517@redhat.com>
-Sender: dhowells@redhat.com
-Cc: peterz@infradead.org, kernel-janitors@vger.kernel.org, oleg@redhat.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, mingo@elte.hu, tglx@linutronix.de
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 7B506B7D85
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Mar 2010 00:29:24 +1100 (EST)
+Date: Sat, 27 Mar 2010 14:29:21 +0100
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: mpc512x uart: testers wanted
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa41003261910uf5c3612pf275d034237ba997@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Sat Mar 27 03:10:36 2010)
+Message-Id: <1269696561.2245.2@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-ZCa/CBkQH9qsssN0Ag0U"
+Cc: linuxppc-dev@ozlabs.org, agust@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,19 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-David Howells <dhowells@redhat.com> wrote:
+--=-ZCa/CBkQH9qsssN0Ag0U
+Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > The semantic patch that makes this change is as follows:
-> > (http://coccinelle.lip6.fr/)
-> 
-> That URL doesn't appear to work:
-> 
-> Not Found
-> The requested URL /) was not found on this server.
-> Additionally, a 404 Not Found error was encountered while trying to use an ErrorDocument to handle the request.
-> Apache/2.2.8 (Mandriva Linux/PREFORK-6mdv2008.1) Server at coccinelle.lip6.fr Port 80
+Dear Grant:
 
-Actually, it does.  It's just that my email client thought that the closing
-bracket after it was part of the URL:-/
+Am 27.03.10 03:10 schrieb(en) Grant Likely:
+> Ping?  I was looking at this tonight but it of course doesn't apply. Have=
+ you gotten a chance to rebase this patch yet?
 
-David
+Thanks for the reminder - I sent Anatolij the rebased patch off-list (as I =
+didn't want to clutter the list again with the same patch) 2=BD weeks ago, =
+but didn't get any testing results from him yet.  If you want to see the pa=
+tch in the list, too, please just drop me a note.
+
+The patch works just fine for me on the 5200B, but IMHO it doesn't make sen=
+se to merge it before Anatolij could comment on the 512x part.
+
+Cheers, Albrecht.
+
+--=-ZCa/CBkQH9qsssN0Ag0U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBLrggxn/9unNAn/9ERAhixAJ43NA0Q5VzHQFctvz2PD7UIWnXTmQCcDCHo
+NMMBcY3QY8meP9Jp3poKJUE=
+=Txtj
+-----END PGP SIGNATURE-----
+
+--=-ZCa/CBkQH9qsssN0Ag0U--
