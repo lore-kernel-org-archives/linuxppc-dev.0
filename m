@@ -1,28 +1,19 @@
-Return-Path: <weo@goedel.recco.de>
-Received: from bastet.recconet.de (bastet.reccoware.net [87.106.68.206])
+Return-Path: <julia@diku.dk>
+Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9A283B7C98
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 01:44:52 +1100 (EST)
-Received: from trinity.recco.de (trinity.intern.recconet.de [192.168.11.241])
-	by bastet.recconet.de (8.13.8/8.13.8/Recconet-2009080201) with ESMTP
-	id o2TEaKvc010500
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Mar 2010 16:36:21 +0200
-Received: from goedel.recco.de (goedel.recco.de [172.16.135.106])
-	by trinity.recco.de (8.13.8/8.13.8/Reccoware-2009080201) with ESMTP id
-	o2TEaKwo011346
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Mar 2010 16:36:20 +0200
-Received: from goedel.recco.de (localhost [127.0.0.1])
-	by goedel.recco.de (8.14.3/8.14.3/Reccoware-2010031901) with ESMTP id
-	o2TEaKhk026113
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Mar 2010 16:36:20 +0200
-Received: (from weo@localhost)
-	by goedel.recco.de (8.14.3/8.14.3/Submit) id o2TEaJd2026111
-	for linuxppc-dev@ozlabs.org; Mon, 29 Mar 2010 16:36:19 +0200
-Message-Id: <201003291436.o2TEaJd2026111@goedel.recco.de>
-From: Wolfgang Ocker <weo@reccoware.de>
-Date: Mon, 29 Mar 2010 15:22:14 +0200
-Subject: [PATCH] PowerPC/FSL/CPM1: Configure clock correctly for SCC
+	(Client CN "mgw1.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 17D7FB7CE6
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 02:33:44 +1100 (EST)
+Date: Mon, 29 Mar 2010 17:33:34 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/12] arch/powerpc/kernel: Add missing unlock
+Message-ID: <Pine.LNX.4.64.1003291733150.21896@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The board setup functions call cpm1_clk_setup() to configure the clock
-source.
+From: Julia Lawall <julia@diku.dk>
 
-If CPM_CLK_RTX has been used for the parameter mode,
-the clock has been configured only for TX but not for RX.
+Add an unlock before exiting the function.
 
-Now CPM_CLK_RTX configures the clock for both directions correctly.
+A simplified version of the semantic patch that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-Signed-off-by: Wolfgang Ocker <weo@reccoware.de>
+// <smpl>
+@r exists@
+expression E1;
+identifier f;
+@@
+
+f (...) { <+...
+* spin_lock_irq (E1,...);
+... when != E1
+* return ...;
+...+> }
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- arch/powerpc/sysdev/cpm1.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/vio.c           |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index a4b41db..786e178 100644
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -485,9 +485,6 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
- 		return -EINVAL;
- 	}
- 
--	if (reg == &mpc8xx_immr->im_cpm.cp_sicr && mode == CPM_CLK_RX)
--		shift += 3;
--
- 	for (i = 0; i < ARRAY_SIZE(clk_map); i++) {
- 		if (clk_map[i][0] == target && clk_map[i][1] == clock) {
- 			bits = clk_map[i][2];
-@@ -502,6 +499,17 @@ int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode)
- 
- 	bits <<= shift;
- 	mask <<= shift;
-+
-+	if (reg == &mpc8xx_immr->im_cpm.cp_sicr) {
-+		if (mode == CPM_CLK_RTX) {
-+			bits |= bits << 3;
-+			mask |= mask << 3;
-+		} else if (mode == CPM_CLK_RX) {
-+			bits <<= 3;
-+			mask <<= 3;
-+		}
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 77f6421..2ca69fa 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -644,8 +644,10 @@ void vio_cmo_set_dev_desired(struct vio_dev *viodev, size_t desired)
+ 			found = 1;
+ 			break;
+ 		}
+-	if (!found)
++	if (!found) {
++		spin_unlock_irqrestore(&vio_cmo.lock, flags);
+ 		return;
 +	}
-+
- 	out_be32(reg, (in_be32(reg) & ~mask) | bits);
  
- 	return 0;
--- 
-1.6.6.1
+ 	/* Increase/decrease in desired device entitlement */
+ 	if (desired >= viodev->cmo.desired) {
