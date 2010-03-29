@@ -1,27 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id 2F561B7CBB
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
+	by ozlabs.org (Postfix) with ESMTP id 1A33DB7CE7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Mar 2010 02:56:37 +1100 (EST)
-Received: by gwb15 with SMTP id 15so800165gwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 29 Mar 2010 08:56:35 -0700 (PDT)
+	Tue, 30 Mar 2010 05:42:12 +1100 (EST)
+Date: Mon, 29 Mar 2010 20:42:08 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: Failing to get DMA working with MPC5200 (TQM5200) and CompactFlash
+To: Josh Triplett <josh@joshtriplett.org>
+References: <20100317051521.GA16826@feather>
+	<fa686aa41003261122s7c03244bm2ffc3347263af613@mail.gmail.com>
+	<20100326213202.GD5350@feather> <20100326221707.GA1953@leila.ping.de>
+	<20100326225916.GA5690@feather> <1269696136.2245.1@antares>
+	<20100328222441.GC16396@feather>
+In-Reply-To: <20100328222441.GC16396@feather> (from josh@joshtriplett.org on
+	Mon Mar 29 00:24:42 2010)
+Message-Id: <1269888128.2995.0@antares>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1269877373.6173.27.camel@iscandar.digidescorp.com>
-References: <201003172118.41559.temerkhanov@cifronik.ru>
-	<fa686aa41003261653j5a9be6e8gbe8f12e19a563cd6@mail.gmail.com>
-	<1269877373.6173.27.camel@iscandar.digidescorp.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 29 Mar 2010 09:56:15 -0600
-Message-ID: <fa686aa41003290856t24a248a5j5dfda623ed2805c0@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] Xilinx MPMC SDMA subsystem
-To: steve@digidescorp.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: microblaze-uclinux@itee.uq.edu.au,
-	Sergey Temerkhanov <temerkhanov@cifronik.ru>,
-	linuxppc-dev@lists.ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-pOWTiGLsyX7yG/Kciw1y"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 29, 2010 at 9:42 AM, Steven J. Magnani
-<steve@digidescorp.com> wrote:
-> On Fri, 2010-03-26 at 17:53 -0600, Grant Likely wrote:
->> I've not got time to review this patch right now, but Sergey and
->> Steven, you both posted MPMC drivers on the same day; Steven on the
->> microblaze list and Sergey on the powerpc list. =A0Can you two please
->> coordinate and figure out how to mork toward a single driver that will
->> meet both your needs? =A0I don't want to have 2 drivers (3 if you count
->> the ll_temac driver) in mainline for the same hardware interface.
->>
->
-> I don't think we'll end up with a single driver. A MPMC DMA Engine
-> driver is useful only on "loopback" SDMA ports. Sergey's code looks like
-> a nice generic interface to Xilinx SDMA HW that could be used by the
-> xlldma and ll_temac drivers, for instance. Both of those will get
-> smaller, but won't go away.
->
-> For this to be useful to me, it would need to be located somewhere more
-> accessible than arch/powerpc and it would need to have initialization
-> methods that don't depend on OF. In my build I would have platform code
-> that binds to the xlldma platform attachment, which would call Sergey's
-> SDMA code to assign it the proper resources.
+--=-pOWTiGLsyX7yG/Kciw1y
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That should be fine.
+Hi Josh:
 
-> Any objections to having Sergey's code live in drivers/dma, and putting
-> sdma.h out in include/linux? Might need to tweak the file/function names
-> some to head off namespace issues. Or is there some other strategy for
-> managing Xilinx-related drivers common to both Microblaze and PowerPC?
+Am 29.03.10 00:24 schrieb(en) Josh Triplett:
+> We have the MPC5200C rev of the board, not the MPC5200B rev which
 
-I have no objections.  This sounds like a good plan.
+Ummm - I didn't know that there is a 5200C available.  The Freescale web si=
+te only mentions the 5200 and the 5200B.  Do you have any pointers to data =
+sheets/docs?
 
-g.
+Thanks, Albrecht.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--=-pOWTiGLsyX7yG/Kciw1y
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iD8DBQBLsPSAn/9unNAn/9ERAlcTAJ46928fixCwzpxKiVv1INpnoh6HDACgxsvL
+be55fNJEG9q217cKoAEXUlI=
+=ZaRy
+-----END PGP SIGNATURE-----
+
+--=-pOWTiGLsyX7yG/Kciw1y--
