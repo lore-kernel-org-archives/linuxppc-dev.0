@@ -1,27 +1,32 @@
-Return-Path: <nm127@freemail.hu>
-Received: from relay02.digicable.hu (relay02.digicable.hu [92.249.128.188])
-	by ozlabs.org (Postfix) with ESMTP id C97EAB7C67
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 17:54:24 +1100 (EST)
-Message-ID: <4BB1A016.2050008@freemail.hu>
-Date: Tue, 30 Mar 2010 08:54:14 +0200
-From: =?windows-1252?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B4519B7C8E
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 20:59:10 +1100 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2U9tLO3028863
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 20:55:21 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o2U9r1T01724448
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 20:53:01 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o2U9x8gT003302
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 20:59:08 +1100
+Date: Tue, 30 Mar 2010 15:28:09 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [Patch 0/2] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver XVI
+Message-ID: <20100330095809.GA14403@in.ibm.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Freescale MPC5554 device tree (was: cross-compiling Linux for
-	PowerPC e200 core?)
-References: <4B934CCA.8030608@freemail.hu> <4B95458A.4000304@freemail.hu>
-	<fa686aa41003081108v31e73660pa817863e5aa73653@mail.gmail.com>
-	<4B95F298.5040000@freemail.hu>
-	<fa686aa41003082335t5a5d642fi13c81e4b84f7b697@mail.gmail.com>
-	<4B9889AC.4080309@freemail.hu> <20100311062331.GI11655@yookeroo>
-	<4B99DE95.8010304@freemail.hu>
-	<fa686aa41003120414j48825e7cr952336703fe03b04@mail.gmail.com>
-	<4B9B7E0A.8090703@freemail.hu>
-	<fa686aa41003171202p677bc14g25a6ac38f879ddf1@mail.gmail.com>
-In-Reply-To: <fa686aa41003171202p677bc14g25a6ac38f879ddf1@mail.gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, paulus@samba.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,453 +36,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi All,
+	Please find the version XVI of the patches that implement
+hardware-breakpoint interfaces for PPC64 Server machines (with one DABR).
+The changes over the previous version are as listed below.
 
-Grant Likely wrote:
-> 2010/3/13 Németh Márton <nm127@freemail.hu>:
-[...]
->> +                       };
->> +
->> +                       etpu@3fc0000 {          // Enhanced Time Processing Unit
->> +                               compatible = "fsl,mpc5554-etpu";
->> +                               reg = <0x03fc0000 0x4000>;
->> +                               interrupts = <67 1      // Global Exception
->> +                                             68 1      // A Channel 0
->> +                                             69 1      // A Channel 1
->> +                                             70 1      // A Channel 2
->> +                                             71 1      // A Channel 3
->> +                                             72 1      // A Channel 4
->> +                                             73 1      // A Channel 5
->> +                                             74 1      // A Channel 6
->> +                                             75 1      // A Channel 7
->> +                                             76 1      // A Channel 8
->> +                                             77 1      // A Channel 9
->> +                                             78 1      // A Channel 10
->> +                                             79 1      // A Channel 11
->> +                                             80 1      // A Channel 12
->> +                                             81 1      // A Channel 13
->> +                                             82 1      // A Channel 14
->> +                                             83 1      // A Channel 15
->> +                                             84 1      // A Channel 16
->> +                                             85 1      // A Channel 17
->> +                                             86 1      // A Channel 18
->> +                                             87 1      // A Channel 19
->> +                                             88 1      // A Channel 20
->> +                                             89 1      // A Channel 21
->> +                                             90 1      // A Channel 22
->> +                                             91 1      // A Channel 23
->> +                                             92 1      // A Channel 24
->> +                                             93 1      // A Channel 25
->> +                                             94 1      // A Channel 26
->> +                                             95 1      // A Channel 27
->> +                                             96 1      // A Channel 28
->> +                                             97 1      // A Channel 29
->> +                                             98 1      // A Channel 30
->> +                                             99 1      // A Channel 31
->> +                                             243 1     // B Channel 0
->> +                                             244 1     // B Channel 1
->> +                                             245 1     // B Channel 2
->> +                                             246 1     // B Channel 3
->> +                                             247 1     // B Channel 4
->> +                                             248 1     // B Channel 5
->> +                                             249 1     // B Channel 6
->> +                                             250 1     // B Channel 7
->> +                                             251 1     // B Channel 8
->> +                                             252 1     // B Channel 9
->> +                                             253 1     // B Channel 10
->> +                                             254 1     // B Channel 11
->> +                                             255 1     // B Channel 12
->> +                                             256 1     // B Channel 13
->> +                                             257 1     // B Channel 14
->> +                                             258 1     // B Channel 15
->> +                                             259 1     // B Channel 16
->> +                                             260 1     // B Channel 17
->> +                                             261 1     // B Channel 18
->> +                                             262 1     // B Channel 19
->> +                                             263 1     // B Channel 20
->> +                                             264 1     // B Channel 21
->> +                                             265 1     // B Channel 22
->> +                                             266 1     // B Channel 23
->> +                                             267 1     // B Channel 24
->> +                                             268 1     // B Channel 25
->> +                                             269 1     // B Channel 26
->> +                                             270 1     // B Channel 27
->> +                                             271 1     // B Channel 28
->> +                                             272 1     // B Channel 29
->> +                                             273 1     // B Channel 30
->> +                                             274 1>;   // B Channel 31
->
-> Are A and B two instances of the same hardware block?  Consider having
-> a subnode for each instance to give some logical separation to this
-> list and associate register ranges with instances.  Doing it that way
-> also makes it easier for external device nodes to describe an
-> attachment to a particular channel.
->
->> +                       };
->> +
->> +                       etpudata@3fc8000 {      // eTPU Shared Data Memory (Parameter RAM)
->> +                               compatible = "fsl,mpc5554-etpudata";
->> +                               reg = <0x03fc8000 0x4000>;
->> +                       };
->> +
->> +                       etpudata@3fcc000 {      // eTPU Shared Data Memory (Parameter RAM) mirror
->> +                               compatible = "fsl,mpc5554-etpudata";
->> +                               reg = <0x03fcc000 0x4000>;
->> +                       };
->> +
->> +                       etpucode@3fd0000 {              // eTPU Shared Code RAM
->> +                               compatible = "fsl,mpc5554-etpucode";
->> +                               reg = <0x03fd0000 0x4000>;
->> +                       };
->
-> Should all this etpu stuff be part of the etpu node?
+Changelog - ver XVI
+--------------------
+(Version XV: linuxppc-dev ref: 20100323140639.GA21836@in.ibm.com)
+- Used a new config option CONFIG_PPC_BOOK3S_64 (in lieu of
+  CONFIG_PPC64/CPU_FTR_HAS_DABR) to limit the scope of the new code.
+- Disabled breakpoints before kexec of the machine using hw_breakpoint_disable().
+- Minor optimisation in exception-64s.S to check for data breakpoint exceptions
+  in DSISR finally (after check for other causes) + changes in code comments and 
+  representation of DSISR_DABRMATCH constant.
+- Rebased to commit ae6be51ed01d6c4aaf249a207b4434bc7785853b of linux-2.6.
 
-With this version of MPC5554 device tree I try to improve the eTPU
-related node. The Table 18-6 on page 18-15 in the
-http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf
-shows the detailed memory map of the eTPU. What is visible is that the
-eTPU A and eTPU B is interleaved in the memory map. For example ETPU_ECR_A
-is at Base + 0x0_0014 while ETPU_ECR_B is at Base + 0x0_0018. Then comes a
-register set for time base configuration: ETPU_TBCR_A is at Base + 0x0_0020,
-and ETPU_TBCR_B is at Base + 0x0_0040. As you can see the eTPU A and eTPU B
-registers are not just shifted by a fixed offset but comes interleaved
-according to the hardware designer wish.
+Let me know if you have any comments.
 
-How can the multiple register ranges be expressed in device tree?
+Thanks,
+K.Prasad
 
-Regards,
 
-	Márton Németh
+Changelog - ver XV
+--------------------
+(Version XIV: linuxppc-dev ref: 20100308181232.GA3406@in.ibm.com)
 
----
-From: Márton Németh <nm127@freemail.hu>
+- Additional patch to disable interrupts during data breakpoint exception
+  handling.
+- Moved HBP_NUM definition to cputable.h under a new CPU_FTR definition
+  (CPU_FTR_HAS_DABR).
+- Filtering of extraneous exceptions (due to accesses outside symbol length) is
+  by-passed for ptrace requests.
+- Removed flush_ptrace_hw_breakpoint() from __switch_to() due to incorrect
+  coding placement.
+- Changes to code comments as per community reviews for previous version.
+- Minor coding-style changes in hw_breakpoint.c as per review comments.
+- Re-based to commit ae6be51ed01d6c4aaf249a207b4434bc7785853b of linux-2.6
 
-Add device tree for Freescale MPC5554.
+Changelog - ver XIV
+--------------------
+(Version XIII: linuxppc-dev ref: 20100215055605.GB3670@in.ibm.com)
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -uprN linux-2.6.33.orig/arch/powerpc/boot/dts//mpc5554.dts linux-2.6.33/arch/powerpc/boot/dts/mpc5554.dts
---- linux-2.6.33.orig/arch/powerpc/boot/dts//mpc5554.dts	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33/arch/powerpc/boot/dts/mpc5554.dts	2010-03-30 08:17:06.000000000 +0200
-@@ -0,0 +1,321 @@
-+/*
-+ * Freescale MPC5554 Device Tree Source
-+ *
-+ * Based on MPC5553/5554 Microcontroller Reference Manual, Rev. 4.0, 04/2007
-+ * http://www.freescale.com/files/32bit/doc/ref_manual/MPC5553_MPC5554_RM.pdf
-+ *  - Block Diagram: page 1-3, Figure 1-1
-+ *  - Memory Map: page 1-21, Table 1-2
-+ *  - Interrupt Request Sources: page 10-16, Table 10-9
-+ *
-+ * This device tree also contains external components found on MPC5554DEMO
-+ * http://www.axman.com/files/MPC5554DEMO_man_G.pdf
-+ * http://www.axman.com/files/MPC5554DEMO_SCH_G.pdf
-+ *
-+ * Copyright 2010 Márton Németh
-+ * Márton Németh <nm127@freemail.hu>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "MPC5554";
-+	compatible = "fsl,MPC5554EVB";		// Freescale MPC5554 Evaluation Board
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	interrupt-parent = <&intc>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			compatible = "PowerPC,5554", "fsl,mpc5554-e200z6", "fsl,powerpc-e200z6";
-+			reg = <0>;
-+			d-cache-line-size = <32>;
-+			i-cache-line-size = <32>;
-+			d-cache-size = <0x8000>;	// L1, 32KiB
-+			i-cache-size = <0x8000>;	// L1, 32KiB
-+			timebase-frequency = <0>;	// from bootloader
-+			bus-frequency = <0>;		// from bootloader
-+			clock-frequency = <0>;		// from bootloader
-+		};
-+	};
-+
-+	memory@20000000 {
-+		device_type = "memory";
-+		reg = <0x20000000 0x80000>;	// 512KiB external SRAM: ISSI IS61SF12832
-+		// CS0 or CS1 selectable by the SRAM_SEL jumper
-+	};
-+
-+	xbar@fff04000 {		// System Bus Crossbar Switch (XBAR)
-+		compatible = "fsl,mpc5554-xbar";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		// The full memory range is covered by XBAR
-+		ranges;
-+		reg = <0xfff04000 0x4000>;
-+
-+		flash@0 {	// read-only FLASH
-+			compatible = "fsl,mpc5554-flash";
-+			reg = <0x00000000 0x200000>;	// 2MiB internal FLASH
-+		};
-+
-+		memory@40000000 {
-+			compatible = "fsl,mpc5554-sram";
-+			reg = <0x40000000 0x10000>;	// 64KiB internal SRAM
-+		};
-+
-+		bridge@c3f00000 {
-+			compatible = "fsl,mpc5554-pbridge-a";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0 0xc0000000 0x20000000>;
-+			reg = <0xc3f00000 0x4000>;
-+
-+			fmpll@3f80000 {		// Frequency Modulated PLL
-+				compatible = "fsl,mpc5554-fmpll";
-+				reg = <0x03f80000 0x4000>;
-+				interrupts = <43	// Loss of Clock
-+					      44>;	// Loss of Lock
-+			};
-+
-+			flashconfig@3f88000 {	// Flash Configuration
-+				compatible = "fsl,mpc5554-flashconfig";
-+				reg = <0x03f88000 0x4000>;
-+			};
-+
-+			siuintc: siu@3f89000 {		// System Integration Unit
-+				compatible = "fsl,mpc5554-siu";
-+				reg = <0x03f90000 0x4000>;
-+
-+				// SIU is an interrupt controller by means that it handles
-+				// the external interrupts
-+				#interrupt-cells = <2>;   // cell 1: extirq#, cell 2: level/edge flags
-+				interrupt-controller;
-+				interrupts = <45 1	// External Interrupt Overrun 0-15
-+					      46 1	// External Interrupt 0
-+					      47 1	// External Interrupt 1
-+					      48 1	// External Interrupt 2
-+					      49 1	// External Interrupt 3
-+					      50 1>;	// External Interrupt 4-15
-+			};
-+
-+			emios@3fa0000 {		// Modular Timer System
-+				compatible = "fsl,mpc5554-emios";
-+				reg = <0x03fa0000 0x4000>;
-+				interrupts = < 51  52  53  54  55  56  57  58	// Channels 0-7
-+					       59  60  61  62  63  64  65  66	// Channels 8-15
-+					      202 203 204 205 206 207 208 209>;	// Channel 16-23
-+			};
-+
-+			etpu@3fc0000 {		// Enhanced Time Processing Unit
-+				compatible = "fsl,mpc5554-etpu";
-+				reg = <0x03fc0000 0x4000>;
-+				interrupts = <67>;	// Global Exception
-+
-+				etpuengine@3fc0014 {	// eTPU Engine A
-+					compatible = "fsl,mpc5554-etpuengine";
-+					interrupts = <68 69 70 71 72 73 74 75	// A Channels 0-7
-+						      76 77 78 79 80 81 82 83	// A Channels 8-15
-+						      84 85 86 87 88 89 90 91	// A Channels 16-23
-+						      92 93 94 95 96 97 98 99	// A Channels 24-31
-+				};
-+
-+				etpuengine@3fc0018 {	// eTPU Engine B
-+					compatible = "fsl,mpc5554-etpuengine";
-+					interrupts = <243 244 245 256 247 248 249 250	// B Channels 0-7
-+						      251 252 253 254 255 256 257 248	// B Channels 8-15
-+						      259 260 261 262 263 264 265 266	// B Channels 16-23
-+						      267 268 269 270 271 272 273 274>;	// B Channels 24-31
-+				};
-+
-+				etpudata@3fc8000 {	// eTPU Shared Data Memory (Parameter RAM)
-+					compatible = "fsl,mpc5554-etpudata";
-+					reg = <0x03fc8000 0x4000>;	// 3 KiB
-+				};
-+
-+				etpudata@3fcc000 {	// eTPU Shared Data Memory (Parameter RAM) mirror
-+					compatible = "fsl,mpc5554-etpudata";
-+					reg = <0x03fcc000 0x4000>;	// 3 KiB
-+				};
-+
-+				etpucode@3fd0000 {		// eTPU Shared Code RAM
-+					compatible = "fsl,mpc5554-etpucode";
-+					reg = <0x03fd0000 0x4000>;	// 16 KiB
-+				};
-+			};
-+		};
-+
-+		bridge@fff00000 {
-+			compatible = "fsl,mpc5554-pbridge-b";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges = <0 0xe0000000 0x20000000>;
-+			reg = <0xfff00000 0x4000>;
-+
-+			ecsm@fff40000 {		// Error Correction Status Module (ECSM)
-+				compatible = "fsl,mpc5554-ecsm";
-+				reg = <0xfff40000 0x4000>;
-+				interrupts = <8	// Software Watchdog Interrupt
-+					      9>;	// Combined: Internal SRAM Non-Correctable Error, Flash Non-Correctable Error
-+			};
-+
-+			edma@fff44000 {		// Enhanced DMA Controller (eDMA)
-+				compatible = "fsl,mpc5554-edma";
-+				reg = <0xfff44000 0x4000>;
-+				interrupts = <10				// Channel Error 0-31
-+					      11 12 13 14 15 16 17 18		// Channels 0-7
-+					      19 20 21 22 23 24 25 26		// Channels 8-15
-+					      27 28 29 30 31 32 33 34		// Channels 16-23
-+					      35 36 37 38 39 40 41 42		// Channels 24-31
-+					      210				// Channel Error 32-63
-+					      211 212 213 214 215 216 217 218	// Channels 32-39
-+					      219 220 221 222 223 224 225 226	// Channels 40-47
-+					      227 228 229 230 231 232 233 234	// Channels 48-55
-+					      235 236 237 238 239 240 241 242>;	// Channels 56-63
-+			};
-+
-+			intc: intc@fff48000 {		// Interrupt Controller (INTC)
-+				compatible = "fsl,mpc5554-intc";
-+				interrupt-controller;
-+				#interrupt-cells = <1>;
-+				reg = <0xfff48000 0x4000>;
-+			};
-+
-+			eqadc@fff80000 {	// Enhanced Queued Analog-to-Digital Converter (eQADC)
-+				compatible = "fsl,mpc5554-eqacd";
-+				reg = <0xfff80000 0x4000>;
-+				interrupts = <100	// Combined: Trigger Overrun, Receive FIFO Overflow, Command FIFO Underflow
-+					      101	// Command FIFO 0 Non-Coherency
-+					      102	// Command FIFO 0 Pause
-+					      103	// Command FIFO 0 End of Queue
-+					      104	// Command FIFO 0 Fill
-+					      105	// Command FIFO 0 Drain
-+					      106	// Command FIFO 1 Non-Coherency
-+					      107	// Command FIFO 1 Pause
-+					      108	// Command FIFO 1 End of Queue
-+					      109	// Command FIFO 1 Fill
-+					      111	// Command FIFO 1 Drain
-+					      111	// Command FIFO 2 Non-Coherency
-+					      112	// Command FIFO 2 Pause
-+					      113	// Command FIFO 2 End of Queue
-+					      114	// Command FIFO 2 Fill
-+					      115	// Command FIFO 2 Drain
-+					      116	// Command FIFO 3 Non-Coherency
-+					      117	// Command FIFO 3 Pause
-+					      118	// Command FIFO 3 End of Queue
-+					      119	// Command FIFO 3 Fill
-+					      120	// Command FIFO 3 Drain
-+					      121	// Command FIFO 4 Non-Coherency
-+					      122	// Command FIFO 4 Pause
-+					      123	// Command FIFO 4 End of Queue
-+					      124	// Command FIFO 4 Fill
-+					      125	// Command FIFO 4 Drain
-+					      126	// Command FIFO 5 Non-Coherency
-+					      127	// Command FIFO 5 Pause
-+					      128	// Command FIFO 5 End of Queue
-+					      129	// Command FIFO 5 Fill
-+					      130>;	// Command FIFO 5 Drain
-+			};
-+
-+			dspi@fff90000 {		// Deserial Serial Peripheral Interface (DSPI_A)
-+				compatible = "fsl,mpc5554-dspi";
-+				reg = <0xfff90000 0x4000>;
-+				interrupts = <275	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-+					      276	// Transmit FIFO End of Queue
-+					      277	// Transmit FIFO Fill Flag
-+					      278	// Transfer Complete
-+					      279>;	// Receive FIFO Drain
-+			};
-+
-+			dspi@fff94000 {		// Deserial Serial Peripheral Interface (DSPI_B)
-+				compatible = "fsl,mpc5554-dspi";
-+				reg = <0xfff94000 0x4000>;
-+				interrupts = <131	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-+					      132	// Transmit FIFO End of Queue
-+					      133	// Transmit FIFO Fill Flag
-+					      134	// Transfer Complete
-+					      135>;	// Receive FIFO Drain
-+			};
-+
-+			dspi@fff98000 {		// Deserial Serial Peripheral Interface (DSPI_C)
-+				compatible = "fsl,mpc5554-dspi";
-+				reg = <0xfff98000 0x4000>;
-+				interrupts = <136	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-+					      137	// Transmit FIFO End of Queue
-+					      138	// Transmit FIFO Fill Flag
-+					      139	// Transfer Complete
-+					      140>;	// Receive FIFO Drain
-+			};
-+
-+			dspi@fff9c000 {		// Deserial Serial Peripheral Interface (DSPI_D)
-+				compatible = "fsl,mpc5554-dspi";
-+				reg = <0xfff9c000 0x4000>;
-+				interrupts = <141	// Combined: Transmit FIFO Underflow, Receive FIFO Overflow
-+					      142	// Transmit FIFO End of Queue
-+					      143	// Transmit FIFO Fill Flag
-+					      144	// Transfer Complete
-+					      145>;	// Receive FIFO Drain
-+			};
-+
-+			esci@fffb0000 {		// Serial Communications Interface (SCI_A)
-+				compatible = "fsl,mpc5554-esci";
-+				reg = <0xfffb0000 0x4000>;
-+				interrupts = <146>;	// Combined request for all SCI_A interrupts
-+			};
-+
-+			esci@fffb4000 {		// Serial Communications Interface (SCI_B)
-+				compatible = "fsl,mpc5554-esci";
-+				reg = <0xfffb4000 0x4000>;
-+				interrupts = <149>;	// Combined request for all SCI_A interrupts
-+			};
-+
-+			can@fffc0000 {		// Controller Area Network (FlexCAN_A)
-+				compatible = "fsl,mpc5554-flexcan";
-+				reg = <0xfffc0000 0x4000>;
-+				interrupts = <152				// Bus off
-+					      153				// Error
-+					      155 156 157 158 159 160 161 162	// Buffers 0-7
-+					      163 164 165 166 167 168 169 170	// Buffers 8-15
-+					      171				// Buffers 16-31
-+					      172>;				// Buffers 32-63
-+			};
-+
-+			can@fffc4000 {		// Controller Area Network (FlexCAN_B)
-+				compatible = "fsl,mpc5554-flexcan";
-+				reg = <0xfffc4000 0x4000>;
-+				interrupts = <280				// Bus off
-+					      281				// Error
-+					      283 284 285 186 287 288 289 290	// Buffers 0-7
-+					      291 292 293 294 295 296 297 298	// Buffers 8-15
-+					      299				// Buffers 16-31
-+					      300>;				// Buffers 32-63
-+			};
-+
-+			can@fffc8000 {		// Controller Area Network (FlexCAN_C)
-+				compatible = "fsl,mpc5554-flexcan";
-+				reg = <0xfffc8000 0x4000>;
-+				interrupts = <173				// Bus off
-+					      174				// Error
-+					      176 177 178 179 180 181 182 183	// Buffers 0-7
-+					      184 185 186 187 188 189 190 191	// Buffers 8-15
-+					      192				// Buffers 16-31
-+					      193>;				// Buffers 32-63
-+			};
-+
-+			bam@ffffc000 {		// Boot Assist Module (BAM)
-+				compatible = "fsl,mpc5554-bam";
-+				reg = <0xffffc000 0x4000>;
-+			};
-+
-+		};
-+
-+	};
-+
-+};
+- Removed the 'name' field from 'struct arch_hw_breakpoint'.
+- All callback invocations through bp->overflow_handler() are replaced with
+  perf_bp_event().
+- Removed the check for pre-existing single-stepping mode in
+  hw_breakpoint_handler() as this check is unreliable while in kernel-space.
+  Side effect of this change is the non-triggering of hw-breakpoints while
+  single-stepping kernel through KGDB or Xmon.
+- Minor code-cleanups and addition of comments in hw_breakpoint_handler() and
+  single_step_dabr_instruction().
+- Re-based to commit 25cf84cf377c0aae5dbcf937ea89bc7893db5176 of linux-2.6
+
+Changelog - ver XIII
+--------------------
+(Version XII: linuxppc-dev ref: 20100121084640.GA3252@in.ibm.com)
+
+- Fixed a bug for user-space breakpoints (triggered following the failure of a
+  breakpoint request).
+- Re-based on commit 724e6d3fe8003c3f60bf404bf22e4e331327c596 of linux-2.6
+  
+Changelog - ver XII
+--------------------
+(Version XI: linuxppc-dev ref: 20100119091234.GA9971@in.ibm.com)
+
+- Unset MSR_SE only if kernel was not previously in single-step mode.
+- Pre-emption is now enabled before returning from the hw-breakpoint exception
+  handler.
+- Variables to track the source of single-step exception (breakpoint from kernel,
+  user-space vs single-stepping due to other requests) are added.
+- Extraneous hw-breakpoint exceptions (due to memory accesses lying outside
+  monitored symbol length) is now done for both kernel and user-space
+  (previously only user-space).
+- single_step_dabr_instruction() now returns NOTIFY_DONE if kernel was in
+  single-step mode even before the hw-breakpoint. This enables other users of
+  single-step mode to be notified of the exception.
+- User-space instructions are not emulated from kernel-space, they are instead
+  single-stepped.
+  
+Changelog - ver XI
+------------------
+(Version X: linuxppc-dev ref: 20091211160144.GA23156@in.ibm.com)
+- Conditionally unset MSR_SE in the single-step handler
+- Added comments to explain the duration and need for pre-emption
+disable following hw-breakpoint exception.
+
+Changelog - ver X
+------------------
+- Re-write the PPC64 patches for the new implementation of hw-breakpoints that
+  uses the perf-layer.
+- Rebased to commit 7622fc234190a37d4e9fe3ed944a2b61a63fca03 of -tip.
+
+Changelog - ver IX
+-------------------
+- Invocation of user-defined callback will be 'trigger-after-execute' (except
+  for ptrace).
+- Creation of a new global per-CPU breakpoint structure to help invocation of
+  user-defined callback from single-step handler.
+(Changes made now)
+- Validation before registration will fail only if the address does not match
+  the kernel symbol's (if specified) resolved address
+  (through kallsyms_lookup_name()).
+- 'symbolsize' value is expected to within the range contained by the symbol's
+  starting address and the end of a double-word boundary (8 Bytes).
+- PPC64's arch-dependant code is now aware of 'cpumask' in 'struct hw_breakpoint'
+  and can accomodate requests for a subset of CPUs in the system.
+- Introduced arch_disable_hw_breakpoint() required for
+  <enable><disable>_hw_breakpoint() APIs.
+
+Changelog - ver VIII
+-------------------
+- Reverting changes to allow one-shot breakpoints only for ptrace requests.
+- Minor changes in sanity checking in arch_validate_hwbkpt_settings().
+- put_cpu_no_resched() is no longer available. Converted to put_cpu().
+
+Changelog - ver VII
+-------------------
+- Allow the one-shot behaviour for exception handlers to be defined by the user.
+  A new 'is_one_shot' flag is added to 'struct arch_hw_breakpoint'.
+
+Changelog - ver VI
+------------------
+The task of identifying 'genuine' breakpoint exceptions from those caused by
+'out-of-range' accesses turned out to be more tricky than originally thought.
+Some changes to this effect were made in version IV of this patchset, but they
+were not sufficient for user-space. Basically the breakpoint address received
+through ptrace is always aligned to 8-bytes since ptrace receives an encoded
+'data' (consisting of address | translation_enable | bkpt_type), and the size of
+the symbol is not known. However for kernel-space addresses, the symbol-size can
+be determined using kallsyms_lookup_size_offset() and this is used to check if
+DAR (in the exception context) is
+'bkpt_address <= DAR <= (bkpt_address + symbol_size)', failing which we conclude
+it as a stray exception.
+
+The following changes are made to enable check:
+- Addition of a symbolsize field in 'struct arch_hw_breakpoint' field.
+- Store the size of the 'watched' kernel symbol into 'symbolsize' field in
+  arch_store_info(0 routine.
+- Verify if the above described condition is true when is_one_shot is FALSE in
+  hw_breakpoint_handler().
+
+Changelog - ver V
+------------------
+- Breakpoint requests from ptrace (for user-space) are designed to be one-shot
+in PPC64. The patch contains changes to retain this behaviour by returning early
+in hw_breakpoint_handler() [without re-initialising DABR] and unregistering the
+user-space request in ptrace_triggered(). It is safe to make a
+unregister_user_hw_breakpoint() call from the breakpoint exception context
+[through ptrace_triggered()] without giving rise to circular locking-dependancy.
+This is because there can be no kernel code running on the CPU (which received
+the exception) with the same spinlock held.
+
+- Minor change in 'type' member of 'struct arch_hw_breakpoint' from u8 to 'int'.
+
+Changelog - ver IV
+------------------
+- While DABR register requires double-word (8 bytes) aligned addresses, i.e.
+the breakpoint is active over a range of 8 bytes, PPC64 allows byte-level
+addressability. This may lead to stray exceptions which have to be ignored in
+hw_breakpoint_handler(), when DAR != (Breakpoint request address). However DABR
+will be populated with the requested breakpoint address aligned to the previous
+double-word address. The code is now modified to store user-requested address
+in 'bp->info.address' but update the DABR with a double-word aligned address.
+
+- Please note that the Data Breakpoint facility in Xmon is broken as of 2.6.29
+and the same has not been integrated into this facility as described in Ver I.
+
+Changelog - ver III
+------------------
+- Patches are based on commit 08f16e060bf54bdc34f800ed8b5362cdeda75d8b of -tip
+tree.
+
+- The declarations in arch/powerpc/include/asm/hw_breakpoint.h are done only if
+CONFIG_PPC64 is defined. This eliminates the need to conditionally include this
+header file.
+
+- load_debug_registers() is done in start_secondary() i.e. during CPU
+initialisation.
+
+- arch_check_va_<> routines in hw_breakpoint.c are now replaced with a much
+simpler is_kernel_addr() check in arch_validate_hwbkpt_settings()
+
+- Return code of hw_breakpoint_handler() when triggered due to Lazy debug
+register switching is now changed to NOTIFY_STOP.
+
+- The ptrace code no longer sets the TIF_DEBUG task flag as it is proposed to
+be done in register_user_hw_breakpoint() routine.
+
+- hw_breakpoint_handler() is now modified to use hbp_kernel_pos value to
+  determine if the trigger was a user/kernel space address. The DAR register
+  value is checked with the address stored in 'struct hw_breakpoint' to avoid
+  handling of exceptions that belong to kprobe/Xmon.
+
+
+Changelog - ver II
+------------------
+- Split the monolithic patch into six logical patches
+
+- Changed the signature of arch_check_va_in_<user><kernel>space functions. They
+  are now marked static.
+
+- HB_NUM is now called as HBP_NUM (to preserve a consistent short-name
+  convention)
+
+- Introduced hw_breakpoint_disable() and changes to kexec code to disable
+  breakpoints before a reboot.
+  
+- Minor changes in ptrace code to use macro-defined constants instead of
+  numbers.
+
+- Introduced a new constant definition INSTRUCTION_LEN in reg.h
