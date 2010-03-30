@@ -1,36 +1,18 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B94A7B7CBB
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:32:36 +1100 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o2U5WGiK002301
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:32:16 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o2U5QKHL1708218
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:26:20 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o2U5WRHl024160
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:32:27 +1100
-Subject: Re: [RFC Patch 1/2] PPC64-HWBKPT: Disable interrupts for data
-	breakpoint exceptions
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20100330052442.GB12619@drongo>
-References: <20100323140008.954823303@pr>
-	<20100323140702.GB21836@in.ibm.com>  <20100330052442.GB12619@drongo>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Mar 2010 16:32:25 +1100
-Message-ID: <1269927145.7101.48.camel@pasglop>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
+	by ozlabs.org (Postfix) with ESMTP id BA7B6B7C48
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 30 Mar 2010 17:25:00 +1100 (EST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+	by duster.selinc.com (8.14.3/8.14.3) with ESMTP id o2U6OwfO014378
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Mar 2010 23:24:58 -0700
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Subject: Question regarding the DTLB Miss exceptions
+Message-ID: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Mon, 29 Mar 2010 23:24:58 -0700
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,32 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-03-30 at 16:24 +1100, Paul Mackerras wrote:
-> On Tue, Mar 23, 2010 at 07:37:02PM +0530, K.Prasad wrote:
-> 
-> > Index: linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/exceptions-64s.S
-> > +++ linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -735,6 +735,9 @@ _STATIC(do_hash_page)
-> >  	std	r3,_DAR(r1)
-> >  	std	r4,_DSISR(r1)
-> >  
-> > +	andis.  r0,r4,0x0040		/* Data Address Breakpoint match? */
-> 
-> Minor comment: why not DSISR_DABRMATCH@h instead of 0x0040?
-> 
-> > +	bne-    handle_dabr_fault
-> > +
-> >  	andis.	r0,r4,0xa450		/* weird error? */
-> >  	bne-	handle_page_fault	/* if not, try to insert a HPTE */
-> >  BEGIN_FTR_SECTION
-> > @@ -823,6 +826,15 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
-> >  	bl	.raw_local_irq_restore
-> >  	b	11f
+I'm tracking a problem that's leading me through DSI and DTLB miss 
+exceptions on an MPC8347 (e300c1 core), and I've come across an oddity 
+that I'm hoping someone can explain.
 
-I would move your new test to the "weird error" case (ie, after the bne-
-handle_page_fault) to avoid hitting the fast path.
+When a DTLB Miss exception can't find a PTE for the virtual address being 
+written/read, it dummies up the SPRs for a DSI exception and then calls 
+directly into the DSI exception code.  Just before the DTLB miss code 
+stores a value into DSISR it sets bit 2, which for a DSI exception is a 
+reserved bit and should be cleared.  There's no comment on the code 
+(.../arch/powerpc/kernel/head_32.S line 619 of the 2.6.33-rc1 kernel). Can 
+anyone tell me why this bit is getting set?
 
-Cheers,
-Ben.
+Thanks.
+
+Bruce
