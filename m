@@ -1,17 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5FBA7B7C06
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 12:39:42 +1100 (EST)
-From: Andy Fleming <afleming@freescale.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] 85xx: Enable support for ports 3 and 4 on 8548 CDS
-Date: Mon, 29 Mar 2010 20:39:08 -0500
-Message-Id: <1269913148-6450-1-git-send-email-afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 30 Mar 2010 16:24:42 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [RFC Patch 1/2] PPC64-HWBKPT: Disable interrupts for data
+	breakpoint exceptions
+Message-ID: <20100330052442.GB12619@drongo>
+References: <20100323140008.954823303@pr> <20100323140702.GB21836@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100323140702.GB21836@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	David Gibson <dwg@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I believe support was disabled due to issues with earlier versions of
-the board/processor.  At worst, adding the ports back into the device
-tree should result in enabling ports that don't work on older systems,
-so the default should be to enable them.
+On Tue, Mar 23, 2010 at 07:37:02PM +0530, K.Prasad wrote:
 
-Signed-off-by: Andy Fleming <afleming@freescale.com>
----
- arch/powerpc/boot/dts/mpc8548cds.dts |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+> Index: linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
+> ===================================================================
+> --- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/exceptions-64s.S
+> +++ linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
+> @@ -735,6 +735,9 @@ _STATIC(do_hash_page)
+>  	std	r3,_DAR(r1)
+>  	std	r4,_DSISR(r1)
+>  
+> +	andis.  r0,r4,0x0040		/* Data Address Breakpoint match? */
 
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index 4173af3..0f52624 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -20,10 +20,8 @@
- 	aliases {
- 		ethernet0 = &enet0;
- 		ethernet1 = &enet1;
--/*
- 		ethernet2 = &enet2;
- 		ethernet3 = &enet3;
--*/
- 		serial0 = &serial0;
- 		serial1 = &serial1;
- 		pci0 = &pci0;
-@@ -254,7 +252,6 @@
- 			};
- 		};
- 
--/* eTSEC 3/4 are currently broken
- 		enet2: ethernet@26000 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-@@ -310,7 +307,6 @@
- 				};
- 			};
- 		};
-- */
- 
- 		serial0: serial@4500 {
- 			cell-index = <0>;
--- 
-1.6.5.2.g6ff9a
+Minor comment: why not DSISR_DABRMATCH@h instead of 0x0040?
+
+> +	bne-    handle_dabr_fault
+> +
+>  	andis.	r0,r4,0xa450		/* weird error? */
+>  	bne-	handle_page_fault	/* if not, try to insert a HPTE */
+>  BEGIN_FTR_SECTION
+> @@ -823,6 +826,15 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
+>  	bl	.raw_local_irq_restore
+>  	b	11f
+>  
+> +/* We have a data breakpoint exception - handle it */
+> +handle_dabr_fault:
+> +	/* Populate the pt_regs structure */
+
+Another minor comment: that comment isn't accurate since you're not
+putting anything in the pt_regs, just getting arguments to do_dabr
+from it.
+
+> +	ld      r4,_DAR(r1)
+> +	ld      r5,_DSISR(r1)
+> +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> +	bl      .do_dabr
+> +	b       .ret_from_except_lite
+> +
+>  /* Here we have a page fault that hash_page can't handle. */
+>  handle_page_fault:
+>  	ENABLE_INTS
+> Index: linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
+> ===================================================================
+> --- linux-2.6.ppc64_test.orig/arch/powerpc/mm/fault.c
+> +++ linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
+> @@ -151,7 +151,7 @@ int __kprobes do_page_fault(struct pt_re
+>  	if (!user_mode(regs) && (address >= TASK_SIZE))
+>  		return SIGSEGV;
+>  
+> -#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+> +#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE) || defined(CONFIG_PPC64))
+
+If we added similar code to head_32.S, we could probably remove this
+whole ifdef block.  But that can be done in a later patch.
+
+Paul.
