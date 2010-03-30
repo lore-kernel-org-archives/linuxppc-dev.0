@@ -1,30 +1,17 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mgw-mx03.nokia.com (smtp.nokia.com [192.100.122.230])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.nokia.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3E258B7C7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Mar 2010 00:58:45 +1100 (EST)
-Received: from mgw-mx06.nokia.com (mgw-mx06.nokia.com [192.100.122.233])
-	by mgw-mx03.nokia.com (Switch-3.3.3/Switch-3.3.3) with ESMTP id
-	o2UDHiwb007669
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:17:45 +0300
-Subject: Re: [PATCH v3 04/11] mtd: Add MPC5121 NAND Flash Controller driver
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa41002091842g6795bf68lb8b410d433cd7f31@mail.gmail.com>
-References: <1265377377-29327-1-git-send-email-agust@denx.de>
-	<1265377377-29327-5-git-send-email-agust@denx.de>
-	<fa686aa41002091842g6795bf68lb8b410d433cd7f31@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Mar 2010 16:15:07 +0300
-Message-ID: <1269954907.6648.9.camel@localhost>
-Mime-Version: 1.0
-Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Anatolij Gustschin <agust@denx.de>,
-	David Woodhouse <dwmw2@infradead.org>
-Reply-To: dedekind1@gmail.com
+Return-Path: <fkan@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 27B8FB7CB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Mar 2010 04:53:07 +1100 (EST)
+From: Feng Kan <fkan@amcc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix the problem where pcix node is probed again as pci node.
+Date: Tue, 30 Mar 2010 10:41:18 -0700
+Message-Id: <1269970878-5080-1-git-send-email-fkan@amcc.com>
+Cc: Feng Kan <fkan@appliedmicro.com>,
+	Tirumala R Marri <tmarri@appliedmicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-02-09 at 19:42 -0700, Grant Likely wrote:
-> On Fri, Feb 5, 2010 at 6:42 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> > Adds NAND Flash Controller driver for MPC5121 Revision 2.
-> > All device features, except hardware ECC and power management,
-> > are supported.
-> >
-> > Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
-> > Signed-off-by: Wolfgang Denk <wd@denx.de>
-> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> > Cc: <linux-mtd@lists.infradead.org>
-> > Cc: Grant Likely <grant.likely@secretlab.ca>
-> > Cc: John Rigby <jcrigby@gmail.com>
-> 
-> On *very* brief review...
-> 
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-> David, there are ordering issues on this patch with arch-specific
-> code.  If the patch looks okay to you, then can I pick it up into my
-> tree?
+From: Feng Kan <fkan@appliedmicro.com>
 
-Because of the general large response time of the MTD community, I
-suggest you to go put this stuff to your tree.
+The current matching scheme make the pci node match to pcix or pciex node.
+To avoid the match, change the method so only one type of initialization
+is called per node.
 
+Signed-off-by: Feng Kan <fkan@appliedmicro.com>
+Signed-off-by: Tirumala R Marri <tmarri@appliedmicro.com>
+---
+ arch/powerpc/sysdev/ppc4xx_pci.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 8aa3302..1e67c74 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -1842,14 +1842,16 @@ static int __init ppc4xx_pci_find_bridges(void)
+ 
+ 	ppc_pci_flags |= PPC_PCI_ENABLE_PROC_DOMAINS | PPC_PCI_COMPAT_DOMAIN_0;
+ 
++	for_each_compatible_node(np, NULL, "ibm,plb-pci") {
++		if (of_device_is_compatible(np, "ibm,plb-pcix"))
++			ppc4xx_probe_pcix_bridge(np);
+ #ifdef CONFIG_PPC4xx_PCI_EXPRESS
+-	for_each_compatible_node(np, NULL, "ibm,plb-pciex")
+-		ppc4xx_probe_pciex_bridge(np);
++		else if (of_device_is_compatible(np, "ibm,plb-pciex"))
++			ppc4xx_probe_pciex_bridge(np);
+ #endif
+-	for_each_compatible_node(np, NULL, "ibm,plb-pcix")
+-		ppc4xx_probe_pcix_bridge(np);
+-	for_each_compatible_node(np, NULL, "ibm,plb-pci")
+-		ppc4xx_probe_pci_bridge(np);
++		else
++			ppc4xx_probe_pci_bridge(np);
++	}
+ 
+ 	return 0;
+ }
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+1.5.5
