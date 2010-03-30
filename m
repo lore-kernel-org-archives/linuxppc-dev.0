@@ -1,18 +1,30 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 93397B7CEF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 30 Mar 2010 21:47:52 +1100 (EST)
-Message-ID: <4BB1D674.2050800@grandegger.com>
-Date: Tue, 30 Mar 2010 12:46:12 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: MPC5200B, many FEC_IEVENT_RFIFO_ERRORs until link down
-References: <201003301200.54609.roman.fietze@telemotive.de>
-In-Reply-To: <201003301200.54609.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <dedekind1@gmail.com>
+Received: from mgw-mx03.nokia.com (smtp.nokia.com [192.100.122.230])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.nokia.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3E258B7C7E
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Mar 2010 00:58:45 +1100 (EST)
+Received: from mgw-mx06.nokia.com (mgw-mx06.nokia.com [192.100.122.233])
+	by mgw-mx03.nokia.com (Switch-3.3.3/Switch-3.3.3) with ESMTP id
+	o2UDHiwb007669
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 16:17:45 +0300
+Subject: Re: [PATCH v3 04/11] mtd: Add MPC5121 NAND Flash Controller driver
+From: Artem Bityutskiy <dedekind1@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa41002091842g6795bf68lb8b410d433cd7f31@mail.gmail.com>
+References: <1265377377-29327-1-git-send-email-agust@denx.de>
+	<1265377377-29327-5-git-send-email-agust@denx.de>
+	<fa686aa41002091842g6795bf68lb8b410d433cd7f31@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 30 Mar 2010 16:15:07 +0300
+Message-ID: <1269954907.6648.9.camel@localhost>
+Mime-Version: 1.0
+Cc: Piotr Ziecik <kosmo@semihalf.com>, dzu@denx.de, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, Anatolij Gustschin <agust@denx.de>,
+	David Woodhouse <dwmw2@infradead.org>
+Reply-To: dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roman Fietze wrote:
-> Hello,
+On Tue, 2010-02-09 at 19:42 -0700, Grant Likely wrote:
+> On Fri, Feb 5, 2010 at 6:42 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> > Adds NAND Flash Controller driver for MPC5121 Revision 2.
+> > All device features, except hardware ECC and power management,
+> > are supported.
+> >
+> > Signed-off-by: Piotr Ziecik <kosmo@semihalf.com>
+> > Signed-off-by: Wolfgang Denk <wd@denx.de>
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > Cc: <linux-mtd@lists.infradead.org>
+> > Cc: Grant Likely <grant.likely@secretlab.ca>
+> > Cc: John Rigby <jcrigby@gmail.com>
 > 
-> I think this is a never ending story. This error still happens under
-> higher load every few seconds, until I get a "PHY: f0003000:00 - Link
-> is Down", on my box easiliy reproducable after maybe 15 to 30 seconds.
-> I can recover using "ip link set down/up dev eth0".
+> On *very* brief review...
 > 
-> I double checked that I'm using the most recent version of this driver
-> (checked with DENX, benh master/next, using Wolfgang Denk's version of
-> the 2.6.33), this includes the locking patches from Asier Llano, the
-> hard setting of mii_speed in the PHY mdio transfer routine of course.
-> I tried all 8 combinations of PLDIS, BSDIS and SE, with and without
-> CONFIG_NOT_COHERENT_CACHE.
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 > 
-> As some of you probably remember, I'm running this controller under
-> high load on FEC, ATA and LPC. As soon as "the" load is going above a
-> certain level I get those FEC RFIFO errors, sometimes ATA errors
-> (MWDMA2) and sometimes even lost SDMA interrupts using BestComm with
-> the SCLPC (now switched back to simple PIO). I quite sure almost all
-> of this is the BestComm's fault.
+> David, there are ordering issues on this patch with arch-specific
+> code.  If the patch looks okay to you, then can I pick it up into my
+> tree?
 
-This problem shows up quickly with NAPI, but I have never observed it
-with the current version. The error occurs when the software is not able
-to readout the messages in time. Unfortunately, dealing with Bestcomm is
-a pain.
+Because of the general large response time of the MTD community, I
+suggest you to go put this stuff to your tree.
 
-> Did somebody already try the latest NAPI patches, which might give me
-> a slight chance to have a workaround? Any idea or upcoming patch to
-> address this problem once more, and if it's just by recovering e.g.
-> within mpc52xx_fec_mdio_transfer's timeout using some other dirty
-> workaround?
-
-Yes, I have a NAPI version ready for testing. I will roll it out as RFC
-today or tomorrow.
-
-Wolfgang.
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
