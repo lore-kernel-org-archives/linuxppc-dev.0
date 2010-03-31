@@ -1,20 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 58ADFB7C48
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Mar 2010 12:52:31 +1100 (EST)
-Date: Wed, 31 Mar 2010 12:52:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 1/12] arch/powerpc/kernel: Add missing unlock
-Message-Id: <20100331125225.3714c9f6.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.1003291733150.21896@ask.diku.dk>
-References: <Pine.LNX.4.64.1003291733150.21896@ask.diku.dk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__31_Mar_2010_12_52_25_+1100_6WvQH3F2B.u.+QJk"
-Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-yw0-f196.google.com (mail-yw0-f196.google.com
+	[209.85.211.196]) by ozlabs.org (Postfix) with ESMTP id 578F0B7BFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Mar 2010 14:04:32 +1100 (EST)
+Received: by ywh34 with SMTP id 34so7436749ywh.17
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Mar 2010 20:04:31 -0700 (PDT)
+Message-ID: <4BB2BBDD.6050304@billgatliff.com>
+Date: Tue, 30 Mar 2010 22:05:01 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+MIME-Version: 1.0
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Requesting a GPIO that hasn't been registered yet
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +20,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__31_Mar_2010_12_52_25_+1100_6WvQH3F2B.u.+QJk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Guys:
 
-Hi Julia,
 
-On Mon, 29 Mar 2010 17:33:34 +0200 (CEST) Julia Lawall <julia@diku.dk> wrot=
-e:
->
-> From: Julia Lawall <julia@diku.dk>
->=20
-> Add an unlock before exiting the function.
+I'm sure this is a FAQ, but I can't seem to find the answer.  I'm happy
+to RTFM, if someone can please tell me where the FM is.  :)
 
-Thanks for this.
+I'm adding device table support to gpio_keys.  The target is an
+MPC5200B.  I have statements in my dts file that look like this:
 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+...
+        i2c@3d40 {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+            reg = <0x3d40 0x40>;
+            interrupts = <2 16 0>;
+...
+            lext60: max7314@60 {
+                compatible = "maxim,max7314","phillips,pca953x";
+                reg = <0x60>;
+                gpio-controller;
+                #gpio-cells = <2>;
+            };
+        };
+...
+        gpio-keys {
+              compatible = "gpio-keys";
+              encoder_button {
+                     gpios = <&lext60 12 0>;
+                     code = <28>;
+                     type = <1>;
+                     active-low = <0>;
+                     wakeup = <0>;
+                     debounce-interval = <0>;
+                     rep = <0>;
+                     };
+             };
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+In other words, the GPIO pin I'm using for the key is one of the bits on
+my pca953x GPIO expander chip.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The above would all be great, except that I haven't come up with a way
+to make sure that my encoder_button doesn't try to probe before lext60
+is available.  In fact, I'm consistently getting initialization in the
+wrong order!
 
---Signature=_Wed__31_Mar_2010_12_52_25_+1100_6WvQH3F2B.u.+QJk
-Content-Type: application/pgp-signature
+Eventually the GPIO expander chip gets plugged in, because I can see it
+show up in sysfs.  And what's really odd is, I recently made similar
+mods to gpio_leds and they are working fine--- although the GPIO pin is
+on a pca953x at address 20, instead of 60.  I'm at a loss to explain why
+one works, but the other doesn't.  And I don't know how to really fix
+this problem for good!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Any suggestions?  Thanks!!
 
-iEYEARECAAYFAkuyqtkACgkQjjKRsyhoI8wchQCeO0mO1cTe2HbjLlJ0XKe7lA7z
-Uc4AmgM1Ki+gVC52iFCoEMNOVkFAUsGO
-=hDu/
------END PGP SIGNATURE-----
 
---Signature=_Wed__31_Mar_2010_12_52_25_+1100_6WvQH3F2B.u.+QJk--
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
