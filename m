@@ -1,31 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 34A6DB7CF8
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4C464B7CF9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Apr 2010 02:48:28 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o2VFmPAx011980 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Mar 2010 08:48:25 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o2VFuxlx013475
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 31 Mar 2010 10:57:00 -0500 (CDT)
-Message-ID: <4BB36EB1.6010105@freescale.com>
-Date: Wed, 31 Mar 2010 10:48:01 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Thu,  1 Apr 2010 02:55:31 +1100 (EST)
+In-Reply-To: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
+References: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
+Subject: Re: Question regarding the DTLB Miss exceptions
+To: Bruce_Leonard@selinc.com
+Message-ID: <OF1F3D1670.795F8C23-ONC12576F7.00565EBF-C12576F7.00568397@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 31 Mar 2010 17:44:57 +0200
 MIME-Version: 1.0
-To: Peter Pan <pppeterpppan@gmail.com>
-Subject: Re: I can not get my MII working on MPC8247 with Linux 2.6.32.6
-References: <48abf2c21003301846h67106ce6h8d51ad167374793f@mail.gmail.com>
-In-Reply-To: <48abf2c21003301846h67106ce6h8d51ad167374793f@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linuxppc-dev-bounces+joakim.tjernlund=transmode.se@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,22 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Pan wrote:
-> Recently, I'm porting Linux 2.6.32.6 to our customized MPC8247 based
-> board. Everything is fine out except my ethernets. I uses
-> cpm2-scc-enet and cpm2-fcc-enet drivers.
-> My ethernet works fine in U-Boot with the same setting, and our
-> previous Linux 2.6.22 is also working, so there should be nothing
-> wrong with the hardware.
-> The boot log of the MII part is:
-> 
-> CPM2 Bitbanged MII: probed
-> mdio_bus f0010d00: error probing PHY at address 0
-> mdio_bus f0010d00: error probing PHY at address 1
+>
+> I'm tracking a problem that's leading me through DSI and DTLB miss
+> exceptions on an MPC8347 (e300c1 core), and I've come across an oddity
+> that I'm hoping someone can explain.
+>
+> When a DTLB Miss exception can't find a PTE for the virtual address being
+> written/read, it dummies up the SPRs for a DSI exception and then calls
+> directly into the DSI exception code.  Just before the DTLB miss code
+> stores a value into DSISR it sets bit 2, which for a DSI exception is a
+> reserved bit and should be cleared.  There's no comment on the code
+> (.../arch/powerpc/kernel/head_32.S line 619 of the 2.6.33-rc1 kernel). Can
+> anyone tell me why this bit is getting set?
 
-Are 0 and 1 the addresses you're expecting the PHYs to be at?
+Probably for generic handling in do_page_fault()
 
-If that's not it, I'd try to examine the specific register accesses that 
-2.6.22 is doing and see what's different.
-
--Scott
+  Jocke
