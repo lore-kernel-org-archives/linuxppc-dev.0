@@ -1,24 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1BDA1B7D1D
+	(Client CN "e28smtp09.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9E875B7D0B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Apr 2010 15:45:35 +1100 (EST)
-Subject: Re: spin_lock_irqsave and multi-core
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: gshan <Gavin.Shan@alcatel-lucent.com>
-In-Reply-To: <4BB4109E.8020607@alcatel-lucent.com>
-References: <4BB3FE05.6040800@alcatel-lucent.com>
-	<1270089545.7101.84.camel@pasglop>
-	<4BB407F6.3070106@alcatel-lucent.com>
-	<1270090589.7101.86.camel@pasglop>
-	<4BB4109E.8020607@alcatel-lucent.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 01 Apr 2010 15:45:25 +1100
-Message-ID: <1270097125.7101.110.camel@pasglop>
-Mime-Version: 1.0
+	Thu,  1 Apr 2010 18:39:40 +1100 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp09.in.ibm.com (8.14.3/8.13.1) with ESMTP id o316r0B3022412
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Apr 2010 12:23:00 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o317daLa3391574
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Apr 2010 13:09:36 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o317daU0018834
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Apr 2010 13:09:36 +0530
+Date: Thu, 1 Apr 2010 13:09:24 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+Subject: [PATCH v2 repost] powerpc: export data from new hcall H_EM_GET_PARMS
+Message-ID: <20100401073924.GT5300@dirshya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +35,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-04-01 at 11:18 +0800, gshan wrote:
-> I agree with you. Actually, I can disable the individual interrupt via
-> disable_irq_sync() to make sure
-> system cooherence. 
+Hi Ben,
 
-This is also a very heavy hammer and not recommended at all. In most
-case, you don't need that either. Also don't forget that if your system
-has shared interrupts, you'll also disable whoever else interrupt you
-are sharing with. You also cannot call that within a spinlock region for
-example.
+Previous post: http://patchwork.ozlabs.org/patch/47249/
 
-You don't normally need any of that if you use spinlocks properly, but
-again, without more understanding of what your driver is trying to do,
-it's hard to explain properly what you should do.
+I have cleaned up the code from the v1:
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080630.html
 
-Normally tho, you synchronize your interrupt handler with your other
-driver parts using simply a spinlock. You take it with spin_lock/unlock
-from the interrupt handler and you use spin_lock_irqsave/restore from
-the non-irq path. You don't normally need more. You only need the
-irqsave/restore in fact on one CPU because it's goal is purely to avoid
-a spin deadlock if your interrupt happens on that same CPU at the same
-time.
+Changes from v1:
+* Removed redundant return statements and rearranged code
 
-Only if you want to disable interrupts for an extended period of time
-should you consider using disable_irq_* and even then, as I mentioned,
-it has drawbacks and is generally not recommended.
+Description:
 
-Alternatively, most devices have the ability to disable interrupt
-emission on the device itself using some kind of MMIO register (though
-you still need to synchronize things properly in your driver as the
-interrupt might have already been emitted and on its way to the
-processor when you whack that register.
+A new hcall H_EM_GET_PARMS as been added to obtain power mode data
+from the platform.  This data can be used by user space administrative
+tools for better power management.
 
-But again, without more detailed knowledge of what you driver is
-actually doing, it's hard to give you more precise advice.
+The following patch add data from this new hcall into the lparcfg
+driver and exports to user space along with other existing lpar data
+in /proc/powerpc/lparcfg
 
-Cheers,
-Ben.
+Please review and include in powerpc -next tree.
 
-> It's just my concern when reading kernel source. 
-> Anyway, thanks a lot
-> for your kindly answer.
-> 
-> 
+Thanks,
+Vaidy
+
+---
+	powerpc: export data from new hcall H_EM_GET_PARMS
+
+	Add support for H_EM_GET_PARMS hcall that will return data
+	related to power modes from the platform.  Export the data
+	directly to user space for administrative tools to interpret
+	and use.
+
+	cat /proc/powerpc/lparcfg will export power mode data
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/hvcall.h |    1 +
+ arch/powerpc/kernel/lparcfg.c     |   12 +++++++++++-
+ 2 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index f027581..ebe7493 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -228,6 +228,7 @@
+ #define H_JOIN			0x298
+ #define H_VASI_STATE            0x2A4
+ #define H_ENABLE_CRQ		0x2B0
++#define H_GET_EM_PARMS		0x2B8
+ #define H_SET_MPP		0x2D0
+ #define H_GET_MPP		0x2D4
+ #define MAX_HCALL_OPCODE	H_GET_MPP
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index d09d1c6..ff698fb 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -37,7 +37,7 @@
+ #include <asm/vio.h>
+ #include <asm/mmu.h>
+
+-#define MODULE_VERS "1.8"
++#define MODULE_VERS "1.9"
+ #define MODULE_NAME "lparcfg"
+
+ /* #define LPARCFG_DEBUG */
+@@ -486,6 +486,14 @@ static void splpar_dispatch_data(struct seq_file *m)
+ 	seq_printf(m, "dispatch_dispersions=%lu\n", dispatch_dispersions);
+ }
+
++static void parse_em_data(struct seq_file *m)
++{
++	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
++
++	if (plpar_hcall(H_GET_EM_PARMS, retbuf) == H_SUCCESS)
++		seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
++}
++
+ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ {
+ 	int partition_potential_processors;
+@@ -540,6 +548,8 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+
+ 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
+
++	parse_em_data(m);
++
+ 	return 0;
+ }
