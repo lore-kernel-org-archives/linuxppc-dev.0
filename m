@@ -2,17 +2,28 @@ Return-Path: <w.sang@pengutronix.de>
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
 	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D955FB7E8E
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Apr 2010 11:17:32 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 9AD97B7D12
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Apr 2010 12:06:08 +1100 (EST)
 From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-i2c@vger.kernel.org
-Date: Fri,  2 Apr 2010 02:17:01 +0200
-Message-Id: <1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1270167421-5205-1-git-send-email-w.sang@pengutronix.de>
-References: <1270167421-5205-1-git-send-email-w.sang@pengutronix.de>
-Subject: [PATCH RESEND 3/3] i2c/ibm-iic: drop NO_IRQ
-Cc: linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Sean MacLennan <smaclennan@pikatech.com>
+To: linux-kernel@vger.kernel.org
+Date: Fri,  2 Apr 2010 03:02:15 +0200
+Message-Id: <1270170140-325-2-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1270170140-325-1-git-send-email-w.sang@pengutronix.de>
+References: <1270170140-325-1-git-send-email-w.sang@pengutronix.de>
+Subject: [PATCH 2/2] device_attributes: add sysfs_attr_init() for dynamic
+	attributes
+Cc: Lin Ming <ming.m.lin@intel.com>, platform-driver-x86@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Kai Jiang <b18973@freescale.com>,
+	Krzysztof Helt <krzysztof.h1@wp.pl>,
+	Sujith Thomas <sujith.thomas@intel.com>,
+	Bob Moore <robert.moore@intel.com>,
+	Anatolij Gustschin <agust@denx.de>, linux-media@vger.kernel.org,
+	Len Brown <len.brown@intel.com>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	Mike Isely <isely@pobox.com>, Johannes Berg <johannes@sipsolutions.net>,
+	Michal Simek <monstr@monstr.eu>, Greg KH <gregkh@suse.de>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,73 +33,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
-(http://lkml.org/lkml/2005/11/21/221). This change is safe, as the driver is
-only used on powerpc, where NO_IRQ is 0 anyhow.
+Made necessary by 6992f5334995af474c2b58d010d08bc597f0f2fe. Prevents further
+"key xxx not in .data" bug-reports. Although some attributes could probably be
+converted to static ones, this is left for people having hardware to test.
+
+Found by this semantic patch:
+
+@ init @
+type T;
+identifier A;
+@@
+
+        T {
+                ...
+                struct device_attribute A;
+                ...
+        };
+
+@ main extends init @
+expression E;
+statement S;
+identifier err;
+T *name;
+@@
+
+        ... when != sysfs_attr_init(&name->A.attr);
+(
++       sysfs_attr_init(&name->A.attr);
+        if (device_create_file(E, &name->A))
+                S
+|
++       sysfs_attr_init(&name->A.attr);
+        err = device_create_file(E, &name->A);
+)
+
+While reviewing, I put the initialization to apropriate places.
 
 Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Sean MacLennan <smaclennan@pikatech.com>
-Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/i2c/busses/i2c-ibm_iic.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/macintosh/windfarm_core.c           |    1 +
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    8 ++++++++
+ drivers/platform/x86/intel_menlow.c         |    1 +
+ drivers/video/fsl-diu-fb.c                  |    1 +
+ 4 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-index b1bc6e2..2bef534 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -668,12 +668,12 @@ static int __devinit iic_request_irq(struct of_device *ofdev,
- 	int irq;
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index 419795f..f447642 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -209,6 +209,7 @@ int wf_register_control(struct wf_control *new_ct)
+ 	kref_init(&new_ct->ref);
+ 	list_add(&new_ct->link, &wf_controls);
  
- 	if (iic_force_poll)
--		return NO_IRQ;
-+		return 0;
++	sysfs_attr_init(&new_ct->attr.attr);
+ 	new_ct->attr.attr.name = new_ct->name;
+ 	new_ct->attr.attr.mode = 0644;
+ 	new_ct->attr.show = wf_show_control;
+diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+index 6c23456..71f5056 100644
+--- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+@@ -423,10 +423,12 @@ static void pvr2_sysfs_add_debugifc(struct pvr2_sysfs *sfp)
  
- 	irq = irq_of_parse_and_map(np, 0);
--	if (irq == NO_IRQ) {
-+	if (!irq) {
- 		dev_err(&ofdev->dev, "irq_of_parse_and_map failed\n");
--		return NO_IRQ;
-+		return 0;
+ 	dip = kzalloc(sizeof(*dip),GFP_KERNEL);
+ 	if (!dip) return;
++	sysfs_attr_init(&dip->attr_debugcmd.attr);
+ 	dip->attr_debugcmd.attr.name = "debugcmd";
+ 	dip->attr_debugcmd.attr.mode = S_IRUGO|S_IWUSR|S_IWGRP;
+ 	dip->attr_debugcmd.show = debugcmd_show;
+ 	dip->attr_debugcmd.store = debugcmd_store;
++	sysfs_attr_init(&dip->attr_debuginfo.attr);
+ 	dip->attr_debuginfo.attr.name = "debuginfo";
+ 	dip->attr_debuginfo.attr.mode = S_IRUGO;
+ 	dip->attr_debuginfo.show = debuginfo_show;
+@@ -644,6 +646,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		return;
  	}
  
- 	/* Disable interrupts until we finish initialization, assumes
-@@ -683,7 +683,7 @@ static int __devinit iic_request_irq(struct of_device *ofdev,
- 	if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
- 		dev_err(&ofdev->dev, "request_irq %d failed\n", irq);
- 		/* Fallback to the polling mode */
--		return NO_IRQ;
-+		return 0;
++	sysfs_attr_init(&sfp->attr_v4l_minor_number.attr);
+ 	sfp->attr_v4l_minor_number.attr.name = "v4l_minor_number";
+ 	sfp->attr_v4l_minor_number.attr.mode = S_IRUGO;
+ 	sfp->attr_v4l_minor_number.show = v4l_minor_number_show;
+@@ -658,6 +661,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->v4l_minor_number_created_ok = !0;
  	}
  
- 	return irq;
-@@ -719,7 +719,7 @@ static int __devinit iic_probe(struct of_device *ofdev,
- 	init_waitqueue_head(&dev->wq);
- 
- 	dev->irq = iic_request_irq(ofdev, dev);
--	if (dev->irq == NO_IRQ)
-+	if (!dev->irq)
- 		dev_warn(&ofdev->dev, "using polling mode\n");
- 
- 	/* Board specific settings */
-@@ -766,7 +766,7 @@ static int __devinit iic_probe(struct of_device *ofdev,
- 	return 0;
- 
- error_cleanup:
--	if (dev->irq != NO_IRQ) {
-+	if (dev->irq) {
- 		iic_interrupt_mode(dev, 0);
- 		free_irq(dev->irq, dev);
++	sysfs_attr_init(&sfp->attr_v4l_radio_minor_number.attr);
+ 	sfp->attr_v4l_radio_minor_number.attr.name = "v4l_radio_minor_number";
+ 	sfp->attr_v4l_radio_minor_number.attr.mode = S_IRUGO;
+ 	sfp->attr_v4l_radio_minor_number.show = v4l_radio_minor_number_show;
+@@ -672,6 +676,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->v4l_radio_minor_number_created_ok = !0;
  	}
-@@ -790,7 +790,7 @@ static int __devexit iic_remove(struct of_device *ofdev)
  
- 	i2c_del_adapter(&dev->adap);
- 
--	if (dev->irq != NO_IRQ) {
-+	if (dev->irq) {
- 		iic_interrupt_mode(dev, 0);
- 		free_irq(dev->irq, dev);
++	sysfs_attr_init(&sfp->attr_unit_number.attr);
+ 	sfp->attr_unit_number.attr.name = "unit_number";
+ 	sfp->attr_unit_number.attr.mode = S_IRUGO;
+ 	sfp->attr_unit_number.show = unit_number_show;
+@@ -685,6 +690,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->unit_number_created_ok = !0;
  	}
+ 
++	sysfs_attr_init(&sfp->attr_bus_info.attr);
+ 	sfp->attr_bus_info.attr.name = "bus_info_str";
+ 	sfp->attr_bus_info.attr.mode = S_IRUGO;
+ 	sfp->attr_bus_info.show = bus_info_show;
+@@ -699,6 +705,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->bus_info_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_hdw_name.attr);
+ 	sfp->attr_hdw_name.attr.name = "device_hardware_type";
+ 	sfp->attr_hdw_name.attr.mode = S_IRUGO;
+ 	sfp->attr_hdw_name.show = hdw_name_show;
+@@ -713,6 +720,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+ 		sfp->hdw_name_created_ok = !0;
+ 	}
+ 
++	sysfs_attr_init(&sfp->attr_hdw_desc.attr);
+ 	sfp->attr_hdw_desc.attr.name = "device_hardware_description";
+ 	sfp->attr_hdw_desc.attr.mode = S_IRUGO;
+ 	sfp->attr_hdw_desc.show = hdw_desc_show;
+diff --git a/drivers/platform/x86/intel_menlow.c b/drivers/platform/x86/intel_menlow.c
+index f0a90a6..90ba5d7 100644
+--- a/drivers/platform/x86/intel_menlow.c
++++ b/drivers/platform/x86/intel_menlow.c
+@@ -396,6 +396,7 @@ static int intel_menlow_add_one_attribute(char *name, int mode, void *show,
+ 	if (!attr)
+ 		return -ENOMEM;
+ 
++	sysfs_attr_init(&attr->attr.attr); /* That is consistent naming :D */
+ 	attr->attr.attr.name = name;
+ 	attr->attr.attr.mode = mode;
+ 	attr->attr.show = show;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 4637bcb..994358a 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1536,6 +1536,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 		goto error;
+ 	}
+ 
++	sysfs_attr_init(&machine_data->dev_attr.attr);
+ 	machine_data->dev_attr.attr.name = "monitor";
+ 	machine_data->dev_attr.attr.mode = S_IRUGO|S_IWUSR;
+ 	machine_data->dev_attr.show = show_monitor;
 -- 
 1.7.0
