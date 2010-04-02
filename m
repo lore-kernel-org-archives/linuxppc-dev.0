@@ -1,19 +1,19 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
-	by ozlabs.org (Postfix) with ESMTP id 5D670B7CF0
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Apr 2010 01:59:58 +1100 (EST)
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 2.6.34-rc3: Badness at kernel/lockdep.c:2706
-References: <4BB588B5.1060309@in.ibm.com> <1270218533.5109.525.camel@twins>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 02 Apr 2010 07:59:48 -0700
-In-Reply-To: <1270218533.5109.525.camel@twins> (Peter Zijlstra's message of
-	"Fri\, 02 Apr 2010 16\:28\:53 +0200")
-Message-ID: <m14ojtrjbv.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 4D9FDB7CF4
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Apr 2010 06:47:21 +1100 (EST)
+Date: Fri, 2 Apr 2010 15:47:18 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH RESEND 3/3] i2c/ibm-iic: drop NO_IRQ
+Message-ID: <20100402154718.4976f2d9@lappy.seanm.ca>
+In-Reply-To: <1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
+References: <1270167421-5205-1-git-send-email-w.sang@pengutronix.de>
+	<1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
+	Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri,  2 Apr 2010 02:17:01 +0200
+Wolfram Sang <w.sang@pengutronix.de> wrote:
 
-Could you try the fix Wolfram Sang sent to linux-kernel yesterday?
+> Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
+> (http://lkml.org/lkml/2005/11/21/221). This change is safe, as the
+> driver is only used on powerpc, where NO_IRQ is 0 anyhow.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-Peter Zijlstra <peterz@infradead.org> writes:
+Acked-by: Sean MacLennan <smaclennan@pikatech.com>
 
-> On Fri, 2010-04-02 at 11:33 +0530, Sachin Sant wrote:
->> With 2.6.34-rc3 boot on a Power5 box :
->> 
->> loop: module loaded
->> BUG: key 6b6b6b6b6b6b6b6b not in .data!
->> ------------[ cut here ]------------
->> Badness at kernel/lockdep.c:2706
->> NIP: c00000000010a0a8 LR: c00000000010a08c CTR: c0000000000704a4
->> REGS: c0000001096d76f0 TRAP: 0700   Not tainted  (2.6.34-rc3)
->> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 28000082  XER: 00000009
->> TASK = c0000001fa6f8000[1] 'swapper' THREAD: c0000001096d4000 CPU: 12
->> GPR00: 0000000000000000 c0000001096d7970 c000000001322e38 0000000000000001
->> GPR04: 0000000000000001 c0000000000c1ea8 0000000000000000 0000000000000002
->> GPR08: 0000000000000000 c000000001cc5a00 0000000000002422 c00000000137d768
->> GPR12: 0000000000000002 c00000000f66e400 0000000000d47940 0000000001c00000
->> GPR16: ffffffffffffffff 0000000002673148 00000000018ff984 0000000000000060
->> GPR20: 0000000000000000 ffffffffffffffff 000000000253a291 00000000018ff990
->> GPR24: 00000000018ff988 c000000001229ef0 0000000000000000 c00000010793a730
->> GPR28: 6b6b6b6b6b6b6b6b c00000010793afd8 c000000001299de0 c0000001096d7970
->> NIP [c00000000010a0a8] .lockdep_init_map+0x12c/0x538
->> LR [c00000000010a08c] .lockdep_init_map+0x110/0x538
->> Call Trace:
->> [c0000001096d7970] [c00000000010a074] .lockdep_init_map+0xf8/0x538 (unreliable)
->> [c0000001096d7a30] [c000000000274eac] .sysfs_add_file_mode+0x90/0x124
->> [c0000001096d7af0] [c000000000274f7c] .sysfs_add_file+0x3c/0x50
->> [c0000001096d7b90] [c0000000002750d8] .sysfs_create_file+0x5c/0x74
->> [c0000001096d7c30] [c0000000004b36a0] .device_create_file+0x40/0x5c
->> [c0000001096d7cd0] [c0000000004db384] .wf_register_control+0x108/0x178
->> [c0000001096d7d80] [c000000000a5f7cc] .wf_cpufreq_clamp_init+0x11c/0x16c
->> [c0000001096d7e20] [c00000000000a104] .do_one_initcall+0xb0/0x208
->> [c0000001096d7ed0] [c000000000a12568] .kernel_init+0x230/0x2f0
->> [c0000001096d7f90] [c000000000033b20] .kernel_thread+0x54/0x70
->> Instruction dump:
->> e93e8190 80090000 2f800000 409e03f8 48280539 60000000 2fa30000 419e03e8
->> e93e8198 80090000 2f800000 409e03d8 <0fe00000> 480003d0 e93e8140 fb9d0000
->> Uniform Multi-Platform E-IDE driver
->
-> 0x6b is POISON_FREE, so it seems to me sysfs made a boo-boo.
-
-Interesting combination of debugging options there.  First time I have
-seen BUG: xyz not in .data with a 0x6b address...
-
-Eric
+Cheers,
+   Sean
