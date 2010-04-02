@@ -1,20 +1,19 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
-	by ozlabs.org (Postfix) with ESMTP id D2D2CB7CF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  2 Apr 2010 23:37:31 +1100 (EST)
-Subject: Re: [Cbe-oss-dev] No otheros feature on new PS3 slim ?
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1267187451.30247.10776.camel@macbook.infradead.org>
-References: <4A8B1E17.4080800@prism.uvsq.fr>  <4A8ED239.4060609@am.sony.com>
-	<1267187451.30247.10776.camel@macbook.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 02 Apr 2010 14:37:23 +0200
-Message-ID: <1270211843.25578.236.camel@thor.local>
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
-	=?ISO-8859-1?Q?Fran=E7ois?= Galea <francois.galea@prism.uvsq.fr>
+Return-Path: <julia@diku.dk>
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mgw2.diku.dk",
+	Issuer "KU Security Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 4A67FB7C67
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Apr 2010 23:47:21 +1100 (EST)
+Date: Fri, 2 Apr 2010 14:47:13 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/3] arch/powerpc/platforms: Eliminate use after free
+Message-ID: <Pine.LNX.4.64.1004021440020.17695@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-26 at 12:30 +0000, David Woodhouse wrote:=20
-> On Fri, 2009-08-21 at 09:58 -0700, geoffrey.levand@am.sony.com wrote:
-> > The feature of "Install Other OS" was removed from the new
-> > "Slim" PS3 model to focus on delivering games and other
-> > entertainment content.=20
-> >=20
-> > Please be assured that SCE is committed to continue
-> > the support for previously sold models that have the
-> > "Install Other OS" feature and that this feature will
-> > not be disabled in future firmware releases.
->=20
-> Although it's disappointing that Sony have removed the feature from new
-> models, It's good to have this public assurance from Sony that at least
-> the feature won't be removed from older models which are already
-> working.
->=20
-> I suppose it shouldn't be too much of a surprise -- if people have
-> bought PS3s specifically to use the advertised 'OtherOS' feature and
-> Sony were to break that with a firmware update, then there may well be
-> legal ramifications. But it's nice to have the promise in writing
-> anyway.
+From: Julia Lawall <julia@diku.dk>
 
-Unfortunately, it wasn't enough - firmware version 3.21 completely
-removes 'other OS' support due to 'security concerns'. :(
+dlpar_free_cc_nodes frees its argument, so dlpar_online_cpu should not be
+called on the same value.  Skip over the call to dlpar_online_cpu by
+jumping directly to out.
 
-http://blog.us.playstation.com/2010/03/28/ps3-firmware-v3-21-update/
+A simplified version of the semantic patch that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
+// <smpl>
+@@
+expression E,E2;
+@@
 
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+dlpar_free_cc_nodes(E)
+...
+(
+  E = E2
+|
+* E
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/powerpc/platforms/pseries/dlpar.c         |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index e1682bc..1540a41 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -433,6 +433,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+ 	if (rc) {
+ 		dlpar_release_drc(drc_index);
+ 		dlpar_free_cc_nodes(dn);
++		goto out;
+ 	}
+ 
+ 	rc = dlpar_online_cpu(dn);
