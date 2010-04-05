@@ -1,19 +1,20 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
-	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id 6B6A1B7D06
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 05:53:17 +1000 (EST)
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 37C98B7C8E
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Apr 2010 15:21:19 +1000 (EST)
+Received: by gyf2 with SMTP id 2so1819551gyf.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 04 Apr 2010 22:21:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-Date: Mon, 5 Apr 2010 13:52:04 -0600
-In-Reply-To: <20100405.121647.91426186.davem@davemloft.net>
-References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local><fa686aa41003171302v46738069pae51061ba83d0818@mail.gmail.com><q2xfa686aa41004051110hc960e9a0sd1d5e61f7e2a5412@mail.gmail.com>
-	<20100405.121647.91426186.davem@davemloft.net>
-From: John Linn <John.Linn@xilinx.com>
-To: "David Miller" <davem@davemloft.net>, <grant.likely@secretlab.ca>
-Message-ID: <660bba19-87fe-454e-a780-ca30bda6b723@SG2EHSMHS006.ehs.local>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jtyner@cs.ucr.edu,
-	michal.simek@petalogix.com, john.williams@petalogix.com
+In-Reply-To: <y2ufa686aa41004040027p560c1b8bw6cdf3f096398cd42@mail.gmail.com>
+References: <h2nc3d0340b1004040010ga00f75b6k38eccbe66ce11799@mail.gmail.com>
+	<y2ufa686aa41004040027p560c1b8bw6cdf3f096398cd42@mail.gmail.com>
+Date: Sun, 4 Apr 2010 22:21:17 -0700
+Message-ID: <h2jc3d0340b1004042221q3f89ec2fu2811846d5eb09409@mail.gmail.com>
+Subject: Re: Migrating from ppc to powerpc
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: multipart/alternative; boundary=000e0cd5cbf89e99730483767fdb
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net]
-> Sent: Monday, April 05, 2010 1:17 PM
-> To: grant.likely@secretlab.ca
-> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-jwboyer@linux.vnet.ibm.com;
-> john.williams@petalogix.com; michal.simek@petalogix.com;
-jtyner@cs.ucr.edu; John Linn
-> Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-> =
+--000e0cd5cbf89e99730483767fdb
+Content-Type: text/plain; charset=ISO-8859-1
 
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Mon, 5 Apr 2010 12:10:51 -0600
-> =
+On Sun, Apr 4, 2010 at 12:27 AM, Grant Likely <grant.likely@secretlab.ca>wrote:
 
-> > David, are you going to pick up this patch, or would you like me to?
-> =
+> What processor/board/soc are you using?  The easiest path is to start
+> with a similar board and adapt the device tree source file (.dts in
+> arch/powerpc/boot/dts) to match your board with your devices.  You'll
+> need to add a node to the tree for each device you add.  If you post
+> your new .dts file to devicetree-discuss@lists.ozlabs.org for review,
+> then I and others will help you to craft it and get it into the format
+> that it needs to be in.
+>
 
-> The submitter, when asked, stated that he couldn't even get
-> the driver to build on microblaze against mainline.
-> =
+Thanks a lot for the info. The board has a MPC7448 processor. I certainly
+like to post the .dts file for review and help.
 
-> So I marked the patch "changed requested" because being able
-> to build is... you know... sort of a requirement for integration.
+-Shawn.
 
-More changes made it into the MicroBlaze mainline and it looks like I
-need to respin the patch again as there are some minor changes on the
-top of the tree.
+--000e0cd5cbf89e99730483767fdb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It built and ran fine on PowerPc, but not MicroBlaze. I'll check now.
+<div class=3D"gmail_quote">On Sun, Apr 4, 2010 at 12:27 AM, Grant Likely <s=
+pan dir=3D"ltr">&lt;<a href=3D"mailto:grant.likely@secretlab.ca">grant.like=
+ly@secretlab.ca</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" =
+style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8=
+ex; padding-left: 1ex;">
+<div><div></div>What processor/board/soc are you using? =A0The easiest path=
+ is to start<br></div>
+with a similar board and adapt the device tree source file (.dts in<br>
+arch/powerpc/boot/dts) to match your board with your devices. =A0You&#39;ll=
+<br>
+need to add a node to the tree for each device you add. =A0If you post<br>
+your new .dts file to <a href=3D"mailto:devicetree-discuss@lists.ozlabs.org=
+">devicetree-discuss@lists.ozlabs.org</a> for review,<br>
+then I and others will help you to craft it and get it into the format<br>
+that it needs to be in.<br></blockquote></div><br>Thanks a lot for the info=
+. The board has a MPC7448 processor. I certainly like to post the .dts file=
+ for review and help.<br><br>-Shawn.<br>
 
-Thanks,
-John
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+--000e0cd5cbf89e99730483767fdb--
