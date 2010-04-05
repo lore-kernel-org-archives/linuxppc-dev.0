@@ -1,21 +1,19 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-bw0-f217.google.com (mail-bw0-f217.google.com
-	[209.85.218.217]) by ozlabs.org (Postfix) with ESMTP id 9B465B7D15
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 07:29:59 +1000 (EST)
-Received: by bwz9 with SMTP id 9so3028023bwz.9
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Apr 2010 14:29:57 -0700 (PDT)
-Subject: Re: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: John Linn <john.linn@xilinx.com>
-In-Reply-To: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
-References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 05 Apr 2010 23:29:53 +0200
-Message-ID: <1270502993.9013.36.camel@edumazet-laptop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	John Tyner <jtyner@cs.ucr.edu>, michal.simek@petalogix.com,
-	john.williams@petalogix.com
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
+	[207.46.51.75]) by ozlabs.org (Postfix) with ESMTP id B56AAB7D1A
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 07:33:49 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+Date: Mon, 5 Apr 2010 15:28:32 -0600
+In-Reply-To: <20100405.121647.91426186.davem@davemloft.net>
+References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local><fa686aa41003171302v46738069pae51061ba83d0818@mail.gmail.com><q2xfa686aa41004051110hc960e9a0sd1d5e61f7e2a5412@mail.gmail.com>
+	<20100405.121647.91426186.davem@davemloft.net>
+From: John Linn <John.Linn@xilinx.com>
+To: "David Miller" <davem@davemloft.net>, <grant.likely@secretlab.ca>
+Message-ID: <1952de2f-eb73-4c5f-899f-e9ee1926df2e@SG2EHSMHS007.ehs.local>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jtyner@cs.ucr.edu,
+	michal.simek@petalogix.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le lundi 05 avril 2010 à 15:11 -0600, John Linn a écrit :
-> This patch adds support for using the LL TEMAC Ethernet driver on
-> non-Virtex 5 platforms by adding support for accessing the Soft DMA
-> registers as if they were memory mapped instead of solely through the
-> DCR's (available on the Virtex 5).
-> 
-> The patch also updates the driver so that it runs on the MicroBlaze.
-> The changes were tested on the PowerPC 440, PowerPC 405, and the
-> MicroBlaze platforms.
-> 
-> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
-> Signed-off-by: John Linn <john.linn@xilinx.com>
-> 
-> ---
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Monday, April 05, 2010 1:17 PM
+> To: grant.likely@secretlab.ca
+> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
+jwboyer@linux.vnet.ibm.com;
+> john.williams@petalogix.com; michal.simek@petalogix.com;
+jtyner@cs.ucr.edu; John Linn
+> Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+> =
 
-> +/* Align the IP data in the packet on word boundaries as MicroBlaze
-> + * needs it.
-> + */
-> +
->  #define XTE_ALIGN       32
-> -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
-> +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
->  
+> From: Grant Likely <grant.likely@secretlab.ca>
+> Date: Mon, 5 Apr 2010 12:10:51 -0600
+> =
 
-Very interesting way of doing this, but why such convoluted thing ?
+> > David, are you going to pick up this patch, or would you like me to?
+> =
 
-Because of the % 32, this is equivalent to :
+> The submitter, when asked, stated that he couldn't even get
+> the driver to build on microblaze against mainline.
+> =
 
-#define BUFFER_ALIGN(adr) ((2 - ((u32) adr)) % XTE_ALIGN)
+> So I marked the patch "changed requested" because being able
+> to build is... you know... sort of a requirement for integration.
 
-But wait, dont we recognise the magic constant NET_IP_ALIGN ?
+Pushed out V3 of the patch, forgot to copy you David.
 
-So, I ask, cant you use netdev_alloc_skb_ip_align() in this driver ?
+Thanks,
+John
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
