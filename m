@@ -1,20 +1,26 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 95D19B7C48
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  5 Apr 2010 22:22:43 +1000 (EST)
-Message-ID: <4BB9D5AD.1090206@grandegger.com>
-Date: Mon, 05 Apr 2010 14:21:01 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: MPC5200B, many FEC_IEVENT_RFIFO_ERRORs until link down
-References: <201003301200.54609.roman.fietze@telemotive.de>
-	<4BB1D674.2050800@grandegger.com> <4BB320D3.9090308@grandegger.com>
-	<201004011204.23994.roman.fietze@telemotive.de>
-In-Reply-To: <201004011204.23994.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <R1AAHA@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0E180B7C33
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 02:05:02 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o35G4iAC012135
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Apr 2010 09:04:54 -0700 (MST)
+Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
+	[10.64.32.10])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o35GCPtf028652
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Apr 2010 11:12:25 -0500 (CDT)
+Date: Mon, 5 Apr 2010 11:13:51 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc: 83xx: add RTC drivers in 83xx defconfig
+Message-Id: <20100405111351.0804d3bb.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,114 +30,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hallo Roman,
+83xx boards typically have the DS1307 or DS1374:
 
-Roman Fietze wrote:
-> Hallo Wolfgang,
-> 
-> On Wednesday 31 March 2010 12:15:47 Wolfgang Grandegger wrote:
-> 
->> I just sent out the patch.
-> 
-> Thanks a lot.
-> 
->> Would be nice if you, or somebody else, could do some testing and
->> provide some feedback.
-> 
-> I tested the patches with the following setup:
-> 
-> - DENX 2.6.33 plus NAPI patch, kernel config with and w/o NAPI enabled
-> 
-> - Own Icecube based board using MPC5200B
-> 
-> - Two different hard drives (because the Toshiba gave my headaches),
->   ext3 default settings of mkfs.ext3, MWDMA2
-> 
-> - FPGA on LPC receiving high bandwidth MOST150 data in PIO mode (for
->   the test: generating them internally), small app writing the data to
->   disk. Why PIO? SCLPC FIFO gave 
-> 
-> - netcat receving data optionally writing the data to HD, sender is a
->   Gigabit Intel NIC feeded using netcat (and /dev/zero) as well via a
->   100MBit/s switch
-> 
-> 
-> And now the first and preliminary results of the tests (see legend and
-> description of the results below the table):
-> 
-> NAPI	MOST	HD		   load		bw	rx_irq		rfifo
-> ------+-------+---------------+---------------+-------+---------------+-------
-> 				nc	most
-> ======+=======+===============+===============+=======+===============+=======
-> 
-> on	off	MK4036GA	93		5.15	32000-35000
-> 		-		99		10.5	72000-74000
-> 
-> 	on	MK4036GA	49	46	crash	15000-17500	none seen
-> 	on	HEJ421010G9AT00	48	47		15000-17500	~100-500, recovers
-> 
-> ------+-------+---------------+-----------------------+-------+---------------+-------
-> 
-> off	off	MK4036GA	90		5.15	34000-36000
-> 		-		99		10.5	76000-77000
-> 
-> 	on	MK4036GA	48	47	crash	17500-19000	~200, network down
-> 
-> Legend:
-> -------
-> 
-> MOST:		PIO mode access to FPGA receiving generated MOST150 data
-> 		very high data rates possible
-> HD:		used disk type
-> load/nc:	load netcat, %
-> load/most:	load MOST receiver app, %
-> load/idle:	was always 0%
-> bw:		netcat network band width, MB/s
-> rx_irq:		FEX RX IRQ, rate in Hz
-> rfifo:		RX FIFO errors, time in between in seconds
-> 
-> Results:
-> --------
-> 
-> Using the MK4036GA HD always crashes IDE after a few seconds. A reboot
-> does not recover the disk, I always need a power cycle. That's why I
-> switched to a HEJ421010G9AT00.
+git grep RTC_DRV arch/powerpc/configs/*83* | grep "=y"
+arch/powerpc/configs/83xx/asp8347_defconfig:CONFIG_RTC_DRV_DS1374=y
+arch/powerpc/configs/83xx/mpc8313_rdb_defconfig:CONFIG_RTC_DRV_DS1307=y
+arch/powerpc/configs/83xx/mpc8315_rdb_defconfig:CONFIG_RTC_DRV_DS1307=y
+arch/powerpc/configs/83xx/mpc832x_mds_defconfig:CONFIG_RTC_DRV_DS1374=y
+arch/powerpc/configs/83xx/mpc834x_itx_defconfig:CONFIG_RTC_DRV_DS1307=y
+arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig:CONFIG_RTC_DRV_DS1307=y
+arch/powerpc/configs/83xx/mpc834x_mds_defconfig:CONFIG_RTC_DRV_DS1374=y
+arch/powerpc/configs/83xx/mpc836x_mds_defconfig:CONFIG_RTC_DRV_DS1374=y
 
-That might be a different issue.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ arch/powerpc/configs/mpc83xx_defconfig |   62 ++++++++++++++++++++++++++++++--
+ 1 files changed, 59 insertions(+), 3 deletions(-)
 
-> NAPI reduces the FEC RX interrupt rate (/proc/interrupts) "somewhat".
-> Could not detect an increase of the maximum bandwidth, but that's not
-> the "problem" of NAPI.
-
-I realized the same behavior.
-
-> NAPI nicely recovers more or less nicely from link down (link down to
-> up about 1 second), without NAPI I have to do that manually (e.g. ip
-> set link down/up). That's something I was looking for since the
-> modular PHY drivers.
-
-Recovering from link down takes a while, unfortunately. I also do not
-yet have an explanation why the link goes down, at all. The rather long
-recovery time does not harm for my use case of "heavy packet storms" but
-is rather annoying a high but not yet critical traffic.
-
-> Some network applications (e.g. our Car Head Unit GN Protocol Logger)
-> break up their connection when the link goes down (e.g. due to
-> internal timeouts? Probably fixable). Ssh and netcat connections stay
-> up.
-
-That's a problem due to the overloaded network.
-
-> Transferred many GiB of data to the MPC w/o any problems except those
-> recoverable FEC_IEVENT_RFIFO_ERRORs.
-> 
-> This patch really looks good to me.
-
-Doesn't sound too bad...
-
-> I will run some additional tests e.g. with mixed RX and TX, different
-> and varying data rates, etc.
-
-OK.
-
-Wolfgang.
+diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
+index 05bec48..acbb8d6 100644
+--- a/arch/powerpc/configs/mpc83xx_defconfig
++++ b/arch/powerpc/configs/mpc83xx_defconfig
+@@ -980,8 +980,6 @@ CONFIG_LEGACY_PTY_COUNT=256
+ CONFIG_HW_RANDOM=y
+ # CONFIG_HW_RANDOM_TIMERIOMEM is not set
+ # CONFIG_NVRAM is not set
+-CONFIG_GEN_RTC=y
+-# CONFIG_GEN_RTC_X is not set
+ # CONFIG_R3964 is not set
+ # CONFIG_APPLICOM is not set
+ # CONFIG_RAW_DRIVER is not set
+@@ -1372,7 +1370,65 @@ CONFIG_USB_EHCI_HCD_PPC_OF=y
+ # CONFIG_ACCESSIBILITY is not set
+ # CONFIG_INFINIBAND is not set
+ # CONFIG_EDAC is not set
+-# CONFIG_RTC_CLASS is not set
++CONFIG_RTC_LIB=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_HCTOSYS=y
++CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
++# CONFIG_RTC_DEBUG is not set
++
++#
++# RTC interfaces
++#
++CONFIG_RTC_INTF_SYSFS=y
++CONFIG_RTC_INTF_PROC=y
++CONFIG_RTC_INTF_DEV=y
++# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
++# CONFIG_RTC_DRV_TEST is not set
++
++#
++# I2C RTC drivers
++#
++CONFIG_RTC_DRV_DS1307=y
++CONFIG_RTC_DRV_DS1374=y
++# CONFIG_RTC_DRV_DS1672 is not set
++# CONFIG_RTC_DRV_MAX6900 is not set
++# CONFIG_RTC_DRV_RS5C372 is not set
++# CONFIG_RTC_DRV_ISL1208 is not set
++# CONFIG_RTC_DRV_X1205 is not set
++# CONFIG_RTC_DRV_PCF8563 is not set
++# CONFIG_RTC_DRV_PCF8583 is not set
++# CONFIG_RTC_DRV_M41T80 is not set
++# CONFIG_RTC_DRV_BQ32K is not set
++# CONFIG_RTC_DRV_S35390A is not set
++# CONFIG_RTC_DRV_FM3130 is not set
++# CONFIG_RTC_DRV_RX8581 is not set
++# CONFIG_RTC_DRV_RX8025 is not set
++
++#
++# SPI RTC drivers
++#
++
++#
++# Platform RTC drivers
++#
++# CONFIG_RTC_DRV_CMOS is not set
++# CONFIG_RTC_DRV_DS1286 is not set
++# CONFIG_RTC_DRV_DS1511 is not set
++# CONFIG_RTC_DRV_DS1553 is not set
++# CONFIG_RTC_DRV_DS1742 is not set
++# CONFIG_RTC_DRV_STK17TA8 is not set
++# CONFIG_RTC_DRV_M48T86 is not set
++# CONFIG_RTC_DRV_M48T35 is not set
++# CONFIG_RTC_DRV_M48T59 is not set
++# CONFIG_RTC_DRV_MSM6242 is not set
++# CONFIG_RTC_DRV_BQ4802 is not set
++# CONFIG_RTC_DRV_RP5C01 is not set
++# CONFIG_RTC_DRV_V3020 is not set
++
++#
++# on-CPU RTC drivers
++#
++# CONFIG_RTC_DRV_GENERIC is not set
+ # CONFIG_DMADEVICES is not set
+ # CONFIG_AUXDISPLAY is not set
+ # CONFIG_UIO is not set
+-- 
+1.7.0.4
