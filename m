@@ -1,20 +1,17 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 37C98B7C8E
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Apr 2010 15:21:19 +1000 (EST)
-Received: by gyf2 with SMTP id 2so1819551gyf.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 04 Apr 2010 22:21:17 -0700 (PDT)
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
+	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id DE9DCB7CF8
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 07:12:21 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca,
+	jwboyer@linux.vnet.ibm.com
+Subject: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
+Date: Mon, 5 Apr 2010 15:11:33 -0600
 MIME-Version: 1.0
-In-Reply-To: <y2ufa686aa41004040027p560c1b8bw6cdf3f096398cd42@mail.gmail.com>
-References: <h2nc3d0340b1004040010ga00f75b6k38eccbe66ce11799@mail.gmail.com>
-	<y2ufa686aa41004040027p560c1b8bw6cdf3f096398cd42@mail.gmail.com>
-Date: Sun, 4 Apr 2010 22:21:17 -0700
-Message-ID: <h2jc3d0340b1004042221q3f89ec2fu2811846d5eb09409@mail.gmail.com>
-Subject: Re: Migrating from ppc to powerpc
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: multipart/alternative; boundary=000e0cd5cbf89e99730483767fdb
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-ID: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
+Cc: michal.simek@petalogix.com, John Tyner <jtyner@cs.ucr.edu>,
+	John Linn <john.linn@xilinx.com>, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +21,329 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd5cbf89e99730483767fdb
-Content-Type: text/plain; charset=ISO-8859-1
+This patch adds support for using the LL TEMAC Ethernet driver on
+non-Virtex 5 platforms by adding support for accessing the Soft DMA
+registers as if they were memory mapped instead of solely through the
+DCR's (available on the Virtex 5).
 
-On Sun, Apr 4, 2010 at 12:27 AM, Grant Likely <grant.likely@secretlab.ca>wrote:
+The patch also updates the driver so that it runs on the MicroBlaze.
+The changes were tested on the PowerPC 440, PowerPC 405, and the
+MicroBlaze platforms.
 
-> What processor/board/soc are you using?  The easiest path is to start
-> with a similar board and adapt the device tree source file (.dts in
-> arch/powerpc/boot/dts) to match your board with your devices.  You'll
-> need to add a node to the tree for each device you add.  If you post
-> your new .dts file to devicetree-discuss@lists.ozlabs.org for review,
-> then I and others will help you to craft it and get it into the format
-> that it needs to be in.
->
+Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+Signed-off-by: John Linn <john.linn@xilinx.com>
 
-Thanks a lot for the info. The board has a MPC7448 processor. I certainly
-like to post the .dts file for review and help.
+---
 
--Shawn.
+V2 - Incorporated comments from Grant and added more logic to allow the driver
+to work on MicroBlaze.
 
---000e0cd5cbf89e99730483767fdb
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+V3 - Only updated it to apply to head, minor change to include slab.h. Also
+verified that it now builds for MicroBlaze. Retested on PowerPC and MicroBlaze.
+---
+ drivers/net/Kconfig         |    1 -
+ drivers/net/ll_temac.h      |   17 +++++-
+ drivers/net/ll_temac_main.c |  124 ++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 113 insertions(+), 29 deletions(-)
 
-<div class=3D"gmail_quote">On Sun, Apr 4, 2010 at 12:27 AM, Grant Likely <s=
-pan dir=3D"ltr">&lt;<a href=3D"mailto:grant.likely@secretlab.ca">grant.like=
-ly@secretlab.ca</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" =
-style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8=
-ex; padding-left: 1ex;">
-<div><div></div>What processor/board/soc are you using? =A0The easiest path=
- is to start<br></div>
-with a similar board and adapt the device tree source file (.dts in<br>
-arch/powerpc/boot/dts) to match your board with your devices. =A0You&#39;ll=
-<br>
-need to add a node to the tree for each device you add. =A0If you post<br>
-your new .dts file to <a href=3D"mailto:devicetree-discuss@lists.ozlabs.org=
-">devicetree-discuss@lists.ozlabs.org</a> for review,<br>
-then I and others will help you to craft it and get it into the format<br>
-that it needs to be in.<br></blockquote></div><br>Thanks a lot for the info=
-. The board has a MPC7448 processor. I certainly like to post the .dts file=
- for review and help.<br><br>-Shawn.<br>
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 0ba5b8e..17044dc 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2435,7 +2435,6 @@ config MV643XX_ETH
+ config XILINX_LL_TEMAC
+ 	tristate "Xilinx LL TEMAC (LocalLink Tri-mode Ethernet MAC) driver"
+ 	select PHYLIB
+-	depends on PPC_DCR_NATIVE
+ 	help
+ 	  This driver supports the Xilinx 10/100/1000 LocalLink TEMAC
+ 	  core used in Xilinx Spartan and Virtex FPGAs
+diff --git a/drivers/net/ll_temac.h b/drivers/net/ll_temac.h
+index 1af66a1..915aa34 100644
+--- a/drivers/net/ll_temac.h
++++ b/drivers/net/ll_temac.h
+@@ -5,8 +5,11 @@
+ #include <linux/netdevice.h>
+ #include <linux/of.h>
+ #include <linux/spinlock.h>
++
++#ifdef CONFIG_PPC_DCR
+ #include <asm/dcr.h>
+ #include <asm/dcr-regs.h>
++#endif
+ 
+ /* packet size info */
+ #define XTE_HDR_SIZE			14      /* size of Ethernet header */
+@@ -290,8 +293,12 @@ This option defaults to enabled (set) */
+ 
+ #define TX_CONTROL_CALC_CSUM_MASK   1
+ 
++/* Align the IP data in the packet on word boundaries as MicroBlaze
++ * needs it.
++ */
++
+ #define XTE_ALIGN       32
+-#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
++#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
+ 
+ #define MULTICAST_CAM_TABLE_NUM 4
+ 
+@@ -335,9 +342,15 @@ struct temac_local {
+ 	struct mii_bus *mii_bus;	/* MII bus reference */
+ 	int mdio_irqs[PHY_MAX_ADDR];	/* IRQs table for MDIO bus */
+ 
+-	/* IO registers and IRQs */
++	/* IO registers, dma functions and IRQs */
+ 	void __iomem *regs;
++	void __iomem *sdma_regs;
++#ifdef CONFIG_PPC_DCR
+ 	dcr_host_t sdma_dcrs;
++#endif
++	u32 (*dma_in)(struct temac_local *, int);
++	void (*dma_out)(struct temac_local *, int, u32);
++
+ 	int tx_irq;
+ 	int rx_irq;
+ 	int emac_num;
+diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+index ba617e3..801b076 100644
+--- a/drivers/net/ll_temac_main.c
++++ b/drivers/net/ll_temac_main.c
+@@ -20,9 +20,6 @@
+  *   or rx, so this should be okay.
+  *
+  * TODO:
+- * - Fix driver to work on more than just Virtex5.  Right now the driver
+- *   assumes that the locallink DMA registers are accessed via DCR
+- *   instructions.
+  * - Factor out locallink DMA code into separate driver
+  * - Fix multicast assignment.
+  * - Fix support for hardware checksumming.
+@@ -116,17 +113,86 @@ void temac_indirect_out32(struct temac_local *lp, int reg, u32 value)
+ 	temac_iow(lp, XTE_CTL0_OFFSET, CNTLREG_WRITE_ENABLE_MASK | reg);
+ }
+ 
++/**
++ * temac_dma_in32 - Memory mapped DMA read, this function expects a
++ * register input that is based on DCR word addresses which
++ * are then converted to memory mapped byte addresses
++ */
+ static u32 temac_dma_in32(struct temac_local *lp, int reg)
+ {
+-	return dcr_read(lp->sdma_dcrs, reg);
++	return in_be32((u32 *)(lp->sdma_regs + (reg << 2)));
+ }
+ 
++/**
++ * temac_dma_out32 - Memory mapped DMA read, this function expects a
++ * register input that is based on DCR word addresses which
++ * are then converted to memory mapped byte addresses
++ */
+ static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
+ {
++	out_be32((u32 *)(lp->sdma_regs + (reg << 2)), value);
++}
++
++/* DMA register access functions can be DCR based or memory mapped.
++ * The PowerPC 440 is DCR based, the PowerPC 405 and MicroBlaze are both
++ * memory mapped.
++ */
++#ifdef CONFIG_PPC_DCR
++
++/**
++ * temac_dma_dcr_in32 - DCR based DMA read
++ */
++static u32 temac_dma_dcr_in(struct temac_local *lp, int reg)
++{
++	return dcr_read(lp->sdma_dcrs, reg);
++}
++
++/**
++ * temac_dma_dcr_out32 - DCR based DMA write
++ */
++static void temac_dma_dcr_out(struct temac_local *lp, int reg, u32 value)
++{
+ 	dcr_write(lp->sdma_dcrs, reg, value);
+ }
+ 
+ /**
++ * temac_dcr_setup - If the DMA is DCR based, then setup the address and
++ * I/O  functions
++ */
++static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
++				struct device_node *np)
++{
++	unsigned int dcrs;
++
++	/* setup the dcr address mapping if it's in the device tree */
++
++	dcrs = dcr_resource_start(np, 0);
++	if (dcrs != 0) {
++		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
++		lp->dma_in = temac_dma_dcr_in;
++		lp->dma_out = temac_dma_dcr_out;
++		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
++		return 0;
++	}
++	/* no DCR in the device tree, indicate a failure */
++	return -1;
++}
++
++#else
++
++/*
++ * temac_dcr_setup - This is a stub for when DCR is not supported,
++ * such as with MicroBlaze
++ */
++static int temac_dcr_setup(struct temac_local *lp, struct of_device *op,
++				struct device_node *np)
++{
++	return -1;
++}
++
++#endif
++
++/**
+  * temac_dma_bd_init - Setup buffer descriptor rings
+  */
+ static int temac_dma_bd_init(struct net_device *ndev)
+@@ -173,23 +239,23 @@ static int temac_dma_bd_init(struct net_device *ndev)
+ 		lp->rx_bd_v[i].app0 = STS_CTRL_APP0_IRQONEND;
+ 	}
+ 
+-	temac_dma_out32(lp, TX_CHNL_CTRL, 0x10220400 |
++	lp->dma_out(lp, TX_CHNL_CTRL, 0x10220400 |
+ 					  CHNL_CTRL_IRQ_EN |
+ 					  CHNL_CTRL_IRQ_DLY_EN |
+ 					  CHNL_CTRL_IRQ_COAL_EN);
+ 	/* 0x10220483 */
+ 	/* 0x00100483 */
+-	temac_dma_out32(lp, RX_CHNL_CTRL, 0xff010000 |
++	lp->dma_out(lp, RX_CHNL_CTRL, 0xff010000 |
+ 					  CHNL_CTRL_IRQ_EN |
+ 					  CHNL_CTRL_IRQ_DLY_EN |
+ 					  CHNL_CTRL_IRQ_COAL_EN |
+ 					  CHNL_CTRL_IRQ_IOE);
+ 	/* 0xff010283 */
+ 
+-	temac_dma_out32(lp, RX_CURDESC_PTR,  lp->rx_bd_p);
+-	temac_dma_out32(lp, RX_TAILDESC_PTR,
++	lp->dma_out(lp, RX_CURDESC_PTR,  lp->rx_bd_p);
++	lp->dma_out(lp, RX_TAILDESC_PTR,
+ 		       lp->rx_bd_p + (sizeof(*lp->rx_bd_v) * (RX_BD_NUM - 1)));
+-	temac_dma_out32(lp, TX_CURDESC_PTR, lp->tx_bd_p);
++	lp->dma_out(lp, TX_CURDESC_PTR, lp->tx_bd_p);
+ 
+ 	return 0;
+ }
+@@ -427,9 +493,9 @@ static void temac_device_reset(struct net_device *ndev)
+ 	temac_indirect_out32(lp, XTE_RXC1_OFFSET, val & ~XTE_RXC1_RXEN_MASK);
+ 
+ 	/* Reset Local Link (DMA) */
+-	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
++	lp->dma_out(lp, DMA_CONTROL_REG, DMA_CONTROL_RST);
+ 	timeout = 1000;
+-	while (temac_dma_in32(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
++	while (lp->dma_in(lp, DMA_CONTROL_REG) & DMA_CONTROL_RST) {
+ 		udelay(1);
+ 		if (--timeout == 0) {
+ 			dev_err(&ndev->dev,
+@@ -437,7 +503,7 @@ static void temac_device_reset(struct net_device *ndev)
+ 			break;
+ 		}
+ 	}
+-	temac_dma_out32(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
++	lp->dma_out(lp, DMA_CONTROL_REG, DMA_TAIL_ENABLE);
+ 
+ 	temac_dma_bd_init(ndev);
+ 
+@@ -598,7 +664,7 @@ static int temac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 		lp->tx_bd_tail = 0;
+ 
+ 	/* Kick off the transfer */
+-	temac_dma_out32(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
++	lp->dma_out(lp, TX_TAILDESC_PTR, tail_p); /* DMA start */
+ 
+ 	return NETDEV_TX_OK;
+ }
+@@ -664,7 +730,7 @@ static void ll_temac_recv(struct net_device *ndev)
+ 		cur_p = &lp->rx_bd_v[lp->rx_bd_ci];
+ 		bdstat = cur_p->app0;
+ 	}
+-	temac_dma_out32(lp, RX_TAILDESC_PTR, tail_p);
++	lp->dma_out(lp, RX_TAILDESC_PTR, tail_p);
+ 
+ 	spin_unlock_irqrestore(&lp->rx_lock, flags);
+ }
+@@ -675,8 +741,8 @@ static irqreturn_t ll_temac_tx_irq(int irq, void *_ndev)
+ 	struct temac_local *lp = netdev_priv(ndev);
+ 	unsigned int status;
+ 
+-	status = temac_dma_in32(lp, TX_IRQ_REG);
+-	temac_dma_out32(lp, TX_IRQ_REG, status);
++	status = lp->dma_in(lp, TX_IRQ_REG);
++	lp->dma_out(lp, TX_IRQ_REG, status);
+ 
+ 	if (status & (IRQ_COAL | IRQ_DLY))
+ 		temac_start_xmit_done(lp->ndev);
+@@ -693,8 +759,8 @@ static irqreturn_t ll_temac_rx_irq(int irq, void *_ndev)
+ 	unsigned int status;
+ 
+ 	/* Read and clear the status registers */
+-	status = temac_dma_in32(lp, RX_IRQ_REG);
+-	temac_dma_out32(lp, RX_IRQ_REG, status);
++	status = lp->dma_in(lp, RX_IRQ_REG);
++	lp->dma_out(lp, RX_IRQ_REG, status);
+ 
+ 	if (status & (IRQ_COAL | IRQ_DLY))
+ 		ll_temac_recv(lp->ndev);
+@@ -795,7 +861,7 @@ static ssize_t temac_show_llink_regs(struct device *dev,
+ 	int i, len = 0;
+ 
+ 	for (i = 0; i < 0x11; i++)
+-		len += sprintf(buf + len, "%.8x%s", temac_dma_in32(lp, i),
++		len += sprintf(buf + len, "%.8x%s", lp->dma_in(lp, i),
+ 			       (i % 8) == 7 ? "\n" : " ");
+ 	len += sprintf(buf + len, "\n");
+ 
+@@ -821,7 +887,6 @@ temac_of_probe(struct of_device *op, const struct of_device_id *match)
+ 	struct net_device *ndev;
+ 	const void *addr;
+ 	int size, rc = 0;
+-	unsigned int dcrs;
+ 
+ 	/* Init network device structure */
+ 	ndev = alloc_etherdev(sizeof(*lp));
+@@ -871,13 +936,20 @@ temac_of_probe(struct of_device *op, const struct of_device_id *match)
+ 		goto nodev;
+ 	}
+ 
+-	dcrs = dcr_resource_start(np, 0);
+-	if (dcrs == 0) {
+-		dev_err(&op->dev, "could not get DMA register address\n");
+-		goto nodev;
++	/* Setup the DMA register accesses, could be DCR or memory mapped */
++	if (temac_dcr_setup(lp, op, np)) {
++
++		/* no DCR in the device tree, try non-DCR */
++		lp->sdma_regs = of_iomap(np, 0);
++		if (lp->sdma_regs) {
++			lp->dma_in = temac_dma_in32;
++			lp->dma_out = temac_dma_out32;
++			dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
++		} else {
++			dev_err(&op->dev, "unable to map DMA registers\n");
++			goto nodev;
++		}
+ 	}
+-	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+-	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
+ 
+ 	lp->rx_irq = irq_of_parse_and_map(np, 0);
+ 	lp->tx_irq = irq_of_parse_and_map(np, 1);
+-- 
+1.6.2.1
 
---000e0cd5cbf89e99730483767fdb--
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
