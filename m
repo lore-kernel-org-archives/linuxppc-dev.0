@@ -1,25 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id B953BB7CF8
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 05:32:17 +1000 (EST)
-Received: by gyf2 with SMTP id 2so2101356gyf.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Apr 2010 12:32:15 -0700 (PDT)
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
+	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id 6B6A1B7D06
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 05:53:17 +1000 (EST)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+Date: Mon, 5 Apr 2010 13:52:04 -0600
 In-Reply-To: <20100405.121647.91426186.davem@davemloft.net>
-References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local>
-	<fa686aa41003171302v46738069pae51061ba83d0818@mail.gmail.com>
-	<q2xfa686aa41004051110hc960e9a0sd1d5e61f7e2a5412@mail.gmail.com>
+References: <bda26c8d-00b2-411d-b4b7-ad6954b9049e@SG2EHSMHS005.ehs.local><fa686aa41003171302v46738069pae51061ba83d0818@mail.gmail.com><q2xfa686aa41004051110hc960e9a0sd1d5e61f7e2a5412@mail.gmail.com>
 	<20100405.121647.91426186.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 5 Apr 2010 13:31:55 -0600
-Message-ID: <t2qfa686aa41004051231v40d7b456y90f14abfca9a06bf@mail.gmail.com>
-Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+From: John Linn <John.Linn@xilinx.com>
+To: "David Miller" <davem@davemloft.net>, <grant.likely@secretlab.ca>
+Message-ID: <660bba19-87fe-454e-a780-ca30bda6b723@SG2EHSMHS006.ehs.local>
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jtyner@cs.ucr.edu,
-	michal.simek@petalogix.com, john.linn@xilinx.com,
-	john.williams@petalogix.com
+	michal.simek@petalogix.com, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 5, 2010 at 1:16 PM, David Miller <davem@davemloft.net> wrote:
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Monday, April 05, 2010 1:17 PM
+> To: grant.likely@secretlab.ca
+> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
+jwboyer@linux.vnet.ibm.com;
+> john.williams@petalogix.com; michal.simek@petalogix.com;
+jtyner@cs.ucr.edu; John Linn
+> Subject: Re: [PATCH] [V2] Add non-Virtex5 support for LL TEMAC driver
+> =
+
 > From: Grant Likely <grant.likely@secretlab.ca>
 > Date: Mon, 5 Apr 2010 12:10:51 -0600
->
->> David, are you going to pick up this patch, or would you like me to?
->
+> =
+
+> > David, are you going to pick up this patch, or would you like me to?
+> =
+
 > The submitter, when asked, stated that he couldn't even get
 > the driver to build on microblaze against mainline.
->
+> =
+
 > So I marked the patch "changed requested" because being able
 > to build is... you know... sort of a requirement for integration.
 
-Heh, the current driver doesn't build on microblaze either.  However,
-John, since you're removing the depends on PPC_DCR_NATIVE, can you
-please respin the patch to make it depend on CONFIG_PPC and CONFIG_OF.
- Looking at it now I see that as-is it will cause collateral damage to
-allmodconfig on every other architecture.
+More changes made it into the MicroBlaze mainline and it looks like I
+need to respin the patch again as there are some minor changes on the
+top of the tree.
 
-g.
+It built and ran fine on PowerPc, but not MicroBlaze. I'll check now.
+
+Thanks,
+John
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
