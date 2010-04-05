@@ -1,20 +1,21 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
-	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id DF422B7D15
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 07:34:30 +1000 (EST)
+Return-Path: <deller@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id CFA1BB7D19
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 07:38:34 +1000 (EST)
+Message-ID: <4BBA5856.6090705@gmx.de>
+Date: Mon, 05 Apr 2010 23:38:30 +0200
+From: Helge Deller <deller@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: RE: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
-Date: Mon, 5 Apr 2010 15:33:42 -0600
-In-Reply-To: <1270502993.9013.36.camel@edumazet-laptop>
-References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
-	<1270502993.9013.36.camel@edumazet-laptop>
-From: John Linn <John.Linn@xilinx.com>
-To: "Eric Dumazet" <eric.dumazet@gmail.com>
-Message-ID: <7a42d507-bf50-40f3-a2a0-8de682b314d7@SG2EHSMHS017.ehs.local>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	John Tyner <jtyner@cs.ucr.edu>, michal.simek@petalogix.com,
-	john.williams@petalogix.com
+To: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: [PATCH 1/4] panic: Allow warnings to set different taint flags
+References: <1270319696.12516.321.camel@localhost>
+In-Reply-To: <1270319696.12516.321.camel@localhost>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linux-sh@vger.kernel.org, linux-pci@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +25,316 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFcmljIER1bWF6ZXQgW21haWx0
-bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiBTZW50OiBNb25kYXksIEFwcmlsIDA1LCAyMDEw
-IDM6MzAgUE0NCj4gVG86IEpvaG4gTGlubg0KPiBDYzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsg
-bGludXhwcGMtZGV2QG96bGFicy5vcmc7IGdyYW50Lmxpa2VseUBzZWNyZXRsYWIuY2E7DQo+IGp3
-Ym95ZXJAbGludXgudm5ldC5pYm0uY29tOyBqb2huLndpbGxpYW1zQHBldGFsb2dpeC5jb207IG1p
-Y2hhbC5zaW1la0BwZXRhbG9naXguY29tOyBKb2huIFR5bmVyDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0hdIFtWM10gQWRkIG5vbi1WaXJ0ZXg1IHN1cHBvcnQgZm9yIExMIFRFTUFDIGRyaXZlcg0KPiAN
-Cj4gTGUgbHVuZGkgMDUgYXZyaWwgMjAxMCDDoCAxNToxMSAtMDYwMCwgSm9obiBMaW5uIGEgw6lj
-cml0IDoNCj4gPiBUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgdXNpbmcgdGhlIExMIFRFTUFD
-IEV0aGVybmV0IGRyaXZlciBvbg0KPiA+IG5vbi1WaXJ0ZXggNSBwbGF0Zm9ybXMgYnkgYWRkaW5n
-IHN1cHBvcnQgZm9yIGFjY2Vzc2luZyB0aGUgU29mdCBETUENCj4gPiByZWdpc3RlcnMgYXMgaWYg
-dGhleSB3ZXJlIG1lbW9yeSBtYXBwZWQgaW5zdGVhZCBvZiBzb2xlbHkgdGhyb3VnaCB0aGUNCj4g
-PiBEQ1IncyAoYXZhaWxhYmxlIG9uIHRoZSBWaXJ0ZXggNSkuDQo+ID4NCj4gPiBUaGUgcGF0Y2gg
-YWxzbyB1cGRhdGVzIHRoZSBkcml2ZXIgc28gdGhhdCBpdCBydW5zIG9uIHRoZSBNaWNyb0JsYXpl
-Lg0KPiA+IFRoZSBjaGFuZ2VzIHdlcmUgdGVzdGVkIG9uIHRoZSBQb3dlclBDIDQ0MCwgUG93ZXJQ
-QyA0MDUsIGFuZCB0aGUNCj4gPiBNaWNyb0JsYXplIHBsYXRmb3Jtcy4NCj4gPg0KPiA+IFNpZ25l
-ZC1vZmYtYnk6IEpvaG4gVHluZXIgPGp0eW5lckBjcy51Y3IuZWR1Pg0KPiA+IFNpZ25lZC1vZmYt
-Ynk6IEpvaG4gTGlubiA8am9obi5saW5uQHhpbGlueC5jb20+DQo+ID4NCj4gPiAtLS0NCj4gDQo+
-ID4gKy8qIEFsaWduIHRoZSBJUCBkYXRhIGluIHRoZSBwYWNrZXQgb24gd29yZCBib3VuZGFyaWVz
-IGFzIE1pY3JvQmxhemUNCj4gPiArICogbmVlZHMgaXQuDQo+ID4gKyAqLw0KPiA+ICsNCj4gPiAg
-I2RlZmluZSBYVEVfQUxJR04gICAgICAgMzINCj4gPiAtI2RlZmluZSBCVUZGRVJfQUxJR04oYWRy
-KSAoKFhURV9BTElHTiAtICgodTMyKSBhZHIpKSAlIFhURV9BTElHTikNCj4gPiArI2RlZmluZSBC
-VUZGRVJfQUxJR04oYWRyKSAoKDM0IC0gKCh1MzIpIGFkcikpICUgWFRFX0FMSUdOKQ0KPiA+DQo+
-IA0KPiBWZXJ5IGludGVyZXN0aW5nIHdheSBvZiBkb2luZyB0aGlzLCBidXQgd2h5IHN1Y2ggY29u
-dm9sdXRlZCB0aGluZyA/DQoNCkdyYW50IG1pZ2h0IGhhdmUgaW5zaWdodCBpbnRvIHdoeSB0aGlz
-IHN0YXJ0ZWQgdGhpcyB3YXksIEkganVzdCB1cGRhdGVkIHRvIGhlbHAgd2l0aCBNaWNyb0JsYXpl
-IGFsaWdubWVudC4NCg0KPiANCj4gQmVjYXVzZSBvZiB0aGUgJSAzMiwgdGhpcyBpcyBlcXVpdmFs
-ZW50IHRvIDoNCj4gDQo+ICNkZWZpbmUgQlVGRkVSX0FMSUdOKGFkcikgKCgyIC0gKCh1MzIpIGFk
-cikpICUgWFRFX0FMSUdOKQ0KPiANCj4gQnV0IHdhaXQsIGRvbnQgd2UgcmVjb2duaXNlIHRoZSBt
-YWdpYyBjb25zdGFudCBORVRfSVBfQUxJR04gPw0KPiANCj4gU28sIEkgYXNrLCBjYW50IHlvdSB1
-c2UgbmV0ZGV2X2FsbG9jX3NrYl9pcF9hbGlnbigpIGluIHRoaXMgZHJpdmVyID8NCj4gDQo+IA0K
-V2lsbCBoYXZlIHRvIGxvb2sgYXQgaXQgdG8gYmV0dGVyIHVuZGVyc3RhbmQsIG1heWJlLg0KDQpU
-aGFua3MsDQpKb2huDQoNCgpUaGlzIGVtYWlsIGFuZCBhbnkgYXR0YWNobWVudHMgYXJlIGludGVu
-ZGVkIGZvciB0aGUgc29sZSB1c2Ugb2YgdGhlIG5hbWVkIHJlY2lwaWVudChzKSBhbmQgY29udGFp
-bihzKSBjb25maWRlbnRpYWwgaW5mb3JtYXRpb24gdGhhdCBtYXkgYmUgcHJvcHJpZXRhcnksIHBy
-aXZpbGVnZWQgb3IgY29weXJpZ2h0ZWQgdW5kZXIgYXBwbGljYWJsZSBsYXcuIElmIHlvdSBhcmUg
-bm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIGRvIG5vdCByZWFkLCBjb3B5LCBvciBmb3J3YXJk
-IHRoaXMgZW1haWwgbWVzc2FnZSBvciBhbnkgYXR0YWNobWVudHMuIERlbGV0ZSB0aGlzIGVtYWls
-IG1lc3NhZ2UgYW5kIGFueSBhdHRhY2htZW50cyBpbW1lZGlhdGVseS4K
+On 04/03/2010 08:34 PM, Ben Hutchings wrote:
+> WARN() is used in some places to report firmware or hardware bugs that
+> are then worked-around.  These bugs do not affect the stability of the
+> kernel and should not set the flag for TAINT_WARN.  To allow for this,
+> add WARN_TAINT() and WARN_TAINT_ONCE() macros that take a taint number
+> as argument.
+> 
+> Architectures that implement warnings using trap instructions instead
+> of calls to warn_slowpath_*() now implement __WARN_TAINT(taint)
+> instead of __WARN().
+> 
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+
+Builds and works on the parisc architecture.
+Acked-by: Helge Deller <deller@gmx.de>
+
+
+> ---
+> Changes since the previous version:
+> - Added note to Documentation/oops-tracing.txt
+> - Changed the commit message to distinguish taint numbers from taint
+>   flags
+> - Removed 'must' from last sentence of commit message; this patch
+>   converts all mainline architectures
+> 
+> Ben.
+> 
+>  Documentation/oops-tracing.txt |    1 +
+>  arch/parisc/include/asm/bug.h  |    8 ++++----
+>  arch/powerpc/include/asm/bug.h |    6 +++---
+>  arch/s390/include/asm/bug.h    |    8 ++++----
+>  arch/sh/include/asm/bug.h      |    4 ++--
+>  include/asm-generic/bug.h      |   34 ++++++++++++++++++++++++++++++++--
+>  kernel/panic.c                 |   24 ++++++++++++++++++++----
+>  lib/bug.c                      |    2 +-
+>  8 files changed, 67 insertions(+), 20 deletions(-)
+> 
+> diff --git a/Documentation/oops-tracing.txt b/Documentation/oops-tracing.txt
+> index c10c022..069fab3 100644
+> --- a/Documentation/oops-tracing.txt
+> +++ b/Documentation/oops-tracing.txt
+> @@ -256,6 +256,7 @@ characters, each representing a particular tainted value.
+>    9: 'A' if the ACPI table has been overridden.
+>  
+>   10: 'W' if a warning has previously been issued by the kernel.
+> +     (Though some warnings may set more specific taint flags.)
+>  
+>   11: 'C' if a staging driver has been loaded.
+>  
+> diff --git a/arch/parisc/include/asm/bug.h b/arch/parisc/include/asm/bug.h
+> index 75e46c5..72cfdb0 100644
+> --- a/arch/parisc/include/asm/bug.h
+> +++ b/arch/parisc/include/asm/bug.h
+> @@ -44,7 +44,7 @@
+>  #endif
+>  
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> -#define __WARN()							\
+> +#define __WARN_TAINT(taint)						\
+>  	do {								\
+>  		asm volatile("\n"					\
+>  			     "1:\t" PARISC_BUG_BREAK_ASM "\n"		\
+> @@ -54,11 +54,11 @@
+>  			     "\t.org 2b+%c3\n"				\
+>  			     "\t.popsection"				\
+>  			     : : "i" (__FILE__), "i" (__LINE__),	\
+> -			     "i" (BUGFLAG_WARNING),			\
+> +			     "i" (BUGFLAG_TAINT(taint)), 		\
+>  			     "i" (sizeof(struct bug_entry)) );		\
+>  	} while(0)
+>  #else
+> -#define __WARN()							\
+> +#define __WARN_TAINT(taint)						\
+>  	do {								\
+>  		asm volatile("\n"					\
+>  			     "1:\t" PARISC_BUG_BREAK_ASM "\n"		\
+> @@ -67,7 +67,7 @@
+>  			     "\t.short %c0\n"				\
+>  			     "\t.org 2b+%c1\n"				\
+>  			     "\t.popsection"				\
+> -			     : : "i" (BUGFLAG_WARNING),			\
+> +			     : : "i" (BUGFLAG_TAINT(taint)),		\
+>  			     "i" (sizeof(struct bug_entry)) );		\
+>  	} while(0)
+>  #endif
+> diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
+> index 2c15212..065c590 100644
+> --- a/arch/powerpc/include/asm/bug.h
+> +++ b/arch/powerpc/include/asm/bug.h
+> @@ -85,12 +85,12 @@
+>  	}							\
+>  } while (0)
+>  
+> -#define __WARN() do {						\
+> +#define __WARN_TAINT(taint) do {				\
+>  	__asm__ __volatile__(					\
+>  		"1:	twi 31,0,0\n"				\
+>  		_EMIT_BUG_ENTRY					\
+>  		: : "i" (__FILE__), "i" (__LINE__),		\
+> -		  "i" (BUGFLAG_WARNING),			\
+> +		  "i" (BUGFLAG_TAINT(taint)),			\
+>  		  "i" (sizeof(struct bug_entry)));		\
+>  } while (0)
+>  
+> @@ -104,7 +104,7 @@
+>  		"1:	"PPC_TLNEI"	%4,0\n"			\
+>  		_EMIT_BUG_ENTRY					\
+>  		: : "i" (__FILE__), "i" (__LINE__),		\
+> -		  "i" (BUGFLAG_WARNING),			\
+> +		  "i" (BUGFLAG_TAINT(TAINT_WARN)),		\
+>  		  "i" (sizeof(struct bug_entry)),		\
+>  		  "r" (__ret_warn_on));				\
+>  	}							\
+> diff --git a/arch/s390/include/asm/bug.h b/arch/s390/include/asm/bug.h
+> index 9beeb9d..bf90d1f 100644
+> --- a/arch/s390/include/asm/bug.h
+> +++ b/arch/s390/include/asm/bug.h
+> @@ -46,18 +46,18 @@
+>  	unreachable();					\
+>  } while (0)
+>  
+> -#define __WARN() do {					\
+> -	__EMIT_BUG(BUGFLAG_WARNING);			\
+> +#define __WARN_TAINT(taint) do {			\
+> +	__EMIT_BUG(BUGFLAG_TAINT(taint));		\
+>  } while (0)
+>  
+>  #define WARN_ON(x) ({					\
+>  	int __ret_warn_on = !!(x);			\
+>  	if (__builtin_constant_p(__ret_warn_on)) {	\
+>  		if (__ret_warn_on)			\
+> -			__EMIT_BUG(BUGFLAG_WARNING);	\
+> +			__WARN();			\
+>  	} else {					\
+>  		if (unlikely(__ret_warn_on))		\
+> -			__EMIT_BUG(BUGFLAG_WARNING);	\
+> +			__WARN();			\
+>  	}						\
+>  	unlikely(__ret_warn_on);			\
+>  })
+> diff --git a/arch/sh/include/asm/bug.h b/arch/sh/include/asm/bug.h
+> index d02c01b..6323f86 100644
+> --- a/arch/sh/include/asm/bug.h
+> +++ b/arch/sh/include/asm/bug.h
+> @@ -48,7 +48,7 @@ do {							\
+>  		   "i" (sizeof(struct bug_entry)));	\
+>  } while (0)
+>  
+> -#define __WARN()					\
+> +#define __WARN_TAINT(taint)				\
+>  do {							\
+>  	__asm__ __volatile__ (				\
+>  		"1:\t.short %O0\n"			\
+> @@ -57,7 +57,7 @@ do {							\
+>  		 : "n" (TRAPA_BUG_OPCODE),		\
+>  		   "i" (__FILE__),			\
+>  		   "i" (__LINE__),			\
+> -		   "i" (BUGFLAG_WARNING),		\
+> +		   "i" (BUGFLAG_TAINT(taint)),		\
+>  		   "i" (sizeof(struct bug_entry)));	\
+>  } while (0)
+>  
+> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+> index 18c435d..c2c9ba0 100644
+> --- a/include/asm-generic/bug.h
+> +++ b/include/asm-generic/bug.h
+> @@ -25,7 +25,10 @@ struct bug_entry {
+>  };
+>  #endif		/* __ASSEMBLY__ */
+>  
+> -#define BUGFLAG_WARNING	(1<<0)
+> +#define BUGFLAG_WARNING		(1 << 0)
+> +#define BUGFLAG_TAINT(taint)	(BUGFLAG_WARNING | ((taint) << 8))
+> +#define BUG_GET_TAINT(bug)	((bug)->flags >> 8)
+> +
+>  #endif	/* CONFIG_GENERIC_BUG */
+>  
+>  /*
+> @@ -56,17 +59,25 @@ struct bug_entry {
+>   * appear at runtime.  Use the versions with printk format strings
+>   * to provide better diagnostics.
+>   */
+> -#ifndef __WARN
+> +#ifndef __WARN_TAINT
+>  #ifndef __ASSEMBLY__
+>  extern void warn_slowpath_fmt(const char *file, const int line,
+>  		const char *fmt, ...) __attribute__((format(printf, 3, 4)));
+> +extern void warn_slowpath_fmt_taint(const char *file, const int line,
+> +				    unsigned taint, const char *fmt, ...)
+> +	__attribute__((format(printf, 4, 5)));
+>  extern void warn_slowpath_null(const char *file, const int line);
+>  #define WANT_WARN_ON_SLOWPATH
+>  #endif
+>  #define __WARN()		warn_slowpath_null(__FILE__, __LINE__)
+>  #define __WARN_printf(arg...)	warn_slowpath_fmt(__FILE__, __LINE__, arg)
+> +#define __WARN_printf_taint(taint, arg...)				\
+> +	warn_slowpath_fmt_taint(__FILE__, __LINE__, taint, arg)
+>  #else
+> +#define __WARN()		__WARN_TAINT(TAINT_WARN)
+>  #define __WARN_printf(arg...)	do { printk(arg); __WARN(); } while (0)
+> +#define __WARN_printf_taint(taint, arg...)				\
+> +	do { printk(arg); __WARN_TAINT(taint); } while (0)
+>  #endif
+>  
+>  #ifndef WARN_ON
+> @@ -87,6 +98,13 @@ extern void warn_slowpath_null(const char *file, const int line);
+>  })
+>  #endif
+>  
+> +#define WARN_TAINT(condition, taint, format...) ({			\
+> +	int __ret_warn_on = !!(condition);				\
+> +	if (unlikely(__ret_warn_on))					\
+> +		__WARN_printf_taint(taint, format);			\
+> +	unlikely(__ret_warn_on);					\
+> +})
+> +
+>  #else /* !CONFIG_BUG */
+>  #ifndef HAVE_ARCH_BUG
+>  #define BUG() do {} while(0)
+> @@ -110,6 +128,8 @@ extern void warn_slowpath_null(const char *file, const int line);
+>  })
+>  #endif
+>  
+> +#define WARN_TAINT(condition, taint, format...) WARN_ON(condition)
+> +
+>  #endif
+>  
+>  #define WARN_ON_ONCE(condition)	({				\
+> @@ -132,6 +152,16 @@ extern void warn_slowpath_null(const char *file, const int line);
+>  	unlikely(__ret_warn_once);				\
+>  })
+>  
+> +#define WARN_TAINT_ONCE(condition, taint, format...)	({	\
+> +	static bool __warned;					\
+> +	int __ret_warn_once = !!(condition);			\
+> +								\
+> +	if (unlikely(__ret_warn_once))				\
+> +		if (WARN_TAINT(!__warned, taint, format))	\
+> +			__warned = true;			\
+> +	unlikely(__ret_warn_once);				\
+> +})
+> +
+>  #define WARN_ON_RATELIMIT(condition, state)			\
+>  		WARN_ON((condition) && __ratelimit(state))
+>  
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index 13d966b..8b821bc 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -365,7 +365,8 @@ struct slowpath_args {
+>  	va_list args;
+>  };
+>  
+> -static void warn_slowpath_common(const char *file, int line, void *caller, struct slowpath_args *args)
+> +static void warn_slowpath_common(const char *file, int line, void *caller,
+> +				 unsigned taint, struct slowpath_args *args)
+>  {
+>  	const char *board;
+>  
+> @@ -381,7 +382,7 @@ static void warn_slowpath_common(const char *file, int line, void *caller, struc
+>  	print_modules();
+>  	dump_stack();
+>  	print_oops_end_marker();
+> -	add_taint(TAINT_WARN);
+> +	add_taint(taint);
+>  }
+>  
+>  void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
+> @@ -390,14 +391,29 @@ void warn_slowpath_fmt(const char *file, int line, const char *fmt, ...)
+>  
+>  	args.fmt = fmt;
+>  	va_start(args.args, fmt);
+> -	warn_slowpath_common(file, line, __builtin_return_address(0), &args);
+> +	warn_slowpath_common(file, line, __builtin_return_address(0),
+> +			     TAINT_WARN, &args);
+>  	va_end(args.args);
+>  }
+>  EXPORT_SYMBOL(warn_slowpath_fmt);
+>  
+> +void warn_slowpath_fmt_taint(const char *file, int line,
+> +			     unsigned taint, const char *fmt, ...)
+> +{
+> +	struct slowpath_args args;
+> +
+> +	args.fmt = fmt;
+> +	va_start(args.args, fmt);
+> +	warn_slowpath_common(file, line, __builtin_return_address(0),
+> +			     taint, &args);
+> +	va_end(args.args);
+> +}
+> +EXPORT_SYMBOL(warn_slowpath_fmt_taint);
+> +
+>  void warn_slowpath_null(const char *file, int line)
+>  {
+> -	warn_slowpath_common(file, line, __builtin_return_address(0), NULL);
+> +	warn_slowpath_common(file, line, __builtin_return_address(0),
+> +			     TAINT_WARN, NULL);
+>  }
+>  EXPORT_SYMBOL(warn_slowpath_null);
+>  #endif
+> diff --git a/lib/bug.c b/lib/bug.c
+> index 300e41a..f13daf4 100644
+> --- a/lib/bug.c
+> +++ b/lib/bug.c
+> @@ -165,7 +165,7 @@ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
+>  			       (void *)bugaddr);
+>  
+>  		show_regs(regs);
+> -		add_taint(TAINT_WARN);
+> +		add_taint(BUG_GET_TAINT(bug));
+>  		return BUG_TRAP_TYPE_WARN;
+>  	}
+>  
