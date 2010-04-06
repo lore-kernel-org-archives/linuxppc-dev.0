@@ -1,17 +1,20 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.15]) by ozlabs.org (Postfix) with ESMTP id 69810B7D11
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 02:13:09 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-bw0-f217.google.com (mail-bw0-f217.google.com
+	[209.85.218.217]) by ozlabs.org (Postfix) with ESMTP id 76239B7D27
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 03:00:41 +1000 (EST)
+Received: by bwz9 with SMTP id 9so98542bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Apr 2010 10:00:39 -0700 (PDT)
 Subject: RE: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
-Date: Tue, 6 Apr 2010 10:12:05 -0600
-In-Reply-To: <1270502993.9013.36.camel@edumazet-laptop>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <2fefb2a2-d0dc-461d-ac8c-3e7d177b7cf8@VA3EHSMHS032.ehs.local>
 References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
 	<1270502993.9013.36.camel@edumazet-laptop>
-From: John Linn <John.Linn@xilinx.com>
-To: "Eric Dumazet" <eric.dumazet@gmail.com>
-Message-ID: <2fefb2a2-d0dc-461d-ac8c-3e7d177b7cf8@VA3EHSMHS032.ehs.local>
+	<2fefb2a2-d0dc-461d-ac8c-3e7d177b7cf8@VA3EHSMHS032.ehs.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Apr 2010 19:00:33 +0200
+Message-ID: <1270573233.2081.47.camel@edumazet-laptop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
 	John Tyner <jtyner@cs.ucr.edu>, michal.simek@petalogix.com,
 	john.williams@petalogix.com
@@ -24,48 +27,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFcmljIER1bWF6ZXQgW21haWx0
-bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiBTZW50OiBNb25kYXksIEFwcmlsIDA1LCAyMDEw
-IDM6MzAgUE0NCj4gVG86IEpvaG4gTGlubg0KPiBDYzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsg
-bGludXhwcGMtZGV2QG96bGFicy5vcmc7IGdyYW50Lmxpa2VseUBzZWNyZXRsYWIuY2E7DQo+IGp3
-Ym95ZXJAbGludXgudm5ldC5pYm0uY29tOyBqb2huLndpbGxpYW1zQHBldGFsb2dpeC5jb207IG1p
-Y2hhbC5zaW1la0BwZXRhbG9naXguY29tOyBKb2huIFR5bmVyDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0hdIFtWM10gQWRkIG5vbi1WaXJ0ZXg1IHN1cHBvcnQgZm9yIExMIFRFTUFDIGRyaXZlcg0KPiAN
-Cj4gTGUgbHVuZGkgMDUgYXZyaWwgMjAxMCDDoCAxNToxMSAtMDYwMCwgSm9obiBMaW5uIGEgw6lj
-cml0IDoNCj4gPiBUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgdXNpbmcgdGhlIExMIFRFTUFD
-IEV0aGVybmV0IGRyaXZlciBvbg0KPiA+IG5vbi1WaXJ0ZXggNSBwbGF0Zm9ybXMgYnkgYWRkaW5n
-IHN1cHBvcnQgZm9yIGFjY2Vzc2luZyB0aGUgU29mdCBETUENCj4gPiByZWdpc3RlcnMgYXMgaWYg
-dGhleSB3ZXJlIG1lbW9yeSBtYXBwZWQgaW5zdGVhZCBvZiBzb2xlbHkgdGhyb3VnaCB0aGUNCj4g
-PiBEQ1IncyAoYXZhaWxhYmxlIG9uIHRoZSBWaXJ0ZXggNSkuDQo+ID4NCj4gPiBUaGUgcGF0Y2gg
-YWxzbyB1cGRhdGVzIHRoZSBkcml2ZXIgc28gdGhhdCBpdCBydW5zIG9uIHRoZSBNaWNyb0JsYXpl
-Lg0KPiA+IFRoZSBjaGFuZ2VzIHdlcmUgdGVzdGVkIG9uIHRoZSBQb3dlclBDIDQ0MCwgUG93ZXJQ
-QyA0MDUsIGFuZCB0aGUNCj4gPiBNaWNyb0JsYXplIHBsYXRmb3Jtcy4NCj4gPg0KPiA+IFNpZ25l
-ZC1vZmYtYnk6IEpvaG4gVHluZXIgPGp0eW5lckBjcy51Y3IuZWR1Pg0KPiA+IFNpZ25lZC1vZmYt
-Ynk6IEpvaG4gTGlubiA8am9obi5saW5uQHhpbGlueC5jb20+DQo+ID4NCj4gPiAtLS0NCj4gDQo+
-ID4gKy8qIEFsaWduIHRoZSBJUCBkYXRhIGluIHRoZSBwYWNrZXQgb24gd29yZCBib3VuZGFyaWVz
-IGFzIE1pY3JvQmxhemUNCj4gPiArICogbmVlZHMgaXQuDQo+ID4gKyAqLw0KPiA+ICsNCj4gPiAg
-I2RlZmluZSBYVEVfQUxJR04gICAgICAgMzINCj4gPiAtI2RlZmluZSBCVUZGRVJfQUxJR04oYWRy
-KSAoKFhURV9BTElHTiAtICgodTMyKSBhZHIpKSAlIFhURV9BTElHTikNCj4gPiArI2RlZmluZSBC
-VUZGRVJfQUxJR04oYWRyKSAoKDM0IC0gKCh1MzIpIGFkcikpICUgWFRFX0FMSUdOKQ0KPiA+DQo+
-IA0KPiBWZXJ5IGludGVyZXN0aW5nIHdheSBvZiBkb2luZyB0aGlzLCBidXQgd2h5IHN1Y2ggY29u
-dm9sdXRlZCB0aGluZyA/DQoNClRoaXMgaXMgdHJ5aW5nIHRvIGFsaWduIGZvciBhIGNhY2hlIGxp
-bmUgKDMyIGJ5dGVzKSBiZWZvcmUgbXkgY2hhbmdlLg0KDQpNeSBjaGFuZ2Ugd2FzIHRoZW4gYWxz
-byBtYWtpbmcgaXQgYWxpZ24gdGhlIElQIGRhdGEgb24gYSB3b3JkIGJvdW5kYXJ5LiANCg0KPiAN
-Cj4gQmVjYXVzZSBvZiB0aGUgJSAzMiwgdGhpcyBpcyBlcXVpdmFsZW50IHRvIDoNCj4gDQo+ICNk
-ZWZpbmUgQlVGRkVSX0FMSUdOKGFkcikgKCgyIC0gKCh1MzIpIGFkcikpICUgWFRFX0FMSUdOKQ0K
-PiANCg0KWWVzLCBidXQgSSdtIG5vdCBzdXJlIHRoYXQncyBjbGVhcmVyIElNSE8uDQoNCj4gQnV0
-IHdhaXQsIGRvbnQgd2UgcmVjb2duaXNlIHRoZSBtYWdpYyBjb25zdGFudCBORVRfSVBfQUxJR04g
-Pw0KDQpZZXMgaXQgY291bGQgYmUgdXNlZC4gIEknbSBzdHJ1Z2dsaW5nIHdpdGggaG93IHRvIG1h
-a2UgdGhpcyBhbGwgYmUgY2xlYXJlci4NCg0KSG93IGFib3V0IHRoaXM/DQoNCiNkZWZpbmUgQlVG
-RkVSX0FMSUdOKGFkcikgKCgoWFRFX0FMSUdOICsgTkVUX0lQX0FMSUdOKSAtICgodTMyKSBhZHIp
-KSAlIFhURV9BTElHTikNCg0KPiANCj4gU28sIEkgYXNrLCBjYW50IHlvdSB1c2UgbmV0ZGV2X2Fs
-bG9jX3NrYl9pcF9hbGlnbigpIGluIHRoaXMgZHJpdmVyID8NCg0KRnJvbSB3aGF0IEkgY2FuIHRl
-bGwsIHRoaXMgd291bGRuJ3Qgd29yayBhcyBpdCBvbmx5IHJlc2VydmVzIHRoZSAyIGJ5dGVzIHRv
-IGFsaWduIHdpdGggDQphIHdvcmQgYm91bmRhcnkuDQoNClRoYW5rcywNCkpvaG4NCg0KPiANCj4g
-DQoNCgpUaGlzIGVtYWlsIGFuZCBhbnkgYXR0YWNobWVudHMgYXJlIGludGVuZGVkIGZvciB0aGUg
-c29sZSB1c2Ugb2YgdGhlIG5hbWVkIHJlY2lwaWVudChzKSBhbmQgY29udGFpbihzKSBjb25maWRl
-bnRpYWwgaW5mb3JtYXRpb24gdGhhdCBtYXkgYmUgcHJvcHJpZXRhcnksIHByaXZpbGVnZWQgb3Ig
-Y29weXJpZ2h0ZWQgdW5kZXIgYXBwbGljYWJsZSBsYXcuIElmIHlvdSBhcmUgbm90IHRoZSBpbnRl
-bmRlZCByZWNpcGllbnQsIGRvIG5vdCByZWFkLCBjb3B5LCBvciBmb3J3YXJkIHRoaXMgZW1haWwg
-bWVzc2FnZSBvciBhbnkgYXR0YWNobWVudHMuIERlbGV0ZSB0aGlzIGVtYWlsIG1lc3NhZ2UgYW5k
-IGFueSBhdHRhY2htZW50cyBpbW1lZGlhdGVseS4K
+Le mardi 06 avril 2010 à 10:12 -0600, John Linn a écrit :
+> > -----Original Message-----
+> > From: Eric Dumazet [mailto:eric.dumazet@gmail.com]
+> > Sent: Monday, April 05, 2010 3:30 PM
+> > To: John Linn
+> > Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org; grant.likely@secretlab.ca;
+> > jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com; michal.simek@petalogix.com; John Tyner
+> > Subject: Re: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
+> > 
+> > Le lundi 05 avril 2010 à 15:11 -0600, John Linn a écrit :
+> > > This patch adds support for using the LL TEMAC Ethernet driver on
+> > > non-Virtex 5 platforms by adding support for accessing the Soft DMA
+> > > registers as if they were memory mapped instead of solely through the
+> > > DCR's (available on the Virtex 5).
+> > >
+> > > The patch also updates the driver so that it runs on the MicroBlaze.
+> > > The changes were tested on the PowerPC 440, PowerPC 405, and the
+> > > MicroBlaze platforms.
+> > >
+> > > Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+> > > Signed-off-by: John Linn <john.linn@xilinx.com>
+> > >
+> > > ---
+> > 
+> > > +/* Align the IP data in the packet on word boundaries as MicroBlaze
+> > > + * needs it.
+> > > + */
+> > > +
+> > >  #define XTE_ALIGN       32
+> > > -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
+> > > +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
+> > >
+> > 
+> > Very interesting way of doing this, but why such convoluted thing ?
+> 
+> This is trying to align for a cache line (32 bytes) before my change.
+> 
+> My change was then also making it align the IP data on a word boundary. 
+> 
+> > 
+> > Because of the % 32, this is equivalent to :
+> > 
+> > #define BUFFER_ALIGN(adr) ((2 - ((u32) adr)) % XTE_ALIGN)
+> > 
+> 
+> Yes, but I'm not sure that's clearer IMHO.
+> 
+> > But wait, dont we recognise the magic constant NET_IP_ALIGN ?
+> 
+> Yes it could be used.  I'm struggling with how to make this all be clearer.
+> 
+
+I am not saying its clearer, I am saying we have a standard way to
+handle this exact problem (aligning rcvs buffer so that IP header is
+aligned)
+
+There is no need to invent new ones, this makes reviewing of this driver
+more difficult.
+
+
+> How about this?
+> #define BUFFER_ALIGN(adr) (((XTE_ALIGN + NET_IP_ALIGN) - ((u32) adr)) % XTE_ALIGN)
+> 
+
+Sorry, I still dont understand why you need XTE_ALIGN + ...
+
+((A + B) - C) % A   is equal to (B - C) % A
+
+Which one is more readable ?
+
+Please take a look at existing and clean code, no magic macro, and we
+can understand the intention.
+
+find drivers/net | xargs grep -n netdev_alloc_skb_ip_align
