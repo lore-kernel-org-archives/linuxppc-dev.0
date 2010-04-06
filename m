@@ -1,33 +1,27 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from www.etchedpixels.co.uk (earthlight.etchedpixels.co.uk
-	[81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prvs=1712771c50=steve@digidescorp.com>
+Received: from digidescorp.com (mail.digidescorp.com [66.244.163.200])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A0874B7D1F
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Apr 2010 22:29:30 +1000 (EST)
-Date: Tue, 6 Apr 2010 13:32:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100406133217.61347573@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100406114238.GN5594@kryten>
-References: <20100319151326.GC8541@kroah.com>
-	<1269011916-8836-4-git-send-email-gregkh@suse.de>
-	<1269119079.8599.65.camel@pasglop>
-	<20100321043725.GA21566@amit-x200.redhat.com>
-	<20100324121902.GJ15789@amit-x200.redhat.com>
-	<4BAC7AD4.4030309@in.ibm.com>
-	<20100326095821.GA7039@amit-x200.redhat.com>
-	<4BAC9D9E.5070901@in.ibm.com>
-	<20100326124340.GB7039@amit-x200.redhat.com>
-	<20100406114238.GN5594@kryten>
+	by ozlabs.org (Postfix) with ESMTPS id 65BF2B7D16
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 01:13:27 +1000 (EST)
+Received: from [10.10.6.102] by digidescorp.com (Cipher SSLv3:RC4-MD5:128)
+	(MDaemon PRO v10.1.1) with ESMTP id md50001246428.msg
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Apr 2010 10:08:08 -0500
+Subject: RE: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
+From: "Steven J. Magnani" <steve@digidescorp.com>
+To: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <7a42d507-bf50-40f3-a2a0-8de682b314d7@SG2EHSMHS017.ehs.local>
+References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
+	<1270502993.9013.36.camel@edumazet-laptop>
+	<7a42d507-bf50-40f3-a2a0-8de682b314d7@SG2EHSMHS017.ehs.local>
+Content-Type: text/plain
+Date: Tue, 06 Apr 2010 10:08:02 -0500
+Message-Id: <1270566482.3949.4.camel@iscandar.digidescorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, a.p.zijlstra@chello.nl,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Amit Shah <amit.shah@redhat.com>, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, michal.simek@petalogix.com,
+	netdev@vger.kernel.org, John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-dev@ozlabs.org, john.williams@petalogix.com
+Reply-To: steve@digidescorp.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,7 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I don't claim to understand the tty layer, but it seems like hvc_open and
-> hvc_close should be balanced in their kref reference counting.
+On Mon, 2010-04-05 at 15:33 -0600, John Linn wrote:
+> > > +/* Align the IP data in the packet on word boundaries as MicroBlaze
+> > > + * needs it.
+> > > + */
+> > > +
+> > >  #define XTE_ALIGN       32
+> > > -#define BUFFER_ALIGN(adr) ((XTE_ALIGN - ((u32) adr)) % XTE_ALIGN)
+> > > +#define BUFFER_ALIGN(adr) ((34 - ((u32) adr)) % XTE_ALIGN)
+> > >
+> > 
+> > Very interesting way of doing this, but why such convoluted thing ?
+> 
+> Grant might have insight into why this started this way, I just updated to help with MicroBlaze alignment.
+> 
+> > 
+> > Because of the % 32, this is equivalent to :
+> > 
+> > #define BUFFER_ALIGN(adr) ((2 - ((u32) adr)) % XTE_ALIGN)
+> > 
+> > But wait, dont we recognise the magic constant NET_IP_ALIGN ?
+> > 
+> > So, I ask, cant you use netdev_alloc_skb_ip_align() in this driver ?
+> > 
 
-They should yes.
+That should work. I switched to that in the older xilinx_lltemac driver
+without any problem. 
+
+------------------------------------------------------------------------
+ Steven J. Magnani               "I claim this network for MARS!
+ www.digidescorp.com              Earthling, return my space modulator!"
+
+ #include <standard.disclaimer>
