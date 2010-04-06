@@ -1,19 +1,22 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from SG2EHSOBE001.bigfish.com (sg2ehsobe001.messaging.microsoft.com
-	[207.46.51.75]) by ozlabs.org (Postfix) with ESMTP id E79D9B7D27
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 03:12:10 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-bw0-f217.google.com (mail-bw0-f217.google.com
+	[209.85.218.217]) by ozlabs.org (Postfix) with ESMTP id C4DBCB7D41
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 03:47:42 +1000 (EST)
+Received: by bwz9 with SMTP id 9so137144bwz.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Apr 2010 10:47:40 -0700 (PDT)
 Subject: RE: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
-Date: Tue, 6 Apr 2010 11:11:53 -0600
-In-Reply-To: <1270573233.2081.47.camel@edumazet-laptop>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <bf8eac92-5008-4c1f-9b99-0199e62436fa@SG2EHSMHS010.ehs.local>
 References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
 	<1270502993.9013.36.camel@edumazet-laptop>
 	<2fefb2a2-d0dc-461d-ac8c-3e7d177b7cf8@VA3EHSMHS032.ehs.local>
 	<1270573233.2081.47.camel@edumazet-laptop>
-From: John Linn <John.Linn@xilinx.com>
-To: "Eric Dumazet" <eric.dumazet@gmail.com>
-Message-ID: <bf8eac92-5008-4c1f-9b99-0199e62436fa@SG2EHSMHS010.ehs.local>
+	<bf8eac92-5008-4c1f-9b99-0199e62436fa@SG2EHSMHS010.ehs.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Apr 2010 19:47:37 +0200
+Message-ID: <1270576057.2081.100.camel@edumazet-laptop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
 	John Tyner <jtyner@cs.ucr.edu>, michal.simek@petalogix.com,
 	john.williams@petalogix.com
@@ -26,70 +29,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFcmljIER1bWF6ZXQgW21haWx0
-bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBBcHJpbCAwNiwgMjAx
-MCAxMTowMSBBTQ0KPiBUbzogSm9obiBMaW5uDQo+IENjOiBuZXRkZXZAdmdlci5rZXJuZWwub3Jn
-OyBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgZ3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYTsNCj4g
-andib3llckBsaW51eC52bmV0LmlibS5jb207IGpvaG4ud2lsbGlhbXNAcGV0YWxvZ2l4LmNvbTsg
-bWljaGFsLnNpbWVrQHBldGFsb2dpeC5jb207IEpvaG4gVHluZXINCj4gU3ViamVjdDogUkU6IFtQ
-QVRDSF0gW1YzXSBBZGQgbm9uLVZpcnRleDUgc3VwcG9ydCBmb3IgTEwgVEVNQUMgZHJpdmVyDQo+
-IA0KPiBMZSBtYXJkaSAwNiBhdnJpbCAyMDEwIMOgIDEwOjEyIC0wNjAwLCBKb2huIExpbm4gYSDD
-qWNyaXQgOg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IEVy
-aWMgRHVtYXpldCBbbWFpbHRvOmVyaWMuZHVtYXpldEBnbWFpbC5jb21dDQo+ID4gPiBTZW50OiBN
-b25kYXksIEFwcmlsIDA1LCAyMDEwIDM6MzAgUE0NCj4gPiA+IFRvOiBKb2huIExpbm4NCj4gPiA+
-IENjOiBuZXRkZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAb3psYWJzLm9yZzsgZ3Jh
-bnQubGlrZWx5QHNlY3JldGxhYi5jYTsNCj4gPiA+IGp3Ym95ZXJAbGludXgudm5ldC5pYm0uY29t
-OyBqb2huLndpbGxpYW1zQHBldGFsb2dpeC5jb207IG1pY2hhbC5zaW1la0BwZXRhbG9naXguY29t
-OyBKb2huIFR5bmVyDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBbVjNdIEFkZCBub24tVmly
-dGV4NSBzdXBwb3J0IGZvciBMTCBURU1BQyBkcml2ZXINCj4gPiA+DQo+ID4gPiBMZSBsdW5kaSAw
-NSBhdnJpbCAyMDEwIMOgIDE1OjExIC0wNjAwLCBKb2huIExpbm4gYSDDqWNyaXQgOg0KPiA+ID4g
-PiBUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgdXNpbmcgdGhlIExMIFRFTUFDIEV0aGVybmV0
-IGRyaXZlciBvbg0KPiA+ID4gPiBub24tVmlydGV4IDUgcGxhdGZvcm1zIGJ5IGFkZGluZyBzdXBw
-b3J0IGZvciBhY2Nlc3NpbmcgdGhlIFNvZnQgRE1BDQo+ID4gPiA+IHJlZ2lzdGVycyBhcyBpZiB0
-aGV5IHdlcmUgbWVtb3J5IG1hcHBlZCBpbnN0ZWFkIG9mIHNvbGVseSB0aHJvdWdoIHRoZQ0KPiA+
-ID4gPiBEQ1IncyAoYXZhaWxhYmxlIG9uIHRoZSBWaXJ0ZXggNSkuDQo+ID4gPiA+DQo+ID4gPiA+
-IFRoZSBwYXRjaCBhbHNvIHVwZGF0ZXMgdGhlIGRyaXZlciBzbyB0aGF0IGl0IHJ1bnMgb24gdGhl
-IE1pY3JvQmxhemUuDQo+ID4gPiA+IFRoZSBjaGFuZ2VzIHdlcmUgdGVzdGVkIG9uIHRoZSBQb3dl
-clBDIDQ0MCwgUG93ZXJQQyA0MDUsIGFuZCB0aGUNCj4gPiA+ID4gTWljcm9CbGF6ZSBwbGF0Zm9y
-bXMuDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEpvaG4gVHluZXIgPGp0eW5lckBj
-cy51Y3IuZWR1Pg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBKb2huIExpbm4gPGpvaG4ubGlubkB4
-aWxpbnguY29tPg0KPiA+ID4gPg0KPiA+ID4gPiAtLS0NCj4gPiA+DQo+ID4gPiA+ICsvKiBBbGln
-biB0aGUgSVAgZGF0YSBpbiB0aGUgcGFja2V0IG9uIHdvcmQgYm91bmRhcmllcyBhcyBNaWNyb0Js
-YXplDQo+ID4gPiA+ICsgKiBuZWVkcyBpdC4NCj4gPiA+ID4gKyAqLw0KPiA+ID4gPiArDQo+ID4g
-PiA+ICAjZGVmaW5lIFhURV9BTElHTiAgICAgICAzMg0KPiA+ID4gPiAtI2RlZmluZSBCVUZGRVJf
-QUxJR04oYWRyKSAoKFhURV9BTElHTiAtICgodTMyKSBhZHIpKSAlIFhURV9BTElHTikNCj4gPiA+
-ID4gKyNkZWZpbmUgQlVGRkVSX0FMSUdOKGFkcikgKCgzNCAtICgodTMyKSBhZHIpKSAlIFhURV9B
-TElHTikNCj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBWZXJ5IGludGVyZXN0aW5nIHdheSBvZiBkb2lu
-ZyB0aGlzLCBidXQgd2h5IHN1Y2ggY29udm9sdXRlZCB0aGluZyA/DQo+ID4NCj4gPiBUaGlzIGlz
-IHRyeWluZyB0byBhbGlnbiBmb3IgYSBjYWNoZSBsaW5lICgzMiBieXRlcykgYmVmb3JlIG15IGNo
-YW5nZS4NCj4gPg0KPiA+IE15IGNoYW5nZSB3YXMgdGhlbiBhbHNvIG1ha2luZyBpdCBhbGlnbiB0
-aGUgSVAgZGF0YSBvbiBhIHdvcmQgYm91bmRhcnkuDQo+ID4NCj4gPiA+DQo+ID4gPiBCZWNhdXNl
-IG9mIHRoZSAlIDMyLCB0aGlzIGlzIGVxdWl2YWxlbnQgdG8gOg0KPiA+ID4NCj4gPiA+ICNkZWZp
-bmUgQlVGRkVSX0FMSUdOKGFkcikgKCgyIC0gKCh1MzIpIGFkcikpICUgWFRFX0FMSUdOKQ0KPiA+
-ID4NCj4gPg0KPiA+IFllcywgYnV0IEknbSBub3Qgc3VyZSB0aGF0J3MgY2xlYXJlciBJTUhPLg0K
-PiA+DQo+ID4gPiBCdXQgd2FpdCwgZG9udCB3ZSByZWNvZ25pc2UgdGhlIG1hZ2ljIGNvbnN0YW50
-IE5FVF9JUF9BTElHTiA/DQo+ID4NCj4gPiBZZXMgaXQgY291bGQgYmUgdXNlZC4gIEknbSBzdHJ1
-Z2dsaW5nIHdpdGggaG93IHRvIG1ha2UgdGhpcyBhbGwgYmUgY2xlYXJlci4NCj4gPg0KPiANCj4g
-SSBhbSBub3Qgc2F5aW5nIGl0cyBjbGVhcmVyLCBJIGFtIHNheWluZyB3ZSBoYXZlIGEgc3RhbmRh
-cmQgd2F5IHRvDQo+IGhhbmRsZSB0aGlzIGV4YWN0IHByb2JsZW0gKGFsaWduaW5nIHJjdnMgYnVm
-ZmVyIHNvIHRoYXQgSVAgaGVhZGVyIGlzDQo+IGFsaWduZWQpDQo+IA0KPiBUaGVyZSBpcyBubyBu
-ZWVkIHRvIGludmVudCBuZXcgb25lcywgdGhpcyBtYWtlcyByZXZpZXdpbmcgb2YgdGhpcyBkcml2
-ZXINCj4gbW9yZSBkaWZmaWN1bHQuDQo+IA0KPiANCj4gPiBIb3cgYWJvdXQgdGhpcz8NCj4gPiAj
-ZGVmaW5lIEJVRkZFUl9BTElHTihhZHIpICgoKFhURV9BTElHTiArIE5FVF9JUF9BTElHTikgLSAo
-KHUzMikgYWRyKSkgJSBYVEVfQUxJR04pDQo+ID4NCj4gDQo+IFNvcnJ5LCBJIHN0aWxsIGRvbnQg
-dW5kZXJzdGFuZCB3aHkgeW91IG5lZWQgWFRFX0FMSUdOICsgLi4uDQo+IA0KPiAoKEEgKyBCKSAt
-IEMpICUgQSAgIGlzIGVxdWFsIHRvIChCIC0gQykgJSBBDQo+IA0KPiBXaGljaCBvbmUgaXMgbW9y
-ZSByZWFkYWJsZSA/DQoNCkknbSBmaW5lIHdpdGggeW91ciBzdWdnZXN0aW9uLg0KDQojZGVmaW5l
-IEJVRkZFUl9BTElHTihhZHIpICgoMiAtICgodTMyKSBhZHIpKSAlIFhURV9BTElHTikNCg0KPiAN
-Cj4gUGxlYXNlIHRha2UgYSBsb29rIGF0IGV4aXN0aW5nIGFuZCBjbGVhbiBjb2RlLCBubyBtYWdp
-YyBtYWNybywgYW5kIHdlDQo+IGNhbiB1bmRlcnN0YW5kIHRoZSBpbnRlbnRpb24uDQo+IA0KPiBm
-aW5kIGRyaXZlcnMvbmV0IHwgeGFyZ3MgZ3JlcCAtbiBuZXRkZXZfYWxsb2Nfc2tiX2lwX2FsaWdu
-DQo+IA0KPiANCg0KWWVzIEkgc2VlIGhvdyBpdCdzIHVzZWQsIGJ1dCBpdCBvbmx5IGFsbG93cyB5
-b3UgdG8gcmVzZXJ2ZSAyIGJ5dGVzIGluIHRoZSBza2Igd2l0aCBubyBvcHRpb25zLg0KDQoNCg0K
-ClRoaXMgZW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBhcmUgaW50ZW5kZWQgZm9yIHRoZSBzb2xl
-IHVzZSBvZiB0aGUgbmFtZWQgcmVjaXBpZW50KHMpIGFuZCBjb250YWluKHMpIGNvbmZpZGVudGlh
-bCBpbmZvcm1hdGlvbiB0aGF0IG1heSBiZSBwcm9wcmlldGFyeSwgcHJpdmlsZWdlZCBvciBjb3B5
-cmlnaHRlZCB1bmRlciBhcHBsaWNhYmxlIGxhdy4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVk
-IHJlY2lwaWVudCwgZG8gbm90IHJlYWQsIGNvcHksIG9yIGZvcndhcmQgdGhpcyBlbWFpbCBtZXNz
-YWdlIG9yIGFueSBhdHRhY2htZW50cy4gRGVsZXRlIHRoaXMgZW1haWwgbWVzc2FnZSBhbmQgYW55
-IGF0dGFjaG1lbnRzIGltbWVkaWF0ZWx5Lgo=
+
+> 
+> Yes I see how it's used, but it only allows you to reserve 2 bytes in the skb with no options.
+
+
+Really ? This would be a bug !
+
+__alloc_skb() uses kmalloc(XXXX), this gives you the guarantee you want,
+or maybe comment you wrote is not what is _really_ necessary ?
+
+/* Align the IP data in the packet on word boundaries as MicroBlaze
+ * needs it.
+ */
