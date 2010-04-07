@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EB7FDB7D53
+	by ozlabs.org (Postfix) with ESMTPS id 61DDCB7D4F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  7 Apr 2010 10:27:41 +1000 (EST)
-Subject: Re: ppc4xx emac support of phy-less devices patch + dts example
+	Wed,  7 Apr 2010 11:03:46 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o3713eeW031532
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Apr 2010 20:03:42 -0500
+Subject: [PATCH] powerpc/pseries: Flush lazy kernel mappings after unplug
+	operations
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Staale.Aakermann@kongsberg.com
-In-Reply-To: <DC3E0C93CCAB2F4DACB66FFECC909F5822F7F1EB13@ukgw-exmb-p06.kda.kongsberg.com>
-References: <DC3E0C93CCAB2F4DACB66FFECC909F5822F7F1EB13@ukgw-exmb-p06.kda.kongsberg.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Apr 2010 10:27:28 +1000
-Message-ID: <1270600048.13812.98.camel@pasglop>
+Date: Wed, 07 Apr 2010 11:03:40 +1000
+Message-ID: <1270602220.13812.99.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,263 +25,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-02-19 at 13:32 +0100, Staale.Aakermann@kongsberg.com wrote:
-> Hi,
+This ensures that the translations for unmapped IO mappings or
+unmapped memory are properly removed from the MMU hash table
+before such an unplug. Without this, the hypervisor refuses the
+unplug operations due to those resources still being mapped by
+the partition.
 
- Hi !
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++++
+ drivers/pci/hotplug/rpadlpar_core.c             |    3 +++
+ drivers/pci/hotplug/rpaphp_core.c               |    3 +++
+ 3 files changed, 13 insertions(+), 0 deletions(-)
 
-Sorry for the delay, I've been busy with other things and your message
-slipped a bit through the cracks.
-
-> I'm currently working on a custom embedded card with ppc405ex
-> installed. 
-> 
-> On this card, EMAC1 is "phy-less", and connected directly to a MAC on
-> a micrel switch (ks8995ma).
->
-> I've tried the default phy-less mode currently supported by the core
-> driver for ibm_newmac, but found
-> 
-> this insufficient. I've made a patch for the core driver so it
-> supports some more scenarios. 
-
- .../...
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 9b21ee6..01e7b5b 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -11,6 +11,7 @@
  
-
-So first thing first, your patch is completely whitespace damaged :-)
-
-Now, as for your aproach:
-
-> +    if (emac_read_uint_prop(np, "phy-duplex", &dev->phy.duplex, 0))
-> 
-> +        dev->phy.duplex = 1;
-> 
-> +
-> 
-> +    if (emac_read_uint_prop(np, "phy-speed", &dev->phy.speed, 0))
-> 
-> +        dev->phy.speed = 100;
-> 
-> +
-> 
-> +    if (emac_read_uint_prop(np, "phy-autoneg", &dev->phy.autoneg, 0))
-> 
-> +        dev->phy.autoneg = 0;
-> 
-> +
-
-No objection on the method above. It might be nicer to call those
-fixed-phy-duplex, fixed-phy-speed, etc... and have a "fixed-phy" empty
-property as a cleaner way to represent the phyless mode but that's not a
-very big deal.
-
->             dev->phy.address = -1;
-> 
->             dev->phy.features = SUPPORTED_MII;
-> 
-> -           if (emac_phy_supports_gige(dev->phy_mode))
-> 
-> -                 dev->phy.features |= SUPPORTED_1000baseT_Full;
-> 
-> -           else
-> 
-> -                 dev->phy.features |= SUPPORTED_100baseT_Full;
-> 
-
-So you remove the above which sets the 1000bT support...
-
-> +
-> 
-> +        if (dev->phy.autoneg == 1 )
-> 
-> +            dev->phy.features |= SUPPORTED_Autoneg;
-> 
-> +
-
-> +        switch (dev->phy.duplex)
-> 
-> +        {
-> 
-> +            case 0:
-> 
-> +
-> 
-> +                if (dev->phy.speed == 10 )
-> 
-> +                    dev->phy.features |= SUPPORTED_10baseT_Half;
-> 
-> +
-> 
-> +                if (dev->phy.speed == 100 )
-> 
-> +                    dev->phy.features |= SUPPORTED_100baseT_Half;
-> 
-> +
-> 
-> +                if (dev->phy.speed == 100 )
-> 
-> +                    dev->phy.features |= SUPPORTED_100baseT_Half;
-> 
-> +
-> 
-> +            default:
-> 
-
-Ditto...
-
-> 
-> +                if (dev->phy.speed == 10 )
-> 
-> +                    dev->phy.features |= SUPPORTED_10baseT_Full;
-> 
-> +
-> 
-> +                if (dev->phy.speed == 100 )
-> 
-> +                    dev->phy.features |= SUPPORTED_100baseT_Full;
-> 
-> +
-> 
-> +                if (dev->phy.speed == 100 )
-> 
-> +                    dev->phy.features |= SUPPORTED_100baseT_Full;
-> 
-> +        }
-> 
-> +
-
-And never add back any option for 1000bT ... Not nice :-)
-
-You should add the case back for 1000bT (btw, turn the above into a
-switch/case statement please). And if phy.speed is none of the above
-(default, ie, the property is not present in the device-tree), then
-revert to the old method, or something like that. Or you may break
-existing stuff.
-
->             dev->phy.pause = 1;
-> 
->  
-> 
-> +        #if defined (CONFIG_PPC_DCR_NATIVE) && defined (CONFIG_405EX)
-> 
-> +        if (of_get_property(np, "phy-clock-internal", NULL))
-> 
-> +            dcri_clrset(SDR0, SDR0_MFR, ( dev->rgmii_port ?
-> SDR0_MFR_ECS >> 1 : SDR0_MFR_ECS ),0 );
-> 
-> +        #endif
-> 
-> +
-
-Ok.
-
-Cheers,
-Ben.
-
->             return 0;
-> 
->       }
-> 
->  
-> 
->  
-> 
-> DTS example:
-> 
->  
-> 
-> EMAC1: ethernet@ef600a00 {
-> 
->       linux,network-index = <0x1>;
-> 
->       device_type = "network";
-> 
->       compatible = "ibm,emac-405ex", "ibm,emac4sync";
-> 
->       interrupt-parent = <&EMAC1>;
-> 
->       interrupts = <0x0 0x1>;
-> 
->       #interrupt-cells = <1>;
-> 
->       #address-cells = <0>;
-> 
->       #size-cells = <0>;
-> 
->       interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
-> 
->                    /*Wake*/  0x1  &UIC1 0x1f 0x4>;
-> 
->       reg = <0xef600a00 0x000000c4>;
-> 
->       local-mac-address = [0000000000]; 
-> 
->       mal-device = <&MAL0>;
-> 
->       mal-tx-channel = <1>;
-> 
->       mal-rx-channel = <1>;
-> 
->       cell-index = <1>;
-> 
->       max-frame-size = <9000>;
-> 
->       rx-fifo-size = <4096>;
-> 
->       tx-fifo-size = <2048>;
-> 
->       phy-mode = "rgmii";
-> 
->       phy-map = <0xffffffff>;      // Be sure that the emac use
-> phy-less configuration
-> 
->       phy-address = <0xffffffff>;  // Be sure that the emac use
-> phy-less configuration
-> 
->       phy-speed = <100>;
-> 
->       phy-duplex = <1>;
-> 
->       phy-autoneg = <0>;
-> 
->       phy-clock-internal;          
-> 
->       rgmii-device = <&RGMII0>;
-> 
->       rgmii-channel = <1>;
-> 
->       has-inverted-stacr-oc;
-> 
->       has-new-stacr-staopc;
-> 
-> };
-> 
->  
-> 
->  
-> 
->  
-> 
-> Best regards 
-> 
-> Staale Aakermann, Systems Engineer
-> 
-> Kongsberg Defence Systems / Defence Communication
-> 
-> Olav Brunborgsv 6, P.O.Box 87, 1375 Billingstad, Norway
-> 
-> Phone: +47 66 84 24 00, Direct Phone: +47 66 74 48 51,
-> 
-> Fax: +47 66 84 82 30, Mobile: +47 928 29 879
-> 
-> Mail: staale.aakermann@kongsberg.com
-> 
-> Url: www.kongsberg.com
-> 
->  
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ #include <linux/of.h>
+ #include <linux/lmb.h>
++#include <linux/vmalloc.h>
+ #include <asm/firmware.h>
+ #include <asm/machdep.h>
+ #include <asm/pSeries_reconfig.h>
+@@ -54,6 +55,12 @@ static int pseries_remove_lmb(unsigned long base, unsigned int lmb_size)
+ 	 */
+ 	start = (unsigned long)__va(base);
+ 	ret = remove_section_mapping(start, start + lmb_size);
++
++	/* Ensure all vmalloc mappings are flushed in case they also
++	 * hit that section of memory
++	 */
++	vm_unmap_aliases();
++
+ 	return ret;
+ }
+ 
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index 4e3e038..0830347 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -20,6 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/string.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/pci-bridge.h>
+ #include <linux/mutex.h>
+@@ -430,6 +431,8 @@ int dlpar_remove_slot(char *drc_name)
+ 			rc = dlpar_remove_pci_slot(drc_name, dn);
+ 			break;
+ 	}
++	vm_unmap_aliases();
++
+ 	printk(KERN_INFO "%s: slot %s removed\n", DLPAR_MODULE_NAME, drc_name);
+ exit:
+ 	mutex_unlock(&rpadlpar_mutex);
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index dcaae72..0aefc96 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -30,6 +30,7 @@
+ #include <linux/slab.h>
+ #include <linux/smp.h>
+ #include <linux/init.h>
++#include <linux/vmalloc.h>
+ #include <asm/eeh.h>       /* for eeh_add_device() */
+ #include <asm/rtas.h>		/* rtas_call */
+ #include <asm/pci-bridge.h>	/* for pci_controller */
+@@ -419,6 +420,8 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+ 		return -EINVAL;
+ 
+ 	pcibios_remove_pci_devices(slot->bus);
++	vm_unmap_aliases();
++
+ 	slot->state = NOT_CONFIGURED;
+ 	return 0;
+ }
