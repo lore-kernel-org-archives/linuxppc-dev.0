@@ -1,20 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 34DE3B7D0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 12:52:03 +1000 (EST)
-Date: Tue, 06 Apr 2010 19:52:04 -0700 (PDT)
-Message-Id: <20100406.195204.165441511.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Subject: Re: [PATCH] [V3] Add non-Virtex5 support for LL TEMAC driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1270502993.9013.36.camel@edumazet-laptop>
-References: <d9134316-bd07-46a8-91d4-c30f27baeb60@SG2EHSMHS007.ehs.local>
-	<1270502993.9013.36.camel@edumazet-laptop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A2E43B7D5F
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Apr 2010 14:23:24 +1000 (EST)
+Subject: Re: powermac/low_i2c.c: three minor problems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: d binderman <dcb314@hotmail.com>
+In-Reply-To: <BLU108-W1270106CF117770B0ABB269C530@phx.gbl>
+References: <BLU108-W1270106CF117770B0ABB269C530@phx.gbl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Apr 2010 14:23:17 +1000
+Message-ID: <1270614197.13812.123.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: michal.simek@petalogix.com, netdev@vger.kernel.org, jtyner@cs.ucr.edu,
-	linuxppc-dev@ozlabs.org, john.linn@xilinx.com, john.williams@petalogix.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Mon, 05 Apr 2010 23:29:53 +0200
+On Sat, 2010-02-06 at 12:13 +0000, d binderman wrote:
+> 
+> Hello there,
+> 
+> I just ran the sourceforge tool cppcheck over the source code of the
+> new Linux kernel 2.6.33-rc6
 
-> So, I ask, cant you use netdev_alloc_skb_ip_align() in this driver ?
+Hi !
 
-Thanks to everyone for getting this patch into shape.
+All your patches have various problems with the actual patch format.
 
-I applied version 4 of the patch to net-next-2.6, thanks!
+Patches should be submitted so that they apply with patch -p1, yours
+don't. In fact, the base directory you diffed from seems to differ from
+patch to patch. I'm manually fixing those this time around, but please
+get that sorted out before you submit a new batch.
+
+Cheers,
+Ben.
+
+> It said
+> 
+> [./arch/powerpc/platforms/powermac/low_i2c.c:594]: (style) The scope of the variable chans can be reduced
+> [./arch/powerpc/platforms/powermac/low_i2c.c:594]: (style) The scope of the variable i can be reduced
+> [./arch/powerpc/platforms/powermac/low_i2c.c:1260]: (style) Redundant condition. It is safe to deallocate a NULL pointer
+> 
+> Please find attached a patch to fix these minor problems.  
+> The patched version compiles, but I have not been able to test it at run time.
+> 
+> Regards
+> 
+> David Binderman
+>  		 	   		  
+> _________________________________________________________________
+> Do you have a story that started on Hotmail? Tell us now
+> http://clk.atdmt.com/UKM/go/195013117/direct/01/
