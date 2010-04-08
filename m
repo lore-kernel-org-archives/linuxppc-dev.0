@@ -1,21 +1,12 @@
-Return-Path: <rusty@rustcorp.com.au>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
-Date: Thu, 8 Apr 2010 09:56:32 +0930
-References: <20100319151326.GC8541@kroah.com>
-	<20100326124340.GB7039@amit-x200.redhat.com>
-	<20100406114238.GN5594@kryten>
-In-Reply-To: <20100406114238.GN5594@kryten>
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 8 Apr 2010 11:33:44 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Add form 1 NUMA affinity
+Message-ID: <20100408013344.GD2698@kryten>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201004080956.33405.rusty@rustcorp.com.au>
-Cc: a.p.zijlstra@chello.nl, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Amit Shah <amit.shah@redhat.com>, tglx@linutronix.de,
-	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +16,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 6 Apr 2010 09:12:38 pm Anton Blanchard wrote:
-> The patch below changes things to call tty_kref_put once for every
-> hvc_close call, and with that my machine boots fine.
 
-Thanks, applied.
+Firmware changed the way it represents memory and cpu affinity on POWER7.
+Unfortunately the old method now caps the topology to work around issues
+with legacy operating systems. For Linux to get the correct topology we
+need to use the new form 1 affinity information.
 
-Cheers,
-Rusty.
+We set the form 1 field in the client architecture, and if we see "1" in the
+ibm,associativity-form property firmware supports form 1 affinity and
+we should look at the first field in the ibm,associativity-reference-points
+array. If not we use the second field as we always have.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-2.6.34-rc3/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.34-rc3.orig/arch/powerpc/kernel/prom_init.c	2010-04-02 07:52:10.000000000 -0500
++++ linux-2.6.34-rc3/arch/powerpc/kernel/prom_init.c	2010-04-07 07:06:45.000000000 -0500
+@@ -653,6 +653,7 @@
+ #else
+ #define OV5_CMO			0x00
+ #endif
++#define OV5_TYPE1_AFFINITY	0x80	/* Type 1 NUMA affinity */
+ 
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+@@ -706,7 +707,7 @@
+ 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
+ 	0,
+ 	OV5_CMO,
+-	0,
++	OV5_TYPE1_AFFINITY,
+ 	0,
+ 	0,
+ 	0,
+Index: linux-2.6.34-rc3/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-2.6.34-rc3.orig/arch/powerpc/mm/numa.c	2010-04-07 07:06:32.000000000 -0500
++++ linux-2.6.34-rc3/arch/powerpc/mm/numa.c	2010-04-07 09:43:48.000000000 -0500
+@@ -242,10 +243,11 @@
+  */
+ static int __init find_min_common_depth(void)
+ {
+-	int depth;
++	int depth, index;
+ 	const unsigned int *ref_points;
+ 	struct device_node *rtas_root;
+ 	unsigned int len;
++	struct device_node *options;
+ 
+ 	rtas_root = of_find_node_by_path("/rtas");
+ 
+@@ -258,11 +260,23 @@
+ 	 * configuration (should be all 0's) and the second is for a normal
+ 	 * NUMA configuration.
+ 	 */
++	index = 1;
+ 	ref_points = of_get_property(rtas_root,
+ 			"ibm,associativity-reference-points", &len);
+ 
++	/*
++	 * For type 1 affinity information we want the first field
++	 */
++	options = of_find_node_by_path("/options");
++	if (options) {
++		const char *str;
++		str = of_get_property(options, "ibm,associativity-form", NULL);
++		if (str && !strcmp(str, "1"))
++                        index = 0;
++	}
++
+ 	if ((len >= 2 * sizeof(unsigned int)) && ref_points) {
+-		depth = ref_points[1];
++		depth = ref_points[index];
+ 	} else {
+ 		dbg("NUMA: ibm,associativity-reference-points not found.\n");
+ 		depth = -1;
