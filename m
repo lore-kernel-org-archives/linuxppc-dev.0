@@ -1,20 +1,31 @@
-Return-Path: <SSparks@aclara.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) by ozlabs.org (Postfix) with ESMTP id C4C5EB7D2A
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 07:30:37 +1000 (EST)
-Received: from mail126-va3 (localhost.localdomain [127.0.0.1])	by
-	mail126-va3-R.bigfish.com (Postfix) with ESMTP id CB3C9750106	for
-	<linuxppc-dev@ozlabs.org>; Thu,  8 Apr 2010 21:15:27 +0000 (UTC)
-Received: from VA3EHSMHS015.bigfish.com (unknown [10.7.14.240])	by
-	mail126-va3.bigfish.com (Postfix) with ESMTP id 562411AB8053	for
-	<linuxppc-dev@ozlabs.org>; Thu,  8 Apr 2010 21:15:26 +0000 (UTC)
+Return-Path: <BATV+3e47b603ed6d9c45fb78+2419+infradead.org+mchehab@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F54DB7C67
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 08:56:37 +1000 (EST)
+Message-ID: <4BBE5EF0.5000801@infradead.org>
+Date: Thu, 08 Apr 2010 19:55:44 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: Upgrade to 2.6.26 results in Oops during request_irq
-Date: Thu, 8 Apr 2010 16:14:54 -0500
-Message-ID: <6011A7C9CD0EE74792C3ED2A835560860170783A@mail.twacs.com>
-From: "Sparks, Sam" <SSparks@aclara.com>
-To: <linuxppc-dev@ozlabs.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH 2/2] device_attributes: add sysfs_attr_init() for dynamic
+	attributes
+References: <1270170140-325-1-git-send-email-w.sang@pengutronix.de>
+	<1270170140-325-2-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1270170140-325-2-git-send-email-w.sang@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: platform-driver-x86@vger.kernel.org, Len Brown <len.brown@intel.com>,
+	Michal Simek <monstr@monstr.eu>, linux-media@vger.kernel.org,
+	Lin Ming <ming.m.lin@intel.com>,
+	Krzysztof Helt <krzysztof.h1@wp.pl>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Bob Moore <robert.moore@intel.com>, Kai Jiang <b18973@freescale.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Sujith Thomas <sujith.thomas@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Anatolij Gustschin <agust@denx.de>, Mike Isely <isely@pobox.com>,
+	Johannes Berg <johannes@sipsolutions.net>, Matthew Garrett <mjg@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,69 +35,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Howdy All,
+Wolfram Sang wrote:
+> Made necessary by 6992f5334995af474c2b58d010d08bc597f0f2fe. Prevents further
+> "key xxx not in .data" bug-reports. Although some attributes could probably be
+> converted to static ones, this is left for people having hardware to test.
+> 
+> Found by this semantic patch:
+> 
+> @ init @
+> type T;
+> identifier A;
+> @@
+> 
+>         T {
+>                 ...
+>                 struct device_attribute A;
+>                 ...
+>         };
+> 
+> @ main extends init @
+> expression E;
+> statement S;
+> identifier err;
+> T *name;
+> @@
+> 
+>         ... when != sysfs_attr_init(&name->A.attr);
+> (
+> +       sysfs_attr_init(&name->A.attr);
+>         if (device_create_file(E, &name->A))
+>                 S
+> |
+> +       sysfs_attr_init(&name->A.attr);
+>         err = device_create_file(E, &name->A);
+> )
+> 
+> While reviewing, I put the initialization to apropriate places.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> Cc: Greg KH <gregkh@suse.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  drivers/macintosh/windfarm_core.c           |    1 +
+>  drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    8 ++++++++
 
-I have (almost) successfully upgraded from Linux 2.6.22 to 2.6.26 (both
-downloaded from debian) on my mpc8347 powerpc, but I think I may be
-missing a required change to my dts regarding the IPIC or maybe a change
-in how my driver requests IRQs.
+I suspect that several (if not all) occurrences at pvrusb2 could be replaced by
+static attributes, but let Mike Isely have the final word on that, as the driver
+maintainer. From my side, I'm ok with either options.
 
-I have several modules that are maintained outside the kernel tree, and
-all but one is working correctly. The offending driver is attempting to
-register IRQ 23, and is accessing an invalid memory location. I am
-currently getting the following stack dump:
-
-# insmod /tmp/cpld.ko
-# insmod /tmp/dig_display.ko=20
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0x00000000
-Oops: Kernel access of bad area, sig: 11 [#1]
-PREEMPT SCPA-G2
-Modules linked in: dig_display(+) cpld immr_misc immr [last unloaded:
-cpld]
-NIP: 00000000 LR: c00496e8 CTR: 00000000
-REGS: dfafbdb0 TRAP: 0400   Not tainted  (2.6.26-twacs-100.0.0)
-MSR: 20001032 <ME,IR,DR>  CR: 24002422  XER: 20000000
-TASK =3D df9d9800[579] 'insmod' THREAD: dfafa000
-GPR00: 00000000 dfafbe60 df9d9800 00000017 00000002 00000020 c00498d0
-c06fe640=20
-GPR08: 00000008 00000000 00000017 00000000 84002428 10073f68 1ffcb000
-007ffeb0=20
-GPR16: 00000000 00000000 00800000 00000000 bffff7f0 00000000 1006e3e4
-00000000=20
-GPR24: 00000002 e90cffd0 00000000 00009032 dfa3aca0 00000017 dfafa000
-c02d0e78=20
-NIP [00000000] 0x0
-LR [c00496e8] setup_irq+0x2d4/0x2e0
-Call Trace:
-[dfafbe60] [c00496b0] setup_irq+0x29c/0x2e0 (unreliable)
-[dfafbe90] [c0049904] request_irq+0xb8/0xe8
-[dfafbec0] [e107e174] init_module+0x174/0x320 [dig_display]
-[dfafbf10] [c0046e68] sys_init_module+0x14c/0x1d8
-[dfafbf40] [c0010008] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff27bb0
-    LR =3D 0x10019ca8
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX=20
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX=20
-Kernel panic - not syncing: Fatal exception
-Rebooting in 1 seconds..<0>------------[=20
-
-I have traced the offending code through the setup_irq() call down to
-kernel/irq/manage.c, where desc->chip->enable(irq) is being called.
-However, enable is NULL resulting in the Oops.
-
-I have verified enable and disable are set to valid addresses when
-set_irq() is entered. However desc->chip->set_type() references
-ipic_set_irq_type(), which overwrites enable and disable by setting
-desc->chip to &ipic_edge_irq_chip.
-
-At this point, I am at a loss. Does some additional step need to be
-taken prior to calling request_irq() when upgrading from 2.6.22 to
-2.6.26? Please let me know if you would like any additional information.
-I don't want this email to get too difficult to follow.
-
-Thanks for the help!
-Sam
-
-=20
+Cheers,
+Mauro
