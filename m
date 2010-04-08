@@ -1,18 +1,19 @@
-Return-Path: <kalyan.alle@gmail.com>
-Received: from mail-qy0-f189.google.com (mail-qy0-f189.google.com
-	[209.85.221.189]) by ozlabs.org (Postfix) with ESMTP id EAC28B7D0A
+Return-Path: <elison.niven@matrixcomsec.com>
+Received: from mail.urlwebserver.com (unknown [74.86.58.248])
+	by ozlabs.org (Postfix) with ESMTP id 5F5ECB7D1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Apr 2010 17:07:35 +1000 (EST)
-Received: by qyk27 with SMTP id 27so2528114qyk.23
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 08 Apr 2010 00:07:33 -0700 (PDT)
+	Thu,  8 Apr 2010 17:09:39 +1000 (EST)
+Received: from Internet10 [192.168.50.52] by Proxy+ with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Apr 2010 12:25:24 +0530
+From: "Elison Niven" <elison.niven@matrixcomsec.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: No userspace processes scheduled for execution when ethernet link
+	state changes
+Date: Thu, 8 Apr 2010 12:25:24 +0530
+Message-Id: <20100408122524@dummy.ozlabs.org>
 MIME-Version: 1.0
-Date: Thu, 8 Apr 2010 12:37:33 +0530
-Message-ID: <t2i42409cb31004080007u1b06d3f3rc2f180cf2d956428@mail.gmail.com>
-Subject: Netdev watchdog timed out on gianfar ethernet driver
-From: kalyan Alle <kalyan.alle@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, kalyan Alle <kalyan.alle@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi ,
-We are using gianfar ethernet driver in our device (2.6.20 kernel).  I
-have observed the following error after i run high throughput traffic
-for some time.
+Hi List,
 
-NETDEV WATCHDOG: eth0: transmit timed out
+I am using linux 2.6.22 on a MPC8358E custom board.
 
-The Kernel we are using is 2.6.20 kernel.  I have added the work queue
-support in the gfar_timeout  (which was not there in the 2.6.20 )
-,which was given in the later kernels  from 2.6.27.
-Without the work queue support i observed the crash. More precisely
-the crash is fixed with the work queue effort ,but still i could see
-the
-NETDEV WATCHDOG: eth0: transmit timed out  .  which stops the end to
-end traffic flow in few seconds after the bidirectional traffic is
-pumped.
+I use a simple userspace process that periodically (100 ms) calls an ioctl
+to a watchdog driver to toggle its pin state.
 
-I have given "ifconfig eth0 down" when this happend and then "ifconfig eth0 up"
-The interface down and up seems to have brought the eht0 into active
-state and traffic continued to run.
+The problem is that when I insert or remove the Ethernet cable, this process
+is not scheduled for execution. The watchdog IC resets the board if a pulse
+is not received in 1.2 seconds.
 
-Can any bidy suggest a clue as how to fix the NETDEV WATCHDOG: eth0:
-transmit timed out issue.
+I am clueless as to where to look in - the vitesse (PHY) driver or the
+ucc_geth driver or the kernel scheduler.
 
-thanks
-kalyan alle
+I have tried modifying the priority of the process but there are no changes
+to this behavior.
+
+Then I wrote another driver that uses a kernel timer, that periodically (100
+ms) toggles the pin state. In this case, I have observed on an oscilloscope
+that the pulses are regular even when the Ethernet cable is inserted or
+removed.
+
+It means that the kernel itself is not in a waiting state when the cable is
+inserted or removed but *however* (as per my observations) it does not
+schedule all userspace processes for the next 1 - 2 seconds.
+
+Well, ofcourse an alternate solution to implementing the watchdog on my
+board would be to toggle the watchdog pin using a kernel timer.
+
+But, Why the userspace process is not getting its time share to execute?
+Please throw some light as to where to look? Is this issue known or could it
+be my board-specific?
+
+Thanks,
+Elison
