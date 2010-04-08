@@ -1,18 +1,21 @@
-Return-Path: <wzgllc@gmail.com>
-Received: from mail-qy0-f189.google.com (mail-qy0-f189.google.com
-	[209.85.221.189]) by ozlabs.org (Postfix) with ESMTP id EF5C5B7D1F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Apr 2010 08:33:59 +1000 (EST)
-Received: by qyk27 with SMTP id 27so2059900qyk.23
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 07 Apr 2010 15:33:57 -0700 (PDT)
+Return-Path: <rusty@rustcorp.com.au>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 4/7] hvc_console: Fix race between hvc_close and hvc_remove
+Date: Thu, 8 Apr 2010 09:56:32 +0930
+References: <20100319151326.GC8541@kroah.com>
+	<20100326124340.GB7039@amit-x200.redhat.com>
+	<20100406114238.GN5594@kryten>
+In-Reply-To: <20100406114238.GN5594@kryten>
 MIME-Version: 1.0
-Date: Wed, 7 Apr 2010 17:33:57 -0500
-Message-ID: <u2vb97b35b01004071533oe3916294t5515da6bd31d7346@mail.gmail.com>
-Subject: udev failed to automount USB memory stick on mpc8313
-From: Zhigang Wang <wzgllc@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201004080956.33405.rusty@rustcorp.com.au>
+Cc: a.p.zijlstra@chello.nl, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Amit Shah <amit.shah@redhat.com>, tglx@linutronix.de,
+	Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I am using the latest LTIB BSP (2.6.23) for mpc8313 and want to use
-udev to automatically mount and umount USB flash storage.
+On Tue, 6 Apr 2010 09:12:38 pm Anton Blanchard wrote:
+> The patch below changes things to call tty_kref_put once for every
+> hvc_close call, and with that my machine boots fine.
 
-But it appears udev never executes the rule and the script file even
-though it is called when a stick is attached. I can manually mount the
-USB stick with no problem.
-Here is the rule file and the script.
+Thanks, applied.
 
-File: 10-local.rules
-ACTION=="add", KERNEL=="sd[a-z][0-9]", SUBSYSTEM=="block",
-RUN+="/root/usbmount.sh"
-
-File: usbmount.sh
-
-#!/bin/sh
-
-if [ $ACTION == "add" ]
-then
-        mount -t vfat     /dev/sda1 /root/files
-  elif [ $ACTION == "remove" ]
-
-then
-        umount -l /root/files
-fi
-
-Can someone tell me how to make it work?
-
-Thanks.
+Cheers,
+Rusty.
