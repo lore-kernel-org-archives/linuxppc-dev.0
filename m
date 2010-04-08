@@ -1,17 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Question regarding the DTLB Miss exceptions
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Bruce_Leonard@selinc.com
-In-Reply-To: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
-References: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-Q6sNPAkxF+AYdlIGb5Dc"
-Date: Thu, 08 Apr 2010 23:59:30 +1000
-Message-ID: <1270735170.19546.2.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <John.Linn@xilinx.com>
+Received: from SG2EHSOBE005.bigfish.com (sg2ehsobe005.messaging.microsoft.com
+	[207.46.51.79]) by ozlabs.org (Postfix) with ESMTP id 40918B7D42
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 03:08:16 +1000 (EST)
+From: John Linn <john.linn@xilinx.com>
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, grant.likely@secretlab.ca,
+	jwboyer@linux.vnet.ibm.com, eric.dumazet@gmail.com
+Subject: [PATCH 1/2] net: ll_temac: remove virt_to_bus call
+Date: Thu, 8 Apr 2010 11:08:01 -0600
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-ID: <e94678c0-497a-4cd3-a0a6-9d94fdcf99ed@SG2EHSMHS017.ehs.local>
+Cc: michal.simek@petalogix.com, John Linn <john.linn@xilinx.com>,
+	john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,53 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The virt_to_bus call should not be used any longer as it's
+considered illegal. The driver has the physical address of
+the buffer in the descriptor such that it's not necessary
+anyway.
 
---=-Q6sNPAkxF+AYdlIGb5Dc
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: John Linn <john.linn@xilinx.com>
+---
+ drivers/net/ll_temac_main.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-On Mon, 2010-03-29 at 23:24 -0700, Bruce_Leonard@selinc.com wrote:=20
-> I'm tracking a problem that's leading me through DSI and DTLB miss=20
-> exceptions on an MPC8347 (e300c1 core), and I've come across an oddity=20
-> that I'm hoping someone can explain.
->=20
-> When a DTLB Miss exception can't find a PTE for the virtual address being=
-=20
-> written/read, it dummies up the SPRs for a DSI exception and then calls=20
-> directly into the DSI exception code.  Just before the DTLB miss code=20
-> stores a value into DSISR it sets bit 2, which for a DSI exception is a=20
-> reserved bit and should be cleared.  There's no comment on the code=20
-> (.../arch/powerpc/kernel/head_32.S line 619 of the 2.6.33-rc1 kernel). Ca=
-n=20
-> anyone tell me why this bit is getting set?
-
-You mean:
-
-616 DataAddressInvalid:
- 617         mfspr   r3,SPRN_SRR1
- 618         rlwinm  r1,r3,9,6,6     /* Get load/store bit */
- 619         addis   r1,r1,0x2000                                          =
-    =20
- 620         mtspr   SPRN_DSISR,r1
-
-Is it trying to set DSISR_ISSTORE?
-
-#define   DSISR_ISSTORE         0x02000000      /* access was a store */   =
-=20
+diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+index ba617e3..ce9aa78 100644
+--- a/drivers/net/ll_temac_main.c
++++ b/drivers/net/ll_temac_main.c
+@@ -612,7 +612,6 @@ static void ll_temac_recv(struct net_device *ndev)
+ 	struct cdmac_bd *cur_p;
+ 	dma_addr_t tail_p;
+ 	int length;
+-	unsigned long skb_vaddr;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&lp->rx_lock, flags);
+@@ -626,8 +625,7 @@ static void ll_temac_recv(struct net_device *ndev)
+ 		skb = lp->rx_skb[lp->rx_bd_ci];
+ 		length = cur_p->app4 & 0x3FFF;
+ 
+-		skb_vaddr = virt_to_bus(skb->data);
+-		dma_unmap_single(ndev->dev.parent, skb_vaddr, length,
++		dma_unmap_single(ndev->dev.parent, cur_p->phys, length,
+ 				 DMA_FROM_DEVICE);
+ 
+ 		skb_put(skb, length);
+-- 
+1.6.2.1
 
 
-cheers=20
 
---=-Q6sNPAkxF+AYdlIGb5Dc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAku94T4ACgkQdSjSd0sB4dITZACfbk0Rzg5Q5Wg1f9TcwX2DWgzO
-9bMAn2bD6zTvc6Muc9Y33sGWtsE0K3kQ
-=Je0r
------END PGP SIGNATURE-----
-
---=-Q6sNPAkxF+AYdlIGb5Dc--
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
