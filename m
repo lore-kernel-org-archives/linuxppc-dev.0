@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 84F74B7D22
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Apr 2010 15:24:37 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 20BA8B7D2B
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Apr 2010 15:38:27 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/e500mc: Implement machine check handler.
-Date: Thu,  8 Apr 2010 00:24:28 -0500
-Message-Id: <1270704268-30011-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH v2] powerpc/e500mc: Implement machine check handler.
+Date: Thu,  8 Apr 2010 00:38:22 -0500
+Message-Id: <1270705102-18343-1-git-send-email-galak@kernel.crashing.org>
 Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,11 +30,13 @@ they aren't stuck on), most notably L1 instruction cache parity errors.
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+* Fix build error
+
  arch/powerpc/include/asm/cputable.h  |    1 +
  arch/powerpc/include/asm/reg_booke.h |   33 +++++++++----
  arch/powerpc/kernel/cputable.c       |    2 +-
- arch/powerpc/kernel/traps.c          |   86 ++++++++++++++++++++++++++++++++++
- 4 files changed, 111 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/traps.c          |   88 +++++++++++++++++++++++++++++++++-
+ 4 files changed, 112 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
 index abb833b..5536a2c 100644
@@ -137,7 +139,7 @@ index 8af4949..c6c9563 100644
  	},
  	{	/* default match */
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 696626a..862cac2 100644
+index 696626a..e893122 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
 @@ -1,5 +1,6 @@
@@ -147,6 +149,15 @@ index 696626a..862cac2 100644
   *
   *  This program is free software; you can redistribute it and/or
   *  modify it under the terms of the GNU General Public License
+@@ -306,7 +307,7 @@ static inline int check_io_access(struct pt_regs *regs)
+ #ifndef CONFIG_FSL_BOOKE
+ #define get_mc_reason(regs)	((regs)->dsisr)
+ #else
+-#define get_mc_reason(regs)	(mfspr(SPRN_MCSR) & MCSR_MASK)
++#define get_mc_reason(regs)	(mfspr(SPRN_MCSR))
+ #endif
+ #define REASON_FP		ESR_FP
+ #define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
 @@ -382,6 +383,91 @@ int machine_check_440A(struct pt_regs *regs)
  	return 0;
  }
