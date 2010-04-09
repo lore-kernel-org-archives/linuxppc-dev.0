@@ -1,17 +1,16 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 73C58B7CFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 05:22:01 +1000 (EST)
-Received: by pwi8 with SMTP id 8so2983863pwi.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Apr 2010 12:22:00 -0700 (PDT)
-Message-ID: <4BBF7E9C.80604@billgatliff.com>
-Date: Fri, 09 Apr 2010 14:23:08 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-embedded <linux-embedded@vger.kernel.org>
-Subject: A better way to sequence driver initialization?
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 392C6B7CFA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 10 Apr 2010 06:22:28 +1000 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: galak@kernel.crashing.org, benh@kernel.crashing.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] fsl_booke: Correct test for MMU_FTR_BIG_PHYS
+Date: Fri,  9 Apr 2010 15:22:21 -0500
+Message-Id: <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,77 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys:
+The code was looking for this in cpu_features, not mmu_features.  Fix this.
 
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-My recent post, "Requesting a GPIO that hasn't been registered yet", and
-Anton's reply thereto (thanks, Anton!) on linuxppc-dev got me thinking
-about the problem of dependencies between devices in different  classes,
-and/or between drivers/devices in general.  I'd like to float an idea to
-see if it's worth pursuing.
-
-Changing the link order to get drivers to initialize in the right order
-will always be a problem for someone--- the order will be right for some
-people, but exactly wrong for others.  And the problem is made worse for
-Device Tree-based systems, where just about everything including IRQ
-descriptors are created on a demand and/or as-available basis.  What if
-we let the kernel sort those dependencies out for us, at runtime?  I
-think it's possible, and I can't be the only one who would like to see
-this happen.
-
-There are two parts to my idea for a solution.  First part is to modify
-do_initcalls() so that it launches each initcall function in its own
-kernel thread.  Wait, don't panic yet!
-
-Second, we create/modify functions like gpio_request() so that if they
-fail, they can optionally stop in a wait queue until the call could
-succeed.  Then gpiochip_add() would signal that queue each time a new
-gpiochip was added. Functions like request_irq() and clk_get()--- and
-probably many others--- would do the same thing, but with their own wait
-queues.
-
-Something like this:
-
-    static wait_queue_head_t requestor_wq;
-
-    int gpiochip_add(struct gpio_chip *chip)
-    {
-        ...
-        wake_up_interruptible(&requestor_wq);
-        return status;
-    }
-
-    int gpio_request_wait(unsigned gpio, const char *label)
-    {
-        return wait_event_interruptible(&requestor_wq,
-!gpio_request(gpio, label));
-    }
-
-
-Or we might want to make the above code be the actual gpio_request(),
-and bury the wait_event_interruptible() inside of that.  Doing so would
-prevent having to touch a lot of code, but would definitely change the
-behavior of gpio_request().  Not sure which approach is best.
-
-Finally, I think that do_initcalls() would turn into something like this:
-
-    static void __init do_initcalls(void)
-    {
-            initcall_t *fn;
-
-            for (fn = __early_initcall_end; fn < __initcall_end; fn++)
-                    kthread_create(do_one_initcall, *fn, "do_initcalls");
-
-            flush_scheduled_work();
-    }
-
-
-If someone doesn't tell me this is a stupid idea, I might post it to
-lkml.  Now's your chance!  :)
-
-
-b.g.
-
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index c539472..533cae5 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -116,7 +116,7 @@ void loadcam_entry(int idx)
+ 	mtspr(SPRN_MAS2, TLBCAM[idx].MAS2);
+ 	mtspr(SPRN_MAS3, TLBCAM[idx].MAS3);
+ 
+-	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
++	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
+ 		mtspr(SPRN_MAS7, TLBCAM[idx].MAS7);
+ 
+ 	asm volatile("isync;tlbwe;isync" : : : "memory");
+@@ -152,7 +152,7 @@ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+ 
+ 	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
+ 	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
+-	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
++	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
+ 		TLBCAM[index].MAS7 = (u64)phys >> 32;
+ 
+ #ifndef CONFIG_KGDB /* want user access for breakpoints */
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+1.6.0.6
