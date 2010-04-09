@@ -3,8 +3,9 @@ To: Peter Zijlstra <peterz@infradead.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 09 Apr 2010 16:21:18 +1000
-Subject: [PATCH 0/5] sched: asymmetrical packing for POWER7 SMT4
-Message-Id: <1270794078.794237.347827867455.qpush@pale>
+Subject: [PATCH 1/5] sched: fix capacity calculations for SMT4
+In-Reply-To: <1270794078.794237.347827867455.qpush@pale>
+Message-Id: <20100409062118.D4096CBB6C@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
 	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
 	Suresh Siddha <suresh.b.siddha@intel.com>
@@ -17,18 +18,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series implements asymmetric SMT packing which ensures
-consistently good performance on POWER7.  
+When calculating capacity we use the following calculation:
 
-I'm no scheduler expert so these probably need some review.  It works
-for my simple test case on a POWER7 with SMT4.  I can now run a number
-of CPU bound processes and they are pulled down to lower threads
-giving the best performance consistently. 
+       capacity = DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
 
-Suresh: some of this touches code you changed recently, so you may
-want to test in your environment.
+In SMT2, power will be 1178/2 (provided we are not scaling power with
+freq say) and SCHED_LOAD_SCALE will be 1024, resulting in capacity
+being 1.
 
-The 1st patch is a fix for SMT4 in general.
-The 2nd adds actual the asymmetrical packing infrastructure.  
-The 3rd adds the powerpc specific hooks for POWER7.
-The 4th and 5th are fixes required for packing to work.
+With SMT4 however, power will be 1178/4, hence capacity will end up as
+0.
+
+Fix this by ensuring capacity is always at least 1 after this
+calculation.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+I'm not sure this is the correct fix but this works for me.  
+Original post here: 
+  http://lkml.org/lkml/2010/3/30/884
+
+---
+
+ kernel/sched_fair.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-ozlabs/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-ozlabs.orig/kernel/sched_fair.c
++++ linux-2.6-ozlabs/kernel/sched_fair.c
+@@ -1482,6 +1482,7 @@ static int select_task_rq_fair(struct ta
+ 			}
+ 
+ 			capacity = DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
++			capacity = max(capacity, 1UL);
+ 
+ 			if (tmp->flags & SD_POWERSAVINGS_BALANCE)
+ 				nr_running /= 2;
+@@ -2488,6 +2489,7 @@ static inline void update_sg_lb_stats(st
+ 
+ 	sgs->group_capacity =
+ 		DIV_ROUND_CLOSEST(group->cpu_power, SCHED_LOAD_SCALE);
++	sgs->group_capacity = max(sgs->group_capacity, 1UL);
+ }
+ 
+ /**
+@@ -2795,9 +2797,11 @@ find_busiest_queue(struct sched_group *g
+ 
+ 	for_each_cpu(i, sched_group_cpus(group)) {
+ 		unsigned long power = power_of(i);
+-		unsigned long capacity = DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
++		unsigned long capacity;
+ 		unsigned long wl;
+ 
++		capacity = max(DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE), 1UL);
++
+ 		if (!cpumask_test_cpu(i, cpus))
+ 			continue;
+ 
