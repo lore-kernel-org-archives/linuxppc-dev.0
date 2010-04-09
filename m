@@ -1,15 +1,14 @@
-Return-Path: <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Fri, 09 Apr 2010 16:21:18 +1000
-Subject: [PATCH 4/5] sched: Mark the balance type for use in
-	need_active_balance()
-In-Reply-To: <1270794078.794237.347827867455.qpush@pale>
-Message-Id: <20100409062119.040B0CBB6F@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	Suresh Siddha <suresh.b.siddha@intel.com>
+Return-Path: <michael.neuling@au1.ibm.com>
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+Subject: Re: [PATCH 3/5] powerpc: enabled asymmetric SMT scheduling on POWER7
+In-reply-to: <20100409062118.F04B4CBB70@localhost.localdomain>
+References: <20100409062118.F04B4CBB70@localhost.localdomain>
+Date: Fri, 09 Apr 2010 16:48:48 +1000
+Message-ID: <16221.1270795728@neuling.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,113 +18,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-need_active_balance() gates the asymmetric packing based due to power
-save logic, but for packing we don't care.
 
-This marks the type of balanace we are attempting to do perform from
-f_b_g() and stops need_active_balance() power save logic gating a
-balance in the asymmetric packing case.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+In message <20100409062118.F04B4CBB70@localhost.localdomain> you wrote:
+> The POWER7 core has dynamic SMT mode switching which is controlled by
+> the hypervisor.  There are 3 SMT modes:
+> 	SMT1 uses thread  0
+> 	SMT2 uses threads 0 & 1
+> 	SMT4 uses threads 0, 1, 2 & 3
+> When in any particular SMT mode, all threads have the same performance
+> as each other (ie. at any moment in time, all threads perform the same).  
+> 
+> The SMT mode switching works such that when linux has threads 2 & 3 idle
+> and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
+> idle loop and the hypervisor will automatically switch to SMT2 for that
+> core (independent of other cores).  The opposite is not true, so if
+> threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+> 
+> Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
+> into SMT1 mode.  
+> 
+> If we can get the core into a lower SMT mode (SMT1 is best), the threads
+> will perform better (since they share less core resources).  Hence when
+> we have idle threads, we want them to be the higher ones.
+> 
+> This adds a feature bit for asymmetric packing to powerpc and then
+> enables it on POWER7. 
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> ---
+> 
+>  arch/powerpc/include/asm/cputable.h |    3 ++-
+>  arch/powerpc/kernel/process.c       |   13 +++++++++++++
+>  2 files changed, 15 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/cputable.h
+> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
+> @@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
+>  #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
+>  #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
+>  #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
+> +#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0100000000000000)
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
+>  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+>  	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+>  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+> -	    CPU_FTR_DSCR | CPU_FTR_SAO)
+> +	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT)
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/process.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/process.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/process.c
+> @@ -1265,3 +1265,16 @@ unsigned long randomize_et_dyn(unsigned 
+>  
+>  	return ret;
+>  }
+> +
+> +unsigned char asym_smt_print = 1;
+> +int arch_sd_sibiling_asym_packing(void)
+> +{
+> +	if (cpu_has_feature(CPU_FTR_ASYM_SMT)){
+> +		if (asym_smt_print) {
+> +			pr_info("Enabling Asymetric SMT scheduling\n");
+> +			asym_smt_print = 0;
+> +		}
 
----
+Oops...  before anyone else laughs at me, I'm changing this to use
+printk_once.
 
- kernel/sched_fair.c |   24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
+Mikey
 
-Index: linux-2.6-ozlabs/kernel/sched_fair.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/sched_fair.c
-+++ linux-2.6-ozlabs/kernel/sched_fair.c
-@@ -91,6 +91,13 @@ const_debug unsigned int sysctl_sched_mi
- 
- static const struct sched_class fair_sched_class;
- 
-+enum balance_type {
-+	BALANCE_NONE = 0,
-+	BALANCE_LOAD,
-+	BALANCE_POWER,
-+	BALANCE_PACKING
-+};
-+
- /**************************************************************
-  * CFS operations on generic schedulable entities:
-  */
-@@ -2783,7 +2790,8 @@ static inline void calculate_imbalance(s
- static struct sched_group *
- find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		   unsigned long *imbalance, enum cpu_idle_type idle,
--		   int *sd_idle, const struct cpumask *cpus, int *balance)
-+		   int *sd_idle, const struct cpumask *cpus, int *balance,
-+		   enum balance_type *bt)
- {
- 	struct sd_lb_stats sds;
- 
-@@ -2808,6 +2816,7 @@ find_busiest_group(struct sched_domain *
- 	if (!(*balance))
- 		goto ret;
- 
-+	*bt = BALANCE_PACKING;
- 	if ((idle == CPU_IDLE || idle == CPU_NEWLY_IDLE) &&
- 	    check_asym_packing(sd, &sds, this_cpu, imbalance))
- 		return sds.busiest;
-@@ -2828,6 +2837,7 @@ find_busiest_group(struct sched_domain *
- 
- 	/* Looks like there is an imbalance. Compute it */
- 	calculate_imbalance(&sds, this_cpu, imbalance);
-+	*bt = BALANCE_LOAD;
- 	return sds.busiest;
- 
- out_balanced:
-@@ -2835,10 +2845,12 @@ out_balanced:
- 	 * There is no obvious imbalance. But check if we can do some balancing
- 	 * to save power.
- 	 */
-+	*bt = BALANCE_POWER;
- 	if (check_power_save_busiest_group(&sds, this_cpu, imbalance))
- 		return sds.busiest;
- ret:
- 	*imbalance = 0;
-+	*bt = BALANCE_NONE;
- 	return NULL;
- }
- 
-@@ -2899,9 +2911,10 @@ find_busiest_queue(struct sched_group *g
- /* Working cpumask for load_balance and load_balance_newidle. */
- static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
- 
--static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle)
-+static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle,
-+			       enum balance_type *bt)
- {
--	if (idle == CPU_NEWLY_IDLE) {
-+	if (idle == CPU_NEWLY_IDLE && *bt != BALANCE_PACKING) {
- 		/*
- 		 * The only task running in a non-idle cpu can be moved to this
- 		 * cpu in an attempt to completely freeup the other CPU
-@@ -2946,6 +2959,7 @@ static int load_balance(int this_cpu, st
- 	struct rq *busiest;
- 	unsigned long flags;
- 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
-+	enum balance_type bt;
- 
- 	cpumask_copy(cpus, cpu_active_mask);
- 
-@@ -2964,7 +2978,7 @@ static int load_balance(int this_cpu, st
- redo:
- 	update_shares(sd);
- 	group = find_busiest_group(sd, this_cpu, &imbalance, idle, &sd_idle,
--				   cpus, balance);
-+				   cpus, balance, &bt);
- 
- 	if (*balance == 0)
- 		goto out_balanced;
-@@ -3018,7 +3032,7 @@ redo:
- 		schedstat_inc(sd, lb_failed[idle]);
- 		sd->nr_balance_failed++;
- 
--		if (need_active_balance(sd, sd_idle, idle)) {
-+		if (need_active_balance(sd, sd_idle, idle, &bt)) {
- 			raw_spin_lock_irqsave(&busiest->lock, flags);
- 
- 			/* don't kick the migration_thread, if the curr
+> +		return SD_ASYM_PACKING;
+> +	}
+> +	return 0;
+> +}
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
