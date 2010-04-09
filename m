@@ -1,22 +1,17 @@
-Return-Path: <SSparks@aclara.com>
-Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 02523B7CF5
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 05:20:16 +1000 (EST)
-Received: from mail145-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail145-tx2-R.bigfish.com (Postfix) with ESMTP id A84281480F7	for
-	<linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 19:05:07 +0000 (UTC)
-Received: from TX2EHSMHS036.bigfish.com (unknown [10.9.14.251])	by
-	mail145-tx2.bigfish.com (Postfix) with ESMTP id 36528A00342	for
-	<linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 18:40:23 +0000 (UTC)
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 73C58B7CFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 05:22:01 +1000 (EST)
+Received: by pwi8 with SMTP id 8so2983863pwi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 Apr 2010 12:22:00 -0700 (PDT)
+Message-ID: <4BBF7E9C.80604@billgatliff.com>
+Date: Fri, 09 Apr 2010 14:23:08 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: Upgrade to 2.6.26 results in Oops during request_irq
-Date: Fri, 9 Apr 2010 13:39:44 -0500
-Message-ID: <6011A7C9CD0EE74792C3ED2A8355608601707849@mail.twacs.com>
-In-Reply-To: <6011A7C9CD0EE74792C3ED2A83556086B67190@mail.twacs.com>
-References: <6011A7C9CD0EE74792C3ED2A83556086B67190@mail.twacs.com>
-From: "Sparks, Sam" <SSparks@aclara.com>
-To: <linuxppc-dev@ozlabs.org>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-embedded <linux-embedded@vger.kernel.org>
+Subject: A better way to sequence driver initialization?
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,90 +21,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->-----Original Message-----
->From: Sparks, Sam
->Sent: Thursday, April 08, 2010 4:15 PM
+Guys:
 
-In the interest of making it easier for someone to help, I've been able
-to replicate the problem with the following minimal kernel module:
 
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/module.h>
+My recent post, "Requesting a GPIO that hasn't been registered yet", and
+Anton's reply thereto (thanks, Anton!) on linuxppc-dev got me thinking
+about the problem of dependencies between devices in different  classes,
+and/or between drivers/devices in general.  I'd like to float an idea to
+see if it's worth pursuing.
 
-static unsigned int cpld_virq =3D NO_IRQ;
-unsigned value =3D 0xdeadbeef;
+Changing the link order to get drivers to initialize in the right order
+will always be a problem for someone--- the order will be right for some
+people, but exactly wrong for others.  And the problem is made worse for
+Device Tree-based systems, where just about everything including IRQ
+descriptors are created on a demand and/or as-available basis.  What if
+we let the kernel sort those dependencies out for us, at runtime?  I
+think it's possible, and I can't be the only one who would like to see
+this happen.
 
-static irqreturn_t cpld_isr(int irq, void *dev_id) {
-    return IRQ_HANDLED;
-}
+There are two parts to my idea for a solution.  First part is to modify
+do_initcalls() so that it launches each initcall function in its own
+kernel thread.  Wait, don't panic yet!
 
-void __exit cpld_cleanup(void) {
-    irq_dispose_mapping(cpld_virq);
-    return;
-}
+Second, we create/modify functions like gpio_request() so that if they
+fail, they can optionally stop in a wait queue until the call could
+succeed.  Then gpiochip_add() would signal that queue each time a new
+gpiochip was added. Functions like request_irq() and clk_get()--- and
+probably many others--- would do the same thing, but with their own wait
+queues.
 
-int __init cpld_init(void) {
-    int retval;
-    unsigned long cpld_interrupt =3D 23;
+Something like this:
 
-    cpld_virq =3D irq_create_mapping(NULL, cpld_interrupt);
-    if (cpld_virq =3D=3D NO_IRQ) {
-        printk(KERN_ERR "Could not map HW IRQ %lu\n", cpld_interrupt);
-        return -EBUSY;
+    static wait_queue_head_t requestor_wq;
+
+    int gpiochip_add(struct gpio_chip *chip)
+    {
+        ...
+        wake_up_interruptible(&requestor_wq);
+        return status;
     }
 
-    retval =3D  request_irq(cpld_virq, cpld_isr,
-            IRQF_DISABLED | IRQF_SHARED | IRQF_TRIGGER_FALLING,
-            "CPLD", &value);
-    if (retval) {
-        irq_dispose_mapping(cpld_virq);
-        return retval;
+    int gpio_request_wait(unsigned gpio, const char *label)
+    {
+        return wait_event_interruptible(&requestor_wq,
+!gpio_request(gpio, label));
     }
 
-    return 0;
-}
 
-module_init(cpld_init);
-module_exit(cpld_cleanup);
-MODULE_LICENSE("Dual BSD/GPL");
+Or we might want to make the above code be the actual gpio_request(),
+and bury the wait_event_interruptible() inside of that.  Doing so would
+prevent having to touch a lot of code, but would definitely change the
+behavior of gpio_request().  Not sure which approach is best.
 
-It builds fine, but still gives me the same error when inserted into the
-kernel:
+Finally, I think that do_initcalls() would turn into something like this:
 
-# insmod /tmp/cpld.ko
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0x00000000
-Oops: Kernel access of bad area, sig: 11 [#1]
-PREEMPT SCPA-G2
-Modules linked in: cpld(+) [last unloaded: immr]
-NIP: 00000000 LR: c004bab8 CTR: 00000000
-REGS: dfb13df0 TRAP: 0400   Not tainted  (2.6.26-twacs-100.0.0)
-MSR: 20001032 <ME,IR,DR>  CR: 24244422  XER: 20000000
-TASK =3D df8b6c00[559] 'insmod' THREAD: dfb12000
-GPR00: 00000000 dfb13ea0 df8b6c00 00000017 00000001 00000001 00000000
-c02d1fb4
-GPR08: 0000361a 00000000 00000000 00000000 44244484 10073f68 1ffcb000
-007ffeb0
-GPR16: 00000000 00000000 00800000 00000000 bffff7f0 00000000 1006e3dc
-00000000
-GPR24: 00000002 20000000 00000000 00009032 df9da620 dfb12000 c02d40e4
-00000017
-NIP [00000000] 0x0
-LR [c004bab8] setup_irq+0x4e0/0x510
-Call Trace:
-[dfb13ea0] [c004ba70] setup_irq+0x498/0x510 (unreliable)
-[dfb13ed0] [c004bd64] request_irq+0xe0/0x130
-[dfb13f00] [e107804c] cpld_init+0x4c/0xe8 [cpld]
-[dfb13f10] [c0048c4c] sys_init_module+0x14c/0x1d8
-[dfb13f40] [c0010008] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff27bb0
-    LR =3D 0x10019ca8
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-Kernel panic - not syncing: Fatal exception
+    static void __init do_initcalls(void)
+    {
+            initcall_t *fn;
 
-Please let me know if I should be providing some additional information.
-Thanks,
-Sam
+            for (fn = __early_initcall_end; fn < __initcall_end; fn++)
+                    kthread_create(do_one_initcall, *fn, "do_initcalls");
+
+            flush_scheduled_work();
+    }
+
+
+If someone doesn't tell me this is a stupid idea, I might post it to
+lkml.  Now's your chance!  :)
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
