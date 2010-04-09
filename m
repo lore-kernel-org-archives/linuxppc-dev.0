@@ -1,20 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 49856B7D00
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Apr 2010 15:44:07 +1000 (EST)
-Subject: Re: Ethernet support missing p1020rdb.dts
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4BBDB59C.4050402@embedded-sol.com>
-Date: Fri, 9 Apr 2010 00:43:50 -0500
-Message-Id: <972C2D0A-EE3F-4183-998C-E1763D46DBE4@kernel.crashing.org>
-References: <4BBDB59C.4050402@embedded-sol.com>
-To: Felix Radensky <felix@embedded-sol.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>
+Return-Path: <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Fri, 09 Apr 2010 16:21:18 +1000
+Subject: [PATCH 0/5] sched: asymmetrical packing for POWER7 SMT4
+Message-Id: <1270794078.794237.347827867455.qpush@pale>
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	Suresh Siddha <suresh.b.siddha@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +17,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch series implements asymmetric SMT packing which ensures
+consistently good performance on POWER7.  
 
-On Apr 8, 2010, at 5:53 AM, Felix Radensky wrote:
+I'm no scheduler expert so these probably need some review.  It works
+for my simple test case on a POWER7 with SMT4.  I can now run a number
+of CPU bound processes and they are pulled down to lower threads
+giving the best performance consistently. 
 
-> Hi,
->=20
-> I've just noticed that ethernet nodes are missing in p1020rdb device =
-tree.
-> Are there any known problems with ethernet controllers on p1020rdb ?
+Suresh: some of this touches code you changed recently, so you may
+want to test in your environment.
 
-I'd say its not problems, its support for the newer controller on =
-p1020rdb.  At the time the .dts the kernel didn't have support.  I'm not =
-100% clear on its current state.
-
-- k=
+The 1st patch is a fix for SMT4 in general.
+The 2nd adds actual the asymmetrical packing infrastructure.  
+The 3rd adds the powerpc specific hooks for POWER7.
+The 4th and 5th are fixes required for packing to work.
