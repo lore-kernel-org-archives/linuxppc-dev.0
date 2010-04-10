@@ -1,19 +1,21 @@
-Return-Path: <csdncannon@gmail.com>
-Received: from mail-pz0-f195.google.com (mail-pz0-f195.google.com
-	[209.85.222.195]) by ozlabs.org (Postfix) with ESMTP id BD616B7CF5
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 13:14:10 +1000 (EST)
-Received: by pzk33 with SMTP id 33so3240888pzk.17
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Apr 2010 20:14:09 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f196.google.com (mail-yw0-f196.google.com
+	[209.85.211.196]) by ozlabs.org (Postfix) with ESMTP id 4D882B7D55
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 15:30:03 +1000 (EST)
+Received: by ywh34 with SMTP id 34so2087243ywh.17
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 Apr 2010 22:30:02 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
-References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
-Date: Sat, 10 Apr 2010 11:14:09 +0800
-Message-ID: <o2y43c137a81004092014z1511cecdxb7154825dc07b49f@mail.gmail.com>
-Subject: Re: Continual reading from the PowerPc time base register is not
-	stable
-From: Csdncannon <csdncannon@gmail.com>
-To: linuxppc-dev@ozlabs.org, zhouminggang@hotmail.com
-Content-Type: multipart/mixed; boundary=0016e64dc98629d4840483d94ea3
+Sender: glikely@secretlab.ca
+In-Reply-To: <4BBF7E9C.80604@billgatliff.com>
+References: <4BBF7E9C.80604@billgatliff.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 9 Apr 2010 23:29:42 -0600
+Message-ID: <i2zfa686aa41004092229l97b83ebdqba6aece45419dc0@mail.gmail.com>
+Subject: Re: A better way to sequence driver initialization?
+To: Bill Gatliff <bgat@billgatliff.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-embedded <linux-embedded@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,105 +25,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e64dc98629d4840483d94ea3
-Content-Type: multipart/alternative; boundary=0016e64dc98629d47a0483d94ea1
-
---0016e64dc98629d47a0483d94ea1
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-Sorry, I attached the wrong log, this attachment is the right one.
-
-
-2010/3/25 Csdncannon <csdncannon@gmail.com>
-
->          In my program, the value of the 64-bit time base register is rea=
-d
-> out, and you will find the later value is even smaller than the earlier
-> value from the log =93log_timebase=94. While the kernel depends on the ac=
-curacy
-> of the timebase for the compensation of the lost PIT interrupt, the negat=
-ive
-> value between two continual timebase reading will bring to the jump of th=
-e
-> jiffies. And this timebase problem will bring to the instability of the
-> gettimeofday system call.
->
->          Do you have any idea about this problem, thanks for your any
-> advice. Attached is the code and log.
+On Fri, Apr 9, 2010 at 1:23 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> Guys:
 >
 >
-> Thanks
+> My recent post, "Requesting a GPIO that hasn't been registered yet", and
+> Anton's reply thereto (thanks, Anton!) on linuxppc-dev got me thinking
+> about the problem of dependencies between devices in different =A0classes=
+,
+> and/or between drivers/devices in general. =A0I'd like to float an idea t=
+o
+> see if it's worth pursuing.
 >
-> Gino
+> Changing the link order to get drivers to initialize in the right order
+> will always be a problem for someone--- the order will be right for some
+> people, but exactly wrong for others. =A0And the problem is made worse fo=
+r
+> Device Tree-based systems, where just about everything including IRQ
+> descriptors are created on a demand and/or as-available basis. =A0What if
+> we let the kernel sort those dependencies out for us, at runtime? =A0I
+> think it's possible, and I can't be the only one who would like to see
+> this happen.
+>
+> There are two parts to my idea for a solution. =A0First part is to modify
+> do_initcalls() so that it launches each initcall function in its own
+> kernel thread. =A0Wait, don't panic yet!
+
+Is initcall the right granularity?  Shouldn't it be that each .probe()
+hook gets its own thread?  Otherwise one device missing its resources
+could block another device using the same driver (whose resources are
+available) from probing.  Regardless, parallel probe has be attempted
+and failed before.  There are lots of fiddly bits to get right.
+
+In fact, there *used* to be code in the kernel that does exactly that.
+ It was put in 2.6.20, but removed in 2.6.21-rc1.  Here's the relevant
+commits, and a very interesting thread discussing the issues:
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D21c7f30b1d3f8a3de3128478daca3ce203fc8733
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D5adc55da4a7758021bcc374904b0f8b076508a11
+http://lkml.indiana.edu/hypermail/linux/kernel/0705.1/0205.html
+
+It is pointed out in that thread that a big part of the problem is
+that a large number of drivers in the tree just aren't safe for
+multithreaded probing which is kind of a showstopper.  Now, maybe
+doing it at the initcall level makes it less scary and more sane, but
+I suspect that it will still expose a lot of broken code that assumes
+things are already set up because it has always been that way.
+
+> Second, we create/modify functions like gpio_request() so that if they
+> fail, they can optionally stop in a wait queue until the call could
+> succeed. =A0Then gpiochip_add() would signal that queue each time a new
+> gpiochip was added. Functions like request_irq() and clk_get()--- and
+> probably many others--- would do the same thing, but with their own wait
+> queues.
+
+You could take a look at the bus notifier code too.  I made an attempt
+at solving a similar problem between Ethernet MAC drivers and binding
+against the correct phy.  I ended up solving the problem in a
+different way, but the experimenting I did convince me that it is a
+viable concept.
+
+Basically, if the driver depends on another resource/device then it
+can register a callback to be notified when a new device becomes
+available.  Once the needed device shows up (or immediately if the
+device is already there), the driver gets called back and it can
+complete registration.
+
+Not quite the same model that you are talking about here, but it would
+solve the problem on a per-driver basis.
+
+> Something like this:
+>
+> =A0 =A0static wait_queue_head_t requestor_wq;
+>
+> =A0 =A0int gpiochip_add(struct gpio_chip *chip)
+> =A0 =A0{
+> =A0 =A0 =A0 =A0...
+> =A0 =A0 =A0 =A0wake_up_interruptible(&requestor_wq);
+> =A0 =A0 =A0 =A0return status;
+> =A0 =A0}
+>
+> =A0 =A0int gpio_request_wait(unsigned gpio, const char *label)
+> =A0 =A0{
+> =A0 =A0 =A0 =A0return wait_event_interruptible(&requestor_wq,
+> !gpio_request(gpio, label));
+> =A0 =A0}
 >
 >
+> Or we might want to make the above code be the actual gpio_request(),
+> and bury the wait_event_interruptible() inside of that. =A0Doing so would
+> prevent having to touch a lot of code, but would definitely change the
+> behavior of gpio_request(). =A0Not sure which approach is best.
+>
+> Finally, I think that do_initcalls() would turn into something like this:
+>
+> =A0 =A0static void __init do_initcalls(void)
+> =A0 =A0{
+> =A0 =A0 =A0 =A0 =A0 =A0initcall_t *fn;
+>
+> =A0 =A0 =A0 =A0 =A0 =A0for (fn =3D __early_initcall_end; fn < __initcall_=
+end; fn++)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0kthread_create(do_one_initcall, *f=
+n, "do_initcalls");
+>
+> =A0 =A0 =A0 =A0 =A0 =A0flush_scheduled_work();
+> =A0 =A0}
 >
 >
+> If someone doesn't tell me this is a stupid idea, I might post it to
+> lkml. =A0Now's your chance! =A0:)
 
---0016e64dc98629d47a0483d94ea1
-Content-Type: text/html; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Have you dug into the Arjan's asynchronous function call infrastructure?
 
-Sorry, I attached the wrong log, this attachment is the right one.<br><br><=
-br><div class=3D"gmail_quote">2010/3/25 Csdncannon <span dir=3D"ltr">&lt;<a=
- href=3D"mailto:csdncannon@gmail.com">csdncannon@gmail.com</a>&gt;</span><b=
-r><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204=
-, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+http://lwn.net/Articles/314808/
 
-<p class=3D"MsoNormal"><font color=3D"navy" face=3D"Arial" size=3D"4"><span=
- style=3D"color: navy; font-family: Arial;" lang=3D"EN-US">=A0=A0=A0=A0=A0=
-=A0=A0=A0 In my program, the value of the 64-bit time base register is read=
- out, and you=20
-will find the later value is even smaller than the earlier value from the l=
-og=20
-=93log_timebase=94. While the kernel depends on the accuracy of the timebas=
-e for the=20
-compensation of the lost PIT interrupt, the negative value between two cont=
-inual=20
-timebase reading will bring to the jump of the jiffies. And this timebase=
-=20
-problem will bring to the instability of the gettimeofday system call.</spa=
-n></font></p><p class=3D"MsoNormal"><font color=3D"navy"><font size=3D"4"><=
-font face=3D"Arial">=A0=A0=A0=A0=A0=A0=A0=A0 Do you have any idea about thi=
-s problem, thanks for your any advice. Attached is the code and log.</font>=
-</font></font></p>
-
-<p class=3D"MsoNormal"><br></p><p class=3D"MsoNormal">Thanks</p><p class=3D=
-"MsoNormal">Gino<br><font color=3D"navy" face=3D"Arial" size=3D"4"><span st=
-yle=3D"color: navy; font-family: Arial;" lang=3D"EN-US"></span></font></p><=
-p class=3D"MsoNormal">
-
-<br><font color=3D"navy" face=3D"Arial" size=3D"1"><span style=3D"font-size=
-: 9pt; color: navy; font-family: Arial;" lang=3D"EN-US"></span></font></p>
-<p class=3D"MsoNormal"><font color=3D"navy" face=3D"Arial" size=3D"1"><span=
- style=3D"font-size: 9pt; color: navy; font-family: Arial;" lang=3D"EN-US">=
-=A0</span></font></p>
-</blockquote></div><br>
-
---0016e64dc98629d47a0483d94ea1--
-
---0016e64dc98629d4840483d94ea3
-Content-Type: application/octet-stream; name="gettime.log"
-Content-Disposition: attachment; filename="gettime.log"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g7tuqcps2
-
-cm9vdEB0bGFiODM3ODovcm9vdD4gL21udC9zZXJ2ZXIvR2luby9nZXR0aW1lDQogMTI3MDU0MDc0
-NCAsICAgMTI3MDU0MDc0NA0KRmFpbGVkIDogdGltZW91dCAxMjcwNTQwNzQ5ICwgbm93IDEyNzA1
-NTgzNDENClNlcmlvdXMgOiB0aW1lb3V0IDEyNzA1NTgzNDEgLCBub3cgMTI3MDU0MDc0OQ0KIDEy
-NzA1NDA3NTUgLCAgIDEyNzA1NDA3NTUNCiAxMjcwNTQwNzY1ICwgICAxMjcwNTQwNzY1DQpGYWls
-ZWQgOiB0aW1lb3V0IDEyNzA1NDA3NzQgLCBub3cgMTI3MDU1ODM2Ng0KU2VyaW91cyA6IHRpbWVv
-dXQgMTI3MDU1ODM2NiAsIG5vdyAxMjcwNTQwNzc0DQogMTI3MDU0MDc3NSAsICAgMTI3MDU0MDc3
-NQ0KIDEyNzA1NDA3ODYgLCAgIDEyNzA1NDA3ODYNCiAxMjcwNTQwNzk2ICwgICAxMjcwNTQwNzk2
-DQpGYWlsZWQgOiB0aW1lb3V0IDEyNzA1NDA4MDIgLCBub3cgMTI3MDU1ODM5NA0KU2VyaW91cyA6
-IHRpbWVvdXQgMTI3MDU1ODM5NCAsIG5vdyAxMjcwNTQwODAyDQpGYWlsZWQgOiB0aW1lb3V0IDEy
-NzA1NDA4MDMgLCBub3cgMTI3MDU1ODM5NQ0KU2VyaW91cyA6IHRpbWVvdXQgMTI3MDU1ODM5NSAs
-IG5vdyAxMjcwNTQwODAzDQogMTI3MDU0MDgwNiAsICAgMTI3MDU0MDgwNg0KRmFpbGVkIDogdGlt
-ZW91dCAxMjcwNTQwODE0ICwgbm93IDEyNzA1NTg0MDYNClNlcmlvdXMgOiB0aW1lb3V0IDEyNzA1
-NTg0MDYgLCBub3cgMTI3MDU0MDgxNA0KIDEyNzA1NDA4MTYgLCAgIDEyNzA1NDA4MTYNCiAxMjcw
-NTQwODI3ICwgICAxMjcwNTQwODI3DQogMTI3MDU0MDgzNyAsICAgMTI3MDU0MDgzNw0KIDEyNzA1
-NDA4NDcgLCAgIDEyNzA1NDA4NDcNCkZhaWxlZCA6IHRpbWVvdXQgMTI3MDU0MDg1NSAsIG5vdyAx
-MjcwNTU4NDQ3DQpTZXJpb3VzIDogdGltZW91dCAxMjcwNTU4NDQ3ICwgbm93IDEyNzA1NDA4NTUN
-CiAxMjcwNTQwODU4ICwgICAxMjcwNTQwODU4
---0016e64dc98629d4840483d94ea3--
+g.
