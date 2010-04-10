@@ -1,21 +1,26 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 393ACB7D18
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 23:55:07 +1000 (EST)
-Received: by gwb11 with SMTP id 11so1769302gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 06:55:06 -0700 (PDT)
-Message-ID: <4BC08381.20805@billgatliff.com>
-Date: Sat, 10 Apr 2010 08:56:17 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <BATV+5b9f2ea52e712abc7935+2421+infradead.org+mchehab@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C8F57B7D17
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 03:13:18 +1000 (EST)
+Message-ID: <4BC0B191.9040703@infradead.org>
+Date: Sat, 10 Apr 2010 14:12:49 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: A better way to sequence driver initialization?
-References: <4BBF7E9C.80604@billgatliff.com>
-	<i2zfa686aa41004092229l97b83ebdqba6aece45419dc0@mail.gmail.com>
-In-Reply-To: <i2zfa686aa41004092229l97b83ebdqba6aece45419dc0@mail.gmail.com>
+To: Mike Isely <isely@isely.net>
+Subject: Re: [PATCH] device_attributes: add sysfs_attr_init() for dynamic
+	attributes
+References: <1269238878-991-1-git-send-email-w.sang@pengutronix.de>
+	<alpine.DEB.1.10.1004101154480.5518@ivanova.isely.net>
+In-Reply-To: <alpine.DEB.1.10.1004101154480.5518@ivanova.isely.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	linux-embedded <linux-embedded@vger.kernel.org>
+Cc: platform-driver-x86@vger.kernel.org,
+	Sujith Thomas <sujith.thomas@intel.com>,
+	Greg KH <gregkh@suse.de>, kernel-janitors@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+	linux-media@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,81 +30,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On Fri, Apr 9, 2010 at 1:23 PM, Bill Gatliff <bgat@billgatliff.com> wrote:
->   
->> Guys:
+Mike Isely wrote:
+> Acked-By: Mike Isely <isely@pobox.com>
+> 
+> (in the context of the pvrusb2 driver related changes)
+
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+> 
+>   -Mike
+> 
+> On Mon, 22 Mar 2010, Wolfram Sang wrote:
+> 
+>> Made necessary by 6992f5334995af474c2b58d010d08bc597f0f2fe.
 >>
+>> Found by this semantic patch:
 >>
->> My recent post, "Requesting a GPIO that hasn't been registered yet", and
->> Anton's reply thereto (thanks, Anton!) on linuxppc-dev got me thinking
->> about the problem of dependencies between devices in different  classes,
->> and/or between drivers/devices in general.  I'd like to float an idea to
->> see if it's worth pursuing.
+>> @ init @
+>> type T;
+>> identifier A;
+>> @@
 >>
->> Changing the link order to get drivers to initialize in the right order
->> will always be a problem for someone--- the order will be right for some
->> people, but exactly wrong for others.  And the problem is made worse for
->> Device Tree-based systems, where just about everything including IRQ
->> descriptors are created on a demand and/or as-available basis.  What if
->> we let the kernel sort those dependencies out for us, at runtime?  I
->> think it's possible, and I can't be the only one who would like to see
->> this happen.
+>>         T {
+>>                 ...
+>>                 struct device_attribute A;
+>>                 ...
+>>         };
 >>
->> There are two parts to my idea for a solution.  First part is to modify
->> do_initcalls() so that it launches each initcall function in its own
->> kernel thread.  Wait, don't panic yet!
->>     
->
-> Is initcall the right granularity?  Shouldn't it be that each .probe()
-> hook gets its own thread?  Otherwise one device missing its resources
-> could block another device using the same driver (whose resources are
-> available) from probing.
+>> @ main extends init @
+>> expression E;
+>> statement S;
+>> identifier err;
+>> T *name;
+>> @@
+>>
+>>         ... when != sysfs_attr_init(&name->A.attr);
+>> (
+>> +       sysfs_attr_init(&name->A.attr);
+>>         if (device_create_file(E, &name->A))
+>>                 S
+>> |
+>> +       sysfs_attr_init(&name->A.attr);
+>>         err = device_create_file(E, &name->A);
+>> )
+>>
+>> While reviewing, I put the initialization to apropriate places.
+>>
+>> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+>> Cc: Eric W. Biederman <ebiederm@xmission.com>
+>> Cc: Greg KH <gregkh@suse.de>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Mike Isely <isely@pobox.com>
+>> Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+>> Cc: Sujith Thomas <sujith.thomas@intel.com>
+>> Cc: Matthew Garrett <mjg@redhat.com>
+>> ---
+>>
+>> The thermal-sys.c-part should fix bugs #15548 and #15584.
+>>
+>>  drivers/macintosh/windfarm_core.c           |    1 +
+>>  drivers/media/video/pvrusb2/pvrusb2-sysfs.c |    8 ++++++++
+>>  drivers/platform/x86/intel_menlow.c         |    1 +
+>>  drivers/thermal/thermal_sys.c               |    1 +
+>>  drivers/video/fsl-diu-fb.c                  |    1 +
+>>  5 files changed, 12 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+>> index 419795f..f447642 100644
+>> --- a/drivers/macintosh/windfarm_core.c
+>> +++ b/drivers/macintosh/windfarm_core.c
+>> @@ -209,6 +209,7 @@ int wf_register_control(struct wf_control *new_ct)
+>>  	kref_init(&new_ct->ref);
+>>  	list_add(&new_ct->link, &wf_controls);
+>>  
+>> +	sysfs_attr_init(&new_ct->attr.attr);
+>>  	new_ct->attr.attr.name = new_ct->name;
+>>  	new_ct->attr.attr.mode = 0644;
+>>  	new_ct->attr.show = wf_show_control;
+>> diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+>> index 6c23456..71f5056 100644
+>> --- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+>> +++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
+>> @@ -423,10 +423,12 @@ static void pvr2_sysfs_add_debugifc(struct pvr2_sysfs *sfp)
+>>  
+>>  	dip = kzalloc(sizeof(*dip),GFP_KERNEL);
+>>  	if (!dip) return;
+>> +	sysfs_attr_init(&dip->attr_debugcmd.attr);
+>>  	dip->attr_debugcmd.attr.name = "debugcmd";
+>>  	dip->attr_debugcmd.attr.mode = S_IRUGO|S_IWUSR|S_IWGRP;
+>>  	dip->attr_debugcmd.show = debugcmd_show;
+>>  	dip->attr_debugcmd.store = debugcmd_store;
+>> +	sysfs_attr_init(&dip->attr_debuginfo.attr);
+>>  	dip->attr_debuginfo.attr.name = "debuginfo";
+>>  	dip->attr_debuginfo.attr.mode = S_IRUGO;
+>>  	dip->attr_debuginfo.show = debuginfo_show;
+>> @@ -644,6 +646,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		return;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_v4l_minor_number.attr);
+>>  	sfp->attr_v4l_minor_number.attr.name = "v4l_minor_number";
+>>  	sfp->attr_v4l_minor_number.attr.mode = S_IRUGO;
+>>  	sfp->attr_v4l_minor_number.show = v4l_minor_number_show;
+>> @@ -658,6 +661,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		sfp->v4l_minor_number_created_ok = !0;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_v4l_radio_minor_number.attr);
+>>  	sfp->attr_v4l_radio_minor_number.attr.name = "v4l_radio_minor_number";
+>>  	sfp->attr_v4l_radio_minor_number.attr.mode = S_IRUGO;
+>>  	sfp->attr_v4l_radio_minor_number.show = v4l_radio_minor_number_show;
+>> @@ -672,6 +676,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		sfp->v4l_radio_minor_number_created_ok = !0;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_unit_number.attr);
+>>  	sfp->attr_unit_number.attr.name = "unit_number";
+>>  	sfp->attr_unit_number.attr.mode = S_IRUGO;
+>>  	sfp->attr_unit_number.show = unit_number_show;
+>> @@ -685,6 +690,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		sfp->unit_number_created_ok = !0;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_bus_info.attr);
+>>  	sfp->attr_bus_info.attr.name = "bus_info_str";
+>>  	sfp->attr_bus_info.attr.mode = S_IRUGO;
+>>  	sfp->attr_bus_info.show = bus_info_show;
+>> @@ -699,6 +705,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		sfp->bus_info_created_ok = !0;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_hdw_name.attr);
+>>  	sfp->attr_hdw_name.attr.name = "device_hardware_type";
+>>  	sfp->attr_hdw_name.attr.mode = S_IRUGO;
+>>  	sfp->attr_hdw_name.show = hdw_name_show;
+>> @@ -713,6 +720,7 @@ static void class_dev_create(struct pvr2_sysfs *sfp,
+>>  		sfp->hdw_name_created_ok = !0;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&sfp->attr_hdw_desc.attr);
+>>  	sfp->attr_hdw_desc.attr.name = "device_hardware_description";
+>>  	sfp->attr_hdw_desc.attr.mode = S_IRUGO;
+>>  	sfp->attr_hdw_desc.show = hdw_desc_show;
+>> diff --git a/drivers/platform/x86/intel_menlow.c b/drivers/platform/x86/intel_menlow.c
+>> index f0a90a6..90ba5d7 100644
+>> --- a/drivers/platform/x86/intel_menlow.c
+>> +++ b/drivers/platform/x86/intel_menlow.c
+>> @@ -396,6 +396,7 @@ static int intel_menlow_add_one_attribute(char *name, int mode, void *show,
+>>  	if (!attr)
+>>  		return -ENOMEM;
+>>  
+>> +	sysfs_attr_init(&attr->attr.attr); /* That's consistent naming :D */
+>>  	attr->attr.attr.name = name;
+>>  	attr->attr.attr.mode = mode;
+>>  	attr->attr.show = show;
+>> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+>> index 5066de5..d4fec47 100644
+>> --- a/drivers/thermal/thermal_sys.c
+>> +++ b/drivers/thermal/thermal_sys.c
+>> @@ -725,6 +725,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+>>  		goto release_idr;
+>>  
+>>  	sprintf(dev->attr_name, "cdev%d_trip_point", dev->id);
+>> +	sysfs_attr_init(&dev->attr.attr);
+>>  	dev->attr.attr.name = dev->attr_name;
+>>  	dev->attr.attr.mode = 0444;
+>>  	dev->attr.show = thermal_cooling_device_trip_point_show;
+>> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+>> index 4637bcb..994358a 100644
+>> --- a/drivers/video/fsl-diu-fb.c
+>> +++ b/drivers/video/fsl-diu-fb.c
+>> @@ -1536,6 +1536,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+>>  		goto error;
+>>  	}
+>>  
+>> +	sysfs_attr_init(&machine_data->dev_attr.attr);
+>>  	machine_data->dev_attr.attr.name = "monitor";
+>>  	machine_data->dev_attr.attr.mode = S_IRUGO|S_IWUSR;
+>>  	machine_data->dev_attr.show = show_monitor;
+>>
+> 
 
-Good point, one that I missed.  Yea, I guess I really want multithreaded
-probing.
-
-> Regardless, parallel probe has be attempted and failed before.  There are lots of fiddly bits to get right.
->   
-
-Yep.  I wasnt aware of any specific attempts before, but I did suspect
-that there were fiddly bits lurking about.  :)
-
-> In fact, there *used* to be code in the kernel that does exactly that.
->  It was put in 2.6.20, but removed in 2.6.21-rc1.  Here's the relevant
-> commits, and a very interesting thread discussing the issues:
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=21c7f30b1d3f8a3de3128478daca3ce203fc8733
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5adc55da4a7758021bcc374904b0f8b076508a11
-> http://lkml.indiana.edu/hypermail/linux/kernel/0705.1/0205.html
->
-> It is pointed out in that thread that a big part of the problem is
-> that a large number of drivers in the tree just aren't safe for
-> multithreaded probing which is kind of a showstopper.  Now, maybe
-> doing it at the initcall level makes it less scary and more sane, but
-> I suspect that it will still expose a lot of broken code that assumes
-> things are already set up because it has always been that way.
->   
-
-Yep.
-
-> Not quite the same model that you are talking about here, but it would
-> solve the problem on a per-driver basis.
->   
-
-Yea, but it's the per-driver part that I'm trying to avoid.
-
-
-> Have you dug into the Arjan's asynchronous function call infrastructure?
->
-> http://lwn.net/Articles/314808/
->   
-
-No, but I think I will now.  :)
-
-
-b.g.
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+
+Cheers,
+Mauro
