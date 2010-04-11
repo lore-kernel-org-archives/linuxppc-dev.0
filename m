@@ -2,23 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85D0FB7D1F
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 17:27:07 +1000 (EST)
-Subject: Re: A better way to sequence driver initialization?
+	by ozlabs.org (Postfix) with ESMTPS id 27578B7D21
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 11 Apr 2010 18:39:39 +1000 (EST)
+Subject: Re: Question regarding the DTLB Miss exceptions
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-In-Reply-To: <4BC12673.2090602@billgatliff.com>
-References: <4BBF7E9C.80604@billgatliff.com>
-	<1270889597.6865.107.camel@pasglop> <4BC07EAD.9020307@billgatliff.com>
-	<20100410233909.GA16099@linux-sh.org>
-	<4BC12673.2090602@billgatliff.com>
+To: Bruce_Leonard@selinc.com
+In-Reply-To: <OFD957C4B7.2DDD66CF-ON882576FF.0069A7B1-882576FF.006B689A@selinc.com>
+References: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>
+	<1270735170.19546.2.camel@concordia>
+	<OFD957C4B7.2DDD66CF-ON882576FF.0069A7B1-882576FF.006B689A@selinc.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 11 Apr 2010 17:26:57 +1000
-Message-ID: <1270970817.6865.127.camel@pasglop>
+Date: Sun, 11 Apr 2010 18:39:11 +1000
+Message-ID: <1270975151.6865.140.camel@pasglop>
 Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	linux-embedded <linux-embedded@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,74 +26,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-04-10 at 20:31 -0500, Bill Gatliff wrote:
-> Right now I'm thinking mostly about GPIO devices which need to register
-> before things like gpio-leds can use them.  Sometimes the GPIO expansion
-> chip of interest is on i2c, other times it's spi, and still others it's
-> a platform or USB device.  Linking the gpio-led driver late helps that
-> specific situation.
+On Thu, 2010-04-08 at 12:33 -0700, Bruce_Leonard@selinc.com wrote:
 
-What it boils down to is that driver A depends on a service provided by
-driver B. At some stage, your dependency -has- to be expressed. Either
-using the device-tree, or by hard wiring a GPIO number, maybe by having
-the platform code figure out the GPIO number and shoving it into a
-platform_data structure, etc... but at -some- point, driver "A" needs
-some kind of "identifier" to the service provided by driver "B". In our
-case, let's say it's a GPIO number.
+(CC'ing Paulus who wrote that code ages ago)
 
-That's when you can start kicking in a simple mechanism for exporting
-services. Let's say the GPIO layer does
+> > 616 DataAddressInvalid:
+> >  617         mfspr   r3,SPRN_SRR1
+> >  618         rlwinm  r1,r3,9,6,6     /* Get load/store bit */
+> >  619         addis   r1,r1,0x2000  
+> >  620         mtspr   SPRN_DSISR,r1
+> > 
+> > Is it trying to set DSISR_ISSTORE?
+> > 
+> > #define   DSISR_ISSTORE         0x02000000      /* access was a store */ 
+>  
+> > 
+> Michael,
+> 
+> Thanks for the reply.
+> 
+> I mean line 619 above.  It's setting 0x20000000 (bit 2) in the DSISR. 
+> 0x02000000 (bit 6 or DSISR_ISSTORE) is already set because it's a DTLB 
+> Data Store Miss Exception.  But 0x20000000 is meaningless for the DSI 
+> Exception about to be called.  According to the data sheet, it's supposed 
+> to be cleared.  Someone wrote code to explicitly set a bit in the DSISR 
+> that has no meaning in the PPC architecture.
 
-	register_service("gpio", gpio_service_query);
+I agree that setting a bit in DSISR is very very fishy... however it
+works and it's not like there was going to be loads of new 603's so I
+assume it's no big deal. As to the meaning of the bits, see below...
 
-With something like
+>   So I assume it's being 
+> overloaded for some purpose, but I can't glean that purpose from the code. 
+>  Equally perplexing to me is the following line of code from the DSI 
+> Exception code:
+> 
+> andis.  r0,r10,0xa470   /* weird error? */
+> 
+> It's checking to see if the following bits of DSISR are set:
+> 0 - set by DTLB miss if no hash table entry group is found
 
-	int gpio_service_query(const char *query_string);
+No. 0 means we hit a direct store segment. This is a historical feature
+of the architecture which we don't use, so should not happen.
 
-Which can parse whatever arguments are passed after the service name and
-return success or failure (or even return a struct device *, whatever,
-this is just a rough sketch).
+> 2 - an invalid bit
 
->From there, you can have for the drivers something like:
+Not sure what 2 is about.
 
-	request_service(const char *name, struct device *myself);
+> 5 - an invalid bit
 
-Which takes a service name of the form "service:args", for example
-"gpio:5" for GPIO #5.
+Nah, that is set on some processors such as 604 when doing a lwarx/stwcx
+with W=1 or such forbidden settings, though I don't remember if it was
+architected back then.
 
-That returns 0 if found, -EAGAIN if not found yet, -EINVAL if rejected
-(the service "gpio" can decide that there cannot be a GPIO 5 on the
-system, whatever) for example. In addition, it would attach "myself" (if
-non-NULL) to an internal list so that later, it's probe() routine can be
-called again.
+> 9 - set if breakpoint match
+> 10 - invalid bit
 
-We then add a way for probe() to return -EAGAIN to put the driver "on
-hold" silently.
+Nah, that is set when missing on segments.
 
-And finally, maybe a way for services to re-run their query (new GPIOs
-were added for example) for all "pending" drivers.
+> 11 - set if the instruction is an ecwix or ecowx and EAR[E] = 0
+>
+> So it's checking to see if three bits not defined by the PPC architecture 
+> are set and calling it a "weird error".  What the heck does that mean, a 
+> "weird error"?
 
-I haven't looked at the flip side here which is service -removal- of
-course. We may get away without dealing with it... tbd.
+Nah. It's a bad name. It means it's an error that is either something we
+don't support (like direct store) or something that doesn't need to go
+through hash_page, such as a breakpoint match.
 
-> But what about when I want to use a pin on a GPIO expansion device as
-> the card-detect for an MMC slot?  Or, as I've just recently noticed in
-> one hardware platform I'm working on, using a pin on a SPI GPIO expander
-> as a chip-select for another SPI device, but through gpiolib? 
-> Eventually, the dependencies don't become circular but changing the link
-> order will break some and fix others.  Ugh.
+I suppose we should probably also test for bit 6 (protection violation)
+since that will always land into do page fault. That would mean removing
+the code to set DIRTY in the hash code and rely on the C code to do it,
+and thus speeding up page faults a bit, but I don't see that as being a
+big deal.
 
-As I said above, at some stage, -somebody- can identify the dependency,
-which ends up being translated into a GPIO number, an OF device path, or
-something .... That should be enough for the above to be made to fit
-no ?
+>   Obviously overloaded bits used for some totally 
+> undocumented purpose that I can't figure out from the code and I'm just 
+> trying to understand what they're used for to see if it's related to my 
+> problem. 
 
-> Definitely, a free-for-all isn't going to work.  But I don't think that
-> having every driver do its own kthread_run() is a solution, either. 
-> I'll keep tinkering.  :) 
-
-I'd rather keep threads out of the picture for now. IE. Leave the
-decision as to do threaded probing or not at a different level.
+I missed the earlier discussion, what is your problem ?
 
 Cheers,
 Ben.
