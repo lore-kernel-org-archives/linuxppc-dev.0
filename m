@@ -1,12 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Subject: Re: [PATCH] fsl_booke: Correct test for MMU_FTR_BIG_PHYS
-In-reply-to: <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org>
-References: <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org>
-Date: Sun, 11 Apr 2010 13:47:36 +1000
-Message-ID: <27522.1270957656@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3D16B7D1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 15:29:45 +1000 (EST)
+Message-ID: <4BC15E42.6090202@embedded-sol.com>
+Date: Sun, 11 Apr 2010 08:29:38 +0300
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Ethernet support missing p1020rdb.dts
+References: <4BBDB59C.4050402@embedded-sol.com>
+	<972C2D0A-EE3F-4183-998C-E1763D46DBE4@kernel.crashing.org>
+In-Reply-To: <972C2D0A-EE3F-4183-998C-E1763D46DBE4@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Aggrwal Poonam-B10812 <B10812@freescale.com>, Sandeep.Kumar@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,52 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org> you w
-rote:
-> The code was looking for this in cpu_features, not mmu_features.  Fix this.
-> 
-> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> ---
->  arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.
-c
-> index c539472..533cae5 100644
-> --- a/arch/powerpc/mm/fsl_booke_mmu.c
-> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-> @@ -116,7 +116,7 @@ void loadcam_entry(int idx)
->  	mtspr(SPRN_MAS2, TLBCAM[idx].MAS2);
->  	mtspr(SPRN_MAS3, TLBCAM[idx].MAS3);
->  
-> -	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
-> +	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
+Hi Kumar,
 
-How about using mmu_has_feature()?
-
->  		mtspr(SPRN_MAS7, TLBCAM[idx].MAS7);
->  
->  	asm volatile("isync;tlbwe;isync" : : : "memory");
-> @@ -152,7 +152,7 @@ static void settlbcam(int index, unsigned long virt, phys
-_addr_t phys,
->  
->  	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
->  	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
-> -	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
-> +	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
-
-Ditto.
-
-Mikey
-
->  		TLBCAM[index].MAS7 = (u64)phys >> 32;
->  
->  #ifndef CONFIG_KGDB /* want user access for breakpoints */
-> -- 
-> 1.6.0.6
-> 
+On 4/9/2010 8:43 AM, Kumar Gala wrote:
+> On Apr 8, 2010, at 5:53 AM, Felix Radensky wrote:
+>
+>   
+>> Hi,
+>>
+>> I've just noticed that ethernet nodes are missing in p1020rdb device tree.
+>> Are there any known problems with ethernet controllers on p1020rdb ?
+>>     
+> I'd say its not problems, its support for the newer controller on p1020rdb.  At the time the .dts the kernel didn't have support.  I'm not 100% clear on its current state.
+>
+> - k
 > _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+>
+>   
+
+AFAICS support for eTSEC2.0 was added by commits 
+46ceb60ca80fa07703bc6eb8f4651f900dff5a82
+and 1d2397d742b7a2b39b2f09dd9da3b9d1463f55e9. Assuming the support is 
+complete, what should
+be changed in ethernet nodes from p2020rdb.dts to support p1020rdb 
+except obvious changes in
+compatible properties ?
+
+I'm going to receive a couple of p1020rdb systems soon, they would be 
+pretty useless without
+a working ethernet.
+
+Thanks.
+
+Felix.
