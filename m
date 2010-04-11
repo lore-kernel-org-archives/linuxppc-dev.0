@@ -1,26 +1,12 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 35D6EB7D18
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 13:29:07 +1000 (EST)
-Received: by gwb11 with SMTP id 11so1954760gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 20:29:06 -0700 (PDT)
-Message-ID: <4BC1424C.8030309@billgatliff.com>
-Date: Sat, 10 Apr 2010 22:30:20 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: A better way to sequence driver initialization?
-References: <4BBF7E9C.80604@billgatliff.com>
-	<1270889597.6865.107.camel@pasglop>
-	<4BC07EAD.9020307@billgatliff.com>
-	<20100410233909.GA16099@linux-sh.org>
-	<k2ufa686aa41004101647md1e8cfbfw85c5b98b9613cd2d@mail.gmail.com>
-	<4BC12701.7000208@billgatliff.com>
-	<20100411014751.GB16099@linux-sh.org>
-In-Reply-To: <20100411014751.GB16099@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-embedded <linux-embedded@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Subject: Re: [PATCH] fsl_booke: Correct test for MMU_FTR_BIG_PHYS
+In-reply-to: <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org>
+References: <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org>
+Date: Sun, 11 Apr 2010 13:47:36 +1000
+Message-ID: <27522.1270957656@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +16,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mundt wrote:
-> In some cases that might be valid, but there are many cases where drivers
-> can reconfigure their capability sets based on which GPIOs are and aren't
-> available. Just because a pin isn't available doesn't make it a
-> show-stopper for the probe path..
->   
+In message <1270844541-11125-1-git-send-email-beckyb@kernel.crashing.org> you w
+rote:
+> The code was looking for this in cpu_features, not mmu_features.  Fix this.
+> 
+> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+> ---
+>  arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.
+c
+> index c539472..533cae5 100644
+> --- a/arch/powerpc/mm/fsl_booke_mmu.c
+> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
+> @@ -116,7 +116,7 @@ void loadcam_entry(int idx)
+>  	mtspr(SPRN_MAS2, TLBCAM[idx].MAS2);
+>  	mtspr(SPRN_MAS3, TLBCAM[idx].MAS3);
+>  
+> -	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
+> +	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
 
-Understood.
+How about using mmu_has_feature()?
 
-I just tweaked my kernel to run all probe()s  in their own kthreads. 
-The results were a mixed bag, as expected.
+>  		mtspr(SPRN_MAS7, TLBCAM[idx].MAS7);
+>  
+>  	asm volatile("isync;tlbwe;isync" : : : "memory");
+> @@ -152,7 +152,7 @@ static void settlbcam(int index, unsigned long virt, phys
+_addr_t phys,
+>  
+>  	TLBCAM[index].MAS3 = (phys & MAS3_RPN) | MAS3_SX | MAS3_SR;
+>  	TLBCAM[index].MAS3 |= ((flags & _PAGE_RW) ? MAS3_SW : 0);
+> -	if (cur_cpu_spec->cpu_features & MMU_FTR_BIG_PHYS)
+> +	if (cur_cpu_spec->mmu_features & MMU_FTR_BIG_PHYS)
 
-On the one hand, it's pretty cool to see everything running in parallel!
+Ditto.
 
-On the other hand, I can see now yet another big reason why a probe
-free-for-all won't work.  Busses are also devices, so there are plenty
-of places where a device for a particular bus type won't be able to
-probe because the target bus simply doesn't exist yet.  That's yet
-another dependency that I hadn't thought about.
+Mikey
 
-Were I to rewrite Linux :), I would make probing parallel from the
-beginning.  But I think I'm going to have to settle for now with
-kthreading my probes that might want to sleep, and adding a wait queue
-to gpio_request() and a few others.  It ain't perfect, but it is
-achieveable.  *sigh*
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
+>  		TLBCAM[index].MAS7 = (u64)phys >> 32;
+>  
+>  #ifndef CONFIG_KGDB /* want user access for breakpoints */
+> -- 
+> 1.6.0.6
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
