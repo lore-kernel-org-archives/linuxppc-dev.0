@@ -1,21 +1,24 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from master.linux-sh.org (124x34x33x190.ap124.ftth.ucom.ne.jp
-	[124.34.33.190]) by ozlabs.org (Postfix) with ESMTP id 8990DB7CF5
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 11:49:32 +1000 (EST)
-Date: Sun, 11 Apr 2010 10:47:51 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 35D6EB7D18
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 13:29:07 +1000 (EST)
+Received: by gwb11 with SMTP id 11so1954760gwb.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Apr 2010 20:29:06 -0700 (PDT)
+Message-ID: <4BC1424C.8030309@billgatliff.com>
+Date: Sat, 10 Apr 2010 22:30:20 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+MIME-Version: 1.0
+To: Paul Mundt <lethal@linux-sh.org>
 Subject: Re: A better way to sequence driver initialization?
-Message-ID: <20100411014751.GB16099@linux-sh.org>
 References: <4BBF7E9C.80604@billgatliff.com>
 	<1270889597.6865.107.camel@pasglop>
 	<4BC07EAD.9020307@billgatliff.com>
 	<20100410233909.GA16099@linux-sh.org>
 	<k2ufa686aa41004101647md1e8cfbfw85c5b98b9613cd2d@mail.gmail.com>
 	<4BC12701.7000208@billgatliff.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BC12701.7000208@billgatliff.com>
+	<20100411014751.GB16099@linux-sh.org>
+In-Reply-To: <20100411014751.GB16099@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-embedded <linux-embedded@vger.kernel.org>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,22 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 10, 2010 at 08:33:53PM -0500, Bill Gatliff wrote:
-> Grant Likely wrote:
-> > On Sat, Apr 10, 2010 at 5:39 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> >   
-> >> In cases where you can specifically note that dependencies, doing so will
-> >> save you a world of pain. Despite that, it's simply not possible to do
-> >> this as a free-for-all. Devices or busses that can tolerate multi-threaded
-> >> probing need to be converted over one at a time, but even then you still
-> >> need the dependency tracking for those that depend on link order today.
-> >>     
-> 
-> Who's to say a function like gpio_request_wait_for_it(GPIO_NUMBER,
-> "dependent-driver") isn't the way to do the dependency tracking?  I
-> can't even implement that without a context that can sleep...
-> 
-In some cases that might be valid, but there are many cases where drivers
-can reconfigure their capability sets based on which GPIOs are and aren't
-available. Just because a pin isn't available doesn't make it a
-show-stopper for the probe path..
+Paul Mundt wrote:
+> In some cases that might be valid, but there are many cases where drivers
+> can reconfigure their capability sets based on which GPIOs are and aren't
+> available. Just because a pin isn't available doesn't make it a
+> show-stopper for the probe path..
+>   
+
+Understood.
+
+I just tweaked my kernel to run all probe()s  in their own kthreads. 
+The results were a mixed bag, as expected.
+
+On the one hand, it's pretty cool to see everything running in parallel!
+
+On the other hand, I can see now yet another big reason why a probe
+free-for-all won't work.  Busses are also devices, so there are plenty
+of places where a device for a particular bus type won't be able to
+probe because the target bus simply doesn't exist yet.  That's yet
+another dependency that I hadn't thought about.
+
+Were I to rewrite Linux :), I would make probing parallel from the
+beginning.  But I think I'm going to have to settle for now with
+kthreading my probes that might want to sleep, and adding a wait queue
+to gpio_request() and a few others.  It ain't perfect, but it is
+achieveable.  *sigh*
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
