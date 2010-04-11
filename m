@@ -1,21 +1,21 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B3D16B7D1B
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 15:29:45 +1000 (EST)
-Message-ID: <4BC15E42.6090202@embedded-sol.com>
-Date: Sun, 11 Apr 2010 08:29:38 +0300
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Ethernet support missing p1020rdb.dts
-References: <4BBDB59C.4050402@embedded-sol.com>
-	<972C2D0A-EE3F-4183-998C-E1763D46DBE4@kernel.crashing.org>
-In-Reply-To: <972C2D0A-EE3F-4183-998C-E1763D46DBE4@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Aggrwal Poonam-B10812 <B10812@freescale.com>, Sandeep.Kumar@freescale.com
+	by ozlabs.org (Postfix) with ESMTPS id D34E6B7D19
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Apr 2010 17:16:02 +1000 (EST)
+Subject: Re: A better way to sequence driver initialization?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bill Gatliff <bgat@billgatliff.com>
+In-Reply-To: <4BC07EAD.9020307@billgatliff.com>
+References: <4BBF7E9C.80604@billgatliff.com>
+	<1270889597.6865.107.camel@pasglop> <4BC07EAD.9020307@billgatliff.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 11 Apr 2010 17:15:53 +1000
+Message-ID: <1270970153.6865.116.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	linux-embedded <linux-embedded@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+> The general problem with your approach is that the module in question
+> might not know what services it needs to wait for.
 
-On 4/9/2010 8:43 AM, Kumar Gala wrote:
-> On Apr 8, 2010, at 5:53 AM, Felix Radensky wrote:
->
->   
->> Hi,
->>
->> I've just noticed that ethernet nodes are missing in p1020rdb device tree.
->> Are there any known problems with ethernet controllers on p1020rdb ?
->>     
-> I'd say its not problems, its support for the newer controller on p1020rdb.  At the time the .dts the kernel didn't have support.  I'm not 100% clear on its current state.
->
-> - k
-> _______________________________________________
->
->   
+The device-tree could provide a lot of help here, by providing a way to
+wait for a service attached to a given device-node since -that- at least
+contains the linkage we need.
 
-AFAICS support for eTSEC2.0 was added by commits 
-46ceb60ca80fa07703bc6eb8f4651f900dff5a82
-and 1d2397d742b7a2b39b2f09dd9da3b9d1463f55e9. Assuming the support is 
-complete, what should
-be changed in ethernet nodes from p2020rdb.dts to support p1020rdb 
-except obvious changes in
-compatible properties ?
+In fact, I could use something like that with the ibm_newemac driver
+where I have various bits and pieces probed separately (MAL - aka DMA
+engine, MII interface, core MAC, etc...) and right now I go through
+horrible hacks to ensure all the drivers have called home. I do have
+explicit links in the device-tree, so what I really want is for a driver
+attached to a device node to be able to say "I'm now operational" and
+for other drivers to wait on that.
 
-I'm going to receive a couple of p1020rdb systems soon, they would be 
-pretty useless without
-a working ethernet.
+In fact, we don't necessarily need to use threads for that. We could
+have a way for a device to return something like -EAGAIN from probe(),
+maybe having called some kind of request_service(node,...) on all the
+dependencies, if any of them isn't satisfied. The core would then be
+able to finally call probe() again when they are.
 
-Thanks.
+That has the advantage of leaving the amount of threading required to
+the core, rather than making it a driver decision, since we don't want
+-too- many probing threads in parallel.
 
-Felix.
+> Specific to my situation, the gpio-led code doesn't have any way of
+> knowing that it needs to wait until my pca953x i2c devices have all been
+> installed so that the gpio pin I have specified even exists.
+
+It could know that via the device-tree. Or on more paleolithic
+architectures, via a GPIO number though that sucks. Note that my
+wait_for_service() example takes a string. That string in my mind can be
+a compound, such as "gpio:#5" for example.
+
+>  And short
+> of setting up some kind of table in the board-specific code (or device
+> tree, actually), I don't know how to communicate such a dependency
+> without touching the generic gpio-led code--- which I'm trying to avoid.
+> 
+> I just want gpio-led to try again if the gpio pin it has been provided
+> can't be requested yet.  And I can see the need for similar behavior in
+> several other of my drivers, hence the desire to generalize things a
+> bit.  I'm pretty sure my approach is only half-baked, but it does seem
+> to avoid the need to touch a bunch of existing code--- especially to add
+> board-specific dependencies.  It just give the system a tool to sort
+> things out on its own.
+> 
+> I do think your overall criticism is valid, though.
+
+Cheers,
+Ben.
