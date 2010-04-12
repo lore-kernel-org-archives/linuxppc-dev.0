@@ -1,33 +1,15 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 04FEBB7D1A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Apr 2010 16:45:10 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp01.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3C6gtAM002465
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:42:55 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3C6j9tN1106008
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:45:09 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3C6j8hv015293
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:45:08 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] perf probe: Add PowerPC DWARF register number mappings
-Date: Mon, 12 Apr 2010 16:43:16 +1000
-Message-Id: <1271054596-26561-3-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1271054596-26561-2-git-send-email-imunsie@au.ibm.com>
-References: <1271054596-26561-1-git-send-email-imunsie@au.ibm.com>
-	<1271054596-26561-2-git-send-email-imunsie@au.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <pi16-03@esisar.grenoble-inp.fr>
+Received: from mx1.esisar.inpg.fr (mx1.esisar.inpg.fr [195.220.37.33])
+	by ozlabs.org (Postfix) with ESMTP id AF0F5B7D1A
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Apr 2010 21:51:54 +1000 (EST)
+Message-ID: <4BC30511.9090207@esisar.grenoble-inp.fr>
+Date: Mon, 12 Apr 2010 13:33:37 +0200
+From: =?ISO-8859-1?Q?WATY_S=E9bastien?= <pi16-03@esisar.grenoble-inp.fr>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, linux-wireless@vger.kernel.org
+Subject: AR9170 Wifi USB module driver on powerpc
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: PI2010-16@esisar.grenoble-inp.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,138 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au.ibm.com>
+Hello,
 
-This patch adds mappings from the register numbers from DWARF to the
-register names used in the PowerPC Regs and Stack Access API. This
-allows perf probe to be used to record variable contents on PowerPC.
+I'm trying to use a USB Wifi module on a linux 2.6.33 kernel using 
+powerpc architecture. The Wifi module is a UNEX DNUA-81 based on an 
+AR9170 from Atheros.
 
-This patch depends on functionality in the powerpc/next tree, though it
-will compile fine without it. Specifically this patch depends on
-359e4284a3f37aba7fd06d993863de2509d86f54
+My problem is that the firmware provided by Atheros can't get uploaded 
+into the device.
 
-Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
----
- tools/perf/arch/powerpc/Makefile                  |    1 +
- tools/perf/arch/powerpc/include/arch_dwarf-regs.h |    6 ++
- tools/perf/arch/powerpc/util/dwarf-regs.c         |   88 +++++++++++++++++++++
- 3 files changed, 95 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/Makefile
- create mode 100644 tools/perf/arch/powerpc/include/arch_dwarf-regs.h
- create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
+I have tested the same driver and firmware on an X86 platform, it works 
+fine.
 
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-new file mode 100644
-index 0000000..1191403
---- /dev/null
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -0,0 +1 @@
-+LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
-diff --git a/tools/perf/arch/powerpc/include/arch_dwarf-regs.h b/tools/perf/arch/powerpc/include/arch_dwarf-regs.h
-new file mode 100644
-index 0000000..a7fc588
---- /dev/null
-+++ b/tools/perf/arch/powerpc/include/arch_dwarf-regs.h
-@@ -0,0 +1,6 @@
-+#ifndef _PREF_ARCH_X86_DWARF_REGS_H
-+#define _PREF_ARCH_X86_DWARF_REGS_H
-+
-+#define get_arch_regstr(n) get_arch_regstr(n)
-+
-+#endif
-diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-new file mode 100644
-index 0000000..48ae0c5
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-@@ -0,0 +1,88 @@
-+/*
-+ * Mapping of DWARF debug register numbers into register names.
-+ *
-+ * Copyright (C) 2010 Ian Munsie, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <libio.h>
-+#include <dwarf-regs.h>
-+
-+
-+struct pt_regs_dwarfnum {
-+	const char *name;
-+	unsigned int dwarfnum;
-+};
-+
-+#define STR(s) #s
-+#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
-+#define GPR_DWARFNUM_NAME(num)	\
-+	{.name = STR(%gpr##num), .dwarfnum = num}
-+#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-+
-+/*
-+ * Reference:
-+ * http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.9.html
-+ */
-+static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
-+	GPR_DWARFNUM_NAME(0),
-+	GPR_DWARFNUM_NAME(1),
-+	GPR_DWARFNUM_NAME(2),
-+	GPR_DWARFNUM_NAME(3),
-+	GPR_DWARFNUM_NAME(4),
-+	GPR_DWARFNUM_NAME(5),
-+	GPR_DWARFNUM_NAME(6),
-+	GPR_DWARFNUM_NAME(7),
-+	GPR_DWARFNUM_NAME(8),
-+	GPR_DWARFNUM_NAME(9),
-+	GPR_DWARFNUM_NAME(10),
-+	GPR_DWARFNUM_NAME(11),
-+	GPR_DWARFNUM_NAME(12),
-+	GPR_DWARFNUM_NAME(13),
-+	GPR_DWARFNUM_NAME(14),
-+	GPR_DWARFNUM_NAME(15),
-+	GPR_DWARFNUM_NAME(16),
-+	GPR_DWARFNUM_NAME(17),
-+	GPR_DWARFNUM_NAME(18),
-+	GPR_DWARFNUM_NAME(19),
-+	GPR_DWARFNUM_NAME(20),
-+	GPR_DWARFNUM_NAME(21),
-+	GPR_DWARFNUM_NAME(22),
-+	GPR_DWARFNUM_NAME(23),
-+	GPR_DWARFNUM_NAME(24),
-+	GPR_DWARFNUM_NAME(25),
-+	GPR_DWARFNUM_NAME(26),
-+	GPR_DWARFNUM_NAME(27),
-+	GPR_DWARFNUM_NAME(28),
-+	GPR_DWARFNUM_NAME(29),
-+	GPR_DWARFNUM_NAME(30),
-+	GPR_DWARFNUM_NAME(31),
-+	REG_DWARFNUM_NAME("%msr",   66),
-+	REG_DWARFNUM_NAME("%ctr",   109),
-+	REG_DWARFNUM_NAME("%link",  108),
-+	REG_DWARFNUM_NAME("%xer",   101),
-+	REG_DWARFNUM_NAME("%dar",   119),
-+	REG_DWARFNUM_NAME("%dsisr", 118),
-+	REG_DWARFNUM_END,
-+};
-+
-+/**
-+ * get_arch_regstr() - lookup register name from it's DWARF register number
-+ * @n:	the DWARF register number
-+ *
-+ * get_arch_regstr() returns the name of the register in struct
-+ * regdwarfnum_table from it's DWARF register number. If the register is not
-+ * found in the table, this returns NULL;
-+ */
-+const char *get_arch_regstr(unsigned int n)
-+{
-+	const struct pt_regs_dwarfnum *roff;
-+	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-+		if (roff->dwarfnum == n)
-+			return roff->name;
-+	return NULL;
-+}
--- 
-1.7.0
+Please find at the end of the message, an extract of what dmesg after 
+plugging the device.
+
+For what I understand, the driver wants to use the ep_00 device to 
+transmit the firmware, but this device isn't initialized when it try to 
+begin the transfer. Is this correct ?
+Any idea on how to solve this ?
+
+Regards Sebastien
+
+---------------------------------------
+usb 1-1.2: New USB device found, idVendor=0cf3, idProduct=9170
+usb 1-1.2: New USB device strings: Mfr=16, Product=32, SerialNumber=48
+usb 1-1.2: Product: USB2.0 WLAN
+usb 1-1.2: Manufacturer: ATHER
+usb 1-1.2: SerialNumber: 12345
+device: '1-1.2': device_add
+bus: 'usb': add device 1-1.2
+usb 1-1.2: uevent
+bus: 'usb': driver_probe_device: matched device 1-1.2 with driver usb
+bus: 'usb': really_probe: probing driver usb with device 1-1.2
+usb 1-1.2: usb_probe_device
+usb 1-1.2: configuration #1 chosen from 1 choice
+usb 1-1.2: adding 1-1.2:1.0 (config #1, interface 0)
+device: '1-1.2:1.0': device_add
+bus: 'usb': add device 1-1.2:1.0
+usb 1-1.2:1.0: uevent
+bus: 'usb': driver_probe_device: matched device 1-1.2:1.0 with driver 
+ar9170usb
+bus: 'usb': really_probe: probing driver ar9170usb with device 1-1.2:1.0
+ar9170usb 1-1.2:1.0: usb_probe_interface
+
+ar9170usb 1-1.2:1.0: usb_probe_interface - got id
+usb 1-1.2: reset high speed USB device using xilinx-of-ehci and address 4
+usb 1-1.2: firmware: using built-in firmware ar9170.fw
+usb 1-1.2: link qh0-00ff/cf0e8120 start 0 [2/0 us]
+usb 1-1.2: khubd timed out on ep0out len=0/4096
+usb 1-1.2: device is in a bad state. please reconnect it!
+usb 1-1.2: stuck tx urbs!
+usb 1-1.2: unlink qh0-00ff/cf0e8120 start 0 [2/0 us]
+ar9170usb: probe of 1-1.2:1.0 failed with error -110
+device: 'ep_01': device_add
+device: 'ep_82': device_add
+device: 'ep_83': device_add
+device: 'ep_04': device_add
+device: 'usbdev1.4': device_add
+drivers/usb/core/inode.c: creating file '004'
+driver: '1-1.2': driver_bound: bound to device 'usb'
+bus: 'usb': really_probe: bound device 1-1.2 to driver usb
+device: 'ep_00': device_add
+
+hub 1-1:1.0: state 7 ports 4 chg 0000 evt 0004
+usb 1-1.2: usb_disable_device nuking non-ep0 URBs
+usb 1-1.2: unregistering interface 1-1.2:1.0
+device: 'ep_01': device_unregister
+device: 'ep_82': device_unregister
+device: 'ep_83': device_unregister
+device: 'ep_04': device_unregister
+bus: 'usb': remove device 1-1.2:1.0
