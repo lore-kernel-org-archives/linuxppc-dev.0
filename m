@@ -1,21 +1,26 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [74.117.214.140])
-	by ozlabs.org (Postfix) with ESMTP id 5DC6BB7D1E
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D4BDAB7D11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Apr 2010 13:47:13 +1000 (EST)
-In-Reply-To: <1270975151.6865.140.camel@pasglop>
-References: <OF788A7534.456B03AA-ON882576F6.00228BC4-882576F6.00233EC1@selinc.com>	
-	<1270735170.19546.2.camel@concordia>
-	<OFD957C4B7.2DDD66CF-ON882576FF.0069A7B1-882576FF.006B689A@selinc.com>
-	<1270975151.6865.140.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0
-Subject: Re: Question regarding the DTLB Miss exceptions
-Message-ID: <OF69BF75D7.F222C4A2-ON88257703.00133151-88257703.0014C317@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Sun, 11 Apr 2010 20:46:46 -0700
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
+	Mon, 12 Apr 2010 16:44:48 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3C6igGS025213
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:44:42 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3C6cICY1306668
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:38:18 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3C6igr3025209
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Apr 2010 16:44:42 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: 
+Date: Mon, 12 Apr 2010 16:43:14 +1000
+Message-Id: <1271054596-26561-1-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > 
-> > It's checking to see if the following bits of DSISR are set:
-> > 0 - set by DTLB miss if no hash table entry group is found
-> 
-> No. 0 means we hit a direct store segment. This is a historical feature
-> of the architecture which we don't use, so should not happen.
-> 
+These patches add the required mappings to use perf probe on PowerPC.
 
-Sorry, would have helped if I had specified the processor; we're using an 
-MPC8347, so it's an e300c1 core.  Also, my fat-fingering of the keyboard 
-got me on this one - bit 0 on the e300 should be cleared.  I put in bit 
-1's definition by mistake in my last email.
+Functionality wise it requires patch 359e4284a3f37aba7fd06d993863de2509d86f54
+from the powerpc-next tree to provide the HAVE_REGS_AND_STACK_ACCESS_API
+required for CONFIG_KPROBE_EVENT. The code will still compile cleanly without
+it and will fail gracefully at runtime on the missing CONFIG_KPROBE_EVENT
+support as before.
 
-> > 2 - an invalid bit
-> 
-> Not sure what 2 is about.
+Part 1 of the patch series moves the arch dependent x86 32 and 64 bit DWARF
+register number mappings out into a separate arch directory and adds the
+necessary Makefile foo to use it.
 
-Yeah, and that's the one I'm trying to figure out why the DTLB Miss on 
-Store exception code is setting before calling the DSI exception code :).
+Part 2 of the patch series adds the PowerPC mappings.
 
-> > are set and calling it a "weird error".  What the heck does that mean, 
-a 
-> > "weird error"?
-> 
-> Nah. It's a bad name. It means it's an error that is either something we
-> don't support (like direct store) or something that doesn't need to go
-> through hash_page, such as a breakpoint match.
-> 
-
-Thanks, that actually helps, knowing that what's being done is determining 
-reasons to call hash_page or not.  Also knowing (which I suppose I should 
-have figured out earlier) that some of the bits in DSISR are not defined 
-for the e300c1 core but that the code is designed to support 
-implementations that DO define those bits helps make sense of what I'm 
-looking at.
-
-> 
-> I missed the earlier discussion, what is your problem ?
-> 
-
-Well, the problem I'm having is really irrelevant to the question at hand. 
- My original question to the list was "why is the DTLB Store Miss 
-exception setting bit two of the DSISR (an invalid bit according to the 
-architecture) before calling the DSI exception?".
-
-Thanks for the explanations!
-
-Bruce
+Thanks,
+-Ian
