@@ -1,15 +1,24 @@
-Return-Path: <pi16-03@esisar.grenoble-inp.fr>
-Received: from mx1.esisar.inpg.fr (mx1.esisar.inpg.fr [195.220.37.33])
-	by ozlabs.org (Postfix) with ESMTP id AF0F5B7D1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Apr 2010 21:51:54 +1000 (EST)
-Message-ID: <4BC30511.9090207@esisar.grenoble-inp.fr>
-Date: Mon, 12 Apr 2010 13:33:37 +0200
-From: =?ISO-8859-1?Q?WATY_S=E9bastien?= <pi16-03@esisar.grenoble-inp.fr>
+Return-Path: <mhiramat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 4A897B7D1F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 12 Apr 2010 22:37:36 +1000 (EST)
+Message-ID: <4BC313EF.4040406@redhat.com>
+Date: Mon, 12 Apr 2010 08:37:03 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, linux-wireless@vger.kernel.org
-Subject: AR9170 Wifi USB module driver on powerpc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: PI2010-16@esisar.grenoble-inp.fr
+To: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH 1/2] perf: Move arch specific code into separate arch
+	directory
+References: <1271054596-26561-1-git-send-email-imunsie@au.ibm.com>
+	<1271054596-26561-2-git-send-email-imunsie@au.ibm.com>
+In-Reply-To: <1271054596-26561-2-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,74 +28,301 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Hi Ian,
 
-I'm trying to use a USB Wifi module on a linux 2.6.33 kernel using 
-powerpc architecture. The Wifi module is a UNEX DNUA-81 based on an 
-AR9170 from Atheros.
+Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au.ibm.com>
+> 
+> The perf userspace tool included some architecture specific code to map
+> registers from the DWARF register number into the names used by the regs
+> and stack access API.
+> 
+> This patch moves the architecture specific code out into a seperate
+> arch/x86 directory along with the infrastructure required to use it.
 
-My problem is that the firmware provided by Atheros can't get uploaded 
-into the device.
+Nice! :)
+I have just some comments on it.
 
-I have tested the same driver and firmware on an X86 platform, it works 
-fine.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+> ---
+>  tools/perf/Makefile                           |   18 ++++++-
+>  tools/perf/arch/x86/Makefile                  |    1 +
+>  tools/perf/arch/x86/include/arch_dwarf-regs.h |    6 ++
+>  tools/perf/arch/x86/util/dwarf-regs.c         |   75 +++++++++++++++++++++++++
+>  tools/perf/util/include/dwarf-regs.h          |    8 +++
+>  tools/perf/util/probe-finder.c                |   55 ++----------------
+>  6 files changed, 113 insertions(+), 50 deletions(-)
+>  create mode 100644 tools/perf/arch/x86/Makefile
+>  create mode 100644 tools/perf/arch/x86/include/arch_dwarf-regs.h
+>  create mode 100644 tools/perf/arch/x86/util/dwarf-regs.c
+>  create mode 100644 tools/perf/util/include/dwarf-regs.h
+> 
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index f578b05..07a6ee2 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -172,6 +172,20 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+>  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+>  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+>  
+> +ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
+> +				  -e s/arm.*/arm/ -e s/sa110/arm/ \
+> +				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
+> +				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ \
+> +				  -e s/sh[234].*/sh/ )
+> +
+> +# Additional ARCH settings for x86
+> +ifeq ($(ARCH),i386)
+> +        ARCH := x86
+> +endif
+> +ifeq ($(ARCH),x86_64)
+> +        ARCH := x86
+> +endif
+> +
+>  # CFLAGS and LDFLAGS are for the users to override from the command line.
+>  
+>  #
+> @@ -284,7 +298,7 @@ endif
+>  # Those must not be GNU-specific; they are shared with perl/ which may
+>  # be built by a different compiler. (Note that this is an artifact now
+>  # but it still might be nice to keep that distinction.)
+> -BASIC_CFLAGS = -Iutil/include
+> +BASIC_CFLAGS = -Iutil/include -Iarch/$(ARCH)/include
+>  BASIC_LDFLAGS =
+>  
+>  # Guard against environment variables
+> @@ -366,6 +380,7 @@ LIB_H += util/include/asm/byteorder.h
+>  LIB_H += util/include/asm/swab.h
+>  LIB_H += util/include/asm/system.h
+>  LIB_H += util/include/asm/uaccess.h
+> +LIB_H += util/include/dwarf-regs.h
+>  LIB_H += perf.h
+>  LIB_H += util/cache.h
+>  LIB_H += util/callchain.h
+> @@ -484,6 +499,7 @@ PERFLIBS = $(LIB_FILE)
+>  
+>  -include config.mak.autogen
+>  -include config.mak
+> +-include arch/$(ARCH)/Makefile
+>  
+>  ifeq ($(uname_S),Darwin)
+>  	ifndef NO_FINK
 
-Please find at the end of the message, an extract of what dmesg after 
-plugging the device.
+Could you add a check whether the get_arch_regstr() is defined
+(or dwarf-regs.h is exist) in Makefile?
+If it is not defined, we'd better drop dwarf support(so set NO_DWARF),
+because it means we haven't ported perf probe on that architecture yet. :)
+ 
+> diff --git a/tools/perf/arch/x86/Makefile b/tools/perf/arch/x86/Makefile
+> new file mode 100644
+> index 0000000..1191403
+> --- /dev/null
+> +++ b/tools/perf/arch/x86/Makefile
+> @@ -0,0 +1 @@
+> +LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
+> diff --git a/tools/perf/arch/x86/include/arch_dwarf-regs.h b/tools/perf/arch/x86/include/arch_dwarf-regs.h
+> new file mode 100644
+> index 0000000..9e8da6a
+> --- /dev/null
+> +++ b/tools/perf/arch/x86/include/arch_dwarf-regs.h
+> @@ -0,0 +1,6 @@
+> +#ifndef _PREF_ARCH_PPC_DWARF_REGS_H
+> +#define _PREF_ARCH_PPC_DWARF_REGS_H
 
-For what I understand, the driver wants to use the ep_00 device to 
-transmit the firmware, but this device isn't initialized when it try to 
-begin the transfer. Is this correct ?
-Any idea on how to solve this ?
+_PREF_ARCH_X86_DWARF_REGS_H ?
 
-Regards Sebastien
+> +
+> +#define get_arch_regstr(n) get_arch_regstr(n)
 
----------------------------------------
-usb 1-1.2: New USB device found, idVendor=0cf3, idProduct=9170
-usb 1-1.2: New USB device strings: Mfr=16, Product=32, SerialNumber=48
-usb 1-1.2: Product: USB2.0 WLAN
-usb 1-1.2: Manufacturer: ATHER
-usb 1-1.2: SerialNumber: 12345
-device: '1-1.2': device_add
-bus: 'usb': add device 1-1.2
-usb 1-1.2: uevent
-bus: 'usb': driver_probe_device: matched device 1-1.2 with driver usb
-bus: 'usb': really_probe: probing driver usb with device 1-1.2
-usb 1-1.2: usb_probe_device
-usb 1-1.2: configuration #1 chosen from 1 choice
-usb 1-1.2: adding 1-1.2:1.0 (config #1, interface 0)
-device: '1-1.2:1.0': device_add
-bus: 'usb': add device 1-1.2:1.0
-usb 1-1.2:1.0: uevent
-bus: 'usb': driver_probe_device: matched device 1-1.2:1.0 with driver 
-ar9170usb
-bus: 'usb': really_probe: probing driver ar9170usb with device 1-1.2:1.0
-ar9170usb 1-1.2:1.0: usb_probe_interface
+If we checked above dwarf support, we don't need this odd macro.
 
-ar9170usb 1-1.2:1.0: usb_probe_interface - got id
-usb 1-1.2: reset high speed USB device using xilinx-of-ehci and address 4
-usb 1-1.2: firmware: using built-in firmware ar9170.fw
-usb 1-1.2: link qh0-00ff/cf0e8120 start 0 [2/0 us]
-usb 1-1.2: khubd timed out on ep0out len=0/4096
-usb 1-1.2: device is in a bad state. please reconnect it!
-usb 1-1.2: stuck tx urbs!
-usb 1-1.2: unlink qh0-00ff/cf0e8120 start 0 [2/0 us]
-ar9170usb: probe of 1-1.2:1.0 failed with error -110
-device: 'ep_01': device_add
-device: 'ep_82': device_add
-device: 'ep_83': device_add
-device: 'ep_04': device_add
-device: 'usbdev1.4': device_add
-drivers/usb/core/inode.c: creating file '004'
-driver: '1-1.2': driver_bound: bound to device 'usb'
-bus: 'usb': really_probe: bound device 1-1.2 to driver usb
-device: 'ep_00': device_add
+> +
+> +#endif
+> diff --git a/tools/perf/arch/x86/util/dwarf-regs.c b/tools/perf/arch/x86/util/dwarf-regs.c
+> new file mode 100644
+> index 0000000..a794d30
+> --- /dev/null
+> +++ b/tools/perf/arch/x86/util/dwarf-regs.c
+> @@ -0,0 +1,75 @@
+> +/*
+> + * dwarf-regs.c : Mapping of DWARF debug register numbers into register names.
+> + * Extracted from probe-finder.c
+> + *
+> + * Written by Masami Hiramatsu <mhiramat@redhat.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + */
+> +
+> +#include <libio.h>
+> +#include <dwarf-regs.h>
+> +
+> +/*
+> + * Generic dwarf analysis helpers
+> + */
+> +
+> +#define X86_32_MAX_REGS 8
+> +const char *x86_32_regs_table[X86_32_MAX_REGS] = {
+> +	"%ax",
+> +	"%cx",
+> +	"%dx",
+> +	"%bx",
+> +	"$stack",	/* Stack address instead of %sp */
+> +	"%bp",
+> +	"%si",
+> +	"%di",
+> +};
+> +
+> +#define X86_64_MAX_REGS 16
+> +const char *x86_64_regs_table[X86_64_MAX_REGS] = {
+> +	"%ax",
+> +	"%dx",
+> +	"%cx",
+> +	"%bx",
+> +	"%si",
+> +	"%di",
+> +	"%bp",
+> +	"%sp",
+> +	"%r8",
+> +	"%r9",
+> +	"%r10",
+> +	"%r11",
+> +	"%r12",
+> +	"%r13",
+> +	"%r14",
+> +	"%r15",
+> +};
+> +
+> +/* TODO: switching by dwarf address size */
+> +#ifdef __x86_64__
+> +#define ARCH_MAX_REGS X86_64_MAX_REGS
+> +#define arch_regs_table x86_64_regs_table
+> +#else
+> +#define ARCH_MAX_REGS X86_32_MAX_REGS
+> +#define arch_regs_table x86_32_regs_table
+> +#endif
+> +
+> +/* Return architecture dependent register string (for kprobe-tracer) */
+> +const char *get_arch_regstr(unsigned int n)
+> +{
+> +	return (n <= ARCH_MAX_REGS) ? arch_regs_table[n] : NULL;
+> +}
+> diff --git a/tools/perf/util/include/dwarf-regs.h b/tools/perf/util/include/dwarf-regs.h
+> new file mode 100644
+> index 0000000..2a1cf6f
+> --- /dev/null
+> +++ b/tools/perf/util/include/dwarf-regs.h
+> @@ -0,0 +1,8 @@
+> +#ifndef _PERF_DWARF_REGS_H_
+> +#define _PERF_DWARF_REGS_H_
+> +
+> +#include <arch_dwarf-regs.h>
+> +
+> +const char *get_arch_regstr(unsigned int n);
+> +
+> +#endif
+> diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+> index a851377..27020fe 100644
+> --- a/tools/perf/util/probe-finder.c
+> +++ b/tools/perf/util/probe-finder.c
+> @@ -31,6 +31,7 @@
+>  #include <string.h>
+>  #include <stdarg.h>
+>  #include <ctype.h>
+> +#include <dwarf-regs.h>
+>  
+>  #include "string.h"
+>  #include "event.h"
+> @@ -38,57 +39,13 @@
+>  #include "util.h"
+>  #include "probe-finder.h"
+>  
+> -
+> -/*
+> - * Generic dwarf analysis helpers
+> - */
+> -
+> -#define X86_32_MAX_REGS 8
+> -const char *x86_32_regs_table[X86_32_MAX_REGS] = {
+> -	"%ax",
+> -	"%cx",
+> -	"%dx",
+> -	"%bx",
+> -	"$stack",	/* Stack address instead of %sp */
+> -	"%bp",
+> -	"%si",
+> -	"%di",
+> -};
+> -
+> -#define X86_64_MAX_REGS 16
+> -const char *x86_64_regs_table[X86_64_MAX_REGS] = {
+> -	"%ax",
+> -	"%dx",
+> -	"%cx",
+> -	"%bx",
+> -	"%si",
+> -	"%di",
+> -	"%bp",
+> -	"%sp",
+> -	"%r8",
+> -	"%r9",
+> -	"%r10",
+> -	"%r11",
+> -	"%r12",
+> -	"%r13",
+> -	"%r14",
+> -	"%r15",
+> -};
+> -
+> -/* TODO: switching by dwarf address size */
+> -#ifdef __x86_64__
+> -#define ARCH_MAX_REGS X86_64_MAX_REGS
+> -#define arch_regs_table x86_64_regs_table
+> -#else
+> -#define ARCH_MAX_REGS X86_32_MAX_REGS
+> -#define arch_regs_table x86_32_regs_table
+> -#endif
+> -
+>  /* Return architecture dependent register string (for kprobe-tracer) */
+> -static const char *get_arch_regstr(unsigned int n)
+> +#ifndef get_arch_regstr
+> +const char *get_arch_regstr(unsigned int n __attribute__((unused)))
+>  {
+> -	return (n <= ARCH_MAX_REGS) ? arch_regs_table[n] : NULL;
+> +	return NULL;
+>  }
+> +#endif
 
-hub 1-1:1.0: state 7 ports 4 chg 0000 evt 0004
-usb 1-1.2: usb_disable_device nuking non-ep0 URBs
-usb 1-1.2: unregistering interface 1-1.2:1.0
-device: 'ep_01': device_unregister
-device: 'ep_82': device_unregister
-device: 'ep_83': device_unregister
-device: 'ep_04': device_unregister
-bus: 'usb': remove device 1-1.2:1.0
+Again, if we add a check in Makefile, we can remove this completely.
+
+>  
+>  /*
+>   * Compare the tail of two strings.
+> @@ -397,7 +354,7 @@ static void convert_location(Dwarf_Op *op, struct probe_finder *pf)
+>  
+>  	regs = get_arch_regstr(regn);
+>  	if (!regs)
+> -		die("%u exceeds max register number.", regn);
+> +		die("Mapping for DWARF register number %u missing on this architecture.", regn);
+>  
+>  	tvar->value = xstrdup(regs);
+>  	if (ref) {
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
