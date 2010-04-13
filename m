@@ -2,17 +2,16 @@ Return-Path: <peterz@infradead.org>
 Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9C77B7CFA
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Apr 2010 22:29:36 +1000 (EST)
-Subject: Re: [PATCH 5/5] sched: make fix_small_imbalance work with
-	asymmetric packing
+	by ozlabs.org (Postfix) with ESMTPS id 062FCB7D00
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Apr 2010 22:29:37 +1000 (EST)
+Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
 From: Peter Zijlstra <peterz@infradead.org>
 To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20100409062119.10AC5CBB6D@localhost.localdomain>
-References: <20100409062119.10AC5CBB6D@localhost.localdomain>
+In-Reply-To: <20100409062118.D4096CBB6C@localhost.localdomain>
+References: <20100409062118.D4096CBB6C@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 13 Apr 2010 14:29:29 +0200
-Message-ID: <1271161769.4807.1283.camel@twins>
+Date: Tue, 13 Apr 2010 14:29:26 +0200
+Message-ID: <1271161766.4807.1280.camel@twins>
 Mime-Version: 1.0
 Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
 	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
@@ -27,26 +26,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
-> With the asymmetric packing infrastructure, fix_small_imbalance is
-> causing idle higher threads to pull tasks off lower threads. =20
+> When calculating capacity we use the following calculation:
 >=20
-> This is being caused by an off-by-one error. =20
+>        capacity =3D DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
+>=20
+> In SMT2, power will be 1178/2 (provided we are not scaling power with
+> freq say) and SCHED_LOAD_SCALE will be 1024, resulting in capacity
+> being 1.
+>=20
+> With SMT4 however, power will be 1178/4, hence capacity will end up as
+> 0.
+>=20
+> Fix this by ensuring capacity is always at least 1 after this
+> calculation.
 >=20
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
 > ---
-> I'm not sure this is the right fix but without it, higher threads pull
-> tasks off the lower threads, then the packing pulls it back down, etc
-> etc and tasks bounce around constantly.
+> I'm not sure this is the correct fix but this works for me. =20
 
-Would help if you expand upon the why/how it manages to get pulled up.
+Right, so I suspect this will indeed break some things.
 
-I can't immediately spot anything wrong with the patch, but then that
-isn't my favourite piece of code either.. Suresh, any comments?
+We initially allowed 0 capacity for when a cpu is consumed by an RT task
+and there simply isn't much capacity left, in that case you really want
+to try and move load to your sibling cpus if possible.
 
-> ---
->=20
->  kernel/sched_fair.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+However you're right that this goes awry in your case.
+
+One thing to look at is if that 15% increase is indeed representative
+for the power7 cpu, it having 4 SMT threads seems to suggest there was
+significant gains, otherwise they'd not have wasted the silicon.
+
+(The broken x86 code was meant to actually compute the SMT gain, so that
+we'd not have to guess the 15%)
+
+Now, increasing this will only marginally fix the issue, since if you
+end up with 512 per thread it only takes a very tiny amount of RT
+workload to drop below and end up at 0 again.
+
+One thing we could look at is using the cpu base power to compute
+capacity from. We'd have to add another field to sched_group and store
+power before we do the scale_rt_power() stuff.
+
+Thoughts?
+
+
+>  kernel/sched_fair.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 >=20
 > Index: linux-2.6-ozlabs/kernel/sched_fair.c
 > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
@@ -54,12 +79,32 @@ isn't my favourite piece of code either.. Suresh, any comments?
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 > --- linux-2.6-ozlabs.orig/kernel/sched_fair.c
 > +++ linux-2.6-ozlabs/kernel/sched_fair.c
-> @@ -2652,7 +2652,7 @@ static inline void fix_small_imbalance(s
->  						 * SCHED_LOAD_SCALE;
->  	scaled_busy_load_per_task /=3D sds->busiest->cpu_power;
+> @@ -1482,6 +1482,7 @@ static int select_task_rq_fair(struct ta
+>  			}
 > =20
-> -	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=3D
-> +	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >
->  			(scaled_busy_load_per_task * imbn)) {
->  		*imbalance =3D sds->busiest_load_per_task;
->  		return;
+>  			capacity =3D DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
+> +			capacity =3D max(capacity, 1UL);
+> =20
+>  			if (tmp->flags & SD_POWERSAVINGS_BALANCE)
+>  				nr_running /=3D 2;
+> @@ -2488,6 +2489,7 @@ static inline void update_sg_lb_stats(st
+> =20
+>  	sgs->group_capacity =3D
+>  		DIV_ROUND_CLOSEST(group->cpu_power, SCHED_LOAD_SCALE);
+> +	sgs->group_capacity =3D max(sgs->group_capacity, 1UL);
+>  }
+> =20
+>  /**
+> @@ -2795,9 +2797,11 @@ find_busiest_queue(struct sched_group *g
+> =20
+>  	for_each_cpu(i, sched_group_cpus(group)) {
+>  		unsigned long power =3D power_of(i);
+> -		unsigned long capacity =3D DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
+> +		unsigned long capacity;
+>  		unsigned long wl;
+> =20
+> +		capacity =3D max(DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE), 1UL);
+> +
+>  		if (!cpumask_test_cpu(i, cpus))
+>  			continue;
+> =20
