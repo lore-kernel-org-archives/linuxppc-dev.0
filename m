@@ -1,24 +1,35 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 6AC17B7D0D
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A1733B7D0E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Apr 2010 01:18:36 +1000 (EST)
+	Wed, 14 Apr 2010 09:34:57 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3DNYtrO020391
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:34:55 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3DNSSVr1658902
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:28:28 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3DNYsbV015668
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:34:54 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: Track backing pages allocated by
+	vmemmap_populate()
+Date: Wed, 14 Apr 2010 09:38:46 +1000
+References: <201003261812.34095.markn@au1.ibm.com>
+	<201004131602.23898.markn@au1.ibm.com>
+	<1271157404.13059.102.camel@pasglop>
+In-Reply-To: <1271157404.13059.102.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v3 3/6] RapidIO: Add Port-Write handling for EM
-Date: Tue, 13 Apr 2010 08:00:29 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552CBCBCD@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <20100412204949.862b3fab.akpm@linux-foundation.org>
-References: <20100406212238.GC26292@amak.tundra.com>
-	<20100412204949.862b3fab.akpm@linux-foundation.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-	"Alexandre Bounine" <abounine@tundra.com>
-Cc: linuxppc-dev@lists.ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org, thomas.moll@sysgo.com
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201004140938.46705.markn@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Tue, 6 Apr 2010 17:22:38 -0400 Alexandre Bounine
-<abounine@tundra.com> wrote:
->=20
-> >
-> > From: Alexandre Bounine <alexandre.bounine@idt.com>
-> >
-> > Add RapidIO Port-Write message handling in the context
-> > of Error Management Extensions Specification Rev.1.3.
-> >
-> > ...
-> >
-> > +static struct rio_dev *rio_get_comptag(u32 comp_tag, struct rio_dev
-*from)
-> > +{
-> > +	struct list_head *n;
-> > +	struct rio_dev *rdev;
-> > +
-> > +	WARN_ON(in_interrupt());
->=20
-> The check should be unneeded - lockdep will warn about this.
+On Tuesday 13 April 2010 21:16:44 Benjamin Herrenschmidt wrote:
+> On Tue, 2010-04-13 at 16:02 +1000, Mark Nelson wrote:
+> > That's a good question, and one that I probably should have added to
+> > the
+> > commit message.
+> > But, following through, it looks like we end up calling into
+> > __remove_section() from mm/memory_hotplug.c and if
+> > CONFIG_SPARSEMEM_VMEMMAP is enabled we just return EBUSY as freeing
+> > memmap with vmemmap isn't implemented yet.
+> > 
+> > So for the moment, I'm not sure we have to worry about it.
+> 
+> We probably don't. IE. The vmemmap will remain for those struct pages,
+> which means they won't need to be allocated again if some memory is
+> plugged back there. If not, we just waste a bit of memory. Not a big
+> deal.
+> 
+Excellent! That makes sense.
 
-Thank you. I will remove it in my next set of patches.=20
+Thanks Ben!
 
->=20
-> > +	spin_lock(&rio_global_list_lock);
-> > +	n =3D from ? from->global_list.next : rio_devices.next;
-> > +
-> > +	while (n && (n !=3D &rio_devices)) {
-> > +		rdev =3D rio_dev_g(n);
-> > +		if (rdev->comp_tag =3D=3D comp_tag)
-> > +			goto exit;
-> > +		n =3D n->next;
-> > +	}
-> > +	rdev =3D NULL;
-> > +exit:
-> > +	spin_unlock(&rio_global_list_lock);
-> > +	return rdev;
-> > +}
-> > +
+Mark.
