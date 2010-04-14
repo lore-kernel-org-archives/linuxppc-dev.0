@@ -1,14 +1,25 @@
-Return-Path: <jakemagee@gmail.com>
+Return-Path: <mhiramat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 88030B7D1F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 00:43:16 +1000 (EST)
+Message-ID: <4BC5D534.8010508@redhat.com>
+Date: Wed, 14 Apr 2010 07:46:12 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4BAC0D4B.3030507@fulcrummicro.com>
-References: <4BAC0D4B.3030507@fulcrummicro.com>
-Date: Wed, 14 Apr 2010 08:55:28 -0500
-Message-ID: <t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
-Subject: Re: Resetting PCI-E devices after linux boot
-From: Jake Magee <jakemagee@gmail.com>
-To: Dan Wilson <dwilson@fulcrummicro.com>
-Content-Type: multipart/alternative; boundary=001636c5b99c1213c2048432bbc5
-Cc: Linuxppc-dev@lists.ozlabs.org
+To: Ian Munsie <imunsie@au1.ibm.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH v2 1/2] perf: Move arch specific code into separate arch
+	directory
+References: <1271221600-25533-1-git-send-email-imunsie@au.ibm.com>
+	<1271221600-25533-2-git-send-email-imunsie@au.ibm.com>
+In-Reply-To: <1271221600-25533-2-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,79 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001636c5b99c1213c2048432bbc5
-Content-Type: text/plain; charset=ISO-8859-1
+Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au.ibm.com>
+> 
+> The perf userspace tool included some architecture specific code to map
+> registers from the DWARF register number into the names used by the regs
+> and stack access API.
+> 
+> This patch moves the architecture specific code out into a separate
+> arch/x86 directory along with the infrastructure required to use it.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+> ---
+> Changes since v1: From Masami Hiramatsu's suggestion, I added a check in the
+> Makefile for if the arch specific Makefile defines PERF_HAVE_DWARF_REGS,
+> printing a message during build if it has not. This simplifies the code
+> removing the odd macro from the previous version and the need for an arch
+> specific arch_dwarf-regs.h. I have not entirely disabled DWARF support for
+> architectures that don't implement the register mappings, so that they can
+> still add a probe based on a line number (they will be missing the ability to
+> capture the value of a variable from a register).
 
-Dan,
+Hmm, sorry, I don't think it is a good way to go... IMHO, porting dwarf-regs.c
+is so easy (you can just refer systemtap/runtime/loc2c-runtime.h), easier
+than porting kprobe-tracer on another arch. And perf is a part of kernel tree.
+It means that someone who are porting kprobe-tracer, he should port
+dwarf-regs.c too. In that case, PERF_HAVE_DWARF_REGS flag will be used only
+between those two patches in same patchset. So, I suggested you to drop dwarf
+support if dwarf-regs mapping doesn't exist.
 
-Were you able to get PCI-E hotplug working?  I could not get this working
-myself and assumed that driver support was lacking.  I'm actually using a
-PPC405.
+AFAIK, at this point, only s390 users are affected. I'd like to ask
+them to just port a register mapping on perf and test it too.
 
-Thanks,
-Jake
+Thank you,
 
-
-On Thu, Mar 25, 2010 at 8:26 PM, Dan Wilson <dwilson@fulcrummicro.com>wrote:
-
-> We are building a PCI-E device for use in an embedded system with an 85xx
-> processor.  One of our customers is adamant that linux PCI-E hot-swap
-> support will not allow us to either bring the device up after linux boot
-> (i.e., the PCI-E device must be present when linux scans for PCI-E devices
-> at startup) or to reset the device once linux is up.  It was our impression
-> that the PCI-E hot-swap support should allow for devices to appear after
-> linux boot, be properly initialized, and then later be able to shut them
-> down and bring them back up again.
->
-> Has anyone successfully used the PCI-E hot-swap capabilities in the linux
-> kernel in a PPC 85xx environment?  Any known gotchas we need to be aware of?
->
-> Thanks in advance for your responses,
->
-> Dan.
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-
---001636c5b99c1213c2048432bbc5
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Dan, <br><br>Were you able to get PCI-E hotplug working?=A0 I could not get=
- this working myself and assumed that driver support was lacking.=A0 I&#39;=
-m actually using a PPC405.<br><br>Thanks,<br>Jake<br>
-<br><br><div class=3D"gmail_quote">On Thu, Mar 25, 2010 at 8:26 PM, Dan Wil=
-son <span dir=3D"ltr">&lt;<a href=3D"mailto:dwilson@fulcrummicro.com">dwils=
-on@fulcrummicro.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quo=
-te" style=3D"margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204=
-, 204); padding-left: 1ex;">
-We are building a PCI-E device for use in an embedded system with an 85xx p=
-rocessor. =A0One of our customers is adamant that linux PCI-E hot-swap supp=
-ort will not allow us to either bring the device up after linux boot (i.e.,=
- the PCI-E device must be present when linux scans for PCI-E devices at sta=
-rtup) or to reset the device once linux is up. =A0It was our impression tha=
-t the PCI-E hot-swap support should allow for devices to appear after linux=
- boot, be properly initialized, and then later be able to shut them down an=
-d bring them back up again.<br>
-
-<br>
-Has anyone successfully used the PCI-E hot-swap capabilities in the linux k=
-ernel in a PPC 85xx environment? =A0Any known gotchas we need to be aware o=
-f?<br>
-<br>
-Thanks in advance for your responses,<br>
-<br>
-Dan.<br>
-<br>
-_______________________________________________<br>
-Linuxppc-dev mailing list<br>
-<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org" target=3D"_blank">Linuxppc=
--dev@lists.ozlabs.org</a><br>
-<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
-">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
-</blockquote></div><br>
-
---001636c5b99c1213c2048432bbc5--
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
