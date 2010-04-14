@@ -1,18 +1,20 @@
-Return-Path: <terren.chow@gmail.com>
-Received: from mail-iw0-f201.google.com (mail-iw0-f201.google.com
-	[209.85.223.201]) by ozlabs.org (Postfix) with ESMTP id 778AEB7D15
+Return-Path: <moises.dominguez@ctag.com>
+Received: from jupiter.ctag.com (smtp.ctag.com [193.144.40.36])
+	by ozlabs.org (Postfix) with ESMTP id 02D07B7D24
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Apr 2010 16:34:06 +1000 (EST)
-Received: by iwn39 with SMTP id 39so6490489iwn.2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Apr 2010 23:34:04 -0700 (PDT)
+	Wed, 14 Apr 2010 17:40:05 +1000 (EST)
+Received: from [193.144.40.38] (helo=INN0072)
+	by jupiter.ctag.com with esmtpa (Exim 4.63)
+	(envelope-from <moises.dominguez@ctag.com>) id 1O1xCO-00063J-58
+	for linuxppc-dev@lists.ozlabs.org; Wed, 14 Apr 2010 09:39:58 +0200
+From: =?iso-8859-1?Q?CTAG_/_Mois=E9s_Dom=EDnguez?= <moises.dominguez@ctag.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 14 Apr 2010 09:39:47 +0200
+Message-ID: <E70643A89AF74DE1BCA25C3C4AE2CE29@ctag>
 MIME-Version: 1.0
-Date: Wed, 14 Apr 2010 14:34:04 +0800
-Message-ID: <q2t9faa26521004132334ta3e05513u2b9b569c47fbe212@mail.gmail.com>
-Subject: Questions about creating a OF platform device
-From: Terren Chow <terren.chow@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016e64757227ac49504842c90a7
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_003F_01CADBB6.6C4D3350"
+Subject: mpc5121e-Real Time Clock
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +24,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e64757227ac49504842c90a7
-Content-Type: text/plain; charset=ISO-8859-1
+This is a multi-part message in MIME format.
 
-Dear all,
-    I'm new to PPC Linux development. Recently I'm learning how to write a
-Linux device driver on MPC5121 based embedded system. I'm just confused
-about the OF related code in the kernel.
-    I know in the Linux device driver model, a driver is attached to a
-device through the bus_type methods. For example, the  platform_driver is
-attached to a platform device through the register_platform_driver() method.
-This method will scan over the device list in the bus, and perform probe()
-method when the match() method return ok.
-   My question is, in PPC Linux, there is a structure named *
-of_platform_driver* which is similar to *platform_driver* and there is also
-a bus_type named *of_platform_bus_type* which is similar to *
-platform_bus_type*. But I can't find any information about the structure
-of_platform_device. How do the kernel create the of_platform_device and
-place them into the device list in the *platform_bus_type* ? I search the
-Internet and I can't find any information about this.Could anyone give me
-some information so that I can find out the magic behind. Thanks!
-
--- 
-Terren.Chow
-College of Informatics, SCAU
-Graduate Student
-Lab of Embedded System and Wireless Sensor Network
-MSN: terren.chow@hotmail.com
-
---0016e64757227ac49504842c90a7
-Content-Type: text/html; charset=ISO-8859-1
+------=_NextPart_000_003F_01CADBB6.6C4D3350
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Dear all,<br>=A0=A0=A0 I&#39;m new to PPC Linux development. Recently I&#39=
-;m
- learning how to write a Linux device driver on MPC5121 based embedded=20
-system. I&#39;m just confused about the OF related code in the kernel. <br>
-=A0=A0=A0 I know in the Linux device driver model, a driver is attached to =
-a=20
-device through the bus_type methods. For example, the=A0 platform_driver=20
-is attached to a platform device through the register_platform_driver()=20
-method. This method will scan over the device list in the bus, and=20
-perform probe() method when the match() method return ok. <br>
-=A0=A0 My question is, in PPC Linux, there is a structure named <b>of_platf=
-orm_driver</b>
- which is similar to <b>platform_driver</b> and there is also a bus_type
- named <b>of_platform_bus_type</b> which is similar to <b>platform_bus_type=
-</b>.
- But I can&#39;t find any information about the structure=20
-of_platform_device. How do the kernel create the of_platform_device and=20
-place them into the device list in the <b>platform_bus_type</b> ? I=20
-search the Internet and I can&#39;t find any information about this.Could a=
-nyone give me some information so that I can find out the=20
-magic behind. Thanks!<br clear=3D"all"><br>-- <br><font color=3D"#888888">T=
-erren.Chow<br>College of Informatics, SCAU <br>Graduate
- Student<br>Lab of Embedded System and Wireless Sensor Network<br>MSN: <a h=
-ref=3D"mailto:terren.chow@hotmail.com" target=3D"_blank">terren.chow@hotmai=
-l.com</a></font><br>
+Hi,
 
---0016e64757227ac49504842c90a7--
+=20
+
+I am trying  to use internal Real Time Clock of my ads5121 board .So =
+that I
+am using /dev/rtc-0 device with linux/Documentation/rtc.txt example. I =
+can
+read and write time/date but I notice RTC is not being updated as if =
+VBAT
+was off or there was not oscillator (I tested oscillator and VBAT).
+
+=20
+
+According MPC5121e errdata of freescale doc., there=92s an issue =
+involving
+RTC:
+
+=20
+
+Description:
+
+=93The TAMP bit in the SRTC does not reliably provide an indication that =
+the
+RTC power supply or the RTC
+
+oscillator has been interrupted=94
+
+=20
+
+Workaround:
+
+=93In your system=92s design, do not rely on the tamper indication to be
+reliable=94
+
+=20
+
+=20
+
+Looking in rtc-mpc5121.c code I didn=92t find anything related to Keep =
+Alive
+Register (where TAMP bit is) so I would like to know where this issue is
+taking into account or if it is really being taking into account in the
+driver.
+
+=20
+
+=20
+
+Regards,  Mois=E9s.
+
+
+------=_NextPart_000_003F_01CADBB6.6C4D3350
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+
+
+<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
+
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Verdana;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EstiloCorreo17
+	{font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DES link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>Hi,</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>I am trying =A0to use internal Real Time Clock of =
+my ads5121
+board .So that I am using /dev/rtc-0 device with =
+linux/Documentation/rtc.txt example.
+I can read and write time/date but I notice RTC is not being updated as =
+if VBAT
+was off or there was not oscillator (I tested oscillator and =
+VBAT).</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>According MPC5121e errdata of freescale doc., =
+there&#8217;s
+an issue involving RTC:</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>Description:</span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><b><i><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana;font-weight:bold;font-style=
+:italic'>&#8220;</span></font></i></b><i><font
+face=3DVerdana><span style=3D'font-family:Verdana;font-style:italic'>The =
+TAMP bit
+in the SRTC does not reliably provide an indication that the RTC power =
+supply
+or the RTC</span></font></i></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><i><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana;font-style:italic'>oscillat=
+or has
+been interrupted&#8221;</span></font></i></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana'>Workaround:</span></font><=
+/p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><i><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana;font-style:italic'>&#8220;I=
+n your
+system&#8217;s design, do not rely on the tamper indication to be =
+reliable&#8221;</span></font></i></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><i><font size=3D3 =
+face=3DVerdana><span
+style=3D'font-size:12.0pt;font-family:Verdana;font-style:italic'>&nbsp;</=
+span></font></i></p>
+
+<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
+face=3DVerdana><span
+style=3D'font-size:10.0pt;font-family:Verdana'>=A0</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>Looking in rtc-mpc5121.c code I didn&#8217;t find =
+anything
+related to Keep Alive Register (where TAMP bit is) so I would like to =
+know where
+this issue is taking into account or if it is really being taking into =
+account in
+the driver.</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3DVerdana><span =
+style=3D'font-size:12.0pt;
+font-family:Verdana'>Regards, =A0Mois=E9s.</span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_003F_01CADBB6.6C4D3350--
