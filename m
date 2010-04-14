@@ -1,15 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
-In-reply-to: <1271161766.4807.1280.camel@twins>
-References: <20100409062118.D4096CBB6C@localhost.localdomain>
-	<1271161766.4807.1280.camel@twins>
-Date: Wed, 14 Apr 2010 14:28:37 +1000
-Message-ID: <2906.1271219317@neuling.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C218EB7D16
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Apr 2010 15:07:28 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp05.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3E53goE004605
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:03:42 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3E50uuY1577212
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:00:56 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3E57RK0031305
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:07:27 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: perf: Split out arch specific code & improve PowerPC perf probe
+	support
+Date: Wed, 14 Apr 2010 15:06:37 +1000
+Message-Id: <1271221600-25533-1-git-send-email-imunsie@au.ibm.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,72 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1271161766.4807.1280.camel@twins> you wrote:
-> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
-> > When calculating capacity we use the following calculation:
-> >=20
-> >        capacity =3D DIV_ROUND_CLOSEST(power, SCHED_LOAD_SCALE);
-> >=20
-> > In SMT2, power will be 1178/2 (provided we are not scaling power with
-> > freq say) and SCHED_LOAD_SCALE will be 1024, resulting in capacity
-> > being 1.
-> >=20
-> > With SMT4 however, power will be 1178/4, hence capacity will end up as
-> > 0.
-> >=20
-> > Fix this by ensuring capacity is always at least 1 after this
-> > calculation.
-> >=20
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > I'm not sure this is the correct fix but this works for me. =20
-> 
-> Right, so I suspect this will indeed break some things.
-> 
-> We initially allowed 0 capacity for when a cpu is consumed by an RT task
-> and there simply isn't much capacity left, in that case you really want
-> to try and move load to your sibling cpus if possible.
+These patches add the required mappings to use perf probe on PowerPC.
 
-Changing the CPU power based on what tasks are running on them seems a
-bit wrong to me.  Shouldn't we keep those concepts separate?
+Functionality wise it requires the patch titled "powerpc: Add kprobe-based
+event tracer" from the powerpc-next tree to provide the
+HAVE_REGS_AND_STACK_ACCESS_API required for CONFIG_KPROBE_EVENT. The code will
+still compile cleanly without it and will fail gracefully at runtime on the
+missing CONFIG_KPROBE_EVENT support as before.
 
-> However you're right that this goes awry in your case.
-> 
-> One thing to look at is if that 15% increase is indeed representative
-> for the power7 cpu, it having 4 SMT threads seems to suggest there was
-> significant gains, otherwise they'd not have wasted the silicon.
+Part 1 of the patch series moves the arch dependent x86 32 and 64 bit DWARF
+register number mappings out into a separate arch directory and adds the
+necessary Makefile foo to use it.
 
-There are certainly, for most workloads, per core gains for SMT4 over
-SMT2 on P7.  My kernels certainly compile faster and that's the only
-workload anyone who matters cares about.... ;-)
+Part 2 of the patch series adds the PowerPC mappings.
 
-> (The broken x86 code was meant to actually compute the SMT gain, so that
-> we'd not have to guess the 15%)
-> 
-> Now, increasing this will only marginally fix the issue, since if you
-> end up with 512 per thread it only takes a very tiny amount of RT
-> workload to drop below and end up at 0 again.
 
-I tried initialled to make smt_gain programmable and at 2048 per core
-(512 per thread), the packing became unstable, as you intimated.
+Changes since v1: From Masami Hiramatsu's suggestion, I added a check in the
+Makefile for if the arch specific Makefile defines PERF_HAVE_DWARF_REGS,
+printing a message during build if it has not. This simplifies the code
+removing the odd macro from the previous version and the need for an arch
+specific arch_dwarf-regs.h. I have not entirely disabled DWARF support for
+architectures that don't implement the register mappings, so that they can
+still add a probe based on a line number (they will be missing the ability to
+capture the value of a variable from a register).
 
-> One thing we could look at is using the cpu base power to compute
-> capacity from. We'd have to add another field to sched_group and store
-> power before we do the scale_rt_power() stuff.
 
-Separating capacity from what RT tasks are running seems like a good
-idea to me.
-
-This would fix the RT issue, but it's not clear to me how you are
-suggesting fixing the rounding down to 0 SMT4 issue.  Are you suggesting
-we bump smt_gain to say 2048 + 15%?  Or are you suggesting we separate
-the RT tasks out from capacity and keep the max(1, capacity) that I've
-added?  Or something else?
-
-Would another possibility be changing capacity a scaled value (like
-cpu_power is now) rather than a small integer as it is now.  For
-example, a scaled capacity of 1024 would be equivalent to a capacity of
-1 now.  This might enable us to handle partial capacities better?  We'd
-probably have to scale a bunch of nr_running too.  
-
-Mikey
+Thanks,
+-Ian
