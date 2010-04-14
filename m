@@ -1,16 +1,14 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/5] sched: add asymmetric packing option for sibling
-	domain
-In-reply-to: <1271161767.4807.1281.camel@twins>
-References: <20100409062118.DDF38CBB6E@localhost.localdomain>
-	<1271161767.4807.1281.camel@twins>
-Date: Wed, 14 Apr 2010 16:09:30 +1000
-Message-ID: <6559.1271225370@neuling.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 14 Apr 2010 16:46:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH] powerpc/perf_event: Fix oops due to perf_event_do_pending call
+Message-ID: <20100414064603.GA4714@drongo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,216 +18,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1271161767.4807.1281.camel@twins> you wrote:
-> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
-> > Peter: Since this is based mainly off your initial patch, it should
-> > have your signed-off-by too, but I didn't want to add without your
-> > permission.  Can I add it?
-> 
-> Of course! :-)
-> 
-> This thing does need a better changelog though, and maybe a larger
-> comment with check_asym_packing(), explaining why and what we're doing
-> and what we're assuming (that lower cpu number also means lower thread
-> number).
-> 
+Anton Blanchard found that large POWER systems would occasionally
+crash in the exception exit path when profiling with perf_events.
+The symptom was that an interrupt would occur late in the exit path
+when the MSR[RI] (recoverable interrupt) bit was clear.  Interrupts
+should be hard-disabled at this point but they were enabled.  Because
+the interrupt was not recoverable the system panicked.
 
-OK, updated patch below...
+The reason is that the exception exit path was calling
+perf_event_do_pending after hard-disabling interrupts, and
+perf_event_do_pending will re-enable interrupts.
 
-Mikey
+The simplest and cleanest fix for this is to use the same mechanism
+that 32-bit powerpc does, namely to cause a self-IPI by setting the
+decrementer to 1.  This means we can remove the tests in the exception
+exit path and raw_local_irq_restore.
 
+This also makes sure that the call to perf_event_do_pending from
+timer_interrupt() happens within irq_enter/irq_exit.  (Note that
+calling perf_event_do_pending from timer_interrupt does not mean that
+there is a possible 1/HZ latency; setting the decrementer to 1 ensures
+that the timer interrupt will happen immediately, i.e. within one
+timebase tick, which is a few nanoseconds or 10s of nanoseconds.)
 
-[PATCH 2/5] sched: add asymmetric group packing option for sibling domain
-
-Check to see if the group is packed in a sched doman.
-
-This is primarily intended to used at the sibling level.  Some cores
-like POWER7 prefer to use lower numbered SMT threads.  In the case of
-POWER7, it can move to lower SMT modes only when higher threads are
-idle.  When in lower SMT modes, the threads will perform better since
-they share less core resources.  Hence when we have idle threads, we
-want them to be the higher ones.
-
-This adds a hook into f_b_g() called check_asym_packing() to check the
-packing.  This packing function is run on idle threads.  It checks to
-see if the busiest CPU in this domain (core in the P7 case) has a
-higher CPU number than what where the packing function is being run
-on.  If it is, calculate the imbalance and return the higher busier
-thread as the busiest group to f_b_g().  Here we are assuming a lower
-CPU number will be equivalent to a lower SMT thread number.
-
-It also creates a new SD_ASYM_PACKING flag to enable this feature at
-any scheduler domain level.
-
-It also creates an arch hook to enable this feature at the sibling
-level.  The default function doesn't enable this feature.
-
-Based heavily on patch from Peter Zijlstra.  
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: stable@kernel.org
 ---
- include/linux/sched.h    |    4 +-
- include/linux/topology.h |    1 
- kernel/sched_fair.c      |   93 +++++++++++++++++++++++++++++++++++++++++++++--
- 3 files changed, 94 insertions(+), 4 deletions(-)
+Ben, please put this in your tree of fixes to go to Linus for 2.6.34,
+since it fixes a potential panic.
 
-Index: linux-2.6-ozlabs/include/linux/sched.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/sched.h
-+++ linux-2.6-ozlabs/include/linux/sched.h
-@@ -799,7 +799,7 @@ enum cpu_idle_type {
- #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
- #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
- #define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
+ arch/powerpc/include/asm/hw_irq.h |   38 ------------------------
+ arch/powerpc/kernel/asm-offsets.c |    1 
+ arch/powerpc/kernel/entry_64.S    |    9 -----
+ arch/powerpc/kernel/irq.c         |    6 ---
+ arch/powerpc/kernel/time.c        |   60 ++++++++++++++++++++++++++++++--------
+ 5 files changed, 48 insertions(+), 66 deletions(-)
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 9f4c9d4..bd100fc 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -130,43 +130,5 @@ static inline int irqs_disabled_flags(unsigned long flags)
+  */
+ struct irq_chip;
+ 
+-#ifdef CONFIG_PERF_EVENTS
 -
-+#define SD_ASYM_PACKING		0x0800  /* Place busy groups earlier in the domain */
- #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
+-#ifdef CONFIG_PPC64
+-static inline unsigned long test_perf_event_pending(void)
+-{
+-	unsigned long x;
+-
+-	asm volatile("lbz %0,%1(13)"
+-		: "=r" (x)
+-		: "i" (offsetof(struct paca_struct, perf_event_pending)));
+-	return x;
+-}
+-
+-static inline void set_perf_event_pending(void)
+-{
+-	asm volatile("stb %0,%1(13)" : :
+-		"r" (1),
+-		"i" (offsetof(struct paca_struct, perf_event_pending)));
+-}
+-
+-static inline void clear_perf_event_pending(void)
+-{
+-	asm volatile("stb %0,%1(13)" : :
+-		"r" (0),
+-		"i" (offsetof(struct paca_struct, perf_event_pending)));
+-}
+-#endif /* CONFIG_PPC64 */
+-
+-#else  /* CONFIG_PERF_EVENTS */
+-
+-static inline unsigned long test_perf_event_pending(void)
+-{
+-	return 0;
+-}
+-
+-static inline void clear_perf_event_pending(void) {}
+-#endif /* CONFIG_PERF_EVENTS */
+-
+ #endif	/* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_HW_IRQ_H */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 957ceb7..c09138d 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -133,7 +133,6 @@ int main(void)
+ 	DEFINE(PACAKMSR, offsetof(struct paca_struct, kernel_msr));
+ 	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct, soft_enabled));
+ 	DEFINE(PACAHARDIRQEN, offsetof(struct paca_struct, hard_enabled));
+-	DEFINE(PACAPERFPEND, offsetof(struct paca_struct, perf_event_pending));
+ 	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, context.id));
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 07109d8..42e9d90 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -556,15 +556,6 @@ ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_ISERIES)
+ 2:
+ 	TRACE_AND_RESTORE_IRQ(r5);
  
- enum powersavings_balance_level {
-@@ -834,6 +834,8 @@ static inline int sd_balance_for_package
- 	return SD_PREFER_SIBLING;
+-#ifdef CONFIG_PERF_EVENTS
+-	/* check paca->perf_event_pending if we're enabling ints */
+-	lbz	r3,PACAPERFPEND(r13)
+-	and.	r3,r3,r5
+-	beq	27f
+-	bl	.perf_event_do_pending
+-27:
+-#endif /* CONFIG_PERF_EVENTS */
+-
+ 	/* extract EE bit and use it to restore paca->hard_enabled */
+ 	ld	r3,_MSR(r1)
+ 	rldicl	r4,r3,49,63		/* r0 = (r3 >> 15) & 1 */
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 64f6f20..066bd31 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -53,7 +53,6 @@
+ #include <linux/bootmem.h>
+ #include <linux/pci.h>
+ #include <linux/debugfs.h>
+-#include <linux/perf_event.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -145,11 +144,6 @@ notrace void raw_local_irq_restore(unsigned long en)
+ 	}
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ 
+-	if (test_perf_event_pending()) {
+-		clear_perf_event_pending();
+-		perf_event_do_pending();
+-	}
+-
+ 	/*
+ 	 * if (get_paca()->hard_enabled) return;
+ 	 * But again we need to take care that gcc gets hard_enabled directly
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 1b16b9a..0441bbd 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -532,25 +532,60 @@ void __init iSeries_time_init_early(void)
  }
+ #endif /* CONFIG_PPC_ISERIES */
  
-+extern int __weak arch_sd_sibiling_asym_packing(void);
-+
- /*
-  * Optimise SD flags for power savings:
-  * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
-Index: linux-2.6-ozlabs/include/linux/topology.h
-===================================================================
---- linux-2.6-ozlabs.orig/include/linux/topology.h
-+++ linux-2.6-ozlabs/include/linux/topology.h
-@@ -102,6 +102,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
- 				| 0*SD_PREFER_SIBLING			\
-+				| arch_sd_sibiling_asym_packing()	\
- 				,					\
- 	.last_balance		= jiffies,				\
- 	.balance_interval	= 1,					\
-Index: linux-2.6-ozlabs/kernel/sched_fair.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/sched_fair.c
-+++ linux-2.6-ozlabs/kernel/sched_fair.c
-@@ -2493,6 +2493,39 @@ static inline void update_sg_lb_stats(st
- }
+-#if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_PPC32)
+-DEFINE_PER_CPU(u8, perf_event_pending);
++#ifdef CONFIG_PERF_EVENTS
  
- /**
-+ * update_sd_pick_busiest - return 1 on busiest group
-+ * @sd: sched_domain whose statistics are to be checked
-+ * @sds: sched_domain statistics
-+ * @sg: sched_group candidate to be checked for being the busiest
-+ * @sds: sched_group statistics
-+ *
-+ * This returns 1 for the busiest group. If asymmetric packing is
-+ * enabled and we already have a busiest, but this candidate group has
-+ * a higher cpu number than the current busiest, pick this sg.
+-void set_perf_event_pending(void)
++/*
++ * 64-bit uses a byte in the PACA, 32-bit uses a per-cpu variable...
 + */
-+static int update_sd_pick_busiest(struct sched_domain *sd,
-+				  struct sd_lb_stats *sds,
-+				  struct sched_group *sg,
-+				  struct sg_lb_stats *sgs)
++#ifdef CONFIG_PPC64
++static inline unsigned long test_perf_event_pending(void)
+ {
+-	get_cpu_var(perf_event_pending) = 1;
+-	set_dec(1);
+-	put_cpu_var(perf_event_pending);
++	unsigned long x;
++
++	asm volatile("lbz %0,%1(13)"
++		: "=r" (x)
++		: "i" (offsetof(struct paca_struct, perf_event_pending)));
++	return x;
+ }
+ 
++static inline void set_perf_event_pending_flag(void)
 +{
-+	if (sgs->sum_nr_running > sgs->group_capacity)
-+		return 1;
++	asm volatile("stb %0,%1(13)" : :
++		"r" (1),
++		"i" (offsetof(struct paca_struct, perf_event_pending)));
++}
 +
-+	if (sgs->group_imb)
-+		return 1;
++static inline void clear_perf_event_pending(void)
++{
++	asm volatile("stb %0,%1(13)" : :
++		"r" (0),
++		"i" (offsetof(struct paca_struct, perf_event_pending)));
++}
 +
-+	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
-+		if (!sds->busiest)
-+			return 1;
++#else /* 32-bit */
 +
-+		if (group_first_cpu(sds->busiest) > group_first_cpu(sg))
-+			return 1;
++DEFINE_PER_CPU(u8, perf_event_pending);
++
++#define set_perf_event_pending_flag()	__get_cpu_var(perf_event_pending) = 1
+ #define test_perf_event_pending()	__get_cpu_var(perf_event_pending)
+ #define clear_perf_event_pending()	__get_cpu_var(perf_event_pending) = 0
+ 
+-#else  /* CONFIG_PERF_EVENTS && CONFIG_PPC32 */
++#endif /* 32 vs 64 bit */
++
++void set_perf_event_pending(void)
++{
++	preempt_disable();
++	set_perf_event_pending_flag();
++	set_dec(1);
++	preempt_enable();
++}
++
++#else  /* CONFIG_PERF_EVENTS */
+ 
+ #define test_perf_event_pending()	0
+ #define clear_perf_event_pending()
+ 
+-#endif /* CONFIG_PERF_EVENTS && CONFIG_PPC32 */
++#endif /* CONFIG_PERF_EVENTS */
+ 
+ /*
+  * For iSeries shared processors, we have to let the hypervisor
+@@ -582,10 +617,6 @@ void timer_interrupt(struct pt_regs * regs)
+ 	set_dec(DECREMENTER_MAX);
+ 
+ #ifdef CONFIG_PPC32
+-	if (test_perf_event_pending()) {
+-		clear_perf_event_pending();
+-		perf_event_do_pending();
+-	}
+ 	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+ 		do_IRQ(regs);
+ #endif
+@@ -604,6 +635,11 @@ void timer_interrupt(struct pt_regs * regs)
+ 
+ 	calculate_steal_time();
+ 
++	if (test_perf_event_pending()) {
++		clear_perf_event_pending();
++		perf_event_do_pending();
 +	}
 +
-+	return 0;
-+}
-+
-+/**
-  * update_sd_lb_stats - Update sched_group's statistics for load balancing.
-  * @sd: sched_domain whose statistics are to be updated.
-  * @this_cpu: Cpu for which load balance is currently performed.
-@@ -2546,9 +2579,8 @@ static inline void update_sd_lb_stats(st
- 			sds->this = group;
- 			sds->this_nr_running = sgs.sum_nr_running;
- 			sds->this_load_per_task = sgs.sum_weighted_load;
--		} else if (sgs.avg_load > sds->max_load &&
--			   (sgs.sum_nr_running > sgs.group_capacity ||
--				sgs.group_imb)) {
-+		} else if (sgs.avg_load >= sds->max_load &&
-+			   update_sd_pick_busiest(sd, sds, group, &sgs)) {
- 			sds->max_load = sgs.avg_load;
- 			sds->busiest = group;
- 			sds->busiest_nr_running = sgs.sum_nr_running;
-@@ -2562,6 +2594,57 @@ static inline void update_sd_lb_stats(st
- 	} while (group != sd->groups);
- }
- 
-+int __weak arch_sd_sibiling_asym_packing(void)
-+{
-+       return 0*SD_ASYM_PACKING;
-+}
-+
-+/**
-+ * check_asym_packing - Check to see if the group is packed into the
-+ *			sched doman.
-+ *
-+ * This is primarily intended to used at the sibling level.  Some
-+ * cores like POWER7 prefer to use lower numbered SMT threads.  In the
-+ * case of POWER7, it can move to lower SMT modes only when higher
-+ * threads are idle.  When in lower SMT modes, the threads will
-+ * perform better since they share less core resources.  Hence when we
-+ * have idle threads, we want them to be the higher ones.
-+ *
-+ * This packing function is run on idle threads.  It checks to see if
-+ * the busiest CPU in this domain (core in the P7 case) has a higher
-+ * CPU number than the packing function is being run on.  Here we are
-+ * assuming lower CPU number will be equivalent to lower a SMT thread
-+ * number.
-+ *
-+ * @sd: The sched_domain whose packing is to be checked.
-+ * @sds: Statistics of the sched_domain which is to be packed
-+ * @this_cpu: The cpu at whose sched_domain we're performing load-balance.
-+ * @imbalance: returns amount of imbalanced due to packing.
-+ *
-+ * Returns 1 when packing is required and a task should be moved to
-+ * this CPU.  The amount of the imbalance is returned in *imbalance.
-+ */
-+static int check_asym_packing(struct sched_domain *sd,
-+			      struct sd_lb_stats *sds,
-+			      int this_cpu, unsigned long *imbalance)
-+{
-+	int busiest_cpu;
-+
-+	if (!(sd->flags & SD_ASYM_PACKING))
-+		return 0;
-+
-+	if (!sds->busiest)
-+		return 0;
-+
-+	busiest_cpu = group_first_cpu(sds->busiest);
-+	if (this_cpu > busiest_cpu)
-+		return 0;
-+
-+	*imbalance = DIV_ROUND_CLOSEST(sds->max_load * sds->busiest->cpu_power,
-+				       SCHED_LOAD_SCALE);
-+	return 1;
-+}
-+
- /**
-  * fix_small_imbalance - Calculate the minor imbalance that exists
-  *			amongst the groups of a sched_domain, during
-@@ -2754,6 +2837,10 @@ find_busiest_group(struct sched_domain *
- 	if (!(*balance))
- 		goto ret;
- 
-+	if ((idle == CPU_IDLE || idle == CPU_NEWLY_IDLE) &&
-+	    check_asym_packing(sd, &sds, this_cpu, imbalance))
-+		return sds.busiest;
-+
- 	if (!sds.busiest || sds.busiest_nr_running == 0)
- 		goto out_balanced;
- 
+ #ifdef CONFIG_PPC_ISERIES
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES))
+ 		get_lppaca()->int_dword.fields.decr_int = 0;
