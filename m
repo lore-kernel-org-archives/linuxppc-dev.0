@@ -1,15 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Resetting PCI-E devices after linux boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jake Magee <jakemagee@gmail.com>
-In-Reply-To: <t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
-References: <4BAC0D4B.3030507@fulcrummicro.com>
-	<t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Apr 2010 08:25:23 +1000
-Message-ID: <1271283923.13059.150.camel@pasglop>
-Mime-Version: 1.0
-Cc: Dan Wilson <dwilson@fulcrummicro.com>, Linuxppc-dev@lists.ozlabs.org
+Return-Path: <terren.chow@gmail.com>
+Received: from mail-pz0-f195.google.com (mail-pz0-f195.google.com
+	[209.85.222.195]) by ozlabs.org (Postfix) with ESMTP id D72FFB7D48
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 04:10:01 +1000 (EST)
+Received: by pzk33 with SMTP id 33so385046pzk.17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Apr 2010 11:08:27 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 15 Apr 2010 02:08:27 +0800
+Message-ID: <u2w9faa26521004141108vf9f06e06j15e864ea94fff3e8@mail.gmail.com>
+Subject: Re:mpc5121e-Real Time Clock
+From: Terren Chow <terren.chow@gmail.com>
+To: moises.dominguez@ctag.com
+Content-Type: multipart/alternative; boundary=000e0cd13842cfefea04843643db
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-04-14 at 08:55 -0500, Jake Magee wrote:
-> On Thu, Mar 25, 2010 at 8:26 PM, Dan Wilson <dwilson@fulcrummicro.com>
-> wrote:
->         We are building a PCI-E device for use in an embedded system
->         with an 85xx processor.  One of our customers is adamant that
->         linux PCI-E hot-swap support will not allow us to either bring
->         the device up after linux boot (i.e., the PCI-E device must be
->         present when linux scans for PCI-E devices at startup) or to
->         reset the device once linux is up.  It was our impression that
->         the PCI-E hot-swap support should allow for devices to appear
->         after linux boot, be properly initialized, and then later be
->         able to shut them down and bring them back up again.
->         
->         Has anyone successfully used the PCI-E hot-swap capabilities
->         in the linux kernel in a PPC 85xx environment?  Any known
->         gotchas we need to be aware of?
->         
->         Thanks in advance for your responses,
+--000e0cd13842cfefea04843643db
+Content-Type: text/plain; charset=ISO-8859-1
 
-It should be possible to get that working, but I suspect not without
-some code changes. I know the current PCIe hotswap driver has ACPI hooks
-that would need to be replaced by appropriate hooks into the powerpc
-code to perform the right resource manipulation etc...
+I don't think the internal RTC is workable. I've read the RTC section in the
+MPC5121 data sheet, and I found that the RTC only keep the time tick
+register using VBAT. So if there is a power failure, the RTC will lost its
+minute and hour information. After the system boot up, the kernel will read
+the RTC to get its wall time, so the system time will reset to 1970xxxxx. I
+think there is a design mistake of the CPU.
+The only solution is using the mt41 RTC chip on the ADS5121 board as the RTC
+device.
 
-We do PCIe hotswap on IBM pSeries, but this is using specific FW
-interfaces for which we have a dedicated PCI hotplug driver.
+-- 
+Terren Chow
+Graduate student
+College of Informatics, SCAU
+MSN: terren.chow@hotmail.com
 
-Can the slot power be SW controlled on the Canyonlands PCIe slot ? In
-that case I should be able to toy with that myself at some stage (but
-not for a couple of weeks).
+--000e0cd13842cfefea04843643db
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+I don&#39;t think the internal RTC is workable. I&#39;ve read the RTC secti=
+on in the MPC5121 data sheet, and I found that the RTC only keep the time t=
+ick register using VBAT. So if there is a power failure, the RTC will lost =
+its minute and hour information. After the system boot up, the kernel will =
+read the RTC to get its wall time, so the system time will reset to 1970xxx=
+xx. I think there is a design mistake of the CPU.<br>
+The only solution is using the mt41 RTC chip on the ADS5121 board as the RT=
+C device.=A0 <br clear=3D"all"><br>-- <br>Terren Chow<br>Graduate student<b=
+r>College of Informatics, SCAU<br>MSN: <a href=3D"mailto:terren.chow@hotmai=
+l.com">terren.chow@hotmail.com</a><br>
+<br>
+
+--000e0cd13842cfefea04843643db--
