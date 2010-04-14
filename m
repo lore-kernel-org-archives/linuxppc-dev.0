@@ -1,34 +1,16 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1C139B7EBE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Apr 2010 15:07:41 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3E57e2C008128
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:07:40 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3E51DaN1101958
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:01:13 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3E57dWF031573
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 15:07:40 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] perf probe: Add PowerPC DWARF register number mappings
-Date: Wed, 14 Apr 2010 15:06:39 +1000
-Message-Id: <1271221600-25533-3-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1271221600-25533-2-git-send-email-imunsie@au.ibm.com>
-References: <1271221600-25533-1-git-send-email-imunsie@au.ibm.com>
-	<1271221600-25533-2-git-send-email-imunsie@au.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	Masami Hiramatsu <mhiramat@redhat.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/5] sched: add asymmetric packing option for sibling
+	domain
+In-reply-to: <1271161767.4807.1281.camel@twins>
+References: <20100409062118.DDF38CBB6E@localhost.localdomain>
+	<1271161767.4807.1281.camel@twins>
+Date: Wed, 14 Apr 2010 16:09:30 +1000
+Message-ID: <6559.1271225370@neuling.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,128 +20,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au.ibm.com>
+In message <1271161767.4807.1281.camel@twins> you wrote:
+> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
+> > Peter: Since this is based mainly off your initial patch, it should
+> > have your signed-off-by too, but I didn't want to add without your
+> > permission.  Can I add it?
+> 
+> Of course! :-)
+> 
+> This thing does need a better changelog though, and maybe a larger
+> comment with check_asym_packing(), explaining why and what we're doing
+> and what we're assuming (that lower cpu number also means lower thread
+> number).
+> 
 
-This patch adds mappings from the register numbers from DWARF to the
-register names used in the PowerPC Regs and Stack Access API. This
-allows perf probe to be used to record variable contents on PowerPC.
+OK, updated patch below...
 
-This patch depends on functionality in the powerpc/next tree, though it
-will compile fine without it. Specifically this patch depends on commit
-"powerpc: Add kprobe-based event tracer"
+Mikey
 
-Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+
+[PATCH 2/5] sched: add asymmetric group packing option for sibling domain
+
+Check to see if the group is packed in a sched doman.
+
+This is primarily intended to used at the sibling level.  Some cores
+like POWER7 prefer to use lower numbered SMT threads.  In the case of
+POWER7, it can move to lower SMT modes only when higher threads are
+idle.  When in lower SMT modes, the threads will perform better since
+they share less core resources.  Hence when we have idle threads, we
+want them to be the higher ones.
+
+This adds a hook into f_b_g() called check_asym_packing() to check the
+packing.  This packing function is run on idle threads.  It checks to
+see if the busiest CPU in this domain (core in the P7 case) has a
+higher CPU number than what where the packing function is being run
+on.  If it is, calculate the imbalance and return the higher busier
+thread as the busiest group to f_b_g().  Here we are assuming a lower
+CPU number will be equivalent to a lower SMT thread number.
+
+It also creates a new SD_ASYM_PACKING flag to enable this feature at
+any scheduler domain level.
+
+It also creates an arch hook to enable this feature at the sibling
+level.  The default function doesn't enable this feature.
+
+Based heavily on patch from Peter Zijlstra.  
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 ---
- Changes since v1: Removed arch specific arch_dwarf-regs.h and defined
- PERF_HAVE_DWARF_REGS in the arch specific Makefile.
+ include/linux/sched.h    |    4 +-
+ include/linux/topology.h |    1 
+ kernel/sched_fair.c      |   93 +++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 94 insertions(+), 4 deletions(-)
 
- tools/perf/arch/powerpc/Makefile          |    2 +
- tools/perf/arch/powerpc/util/dwarf-regs.c |   88 +++++++++++++++++++++++++++++
- 2 files changed, 90 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/Makefile
- create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
-
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-new file mode 100644
-index 0000000..cbd7833
---- /dev/null
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -0,0 +1,2 @@
-+PERF_HAVE_DWARF_REGS := 1
-+LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
-diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-new file mode 100644
-index 0000000..48ae0c5
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-@@ -0,0 +1,88 @@
-+/*
-+ * Mapping of DWARF debug register numbers into register names.
+Index: linux-2.6-ozlabs/include/linux/sched.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/linux/sched.h
++++ linux-2.6-ozlabs/include/linux/sched.h
+@@ -799,7 +799,7 @@ enum cpu_idle_type {
+ #define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
+ #define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
+ #define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
+-
++#define SD_ASYM_PACKING		0x0800  /* Place busy groups earlier in the domain */
+ #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
+ 
+ enum powersavings_balance_level {
+@@ -834,6 +834,8 @@ static inline int sd_balance_for_package
+ 	return SD_PREFER_SIBLING;
+ }
+ 
++extern int __weak arch_sd_sibiling_asym_packing(void);
++
+ /*
+  * Optimise SD flags for power savings:
+  * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
+Index: linux-2.6-ozlabs/include/linux/topology.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/linux/topology.h
++++ linux-2.6-ozlabs/include/linux/topology.h
+@@ -102,6 +102,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_SHARE_PKG_RESOURCES		\
+ 				| 0*SD_SERIALIZE			\
+ 				| 0*SD_PREFER_SIBLING			\
++				| arch_sd_sibiling_asym_packing()	\
+ 				,					\
+ 	.last_balance		= jiffies,				\
+ 	.balance_interval	= 1,					\
+Index: linux-2.6-ozlabs/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-ozlabs.orig/kernel/sched_fair.c
++++ linux-2.6-ozlabs/kernel/sched_fair.c
+@@ -2493,6 +2493,39 @@ static inline void update_sg_lb_stats(st
+ }
+ 
+ /**
++ * update_sd_pick_busiest - return 1 on busiest group
++ * @sd: sched_domain whose statistics are to be checked
++ * @sds: sched_domain statistics
++ * @sg: sched_group candidate to be checked for being the busiest
++ * @sds: sched_group statistics
 + *
-+ * Copyright (C) 2010 Ian Munsie, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * This returns 1 for the busiest group. If asymmetric packing is
++ * enabled and we already have a busiest, but this candidate group has
++ * a higher cpu number than the current busiest, pick this sg.
 + */
++static int update_sd_pick_busiest(struct sched_domain *sd,
++				  struct sd_lb_stats *sds,
++				  struct sched_group *sg,
++				  struct sg_lb_stats *sgs)
++{
++	if (sgs->sum_nr_running > sgs->group_capacity)
++		return 1;
 +
-+#include <libio.h>
-+#include <dwarf-regs.h>
++	if (sgs->group_imb)
++		return 1;
 +
++	if ((sd->flags & SD_ASYM_PACKING) && sgs->sum_nr_running) {
++		if (!sds->busiest)
++			return 1;
 +
-+struct pt_regs_dwarfnum {
-+	const char *name;
-+	unsigned int dwarfnum;
-+};
++		if (group_first_cpu(sds->busiest) > group_first_cpu(sg))
++			return 1;
++	}
 +
-+#define STR(s) #s
-+#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
-+#define GPR_DWARFNUM_NAME(num)	\
-+	{.name = STR(%gpr##num), .dwarfnum = num}
-+#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-+
-+/*
-+ * Reference:
-+ * http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.9.html
-+ */
-+static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
-+	GPR_DWARFNUM_NAME(0),
-+	GPR_DWARFNUM_NAME(1),
-+	GPR_DWARFNUM_NAME(2),
-+	GPR_DWARFNUM_NAME(3),
-+	GPR_DWARFNUM_NAME(4),
-+	GPR_DWARFNUM_NAME(5),
-+	GPR_DWARFNUM_NAME(6),
-+	GPR_DWARFNUM_NAME(7),
-+	GPR_DWARFNUM_NAME(8),
-+	GPR_DWARFNUM_NAME(9),
-+	GPR_DWARFNUM_NAME(10),
-+	GPR_DWARFNUM_NAME(11),
-+	GPR_DWARFNUM_NAME(12),
-+	GPR_DWARFNUM_NAME(13),
-+	GPR_DWARFNUM_NAME(14),
-+	GPR_DWARFNUM_NAME(15),
-+	GPR_DWARFNUM_NAME(16),
-+	GPR_DWARFNUM_NAME(17),
-+	GPR_DWARFNUM_NAME(18),
-+	GPR_DWARFNUM_NAME(19),
-+	GPR_DWARFNUM_NAME(20),
-+	GPR_DWARFNUM_NAME(21),
-+	GPR_DWARFNUM_NAME(22),
-+	GPR_DWARFNUM_NAME(23),
-+	GPR_DWARFNUM_NAME(24),
-+	GPR_DWARFNUM_NAME(25),
-+	GPR_DWARFNUM_NAME(26),
-+	GPR_DWARFNUM_NAME(27),
-+	GPR_DWARFNUM_NAME(28),
-+	GPR_DWARFNUM_NAME(29),
-+	GPR_DWARFNUM_NAME(30),
-+	GPR_DWARFNUM_NAME(31),
-+	REG_DWARFNUM_NAME("%msr",   66),
-+	REG_DWARFNUM_NAME("%ctr",   109),
-+	REG_DWARFNUM_NAME("%link",  108),
-+	REG_DWARFNUM_NAME("%xer",   101),
-+	REG_DWARFNUM_NAME("%dar",   119),
-+	REG_DWARFNUM_NAME("%dsisr", 118),
-+	REG_DWARFNUM_END,
-+};
++	return 0;
++}
 +
 +/**
-+ * get_arch_regstr() - lookup register name from it's DWARF register number
-+ * @n:	the DWARF register number
-+ *
-+ * get_arch_regstr() returns the name of the register in struct
-+ * regdwarfnum_table from it's DWARF register number. If the register is not
-+ * found in the table, this returns NULL;
-+ */
-+const char *get_arch_regstr(unsigned int n)
+  * update_sd_lb_stats - Update sched_group's statistics for load balancing.
+  * @sd: sched_domain whose statistics are to be updated.
+  * @this_cpu: Cpu for which load balance is currently performed.
+@@ -2546,9 +2579,8 @@ static inline void update_sd_lb_stats(st
+ 			sds->this = group;
+ 			sds->this_nr_running = sgs.sum_nr_running;
+ 			sds->this_load_per_task = sgs.sum_weighted_load;
+-		} else if (sgs.avg_load > sds->max_load &&
+-			   (sgs.sum_nr_running > sgs.group_capacity ||
+-				sgs.group_imb)) {
++		} else if (sgs.avg_load >= sds->max_load &&
++			   update_sd_pick_busiest(sd, sds, group, &sgs)) {
+ 			sds->max_load = sgs.avg_load;
+ 			sds->busiest = group;
+ 			sds->busiest_nr_running = sgs.sum_nr_running;
+@@ -2562,6 +2594,57 @@ static inline void update_sd_lb_stats(st
+ 	} while (group != sd->groups);
+ }
+ 
++int __weak arch_sd_sibiling_asym_packing(void)
 +{
-+	const struct pt_regs_dwarfnum *roff;
-+	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-+		if (roff->dwarfnum == n)
-+			return roff->name;
-+	return NULL;
++       return 0*SD_ASYM_PACKING;
 +}
--- 
-1.7.0
++
++/**
++ * check_asym_packing - Check to see if the group is packed into the
++ *			sched doman.
++ *
++ * This is primarily intended to used at the sibling level.  Some
++ * cores like POWER7 prefer to use lower numbered SMT threads.  In the
++ * case of POWER7, it can move to lower SMT modes only when higher
++ * threads are idle.  When in lower SMT modes, the threads will
++ * perform better since they share less core resources.  Hence when we
++ * have idle threads, we want them to be the higher ones.
++ *
++ * This packing function is run on idle threads.  It checks to see if
++ * the busiest CPU in this domain (core in the P7 case) has a higher
++ * CPU number than the packing function is being run on.  Here we are
++ * assuming lower CPU number will be equivalent to lower a SMT thread
++ * number.
++ *
++ * @sd: The sched_domain whose packing is to be checked.
++ * @sds: Statistics of the sched_domain which is to be packed
++ * @this_cpu: The cpu at whose sched_domain we're performing load-balance.
++ * @imbalance: returns amount of imbalanced due to packing.
++ *
++ * Returns 1 when packing is required and a task should be moved to
++ * this CPU.  The amount of the imbalance is returned in *imbalance.
++ */
++static int check_asym_packing(struct sched_domain *sd,
++			      struct sd_lb_stats *sds,
++			      int this_cpu, unsigned long *imbalance)
++{
++	int busiest_cpu;
++
++	if (!(sd->flags & SD_ASYM_PACKING))
++		return 0;
++
++	if (!sds->busiest)
++		return 0;
++
++	busiest_cpu = group_first_cpu(sds->busiest);
++	if (this_cpu > busiest_cpu)
++		return 0;
++
++	*imbalance = DIV_ROUND_CLOSEST(sds->max_load * sds->busiest->cpu_power,
++				       SCHED_LOAD_SCALE);
++	return 1;
++}
++
+ /**
+  * fix_small_imbalance - Calculate the minor imbalance that exists
+  *			amongst the groups of a sched_domain, during
+@@ -2754,6 +2837,10 @@ find_busiest_group(struct sched_domain *
+ 	if (!(*balance))
+ 		goto ret;
+ 
++	if ((idle == CPU_IDLE || idle == CPU_NEWLY_IDLE) &&
++	    check_asym_packing(sd, &sds, this_cpu, imbalance))
++		return sds.busiest;
++
+ 	if (!sds.busiest || sds.busiest_nr_running == 0)
+ 		goto out_balanced;
+ 
