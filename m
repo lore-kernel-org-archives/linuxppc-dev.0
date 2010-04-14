@@ -1,35 +1,23 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A1733B7D0E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Apr 2010 09:34:57 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3DNYtrO020391
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:34:55 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3DNSSVr1658902
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:28:28 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3DNYsbV015668
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Apr 2010 09:34:54 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: Track backing pages allocated by
-	vmemmap_populate()
-Date: Wed, 14 Apr 2010 09:38:46 +1000
-References: <201003261812.34095.markn@au1.ibm.com>
-	<201004131602.23898.markn@au1.ibm.com>
-	<1271157404.13059.102.camel@pasglop>
-In-Reply-To: <1271157404.13059.102.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201004140938.46705.markn@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <suresh.b.siddha@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 6F03CB7D0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Apr 2010 11:42:09 +1000 (EST)
+Subject: Re: [PATCH 5/5] sched: make fix_small_imbalance work with
+	asymmetric packing
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1271161769.4807.1283.camel@twins>
+References: <20100409062119.10AC5CBB6D@localhost.localdomain>
+	<1271161769.4807.1283.camel@twins>
+Content-Type: text/plain
+Date: Tue, 13 Apr 2010 18:31:10 -0700
+Message-Id: <1271208670.2834.55.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, Gautham R Shenoy <ego@in.ibm.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Ingo Molnar <mingo@elte.hu>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 13 April 2010 21:16:44 Benjamin Herrenschmidt wrote:
-> On Tue, 2010-04-13 at 16:02 +1000, Mark Nelson wrote:
-> > That's a good question, and one that I probably should have added to
-> > the
-> > commit message.
-> > But, following through, it looks like we end up calling into
-> > __remove_section() from mm/memory_hotplug.c and if
-> > CONFIG_SPARSEMEM_VMEMMAP is enabled we just return EBUSY as freeing
-> > memmap with vmemmap isn't implemented yet.
+On Tue, 2010-04-13 at 05:29 -0700, Peter Zijlstra wrote:
+> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
+> > With the asymmetric packing infrastructure, fix_small_imbalance is
+> > causing idle higher threads to pull tasks off lower threads.  
 > > 
-> > So for the moment, I'm not sure we have to worry about it.
+> > This is being caused by an off-by-one error.  
+> > 
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> > I'm not sure this is the right fix but without it, higher threads pull
+> > tasks off the lower threads, then the packing pulls it back down, etc
+> > etc and tasks bounce around constantly.
 > 
-> We probably don't. IE. The vmemmap will remain for those struct pages,
-> which means they won't need to be allocated again if some memory is
-> plugged back there. If not, we just waste a bit of memory. Not a big
-> deal.
+> Would help if you expand upon the why/how it manages to get pulled up.
 > 
-Excellent! That makes sense.
+> I can't immediately spot anything wrong with the patch, but then that
+> isn't my favourite piece of code either.. Suresh, any comments?
+> 
 
-Thanks Ben!
+Sorry didn't pay much attention to this patchset. But based on the
+comments from Michael and looking at this patchset, it has SMT/MC
+implications. I will review and run some tests and get back in a day.
 
-Mark.
+As far as this particular patch is concerned, original code is coming
+from Ingo's original CFS code commit (dd41f596) and the below hunk
+pretty much explains what the change is about.
+
+-               if (max_load - this_load >= busiest_load_per_task * imbn) {
++               if (max_load - this_load + SCHED_LOAD_SCALE_FUZZ >=
++                                       busiest_load_per_task * imbn) {
+
+So the below proposed change will probably break what the above
+mentioned commit was trying to achieve, which is: for fairness reasons
+we were bouncing the small extra load (between the max_load and
+this_load) around.
+
+> > ---
+> > 
+> >  kernel/sched_fair.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6-ozlabs/kernel/sched_fair.c
+> > ===================================================================
+> > --- linux-2.6-ozlabs.orig/kernel/sched_fair.c
+> > +++ linux-2.6-ozlabs/kernel/sched_fair.c
+> > @@ -2652,7 +2652,7 @@ static inline void fix_small_imbalance(s
+> >  						 * SCHED_LOAD_SCALE;
+> >  	scaled_busy_load_per_task /= sds->busiest->cpu_power;
+> >  
+> > -	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
+> > +	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >
+> >  			(scaled_busy_load_per_task * imbn)) {
+> >  		*imbalance = sds->busiest_load_per_task;
+> >  		return;
+> 
+
+thanks,
+suresh
