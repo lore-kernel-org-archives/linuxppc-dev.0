@@ -1,23 +1,19 @@
-Return-Path: <suresh.b.siddha@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	by ozlabs.org (Postfix) with ESMTP id 6F03CB7D0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Apr 2010 11:42:09 +1000 (EST)
-Subject: Re: [PATCH 5/5] sched: make fix_small_imbalance work with
-	asymmetric packing
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EC30DB7D0F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Apr 2010 12:38:47 +1000 (EST)
+Subject: Possible bug with mutex adaptative spinning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <1271161769.4807.1283.camel@twins>
-References: <20100409062119.10AC5CBB6D@localhost.localdomain>
-	<1271161769.4807.1283.camel@twins>
-Content-Type: text/plain
-Date: Tue, 13 Apr 2010 18:31:10 -0700
-Message-Id: <1271208670.2834.55.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 14 Apr 2010 12:35:09 +1000
+Message-ID: <1271212509.13059.135.camel@pasglop>
 Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, Gautham R Shenoy <ego@in.ibm.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@elte.hu>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-04-13 at 05:29 -0700, Peter Zijlstra wrote:
-> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
-> > With the asymmetric packing infrastructure, fix_small_imbalance is
-> > causing idle higher threads to pull tasks off lower threads.  
-> > 
-> > This is being caused by an off-by-one error.  
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > I'm not sure this is the right fix but without it, higher threads pull
-> > tasks off the lower threads, then the packing pulls it back down, etc
-> > etc and tasks bounce around constantly.
-> 
-> Would help if you expand upon the why/how it manages to get pulled up.
-> 
-> I can't immediately spot anything wrong with the patch, but then that
-> isn't my favourite piece of code either.. Suresh, any comments?
-> 
+Hi Peter !
 
-Sorry didn't pay much attention to this patchset. But based on the
-comments from Michael and looking at this patchset, it has SMT/MC
-implications. I will review and run some tests and get back in a day.
+I -may- have found a bug with mutex adaptative spinning. We hit it when
+torture testing CPU unplug.
 
-As far as this particular patch is concerned, original code is coming
-from Ingo's original CFS code commit (dd41f596) and the below hunk
-pretty much explains what the change is about.
+Basically, what happens is mutex_spin_on_owner() returns 1 if the owner
+CPU is offline. That means that the caller (__mutex_lock_common()) will
+spin until the mutex is released since there's a valid owner (so the
+need_resched() test doesn't trigger). This will deadlock if this is the
+only remaining CPU online.
 
--               if (max_load - this_load >= busiest_load_per_task * imbn) {
-+               if (max_load - this_load + SCHED_LOAD_SCALE_FUZZ >=
-+                                       busiest_load_per_task * imbn) {
+In fact, it even deadlocks with more than 1 CPU online, for example, I
+have a case where the 2 remaining online CPUs got into
+__mutex_lock_common() at the same time, and so got into that spin loop
+before any of them added itself to the wait_list, thus never hitting the
+exist condition there.
 
-So the below proposed change will probably break what the above
-mentioned commit was trying to achieve, which is: for fairness reasons
-we were bouncing the small extra load (between the max_load and
-this_load) around.
+I believe your test against nr_cpumask_bits is also a bit fragile for
+similar reasons. IE. You have what looks like a valid owner but it seems
+to be on an invalid CPU. It could be a freed thread_info, in which case
+returning 1 is fine, but if it's anything else, kaboom. I think it's
+better to be safe than sorry here and just go to sleep (ie return 0).
 
-> > ---
-> > 
-> >  kernel/sched_fair.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-ozlabs/kernel/sched_fair.c
-> > ===================================================================
-> > --- linux-2.6-ozlabs.orig/kernel/sched_fair.c
-> > +++ linux-2.6-ozlabs/kernel/sched_fair.c
-> > @@ -2652,7 +2652,7 @@ static inline void fix_small_imbalance(s
-> >  						 * SCHED_LOAD_SCALE;
-> >  	scaled_busy_load_per_task /= sds->busiest->cpu_power;
-> >  
-> > -	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
-> > +	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >
-> >  			(scaled_busy_load_per_task * imbn)) {
-> >  		*imbalance = sds->busiest_load_per_task;
-> >  		return;
-> 
+Same comment with the DEBUG_PAGE_ALLOC case. In fact, this (untested)
+patch makes the function simpler and I don't think will have any
+negative effect on performances. Let me know what you think:
 
-thanks,
-suresh
+---- cut here ----
+
+[PATCH] mutex: Don't spin when the owner CPU is offline or other weird cases
+
+The current code might spin forever if the CPU owning the mutex has been
+offlined, and the last CPU in the system is trying to acquire it, since
+mutex_spin_on_owner() will always return 1, telling the caller to spin
+until the mutex has been released.
+
+This patch changes mutex_spin_on_owner() to return 0 (don't spin) in any
+case where we aren't sure about the owner struct validity or CPU number,
+and if the said CPU is offline. There is no point going back &
+re-evaluate spinning in corner cases like that, let's just go to sleep.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index a3dff1f..11b7f4a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3780,7 +3780,7 @@ int mutex_spin_on_owner(struct mutex *lock, struct
+thread_info *owner)
+ 	 * the mutex owner just released it and exited.
+ 	 */
+ 	if (probe_kernel_address(&owner->cpu, cpu))
+-		goto out;
++		return 0;
+ #else
+ 	cpu = owner->cpu;
+ #endif
+@@ -3788,16 +3788,21 @@ int mutex_spin_on_owner(struct mutex *lock,
+struct thread_info *owner)
+ 	/*
+ 	 * Even if the access succeeded (likely case),
+ 	 * the cpu field may no longer be valid.
++	 *
++	 * We stop spinning in this case since the owner may never
+ 	 */
+ 	if (cpu >= nr_cpumask_bits)
+-		goto out;
++		return 0;
+ 
+ 	/*
+ 	 * We need to validate that we can do a
+ 	 * get_cpu() and that we have the percpu area.
++	 *
++	 * If the CPU is offline, the owner will never release it so
++	 * we must not spin
+ 	 */
+ 	if (!cpu_online(cpu))
+-		goto out;
++		return 0;
+ 
+ 	rq = cpu_rq(cpu);
+ 
+@@ -3816,7 +3821,6 @@ int mutex_spin_on_owner(struct mutex *lock, struct
+thread_info *owner)
+ 
+ 		cpu_relax();
+ 	}
+-out:
+ 	return 1;
+ }
+ #endif
