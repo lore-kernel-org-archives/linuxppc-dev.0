@@ -1,20 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/perf_event: Fix oops due to
-	perf_event_do_pending call
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20100414064603.GA4714@drongo>
-References: <20100414064603.GA4714@drongo>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-PVasO5QlV5XfeYA5Awxf"
-Date: Wed, 14 Apr 2010 22:11:09 +1000
-Message-ID: <1271247069.3727.1.camel@concordia>
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	Ingo Molnar <mingo@elte.hu>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jakemagee@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <4BAC0D4B.3030507@fulcrummicro.com>
+References: <4BAC0D4B.3030507@fulcrummicro.com>
+Date: Wed, 14 Apr 2010 08:55:28 -0500
+Message-ID: <t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
+Subject: Re: Resetting PCI-E devices after linux boot
+From: Jake Magee <jakemagee@gmail.com>
+To: Dan Wilson <dwilson@fulcrummicro.com>
+Content-Type: multipart/alternative; boundary=001636c5b99c1213c2048432bbc5
+Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +18,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001636c5b99c1213c2048432bbc5
+Content-Type: text/plain; charset=ISO-8859-1
 
---=-PVasO5QlV5XfeYA5Awxf
-Content-Type: text/plain; charset="UTF-8"
+Dan,
+
+Were you able to get PCI-E hotplug working?  I could not get this working
+myself and assumed that driver support was lacking.  I'm actually using a
+PPC405.
+
+Thanks,
+Jake
+
+
+On Thu, Mar 25, 2010 at 8:26 PM, Dan Wilson <dwilson@fulcrummicro.com>wrote:
+
+> We are building a PCI-E device for use in an embedded system with an 85xx
+> processor.  One of our customers is adamant that linux PCI-E hot-swap
+> support will not allow us to either bring the device up after linux boot
+> (i.e., the PCI-E device must be present when linux scans for PCI-E devices
+> at startup) or to reset the device once linux is up.  It was our impression
+> that the PCI-E hot-swap support should allow for devices to appear after
+> linux boot, be properly initialized, and then later be able to shut them
+> down and bring them back up again.
+>
+> Has anyone successfully used the PCI-E hot-swap capabilities in the linux
+> kernel in a PPC 85xx environment?  Any known gotchas we need to be aware of?
+>
+> Thanks in advance for your responses,
+>
+> Dan.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+
+--001636c5b99c1213c2048432bbc5
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2010-04-14 at 16:46 +1000, Paul Mackerras wrote:
-> Anton Blanchard found that large POWER systems would occasionally
-> crash in the exception exit path when profiling with perf_events.
-> The symptom was that an interrupt would occur late in the exit path
-> when the MSR[RI] (recoverable interrupt) bit was clear.  Interrupts
-> should be hard-disabled at this point but they were enabled.  Because
-> the interrupt was not recoverable the system panicked.
->=20
-...
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 1b16b9a..0441bbd 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -532,25 +532,60 @@ void __init iSeries_time_init_early(void)
->  }
->  #endif /* CONFIG_PPC_ISERIES */
-> =20
-> -#if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_PPC32)
-> -DEFINE_PER_CPU(u8, perf_event_pending);
-> +#ifdef CONFIG_PERF_EVENTS
-> =20
-> -void set_perf_event_pending(void)
-> +/*
-> + * 64-bit uses a byte in the PACA, 32-bit uses a per-cpu variable...
-> + */
+Dan, <br><br>Were you able to get PCI-E hotplug working?=A0 I could not get=
+ this working myself and assumed that driver support was lacking.=A0 I&#39;=
+m actually using a PPC405.<br><br>Thanks,<br>Jake<br>
+<br><br><div class=3D"gmail_quote">On Thu, Mar 25, 2010 at 8:26 PM, Dan Wil=
+son <span dir=3D"ltr">&lt;<a href=3D"mailto:dwilson@fulcrummicro.com">dwils=
+on@fulcrummicro.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quo=
+te" style=3D"margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204=
+, 204); padding-left: 1ex;">
+We are building a PCI-E device for use in an embedded system with an 85xx p=
+rocessor. =A0One of our customers is adamant that linux PCI-E hot-swap supp=
+ort will not allow us to either bring the device up after linux boot (i.e.,=
+ the PCI-E device must be present when linux scans for PCI-E devices at sta=
+rtup) or to reset the device once linux is up. =A0It was our impression tha=
+t the PCI-E hot-swap support should allow for devices to appear after linux=
+ boot, be properly initialized, and then later be able to shut them down an=
+d bring them back up again.<br>
 
-Any reason not to switch to per-cpu for both, now that you don't need to
-access it from asm?
+<br>
+Has anyone successfully used the PCI-E hot-swap capabilities in the linux k=
+ernel in a PPC 85xx environment? =A0Any known gotchas we need to be aware o=
+f?<br>
+<br>
+Thanks in advance for your responses,<br>
+<br>
+Dan.<br>
+<br>
+_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org" target=3D"_blank">Linuxppc=
+-dev@lists.ozlabs.org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+</blockquote></div><br>
 
-cheers
-
---=-PVasO5QlV5XfeYA5Awxf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkvFsNkACgkQdSjSd0sB4dKXtwCdFSWKKxxitwjJwM+QXzgKad1z
-jIIAoLprKHTqhJiKzFSAHbBV9HvoVcRs
-=9xj3
------END PGP SIGNATURE-----
-
---=-PVasO5QlV5XfeYA5Awxf--
+--001636c5b99c1213c2048432bbc5--
