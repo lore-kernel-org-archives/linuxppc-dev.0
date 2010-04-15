@@ -1,25 +1,28 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-yx0-f172.google.com (mail-yx0-f172.google.com
-	[209.85.210.172]) by ozlabs.org (Postfix) with ESMTP id 48ED5B7080
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-bw0-f225.google.com (mail-bw0-f225.google.com
+	[209.85.218.225]) by ozlabs.org (Postfix) with ESMTP id 9236CB7C8E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 02:07:06 +1000 (EST)
-Received: by yxe2 with SMTP id 2so1010453yxe.2
+	Fri, 16 Apr 2010 03:15:58 +1000 (EST)
+Received: by bwz25 with SMTP id 25so1669503bwz.8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 09:07:04 -0700 (PDT)
+	Thu, 15 Apr 2010 10:15:55 -0700 (PDT)
+Date: Thu, 15 Apr 2010 19:15:55 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final
+	tree (tip related)
+Message-ID: <20100415171551.GA5069@nowhere>
+References: <20100415161214.04637496.sfr@canb.auug.org.au>
+	<20100415064940.GA9240@elte.hu> <20100415130032.GA6789@nowhere>
+	<20100415140358.GA19981@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <v2ma0706c7b1004150906p34b853a0r80e2bb751e034b97@mail.gmail.com>
-References: <4BC682DC.1050200@billgatliff.com>
-	<201004150921.47268.roman.fietze@telemotive.de>
-	<4BC70E47.9010408@billgatliff.com>
-	<201004151553.53426.roman.fietze@telemotive.de>
-	<v2ma0706c7b1004150906p34b853a0r80e2bb751e034b97@mail.gmail.com>
-Date: Thu, 15 Apr 2010 11:07:03 -0500
-Message-ID: <v2pa0706c7b1004150907teae3383dwa4ee101d07daacfe@mail.gmail.com>
-Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
-From: Bill Gatliff <bgat@billgatliff.com>
-To: Roman Fietze <roman.fietze@telemotive.de>
-Content-Type: multipart/alternative; boundary=0016e6475b0282f3af048448aff0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100415140358.GA19981@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6475b0282f3af048448aff0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, Apr 15, 2010 at 04:03:58PM +0200, Ingo Molnar wrote:
+> > In this case, I guess the following fix should be sufficient?
+> > I'm going to test it and provide a sane changelog.
+> > 
+> > 
+> > diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> > index 78325f8..65d4336 100644
+> > --- a/kernel/lockdep.c
+> > +++ b/kernel/lockdep.c
+> > @@ -2298,7 +2298,11 @@ void trace_hardirqs_on_caller(unsigned long ip)
+> >  		return;
+> >  
+> >  	if (unlikely(curr->hardirqs_enabled)) {
+> > +		unsigned long flags;
+> > +
+> > +		raw_local_irq_save(flags);
+> >  		debug_atomic_inc(redundant_hardirqs_on);
+> > +		raw_local_irq_restore(flags);
+> >  		return;
+> >  	}
+> >  	/* we'll do an OFF -> ON transition: */
+> 
+> that looks rather ugly. Why not do a raw:
+> 
+> 	this_cpu_inc(lockdep_stats.redundant_hardirqs_on);
+> 
+> which basically open-codes debug_atomic_inc(), but without the warning?
 
-I would love it if you posted your code! Thanks!!
 
-b.g.
+Because that would open a race against interrupts that might
+touch lockdep_stats.redundant_hardirqs_on too.
 
-On Apr 15, 2010 8:53 AM, "Roman Fietze" <roman.fietze@telemotive.de> wrote:
-
-Hello Bill,
-
-
-On Thursday 15 April 2010 15:01:59 Bill Gatliff wrote:
-
-> Are you talking about this code here?
->
-...
-Yes. I added a routine like
-
-/* Swap frame buffer bytes in 32 bit value.  */
-static __inline unsigned int
-fbbits_swap32(unsigned int __bsx)
-{
-   return ((((__bsx) & 0xff000000) >> 8) | (((__bsx) & 0x00ff0000) << 8) |
-           (((__bsx) & 0x0000ff00) >> 8) | (((__bsx) & 0x000000ff) << 8));
-}
-
-
-Then I added void shadowUpdatePackedSwapped16() and
-shadowUpdatePackedSwapped32() which I was using instead of the
-original *Weak functions, which in turn uses the above swap routine
-when copying from shadow to the device.
-
-If you want I can post (in the ML) or mail you the files that I
-changed. A diff probably won't help a lot, because I think we changed
-more than that, and we are using a pretty old XFree version.
+If you think it's not very important (this race must be pretty rare I guess),
+I can use your solution.
 
 
 
-Roman
+> 
+> Btw., using the this_cpu() methods might result in faster code for all the 
+> debug_atomic_inc() macros as well?
 
---=20
-Roman Fietze Telemotive AG B=FCro M=FChlhausen
-Breitwiesen ...
 
---0016e6475b0282f3af048448aff0
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Indeed, will change that too.
 
-<p>I would love it if you posted your code! Thanks!!</p>
-<p>b.g.<br>
-</p>
-<p><blockquote type=3D"cite">On Apr 15, 2010 8:53 AM, &quot;Roman Fietze&qu=
-ot; &lt;<a href=3D"mailto:roman.fietze@telemotive.de">roman.fietze@telemoti=
-ve.de</a>&gt; wrote:<br><br>Hello Bill,<br>
-<p><font color=3D"#500050"><br>On Thursday 15 April 2010 15:01:59 Bill Gatl=
-iff wrote:<br><br>&gt; Are you talking about this code here?<br>&gt; <br>..=
-.</font></p>Yes. I added a routine like<br>
-<br>
-/* Swap frame buffer bytes in 32 bit value. =A0*/<br>
-static __inline unsigned int<br>
-fbbits_swap32(unsigned int __bsx)<br>
-{<br>
- =A0 =A0return ((((__bsx) &amp; 0xff000000) &gt;&gt; 8) | (((__bsx) &amp; 0=
-x00ff0000) &lt;&lt; 8) |<br>
- =A0 =A0 =A0 =A0 =A0 =A0(((__bsx) &amp; 0x0000ff00) &gt;&gt; 8) | (((__bsx)=
- &amp; 0x000000ff) &lt;&lt; 8));<br>
-}<br>
-<br>
-<br>
-Then I added void shadowUpdatePackedSwapped16() and<br>
-shadowUpdatePackedSwapped32() which I was using instead of the<br>
-original *Weak functions, which in turn uses the above swap routine<br>
-when copying from shadow to the device.<br>
-<br>
-If you want I can post (in the ML) or mail you the files that I<br>
-changed. A diff probably won&#39;t help a lot, because I think we changed<b=
-r>
-more than that, and we are using a pretty old XFree version.<br>
-<p><font color=3D"#500050"><br><br>Roman<br><br>-- <br>Roman Fietze        =
-        Telemotive AG B=FCro M=FChlhausen<br>Breitwiesen                  .=
-..</font></p></blockquote></p>
-
---0016e6475b0282f3af048448aff0--
+Thanks.
