@@ -1,29 +1,17 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6B6ADB7CF6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 17:33:34 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1O2JZp-0001ua-S8
-	from <mingo@elte.hu>
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 09:33:29 +0200
-Date: Thu, 15 Apr 2010 09:32:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final tree
-	(tip related)
-Message-ID: <20100415073256.GG9240@elte.hu>
-References: <20100415161214.04637496.sfr@canb.auug.org.au>
-	<20100415064940.GA9240@elte.hu>
-	<20100414.235557.123118153.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100414.235557.123118153.davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, peterz@infradead.org, fweisbec@gmail.com,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	hpa@zytor.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A175BB7C48
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 17:44:22 +1000 (EST)
+Date: Thu, 15 Apr 2010 09:44:13 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
+Message-ID: <20100415094413.4d752de0@wker>
+In-Reply-To: <4BC682DC.1050200@billgatliff.com>
+References: <4BC682DC.1050200@billgatliff.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,26 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 14 Apr 2010 22:07:08 -0500
+Bill Gatliff <bgat@billgatliff.com> wrote:
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 15 Apr 2010 08:49:40 +0200
+> Put simply, I have an MPC5200b platform with a Fujitsu "Lime" GDC, and
+> I'm trying to run Debian squeeze's xorg on it.
 > 
-> > Btw., WARN_ON trapping on PowerPC is clearly a PowerPC bug - there's a good 
-> > reason we have WARN_ON versus BUG_ON - it should be fixed.
+> Actually, I *have* Debian squeeze's xorg running on the platform just
+> fine, with a 2.6.34-rc1 kernel (kernel.org).  Problem is, every single
+> diagonal line is very blocky--- not smooth at all.  I used to think this
+> was a problem with X's fonts, but now I don't think so because the mouse
+> cursor's diagonal lines also look equally bad.
 > 
-> I disagree, an implementation should be allowed to use the most
-> efficient implementation possible for both interfaces.
+> It's almost as if any time the platform tries to draw a diagonal line,
+> truncation/rounding errors are causing it problems in figuring out which
+> pixels to turn on and off.
 
-It trades robustness for slightly better space/code efficiency.
+On all PowerPC based boards with Lime (PPC440EPx, MPC85xx) I have seen so
+far there is a similar problem with direct access to the frame buffer in
+16-bit mode.
 
-Such a trap based mechanism exists on x86 as well and we use it for BUG_ON(). 
-We intentionally dont use it to generate warnings and dont override __WARN(), 
-because it would blow up way too often when a warning triggers in some 
-sensitive codepath that cannot take a trap.
+> A non-Linux kernel on this hardware, running a non-X GUI, seems to work
+> fine so I think the hardware isn't the problem.
 
-Anyway, the warning obviously has to be fixed - but the boot crash itself is 
-PowerPC's own doing.
+It is possible that this non-X GUI doesn't access the frame buffer directly
+but only uses the accelerated driver for rendering. In this case all
+drawing is done by Lime itself triggered by 32-bit accesses to the
+drawing command FIFO.
 
-	Ingo
+> Anyone have any suggestions on where to start with this one?  Anyone
+> else running a similar configuration with any success?  I'm completely
+> lost, and running out of hair *fast*...
+
+You probably have to fix Xorg driver for swapping.
+
+Anatolij
