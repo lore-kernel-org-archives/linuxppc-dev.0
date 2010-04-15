@@ -1,23 +1,27 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AEF73B6EFF
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-bw0-f225.google.com (mail-bw0-f225.google.com
+	[209.85.218.225]) by ozlabs.org (Postfix) with ESMTP id F0936B7CF6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 20:59:50 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Resetting PCI-E devices after linux boot
-Date: Thu, 15 Apr 2010 12:59:27 +0200
-References: <4BAC0D4B.3030507@fulcrummicro.com>
-	<t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
-	<1271283923.13059.150.camel@pasglop>
-In-Reply-To: <1271283923.13059.150.camel@pasglop>
+	Thu, 15 Apr 2010 23:00:39 +1000 (EST)
+Received: by bwz25 with SMTP id 25so1362137bwz.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 06:00:36 -0700 (PDT)
+Date: Thu, 15 Apr 2010 15:00:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final
+	tree (tip related)
+Message-ID: <20100415130032.GA6789@nowhere>
+References: <20100415161214.04637496.sfr@canb.auug.org.au>
+	<20100415064940.GA9240@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201004151259.27680.sr@denx.de>
-Cc: Jake Magee <jakemagee@gmail.com>, Dan Wilson <dwilson@fulcrummicro.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100415064940.GA9240@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-On Thursday 15 April 2010 00:25:23 Benjamin Herrenschmidt wrote:
-> It should be possible to get that working, but I suspect not without
-> some code changes. I know the current PCIe hotswap driver has ACPI hooks
-> that would need to be replaced by appropriate hooks into the powerpc
-> code to perform the right resource manipulation etc...
+On Thu, Apr 15, 2010 at 08:49:40AM +0200, Ingo Molnar wrote:
 > 
-> We do PCIe hotswap on IBM pSeries, but this is using specific FW
-> interfaces for which we have a dedicated PCI hotplug driver.
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
-> Can the slot power be SW controlled on the Canyonlands PCIe slot ?
+> > Hi all,
+> > 
+> > Yesterday's (and today's) linux-next boot (PowerPC) failed like this:
+> > 
+> > ------------[ cut here ]------------
+> > Badness at kernel/lockdep.c:2301
+> > NIP: c0000000000a35c8 LR: c0000000000084c4 CTR: 0000000000000000
+> > REGS: c000000000bf77e0 TRAP: 0700   Not tainted  (2.6.34-rc4-autokern1)
+> > MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24000044  XER: 00000004
+> > TASK = c000000000aa3d30[0] 'swapper' THREAD: c000000000bf4000 CPU: 0
+> > GPR00: 0000000000000001 c000000000bf7a60 c000000000bf32f0 c0000000000084c4 
+> > GPR04: 0000000000000000 0000000000000a00 0000000000000000 0000000000000068 
+> > GPR08: 0000000000000008 c000000000c4fabe 0000000000000000 7265677368657265 
+> > GPR12: 8000000000009032 c000000007691000 0000000001c00000 c000000000770bf8 
+> > GPR16: c00000000076f390 0000000000000000 0000000000430000 00000000024876f0 
+> > GPR20: c000000000887480 0000000002487480 c0000000008876f0 0000000001b5f8d0 
+> > GPR24: c000000000770478 0000000003300000 c000000000c1f1c8 c000000000884610 
+> > GPR28: c000000000c1b290 c0000000000084c4 c000000000b45068 c000000000aa3d30 
+> > NIP [c0000000000a35c8] .trace_hardirqs_on_caller+0xb0/0x224
+> > LR [c0000000000084c4] system_call_common+0xc4/0x114
+> > Call Trace:
+> > [c000000000bf7a60] [c000000000bf7ba0] init_thread_union+0x3ba0/0x4000 (unreliable)
+> > [c000000000bf7af0] [c0000000000084c4] system_call_common+0xc4/0x114
+> > --- Exception: c01 at .kernel_thread+0x28/0x70
+> >     LR = .rest_init+0x34/0xf8
+> > [c000000000bf7de0] [c00000000086916c] .proc_sys_init+0x20/0x64 (unreliable)
+> > [c000000000bf7e50] [c0000000000099c0] .rest_init+0x20/0xf8
+> > [c000000000bf7ee0] [c000000000848af0] .start_kernel+0x484/0x4a8
+> > [c000000000bf7f90] [c0000000000083c0] .start_here_common+0x1c/0x5c
+> > Instruction dump:
+> > 409e0188 0fe00000 48000180 801f08d8 2f800000 41be0050 880d01da 2fa00000 
+> > 41be0028 e93e8538 88090000 68000001 <0b000000> 2fa00000 41be0010 e93e8538 
+> > ------------[ cut here ]------------
+> > 
+> > Caused by commit bd6d29c25bb1a24a4c160ec5de43e0004e01f72b ("lockstat:
+> > Make lockstat counting per cpu").  This added a WARN_ON_ONCE to
+> > debug_atomic_inc() which is called from trace_hardirqs_on_caller() with
+> > irqs enabled.
+> > 
+> > Line 2301 is:
+> > 
+> >         if (unlikely(curr->hardirqs_enabled)) {
+> >                 debug_atomic_inc(redundant_hardirqs_on);   <--- 2301
+> >                 return;
+> >         }
+> > 
+> > This is especially bad since on PowerPC, WARN_ON is a TRAP and the return
+> > path from the TRAP also calls trace_hardirqs_on_caller(), so the TRAP
+> > recurses ...
+> 
+> Ok, we'll fix the warning.
+> 
+> Btw., WARN_ON trapping on PowerPC is clearly a PowerPC bug - there's a good 
+> reason we have WARN_ON versus BUG_ON - it should be fixed.
 
-No. I just checked the schematics. PCIe power supply is directly connected to 
-the board power supplies.
 
-Cheers,
-Stefan
+In this case, I guess the following fix should be sufficient?
+I'm going to test it and provide a sane changelog.
+
+
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 78325f8..65d4336 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2298,7 +2298,11 @@ void trace_hardirqs_on_caller(unsigned long ip)
+ 		return;
+ 
+ 	if (unlikely(curr->hardirqs_enabled)) {
++		unsigned long flags;
++
++		raw_local_irq_save(flags);
+ 		debug_atomic_inc(redundant_hardirqs_on);
++		raw_local_irq_restore(flags);
+ 		return;
+ 	}
+ 	/* we'll do an OFF -> ON transition: */
