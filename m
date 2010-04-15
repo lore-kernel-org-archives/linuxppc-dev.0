@@ -1,26 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C6049B7CF6
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AEF73B6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 20:04:21 +1000 (EST)
-Date: Thu, 15 Apr 2010 20:04:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final
-	tree (tip related)
-Message-Id: <20100415200414.1ef705c8.sfr@canb.auug.org.au>
-In-Reply-To: <20100415064940.GA9240@elte.hu>
-References: <20100415161214.04637496.sfr@canb.auug.org.au>
-	<20100415064940.GA9240@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__15_Apr_2010_20_04_14_+1000_cwf2clJQ=Y1VEbHW"
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Thu, 15 Apr 2010 20:59:50 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Resetting PCI-E devices after linux boot
+Date: Thu, 15 Apr 2010 12:59:27 +0200
+References: <4BAC0D4B.3030507@fulcrummicro.com>
+	<t2wa8142e731004140655p230f7094idc29e489ea09e848@mail.gmail.com>
+	<1271283923.13059.150.camel@pasglop>
+In-Reply-To: <1271283923.13059.150.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201004151259.27680.sr@denx.de>
+Cc: Jake Magee <jakemagee@gmail.com>, Dan Wilson <dwilson@fulcrummicro.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,33 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__15_Apr_2010_20_04_14_+1000_cwf2clJQ=Y1VEbHW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Ben,
 
-Hi Ingo,
+On Thursday 15 April 2010 00:25:23 Benjamin Herrenschmidt wrote:
+> It should be possible to get that working, but I suspect not without
+> some code changes. I know the current PCIe hotswap driver has ACPI hooks
+> that would need to be replaced by appropriate hooks into the powerpc
+> code to perform the right resource manipulation etc...
+> 
+> We do PCIe hotswap on IBM pSeries, but this is using specific FW
+> interfaces for which we have a dedicated PCI hotplug driver.
+> 
+> Can the slot power be SW controlled on the Canyonlands PCIe slot ?
 
-On Thu, 15 Apr 2010 08:49:40 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> Ok, we'll fix the warning.
+No. I just checked the schematics. PCIe power supply is directly connected to 
+the board power supplies.
 
-Thanks.
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__15_Apr_2010_20_04_14_+1000_cwf2clJQ=Y1VEbHW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkvG5J4ACgkQjjKRsyhoI8xGNACeIcDOIfs3wO+YEBYuG+tMEy73
-+M4AoIxjOFzg8ZG8jBZ9/bQl0mjdP9ZM
-=zHJj
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_Apr_2010_20_04_14_+1000_cwf2clJQ=Y1VEbHW--
+Stefan
