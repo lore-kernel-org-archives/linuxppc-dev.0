@@ -1,25 +1,25 @@
-Return-Path: <mhiramat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 55270B7D00
+Return-Path: <bgat@billgatliff.com>
+Received: from mail-yx0-f172.google.com (mail-yx0-f172.google.com
+	[209.85.210.172]) by ozlabs.org (Postfix) with ESMTP id 48ED5B7080
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 01:16:13 +1000 (EST)
-Message-ID: <4BC72E82.7080401@redhat.com>
-Date: Thu, 15 Apr 2010 08:19:30 -0700
-From: Masami Hiramatsu <mhiramat@redhat.com>
+	Fri, 16 Apr 2010 02:07:06 +1000 (EST)
+Received: by yxe2 with SMTP id 2so1010453yxe.2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 09:07:04 -0700 (PDT)
 MIME-Version: 1.0
-To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH v3 2/2] perf probe: Add PowerPC DWARF register number
-	mappings
-References: <1271303822-11542-1-git-send-email-imunsie@au.ibm.com>
-	<1271303822-11542-2-git-send-email-imunsie@au.ibm.com>
-	<1271303822-11542-3-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1271303822-11542-3-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <v2ma0706c7b1004150906p34b853a0r80e2bb751e034b97@mail.gmail.com>
+References: <4BC682DC.1050200@billgatliff.com>
+	<201004150921.47268.roman.fietze@telemotive.de>
+	<4BC70E47.9010408@billgatliff.com>
+	<201004151553.53426.roman.fietze@telemotive.de>
+	<v2ma0706c7b1004150906p34b853a0r80e2bb751e034b97@mail.gmail.com>
+Date: Thu, 15 Apr 2010 11:07:03 -0500
+Message-ID: <v2pa0706c7b1004150907teae3383dwa4ee101d07daacfe@mail.gmail.com>
+Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
+From: Bill Gatliff <bgat@billgatliff.com>
+To: Roman Fietze <roman.fietze@telemotive.de>
+Content-Type: multipart/alternative; boundary=0016e6475b0282f3af048448aff0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,133 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au.ibm.com>
-> 
-> This patch adds mappings from the register numbers from DWARF to the
-> register names used in the PowerPC Regs and Stack Access API. This
-> allows perf probe to be used to record variable contents on PowerPC.
-> 
-> This patch depends on functionality in the powerpc/next tree, though it
-> will compile fine without it. Specifically this patch depends on commit
-> "powerpc: Add kprobe-based event tracer"
-> 
-> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+--0016e6475b0282f3af048448aff0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+I would love it if you posted your code! Thanks!!
 
-Thank you!
+b.g.
 
-> ---
->  tools/perf/arch/powerpc/Makefile          |    2 +
->  tools/perf/arch/powerpc/util/dwarf-regs.c |   88 +++++++++++++++++++++++++++++
->  2 files changed, 90 insertions(+), 0 deletions(-)
->  create mode 100644 tools/perf/arch/powerpc/Makefile
->  create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
-> 
-> diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-> new file mode 100644
-> index 0000000..cbd7833
-> --- /dev/null
-> +++ b/tools/perf/arch/powerpc/Makefile
-> @@ -0,0 +1,2 @@
-> +PERF_HAVE_DWARF_REGS := 1
-> +LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
-> diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-> new file mode 100644
-> index 0000000..48ae0c5
-> --- /dev/null
-> +++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-> @@ -0,0 +1,88 @@
-> +/*
-> + * Mapping of DWARF debug register numbers into register names.
-> + *
-> + * Copyright (C) 2010 Ian Munsie, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <libio.h>
-> +#include <dwarf-regs.h>
-> +
-> +
-> +struct pt_regs_dwarfnum {
-> +	const char *name;
-> +	unsigned int dwarfnum;
-> +};
-> +
-> +#define STR(s) #s
-> +#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
-> +#define GPR_DWARFNUM_NAME(num)	\
-> +	{.name = STR(%gpr##num), .dwarfnum = num}
-> +#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-> +
-> +/*
-> + * Reference:
-> + * http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.9.html
-> + */
-> +static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
-> +	GPR_DWARFNUM_NAME(0),
-> +	GPR_DWARFNUM_NAME(1),
-> +	GPR_DWARFNUM_NAME(2),
-> +	GPR_DWARFNUM_NAME(3),
-> +	GPR_DWARFNUM_NAME(4),
-> +	GPR_DWARFNUM_NAME(5),
-> +	GPR_DWARFNUM_NAME(6),
-> +	GPR_DWARFNUM_NAME(7),
-> +	GPR_DWARFNUM_NAME(8),
-> +	GPR_DWARFNUM_NAME(9),
-> +	GPR_DWARFNUM_NAME(10),
-> +	GPR_DWARFNUM_NAME(11),
-> +	GPR_DWARFNUM_NAME(12),
-> +	GPR_DWARFNUM_NAME(13),
-> +	GPR_DWARFNUM_NAME(14),
-> +	GPR_DWARFNUM_NAME(15),
-> +	GPR_DWARFNUM_NAME(16),
-> +	GPR_DWARFNUM_NAME(17),
-> +	GPR_DWARFNUM_NAME(18),
-> +	GPR_DWARFNUM_NAME(19),
-> +	GPR_DWARFNUM_NAME(20),
-> +	GPR_DWARFNUM_NAME(21),
-> +	GPR_DWARFNUM_NAME(22),
-> +	GPR_DWARFNUM_NAME(23),
-> +	GPR_DWARFNUM_NAME(24),
-> +	GPR_DWARFNUM_NAME(25),
-> +	GPR_DWARFNUM_NAME(26),
-> +	GPR_DWARFNUM_NAME(27),
-> +	GPR_DWARFNUM_NAME(28),
-> +	GPR_DWARFNUM_NAME(29),
-> +	GPR_DWARFNUM_NAME(30),
-> +	GPR_DWARFNUM_NAME(31),
-> +	REG_DWARFNUM_NAME("%msr",   66),
-> +	REG_DWARFNUM_NAME("%ctr",   109),
-> +	REG_DWARFNUM_NAME("%link",  108),
-> +	REG_DWARFNUM_NAME("%xer",   101),
-> +	REG_DWARFNUM_NAME("%dar",   119),
-> +	REG_DWARFNUM_NAME("%dsisr", 118),
-> +	REG_DWARFNUM_END,
-> +};
-> +
-> +/**
-> + * get_arch_regstr() - lookup register name from it's DWARF register number
-> + * @n:	the DWARF register number
-> + *
-> + * get_arch_regstr() returns the name of the register in struct
-> + * regdwarfnum_table from it's DWARF register number. If the register is not
-> + * found in the table, this returns NULL;
-> + */
-> +const char *get_arch_regstr(unsigned int n)
-> +{
-> +	const struct pt_regs_dwarfnum *roff;
-> +	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-> +		if (roff->dwarfnum == n)
-> +			return roff->name;
-> +	return NULL;
-> +}
+On Apr 15, 2010 8:53 AM, "Roman Fietze" <roman.fietze@telemotive.de> wrote:
 
--- 
-Masami Hiramatsu
-e-mail: mhiramat@redhat.com
+Hello Bill,
+
+
+On Thursday 15 April 2010 15:01:59 Bill Gatliff wrote:
+
+> Are you talking about this code here?
+>
+...
+Yes. I added a routine like
+
+/* Swap frame buffer bytes in 32 bit value.  */
+static __inline unsigned int
+fbbits_swap32(unsigned int __bsx)
+{
+   return ((((__bsx) & 0xff000000) >> 8) | (((__bsx) & 0x00ff0000) << 8) |
+           (((__bsx) & 0x0000ff00) >> 8) | (((__bsx) & 0x000000ff) << 8));
+}
+
+
+Then I added void shadowUpdatePackedSwapped16() and
+shadowUpdatePackedSwapped32() which I was using instead of the
+original *Weak functions, which in turn uses the above swap routine
+when copying from shadow to the device.
+
+If you want I can post (in the ML) or mail you the files that I
+changed. A diff probably won't help a lot, because I think we changed
+more than that, and we are using a pretty old XFree version.
+
+
+
+Roman
+
+--=20
+Roman Fietze Telemotive AG B=FCro M=FChlhausen
+Breitwiesen ...
+
+--0016e6475b0282f3af048448aff0
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<p>I would love it if you posted your code! Thanks!!</p>
+<p>b.g.<br>
+</p>
+<p><blockquote type=3D"cite">On Apr 15, 2010 8:53 AM, &quot;Roman Fietze&qu=
+ot; &lt;<a href=3D"mailto:roman.fietze@telemotive.de">roman.fietze@telemoti=
+ve.de</a>&gt; wrote:<br><br>Hello Bill,<br>
+<p><font color=3D"#500050"><br>On Thursday 15 April 2010 15:01:59 Bill Gatl=
+iff wrote:<br><br>&gt; Are you talking about this code here?<br>&gt; <br>..=
+.</font></p>Yes. I added a routine like<br>
+<br>
+/* Swap frame buffer bytes in 32 bit value. =A0*/<br>
+static __inline unsigned int<br>
+fbbits_swap32(unsigned int __bsx)<br>
+{<br>
+ =A0 =A0return ((((__bsx) &amp; 0xff000000) &gt;&gt; 8) | (((__bsx) &amp; 0=
+x00ff0000) &lt;&lt; 8) |<br>
+ =A0 =A0 =A0 =A0 =A0 =A0(((__bsx) &amp; 0x0000ff00) &gt;&gt; 8) | (((__bsx)=
+ &amp; 0x000000ff) &lt;&lt; 8));<br>
+}<br>
+<br>
+<br>
+Then I added void shadowUpdatePackedSwapped16() and<br>
+shadowUpdatePackedSwapped32() which I was using instead of the<br>
+original *Weak functions, which in turn uses the above swap routine<br>
+when copying from shadow to the device.<br>
+<br>
+If you want I can post (in the ML) or mail you the files that I<br>
+changed. A diff probably won&#39;t help a lot, because I think we changed<b=
+r>
+more than that, and we are using a pretty old XFree version.<br>
+<p><font color=3D"#500050"><br><br>Roman<br><br>-- <br>Roman Fietze        =
+        Telemotive AG B=FCro M=FChlhausen<br>Breitwiesen                  .=
+..</font></p></blockquote></p>
+
+--0016e6475b0282f3af048448aff0--
