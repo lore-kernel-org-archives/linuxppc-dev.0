@@ -1,25 +1,29 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DB93AB7080
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6B6ADB7CF6
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 17:21:54 +1000 (EST)
-Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
-	[192.168.5.33])
-	by alderan.mit.telemotive.de (Postfix) with ESMTP id 85009CA686
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 09:21:47 +0200 (CEST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
-References: <4BC682DC.1050200@billgatliff.com>
-In-Reply-To: <4BC682DC.1050200@billgatliff.com>
+	Thu, 15 Apr 2010 17:33:34 +1000 (EST)
+Received: from mx3.mail.elte.hu ([157.181.1.138])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1O2JZp-0001ua-S8
+	from <mingo@elte.hu>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 09:33:29 +0200
+Date: Thu, 15 Apr 2010 09:32:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final tree
+	(tip related)
+Message-ID: <20100415073256.GG9240@elte.hu>
+References: <20100415161214.04637496.sfr@canb.auug.org.au>
+	<20100415064940.GA9240@elte.hu>
+	<20100414.235557.123118153.davem@davemloft.net>
 MIME-Version: 1.0
-Message-ID: <201004150921.47268.roman.fietze@telemotive.de>
-Date: Thu, 15 Apr 2010 09:21:46 +0200
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100414.235557.123118153.davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, peterz@infradead.org, fweisbec@gmail.com,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	hpa@zytor.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hallo Bill,
 
-On Thursday 15 April 2010 05:07:08 Bill Gatliff wrote:
+* David Miller <davem@davemloft.net> wrote:
 
-> Actually, I *have* Debian squeeze's xorg running on the platform just
-> fine, with a 2.6.34-rc1 kernel (kernel.org).  Problem is, every single
-> diagonal line is very blocky--- not smooth at all.
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Thu, 15 Apr 2010 08:49:40 +0200
+> 
+> > Btw., WARN_ON trapping on PowerPC is clearly a PowerPC bug - there's a good 
+> > reason we have WARN_ON versus BUG_ON - it should be fixed.
+> 
+> I disagree, an implementation should be allowed to use the most
+> efficient implementation possible for both interfaces.
 
-I'm 95% sure it's an endianess problem, on our boards we had to modify
-the X11 driver. What I did was swapping bytes when updating the device
-from the shadowfb inside programs/Xserver/miext/shadow/shpacked.c
+It trades robustness for slightly better space/code efficiency.
 
+Such a trap based mechanism exists on x86 as well and we use it for BUG_ON(). 
+We intentionally dont use it to generate warnings and dont override __WARN(), 
+because it would blow up way too often when a warning triggers in some 
+sensitive codepath that cannot take a trap.
 
-Roman
+Anyway, the warning obviously has to be fixed - but the boot crash itself is 
+PowerPC's own doing.
 
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+	Ingo
