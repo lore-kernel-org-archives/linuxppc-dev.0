@@ -1,35 +1,16 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BE3C8B7F81
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 13:58:12 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3F3w944015875
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:58:09 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3F3wA4H1855540
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:58:11 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3F3w9em008070
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:58:10 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/2] perf probe: Add PowerPC DWARF register number mappings
-Date: Thu, 15 Apr 2010 13:57:02 +1000
-Message-Id: <1271303822-11542-3-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1271303822-11542-2-git-send-email-imunsie@au.ibm.com>
-References: <1271303822-11542-1-git-send-email-imunsie@au.ibm.com>
-	<1271303822-11542-2-git-send-email-imunsie@au.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	Masami Hiramatsu <mhiramat@redhat.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5] sched: Mark the balance type for use in
+	need_active_balance()
+In-reply-to: <1271161768.4807.1282.camel@twins>
+References: <20100409062119.040B0CBB6F@localhost.localdomain>
+	<1271161768.4807.1282.camel@twins>
+Date: Thu, 15 Apr 2010 14:15:12 +1000
+Message-ID: <25935.1271304912@neuling.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,125 +20,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au.ibm.com>
+> On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
+> > need_active_balance() gates the asymmetric packing based due to power
+> > save logic, but for packing we don't care.
+> 
+> This explanation lacks a how/why.
+> 
+> So the problem is that need_active_balance() ends up returning false and
+> prevents the active balance from pulling a task to a lower available SMT
+> sibling?
 
-This patch adds mappings from the register numbers from DWARF to the
-register names used in the PowerPC Regs and Stack Access API. This
-allows perf probe to be used to record variable contents on PowerPC.
+Correct.  I've put a more detailed description in the patch below.  
 
-This patch depends on functionality in the powerpc/next tree, though it
-will compile fine without it. Specifically this patch depends on commit
-"powerpc: Add kprobe-based event tracer"
+> > This marks the type of balanace we are attempting to do perform from
+> > f_b_g() and stops need_active_balance() power save logic gating a
+> > balance in the asymmetric packing case.
+> 
+> At the very least this wants more comments in the code. 
 
-Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
+Sorry again for the lack luster comments. I've updated this patch also.
+
+> I'm not really charmed by having to add yet another variable to pass
+> around that mess, but I can't seem to come up with something cleaner
+> either.
+
+Yeah, the current case only ever reads the balance type in the !=
+BALANCE_POWER so a full enum might be overkill, but I though it might
+come in useful for someone else.
+
+Updated patch below.
+
+Mikey
+
+
+[PATCH 4/5] sched: fix need_active_balance() from preventing asymmetric packing 
+
+need_active_balance() prevents a task being pulled onto a newly idle
+package in an attempt to completely free it so it can be powered down.
+Hence it returns false to load_balance() and prevents the active
+balance from occurring.
+
+Unfortunately, when asymmetric packing is enabled at the sibling level
+this power save logic is preventing the packing balance from moving a
+task to a lower idle thread.  At the sibling level SD_SHARE_CPUPOWER
+and parent(SD_POWERSAVINGS_BALANCE) are enabled and the domain is also
+non-idle (since we have at least 1 task we are trying to move down).
+Hence the following code, prevents the an active balance from
+occurring:
+
+		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+			return 0;
+
+To fix this, this patch classifies the type of balance we are
+attempting to perform into none, load, power and packing based on what
+function finds busiest in f_b_g().  This classification is then used
+by need_active_balance() to prevent the above power saving logic from
+stopping a balance due to asymmetric packing.  This ensures tasks can
+be correctly moved down to lower sibling threads.  
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- tools/perf/arch/powerpc/Makefile          |    2 +
- tools/perf/arch/powerpc/util/dwarf-regs.c |   88 +++++++++++++++++++++++++++++
- 2 files changed, 90 insertions(+), 0 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/Makefile
- create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
 
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-new file mode 100644
-index 0000000..cbd7833
---- /dev/null
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -0,0 +1,2 @@
-+PERF_HAVE_DWARF_REGS := 1
-+LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
-diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-new file mode 100644
-index 0000000..48ae0c5
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-@@ -0,0 +1,88 @@
-+/*
-+ * Mapping of DWARF debug register numbers into register names.
-+ *
-+ * Copyright (C) 2010 Ian Munsie, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <libio.h>
-+#include <dwarf-regs.h>
-+
-+
-+struct pt_regs_dwarfnum {
-+	const char *name;
-+	unsigned int dwarfnum;
+ kernel/sched_fair.c |   35 ++++++++++++++++++++++++++++++-----
+ 1 file changed, 30 insertions(+), 5 deletions(-)
+
+Index: linux-2.6-ozlabs/kernel/sched_fair.c
+===================================================================
+--- linux-2.6-ozlabs.orig/kernel/sched_fair.c
++++ linux-2.6-ozlabs/kernel/sched_fair.c
+@@ -91,6 +91,14 @@ const_debug unsigned int sysctl_sched_mi
+ 
+ static const struct sched_class fair_sched_class;
+ 
++/* Enum to classify the type of balance we are attempting to perform */
++enum balance_type {
++	BALANCE_NONE = 0,
++	BALANCE_LOAD,
++	BALANCE_POWER,
++	BALANCE_PACKING
 +};
 +
-+#define STR(s) #s
-+#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
-+#define GPR_DWARFNUM_NAME(num)	\
-+	{.name = STR(%gpr##num), .dwarfnum = num}
-+#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-+
-+/*
-+ * Reference:
-+ * http://refspecs.linuxfoundation.org/ELF/ppc64/PPC-elf64abi-1.9.html
-+ */
-+static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
-+	GPR_DWARFNUM_NAME(0),
-+	GPR_DWARFNUM_NAME(1),
-+	GPR_DWARFNUM_NAME(2),
-+	GPR_DWARFNUM_NAME(3),
-+	GPR_DWARFNUM_NAME(4),
-+	GPR_DWARFNUM_NAME(5),
-+	GPR_DWARFNUM_NAME(6),
-+	GPR_DWARFNUM_NAME(7),
-+	GPR_DWARFNUM_NAME(8),
-+	GPR_DWARFNUM_NAME(9),
-+	GPR_DWARFNUM_NAME(10),
-+	GPR_DWARFNUM_NAME(11),
-+	GPR_DWARFNUM_NAME(12),
-+	GPR_DWARFNUM_NAME(13),
-+	GPR_DWARFNUM_NAME(14),
-+	GPR_DWARFNUM_NAME(15),
-+	GPR_DWARFNUM_NAME(16),
-+	GPR_DWARFNUM_NAME(17),
-+	GPR_DWARFNUM_NAME(18),
-+	GPR_DWARFNUM_NAME(19),
-+	GPR_DWARFNUM_NAME(20),
-+	GPR_DWARFNUM_NAME(21),
-+	GPR_DWARFNUM_NAME(22),
-+	GPR_DWARFNUM_NAME(23),
-+	GPR_DWARFNUM_NAME(24),
-+	GPR_DWARFNUM_NAME(25),
-+	GPR_DWARFNUM_NAME(26),
-+	GPR_DWARFNUM_NAME(27),
-+	GPR_DWARFNUM_NAME(28),
-+	GPR_DWARFNUM_NAME(29),
-+	GPR_DWARFNUM_NAME(30),
-+	GPR_DWARFNUM_NAME(31),
-+	REG_DWARFNUM_NAME("%msr",   66),
-+	REG_DWARFNUM_NAME("%ctr",   109),
-+	REG_DWARFNUM_NAME("%link",  108),
-+	REG_DWARFNUM_NAME("%xer",   101),
-+	REG_DWARFNUM_NAME("%dar",   119),
-+	REG_DWARFNUM_NAME("%dsisr", 118),
-+	REG_DWARFNUM_END,
-+};
-+
-+/**
-+ * get_arch_regstr() - lookup register name from it's DWARF register number
-+ * @n:	the DWARF register number
-+ *
-+ * get_arch_regstr() returns the name of the register in struct
-+ * regdwarfnum_table from it's DWARF register number. If the register is not
-+ * found in the table, this returns NULL;
-+ */
-+const char *get_arch_regstr(unsigned int n)
-+{
-+	const struct pt_regs_dwarfnum *roff;
-+	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-+		if (roff->dwarfnum == n)
-+			return roff->name;
-+	return NULL;
-+}
--- 
-1.7.0
+ /**************************************************************
+  * CFS operations on generic schedulable entities:
+  */
+@@ -2803,16 +2811,19 @@ static inline void calculate_imbalance(s
+  * @cpus: The set of CPUs under consideration for load-balancing.
+  * @balance: Pointer to a variable indicating if this_cpu
+  *	is the appropriate cpu to perform load balancing at this_level.
++ * @bt: returns the type of imbalance found
+  *
+  * Returns:	- the busiest group if imbalance exists.
+  *		- If no imbalance and user has opted for power-savings balance,
+  *		   return the least loaded group whose CPUs can be
+  *		   put to idle by rebalancing its tasks onto our group.
++ *		- *bt classifies the type of imbalance found
+  */
+ static struct sched_group *
+ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		   unsigned long *imbalance, enum cpu_idle_type idle,
+-		   int *sd_idle, const struct cpumask *cpus, int *balance)
++		   int *sd_idle, const struct cpumask *cpus, int *balance,
++		   enum balance_type *bt)
+ {
+ 	struct sd_lb_stats sds;
+ 
+@@ -2837,6 +2848,7 @@ find_busiest_group(struct sched_domain *
+ 	if (!(*balance))
+ 		goto ret;
+ 
++	*bt = BALANCE_PACKING;
+ 	if ((idle == CPU_IDLE || idle == CPU_NEWLY_IDLE) &&
+ 	    check_asym_packing(sd, &sds, this_cpu, imbalance))
+ 		return sds.busiest;
+@@ -2857,6 +2869,7 @@ find_busiest_group(struct sched_domain *
+ 
+ 	/* Looks like there is an imbalance. Compute it */
+ 	calculate_imbalance(&sds, this_cpu, imbalance);
++	*bt = BALANCE_LOAD;
+ 	return sds.busiest;
+ 
+ out_balanced:
+@@ -2864,10 +2877,12 @@ out_balanced:
+ 	 * There is no obvious imbalance. But check if we can do some balancing
+ 	 * to save power.
+ 	 */
++	*bt = BALANCE_POWER;
+ 	if (check_power_save_busiest_group(&sds, this_cpu, imbalance))
+ 		return sds.busiest;
+ ret:
+ 	*imbalance = 0;
++	*bt = BALANCE_NONE;
+ 	return NULL;
+ }
+ 
+@@ -2928,9 +2943,18 @@ find_busiest_queue(struct sched_group *g
+ /* Working cpumask for load_balance and load_balance_newidle. */
+ static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
+ 
+-static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle)
++static int need_active_balance(struct sched_domain *sd, int sd_idle, int idle,
++			       enum balance_type *bt)
+ {
+-	if (idle == CPU_NEWLY_IDLE) {
++	/*
++	 * The powersave code will stop a task being moved in an
++	 * attempt to freeup CPU package wich could be powered
++	 * down. In the case where we are attempting to balance due to
++	 * asymmetric packing at the sibling level, we don't care
++	 * about power save.  Hence prevent powersave stopping a
++	 * balance trigged by packing.
++         */
++	if (idle == CPU_NEWLY_IDLE && *bt != BALANCE_PACKING) {
+ 		/*
+ 		 * The only task running in a non-idle cpu can be moved to this
+ 		 * cpu in an attempt to completely freeup the other CPU
+@@ -2975,6 +2999,7 @@ static int load_balance(int this_cpu, st
+ 	struct rq *busiest;
+ 	unsigned long flags;
+ 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
++	enum balance_type bt;
+ 
+ 	cpumask_copy(cpus, cpu_active_mask);
+ 
+@@ -2993,7 +3018,7 @@ static int load_balance(int this_cpu, st
+ redo:
+ 	update_shares(sd);
+ 	group = find_busiest_group(sd, this_cpu, &imbalance, idle, &sd_idle,
+-				   cpus, balance);
++				   cpus, balance, &bt);
+ 
+ 	if (*balance == 0)
+ 		goto out_balanced;
+@@ -3047,7 +3072,7 @@ redo:
+ 		schedstat_inc(sd, lb_failed[idle]);
+ 		sd->nr_balance_failed++;
+ 
+-		if (need_active_balance(sd, sd_idle, idle)) {
++		if (need_active_balance(sd, sd_idle, idle, &bt)) {
+ 			raw_spin_lock_irqsave(&busiest->lock, flags);
+ 
+ 			/* don't kick the migration_thread, if the curr
