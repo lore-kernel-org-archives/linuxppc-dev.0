@@ -1,18 +1,20 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 5/5] sched: make fix_small_imbalance work with asymmetric
-	packing
-In-reply-to: <1271208670.2834.55.camel@sbs-t61.sc.intel.com>
-References: <20100409062119.10AC5CBB6D@localhost.localdomain>
-	<1271161769.4807.1283.camel@twins>
-	<1271208670.2834.55.camel@sbs-t61.sc.intel.com>
-Date: Thu, 15 Apr 2010 15:06:31 +1000
-Message-ID: <10091.1271307991@neuling.org>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Ingo Molnar <mingo@elte.hu>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 5FFC9B7CF5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 16:12:20 +1000 (EST)
+Date: Thu, 15 Apr 2010 16:12:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: boot failure after merge of the final tree (tip related)
+Message-Id: <20100415161214.04637496.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__15_Apr_2010_16_12_14_+1000_sGdkpenvusvz.qL3"
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-next@vger.kernel.org,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,73 +24,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1271208670.2834.55.camel@sbs-t61.sc.intel.com> you wrote:
-> On Tue, 2010-04-13 at 05:29 -0700, Peter Zijlstra wrote:
-> > On Fri, 2010-04-09 at 16:21 +1000, Michael Neuling wrote:
-> > > With the asymmetric packing infrastructure, fix_small_imbalance is
-> > > causing idle higher threads to pull tasks off lower threads.  
-> > > 
-> > > This is being caused by an off-by-one error.  
-> > > 
-> > > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > > ---
-> > > I'm not sure this is the right fix but without it, higher threads pull
-> > > tasks off the lower threads, then the packing pulls it back down, etc
-> > > etc and tasks bounce around constantly.
-> > 
-> > Would help if you expand upon the why/how it manages to get pulled up.
-> > 
-> > I can't immediately spot anything wrong with the patch, but then that
-> > isn't my favourite piece of code either.. Suresh, any comments?
-> > 
-> 
-> Sorry didn't pay much attention to this patchset. But based on the
-> comments from Michael and looking at this patchset, it has SMT/MC
-> implications. I will review and run some tests and get back in a day.
-> 
-> As far as this particular patch is concerned, original code is coming
-> from Ingo's original CFS code commit (dd41f596) and the below hunk
-> pretty much explains what the change is about.
-> 
-> -               if (max_load - this_load >= busiest_load_per_task * imbn) {
-> +               if (max_load - this_load + SCHED_LOAD_SCALE_FUZZ >=
-> +                                       busiest_load_per_task * imbn) {
-> 
-> So the below proposed change will probably break what the above
-> mentioned commit was trying to achieve, which is: for fairness reasons
-> we were bouncing the small extra load (between the max_load and
-> this_load) around.
+--Signature=_Thu__15_Apr_2010_16_12_14_+1000_sGdkpenvusvz.qL3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Actually, you can drop this patch.  
+Hi all,
 
-In the process of clarifying why it was needed for the changelog, I
-discovered I don't actually need it.  
+Yesterday's (and today's) linux-next boot (PowerPC) failed like this:
 
-Sorry about that.
+------------[ cut here ]------------
+Badness at kernel/lockdep.c:2301
+NIP: c0000000000a35c8 LR: c0000000000084c4 CTR: 0000000000000000
+REGS: c000000000bf77e0 TRAP: 0700   Not tainted  (2.6.34-rc4-autokern1)
+MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24000044  XER: 00000004
+TASK =3D c000000000aa3d30[0] 'swapper' THREAD: c000000000bf4000 CPU: 0
+GPR00: 0000000000000001 c000000000bf7a60 c000000000bf32f0 c0000000000084c4=
+=20
+GPR04: 0000000000000000 0000000000000a00 0000000000000000 0000000000000068=
+=20
+GPR08: 0000000000000008 c000000000c4fabe 0000000000000000 7265677368657265=
+=20
+GPR12: 8000000000009032 c000000007691000 0000000001c00000 c000000000770bf8=
+=20
+GPR16: c00000000076f390 0000000000000000 0000000000430000 00000000024876f0=
+=20
+GPR20: c000000000887480 0000000002487480 c0000000008876f0 0000000001b5f8d0=
+=20
+GPR24: c000000000770478 0000000003300000 c000000000c1f1c8 c000000000884610=
+=20
+GPR28: c000000000c1b290 c0000000000084c4 c000000000b45068 c000000000aa3d30=
+=20
+NIP [c0000000000a35c8] .trace_hardirqs_on_caller+0xb0/0x224
+LR [c0000000000084c4] system_call_common+0xc4/0x114
+Call Trace:
+[c000000000bf7a60] [c000000000bf7ba0] init_thread_union+0x3ba0/0x4000 (unre=
+liable)
+[c000000000bf7af0] [c0000000000084c4] system_call_common+0xc4/0x114
+--- Exception: c01 at .kernel_thread+0x28/0x70
+    LR =3D .rest_init+0x34/0xf8
+[c000000000bf7de0] [c00000000086916c] .proc_sys_init+0x20/0x64 (unreliable)
+[c000000000bf7e50] [c0000000000099c0] .rest_init+0x20/0xf8
+[c000000000bf7ee0] [c000000000848af0] .start_kernel+0x484/0x4a8
+[c000000000bf7f90] [c0000000000083c0] .start_here_common+0x1c/0x5c
+Instruction dump:
+409e0188 0fe00000 48000180 801f08d8 2f800000 41be0050 880d01da 2fa00000=20
+41be0028 e93e8538 88090000 68000001 <0b000000> 2fa00000 41be0010 e93e8538=20
+------------[ cut here ]------------
 
-Mikey
+Caused by commit bd6d29c25bb1a24a4c160ec5de43e0004e01f72b ("lockstat:
+Make lockstat counting per cpu").  This added a WARN_ON_ONCE to
+debug_atomic_inc() which is called from trace_hardirqs_on_caller() with
+irqs enabled.
 
-> 
-> > > ---
-> > > 
-> > >  kernel/sched_fair.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > Index: linux-2.6-ozlabs/kernel/sched_fair.c
-> > > ===================================================================
-> > > --- linux-2.6-ozlabs.orig/kernel/sched_fair.c
-> > > +++ linux-2.6-ozlabs/kernel/sched_fair.c
-> > > @@ -2652,7 +2652,7 @@ static inline void fix_small_imbalance(s
-> > >  						 * SCHED_LOAD_SCALE;
-> > >  	scaled_busy_load_per_task /= sds->busiest->cpu_power;
-> > >  
-> > > -	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >=
-> > > +	if (sds->max_load - sds->this_load + scaled_busy_load_per_task >
-> > >  			(scaled_busy_load_per_task * imbn)) {
-> > >  		*imbalance = sds->busiest_load_per_task;
-> > >  		return;
-> > 
-> 
-> thanks,
-> suresh
-> 
+Line 2301 is:
+
+        if (unlikely(curr->hardirqs_enabled)) {
+                debug_atomic_inc(redundant_hardirqs_on);   <--- 2301
+                return;
+        }
+
+This is especially bad since on PowerPC, WARN_ON is a TRAP and the return
+path from the TRAP also calls trace_hardirqs_on_caller(), so the TRAP
+recurses ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__15_Apr_2010_16_12_14_+1000_sGdkpenvusvz.qL3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkvGrj4ACgkQjjKRsyhoI8yXnACePpLpB19pWKhvfrDB9C3MQCMs
+mgQAn1ivijXtG9oDFz389AjZvl2BGLkI
+=NxnK
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__15_Apr_2010_16_12_14_+1000_sGdkpenvusvz.qL3--
