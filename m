@@ -1,26 +1,25 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A8627B7D0C
+Return-Path: <mhiramat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id BDDCBB7CFA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 00:04:32 +1000 (EST)
-Date: Thu, 15 Apr 2010 16:03:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final tree
-	(tip related)
-Message-ID: <20100415140358.GA19981@elte.hu>
-References: <20100415161214.04637496.sfr@canb.auug.org.au>
-	<20100415064940.GA9240@elte.hu> <20100415130032.GA6789@nowhere>
+	Fri, 16 Apr 2010 01:16:12 +1000 (EST)
+Message-ID: <4BC72E70.9070401@redhat.com>
+Date: Thu, 15 Apr 2010 08:19:12 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100415130032.GA6789@nowhere>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Peter Zijlstra <peterz@infradead.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH v3 1/2] perf: Move arch specific code into separate arch
+	directory
+References: <1271303822-11542-1-git-send-email-imunsie@au.ibm.com>
+	<1271303822-11542-2-git-send-email-imunsie@au.ibm.com>
+In-Reply-To: <1271303822-11542-2-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,97 +29,293 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au.ibm.com>
+> 
+> The perf userspace tool included some architecture specific code to map
+> registers from the DWARF register number into the names used by the regs
+> and stack access API.
+> 
+> This patch moves the architecture specific code out into a separate
+> arch/x86 directory along with the infrastructure required to use it.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au.ibm.com>
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Good work!
 
-> On Thu, Apr 15, 2010 at 08:49:40AM +0200, Ingo Molnar wrote:
-> > 
-> > * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > Yesterday's (and today's) linux-next boot (PowerPC) failed like this:
-> > > 
-> > > ------------[ cut here ]------------
-> > > Badness at kernel/lockdep.c:2301
-> > > NIP: c0000000000a35c8 LR: c0000000000084c4 CTR: 0000000000000000
-> > > REGS: c000000000bf77e0 TRAP: 0700   Not tainted  (2.6.34-rc4-autokern1)
-> > > MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24000044  XER: 00000004
-> > > TASK = c000000000aa3d30[0] 'swapper' THREAD: c000000000bf4000 CPU: 0
-> > > GPR00: 0000000000000001 c000000000bf7a60 c000000000bf32f0 c0000000000084c4 
-> > > GPR04: 0000000000000000 0000000000000a00 0000000000000000 0000000000000068 
-> > > GPR08: 0000000000000008 c000000000c4fabe 0000000000000000 7265677368657265 
-> > > GPR12: 8000000000009032 c000000007691000 0000000001c00000 c000000000770bf8 
-> > > GPR16: c00000000076f390 0000000000000000 0000000000430000 00000000024876f0 
-> > > GPR20: c000000000887480 0000000002487480 c0000000008876f0 0000000001b5f8d0 
-> > > GPR24: c000000000770478 0000000003300000 c000000000c1f1c8 c000000000884610 
-> > > GPR28: c000000000c1b290 c0000000000084c4 c000000000b45068 c000000000aa3d30 
-> > > NIP [c0000000000a35c8] .trace_hardirqs_on_caller+0xb0/0x224
-> > > LR [c0000000000084c4] system_call_common+0xc4/0x114
-> > > Call Trace:
-> > > [c000000000bf7a60] [c000000000bf7ba0] init_thread_union+0x3ba0/0x4000 (unreliable)
-> > > [c000000000bf7af0] [c0000000000084c4] system_call_common+0xc4/0x114
-> > > --- Exception: c01 at .kernel_thread+0x28/0x70
-> > >     LR = .rest_init+0x34/0xf8
-> > > [c000000000bf7de0] [c00000000086916c] .proc_sys_init+0x20/0x64 (unreliable)
-> > > [c000000000bf7e50] [c0000000000099c0] .rest_init+0x20/0xf8
-> > > [c000000000bf7ee0] [c000000000848af0] .start_kernel+0x484/0x4a8
-> > > [c000000000bf7f90] [c0000000000083c0] .start_here_common+0x1c/0x5c
-> > > Instruction dump:
-> > > 409e0188 0fe00000 48000180 801f08d8 2f800000 41be0050 880d01da 2fa00000 
-> > > 41be0028 e93e8538 88090000 68000001 <0b000000> 2fa00000 41be0010 e93e8538 
-> > > ------------[ cut here ]------------
-> > > 
-> > > Caused by commit bd6d29c25bb1a24a4c160ec5de43e0004e01f72b ("lockstat:
-> > > Make lockstat counting per cpu").  This added a WARN_ON_ONCE to
-> > > debug_atomic_inc() which is called from trace_hardirqs_on_caller() with
-> > > irqs enabled.
-> > > 
-> > > Line 2301 is:
-> > > 
-> > >         if (unlikely(curr->hardirqs_enabled)) {
-> > >                 debug_atomic_inc(redundant_hardirqs_on);   <--- 2301
-> > >                 return;
-> > >         }
-> > > 
-> > > This is especially bad since on PowerPC, WARN_ON is a TRAP and the return
-> > > path from the TRAP also calls trace_hardirqs_on_caller(), so the TRAP
-> > > recurses ...
-> > 
-> > Ok, we'll fix the warning.
-> > 
-> > Btw., WARN_ON trapping on PowerPC is clearly a PowerPC bug - there's a good 
-> > reason we have WARN_ON versus BUG_ON - it should be fixed.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+Thank you very much!
+
+> ---
+> Changes since v2: From Masami Hiramatsu's feedback DWARF support is disabled
+> altogether if the architecture specific Makefile does not define
+> PERF_HAVE_DWARF_REGS - ie, DWARF register mappings are missing for the
+> architecture. A message indicating this is printed out during compilation.
 > 
+>  tools/perf/Makefile                   |   26 ++++++++++-
+>  tools/perf/arch/x86/Makefile          |    2 +
+>  tools/perf/arch/x86/util/dwarf-regs.c |   75 +++++++++++++++++++++++++++++++++
+>  tools/perf/util/include/dwarf-regs.h  |    8 ++++
+>  tools/perf/util/probe-finder.c        |   55 +-----------------------
+>  5 files changed, 110 insertions(+), 56 deletions(-)
+>  create mode 100644 tools/perf/arch/x86/Makefile
+>  create mode 100644 tools/perf/arch/x86/util/dwarf-regs.c
+>  create mode 100644 tools/perf/util/include/dwarf-regs.h
 > 
-> In this case, I guess the following fix should be sufficient?
-> I'm going to test it and provide a sane changelog.
-> 
-> 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index 78325f8..65d4336 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -2298,7 +2298,11 @@ void trace_hardirqs_on_caller(unsigned long ip)
->  		return;
+> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> index 57b3569..269d5dd 100644
+> --- a/tools/perf/Makefile
+> +++ b/tools/perf/Makefile
+> @@ -173,6 +173,20 @@ uname_R := $(shell sh -c 'uname -r 2>/dev/null || echo not')
+>  uname_P := $(shell sh -c 'uname -p 2>/dev/null || echo not')
+>  uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
 >  
->  	if (unlikely(curr->hardirqs_enabled)) {
-> +		unsigned long flags;
+> +ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
+> +				  -e s/arm.*/arm/ -e s/sa110/arm/ \
+> +				  -e s/s390x/s390/ -e s/parisc64/parisc/ \
+> +				  -e s/ppc.*/powerpc/ -e s/mips.*/mips/ \
+> +				  -e s/sh[234].*/sh/ )
 > +
-> +		raw_local_irq_save(flags);
->  		debug_atomic_inc(redundant_hardirqs_on);
-> +		raw_local_irq_restore(flags);
->  		return;
->  	}
->  	/* we'll do an OFF -> ON transition: */
+> +# Additional ARCH settings for x86
+> +ifeq ($(ARCH),i386)
+> +        ARCH := x86
+> +endif
+> +ifeq ($(ARCH),x86_64)
+> +        ARCH := x86
+> +endif
+> +
+>  # CFLAGS and LDFLAGS are for the users to override from the command line.
+>  
+>  #
+> @@ -285,7 +299,7 @@ endif
+>  # Those must not be GNU-specific; they are shared with perl/ which may
+>  # be built by a different compiler. (Note that this is an artifact now
+>  # but it still might be nice to keep that distinction.)
+> -BASIC_CFLAGS = -Iutil/include
+> +BASIC_CFLAGS = -Iutil/include -Iarch/$(ARCH)/include
+>  BASIC_LDFLAGS =
+>  
+>  # Guard against environment variables
+> @@ -367,6 +381,7 @@ LIB_H += util/include/asm/byteorder.h
+>  LIB_H += util/include/asm/swab.h
+>  LIB_H += util/include/asm/system.h
+>  LIB_H += util/include/asm/uaccess.h
+> +LIB_H += util/include/dwarf-regs.h
+>  LIB_H += perf.h
+>  LIB_H += util/cache.h
+>  LIB_H += util/callchain.h
+> @@ -485,6 +500,7 @@ PERFLIBS = $(LIB_FILE)
+>  
+>  -include config.mak.autogen
+>  -include config.mak
+> +-include arch/$(ARCH)/Makefile
+>  
+>  ifeq ($(uname_S),Darwin)
+>  	ifndef NO_FINK
+> @@ -521,12 +537,16 @@ endif
+>  ifneq ($(shell sh -c "(echo '\#include <dwarf.h>'; echo '\#include <libdw.h>'; echo 'int main(void) { Dwarf *dbg; dbg = dwarf_begin(0, DWARF_C_READ); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -I/usr/include/elfutils -ldw -lelf -o $(BITBUCKET) $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
+>  	msg := $(warning No libdw.h found or old libdw.h found, disables dwarf support. Please install elfutils-devel/elfutils-dev);
+>  else
+> +ifeq ($(origin PERF_HAVE_DWARF_REGS), undefined)
+> +	msg := $(warning DWARF register mappings have not been defined for architecture $(ARCH), DWARF support disabled);
+> +else
+>  ifndef NO_DWARF
+>  	BASIC_CFLAGS += -I/usr/include/elfutils -DDWARF_SUPPORT
+>  	EXTLIBS += -lelf -ldw
+>  	LIB_OBJS += $(OUTPUT)util/probe-finder.o
+> -endif
+> -endif
+> +endif # NO_DWARF
+> +endif # PERF_HAVE_DWARF_REGS
+> +endif # Dwarf support
+>  
+>  ifneq ($(shell sh -c "(echo '\#include <newt.h>'; echo 'int main(void) { newtInit(); newtCls(); return newtFinished(); }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -lnewt -o $(BITBUCKET) $(ALL_LDFLAGS) $(EXTLIBS) "$(QUIET_STDERR)" && echo y"), y)
+>  	msg := $(warning newt not found, disables TUI support. Please install newt-devel or libnewt-dev);
+> diff --git a/tools/perf/arch/x86/Makefile b/tools/perf/arch/x86/Makefile
+> new file mode 100644
+> index 0000000..cbd7833
+> --- /dev/null
+> +++ b/tools/perf/arch/x86/Makefile
+> @@ -0,0 +1,2 @@
+> +PERF_HAVE_DWARF_REGS := 1
+> +LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
+> diff --git a/tools/perf/arch/x86/util/dwarf-regs.c b/tools/perf/arch/x86/util/dwarf-regs.c
+> new file mode 100644
+> index 0000000..a794d30
+> --- /dev/null
+> +++ b/tools/perf/arch/x86/util/dwarf-regs.c
+> @@ -0,0 +1,75 @@
+> +/*
+> + * dwarf-regs.c : Mapping of DWARF debug register numbers into register names.
+> + * Extracted from probe-finder.c
+> + *
+> + * Written by Masami Hiramatsu <mhiramat@redhat.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + */
+> +
+> +#include <libio.h>
+> +#include <dwarf-regs.h>
+> +
+> +/*
+> + * Generic dwarf analysis helpers
+> + */
+> +
+> +#define X86_32_MAX_REGS 8
+> +const char *x86_32_regs_table[X86_32_MAX_REGS] = {
+> +	"%ax",
+> +	"%cx",
+> +	"%dx",
+> +	"%bx",
+> +	"$stack",	/* Stack address instead of %sp */
+> +	"%bp",
+> +	"%si",
+> +	"%di",
+> +};
+> +
+> +#define X86_64_MAX_REGS 16
+> +const char *x86_64_regs_table[X86_64_MAX_REGS] = {
+> +	"%ax",
+> +	"%dx",
+> +	"%cx",
+> +	"%bx",
+> +	"%si",
+> +	"%di",
+> +	"%bp",
+> +	"%sp",
+> +	"%r8",
+> +	"%r9",
+> +	"%r10",
+> +	"%r11",
+> +	"%r12",
+> +	"%r13",
+> +	"%r14",
+> +	"%r15",
+> +};
+> +
+> +/* TODO: switching by dwarf address size */
+> +#ifdef __x86_64__
+> +#define ARCH_MAX_REGS X86_64_MAX_REGS
+> +#define arch_regs_table x86_64_regs_table
+> +#else
+> +#define ARCH_MAX_REGS X86_32_MAX_REGS
+> +#define arch_regs_table x86_32_regs_table
+> +#endif
+> +
+> +/* Return architecture dependent register string (for kprobe-tracer) */
+> +const char *get_arch_regstr(unsigned int n)
+> +{
+> +	return (n <= ARCH_MAX_REGS) ? arch_regs_table[n] : NULL;
+> +}
+> diff --git a/tools/perf/util/include/dwarf-regs.h b/tools/perf/util/include/dwarf-regs.h
+> new file mode 100644
+> index 0000000..cf6727e
+> --- /dev/null
+> +++ b/tools/perf/util/include/dwarf-regs.h
+> @@ -0,0 +1,8 @@
+> +#ifndef _PERF_DWARF_REGS_H_
+> +#define _PERF_DWARF_REGS_H_
+> +
+> +#ifdef DWARF_SUPPORT
+> +const char *get_arch_regstr(unsigned int n);
+> +#endif
+> +
+> +#endif
+> diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
+> index a851377..83e5bd8 100644
+> --- a/tools/perf/util/probe-finder.c
+> +++ b/tools/perf/util/probe-finder.c
+> @@ -31,6 +31,7 @@
+>  #include <string.h>
+>  #include <stdarg.h>
+>  #include <ctype.h>
+> +#include <dwarf-regs.h>
+>  
+>  #include "string.h"
+>  #include "event.h"
+> @@ -38,58 +39,6 @@
+>  #include "util.h"
+>  #include "probe-finder.h"
+>  
+> -
+> -/*
+> - * Generic dwarf analysis helpers
+> - */
+> -
+> -#define X86_32_MAX_REGS 8
+> -const char *x86_32_regs_table[X86_32_MAX_REGS] = {
+> -	"%ax",
+> -	"%cx",
+> -	"%dx",
+> -	"%bx",
+> -	"$stack",	/* Stack address instead of %sp */
+> -	"%bp",
+> -	"%si",
+> -	"%di",
+> -};
+> -
+> -#define X86_64_MAX_REGS 16
+> -const char *x86_64_regs_table[X86_64_MAX_REGS] = {
+> -	"%ax",
+> -	"%dx",
+> -	"%cx",
+> -	"%bx",
+> -	"%si",
+> -	"%di",
+> -	"%bp",
+> -	"%sp",
+> -	"%r8",
+> -	"%r9",
+> -	"%r10",
+> -	"%r11",
+> -	"%r12",
+> -	"%r13",
+> -	"%r14",
+> -	"%r15",
+> -};
+> -
+> -/* TODO: switching by dwarf address size */
+> -#ifdef __x86_64__
+> -#define ARCH_MAX_REGS X86_64_MAX_REGS
+> -#define arch_regs_table x86_64_regs_table
+> -#else
+> -#define ARCH_MAX_REGS X86_32_MAX_REGS
+> -#define arch_regs_table x86_32_regs_table
+> -#endif
+> -
+> -/* Return architecture dependent register string (for kprobe-tracer) */
+> -static const char *get_arch_regstr(unsigned int n)
+> -{
+> -	return (n <= ARCH_MAX_REGS) ? arch_regs_table[n] : NULL;
+> -}
+> -
+>  /*
+>   * Compare the tail of two strings.
+>   * Return 0 if whole of either string is same as another's tail part.
+> @@ -397,7 +346,7 @@ static void convert_location(Dwarf_Op *op, struct probe_finder *pf)
+>  
+>  	regs = get_arch_regstr(regn);
+>  	if (!regs)
+> -		die("%u exceeds max register number.", regn);
+> +		die("Mapping for DWARF register number %u missing on this architecture.", regn);
+>  
+>  	tvar->value = xstrdup(regs);
+>  	if (ref) {
 
-that looks rather ugly. Why not do a raw:
-
-	this_cpu_inc(lockdep_stats.redundant_hardirqs_on);
-
-which basically open-codes debug_atomic_inc(), but without the warning?
-
-Btw., using the this_cpu() methods might result in faster code for all the 
-debug_atomic_inc() macros as well?
-
-	Ingo
+-- 
+Masami Hiramatsu
+e-mail: mhiramat@redhat.com
