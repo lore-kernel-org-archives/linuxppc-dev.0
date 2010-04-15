@@ -1,23 +1,26 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <mingo@elte.hu>
+Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 40892B7C48
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A8627B7D0C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 23:53:59 +1000 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
-References: <4BC682DC.1050200@billgatliff.com>
-	<201004150921.47268.roman.fietze@telemotive.de>
-	<4BC70E47.9010408@billgatliff.com>
-In-Reply-To: <4BC70E47.9010408@billgatliff.com>
+	Fri, 16 Apr 2010 00:04:32 +1000 (EST)
+Date: Thu, 15 Apr 2010 16:03:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final tree
+	(tip related)
+Message-ID: <20100415140358.GA19981@elte.hu>
+References: <20100415161214.04637496.sfr@canb.auug.org.au>
+	<20100415064940.GA9240@elte.hu> <20100415130032.GA6789@nowhere>
 MIME-Version: 1.0
-Message-ID: <201004151553.53426.roman.fietze@telemotive.de>
-Date: Thu, 15 Apr 2010 15:53:53 +0200
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100415130032.GA6789@nowhere>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Peter Zijlstra <peterz@infradead.org>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +30,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Bill,
 
-On Thursday 15 April 2010 15:01:59 Bill Gatliff wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Are you talking about this code here?
->=20
->     void
->     shadowUpdatePacked (ScreenPtr pScreen,
->                         shadowBufPtr pBuf)
->     {
->     ...
->                     while (i--)
->                         *win++ =3D *sha++;
+> On Thu, Apr 15, 2010 at 08:49:40AM +0200, Ingo Molnar wrote:
+> > 
+> > * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > Yesterday's (and today's) linux-next boot (PowerPC) failed like this:
+> > > 
+> > > ------------[ cut here ]------------
+> > > Badness at kernel/lockdep.c:2301
+> > > NIP: c0000000000a35c8 LR: c0000000000084c4 CTR: 0000000000000000
+> > > REGS: c000000000bf77e0 TRAP: 0700   Not tainted  (2.6.34-rc4-autokern1)
+> > > MSR: 8000000000021032 <ME,CE,IR,DR>  CR: 24000044  XER: 00000004
+> > > TASK = c000000000aa3d30[0] 'swapper' THREAD: c000000000bf4000 CPU: 0
+> > > GPR00: 0000000000000001 c000000000bf7a60 c000000000bf32f0 c0000000000084c4 
+> > > GPR04: 0000000000000000 0000000000000a00 0000000000000000 0000000000000068 
+> > > GPR08: 0000000000000008 c000000000c4fabe 0000000000000000 7265677368657265 
+> > > GPR12: 8000000000009032 c000000007691000 0000000001c00000 c000000000770bf8 
+> > > GPR16: c00000000076f390 0000000000000000 0000000000430000 00000000024876f0 
+> > > GPR20: c000000000887480 0000000002487480 c0000000008876f0 0000000001b5f8d0 
+> > > GPR24: c000000000770478 0000000003300000 c000000000c1f1c8 c000000000884610 
+> > > GPR28: c000000000c1b290 c0000000000084c4 c000000000b45068 c000000000aa3d30 
+> > > NIP [c0000000000a35c8] .trace_hardirqs_on_caller+0xb0/0x224
+> > > LR [c0000000000084c4] system_call_common+0xc4/0x114
+> > > Call Trace:
+> > > [c000000000bf7a60] [c000000000bf7ba0] init_thread_union+0x3ba0/0x4000 (unreliable)
+> > > [c000000000bf7af0] [c0000000000084c4] system_call_common+0xc4/0x114
+> > > --- Exception: c01 at .kernel_thread+0x28/0x70
+> > >     LR = .rest_init+0x34/0xf8
+> > > [c000000000bf7de0] [c00000000086916c] .proc_sys_init+0x20/0x64 (unreliable)
+> > > [c000000000bf7e50] [c0000000000099c0] .rest_init+0x20/0xf8
+> > > [c000000000bf7ee0] [c000000000848af0] .start_kernel+0x484/0x4a8
+> > > [c000000000bf7f90] [c0000000000083c0] .start_here_common+0x1c/0x5c
+> > > Instruction dump:
+> > > 409e0188 0fe00000 48000180 801f08d8 2f800000 41be0050 880d01da 2fa00000 
+> > > 41be0028 e93e8538 88090000 68000001 <0b000000> 2fa00000 41be0010 e93e8538 
+> > > ------------[ cut here ]------------
+> > > 
+> > > Caused by commit bd6d29c25bb1a24a4c160ec5de43e0004e01f72b ("lockstat:
+> > > Make lockstat counting per cpu").  This added a WARN_ON_ONCE to
+> > > debug_atomic_inc() which is called from trace_hardirqs_on_caller() with
+> > > irqs enabled.
+> > > 
+> > > Line 2301 is:
+> > > 
+> > >         if (unlikely(curr->hardirqs_enabled)) {
+> > >                 debug_atomic_inc(redundant_hardirqs_on);   <--- 2301
+> > >                 return;
+> > >         }
+> > > 
+> > > This is especially bad since on PowerPC, WARN_ON is a TRAP and the return
+> > > path from the TRAP also calls trace_hardirqs_on_caller(), so the TRAP
+> > > recurses ...
+> > 
+> > Ok, we'll fix the warning.
+> > 
+> > Btw., WARN_ON trapping on PowerPC is clearly a PowerPC bug - there's a good 
+> > reason we have WARN_ON versus BUG_ON - it should be fixed.
+> 
+> 
+> In this case, I guess the following fix should be sufficient?
+> I'm going to test it and provide a sane changelog.
+> 
+> 
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index 78325f8..65d4336 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -2298,7 +2298,11 @@ void trace_hardirqs_on_caller(unsigned long ip)
+>  		return;
+>  
+>  	if (unlikely(curr->hardirqs_enabled)) {
+> +		unsigned long flags;
+> +
+> +		raw_local_irq_save(flags);
+>  		debug_atomic_inc(redundant_hardirqs_on);
+> +		raw_local_irq_restore(flags);
+>  		return;
+>  	}
+>  	/* we'll do an OFF -> ON transition: */
 
-Yes. I added a routine like
+that looks rather ugly. Why not do a raw:
 
-/* Swap frame buffer bytes in 32 bit value.  */
-static __inline unsigned int
-fbbits_swap32(unsigned int __bsx)
-{
-    return ((((__bsx) & 0xff000000) >> 8) | (((__bsx) & 0x00ff0000) << 8) |
-	    (((__bsx) & 0x0000ff00) >> 8) | (((__bsx) & 0x000000ff) << 8));
-}
+	this_cpu_inc(lockdep_stats.redundant_hardirqs_on);
 
+which basically open-codes debug_atomic_inc(), but without the warning?
 
-Then I added void shadowUpdatePackedSwapped16() and
-shadowUpdatePackedSwapped32() which I was using instead of the
-original *Weak functions, which in turn uses the above swap routine
-when copying from shadow to the device.
+Btw., using the this_cpu() methods might result in faster code for all the 
+debug_atomic_inc() macros as well?
 
-If you want I can post (in the ML) or mail you the files that I
-changed. A diff probably won't help a lot, because I think we changed
-more than that, and we are using a pretty old XFree version.
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+	Ingo
