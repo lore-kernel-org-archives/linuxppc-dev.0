@@ -1,16 +1,29 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id C52EBB7D41
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 13:05:46 +1000 (EST)
-Received: by gyf2 with SMTP id 2so459146gyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Apr 2010 20:05:44 -0700 (PDT)
-Message-ID: <4BC682DC.1050200@billgatliff.com>
-Date: Wed, 14 Apr 2010 22:07:08 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>, agust@denx.de
-Subject: Xorg on Fujitsu "Lime" with MPC5200b?
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 031B4B7CF8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Apr 2010 13:57:39 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3F3sCMB027791
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:54:12 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3F3p5te651340
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:51:05 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3F3vbMM009225
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Apr 2010 13:57:37 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] perf: Split out arch specific code & improve PowerPC perf
+	probe support
+Date: Thu, 15 Apr 2010 13:57:00 +1000
+Message-Id: <1271303822-11542-1-git-send-email-imunsie@au.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys:
+These patches add the required mappings to use perf probe on PowerPC.
+
+Part 1 of the patch series moves the arch dependent x86 32 and 64 bit DWARF
+register number mappings out into a separate arch directory and adds the
+necessary Makefile foo to use it.
+
+Part 2 of the patch series adds the PowerPC mappings -
+Functionality wise it requires the patch titled "powerpc: Add kprobe-based
+event tracer" from the powerpc-next tree to provide the
+HAVE_REGS_AND_STACK_ACCESS_API required for CONFIG_KPROBE_EVENT. The code will
+still compile cleanly without it and will fail gracefully at runtime on the
+missing CONFIG_KPROBE_EVENT support as before as well as printing a warning
+message during compilation.
 
 
-I'm not quite sure where to ask this question, but all my attempts
-elsewhere have come up short, so...
-
-Put simply, I have an MPC5200b platform with a Fujitsu "Lime" GDC, and
-I'm trying to run Debian squeeze's xorg on it.
-
-Actually, I *have* Debian squeeze's xorg running on the platform just
-fine, with a 2.6.34-rc1 kernel (kernel.org).  Problem is, every single
-diagonal line is very blocky--- not smooth at all.  I used to think this
-was a problem with X's fonts, but now I don't think so because the mouse
-cursor's diagonal lines also look equally bad.
-
-It's almost as if any time the platform tries to draw a diagonal line,
-truncation/rounding errors are causing it problems in figuring out which
-pixels to turn on and off.
-
-A non-Linux kernel on this hardware, running a non-X GUI, seems to work
-fine so I think the hardware isn't the problem.
-
-Anyone have any suggestions on where to start with this one?  Anyone
-else running a similar configuration with any success?  I'm completely
-lost, and running out of hair *fast*...
-
-
-Thanks!
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
+Changes since v2: From Masami Hiramatsu's feedback DWARF support is disabled
+altogether if the architecture specific Makefile does not define
+PERF_HAVE_DWARF_REGS - ie, DWARF register mappings are missing for the
+architecture. A message indicating this is printed out during compilation.
