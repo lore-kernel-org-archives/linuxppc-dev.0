@@ -1,17 +1,17 @@
 Return-Path: <fweisbec@gmail.com>
-Received: from mail-bw0-f225.google.com (mail-bw0-f225.google.com
-	[209.85.218.225]) by ozlabs.org (Postfix) with ESMTP id 9236CB7C8E
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 37F4DB7D0E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 03:15:58 +1000 (EST)
-Received: by bwz25 with SMTP id 25so1669503bwz.8
+	Fri, 16 Apr 2010 03:24:27 +1000 (EST)
+Received: by pwj8 with SMTP id 8so1178835pwj.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 10:15:55 -0700 (PDT)
-Date: Thu, 15 Apr 2010 19:15:55 +0200
+	Thu, 15 Apr 2010 10:24:25 -0700 (PDT)
+Date: Thu, 15 Apr 2010 19:24:22 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final
 	tree (tip related)
-Message-ID: <20100415171551.GA5069@nowhere>
+Message-ID: <20100415172421.GB5069@nowhere>
 References: <20100415161214.04637496.sfr@canb.auug.org.au>
 	<20100415064940.GA9240@elte.hu> <20100415130032.GA6789@nowhere>
 	<20100415140358.GA19981@elte.hu>
@@ -33,8 +33,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Apr 15, 2010 at 04:03:58PM +0200, Ingo Molnar wrote:
-> > In this case, I guess the following fix should be sufficient?
-> > I'm going to test it and provide a sane changelog.
 > > 
 > > 
 > > diff --git a/kernel/lockdep.c b/kernel/lockdep.c
@@ -61,19 +59,7 @@ On Thu, Apr 15, 2010 at 04:03:58PM +0200, Ingo Molnar wrote:
 > which basically open-codes debug_atomic_inc(), but without the warning?
 
 
-Because that would open a race against interrupts that might
-touch lockdep_stats.redundant_hardirqs_on too.
+There is also no guarantee we are in a non-preemptable section. We can then
+also race against another cpu.
 
-If you think it's not very important (this race must be pretty rare I guess),
-I can use your solution.
-
-
-
-> 
-> Btw., using the this_cpu() methods might result in faster code for all the 
-> debug_atomic_inc() macros as well?
-
-
-Indeed, will change that too.
-
-Thanks.
+I'm not sure what to do.
