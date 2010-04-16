@@ -1,24 +1,23 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id 75322B7D2F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 12:50:09 +1000 (EST)
-Received: by gwj17 with SMTP id 17so1017893gwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Apr 2010 19:50:07 -0700 (PDT)
-Message-ID: <4BC7D0BA.5000502@billgatliff.com>
-Date: Thu, 15 Apr 2010 21:51:38 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 7C090B7D59
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 15:40:15 +1000 (EST)
+Received: by wyb34 with SMTP id 34so1082999wyb.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 22:40:13 -0700 (PDT)
+Date: Fri, 16 Apr 2010 09:40:10 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] powerpc: Add hibernation support for FSL BookE
+	processors
+Message-ID: <20100416054010.GA391@oksana.dev.rtsoft.ru>
+References: <20100224213802.GA12843@oksana.dev.rtsoft.ru>
+	<20100415184513.GA27101@oksana.dev.rtsoft.ru>
+	<2954FCF7-F34C-4E9D-A2EB-AC117D287EB5@kernel.crashing.org>
+	<4BC77174.1020305@freescale.com>
 MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
-References: <4BC682DC.1050200@billgatliff.com>
-	<201004150921.47268.roman.fietze@telemotive.de>
-	<4BC70E47.9010408@billgatliff.com>
-	<201004151553.53426.roman.fietze@telemotive.de>
-In-Reply-To: <201004151553.53426.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4BC77174.1020305@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Roman Fietze wrote:
-> Yes. I added a routine like
->
-> /* Swap frame buffer bytes in 32 bit value.  */
-> static __inline unsigned int
-> fbbits_swap32(unsigned int __bsx)
-> {
->     return ((((__bsx) & 0xff000000) >> 8) | (((__bsx) & 0x00ff0000) << 8) |
-> 	    (((__bsx) & 0x0000ff00) >> 8) | (((__bsx) & 0x000000ff) << 8));
-> }
->   
+On Thu, Apr 15, 2010 at 03:05:08PM -0500, Scott Wood wrote:
+> Kumar Gala wrote:
+> >On Apr 15, 2010, at 1:45 PM, Anton Vorontsov wrote:
+> >>Kumar,
+> >>
+> >>According to patchwork, this is now delegated to you. Do you
+> >>have any objections to merge this?
+> >
+> >Would like Scott's Ack.
+> 
+> I think we need to save IACn, DACn, DBCRn,
 
-I baked the above code into shadowUpdatePacked(), and it didn't seem to
-help anything--- my icewm mouse cursor was still quite jagged, as was
-all the text on the screen (clock widget, etc).  So I replaced the above
-code with a return 0, and the icewm desktop went completely black--- and
-everything else remained unchanged.
+Does the kernel actually need these registers? I mean, they're
+saved per thread anyway.
 
-Apparently, there are several similar modifications that need to be
-made, i.e. the shadowUpdatePacked() function isn't the only way to the
-framebuffer memory?  I'm really looking forward to seeing your code, as
-I have no idea how to even identify the places that need hacking.  I
-understand the utility of the hack, however.
+> PID0,
 
-Makes me think that we're all just soldering this chip down to the wrong
-data lines, and makes me wonder if there isn't an "endianness bit" in
-the memory bus controller that can undo this damage for us.  I know I've
-seen such a bit in other SoCs...
+Kernel clears it early at boot, why would we save it?
 
+> and USPRG0.
 
-Thanks!
+Currently this isn't used at all.
 
+> Might want to also save TLB1 contents, and maybe things like HIDn,
+> cache registers, etc. -- I don't think they're changeable post-boot
+> currently, but it'd be good to avoid surprises if that were to
+> change.
 
-b.g.
+Hm. I don't really like the idea of doing things 'just in case',
+it just adds a code which functionality isn't tested, and which
+we will might never actually need.
+
+Thanks,
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
