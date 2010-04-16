@@ -1,23 +1,27 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 7C090B7D59
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 15:40:15 +1000 (EST)
-Received: by wyb34 with SMTP id 34so1082999wyb.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 22:40:13 -0700 (PDT)
-Date: Fri, 16 Apr 2010 09:40:10 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc: Add hibernation support for FSL BookE
-	processors
-Message-ID: <20100416054010.GA391@oksana.dev.rtsoft.ru>
-References: <20100224213802.GA12843@oksana.dev.rtsoft.ru>
-	<20100415184513.GA27101@oksana.dev.rtsoft.ru>
-	<2954FCF7-F34C-4E9D-A2EB-AC117D287EB5@kernel.crashing.org>
-	<4BC77174.1020305@freescale.com>
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 0DC81B7D5B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Apr 2010 16:12:14 +1000 (EST)
+Received: from rfietze.mit.telemotive.de (rfietze.mit.telemotive.de
+	[192.168.5.33])
+	by alderan.mit.telemotive.de (Postfix) with ESMTP id A0F46C592F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Apr 2010 07:48:29 +0200 (CEST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
+References: <4BC682DC.1050200@billgatliff.com>
+	<201004151553.53426.roman.fietze@telemotive.de>
+	<4BC77391.9000806@billgatliff.com>
+In-Reply-To: <4BC77391.9000806@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4BC77174.1020305@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <201004160748.29107.roman.fietze@telemotive.de>
+Date: Fri, 16 Apr 2010 07:48:28 +0200
+Content-Type: multipart/signed; boundary="nextPart5503650.dqfLDAPJkB";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 15, 2010 at 03:05:08PM -0500, Scott Wood wrote:
-> Kumar Gala wrote:
-> >On Apr 15, 2010, at 1:45 PM, Anton Vorontsov wrote:
-> >>Kumar,
-> >>
-> >>According to patchwork, this is now delegated to you. Do you
-> >>have any objections to merge this?
-> >
-> >Would like Scott's Ack.
-> 
-> I think we need to save IACn, DACn, DBCRn,
+--nextPart5503650.dqfLDAPJkB
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Does the kernel actually need these registers? I mean, they're
-saved per thread anyway.
+Hello Bill,
 
-> PID0,
+On Thursday 15 April 2010 22:14:09 Bill Gatliff wrote:
 
-Kernel clears it early at boot, why would we save it?
+> I'm not sure what the *Weak stuff is doing. Can I just hack
+> shadowUpdatePacked() itself?
 
-> and USPRG0.
+I think so. But take care if you want to use that code on other
+systems or without shadowfb. If I search for shadowUpdatePacked, then
+I'll find it in quite some other locations.
 
-Currently this isn't used at all.
 
-> Might want to also save TLB1 contents, and maybe things like HIDn,
-> cache registers, etc. -- I don't think they're changeable post-boot
-> currently, but it'd be good to avoid surprises if that were to
-> change.
+Roman
 
-Hm. I don't really like the idea of doing things 'just in case',
-it just adds a code which functionality isn't tested, and which
-we will might never actually need.
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
 
-Thanks,
+Amtsgericht Ulm                                HRB 541321
+Vorstand:
+Peter Kersten, Markus Fischer, Franz Diller, Markus Stolz
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+--nextPart5503650.dqfLDAPJkB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.15 (GNU/Linux)
+
+iEYEABECAAYFAkvH+i0ACgkQp5XY/BK//MLEGACgj6HH5gN7TOJOGIdKRyHpUAAY
+gk4AmwXeL+OQat2tfFOBO8D8+p6DWdFn
+=MHdq
+-----END PGP SIGNATURE-----
+
+--nextPart5503650.dqfLDAPJkB--
