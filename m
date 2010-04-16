@@ -1,29 +1,23 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <roman.fietze@telemotive.de>
+Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 83C53B7F8E
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 16:58:27 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o3G6wOX9025488
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 23:58:25 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3G77Rad009363
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 02:07:29 -0500 (CDT)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/4] mpc8572ds: change camp dtses for MSI sharing
-Date: Fri, 16 Apr 2010 15:34:38 +0800
-Message-Id: <1271403278-30091-4-git-send-email-leoli@freescale.com>
-In-Reply-To: <1271403278-30091-3-git-send-email-leoli@freescale.com>
-References: <1271403278-30091-1-git-send-email-leoli@freescale.com>
-	<1271403278-30091-2-git-send-email-leoli@freescale.com>
-	<1271403278-30091-3-git-send-email-leoli@freescale.com>
-Cc: Zhao Chenhui <b26998@freescale.com>
+	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 85554B7CF8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Apr 2010 18:28:34 +1000 (EST)
+From: Roman Fietze <roman.fietze@telemotive.de>
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
+References: <4BC682DC.1050200@billgatliff.com>
+	<201004151553.53426.roman.fietze@telemotive.de>
+	<4BC7D0BA.5000502@billgatliff.com>
+In-Reply-To: <4BC7D0BA.5000502@billgatliff.com>
+MIME-Version: 1.0
+Message-ID: <201004161028.27637.roman.fietze@telemotive.de>
+Date: Fri, 16 Apr 2010 10:28:27 +0200
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,74 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the sharing of MSI interrupt through AMP OSes in the mpc8572ds
-dtses.
+Hello Bill,
 
-Signed-off-by: Zhao Chenhui <b26998@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |   15 +++++++++++++--
- arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    7 ++-----
- 2 files changed, 15 insertions(+), 7 deletions(-)
+On Friday 16 April 2010 04:51:38 Bill Gatliff wrote:
 
-diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-index 5bd1011..3375c2a 100644
---- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-@@ -215,6 +215,18 @@
- 			clock-frequency = <0>;
- 		};
- 
-+		msi@41600 {
-+			compatible = "fsl,mpc8572-msi", "fsl,mpic-msi";
-+			reg = <0x41600 0x80>;
-+			msi-available-ranges = <0 0x80>;
-+			interrupts = <
-+				0xe0 0
-+				0xe1 0
-+				0xe2 0
-+				0xe3 0>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
- 		global-utilities@e0000 {	//global utilities block
- 			compatible = "fsl,mpc8572-guts";
- 			reg = <0xe0000 0x1000>;
-@@ -243,8 +255,7 @@
- 			protected-sources = <
- 			31 32 33 37 38 39       /* enet2 enet3 */
- 			76 77 78 79 26 42	/* dma2 pci2 serial*/
--			0xe0 0xe1 0xe2 0xe3     /* msi */
--			0xe4 0xe5 0xe6 0xe7
-+			0xe4 0xe5 0xe6 0xe7	/* msi */
- 			>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-index 0efc345..3f0e8bd 100644
---- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-@@ -154,12 +154,8 @@
- 		msi@41600 {
- 			compatible = "fsl,mpc8572-msi", "fsl,mpic-msi";
- 			reg = <0x41600 0x80>;
--			msi-available-ranges = <0 0x100>;
-+			msi-available-ranges = <0x80 0x100>;
- 			interrupts = <
--				0xe0 0
--				0xe1 0
--				0xe2 0
--				0xe3 0
- 				0xe4 0
- 				0xe5 0
- 				0xe6 0
-@@ -190,6 +186,7 @@
- 			0x1 0x2 0x3 0x4         /* pci slot */
- 			0x9 0xa 0xb 0xc         /* usb */
- 			0x6 0x7 0xe 0x5         /* Audio elgacy SATA */
-+			0xe0 0xe1 0xe2 0xe3	/* msi */
- 			>;
- 		};
- 	};
--- 
-1.6.6-rc1.GIT
+> Apparently, there are several similar modifications that need to be
+> made, ...
+
+I'm SW-Engineer, so I assume HW, that's always a good bet. ;)
+
+Please take care, that I forgot to tell you that my X server runs well
+on a Futjitsu 86295 chip, also connected to a MPC5200(B). I silently
+assumed that those two are identical in terms of byte ordering and
+(non) existant automatic byte swapping.
+
+At least, when you get a black screen when copying out nothing, you
+might be able to copy over some fixed pattern to find out what bits
+cause what, e.g. start writing 0x03 and shift that pattern left every
+16 scanlines.
+
+In what mode is your X server running? 16/24/32 bit? DirectColor, etc?
+
+
+Roman
+
+=2D-=20
+Roman Fietze                Telemotive AG B=FCro M=FChlhausen
+Breitwiesen                              73347 M=FChlhausen
+Tel.: +49(0)7335/18493-45        http://www.telemotive.de
