@@ -1,23 +1,25 @@
-Return-Path: <roman.fietze@telemotive.de>
-Received: from coyote.quickmin.net (coyote.quickmin.net [217.14.112.24])
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.quickmin.de", Issuer "smtp.quickmin.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B9942B7D61
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 16:14:06 +1000 (EST)
-From: Roman Fietze <roman.fietze@telemotive.de>
-To: Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: Xorg on Fujitsu "Lime" with MPC5200b?
-References: <4BC682DC.1050200@billgatliff.com>
-	<v2ma0706c7b1004150906p34b853a0r80e2bb751e034b97@mail.gmail.com>
-	<v2pa0706c7b1004150907teae3383dwa4ee101d07daacfe@mail.gmail.com>
-In-Reply-To: <v2pa0706c7b1004150907teae3383dwa4ee101d07daacfe@mail.gmail.com>
-MIME-Version: 1.0
-Message-ID: <201004160814.01037.roman.fietze@telemotive.de>
-Date: Fri, 16 Apr 2010 08:14:00 +0200
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Cc: linuxppc-dev@lists.ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDE14B7D64
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 16:58:18 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o3G6wFot025441
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Apr 2010 23:58:15 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3G77J6V009354
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 02:07:19 -0500 (CDT)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4] fsl_msi: fix the conflict of virt_msir's chip_data
+Date: Fri, 16 Apr 2010 15:34:35 +0800
+Message-Id: <1271403278-30091-1-git-send-email-leoli@freescale.com>
+Cc: Zhao Chenhui <b26998@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,359 +29,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Bill,
+From: Zhao Chenhui <b26998@freescale.com>
 
-On Thursday 15 April 2010 18:07:03 Bill Gatliff wrote:
+In fsl_of_msi_probe(), the virt_msir's chip_data have been stored
+the pointer to struct mpic. We add a struct fsl_msi_cascade_data
+to store the pointer to struct fsl_msi and msir_index.  Otherwise,
+the pointer to struct mpic will be over-written, and will cause
+problem when calling eoi() of the irq.
 
-> I would love it if you posted your code! Thanks!!
+Signed-off-by: Zhao Chenhui <b26998@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c |   30 +++++++++++++++++++++++++-----
+ 1 files changed, 25 insertions(+), 5 deletions(-)
 
-In this source file I just added my own routines:
-
-Index: programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c   (revision 6)
-+++ programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c   (revision 7)
-@@ -139,8 +139,8 @@
-        "shadowInit",
-        "shadowSetup",
-        "shadowUpdatePacked",
-=2D       "shadowUpdatePackedSwapped16Weak",
-=2D       "shadowUpdatePackedSwapped32Weak",
-+       "shadowUpdatePackedSwapped16",
-+       "shadowUpdatePackedSwapped32",
-        "shadowUpdateRotatePacked",
-        NULL
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index ad453ca..716862f 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -21,6 +21,7 @@
+ #include <asm/prom.h>
+ #include <asm/hw_irq.h>
+ #include <asm/ppc-pci.h>
++#include <asm/mpic.h>
+ #include "fsl_msi.h"
+ 
+ struct fsl_msi_feature {
+@@ -28,6 +29,10 @@ struct fsl_msi_feature {
+ 	u32 msiir_offset;
  };
-@@ -619,6 +619,7 @@
-        ScrnInfoPtr pScrn =3D xf86Screens[pScreen->myNum];
-        FBDevPtr fPtr =3D FBDEVPTR(pScrn);
-        VisualPtr visual;
-+       ShadowUpdateProc pupdate;
-        int init_picture =3D 0;
-        int ret,flags,width,height;
-=20
-@@ -794,7 +795,7 @@
-                xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-                           "RENDER extension initialisation failed.\n");
-=20
-=2D       pupdate =3D pScrn->bitsPerPixel > 16 ? shadowUpdatePackedSwapped3=
-2Weak() :
- shadowUpdatePackedSwapped16Weak();
-+       pupdate =3D pScrn->bitsPerPixel > 16 ? shadowUpdatePackedSwapped32 =
-: shado
-wUpdatePackedSwapped16;
-=20
-        if (fPtr->shadowFB &&=20
-            (!shadowSetup(pScreen) || !shadowAdd(pScreen, NULL,
-
-
-=2D-------------------------------
-
-And here's my complete programs/Xserver/miext/shadow/shpacked.c
-
-
-/*
- * $XFree86: xc/programs/Xserver/miext/shadow/shpacked.c,v 1.5 2001/10/28 0=
-3:34:16 tsi Exp $
- *
- * Copyright =A9 2000 Keith Packard
- *
- * Permission to use, copy, modify, distribute, and sell this software and =
-its
- * documentation for any purpose is hereby granted without fee, provided th=
-at
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of Keith Packard not be used in
- * advertising or publicity pertaining to distribution of the software with=
-out
- * specific, written prior permission.  Keith Packard makes no
- * representations about the suitability of this software for any purpose. =
- It
- * is provided "as is" without express or implied warranty.
- *
- * KEITH PACKARD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL KEITH PACKARD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF U=
-SE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
- */
-
-#include    <byteswap.h>
-#include    <unistd.h>
-
-#include    "X.h"
-#include    "scrnintstr.h"
-#include    "windowstr.h"
-#include    "font.h"
-#include    "dixfontstr.h"
-#include    "fontstruct.h"
-#include    "mi.h"
-#include    "regionstr.h"
-#include    "globals.h"
-#include    "gcstruct.h"
-#include    "shadow.h"
-#include    "fb.h"
-
-void
-shadowUpdatePacked (ScreenPtr	    pScreen,
-		    shadowBufPtr    pBuf)
-{
-    RegionPtr	damage =3D &pBuf->damage;
-    PixmapPtr	pShadow =3D pBuf->pPixmap;
-    int		nbox =3D REGION_NUM_RECTS (damage);
-    BoxPtr	pbox =3D REGION_RECTS (damage);
-    FbBits	*shaBase, *shaLine, *sha;
-    FbStride	shaStride;
-    int		scrBase, scrLine, scr;
-    int		shaBpp;
-    int		shaXoff, shaYoff; /* XXX assumed to be zero */
-    int		x, y, w, h, width;
-    int         i;
-    FbBits	*winBase =3D NULL, *win;
-    CARD32      winSize;
-
-    fbGetDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp, shaXoff,=
- shaYoff);
-    while (nbox--)
-    {
-	x =3D pbox->x1 * shaBpp;
-	y =3D pbox->y1;
-	w =3D (pbox->x2 - pbox->x1) * shaBpp;
-	h =3D pbox->y2 - pbox->y1;
-
-	scrLine =3D (x >> FB_SHIFT);
-	shaLine =3D shaBase + y * shaStride + (x >> FB_SHIFT);
-				  =20
-	x &=3D FB_MASK;
-	w =3D (w + x + FB_MASK) >> FB_SHIFT;
-=09
-	while (h--)
-	{
-	    winSize =3D 0;
-	    scrBase =3D 0;
-	    width =3D w;
-	    scr =3D scrLine;
-	    sha =3D shaLine;
-	    while (width) {
-		/* how much remains in this window */
-		i =3D scrBase + winSize - scr;
-		if (i <=3D 0 || scr < scrBase)
-		{
-		    winBase =3D (FbBits *) (*pBuf->window) (pScreen,
-							  y,
-							  scr * sizeof (FbBits),
-							  SHADOW_WINDOW_WRITE,
-							  &winSize,
-							  pBuf->closure);
-		    if(!winBase)
-			return;
-		    scrBase =3D scr;
-		    winSize /=3D sizeof (FbBits);
-		    i =3D winSize;
-		}
-		win =3D winBase + (scr - scrBase);
-		if (i > width)
-		    i =3D width;
-		width -=3D i;
-		scr +=3D i;
-
-		while (i--)
-		    *win++ =3D *sha++;
-	    }
-	    shaLine +=3D shaStride;
-	    y++;
-	}
-	pbox++;
-    }
-}
-
-
-/* Swap frame buffer bytes in 32 bit value.  */
-static __inline unsigned int
-fbbits_swap32(unsigned int __bsx)
-{
-    return ((((__bsx) & 0xff000000) >> 8) | (((__bsx) & 0x00ff0000) << 8) |
-	    (((__bsx) & 0x0000ff00) >> 8) | (((__bsx) & 0x000000ff) << 8));
-}
-
-void
-shadowUpdatePackedSwapped16 (ScreenPtr	    pScreen,
-			     shadowBufPtr    pBuf)
-{
-    RegionPtr	damage =3D &pBuf->damage;
-    PixmapPtr	pShadow =3D pBuf->pPixmap;
-    int		nbox =3D REGION_NUM_RECTS (damage);
-    BoxPtr	pbox =3D REGION_RECTS (damage);
-    FbBits	*shaBase, *shaLine, *sha;
-    FbStride	shaStride;
-    int		scrBase, scrLine, scr;
-    int		shaBpp;
-    int		shaXoff, shaYoff; /* XXX assumed to be zero */
-    int		x, y, w, h, width;
-    int         i;
-    FbBits	*winBase =3D NULL, *win;
-    CARD32      winSize;
-
-    /* fprintf(stderr, "#### %s() nbox=3D%d sizof(*win)=3D%u\n", __FUNCTION=
-__, nbox, sizeof(*win)); */
-
-    fbGetDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp, shaXoff,=
- shaYoff);
-    while (nbox--)
-    {
-	x =3D pbox->x1 * shaBpp;
-	y =3D pbox->y1;
-	w =3D (pbox->x2 - pbox->x1) * shaBpp;
-	h =3D pbox->y2 - pbox->y1;
-
-	/* fprintf(stderr, "####\t%s: x=3D%d y=3D%d w=3D%d h=3D%d\n", __FUNCTION__=
-, x, y, w, h); */
-
-	scrLine =3D (x >> FB_SHIFT);
-	shaLine =3D shaBase + y * shaStride + (x >> FB_SHIFT);
-				  =20
-	x &=3D FB_MASK;
-	w =3D (w + x + FB_MASK) >> FB_SHIFT;
-=09
-	while (h--)
-	{
-	    winSize =3D 0;
-	    scrBase =3D 0;
-	    width =3D w;
-	    scr =3D scrLine;
-	    sha =3D shaLine;
-	    while (width) {
-		/* how much remains in this window */
-		i =3D scrBase + winSize - scr;
-		if (i <=3D 0 || scr < scrBase)
-		{
-		    winBase =3D (FbBits *) (*pBuf->window) (pScreen,
-							  y,
-							  scr * sizeof (FbBits),
-							  SHADOW_WINDOW_WRITE,
-							  &winSize,
-							  pBuf->closure);
-		    if(!winBase)
-			return;
-		    scrBase =3D scr;
-		    winSize /=3D sizeof (FbBits);
-		    i =3D winSize;
-		}
-		win =3D winBase + (scr - scrBase);
-		if (i > width)
-		    i =3D width;
-		width -=3D i;
-		scr +=3D i;
-
-#if 1
-		/* TODO: check which one of these solutions is
-		 * faster. Allthough swab probably uses optimized PPC
-		 * operations, the fbbits_swap32 solution uses 32 bit
-		 * PCI accesses, so the result isn't that clear.
-		 */
-		while (i--)
-		    *win++ =3D fbbits_swap32(*sha++);
-#else
-		swab(sha, win, i * sizeof(*win));
-#endif
-	    }
-	    shaLine +=3D shaStride;
-	    y++;
-	}
-	pbox++;
-    }
-}
-
-
-void
-shadowUpdatePackedSwapped32 (ScreenPtr	    pScreen,
-			     shadowBufPtr    pBuf)
-{
-    RegionPtr	damage =3D &pBuf->damage;
-    PixmapPtr	pShadow =3D pBuf->pPixmap;
-    int		nbox =3D REGION_NUM_RECTS (damage);
-    BoxPtr	pbox =3D REGION_RECTS (damage);
-    FbBits	*shaBase, *shaLine, *sha;
-    FbStride	shaStride;
-    int		scrBase, scrLine, scr;
-    int		shaBpp;
-    int		shaXoff, shaYoff; /* XXX assumed to be zero */
-    int		x, y, w, h, width;
-    int         i;
-    FbBits	*winBase =3D NULL, *win;
-    CARD32      winSize;
-
-    /* fprintf(stderr, "#### %s() nbox=3D%d sizof(*win)=3D%u\n", __FUNCTION=
-__, nbox, sizeof(*win)); */
-
-    fbGetDrawable (&pShadow->drawable, shaBase, shaStride, shaBpp, shaXoff,=
- shaYoff);
-    while (nbox--)
-    {
-	x =3D pbox->x1 * shaBpp;
-	y =3D pbox->y1;
-	w =3D (pbox->x2 - pbox->x1) * shaBpp;
-	h =3D pbox->y2 - pbox->y1;
-
-	/* fprintf(stderr, "####\t%s: x=3D%d y=3D%d w=3D%d h=3D%d\n", __FUNCTION__=
-, x, y, w, h); */
-
-	scrLine =3D (x >> FB_SHIFT);
-	shaLine =3D shaBase + y * shaStride + (x >> FB_SHIFT);
-				  =20
-	x &=3D FB_MASK;
-	w =3D (w + x + FB_MASK) >> FB_SHIFT;
-=09
-	while (h--)
-	{
-	    winSize =3D 0;
-	    scrBase =3D 0;
-	    width =3D w;
-	    scr =3D scrLine;
-	    sha =3D shaLine;
-	    while (width) {
-		/* how much remains in this window */
-		i =3D scrBase + winSize - scr;
-		if (i <=3D 0 || scr < scrBase)
-		{
-		    winBase =3D (FbBits *) (*pBuf->window) (pScreen,
-							  y,
-							  scr * sizeof (FbBits),
-							  SHADOW_WINDOW_WRITE,
-							  &winSize,
-							  pBuf->closure);
-		    if(!winBase)
-			return;
-		    scrBase =3D scr;
-		    winSize /=3D sizeof (FbBits);
-		    i =3D winSize;
-		}
-		win =3D winBase + (scr - scrBase);
-		if (i > width)
-		    i =3D width;
-		width -=3D i;
-		scr +=3D i;
-
-		while (i--)
-		    *win++ =3D bswap_32(*sha++);
-	    }
-	    shaLine +=3D shaStride;
-	    y++;
-	}
-	pbox++;
-    }
-}
-
-
-Roman
-
-=2D-=20
-Roman Fietze                Telemotive AG B=FCro M=FChlhausen
-Breitwiesen                              73347 M=FChlhausen
-Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+ 
++struct fsl_msi_cascade_data {
++	struct fsl_msi *data;
++	int index;
++};
+ 
+ static inline u32 fsl_msi_read(u32 __iomem *base, unsigned int reg)
+ {
+@@ -132,7 +137,7 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
+ 
+ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
+-	int rc, hwirq;
++	int rc, hwirq = NO_IRQ;
+ 	unsigned int virq;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
+@@ -172,11 +177,15 @@ out_free:
+ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ {
+ 	unsigned int cascade_irq;
+-	struct fsl_msi *msi_data = get_irq_chip_data(irq);
++	struct fsl_msi *msi_data;
+ 	int msir_index = -1;
+ 	u32 msir_value = 0;
+ 	u32 intr_index;
+ 	u32 have_shift = 0;
++	struct fsl_msi_cascade_data *cascade_data;
++
++	cascade_data = (struct fsl_msi_cascade_data *)get_irq_data(irq);
++	msi_data = cascade_data->data;
+ 
+ 	spin_lock(&desc->lock);
+ 	if ((msi_data->feature &  FSL_PIC_IP_MASK) == FSL_PIC_IP_IPIC) {
+@@ -191,7 +200,7 @@ static void fsl_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	if (unlikely(desc->status & IRQ_INPROGRESS))
+ 		goto unlock;
+ 
+-	msir_index = (int)desc->handler_data;
++	msir_index = cascade_data->index;
+ 
+ 	if (msir_index >= NR_MSI_REG)
+ 		cascade_irq = NO_IRQ;
+@@ -243,6 +252,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 	int virt_msir;
+ 	const u32 *p;
+ 	struct fsl_msi_feature *features = match->data;
++	struct fsl_msi_cascade_data *cascade_data = NULL;
+ 
+ 	printk(KERN_DEBUG "Setting up Freescale MSI support\n");
+ 
+@@ -309,9 +319,19 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 			break;
+ 		virt_msir = irq_of_parse_and_map(dev->node, i);
+ 		if (virt_msir != NO_IRQ) {
+-			set_irq_data(virt_msir, (void *)i);
++			cascade_data = kzalloc(
++					sizeof(struct fsl_msi_cascade_data),
++					GFP_KERNEL);
++			if (!cascade_data) {
++				dev_err(&dev->dev,
++					"No memory for MSI cascade data\n");
++				err = -ENOMEM;
++				goto error_out;
++			}
++			cascade_data->index = i;
++			cascade_data->data = msi;
++			set_irq_data(virt_msir, (void *)cascade_data);
+ 			set_irq_chained_handler(virt_msir, fsl_msi_cascade);
+-			set_irq_chip_data(virt_msir, msi);
+ 		}
+ 	}
+ 
+-- 
+1.6.6-rc1.GIT
