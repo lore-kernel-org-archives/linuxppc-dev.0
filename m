@@ -1,28 +1,27 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-ww0-f51.google.com (mail-ww0-f51.google.com [74.125.82.51])
-	by ozlabs.org (Postfix) with ESMTP id 1257CB7D6E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 22:32:15 +1000 (EST)
-Received: by wwb34 with SMTP id 34so1070191wwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Apr 2010 05:32:12 -0700 (PDT)
-Date: Fri, 16 Apr 2010 14:32:12 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: linux-next: PowerPC WARN_ON_ONCE() after merge of the final
-	tree (tip related)
-Message-ID: <20100416123208.GA5162@nowhere>
-References: <20100415161214.04637496.sfr@canb.auug.org.au>
-	<20100415064940.GA9240@elte.hu> <20100415130032.GA6789@nowhere>
-	<20100415140358.GA19981@elte.hu> <20100415171551.GA5069@nowhere>
-	<1271414323.4807.1931.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1271414323.4807.1931.camel@twins>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-	Ingo Molnar <mingo@elte.hu>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id ED052B7D00
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Apr 2010 23:58:44 +1000 (EST)
+Received: from e35131.upc-e.chello.nl ([213.93.35.131]
+	helo=dyad.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.69 #1 (Red Hat Linux))
+	id 1O2m48-0002qd-8s
+	for linuxppc-dev@ozlabs.org; Fri, 16 Apr 2010 13:58:40 +0000
+Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <2906.1271219317@neuling.org>
+References: <20100409062118.D4096CBB6C@localhost.localdomain>
+	<1271161766.4807.1280.camel@twins>  <2906.1271219317@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Apr 2010 15:58:28 +0200
+Message-ID: <1271426308.1674.429.camel@laptop>
+Mime-Version: 1.0
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +31,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 16, 2010 at 12:38:43PM +0200, Peter Zijlstra wrote:
-> On Thu, 2010-04-15 at 19:15 +0200, Frederic Weisbecker wrote:
-> > > that looks rather ugly. Why not do a raw:
-> > > 
-> > >       this_cpu_inc(lockdep_stats.redundant_hardirqs_on);
-> > > 
-> > > which basically open-codes debug_atomic_inc(), but without the warning?
+On Wed, 2010-04-14 at 14:28 +1000, Michael Neuling wrote:
+
+> > Right, so I suspect this will indeed break some things.
 > > 
+> > We initially allowed 0 capacity for when a cpu is consumed by an RT task
+> > and there simply isn't much capacity left, in that case you really want
+> > to try and move load to your sibling cpus if possible.
+> 
+> Changing the CPU power based on what tasks are running on them seems a
+> bit wrong to me.  Shouldn't we keep those concepts separate?
+
+Well the thing cpu_power represents is a ratio of compute capacity
+available to this cpu as compared to other cpus. By normalizing the
+runqueue weights with this we end up with a fair balance.
+
+The thing to realize here is that this is solely about SCHED_NORMAL
+tasks, SCHED_FIFO/RR (or the proposed DEADLINE) tasks do not care about
+fairness and available compute capacity.
+
+So if we were to ignore RT tasks, you'd end up with a situation where,
+assuming 2 cpus and 4 equally weighted NORMAL tasks, and 1 RT task, the
+load-balancer would give each cpu 2 NORMAL tasks, but the tasks that
+would end up on the cpu the RT tasks would be running on would not run
+as fast -- is that fair?
+
+Since RT tasks do not have a weight (FIFO/RR have no limit at all,
+DEADLINE would have something equivalent to a max weight), it is
+impossible to account them in the normal weight sense.
+
+Therefore the current model takes them into account by lowering the
+compute capacity according to their (avg) cpu usage. So if the RT task
+would consume 66% cputime, we'd end up with a situation where the cpu
+running the RT task would get 1 NORMAL task, and other cpu would have
+the remaining 3, that way they'd all get 33% cpu.
+
+> > However you're right that this goes awry in your case.
 > > 
-> > Because that would open a race against interrupts that might
-> > touch lockdep_stats.redundant_hardirqs_on too.
+> > One thing to look at is if that 15% increase is indeed representative
+> > for the power7 cpu, it having 4 SMT threads seems to suggest there was
+> > significant gains, otherwise they'd not have wasted the silicon.
 > 
+> There are certainly, for most workloads, per core gains for SMT4 over
+> SMT2 on P7.  My kernels certainly compile faster and that's the only
+> workload anyone who matters cares about.... ;-)
+
+For sure ;-)
+
+Are there any numbers available on how much they gain? It might be worth
+to stick in real numbers instead of this alleged 15%.
+
+> > One thing we could look at is using the cpu base power to compute
+> > capacity from. We'd have to add another field to sched_group and store
+> > power before we do the scale_rt_power() stuff.
 > 
-> How so, its a pure per-cpu variable right? so either the increment
-> happens before the interrupts hits, or after, in either case there
-> should not be a race with interrupts.
+> Separating capacity from what RT tasks are running seems like a good
+> idea to me.
+
+Well, per the above we cannot fully separate them.
+
+> This would fix the RT issue, but it's not clear to me how you are
+> suggesting fixing the rounding down to 0 SMT4 issue.  Are you suggesting
+> we bump smt_gain to say 2048 + 15%?  Or are you suggesting we separate
+> the RT tasks out from capacity and keep the max(1, capacity) that I've
+> added?  Or something else?
+
+I would think that 4 SMT threads are still slower than two full cores,
+right? So cpu_power=2048 would not be appropriate.
+
+> Would another possibility be changing capacity a scaled value (like
+> cpu_power is now) rather than a small integer as it is now.  For
+> example, a scaled capacity of 1024 would be equivalent to a capacity of
+> 1 now.  This might enable us to handle partial capacities better?  We'd
+> probably have to scale a bunch of nr_running too.  
+
+Right, so my proposal was to scale down the capacity divider (currently
+1024) to whatever would be the base capacity for that cpu. Trouble seems
+to be that that makes group capacity a lot more complex, as you would
+end up needing to average all the cpu's their base capacity.
 
 
-In x86 yeah, I guess the compiler simply loads the address
-and does an inc directly, which is atomic wrt interrupts.
-
-But what about another arch that would need an intermediate
-load of the value:
-
-load val, reg
-add reg, 1
-		<---interrupt here
-store reg, val
+Hrmm, my brain seems muddled but I might have another solution, let me
+ponder this for a bit..
