@@ -1,24 +1,19 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DE4B7B7D13
+	by ozlabs.org (Postfix) with ESMTPS id 2B18BB7D0C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Apr 2010 07:27:38 +1000 (EST)
-Received: from e35131.upc-e.chello.nl ([213.93.35.131]
-	helo=dyad.programming.kicks-ass.net)
-	by bombadil.infradead.org with esmtpsa (Exim 4.69 #1 (Red Hat Linux))
-	id 1O2t4X-0005oP-Sa
-	for linuxppc-dev@lists.ozlabs.org; Fri, 16 Apr 2010 21:27:34 +0000
+	Sat, 17 Apr 2010 08:01:42 +1000 (EST)
 Subject: Re: Possible bug with mutex adaptative spinning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1271213767.13059.137.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <1271453184.1674.483.camel@laptop>
 References: <1271212509.13059.135.camel@pasglop>
-	<1271213767.13059.137.camel@pasglop>
+	<1271453184.1674.483.camel@laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Apr 2010 23:27:31 +0200
-Message-ID: <1271453251.1674.485.camel@laptop>
+Date: Sat, 17 Apr 2010 08:00:32 +1000
+Message-ID: <1271455232.13059.197.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
@@ -31,22 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-04-14 at 12:56 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-04-14 at 12:35 +1000, Benjamin Herrenschmidt wrote:
-> > Hi Peter !
-> > 
-> > I -may- have found a bug with mutex adaptative spinning. We hit it when
-> > torture testing CPU unplug.
-> 
->  .../...
-> 
-> In fact, I wonder if there's another potential problem:
-> 
-> If the owner is actually running, it may do so for a very long time. It
-> looks to me that everybody trying to take the mutex will thus spin and
-> never get out of the spin loop until the owner stops running.
 
-The inner-most spin loop breaks out on need_resched():
+> 
+> I've queued the below patch
 
-                if (task_thread_info(rq->curr) != owner || need_resched())
-                        return 0;
+Thanks. Should it make -stable as well ?
+
+Cheers,
+Ben.
+
+> ---
+> Subject: mutex: Don't spin when the owner CPU is offline or other weird cases
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Fri Apr 16 23:20:00 CEST 2010
+> 
+> Due to recent load-balancer changes that delay the task migration to
+> the next wakeup, the adaptive mutex spinning ends up in a live lock
+> when the owner's CPU gets offlined because the cpu_online() check
+> lives before the owner running check.
+> 
+> This patch changes mutex_spin_on_owner() to return 0 (don't spin) in
+> any case where we aren't sure about the owner struct validity or CPU
+> number, and if the said CPU is offline. There is no point going back &
+> re-evaluate spinning in corner cases like that, let's just go to
+> sleep.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <1271212509.13059.135.camel@pasglop>
+> ---
+>  kernel/sched.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -3647,7 +3647,7 @@ int mutex_spin_on_owner(struct mutex *lo
+>  	 * the mutex owner just released it and exited.
+>  	 */
+>  	if (probe_kernel_address(&owner->cpu, cpu))
+> -		goto out;
+> +		return 0;
+>  #else
+>  	cpu = owner->cpu;
+>  #endif
+> @@ -3657,14 +3657,14 @@ int mutex_spin_on_owner(struct mutex *lo
+>  	 * the cpu field may no longer be valid.
+>  	 */
+>  	if (cpu >= nr_cpumask_bits)
+> -		goto out;
+> +		return 0;
+>  
+>  	/*
+>  	 * We need to validate that we can do a
+>  	 * get_cpu() and that we have the percpu area.
+>  	 */
+>  	if (!cpu_online(cpu))
+> -		goto out;
+> +		return 0;
+>  
+>  	rq = cpu_rq(cpu);
+>  
+> @@ -3683,7 +3683,7 @@ int mutex_spin_on_owner(struct mutex *lo
+>  
+>  		cpu_relax();
+>  	}
+> -out:
+> +
+>  	return 1;
+>  }
+>  #endif
+> 
