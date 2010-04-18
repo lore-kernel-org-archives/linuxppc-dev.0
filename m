@@ -1,28 +1,17 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8D9C4B6EEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Apr 2010 00:49:11 +1000 (EST)
-Received: from f199130.upc-f.chello.nl ([80.56.199.130]
-	helo=dyad.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.69 #1 (Red Hat Linux))
-	id 1O3sHa-0002Mo-7h
-	for linuxppc-dev@ozlabs.org; Mon, 19 Apr 2010 14:49:06 +0000
-Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <28214.1271626457@neuling.org>
-References: <20100409062118.D4096CBB6C@localhost.localdomain>
-	<1271161766.4807.1280.camel@twins> <2906.1271219317@neuling.org>
-	<1271426308.1674.429.camel@laptop>  <28214.1271626457@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 19 Apr 2010 16:49:03 +0200
-Message-ID: <1271688543.1488.253.camel@laptop>
+Return-Path: <gknispel@proformatique.com>
+Date: Sun, 18 Apr 2010 05:34:39 +0200
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: linux-kernel@vger.kernel.org, Linuxppc-dev@lists.ozlabs.org
+Subject: Pending interrupts not always replayed
+Message-ID: <20100418053439.4d2ffe11@xilun.lan.proformatique.com>
 Mime-Version: 1.0
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Lars-Peter Clausen <lars@metafoo.de>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-04-19 at 07:34 +1000, Michael Neuling wrote:
-> > Are there any numbers available on how much they gain? It might be worth
-> > to stick in real numbers instead of this alleged 15%.
-> 
-> I get some gain numbers but obviously the workloads makes a huge
-> difference.  From a scheduler perspective, I assume an
-> average/representative gain is best rather than an optimistic or
-> pessimistic one?
+Hi,
 
-Yeah, average would be best.
+=46rom reading the code (kernel/irq stuffs), it seems that at least some
+handle_edge_irq based interrupts are not replayed when enabling if
+desc->chip->retrigger =3D=3D NULL and on a platform where
+CONFIG_HARDIRQS_SW_RESEND is not set (which for now is only defined for
+(some?) arm and avr32). Depending on the pic this problem might
+be masked if multiple interrupts are received between disable_irq and
+enable_irq (maybe other conditions exist with controllers i don't know).
 
-> We'll have different gains for SMT2 and SMT4, so we could change the
-> gain dynamically based on which SMT mode we are in.  Does that seem like
-> something we should add as an arch hook?  
+I happen to program a PPC SoC (MPC8555E to be precise), using some edge
+interrupts on the PortC of the CPM2 pic (arch/powerpc/sysdev/cpm2_pic.c)
+in a driver that does some enable_irq/disable_irq while various
+patterns of interrupts are received and i think i've hit the problem.
 
-That's the sort of thing you can use arch_scale_smt_power() for. But be
-weary to not fall into the same trap I did with x86, where I confused
-actual gain with capacity (When idle the actual gain is 0, but the
-capacity is not).
+Is the behavior intended (not always replaying edge triggered interrupts)
+or is it just a bug to fix?
+
+Anybody knows if it's safe to activate CONFIG_HARDIRQS_SW_RESEND for a
+powerpc or are there some known dangerous interactions?
+(I'll give it a try on my side in the meantime anyway)
+
+Cheers!
+--=20
+Guillaume Knispel
