@@ -1,16 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
-In-reply-to: <1271426308.1674.429.camel@laptop>
-References: <20100409062118.D4096CBB6C@localhost.localdomain>
-	<1271161766.4807.1280.camel@twins> <2906.1271219317@neuling.org>
-	<1271426308.1674.429.camel@laptop>
-Date: Mon, 19 Apr 2010 07:34:17 +1000
-Message-ID: <28214.1271626457@neuling.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/4] fsl_msi: enable msi sharing through AMP OSes
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <1271403278-30091-3-git-send-email-leoli@freescale.com>
+References: <1271403278-30091-1-git-send-email-leoli@freescale.com>
+	<1271403278-30091-2-git-send-email-leoli@freescale.com>
+	<1271403278-30091-3-git-send-email-leoli@freescale.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-2vDbpGizdLl63aivRTNG"
+Date: Mon, 19 Apr 2010 12:34:09 +1000
+Message-ID: <1271644449.14835.35.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Zhao Chenhui <b26998@freescale.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,109 +24,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-In message <1271426308.1674.429.camel@laptop> you wrote:
-> On Wed, 2010-04-14 at 14:28 +1000, Michael Neuling wrote:
-> 
-> > > Right, so I suspect this will indeed break some things.
-> > > 
-> > > We initially allowed 0 capacity for when a cpu is consumed by an RT task
-> > > and there simply isn't much capacity left, in that case you really want
-> > > to try and move load to your sibling cpus if possible.
-> > 
-> > Changing the CPU power based on what tasks are running on them seems a
-> > bit wrong to me.  Shouldn't we keep those concepts separate?
-> 
-> Well the thing cpu_power represents is a ratio of compute capacity
-> available to this cpu as compared to other cpus. By normalizing the
-> runqueue weights with this we end up with a fair balance.
-> 
-> The thing to realize here is that this is solely about SCHED_NORMAL
-> tasks, SCHED_FIFO/RR (or the proposed DEADLINE) tasks do not care about
-> fairness and available compute capacity.
-> 
-> So if we were to ignore RT tasks, you'd end up with a situation where,
-> assuming 2 cpus and 4 equally weighted NORMAL tasks, and 1 RT task, the
-> load-balancer would give each cpu 2 NORMAL tasks, but the tasks that
-> would end up on the cpu the RT tasks would be running on would not run
-> as fast -- is that fair?
-> 
-> Since RT tasks do not have a weight (FIFO/RR have no limit at all,
-> DEADLINE would have something equivalent to a max weight), it is
-> impossible to account them in the normal weight sense.
-> 
-> Therefore the current model takes them into account by lowering the
-> compute capacity according to their (avg) cpu usage. So if the RT task
-> would consume 66% cputime, we'd end up with a situation where the cpu
-> running the RT task would get 1 NORMAL task, and other cpu would have
-> the remaining 3, that way they'd all get 33% cpu.
+--=-2vDbpGizdLl63aivRTNG
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the explanation.  Your last example makes perfect sense for
-me.  
+On Fri, 2010-04-16 at 15:34 +0800, Li Yang wrote:
+> From: Zhao Chenhui <b26998@freescale.com>
+>=20
+> Make a single PCIe MSI bank shareable through CAMP OSes. The number of
+> MSI used by each core can be configured by dts file.
+>=20
+> Signed-off-by: Zhao Chenhui <b26998@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_msi.c    |    8 +++++++-
+>  arch/powerpc/sysdev/msi_bitmap.c |    4 ++--
+>  2 files changed, 9 insertions(+), 3 deletions(-)
+..
+> diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_b=
+itmap.c
+> index 5a32cbe..b41db96 100644
+> --- a/arch/powerpc/sysdev/msi_bitmap.c
+> +++ b/arch/powerpc/sysdev/msi_bitmap.c
+> @@ -95,8 +95,8 @@ int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp=
+)
+>  	/* Format is: (<u32 start> <u32 count>)+ */
+>  	len /=3D 2 * sizeof(u32);
+>  	for (i =3D 0; i < len; i++, p +=3D 2) {
+> -		for (j =3D 0; j < *(p + 1); j++)
+> -			bitmap_release_region(bmp->bitmap, *p + j, 0);
+> +		for (j =3D *p; j < *(p + 1); j++)
+> +			bitmap_release_region(bmp->bitmap, j, 0);
+>  	}
+> =20
+>  	spin_unlock(&bmp->lock);
 
-> 
-> > > However you're right that this goes awry in your case.
-> > > 
-> > > One thing to look at is if that 15% increase is indeed representative
-> > > for the power7 cpu, it having 4 SMT threads seems to suggest there was
-> > > significant gains, otherwise they'd not have wasted the silicon.
-> > 
-> > There are certainly, for most workloads, per core gains for SMT4 over
-> > SMT2 on P7.  My kernels certainly compile faster and that's the only
-> > workload anyone who matters cares about.... ;-)
-> 
-> For sure ;-)
-> 
-> Are there any numbers available on how much they gain? It might be worth
-> to stick in real numbers instead of this alleged 15%.
+This looks like a bug fix to the msi bitmap code, is it not? Please
+split it into a separate commit with an explanatory changelog.
 
-I get some gain numbers but obviously the workloads makes a huge
-difference.  From a scheduler perspective, I assume an
-average/representative gain is best rather than an optimistic or
-pessimistic one?
+cheers
 
-We'll have different gains for SMT2 and SMT4, so we could change the
-gain dynamically based on which SMT mode we are in.  Does that seem like
-something we should add as an arch hook?  
 
-> > > One thing we could look at is using the cpu base power to compute
-> > > capacity from. We'd have to add another field to sched_group and store
-> > > power before we do the scale_rt_power() stuff.
-> > 
-> > Separating capacity from what RT tasks are running seems like a good
-> > idea to me.
-> 
-> Well, per the above we cannot fully separate them.
 
-Yep.
+--=-2vDbpGizdLl63aivRTNG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-> 
-> > This would fix the RT issue, but it's not clear to me how you are
-> > suggesting fixing the rounding down to 0 SMT4 issue.  Are you suggesting
-> > we bump smt_gain to say 2048 + 15%?  Or are you suggesting we separate
-> > the RT tasks out from capacity and keep the max(1, capacity) that I've
-> > added?  Or something else?
-> 
-> I would think that 4 SMT threads are still slower than two full cores,
-> right? So cpu_power=2048 would not be appropriate.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Yes for an average workload, 4 SMT threads are slower than 2 full
-cores.  
+iEYEABECAAYFAkvLwSEACgkQdSjSd0sB4dInRgCgqrgDodW3XtEARVTxftF7qENF
+SaEAoMY2VHD7hn+xKGkymh3w3EjXuUCJ
+=Bb1J
+-----END PGP SIGNATURE-----
 
-> 
-> > Would another possibility be changing capacity a scaled value (like
-> > cpu_power is now) rather than a small integer as it is now.  For
-> > example, a scaled capacity of 1024 would be equivalent to a capacity of
-> > 1 now.  This might enable us to handle partial capacities better?  We'd
-> > probably have to scale a bunch of nr_running too.  
-> 
-> Right, so my proposal was to scale down the capacity divider (currently
-> 1024) to whatever would be the base capacity for that cpu. Trouble seems
-> to be that that makes group capacity a lot more complex, as you would
-> end up needing to average all the cpu's their base capacity.
-> 
-> Hrmm, my brain seems muddled but I might have another solution, let me
-> ponder this for a bit..
-
-Great!
-
-Mikey
+--=-2vDbpGizdLl63aivRTNG--
