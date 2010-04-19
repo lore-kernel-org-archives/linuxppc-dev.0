@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 02199B7D15
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 22:19:41 +1000 (EST)
-Subject: Re: [PATCH 1/4] fsl_msi: fix the conflict of virt_msir's chip_data
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4BCBE133.3010407@freescale.com>
-Date: Mon, 19 Apr 2010 07:19:25 -0500
-Message-Id: <2628E3BC-6FC4-4D84-A228-03C6D955EB4F@kernel.crashing.org>
-References: <1271403278-30091-1-git-send-email-leoli@freescale.com>
-	<1271644834.14835.40.camel@concordia>
-	<4BCBE133.3010407@freescale.com>
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Zhao Chenhui <b26998@freescale.com>
+Return-Path: <gknispel@proformatique.com>
+Date: Mon, 19 Apr 2010 15:09:47 +0200
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Pending interrupts not always replayed
+Message-ID: <20100419150947.4c2832c3@xilun.lan.proformatique.com>
+In-Reply-To: <alpine.LFD.2.00.1004182112280.2972@localhost.localdomain>
+References: <20100418053439.4d2ffe11@xilun.lan.proformatique.com>
+	<20100418164614.771d4f01@xilun.lan.proformatique.com>
+	<alpine.LFD.2.00.1004182112280.2972@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Lars-Peter Clausen <lars@metafoo.de>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+	Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 18 Apr 2010 21:14:12 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-On Apr 18, 2010, at 11:50 PM, Li Yang wrote:
+> On Sun, 18 Apr 2010, Guillaume Knispel wrote:
+> > Now everything seems to work fine: my device was not previously not
+> > interrupting anymore after typically 1 or 2 minutes (because the
+> > interrupt signal stays at level low until the device is served, so
+> 
+> So you are having a level interrupt device and the irq line is handled
+> by an edge type handler ? Why not configuring the irq line for level
+> and in the first place ?
 
-> On 4/19/2010 10:40 AM, Michael Ellerman wrote:
->> On Fri, 2010-04-16 at 15:34 +0800, Li Yang wrote:
->>  =20
->>> From: Zhao Chenhui<b26998@freescale.com>
->>>=20
->>> In fsl_of_msi_probe(), the virt_msir's chip_data have been stored
->>> the pointer to struct mpic. We add a struct fsl_msi_cascade_data
->>> to store the pointer to struct fsl_msi and msir_index.  Otherwise,
->>> the pointer to struct mpic will be over-written, and will cause
->>> problem when calling eoi() of the irq.
->>>    =20
->> I don't quite understand. Do you mean someone was overwriting
->> handler_data somewhere?
->>  =20
->=20
-> The patch at http://patchwork.ozlabs.org/patch/48794/ was overwriting =
-the chip_data.  We move the newly added pointer to fsl_msi structure to =
-the handler data.
+Not really the problem here, it indeed helped me do discover the real
+bug (because I would not have seen that an interrupt went missing if the
+device have generated another one all by itself soon after that).
 
-Let's fix that patch.
+I would of course prefer to have this line in level trigger, but the
+pic just can't do it for this signal, so I play with masking and
+unmasking interrupts on the device side to regenerate edges when needed.
+When interrupts are enabled, I do that in the isr, so if it is not
+called after a falling edge it won't be anymore in the future.
 
-- k=
+What is a real bug IMHO is that when in falling edge trigger mode,
+the sequence:
+ - disable_irq(),
+ - 1 falling edge,
+ - enable_irq()
+doesn't lead to the isr being called just after enable_irq().
+
+This is because:
+
+* __disable_irq basically do (when really disabling)
+	desc->status |= IRQ_DISABLED;
+	desc->chip->disable(irq);	<= noop or racy see under
+
+* arch/powerpc/sysdev/cpm2_pic.c does not define a disable() in
+  struct irq_chip cpm2_pic. So default_disable is used, and
+  it's a noop. For pics where this is not a noop, there can be a race
+  if the interrupt triggers before the disable(): the flow handler will
+  still be executed just after desc->lock is unlocked in
+  disable_irq_nosync(). So it does not really matters whether
+  disable() is implemented or is a noop.
+
+* When the flow handler is executed after disable_irq_nosync(),
+  handle_edge_irq() does:
+	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+	desc->status |= (IRQ_PENDING | IRQ_MASKED);
+	mask_ack_irq(desc, irq);
+  The responsibility of triggering the interrupt has now been
+  transferred from the pic to the kernel (the interrupt has been acked
+  at pic level), so I would say that if the kernel does not run replay
+  it later, it will be a bug.
+
+* When __enable_irq() is called, it does:
+	unsigned int status = desc->status & ~IRQ_DISABLED;
+	desc->status = status | IRQ_NOPROBE;
+	check_irq_resend(desc, irq);
+
+* if it's an edge triggered IRQ (and in my case it is)
+  check_irq_resend() sometimes, if the planets are aligned, resend the
+  IRQ. Planet alignement is defined by retrigger being provided for the
+  irq_chip and retrigger succeed, or CONFIG_HARDIRQS_SW_RESEND is
+  defined (in which case and if retrigger is absent or has failed, the
+  hardirq is indeed executed in a tasklet -- which might maybe cause
+  obscure problems?).
+
+My guess is that CONFIG_HARDIRQS_SW_RESEND was meant to be defined on
+any platform where a pic can exist and can do edge trigger but does not
+implement retrigger or implements a retrigger that can fail (because
+otherwise interrupts can be missed).
+
+This seems to be a quite unknown fact that might have been missed by
+multiple irq_chips (and could be missed by more in the future), and I
+would propose to just unconditionally build the resend_irqs() tasklet
+and its scheduling code, and completely remove
+CONFIG_HARDIRQS_SW_RESEND, at least if it is sure that executing a flow
+handler in a tasklet can never cause obscure problems.
+
+Cheers!
+-- 
+Guillaume Knispel
