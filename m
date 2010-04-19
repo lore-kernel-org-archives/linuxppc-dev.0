@@ -1,21 +1,28 @@
-Return-Path: <gknispel@proformatique.com>
-Date: Mon, 19 Apr 2010 15:09:47 +0200
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Pending interrupts not always replayed
-Message-ID: <20100419150947.4c2832c3@xilun.lan.proformatique.com>
-In-Reply-To: <alpine.LFD.2.00.1004182112280.2972@localhost.localdomain>
-References: <20100418053439.4d2ffe11@xilun.lan.proformatique.com>
-	<20100418164614.771d4f01@xilun.lan.proformatique.com>
-	<alpine.LFD.2.00.1004182112280.2972@localhost.localdomain>
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8D9C4B6EEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Apr 2010 00:49:11 +1000 (EST)
+Received: from f199130.upc-f.chello.nl ([80.56.199.130]
+	helo=dyad.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.69 #1 (Red Hat Linux))
+	id 1O3sHa-0002Mo-7h
+	for linuxppc-dev@ozlabs.org; Mon, 19 Apr 2010 14:49:06 +0000
+Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <28214.1271626457@neuling.org>
+References: <20100409062118.D4096CBB6C@localhost.localdomain>
+	<1271161766.4807.1280.camel@twins> <2906.1271219317@neuling.org>
+	<1271426308.1674.429.camel@laptop>  <28214.1271626457@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 19 Apr 2010 16:49:03 +0200
+Message-ID: <1271688543.1488.253.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Lars-Peter Clausen <lars@metafoo.de>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
-	Linuxppc-dev@lists.ozlabs.org
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,84 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 18 Apr 2010 21:14:12 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Sun, 18 Apr 2010, Guillaume Knispel wrote:
-> > Now everything seems to work fine: my device was not previously not
-> > interrupting anymore after typically 1 or 2 minutes (because the
-> > interrupt signal stays at level low until the device is served, so
+On Mon, 2010-04-19 at 07:34 +1000, Michael Neuling wrote:
+> > Are there any numbers available on how much they gain? It might be worth
+> > to stick in real numbers instead of this alleged 15%.
 > 
-> So you are having a level interrupt device and the irq line is handled
-> by an edge type handler ? Why not configuring the irq line for level
-> and in the first place ?
+> I get some gain numbers but obviously the workloads makes a huge
+> difference.  From a scheduler perspective, I assume an
+> average/representative gain is best rather than an optimistic or
+> pessimistic one?
 
-Not really the problem here, it indeed helped me do discover the real
-bug (because I would not have seen that an interrupt went missing if the
-device have generated another one all by itself soon after that).
+Yeah, average would be best.
 
-I would of course prefer to have this line in level trigger, but the
-pic just can't do it for this signal, so I play with masking and
-unmasking interrupts on the device side to regenerate edges when needed.
-When interrupts are enabled, I do that in the isr, so if it is not
-called after a falling edge it won't be anymore in the future.
+> We'll have different gains for SMT2 and SMT4, so we could change the
+> gain dynamically based on which SMT mode we are in.  Does that seem like
+> something we should add as an arch hook?  
 
-What is a real bug IMHO is that when in falling edge trigger mode,
-the sequence:
- - disable_irq(),
- - 1 falling edge,
- - enable_irq()
-doesn't lead to the isr being called just after enable_irq().
-
-This is because:
-
-* __disable_irq basically do (when really disabling)
-	desc->status |= IRQ_DISABLED;
-	desc->chip->disable(irq);	<= noop or racy see under
-
-* arch/powerpc/sysdev/cpm2_pic.c does not define a disable() in
-  struct irq_chip cpm2_pic. So default_disable is used, and
-  it's a noop. For pics where this is not a noop, there can be a race
-  if the interrupt triggers before the disable(): the flow handler will
-  still be executed just after desc->lock is unlocked in
-  disable_irq_nosync(). So it does not really matters whether
-  disable() is implemented or is a noop.
-
-* When the flow handler is executed after disable_irq_nosync(),
-  handle_edge_irq() does:
-	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
-	desc->status |= (IRQ_PENDING | IRQ_MASKED);
-	mask_ack_irq(desc, irq);
-  The responsibility of triggering the interrupt has now been
-  transferred from the pic to the kernel (the interrupt has been acked
-  at pic level), so I would say that if the kernel does not run replay
-  it later, it will be a bug.
-
-* When __enable_irq() is called, it does:
-	unsigned int status = desc->status & ~IRQ_DISABLED;
-	desc->status = status | IRQ_NOPROBE;
-	check_irq_resend(desc, irq);
-
-* if it's an edge triggered IRQ (and in my case it is)
-  check_irq_resend() sometimes, if the planets are aligned, resend the
-  IRQ. Planet alignement is defined by retrigger being provided for the
-  irq_chip and retrigger succeed, or CONFIG_HARDIRQS_SW_RESEND is
-  defined (in which case and if retrigger is absent or has failed, the
-  hardirq is indeed executed in a tasklet -- which might maybe cause
-  obscure problems?).
-
-My guess is that CONFIG_HARDIRQS_SW_RESEND was meant to be defined on
-any platform where a pic can exist and can do edge trigger but does not
-implement retrigger or implements a retrigger that can fail (because
-otherwise interrupts can be missed).
-
-This seems to be a quite unknown fact that might have been missed by
-multiple irq_chips (and could be missed by more in the future), and I
-would propose to just unconditionally build the resend_irqs() tasklet
-and its scheduling code, and completely remove
-CONFIG_HARDIRQS_SW_RESEND, at least if it is sure that executing a flow
-handler in a tasklet can never cause obscure problems.
-
-Cheers!
--- 
-Guillaume Knispel
+That's the sort of thing you can use arch_scale_smt_power() for. But be
+weary to not fall into the same trap I did with x86, where I confused
+actual gain with capacity (When idle the actual gain is 0, but the
+capacity is not).
