@@ -1,36 +1,21 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.17.162])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79AC6B7D18
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 22:08:51 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.1/8.13.1) with ESMTP id o3JC8mkB007037
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 12:08:48 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id o3JC8lPw1605728
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 14:08:47 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id o3JC8lKc021550
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 14:08:47 +0200
-Message-ID: <4BCC47CF.8060107@de.ibm.com>
-Date: Mon, 19 Apr 2010 14:08:47 +0200
-From: Thomas Klein <osstklei@de.ibm.com>
-MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 2/2] ehea: fix possible DLPAR/mem deadlock
-References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>	<1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>	<48CE7CC3.8040902@de.ibm.com>
-	<20080916085746.194c1510@bull.net>
-In-Reply-To: <20080916085746.194c1510@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 02199B7D15
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 22:19:41 +1000 (EST)
+Subject: Re: [PATCH 1/4] fsl_msi: fix the conflict of virt_msir's chip_data
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4BCBE133.3010407@freescale.com>
+Date: Mon, 19 Apr 2010 07:19:25 -0500
+Message-Id: <2628E3BC-6FC4-4D84-A228-03C6D955EB4F@kernel.crashing.org>
+References: <1271403278-30091-1-git-send-email-leoli@freescale.com>
+	<1271644834.14835.40.camel@concordia>
+	<4BCBE133.3010407@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Zhao Chenhui <b26998@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,87 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Force serialization of userspace-triggered DLPAR/mem operations
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
+On Apr 18, 2010, at 11:50 PM, Li Yang wrote:
 
-Patch created against 2.6.34-rc4
+> On 4/19/2010 10:40 AM, Michael Ellerman wrote:
+>> On Fri, 2010-04-16 at 15:34 +0800, Li Yang wrote:
+>>  =20
+>>> From: Zhao Chenhui<b26998@freescale.com>
+>>>=20
+>>> In fsl_of_msi_probe(), the virt_msir's chip_data have been stored
+>>> the pointer to struct mpic. We add a struct fsl_msi_cascade_data
+>>> to store the pointer to struct fsl_msi and msir_index.  Otherwise,
+>>> the pointer to struct mpic will be over-written, and will cause
+>>> problem when calling eoi() of the irq.
+>>>    =20
+>> I don't quite understand. Do you mean someone was overwriting
+>> handler_data somewhere?
+>>  =20
+>=20
+> The patch at http://patchwork.ozlabs.org/patch/48794/ was overwriting =
+the chip_data.  We move the newly added pointer to fsl_msi structure to =
+the handler data.
 
-diff -Nurp linux-2.6.34-rc4.orig//drivers/net/ehea/ehea.h linux-2.6.34-rc4//drivers/net/ehea/ehea.h
---- linux-2.6.34-rc4.orig//drivers/net/ehea/ehea.h	2010-04-19 11:54:07.000000000 +0200
-+++ linux-2.6.34-rc4//drivers/net/ehea/ehea.h	2010-04-19 12:00:14.000000000 +0200
-@@ -40,7 +40,7 @@
-  #include <asm/io.h>
+Let's fix that patch.
 
-  #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0102"
-+#define DRV_VERSION	"EHEA_0103"
-
-  /* eHEA capability flags */
-  #define DLPAR_PORT_ADD_REM 1
-diff -Nurp linux-2.6.34-rc4.orig//drivers/net/ehea/ehea_main.c linux-2.6.34-rc4//drivers/net/ehea/ehea_main.c
---- linux-2.6.34-rc4.orig//drivers/net/ehea/ehea_main.c	2010-04-19 11:59:11.000000000 +0200
-+++ linux-2.6.34-rc4//drivers/net/ehea/ehea_main.c	2010-04-19 11:59:50.000000000 +0200
-@@ -2889,7 +2889,6 @@ static void ehea_rereg_mrs(struct work_s
-  	int ret, i;
-  	struct ehea_adapter *adapter;
-
--	mutex_lock(&dlpar_mem_lock);
-  	ehea_info("LPAR memory changed - re-initializing driver");
-
-  	list_for_each_entry(adapter, &adapter_list, list)
-@@ -2959,7 +2958,6 @@ static void ehea_rereg_mrs(struct work_s
-  		}
-  	ehea_info("re-initializing driver complete");
-  out:
--	mutex_unlock(&dlpar_mem_lock);
-  	return;
-  }
-
-@@ -3542,7 +3540,14 @@ void ehea_crash_handler(void)
-  static int ehea_mem_notifier(struct notifier_block *nb,
-                               unsigned long action, void *data)
-  {
-+	int ret = NOTIFY_BAD;
-  	struct memory_notify *arg = data;
-+
-+	if (!mutex_trylock(&dlpar_mem_lock)) {
-+		ehea_info("ehea_mem_notifier must not be called parallelized");
-+		goto out;
-+	}
-+
-  	switch (action) {
-  	case MEM_CANCEL_OFFLINE:
-  		ehea_info("memory offlining canceled");
-@@ -3551,14 +3556,14 @@ static int ehea_mem_notifier(struct noti
-  		ehea_info("memory is going online");
-  		set_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
-  		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
--			return NOTIFY_BAD;
-+			goto out_unlock;
-  		ehea_rereg_mrs(NULL);
-  		break;
-  	case MEM_GOING_OFFLINE:
-  		ehea_info("memory is going offline");
-  		set_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
-  		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
--			return NOTIFY_BAD;
-+			goto out_unlock;
-  		ehea_rereg_mrs(NULL);
-  		break;
-  	default:
-@@ -3566,8 +3571,12 @@ static int ehea_mem_notifier(struct noti
-  	}
-
-  	ehea_update_firmware_handles();
-+	ret = NOTIFY_OK;
-
--	return NOTIFY_OK;
-+out_unlock:
-+	mutex_unlock(&dlpar_mem_lock);
-+out:
-+	return ret;
-  }
-
-  static struct notifier_block ehea_mem_nb = {
+- k=
