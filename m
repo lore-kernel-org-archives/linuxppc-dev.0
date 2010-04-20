@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 48529B7D0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Apr 2010 14:27:01 +1000 (EST)
-Date: Mon, 19 Apr 2010 23:26:54 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <Pine.LNX.4.64.1004192326100.27041@localhost.localdomain>
+Return-Path: <lists@nerdbynature.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
+	by ozlabs.org (Postfix) with ESMTP id 04133B7CF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Apr 2010 16:46:26 +1000 (EST)
+Date: Mon, 19 Apr 2010 23:45:56 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #15589] 2.6.34-rc1: Badness at fs/proc/generic.c:316
+In-Reply-To: <YeFfFNFyTSF.A.vUB.fSSzLB@tosh>
+Message-ID: <alpine.DEB.2.01.1004192339190.13016@bogon.housecafe.de>
+References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh> <YeFfFNFyTSF.A.vUB.fSSzLB@tosh>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	adobriyan@gmail.com, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,89 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(Mostly defconfig updates, but a few minor bug fixes).
+On Tue, 20 Apr 2010 at 05:19, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15589
+> Subject		: 2.6.34-rc1: Badness at fs/proc/generic.c:316
+> Submitter	: Christian Kujau <lists@nerdbynature.de>
+> Date		: 2010-03-13 23:53 (38 days old)
+> Message-ID	: <alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>
+> References	: http://marc.info/?l=linux-kernel&m=126852442903680&w=2
 
-The following changes since commit 01bf0b64579ead8a82e7cfc32ae44bc667e7ad0f:
-  Linus Torvalds (1):
-        Linux 2.6.34-rc5
+Yes, unless something in this area has changed from -rc4 to -rc5, this is 
+still printed during boot:
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+device-tree: Duplicate name in /cpus/PowerPC,G4@0, renamed to "l2-cache#1"
+name 'pulses/rev'
+------------[ cut here ]------------
+Badness at fs/proc/generic.c:317
+NIP: c00e14b8 LR: c00e14b8 CTR: c01fc2c0
+REGS: c045bdc0 TRAP: 0700   Not tainted  (2.6.34-rc4)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 22000022  XER: 20000000
+TASK = c043b410[0] 'swapper' THREAD: c045a000
+GPR00: c00e14b8 c045be70 c043b410 00000024 000012ff ffffffff ffffffff 00000000 
+GPR08: ef808320 c0458670 00000000 000012ff 42000028 00000000 00cb3ccc 00cb39b8 
+GPR16: 00cd682c 00cb3ca8 00cb38c8 00cb39ac 00240e18 00240e20 00cb3954 00240e24 
+GPR24: 00000000 0049b000 c045be98 c045bec8 c0da0a42 c0da0a42 00000006 00000000 
+NIP [c00e14b8] __xlate_proc_name+0xd0/0xf8
+LR [c00e14b8] __xlate_proc_name+0xd0/0xf8
+Call Trace:
+[c045be70] [c00e14b8] __xlate_proc_name+0xd0/0xf8 (unreliable)
+[c045be90] [c00e1a2c] __proc_create+0x60/0xf0
+[c045bec0] [c00e2194] proc_create_data+0x54/0xc4
+[c045bee0] [c00e6310] __proc_device_tree_add_prop+0x64/0xd4
+[c045bf00] [c00e64b4] proc_device_tree_add_node+0x134/0x164
+[c045bf20] [c00e6434] proc_device_tree_add_node+0xb4/0x164
+[c045bf40] [c00e6434] proc_device_tree_add_node+0xb4/0x164
+[c045bf60] [c00e6434] proc_device_tree_add_node+0xb4/0x164
+[c045bf80] [c00e6434] proc_device_tree_add_node+0xb4/0x164
+[c045bfa0] [c0421c30] proc_device_tree_init+0x4c/0x78
+[c045bfb0] [c0421698] proc_root_init+0xcc/0xf0
+[c045bfc0] [c040e798] start_kernel+0x230/0x284
+[c045bff0] [00003444] 0x3444
+Instruction dump:
+93ba0000 38600000 93fb0000 80010024 bb410008 38210020 7c0803a6 4e800020 
+3c60c03c 7f84e378 386300a8 48273a45 <0fe00000> 80010024 3860fffe bb410008 
 
-Anton Vorontsov (1):
-      powerpc/85xx/86xx: Fix build w/ CONFIG_PCI=n
 
-Becky Bruce (1):
-      powerpc/fsl_booke: Correct test for MMU_FTR_BIG_PHYS
+-- 
+BOFH excuse #37:
 
-Kim Phillips (4):
-      powerpc/83xx: add RTC drivers in 83xx defconfig
-      powerpc/83xx: enable EPOLL syscall in defconfig
-      powerpc/83xx: configure SIL SATA driver in 83xx-wide defconfig
-      powerpc/mpc8xxx defconfigs - turn off SYSFS_DEPRECATED
-
-Kumar Gala (1):
-      powerpc: 2.6.34 update of defconfigs for embedded 6xx/7xxx, 8xx, 8xxx
-
-Wolfgang Ocker (1):
-      powerpc/fsl-cpm: Configure clock correctly for SCC
-
- arch/powerpc/configs/83xx/asp8347_defconfig       |   44 ++++----
- arch/powerpc/configs/83xx/kmeter1_defconfig       |   28 +++--
- arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   49 +++++----
- arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |   50 +++++----
- arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   45 ++++----
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   49 ++++----
- arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   44 ++++----
- arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   43 ++++----
- arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   46 +++++----
- arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   45 ++++----
- arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   44 ++++---
- arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   46 +++++----
- arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   51 +++++----
- arch/powerpc/configs/83xx/sbc834x_defconfig       |   44 ++++----
- arch/powerpc/configs/85xx/ksi8560_defconfig       |   23 +++-
- arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   25 +++--
- arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   34 ++++--
- arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   31 ++++--
- arch/powerpc/configs/85xx/sbc8548_defconfig       |   31 ++++--
- arch/powerpc/configs/85xx/sbc8560_defconfig       |   25 +++--
- arch/powerpc/configs/85xx/socrates_defconfig      |   51 +++++----
- arch/powerpc/configs/85xx/stx_gp3_defconfig       |   51 +++++----
- arch/powerpc/configs/85xx/tqm8540_defconfig       |   48 +++++---
- arch/powerpc/configs/85xx/tqm8541_defconfig       |   54 ++++++---
- arch/powerpc/configs/85xx/tqm8548_defconfig       |   47 +++++---
- arch/powerpc/configs/85xx/tqm8555_defconfig       |   54 ++++++---
- arch/powerpc/configs/85xx/tqm8560_defconfig       |   54 ++++++---
- arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |   59 +++++++---
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  102 +++++++++++-------
- arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   53 ++++++----
- arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   96 +++++++++++------
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   34 +++---
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   48 +++++---
- arch/powerpc/configs/86xx/sbc8641d_defconfig      |   40 ++++---
- arch/powerpc/configs/adder875_defconfig           |   18 ++--
- arch/powerpc/configs/c2k_defconfig                |   55 ++++-----
- arch/powerpc/configs/ep8248e_defconfig            |   20 +++-
- arch/powerpc/configs/ep88xc_defconfig             |   17 ++--
- arch/powerpc/configs/linkstation_defconfig        |   48 +++++---
- arch/powerpc/configs/mgcoge_defconfig             |   31 ++++--
- arch/powerpc/configs/mgsuvd_defconfig             |   19 ++--
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |   26 +++--
- arch/powerpc/configs/mpc8272_ads_defconfig        |   23 +++-
- arch/powerpc/configs/mpc83xx_defconfig            |  124 ++++++++++++++++-----
- arch/powerpc/configs/mpc85xx_defconfig            |   62 +++++++----
- arch/powerpc/configs/mpc85xx_smp_defconfig        |   64 +++++++----
- arch/powerpc/configs/mpc866_ads_defconfig         |   20 ++--
- arch/powerpc/configs/mpc86xx_defconfig            |   57 ++++++----
- arch/powerpc/configs/mpc885_ads_defconfig         |   20 ++--
- arch/powerpc/configs/pq2fads_defconfig            |   22 +++-
- arch/powerpc/configs/prpmc2800_defconfig          |   52 ++++++---
- arch/powerpc/configs/storcenter_defconfig         |   33 +++---
- arch/powerpc/mm/fsl_booke_mmu.c                   |    4 +-
- arch/powerpc/platforms/85xx/Kconfig               |    4 +-
- arch/powerpc/platforms/86xx/Kconfig               |    4 +-
- arch/powerpc/sysdev/cpm1.c                        |   14 ++-
- arch/powerpc/sysdev/cpm2.c                        |   11 ++-
- 57 files changed, 1432 insertions(+), 904 deletions(-)
+heavy gravity fluctuation, move computer to floor rapidly
