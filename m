@@ -4,28 +4,28 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B8C72B7D51
+	by ozlabs.org (Postfix) with ESMTPS id 861A3B7E1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Apr 2010 21:44:27 +1000 (EST)
+	Tue, 20 Apr 2010 21:44:29 +1000 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o3KBi939015985 for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Apr 2010 04:44:19 -0700 (MST)
+	o3KBiBkt015991 for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 20 Apr 2010 04:44:21 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o3KBrs2t014673
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o3KBrs2v014673
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Apr 2010 06:54:00 -0500 (CDT)
+	Tue, 20 Apr 2010 06:54:02 -0500 (CDT)
 From: Li Yang <leoli@freescale.com>
 To: galak@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/5] mpc8572ds: change camp dtses for MSI sharing
-Date: Tue, 20 Apr 2010 20:20:47 +0800
-Message-Id: <1271766048-19272-4-git-send-email-leoli@freescale.com>
-In-Reply-To: <1271766048-19272-3-git-send-email-leoli@freescale.com>
+Subject: [PATCH v2 5/5] fsl_msi: add remove path and probe failing path
+Date: Tue, 20 Apr 2010 20:20:48 +0800
+Message-Id: <1271766048-19272-5-git-send-email-leoli@freescale.com>
+In-Reply-To: <1271766048-19272-4-git-send-email-leoli@freescale.com>
 References: <1271766048-19272-1-git-send-email-leoli@freescale.com>
 	<1271766048-19272-2-git-send-email-leoli@freescale.com>
 	<1271766048-19272-3-git-send-email-leoli@freescale.com>
-Cc: Zhao Chenhui <b26998@freescale.com>
+	<1271766048-19272-4-git-send-email-leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,74 +35,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the sharing of MSI interrupt through AMP OSes in the mpc8572ds
-dtses.
+Also cleanup the probe function.
 
-Signed-off-by: Zhao Chenhui <b26998@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts |   15 +++++++++++++--
- arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    7 ++-----
- 2 files changed, 15 insertions(+), 7 deletions(-)
+ arch/powerpc/sysdev/fsl_msi.c |   35 +++++++++++++++++++++++++++++------
+ arch/powerpc/sysdev/fsl_msi.h |    1 +
+ 2 files changed, 30 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-index 5bd1011..3375c2a 100644
---- a/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core0.dts
-@@ -215,6 +215,18 @@
- 			clock-frequency = <0>;
- 		};
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 61e97cb..2c25575 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -251,6 +251,29 @@ unlock:
+ 	spin_unlock(&desc->lock);
+ }
  
-+		msi@41600 {
-+			compatible = "fsl,mpc8572-msi", "fsl,mpic-msi";
-+			reg = <0x41600 0x80>;
-+			msi-available-ranges = <0 0x80>;
-+			interrupts = <
-+				0xe0 0
-+				0xe1 0
-+				0xe2 0
-+				0xe3 0>;
-+			interrupt-parent = <&mpic>;
-+		};
++static int fsl_of_msi_remove(struct of_device *ofdev)
++{
++	struct fsl_msi *msi = ofdev->dev.platform_data;
++	int virq, i;
++	struct fsl_msi_cascade_data *cascade_data;
 +
- 		global-utilities@e0000 {	//global utilities block
- 			compatible = "fsl,mpc8572-guts";
- 			reg = <0xe0000 0x1000>;
-@@ -243,8 +255,7 @@
- 			protected-sources = <
- 			31 32 33 37 38 39       /* enet2 enet3 */
- 			76 77 78 79 26 42	/* dma2 pci2 serial*/
--			0xe0 0xe1 0xe2 0xe3     /* msi */
--			0xe4 0xe5 0xe6 0xe7
-+			0xe4 0xe5 0xe6 0xe7	/* msi */
- 			>;
- 		};
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-index 0efc345..e7b477f 100644
---- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-+++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
-@@ -154,12 +154,8 @@
- 		msi@41600 {
- 			compatible = "fsl,mpc8572-msi", "fsl,mpic-msi";
- 			reg = <0x41600 0x80>;
--			msi-available-ranges = <0 0x100>;
-+			msi-available-ranges = <0x80 0x80>;
- 			interrupts = <
--				0xe0 0
--				0xe1 0
--				0xe2 0
--				0xe3 0
- 				0xe4 0
- 				0xe5 0
- 				0xe6 0
-@@ -190,6 +186,7 @@
- 			0x1 0x2 0x3 0x4         /* pci slot */
- 			0x9 0xa 0xb 0xc         /* usb */
- 			0x6 0x7 0xe 0x5         /* Audio elgacy SATA */
-+			0xe0 0xe1 0xe2 0xe3	/* msi */
- 			>;
- 		};
- 	};
++	if (msi->list.prev != NULL)
++		list_del(&msi->list);
++	for (i = 0; i < NR_MSI_REG; i++) {
++		virq = msi->msi_virqs[i];
++		if (virq != NO_IRQ) {
++			cascade_data = get_irq_data(virq);
++			kfree(cascade_data);
++			irq_dispose_mapping(virq);
++		}
++	}
++	msi_bitmap_free(&msi->bitmap);
++	iounmap(msi->msi_regs);
++	kfree(msi);
++
++	return 0;
++}
++
+ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 				const struct of_device_id *match)
+ {
+@@ -270,9 +293,9 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 	msi = kzalloc(sizeof(struct fsl_msi), GFP_KERNEL);
+ 	if (!msi) {
+ 		dev_err(&dev->dev, "No memory for MSI structure\n");
+-		err = -ENOMEM;
+-		goto error_out;
++		return -ENOMEM;
+ 	}
++	dev->dev.platform_data = msi;
+ 
+ 	msi->irqhost = irq_alloc_host(dev->node, IRQ_HOST_MAP_LINEAR,
+ 				      NR_MSI_IRQS, &fsl_msi_host_ops, 0);
+@@ -329,9 +352,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 		offset = *p / IRQS_PER_MSI_REG;
+ 
+ 	count /= sizeof(u32);
+-	for (i = 0; i < count / 2; i++) {
+-		if (i > NR_MSI_REG)
+-			break;
++	for (i = 0; i < min(count / 2, NR_MSI_REG); i++) {
+ 		virt_msir = irq_of_parse_and_map(dev->node, i);
+ 		if (virt_msir != NO_IRQ) {
+ 			cascade_data = kzalloc(
+@@ -343,6 +364,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 				err = -ENOMEM;
+ 				goto error_out;
+ 			}
++			msi->msi_virqs[i] = virt_msir;
+ 			cascade_data->index = i + offset;
+ 			cascade_data->msi_data = msi;
+ 			set_irq_data(virt_msir, (void *)cascade_data);
+@@ -364,7 +386,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 	}
+ 	return 0;
+ error_out:
+-	kfree(msi);
++	fsl_of_msi_remove(dev);
+ 	return err;
+ }
+ 
+@@ -394,6 +416,7 @@ static struct of_platform_driver fsl_of_msi_driver = {
+ 	.name = "fsl-msi",
+ 	.match_table = fsl_of_msi_ids,
+ 	.probe = fsl_of_msi_probe,
++	.remove = fsl_of_msi_remove,
+ };
+ 
+ static __init int fsl_of_msi_init(void)
+diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+index 8fc5523..624580c 100644
+--- a/arch/powerpc/sysdev/fsl_msi.h
++++ b/arch/powerpc/sysdev/fsl_msi.h
+@@ -32,6 +32,7 @@ struct fsl_msi {
+ 	u32 msi_addr_hi;
+ 	void __iomem *msi_regs;
+ 	u32 feature;
++	int msi_virqs[NR_MSI_REG];
+ 
+ 	struct msi_bitmap bitmap;
+ 
 -- 
 1.6.6-rc1.GIT
