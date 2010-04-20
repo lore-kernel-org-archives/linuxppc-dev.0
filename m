@@ -1,17 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
-In-reply-to: <1271688543.1488.253.camel@laptop>
-References: <20100409062118.D4096CBB6C@localhost.localdomain>
-	<1271161766.4807.1280.camel@twins> <2906.1271219317@neuling.org>
-	<1271426308.1674.429.camel@laptop> <28214.1271626457@neuling.org>
-	<1271688543.1488.253.camel@laptop>
-Date: Tue, 20 Apr 2010 06:45:45 +1000
-Message-ID: <715.1271709945@neuling.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-qy0-f175.google.com (mail-qy0-f175.google.com
+	[209.85.221.175]) by ozlabs.org (Postfix) with ESMTP id AE23BB7D06
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Apr 2010 13:10:02 +1000 (EST)
+Received: by qyk5 with SMTP id 5so7005933qyk.3
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Apr 2010 20:10:00 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <2628E3BC-6FC4-4D84-A228-03C6D955EB4F@kernel.crashing.org>
+References: <1271403278-30091-1-git-send-email-leoli@freescale.com>
+	<1271644834.14835.40.camel@concordia> <4BCBE133.3010407@freescale.com>
+	<2628E3BC-6FC4-4D84-A228-03C6D955EB4F@kernel.crashing.org>
+Date: Tue, 20 Apr 2010 11:10:00 +0800
+Message-ID: <l2h2a27d3731004192010if95cf38ey42b6390fdaa2a1f5@mail.gmail.com>
+Subject: Re: [PATCH 1/4] fsl_msi: fix the conflict of virt_msir's chip_data
+From: Li Yang <leoli@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Zhao Chenhui <b26998@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,35 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message <1271688543.1488.253.camel@laptop> you wrote:
-> On Mon, 2010-04-19 at 07:34 +1000, Michael Neuling wrote:
-> > > Are there any numbers available on how much they gain? It might be worth
-> > > to stick in real numbers instead of this alleged 15%.
-> > 
-> > I get some gain numbers but obviously the workloads makes a huge
-> > difference.  From a scheduler perspective, I assume an
-> > average/representative gain is best rather than an optimistic or
-> > pessimistic one?
-> 
-> Yeah, average would be best.
+On Mon, Apr 19, 2010 at 8:19 PM, Kumar Gala <galak@kernel.crashing.org> wro=
+te:
+>
+> On Apr 18, 2010, at 11:50 PM, Li Yang wrote:
+>
+>> On 4/19/2010 10:40 AM, Michael Ellerman wrote:
+>>> On Fri, 2010-04-16 at 15:34 +0800, Li Yang wrote:
+>>>
+>>>> From: Zhao Chenhui<b26998@freescale.com>
+>>>>
+>>>> In fsl_of_msi_probe(), the virt_msir's chip_data have been stored
+>>>> the pointer to struct mpic. We add a struct fsl_msi_cascade_data
+>>>> to store the pointer to struct fsl_msi and msir_index. =C2=A0Otherwise=
+,
+>>>> the pointer to struct mpic will be over-written, and will cause
+>>>> problem when calling eoi() of the irq.
+>>>>
+>>> I don't quite understand. Do you mean someone was overwriting
+>>> handler_data somewhere?
+>>>
+>>
+>> The patch at http://patchwork.ozlabs.org/patch/48794/ was overwriting th=
+e chip_data. =C2=A0We move the newly added pointer to fsl_msi structure to =
+the handler data.
+>
+> Let's fix that patch.
 
-Ok.
+All right.  You can merge the two patches if you like it that way.
 
-> > We'll have different gains for SMT2 and SMT4, so we could change the
-> > gain dynamically based on which SMT mode we are in.  Does that seem like
-> > something we should add as an arch hook?  
-> 
-> That's the sort of thing you can use arch_scale_smt_power() for. But be
-> weary to not fall into the same trap I did with x86, where I confused
-> actual gain with capacity (When idle the actual gain is 0, but the
-> capacity is not).
-
-Oops, yes of course :-)
-
-<from before>
-> Hrmm, my brain seems muddled but I might have another solution, let me
-> ponder this for a bit..
-
-Let me know if/when you come up this solution or if I can help.  
-
-Mikey
+Thanks.
+Leo
