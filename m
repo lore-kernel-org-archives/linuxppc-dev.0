@@ -1,32 +1,18 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <nhillery@sixisinc.com>
+Received: from asp.reflexion.net (asp-submit.reflexion.net [69.84.129.234])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F0DA5B7CF8
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 27C1AB7CF8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Apr 2010 13:15:47 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e3.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o3L33TO1019577
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 23:03:29 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3L3FhBW1953998
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 23:15:44 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3L3FhG1006466
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 23:15:43 -0400
-Message-ID: <4BCE6DDC.4020902@linux.vnet.ibm.com>
-Date: Tue, 20 Apr 2010 22:15:40 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+	Wed, 21 Apr 2010 04:35:17 +1000 (EST)
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/1] powerpc: Ignore IPIs to offline CPUs
-References: <201004210154.o3L1sXaR001791@d01av04.pok.ibm.com>
-	<12054.1271815478@neuling.org>
-In-Reply-To: <12054.1271815478@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CAE0B6.C010F2A1"
+Subject: U-boot support for MPC85xx eSPI
+Date: Tue, 20 Apr 2010 14:24:37 -0400
+Message-ID: <DA601BED1671C24093F284F75082C9934B68EB@rtpwbee01.SIXIS.NS>
+From: "Hillery, Nathan" <nhillery@sixisinc.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,65 +22,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2010 09:04 PM, Michael Neuling wrote:
-> In message <201004210154.o3L1sXaR001791@d01av04.pok.ibm.com> you wrote:
->>
->> Since there is nothing to stop an IPI from occurring to an
->> offline CPU, rather than printing a warning to the logs,
->> just ignore the IPI. This was seen while stress testing
->> SMT enable/disable.
-> 
-> This seems like a recipe for disaster.  Do we at least need a
-> WARN_ON_ONCE?
+This is a multi-part message in MIME format.
 
-Actually we are only seeing it once per offlining of a CPU,
-and only once in a while.
- 
-My guess is that once the CPU is marked offline fewer IPIs
-get sent to it since its no longer in the online mask.
+------_=_NextPart_001_01CAE0B6.C010F2A1
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps we should be disabling IPIs to offline CPUs instead?
-
--Brian
+I'm looking for U-boot support for the embedded SPI driver on the
+MPC8536 to access a SPI flash device (Numonyx [ex-STmicro] M25P16).  The
+eSPI can read the SPI flash (that's how U-boot gets loaded into RAM) and
+I can read/write from linux using the mtdblock driver.  I see code that
+appears to support the MPC83xx, but it looks quite different than the
+MPC85xx.  I am willing to backport the linux code to work in U-boot, but
+am hoping that isn't necessary.
 
 
-> 
->> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
->> ---
->>
->>  arch/powerpc/platforms/pseries/xics.c |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff -puN arch/powerpc/platforms/pseries/xics.c~powerpc_xics_ipi_offline arch
-> /powerpc/platforms/pseries/xics.c
->> --- linux-2.6/arch/powerpc/platforms/pseries/xics.c~powerpc_xics_ipi_offline
-> 	2010-04-20 20:46:06.000000000 -0500
->> +++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/xics.c	2010-04-20 20:4
-> 7:53.000000000 -0500
->> @@ -545,7 +545,8 @@ static irqreturn_t xics_ipi_dispatch(int
->>  {
->>  	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
->>  
->> -	WARN_ON(cpu_is_offline(cpu));
->> +	if (cpu_is_offline(cpu))
->> +		return IRQ_HANDLED;
->>  
->>  	mb();	/* order mmio clearing qirr */
->>  	while (*tgt) {
->> _
-> 
-> FYI random white space change here.
-> 
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
-> 
-> Mikey
+------_=_NextPart_001_01CAE0B6.C010F2A1
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>I&#8217;m looking for U-boot support for the =
+embedded SPI
+driver on the MPC8536 to access a SPI flash device (Numonyx [ex-STmicro] =
+M25P16).&nbsp;
+The eSPI can read the SPI flash (that&#8217;s how U-boot gets loaded =
+into RAM)
+and I can read/write from linux using the mtdblock driver.&nbsp; I see =
+code that
+appears to support the MPC83xx, but it looks quite different than the
+MPC85xx.&nbsp; I am willing to backport the linux code to work in =
+U-boot, but am
+hoping that isn&#8217;t necessary.<o:p></o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01CAE0B6.C010F2A1--
