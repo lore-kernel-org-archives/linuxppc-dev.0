@@ -1,17 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Badness in xics_ipi_dispatch
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Brian King <brking@linux.vnet.ibm.com>
-In-Reply-To: <4BCE27E8.4090101@linux.vnet.ibm.com>
-References: <4BCE27E8.4090101@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-1ZXDSTeykhMRvsibu4Sc"
-Date: Wed, 21 Apr 2010 11:43:54 +1000
-Message-ID: <1271814234.13262.36.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D9997B7CFA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Apr 2010 11:54:40 +1000 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o3L1qFl9011810
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 21:52:15 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3L1sZm4180742
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 21:54:35 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3L1sYLw001803
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Apr 2010 21:54:35 -0400
+Message-Id: <201004210154.o3L1sXaR001791@d01av04.pok.ibm.com>
+Subject: [PATCH 1/1] powerpc: Ignore IPIs to offline CPUs
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Tue, 20 Apr 2010 20:54:31 -0500
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,45 +32,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-1ZXDSTeykhMRvsibu4Sc
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Since there is nothing to stop an IPI from occurring to an
+offline CPU, rather than printing a warning to the logs,
+just ignore the IPI. This was seen while stress testing
+SMT enable/disable.
 
-On Tue, 2010-04-20 at 17:17 -0500, Brian King wrote:
-> In stress testing enabling and disabling of SMT, we are regularly
-> seeing the badness warning below. Looking through the cpu offline
-> path, this is what I see:
->=20
-> 1. stop_cpu: IRQ's get disabled
-> 2. pseries_cpu_disable: set cpu offline (no barriers after this)
-> 3. xics_migrate_irqs_away: Remove ourselves from the GIQ, but still allow
->     IPIs
-> 4. stop_cpu: IRQ's get enabled again (local_irq_enable)
->=20
-> It looks to me like there is plenty of opportunity between 1 and 2 for
-> an IPI to get queued, resulting in the badness below. Is there something
-> in xics_migrate_irqs_away that should clear any pending IPIs? If there
-> is, maybe the solution is as simple as adding a barrier after marking
-> the cpu offline. Or is the warning bogus and we should just remove it?
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-It looks like xics_migrate_irqs_away() doesn't do anything about IPIs,
-at least the comment says "Allow IPIs again". So I don't see what's to
-stop you just taking another IPI after you reenable interrupts in
-stop_cpu(). Maybe xics_ipi_dispatch() should just return if the cpu is
-offline?
+ arch/powerpc/platforms/pseries/xics.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-cheers
-
---=-1ZXDSTeykhMRvsibu4Sc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkvOWFkACgkQdSjSd0sB4dI2owCfURP+MMZ5P4yF84rLZ0F1aU/L
-QmkAoMx1Rj0xe4a3b2s2/7fvtwwRxntT
-=oaIK
------END PGP SIGNATURE-----
-
---=-1ZXDSTeykhMRvsibu4Sc--
+diff -puN arch/powerpc/platforms/pseries/xics.c~powerpc_xics_ipi_offline arch/powerpc/platforms/pseries/xics.c
+--- linux-2.6/arch/powerpc/platforms/pseries/xics.c~powerpc_xics_ipi_offline	2010-04-20 20:46:06.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/xics.c	2010-04-20 20:47:53.000000000 -0500
+@@ -545,7 +545,8 @@ static irqreturn_t xics_ipi_dispatch(int
+ {
+ 	unsigned long *tgt = &per_cpu(xics_ipi_message, cpu);
+ 
+-	WARN_ON(cpu_is_offline(cpu));
++	if (cpu_is_offline(cpu))
++		return IRQ_HANDLED;
+ 
+ 	mb();	/* order mmio clearing qirr */
+ 	while (*tgt) {
+_
