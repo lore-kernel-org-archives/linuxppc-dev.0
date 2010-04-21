@@ -1,23 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 34603B7C06
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Apr 2010 19:29:52 +1000 (EST)
-Subject: Re: perf top broken on ppc64
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1271827490-sup-48@au1.ibm.com>
-Date: Wed, 21 Apr 2010 11:29:44 +0200
-Message-Id: <12E39DE6-0957-43CD-8DD4-24970AAF45D3@suse.de>
-References: <594EC076-62C6-473D-9AF2-47AEE4B57ED3@suse.de>
-	<1271827490-sup-48@au1.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	LKML Mailing List <linux-kernel@vger.kernel.org>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/1] powerpc: Ignore IPIs to offline CPUs
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Brian King <brking@linux.vnet.ibm.com>
+In-Reply-To: <4BCE6DDC.4020902@linux.vnet.ibm.com>
+References: <201004210154.o3L1sXaR001791@d01av04.pok.ibm.com>
+	<12054.1271815478@neuling.org>  <4BCE6DDC.4020902@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-iRhnuhzSWUgFmGlvswSD"
+Date: Wed, 21 Apr 2010 23:35:29 +1000
+Message-ID: <1271856929.3832.46.camel@concordia>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +23,73 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 21.04.2010, at 07:29, Ian Munsie wrote:
+--=-iRhnuhzSWUgFmGlvswSD
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> Excerpts from Alexander Graf's message of Wed Apr 21 09:21:36 +1000 =
-2010:
->> Hi,
->>=20
->> While trying to find out performance bottlenecks in KVM for PowerPC I
->> figured I'd try and use "perf top" to see what's going on in the
->> system. This works great on my G4, but doesn't on the Powerstation
->> (970MP).
->>=20
->> The only weird thing I can imagine about this setup is that I'm
->> running 32 bit userland on a 64 bit kernel. So I went ahead and
->> compiled perf for ppc64 - without any change:
+On Tue, 2010-04-20 at 22:15 -0500, Brian King wrote:
+> On 04/20/2010 09:04 PM, Michael Neuling wrote:
+> > In message <201004210154.o3L1sXaR001791@d01av04.pok.ibm.com> you wrote:
+> >>
+> >> Since there is nothing to stop an IPI from occurring to an
+> >> offline CPU, rather than printing a warning to the logs,
+> >> just ignore the IPI. This was seen while stress testing
+> >> SMT enable/disable.
+> >=20
+> > This seems like a recipe for disaster.  Do we at least need a
+> > WARN_ON_ONCE?
 >=20
-> I'm using 32 bit userland and 64 bit kernel on a PowerPC box and it's =
-working for me.
-> Are you building perf from the tip tree?
+> Actually we are only seeing it once per offlining of a CPU,
+> and only once in a while.
+> =20
+> My guess is that once the CPU is marked offline fewer IPIs
+> get sent to it since its no longer in the online mask.
 
-I'm using kvm.git which is pretty close to tip. The version says =
-something 2.6.34-rc3'ish. Has anything significantly changed since then?
+Hmm, right. Once it's offline it shouldn't get _any_ IPIs, AFAICS.
 
-Either way - I'll give it a try.
+> Perhaps we should be disabling IPIs to offline CPUs instead?
+
+You mean not sending them? We do:
+
+void smp_xics_message_pass(int target, int msg)
+{
+        unsigned int i;
+
+        if (target < NR_CPUS) {
+                smp_xics_do_message(target, msg);
+        } else {
+                for_each_online_cpu(i) {
+                        if (target =3D=3D MSG_ALL_BUT_SELF
+                            && i =3D=3D smp_processor_id())
+                                continue;
+                        smp_xics_do_message(i, msg);
+                }
+        }
+}     =20
+
+So it does sound like the IPI was sent while the cpu was online (ie.
+before pseries_cpu_disable(), but xics_migrate_irqs_away() has not
+caused the IPI to be cancelled.
+
+Problem is I don't think we can just ignore the IPI. The IPI might have
+been sent for a smp_call_function() which is waiting for the result, in
+which case if we ignore it the caller will block for ever.
+
+I don't see how to fix it :/
+
+cheers
 
 
-Alex
+--=-iRhnuhzSWUgFmGlvswSD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkvO/yEACgkQdSjSd0sB4dIf+ACcCm+mYfXI+kJNrXpPA/LE3drA
+r0AAoI81RaLq4MKBxAO2nNRlvD4l89Rs
+=/haO
+-----END PGP SIGNATURE-----
+
+--=-iRhnuhzSWUgFmGlvswSD--
