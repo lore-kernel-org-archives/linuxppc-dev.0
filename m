@@ -1,23 +1,23 @@
 Return-Path: <michael@ellerman.id.au>
 Subject: Re: [Bug #15589] 2.6.34-rc1: Badness at fs/proc/generic.c:316
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20100421155547.GA4222@x200>
+To: Christian Kujau <lists@nerdbynature.de>
+In-Reply-To: <alpine.DEB.2.01.1004201104170.13016@bogon.housecafe.de>
 References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh> <YeFfFNFyTSF.A.vUB.fSSzLB@tosh>
 	<alpine.DEB.2.01.1004192339190.13016@bogon.housecafe.de>
-	<1271765898.4324.2.camel@concordia>  <20100421155547.GA4222@x200>
+	<1271765898.4324.2.camel@concordia>
+	<alpine.DEB.2.01.1004201104170.13016@bogon.housecafe.de>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-ks/erLzbOJ+lZLQiQRTx"
-Date: Wed, 21 Apr 2010 10:21:39 +1000
-Message-ID: <1271809299.13262.6.camel@concordia>
+	boundary="=-7mMsqZUyl6FWoxy/VMhC"
+Date: Wed, 21 Apr 2010 10:25:27 +1000
+Message-ID: <1271809527.13262.10.camel@concordia>
 Mime-Version: 1.0
-Cc: Christian Kujau <lists@nerdbynature.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
 	schwab@linux-m68k.org,
 	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Maciej Rutecki <maciej.rutecki@gmail.com>
+	adobriyan@gmail.com, Maciej Rutecki <maciej.rutecki@gmail.com>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,60 +29,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-ks/erLzbOJ+lZLQiQRTx
+--=-7mMsqZUyl6FWoxy/VMhC
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2010-04-21 at 18:55 +0300, Alexey Dobriyan wrote:
-> On Tue, Apr 20, 2010 at 10:18:18PM +1000, Michael Ellerman wrote:
-> > On Mon, 2010-04-19 at 23:45 -0700, Christian Kujau wrote:
-> > --- a/fs/proc/proc_devtree.c
-> > +++ b/fs/proc/proc_devtree.c
-> > @@ -175,6 +175,24 @@ retry:
-> >         return fixed_name;
-> >  }
-> > =20
-> > +static const char *unslash_name(const char *name)
-> > +{
-> > +       char *p, *fixed_name;
-> > +
-> > +       fixed_name =3D kstrdup(name);
-> > +       if (!fixed_name) {
-> > +               printk(KERN_ERR "device-tree: Out of memory trying to u=
-nslash "
-> > +                               "name \"%s\"\n", name);
-> > +               return name;
-> > +       }
-> > +
-> > +       p =3D fixed_name;
-> > +       while ((p =3D strstr(p, "/")))
-> > +               *p++ =3D '_';
+On Tue, 2010-04-20 at 11:15 -0700, Christian Kujau wrote:
+> On Tue, 20 Apr 2010 at 22:18, Michael Ellerman wrote:
+> > Try this 100% unbuilt, 100% untested patch.
 >=20
-> This is wasteful. :-)
+> I added GFP_KERNEL to kstrdup to make the compile error go away:
+>=20
+> fs/proc/proc_devtree.c: In function =E2=80=98unslash_name=E2=80=99:
+> fs/proc/proc_devtree.c:183: error: too few arguments to function =E2=80=
+=98kstrdup=E2=80=99
+> make[2]: *** [fs/proc/proc_devtree.o] Error 1
+> make[1]: *** [fs/proc] Error 2
+> make: *** [fs] Error 2
 
-Whatever, patches welcome :)
+Yeah oops, told you I hadn't built it.
 
-> Also, I hope we won't spit message every time allocation fail.
+> And now 2.6.34-rc5 compiles and boots without the warning. Thanks!=20
+> New dmesg and /proc/device-tree on:
+>=20
+>   http://nerdbynature.de/bits/2.6.34-rc1/xlate_proc_name/
 
-We do. Your system is mostly hosed anyway, but feel free to rate limit
-it or something.
+Cool, and we see:
 
-The error handling in there is a bit dubious, if the alloc fails we just
-return the old name, which we know is bogus. It should probably return
-NULL and the calling code can check - same for fixup_name().
+./uni-n@f8000000/i2c@f8001000/i2c-bus@1/fan@5c/pulses_rev
+
+Which is the one that needed fixing.
+
+> Alexey mentioned that this is "wasteful" - does it make the kernel slower=
+?=20
+> I have not done any performance tests, but I'd rather stick with the=20
+> warning than make this Powerbook G4 any more slower :-\
+
+Maybe a little. It has to check every string to see if it contains a
+"/". But then you save the cost of taking an exeception for the WARN,
+which might make up the difference. But it's a one time fixup at boot,
+so it's not going to be noticeable.
 
 cheers
 
---=-ks/erLzbOJ+lZLQiQRTx
+--=-7mMsqZUyl6FWoxy/VMhC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkvORRAACgkQdSjSd0sB4dKJqwCgq79/5W+simjGRQJ4tQYpfcX7
-gzoAoLD3mnRvEEi8RnPB+OidBrer+tPx
-=9O+3
+iEYEABECAAYFAkvORfYACgkQdSjSd0sB4dJ5TwCfS/XLWyVT0bVe+ByKEDs3H1Ym
+Ja8AoLErg+pQjsiMOCJZsqagicowbCiV
+=mzdz
 -----END PGP SIGNATURE-----
 
---=-ks/erLzbOJ+lZLQiQRTx--
+--=-7mMsqZUyl6FWoxy/VMhC--
