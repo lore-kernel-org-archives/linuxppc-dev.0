@@ -1,19 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 8503EB7D06
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Apr 2010 09:21:41 +1000 (EST)
-From: Alexander Graf <agraf@suse.de>
-Content-Type: text/plain; charset=us-ascii
-Subject: perf top broken on ppc64
-Date: Wed, 21 Apr 2010 01:21:36 +0200
-Message-Id: <594EC076-62C6-473D-9AF2-47AEE4B57ED3@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Mime-Version: 1.0 (Apple Message framework v1078)
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Bug #15589] 2.6.34-rc1: Badness at fs/proc/generic.c:316
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20100421155547.GA4222@x200>
+References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh> <YeFfFNFyTSF.A.vUB.fSSzLB@tosh>
+	<alpine.DEB.2.01.1004192339190.13016@bogon.housecafe.de>
+	<1271765898.4324.2.camel@concordia>  <20100421155547.GA4222@x200>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-ks/erLzbOJ+lZLQiQRTx"
+Date: Wed, 21 Apr 2010 10:21:39 +1000
+Message-ID: <1271809299.13262.6.camel@concordia>
+Mime-Version: 1.0
+Cc: Christian Kujau <lists@nerdbynature.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	schwab@linux-m68k.org,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Maciej Rutecki <maciej.rutecki@gmail.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-While trying to find out performance bottlenecks in KVM for PowerPC I =
-figured I'd try and use "perf top" to see what's going on in the system. =
-This works great on my G4, but doesn't on the Powerstation (970MP).
+--=-ks/erLzbOJ+lZLQiQRTx
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The only weird thing I can imagine about this setup is that I'm running =
-32 bit userland on a 64 bit kernel. So I went ahead and compiled perf =
-for ppc64 - without any change:
+On Wed, 2010-04-21 at 18:55 +0300, Alexey Dobriyan wrote:
+> On Tue, Apr 20, 2010 at 10:18:18PM +1000, Michael Ellerman wrote:
+> > On Mon, 2010-04-19 at 23:45 -0700, Christian Kujau wrote:
+> > --- a/fs/proc/proc_devtree.c
+> > +++ b/fs/proc/proc_devtree.c
+> > @@ -175,6 +175,24 @@ retry:
+> >         return fixed_name;
+> >  }
+> > =20
+> > +static const char *unslash_name(const char *name)
+> > +{
+> > +       char *p, *fixed_name;
+> > +
+> > +       fixed_name =3D kstrdup(name);
+> > +       if (!fixed_name) {
+> > +               printk(KERN_ERR "device-tree: Out of memory trying to u=
+nslash "
+> > +                               "name \"%s\"\n", name);
+> > +               return name;
+> > +       }
+> > +
+> > +       p =3D fixed_name;
+> > +       while ((p =3D strstr(p, "/")))
+> > +               *p++ =3D '_';
+>=20
+> This is wasteful. :-)
 
-# file `which perf`
-/root/bin/perf: ELF 64-bit MSB executable, 64-bit PowerPC or cisco 7500, =
-version 1 (SYSV), for GNU/Linux 2.6.4, dynamically linked (uses shared =
-libs), not stripped
+Whatever, patches welcome :)
 
-Whenever I call 'perf top' I get the following output:
+> Also, I hope we won't spit message every time allocation fail.
 
+We do. Your system is mostly hosed anyway, but feel free to rate limit
+it or something.
 
-=
---------------------------------------------------------------------------=
------------------------------
-   PerfTop:   57159 irqs/sec  kernel:100.0% [1000Hz cycles],  (all, 4 =
-CPUs)
-=
---------------------------------------------------------------------------=
------------------------------
+The error handling in there is a bit dubious, if the alloc fails we just
+return the old name, which we know is bogus. It should probably return
+NULL and the calling code can check - same for fixup_name().
 
-             samples  pcnt  DSO
-             _______ _____ =20
+cheers
 
+--=-ks/erLzbOJ+lZLQiQRTx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Where there would usually be functions being listed I don't get =
-anything.
-The interesting part is that 'perf record -g' and 'perf report -g' work =
-just fine. I get reasonable output. I also had 'perf top' with the exact =
-same binaries working by accident too once. But then I rebooted and not =
-it's all moot again.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-So the question is: why doesn't the top function work for me?
+iEYEABECAAYFAkvORRAACgkQdSjSd0sB4dKJqwCgq79/5W+simjGRQJ4tQYpfcX7
+gzoAoLD3mnRvEEi8RnPB+OidBrer+tPx
+=9O+3
+-----END PGP SIGNATURE-----
 
-
-Thanks,
-
-Alex
+--=-ks/erLzbOJ+lZLQiQRTx--
