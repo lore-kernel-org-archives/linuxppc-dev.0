@@ -1,23 +1,24 @@
-Return-Path: <nhillery@sixisinc.com>
-Received: from asp.reflexion.net (asp-submit.reflexion.net [69.84.129.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B0F65B7CF8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Apr 2010 14:22:54 +1000 (EST)
-References: <DA601BED1671C24093F284F75082C9934B68EB@rtpwbee01.SIXIS.NS>
-	<6E565AB2-EAAD-4395-9E38-6759FA36125A@kernel.crashing.org>
-Message-ID: <29B2CB6A-DCE0-4C4C-A00E-76D2DC4C2C8B@sixisinc.com>
-From: "Hillery, Nathan" <nhillery@sixisinc.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-In-Reply-To: <6E565AB2-EAAD-4395-9E38-6759FA36125A@kernel.crashing.org>
-Content-Type: text/plain;
-	charset="utf-8"
-MIME-Version: 1.0 (iPad Mail 7B367)
-Subject: Re: U-boot support for MPC85xx eSPI
-Date: Wed, 21 Apr 2010 00:24:01 -0400
-Cc: U-Boot-Users ML <u-boot@lists.denx.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id BE597B7CFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Apr 2010 15:14:24 +1000 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: michael@ellerman.id.au
+Subject: Re: [Bug #15589] 2.6.34-rc1: Badness at fs/proc/generic.c:316
+Date: Wed, 21 Apr 2010 06:57:18 +0200
+References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh> <20100421155547.GA4222@x200>
+	<1271809299.13262.6.camel@concordia>
+In-Reply-To: <1271809299.13262.6.camel@concordia>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Message-Id: <201004210657.18864.rjw@sisk.pl>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-V2VsbCwgb2YgY291cnNlIS0pLiBUaGFua3MgZm9yIHRoZSBoZWxwZnVsIHBvaW50ZXIgJiByZS1w
-b3N0LiAgDQoNClNlbnQgZnJvbSBteSBpUGFkDQoNCk9uIEFwciAyMSwgMjAxMCwgYXQgMTI6MTUg
-QU0sICJLdW1hciBHYWxhIiA8Z2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZz4gd3JvdGU6DQoNCj4g
-DQo+IE9uIEFwciAyMCwgMjAxMCwgYXQgMToyNCBQTSwgSGlsbGVyeSwgTmF0aGFuIHdyb3RlOg0K
-PiANCj4+IEnigJltIGxvb2tpbmcgZm9yIFUtYm9vdCBzdXBwb3J0IGZvciB0aGUgZW1iZWRkZWQg
-U1BJIGRyaXZlciBvbiB0aGUgTVBDODUzNiB0byBhY2Nlc3MgYSBTUEkgZmxhc2ggZGV2aWNlIChO
-dW1vbnl4IFtleC1TVG1pY3JvXSBNMjVQMTYpLiAgVGhlIGVTUEkgY2FuIHJlYWQgdGhlIFNQSSBm
-bGFzaCAodGhhdOKAmXMgaG93IFUtYm9vdCBnZXRzIGxvYWRlZCBpbnRvIFJBTSkgYW5kIEkgY2Fu
-IHJlYWQvd3JpdGUgZnJvbSBsaW51eCB1c2luZyB0aGUgbXRkYmxvY2sgZHJpdmVyLiAgSSBzZWUg
-Y29kZSB0aGF0IGFwcGVhcnMgdG8gc3VwcG9ydCB0aGUgTVBDODN4eCwgYnV0IGl0IGxvb2tzIHF1
-aXRlIGRpZmZlcmVudCB0aGFuIHRoZSBNUEM4NXh4LiAgSSBhbSB3aWxsaW5nIHRvIGJhY2twb3J0
-IHRoZSBsaW51eCBjb2RlIHRvIHdvcmsgaW4gVS1ib290LCBidXQgYW0gaG9waW5nIHRoYXQgaXNu
-4oCZdCBuZWNlc3NhcnkuDQo+IA0KPiBUaGlzIGlzIHJlYWxseSBhIHUtYm9vdCBsaXN0IHF1ZXN0
-aW9uLiAgKHUtYm9vdEBsaXN0cy5kZW54LmRlKQ0KPiANCj4gLSBrDQo=
+On Wednesday 21 April 2010, Michael Ellerman wrote:
+> On Wed, 2010-04-21 at 18:55 +0300, Alexey Dobriyan wrote:
+> > On Tue, Apr 20, 2010 at 10:18:18PM +1000, Michael Ellerman wrote:
+> > > On Mon, 2010-04-19 at 23:45 -0700, Christian Kujau wrote:
+> > > --- a/fs/proc/proc_devtree.c
+> > > +++ b/fs/proc/proc_devtree.c
+> > > @@ -175,6 +175,24 @@ retry:
+> > >         return fixed_name;
+> > >  }
+> > >  
+> > > +static const char *unslash_name(const char *name)
+> > > +{
+> > > +       char *p, *fixed_name;
+> > > +
+> > > +       fixed_name = kstrdup(name);
+> > > +       if (!fixed_name) {
+> > > +               printk(KERN_ERR "device-tree: Out of memory trying to unslash "
+> > > +                               "name \"%s\"\n", name);
+> > > +               return name;
+> > > +       }
+> > > +
+> > > +       p = fixed_name;
+> > > +       while ((p = strstr(p, "/")))
+> > > +               *p++ = '_';
+> > 
+> > This is wasteful. :-)
+> 
+> Whatever, patches welcome :)
+> 
+> > Also, I hope we won't spit message every time allocation fail.
+> 
+> We do. Your system is mostly hosed anyway, but feel free to rate limit
+> it or something.
+
+OK
+
+Is anyone going to post a clean patch for that with a sign-off?
+
+Rafael
