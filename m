@@ -1,32 +1,23 @@
-Return-Path: <tklein@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.17.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 33DB8B7CFA
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Apr 2010 19:11:36 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.1/8.13.1) with ESMTP id o3L9BW9A025098
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Apr 2010 09:11:32 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id o3L9BWcW1618172
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Apr 2010 11:11:32 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id o3L9BVD3028900
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Apr 2010 11:11:31 +0200
-From: Thomas Klein <tklein@de.ibm.com>
-To: davem@davemloft.net
-Subject: [PATCH 2/2][RESEND] ehea: fix possible DLPAR/mem deadlock
-Date: Wed, 21 Apr 2010 11:11:31 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <201004211111.31298.tklein@de.ibm.com>
-Cc: netdev@vger.kernel.org, themann@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 34603B7C06
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Apr 2010 19:29:52 +1000 (EST)
+Subject: Re: perf top broken on ppc64
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1271827490-sup-48@au1.ibm.com>
+Date: Wed, 21 Apr 2010 11:29:44 +0200
+Message-Id: <12E39DE6-0957-43CD-8DD4-24970AAF45D3@suse.de>
+References: <594EC076-62C6-473D-9AF2-47AEE4B57ED3@suse.de>
+	<1271827490-sup-48@au1.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	LKML Mailing List <linux-kernel@vger.kernel.org>,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,87 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Force serialization of userspace-triggered DLPAR/mem operations
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
+On 21.04.2010, at 07:29, Ian Munsie wrote:
 
-Patch created against net-2.6
+> Excerpts from Alexander Graf's message of Wed Apr 21 09:21:36 +1000 =
+2010:
+>> Hi,
+>>=20
+>> While trying to find out performance bottlenecks in KVM for PowerPC I
+>> figured I'd try and use "perf top" to see what's going on in the
+>> system. This works great on my G4, but doesn't on the Powerstation
+>> (970MP).
+>>=20
+>> The only weird thing I can imagine about this setup is that I'm
+>> running 32 bit userland on a 64 bit kernel. So I went ahead and
+>> compiled perf for ppc64 - without any change:
+>=20
+> I'm using 32 bit userland and 64 bit kernel on a PowerPC box and it's =
+working for me.
+> Are you building perf from the tip tree?
 
-diff -Nurp net-2.6.orig/drivers/net/ehea/ehea.h net-2.6/drivers/net/ehea/ehea.h
---- net-2.6.orig/drivers/net/ehea/ehea.h	2010-04-21 10:23:21.000000000 +0200
-+++ net-2.6/drivers/net/ehea/ehea.h	2010-04-21 10:42:14.000000000 +0200
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0102"
-+#define DRV_VERSION	"EHEA_0103"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp net-2.6.orig/drivers/net/ehea/ehea_main.c net-2.6/drivers/net/ehea/ehea_main.c
---- net-2.6.orig/drivers/net/ehea/ehea_main.c	2010-04-21 10:43:14.000000000 +0200
-+++ net-2.6/drivers/net/ehea/ehea_main.c	2010-04-21 10:42:14.000000000 +0200
-@@ -2889,7 +2889,6 @@ static void ehea_rereg_mrs(struct work_s
- 	int ret, i;
- 	struct ehea_adapter *adapter;
- 
--	mutex_lock(&dlpar_mem_lock);
- 	ehea_info("LPAR memory changed - re-initializing driver");
- 
- 	list_for_each_entry(adapter, &adapter_list, list)
-@@ -2959,7 +2958,6 @@ static void ehea_rereg_mrs(struct work_s
- 		}
- 	ehea_info("re-initializing driver complete");
- out:
--	mutex_unlock(&dlpar_mem_lock);
- 	return;
- }
- 
-@@ -3542,7 +3540,14 @@ void ehea_crash_handler(void)
- static int ehea_mem_notifier(struct notifier_block *nb,
-                              unsigned long action, void *data)
- {
-+	int ret = NOTIFY_BAD;
- 	struct memory_notify *arg = data;
-+
-+	if (!mutex_trylock(&dlpar_mem_lock)) {
-+		ehea_info("ehea_mem_notifier must not be called parallelized");
-+		goto out;
-+	}
-+
- 	switch (action) {
- 	case MEM_CANCEL_OFFLINE:
- 		ehea_info("memory offlining canceled");
-@@ -3551,14 +3556,14 @@ static int ehea_mem_notifier(struct noti
- 		ehea_info("memory is going online");
- 		set_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
- 		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
--			return NOTIFY_BAD;
-+			goto out_unlock;
- 		ehea_rereg_mrs(NULL);
- 		break;
- 	case MEM_GOING_OFFLINE:
- 		ehea_info("memory is going offline");
- 		set_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
- 		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
--			return NOTIFY_BAD;
-+			goto out_unlock;
- 		ehea_rereg_mrs(NULL);
- 		break;
- 	default:
-@@ -3566,8 +3571,12 @@ static int ehea_mem_notifier(struct noti
- 	}
- 
- 	ehea_update_firmware_handles();
-+	ret = NOTIFY_OK;
- 
--	return NOTIFY_OK;
-+out_unlock:
-+	mutex_unlock(&dlpar_mem_lock);
-+out:
-+	return ret;
- }
- 
- static struct notifier_block ehea_mem_nb = {
+I'm using kvm.git which is pretty close to tip. The version says =
+something 2.6.34-rc3'ish. Has anything significantly changed since then?
+
+Either way - I'll give it a try.
+
+
+Alex
