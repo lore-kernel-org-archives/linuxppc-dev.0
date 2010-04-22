@@ -1,31 +1,19 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5360AB7DE1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 17:55:11 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o3M7srKQ007608 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 00:55:03 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3M843rp009129
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 03:04:10 -0500 (CDT)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/5] fsl_msi: add removal path and probe failing path
-Date: Thu, 22 Apr 2010 16:31:39 +0800
-Message-Id: <1271925099-29100-5-git-send-email-leoli@freescale.com>
-In-Reply-To: <1271925099-29100-4-git-send-email-leoli@freescale.com>
-References: <1271925099-29100-1-git-send-email-leoli@freescale.com>
-	<1271925099-29100-2-git-send-email-leoli@freescale.com>
-	<1271925099-29100-3-git-send-email-leoli@freescale.com>
-	<1271925099-29100-4-git-send-email-leoli@freescale.com>
+Return-Path: <gknispel@proformatique.com>
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: linux-kernel@vger.kernel.org,
+	Linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] genirq: reliably replay pending edge-triggered irq (plus
+	doc)
+Date: Thu, 22 Apr 2010 15:09:56 +0200
+Message-Id: <1271941798-9659-1-git-send-email-gknispel@proformatique.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Russell King <linux@arm.linux.org.uk>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Guillaume Knispel <gknispel@proformatique.com>,
+	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,108 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also cleanup the probe function.
+In the following series:
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/sysdev/fsl_msi.c |   36 ++++++++++++++++++++++++++++++------
- arch/powerpc/sysdev/fsl_msi.h |    1 +
- 2 files changed, 31 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 7c442e2..025aa9b 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -249,6 +249,30 @@ unlock:
- 	spin_unlock(&desc->lock);
- }
- 
-+static int fsl_of_msi_remove(struct of_device *ofdev)
-+{
-+	struct fsl_msi *msi = ofdev->dev.platform_data;
-+	int virq, i;
-+	struct fsl_msi_cascade_data *cascade_data;
-+
-+	if (msi->list.prev != NULL)
-+		list_del(&msi->list);
-+	for (i = 0; i < NR_MSI_REG; i++) {
-+		virq = msi->msi_virqs[i];
-+		if (virq != NO_IRQ) {
-+			cascade_data = get_irq_data(virq);
-+			kfree(cascade_data);
-+			irq_dispose_mapping(virq);
-+		}
-+	}
-+	if (msi->bitmap.bitmap)
-+		msi_bitmap_free(&msi->bitmap);
-+	iounmap(msi->msi_regs);
-+	kfree(msi);
-+
-+	return 0;
-+}
-+
- static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 				const struct of_device_id *match)
- {
-@@ -268,9 +292,9 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 	msi = kzalloc(sizeof(struct fsl_msi), GFP_KERNEL);
- 	if (!msi) {
- 		dev_err(&dev->dev, "No memory for MSI structure\n");
--		err = -ENOMEM;
--		goto error_out;
-+		return -ENOMEM;
- 	}
-+	dev->dev.platform_data = msi;
- 
- 	msi->irqhost = irq_alloc_host(dev->node, IRQ_HOST_MAP_LINEAR,
- 				      NR_MSI_IRQS, &fsl_msi_host_ops, 0);
-@@ -327,9 +351,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 		offset = *p / IRQS_PER_MSI_REG;
- 
- 	count /= sizeof(u32);
--	for (i = 0; i < count / 2; i++) {
--		if (i > NR_MSI_REG)
--			break;
-+	for (i = 0; i < min(count / 2, NR_MSI_REG); i++) {
- 		virt_msir = irq_of_parse_and_map(dev->node, i);
- 		if (virt_msir != NO_IRQ) {
- 			cascade_data = kzalloc(
-@@ -341,6 +363,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 				err = -ENOMEM;
- 				goto error_out;
- 			}
-+			msi->msi_virqs[i] = virt_msir;
- 			cascade_data->index = i + offset;
- 			cascade_data->msi_data = msi;
- 			set_irq_data(virt_msir, (void *)cascade_data);
-@@ -362,7 +385,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 	}
- 	return 0;
- error_out:
--	kfree(msi);
-+	fsl_of_msi_remove(dev);
- 	return err;
- }
- 
-@@ -392,6 +415,7 @@ static struct of_platform_driver fsl_of_msi_driver = {
- 	.name = "fsl-msi",
- 	.match_table = fsl_of_msi_ids,
- 	.probe = fsl_of_msi_probe,
-+	.remove = fsl_of_msi_remove,
- };
- 
- static __init int fsl_of_msi_init(void)
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 8fc5523..624580c 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -32,6 +32,7 @@ struct fsl_msi {
- 	u32 msi_addr_hi;
- 	void __iomem *msi_regs;
- 	u32 feature;
-+	int msi_virqs[NR_MSI_REG];
- 
- 	struct msi_bitmap bitmap;
- 
--- 
-1.6.6-rc1.GIT
+[1/2] implements the proposal I made at the end of the thread
+http://lkml.org/lkml/2010/4/19/129 to reliably support replay
+of edge-triggered interrupts on all architectures when using
+disable_irq() / enable_irq().
+
+Proper replays of pending edge-triggered interrupts was
+depending on CONFIG_HARDIRQS_SW_RESEND which only seems to have
+been noticed for plateforms of ARM and AVR32 architecture while
+it should also have been used on other architectures to get the
+correct behavior. So the patch removes CONFIG_HARDIRQS_SW_RESEND
+and unconditionally builds the resend_irqs() tasklet and its
+scheduling.
+
+I only tested an equivalent patch for linux-2.6.22.18 on powerpc
+for a board with an MPC8555E (using a portC line on the CPM2 PIC),
+and build-tested this one for x86.
+
+
+[2/2] updates Documentation/DocBook/genericirq.tmpl, taking
+into account 1/2 other previous undocumented changes to genirq.
+
+
+--
+Guillaume Knispel
