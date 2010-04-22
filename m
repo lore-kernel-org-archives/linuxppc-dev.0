@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id A58CFB6EEB
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id ACE29B7BEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 05:11:29 +1000 (EST)
-Received: by gwb11 with SMTP id 11so3051366gwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 12:11:28 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1271962721.12334.34.camel@slamon-laptop.novariant.com>
-References: <1271962721.12334.34.camel@slamon-laptop.novariant.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 22 Apr 2010 13:11:05 -0600
-Message-ID: <h2ofa686aa41004221211w227bfcc4l3c7a6cc26a81e7dc@mail.gmail.com>
+	Fri, 23 Apr 2010 05:26:01 +1000 (EST)
+Date: Thu, 22 Apr 2010 21:25:49 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
 Subject: Re: Boot hang when setting console=none with MPC5200B custom board
 To: Sylvain Lamontagne <sylvain.lamontagne@novariant.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1271962721.12334.34.camel@slamon-laptop.novariant.com> (from
+	sylvain.lamontagne@novariant.com on Thu Apr 22 20:58:41 2010)
+Message-Id: <1271964357.1672.1@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-T9kcwHYOQ/nHCppU3SkA"
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,72 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 22, 2010 at 12:58 PM, Sylvain Lamontagne
-<sylvain.lamontagne@novariant.com> wrote:
-> Hi everybody,
->
-> I'm trying to remove the console from a custom board based on a
-> MPC5200B. During development we used console=ttyS1,115200 in our bootcmd
-> for the kernel, but now that the product is ready to be shipped we want
-> to use ttyS1 for something else and would like to deactivate completely
-> the console. So the unit would be accessible only by ssh if needed.
->
-> (I'm not really confortable with this since a network problem would
-> prevent us of even debugging the platform... but I've been ask to do
-> it.)
->
-> Anyway, whenever I try to change console= to null or to tty1 or anything
-> else, the boot is hanging somewhere ( I know that, because some leds are
-> not flashing like they should on a normal boot and I can't login in with
-> ssh).
->
-> I've tried to use tty1, none, null, zero and I've tried to completely
-> remove the console= arguments... but nothing work, its hanging there
-> without any flashing leds.
->
-> I've tried redirecting another "real" serial port and it worked, so
-> console=ttyPSC2,115200 work... but we need it also... so it can't do.
->
-> I've also tried the U-Boot's silent variable trick ... but it did not
-> work and I had to erase the environment of U-Boot with a JTAG to recover
-> back my default setting of ttyS1.
->
-> I'm now at a point where I think I have try everything that I know, and
-> since I have no way of "seeing" what is going on ... it's pretty hard to
-> debug.
+--=-T9kcwHYOQ/nHCppU3SkA
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Can you halt the processor with JTAG and look at the contents of __log_buf?
+Hi Sylvain:
 
-> The kernel is 2.6.29.2 and can't really be changed... (but it may be
-> patch)
-> This board doesn't have a framebuffer or a graphic chipset, everything
-> was done with a serial connection and now we want to remove this serial
-> connection (console) before sending it to a customer.
->
+Am 22.04.10 20:58 schrieb(en) Sylvain Lamontagne:
+[snip]
 > 1. Is it possible ?
 
-Yes, I believe so, but I haven't tried.
+Yes!  I tried this with several kernel versions (currently 2.6.33), using t=
+he option 'console=3Dtty0'.  Works just fine...
 
 > 2. Do you have any idea how it can be achieve ?
 
-You should be doing the right thing.  Are your userspace init scripts
-trying to start a getty on the non-existent console device?
+Hmmm, iirc, I also saw the effect you have.  I *think* the solution was to =
+ensure that all /dev/* files were created manually in the jffs image, not b=
+y running mdev (if you use busybox).  But I might be wrong here, sorry.  Be=
+ing at home, I don't have access to the device, but I can re-check tomorrow=
+.
 
 > 3. Do you know a bug in 2.6.29.2 that could prevent this to work ?
 
-no
+Not sure if I used *exactly* that version w/o serial console, but (iirc) 2.=
+6.28.something, and then many different up to .33 - they all work!
 
-> 4. The 'chosen' node is empty in my dts, does it require something to be
-> set ?
+Best, Albrecht.
 
-no
+--=-T9kcwHYOQ/nHCppU3SkA
+Content-Type: application/pgp-signature
 
-I think your best bet is to figure out some way to get at __log_buf to
-retrieve the kernel output after the failed boot.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
 
-Cheers,
-g.
+iD8DBQBL0KLFn/9unNAn/9ERAjzQAJ4xMPZIwc1mC3l24FbD58XUbrkHuACgopHn
+7rHJkG7u19434OW9OAOTKSg=
+=6vrS
+-----END PGP SIGNATURE-----
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--=-T9kcwHYOQ/nHCppU3SkA--
