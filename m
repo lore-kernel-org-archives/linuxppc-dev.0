@@ -1,29 +1,34 @@
-Return-Path: <rientjes@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.35])
+Return-Path: <R1AAHA@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 82CBDB7BEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 07:55:06 +1000 (EST)
-Received: from wpaz24.hot.corp.google.com (wpaz24.hot.corp.google.com
-	[172.24.198.88]) by smtp-out.google.com with ESMTP id o3MLiRhB020747
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 23:44:28 +0200
-Received: from pvg4 (pvg4.prod.google.com [10.241.210.132])
-	by wpaz24.hot.corp.google.com with ESMTP id o3MLhxNV022854
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 14:44:25 -0700
-Received: by pvg4 with SMTP id 4so110151pvg.1
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 14:44:25 -0700 (PDT)
-Date: Thu, 22 Apr 2010 14:44:22 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: npiggin@suse.de
-Subject: Re: [patch 11/14] powerpc: invoke oom-killer from page fault
-In-Reply-To: <20100422161224.465958039@suse.de>
-Message-ID: <alpine.DEB.2.00.1004221442590.25350@chino.kir.corp.google.com>
-References: <20100422160613.723698029@suse.de>
-	<20100422161224.465958039@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 504EEB7D1B
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 09:15:57 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o3MNFcfX021721
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 16:15:49 -0700 (MST)
+Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
+	[10.64.32.10])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3MNNqSs015528
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 18:23:52 -0500 (CDT)
+Date: Thu, 22 Apr 2010 18:27:14 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Continual reading from the PowerPc time base register is not
+	stable
+Message-Id: <20100422182714.b591f3e2.kim.phillips@freescale.com>
+In-Reply-To: <1271897416.2330.186.camel@pasglop>
+References: <43c137a81003241941p84cba56y3e02e40cb22623e2@mail.gmail.com>
+	<o2y43c137a81004092014z1511cecdxb7154825dc07b49f@mail.gmail.com>
+	<20100421194419.3edf2c80.kim.phillips@freescale.com>
+	<1271897416.2330.186.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Csdncannon <csdncannon@gmail.com>,
+	zhouminggang@hotmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,42 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 23 Apr 2010, npiggin@suse.de wrote:
+On Thu, 22 Apr 2010 10:50:16 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> As explained in commit 1c0fe6e3bd, we want to call the architecture independent
-> oom killer when getting an unexplained OOM from handle_mm_fault, rather than
-> simply killing current.
+> On Wed, 2010-04-21 at 19:44 -0500, Kim Phillips wrote:
+> > I took an 8377 rdb board, and let it run timebase.c (with the isync &
+> > long long casts) all weekend, and have failed to reproduce the issue.
+> > That was on linux 2.6.33, and I've got another machine running the
+> > same
+> > thing under 2.6.28 for the last couple of hours, still unable to
+> > reproduce the issue.
 > 
-> Cc: linuxppc-dev@ozlabs.org
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linux-arch@vger.kernel.org
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
-> Index: linux-2.6/arch/powerpc/mm/fault.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/mm/fault.c
-> +++ linux-2.6/arch/powerpc/mm/fault.c
-> @@ -359,15 +359,10 @@ bad_area_nosemaphore:
->   */
->  out_of_memory:
->  	up_read(&mm->mmap_sem);
-> -	if (is_global_init(current)) {
-> -		yield();
-> -		down_read(&mm->mmap_sem);
-> -		goto survive;
-> -	}
-> -	printk("VM: killing process %s\n", current->comm);
-> -	if (user_mode(regs))
-> -		do_group_exit(SIGKILL);
-> -	return SIGKILL;
-> +	if (!user_mode(regs))
-> +		return SIGKILL;
-> +	pagefault_out_of_memory();
-> +	return 0;
+> Do we need to add an isync to the vdso and kernel gettimeofday() ?
 
-Do we really want to return 0 and indicate that the fault was handled?  It 
-seems more consistent to do
+don't see why: I put two gettimeofday calls in a tight loop, checking
+if (t2.tv_sec < t1.tv_sec) || (t2.tv_sec > t1.tv_sec + 1), and the
+condition was never met.  I also removed all {i,}sync instructions from
+timebase.c (but left the long long casts in), and no failures were
+reported.
 
-	if (user_mode(regs))
-		pagefault_out_of_memory();
-	return SIGKILL;
+Kim
