@@ -1,19 +1,29 @@
-Return-Path: <Sylvain.Lamontagne@novariant.com>
-Received: from sm1.novariant.com (sm1.novariant.com [76.238.142.74])
-	by ozlabs.org (Postfix) with ESMTP id 38735B7D11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 06:34:28 +1000 (EST)
-Subject: Re: Boot hang when setting console=none with MPC5200B custom board
-From: Sylvain Lamontagne <sylvain.lamontagne@novariant.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <h2ofa686aa41004221211w227bfcc4l3c7a6cc26a81e7dc@mail.gmail.com>
-References: <1271962721.12334.34.camel@slamon-laptop.novariant.com>
-	<h2ofa686aa41004221211w227bfcc4l3c7a6cc26a81e7dc@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 22 Apr 2010 16:34:26 -0400
-Message-ID: <1271968466.12334.52.camel@slamon-laptop.novariant.com>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <rientjes@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [74.125.121.35])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 82CBDB7BEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 07:55:06 +1000 (EST)
+Received: from wpaz24.hot.corp.google.com (wpaz24.hot.corp.google.com
+	[172.24.198.88]) by smtp-out.google.com with ESMTP id o3MLiRhB020747
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 23:44:28 +0200
+Received: from pvg4 (pvg4.prod.google.com [10.241.210.132])
+	by wpaz24.hot.corp.google.com with ESMTP id o3MLhxNV022854
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 14:44:25 -0700
+Received: by pvg4 with SMTP id 4so110151pvg.1
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 14:44:25 -0700 (PDT)
+Date: Thu, 22 Apr 2010 14:44:22 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: npiggin@suse.de
+Subject: Re: [patch 11/14] powerpc: invoke oom-killer from page fault
+In-Reply-To: <20100422161224.465958039@suse.de>
+Message-ID: <alpine.DEB.2.00.1004221442590.25350@chino.kir.corp.google.com>
+References: <20100422160613.723698029@suse.de>
+	<20100422161224.465958039@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[snip]=20
-> Can you halt the processor with JTAG and look at the contents of __log_bu=
-f?
-Ok I'll try that as soon as I can get CodeWarrior to work again...
+On Fri, 23 Apr 2010, npiggin@suse.de wrote:
 
-> > 1. Is it possible ?
->=20
-> Yes, I believe so, but I haven't tried.
-Ok=20
->=20
-> > 2. Do you have any idea how it can be achieve ?
->=20
-> You should be doing the right thing.  Are your userspace init scripts
-> trying to start a getty on the non-existent console device?
->=20
-Nope and using init=3D/bin/sh=20
-gave me /bin/sh: can't access tty; job control turned off
-And then=20
-/ # tty
-not a tty
+> As explained in commit 1c0fe6e3bd, we want to call the architecture independent
+> oom killer when getting an unexplained OOM from handle_mm_fault, rather than
+> simply killing current.
+> 
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linux-arch@vger.kernel.org
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+> Index: linux-2.6/arch/powerpc/mm/fault.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/mm/fault.c
+> +++ linux-2.6/arch/powerpc/mm/fault.c
+> @@ -359,15 +359,10 @@ bad_area_nosemaphore:
+>   */
+>  out_of_memory:
+>  	up_read(&mm->mmap_sem);
+> -	if (is_global_init(current)) {
+> -		yield();
+> -		down_read(&mm->mmap_sem);
+> -		goto survive;
+> -	}
+> -	printk("VM: killing process %s\n", current->comm);
+> -	if (user_mode(regs))
+> -		do_group_exit(SIGKILL);
+> -	return SIGKILL;
+> +	if (!user_mode(regs))
+> +		return SIGKILL;
+> +	pagefault_out_of_memory();
+> +	return 0;
 
-Is helpful ? This is while using console=3DttyS1,115200 (so when I know
-it's working)
+Do we really want to return 0 and indicate that the fault was handled?  It 
+seems more consistent to do
 
-> > 3. Do you know a bug in 2.6.29.2 that could prevent this to work ?
->=20
-> no
-Ok :)=20
->=20
-> > 4. The 'chosen' node is empty in my dts, does it require something to b=
-e
-> > set ?
->=20
-> no
-Good to know=20
->=20
-> I think your best bet is to figure out some way to get at __log_buf to
-> retrieve the kernel output after the failed boot.
-Ok I'll try to revive CodeWarrior (I would better appreciate a BDI2000,
-but I'm stuck with a Freescale USB TAP that require CodeWarrior)
-
->=20
-> Cheers,
-> g.
->=20
-Thank you
-
-Sylvain
+	if (user_mode(regs))
+		pagefault_out_of_memory();
+	return SIGKILL;
