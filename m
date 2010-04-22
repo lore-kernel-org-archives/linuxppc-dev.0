@@ -1,31 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C43F7B6EEB
+Return-Path: <Sylvain.Lamontagne@novariant.com>
+Received: from sm1.novariant.com (sm1.novariant.com [76.238.142.74])
+	by ozlabs.org (Postfix) with ESMTP id 1BF6DB7D19
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 03:11:53 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o3MHBepe026269 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 10:11:50 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3MHKxfZ018773
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 12:20:59 -0500 (CDT)
-Message-ID: <4BD0834A.3020508@freescale.com>
-Date: Thu, 22 Apr 2010 12:11:38 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Peter Pan <pppeterpppan@gmail.com>
-Subject: Re: How to support scc-enet on MPC8247 in Linux 2.6.32.6
-References: <q2g48abf2c21004212341oe37ed471g63c646ae12914ab3@mail.gmail.com>
-In-Reply-To: <q2g48abf2c21004212341oe37ed471g63c646ae12914ab3@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 23 Apr 2010 05:08:47 +1000 (EST)
+Subject: Boot hang when setting console=none with MPC5200B custom board
+From: Sylvain Lamontagne <sylvain.lamontagne@novariant.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 22 Apr 2010 14:58:41 -0400
+Message-ID: <1271962721.12334.34.camel@slamon-laptop.novariant.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Pan wrote:
-> I'm porting Linux 2.6.32.6 to our MPC8247 based board. We use SCC3 and
-> SCC4 as ethernet port. These two ports are connect with LXT905 PHY
-> chip.
-> I'm now using fs_enet driver, how should I config the scc port in dtc
-> file. I copied from mgcoge.dts file, and my dtc file of scc enet is
-> follows:
-> 
->             eth2: ethernet@11a40 {
->                 device_type = "network";
->                 compatible = "fsl,mpc8247-scc-enet",
->                              "fsl,cpm2-scc-enet";
->                 reg = <0x11a40 0x20 0x8200 0x100 0x11390 0x1>;
->                 local-mac-address = [ 00 00 00 00 00 00 ]; /* filled
-> by U-Boot */
->                 interrupts = <42 8>;
->                 interrupt-parent = <&PIC>;
->                 linux,network-index = <0x2>;
->                 fsl,cpm-command = <0x8c00000>;
->                 fixed-link = < 0 0 10 0 0 >;
->             };
-> But i does not working. Linux says that PHY 0:00 is not found. I dive
-> into the code, and that's according to the fixed-link property.
-> I'm wondering how to support scc-enet in my situation.
+Hi everybody,
 
-Do you really want fixed-link, or does the board have a working MDIO 
-interface?  If the latter, you need a phy-handle property instead, 
-pointing to a PHY node under an MDIO bus node that represents how MDIO 
-is wired on your board.
+I'm trying to remove the console from a custom board based on a
+MPC5200B. During development we used console=3DttyS1,115200 in our bootcmd
+for the kernel, but now that the product is ready to be shipped we want
+to use ttyS1 for something else and would like to deactivate completely
+the console. So the unit would be accessible only by ssh if needed.
 
--Scott
+(I'm not really confortable with this since a network problem would
+prevent us of even debugging the platform... but I've been ask to do
+it.)
+
+Anyway, whenever I try to change console=3D to null or to tty1 or anything
+else, the boot is hanging somewhere ( I know that, because some leds are
+not flashing like they should on a normal boot and I can't login in with
+ssh).
+
+I've tried to use tty1, none, null, zero and I've tried to completely
+remove the console=3D arguments... but nothing work, its hanging there
+without any flashing leds.
+
+I've tried redirecting another "real" serial port and it worked, so
+console=3DttyPSC2,115200 work... but we need it also... so it can't do.
+
+I've also tried the U-Boot's silent variable trick ... but it did not
+work and I had to erase the environment of U-Boot with a JTAG to recover
+back my default setting of ttyS1.
+
+I'm now at a point where I think I have try everything that I know, and
+since I have no way of "seeing" what is going on ... it's pretty hard to
+debug.=20
+
+The kernel is 2.6.29.2 and can't really be changed... (but it may be
+patch)
+This board doesn't have a framebuffer or a graphic chipset, everything
+was done with a serial connection and now we want to remove this serial
+connection (console) before sending it to a customer.
+
+1. Is it possible ?
+2. Do you have any idea how it can be achieve ?
+3. Do you know a bug in 2.6.29.2 that could prevent this to work ?
+4. The 'chosen' node is empty in my dts, does it require something to be
+set ?
+
+Thank you for your help ( I hope ;) )
+
+Sylvain Lamontagne
