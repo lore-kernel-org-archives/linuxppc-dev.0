@@ -1,18 +1,34 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id DACBCB7D1D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 17:59:50 +1000 (EST)
-Date: Fri, 23 Apr 2010 09:59:30 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: "Steve Deiters" <SteveDeiters@BASLER.com>
-Subject: Re: [PATCH] Fixes for MPC512x PSC
-Message-ID: <20100423095930.3a26b8bd@wker>
-In-Reply-To: <181804936ABC2349BE503168465576460E8723C5@exchserver.basler.com>
-References: <181804936ABC2349BE503168465576460E8723C5@exchserver.basler.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.17.166])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 1DE07B7D1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 18:22:38 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.1/8.13.1) with ESMTP id o3N8MYuG007642
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 08:22:34 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+	ESMTP id o3N8MYu61687598
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 10:22:34 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id o3N8MXrH023553
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 10:22:33 +0200
+Message-ID: <4BD158C9.90807@de.ibm.com>
+Date: Fri, 23 Apr 2010 10:22:33 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/2][RESEND] ehea: error handling improvement
+References: <201004211110.55986.tklein@de.ibm.com>
+	<20100421.223620.257172362.davem@davemloft.net>
+In-Reply-To: <20100421.223620.257172362.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: tklein@de.ibm.com, netdev@vger.kernel.org, themann@de.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 22 Apr 2010 19:13:21 -0500
-"Steve Deiters" <SteveDeiters@BASLER.com> wrote:
+On 04/22/2010 07:36 AM, David Miller wrote:
+> From: Thomas Klein<tklein@de.ibm.com>
+> Date: Wed, 21 Apr 2010 11:10:55 +0200
+>
+>> Reset a port's resources only if they're actually in an error state
+>>
+>> Signed-off-by: Thomas Klein<tklein@de.ibm.com>
+>> ---
+>>
+>> Patch created against net-2.6
+>
+> I thought you were sorry for wasting my time and that you were going
+> to follow the directions I gave you last time, and I quote:
+>
+> --------------------
+> 3) These are not appropriate for net-2.6 as we are deep in
+>     the -rcX series at this point and only the most diabolical
+>     bug fixes are appropriate.  Therefore, please generate these
+>     against net-next-2.6, thanks.
+> --------------------
+>
+> And here you are generating your patches against net-2.6.  Heck, you
+> even feel it's worth mentioning explicitly.
 
-> This will apply on the mpc512x-v2.6.33-devel branch of the DENX git
-> repository.  This is all mostly based
-> on what was in the Freescale LTIB release from the Freescale website.
+Guilty! Allows no excuse. Screwed it. Deeply sorry.
 
-Please don't use mpc512x-v2.6.33-devel branch, it is obsolete.
-Fixes to serial PSC driver have been merged into mainline kernel,
-so with v2.6.34-rc5 you do not need all this stuff your patch
-addresses.
+>
+> Lucky for you the patches happen to apply cleanly to net-next-2.6 so
+> I've put them there.
 
-> On a somewhat unrelated note, does anyone know if the Freescale LTIB
-> drivers have been merged into any newer
-> kernel versions?  In particular, I could not find a branch that has
-> drivers for the newer NAND Flash controller
-> that was in the LTIB version.
+Thanks!
+Thomas
 
-Pull from mtd-2.6 tree [1] to get newer mpc512x NAND driver.
-
-[1] http://git.infradead.org/mtd-2.6.git
-
-Anatolij
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
