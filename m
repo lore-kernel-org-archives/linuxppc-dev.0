@@ -1,27 +1,14 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19A1FB7D40
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 10:13:39 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o3N0Dbig004053
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 17:13:37 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3N0LpDr027692
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Apr 2010 19:21:51 -0500 (CDT)
-Date: Thu, 22 Apr 2010 19:25:13 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: remove tls_ssl_stream descriptor type capability
-	in sec3.3 node
-Message-Id: <20100422192513.27ce5356.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 23 Apr 2010 10:32:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [GIT PULL] Perf probe support for PowerPC, from Ian Munsie
+Message-ID: <20100423003251.GA2420@brick.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Technically, whilst SEC v3.3 h/w honours the tls_ssl_stream descriptor
-type, it lacks the ARC4 algorithm execution unit required to be able
-to execute anything meaningful with it.  Change the node to agree with
-the documentation that declares that the sec3.3 really doesn't have such
-a descriptor type.
+Ingo,
 
-Reported-by: Haiying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Please pull my perf.git master branch:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+
+It has two commits from Ian Munsie that allow us to access local
+variables with perf probe on PowerPC.  We also need a commit in Ben's
+powerpc-next branch for it to function, but it compiles without that.
+
+Thanks,
+Paul.
+
 ---
- arch/powerpc/boot/dts/mpc8315erdb.dts |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index 8a3a4f3..508b770 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -292,7 +292,7 @@
- 			fsl,num-channels = <4>;
- 			fsl,channel-fifo-len = <24>;
- 			fsl,exec-units-mask = <0x97c>;
--			fsl,descriptor-types-mask = <0x3ab0abf>;
-+			fsl,descriptor-types-mask = <0x3a30abf>;
- 		};
- 
- 		sata@18000 {
--- 
-1.7.0.5
+The following changes since commit 6eca8cc35b50af1037bc919106dd6dd332c959c2:
+  Frederic Weisbecker (1):
+        perf: Fix perf probe build error
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+
+Ian Munsie (2):
+      perf: Move arch specific code into separate arch directory
+      perf probe: Add PowerPC DWARF register number mappings
+
+ tools/perf/Makefile                       |   36 ++++++++++--
+ tools/perf/arch/powerpc/Makefile          |    4 +
+ tools/perf/arch/powerpc/util/dwarf-regs.c |   88 +++++++++++++++++++++++++++++
+ tools/perf/arch/x86/Makefile              |    4 +
+ tools/perf/arch/x86/util/dwarf-regs.c     |   75 ++++++++++++++++++++++++
+ tools/perf/util/include/dwarf-regs.h      |    8 +++
+ tools/perf/util/probe-finder.c            |   55 +-----------------
+ 7 files changed, 211 insertions(+), 59 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/Makefile
+ create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
+ create mode 100644 tools/perf/arch/x86/Makefile
+ create mode 100644 tools/perf/arch/x86/util/dwarf-regs.c
+ create mode 100644 tools/perf/util/include/dwarf-regs.h
