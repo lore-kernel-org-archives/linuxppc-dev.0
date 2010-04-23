@@ -1,34 +1,28 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.17.166])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1DE07B7D1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 18:22:38 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.1/8.13.1) with ESMTP id o3N8MYuG007642
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 08:22:34 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v10.0) with
-	ESMTP id o3N8MYu61687598
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 10:22:34 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id o3N8MXrH023553
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 10:22:33 +0200
-Message-ID: <4BD158C9.90807@de.ibm.com>
-Date: Fri, 23 Apr 2010 10:22:33 +0200
-From: Thomas Klein <osstklei@de.ibm.com>
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id EFB10B7D11
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 20:09:58 +1000 (EST)
+Received: from mx2.mail.elte.hu ([157.181.151.9])
+	by fallback.mail.elte.hu with esmtp (Exim) id 1O5Ew6-0008BX-5q
+	from <mingo@elte.hu>
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Apr 2010 11:12:34 +0200
+Date: Fri, 23 Apr 2010 11:11:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [GIT PULL] Perf probe support for PowerPC, from Ian Munsie
+Message-ID: <20100423091158.GA6078@elte.hu>
+References: <20100423003251.GA2420@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/2][RESEND] ehea: error handling improvement
-References: <201004211110.55986.tklein@de.ibm.com>
-	<20100421.223620.257172362.davem@davemloft.net>
-In-Reply-To: <20100421.223620.257172362.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tklein@de.ibm.com, netdev@vger.kernel.org, themann@de.ibm.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100423003251.GA2420@brick.ozlabs.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	linuxppc-dev@ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,40 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/22/2010 07:36 AM, David Miller wrote:
-> From: Thomas Klein<tklein@de.ibm.com>
-> Date: Wed, 21 Apr 2010 11:10:55 +0200
->
->> Reset a port's resources only if they're actually in an error state
->>
->> Signed-off-by: Thomas Klein<tklein@de.ibm.com>
->> ---
->>
->> Patch created against net-2.6
->
-> I thought you were sorry for wasting my time and that you were going
-> to follow the directions I gave you last time, and I quote:
->
-> --------------------
-> 3) These are not appropriate for net-2.6 as we are deep in
->     the -rcX series at this point and only the most diabolical
->     bug fixes are appropriate.  Therefore, please generate these
->     against net-next-2.6, thanks.
-> --------------------
->
-> And here you are generating your patches against net-2.6.  Heck, you
-> even feel it's worth mentioning explicitly.
 
-Guilty! Allows no excuse. Screwed it. Deeply sorry.
+* Paul Mackerras <paulus@samba.org> wrote:
 
->
-> Lucky for you the patches happen to apply cleanly to net-next-2.6 so
-> I've put them there.
+> Ingo,
+> 
+> Please pull my perf.git master branch:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+> 
+> It has two commits from Ian Munsie that allow us to access local
+> variables with perf probe on PowerPC.  We also need a commit in Ben's
+> powerpc-next branch for it to function, but it compiles without that.
+> 
+> Thanks,
+> Paul.
+> 
+> ---
+> 
+> The following changes since commit 6eca8cc35b50af1037bc919106dd6dd332c959c2:
+>   Frederic Weisbecker (1):
+>         perf: Fix perf probe build error
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+> 
+> Ian Munsie (2):
+>       perf: Move arch specific code into separate arch directory
+>       perf probe: Add PowerPC DWARF register number mappings
+> 
+>  tools/perf/Makefile                       |   36 ++++++++++--
+>  tools/perf/arch/powerpc/Makefile          |    4 +
+>  tools/perf/arch/powerpc/util/dwarf-regs.c |   88 +++++++++++++++++++++++++++++
+>  tools/perf/arch/x86/Makefile              |    4 +
+>  tools/perf/arch/x86/util/dwarf-regs.c     |   75 ++++++++++++++++++++++++
+>  tools/perf/util/include/dwarf-regs.h      |    8 +++
+>  tools/perf/util/probe-finder.c            |   55 +-----------------
+>  7 files changed, 211 insertions(+), 59 deletions(-)
+>  create mode 100644 tools/perf/arch/powerpc/Makefile
+>  create mode 100644 tools/perf/arch/powerpc/util/dwarf-regs.c
+>  create mode 100644 tools/perf/arch/x86/Makefile
+>  create mode 100644 tools/perf/arch/x86/util/dwarf-regs.c
+>  create mode 100644 tools/perf/util/include/dwarf-regs.h
 
-Thanks!
-Thomas
+Pulled, thanks a lot Paul!
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	Ingo
