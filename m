@@ -1,16 +1,17 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 6FB71B7D30
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Apr 2010 03:12:46 +1000 (EST)
-Date: Fri, 23 Apr 2010 21:12:44 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2/2] gianfar: Fix potential oops during OF address translation
-Message-ID: <20100423171244.GB2140@oksana.dev.rtsoft.ru>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 68A90B7C48
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 24 Apr 2010 07:54:21 +1000 (EST)
+Message-ID: <4BD21709.7040500@mlbassoc.com>
+Date: Fri, 23 Apr 2010 15:54:17 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: netdev@vger.kernel.org, Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
-	linuxppc-dev@ozlabs.org
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Initcall ordering
+References: <4BD1C317.5000909@mlbassoc.com>
+In-Reply-To: <4BD1C317.5000909@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gianfar driver may pass NULL pointer to the of_translate_address(),
-which may lead to a kernel oops. Fix this by using of_iomap(), which
-is also much simpler and shorter.
+On 04/23/2010 09:56 AM, Gary Thomas wrote:
+> I'm having trouble with the I2C devices on my 8347 platform.
+> The problem is that I2C device probe() functions are only called
+> once, as the I2C bus is being initialized (in this case fsl_i2c_init())
+> I have 2 devices on this bus, one device gets it's initcall
+> before fsl_i2c_init, the second one does not :-( This means
+> that the second device is never probed.
+>
+> What can I do about this? Has the problem been seen before?
+> I can provide more data, as required.
+>
+> note: I'm currently using 2.6.28, but I will be moving to 2.6.32
+> soon in case it matters, but I'd rather find/understand/fix this
+> in 2.6.28 if possible.
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- drivers/net/gianfar.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+A possibly related question: how can I2C devices work as
+modules when the device address + probe info is in the device
+tree?  Given the behaviour I'm seeing (I2C device probes only
+happen when the bus is enumerated), how is this supposed to
+work?
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 080d1ce..df49af3 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -549,12 +549,8 @@ static int gfar_parse_group(struct device_node *np,
- 		struct gfar_private *priv, const char *model)
- {
- 	u32 *queue_mask;
--	u64 addr, size;
--
--	addr = of_translate_address(np,
--			of_get_address(np, 0, &size, NULL));
--	priv->gfargrp[priv->num_grps].regs = ioremap(addr, size);
- 
-+	priv->gfargrp[priv->num_grps].regs = of_iomap(np, 0);
- 	if (!priv->gfargrp[priv->num_grps].regs)
- 		return -ENOMEM;
- 
+... maybe I'm missing something fundamental?
+
 -- 
-1.7.0.5
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
