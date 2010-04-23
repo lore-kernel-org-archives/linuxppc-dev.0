@@ -1,18 +1,20 @@
-Return-Path: <pppeterpppan@gmail.com>
-Received: from mail-qy0-f189.google.com (mail-qy0-f189.google.com
-	[209.85.221.189]) by ozlabs.org (Postfix) with ESMTP id 78D3FB7D25
+Return-Path: <albrecht.dress@arcor.de>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37845B7D1A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 12:36:50 +1000 (EST)
-Received: by qyk27 with SMTP id 27so3622680qyk.23
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 22 Apr 2010 19:36:48 -0700 (PDT)
+	Fri, 23 Apr 2010 17:29:06 +1000 (EST)
+Date: Fri, 23 Apr 2010 09:28:59 +0200 (CEST)
+From: "Albrecht Dreﬂ" <albrecht.dress@arcor.de>
+To: sylvain.lamontagne@novariant.com
+Message-ID: <2011538478.344681272007739977.JavaMail.ngmail@webmail06.arcor-online.net>
+Subject: Re: Boot hang when setting console=none with MPC5200B custom board
 MIME-Version: 1.0
-Date: Fri, 23 Apr 2010 10:36:48 +0800
-Message-ID: <x2v48abf2c21004221936kf5ca0a49mbf476d379038568@mail.gmail.com>
-Subject: My MDIO is acting strange
-From: Peter Pan <pppeterpppan@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,13 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm porting Linux 2.6.32.6 to my MPC8247 based board. Our FCC1 and
-FCC2 are used as 100MBps ethernet ports. MDIO is used to connect with
-PHY chip. During boot, the of driver is checking the PHYID, it gets
-all Fs. But after I comment the following lines:
-//if ((phy_id & 0x1fffffff) == 0x1fffffff)
-//    return NULL;
-I can use my FCC ethernet normally after boot into console.
-I checked that while boot, all the read bit from MDIO pin is 1, that
-makes no TA bit, and no PHYID.
-I'm wondering why is that happening.
+Hi Sylvain:
+
+> Humm I see, here is the node I'm creating in the initial ramdisk, so
+> they are there before mdev is launched in one of my init scripts.
+[snip]
+
+I additionally have "tty0 c 4 0" which might be important here, plus a lot of other crap (should clean up there...;-).  I don't use a ramdisk, but have the /dev folder in the flash jffs2 image.  In the init script, I say
+
+/bin/mount -t tmpfs ramfs /dev
+mdev -s
+mkdir /dev/pts
+mkdir /dev/shm
+chmod 1777 /dev/shm
+
+and then tty0 is gone.  So to be honest I'm not absolutely sure it's necessary.
+
+My inittab contains
+
+::sysinit:/etc/init.d/rcS
+::respawn:-/bin/sh 
+::shutdown:/etc/init.d/rcS stop
+::restart:/sbin/init
+::respawn:/sbin/dropbear -F
+
+With this, I can access the board through ssh (dropbear).  The dmesg output lists "console=tty0" as expected.  All PSC's are in the device tree, btw, and available as serial ports.
+
+Hth,
+Albrecht.
+
+Traumziele - von Beschreibung bis Buchung jetzt kompakt auf den Reise-Seiten von Arcor.de! http://www.arcor.de/rd/footer.reise
