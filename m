@@ -1,22 +1,15 @@
-Return-Path: <pppeterpppan@gmail.com>
-Received: from mail-qy0-f189.google.com (mail-qy0-f189.google.com
-	[209.85.221.189]) by ozlabs.org (Postfix) with ESMTP id 71A6CB7D1D
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 6377CB7D20
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 24 Apr 2010 01:32:11 +1000 (EST)
-Received: by qyk27 with SMTP id 27so4743483qyk.23
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Apr 2010 08:32:09 -0700 (PDT)
+	Sat, 24 Apr 2010 02:03:01 +1000 (EST)
+Message-ID: <4BD1C317.5000909@mlbassoc.com>
+Date: Fri, 23 Apr 2010 09:56:07 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-In-Reply-To: <z2m2acbd3e41004230814pc0ce9acasaf99a180d3f5b702@mail.gmail.com>
-References: <x2v48abf2c21004221936kf5ca0a49mbf476d379038568@mail.gmail.com>
-	<z2m2acbd3e41004230814pc0ce9acasaf99a180d3f5b702@mail.gmail.com>
-Date: Fri, 23 Apr 2010 23:32:09 +0800
-Message-ID: <g2u48abf2c21004230832g72e8d5bdz2a509af84a4ec70e@mail.gmail.com>
-Subject: Re: My MDIO is acting strange
-From: Peter Pan <pppeterpppan@gmail.com>
-To: Andy Fleming <afleming@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Initcall ordering
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-linux 2.6.22 is working correctly on my board. So, I think this is due
-to the difference between them.
-I will check the boot time difference between 2.6.22 and my new port.
-Hope that will give me a clue.
+I'm having trouble with the I2C devices on my 8347 platform.
+The problem is that I2C device probe() functions are only called
+once, as the I2C bus is being initialized (in this case fsl_i2c_init())
+I have 2 devices on this bus, one device gets it's initcall
+before fsl_i2c_init, the second one does not :-(  This means
+that the second device is never probed.
 
-2010/4/23 Andy Fleming <afleming@gmail.com>:
-> On Thu, Apr 22, 2010 at 9:36 PM, Peter Pan <pppeterpppan@gmail.com> wrote=
-:
->> I'm porting Linux 2.6.32.6 to my MPC8247 based board. Our FCC1 and
->> FCC2 are used as 100MBps ethernet ports. MDIO is used to connect with
->> PHY chip. During boot, the of driver is checking the PHYID, it gets
->> all Fs. But after I comment the following lines:
->> //if ((phy_id & 0x1fffffff) =3D=3D 0x1fffffff)
->> // =A0 =A0return NULL;
->> I can use my FCC ethernet normally after boot into console.
->
-> This means that your PHY can work without any initialization, and
-> implies the problem is with your MDIO bus.
->
->> I checked that while boot, all the read bit from MDIO pin is 1, that
->> makes no TA bit, and no PHYID.
->> I'm wondering why is that happening.
->
-> Possible reasons include the board being wired incorrectly (so the PHY
-> is not responding to MDIO commands), or software being configured
-> incorrectly to use the wrong pins for MDIO. =A0That's my guess.
->
-> Andy
->
+What can I do about this?  Has the problem been seen before?
+I can provide more data, as required.
+
+note: I'm currently using 2.6.28, but I will be moving to 2.6.32
+soon in case it matters, but I'd rather find/understand/fix this
+in 2.6.28 if possible.
+
+Thanks
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
