@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E850DB7D2B
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Apr 2010 10:56:17 +1000 (EST)
-Subject: Re: [PATCH] add icswx support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
-In-Reply-To: <1272060275.6329.13.camel@flin.austin.ibm.com>
-References: <1272060275.6329.13.camel@flin.austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 24 Apr 2010 10:55:51 +1000
-Message-ID: <1272070551.2330.213.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTPS id 3F39EB7D4C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 24 Apr 2010 11:24:34 +1000 (EST)
+Date: Sat, 24 Apr 2010 03:24:27 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Gary Thomas <gary@mlbassoc.com>
+Subject: Re: Initcall ordering
+Message-ID: <20100424012427.GA21255@pengutronix.de>
+References: <4BD1C317.5000909@mlbassoc.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+In-Reply-To: <4BD1C317.5000909@mlbassoc.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,213 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-04-23 at 17:04 -0500, Tseng-Hui (Frank) Lin wrote:
-> Add Power7 icswx co-processor instruction support.
 
-Please provide a -much- more detailed explanation of what it is, what it
-does and why it requires hooking into the MMU context switch code. _I_
-know these things but nobody else on the list does which limits the
-ability of people to review your patch.
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
-> Signed-off-by: Tseng-Hui (Frank) Lin <thlin@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/mmu-hash64.h  |    3 +
->  arch/powerpc/include/asm/mmu_context.h |    4 ++
->  arch/powerpc/include/asm/reg.h         |    3 +
->  arch/powerpc/mm/mmu_context_hash64.c   |   79
-> ++++++++++++++++++++++++++++++++
->  4 files changed, 89 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h
-> b/arch/powerpc/include/asm/mmu-hash64.h
-> index 2102b21..ba5727d 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -421,6 +421,9 @@ typedef struct {
->  #ifdef CONFIG_PPC_SUBPAGE_PROT
->  	struct subpage_prot_table spt;
->  #endif /* CONFIG_PPC_SUBPAGE_PROT */
-> +	unsigned long acop;
-> +#define HASH64_MAX_PID (0xFFFF)
-> +	unsigned int pid;
+Hi Gary,
 
-Please add a comment as to what those two fields are about, something
-like acop; /* mask of enabled coprocessor types */ and pid /* pid
-value used with coprocessors */ or something like that.
+(adding linux-i2c)
 
->  } mm_context_t;
->  
-> 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h
-> b/arch/powerpc/include/asm/mmu_context.h
-> index 26383e0..d6c8841 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -78,6 +78,10 @@ static inline void switch_mm(struct mm_struct *prev,
-> struct mm_struct *next,
->  
->  #define deactivate_mm(tsk,mm)	do { } while (0)
->  
-> +extern void switch_cop(struct mm_struct *next);
-> +extern int  use_cop(unsigned long acop, struct task_struct *task);
-              ^ remove that space
-> +extern void disuse_cop(unsigned long acop, struct mm_struct *mm);
+On Fri, Apr 23, 2010 at 09:56:07AM -0600, Gary Thomas wrote:
+> I'm having trouble with the I2C devices on my 8347 platform.
+> The problem is that I2C device probe() functions are only called
+> once, as the I2C bus is being initialized (in this case fsl_i2c_init())
+> I have 2 devices on this bus, one device gets it's initcall
+> before fsl_i2c_init, the second one does not :-(  This means
+> that the second device is never probed.
 
-I'd prefer "drop" or "forget" :-)
+Can you try this patch?
 
-> +
->  /*
->   * After we have set current->mm to a new value, this activates
->   * the context for the new mm so we see the new mappings.
-> diff --git a/arch/powerpc/include/asm/reg.h
-> b/arch/powerpc/include/asm/reg.h
-> index 5572e86..30503f8 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -516,6 +516,9 @@
->  #define SPRN_SIAR	780
->  #define SPRN_SDAR	781
->  
-> +#define SPRN_ACOP	 31
-> +#define SPRN_PID	 48
-> +
+=46rom: Wolfram Sang <w.sang@pengutronix.de>
+Date: Sat, 24 Apr 2010 03:18:16 +0200
+Subject: [PATCH] i2c/mpc: use subsys_initcall() to allow early usage of dev=
+ices
 
-Remove the definition of SPRN_PID from reg_booke.h to avoid a double
-definition then.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+---
+ drivers/i2c/busses/i2c-mpc.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
->  #define SPRN_PA6T_MMCR0 795
->  #define   PA6T_MMCR0_EN0	0x0000000000000001UL
->  #define   PA6T_MMCR0_EN1	0x0000000000000002UL
-> diff --git a/arch/powerpc/mm/mmu_context_hash64.c
-> b/arch/powerpc/mm/mmu_context_hash64.c
-> index 2535828..d0a79f6 100644
-> --- a/arch/powerpc/mm/mmu_context_hash64.c
-> +++ b/arch/powerpc/mm/mmu_context_hash64.c
-> @@ -18,6 +18,7 @@
->  #include <linux/mm.h>
->  #include <linux/spinlock.h>
->  #include <linux/idr.h>
-> +#include <linux/percpu.h>
->  #include <linux/module.h>
->  #include <linux/gfp.h>
->  
-> @@ -25,6 +26,82 @@
->  
->  static DEFINE_SPINLOCK(mmu_context_lock);
->  static DEFINE_IDA(mmu_context_ida);
-> +static DEFINE_IDA(cop_ida);
-> +
-> +/* Lazy switch the ACOP register */
-> +static DEFINE_PER_CPU(unsigned long, acop_reg);
-> +
-> +void switch_cop(struct mm_struct *next)
-> +{
-> +	mtspr(SPRN_PID, next->context.pid);
-> +	if (next->context.pid &&
-> +	    __get_cpu_var(acop_reg) != next->context.acop) {
-> +		mtspr(SPRN_ACOP, next->context.acop);
-> +		__get_cpu_var(acop_reg) = next->context.acop;
-> +	}
-> +}
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index f1321f7..32a3bae 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -693,13 +693,12 @@ static int __init fsl_i2c_init(void)
+ 		       " of_register_platform_driver failed (%i)\n", rv);
+ 	return rv;
+ }
++subsys_initcall(fsl_i2c_init);
+=20
+ static void __exit fsl_i2c_exit(void)
+ {
+ 	of_unregister_platform_driver(&mpc_i2c_driver);
+ }
+-
+-module_init(fsl_i2c_init);
+ module_exit(fsl_i2c_exit);
+=20
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
 
-The above doesn't appear to be called anywhere ?
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-> +int use_cop(unsigned long acop, struct task_struct *task)
-> +{
-> +	int pid;
-> +	int err;
-> +	struct mm_struct *mm = get_task_mm(task);
-> +
-> +	if (!mm)
-> +		return -EINVAL;
-> +
-> +	if (!mm->context.pid) {
-> +		if (!ida_pre_get(&cop_ida, GFP_KERNEL))
-> +			return -ENOMEM;
-> +again:
-> +		spin_lock(&mmu_context_lock);
-> +		err = ida_get_new_above(&cop_ida, 1, &pid);
-> +		spin_unlock(&mmu_context_lock);
-> +
-> +		if (err == -EAGAIN)
-> +			goto again;
-> +		else if (err)
-> +			return err;
-> +
-> +		if (pid > HASH64_MAX_PID) {
-> +			spin_lock(&mmu_context_lock);
-> +			ida_remove(&cop_ida, pid);
-> +			spin_unlock(&mmu_context_lock);
-> +			return -EBUSY;
-> +		}
-> +		mm->context.pid = pid;
-> +		mtspr(SPRN_PID,  mm->context.pid);
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Shouldn't the above be ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-	if (mm == current->active_mm)
-		mtspr(....)
+iEYEARECAAYFAkvSSEsACgkQD27XaX1/VRt4qQCdFAd3qkfs+cMiEkjejXQrodTZ
+ImQAoIXP73i5osPKvrzRxnggkVzZnt/W
+=l3JI
+-----END PGP SIGNATURE-----
 
-> +	}
-> +	mm->context.acop |= acop;
-
-Locking ?
-
-> +	get_cpu_var(acop_reg) = mm->context.acop;
-> +	mtspr(SPRN_ACOP, mm->context.acop);
-
-Same comment about testing for current.
-
-> +	put_cpu_var(acop_reg);
-> +
-> +	return mm->context.pid;
-> +}
-> +EXPORT_SYMBOL(use_cop);
-> +
-> +void disuse_cop(unsigned long acop, struct mm_struct *mm)
-> +{
-> +	if (WARN_ON(!mm))
-> +		return;
-> +
-> +	mm->context.acop &= ~acop;
-
-Shouldn't the above need some kind of locking if multiple threads hit it
-with different "acop" values ?
-
-> +	if (!mm->context.acop) {
-> +		spin_lock(&mmu_context_lock);
-> +		ida_remove(&cop_ida, mm->context.pid);
-> +		spin_unlock(&mmu_context_lock);
-> +		mm->context.pid = 0;
-> +		mtspr(SPRN_PID, 0);
-
-Same comment about current.
-
-> +	} else {
-> +		get_cpu_var(acop_reg) = mm->context.acop;
-> +		mtspr(SPRN_ACOP, mm->context.acop);
-
-Same comment.
-
-> +		put_cpu_var(acop_reg);
-> +	}
-> +	mmput(mm);
-> +}
-> +EXPORT_SYMBOL(disuse_cop);
->  
->  /*
->   * The proto-VSID space has 2^35 - 1 segments available for user
-> mappings.
-> @@ -94,6 +171,8 @@ EXPORT_SYMBOL_GPL(__destroy_context);
->  void destroy_context(struct mm_struct *mm)
->  {
->  	__destroy_context(mm->context.id);
-> +	if (mm->context.pid)
-> +		ida_remove(&cop_ida, mm->context.pid);
->  	subpage_prot_free(mm);
->  	mm->context.id = NO_CONTEXT;
->  }
-
-Cheers,
-Ben.
+--Kj7319i9nmIyA2yE--
