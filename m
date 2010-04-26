@@ -1,20 +1,18 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id C99D6B7D64
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 05:29:55 +1000 (EST)
-Received: by wyf28 with SMTP id 28so3150575wyf.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 12:29:53 -0700 (PDT)
-Date: Mon, 26 Apr 2010 23:29:47 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: MPC8313: fsl_elbc_nand and MDR
-Message-ID: <20100426192947.GA25762@oksana.dev.rtsoft.ru>
-References: <335466.44978.qm@web83505.mail.sp1.yahoo.com>
-	<4BD5E940.7000109@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4BD5E940.7000109@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Ron Madrid <ron_madrid@sbcglobal.net>
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 84188B7D5D
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 06:50:29 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org,
+	broonie@opensource.wolfsonmicro.com, lrg@slimlogic.co.uk,
+	kumar.gala@freescale.com
+Subject: [PATCH 1/2] powerpc: add platform registration for ALSA SoC drivers
+Date: Mon, 26 Apr 2010 15:49:40 -0500
+Message-Id: <1272314980-23679-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 26, 2010 at 02:28:00PM -0500, Scott Wood wrote:
-> Ron Madrid wrote:
-> >Thanks.  Although this doesn't handle programming the
-> >UPM, which is where my conflict is occurring.  MDR is
-> >used when programming the UPM.  Do you think I would
-> >be better served to program the UPM in U-boot and
-> >therefore preempt this conflict?
-> 
-> If you don't need to reprogram it dynamically, doing it either in
-> u-boot or early in platform code is probably best.
-> 
-> I guess the UPM NAND code relies on U-Boot doing this?
+An upcoming change in the architecture of ALSA SoC (ASoC) will require the
+MPC8610 HPCD's ASoC fabric driver to register as a standard platform driver.
+Therefore, we need to call platform_device_register_simple() from the board's
+platform code.
 
-Yep, u-boot or platform code.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
+Kumar, the ASoC mainters are willing to pick up this patch, but they want an
+ACK from you first.  Or, you could pick it up, since by itself it's harmless.
+
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 5abe137..66afff3 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -98,6 +98,9 @@ static int __init mpc8610_declare_of_platform_devices(void)
+ 	/* Without this call, the SSI device driver won't get probed. */
+ 	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
+ 
++	/* Register the platform device for the ASoC fabric driver */
++	platform_device_register_simple("snd-soc-mpc8610-hpcd", 0, NULL, 0);
++
+ 	return 0;
+ }
+ machine_device_initcall(mpc86xx_hpcd, mpc8610_declare_of_platform_devices);
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.5
