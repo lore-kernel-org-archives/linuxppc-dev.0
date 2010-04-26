@@ -1,18 +1,15 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 841E3B7D2E
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 21:20:41 +1000 (EST)
-From: Martyn Welch <martyn.welch@ge.com>
-Subject: [PATCH] Correct PowerPC Parport interrupt parsing.
-To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 26 Apr 2010 12:15:29 +0100
-Message-ID: <20100426110810.22131.46466.stgit@ES-J7S4D2J.amer.consind.ge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: tim@cyberelk.demon.co.uk, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michael Neuling <mikey@neuling.org>
+	by ozlabs.org (Postfix) with ESMTPS id EFF5DB7BEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 23:39:15 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/4xx: Add optional "reset_type" property to control
+	reboot via dts
+Date: Mon, 26 Apr 2010 15:39:01 +0200
+Message-Id: <1272289141-21053-1-git-send-email-sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +19,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the parsing of the device tree in
-arch/powerpc/include/asm/parport.h assumes that the interrupt provided in
-the parallel port node is a valid virtual irq. The values for the
-interrupts provided in the device tree should have meaning in the context
-of the driver for the specific interrupt controller to which the interrupt
-is connected and irq_of_parse_and_map() should be used to determine the
-correct virtual irq.
+By setting "reset_type" to one of the following values, the default
+software reset mechanism may be overidden. Here the possible values of
+"reset_type":
 
-Signed-off-by: Martyn Welch <martyn.welch@ge.com>
+  1 - PPC4xx core reset
+  2 - PPC4xx chip reset
+  3 - PPC4xx system reset (default)
+
+This will be used by a new PPC440SPe board port, which needs a "chip
+reset" instead of the default "system reset" to be asserted.
+
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+ arch/powerpc/sysdev/ppc4xx_soc.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
 
-I believe this is the correct way to discover interrupt numbering. I assume
-this has worked in the past as the interrupt routing hasn't been as
-"interesting" as the board I'm currently working on.
-
-I also don't have any other targets I could test this on, can anyone tell
-me if this will break support on existing devices?
-
- arch/powerpc/include/asm/parport.h |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-index 94942d6..aa3f7bc 100644
---- a/arch/powerpc/include/asm/parport.h
-+++ b/arch/powerpc/include/asm/parport.h
-@@ -19,6 +19,8 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 	u32 io1, io2;
- 	int propsize;
- 	int count = 0;
-+	int virq;
+diff --git a/arch/powerpc/sysdev/ppc4xx_soc.c b/arch/powerpc/sysdev/ppc4xx_soc.c
+index 5c01435..fe54216 100644
+--- a/arch/powerpc/sysdev/ppc4xx_soc.c
++++ b/arch/powerpc/sysdev/ppc4xx_soc.c
+@@ -191,11 +191,24 @@ static int __init ppc4xx_l2c_probe(void)
+ arch_initcall(ppc4xx_l2c_probe);
+ 
+ /*
+- * At present, this routine just applies a system reset.
++ * Apply a system reset. Alternatively a board specific value may be
++ * provided via the "reset-type" property in the cpu node.
+  */
+ void ppc4xx_reset_system(char *cmd)
+ {
+-	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_RST_SYSTEM);
++	struct device_node *np;
++	u32 reset_type = DBCR0_RST_SYSTEM;
++	const u32 *prop;
 +
- 	for (np = NULL; (np = of_find_compatible_node(np,
- 						      "parallel",
- 						      "pnpPNP,400")) != NULL;) {
-@@ -26,10 +28,13 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 		if (!prop || propsize > 6*sizeof(u32))
- 			continue;
- 		io1 = prop[1]; io2 = prop[2];
--		prop = of_get_property(np, "interrupts", NULL);
--		if (!prop)
++	np = of_find_node_by_type(NULL, "cpu");
++	if (np) {
++		prop = of_get_property(np, "reset-type", NULL);
++		if (prop)
++			reset_type = prop[0] << 28;
++	}
 +
-+		virq = irq_of_parse_and_map(np, 1);
-+		if (virq == NO_IRQ)
- 			continue;
--		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
++	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | reset_type);
 +
-+		if (parport_pc_probe_port(io1, io2, virq, autodma, NULL, 0)
-+				!= NULL)
- 			count++;
- 	}
- 	return count;
-
-
---
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+ 	while (1)
+ 		;	/* Just in case the reset doesn't work */
+ }
+-- 
+1.7.1
