@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7A2BAB7D51
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 07:27:42 +1000 (EST)
-Subject: Re: [PATCH] Correct PowerPC Parport interrupt parsing.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Martyn Welch <martyn.welch@ge.com>
-In-Reply-To: <20100426110810.22131.46466.stgit@ES-J7S4D2J.amer.consind.ge.com>
-References: <20100426110810.22131.46466.stgit@ES-J7S4D2J.amer.consind.ge.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Apr 2010 07:27:05 +1000
-Message-ID: <1272317225.29889.1.camel@pasglop>
-Mime-Version: 1.0
-Cc: tim@cyberelk.demon.co.uk, linuxppc-dev@ozlabs.org,
-	Michael Neuling <mikey@neuling.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+	by ozlabs.org (Postfix) with ESMTPS id 6AAF6B7BEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 08:52:40 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o3QMqaDg003434
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 17:52:36 -0500
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl-booke: Fix CONFIG_RELOCATABLE support on FSL
+	Book-E ppc32
+Date: Mon, 26 Apr 2010 17:52:36 -0500
+Message-Id: <1272322356-27306-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-04-26 at 12:15 +0100, Martyn Welch wrote:
-> Currently the parsing of the device tree in
-> arch/powerpc/include/asm/parport.h assumes that the interrupt provided in
-> the parallel port node is a valid virtual irq. The values for the
-> interrupts provided in the device tree should have meaning in the context
-> of the driver for the specific interrupt controller to which the interrupt
-> is connected and irq_of_parse_and_map() should be used to determine the
-> correct virtual irq.
-> 
-> Signed-off-by: Martyn Welch <martyn.welch@ge.com>
-> ---
-> 
-> I believe this is the correct way to discover interrupt numbering. I assume
-> this has worked in the past as the interrupt routing hasn't been as
-> "interesting" as the board I'm currently working on.
-> 
-> I also don't have any other targets I could test this on, can anyone tell
-> me if this will break support on existing devices?
-> 
->  arch/powerpc/include/asm/parport.h |   11 ++++++++---
->  1 files changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-> index 94942d6..aa3f7bc 100644
-> --- a/arch/powerpc/include/asm/parport.h
-> +++ b/arch/powerpc/include/asm/parport.h
-> @@ -19,6 +19,8 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
->  	u32 io1, io2;
->  	int propsize;
->  	int count = 0;
-> +	int virq;
-> +
->  	for (np = NULL; (np = of_find_compatible_node(np,
->  						      "parallel",
->  						      "pnpPNP,400")) != NULL;) {
-> @@ -26,10 +28,13 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
->  		if (!prop || propsize > 6*sizeof(u32))
->  			continue;
->  		io1 = prop[1]; io2 = prop[2];
-> -		prop = of_get_property(np, "interrupts", NULL);
-> -		if (!prop)
-> +
-> +		virq = irq_of_parse_and_map(np, 1);
+The following commit broke CONFIG_RELOCATABLE support on FSL Book-E
+parts:
 
-It looks good overall except the above, "1" should be "0".
+commit 549e8152de8039506f69c677a4546e5427aa6ae7
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Sat Aug 30 11:43:47 2008 +1000
 
-I suspect it worked by luck so far because the few machines with a
-parallel port also have a 8259 irq controller using legacy interrupts
-and the virq layer keeps those mapped 1:1.
+    powerpc: Make the 64-bit kernel as a position-independent executable
 
-Cheers,
-Ben.
+The change to __va and __pa to use PAGE_OFFSET & MEMORY_START causes
+problems on the Book-E parts because we don't know MEMORY_START until
+after we parse the device tree.  We need __va to work properly to even
+parse the device tree so we have a chicken an egg.  So go back to using
+he other definition of __va/__pa on CONFIG_BOOKE and use the
+PAGE_OFFSET/MEMORY_START version on "Classic" PPC64.
 
-> +		if (virq == NO_IRQ)
->  			continue;
-> -		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
-> +
-> +		if (parport_pc_probe_port(io1, io2, virq, autodma, NULL, 0)
-> +				!= NULL)
->  			count++;
->  	}
->  	return count;
-> 
-> 
-> --
-> Martyn Welch (Principal Software Engineer)   |   Registered in England and
-> GE Intelligent Platforms                     |   Wales (3828642) at 100
-> T +44(0)127322748                            |   Barbirolli Square, Manchester,
-> E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+Also updated casts to handle phys_addr_t being a different size from
+unsigned long (ie 36-bit physical on PPC32).
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/page.h |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index e96d52a..5b5d280 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -108,8 +108,21 @@ extern phys_addr_t kernstart_addr;
+ #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 
+-#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET - MEMORY_START))
++/*
++ * On Book-E parts we need __va to parse the device tree and we can't
++ * determine MEMORY_START until than.  However we can determine PHYSICAL_START
++ * from information at hand (program counter, TLB lookup).
++ *
++ * On non-Book-E PPC64 it PAGE_OFFSET and MEMORY_START are constants so use
++ * the other definitions for __va & __pa.
++ */
++#ifdef CONFIG_BOOKE
++#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) - PHYSICAL_START + KERNELBASE))
++#define __pa(x) ((unsigned long)(x) + PHYSICAL_START - KERNELBASE)
++#else
++#define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) + PAGE_OFFSET - MEMORY_START))
+ #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
++#endif
+ 
+ /*
+  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+-- 
+1.6.0.6
