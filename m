@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6AAF6B7BEE
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 08:52:40 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id A6F3AB7D57
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 08:54:56 +1000 (EST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o3QMqaDg003434
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 17:52:36 -0500
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o3QMsqwl003546
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Apr 2010 17:54:53 -0500
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fsl-booke: Fix CONFIG_RELOCATABLE support on FSL
+Subject: [PATCH v2] powerpc/fsl-booke: Fix CONFIG_RELOCATABLE support on FSL
 	Book-E ppc32
-Date: Mon, 26 Apr 2010 17:52:36 -0500
-Message-Id: <1272322356-27306-1-git-send-email-galak@kernel.crashing.org>
+Date: Mon, 26 Apr 2010 17:54:52 -0500
+Message-Id: <1272322492-27408-1-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,11 +43,13 @@ unsigned long (ie 36-bit physical on PPC32).
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
+* Fixed some grammaticaly issues pointed out by Becky in code comments
+
  arch/powerpc/include/asm/page.h |   15 ++++++++++++++-
  1 files changed, 14 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index e96d52a..5b5d280 100644
+index e96d52a..53b64be 100644
 --- a/arch/powerpc/include/asm/page.h
 +++ b/arch/powerpc/include/asm/page.h
 @@ -108,8 +108,21 @@ extern phys_addr_t kernstart_addr;
@@ -57,10 +59,10 @@ index e96d52a..5b5d280 100644
 -#define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET - MEMORY_START))
 +/*
 + * On Book-E parts we need __va to parse the device tree and we can't
-+ * determine MEMORY_START until than.  However we can determine PHYSICAL_START
++ * determine MEMORY_START until then.  However we can determine PHYSICAL_START
 + * from information at hand (program counter, TLB lookup).
 + *
-+ * On non-Book-E PPC64 it PAGE_OFFSET and MEMORY_START are constants so use
++ * On non-Book-E PPC64 PAGE_OFFSET and MEMORY_START are constants so use
 + * the other definitions for __va & __pa.
 + */
 +#ifdef CONFIG_BOOKE
