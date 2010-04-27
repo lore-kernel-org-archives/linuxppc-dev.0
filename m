@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wsa@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F1F6DB7D53
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 17:06:44 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id C40D1B7D47
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 17:12:31 +1000 (EST)
+Date: Tue, 27 Apr 2010 09:12:22 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH RESEND 3/3] i2c/ibm-iic: drop NO_IRQ
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
+Message-ID: <20100427071222.GB22743@pengutronix.de>
 References: <1270167421-5205-1-git-send-email-w.sang@pengutronix.de>
 	<1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Apr 2010 17:06:14 +1000
-Message-ID: <1272351974.24542.9.camel@pasglop>
-Mime-Version: 1.0
+	<1272351974.24542.9.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qcHopEYAB45HaUaB"
+In-Reply-To: <1272351974.24542.9.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
 	Ben Dooks <ben-linux@fluff.org>, Sean MacLennan <smaclennan@pikatech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,77 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-04-02 at 02:17 +0200, Wolfram Sang wrote:
-> Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
-> (http://lkml.org/lkml/2005/11/21/221). This change is safe, as the driver is
-> only used on powerpc, where NO_IRQ is 0 anyhow.
 
-Oops... forgot those. Applied, will show up in -next soon.
+--qcHopEYAB45HaUaB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Ben.
+On Tue, Apr 27, 2010 at 05:06:14PM +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-04-02 at 02:17 +0200, Wolfram Sang wrote:
+> > Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
+> > (http://lkml.org/lkml/2005/11/21/221). This change is safe, as the driv=
+er is
+> > only used on powerpc, where NO_IRQ is 0 anyhow.
+>=20
+> Oops... forgot those. Applied, will show up in -next soon.
 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Sean MacLennan <smaclennan@pikatech.com>
-> Cc: Ben Dooks <ben-linux@fluff.org>
-> ---
->  drivers/i2c/busses/i2c-ibm_iic.c |   14 +++++++-------
->  1 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
-> index b1bc6e2..2bef534 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -668,12 +668,12 @@ static int __devinit iic_request_irq(struct of_device *ofdev,
->  	int irq;
->  
->  	if (iic_force_poll)
-> -		return NO_IRQ;
-> +		return 0;
->  
->  	irq = irq_of_parse_and_map(np, 0);
-> -	if (irq == NO_IRQ) {
-> +	if (!irq) {
->  		dev_err(&ofdev->dev, "irq_of_parse_and_map failed\n");
-> -		return NO_IRQ;
-> +		return 0;
->  	}
->  
->  	/* Disable interrupts until we finish initialization, assumes
-> @@ -683,7 +683,7 @@ static int __devinit iic_request_irq(struct of_device *ofdev,
->  	if (request_irq(irq, iic_handler, 0, "IBM IIC", dev)) {
->  		dev_err(&ofdev->dev, "request_irq %d failed\n", irq);
->  		/* Fallback to the polling mode */
-> -		return NO_IRQ;
-> +		return 0;
->  	}
->  
->  	return irq;
-> @@ -719,7 +719,7 @@ static int __devinit iic_probe(struct of_device *ofdev,
->  	init_waitqueue_head(&dev->wq);
->  
->  	dev->irq = iic_request_irq(ofdev, dev);
-> -	if (dev->irq == NO_IRQ)
-> +	if (!dev->irq)
->  		dev_warn(&ofdev->dev, "using polling mode\n");
->  
->  	/* Board specific settings */
-> @@ -766,7 +766,7 @@ static int __devinit iic_probe(struct of_device *ofdev,
->  	return 0;
->  
->  error_cleanup:
-> -	if (dev->irq != NO_IRQ) {
-> +	if (dev->irq) {
->  		iic_interrupt_mode(dev, 0);
->  		free_irq(dev->irq, dev);
->  	}
-> @@ -790,7 +790,7 @@ static int __devexit iic_remove(struct of_device *ofdev)
->  
->  	i2c_del_adapter(&dev->adap);
->  
-> -	if (dev->irq != NO_IRQ) {
-> +	if (dev->irq) {
->  		iic_interrupt_mode(dev, 0);
->  		free_irq(dev->irq, dev);
->  	}
+Ah, thanks. I also asked Ben Dooks to pick them up, but better twice than n=
+ever
+;)
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--qcHopEYAB45HaUaB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkvWjlYACgkQD27XaX1/VRvb4gCfac8AEkOcE0nKPmbeprc4Uhg+
+g4QAn2MpshayIMtohOk4S1jiT+Z8QS6B
+=xJuH
+-----END PGP SIGNATURE-----
+
+--qcHopEYAB45HaUaB--
