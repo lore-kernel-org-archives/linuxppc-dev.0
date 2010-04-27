@@ -1,10 +1,10 @@
 Return-Path: <anton@ozlabs.org>
-Message-Id: <20100427013432.189850808@samba.org>
-Date: Tue, 27 Apr 2010 11:32:38 +1000
+Message-Id: <20100427013432.277400577@samba.org>
+Date: Tue, 27 Apr 2010 11:32:39 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  rusty@rustcorp.com.au
-Subject: [patch 07/15] powerpc: cpumask: Convert xics driver to new cpumask API
+Subject: [patch 08/15] powerpc: cpumask: Refactor /proc/cpuinfo code
 References: <20100427013231.510168034@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,92 +16,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the new cpumask API and add some comments to clarify how get_irq_server
-works.
+This separates the per cpu output from the summary output at the end of the
+file, making it easier to convert to the new cpumask API in a subsequent
+patch.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/powerpc/platforms/pseries/xics.c
+Index: linux-cpumask/arch/powerpc/kernel/setup-common.c
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/platforms/pseries/xics.c	2010-04-08 19:46:04.039197077 +1000
-+++ linux-cpumask/arch/powerpc/platforms/pseries/xics.c	2010-04-22 13:03:18.825447113 +1000
-@@ -163,29 +163,37 @@ static inline void lpar_qirr_info(int n_
- /* Interface to generic irq subsystem */
+--- linux-cpumask.orig/arch/powerpc/kernel/setup-common.c	2010-04-08 19:46:03.999199713 +1000
++++ linux-cpumask/arch/powerpc/kernel/setup-common.c	2010-04-22 13:03:19.866696740 +1000
+@@ -161,43 +161,47 @@ extern u32 cpu_temp_both(unsigned long c
+ DEFINE_PER_CPU(unsigned int, cpu_pvr);
+ #endif
  
- #ifdef CONFIG_SMP
--static int get_irq_server(unsigned int virq, cpumask_t cpumask,
-+/*
-+ * For the moment we only implement delivery to all cpus or one cpu.
-+ *
-+ * If the requested affinity is cpu_all_mask, we set global affinity.
-+ * If not we set it to the first cpu in the mask, even if multiple cpus
-+ * are set. This is so things like irqbalance (which set core and package
-+ * wide affinities) do the right thing.
-+ */
-+static int get_irq_server(unsigned int virq, const struct cpumask *cpumask,
- 			  unsigned int strict_check)
+-static int show_cpuinfo(struct seq_file *m, void *v)
++static void show_cpuinfo_summary(struct seq_file *m)
  {
--	int server;
--	/* For the moment only implement delivery to all cpus or one cpu */
--	cpumask_t tmp = CPU_MASK_NONE;
- 
- 	if (!distribute_irqs)
- 		return default_server;
- 
--	if (!cpus_equal(cpumask, CPU_MASK_ALL)) {
--		cpus_and(tmp, cpu_online_map, cpumask);
+-	unsigned long cpu_id = (unsigned long)v - 1;
+-	unsigned int pvr;
+-	unsigned short maj;
+-	unsigned short min;
 -
--		server = first_cpu(tmp);
-+	if (!cpumask_equal(cpumask, cpu_all_mask)) {
-+		int server = cpumask_first_and(cpu_online_mask, cpumask);
+-	if (cpu_id == NR_CPUS) {
+-		struct device_node *root;
+-		const char *model = NULL;
++	struct device_node *root;
++	const char *model = NULL;
+ #if defined(CONFIG_SMP) && defined(CONFIG_PPC32)
+-		unsigned long bogosum = 0;
+-		int i;
+-		for_each_online_cpu(i)
+-			bogosum += loops_per_jiffy;
+-		seq_printf(m, "total bogomips\t: %lu.%02lu\n",
+-			   bogosum/(500000/HZ), bogosum/(5000/HZ) % 100);
++	unsigned long bogosum = 0;
++	int i;
++	for_each_online_cpu(i)
++		bogosum += loops_per_jiffy;
++	seq_printf(m, "total bogomips\t: %lu.%02lu\n",
++		   bogosum/(500000/HZ), bogosum/(5000/HZ) % 100);
+ #endif /* CONFIG_SMP && CONFIG_PPC32 */
+-		seq_printf(m, "timebase\t: %lu\n", ppc_tb_freq);
+-		if (ppc_md.name)
+-			seq_printf(m, "platform\t: %s\n", ppc_md.name);
+-		root = of_find_node_by_path("/");
+-		if (root)
+-			model = of_get_property(root, "model", NULL);
+-		if (model)
+-			seq_printf(m, "model\t\t: %s\n", model);
+-		of_node_put(root);
++	seq_printf(m, "timebase\t: %lu\n", ppc_tb_freq);
++	if (ppc_md.name)
++		seq_printf(m, "platform\t: %s\n", ppc_md.name);
++	root = of_find_node_by_path("/");
++	if (root)
++		model = of_get_property(root, "model", NULL);
++	if (model)
++		seq_printf(m, "model\t\t: %s\n", model);
++	of_node_put(root);
  
--		if (server < NR_CPUS)
-+		if (server < nr_cpu_ids)
- 			return get_hard_smp_processor_id(server);
+-		if (ppc_md.show_cpuinfo != NULL)
+-			ppc_md.show_cpuinfo(m);
++	if (ppc_md.show_cpuinfo != NULL)
++		ppc_md.show_cpuinfo(m);
  
- 		if (strict_check)
- 			return -1;
+ #ifdef CONFIG_PPC32
+-		/* Display the amount of memory */
+-		seq_printf(m, "Memory\t\t: %d MB\n",
+-			   (unsigned int)(total_memory / (1024 * 1024)));
++	/* Display the amount of memory */
++	seq_printf(m, "Memory\t\t: %d MB\n",
++		   (unsigned int)(total_memory / (1024 * 1024)));
+ #endif
++}
+ 
++static int show_cpuinfo(struct seq_file *m, void *v)
++{
++	unsigned long cpu_id = (unsigned long)v - 1;
++	unsigned int pvr;
++	unsigned short maj;
++	unsigned short min;
++
++	if (cpu_id == NR_CPUS) {
++		show_cpuinfo_summary(m);
+ 		return 0;
  	}
  
--	if (cpus_equal(cpu_online_map, cpu_present_map))
-+	/*
-+	 * Workaround issue with some versions of JS20 firmware that
-+	 * deliver interrupts to cpus which haven't been started. This
-+	 * happens when using the maxcpus= boot option.
-+	 */
-+	if (cpumask_equal(cpu_online_mask, cpu_present_mask))
- 		return default_distrib_server;
- 
- 	return default_server;
-@@ -207,7 +215,7 @@ static void xics_unmask_irq(unsigned int
- 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
- 		return;
- 
--	server = get_irq_server(virq, *(irq_to_desc(virq)->affinity), 0);
-+	server = get_irq_server(virq, irq_to_desc(virq)->affinity, 0);
- 
- 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, server,
- 				DEFAULT_PRIORITY);
-@@ -398,11 +406,7 @@ static int xics_set_affinity(unsigned in
- 		return -1;
- 	}
- 
--	/*
--	 * For the moment only implement delivery to all cpus or one cpu.
--	 * Get current irq_server for the given irq
--	 */
--	irq_server = get_irq_server(virq, *cpumask, 1);
-+	irq_server = get_irq_server(virq, cpumask, 1);
- 	if (irq_server == -1) {
- 		char cpulist[128];
- 		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
-@@ -611,7 +615,7 @@ int __init smp_xics_probe(void)
- {
- 	xics_request_ipi();
- 
--	return cpus_weight(cpu_possible_map);
-+	return cpumask_weight(cpu_possible_mask);
- }
- 
- #endif /* CONFIG_SMP */
