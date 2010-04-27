@@ -1,11 +1,10 @@
 Return-Path: <anton@ozlabs.org>
-Message-Id: <20100427013432.565344579@samba.org>
-Date: Tue, 27 Apr 2010 11:32:42 +1000
+Message-Id: <20100427013432.657193481@samba.org>
+Date: Tue, 27 Apr 2010 11:32:43 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  rusty@rustcorp.com.au
-Subject: [patch 11/15] powerpc: cpumask: Convert hotplug-cpu code to new
-	cpumask API
+Subject: [patch 12/15] powerpc: cpumask: Convert NUMA code to new cpumask API
 References: <20100427013231.510168034@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -17,104 +16,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert hotplug-cpu code to new cpumask API.
+Convert NUMA code to new cpumask API. We shift the node to cpumask
+setup code until after we complete bootmem allocation so we can
+dynamically allocate the cpumasks.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/powerpc/platforms/pseries/hotplug-cpu.c
+Index: linux-cpumask/arch/powerpc/include/asm/mmzone.h
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-04-08 19:46:03.437946780 +1000
-+++ linux-cpumask/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-04-22 13:03:25.075445756 +1000
-@@ -187,7 +187,7 @@ static int pseries_cpu_disable(void)
+--- linux-cpumask.orig/arch/powerpc/include/asm/mmzone.h	2010-04-12 09:17:47.847946437 +1000
++++ linux-cpumask/arch/powerpc/include/asm/mmzone.h	2010-04-22 13:03:26.335446079 +1000
+@@ -30,7 +30,7 @@ extern struct pglist_data *node_data[];
+  */
  
- 	/*fix boot_cpuid here*/
- 	if (cpu == boot_cpuid)
--		boot_cpuid = any_online_cpu(cpu_online_map);
-+		boot_cpuid = cpumask_any(cpu_online_mask);
+ extern int numa_cpu_lookup_table[];
+-extern cpumask_t numa_cpumask_lookup_table[];
++extern cpumask_var_t node_to_cpumask_map[];
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ extern unsigned long max_pfn;
+ #endif
+Index: linux-cpumask/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/mm/numa.c	2010-04-12 09:17:47.817946138 +1000
++++ linux-cpumask/arch/powerpc/mm/numa.c	2010-04-22 13:03:26.335446079 +1000
+@@ -33,16 +33,41 @@ static int numa_debug;
+ #define dbg(args...) if (numa_debug) { printk(KERN_INFO args); }
  
- 	/* FIXME: abstract this to not be platform specific later on */
- 	xics_migrate_irqs_away();
-@@ -254,7 +254,7 @@ static void pseries_cpu_die(unsigned int
- static int pseries_add_processor(struct device_node *np)
- {
- 	unsigned int cpu;
--	cpumask_t candidate_map, tmp = CPU_MASK_NONE;
-+	cpumask_var_t candidate_mask, tmp;
- 	int err = -ENOSPC, len, nthreads, i;
- 	const u32 *intserv;
+ int numa_cpu_lookup_table[NR_CPUS];
+-cpumask_t numa_cpumask_lookup_table[MAX_NUMNODES];
++cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
+ struct pglist_data *node_data[MAX_NUMNODES];
  
-@@ -262,48 +262,53 @@ static int pseries_add_processor(struct 
- 	if (!intserv)
- 		return 0;
+ EXPORT_SYMBOL(numa_cpu_lookup_table);
+-EXPORT_SYMBOL(numa_cpumask_lookup_table);
++EXPORT_SYMBOL(node_to_cpumask_map);
+ EXPORT_SYMBOL(node_data);
  
-+	zalloc_cpumask_var(&candidate_mask, GFP_KERNEL);
-+	zalloc_cpumask_var(&tmp, GFP_KERNEL);
+ static int min_common_depth;
+ static int n_mem_addr_cells, n_mem_size_cells;
+ 
++/*
++ * Allocate node_to_cpumask_map based on number of available nodes
++ * Requires node_possible_map to be valid.
++ *
++ * Note: node_to_cpumask() is not valid until after this is done.
++ */
++static void __init setup_node_to_cpumask_map(void)
++{
++	unsigned int node, num = 0;
 +
- 	nthreads = len / sizeof(u32);
- 	for (i = 0; i < nthreads; i++)
--		cpu_set(i, tmp);
-+		cpumask_set_cpu(i, tmp);
++	/* setup nr_node_ids if not done yet */
++	if (nr_node_ids == MAX_NUMNODES) {
++		for_each_node_mask(node, node_possible_map)
++			num = node;
++		nr_node_ids = num + 1;
++	}
++
++	/* allocate the map */
++	for (node = 0; node < nr_node_ids; node++)
++		alloc_bootmem_cpumask_var(&node_to_cpumask_map[node]);
++
++	/* cpumask_of_node() will now work */
++	dbg("Node to cpumask map for %d nodes\n", nr_node_ids);
++}
++
+ static int __cpuinit fake_numa_create_new_node(unsigned long end_pfn,
+ 						unsigned int *nid)
+ {
+@@ -138,8 +163,8 @@ static void __cpuinit map_cpu_to_node(in
  
- 	cpu_maps_update_begin();
+ 	dbg("adding cpu %d to node %d\n", cpu, node);
  
--	BUG_ON(!cpus_subset(cpu_present_map, cpu_possible_map));
-+	BUG_ON(!cpumask_subset(cpu_present_mask, cpu_possible_mask));
- 
- 	/* Get a bitmap of unoccupied slots. */
--	cpus_xor(candidate_map, cpu_possible_map, cpu_present_map);
--	if (cpus_empty(candidate_map)) {
-+	cpumask_xor(candidate_mask, cpu_possible_mask, cpu_present_mask);
-+	if (cpumask_empty(candidate_mask)) {
- 		/* If we get here, it most likely means that NR_CPUS is
- 		 * less than the partition's max processors setting.
- 		 */
- 		printk(KERN_ERR "Cannot add cpu %s; this system configuration"
- 		       " supports %d logical cpus.\n", np->full_name,
--		       cpus_weight(cpu_possible_map));
-+		       cpumask_weight(cpu_possible_mask));
- 		goto out_unlock;
- 	}
- 
--	while (!cpus_empty(tmp))
--		if (cpus_subset(tmp, candidate_map))
-+	while (!cpumask_empty(tmp))
-+		if (cpumask_subset(tmp, candidate_mask))
- 			/* Found a range where we can insert the new cpu(s) */
- 			break;
- 		else
--			cpus_shift_left(tmp, tmp, nthreads);
-+			cpumask_shift_left(tmp, tmp, nthreads);
- 
--	if (cpus_empty(tmp)) {
-+	if (cpumask_empty(tmp)) {
- 		printk(KERN_ERR "Unable to find space in cpu_present_map for"
- 		       " processor %s with %d thread(s)\n", np->name,
- 		       nthreads);
- 		goto out_unlock;
- 	}
- 
--	for_each_cpu_mask(cpu, tmp) {
--		BUG_ON(cpu_isset(cpu, cpu_present_map));
-+	for_each_cpu(cpu, tmp) {
-+		BUG_ON(cpumask_test_cpu(cpu, cpu_present_mask));
- 		set_cpu_present(cpu, true);
- 		set_hard_smp_processor_id(cpu, *intserv++);
- 	}
- 	err = 0;
- out_unlock:
- 	cpu_maps_update_done();
-+	free_cpumask_var(candidate_mask);
-+	free_cpumask_var(tmp);
- 	return err;
+-	if (!(cpu_isset(cpu, numa_cpumask_lookup_table[node])))
+-		cpu_set(cpu, numa_cpumask_lookup_table[node]);
++	if (!(cpumask_test_cpu(cpu, node_to_cpumask_map[node])))
++		cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
  }
  
-@@ -334,7 +339,7 @@ static void pseries_remove_processor(str
- 			set_hard_smp_processor_id(cpu, -1);
- 			break;
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -149,8 +174,8 @@ static void unmap_cpu_from_node(unsigned
+ 
+ 	dbg("removing cpu %lu from node %d\n", cpu, node);
+ 
+-	if (cpu_isset(cpu, numa_cpumask_lookup_table[node])) {
+-		cpu_clear(cpu, numa_cpumask_lookup_table[node]);
++	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
++		cpumask_set_cpu(cpu, node_to_cpumask_map[node]);
+ 	} else {
+ 		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
+ 		       cpu, node);
+@@ -737,8 +762,9 @@ void __init dump_numa_cpu_topology(void)
+ 		 * If we used a CPU iterator here we would miss printing
+ 		 * the holes in the cpumap.
+ 		 */
+-		for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-			if (cpu_isset(cpu, numa_cpumask_lookup_table[node])) {
++		for (cpu = 0; cpu < nr_cpu_ids; cpu++) {
++			if (cpumask_test_cpu(cpu,
++					node_to_cpumask_map[node])) {
+ 				if (count == 0)
+ 					printk(" %u", cpu);
+ 				++count;
+@@ -750,7 +776,7 @@ void __init dump_numa_cpu_topology(void)
  		}
--		if (cpu == NR_CPUS)
-+		if (cpu >= nr_cpu_ids)
- 			printk(KERN_WARNING "Could not find cpu to remove "
- 			       "with physical id 0x%x\n", intserv[i]);
+ 
+ 		if (count > 1)
+-			printk("-%u", NR_CPUS - 1);
++			printk("-%u", nr_cpu_ids - 1);
+ 		printk("\n");
  	}
+ }
+@@ -926,10 +952,6 @@ void __init do_init_bootmem(void)
+ 	else
+ 		dump_numa_memory_topology();
+ 
+-	register_cpu_notifier(&ppc64_numa_nb);
+-	cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
+-			  (void *)(unsigned long)boot_cpuid);
+-
+ 	for_each_online_node(nid) {
+ 		unsigned long start_pfn, end_pfn;
+ 		void *bootmem_vaddr;
+@@ -983,6 +1005,16 @@ void __init do_init_bootmem(void)
+ 	}
+ 
+ 	init_bootmem_done = 1;
++
++	/*
++	 * Now bootmem is initialised we can create the node to cpumask
++	 * lookup tables and setup the cpu callback to populate them.
++	 */
++	setup_node_to_cpumask_map();
++
++	register_cpu_notifier(&ppc64_numa_nb);
++	cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
++			  (void *)(unsigned long)boot_cpuid);
+ }
+ 
+ void __init paging_init(void)
+Index: linux-cpumask/arch/powerpc/include/asm/topology.h
+===================================================================
+--- linux-cpumask.orig/arch/powerpc/include/asm/topology.h	2010-04-22 13:03:22.535446350 +1000
++++ linux-cpumask/arch/powerpc/include/asm/topology.h	2010-04-22 13:03:26.345446035 +1000
+@@ -19,7 +19,7 @@ static inline int cpu_to_node(int cpu)
+ 
+ #define cpumask_of_node(node) ((node) == -1 ?				\
+ 			       cpu_all_mask :				\
+-			       &numa_cpumask_lookup_table[node])
++			       node_to_cpumask_map[node])
+ 
+ int of_node_to_nid(struct device_node *device);
+ 
