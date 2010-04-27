@@ -1,23 +1,30 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C40D1B7D47
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 17:12:31 +1000 (EST)
-Date: Tue, 27 Apr 2010 09:12:22 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH RESEND 3/3] i2c/ibm-iic: drop NO_IRQ
-Message-ID: <20100427071222.GB22743@pengutronix.de>
-References: <1270167421-5205-1-git-send-email-w.sang@pengutronix.de>
-	<1270167421-5205-4-git-send-email-w.sang@pengutronix.de>
-	<1272351974.24542.9.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qcHopEYAB45HaUaB"
-In-Reply-To: <1272351974.24542.9.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, linux-i2c@vger.kernel.org,
-	Ben Dooks <ben-linux@fluff.org>, Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 09785B7D49
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 27 Apr 2010 17:39:01 +1000 (EST)
+References: <594EC076-62C6-473D-9AF2-47AEE4B57ED3@suse.de>
+	<1271827490-sup-48@au1.ibm.com>
+	<12E39DE6-0957-43CD-8DD4-24970AAF45D3@suse.de>
+	<1272331742-sup-1208@au1.ibm.com>
+Message-Id: <13932595-5EF2-4C1D-B07D-CB24AEB7BCF7@suse.de>
+From: Alexander Graf <agraf@suse.de>
+To: Ian Munsie <imunsie@au1.ibm.com>
+In-Reply-To: <1272331742-sup-1208@au1.ibm.com>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Mime-Version: 1.0 (iPhone Mail 7E18)
+Subject: Re: perf top broken on ppc64
+Date: Tue, 27 Apr 2010 08:39:18 +0100
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	LKML Mailing List <linux-kernel@vger.kernel.org>,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +35,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---qcHopEYAB45HaUaB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am 27.04.2010 um 02:30 schrieb Ian Munsie <imunsie@au1.ibm.com>:
 
-On Tue, Apr 27, 2010 at 05:06:14PM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2010-04-02 at 02:17 +0200, Wolfram Sang wrote:
-> > Drop NO_IRQ as 0 is the preferred way to describe 'no irq'
-> > (http://lkml.org/lkml/2005/11/21/221). This change is safe, as the driv=
-er is
-> > only used on powerpc, where NO_IRQ is 0 anyhow.
->=20
-> Oops... forgot those. Applied, will show up in -next soon.
+>>> I'm using 32 bit userland and 64 bit kernel on a PowerPC box and  
+>>> it's working for me.
+>>> Are you building perf from the tip tree?
+>>
+>> I'm using kvm.git which is pretty close to tip. The version says  
+>> something 2.6.34-rc3'ish. Has anything significantly changed since  
+>> then?
+>>
+>> Either way - I'll give it a try.
+>
+>
+> Hey Alex,
+>
+> Did perf from the tip tree work for you?
 
-Ah, thanks. I also asked Ben Dooks to pick them up, but better twice than n=
-ever
-;)
+Howdy,
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Sorry - I left for vacation without replying :).
 
---qcHopEYAB45HaUaB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+I tried perf from tip with kvm.git kernel and that did show the same  
+effects. I didn't get around to also try to run the tip kernel, and  
+won't be within this week :o
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkvWjlYACgkQD27XaX1/VRvb4gCfac8AEkOcE0nKPmbeprc4Uhg+
-g4QAn2MpshayIMtohOk4S1jiT+Z8QS6B
-=xJuH
------END PGP SIGNATURE-----
+Greetings from Gran Canaria,
 
---qcHopEYAB45HaUaB--
+Alex
+
+>
