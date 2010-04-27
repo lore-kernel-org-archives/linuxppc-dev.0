@@ -1,27 +1,21 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42E8FB7D5C
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 07:11:21 +1000 (EST)
-Date: Tue, 27 Apr 2010 22:11:18 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
-	for ALSA SoC drivers
-Message-ID: <20100427211118.GD15083@opensource.wolfsonmicro.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
-	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-	<4BD74D0C.40303@freescale.com>
-	<20100427205924.GC15083@opensource.wolfsonmicro.com>
-	<4BD7511F.7090201@freescale.com>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6CBA4B7E2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 07:11:25 +1000 (EST)
+Message-Id: <201004272110.o3RLAl7P019943@imap1.linux-foundation.org>
+Subject: [patch 1/1] powerpc: add rcu_read_lock() to gup_fast() implementation
+To: benh@kernel.crashing.org
+From: akpm@linux-foundation.org
+Date: Tue, 27 Apr 2010 14:10:47 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BD7511F.7090201@freescale.com>
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org, Liam Girdwood <lrg@slimlogic.co.uk>
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: npiggin@suse.de, riel@redhat.com, a.p.zijlstra@chello.nl,
+	linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 04:03:27PM -0500, Timur Tabi wrote:
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-[Reflowing the text into 80 columns again]
+The powerpc page table freeing relies on the fact that IRQs hold off an
+RCU grace period, this is currently true for all existing RCU
+implementations but is not an assumption Paul wants to support.
 
-> Mark Brown wrote:
-> > It's entirely possible that if the board designer intended the verious
-> > SSIs to be used in concert they've done something like cross wire the
-> > clocks which creates a board-specific interrelationship that needs to be
-> > dealt with.
+Therefore, also take the RCU read lock along with disabling IRQs to ensure
+the RCU grace period does at least cover these lookups.
 
-> Fine, but I don't see how that can be handled with the current code.
-> Each SSI is independent, and audio is streamed to it via DMA.  The
-> current SSI driver would need to be completely rewritten in order to
-> initiate both DMA operations simultaneously.  The clocking is the least
-> of my problems.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Requested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-I believe the usual technique is to start the DMA then clock the bus -
-data doesn't flow over the bus until the clock appears and that appears
-everywhere simultaneously.  Obviously some hardware really doesn't like
-having the DMA blocked like that, but not all.
+ arch/powerpc/mm/gup.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff -puN arch/powerpc/mm/gup.c~powerpc-add-rcu_read_lock-to-gup_fast-implementation arch/powerpc/mm/gup.c
+--- a/arch/powerpc/mm/gup.c~powerpc-add-rcu_read_lock-to-gup_fast-implementation
++++ a/arch/powerpc/mm/gup.c
+@@ -142,6 +142,7 @@ int get_user_pages_fast(unsigned long st
+ 	 * So long as we atomically load page table pointers versus teardown,
+ 	 * we can follow the address down to the the page and take a ref on it.
+ 	 */
++	rcu_read_lock();
+ 	local_irq_disable();
+ 
+ 	pgdp = pgd_offset(mm, addr);
+@@ -162,6 +163,7 @@ int get_user_pages_fast(unsigned long st
+ 	} while (pgdp++, addr = next, addr != end);
+ 
+ 	local_irq_enable();
++	rcu_read_unlock();
+ 
+ 	VM_BUG_ON(nr != (end - start) >> PAGE_SHIFT);
+ 	return nr;
+@@ -171,6 +173,7 @@ int get_user_pages_fast(unsigned long st
+ 
+ slow:
+ 		local_irq_enable();
++		rcu_read_unlock();
+ slow_irqon:
+ 		pr_devel("  slow path ! nr = %d\n", nr);
+ 
+_
