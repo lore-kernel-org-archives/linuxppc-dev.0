@@ -1,21 +1,21 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6AEBFB7D59
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 20:02:38 +1000 (EST)
-Date: Tue, 27 Apr 2010 10:54:41 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTPS id 7A1F3B7D27
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 20:09:32 +1000 (EST)
 Subject: Re: [PATCH 1/2] powerpc: add platform registration for ALSA SoC
 	drivers
-Message-ID: <20100427095440.GA15492@rakim.wolfsonmicro.main>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20100427095440.GA15492@rakim.wolfsonmicro.main>
 References: <1272314980-23679-1-git-send-email-timur@freescale.com>
 	<1272350168.24542.6.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1272350168.24542.6.camel@pasglop>
+	<20100427095440.GA15492@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Apr 2010 20:09:15 +1000
+Message-ID: <1272362955.24542.24.camel@pasglop>
+Mime-Version: 1.0
 Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
 	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
 	lrg@slimlogic.co.uk
@@ -28,26 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 04:36:08PM +1000, Benjamin Herrenschmidt wrote:
+On Tue, 2010-04-27 at 10:54 +0100, Mark Brown wrote:
+> I'd just like to add that I *really* want to see you guys come to some
+> sort of firm and documented conclusion about the way to handle
+> situations like this.  Some variant of this seems to come up every
+> single time anyone tries to do anything to do with audio on a system
+> using the device tree and it's getting really repetitive.  What would be
+> really useful for audio at this point would be if we could get some sort
+> of decision about how to represent this stuff which we can point people
+> at so that work on systems using the device tree can be done without
+> having to deal with the device tree layout discussions that frequently
+> seem to be involved. 
 
-> Gross. Loses the linkage to device-tree etc... which is useful for audio
-> especially. You should at least make sure the device node follows for
-> the target driver to be able to use it :-) I'd like you to sync with
-> Grant work on that matter if you are going to convert of_devices into
-> platform_devices.
+Agreed. Just seeing how Apple fucked it up so many times, it's not a
+simple problem :-)
 
-So, Liam already sent a message explaining the technical side of this -
-the audio subsystem needs to glue together two or more components that
-don't immediately have anything to do with each other from a device tree
-point of view and may have rather complex interrelationships.
+The device-tree allows to express all of these relationship but we
+should be able to come up with a reasonably "standard" way to do so to
+avoid every SoC or platform doing it it's "own" way.
 
-I'd just like to add that I *really* want to see you guys come to some
-sort of firm and documented conclusion about the way to handle
-situations like this.  Some variant of this seems to come up every
-single time anyone tries to do anything to do with audio on a system
-using the device tree and it's getting really repetitive.  What would be
-really useful for audio at this point would be if we could get some sort
-of decision about how to represent this stuff which we can point people
-at so that work on systems using the device tree can be done without
-having to deal with the device tree layout discussions that frequently
-seem to be involved.
+I think the main deal is to decide who gets to be the "master" node
+which contains the various properties doing the linkage. My gut feeling
+is that it could be the main transport, ie, the i2s or ac97, but people
+with more experience dealing with that stuff might have other ideas.
+
+Keep in mind that it's perfectly kosher to create nodes for "virtual"
+devices. IE. We could imagine a node for the "sound subsystem" that
+doesn't actually correspond to any physical device but contain the
+necessary properties that binds everything together. You could even have
+multiple of these if you have separate set of sound HW that aren't
+directly dependant.
+
+I don't have bandwidth to contribute much in this discussion right now,
+at least not to lead it, so I'm happy to let others do so, but I'm happy
+to provide feedback from my own experience as proposals are made.
+
+Cheers,
+Ben.
