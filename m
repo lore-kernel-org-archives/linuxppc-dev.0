@@ -1,10 +1,11 @@
 Return-Path: <anton@ozlabs.org>
-Message-Id: <20100427013432.277400577@samba.org>
-Date: Tue, 27 Apr 2010 11:32:39 +1000
+Message-Id: <20100427013432.378682127@samba.org>
+Date: Tue, 27 Apr 2010 11:32:40 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org,
  rusty@rustcorp.com.au
-Subject: [patch 08/15] powerpc: cpumask: Refactor /proc/cpuinfo code
+Subject: [patch 09/15] powerpc: cpumask: Convert /proc/cpuinfo to new cpumask
+	API
 References: <20100427013231.510168034@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,91 +17,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This separates the per cpu output from the summary output at the end of the
-file, making it easier to convert to the new cpumask API in a subsequent
-patch.
+Use new cpumask API in /proc/cpuinfo code.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-cpumask/arch/powerpc/kernel/setup-common.c
 ===================================================================
---- linux-cpumask.orig/arch/powerpc/kernel/setup-common.c	2010-04-08 19:46:03.999199713 +1000
-+++ linux-cpumask/arch/powerpc/kernel/setup-common.c	2010-04-22 13:03:19.866696740 +1000
-@@ -161,43 +161,47 @@ extern u32 cpu_temp_both(unsigned long c
- DEFINE_PER_CPU(unsigned int, cpu_pvr);
- #endif
+--- linux-cpumask.orig/arch/powerpc/kernel/setup-common.c	2010-04-22 13:03:19.866696740 +1000
++++ linux-cpumask/arch/powerpc/kernel/setup-common.c	2010-04-22 13:03:21.075446071 +1000
+@@ -200,11 +200,6 @@ static int show_cpuinfo(struct seq_file 
+ 	unsigned short maj;
+ 	unsigned short min;
  
--static int show_cpuinfo(struct seq_file *m, void *v)
-+static void show_cpuinfo_summary(struct seq_file *m)
- {
--	unsigned long cpu_id = (unsigned long)v - 1;
--	unsigned int pvr;
--	unsigned short maj;
--	unsigned short min;
--
 -	if (cpu_id == NR_CPUS) {
--		struct device_node *root;
--		const char *model = NULL;
-+	struct device_node *root;
-+	const char *model = NULL;
- #if defined(CONFIG_SMP) && defined(CONFIG_PPC32)
--		unsigned long bogosum = 0;
--		int i;
--		for_each_online_cpu(i)
--			bogosum += loops_per_jiffy;
--		seq_printf(m, "total bogomips\t: %lu.%02lu\n",
--			   bogosum/(500000/HZ), bogosum/(5000/HZ) % 100);
-+	unsigned long bogosum = 0;
-+	int i;
-+	for_each_online_cpu(i)
-+		bogosum += loops_per_jiffy;
-+	seq_printf(m, "total bogomips\t: %lu.%02lu\n",
-+		   bogosum/(500000/HZ), bogosum/(5000/HZ) % 100);
- #endif /* CONFIG_SMP && CONFIG_PPC32 */
--		seq_printf(m, "timebase\t: %lu\n", ppc_tb_freq);
--		if (ppc_md.name)
--			seq_printf(m, "platform\t: %s\n", ppc_md.name);
--		root = of_find_node_by_path("/");
--		if (root)
--			model = of_get_property(root, "model", NULL);
--		if (model)
--			seq_printf(m, "model\t\t: %s\n", model);
--		of_node_put(root);
-+	seq_printf(m, "timebase\t: %lu\n", ppc_tb_freq);
-+	if (ppc_md.name)
-+		seq_printf(m, "platform\t: %s\n", ppc_md.name);
-+	root = of_find_node_by_path("/");
-+	if (root)
-+		model = of_get_property(root, "model", NULL);
-+	if (model)
-+		seq_printf(m, "model\t\t: %s\n", model);
-+	of_node_put(root);
- 
--		if (ppc_md.show_cpuinfo != NULL)
--			ppc_md.show_cpuinfo(m);
-+	if (ppc_md.show_cpuinfo != NULL)
-+		ppc_md.show_cpuinfo(m);
- 
- #ifdef CONFIG_PPC32
--		/* Display the amount of memory */
--		seq_printf(m, "Memory\t\t: %d MB\n",
--			   (unsigned int)(total_memory / (1024 * 1024)));
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n",
-+		   (unsigned int)(total_memory / (1024 * 1024)));
+-		show_cpuinfo_summary(m);
+-		return 0;
+-	}
+-
+ 	/* We only show online cpus: disable preempt (overzealous, I
+ 	 * knew) to prevent cpu going down. */
+ 	preempt_disable();
+@@ -312,19 +307,28 @@ static int show_cpuinfo(struct seq_file 
  #endif
-+}
  
-+static int show_cpuinfo(struct seq_file *m, void *v)
-+{
-+	unsigned long cpu_id = (unsigned long)v - 1;
-+	unsigned int pvr;
-+	unsigned short maj;
-+	unsigned short min;
+ 	preempt_enable();
 +
-+	if (cpu_id == NR_CPUS) {
++	/* If this is the last cpu, print the summary */
++	if (cpumask_next(cpu_id, cpu_online_mask) >= nr_cpu_ids)
 +		show_cpuinfo_summary(m);
- 		return 0;
- 	}
++
+ 	return 0;
+ }
+ 
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+-	unsigned long i = *pos;
+-
+-	return i <= NR_CPUS ? (void *)(i + 1) : NULL;
++	if (*pos == 0)	/* just in case, cpu 0 is not the first */
++		*pos = cpumask_first(cpu_online_mask);
++	else
++		*pos = cpumask_next(*pos - 1, cpu_online_mask);
++	if ((*pos) < nr_cpu_ids)
++		return (void *)(*pos + 1);
++	return NULL;
+ }
+ 
+ static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+ {
+-	++*pos;
++	(*pos)++;
+ 	return c_start(m, pos);
+ }
  
