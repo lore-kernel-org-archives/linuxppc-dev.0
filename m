@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 42074B7D48
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Apr 2010 20:52:06 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: hs@denx.de
-In-Reply-To: <4BD6C0EF.8070904@denx.de>
-References: <mailman.1505.1272352353.27723.linuxppc-dev@lists.ozlabs.org>
-	<4BD6C0EF.8070904@denx.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Apr 2010 20:51:51 +1000
-Message-ID: <1272365511.24542.33.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <tglx@linutronix.de>
+Date: Tue, 27 Apr 2010 15:42:11 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Guillaume Knispel <gknispel@proformatique.com>
+Subject: Re: [PATCH 1/2] genirq: reliably replay pending edge-triggered irq
+In-Reply-To: <1271941798-9659-2-git-send-email-gknispel@proformatique.com>
+Message-ID: <alpine.LFD.2.00.1004271537130.2951@localhost.localdomain>
+References: <1271941798-9659-1-git-send-email-gknispel@proformatique.com>
+	<1271941798-9659-2-git-send-email-gknispel@proformatique.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Russell King <linux@arm.linux.org.uk>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+	Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-04-27 at 12:48 +0200, Heiko Schocher wrote:
-> Hello Benjamin,
-> 
-> Benjamin Herrenschmidt wrote:
-> > Hi Linus !
-> > 
-> > PowerPC has been a bit quiet this time around :-) That is until Kumar
-> > woke me up with a few fixes and defconfig updates for the freescale
-> > embedded platforms.
-> 
-> I got no comments for the following patch:
-> 
-> http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/081303.html
-> 
-> Can this go in?
+On Thu, 22 Apr 2010, Guillaume Knispel wrote:
 
-This is Kumar's call. However, it's definitely not something that can go
-in -rc5, we only take grave bugs / regression fixes at this stage. More
-like a candidate for -next.
+> When the critical section in handle_edge_irq() is executed after
+> IRQ_DISABLED has been set in the one in disable_irq(), the interrupt is
 
-My -next branch is open, so it's up to Kumar to pick that up and send me
-something to pull from.
+  in the one ? -ENOPARSE
 
-Cheers,
-Ben.
+> acked and masked at controller level and IRQ_PENDING is set.
+> ---
+>  arch/arm/Kconfig                                   |    4 ----
+>  arch/arm/configs/acs5k_defconfig                   |    1 -
+>  arch/arm/configs/acs5k_tiny_defconfig              |    1 -
+
+   Changing the defconfigs should be a separate patch and I'm not
+   going to push such a thing through the genirq tree. The stale
+   entries do not hurt.
+
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index 127b871..9bec343 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -1423,7 +1423,7 @@ int setup_ioapic_entry(int apic_id, int irq,
+>  	entry->polarity = polarity;
+>  
+>  	/* Mask level triggered irqs.
+> -	 * Use IRQ_DELAYED_DISABLE for edge triggered irqs.
+> +	 * Edge triggered irqs can be resent by software.
+
+  That change is unrelated and should be done in a seperate patch.
+
+Thanks,
+
+	tglx
