@@ -1,23 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
-	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id 9B741B7DFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 05:21:51 +1000 (EST)
-Received: by pzk15 with SMTP id 15so8651823pzk.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 12:21:51 -0700 (PDT)
+Return-Path: <xiaoxianghua@gmail.com>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 5AE6FB7DBC
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 05:26:47 +1000 (EST)
+Received: by pvg6 with SMTP id 6so1781196pvg.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 12:26:46 -0700 (PDT)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1272314980-23679-1-git-send-email-timur@freescale.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 27 Apr 2010 13:21:30 -0600
-Message-ID: <j2qfa686aa41004271221g18f04fbcla8b74861f87b8c84@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc: add platform registration for ALSA SoC
-	drivers
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com, kumar.gala@freescale.com,
-	lrg@slimlogic.co.uk
+Date: Tue, 27 Apr 2010 14:26:44 -0500
+Message-ID: <h2ie6bf505b1004271226m8441bf04qa0e0676b20340d57@mail.gmail.com>
+Subject: gianfar driver with realtime patch does not work
+From: Xianghua Xiao <xiaoxianghua@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 26, 2010 at 2:49 PM, Timur Tabi <timur@freescale.com> wrote:
-> An upcoming change in the architecture of ALSA SoC (ASoC) will require th=
-e
-> MPC8610 HPCD's ASoC fabric driver to register as a standard platform driv=
-er.
-> Therefore, we need to call platform_device_register_simple() from the boa=
-rd's
-> platform code.
->
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->
-> Kumar, the ASoC mainters are willing to pick up this patch, but they want=
- an
-> ACK from you first. =A0Or, you could pick it up, since by itself it's har=
-mless.
->
-> =A0arch/powerpc/platforms/86xx/mpc8610_hpcd.c | =A0 =A03 +++
-> =A01 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/pl=
-atforms/86xx/mpc8610_hpcd.c
-> index 5abe137..66afff3 100644
-> --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> @@ -98,6 +98,9 @@ static int __init mpc8610_declare_of_platform_devices(v=
-oid)
-> =A0 =A0 =A0 =A0/* Without this call, the SSI device driver won't get prob=
-ed. */
-> =A0 =A0 =A0 =A0of_platform_bus_probe(NULL, mpc8610_ids, NULL);
->
-> + =A0 =A0 =A0 /* Register the platform device for the ASoC fabric driver =
-*/
-> + =A0 =A0 =A0 platform_device_register_simple("snd-soc-mpc8610-hpcd", 0, =
-NULL, 0);
-> +
+I'm trying to get 834x/TSEC gianfar.c working with 2.6.33/RT.
 
-Since this is a temporary measure, this device registration is
-probably best put into the .probe() hook of the i2s driver.  That will
-keep everything contained in the same place until we can hammer out a
-reasonable binding.
+when PREEMPT is disabled gianfar driver worked well.
 
-g.
+if PREEMPT is enabled, especially when PREEMPT_RT is enabled,
+network(gianfar) will be disconnected in about 2-3 minutes under
+iperf.
+
+In an older version (2.6.18-rt) where NAPI is disabled, gianfar
+performed well under PREEMPT_RT, in the new version of gianfar, NAPI
+is enforced(the code is there by default and it's hard to disable NAPI
+in the code now), also TX COALESCE is enabled while RX COALESCE is
+disabled. It seems to me NAPI is now by default for Rx and COALESCE is
+by default for Tx.
+
+Both NAPI/COALESCE may have negative effects for real time systems,
+where latency is more important than throughput. Unfortunately it's
+hard to disable either of them now after some experiments.
+
+Is there anyone here using gianfar with PREEMPT_RT? Do I have to port
+an older version gianfar to get rid of NAPI at least?
+
+Thanks,
+Xianghua
