@@ -1,13 +1,12 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E931CB7D76
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 02:11:41 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id AB5BDB7E32
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 02:11:45 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 1/4] powerpc/fsl_soc.c: prepare for addition of mpc5121 USB
-	code
-Date: Tue, 27 Apr 2010 18:11:35 +0200
-Message-Id: <1272384698-4359-2-git-send-email-agust@denx.de>
+Subject: [PATCH 4/4] powerpc/mpc5121: select options for USB OTG support
+Date: Tue, 27 Apr 2010 18:11:38 +0200
+Message-Id: <1272384698-4359-5-git-send-email-agust@denx.de>
 In-Reply-To: <1272384698-4359-1-git-send-email-agust@denx.de>
 References: <1272384698-4359-1-git-send-email-agust@denx.de>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -22,295 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Factor out common code for registering a FSL EHCI platform
-device into new fsl_usb2_register_device() function. This
-is done to avoid code duplication while adding code for
-instantiating of MPC5121 dual role USB platform devices.
-Then, the subsequent patch can use
-for_each_compatible_node(np, NULL, "fsl,mpc5121-usb2-dr") {
-        ...
-        fsl_usb2_register_device();
-}
+USB Device Controller driver and OTG driver allow
+configuration of controller register accessors.
+Enable default big-endian register accessors for
+Rev.2 SoC.
 
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/sysdev/fsl_soc.c |  231 +++++++++++++++++++---------------------
- 1 files changed, 110 insertions(+), 121 deletions(-)
+ arch/powerpc/platforms/512x/Kconfig |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index b91f7ac..976218c 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -209,6 +209,49 @@ static int __init of_add_fixed_phys(void)
- arch_initcall(of_add_fixed_phys);
- #endif /* CONFIG_FIXED_PHY */
- 
-+struct fsl_usb2_dev_data {
-+	char *dr_mode;		/* controller mode */
-+	char *drivers[3];	/* drivers to instantiate for this mode */
-+	enum fsl_usb2_operating_modes op_mode;	/* operating mode */
-+};
+diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
+index fed7b5d..0c42537 100644
+--- a/arch/powerpc/platforms/512x/Kconfig
++++ b/arch/powerpc/platforms/512x/Kconfig
+@@ -12,6 +12,14 @@ config PPC_MPC5121
+ 	select USB_ARCH_HAS_EHCI
+ 	select USB_EHCI_BIG_ENDIAN_DESC
+ 	select USB_EHCI_BIG_ENDIAN_MMIO
++	select USB_FSL_BIG_ENDIAN_DESC
++	select USB_FSL_BIG_ENDIAN_MMIO
 +
-+struct fsl_usb2_dev_data dr_data[] __initdata = {
-+	{
-+		"host",
-+		{ "fsl-ehci", NULL, NULL, },
-+		FSL_USB2_DR_HOST,
-+	},
-+	{
-+		"otg",
-+		{ "fsl-ehci", "fsl-usb2-udc", "fsl-usb2-otg", },
-+		FSL_USB2_DR_OTG,
-+	},
-+	{
-+		"periferal",
-+		{ "fsl-usb2-udc", NULL, NULL, },
-+		FSL_USB2_DR_DEVICE,
-+	},
-+};
++config USB_FSL_BIG_ENDIAN_MMIO
++	bool
 +
-+struct fsl_usb2_dev_data mph_data[] __initdata = {
-+	{ NULL,		{ "fsl-ehci",	NULL,		}, FSL_USB2_MPH_HOST, },
-+};
-+
-+struct fsl_usb2_dev_data * __init get_dr_data(struct device_node *np)
-+{
-+	const unsigned char *prop;
-+	int i;
-+
-+	prop = of_get_property(np, "dr_mode", NULL);
-+	if (prop) {
-+		for (i = 0; i < ARRAY_SIZE(dr_data); i++) {
-+			if (!strcmp(prop, dr_data[i].dr_mode))
-+				return &dr_data[i];
-+		}
-+	}
-+	return &dr_data[0]; /* mode not specified, use host */
-+}
-+
- static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
- {
- 	if (!phy_type)
-@@ -225,151 +268,97 @@ static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
- 	return FSL_USB2_PHY_NONE;
- }
++config USB_FSL_BIG_ENDIAN_DESC
++	bool
  
--static int __init fsl_usb_of_init(void)
-+int __init fsl_usb2_register_device(struct device_node *np,
-+			struct fsl_usb2_dev_data *dev_data,
-+			struct fsl_usb2_platform_data *pdata,
-+			unsigned int idx)
- {
--	struct device_node *np;
--	unsigned int i = 0;
--	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
--		*usb_dev_dr_client = NULL;
-+	struct platform_device *usb_dev;
-+	const unsigned char *prop;
-+	struct resource r[2];
-+	int registered = 0;
- 	int ret;
-+	int i;
-+
-+	if (!(dev_data && pdata))
-+		return -EINVAL;
-+
-+	memset(&r, 0, sizeof(r));
-+	ret = of_address_to_resource(np, 0, &r[0]);
-+	if (ret)
-+		return -ENODEV;
-+
-+	ret = of_irq_to_resource(np, 0, &r[1]);
-+	if (ret == NO_IRQ)
-+		return -ENODEV;
-+
-+	pdata->operating_mode = dev_data->op_mode;
-+
-+	prop = of_get_property(np, "phy_type", NULL);
-+	pdata->phy_mode = determine_usb_phy(prop);
-+	ret = 0;
-+	for (i = 0; i < ARRAY_SIZE(dev_data->drivers); i++) {
-+		if (!dev_data->drivers[i])
-+			break;
-+		usb_dev = platform_device_register_simple(
-+					dev_data->drivers[i], idx, r, 2);
-+		if (IS_ERR(usb_dev)) {
-+			ret = PTR_ERR(usb_dev);
-+			goto out;
-+		}
- 
--	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
--		struct resource r[2];
--		struct fsl_usb2_platform_data usb_data;
--		const unsigned char *prop = NULL;
--
--		memset(&r, 0, sizeof(r));
--		memset(&usb_data, 0, sizeof(usb_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
-+		usb_dev->dev.coherent_dma_mask = 0xffffffffUL;
-+		usb_dev->dev.dma_mask = &usb_dev->dev.coherent_dma_mask;
-+		ret = platform_device_add_data(usb_dev, pdata,
-+				sizeof(struct fsl_usb2_platform_data));
- 		if (ret)
--			goto err;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		usb_dev_mph =
--		    platform_device_register_simple("fsl-ehci", i, r, 2);
--		if (IS_ERR(usb_dev_mph)) {
--			ret = PTR_ERR(usb_dev_mph);
--			goto err;
--		}
-+			platform_device_unregister(usb_dev);
-+		else
-+			registered++;
-+	}
-+out:
-+	if (!registered)
-+		irq_dispose_mapping(r[1].end);
- 
--		usb_dev_mph->dev.coherent_dma_mask = 0xffffffffUL;
--		usb_dev_mph->dev.dma_mask = &usb_dev_mph->dev.coherent_dma_mask;
-+	return ret;
-+}
- 
--		usb_data.operating_mode = FSL_USB2_MPH_HOST;
-+static int __init fsl_usb_of_init(void)
-+{
-+	struct device_node *np;
-+	const unsigned char *prop;
-+	struct fsl_usb2_platform_data pdata;
-+	unsigned int idx = 0;
-+	int ret;
- 
-+	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
-+		memset(&pdata, 0, sizeof(pdata));
- 		prop = of_get_property(np, "port0", NULL);
- 		if (prop)
--			usb_data.port_enables |= FSL_USB2_PORT0_ENABLED;
-+			pdata.port_enables |= FSL_USB2_PORT0_ENABLED;
- 
- 		prop = of_get_property(np, "port1", NULL);
- 		if (prop)
--			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
-+			pdata.port_enables |= FSL_USB2_PORT1_ENABLED;
- 
--		prop = of_get_property(np, "phy_type", NULL);
--		usb_data.phy_mode = determine_usb_phy(prop);
--
--		ret =
--		    platform_device_add_data(usb_dev_mph, &usb_data,
--					     sizeof(struct
--						    fsl_usb2_platform_data));
-+		ret = fsl_usb2_register_device(np, mph_data, &pdata, idx++);
- 		if (ret)
--			goto unreg_mph;
--		i++;
-+			return ret;
- 	}
- 
- 	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
--		struct resource r[2];
--		struct fsl_usb2_platform_data usb_data;
--		const unsigned char *prop = NULL;
--
- 		if (!of_device_is_available(np))
- 			continue;
- 
--		memset(&r, 0, sizeof(r));
--		memset(&usb_data, 0, sizeof(usb_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
-+		memset(&pdata, 0, sizeof(pdata));
-+		ret = fsl_usb2_register_device(np, get_dr_data(np),
-+						&pdata, idx++);
- 		if (ret)
--			goto unreg_mph;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		prop = of_get_property(np, "dr_mode", NULL);
--
--		if (!prop || !strcmp(prop, "host")) {
--			usb_data.operating_mode = FSL_USB2_DR_HOST;
--			usb_dev_dr_host = platform_device_register_simple(
--					"fsl-ehci", i, r, 2);
--			if (IS_ERR(usb_dev_dr_host)) {
--				ret = PTR_ERR(usb_dev_dr_host);
--				goto err;
--			}
--		} else if (prop && !strcmp(prop, "peripheral")) {
--			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
--			usb_dev_dr_client = platform_device_register_simple(
--					"fsl-usb2-udc", i, r, 2);
--			if (IS_ERR(usb_dev_dr_client)) {
--				ret = PTR_ERR(usb_dev_dr_client);
--				goto err;
--			}
--		} else if (prop && !strcmp(prop, "otg")) {
--			usb_data.operating_mode = FSL_USB2_DR_OTG;
--			usb_dev_dr_host = platform_device_register_simple(
--					"fsl-ehci", i, r, 2);
--			if (IS_ERR(usb_dev_dr_host)) {
--				ret = PTR_ERR(usb_dev_dr_host);
--				goto err;
--			}
--			usb_dev_dr_client = platform_device_register_simple(
--					"fsl-usb2-udc", i, r, 2);
--			if (IS_ERR(usb_dev_dr_client)) {
--				ret = PTR_ERR(usb_dev_dr_client);
--				goto err;
--			}
--		} else {
--			ret = -EINVAL;
--			goto err;
--		}
--
--		prop = of_get_property(np, "phy_type", NULL);
--		usb_data.phy_mode = determine_usb_phy(prop);
--
--		if (usb_dev_dr_host) {
--			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
--			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
--				dev.coherent_dma_mask;
--			if ((ret = platform_device_add_data(usb_dev_dr_host,
--						&usb_data, sizeof(struct
--						fsl_usb2_platform_data))))
--				goto unreg_dr;
--		}
--		if (usb_dev_dr_client) {
--			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
--			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
--				dev.coherent_dma_mask;
--			if ((ret = platform_device_add_data(usb_dev_dr_client,
--						&usb_data, sizeof(struct
--						fsl_usb2_platform_data))))
--				goto unreg_dr;
--		}
--		i++;
-+			return ret;
- 	}
--	return 0;
- 
--unreg_dr:
--	if (usb_dev_dr_host)
--		platform_device_unregister(usb_dev_dr_host);
--	if (usb_dev_dr_client)
--		platform_device_unregister(usb_dev_dr_client);
--unreg_mph:
--	if (usb_dev_mph)
--		platform_device_unregister(usb_dev_mph);
--err:
--	return ret;
-+	return 0;
- }
--
- arch_initcall(fsl_usb_of_init);
- 
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ config MPC5121_ADS
+ 	bool "Freescale MPC5121E ADS"
 -- 
 1.6.3.3
