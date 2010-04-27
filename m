@@ -1,27 +1,36 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AE633B7BEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:50:07 +1000 (EST)
-Date: Tue, 27 Apr 2010 21:50:04 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] powerpc: add platform registration for ALSA SoC
-	drivers
-Message-ID: <20100427205004.GB15083@opensource.wolfsonmicro.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7ED16B7D2F
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:54:01 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o3RKrwES019154
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 13:53:58 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3RL3S8H024501
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 16:03:28 -0500 (CDT)
+Message-ID: <4BD74EE5.4020806@freescale.com>
+Date: Tue, 27 Apr 2010 15:53:57 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/2] powerpc: add platform registration for ALSA
+	SoC	drivers
 References: <1272314980-23679-1-git-send-email-timur@freescale.com>
 	<1272350168.24542.6.camel@pasglop>
 	<20100427095440.GA15492@rakim.wolfsonmicro.main>
 	<1272362955.24542.24.camel@pasglop>
 	<j2pfa686aa41004271327v1658e33bgd170ecc9735f285b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <j2pfa686aa41004271327v1658e33bgd170ecc9735f285b@mail.gmail.com>
+	<20100427205004.GB15083@opensource.wolfsonmicro.com>
+In-Reply-To: <20100427205004.GB15083@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	lrg@slimlogic.co.uk
+	linuxppc-dev@ozlabs.org, lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +40,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 02:27:42PM -0600, Grant Likely wrote:
-> On Tue, Apr 27, 2010 at 4:09 AM, Benjamin Herrenschmidt
+Mark Brown wrote:
+> Hrm, the only issue that's been raised upstream is multi-CODEC (there
+> are one or two other things that boil down to multi-CODEC, but nothing
+> else I'm aware of).  If you schedule something please announce it here,
+> I believe that UDS generally has arrangements for remote participation.
 
-> > I don't have bandwidth to contribute much in this discussion right now,
-> > at least not to lead it, so I'm happy to let others do so, but I'm happy
-> > to provide feedback from my own experience as proposals are made.
+Keep in mind that the phandle-type properties can accept multiple phandles.  So for instance, if I had two codecs attached to an SSI, the SSI node would look like this:
 
-> Unfortunately, I'm in the same boat.  :-(  However, I'll be at UDS in
-> 2 weeks time, and I know audio is a big concern for the Ubuntu folks.
-> A bunch of the ARM vendors will be there too.  I'll schedule a session
-> to talk about audio bindings and hopefully that way make some headway
-> on defining a binding that makes sense and is actually useful.
+	ssi@16000 {
+		compatible = "fsl,mpc8610-ssi";
+		...
+		codec-handle = <&cs4270_1 &cs4270_2>;
+	};
 
-Hrm, the only issue that's been raised upstream is multi-CODEC (there
-are one or two other things that boil down to multi-CODEC, but nothing
-else I'm aware of).  If you schedule something please announce it here,
-I believe that UDS generally has arrangements for remote participation.
-
-Note that most of the complexity explosion you'll see here is visible in
-things like phones more than the sort of devices you'd run Ubuntu on
-currently and much of it isn't really visible to a lot of the CPU
-vendors at all since it's generally all handled off the CPU.
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
