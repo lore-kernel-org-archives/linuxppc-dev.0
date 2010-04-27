@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C7B75B7D16
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 14:55:29 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4BD66378.1010603@embedded-sol.com>
-Date: Mon, 26 Apr 2010 23:55:16 -0500
-Message-Id: <62341C68-07F0-4593-8DCD-F1DEC015ED1F@kernel.crashing.org>
-References: <Pine.LNX.4.64.1004192326100.27041@localhost.localdomain>
-	<2009D70F-BBE3-4D4D-B1BA-C92041AFE9C9@kernel.crashing.org>
-	<4BD66378.1010603@embedded-sol.com>
-To: Felix Radensky <felix@embedded-sol.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTPS id C52AFB7BEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 15:56:22 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 27 Apr 2010 15:56:10 +1000
+Message-ID: <1272347770.24542.1.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +23,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
-On Apr 26, 2010, at 11:09 PM, Felix Radensky wrote:
+PowerPC has been a bit quiet this time around :-) That is until Kumar
+woke me up with a few fixes and defconfig updates for the freescale
+embedded platforms.
 
-> Hi Kumar,
->=20
-> On 4/27/2010 2:05 AM, Kumar Gala wrote:
->> Ben,
->>=20
->> I've updated this to include this one additional patch for dealing =
-with CONFIG_RELOCATE on FSL-BookE ppc32
->>=20
->> http://patchwork.ozlabs.org/patch/51011/
->>=20
->>  =20
->=20
-> Can this patch also be included: =
-http://patchwork.ozlabs.org/patch/50289/
->=20
-> Thanks.
->=20
-> Felix.
+Cheers,
+Ben.
 
-I didn't consider this a bug fix and thus didn't include it.  It will go =
-in for 2.6.35.
+The following changes since commit b91ce4d14a21fc04d165be30319541e0f9204f15:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-- k=
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Vorontsov (1):
+      powerpc/85xx/86xx: Fix build w/ CONFIG_PCI=n
+
+Becky Bruce (1):
+      powerpc/fsl_booke: Correct test for MMU_FTR_BIG_PHYS
+
+Kim Phillips (4):
+      powerpc/83xx: add RTC drivers in 83xx defconfig
+      powerpc/83xx: enable EPOLL syscall in defconfig
+      powerpc/83xx: configure SIL SATA driver in 83xx-wide defconfig
+      powerpc/mpc8xxx defconfigs - turn off SYSFS_DEPRECATED
+
+Kumar Gala (2):
+      powerpc: 2.6.34 update of defconfigs for embedded 6xx/7xxx, 8xx, 8xxx
+      powerpc/fsl-booke: Fix CONFIG_RELOCATABLE support on FSL Book-E ppc32
+
+Wolfgang Ocker (1):
+      powerpc/fsl-cpm: Configure clock correctly for SCC
+
+ arch/powerpc/configs/83xx/asp8347_defconfig       |   44 ++++----
+ arch/powerpc/configs/83xx/kmeter1_defconfig       |   28 +++--
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |   49 +++++----
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |   50 +++++----
+ arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |   45 ++++----
+ arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |   49 ++++----
+ arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |   44 ++++----
+ arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |   43 ++++----
+ arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |   46 +++++----
+ arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |   45 ++++----
+ arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |   44 ++++---
+ arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |   46 +++++----
+ arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |   51 +++++----
+ arch/powerpc/configs/83xx/sbc834x_defconfig       |   44 ++++----
+ arch/powerpc/configs/85xx/ksi8560_defconfig       |   23 +++-
+ arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |   25 +++--
+ arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |   34 ++++--
+ arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |   31 ++++--
+ arch/powerpc/configs/85xx/sbc8548_defconfig       |   31 ++++--
+ arch/powerpc/configs/85xx/sbc8560_defconfig       |   25 +++--
+ arch/powerpc/configs/85xx/socrates_defconfig      |   51 +++++----
+ arch/powerpc/configs/85xx/stx_gp3_defconfig       |   51 +++++----
+ arch/powerpc/configs/85xx/tqm8540_defconfig       |   48 +++++---
+ arch/powerpc/configs/85xx/tqm8541_defconfig       |   54 ++++++---
+ arch/powerpc/configs/85xx/tqm8548_defconfig       |   47 +++++---
+ arch/powerpc/configs/85xx/tqm8555_defconfig       |   54 ++++++---
+ arch/powerpc/configs/85xx/tqm8560_defconfig       |   54 ++++++---
+ arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |   59 +++++++---
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  102 +++++++++++-------
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig    |   53 ++++++----
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig    |   96 +++++++++++------
+ arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |   34 +++---
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |   48 +++++---
+ arch/powerpc/configs/86xx/sbc8641d_defconfig      |   40 ++++---
+ arch/powerpc/configs/adder875_defconfig           |   18 ++--
+ arch/powerpc/configs/c2k_defconfig                |   55 ++++-----
+ arch/powerpc/configs/ep8248e_defconfig            |   20 +++-
+ arch/powerpc/configs/ep88xc_defconfig             |   17 ++--
+ arch/powerpc/configs/linkstation_defconfig        |   48 +++++---
+ arch/powerpc/configs/mgcoge_defconfig             |   31 ++++--
+ arch/powerpc/configs/mgsuvd_defconfig             |   19 ++--
+ arch/powerpc/configs/mpc7448_hpc2_defconfig       |   26 +++--
+ arch/powerpc/configs/mpc8272_ads_defconfig        |   23 +++-
+ arch/powerpc/configs/mpc83xx_defconfig            |  124 ++++++++++++++++-----
+ arch/powerpc/configs/mpc85xx_defconfig            |   62 +++++++----
+ arch/powerpc/configs/mpc85xx_smp_defconfig        |   64 +++++++----
+ arch/powerpc/configs/mpc866_ads_defconfig         |   20 ++--
+ arch/powerpc/configs/mpc86xx_defconfig            |   57 ++++++----
+ arch/powerpc/configs/mpc885_ads_defconfig         |   20 ++--
+ arch/powerpc/configs/pq2fads_defconfig            |   22 +++-
+ arch/powerpc/configs/prpmc2800_defconfig          |   52 ++++++---
+ arch/powerpc/configs/storcenter_defconfig         |   33 +++---
+ arch/powerpc/include/asm/page.h                   |   15 +++-
+ arch/powerpc/mm/fsl_booke_mmu.c                   |    4 +-
+ arch/powerpc/platforms/85xx/Kconfig               |    4 +-
+ arch/powerpc/platforms/86xx/Kconfig               |    4 +-
+ arch/powerpc/sysdev/cpm1.c                        |   14 ++-
+ arch/powerpc/sysdev/cpm2.c                        |   11 ++-
+ 58 files changed, 1446 insertions(+), 905 deletions(-)
