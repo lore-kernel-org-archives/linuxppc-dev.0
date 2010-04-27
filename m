@@ -1,12 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Message-Id: <20100427013432.950809577@samba.org>
-Date: Tue, 27 Apr 2010 11:32:46 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org,
- rusty@rustcorp.com.au
-Subject: [patch 15/15] powerpc: cpumask: Add DEBUG_PER_CPU_MAPS option
-References: <20100427013231.510168034@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <felix@embedded-sol.com>
+Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 65E20B7D2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 14:09:44 +1000 (EST)
+Message-ID: <4BD66378.1010603@embedded-sol.com>
+Date: Tue, 27 Apr 2010 07:09:28 +0300
+From: Felix Radensky <felix@embedded-sol.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+References: <Pine.LNX.4.64.1004192326100.27041@localhost.localdomain>
+	<2009D70F-BBE3-4D4D-B1BA-C92041AFE9C9@kernel.crashing.org>
+In-Reply-To: <2009D70F-BBE3-4D4D-B1BA-C92041AFE9C9@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,32 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the DEBUG_PER_CPU_MAPS option so we can look for problems with
-cpumasks .
+Hi Kumar,
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+On 4/27/2010 2:05 AM, Kumar Gala wrote:
+> Ben,
+>
+> I've updated this to include this one additional patch for dealing with CONFIG_RELOCATE on FSL-BookE ppc32
+>
+> http://patchwork.ozlabs.org/patch/51011/
+>
+>    
 
-Index: linux-cpumask/arch/powerpc/Kconfig.debug
-===================================================================
---- linux-cpumask.orig/arch/powerpc/Kconfig.debug	2010-04-22 14:51:36.359196562 +1000
-+++ linux-cpumask/arch/powerpc/Kconfig.debug	2010-04-22 14:52:04.845445439 +1000
-@@ -44,6 +44,18 @@ config DEBUG_STACK_USAGE
- 
- 	  This option will slow down process creation somewhat.
- 
-+config DEBUG_PER_CPU_MAPS
-+	bool "Debug access to per_cpu maps"
-+	depends on DEBUG_KERNEL
-+	depends on SMP
-+	default n
-+	---help---
-+	  Say Y to verify that the per_cpu map being accessed has
-+	  been setup.  Adds a fair amount of code to kernel memory
-+	  and decreases performance.
-+
-+	  Say N if unsure.
-+
- config HCALL_STATS
- 	bool "Hypervisor call instrumentation"
- 	depends on PPC_PSERIES && DEBUG_FS && TRACEPOINTS
+Can this patch also be included: http://patchwork.ozlabs.org/patch/50289/
+
+Thanks.
+
+Felix.
