@@ -1,23 +1,19 @@
-Return-Path: <lgirdwood@gmail.com>
-Received: from mail-ww0-f42.google.com (mail-ww0-f42.google.com [74.125.82.42])
-	by ozlabs.org (Postfix) with ESMTP id D1275B7D24
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 18:07:10 +1000 (EST)
-Received: by wwb18 with SMTP id 18so1506731wwb.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 01:07:08 -0700 (PDT)
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
-	for ALSA SoC drivers
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1272350168.24542.6.camel@pasglop>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Apr 2010 09:07:04 +0100
-Message-ID: <1272355624.3204.52.camel@odin>
-Mime-Version: 1.0
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 69CC4B6EFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 18:50:26 +1000 (EST)
+From: Martyn Welch <martyn.welch@ge.com>
+Subject: [PATCH v2] Correct PowerPC Parport interrupt parsing.
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+Date: Tue, 27 Apr 2010 09:50:21 +0100
+Message-ID: <20100427084708.11358.87171.stgit@ES-J7S4D2J.amer.consind.ge.com>
+In-Reply-To: <1272317225.29889.1.camel@pasglop>
+References: <1272317225.29889.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: sfr@canb.auug.org.au, mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-04-27 at 16:36 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2010-04-26 at 15:49 -0500, Timur Tabi wrote:
-> > An upcoming change in the architecture of ALSA SoC (ASoC) will require the
-> > MPC8610 HPCD's ASoC fabric driver to register as a standard platform driver.
-> > Therefore, we need to call platform_device_register_simple() from the board's
-> > platform code.
-> > 
-> > Signed-off-by: Timur Tabi <timur@freescale.com>
-> > ---
-> 
-> Gross. Loses the linkage to device-tree etc... which is useful for audio
-> especially. You should at least make sure the device node follows for
-> the target driver to be able to use it :-) I'd like you to sync with
-> Grant work on that matter if you are going to convert of_devices into
-> platform_devices.
+Currently the parsing of the device tree in
+arch/powerpc/include/asm/parport.h assumes that the interrupt provided in
+the parallel port node is a valid virtual irq. The values for the
+interrupts provided in the device tree should have meaning in the context
+of the driver for the specific interrupt controller to which the interrupt
+is connected and irq_of_parse_and_map() should be used to determine the
+correct virtual irq.
 
-Timur, please correct my device tree understanding form our IRC
-conversation if I'm wrong here.
+Signed-off-by: Martyn Welch <martyn.welch@ge.com>
+---
 
-I think one of the difficulties encountered here is that the device tree
-root for sound in this case is the SSI (Digital Audio Interface)
-controller and not the sound card as in ASoC. So maybe the problem is
-how do we represent an ASoC sound card in the device tree ?
+v2: Corrected irq_of_parse_and_map() index.
 
-The sound card within ASoC is a compound device that is made up of the
-SSI, Codec and audio DMA engine components. The SSI/Codec/DMA components
-do not have to be the sound cards child devices wrt the driver model but
-do register with the ASoC core and are 'joined' with each other and the
-sound card driver to form a working audio device.
+ arch/powerpc/include/asm/parport.h |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-Now I don't know the mechanics of adding an ASoC sound card to the
-device tree, but the device tree should be able to define an ASoC sound
-card and also represent the relationships between the sound card and the
-SSI/Codec/DMA components. The components should also be represented in
-the device tree. Parsing the device tree should probe() all the ASoC
-components and sound card. The ASoC core would then instantiated them as
-a sound device.  
+diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
+index 94942d6..1ca1102 100644
+--- a/arch/powerpc/include/asm/parport.h
++++ b/arch/powerpc/include/asm/parport.h
+@@ -19,6 +19,8 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
+ 	u32 io1, io2;
+ 	int propsize;
+ 	int count = 0;
++	int virq;
++
+ 	for (np = NULL; (np = of_find_compatible_node(np,
+ 						      "parallel",
+ 						      "pnpPNP,400")) != NULL;) {
+@@ -26,10 +28,13 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
+ 		if (!prop || propsize > 6*sizeof(u32))
+ 			continue;
+ 		io1 = prop[1]; io2 = prop[2];
+-		prop = of_get_property(np, "interrupts", NULL);
+-		if (!prop)
++
++		virq = irq_of_parse_and_map(np, 0);
++		if (virq == NO_IRQ)
+ 			continue;
+-		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
++
++		if (parport_pc_probe_port(io1, io2, virq, autodma, NULL, 0)
++				!= NULL)
+ 			count++;
+ 	}
+ 	return count;
 
-Thanks
 
-Liam 
-
--- 
-Freelance Developer, SlimLogic Ltd
-ASoC and Voltage Regulator Maintainer.
-http://www.slimlogic.co.uk
+--
+Martyn Welch (Principal Software Engineer)   |   Registered in England and
+GE Intelligent Platforms                     |   Wales (3828642) at 100
+T +44(0)127322748                            |   Barbirolli Square, Manchester,
+E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
