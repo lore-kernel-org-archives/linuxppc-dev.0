@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 02067B6EEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 16:36:29 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc: add platform registration for ALSA SoC
-	drivers
+	by ozlabs.org (Postfix) with ESMTPS id 39B8BB7D41
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 16:39:40 +1000 (EST)
+Subject: Re: [PATCH] booke_wdt: Fix build (unconstify watchdog_info)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1272314980-23679-1-git-send-email-timur@freescale.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
+To: Anton Vorontsov <avorontsov@mvista.com>
+In-Reply-To: <20100426174358.GA16889@oksana.dev.rtsoft.ru>
+References: <20100426174358.GA16889@oksana.dev.rtsoft.ru>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 27 Apr 2010 16:36:08 +1000
-Message-ID: <1272350168.24542.6.camel@pasglop>
+Date: Tue, 27 Apr 2010 16:37:00 +1000
+Message-ID: <1272350220.24542.7.camel@pasglop>
 Mime-Version: 1.0
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org,
-	lrg@slimlogic.co.uk
+Cc: linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-04-26 at 15:49 -0500, Timur Tabi wrote:
-> An upcoming change in the architecture of ALSA SoC (ASoC) will require the
-> MPC8610 HPCD's ASoC fabric driver to register as a standard platform driver.
-> Therefore, we need to call platform_device_register_simple() from the board's
-> platform code.
+On Mon, 2010-04-26 at 21:43 +0400, Anton Vorontsov wrote:
+> commit 42747d712de56cf2087b702d2ad90af114c53138 ("[WATCHDOG]
+> watchdog_info constify") introduced the following build failure:
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
+>    CC      booke_wdt.o
+>  booke_wdt.c: In function 'booke_wdt_init':
+>  booke_wdt.c:220: error: assignment of read-only variable 'ident'
+> 
+> Fix this by removing 'const' qualifier from watchdog_info struct.
 
-Gross. Loses the linkage to device-tree etc... which is useful for audio
-especially. You should at least make sure the device node follows for
-the target driver to be able to use it :-) I'd like you to sync with
-Grant work on that matter if you are going to convert of_devices into
-platform_devices.
+Should this go via powerpc.git ? If yes, I'll send to Linus asap.
 
 Cheers,
 Ben.
 
-> Kumar, the ASoC mainters are willing to pick up this patch, but they want an
-> ACK from you first.  Or, you could pick it up, since by itself it's harmless.
+> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+> ---
+>  drivers/watchdog/booke_wdt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-
 > 
->  arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> index 5abe137..66afff3 100644
-> --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-> @@ -98,6 +98,9 @@ static int __init mpc8610_declare_of_platform_devices(void)
->  	/* Without this call, the SSI device driver won't get probed. */
->  	of_platform_bus_probe(NULL, mpc8610_ids, NULL);
->  
-> +	/* Register the platform device for the ASoC fabric driver */
-> +	platform_device_register_simple("snd-soc-mpc8610-hpcd", 0, NULL, 0);
-> +
->  	return 0;
+> diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+> index 500d383..801ead1 100644
+> --- a/drivers/watchdog/booke_wdt.c
+> +++ b/drivers/watchdog/booke_wdt.c
+> @@ -121,7 +121,7 @@ static ssize_t booke_wdt_write(struct file *file, const char __user *buf,
+>  	return count;
 >  }
->  machine_device_initcall(mpc86xx_hpcd, mpc8610_declare_of_platform_devices);
+>  
+> -static const struct watchdog_info ident = {
+> +static struct watchdog_info ident = {
+>  	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+>  	.identity = "PowerPC Book-E Watchdog",
+>  };
