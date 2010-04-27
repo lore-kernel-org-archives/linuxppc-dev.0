@@ -1,25 +1,15 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 59842B7D30
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 01:57:15 +1000 (EST)
-Received: by pxi18 with SMTP id 18so2113044pxi.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 08:57:13 -0700 (PDT)
-MIME-Version: 1.0
-Sender: timur.tabi@gmail.com
-In-Reply-To: <4BD70292.20001@freescale.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
-	<4BD6FA39.3030400@freescale.com> <1272381611.11000.39.camel@odin>
-	<4BD70292.20001@freescale.com>
-From: Timur Tabi <timur@freescale.com>
-Date: Tue, 27 Apr 2010 10:56:41 -0500
-Message-ID: <g2ged82fe3e1004270856p1320dbb2jbca35077b2ff71d2@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
-	ALSA SoC drivers
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C970EB7D76
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 02:11:38 +1000 (EST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linux-usb@vger.kernel.org
+Subject: [PATCH 0/4] Add USB Host and OTG support for MPC5121 SoC
+Date: Tue, 27 Apr 2010 18:11:34 +0200
+Message-Id: <1272384698-4359-1-git-send-email-agust@denx.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,11 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 10:28 AM, Timur Tabi <timur@freescale.com> wrote:
-> I can say for certain whether that will actually work.
+Anatolij Gustschin (4):
+  powerpc/fsl_soc.c: prepare for addition of mpc5121 USB code
+  powerpc/mpc5121: add USB host support
+  USB: add USB OTG support for MPC5121 SoC
+  powerpc/mpc5121: select options for USB OTG support
 
-Ugh, I meant to write, "I can't say for certain".
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+ Documentation/powerpc/dts-bindings/fsl/usb.txt |   22 +
+ arch/powerpc/include/asm/fsl_usb_io.h          |  106 +++
+ arch/powerpc/platforms/512x/Kconfig            |   11 +
+ arch/powerpc/platforms/512x/Makefile           |    2 +-
+ arch/powerpc/platforms/512x/mpc5121_usb.c      |  131 +++
+ arch/powerpc/platforms/512x/mpc512x.h          |    1 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c   |    1 +
+ arch/powerpc/sysdev/fsl_soc.c                  |  249 +++---
+ arch/powerpc/sysdev/fsl_soc.h                  |    9 +
+ drivers/usb/gadget/fsl_udc_core.c              |  357 ++++++--
+ drivers/usb/gadget/fsl_usb2_udc.h              |   14 +
+ drivers/usb/host/ehci-fsl.c                    |  372 ++++++--
+ drivers/usb/host/ehci-fsl.h                    |   22 +-
+ drivers/usb/host/ehci-hub.c                    |   39 +
+ drivers/usb/host/ehci-mem.c                    |    2 +-
+ drivers/usb/host/ehci.h                        |    5 +
+ drivers/usb/otg/Kconfig                        |    8 +
+ drivers/usb/otg/Makefile                       |    2 +
+ drivers/usb/otg/fsl_otg.c                      | 1199 ++++++++++++++++++++++++
+ drivers/usb/otg/fsl_otg.h                      |  418 +++++++++
+ drivers/usb/otg/otg.c                          |   17 +
+ drivers/usb/otg/otg_fsm.c                      |  368 ++++++++
+ drivers/usb/otg/otg_fsm.h                      |  154 +++
+ include/linux/fsl_devices.h                    |   28 +
+ 24 files changed, 3285 insertions(+), 252 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/fsl_usb_io.h
+ create mode 100644 arch/powerpc/platforms/512x/mpc5121_usb.c
+ create mode 100644 drivers/usb/otg/fsl_otg.c
+ create mode 100644 drivers/usb/otg/fsl_otg.h
+ create mode 100644 drivers/usb/otg/otg_fsm.c
+ create mode 100644 drivers/usb/otg/otg_fsm.h
