@@ -1,19 +1,15 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og109.obsmtp.com (exprod5og109.obsmtp.com [64.18.0.188])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 69CC4B6EFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 18:50:26 +1000 (EST)
-From: Martyn Welch <martyn.welch@ge.com>
-Subject: [PATCH v2] Correct PowerPC Parport interrupt parsing.
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Date: Tue, 27 Apr 2010 09:50:21 +0100
-Message-ID: <20100427084708.11358.87171.stgit@ES-J7S4D2J.amer.consind.ge.com>
-In-Reply-To: <1272317225.29889.1.camel@pasglop>
-References: <1272317225.29889.1.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: sfr@canb.auug.org.au, mikey@neuling.org
+	by ozlabs.org (Postfix) with ESMTPS id 530EBB7D66
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 19:26:07 +1000 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 27 Apr 2010 11:25:27 +0200
+Message-Id: <1272360327-31425-1-git-send-email-w.sang@pengutronix.de>
+Subject: [PATCH RESEND] serial/mpc52xx_uart: Drop outdated comments
+Cc: linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the parsing of the device tree in
-arch/powerpc/include/asm/parport.h assumes that the interrupt provided in
-the parallel port node is a valid virtual irq. The values for the
-interrupts provided in the device tree should have meaning in the context
-of the driver for the specific interrupt controller to which the interrupt
-is connected and irq_of_parse_and_map() should be used to determine the
-correct virtual irq.
+Most things mentioned are either obsolete (platform-support) or wrong (device
+numbering, DCD spport) these days. The remaining rest is obvious.
 
-Signed-off-by: Martyn Welch <martyn.welch@ge.com>
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
+ drivers/serial/mpc52xx_uart.c |   33 ---------------------------------
+ 1 files changed, 0 insertions(+), 33 deletions(-)
 
-v2: Corrected irq_of_parse_and_map() index.
-
- arch/powerpc/include/asm/parport.h |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/parport.h b/arch/powerpc/include/asm/parport.h
-index 94942d6..1ca1102 100644
---- a/arch/powerpc/include/asm/parport.h
-+++ b/arch/powerpc/include/asm/parport.h
-@@ -19,6 +19,8 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 	u32 io1, io2;
- 	int propsize;
- 	int count = 0;
-+	int virq;
-+
- 	for (np = NULL; (np = of_find_compatible_node(np,
- 						      "parallel",
- 						      "pnpPNP,400")) != NULL;) {
-@@ -26,10 +28,13 @@ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
- 		if (!prop || propsize > 6*sizeof(u32))
- 			continue;
- 		io1 = prop[1]; io2 = prop[2];
--		prop = of_get_property(np, "interrupts", NULL);
--		if (!prop)
-+
-+		virq = irq_of_parse_and_map(np, 0);
-+		if (virq == NO_IRQ)
- 			continue;
--		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL, 0) != NULL)
-+
-+		if (parport_pc_probe_port(io1, io2, virq, autodma, NULL, 0)
-+				!= NULL)
- 			count++;
- 	}
- 	return count;
-
-
---
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 3119fdd..a176ab4 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -29,39 +29,6 @@
+  * kind, whether express or implied.
+  */
+ 
+-/* Platform device Usage :
+- *
+- * Since PSCs can have multiple function, the correct driver for each one
+- * is selected by calling mpc52xx_match_psc_function(...). The function
+- * handled by this driver is "uart".
+- *
+- * The driver init all necessary registers to place the PSC in uart mode without
+- * DCD. However, the pin multiplexing aren't changed and should be set either
+- * by the bootloader or in the platform init code.
+- *
+- * The idx field must be equal to the PSC index (e.g. 0 for PSC1, 1 for PSC2,
+- * and so on). So the PSC1 is mapped to /dev/ttyPSC0, PSC2 to /dev/ttyPSC1 and
+- * so on. But be warned, it's an ABSOLUTE REQUIREMENT ! This is needed mainly
+- * fpr the console code : without this 1:1 mapping, at early boot time, when we
+- * are parsing the kernel args console=ttyPSC?, we wouldn't know which PSC it
+- * will be mapped to.
+- */
+-
+-/* OF Platform device Usage :
+- *
+- * This driver is only used for PSCs configured in uart mode.  The device
+- * tree will have a node for each PSC with "mpc52xx-psc-uart" in the compatible
+- * list.
+- *
+- * By default, PSC devices are enumerated in the order they are found.  However
+- * a particular PSC number can be forces by adding 'device_no = <port#>'
+- * to the device node.
+- *
+- * The driver init all necessary registers to place the PSC in uart mode without
+- * DCD. However, the pin multiplexing aren't changed and should be set either
+- * by the bootloader or in the platform init code.
+- */
+-
+ #undef DEBUG
+ 
+ #include <linux/device.h>
+-- 
+1.7.0
