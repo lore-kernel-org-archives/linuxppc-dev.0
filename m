@@ -1,22 +1,32 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.181])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 99074B7D5B
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 23:58:38 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/4xx: Add optional "reset_type" property to
-	control reboot via dts
-Date: Tue, 27 Apr 2010 15:58:20 +0200
-References: <1272289141-21053-1-git-send-email-sr@denx.de>
-	<20100426182828.GA29593@zod.rchland.ibm.com>
-In-Reply-To: <20100426182828.GA29593@zod.rchland.ibm.com>
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 81A95B7D63
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 00:52:55 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o3REqgcZ010622
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 07:52:42 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o3RF14dA012591
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 10:01:04 -0500 (CDT)
+Message-ID: <4BD6FA39.3030400@freescale.com>
+Date: Tue, 27 Apr 2010 09:52:41 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201004271558.20212.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
+	ALSA SoC drivers
+References: <1272314980-23679-1-git-send-email-timur@freescale.com>	
+	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
+In-Reply-To: <1272355624.3204.52.camel@odin>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
+	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,100 +36,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Josh,
+Liam Girdwood wrote:
 
-On Monday 26 April 2010 20:28:29 Josh Boyer wrote:
-> On Mon, Apr 26, 2010 at 03:39:01PM +0200, Stefan Roese wrote:
-> >By setting "reset_type" to one of the following values, the default
-> >software reset mechanism may be overidden. Here the possible values of
-> 
-> >"reset_type":
-> NEAT!  A 4xx patch!  I haven't gotten enough of these lately, so forgive my
-> nit picking ;)
+> I think one of the difficulties encountered here is that the device tree
+> root for sound in this case is the SSI (Digital Audio Interface)
+> controller and not the sound card as in ASoC. So maybe the problem is
+> how do we represent an ASoC sound card in the device tree ?
 
-Sure. Comments welcome, as always.
- 
-> >  1 - PPC4xx core reset
-> >  2 - PPC4xx chip reset
-> >  3 - PPC4xx system reset (default)
-> 
-> We should probably put a brief description of this in the dts bindings
-> under Documentation (or whereever we're storing them these days.  I saw
-> something about a wiki?).
+Yes, that is a topic of concern.
 
-Right. I thought about this as well (too late). I'll include a short 
-documentation in my next patch version.
- 
-> Also, while it's not a large issue, I wonder if there will be confusion on
-> whether 'reset-type' is "the type of reset to use" or "the type of reset
-> that was just done".  There are some products that actually care about the
-> latter for various RAS issues.  I don't, however, have a great alternative
-> property name that comes to mind though.
+If you look at the 8610 DTS, you'll see that the SSI (i2s) is effectively the master.  In reality, I just modeled the board in the DTS.  The SSI node, for example, lists the two DMA channels it needs.  It also points to the codec that it's connected to.  And the clock-frequency property is in the codec node because the oscillator is connected to the codec on the board.
 
-I'll stick with this name for now then.
- 
-> >This will be used by a new PPC440SPe board port, which needs a "chip
-> >reset" instead of the default "system reset" to be asserted.
-> 
-> I'm curious why that is?
+In theory, would could probably get rid of the DMA node pointers if I can update the standard DMA driver to allow me to reserve two DMA channels.  That's not an easy fix, though.
 
-Hmmm. Frankly, I can't remember the background here. You might what to check 
-this for yourself. Katmai has the same issue. And I just copied this reboot 
-code from Katmai for this new 440SPe board.
+> The sound card within ASoC is a compound device that is made up of the
+> SSI, Codec and audio DMA engine components. The SSI/Codec/DMA components
+> do not have to be the sound cards child devices wrt the driver model but
+> do register with the ASoC core and are 'joined' with each other and the
+> sound card driver to form a working audio device.
 
-BTW: Once this patch is finished/accepted, I'll cook up a short katmai patch 
-to fix this reboot issue here too.
- 
-> >Signed-off-by: Stefan Roese <sr@denx.de>
-> >Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> >Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >---
-> >
-> > arch/powerpc/sysdev/ppc4xx_soc.c |   17 +++++++++++++++--
-> > 1 files changed, 15 insertions(+), 2 deletions(-)
-> >
-> >diff --git a/arch/powerpc/sysdev/ppc4xx_soc.c
-> >b/arch/powerpc/sysdev/ppc4xx_soc.c index 5c01435..fe54216 100644
-> >--- a/arch/powerpc/sysdev/ppc4xx_soc.c
-> >+++ b/arch/powerpc/sysdev/ppc4xx_soc.c
-> >@@ -191,11 +191,24 @@ static int __init ppc4xx_l2c_probe(void)
-> >
-> > arch_initcall(ppc4xx_l2c_probe);
-> > 
-> > /*
-> >
-> >- * At present, this routine just applies a system reset.
-> >+ * Apply a system reset. Alternatively a board specific value may be
-> >+ * provided via the "reset-type" property in the cpu node.
-> >
-> >  */
-> > 
-> > void ppc4xx_reset_system(char *cmd)
-> > {
-> >
-> >-	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_RST_SYSTEM);
-> >+	struct device_node *np;
-> >+	u32 reset_type = DBCR0_RST_SYSTEM;
-> >+	const u32 *prop;
-> >+
-> >+	np = of_find_node_by_type(NULL, "cpu");
-> >+	if (np) {
-> >+		prop = of_get_property(np, "reset-type", NULL);
-> >+		if (prop)
-> >+			reset_type = prop[0] << 28;
-> >+	}
-> 
-> While I don't think it's a big issue, I wonder if we should sanity check
-> the resulting value here.  I could see someone being dumb and doing:
-> 
-> 	reset-type = "system";
-> 
-> or something like that.  If that is done, what would the resulting shift on
-> it turn into?
+Yes, today I just walk the device tree looking for these connections implicitly. The code may be ugly, but the device tree is more streamlined.
 
-Good idea. I'll add a check in the next version.
+> Now I don't know the mechanics of adding an ASoC sound card to the
+> device tree, but the device tree should be able to define an ASoC sound
+> card and also represent the relationships between the sound card and the
+> SSI/Codec/DMA components. The components should also be represented in
+> the device tree. Parsing the device tree should probe() all the ASoC
+> components and sound card. The ASoC core would then instantiated them as
+> a sound device.  
 
-Thanks.
+Another problem is that ASoC won't let me probe the DMA channels independently.  That is, I cannot tell ASoC that I have a playback DMA and a capture DMA.  ASoC does not recognize two DMA devices for a single SSI.  If you can fix that, then I can turn the DMA driver into an OF driver.
 
-Cheers,
-Stefan
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
