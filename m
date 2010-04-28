@@ -1,19 +1,25 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id E248FB7D53
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 13:29:40 +1000 (EST)
-Date: Wed, 28 Apr 2010 13:29:31 +1000
-From: Nick Piggin <npiggin@suse.de>
-To: akpm@linux-foundation.org
-Subject: Re: [patch 1/1] powerpc: add rcu_read_lock() to gup_fast()
-	implementation
-Message-ID: <20100428032931.GE5683@laptop>
-References: <201004272110.o3RLAl7P019943@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201004272110.o3RLAl7P019943@imap1.linux-foundation.org>
-Cc: riel@redhat.com, paulmck@linux.vnet.ibm.com, a.p.zijlstra@chello.nl,
-	linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E3BEB7D51
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 14:10:41 +1000 (EST)
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
+	for ALSA SoC drivers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20100427222913.GE15083@opensource.wolfsonmicro.com>
+References: <1272314980-23679-1-git-send-email-timur@freescale.com>
+	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
+	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
+	<20100427222913.GE15083@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 28 Apr 2010 14:10:11 +1000
+Message-ID: <1272427811.24542.59.camel@pasglop>
+Mime-Version: 1.0
+Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
+	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
+	Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 02:10:47PM -0700, Andrew Morton wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+On Tue, 2010-04-27 at 23:29 +0100, Mark Brown wrote:
 > 
-> The powerpc page table freeing relies on the fact that IRQs hold off an
-> RCU grace period, this is currently true for all existing RCU
-> implementations but is not an assumption Paul wants to support.
-> 
-> Therefore, also take the RCU read lock along with disabling IRQs to ensure
-> the RCU grace period does at least cover these lookups.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Requested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> On the other hand from a pragmatic point of view it's just much less
+> hassle to just only provide the mechanism for instantiating a machine
+> with custom code and use that for everything.
 
-I think I nacked this because the rest of the powerpc code also
-assumes irq disables provide an rcu critical section. The plan was
-to convert powerpc pagetable code to use call_rcu_sched.
+Right, that's the balance to find. A too descriptive device-tree becomes
+a mess, and attempting to deal with any kind of representation in SW is
+horrible.
 
-> ---
-> 
->  arch/powerpc/mm/gup.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff -puN arch/powerpc/mm/gup.c~powerpc-add-rcu_read_lock-to-gup_fast-implementation arch/powerpc/mm/gup.c
-> --- a/arch/powerpc/mm/gup.c~powerpc-add-rcu_read_lock-to-gup_fast-implementation
-> +++ a/arch/powerpc/mm/gup.c
-> @@ -142,6 +142,7 @@ int get_user_pages_fast(unsigned long st
->  	 * So long as we atomically load page table pointers versus teardown,
->  	 * we can follow the address down to the the page and take a ref on it.
->  	 */
-> +	rcu_read_lock();
->  	local_irq_disable();
->  
->  	pgdp = pgd_offset(mm, addr);
-> @@ -162,6 +163,7 @@ int get_user_pages_fast(unsigned long st
->  	} while (pgdp++, addr = next, addr != end);
->  
->  	local_irq_enable();
-> +	rcu_read_unlock();
->  
->  	VM_BUG_ON(nr != (end - start) >> PAGE_SHIFT);
->  	return nr;
-> @@ -171,6 +173,7 @@ int get_user_pages_fast(unsigned long st
->  
->  slow:
->  		local_irq_enable();
-> +		rcu_read_unlock();
->  slow_irqon:
->  		pr_devel("  slow path ! nr = %d\n", nr);
->  
-> _
+There is a fine balance to be found between how much goes into the
+device-tree and how much is eventually just a plain C file that puts
+things together.
+
+For example, one could imagine a /sound node with simply a "compatible"
+property that matches what we call in AOA terminology a "fabric" driver.
+IE. The one thing specific to the board that puts bits and pieces
+together.
+
+Now, the device-tree is still obviously useful to provide things like
+the actual i2c IDs of codecs, GPIOs used for various actions, link to
+from various components to their clock source devices, etc.. All these
+things simplify the code, avoids horrid board specific code in the
+actual drivers (codecs, busses, etc...) and overall help keeping the
+code more maintainable. 
+
+This is not an issue specific to audio. The same problem to some extent
+shows up at the arch level, which is why I was never too much in favor
+of doing a "generic" platform on powerpc, but still want to have a per
+board (or at least board family) platform .c file which has the upper
+hand, even if it ends up mostly using device-tree based "helpers" to put
+things together.
+
+The device-tree helps keep the platform .c file simple and devoid of too
+horrible hacks, it allows to easily pass various configuration data to
+leaf drivers such as i2c thingies, PHY devices etc... without gross
+hooks between these and the platform, but the platform code still has
+the upper hand for doing ad-hoc bits and pieces (or overwriting the
+device-tree based behaviour) if necessary.
+
+Cheers,
+Ben.
