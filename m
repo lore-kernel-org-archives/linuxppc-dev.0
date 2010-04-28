@@ -1,25 +1,21 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA98EB7D52
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 08:29:17 +1000 (EST)
-Date: Tue, 27 Apr 2010 23:29:14 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
-	for ALSA SoC drivers
-Message-ID: <20100427222913.GE15083@opensource.wolfsonmicro.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
-	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 9EC26B7D52
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 12:09:32 +1000 (EST)
+Date: Wed, 28 Apr 2010 12:09:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [patch 03/15] powerpc: cpumask: Convert smp_cpus_done to new
+	cpumask API
+Message-Id: <20100428120922.11d7b47e.sfr@canb.auug.org.au>
+In-Reply-To: <20100427013431.787617147@samba.org>
+References: <20100427013231.510168034@samba.org>
+	<20100427013431.787617147@samba.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3"
+Cc: rusty@rustcorp.com.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 02:24:34PM -0600, Grant Likely wrote:
+--Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> However, as you and Mark rightly point out, it completely fails to
-> represent complex sound devices with weird clocking and strange
-> routes.  Something like this is probably more appropriate:
+Hi Anton,
 
-> 
-> 	[...]
-> 		codec1 :codec@4f {
-> 			compatible = "cirrus,cs4270";
-> 			reg = <0x4f>;
-> 			/* MCLK source is a stand-alone oscillator */
-> 			clock-frequency = <12288000>;
-> 		};
+On Tue, 27 Apr 2010 11:32:34 +1000 Anton Blanchard <anton@samba.org> wrote:
+>
+> -	old_mask =3D current->cpus_allowed;
+> -	set_cpus_allowed(current, cpumask_of_cpu(boot_cpuid));
+> -=09
+> +	alloc_cpumask_var(&old_mask, GFP_NOWAIT);
 
-You also want to be representing unused pins here.
+You should probably put an explicit include of linux/gfp.h in this file
+for this.  (Maybe linux/cpumask.h should include it - but it doesn't.)
 
-> 	[...]
-> 	ssi1: ssi@16000 {
-> 		compatible = "fsl,mpc8610-ssi";
-> 		[...]
-> 		fsl,mode = "i2s-slave";
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'd not include the master/slave decision; it's either implied by the
-fact that the CODEC has a standalone clock, a property of the link/card,
-or a policy decision that the running software can change on a whim.
+--Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3
+Content-Type: application/pgp-signature
 
-> 	sound {
-> 		compatible = "fsl,mpc8610-hpcd-sound";
-> 		/* maybe something like (totally off the top of my head) */
-> 		dai-links = <&ssi1 0 &codec 0
-> 		             &ssi1 1 &codec 1>;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-I'm having a hard time loving this.  I'd be looking for a lot more
-semantics on the links (things like information about separate clocks
-for the two directions, for example) which makes me think that that
-simple list format is far too simple and you want a list of more complex
-objects.
+iEYEARECAAYFAkvXmNIACgkQjjKRsyhoI8yh9ACfV22N/AMiHTcMC30RoxeFvNbL
+IrwAn38XQUdeZGQPt3FnL8UTJiiRfj5z
+=dOB2
+-----END PGP SIGNATURE-----
 
-There's also analogue interconnects to deal with, and jacks (including
-detection and accessories).  Jacks can be particularly entertaining
-here.
-
-> Or, in other words, the device tree should *not* be used to describe
-> every possible detail and permutation.  It is best used to describe
-> the permutations that are common so that they don't need to be hard
-> coded for each and every board.
-
-I think the ideal is something that's purely descriptive of the hardware
-and doesn't include any policy decisions.  Policy decisions covers an
-awful lot of the interesting issues, though - but they're the sort of
-things that can easily be changed with a new software load and therefore
-don't belong in the device tree.
-
-On the other hand from a pragmatic point of view it's just much less
-hassle to just only provide the mechanism for instantiating a machine
-with custom code and use that for everything.
+--Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3--
