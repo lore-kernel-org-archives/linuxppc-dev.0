@@ -1,15 +1,15 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A2891B7D54
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 18:13:58 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/4xx: Add optional "reset_type" property to control
-	reboot via dts
-Date: Wed, 28 Apr 2010 10:13:34 +0200
-Message-Id: <1272442414-8018-1-git-send-email-sr@denx.de>
+Return-Path: <sanjeevfiles@yahoo.com>
+Received: from web63006.mail.re1.yahoo.com (web63006.mail.re1.yahoo.com
+	[69.147.96.217]) by ozlabs.org (Postfix) with SMTP id 1A42FB7D45
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Apr 2010 18:27:34 +1000 (EST)
+Message-ID: <193202.72183.qm@web63006.mail.re1.yahoo.com>
+Date: Wed, 28 Apr 2010 01:27:32 -0700 (PDT)
+From: Maindoor <sanjeevfiles@yahoo.com>
+Subject: change_page_attr support on ppc, patch discussion
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1068691629-1272443252=:72183"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,91 +19,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By setting "reset_type" to one of the following values, the default
-software reset mechanism may be overidden. Here the possible values of
-"reset_type":
+--0-1068691629-1272443252=:72183
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-  1 - PPC4xx core reset
-  2 - PPC4xx chip reset
-  3 - PPC4xx system reset (default)
+Hi,
+I am trying to set a page of my data-structure as read-only on a USI MPC834=
+7E.
+This is primarily to figure a data structure corruption issue.
+Added small support as follows:
+ppc/mm/init.c:MMU_setup
 
-This will be used by a new PPC440SPe board port, which needs a "chip
-reset" instead of the default "system reset" to be asserted.
+=A0=A0=A0 __map_without_bats =3D 1;
+=A0=A0=A0 __map_without_ltlbs =3D 1;
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-v2:
-- Add small property description to Documentation
-- Add sanity check for property value
 
- Documentation/powerpc/dts-bindings/4xx/reboot.txt |   18 +++++++++++++++
- arch/powerpc/sysdev/ppc4xx_soc.c                  |   24 +++++++++++++++++++-
- 2 files changed, 40 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/4xx/reboot.txt
+ppc/mm/pgtable.c
 
-diff --git a/Documentation/powerpc/dts-bindings/4xx/reboot.txt b/Documentation/powerpc/dts-bindings/4xx/reboot.txt
-new file mode 100644
-index 0000000..d721726
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/4xx/reboot.txt
-@@ -0,0 +1,18 @@
-+Reboot property to control system reboot on PPC4xx systems:
-+
-+By setting "reset_type" to one of the following values, the default
-+software reset mechanism may be overidden. Here the possible values of
-+"reset_type":
-+
-+      1 - PPC4xx core reset
-+      2 - PPC4xx chip reset
-+      3 - PPC4xx system reset (default)
-+
-+Example:
-+
-+		cpu@0 {
-+			device_type = "cpu";
-+			model = "PowerPC,440SPe";
-+			...
-+			reset-type = <2>;	/* Use chip-reset */
-+		};
-diff --git a/arch/powerpc/sysdev/ppc4xx_soc.c b/arch/powerpc/sysdev/ppc4xx_soc.c
-index 5c01435..d3d6ce3 100644
---- a/arch/powerpc/sysdev/ppc4xx_soc.c
-+++ b/arch/powerpc/sysdev/ppc4xx_soc.c
-@@ -191,11 +191,31 @@ static int __init ppc4xx_l2c_probe(void)
- arch_initcall(ppc4xx_l2c_probe);
- 
- /*
-- * At present, this routine just applies a system reset.
-+ * Apply a system reset. Alternatively a board specific value may be
-+ * provided via the "reset-type" property in the cpu node.
-  */
- void ppc4xx_reset_system(char *cmd)
- {
--	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_RST_SYSTEM);
-+	struct device_node *np;
-+	u32 reset_type = DBCR0_RST_SYSTEM;
-+	const u32 *prop;
-+
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		prop = of_get_property(np, "reset-type", NULL);
-+
-+		/*
-+		 * Check if property exists and if it is in range:
-+		 * 1 - PPC4xx core reset
-+		 * 2 - PPC4xx chip reset
-+		 * 3 - PPC4xx system reset (default)
-+		 */
-+		if ((prop) && ((prop[0] >= 1) && (prop[0] <= 3)))
-+			reset_type = prop[0] << 28;
-+	}
-+
-+	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | reset_type);
-+
- 	while (1)
- 		;	/* Just in case the reset doesn't work */
- }
--- 
-1.7.1
+static int __change_page_attr(struct page *page, pgprot_t prot)
+{
+=A0=A0=A0 pte_t *kpte;
+=A0=A0=A0 pmd_t *kpmd;
+=A0=A0=A0 unsigned long address;
+
+=A0=A0=A0 BUG_ON(PageHighMem(page));
+=A0=A0=A0 address =3D (unsigned long)page_address(page);
+
+=A0=A0=A0 if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
+=A0=A0=A0=A0=A0=A0=A0 return 0;
+=A0=A0=A0 if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+=A0=A0=A0=A0=A0=A0=A0 return -EINVAL;
+=A0=A0=A0 set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
+=A0=A0=A0 wmb();
+=A0=A0=A0 flush_HPTE(0, address, pmd_val(*kpmd));
+=A0=A0=A0 pte_unmap(kpte);
+=A0=A0=A0 mb();
+=A0=A0=A0 return 0;
+}
+
+/*
+=A0* Change the page attributes of an page in the linear mapping.
+*/
+int change_page_attr(struct page *page, int numpages, pgprot_t prot)
+{
+=A0=A0=A0 int i, err =3D 0;
+=A0=A0=A0 unsigned long flags;
+
+=A0=A0=A0 local_irq_save(flags);
+=A0=A0=A0 for (i =3D 0; i < numpages; i++, page++) {
+=A0=A0=A0=A0=A0=A0=A0 err =3D __change_page_attr(page, prot);
+=A0=A0=A0=A0=A0=A0=A0 if (err)
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break;
+=A0=A0=A0 }
+=A0=A0=A0 local_irq_restore(flags);
+=A0=A0=A0 return err;
+}
+EXPORT_SYMBOL(change_page_attr);
+
+After allocation of my data structure, when I mark the page readonly like t=
+his:
+change_page_attr(virt_to_page(dat_str), 1, PAGE_READONLY);
+
+it works (throws Oops) but only for the first time, but subsequent writes
+are going through. I expect even the subsequent writes to fail.
+
+One more quirkiness to this is, after changing the page attribute I need to
+read the element at least once for this to work.
+
+Have I written the supportive api's (above ) correctly ? This is on 2.6.18 =
+kernel.
+If there is any other way to catch this corruption please let me know.
+kgdb and bdi won't help me as it is a dynamically created data-structure an=
+d I
+have timing constraints.
+
+Regards,
+Maindoor.
+
+=0A=0A=0A      
+--0-1068691629-1272443252=:72183
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;">Hi,<br>I am trying to set a page of my data-s=
+tructure as read-only on a USI MPC8347E.<br>This is primarily to figure a d=
+ata structure corruption issue.<br>Added small support as follows:<br>ppc/m=
+m/init.c:MMU_setup<br><br>&nbsp;&nbsp;&nbsp; __map_without_bats =3D 1;<br>&=
+nbsp;&nbsp;&nbsp; __map_without_ltlbs =3D 1;<br><br><br>ppc/mm/pgtable.c<br=
+><br>static int __change_page_attr(struct page *page, pgprot_t prot)<br>{<b=
+r>&nbsp;&nbsp;&nbsp; pte_t *kpte;<br>&nbsp;&nbsp;&nbsp; pmd_t *kpmd;<br>&nb=
+sp;&nbsp;&nbsp; unsigned long address;<br><br>&nbsp;&nbsp;&nbsp; BUG_ON(Pag=
+eHighMem(page));<br>&nbsp;&nbsp;&nbsp; address =3D (unsigned long)page_addr=
+ess(page);<br><br>&nbsp;&nbsp;&nbsp; if (v_mapped_by_bats(address) || v_map=
+ped_by_tlbcam(address))<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; retur=
+n 0;<br>&nbsp;&nbsp;&nbsp; if (!get_pteptr(&amp;init_mm, address, &amp;kpte=
+,
+ &amp;kpmd))<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -EINVAL;<=
+br>&nbsp;&nbsp;&nbsp; set_pte_at(&amp;init_mm, address, kpte, mk_pte(page, =
+prot));<br>&nbsp;&nbsp;&nbsp; wmb();<br>&nbsp;&nbsp;&nbsp; flush_HPTE(0, ad=
+dress, pmd_val(*kpmd));<br>&nbsp;&nbsp;&nbsp; pte_unmap(kpte);<br>&nbsp;&nb=
+sp;&nbsp; mb();<br>&nbsp;&nbsp;&nbsp; return 0;<br>}<br><br>/*<br>&nbsp;* C=
+hange the page attributes of an page in the linear mapping.<br>*/<br>int ch=
+ange_page_attr(struct page *page, int numpages, pgprot_t prot)<br>{<br>&nbs=
+p;&nbsp;&nbsp; int i, err =3D 0;<br>&nbsp;&nbsp;&nbsp; unsigned long flags;=
+<br><br>&nbsp;&nbsp;&nbsp; local_irq_save(flags);<br>&nbsp;&nbsp;&nbsp; for=
+ (i =3D 0; i &lt; numpages; i++, page++) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; err =3D __change_page_attr(page, prot);<br>&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp; if (err)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<br>&nbsp;&nbsp;&nbsp;
+ }<br>&nbsp;&nbsp;&nbsp; local_irq_restore(flags);<br>&nbsp;&nbsp;&nbsp; re=
+turn err;<br>}<br>EXPORT_SYMBOL(change_page_attr);<br><br>After allocation =
+of my data structure, when I mark the page readonly like this:<br>change_pa=
+ge_attr(virt_to_page(dat_str), 1, PAGE_READONLY);<br><br>it works (throws O=
+ops) but only for the first time, but subsequent writes<br>are going throug=
+h. I expect even the subsequent writes to fail.<br><br>One more quirkiness =
+to this is, after changing the page attribute I need to<br>read the element=
+ at least once for this to work.<br><br>Have I written the supportive api's=
+ (above ) correctly ? This is on 2.6.18 kernel.<br>If there is any other wa=
+y to catch this corruption please let me know.<br>kgdb and bdi won't help m=
+e as it is a dynamically created data-structure and I<br>have timing constr=
+aints.<br><br>Regards,<br>Maindoor.<br><br></td></tr></table><br>=0A=0A=0A=
+=0A=0A=0A=0A=0A      
+--0-1068691629-1272443252=:72183--
