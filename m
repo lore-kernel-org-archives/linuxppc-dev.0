@@ -1,25 +1,27 @@
 Return-Path: <timur.tabi@gmail.com>
 Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id BCE9AB7D57
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 23:19:34 +1000 (EST)
-Received: by pvc22 with SMTP id 22so35012pvc.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:19:33 -0700 (PDT)
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 5A764B7D17
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 23:36:03 +1000 (EST)
+Received: by pvc22 with SMTP id 22so52283pvc.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:36:02 -0700 (PDT)
 MIME-Version: 1.0
 Sender: timur.tabi@gmail.com
-In-Reply-To: <20100427222913.GE15083@opensource.wolfsonmicro.com>
+In-Reply-To: <q2xfa686aa41004272237ld1ffc08fhebb55ff84b51d1c2@mail.gmail.com>
 References: <1272314980-23679-1-git-send-email-timur@freescale.com>
 	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
 	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-	<20100427222913.GE15083@opensource.wolfsonmicro.com>
+	<4BD74D0C.40303@freescale.com>
+	<q2xfa686aa41004272237ld1ffc08fhebb55ff84b51d1c2@mail.gmail.com>
 From: Timur Tabi <timur@freescale.com>
-Date: Wed, 28 Apr 2010 08:19:00 -0500
-Message-ID: <r2oed82fe3e1004280619j29ba990fr9d0fc5b3ffa450f8@mail.gmail.com>
+Date: Wed, 28 Apr 2010 08:35:30 -0500
+Message-ID: <u2xed82fe3e1004280635vaeb792d2xf86996cac299ba2b@mail.gmail.com>
 Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
 	ALSA SoC drivers
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Grant Likely <grant.likely@secretlab.ca>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org, Liam Girdwood <lrg@slimlogic.co.uk>
+	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org,
+	Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 5:29 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
+On Wed, Apr 28, 2010 at 12:37 AM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
 
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 codec1 :codec@4f {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "cirrus,cs427=
-0";
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x4f>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* MCLK source is a stand-al=
-one oscillator */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <1228800=
-0>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+> Why not? =A0Just have the ssi driver probe routine register the fabric
+> device based on the existence of the codec-handle property. =A0It is the
+> best way to go about things with the data that you've got available,
+> and it is no big deal. =A0The relevant fabric driver can then bind
+> against that. =A0You should probably also stuff the ssi device node
+> pointer into the fabric device of_node pointer.
+
+And then where do I put the board-specific initialization code that's
+currently in the fabric driver?  The programming information for that
+initialization is not in the device tree.
+
+It sounds to me like you're saying I should take all the code from the
+fabric driver and shove it into the SSI driver, just so that I can
+avoid instantiating a platform driver.
+
+Keep in mind that asoc likes to have a different struct device for the
+fabric driver and the SSI nodes, so I would need to manually create a
+struct device for the fabric device anyway.
+
+>> I don't know when I would ever do this. =A0The two SSI devices are compl=
+etely independent. =A0Why would I bind them together into one "device"?
 >
-> You also want to be representing unused pins here.
+> If there is no use case for binding them together, then you're right.
+> The current binding is probably just fine. =A0I cannot comment on
+> whether or not it will be used that way by platform designers.
 
-If they're unused, how do I represent them?  Can you give me an example?
+Although the 8610 has two SSI devices, the reference board we ship
+only has one wired up.  I have a prototype board in the lab that has
+both wired up, but even then, I don't think I can get the two SSIs
+synchronized in any meaningful fashion.  Mark suggested a technique,
+but even if I could get that to work, the driver code would need to be
+rewritten to handle two SSI devices in concert.  In short, it might be
+theoretically possible, but I'm not going to try to make it work.
 
->> =A0 =A0 =A0 [...]
->> =A0 =A0 =A0 ssi1: ssi@16000 {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-ssi";
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 [...]
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,mode =3D "i2s-slave";
->
-> I'd not include the master/slave decision; it's either implied by the
-> fact that the CODEC has a standalone clock, a property of the link/card,
-> or a policy decision that the running software can change on a whim.
+> Linux struct device registrations are cheap, and every struct device
+> has a device_node pointer available. =A0It is totally fine to have both
+> the ssi device and the fabric device point to the same device node if
+> that helps solve your problem of finding references to the right
+> things in each driver. =A0(Just as long as only one of them is an
+> of_platform driver).
 
-I know it's redundant, but at the time, it seemed a lot simpler than
-walking the device tree.
-
-Frankly, I'd rather not consider minor device tree changes at this
-point.  I'm hoping I don't need to change the device tree at all.
-
->> =A0 =A0 =A0 sound {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-hpcd-sound";
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* maybe something like (totally off the top=
- of my head) */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dai-links =3D <&ssi1 0 &codec 0
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&ssi1 1 &codec 1>=
-;
->
-> I'm having a hard time loving this. =A0I'd be looking for a lot more
-> semantics on the links (things like information about separate clocks
-> for the two directions, for example) which makes me think that that
-> simple list format is far too simple and you want a list of more complex
-> objects.
-
-Yeah, I don't like it either.  It seems arbitrary.
-
-> I think the ideal is something that's purely descriptive of the hardware
-> and doesn't include any policy decisions.
-
-I like to think that this is what we have today.
+But I already have it set up like that.  The SSI driver is an OF
+driver, and the fabric driver is a platform driver.  I might be able
+to move some code from the fabric driver into the SSI driver to make
+it the fabric driver less obnoxious about scanning the device tree.
 
 --=20
 Timur Tabi
