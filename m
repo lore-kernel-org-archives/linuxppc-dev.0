@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 15B20B7D30
+Return-Path: <stevedeiters@basler.com>
+Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
+	by ozlabs.org (Postfix) with ESMTP id D88F4B7D5C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Apr 2010 08:29:57 +1000 (EST)
-Subject: Re: [PATCH] Fix DEBUG_PAGEALLOC on 603/e300
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Xianghua Xiao <xiaoxianghua@gmail.com>
-In-Reply-To: <y2te6bf505b1004281215n9dcc6190j9915aa27ae91f75d@mail.gmail.com>
-References: <1272439375.24542.94.camel@pasglop>
-	<y2te6bf505b1004281215n9dcc6190j9915aa27ae91f75d@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Apr 2010 08:29:50 +1000
-Message-ID: <1272493790.24542.109.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Thu, 29 Apr 2010 08:33:19 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: [PATCH] mpc5121_nfc: Changed SVR check to allow MPC5123.
+Date: Wed, 28 Apr 2010 17:33:19 -0500
+Message-ID: <181804936ABC2349BE503168465576460E95836C@exchserver.basler.com>
+From: "Steve Deiters" <SteveDeiters@BASLER.com>
+To: <linux-mtd@lists.infradead.org>,
+	<linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-04-28 at 14:15 -0500, Xianghua Xiao wrote:
-> This change works me on a 834x(e300) platform, tested with lmbench and
-> a production-ready application with 2.6.33.3.
+The revision in SVR for MPC5123 is 3.  The NFC is the same as MPC5121
+revision 2.
 
-But have you tested that DEBUG_PAGEALLOC actually works ? :-)
+---
+ drivers/mtd/nand/mpc5121_nfc.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-A way to do that is to
-
-	- get_free_pages a page
-	- read from it
-	- free it
-	- write to it
-
-It should oops on the write, and I suspect that without my patch it
-doesn't.
-
-Cheers,
-Ben.
+diff --git a/drivers/mtd/nand/mpc5121_nfc.c
+b/drivers/mtd/nand/mpc5121_nfc.c
+index 191bf99..dc04d74 100644
+--- a/drivers/mtd/nand/mpc5121_nfc.c
++++ b/drivers/mtd/nand/mpc5121_nfc.c
+@@ -666,10 +666,10 @@ static int __devinit mpc5121_nfc_probe(struct
+of_device *op,
+=20
+ 	/*
+ 	 * Check SoC revision. This driver supports only NFC
+-	 * in MPC5121 revision 2.
++	 * in MPC5121 revision 2 and MPC5123 revision 3.
+ 	 */
+ 	rev =3D (mfspr(SPRN_SVR) >> 4) & 0xF;
+-	if (rev !=3D 2) {
++	if ((rev !=3D 2) && (rev !=3D 3)) {
+ 		dev_err(dev, "SoC revision %u is not supported!\n",
+rev);
+ 		return -ENXIO;
+ 	}
+--=20
+1.5.4.3
