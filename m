@@ -2,21 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6F476B7D2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 14:11:16 +1000 (EST)
-Subject: Re: [patch 1/1] powerpc: add rcu_read_lock() to gup_fast()
-	implementation
+	by ozlabs.org (Postfix) with ESMTPS id 6B280B7D55
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 14:18:26 +1000 (EST)
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
+	for ALSA SoC drivers
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20100428032931.GE5683@laptop>
-References: <201004272110.o3RLAl7P019943@imap1.linux-foundation.org>
-	<20100428032931.GE5683@laptop>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <s2ifa686aa41004271215tb3c992c1v8996ce5520896c6c@mail.gmail.com>
+References: <1272314980-23679-1-git-send-email-timur@freescale.com>
+	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
+	<4BD6FA39.3030400@freescale.com> <1272381611.11000.39.camel@odin>
+	<4BD70292.20001@freescale.com> <1272386470.11000.84.camel@odin>
+	<4BD72DB0.20808@freescale.com>
+	<s2ifa686aa41004271215tb3c992c1v8996ce5520896c6c@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 28 Apr 2010 14:10:58 +1000
-Message-ID: <1272427858.24542.60.camel@pasglop>
+Date: Wed, 28 Apr 2010 14:18:15 +1000
+Message-ID: <1272428295.24542.65.camel@pasglop>
 Mime-Version: 1.0
-Cc: riel@redhat.com, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	paulmck@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
+Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
+	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org,
+	Timur Tabi <timur@freescale.com>, Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-04-28 at 13:29 +1000, Nick Piggin wrote:
-> I think I nacked this because the rest of the powerpc code also
-> assumes irq disables provide an rcu critical section. The plan was
-> to convert powerpc pagetable code to use call_rcu_sched.
+On Tue, 2010-04-27 at 13:15 -0600, Grant Likely wrote:
+> 
+> Can you not dynamically assign an id?  If alsa soc needs a unique id
+> number, then just create a lookup function.  Something like
+> of_asoc_phandle_to_codec_id() that will either return a previously
+> assigned id, or will assign a new id.  You shouldn't ever need to add
+> data to the tree at runtime. 
 
-Right, on my todo list.
+Numerical magic IDs are evil... why not a name ? Or it's existing alsa
+breakage ? :-)
 
 Cheers,
 Ben.
