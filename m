@@ -1,28 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 3E4C1B7D24
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 23:58:09 +1000 (EST)
-Received: by pwj6 with SMTP id 6so1874409pwj.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:58:08 -0700 (PDT)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 15B0AB7D55
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Apr 2010 00:43:00 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o3SEZdFt021044
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 08:35:39 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3SEgrhZ127924
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 08:42:53 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o3SEgpO0022422
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 08:42:51 -0600
+Date: Wed, 28 Apr 2010 10:42:49 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH v2] powerpc/4xx: Add optional "reset_type" property to
+	control reboot via dts
+Message-ID: <20100428144249.GB29593@zod.rchland.ibm.com>
+References: <1272442414-8018-1-git-send-email-sr@denx.de>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <u2xed82fe3e1004280635vaeb792d2xf86996cac299ba2b@mail.gmail.com>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
-	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-	<4BD74D0C.40303@freescale.com>
-	<q2xfa686aa41004272237ld1ffc08fhebb55ff84b51d1c2@mail.gmail.com>
-	<u2xed82fe3e1004280635vaeb792d2xf86996cac299ba2b@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 28 Apr 2010 07:57:47 -0600
-Message-ID: <j2zfa686aa41004280657g49db18d9g563e643e16ca64e9@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
-	ALSA SoC drivers
-To: Timur Tabi <timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	broonie@opensource.wolfsonmicro.com, linuxppc-dev@ozlabs.org,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1272442414-8018-1-git-send-email-sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +36,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 28, 2010 at 7:35 AM, Timur Tabi <timur@freescale.com> wrote:
-> On Wed, Apr 28, 2010 at 12:37 AM, Grant Likely
-> <grant.likely@secretlab.ca> wrote:
+On Wed, Apr 28, 2010 at 10:13:34AM +0200, Stefan Roese wrote:
+>By setting "reset_type" to one of the following values, the default
+>software reset mechanism may be overidden. Here the possible values of
+>"reset_type":
 >
->> Why not? =A0Just have the ssi driver probe routine register the fabric
->> device based on the existence of the codec-handle property. =A0It is the
->> best way to go about things with the data that you've got available,
->> and it is no big deal. =A0The relevant fabric driver can then bind
->> against that. =A0You should probably also stuff the ssi device node
->> pointer into the fabric device of_node pointer.
+>  1 - PPC4xx core reset
+>  2 - PPC4xx chip reset
+>  3 - PPC4xx system reset (default)
 >
-> And then where do I put the board-specific initialization code that's
-> currently in the fabric driver? =A0The programming information for that
-> initialization is not in the device tree.
-
-In the fabric driver; where it is right now.  I'm saying *instantiate*
-the device when the ssi driver gets probed.  Use the top level board
-name when assigning the name so that the correct asoc machine driver
-gets bound to it.
-
-> It sounds to me like you're saying I should take all the code from the
-> fabric driver and shove it into the SSI driver, just so that I can
-> avoid instantiating a platform driver.
-
-Nope.
-
-> Keep in mind that asoc likes to have a different struct device for the
-> fabric driver and the SSI nodes, so I would need to manually create a
-> struct device for the fabric device anyway.
-
-You can do it this way too, but this is not what I'm saying.
-
->> Linux struct device registrations are cheap, and every struct device
->> has a device_node pointer available. =A0It is totally fine to have both
->> the ssi device and the fabric device point to the same device node if
->> that helps solve your problem of finding references to the right
->> things in each driver. =A0(Just as long as only one of them is an
->> of_platform driver).
+>This will be used by a new PPC440SPe board port, which needs a "chip
+>reset" instead of the default "system reset" to be asserted.
 >
-> But I already have it set up like that. =A0The SSI driver is an OF
-> driver, and the fabric driver is a platform driver. =A0I might be able
-> to move some code from the fabric driver into the SSI driver to make
-> it the fabric driver less obnoxious about scanning the device tree.
+>Signed-off-by: Stefan Roese <sr@denx.de>
+>Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+>Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>---
+>v2:
+>- Add small property description to Documentation
+>- Add sanity check for property value
 
-I'm just saying move the registration of the machine device out of
-arch/powerpc platform code and into the ssi driver.  Then you've got a
-reasonable place to pass shared data (either the ssi device node or
-device instance or name.  Whatever you need) to the machine driver.
+Thanks for the quick respin.
 
-g.
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+
+Ben, I don't have anything else pending for -next at the moment.  Can you pick
+this up yourself, or do you want me to create a pull request for just this
+patch?
+
+josh
+
+>
+> Documentation/powerpc/dts-bindings/4xx/reboot.txt |   18 +++++++++++++++
+> arch/powerpc/sysdev/ppc4xx_soc.c                  |   24 +++++++++++++++++++-
+> 2 files changed, 40 insertions(+), 2 deletions(-)
+> create mode 100644 Documentation/powerpc/dts-bindings/4xx/reboot.txt
+>
+>diff --git a/Documentation/powerpc/dts-bindings/4xx/reboot.txt b/Documentation/powerpc/dts-bindings/4xx/reboot.txt
+>new file mode 100644
+>index 0000000..d721726
+>--- /dev/null
+>+++ b/Documentation/powerpc/dts-bindings/4xx/reboot.txt
+>@@ -0,0 +1,18 @@
+>+Reboot property to control system reboot on PPC4xx systems:
+>+
+>+By setting "reset_type" to one of the following values, the default
+>+software reset mechanism may be overidden. Here the possible values of
+>+"reset_type":
+>+
+>+      1 - PPC4xx core reset
+>+      2 - PPC4xx chip reset
+>+      3 - PPC4xx system reset (default)
+>+
+>+Example:
+>+
+>+		cpu@0 {
+>+			device_type = "cpu";
+>+			model = "PowerPC,440SPe";
+>+			...
+>+			reset-type = <2>;	/* Use chip-reset */
+>+		};
+>diff --git a/arch/powerpc/sysdev/ppc4xx_soc.c b/arch/powerpc/sysdev/ppc4xx_soc.c
+>index 5c01435..d3d6ce3 100644
+>--- a/arch/powerpc/sysdev/ppc4xx_soc.c
+>+++ b/arch/powerpc/sysdev/ppc4xx_soc.c
+>@@ -191,11 +191,31 @@ static int __init ppc4xx_l2c_probe(void)
+> arch_initcall(ppc4xx_l2c_probe);
+>
+> /*
+>- * At present, this routine just applies a system reset.
+>+ * Apply a system reset. Alternatively a board specific value may be
+>+ * provided via the "reset-type" property in the cpu node.
+>  */
+> void ppc4xx_reset_system(char *cmd)
+> {
+>-	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_RST_SYSTEM);
+>+	struct device_node *np;
+>+	u32 reset_type = DBCR0_RST_SYSTEM;
+>+	const u32 *prop;
+>+
+>+	np = of_find_node_by_type(NULL, "cpu");
+>+	if (np) {
+>+		prop = of_get_property(np, "reset-type", NULL);
+>+
+>+		/*
+>+		 * Check if property exists and if it is in range:
+>+		 * 1 - PPC4xx core reset
+>+		 * 2 - PPC4xx chip reset
+>+		 * 3 - PPC4xx system reset (default)
+>+		 */
+>+		if ((prop) && ((prop[0] >= 1) && (prop[0] <= 3)))
+>+			reset_type = prop[0] << 28;
+>+	}
+>+
+>+	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | reset_type);
+>+
+> 	while (1)
+> 		;	/* Just in case the reset doesn't work */
+> }
+>-- 
+>1.7.1
+>
