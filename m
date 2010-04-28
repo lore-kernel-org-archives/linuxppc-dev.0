@@ -1,21 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9EC26B7D52
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 12:09:32 +1000 (EST)
-Date: Wed, 28 Apr 2010 12:09:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [patch 03/15] powerpc: cpumask: Convert smp_cpus_done to new
-	cpumask API
-Message-Id: <20100428120922.11d7b47e.sfr@canb.auug.org.au>
-In-Reply-To: <20100427013431.787617147@samba.org>
-References: <20100427013231.510168034@samba.org>
-	<20100427013431.787617147@samba.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3"
-Cc: rusty@rustcorp.com.au, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 01064B6EFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 12:31:40 +1000 (EST)
+Received: by gyf2 with SMTP id 2so6689034gyf.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Apr 2010 19:31:38 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100427222913.GE15083@opensource.wolfsonmicro.com>
+References: <1272314980-23679-1-git-send-email-timur@freescale.com>
+	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
+	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
+	<20100427222913.GE15083@opensource.wolfsonmicro.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 27 Apr 2010 20:31:18 -0600
+Message-ID: <i2vfa686aa41004271931wc04b9c11l5f3ebda0acb14b9@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
+	ALSA SoC drivers
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
+	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
+	Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +30,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Anton,
-
-On Tue, 27 Apr 2010 11:32:34 +1000 Anton Blanchard <anton@samba.org> wrote:
+On Tue, Apr 27, 2010 at 4:29 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Tue, Apr 27, 2010 at 02:24:34PM -0600, Grant Likely wrote:
 >
-> -	old_mask =3D current->cpus_allowed;
-> -	set_cpus_allowed(current, cpumask_of_cpu(boot_cpuid));
-> -=09
-> +	alloc_cpumask_var(&old_mask, GFP_NOWAIT);
+>> However, as you and Mark rightly point out, it completely fails to
+>> represent complex sound devices with weird clocking and strange
+>> routes. =A0Something like this is probably more appropriate:
+>
+>>
+>> =A0 =A0 =A0 [...]
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 codec1 :codec@4f {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "cirrus,cs427=
+0";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x4f>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* MCLK source is a stand-al=
+one oscillator */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <1228800=
+0>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+>
+> You also want to be representing unused pins here.
+>
+>> =A0 =A0 =A0 [...]
+>> =A0 =A0 =A0 ssi1: ssi@16000 {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-ssi";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 [...]
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,mode =3D "i2s-slave";
+>
+> I'd not include the master/slave decision; it's either implied by the
+> fact that the CODEC has a standalone clock, a property of the link/card,
+> or a policy decision that the running software can change on a whim.
+>
+>> =A0 =A0 =A0 sound {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-hpcd-sound";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* maybe something like (totally off the top=
+ of my head) */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dai-links =3D <&ssi1 0 &codec 0
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&ssi1 1 &codec 1>=
+;
+>
+> I'm having a hard time loving this. =A0I'd be looking for a lot more
+> semantics on the links (things like information about separate clocks
+> for the two directions, for example) which makes me think that that
+> simple list format is far too simple and you want a list of more complex
+> objects.
 
-You should probably put an explicit include of linux/gfp.h in this file
-for this.  (Maybe linux/cpumask.h should include it - but it doesn't.)
+Oh, absolutely.  This example is no where near complete.  Mostly I
+just wanted to give a concrete example of a 'virtual' device like Ben
+was talking about.  I'm not going to even attempt to draft a complete
+binding until I've got time to properly go over the issues involved
+and discuss them with you and Liam.
+
+> There's also analogue interconnects to deal with, and jacks (including
+> detection and accessories). =A0Jacks can be particularly entertaining
+> here.
+>
+>> Or, in other words, the device tree should *not* be used to describe
+>> every possible detail and permutation. =A0It is best used to describe
+>> the permutations that are common so that they don't need to be hard
+>> coded for each and every board.
+>
+> I think the ideal is something that's purely descriptive of the hardware
+> and doesn't include any policy decisions. =A0Policy decisions covers an
+> awful lot of the interesting issues, though - but they're the sort of
+> things that can easily be changed with a new software load and therefore
+> don't belong in the device tree.
+
+Agreed.
+
+> On the other hand from a pragmatic point of view it's just much less
+> hassle to just only provide the mechanism for instantiating a machine
+> with custom code and use that for everything.
+
+Also true, but this approach carries with it an incremental cost that
+distributions feel the pain of.  Ultimately I think we'll find a sweet
+spot somewhere in between.
+
+Cheers,
+g.
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkvXmNIACgkQjjKRsyhoI8yh9ACfV22N/AMiHTcMC30RoxeFvNbL
-IrwAn38XQUdeZGQPt3FnL8UTJiiRfj5z
-=dOB2
------END PGP SIGNATURE-----
-
---Signature=_Wed__28_Apr_2010_12_09_22_+1000_MJBP4mxgg.ZDBXT3--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
