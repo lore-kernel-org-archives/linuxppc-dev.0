@@ -1,28 +1,25 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6E196B7D48
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 23:00:30 +1000 (EST)
-Date: Wed, 28 Apr 2010 14:00:37 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration
-	for ALSA SoC drivers
-Message-ID: <20100428130037.GF31400@opensource.wolfsonmicro.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id BCE9AB7D57
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 23:19:34 +1000 (EST)
+Received: by pvc22 with SMTP id 22so35012pvc.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 06:19:33 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20100427222913.GE15083@opensource.wolfsonmicro.com>
 References: <1272314980-23679-1-git-send-email-timur@freescale.com>
 	<1272350168.24542.6.camel@pasglop> <1272355624.3204.52.camel@odin>
 	<g2mfa686aa41004271324g8ff0d67fi3df4336cb25e9acc@mail.gmail.com>
-	<4BD74D0C.40303@freescale.com>
-	<20100427205924.GC15083@opensource.wolfsonmicro.com>
-	<1272428729.24542.70.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1272428729.24542.70.camel@pasglop>
+	<20100427222913.GE15083@opensource.wolfsonmicro.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 28 Apr 2010 08:19:00 -0500
+Message-ID: <r2oed82fe3e1004280619j29ba990fr9d0fc5b3ffa450f8@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
+	ALSA SoC drivers
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+	linuxppc-dev@ozlabs.org, Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 28, 2010 at 02:25:29PM +1000, Benjamin Herrenschmidt wrote:
+On Tue, Apr 27, 2010 at 5:29 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
 
-> I'd stay stick to the basics and move incrementally up until it stops
-> making sense:
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 codec1 :codec@4f {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "cirrus,cs427=
+0";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x4f>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* MCLK source is a stand-al=
+one oscillator */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 clock-frequency =3D <1228800=
+0>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 };
+>
+> You also want to be representing unused pins here.
 
->  - First, the basics: nodes for actual physical devices. i2c codecs on
-> their i2c busses, DMA controllers, etc...
+If they're unused, how do I represent them?  Can you give me an example?
 
-This is already supported by the ASoC core and has been for about a year
-or so, it just needs the device drivers to make use of it.  IIRC the
-drivers relevant to PowerPC are pretty much doing so already, but I
-didn't actually check.
+>> =A0 =A0 =A0 [...]
+>> =A0 =A0 =A0 ssi1: ssi@16000 {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-ssi";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 [...]
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 fsl,mode =3D "i2s-slave";
+>
+> I'd not include the master/slave decision; it's either implied by the
+> fact that the CODEC has a standalone clock, a property of the link/card,
+> or a policy decision that the running software can change on a whim.
 
->  - From there, see what simple properties are better off being put in
-> those respective nodes because they represent common enough variants of
-> functionality or simply because they are specific attributes of a given
-> device that aren't too concerned by the way things are interconnected.
+I know it's redundant, but at the time, it seemed a lot simpler than
+walking the device tree.
 
-This one is just a case of writing boiler plate for the existing
-platform data devices have to convert that from device tree into the
-existing formats.  It's not a monumentally edifying task, but I don't
-think we really need to worry about it here.
+Frankly, I'd rather not consider minor device tree changes at this
+point.  I'm hoping I don't need to change the device tree at all.
 
->  - Provide at least one identifier (either in a "sound" virtual device,
-> or just use the board's own "compatible" property) to have a .c file to
-> put everything together.
+>> =A0 =A0 =A0 sound {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc8610-hpcd-sound";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* maybe something like (totally off the top=
+ of my head) */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dai-links =3D <&ssi1 0 &codec 0
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&ssi1 1 &codec 1>=
+;
+>
+> I'm having a hard time loving this. =A0I'd be looking for a lot more
+> semantics on the links (things like information about separate clocks
+> for the two directions, for example) which makes me think that that
+> simple list format is far too simple and you want a list of more complex
+> objects.
 
-This has been the big sticking point so far.  It has been difficult to
-get people to accept this idea at all, the idea that there may be more
-to the machine specific setup than can be readily expressed in static
-data and might even vary dynamically at runtime is what seems to upset
-people.  I've been told on a number of occasions that instantiating 
-machine specific code that's not part of a specific chip is very
-difficult and would cause the device tree to be horribly buggy.
+Yeah, I don't like it either.  It seems arbitrary.
 
-What you're suggesting here is exactly what is supposed to happen from
-an ASoC point of view.
+> I think the ideal is something that's purely descriptive of the hardware
+> and doesn't include any policy decisions.
 
-> The whole thing is a matter of common sense and a bit of taste :-)
+I like to think that this is what we have today.
 
-The impression that has been created in the past is that there are
-inflexible device tree rules which can't be varied.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
