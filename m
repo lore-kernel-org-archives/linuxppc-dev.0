@@ -1,25 +1,22 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id DB179B7BEE
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Apr 2010 06:36:03 +1000 (EST)
-Received: by pxi18 with SMTP id 18so2733623pxi.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 13:36:02 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1272362955.24542.24.camel@pasglop>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop>
-	<20100427095440.GA15492@rakim.wolfsonmicro.main>
-	<1272362955.24542.24.camel@pasglop>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Wed, 28 Apr 2010 15:35:32 -0500
-Message-ID: <j2qed82fe3e1004281335h4076b050jc2894d4c4d6eac65@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
-	ALSA SoC drivers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@ozlabs.org, lrg@slimlogic.co.uk
+Return-Path: <gknispel@proformatique.com>
+Date: Wed, 28 Apr 2010 23:56:57 +0200
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/2] genirq: reliably replay pending edge-triggered irq
+Message-Id: <20100428235657.7120edd9.gknispel@proformatique.com>
+In-Reply-To: <alpine.LFD.2.00.1004271537130.2951@localhost.localdomain>
+References: <1271941798-9659-1-git-send-email-gknispel@proformatique.com>
+	<1271941798-9659-2-git-send-email-gknispel@proformatique.com>
+	<alpine.LFD.2.00.1004271537130.2951@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Russell King <linux@arm.linux.org.uk>,
+	Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Michael Buesch <mb@bu3sch.de>, Ingo Molnar <mingo@elte.hu>,
+	Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 27, 2010 at 5:09 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
+On Tue, 27 Apr 2010 15:42:11 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> Keep in mind that it's perfectly kosher to create nodes for "virtual"
-> devices. IE. We could imagine a node for the "sound subsystem" that
-> doesn't actually correspond to any physical device but contain the
-> necessary properties that binds everything together. You could even have
-> multiple of these if you have separate set of sound HW that aren't
-> directly dependant.
+> On Thu, 22 Apr 2010, Guillaume Knispel wrote:
+[snip] 
+> > acked and masked at controller level and IRQ_PENDING is set.
+> > ---
+> >  arch/arm/Kconfig                                   |    4 ----
+> >  arch/arm/configs/acs5k_defconfig                   |    1 -
+> >  arch/arm/configs/acs5k_tiny_defconfig              |    1 -
+> 
+>    Changing the defconfigs should be a separate patch and I'm not
+>    going to push such a thing through the genirq tree. The stale
+>    entries do not hurt.
 
-First, I want to officially retract this patch.  I've talked with
-Grant, and we've come up with a different approach to this problem.
+Ok
+In this separate patch, to I put "genirq" in the title?
+Do I put it in the same series?
 
-Second, how about this binding for the virtual sound node?  It would
-be a root-level node.
-
-	sound-devices {
-		sound0 {
-			ssi = &ssi0;
-			playback-dma = &dma00;
-			capture-dma = &dma01;
-			codec = &cs4270;
-		}
-	};
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Cheers,
+Guillaume Knispel
