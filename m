@@ -1,28 +1,21 @@
-Return-Path: <prvs=173405f1c6=steve@digidescorp.com>
-Received: from digidescorp.com (mail.digidescorp.com [66.244.163.200])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 158E2B7D21
+Return-Path: <xiaoxianghua@gmail.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 92C1AB7D2D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Apr 2010 03:36:03 +1000 (EST)
-Received: from [172.16.12.44] by digidescorp.com (Cipher SSLv3:RC4-MD5:128)
-	(MDaemon PRO v10.1.1) with ESMTP id md50001270550.msg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Apr 2010 12:35:56 -0500
-Subject: Re: [microblaze-uclinux] [PATCHv2] [RFC] Xilinx MPMC SDMA subsystem
-From: "Steven J. Magnani" <steve@digidescorp.com>
-To: microblaze-uclinux@itee.uq.edu.au
-In-Reply-To: <n2vfa686aa41004272213wceeef998tadc483ec1de7b792@mail.gmail.com>
-References: <201004280206.38220.temerkhanov@yandex.ru>
-	<1272421344.2877.6.camel@iscandar.digidescorp.com>
-	<1272421789.2877.21.camel@iscandar.digidescorp.com>
-	<n2vfa686aa41004272213wceeef998tadc483ec1de7b792@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 28 Apr 2010 12:35:50 -0500
-Message-Id: <1272476150.2956.51.camel@iscandar.digidescorp.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: steve@digidescorp.com
+	Thu, 29 Apr 2010 05:15:53 +1000 (EST)
+Received: by gwj17 with SMTP id 17so3891961gwj.15
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Apr 2010 12:15:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1272439375.24542.94.camel@pasglop>
+References: <1272439375.24542.94.camel@pasglop>
+Date: Wed, 28 Apr 2010 14:15:50 -0500
+Message-ID: <y2te6bf505b1004281215n9dcc6190j9915aa27ae91f75d@mail.gmail.com>
+Subject: Re: [PATCH] Fix DEBUG_PAGEALLOC on 603/e300
+From: Xianghua Xiao <xiaoxianghua@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,239 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant -
+On Wed, Apr 28, 2010 at 2:22 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> So we tried to speed things up a bit using flush_hash_pages() directly
+> but that falls over on 603 of course meaning we fail to flush the TLB
+> properly and we may even end up having it corrupt memory randomly by
+> accessing a hash table that doesn't exist.
+>
+> This removes the "optimization" by always going through flush_tlb_page()
+> for now at least.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>
+> Somebody with a 603 or e300 core based FSL SoC to try this out for me ?
+>
+> It's obviously completely untested :-)
+>
+> Cheers,
+> Ben.
+>
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> index b9243e7..95774b4 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -385,11 +385,7 @@ static int __change_page_attr(struct page *page, pgp=
+rot_t prot)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -EINVAL;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0__set_pte_at(&init_mm, address, kpte, mk_pte(p=
+age, prot), 0);
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0wmb();
+> -#ifdef CONFIG_PPC_STD_MMU
+> - =C2=A0 =C2=A0 =C2=A0 flush_hash_pages(0, address, pmd_val(*kpmd), 1);
+> -#else
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0flush_tlb_page(NULL, address);
+> -#endif
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0pte_unmap(kpte);
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+This change works me on a 834x(e300) platform, tested with lmbench and
+a production-ready application with 2.6.33.3.
 
-Thanks for the feedback. My responses are inline.
-
---Steve
-
-On Tue, 2010-04-27 at 23:13 -0600, Grant Likely wrote: 
-> Hi Sergey and Steven,
-> 
-> On Tue, Apr 27, 2010 at 8:29 PM, Steven J. Magnani
-> <steve@digidescorp.com> wrote:
-> > On Wed, 2010-04-28 at 02:06 +0400, Sergey Temerkhanov wrote:
-> >> This is the 2nd version of Xilinx MPMC LocalLink SDMA subsystem
-> >>
-
-[snip] 
-
-> >> diff -r baced9e29ab5 drivers/dma/Kconfig
-> >> --- a/drivers/dma/Kconfig     Tue Apr 27 20:48:50 2010 +0400
-> >> +++ b/drivers/dma/Kconfig     Wed Apr 28 02:00:51 2010 +0400
-> >> @@ -97,6 +97,14 @@
-> >>         Support the TXx9 SoC internal DMA controller.  This can be
-> >>         integrated in chips such as the Toshiba TX4927/38/39.
-> >>
-> >> +config XLLSDMA
-> 
-> I'd prefer XILINX_LLSDMA.  XLLSDMA could be ambiguous in the global
-> namespace (for a human reader), particularly as it is something that
-> few people will actually see.
-> 
-> >> +     bool "Xilinx MPMC DMA support"
-> >> +     depends on XILINX_VIRTEX || MICROBLAZE
-> >> +     select DMA_ENGINE
-> >> +     help
-> >> +       Support fot Xilinx MPMC LocalLink SDMA. Virtex FPGA family
-> >> +       has it integrated or fabric-based.
-> >> +
-> >
-> > fot --> for
-> >
-> > Since the xllsdma driver provides services to other drivers - not to userland -
-> > I think this would be better as a "silent" option, selected automatically when
-> > something like ll_temac or the forthcoming Xilinx DMA engine is selected.
-> > If we do it that way, note that XLLSDMA is independent of DMA_ENGINE so
-> > drivers/Makefile will need to be patched so that the dma subdirectory is
-> > always "y".
-> 
-> Agreed.  However, looking at this code, I don't see anything that
-> actually uses DMA_ENGINE here.  Am I missing something?
-
-This is a low-level driver that provides services to ll_temac and the
-(still in the works) DMA engine driver. There's no real relationship
-between this driver and DMA_ENGINE, and the still-in-the-works driver
-will come later after we stabilize the interface of this one.
-
-> >> +++ b/drivers/dma/xllsdma.c   Wed Apr 28 02:00:51 2010 +0400
-
-[snip] 
-
-> >> +
-> >> +static int __devinit mpmc_of_probe(struct of_device *op,
-> >> +                     const struct of_device_id *match)
-> >> +{
-> >> +     int err = mpmc_init(&op->dev);
-> >> +     if (err)
-> >> +             return err;
-> >> +
-> >> +     of_platform_bus_probe(op->node, xllsdma_of_match, &op->dev);
-> >> +     return 0;
-> >> +}
-> 
-> Okay, I think I've figured out what is bothering me....
-> 
-> While this *does* work; it really is the long way to go about things.
-> Doing it this way requires going back out to the driver model to tell
-> it things and trigger a probe on things that *this* driver needs, and
-> *this* driver already knows about.  It doesn't need to be this
-> complex.
-> 
-> Rather than register a bunch more of_platform devices, do something
-> like this instead:
-> 
-> +static int __devinit mpmc_of_probe(struct of_device *op,
-> +                     const struct of_device_id *match)
-> +{
-> +     struct mpmc_device *mpmc;
-> +     struct device_node *node;
-> +
-> +     mpmc = mpmc_init(&op->dev);
-> +     if (!mpmc)
-> +             return -ENODEV;
-> +
-> +     for_each_child_of_node(op->node, node) {
-> +             xllsdma_of_init(mpmc, node);
-> +     }
-> +     return 0;
-> +}
-> 
-> You do *not* need to register a separate struct device for each DMA
-> channel sub node (at least with regard to the driver model; I don't
-> know about the dma subsystem).  If you *want* a struct device, then
-> xllsdma_of_init() is free to register one, but it does not need to be
-> on the of_platform_bus, and this driver should not require a probe
-> step for each DMA channel.
-
-The DMA engine driver (and ll_temac, I imagine) will gain access to this driver via xllsdma_find_device(). 
-They should not need a struct device.
-
-[snip]
-
-> >> +#else        /* CONFIG_OF */
-> 
-> Why else?  It is perfectly valid to have both of_platform and platform
-> bus bindings.  That being said, this split will become unnecessary in
-> the very near future.  I've eliminated of_platform_bus_type, and
-> automatically moved all users of it over to the platform bus (without
-> driver changes).
-
-Agreed. It would help to have an idea of the timeline for the
-convergence. I haven't been following any OF-related discussions on
-LKML; I'll try to pay more attention.
-
-> 
-> However, current powerpc and microblaze code makes CONFIG_OF
-> manditory.  What condition will compile in the platform bus
-> attachment?
-
-At the moment, none in mainline. See my next comment.
-
-> 
-> >> +/*---------------------------------------------------------------------------
-> >> + * Platform bus attachment
-> >> + */
-> >> +
-> >> +static __devexit int xllsdma_plat_remove(struct platform_device *pdev)
-> >> +{
-> >> +     xllsdma_cleanup(&pdev->dev);
-> >> +     return 0;
-> >> +}
-> >> +
-> >> +static int __devinit xllsdma_plat_probe(struct platform_device *pdev)
-> >> +{
-> >> +     struct resource *rx_irq, *tx_irq, *mem;
-> >> +     int err = 0;
-> >> +
-> >> +     mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> >> +     if (!mem) {
-> >> +             dev_err(&pdev->dev, "invalid address\n");
-> >> +             err = -EINVAL;
-> >> +             goto fail;
-> >> +     }
-> >> +
-> >> +     /* RX interrupt is optional, and first */
-> >> +     rx_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-> >> +
-> >> +     /* TX interrupt is optional, and second */
-> >> +     tx_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 1);
-> >> +
-> >
-> > If it is impossible to create duplicate phandles in Device Tree,
-> > there should be a check here that no device with pdev->id already exists
-> > (i.e., it's NOT impossible with platform bus). It might be just as well to
-> > put the check in xllsdma_init() since that's not a 'hot' code path.
-> 
-> Question: microblaze and powerpc both use the device tree.  What is
-> the use-case for the non-dts version?
-
-My kernel, for one. During microblaze integration into mainline,
-toolchains that supported device tree were not available to common folk,
-so I had to hack up my kernel to work around this. In my kernel, OF is a
-selectable option. Since then new tools have become available (although
-AFAIK none officially from Xilinx - we are still having lots of problems
-with toolchains), but my last attempt to switch to device tree failed.
-At this point we're too far in the development cycle to justify the
-effort involved in a switch.
-
-[snip]
-
-> >> +int __init xllsdma_plat_init(void)
-> >> +{
-> >> +     int err = platform_driver_register(&xllsdma_plat_driver);
-> >> +     if (err) {
-> >> +             platform_driver_unregister(&xllsdma_plat_driver);
-> >> +             printk(KERN_ERR "registering driver failed: err=%i", err);
-> >> +             return err;
-> >> +     }
-> >> +
-> >> +     return 0;
-> >> +}
-> >> +subsys_initcall(xllsdma_plat_init);
-> 
-> Again, if driver registration fails, then the driver doesn't need to
-> be unregistered.  Same as with the of_platform_bus binding.
-
-Agreed.
-
-> 
-> >> +
-> >> +void xllsdma_plat_exit(void)
-> >> +{
-> >> +     platform_driver_unregister(&xllsdma_plat_driver);
-> >> +}
-> >> +
-> >> +static int mpmc_plat_probe(struct platform_device *pdev)
-> >> +{
-> >> +     return mpmc_init(&pdev->dev);
-> >> +}
-> >> +
-> >> +static int __devexit mpmc_plat_remove(struct platform_device *pdev)
-> >> +{
-> >> +     mpmc_cleanup(&pdev->dev);
-> >> +     return 0;
-> >> +}
-> >> +
-> >> +static struct platform_driver mpmc_plat_driver = {
-> >> +     .probe = mpmc_plat_probe,
-> >> +     .remove = __devexit_p(mpmc_plat_remove),
-> >> +     .driver = {
-> >> +             .owner = THIS_MODULE,
-> >> +             .name  = "xilinx-mpmc",
-> >> +     },
-> >> +};
-> 
-> I'll make the same argument here.  The multiple registrations in this
-> driver is weird.  This driver already knows about all of it's dma
-> channels, so why depend on the core driver model to probe a driver
-> instance for each?
-
-This code depends on the same infrastructure/concept as its OF
-countertpart. When those change, so will this.
-
-------------------------------------------------------------------------
- Steven J. Magnani               "I claim this network for MARS!
- www.digidescorp.com              Earthling, return my space modulator!"
-
- #include <standard.disclaimer>
+Xianghua
