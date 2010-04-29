@@ -1,32 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 92092B7D27
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Apr 2010 13:44:40 +1000 (EST)
-Received: by gyf2 with SMTP id 2so7320189gyf.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Apr 2010 20:44:38 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1272502322.24542.135.camel@pasglop>
-References: <1272314980-23679-1-git-send-email-timur@freescale.com>
-	<1272350168.24542.6.camel@pasglop>
-	<20100427095440.GA15492@rakim.wolfsonmicro.main>
-	<1272362955.24542.24.camel@pasglop>
-	<j2qed82fe3e1004281335h4076b050jc2894d4c4d6eac65@mail.gmail.com>
-	<z2xfa686aa41004281458u3a3048feh9d762e07f8052348@mail.gmail.com>
-	<r2oed82fe3e1004281513k23b54b56v7904a4a34750c90b@mail.gmail.com>
-	<1272502322.24542.135.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 28 Apr 2010 21:44:18 -0600
-Message-ID: <v2gfa686aa41004282044m48ace5feqb1507968d4b147e4@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc: add platform registration for
-	ALSA SoC drivers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: alsa-devel@alsa-project.org, kumar.gala@freescale.com,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur.tabi@gmail.com>,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	lrg@slimlogic.co.uk
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/5] sched: fix capacity calculations for SMT4
+In-reply-to: <1271426308.1674.429.camel@laptop>
+References: <20100409062118.D4096CBB6C@localhost.localdomain>
+	<1271161766.4807.1280.camel@twins> <2906.1271219317@neuling.org>
+	<1271426308.1674.429.camel@laptop>
+Date: Thu, 29 Apr 2010 16:55:58 +1000
+Message-ID: <31281.1272524158@neuling.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +20,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 28, 2010 at 6:52 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2010-04-28 at 17:13 -0500, Timur Tabi wrote:
->> On Wed, Apr 28, 2010 at 4:58 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->>
->> > The sound0 node needs a compatible value,
->>
->> I knew I was forgetting something
->>
->> > the sound-device node should
->> > probably have one too.
->>
->> The aliases, cpus, and memory node don't have a compatible property,
->> and I was modeling the design after the aliases node.
->
-> aliases is a bad choice, it's very very special and is neither a device
-> nor a virtual device, like chosen.
->
-> cpus is more of a match in your case.
->
-> In any case, I agree, you may not really need a compatible prop for the
-> virtual device. In fact, Grant, do we really need an enclosing node like
-> that ?
+In message <1271426308.1674.429.camel@laptop> you wrote:
+> On Wed, 2010-04-14 at 14:28 +1000, Michael Neuling wrote:
+> 
+> > > Right, so I suspect this will indeed break some things.
+> > > 
+> > > We initially allowed 0 capacity for when a cpu is consumed by an RT task
+> > > and there simply isn't much capacity left, in that case you really want
+> > > to try and move load to your sibling cpus if possible.
+> > 
+> > Changing the CPU power based on what tasks are running on them seems a
+> > bit wrong to me.  Shouldn't we keep those concepts separate?
+> 
+> Well the thing cpu_power represents is a ratio of compute capacity
+> available to this cpu as compared to other cpus. By normalizing the
+> runqueue weights with this we end up with a fair balance.
+> 
+> The thing to realize here is that this is solely about SCHED_NORMAL
+> tasks, SCHED_FIFO/RR (or the proposed DEADLINE) tasks do not care about
+> fairness and available compute capacity.
+> 
+> So if we were to ignore RT tasks, you'd end up with a situation where,
+> assuming 2 cpus and 4 equally weighted NORMAL tasks, and 1 RT task, the
+> load-balancer would give each cpu 2 NORMAL tasks, but the tasks that
+> would end up on the cpu the RT tasks would be running on would not run
+> as fast -- is that fair?
+> 
+> Since RT tasks do not have a weight (FIFO/RR have no limit at all,
+> DEADLINE would have something equivalent to a max weight), it is
+> impossible to account them in the normal weight sense.
+> 
+> Therefore the current model takes them into account by lowering the
+> compute capacity according to their (avg) cpu usage. So if the RT task
+> would consume 66% cputime, we'd end up with a situation where the cpu
+> running the RT task would get 1 NORMAL task, and other cpu would have
+> the remaining 3, that way they'd all get 33% cpu.
+> 
+> > > However you're right that this goes awry in your case.
+> > > 
+> > > One thing to look at is if that 15% increase is indeed representative
+> > > for the power7 cpu, it having 4 SMT threads seems to suggest there was
+> > > significant gains, otherwise they'd not have wasted the silicon.
+> > 
+> > There are certainly, for most workloads, per core gains for SMT4 over
+> > SMT2 on P7.  My kernels certainly compile faster and that's the only
+> > workload anyone who matters cares about.... ;-)
+> 
+> For sure ;-)
+> 
+> Are there any numbers available on how much they gain? It might be worth
+> to stick in real numbers instead of this alleged 15%.
+> 
+> > > One thing we could look at is using the cpu base power to compute
+> > > capacity from. We'd have to add another field to sched_group and store
+> > > power before we do the scale_rt_power() stuff.
+> > 
+> > Separating capacity from what RT tasks are running seems like a good
+> > idea to me.
+> 
+> Well, per the above we cannot fully separate them.
+> 
+> > This would fix the RT issue, but it's not clear to me how you are
+> > suggesting fixing the rounding down to 0 SMT4 issue.  Are you suggesting
+> > we bump smt_gain to say 2048 + 15%?  Or are you suggesting we separate
+> > the RT tasks out from capacity and keep the max(1, capacity) that I've
+> > added?  Or something else?
+> 
+> I would think that 4 SMT threads are still slower than two full cores,
+> right? So cpu_power=2048 would not be appropriate.
+> 
+> > Would another possibility be changing capacity a scaled value (like
+> > cpu_power is now) rather than a small integer as it is now.  For
+> > example, a scaled capacity of 1024 would be equivalent to a capacity of
+> > 1 now.  This might enable us to handle partial capacities better?  We'd
+> > probably have to scale a bunch of nr_running too.  
+> 
+> Right, so my proposal was to scale down the capacity divider (currently
+> 1024) to whatever would be the base capacity for that cpu. Trouble seems
+> to be that that makes group capacity a lot more complex, as you would
+> end up needing to average all the cpu's their base capacity.
+> 
+> 
+> Hrmm, my brain seems muddled but I might have another solution, let me
+> ponder this for a bit..
+> 
 
-Mostly I'm concerned about 'polluting' the root node in a way that
-we'd regret later; but perhaps I'm being overly conservative.  The
-sound node will still be uniquely identified by it's compatible
-property, so perhaps I'm fretting over nothing.
+Peter,
 
-> In any case, it's no big deal and shouldn't have much impact on
-> the design.
+Did you manage to get anywhere on this capacity issue?
 
-Right, the point has been reached of quibbling over trivialities.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Mikey
