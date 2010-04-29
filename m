@@ -1,12 +1,14 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id BA142B7D4C
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Apr 2010 09:49:37 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 65C28B7D1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Apr 2010 09:49:39 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
-Date: Fri, 30 Apr 2010 01:49:33 +0200
-Message-Id: <1272584978-19063-1-git-send-email-agust@denx.de>
+Subject: [PATCH 4/5] powerpc: doc/dts-bindings: update doc of FSL DIU bindings
+Date: Fri, 30 Apr 2010 01:49:37 +0200
+Message-Id: <1272584978-19063-5-git-send-email-agust@denx.de>
+In-Reply-To: <1272584978-19063-1-git-send-email-agust@denx.de>
+References: <1272584978-19063-1-git-send-email-agust@denx.de>
 Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de,
 	devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,28 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series rework DIU support patches submitted
-previously. Comments to the previos patch series have
-been addressed, not related changes are dropped and some
-changes are split out to separate patches to simplify
-review. Furthermore a patch has been added to support
-setting display mode using EDID block in the device tree.
+Update compatible and interrupt properties description.
+Furthermore an example for the MPC5121 has been added.
 
-Anatolij Gustschin (5):
-  fsl-diu-fb: fix issue with re-enabling DIU area descriptor on MPC5121
-  fsl-diu-fb: move fsl-diu-fb.h to include/linux
-  powerpc/mpc5121: shared DIU framebuffer support
-  powerpc: doc/dts-bindings: update doc of FSL DIU bindings
-  fsl-diu-fb: Support setting display mode using EDID
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ Documentation/powerpc/dts-bindings/fsl/diu.txt |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
- Documentation/powerpc/dts-bindings/fsl/diu.txt |   20 ++-
- arch/powerpc/platforms/512x/mpc5121_ads.c      |    7 +
- arch/powerpc/platforms/512x/mpc5121_generic.c  |   12 +
- arch/powerpc/platforms/512x/mpc512x.h          |    2 +
- arch/powerpc/platforms/512x/mpc512x_shared.c   |  284 ++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.h                  |    1 +
- drivers/video/Kconfig                          |    1 +
- drivers/video/fsl-diu-fb.c                     |  104 ++++++++-
- {drivers/video => include/linux}/fsl-diu-fb.h  |    0
- 9 files changed, 419 insertions(+), 12 deletions(-)
- rename {drivers/video => include/linux}/fsl-diu-fb.h (100%)
+diff --git a/Documentation/powerpc/dts-bindings/fsl/diu.txt b/Documentation/powerpc/dts-bindings/fsl/diu.txt
+index deb35de..326cddf 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/diu.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/diu.txt
+@@ -4,10 +4,12 @@ The Freescale DIU is a LCD controller, with proper hardware, it can also
+ drive DVI monitors.
+ 
+ Required properties:
+-- compatible : should be "fsl-diu".
++- compatible : should be "fsl,diu" or "fsl,mpc5121-diu".
+ - reg : should contain at least address and length of the DIU register
+   set.
+-- Interrupts : one DIU interrupt should be describe here.
++- interrupts : one DIU interrupt should be described here.
++- interrupt-parent : the phandle for the interrupt controller that
++  services interrupts for this device.
+ 
+ Example (MPC8610HPCD):
+ 	display@2c000 {
+@@ -16,3 +18,11 @@ Example (MPC8610HPCD):
+ 		interrupts = <72 2>;
+ 		interrupt-parent = <&mpic>;
+ 	};
++
++Example for MPC5121:
++	display@2100 {
++		compatible = "fsl,mpc5121-diu";
++		reg = <0x2100 0x100>;
++		interrupts = <64 0x8>;
++		interrupt-parent = <&ipic>;
++	};
+-- 
+1.6.3.3
