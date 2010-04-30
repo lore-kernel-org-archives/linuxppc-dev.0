@@ -1,28 +1,25 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 96F2CB7D40
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 May 2010 01:12:58 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3UF9RFL012953
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:09:27 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o3UFCvsh1617926
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:12:57 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o3UFCv4S005930
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:12:57 +1000
-Message-ID: <4BDAF376.4030005@in.ibm.com>
-Date: Fri, 30 Apr 2010 20:42:54 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
+	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id 6991DB7D2D
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 May 2010 01:15:19 +1000 (EST)
+Received: by pzk15 with SMTP id 15so175192pzk.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Apr 2010 08:15:17 -0700 (PDT)
 MIME-Version: 1.0
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: -next Apr 30: OOPS during eHEA driver initialization
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
+In-Reply-To: <20100430121947.1d265ca6@wker>
+References: <1272584978-19063-1-git-send-email-agust@denx.de>
+	<1272584978-19063-4-git-send-email-agust@denx.de>
+	<s2ted82fe3e1004291905mf562f0cbi24054bb973aa2dbb@mail.gmail.com>
+	<20100430121947.1d265ca6@wker>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Fri, 30 Apr 2010 10:08:45 -0500
+Message-ID: <x2ned82fe3e1004300808q757826cs864ac1c7c082f81@mail.gmail.com>
+Subject: Re: [PATCH 3/5] powerpc/mpc5121: shared DIU framebuffer support
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de,
+	John Rigby <jrigby@gmail.com>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,54 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With today's next eHEA drivers fails to initialize.
+On Fri, Apr 30, 2010 at 5:19 AM, Anatolij Gustschin <agust@denx.de> wrote:
 
-IBM eHEA ethernet device driver (Release EHEA_0103)
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc0000000004e8d7c
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=1024 NUMA pSeries
-last sysfs file: /sys/devices/vio/30000007/host0/target0:0:2/0:0:2:0/type
-Modules linked in: ehea(+) sr_mod cdrom sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
-NIP: c0000000004e8d7c LR: c00000000002614c CTR: c000000000026314
-REGS: c00000000c517810 TRAP: 0300   Not tainted  (2.6.34-rc5-autotest-next-20100430)
-MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24222228  XER: 20000005
-DAR: 0000000000000000, DSISR: 0000000040000000
-TASK = c00000000cf3ced0[730] 'modprobe' THREAD: c00000000c514000 CPU: 0
-GPR00: c00000000002614c c00000000c517a90 c000000000c96358 0000000000000000
-GPR04: c0000000ffff7858 c0000000004e973c c00000000cf3d9c8 0000000000000000
-GPR08: c000000000e4f8a0 0000000000001eed 0000000000000000 00000000000002e7
-GPR12: d000000001bfb0d0 c000000007440000 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 000000001002c598 0000000000000000
-GPR20: 0000000000000000 0000000000000004 0000000000000000 0000000010030218
-GPR24: 0000000010030160 00000fffb7b00000 0000000010030200 0000000000000000
-GPR28: c0000000ffff7858 0000000000000000 c000000000bfd528 0000000000000000
-NIP [c0000000004e8d7c] .of_match_node+0xc0/0x10c
-LR [c00000000002614c] .ibmebus_create_devices+0x48/0x104
-Call Trace:
-[c00000000c517a90] [c0000000004e973c] .of_get_next_child+0x74/0x98 (unreliable)
-[c00000000c517b20] [c00000000002614c] .ibmebus_create_devices+0x48/0x104
-[c00000000c517bc0] [c000000000026338] .ibmebus_register_driver+0x24/0x4c
-[c00000000c517c50] [d000000001bfa1bc] .ehea_module_init+0x1d4/0x22b8 [ehea]
-[c00000000c517ce0] [c0000000000097a4] .do_one_initcall+0x88/0x1bc
-[c00000000c517d90] [c0000000000cbdf4] .SyS_init_module+0x11c/0x2b0
-[c00000000c517e30] [c0000000000085b4] syscall_exit+0x0/0x40
-Instruction dump:
-7c7de838 881f0040 2f800000 419e0018 7f83e378 389f0040 4bfffdbd 7c63e838
-7c7d07b4 2fbd0000 409e0030 3bff00c8 <881f0000> 2f800000 409eff60 881f0020
----[ end trace cb522a034d760fb8 ]---
+>> How about just doing this?
+>>
+>> .init_early =A0 =A0 =A0 =A0 =A0 =A0 =3D mpc512x_init_diu,
+>
+> I thought it should be prepared for adding other code here.
+> mpc5121_ads_init_early() is generic and could contain other
+> things as well. I would vote for current version.
 
-next-20100428 was OK. Will try to bisect.
+Do you have any plans to add any additional code?   If not, then I say
+skip the middle-man.  If someone ever needs to do more, he can always
+put that function back.
 
-Thanks
--Sachin
+>> I'm pretty sure the compiler will optimize this to:
+>>
+>> =A0 =A0 temp =3D (1000000000000UL / pixclock);
+>>
+>> so you may as well do it that way.
+>
+> ??
+> 1000000000000 is _not_ UL, but UUL.
 
+That's what I meant.  Actually, I think it's ULL.  Regardless, I think
+the compiler will see the  "1000000000 ... * 1000" and just combine
+them together.  You're not actually outsmarting the compiler.
 
--- 
+>> > + =A0 =A0 =A0 err =3D 100000000;
+>>
+>> Why do you assign err to this arbitrary value?
+>
+> Dunno. It is Freescale's code and I do not have time to check
+> and understand each bit of it and to explain it.
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+*sigh*  You're not the first person to modify the DIU driver without
+understanding what it all does.  I suspect that the original author
+should have done this:
+
+    err =3D -1;
+
+because he wanted it to be the largest possible integer.
+
+>> Do you really need to use reserve_bootmem? =A0Have you tried kmalloc or
+>> alloc_pages_exact()?
+>
+> Yes. No, it is too early to use them here.
+
+There was a recent change in the kernel that allows kmalloc to work
+earlier than before.  Take a look at commit
+85355bb272db31a3f2dd99d547eef794805e1319 ("powerpc: Fix mpic alloc
+warning").
+
+>> > + =A0 =A0 =A0 mode =3D in_be32(diu_reg + 0x1c);
+>> > + =A0 =A0 =A0 if (mode !=3D 1) {
+>>
+>> How can in_be32() return a -1?
+>
+> It is a 1, not -1. I will use appropriate macro here and also
+> change to use a struct instead of adding offset to register base.
+
+Sorry, I misread the code.  I could have sworn it read "mode !=3D -1"
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
