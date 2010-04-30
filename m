@@ -1,25 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 6CF62B7D45
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Apr 2010 23:43:19 +1000 (EST)
-Received: by gyf2 with SMTP id 2so99755gyf.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Apr 2010 06:43:18 -0700 (PDT)
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 96F2CB7D40
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 May 2010 01:12:58 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp02.au.ibm.com (8.14.3/8.13.1) with ESMTP id o3UF9RFL012953
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:09:27 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o3UFCvsh1617926
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:12:57 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o3UFCv4S005930
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 01:12:57 +1000
+Message-ID: <4BDAF376.4030005@in.ibm.com>
+Date: Fri, 30 Apr 2010 20:42:54 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1272633687-6935-2-git-send-email-agust@denx.de>
-References: <1272633687-6935-1-git-send-email-agust@denx.de>
-	<1272633687-6935-2-git-send-email-agust@denx.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 30 Apr 2010 07:42:58 -0600
-Message-ID: <z2lfa686aa41004300642k2df3b5b3ofa7c00ae4d563a63@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/mpc5121: move PSC FIFO memory init to
-	platform code
-To: Anatolij Gustschin <agust@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: spi-devel-general@lists.sourceforge.net,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Wolfgang Denk <wd@denx.de>, Detelv Zundel <dzu@denx.de>,
-	linuxppc-dev@ozlabs.org
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: -next Apr 30: OOPS during eHEA driver initialization
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,261 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 30, 2010 at 7:21 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> Since PSC could also be used in other modes than UART mode
-> we move PSC FIFO memory initialization from serial driver to
-> common platform code. The initialized FIFO memory slices may
-> not overlap, so the most easy way would be to configure them
-> all at once at init time for all PSC devices. This is now done
-> by this patch.
->
-> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+With today's next eHEA drivers fails to initialize.
 
-Looks good.  I'll pick it up.
+IBM eHEA ethernet device driver (Release EHEA_0103)
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc0000000004e8d7c
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=1024 NUMA pSeries
+last sysfs file: /sys/devices/vio/30000007/host0/target0:0:2/0:0:2:0/type
+Modules linked in: ehea(+) sr_mod cdrom sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+NIP: c0000000004e8d7c LR: c00000000002614c CTR: c000000000026314
+REGS: c00000000c517810 TRAP: 0300   Not tainted  (2.6.34-rc5-autotest-next-20100430)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24222228  XER: 20000005
+DAR: 0000000000000000, DSISR: 0000000040000000
+TASK = c00000000cf3ced0[730] 'modprobe' THREAD: c00000000c514000 CPU: 0
+GPR00: c00000000002614c c00000000c517a90 c000000000c96358 0000000000000000
+GPR04: c0000000ffff7858 c0000000004e973c c00000000cf3d9c8 0000000000000000
+GPR08: c000000000e4f8a0 0000000000001eed 0000000000000000 00000000000002e7
+GPR12: d000000001bfb0d0 c000000007440000 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 000000001002c598 0000000000000000
+GPR20: 0000000000000000 0000000000000004 0000000000000000 0000000010030218
+GPR24: 0000000010030160 00000fffb7b00000 0000000010030200 0000000000000000
+GPR28: c0000000ffff7858 0000000000000000 c000000000bfd528 0000000000000000
+NIP [c0000000004e8d7c] .of_match_node+0xc0/0x10c
+LR [c00000000002614c] .ibmebus_create_devices+0x48/0x104
+Call Trace:
+[c00000000c517a90] [c0000000004e973c] .of_get_next_child+0x74/0x98 (unreliable)
+[c00000000c517b20] [c00000000002614c] .ibmebus_create_devices+0x48/0x104
+[c00000000c517bc0] [c000000000026338] .ibmebus_register_driver+0x24/0x4c
+[c00000000c517c50] [d000000001bfa1bc] .ehea_module_init+0x1d4/0x22b8 [ehea]
+[c00000000c517ce0] [c0000000000097a4] .do_one_initcall+0x88/0x1bc
+[c00000000c517d90] [c0000000000cbdf4] .SyS_init_module+0x11c/0x2b0
+[c00000000c517e30] [c0000000000085b4] syscall_exit+0x0/0x40
+Instruction dump:
+7c7de838 881f0040 2f800000 419e0018 7f83e378 389f0040 4bfffdbd 7c63e838
+7c7d07b4 2fbd0000 409e0030 3bff00c8 <881f0000> 2f800000 409eff60 881f0020
+---[ end trace cb522a034d760fb8 ]---
 
-g.
+next-20100428 was OK. Will try to bisect.
 
-> ---
-> =A0arch/powerpc/platforms/512x/mpc512x_shared.c | =A0 78 ++++++++++++++++=
-++++++++++
-> =A0drivers/serial/mpc52xx_uart.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 69 =
------------------------
-> =A02 files changed, 78 insertions(+), 69 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/=
-platforms/512x/mpc512x_shared.c
-> index 796080c..a717466 100644
-> --- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-> +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-> @@ -26,6 +26,7 @@
-> =A0#include <asm/prom.h>
-> =A0#include <asm/time.h>
-> =A0#include <asm/mpc5121.h>
-> +#include <asm/mpc52xx_psc.h>
->
-> =A0#include "mpc512x.h"
->
-> @@ -369,9 +370,86 @@ void __init mpc512x_declare_of_platform_devices(void=
-)
-> =A0 =A0 =A0 =A0}
-> =A0}
->
-> +#define DEFAULT_FIFO_SIZE 16
-> +
-> +static unsigned int __init get_fifo_size(struct device_node *np,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0char *prop_name)
-> +{
-> + =A0 =A0 =A0 const unsigned int *fp;
-> +
-> + =A0 =A0 =A0 fp =3D of_get_property(np, prop_name, NULL);
-> + =A0 =A0 =A0 if (fp)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return *fp;
-> +
-> + =A0 =A0 =A0 pr_warning("no %s property in %s node, defaulting to %d\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0prop_name, np->full_name, DEFAULT_FI=
-FO_SIZE);
-> +
-> + =A0 =A0 =A0 return DEFAULT_FIFO_SIZE;
-> +}
-> +
-> +#define FIFOC(_base) ((struct mpc512x_psc_fifo __iomem *) \
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ((u32)(_base) + sizeof(struct mpc52=
-xx_psc)))
-> +
-> +/* Init PSC FIFO space for TX and RX slices */
-> +void __init mpc512x_psc_fifo_init(void)
-> +{
-> + =A0 =A0 =A0 struct device_node *np;
-> + =A0 =A0 =A0 void __iomem *psc;
-> + =A0 =A0 =A0 unsigned int tx_fifo_size;
-> + =A0 =A0 =A0 unsigned int rx_fifo_size;
-> + =A0 =A0 =A0 int fifobase =3D 0; /* current fifo address in 32 bit words=
- */
-> +
-> + =A0 =A0 =A0 for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size =3D get_fifo_size(np, "fsl,tx-=
-fifo-size");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size =3D get_fifo_size(np, "fsl,rx-=
-fifo-size");
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* size in register is in 4 byte units */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size /=3D 4;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size /=3D 4;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!tx_fifo_size)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size =3D 1;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!rx_fifo_size)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size =3D 1;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 psc =3D of_iomap(np, 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!psc) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: Can't map %s de=
-vice\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, n=
-p->full_name);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* FIFO space is 4KiB, check if requested s=
-ize is available */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((fifobase + tx_fifo_size + rx_fifo_size=
-) > 0x1000) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: no fifo space a=
-vailable for %s\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, n=
-p->full_name);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(psc);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* chances are that anoth=
-er device requests less
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* fifo space, so we cont=
-inue.
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* set tx and rx fifo size registers */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txsz, (fifobase << 16=
-) | tx_fifo_size);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fifobase +=3D tx_fifo_size;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxsz, (fifobase << 16=
-) | rx_fifo_size);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 fifobase +=3D rx_fifo_size;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* reset and enable the slices */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txcmd, 0x80);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txcmd, 0x01);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxcmd, 0x80);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxcmd, 0x01);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(psc);
-> + =A0 =A0 =A0 }
-> +}
-> +
-> =A0void __init mpc512x_init(void)
-> =A0{
-> =A0 =A0 =A0 =A0mpc512x_declare_of_platform_devices();
-> =A0 =A0 =A0 =A0mpc5121_clk_init();
-> =A0 =A0 =A0 =A0mpc512x_restart_init();
-> + =A0 =A0 =A0 mpc512x_psc_fifo_init();
-> =A0}
-> diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.=
-c
-> index 3119fdd..843e7fb 100644
-> --- a/drivers/serial/mpc52xx_uart.c
-> +++ b/drivers/serial/mpc52xx_uart.c
-> @@ -430,34 +430,10 @@ static unsigned long mpc512x_getuartclk(void *p)
-> =A0 =A0 =A0 =A0return mpc5xxx_get_bus_frequency(p);
-> =A0}
->
-> -#define DEFAULT_FIFO_SIZE 16
-> -
-> -static unsigned int __init get_fifo_size(struct device_node *np,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0char *fifo_name)
-> -{
-> - =A0 =A0 =A0 const unsigned int *fp;
-> -
-> - =A0 =A0 =A0 fp =3D of_get_property(np, fifo_name, NULL);
-> - =A0 =A0 =A0 if (fp)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return *fp;
-> -
-> - =A0 =A0 =A0 pr_warning("no %s property in %s node, defaulting to %d\n",
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fifo_name, np->full_name, DEFAULT_FI=
-FO_SIZE);
-> -
-> - =A0 =A0 =A0 return DEFAULT_FIFO_SIZE;
-> -}
-> -
-> -#define FIFOC(_base) ((struct mpc512x_psc_fifo __iomem *) \
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ((u32)(_base) + sizeof(struct mpc52=
-xx_psc)))
-> -
-> =A0/* Init PSC FIFO Controller */
-> =A0static int __init mpc512x_psc_fifoc_init(void)
-> =A0{
-> =A0 =A0 =A0 =A0struct device_node *np;
-> - =A0 =A0 =A0 void __iomem *psc;
-> - =A0 =A0 =A0 unsigned int tx_fifo_size;
-> - =A0 =A0 =A0 unsigned int rx_fifo_size;
-> - =A0 =A0 =A0 int fifobase =3D 0; /* current fifo address in 32 bit words=
- */
->
-> =A0 =A0 =A0 =A0np =3D of_find_compatible_node(NULL, NULL,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "=
-fsl,mpc5121-psc-fifo");
-> @@ -480,51 +456,6 @@ static int __init mpc512x_psc_fifoc_init(void)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -ENODEV;
-> =A0 =A0 =A0 =A0}
->
-> - =A0 =A0 =A0 for_each_compatible_node(np, NULL, "fsl,mpc5121-psc-uart") =
-{
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size =3D get_fifo_size(np, "fsl,tx-=
-fifo-size");
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size =3D get_fifo_size(np, "fsl,rx-=
-fifo-size");
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* size in register is in 4 byte units */
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size /=3D 4;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size /=3D 4;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!tx_fifo_size)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 tx_fifo_size =3D 1;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!rx_fifo_size)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 rx_fifo_size =3D 1;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 psc =3D of_iomap(np, 0);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!psc) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: Can't map %s de=
-vice\n",
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, n=
-p->full_name);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* FIFO space is 4KiB, check if requested s=
-ize is available */
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((fifobase + tx_fifo_size + rx_fifo_size=
-) > 0x1000) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: no fifo space a=
-vailable for %s\n",
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__, n=
-p->full_name);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(psc);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* chances are that anoth=
-er device requests less
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* fifo space, so we cont=
-inue.
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* set tx and rx fifo size registers */
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txsz, (fifobase << 16=
-) | tx_fifo_size);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 fifobase +=3D tx_fifo_size;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxsz, (fifobase << 16=
-) | rx_fifo_size);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 fifobase +=3D rx_fifo_size;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* reset and enable the slices */
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txcmd, 0x80);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->txcmd, 0x01);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxcmd, 0x80);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&FIFOC(psc)->rxcmd, 0x01);
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 iounmap(psc);
-> - =A0 =A0 =A0 }
-> -
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
->
-> --
-> 1.6.3.3
->
->
+Thanks
+-Sachin
 
 
+-- 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
