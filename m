@@ -1,19 +1,21 @@
 Return-Path: <orenl@cs.columbia.edu>
 Received: from tarap.cc.columbia.edu (tarap.cc.columbia.edu [128.59.29.7])
-	by ozlabs.org (Postfix) with ESMTP id 4DD7DB84AB
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 May 2010 00:25:42 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1B54AB80CE
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 May 2010 00:25:47 +1000 (EST)
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v21 010/100] eclone (10/11): Implement sys_eclone for powerpc
-Date: Sat,  1 May 2010 10:14:52 -0400
-Message-Id: <1272723382-19470-11-git-send-email-orenl@cs.columbia.edu>
+Subject: [PATCH v21 004/100] eclone (4/11): Add target_pids parameter to
+	alloc_pid()
+Date: Sat,  1 May 2010 10:14:46 -0400
+Message-Id: <1272723382-19470-5-git-send-email-orenl@cs.columbia.edu>
 In-Reply-To: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
 References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
 Cc: linux-s390@vger.kernel.org, linux-api@vger.kernel.org,
 	containers@lists.linux-foundation.org, x86@kernel.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Matt Helsley <matthltc@us.ibm.com>,
-	Serge Hallyn <serue@us.ibm.com>, Pavel Emelyanov <xemul@openvz.org>
+	Matt Helsley <matthltc@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+	Pavel Emelyanov <xemul@openvz.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,172 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nathan Lynch <ntl@pobox.com>
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Wired up for both ppc32 and ppc64, but tested only with the latter.
-
-Changelog:
-  - Jan 20: (ntl) fix 32-bit build
-  - Nov 17: (serge) remove redundant flags_high check, and
-    	    don't fold it into flags.
+This parameter is currently NULL, but will be used in a follow-on patch.
 
 Cc: linux-api@vger.kernel.org
 Cc: x86@kernel.org
 Cc: linux-s390@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Serge E. Hallyn <serue@us.ibm.com>
+Tested-by: Serge E. Hallyn <serue@us.ibm.com>
+Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/powerpc/include/asm/syscalls.h |    6 ++++
- arch/powerpc/include/asm/systbl.h   |    1 +
- arch/powerpc/include/asm/unistd.h   |    3 +-
- arch/powerpc/kernel/entry_32.S      |    8 +++++
- arch/powerpc/kernel/entry_64.S      |    5 +++
- arch/powerpc/kernel/process.c       |   54 ++++++++++++++++++++++++++++++++++-
- 6 files changed, 75 insertions(+), 2 deletions(-)
+ include/linux/pid.h |    2 +-
+ kernel/fork.c       |    3 ++-
+ kernel/pid.c        |    9 +++++++--
+ 3 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 4084e56..920cefd 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -23,6 +23,12 @@ asmlinkage int sys_execve(unsigned long a0, unsigned long a1,
- asmlinkage int sys_clone(unsigned long clone_flags, unsigned long usp,
- 		int __user *parent_tidp, void __user *child_threadptr,
- 		int __user *child_tidp, int p6, struct pt_regs *regs);
-+asmlinkage int sys_eclone(unsigned long flags_low,
-+			  struct clone_args __user *args,
-+			  size_t args_size,
-+			  pid_t __user *pids,
-+			  unsigned long p5, unsigned long p6,
-+			  struct pt_regs *regs);
- asmlinkage int sys_fork(unsigned long p1, unsigned long p2,
- 		unsigned long p3, unsigned long p4, unsigned long p5,
- 		unsigned long p6, struct pt_regs *regs);
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index a5ee345..f94fc43 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -326,3 +326,4 @@ SYSCALL_SPU(perf_event_open)
- COMPAT_SYS_SPU(preadv)
- COMPAT_SYS_SPU(pwritev)
- COMPAT_SYS(rt_tgsigqueueinfo)
-+PPC_SYS(eclone)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index f0a1026..4cdbd5c 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -345,10 +345,11 @@
- #define __NR_preadv		320
- #define __NR_pwritev		321
- #define __NR_rt_tgsigqueueinfo	322
-+#define __NR_eclone		323
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index 49f1c2f..914185d 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -119,7 +119,7 @@ extern struct pid *find_get_pid(int nr);
+ extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
+ int next_pidmap(struct pid_namespace *pid_ns, int last);
  
- #ifdef __KERNEL__
+-extern struct pid *alloc_pid(struct pid_namespace *ns);
++extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids);
+ extern void free_pid(struct pid *pid);
  
--#define __NR_syscalls		323
-+#define __NR_syscalls		324
+ /*
+diff --git a/kernel/fork.c b/kernel/fork.c
+index afdfb08..62018c8 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -962,6 +962,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	int retval;
+ 	struct task_struct *p;
+ 	int cgroup_callbacks_done = 0;
++	pid_t *target_pids = NULL;
  
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 1175a85..579f1da 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -586,6 +586,14 @@ ppc_clone:
- 	stw	r0,_TRAP(r1)		/* register set saved */
- 	b	sys_clone
+ 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
+ 		return ERR_PTR(-EINVAL);
+@@ -1147,7 +1148,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 		goto bad_fork_cleanup_io;
  
-+	.globl	ppc_eclone
-+ppc_eclone:
-+	SAVE_NVGPRS(r1)
-+	lwz	r0,_TRAP(r1)
-+	rlwinm	r0,r0,0,0,30		/* clear LSB to indicate full */
-+	stw	r0,_TRAP(r1)		/* register set saved */
-+	b	sys_eclone
-+
- 	.globl	ppc_swapcontext
- ppc_swapcontext:
- 	SAVE_NVGPRS(r1)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 07109d8..b763340 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -344,6 +344,11 @@ _GLOBAL(ppc_clone)
- 	bl	.sys_clone
- 	b	syscall_exit
- 
-+_GLOBAL(ppc_eclone)
-+	bl	.save_nvgprs
-+	bl	.sys_eclone
-+	b	syscall_exit
-+
- _GLOBAL(ppc32_swapcontext)
- 	bl	.save_nvgprs
- 	bl	.compat_sys_swapcontext
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e4d71ce..b183287 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -961,7 +961,59 @@ int sys_clone(unsigned long clone_flags, unsigned long usp,
- 		child_tidp = TRUNC_PTR(child_tidp);
- 	}
- #endif
-- 	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
-+	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
-+}
-+
-+int sys_eclone(unsigned long clone_flags_low,
-+	       struct clone_args __user *uclone_args,
-+	       size_t size,
-+	       pid_t __user *upids,
-+	       unsigned long p5, unsigned long p6,
-+	       struct pt_regs *regs)
-+{
-+	struct clone_args kclone_args;
-+	unsigned long stack_base;
-+	int __user *parent_tidp;
-+	int __user *child_tidp;
-+	unsigned long stack_sz;
-+	unsigned int nr_pids;
-+	unsigned long flags;
-+	unsigned long usp;
-+	int rc;
-+
-+	CHECK_FULL_REGS(regs);
-+
-+	rc = fetch_clone_args_from_user(uclone_args, size, &kclone_args);
-+	if (rc)
-+		return rc;
-+
-+	stack_sz = kclone_args.child_stack_size;
-+	stack_base = kclone_args.child_stack;
-+
-+	/* powerpc doesn't do anything useful with the stack size */
-+	if (stack_sz)
-+		return -EINVAL;
-+
-+	/* Interpret stack_base as the child sp if it is set. */
-+	usp = regs->gpr[1];
-+	if (stack_base)
-+		usp = stack_base;
-+
-+	flags = clone_flags_low;
-+
-+	nr_pids = kclone_args.nr_pids;
-+
-+	parent_tidp = (int __user *)(unsigned long)kclone_args.parent_tid_ptr;
-+	child_tidp = (int __user *)(unsigned long)kclone_args.child_tid_ptr;
-+
-+#ifdef CONFIG_PPC64
-+	if (test_thread_flag(TIF_32BIT)) {
-+		parent_tidp = TRUNC_PTR(parent_tidp);
-+		child_tidp = TRUNC_PTR(child_tidp);
-+	}
-+#endif
-+	return do_fork_with_pids(flags, stack_base, regs, stack_sz,
-+				 parent_tidp, child_tidp, nr_pids, upids);
+ 	if (pid != &init_struct_pid) {
+-		pid = alloc_pid(p->nsproxy->pid_ns);
++		pid = alloc_pid(p->nsproxy->pid_ns, target_pids);
+ 		if (IS_ERR(pid)) {
+ 			retval = PTR_ERR(pid);
+ 			goto bad_fork_cleanup_io;
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 4eaf975..57f1344 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -276,13 +276,14 @@ void free_pid(struct pid *pid)
+ 	call_rcu(&pid->rcu, delayed_put_pid);
  }
  
- int sys_fork(unsigned long p1, unsigned long p2, unsigned long p3,
+-struct pid *alloc_pid(struct pid_namespace *ns)
++struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids)
+ {
+ 	struct pid *pid;
+ 	enum pid_type type;
+ 	int i, nr;
+ 	struct pid_namespace *tmp;
+ 	struct upid *upid;
++	pid_t tpid;
+ 
+ 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+ 	if (!pid) {
+@@ -292,7 +293,11 @@ struct pid *alloc_pid(struct pid_namespace *ns)
+ 
+ 	tmp = ns;
+ 	for (i = ns->level; i >= 0; i--) {
+-		nr = alloc_pidmap(tmp);
++		tpid = 0;
++		if (target_pids)
++			tpid = target_pids[i];
++
++		nr = set_pidmap(tmp, tpid);
+ 		if (nr < 0)
+ 			goto out_free;
+ 
 -- 
 1.6.3.3
