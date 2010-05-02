@@ -1,37 +1,18 @@
-Return-Path: <matthltc@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6A849B7D61
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 May 2010 10:25:21 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o420CXXs019169
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 20:12:33 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o420PHps2134218
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 20:25:17 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o420PGwE026175
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 May 2010 20:25:17 -0400
-Date: Sat, 1 May 2010 17:25:13 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v21 001/100] eclone (1/11): Factor out code to allocate
-	pidmap page
-Message-ID: <20100502002513.GC31830@count0.beaverton.ibm.com>
-References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
-	<1272723382-19470-2-git-send-email-orenl@cs.columbia.edu>
-	<20100501.151022.190375136.davem@davemloft.net>
+Return-Path: <sanjeevfiles@yahoo.com>
+Received: from web63002.mail.re1.yahoo.com (web63002.mail.re1.yahoo.com
+	[69.147.96.213]) by ozlabs.org (Postfix) with SMTP id C6284B7D60
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun,  2 May 2010 20:27:15 +1000 (EST)
+Message-ID: <832265.7605.qm@web63002.mail.re1.yahoo.com>
+Date: Sun, 2 May 2010 03:27:12 -0700 (PDT)
+From: Maindoor <sanjeevfiles@yahoo.com>
+Subject: Re: [PATCH] Fix DEBUG_PAGEALLOC on 603/e300
+To: Xianghua Xiao <xiaoxianghua@gmail.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1272493790.24542.109.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100501.151022.190375136.davem@davemloft.net>
-Cc: linux-s390@vger.kernel.org, orenl@cs.columbia.edu,
-	containers@lists.linux-foundation.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	matthltc@us.ibm.com, linux-api@vger.kernel.org, serue@us.ibm.com,
-	akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com, xemul@openvz.org
+Content-Type: multipart/alternative; boundary="0-1324963604-1272796032=:7605"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,80 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 01, 2010 at 03:10:22PM -0700, David Miller wrote:
-> NO WAY, there is no way in the world you should post 100 patches
-> at a time to any mailing list, especially those at vger.kernel.org
-> that have thousands upon thousands of subscribers.
+--0-1324963604-1272796032=:7605
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I am sorry we concluded that sending these 100 patches at once was a
-good idea. I will try, again, to find ways to divide the
-set up into more manageable pieces. Regardless of how that goes
-the whole set will not be submitted to LKML/vger all at once in the
-future.
+Any updates on this ? I need something similar.
 
-If anyone would like to offer more specific constructive suggestions
-on subdividing the patches I'd be happy to try them.
+Thanks,
+Maindoor.
 
-That said, for anyone who's curious, we faced a few dilemmas which
-pointed us down the wrong path here.
+--- On Thu, 4/29/10, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrot=
+e:
 
-http://lkml.org/lkml/2010/3/1/422
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Fix DEBUG_PAGEALLOC on 603/e300
+To: "Xianghua Xiao" <xiaoxianghua@gmail.com>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
+Date: Thursday, April 29, 2010, 3:59 AM
 
-Specifically the last part is rather hard to misinterpret:
+On Wed, 2010-04-28 at 14:15 -0500, Xianghua Xiao wrote:
+> This change works me on a 834x(e300) platform, tested with lmbench and
+> a production-ready application with 2.6.33.3.
 
-"I'd suggest waiting until very shortly after 2.6.34-rc1 then please
-send all the patches onto the list and let's get to work."
+But have you tested that DEBUG_PAGEALLOC actually works ? :-)
 
-(ok, it's not shortly after 2.6.34-rc1 -- we were asked to reorganize
-the code and we did...)
+A way to do that is to
 
-But even if one decides to ignore the common sense interpretation of
-Andrew's reply there was more:
+=A0=A0=A0 - get_free_pages a page
+=A0=A0=A0 - read from it
+=A0=A0=A0 - free it
+=A0=A0=A0 - write to it
 
-Standard procedure is to post to LKML when pushing patches upstream.
+It should oops on the write, and I suspect that without my patch it
+doesn't.
 
-We were asked to create a useful implementation of checkpoint/restart
-yet when we tried to submit a digestable piece we were told that
-submitting it by itself was pointless (eclone). The rest of the code
-was even more checkpoint/restart-specific so the same logic seemed to
-apply.
+Cheers,
+Ben.
 
-We have public git trees and used the containers@ mailing list to post
-patches for review but rarely received outside feedback on patches
-there. Not even requests to divide the set.
 
-So clearly we needed to post to relevant external lists and
-reviewers. We tried that earlier and received complaints that lists
-hadn't been Cc'd on some of the patches (e.g. fsdevel). So clearly we
-needed to expand the Cc list for v21.
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@lists.ozlabs.org
+https://lists.ozlabs.org/listinfo/linuxppc-dev
+=0A=0A=0A      
+--0-1324963604-1272796032=:7605
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-We looked at dividing the set but it always came down to trimming
-functionality -- this conflicted with the "useful implementation"
-we were asked for.
-
-In summary: We've been given a fair number of conflicting instructions
-		and we failed to find the right balance in following them.
-
-> Post only small, well contained, sets of patches at a time.  At most
-> 10 or so in one go.
-
-We've tried to keep the individual patches small and reviewable. That
-has the opposite effect on patch count unfortunately.
-
->
-> Do you realize how much mail traffic you generate by posting so many
-> patches at one time, and how unlikely it is for anyone to actually
-> sift through and review your patches after you've spammed them by
-> posting so many at one time?
->
-> A second infraction and I will have no choice but to block you at the
-> SMTP level at vger.kernel.org so please do not do it again.
-
-We will not post nearly this many at once again.
-
-I'm thinking we'll just provide URLs to git trees or quilt series
-if subdividing is impossible and/or anyone needs wider context than
-the 10 or so we post at a time.
-
-Sorry again,
-	-Matt Helsley
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;">Any updates on this ? I need something simila=
+r.<br><br>Thanks,<br>Maindoor.<br><br>--- On <b>Thu, 4/29/10, Benjamin Herr=
+enschmidt <i>&lt;benh@kernel.crashing.org&gt;</i></b> wrote:<br><blockquote=
+ style=3D"border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; paddin=
+g-left: 5px;"><br>From: Benjamin Herrenschmidt &lt;benh@kernel.crashing.org=
+&gt;<br>Subject: Re: [PATCH] Fix DEBUG_PAGEALLOC on 603/e300<br>To: "Xiangh=
+ua Xiao" &lt;xiaoxianghua@gmail.com&gt;<br>Cc: "linuxppc-dev" &lt;linuxppc-=
+dev@lists.ozlabs.org&gt;<br>Date: Thursday, April 29, 2010, 3:59 AM<br><br>=
+<div class=3D"plainMail">On Wed, 2010-04-28 at 14:15 -0500, Xianghua Xiao w=
+rote:<br>&gt; This change works me on a 834x(e300) platform, tested with lm=
+bench and<br>&gt; a production-ready application with 2.6.33.3.<br><br>But =
+have you tested that DEBUG_PAGEALLOC actually works ? :-)<br><br>A way to d=
+o that
+ is to<br><br>&nbsp;&nbsp;&nbsp; - get_free_pages a page<br>&nbsp;&nbsp;&nb=
+sp; - read from it<br>&nbsp;&nbsp;&nbsp; - free it<br>&nbsp;&nbsp;&nbsp; - =
+write to it<br><br>It should oops on the write, and I suspect that without =
+my patch it<br>doesn't.<br><br>Cheers,<br>Ben.<br><br><br>_________________=
+______________________________<br>Linuxppc-dev mailing list<br><a ymailto=
+=3D"mailto:Linuxppc-dev@lists.ozlabs.org" href=3D"/mc/compose?to=3DLinuxppc=
+-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a><br><a href=3D"http=
+s://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank">https://lists=
+.ozlabs.org/listinfo/linuxppc-dev</a><br></div></blockquote></td></tr></tab=
+le><br>=0A=0A      
+--0-1324963604-1272796032=:7605--
