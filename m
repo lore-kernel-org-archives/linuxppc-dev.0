@@ -1,35 +1,37 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3EEC9B7D2D
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 02:34:47 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o43GYToD009094
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 May 2010 09:34:39 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o43GYXG5002555
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 May 2010 11:34:33 -0500 (CDT)
-Message-ID: <4BDEFB13.5060407@freescale.com>
-Date: Mon, 03 May 2010 11:34:27 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] powerpc/mpc5121: add initial support for PDM360NG
-	board
-References: <1272659448-23302-1-git-send-email-agust@denx.de>
-	<1272659448-23302-2-git-send-email-agust@denx.de>
-	<g2tfa686aa41005020754t46934f13hbd5c75a6b7668a54@mail.gmail.com>
-In-Reply-To: <g2tfa686aa41005020754t46934f13hbd5c75a6b7668a54@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Detlev Zundel <dzu@denx.de>, Markus Fischer <markus.fischer.ec@ifm.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	Michael Weiss <michael.weiss@ifm.com>, linuxppc-dev@ozlabs.org,
-	Anatolij Gustschin <agust@denx.de>, Wolfgang Grandegger <wg@denx.de>
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E55BCB7D1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 07:02:41 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e2.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o43Kosjv024106
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 May 2010 16:50:54 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o43L2aDY161230
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 May 2010 17:02:36 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o43L2ZEt017235
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 May 2010 18:02:36 -0300
+Subject: Re: [PATCH v21 001/100] eclone (1/11): Factor out code to allocate
+	pidmap page
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20100501.151022.190375136.davem@davemloft.net>
+References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
+	<1272723382-19470-2-git-send-email-orenl@cs.columbia.edu>
+	<20100501.151022.190375136.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 03 May 2010 14:02:31 -0700
+Message-Id: <1272920551.12034.4729.camel@nimitz>
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, orenl@cs.columbia.edu,
+	containers@lists.linux-foundation.org, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	matthltc@us.ibm.com, linux-api@vger.kernel.org, serue@us.ibm.com,
+	akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com, xemul@openvz.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
->> +               // IPIC
->> +               // interrupts cell = <intr #, sense>
->> +               // sense values match linux IORESOURCE_IRQ_* defines:
->> +               // sense == 8: Level, low assertion
->> +               // sense == 2: Edge, high-to-low change
->> +               //
->> +               ipic: interrupt-controller@c00 {
->> +                       compatible = "fsl,mpc5121-ipic", "fsl,ipic";
->> +                       interrupt-controller;
->> +                       #address-cells = <0>;
+On Sat, 2010-05-01 at 15:10 -0700, David Miller wrote:
+> NO WAY, there is no way in the world you should post 100 patches
+> at a time to any mailing list, especially those at vger.kernel.org
+> that have thousands upon thousands of subscribers.
 > 
-> Don't need #address-cells here
+> Post only small, well contained, sets of patches at a time.  At most
+> 10 or so in one go.
 
-#address-cells is required by ePAPR for interrupt controllers if an 
-interrupt-map is used.  While there isn't one in this tree, it's best to 
-just always include #address-cells in interrupt controller nodes.
+Hi Dave,
 
--Scott
+I really do apologize if these caused undue traffic on vger.  It
+certainly wasn't our intention to cause any problems.
+
+We've had a fear all along that we'll just go back into our little
+containers@lists.linux-foundation.org, and go astray of what the
+community wants done with these patches.  It's also important to
+remember that these really do affect the entire kernel.  Unfortunately,
+it's not really a single feature or something that fits well on any
+other mailing list.  It has implications _everywhere_.  I think Andrew
+Morton also asked that these continue coming to LKML, although his
+request probably came at a time when the set was a wee bit smaller.
+
+> Do you realize how much mail traffic you generate by posting so many
+> patches at one time, and how unlikely it is for anyone to actually
+> sift through and review your patches after you've spammed them by
+> posting so many at one time?
+
+I honestly don't expect people to be reading the whole thing at once.
+But, I do hope that people can take a look at their individual bits that
+are touched.
+
+> A second infraction and I will have no choice but to block you at the
+> SMTP level at vger.kernel.org so please do not do it again.
+
+I know these patches are certainly not at the level of importance as,
+say the pata or -stable updates, but they're certainly not of
+unprecedented scale.  I've seen a number of patchbombs of this size
+recently.
+
+I hope Andrew pulls this set into -mm so this doesn't even come up
+again.  But, if it does, can you make some suggestions on how to be more
+kind to vger in the process?
+
+-- Dave
