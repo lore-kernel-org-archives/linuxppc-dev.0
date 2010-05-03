@@ -1,25 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A444FB7D21
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 07:12:35 +1000 (EST)
-Date: Mon, 03 May 2010 14:12:40 -0700 (PDT)
-Message-Id: <20100503.141240.22516688.davem@davemloft.net>
-To: dave@linux.vnet.ibm.com
-Subject: Re: [PATCH v21 001/100] eclone (1/11): Factor out code to allocate
-	pidmap page
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1272920551.12034.4729.camel@nimitz>
-References: <1272723382-19470-2-git-send-email-orenl@cs.columbia.edu>
-	<20100501.151022.190375136.davem@davemloft.net>
-	<1272920551.12034.4729.camel@nimitz>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-s390@vger.kernel.org, orenl@cs.columbia.edu,
-	containers@lists.linux-foundation.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	matthltc@us.ibm.com, linux-api@vger.kernel.org, serue@us.ibm.com,
-	akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com, xemul@openvz.org
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EDED9B7D12
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 07:54:40 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: kumar.gala@freescale.com, linuxppc-dev@ozlabs.org,
+	alsa-devel@alsa-project.org, broonie@opensource.wolfsonmicro.com,
+	lrg@slimlogic.co.uk
+Subject: [PATCH 1/2] powerpc/8610: add probing for individual DMA channels,
+	not just DMA controllers
+Date: Mon,  3 May 2010 16:54:15 -0500
+Message-Id: <1272923655-31807-1-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Mon, 03 May 2010 14:02:31 -0700
+A future version of the MPC8610 HPCD's ASoC DMA driver will probe on individual
+DMA channel nodes, so the DMA controller nodes' compatible string must be listed
+in mpc8610_ids[] for the probe to work.
 
-> It has implications _everywhere_.
+Also remove the "gianfar" compatible from mpc8610_ids[], since there is no
+gianfar (or any other networking device) on the 8610.
 
-That does not remove the responsibility to break things up into
-managable pieces, not does it make such a task impossible or
-even hard to do.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-You post sets of 10 to 15 at a time, once those are agreed to
-and to everyone's general liking, you toss them into a GIT tree
-and you say "here's the next 10 to 15 and they are relative to
-the changes in GIT tree X which have already been fully reviewed"
+Kumar, the ASoC mainters are willing to pick up this patch, but they want an
+ACK from you first.  Or, you could pick it up, since by itself it's harmless.
 
-And so on and so forth.
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-And this is the only logical thing to do, because if someone wants
-a change in patch 7, it can effect patch 23 so it's pointless to
-post for review a patch that's going to end up changing anyways.
-That's a waste of reviewer resources.
-
-To be honest, I'm really tired of what tends to be people's knee jerk
-reaction to this situations, which is a lot of people doing nothing
-but defending themselves.  Even if it did not violate documented
-policy (it did), it violates common sense.  So, can people do
-something more constructive than trying to defend themselves on this?
-
-It's stupid and shouldn't have been done, and we should move on.
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 5abe137..018cc67 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -83,7 +83,8 @@ static struct of_device_id __initdata mpc8610_ids[] = {
+ 	{ .compatible = "fsl,mpc8610-immr", },
+ 	{ .compatible = "fsl,mpc8610-guts", },
+ 	{ .compatible = "simple-bus", },
+-	{ .compatible = "gianfar", },
++	/* So that the DMA channel nodes can be probed individually: */
++	{ .compatible = "fsl,eloplus-dma", },
+ 	{}
+ };
+ 
+-- 
+1.6.5
