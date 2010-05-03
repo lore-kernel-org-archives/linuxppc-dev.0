@@ -1,15 +1,19 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C723FB7D5D
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 May 2010 03:30:26 +1000 (EST)
-Date: Sun, 2 May 2010 21:30:25 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] USB: FHCI: cq_get() should check kfifo_out()'s return value
-Message-ID: <20100502173025.GA24086@oksana.dev.rtsoft.ru>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (mail.lixom.net [66.141.50.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D13D8B7D5C
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 May 2010 11:33:29 +1000 (EST)
+Date: Sun, 2 May 2010 20:43:29 -0500
+From: Olof Johansson <olof@lixom.net>
+To: "Tseng-Hui (Frank) Lin" <thlin@linux.vnet.ibm.com>
+Subject: Re: [PATCH] add icswx support
+Message-ID: <20100503014329.GA26805@lixom.net>
+References: <1272060275.6329.13.camel@flin.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1272060275.6329.13.camel@flin.austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,50 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 7acd72eb85f1c7a15e8b5eb554994949241737f1 ("kfifo: rename
-kfifo_put... into kfifo_in... and kfifo_get... into kfifo_out..."),
-kfifo_out() is marked __must_check, and that causes gcc to produce
-lots of warnings like this:
+On Fri, Apr 23, 2010 at 05:04:35PM -0500, Tseng-Hui (Frank) Lin wrote:
+> Add Power7 icswx co-processor instruction support.
+> 
+> Signed-off-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
+> Signed-off-by: Tseng-Hui (Frank) Lin <thlin@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/mmu-hash64.h  |    3 +
+>  arch/powerpc/include/asm/mmu_context.h |    4 ++
+>  arch/powerpc/include/asm/reg.h         |    3 +
+>  arch/powerpc/mm/mmu_context_hash64.c   |   79
+> ++++++++++++++++++++++++++++++++
+>  4 files changed, 89 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h
+> b/arch/powerpc/include/asm/mmu-hash64.h
+> index 2102b21..ba5727d 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -421,6 +421,9 @@ typedef struct {
+>  #ifdef CONFIG_PPC_SUBPAGE_PROT
+>  	struct subpage_prot_table spt;
+>  #endif /* CONFIG_PPC_SUBPAGE_PROT */
+> +	unsigned long acop;
+> +#define HASH64_MAX_PID (0xFFFF)
+> +	unsigned int pid;
 
-  CC      drivers/usb/host/fhci-mem.o
-In file included from drivers/usb/host/fhci-hcd.c:34:
-drivers/usb/host/fhci.h: In function 'cq_get':
-drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
-...
+Way too generic a name. Please call it acop_pid or something similar.
 
-Fix it with BUG_ON() check. We could just forcibly ignore return
-value, but it's better to check if we really got a whole pointer.
+Same with the define.
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- drivers/usb/host/fhci.h |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+This is also growing the mm_struct by 16 bytes on all platforms, no
+matter if the process in question is using the coprocessor or not.
 
-diff --git a/drivers/usb/host/fhci.h b/drivers/usb/host/fhci.h
-index 72dae1c..a3fd0fd 100644
---- a/drivers/usb/host/fhci.h
-+++ b/drivers/usb/host/fhci.h
-@@ -20,6 +20,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/types.h>
-+#include <linux/bug.h>
- #include <linux/spinlock.h>
- #include <linux/interrupt.h>
- #include <linux/kfifo.h>
-@@ -515,9 +516,12 @@ static inline int cq_put(struct kfifo *kfifo, void *p)
- 
- static inline void *cq_get(struct kfifo *kfifo)
- {
-+	unsigned int sz;
- 	void *p = NULL;
- 
--	kfifo_out(kfifo, (void *)&p, sizeof(p));
-+	sz = kfifo_out(kfifo, (void *)&p, sizeof(p));
-+	BUG_ON(sz != sizeof(p));
-+
- 	return p;
- }
- 
--- 
-1.7.0.5
+
+
+-Olof
