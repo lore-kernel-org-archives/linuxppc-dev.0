@@ -1,15 +1,14 @@
 Return-Path: <takuya.yoshikawa@gmail.com>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id B2433B7D27
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 23:06:23 +1000 (EST)
-Received: by pwi8 with SMTP id 8so1805577pwi.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 May 2010 06:06:22 -0700 (PDT)
-Date: Tue, 4 May 2010 22:06:20 +0900
+Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
+	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id ED3CEB7D1A
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 23:07:05 +1000 (EST)
+Received: by pzk15 with SMTP id 15so898559pzk.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 04 May 2010 06:07:04 -0700 (PDT)
+Date: Tue, 4 May 2010 22:07:02 +0900
 From: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
 To: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
-Subject: [RFC][PATCH 9/12] KVM: introduce a wrapper function of
-	set_bit_user_non_atomic()
-Message-Id: <20100504220620.97e90535.takuya.yoshikawa@gmail.com>
+Subject: [RFC][PATCH RFC 10/12] KVM: move dirty bitmaps to user space
+Message-Id: <20100504220702.f8ba6ccc.takuya.yoshikawa@gmail.com>
 In-Reply-To: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
 References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
 Mime-Version: 1.0
@@ -30,83 +29,267 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is not to break the build for other architectures than x86 and ppc.
+We move dirty bitmaps to user space.
+
+ - Allocation and destruction: we use do_mmap() and do_munmap().
+   The new bitmap space is twice longer than the original one and we
+   use the additional space for double buffering: this makes it
+   possible to update the active bitmap while letting the user space
+   read the other one safely. For x86, we can also remove the vmalloc()
+   in kvm_vm_ioctl_get_dirty_log().
+
+ - Bitmap manipulations: we replace all functions which access dirty
+   bitmaps with *_user() functions.
+
+ - For ia64: moving the dirty bitmaps of memory slots does not affect
+   ia64 much because it's using a different place to store dirty logs
+   rather than the dirty bitmaps of memory slots: all we have to change
+   are sync and get of dirty log, so we don't need set_bit_user like
+   functions for ia64.
 
 Signed-off-by: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+CC: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>
 ---
- arch/ia64/include/asm/kvm_host.h    |    5 +++++
- arch/powerpc/include/asm/kvm_host.h |    6 ++++++
- arch/s390/include/asm/kvm_host.h    |    6 ++++++
- arch/x86/include/asm/kvm_host.h     |    5 +++++
- 4 files changed, 22 insertions(+), 0 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c  |   15 +++++++++-
+ arch/powerpc/kvm/book3s.c |    5 +++-
+ arch/x86/kvm/x86.c        |   25 ++++++++----------
+ include/linux/kvm_host.h  |    3 +-
+ virt/kvm/kvm_main.c       |   62 +++++++++++++++++++++++++++++++++++++-------
+ 5 files changed, 82 insertions(+), 28 deletions(-)
 
-diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
-index a362e67..938041b 100644
---- a/arch/ia64/include/asm/kvm_host.h
-+++ b/arch/ia64/include/asm/kvm_host.h
-@@ -589,6 +589,11 @@ int kvm_emulate_halt(struct kvm_vcpu *vcpu);
- int kvm_pal_emul(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run);
- void kvm_sal_emul(struct kvm_vcpu *vcpu);
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index 17fd65c..03503e6 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -1823,11 +1823,19 @@ static int kvm_ia64_sync_dirty_log(struct kvm *kvm,
+ 	n = kvm_dirty_bitmap_bytes(memslot);
+ 	base = memslot->base_gfn / BITS_PER_LONG;
  
-+static inline int kvm_set_bit_user(int nr, void __user *addr)
-+{
-+	return 0;
-+}
++	r = -EFAULT;
++	if (!access_ok(VERIFY_WRITE, memslot->dirty_bitmap, n))
++		goto out;
 +
- #endif /* __ASSEMBLY__*/
+ 	for (i = 0; i < n/sizeof(long); ++i) {
+ 		if (dirty_bitmap[base + i])
+ 			memslot->is_dirty = true;
  
- #endif
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 0c9ad86..9463524 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -26,6 +26,7 @@
- #include <linux/types.h>
- #include <linux/kvm_types.h>
- #include <asm/kvm_asm.h>
-+#include <asm/uaccess.h>
+-		memslot->dirty_bitmap[i] = dirty_bitmap[base + i];
++		if (__put_user(dirty_bitmap[base + i],
++			       &memslot->dirty_bitmap[i])) {
++			r = -EFAULT;
++			goto out;
++		}
+ 		dirty_bitmap[base + i] = 0;
+ 	}
+ 	r = 0;
+@@ -1858,7 +1866,10 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
+ 	if (memslot->is_dirty) {
+ 		kvm_flush_remote_tlbs(kvm);
+ 		n = kvm_dirty_bitmap_bytes(memslot);
+-		memset(memslot->dirty_bitmap, 0, n);
++		if (clear_user(memslot->dirty_bitmap, n)) {
++			r = -EFAULT;
++			goto out;
++		}
+ 		memslot->is_dirty = false;
+ 	}
+ 	r = 0;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 4b074f1..2a31d2f 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -1210,7 +1210,10 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
+ 			kvmppc_mmu_pte_pflush(vcpu, ga, ga_end);
  
- #define KVM_MAX_VCPUS 1
- #define KVM_MEMORY_SLOTS 32
-@@ -287,4 +288,9 @@ struct kvm_vcpu_arch {
- #endif
- };
+ 		n = kvm_dirty_bitmap_bytes(memslot);
+-		memset(memslot->dirty_bitmap, 0, n);
++		if (clear_user(memslot->dirty_bitmap, n)) {
++			r = -EFAULT;
++			goto out;
++		}
+ 		memslot->is_dirty = false;
+ 	}
  
-+static inline int kvm_set_bit_user(int nr, void __user *addr)
-+{
-+	return set_bit_user_non_atomic(nr, addr);
-+}
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 023c7f8..32a3d94 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2760,40 +2760,37 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
+ 	/* If nothing is dirty, don't bother messing with page tables. */
+ 	if (memslot->is_dirty) {
+ 		struct kvm_memslots *slots, *old_slots;
+-		unsigned long *dirty_bitmap;
++		unsigned long __user *dirty_bitmap;
++		unsigned long __user *dirty_bitmap_old;
+ 
+ 		spin_lock(&kvm->mmu_lock);
+ 		kvm_mmu_slot_remove_write_access(kvm, log->slot);
+ 		spin_unlock(&kvm->mmu_lock);
+ 
+-		r = -ENOMEM;
+-		dirty_bitmap = vmalloc(n);
+-		if (!dirty_bitmap)
++		dirty_bitmap = memslot->dirty_bitmap;
++		dirty_bitmap_old = memslot->dirty_bitmap_old;
++		r = -EFAULT;
++		if (clear_user(dirty_bitmap_old, n))
+ 			goto out;
+-		memset(dirty_bitmap, 0, n);
+ 
+ 		r = -ENOMEM;
+ 		slots = kzalloc(sizeof(struct kvm_memslots), GFP_KERNEL);
+-		if (!slots) {
+-			vfree(dirty_bitmap);
++		if (!slots)
+ 			goto out;
+-		}
 +
- #endif /* __POWERPC_KVM_HOST_H__ */
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index 27605b6..36710ee 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -238,4 +238,10 @@ struct kvm_arch{
- };
+ 		memcpy(slots, kvm->memslots, sizeof(struct kvm_memslots));
+-		slots->memslots[log->slot].dirty_bitmap = dirty_bitmap;
++		slots->memslots[log->slot].dirty_bitmap = dirty_bitmap_old;
++		slots->memslots[log->slot].dirty_bitmap_old = dirty_bitmap;
+ 		slots->memslots[log->slot].is_dirty = false;
  
- extern int sie64a(struct kvm_s390_sie_block *, unsigned long *);
-+
-+static inline int kvm_set_bit_user(int nr, void __user *addr)
-+{
-+	return 0;
-+}
-+
- #endif
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 3f0007b..9e22df9 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -795,4 +795,9 @@ void kvm_set_shared_msr(unsigned index, u64 val, u64 mask);
+ 		old_slots = kvm->memslots;
+ 		rcu_assign_pointer(kvm->memslots, slots);
+ 		synchronize_srcu_expedited(&kvm->srcu);
+-		dirty_bitmap = old_slots->memslots[log->slot].dirty_bitmap;
+ 		kfree(old_slots);
  
- bool kvm_is_linear_rip(struct kvm_vcpu *vcpu, unsigned long linear_rip);
+ 		r = -EFAULT;
+-		if (copy_to_user(log->dirty_bitmap, dirty_bitmap, n)) {
+-			vfree(dirty_bitmap);
++		if (copy_in_user(log->dirty_bitmap, dirty_bitmap, n))
+ 			goto out;
+-		}
+-		vfree(dirty_bitmap);
+ 	} else {
+ 		r = -EFAULT;
+ 		if (clear_user(log->dirty_bitmap, n))
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 0aa6ecb..c95e2b7 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -116,7 +116,8 @@ struct kvm_memory_slot {
+ 	unsigned long npages;
+ 	unsigned long flags;
+ 	unsigned long *rmap;
+-	unsigned long *dirty_bitmap;
++	unsigned long __user *dirty_bitmap;
++	unsigned long __user *dirty_bitmap_old;
+ 	bool is_dirty;
+ 	struct {
+ 		unsigned long rmap_pde;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 3e3acad..ddcf65a 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -437,8 +437,20 @@ out_err_nodisable:
  
-+static inline int kvm_set_bit_user(int nr, void __user *addr)
-+{
-+	return set_bit_user_non_atomic(nr, addr);
-+}
+ static void kvm_destroy_dirty_bitmap(struct kvm_memory_slot *memslot)
+ {
+-	vfree(memslot->dirty_bitmap);
++	unsigned long user_addr;
++	unsigned long n = kvm_dirty_bitmap_bytes(memslot);
 +
- #endif /* _ASM_X86_KVM_HOST_H */
++	if (!memslot->dirty_bitmap)
++		return;
++
++	user_addr = min((unsigned long)memslot->dirty_bitmap,
++			(unsigned long)memslot->dirty_bitmap_old);
++	down_write(&current->mm->mmap_sem);
++	do_munmap(current->mm, user_addr, 2 * n);
++	up_write(&current->mm->mmap_sem);
++
+ 	memslot->dirty_bitmap = NULL;
++	memslot->dirty_bitmap_old = NULL;
+ }
+ 
+ /*
+@@ -472,8 +484,12 @@ void kvm_free_physmem(struct kvm *kvm)
+ 	int i;
+ 	struct kvm_memslots *slots = kvm->memslots;
+ 
+-	for (i = 0; i < slots->nmemslots; ++i)
++	for (i = 0; i < slots->nmemslots; ++i) {
++		/* VM process will exit: we don't unmap by ourselves. */
++		slots->memslots[i].dirty_bitmap = NULL;
++		slots->memslots[i].dirty_bitmap_old = NULL;
+ 		kvm_free_physmem_slot(&slots->memslots[i], NULL);
++	}
+ 
+ 	kfree(kvm->memslots);
+ }
+@@ -527,14 +543,35 @@ static int kvm_vm_release(struct inode *inode, struct file *filp)
+ 
+ static int kvm_create_dirty_bitmap(struct kvm_memory_slot *memslot)
+ {
+-	unsigned long dirty_bytes = kvm_dirty_bitmap_bytes(memslot);
++	int err;
++	unsigned long user_addr;
++	unsigned long n = kvm_dirty_bitmap_bytes(memslot);
+ 
+-	memslot->dirty_bitmap = vmalloc(dirty_bytes);
+-	if (!memslot->dirty_bitmap)
+-		return -ENOMEM;
++	down_write(&current->mm->mmap_sem);
++	user_addr = do_mmap(NULL, 0, 2 * n,
++			    PROT_READ | PROT_WRITE,
++			    MAP_PRIVATE | MAP_ANONYMOUS, 0);
++	up_write(&current->mm->mmap_sem);
++
++	if (IS_ERR((void *)user_addr)) {
++		err = PTR_ERR((void *)user_addr);
++		goto out;
++	}
++
++	memslot->dirty_bitmap = (unsigned long __user *)user_addr;
++	memslot->dirty_bitmap_old = (unsigned long __user *)(user_addr + n);
++	if (clear_user(memslot->dirty_bitmap, 2 * n)) {
++		err = -EFAULT;
++		goto out_unmap;
++	}
+ 
+-	memset(memslot->dirty_bitmap, 0, dirty_bytes);
+ 	return 0;
++out_unmap:
++	down_write(&current->mm->mmap_sem);
++	do_munmap(current->mm, user_addr, 2 * n);
++	up_write(&current->mm->mmap_sem);
++out:
++	return err;
+ }
+ 
+ /*
+@@ -799,7 +836,7 @@ int kvm_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+ 	n = kvm_dirty_bitmap_bytes(memslot);
+ 
+ 	r = -EFAULT;
+-	if (copy_to_user(log->dirty_bitmap, memslot->dirty_bitmap, n))
++	if (copy_in_user(log->dirty_bitmap, memslot->dirty_bitmap, n))
+ 		goto out;
+ 
+ 	r = 0;
+@@ -1195,11 +1232,16 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+ 	gfn = unalias_gfn(kvm, gfn);
+ 	memslot = gfn_to_memslot_unaliased(kvm, gfn);
+ 	if (memslot && memslot->dirty_bitmap) {
+-		unsigned long rel_gfn = gfn - memslot->base_gfn;
++		int nr = generic_le_bit_offset(gfn - memslot->base_gfn);
+ 
+-		generic___set_le_bit(rel_gfn, memslot->dirty_bitmap);
++		if (kvm_set_bit_user(nr, memslot->dirty_bitmap))
++			goto out_fault;
+ 		memslot->is_dirty = true;
+ 	}
++	return;
++
++out_fault:
++	printk(KERN_WARNING "%s: kvm_set_bit_user failed.\n", __func__);
+ }
+ 
+ /*
 -- 
 1.7.0.4
