@@ -1,15 +1,15 @@
 Return-Path: <takuya.yoshikawa@gmail.com>
-Received: from mail-pz0-f185.google.com (mail-pz0-f185.google.com
-	[209.85.222.185]) by ozlabs.org (Postfix) with ESMTP id 8B763B7D27
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 23:04:42 +1000 (EST)
-Received: by pzk15 with SMTP id 15so897327pzk.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 May 2010 06:04:41 -0700 (PDT)
-Date: Tue, 4 May 2010 22:04:18 +0900
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 1F602B7D2E
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 May 2010 23:05:02 +1000 (EST)
+Received: by pxi18 with SMTP id 18so1791534pxi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 04 May 2010 06:05:02 -0700 (PDT)
+Date: Tue, 4 May 2010 22:05:00 +0900
 From: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
 To: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
-Subject: [RFC][PATCH 7/12 not tested yet] PPC: introduce __set_bit() like
-	function for bitmaps in user space
-Message-Id: <20100504220418.083929bc.takuya.yoshikawa@gmail.com>
+Subject: [RFC][PATCH resend 8/12] asm-generic: bitops: introduce le bit
+	offset macro
+Message-Id: <20100504220500.7695cd66.takuya.yoshikawa@gmail.com>
 In-Reply-To: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
 References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
 Mime-Version: 1.0
@@ -30,62 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During the work of KVM's dirty page logging optimization, we encountered
-the need of manipulating bitmaps in user space efficiantly. To achive this,
-we introduce a uaccess function for setting a bit in user space following
-Avi's suggestion.
+Although we can use *_le_bit() helpers to treat bitmaps le arranged,
+having le bit offset calculation as a seperate macro gives us more freedom.
 
-  KVM is now using dirty bitmaps for live-migration and VGA. Although we need
-  to update them from kernel side, copying them every time for updating the
-  dirty log is a big bottleneck. Especially, we tested that zero-copy bitmap
-  manipulation improves responses of GUI manipulations a lot.
+For example, KVM has le arranged dirty bitmaps for VGA, live-migration
+and they are used in user space too. To avoid bitmap copies between kernel
+and user space, we want to update the bitmaps in user space directly.
+To achive this, le bit offset with *_user() functions help us a lot.
 
-We also found one similar need in drivers/vhost/vhost.c in which the author
-implemented set_bit_to_user() locally using inefficient functions: see TODO
-at the top of that.
-
-Probably, this kind of need would be common for virtualization area.
-
-So we introduce a function set_bit_user_non_atomic().
+So let us use the le bit offset calculation part by defining it as a new
+macro: generic_le_bit_offset() .
 
 Signed-off-by: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-CC: Alexander Graf <agraf@suse.de>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
+CC: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/include/asm/uaccess.h |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ include/asm-generic/bitops/le.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 3a01ce8..f878326 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -321,6 +321,25 @@ do {								\
- 	__gu_err;						\
- })
+diff --git a/include/asm-generic/bitops/le.h b/include/asm-generic/bitops/le.h
+index 80e3bf1..ee445fb 100644
+--- a/include/asm-generic/bitops/le.h
++++ b/include/asm-generic/bitops/le.h
+@@ -9,6 +9,8 @@
  
-+static inline int set_bit_user_non_atomic(int nr, void __user *addr)
-+{
-+	u8 __user *p;
-+	u8 val;
-+
-+	p = (u8 __user *)((unsigned long)addr + nr / BITS_PER_BYTE);
-+	if (!access_ok(VERIFY_WRITE, p, 1))
-+		return -EFAULT;
-+
-+	if (__get_user(val, p))
-+		return -EFAULT;
-+
-+	val |= 1U << (nr % BITS_PER_BYTE);
-+	if (__put_user(val, p))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
+ #if defined(__LITTLE_ENDIAN)
  
- /* more complex routines */
++#define generic_le_bit_offset(nr)	(nr)
++
+ #define generic_test_le_bit(nr, addr) test_bit(nr, addr)
+ #define generic___set_le_bit(nr, addr) __set_bit(nr, addr)
+ #define generic___clear_le_bit(nr, addr) __clear_bit(nr, addr)
+@@ -25,6 +27,8 @@
  
+ #elif defined(__BIG_ENDIAN)
+ 
++#define generic_le_bit_offset(nr)	((nr) ^ BITOP_LE_SWIZZLE)
++
+ #define generic_test_le_bit(nr, addr) \
+ 	test_bit((nr) ^ BITOP_LE_SWIZZLE, (addr))
+ #define generic___set_le_bit(nr, addr) \
 -- 
 1.7.0.4
