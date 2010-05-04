@@ -1,17 +1,16 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id E4969B7D4A
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 07:14:19 +1000 (EST)
-Date: Tue, 4 May 2010 23:14:18 +0200
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 978DBB7BEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 08:19:05 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
-To: Leonardo Chiquitto <leonardo.lists@gmail.com>
-Subject: Re: Oops in mpc52xx_uart_init (2.6.34-rc5)
-Message-ID: <20100504231418.720eb809@wker>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] serial: mpc52xx_uart: fix null pointer dereference
+Date: Wed,  5 May 2010 00:18:59 +0200
+Message-Id: <1273011539-13994-1-git-send-email-agust@denx.de>
 In-Reply-To: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
 References: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, leonardo.lists@gmail.com, gregkh@suse.de,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 May 2010 17:39:25 -0300
-Leonardo Chiquitto <leonardo.lists@gmail.com> wrote:
+Commit 6acc6833510db8f72b5ef343296d97480555fda9
+introduced NULL pointer dereference and kernel crash
+on ppc32 machines while booting. Fix this bug now.
 
-> Kernel 2.6.34-rc5 crashes on boot in a ppc32 machine (Mac Mini G4).
-> 
-> Reverting the following commit makes the kernel boot normally again:
-> 
-> commit 6acc6833510db8f72b5ef343296d97480555fda9
-> Author: Anatolij Gustschin <agust@denx.de>
-> Date:   Tue Feb 16 22:30:03 2010 -0700
-> 
->     serial: mpc52xx_uart: re-enable mpc5121 PSC UART support
-> 
-> I'm attaching a photo with the panic message and call trace (I apologize
-> for the poor image quality and cropped left border). Please let me know if I
-> can provide any other info to help debugging this issue.
+Reported-by: Leonardo Chiquitto <leonardo.lists@gmail.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/serial/mpc52xx_uart.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks for the bug report! This info is enough, I will submit a
-fix soon.
-
-Thanks,
-Anatolij
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index a176ab4..02469c3 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -1467,7 +1467,7 @@ mpc52xx_uart_init(void)
+ 	/*
+ 	 * Map the PSC FIFO Controller and init if on MPC512x.
+ 	 */
+-	if (psc_ops->fifoc_init) {
++	if (psc_ops && psc_ops->fifoc_init) {
+ 		ret = psc_ops->fifoc_init();
+ 		if (ret)
+ 			return ret;
+-- 
+1.7.0.4
