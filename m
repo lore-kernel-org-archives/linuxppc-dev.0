@@ -1,26 +1,20 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id C23B4B7D62
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 02:09:00 +1000 (EST)
-Message-ID: <4BE04677.4060608@redhat.com>
-Date: Tue, 04 May 2010 19:08:23 +0300
-From: Avi Kivity <avi@redhat.com>
+Return-Path: <mqbitsko@gmail.com>
+Received: from mail-gx0-f217.google.com (mail-gx0-f217.google.com
+	[209.85.217.217]) by ozlabs.org (Postfix) with ESMTP id 6AFF5B7BEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  5 May 2010 02:48:32 +1000 (EST)
+Received: by gxk9 with SMTP id 9so2226235gxk.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 04 May 2010 09:48:30 -0700 (PDT)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC][PATCH resend 8/12] asm-generic: bitops: introduce le bit
-	offset macro
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<20100504220500.7695cd66.takuya.yoshikawa@gmail.com>
-	<201005041703.00549.arnd@arndb.de>
-In-Reply-To: <201005041703.00549.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
-	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, yoshikawa.takuya@oss.ntt.co.jp,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
-	hpa@zytor.com, tglx@linutronix.de,
-	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
+Sender: mqbitsko@gmail.com
+Date: Tue, 4 May 2010 11:48:30 -0500
+Message-ID: <o2u7ee95fff1005040948s29c5113el18d43c4a59045621@mail.gmail.com>
+Subject: fs_enet/mac-fcc: RMII, 10Mb Ethernet not clocking right
+From: Ken MacLeod <ken@bitsko.slc.ut.us>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Vitaly Bordug <vbordug@ru.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/04/2010 06:03 PM, Arnd Bergmann wrote:
-> On Tuesday 04 May 2010, Takuya Yoshikawa wrote:
->    
->> Although we can use *_le_bit() helpers to treat bitmaps le arranged,
->> having le bit offset calculation as a seperate macro gives us more freedom.
->>
->> For example, KVM has le arranged dirty bitmaps for VGA, live-migration
->> and they are used in user space too. To avoid bitmap copies between kernel
->> and user space, we want to update the bitmaps in user space directly.
->> To achive this, le bit offset with *_user() functions help us a lot.
->>
->> So let us use the le bit offset calculation part by defining it as a new
->> macro: generic_le_bit_offset() .
->>      
-> Does this work correctly if your user space is 32 bits (i.e. unsigned long
-> is different size in user space and kernel) in both big- and little-endian
-> systems?
->
-> I'm not sure about all the details, but I think you cannot in general share
-> bitmaps between user space and kernel because of this.
->    
+Short version:
 
-That's why the bitmaps are defined as little endian u64 aligned, even on 
-big endian 32-bit systems.  Little endian bitmaps are wordsize agnostic, 
-and u64 alignment ensures we can use long-sized bitops on mixed size 
-systems.
+Can anyone confirm 10Mb Ethernet works with fs_enet/mac-fcc? with
+RMII? with a KS8721 PHY?
 
--- 
-error compiling committee.c: too many arguments to function
+Long version:
+
+I have an MPC8247 connected via an externally clocked RMII to a Micrel
+KS8721 PHY using the Generic PHY driver, running either MontaVista
+2.6.18+ or mainline 2.6.30 (I don't see any relevant changes up to
+current mainline).  100Mb Ethernet works fine.
+
+When I use a 10Mb hub (not switch), the PHY registers, mii-tool, and
+ethtool all report 10baseT-HD, no autonegotiation.  mac-fcc, restart()
+sets the FCC GFEMR CLK bit and clears the FCC FPSMR FDE and LPB bits
+(the FCC FPSMR RMII bit is set in all cases).
+
+>From that perspective, it looks like everything is set up correctly to
+work at 10Mb.  However, no outgoing packets are received by other
+hosts and I see a 1:1 count of incoming errors for the ARP requests
+sent by my other host (frame errors, reported as RxBD[NO] nonoctet
+aligned errors).
+
+When I connect a scope to the transmit line, I'm seeing the same
+timing for both 10Mb and 100Mb.  I would have expected the 10Mb to be
+10x longer.
+
+The MPC8272 Reference Manual is confusing on this point, for the FCC
+GFEMR CLK field it says "RMII reference clock rate for 50-MHz input
+clock from external oscillator (Ethernet mode): 0 == 50MHz (for Fast
+Ethernet), 1 == 5MHz (for 10BaseT)"  The RMII spec and the KS8721
+datasheet both say REF_CLK should be 50MHz at all times, but I don't
+see anything other than the CLK bit to indicate 10Mb cycle timing for
+the RMII.
+
+Am I missing something?  What next to try?
+
+Thanks,
+
+  -- Ken
