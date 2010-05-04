@@ -1,25 +1,32 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id 83C6EB7D1E
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 01:03:33 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
-Subject: Re: [RFC][PATCH resend 8/12] asm-generic: bitops: introduce le bit
-	offset macro
-Date: Tue, 4 May 2010 17:03:00 +0200
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<20100504220500.7695cd66.takuya.yoshikawa@gmail.com>
-In-Reply-To: <20100504220500.7695cd66.takuya.yoshikawa@gmail.com>
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E79DFB7D2F
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 01:11:38 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o44FBZRL023098
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 May 2010 08:11:36 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o44FLHcB020274
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 May 2010 10:21:17 -0500 (CDT)
+Message-ID: <4BE03926.4050900@freescale.com>
+Date: Tue, 04 May 2010 10:11:34 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201005041703.00549.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
-	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, yoshikawa.takuya@oss.ntt.co.jp,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
-	avi@redhat.com, hpa@zytor.com, tglx@linutronix.de
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/2] powerpc/8610: add probing for individual DMA channels,
+	not just DMA controllers
+References: <1272923655-31807-1-git-send-email-timur@freescale.com>
+	<20100504145430.GC3651@opensource.wolfsonmicro.com>
+In-Reply-To: <20100504145430.GC3651@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+	alsa-devel@alsa-project.org, lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 04 May 2010, Takuya Yoshikawa wrote:
+Mark Brown wrote:
+> On Mon, May 03, 2010 at 04:54:15PM -0500, Timur Tabi wrote:
 > 
-> Although we can use *_le_bit() helpers to treat bitmaps le arranged,
-> having le bit offset calculation as a seperate macro gives us more freedom.
+>>  	{ .compatible = "simple-bus", },
+>> -	{ .compatible = "gianfar", },
+>> +	/* So that the DMA channel nodes can be probed individually: */
+>> +	{ .compatible = "fsl,eloplus-dma", },
+>>  	{}
 > 
-> For example, KVM has le arranged dirty bitmaps for VGA, live-migration
-> and they are used in user space too. To avoid bitmap copies between kernel
-> and user space, we want to update the bitmaps in user space directly.
-> To achive this, le bit offset with *_user() functions help us a lot.
-> 
-> So let us use the le bit offset calculation part by defining it as a new
-> macro: generic_le_bit_offset() .
+> The removal of gianfar looks a bit surprising here - if it's not a
+> mistake a note in the changelog would be useful.
 
-Does this work correctly if your user space is 32 bits (i.e. unsigned long
-is different size in user space and kernel) in both big- and little-endian
-systems?
+The changelog says this:
 
-I'm not sure about all the details, but I think you cannot in general share
-bitmaps between user space and kernel because of this.
+Also remove the "gianfar" compatible from mpc8610_ids[], since there is no
+gianfar (or any other networking device) on the 8610.
 
-	Arnd
+The 8610 is almost unique among our high-end PowerPC chips in that it
+literally has no on-board networking.  The board provides networking via a
+PCI device.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
