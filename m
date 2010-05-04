@@ -1,23 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98181B7D45
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 03:20:48 +1000 (EST)
-Subject: Re: [PATCH 1/2] powerpc/8610: add probing for individual DMA channels,
-	not just DMA controllers
-Mime-Version: 1.0 (Apple Message framework v1078)
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 1BADFB7D51
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 05:28:26 +1000 (EST)
+Date: Tue, 4 May 2010 12:17:19 -0700
+From: Greg KH <greg@kroah.com>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Subject: Re: [PATCH] USB: FHCI: cq_get() should check kfifo_out()'s return
+	value
+Message-ID: <20100504191719.GA13854@kroah.com>
+References: <20100502173025.GA24086@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1272923655-31807-1-git-send-email-timur@freescale.com>
-Date: Tue, 4 May 2010 12:20:13 -0500
-Message-Id: <2928D88F-057B-498C-8A11-F7193429A90D@freescale.com>
-References: <1272923655-31807-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com, lrg@slimlogic.co.uk
+In-Reply-To: <20100502173025.GA24086@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-usb@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, May 02, 2010 at 09:30:25PM +0400, Anton Vorontsov wrote:
+> Since commit 7acd72eb85f1c7a15e8b5eb554994949241737f1 ("kfifo: rename
+> kfifo_put... into kfifo_in... and kfifo_get... into kfifo_out..."),
+> kfifo_out() is marked __must_check, and that causes gcc to produce
+> lots of warnings like this:
+> 
+>   CC      drivers/usb/host/fhci-mem.o
+> In file included from drivers/usb/host/fhci-hcd.c:34:
+> drivers/usb/host/fhci.h: In function 'cq_get':
+> drivers/usb/host/fhci.h:520: warning: ignoring return value of 'kfifo_out', declared with attribute warn_unused_result
+> ...
+> 
+> Fix it with BUG_ON() check. We could just forcibly ignore return
+> value, but it's better to check if we really got a whole pointer.
 
-On May 3, 2010, at 4:54 PM, Timur Tabi wrote:
+No, you don't want to crash the whole machine for something like this.
 
-> A future version of the MPC8610 HPCD's ASoC DMA driver will probe on =
-individual
-> DMA channel nodes, so the DMA controller nodes' compatible string must =
-be listed
-> in mpc8610_ids[] for the probe to work.
->=20
-> Also remove the "gianfar" compatible from mpc8610_ids[], since there =
-is no
-> gianfar (or any other networking device) on the 8610.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
+Please just handle the error normally and pass it up to the upper levels
+if possible.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+thanks,
 
-- k=
+greg k-h
