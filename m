@@ -1,26 +1,20 @@
-Return-Path: <orenl@cs.columbia.edu>
-Received: from brinza.cc.columbia.edu (brinza.cc.columbia.edu [128.59.29.8])
-	by ozlabs.org (Postfix) with ESMTP id B3338B7D5D
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 01:17:56 +1000 (EST)
-Message-ID: <4BE18B30.10700@cs.columbia.edu>
-Date: Wed, 05 May 2010 11:13:52 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
+Return-Path: <PeterHuewe@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 8A7DFB7D6D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 01:20:31 +1000 (EST)
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH] media/IR: Add missing include file to rc-map.c
+Date: Wed, 5 May 2010 17:20:21 +0200
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v21 001/100] eclone (1/11): Factor out code to allocate
-	pidmap page
-References: <1272723382-19470-2-git-send-email-orenl@cs.columbia.edu>
-	<1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
-	<3803.1272984193@redhat.com>
-In-Reply-To: <3803.1272984193@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-api@vger.kernel.org,
-	containers@lists.linux-foundation.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Matt Helsley <matthltc@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	Pavel Emelyanov <xemul@openvz.org>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201005051720.22617.PeterHuewe@gmx.de>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	David =?iso-8859-1?q?H=E4rdeman?= <david@hardeman.nu>,
+	linux-m68k@lists.linux-m68k.org, linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+From: Peter Huewe <peterhuewe@gmx.de>
 
-I suppose you are looking for more details than those found in the
-current patch-0 (http://lkml.org/lkml/2010/5/1/140).
+This patch adds a missing include linux/delay.h to prevent
+build failures[1-5]
 
-We omitted them for brevity sake; here is a link to patch-0 of a 
-previous post of the patchset: http://lkml.org/lkml/2009/9/23/423
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+KernelVersion: linux-next-20100505
 
-Thanks,
+References:
+[1] http://kisskb.ellerman.id.au/kisskb/buildresult/2571452/
+[2] http://kisskb.ellerman.id.au/kisskb/buildresult/2571188/
+[3] http://kisskb.ellerman.id.au/kisskb/buildresult/2571479/
+[4] http://kisskb.ellerman.id.au/kisskb/buildresult/2571429/
+[5] http://kisskb.ellerman.id.au/kisskb/buildresult/2571432/
 
-Oren.
+drivers/media/IR/rc-map.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-David Howells wrote:
-> With a huge patch series like this, can you post a cover note at the front
-> (usually patch 0) saying what the point of the whole series is?
-> 
-> David
-> 
+diff --git a/drivers/media/IR/rc-map.c b/drivers/media/IR/rc-map.c
+index caf6a27..46a8f15 100644
+--- a/drivers/media/IR/rc-map.c
++++ b/drivers/media/IR/rc-map.c
+@@ -14,6 +14,7 @@
+ 
+ #include <media/ir-core.h>
+ #include <linux/spinlock.h>
++#include <linux/delay.h>
+ 
+ /* Used to handle IR raw handler extensions */
+ static LIST_HEAD(rc_map_list);
+-- 
+1.6.4.4
