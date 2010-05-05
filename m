@@ -1,17 +1,26 @@
-Return-Path: <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 06/13] powerpc/4xx: Simple platform for the ISS 4xx
-	simulator
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20100505151120.GJ29593@zod.rchland.ibm.com>
-References: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
-	<20100305204329.18424.26544.sendpatchset@norville.austin.ibm.com>
-	<20100505151120.GJ29593@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 05 May 2010 10:16:14 -0500
-Message-Id: <1273072574.20294.31.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
+Return-Path: <orenl@cs.columbia.edu>
+Received: from brinza.cc.columbia.edu (brinza.cc.columbia.edu [128.59.29.8])
+	by ozlabs.org (Postfix) with ESMTP id B3338B7D5D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 01:17:56 +1000 (EST)
+Message-ID: <4BE18B30.10700@cs.columbia.edu>
+Date: Wed, 05 May 2010 11:13:52 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH v21 001/100] eclone (1/11): Factor out code to allocate
+	pidmap page
+References: <1272723382-19470-2-git-send-email-orenl@cs.columbia.edu>
+	<1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
+	<3803.1272984193@redhat.com>
+In-Reply-To: <3803.1272984193@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-s390@vger.kernel.org, linux-api@vger.kernel.org,
+	containers@lists.linux-foundation.org, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Matt Helsley <matthltc@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+	Pavel Emelyanov <xemul@openvz.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,74 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-05-05 at 11:11 -0400, Josh Boyer wrote:
-> On Fri, Mar 05, 2010 at 01:45:54PM -0700, Dave Kleikamp wrote:
-> >+config ISS4xx
-> >+	bool "ISS 4xx Simulator"
-> >+	depends on (44x || 40x)
-> >+	default n
-> >+	select 405GP if 40x
-> >+	select 440GP if 44x && !PPC_47x
-> >+	select PPC_FPU
-> >+	select OF_RTC
-> >+	help
-> >+	  This option enables support for the IBM ISS simulation environment
-> 
-> This looks like how we want to do this, however...
-> 
-> >+/* We can have either UICs or MPICs */
-> >+static void __init iss4xx_init_irq(void)
-> >+{
-> >+	struct device_node *np;
-> >+
-> >+	/* Find top level interrupt controller */
-> >+	for_each_node_with_property(np, "interrupt-controller") {
-> >+		if (of_get_property(np, "interrupts", NULL) == NULL)
-> >+			break;
-> >+	}
-> >+	if (np == NULL)
-> >+		panic("Can't find top level interrupt controller");
-> >+
-> >+	/* Check type and do appropriate initialization */
-> >+	if (of_device_is_compatible(np, "ibm,uic")) {
-> >+		uic_init_tree();
-> >+		ppc_md.get_irq = uic_get_irq;
-> >+	} else if (of_device_is_compatible(np, "chrp,open-pic")) {
-> >+		/* The MPIC driver will get everything it needs from the
-> >+		 * device-tree, just pass 0 to all arguments
-> >+		 */
-> >+		struct mpic *mpic = mpic_alloc(np, 0, MPIC_PRIMARY, 0, 0,
-> >+					       " MPIC     ");
-> >+		BUG_ON(mpic == NULL);
-> >+		mpic_init(mpic);
-> >+		ppc_md.get_irq = mpic_get_irq;
-> >+	} else
-> >+		panic("Unrecognized top level interrupt controller");
-> >+}
-> 
-> .. on non-476 builds we get link errors:
-> 
-> arch/powerpc/platforms/built-in.o: In function `as1_writeb':
-> (.init.text+0x5d4): undefined reference to `mpic_alloc'
-> arch/powerpc/platforms/built-in.o: In function `as1_writeb':
-> (.init.text+0x5e4): undefined reference to `mpic_init'
-> arch/powerpc/platforms/built-in.o: In function `as1_writeb':
-> (.init.text+0x5ea): undefined reference to `mpic_get_irq'
-> arch/powerpc/platforms/built-in.o: In function `as1_writeb':
-> (.init.text+0x5ee): undefined reference to `mpic_get_irq'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> because we don't have CONFIG_MPIC turned on for these.  I'd suggest we guard
-> the mpic else chunk in this file behind CONFIG_MPIC.  Agreed?
+Hi David,
 
-Yeah.  That's reasonable.
+I suppose you are looking for more details than those found in the
+current patch-0 (http://lkml.org/lkml/2010/5/1/140).
 
-> I'm less worried about the mpic references that are already guarded behind the
-> CONFIG_SMP sections.  Nobody has been crazy enough to make an SMP 440 or 460 SoC
-> yet, so CONFIG_SMP should only get selected for 476, and that already selects
-> MPIC in the Kconfig.
+We omitted them for brevity sake; here is a link to patch-0 of a 
+previous post of the patchset: http://lkml.org/lkml/2009/9/23/423
+
+Thanks,
+
+Oren.
+
+David Howells wrote:
+> With a huge patch series like this, can you post a cover note at the front
+> (usually patch 0) saying what the point of the whole series is?
 > 
-> josh
--- 
-Dave Kleikamp
-IBM Linux Technology Center
+> David
+> 
