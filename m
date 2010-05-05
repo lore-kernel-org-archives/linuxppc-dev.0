@@ -1,20 +1,19 @@
-Return-Path: <stevedeiters@basler.com>
-Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
-	by ozlabs.org (Postfix) with ESMTP id AF4E3B7D53
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  6 May 2010 04:48:38 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: [PATCH resend] mpc5121_nfc: Changed SVR check to allow MPC5123.
-Date: Wed, 5 May 2010 13:48:38 -0500
-Message-ID: <181804936ABC2349BE503168465576460EA16F75@exchserver.basler.com>
-In-Reply-To: <1272980863.3702.10.camel@localhost>
-References: <181804936ABC2349BE503168465576460E95836C@exchserver.basler.com>
-	<1272980863.3702.10.camel@localhost>
-From: "Steve Deiters" <SteveDeiters@BASLER.com>
-To: <dedekind1@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
+Return-Path: <amit.shah@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id A392EB7D2F
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 06:38:04 +1000 (EST)
+From: Amit Shah <amit.shah@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/3] virtio: console: Resize console port 0 on config intr
+	only if multiport is off
+Date: Thu,  6 May 2010 02:05:07 +0530
+Message-Id: <1273091709-19963-2-git-send-email-amit.shah@redhat.com>
+In-Reply-To: <1273091709-19963-1-git-send-email-amit.shah@redhat.com>
+References: <1273091709-19963-1-git-send-email-amit.shah@redhat.com>
+Cc: Amit Shah <amit.shah@redhat.com>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	Kusanagi Kouichi <slash@ac.auone-net.jp>, linuxppc-dev@ozlabs.org,
+	Virtualization List <virtualization@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The revision in SVR for MPC5123 is 3.  The NFC is the same as MPC5121
-revision 2.
+When using multiport, we'll use control messages. Ensure we don't
+accidentally update port 0 size on config interrupts.
 
-Signed-off-by: Steve Deiters <SteveDeiters@basler.com>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+CC: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: linuxppc-dev@ozlabs.org
+CC: Kusanagi Kouichi <slash@ac.auone-net.jp>
 ---
- drivers/mtd/nand/mpc5121_nfc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/char/virtio_console.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/mtd/nand/mpc5121_nfc.c
-b/drivers/mtd/nand/mpc5121_nfc.c
-index 191bf99..dc04d74 100644
---- a/drivers/mtd/nand/mpc5121_nfc.c
-+++ b/drivers/mtd/nand/mpc5121_nfc.c
-@@ -666,10 +666,10 @@ static int __devinit mpc5121_nfc_probe(struct
-of_device *op,
-=20
- 	/*
- 	 * Check SoC revision. This driver supports only NFC
--	 * in MPC5121 revision 2.
-+	 * in MPC5121 revision 2 and MPC5123 revision 3.
- 	 */
- 	rev =3D (mfspr(SPRN_SVR) >> 4) & 0xF;
--	if (rev !=3D 2) {
-+	if ((rev !=3D 2) && (rev !=3D 3)) {
- 		dev_err(dev, "SoC revision %u is not supported!\n",
-rev);
- 		return -ENXIO;
- 	}
---=20
-1.5.4.3
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index a64558f..e2d05ea 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -1319,13 +1319,16 @@ static void config_intr(struct virtio_device *vdev)
+ 
+ 	portdev = vdev->priv;
+ 
+-	/*
+-	 * We'll use this way of resizing only for legacy support.
+-	 * For newer userspace (VIRTIO_CONSOLE_F_MULTPORT+), use
+-	 * control messages to indicate console size changes so that
+-	 * it can be done per-port
+-	 */
+-	resize_console(find_port_by_id(portdev, 0));
++	if (!use_multiport(portdev)) {
++		/*
++		 * We'll use this way of resizing only for legacy
++		 * support.  For newer userspace
++		 * (VIRTIO_CONSOLE_F_MULTPORT+), use control messages
++		 * to indicate console size changes so that it can be
++		 * done per-port.
++		 */
++		resize_console(find_port_by_id(portdev, 0));
++	}
+ }
+ 
+ static int init_vqs(struct ports_device *portdev)
+-- 
+1.6.2.5
