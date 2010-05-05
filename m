@@ -1,32 +1,19 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from rcsinet14.oracle.com (rcsinet14.oracle.com [148.87.113.126])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rcsinet14.oracle.com",
-	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 93EA2B7D28
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 07:19:43 +1000 (EST)
-Received: from rcsinet10.oracle.com (rcsinet10.oracle.com [148.87.113.121])
-	by rcsinet14.oracle.com (Sentrion-MP-4.0.0/Sentrion-MP-4.0.0) with
-	ESMTP id o45LJe9q003500
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 21:19:40 GMT
-Date: Wed, 5 May 2010 14:14:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
-Message-Id: <20100505141447.fc2397f6.randy.dunlap@oracle.com>
-In-Reply-To: <1272723382-19470-12-git-send-email-orenl@cs.columbia.edu>
-References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
-	<1272723382-19470-12-git-send-email-orenl@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-s390@vger.kernel.org, linux-api@vger.kernel.org,
-	containers@lists.linux-foundation.org, x86@kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Matt Helsley <matthltc@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	Pavel Emelyanov <xemul@openvz.org>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id 8CD1AB7D4F
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 08:39:59 +1000 (EST)
+Date: Wed, 5 May 2010 15:09:16 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
+Message-ID: <20100505220916.GD3529@ovro.caltech.edu>
+References: <1266433154.2322.0@antares>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1266433154.2322.0@antares>
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,429 +23,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat,  1 May 2010 10:14:53 -0400 Oren Laadan wrote:
-
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+On Wed, Feb 17, 2010 at 07:59:14PM +0100, Albrecht Dreﬂ wrote:
+> This patch improves the recovery of the MPC's I2C bus from errors like bus
+> hangs resulting in timeouts:
+> 1. make the bus timeout configurable, as it depends on the bus clock and
+>     the attached slave chip(s); default is still 1 second;
+> 2. detect any of the cases indicated by the CF, BB and RXAK MSR flags if a
+>     timeout occurs, and add a missing (required) MAL reset;
+> 3. use a more reliable method to fixup the bus if a hang has been detected.
+>     The sequence is sent 9 times which seems to be necessary if a slave
+>     "misses" more than one clock cycle.  For 400 kHz bus speed, the fixup is
+>     also ~70us (81us vs. 150us) faster.
 > 
-> This gives a brief overview of the eclone() system call.  We should
-> eventually describe more details in existing clone(2) man page or in
-> a new man page.
+> Tested on a custom Lite5200b derived board, with a Dallas RTC, AD sensors
+> and NXP IO expander chips attached to the i2c.
 > 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Acked-by: Serge E. Hallyn <serue@us.ibm.com>
-> Acked-by: Oren Laadan  <orenl@cs.columbia.edu>
+> Changes vs. v1:
+> - use improved bus fixup sequence for all chips (not only the 5200)
+> - calculate real clock from defaults if no clock is given in the device tree
+> - better description (I hope) of the changes.
+> 
+> I didn't split the changes in this file into three parts as recommended by
+> Grant, as they actually belong together (i.e. they address one single
+> problem, just in three places of one single source file).
+> 
+> Signed-off-by: Albrecht Dreﬂ <albrecht.dress@arcor.de>
+> 
 > ---
->  Documentation/eclone |  348 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 348 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/eclone
 > 
-> diff --git a/Documentation/eclone b/Documentation/eclone
-> new file mode 100644
-> index 0000000..c2f1b4b
-> --- /dev/null
-> +++ b/Documentation/eclone
-> @@ -0,0 +1,348 @@
-> +
-> +struct clone_args {
-> +	u64 clone_flags_high;
-> +	u64 child_stack;
-> +	u64 child_stack_size;
-> +	u64 parent_tid_ptr;
-> +	u64 child_tid_ptr;
-> +	u32 nr_pids;
-> +	u32 reserved0;
-> +};
-> +
-> +
-> +sys_eclone(u32 flags_low, struct clone_args * __user cargs, int cargs_size,
-> +		pid_t * __user pids)
-> +
-> +	In addition to doing everything that clone() system call does, the
+> Note about the reset sequence: I verified the waveforms for 18.4kHz, 85.9kHz
+> and 375kHz (drop me a note if you want to see scope screen shots).  Not
+> verified on other mpc chips yet.
+> @Ira: thanks in advance for giving it a try on your box!
+> 
 
-	                                that the clone()
+Did this series get forgotten about? I don't see it in bjdook's next-i2c
+branch or in benh's next branch.
 
-> +	eclone() system call:
-> +
-> +		- allows additional clone flags (31 of 32 bits in the flags
-> +		  parameter to clone() are in use)
-> +
-> +		- allows user to specify a pid for the child process in its
-> +		  active and ancestor pid namespaces.
-> +
-> +	This system call is meant to be used when restarting an application
-> +	from a checkpoint. Such restart requires that the processes in the
-> +	application have the same pids they had when the application was
-> +	checkpointed. When containers are nested, the processes within the
-> +	containers exist in multiple pid namespaces and hence have multiple
-> +	pids to specify during restart.
-> +
-> +	The @flags_low parameter is identical to the 'clone_flags' parameter
-> +	in existing clone() system call.
+I've pulled these into my 2.6.31.13 kernel, and they seem to work fine.
+You've got my Tested-by if you didn't get one from me already.
 
-	in the existing
+Ira
 
+> --- linux-2.6.32-orig/drivers/i2c/busses/i2c-mpc.c	2009-12-03 04:51:21.000000000 +0100
+> +++ linux-2.6.32/drivers/i2c/busses/i2c-mpc.c	2010-02-17 16:23:11.000000000 +0100
+> @@ -59,6 +59,7 @@ struct mpc_i2c {
+>   	wait_queue_head_t queue;
+>   	struct i2c_adapter adap;
+>   	int irq;
+> +	u32 real_clk;
+>   };
+> 
+>   struct mpc_i2c_divider {
+> @@ -93,20 +94,23 @@ static irqreturn_t mpc_i2c_isr(int irq,
+>   /* Sometimes 9th clock pulse isn't generated, and slave doesn't release
+>    * the bus, because it wants to send ACK.
+>    * Following sequence of enabling/disabling and sending start/stop generates
+> - * the pulse, so it's all OK.
+> + * the 9 pulses, so it's all OK.
+>    */
+>   static void mpc_i2c_fixup(struct mpc_i2c *i2c)
+>   {
+> -	writeccr(i2c, 0);
+> -	udelay(30);
+> -	writeccr(i2c, CCR_MEN);
+> -	udelay(30);
+> -	writeccr(i2c, CCR_MSTA | CCR_MTX);
+> -	udelay(30);
+> -	writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
+> -	udelay(30);
+> -	writeccr(i2c, CCR_MEN);
+> -	udelay(30);
+> +	int k;
+> +	u32 delay_val = 1000000 / i2c->real_clk + 1;
 > +
-> +	The fields in 'struct clone_args' are meant to be used as follows:
+> +	if (delay_val < 2)
+> +		delay_val = 2;
 > +
-> +	u64 clone_flags_high:
-> +
-> +		When eclone() supports more than 32 flags, the additional bits
-> +		in the clone_flags should be specified in this field. This
-> +		field is currently unused and must be set to 0.
-> +
-> +	u64 child_stack;
-> +	u64 child_stack_size;
-> +
-> +		These two fields correspond to the 'child_stack' fields in
-> +		clone() and clone2() (on IA64) system calls. The usage of
-> +		these two fields depends on the processor architecture.
-> +
-> +		Most architectures use ->child_stack to pass-in a stack-pointer
-
-		                                     to pass in
-
-> +		itself and don't need the ->child_stack_size field. On these
-> +		architectures the ->child_stack_size field must be 0.
-> +
-> +		Some architectures, eg IA64, use ->child_stack to pass-in the
-
-		                    e.g.                        to pass in
-
-> +		base of the region allocated for stack. These architectures
-> +		must pass in the size of the stack-region in ->child_stack_size.
-
-		                             stack region
-
-Seems unfortunate that different architectures use the fields differently.
-
-> +
-> +	u64 parent_tid_ptr;
-> +	u64 child_tid_ptr;
-> +
-> +		These two fields correspond to the 'parent_tid_ptr' and
-> +		'child_tid_ptr' fields in the clone() system call
-
-		                                      system call.
-
-> +
-> +	u32 nr_pids;
-> +
-> +		nr_pids specifies the number of pids in the @pids array
-> +		parameter to eclone() (see below). nr_pids should not exceed
-> +		the current nesting level of the calling process (i.e if the
-
-		                                                  i.e.
-
-> +		process is in init_pid_ns, nr_pids must be 1, if process is
-> +		in a pid namespace that is a child of init-pid-ns, nr_pids
-> +		cannot exceed 2, and so on).
-> +
-> +	u32 reserved0;
-> +	u64 reserved1;
-> +
-> +		These fields are intended to extend the functionality of the
-> +		eclone() in the future, while preserving backward compatibility.
-> +		They must be set to 0 for now.
-
-The struct does not have a reserved1 field AFAICT.
-
-> +	The @cargs_size parameter specifes the sizeof(struct clone_args) and
-> +	is intended to enable extending this structure in the future, while
-> +	preserving backward compatibility.  For now, this field must be set
-> +	to the sizeof(struct clone_args) and this size must match the kernel's
-> +	view of the structure.
-> +
-> +	The @pids parameter defines the set of pids that should be assigned to
-> +	the child process in its active and ancestor pid namespaces. The
-> +	descendant pid namespaces do not matter since a process does not have a
-> +	pid in descendant namespaces, unless the process is in a new pid
-> +	namespace in which case the process is a container-init (and must have
-> +	the pid 1 in that namespace).
-> +
-> +	See CLONE_NEWPID section of clone(2) man page for details about pid
-
-	                         of the clone(2)
-
-> +	namespaces.
-> +
-> +	If a pid in the @pids list is 0, the kernel will assign the next
-> +	available pid in the pid namespace.
-> +
-> +	If a pid in the @pids list is non-zero, the kernel tries to assign
-> +	the specified pid in that namespace.  If that pid is already in use
-> +	by another process, the system call fails (see EBUSY below).
-> +
-> +	The order of pids in @pids is oldest in pids[0] to youngest pid
-> +	namespace in pids[nr_pids-1]. If the number of pids specified in the
-> +	@pids list is fewer than the nesting level of the process, the pids
-> +	are applied from youngest namespace. i.e if the process is nested in
-
-	                 the youngest namespace. I.e.
-
-> +	a level-6 pid namespace and @pids only specifies 3 pids, the 3 pids
-> +	are applied to levels 6, 5 and 4. Levels 0 through 3 are assumed to
-> +	have a pid of '0' (the kernel will assign a pid in those namespaces).
-> +
-> +	On success, the system call returns the pid of the child process in
-> +	the parent's active pid namespace.
-> +
-> +	On failure, eclone() returns -1 and sets 'errno' to one of following
-> +	values (the child process is not created).
-> +
-> +	EPERM	Caller does not have the CAP_SYS_ADMIN privilege needed to
-> +		specify the pids in this call (if pids are not specifed
-> +		CAP_SYS_ADMIN is not required).
-> +
-> +	EINVAL	The number of pids specified in 'clone_args.nr_pids' exceeds
-> +		the current nesting level of parent process
-
-		                                    process.
-
-> +
-> +	EINVAL	Not all specified clone-flags are valid.
-> +
-> +	EINVAL	The reserved fields in the clone_args argument are not 0.
-> +
-> +	EINVAL	The child_stack_size field is not 0 (on architectures that
-> +		pass in a stack pointer in ->child_stack field)
-
-		                                         field).
-
-> +
-> +	EBUSY	A requested pid is in use by another process in that namespace.
-> +
-> +---
-
-
-Is this example program meant to build only on i386?
-
-On x86_64 I get:
-
-eclone-syscall-test.c: In function 'do_clone':
-eclone-syscall-test.c:166: warning: assignment makes pointer from integer without a cast
-/tmp/cc0OrhU3.o: In function `do_clone':
-eclone-syscall-test.c:(.text+0x173): undefined reference to `setup_stack'
-eclone-syscall-test.c:(.text+0x1e2): undefined reference to `eclone'
-
-
-> +/*
-> + * Example eclone() usage - Create a child process with pid CHILD_TID1 in
-> + * the current pid namespace. The child gets the usual "random" pid in any
-> + * ancestor pid namespaces.
-> + */
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <signal.h>
-> +#include <errno.h>
-> +#include <unistd.h>
-> +#include <wait.h>
-> +#include <sys/syscall.h>
-> +
-> +#define __NR_eclone		337
-> +#define CLONE_NEWPID            0x20000000
-> +#define CLONE_CHILD_SETTID      0x01000000
-> +#define CLONE_PARENT_SETTID     0x00100000
-> +#define CLONE_UNUSED		0x00001000
-> +
-> +#define STACKSIZE		8192
-> +
-> +typedef unsigned long long u64;
-> +typedef unsigned int u32;
-> +typedef int pid_t;
-> +struct clone_args {
-> +	u64 clone_flags_high;
-> +	u64 child_stack;
-> +	u64 child_stack_size;
-> +
-> +	u64 parent_tid_ptr;
-> +	u64 child_tid_ptr;
-> +
-> +	u32 nr_pids;
-> +
-> +	u32 reserved0;
-> +};
-> +
-> +#define exit		_exit
-> +
-> +/*
-> + * Following eclone() is based on code posted by Oren Laadan at:
-> + * https://lists.linux-foundation.org/pipermail/containers/2009-June/018463.html
-> + */
-> +#if defined(__i386__) && defined(__NR_eclone)
-> +
-> +int eclone(u32 flags_low, struct clone_args *clone_args, int args_size,
-> +		int *pids)
-> +{
-> +	long retval;
-> +
-> +	__asm__ __volatile__(
-> +		 "movl %3, %%ebx\n\t"	/* flags_low -> 1st (ebx) */
-> +		 "movl %4, %%ecx\n\t"	/* clone_args -> 2nd (ecx)*/
-> +		 "movl %5, %%edx\n\t"	/* args_size -> 3rd (edx) */
-> +		 "movl %6, %%edi\n\t"	/* pids -> 4th (edi)*/
-> +
-> +		 "pushl %%ebp\n\t"	/* save value of ebp */
-> +		 "int $0x80\n\t"	/* Linux/i386 system call */
-> +		 "testl %0,%0\n\t"	/* check return value */
-> +		 "jne 1f\n\t"		/* jump if parent */
-> +
-> +		 "popl %%esi\n\t"	/* get subthread function */
-> +		 "call *%%esi\n\t"	/* start subthread function */
-> +		 "movl %2,%0\n\t"
-> +		 "int $0x80\n"		/* exit system call: exit subthread */
-> +		 "1:\n\t"
-> +		 "popl %%ebp\t"		/* restore parent's ebp */
-> +
-> +		:"=a" (retval)
-> +
-> +		:"0" (__NR_eclone),
-> +		 "i" (__NR_exit),
-> +		 "m" (flags_low),
-> +		 "m" (clone_args),
-> +		 "m" (args_size),
-> +		 "m" (pids)
-> +		);
-> +
-> +	if (retval < 0) {
-> +		errno = -retval;
-> +		retval = -1;
+> +	for (k = 9; k; k--) {
+> +		writeccr(i2c, 0);
+> +		writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
+> +		udelay(delay_val);
+> +		writeccr(i2c, CCR_MEN);
+> +		udelay(delay_val << 1);
 > +	}
-> +	return retval;
-> +}
-> +
-> +/*
-> + * Allocate a stack for the clone-child and arrange to have the child
-> + * execute @child_fn with @child_arg as the argument.
-> + */
-> +void *setup_stack(int (*child_fn)(void *), void *child_arg, int size)
-> +{
-> +	void *stack_base;
-> +	void **stack_top;
-> +
-> +	stack_base = malloc(size + size);
-> +	if (!stack_base) {
-> +		perror("malloc()");
-> +		exit(1);
+>   }
+> 
+>   static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
+> @@ -186,15 +190,19 @@ static const struct mpc_i2c_divider mpc_
+>   	{10240, 0x9d}, {12288, 0x9e}, {15360, 0x9f}
+>   };
+> 
+> -int mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock, int prescaler)
+> +int mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock, int prescaler,
+> +			 u32 *real_clk)
+>   {
+>   	const struct mpc_i2c_divider *div = NULL;
+>   	unsigned int pvr = mfspr(SPRN_PVR);
+>   	u32 divider;
+>   	int i;
+> 
+> -	if (!clock)
+> +	if (!clock) {
+> +		/* see below - default fdr = 0x3f -> div = 2048 */
+> +		*real_clk = mpc5xxx_get_bus_frequency(node) / 2048;
+>   		return -EINVAL;
 > +	}
-> +
-> +	stack_top = (void **)((char *)stack_base + (size - 4));
-> +	*--stack_top = child_arg;
-> +	*--stack_top = child_fn;
-> +
-> +	return stack_top;
-> +}
-> +#endif
-> +
-> +/* gettid() is a bit more useful than getpid() when messing with clone() */
-> +int gettid()
-> +{
-> +	int rc;
-> +
-> +	rc = syscall(__NR_gettid, 0, 0, 0);
-> +	if (rc < 0) {
-> +		printf("rc %d, errno %d\n", rc, errno);
-> +		exit(1);
+> 
+>   	/* Determine divider value */
+>   	divider = mpc5xxx_get_bus_frequency(node) / clock;
+> @@ -212,7 +220,8 @@ int mpc_i2c_get_fdr_52xx(struct device_n
+>   			break;
+>   	}
+> 
+> -	return div ? (int)div->fdr : -EINVAL;
+> +	*real_clk = mpc5xxx_get_bus_frequency(node) / div->divider;
+> +	return (int)div->fdr;
+>   }
+> 
+>   static void mpc_i2c_setclock_52xx(struct device_node *node,
+> @@ -221,13 +230,14 @@ static void mpc_i2c_setclock_52xx(struct
+>   {
+>   	int ret, fdr;
+> 
+> -	ret = mpc_i2c_get_fdr_52xx(node, clock, prescaler);
+> +	ret = mpc_i2c_get_fdr_52xx(node, clock, prescaler, &i2c->real_clk);
+>   	fdr = (ret >= 0) ? ret : 0x3f; /* backward compatibility */
+> 
+>   	writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
+> 
+>   	if (ret >= 0)
+> -		dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
+> +		dev_info(i2c->dev, "clock %u Hz (fdr=%d)\n", i2c->real_clk,
+> +			 fdr);
+>   }
+>   #else /* !CONFIG_PPC_MPC52xx */
+>   static void mpc_i2c_setclock_52xx(struct device_node *node,
+> @@ -287,14 +297,18 @@ u32 mpc_i2c_get_sec_cfg_8xxx(void)
+>   	return val;
+>   }
+> 
+> -int mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock, u32 prescaler)
+> +int mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock, u32 prescaler,
+> +			 u32 *real_clk)
+>   {
+>   	const struct mpc_i2c_divider *div = NULL;
+>   	u32 divider;
+>   	int i;
+> 
+> -	if (!clock)
+> +	if (!clock) {
+> +		/* see below - default fdr = 0x1031 -> div = 16 * 3072 */
+> +		*real_clk = fsl_get_sys_freq() / prescaler / (16 * 3072);
+>   		return -EINVAL;
 > +	}
-> +	return rc;
-> +}
+> 
+>   	/* Determine proper divider value */
+>   	if (of_device_is_compatible(node, "fsl,mpc8544-i2c"))
+> @@ -317,6 +331,7 @@ int mpc_i2c_get_fdr_8xxx(struct device_n
+>   			break;
+>   	}
+> 
+> +	*real_clk = fsl_get_sys_freq() / prescaler / div->divider;
+>   	return div ? (int)div->fdr : -EINVAL;
+>   }
+> 
+> @@ -326,7 +341,7 @@ static void mpc_i2c_setclock_8xxx(struct
+>   {
+>   	int ret, fdr;
+> 
+> -	ret = mpc_i2c_get_fdr_8xxx(node, clock, prescaler);
+> +	ret = mpc_i2c_get_fdr_8xxx(node, clock, prescaler, &i2c->real_clk);
+>   	fdr = (ret >= 0) ? ret : 0x1031; /* backward compatibility */
+> 
+>   	writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
+> @@ -334,7 +349,7 @@ static void mpc_i2c_setclock_8xxx(struct
+> 
+>   	if (ret >= 0)
+>   		dev_info(i2c->dev, "clock %d Hz (dfsrr=%d fdr=%d)\n",
+> -			 clock, fdr >> 8, fdr & 0xff);
+> +			 i2c->real_clk, fdr >> 8, fdr & 0xff);
+>   }
+> 
+>   #else /* !CONFIG_FSL_SOC */
+> @@ -446,10 +461,14 @@ static int mpc_xfer(struct i2c_adapter *
+>   			return -EINTR;
+>   		}
+>   		if (time_after(jiffies, orig_jiffies + HZ)) {
+> +			u8 status = readb(i2c->base + MPC_I2C_SR);
 > +
-> +#define CHILD_TID1	377
-> +#define CHILD_TID2	1177
-> +#define CHILD_TID3	2799
-> +
-> +struct clone_args clone_args;
-> +void *child_arg = &clone_args;
-> +int child_tid;
-> +
-> +int do_child(void *arg)
-> +{
-> +	struct clone_args *cs = (struct clone_args *)arg;
-> +	int ctid;
-> +
-> +	/* Verify we pushed the arguments correctly on the stack... */
-> +	if (arg != child_arg)  {
-> +		printf("Child: Incorrect child arg pointer, expected %p,"
-> +				"actual %p\n", child_arg, arg);
-> +		exit(1);
+>   			dev_dbg(i2c->dev, "timeout\n");
+> -			if (readb(i2c->base + MPC_I2C_SR) ==
+> -			    (CSR_MCF | CSR_MBB | CSR_RXAK))
+> +			if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) != 0) {
+> +				writeb(status & ~CSR_MAL,
+> +				       i2c->base + MPC_I2C_SR);
+>   				mpc_i2c_fixup(i2c);
+> +			}
+>   			return -EIO;
+>   		}
+>   		schedule();
+> @@ -540,6 +559,14 @@ static int __devinit fsl_i2c_probe(struc
+>   		}
+>   	}
+> 
+> +	prop = of_get_property(op->node, "fsl,timeout", &plen);
+> +	if (prop && plen == sizeof(u32)) {
+> +		mpc_ops.timeout = *prop * HZ / 1000000;
+> +		if (mpc_ops.timeout < 5)
+> +			mpc_ops.timeout = 5;
 > +	}
+> +	dev_info(i2c->dev, "timeout %u us\n", mpc_ops.timeout * 1000000 / HZ);
 > +
-> +	/* ... and that we got the thread-id we expected */
-> +	ctid = *((int *)(unsigned long)cs->child_tid_ptr);
-> +	if (ctid != CHILD_TID1) {
-> +		printf("Child: Incorrect child tid, expected %d, actual %d\n",
-> +				CHILD_TID1, ctid);
-> +		exit(1);
-> +	} else {
-> +		printf("Child got the expected tid, %d\n", gettid());
-> +	}
-> +	sleep(2);
-> +
-> +	printf("[%d, %d]: Child exiting\n", getpid(), ctid);
-> +	exit(0);
-> +}
-> +
-> +static int do_clone(int (*child_fn)(void *), void *child_arg,
-> +		unsigned int flags_low, int nr_pids, pid_t *pids_list)
-> +{
-> +	int rc;
-> +	void *stack;
-> +	struct clone_args *ca = &clone_args;
-> +	int args_size;
-> +
-> +	stack = setup_stack(child_fn, child_arg, STACKSIZE);
-> +
-> +	memset(ca, 0, sizeof(*ca));
-> +
-> +	ca->child_stack		= (u64)(unsigned long)stack;
-> +	ca->child_stack_size	= (u64)0;
-> +	ca->child_tid_ptr	= (u64)(unsigned long)&child_tid;
-> +	ca->nr_pids		= nr_pids;
-> +
-> +	args_size = sizeof(struct clone_args);
-> +	rc = eclone(flags_low, ca, args_size, pids_list);
-> +
-> +	printf("[%d, %d]: eclone() returned %d, error %d\n", getpid(), gettid(),
-> +				rc, errno);
-> +	return rc;
-> +}
-> +
-> +/*
-> + * Multiple pid_t pid_t values in pids_list[] here are just for illustration.
-> + * The test case creates a child in the current pid namespace and uses only
-> + * the first value, CHILD_TID1.
-> + */
-> +pid_t pids_list[] = { CHILD_TID1, CHILD_TID2, CHILD_TID3 };
-> +int main()
-> +{
-> +	int rc, pid, status;
-> +	unsigned long flags;
-> +	int nr_pids = 1;
-> +
-> +	flags = SIGCHLD|CLONE_CHILD_SETTID;
-> +
-> +	pid = do_clone(do_child, &clone_args, flags, nr_pids, pids_list);
-> +
-> +	printf("[%d, %d]: Parent waiting for %d\n", getpid(), gettid(), pid);
-> +
-> +	rc = waitpid(pid, &status, __WALL);
-> +	if (rc < 0) {
-> +		printf("waitpid(): rc %d, error %d\n", rc, errno);
-> +	} else {
-> +		printf("[%d, %d]: child %d:\n\t wait-status 0x%x\n", getpid(),
-> +			 gettid(), rc, status);
-> +
-> +		if (WIFEXITED(status)) {
-> +			printf("\t EXITED, %d\n", WEXITSTATUS(status));
-> +		} else if (WIFSIGNALED(status)) {
-> +			printf("\t SIGNALED, %d\n", WTERMSIG(status));
-> +		}
-> +	}
-> +	return 0;
-> +}
-> -- 
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+>   	dev_set_drvdata(&op->dev, i2c);
+> 
+>   	i2c->adap = mpc_ops;
+> 
