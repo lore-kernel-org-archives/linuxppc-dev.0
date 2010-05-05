@@ -1,19 +1,16 @@
-Return-Path: <gknispel@proformatique.com>
-Received: from mx1.corp.avencall.com (mx1.corp.avencall.com [91.194.178.12])
-	by ozlabs.org (Postfix) with ESMTP id 937BCB7D80
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 May 2010 23:34:40 +1000 (EST)
-Date: Wed, 5 May 2010 15:34:35 +0200
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: xiaokun <xiaokun@sf-auto.com>
-Subject: Re: question about cpm_uart_cpm2.c "Section mismatch in reference
-	from the function cpm_uart_allocbuf"
-Message-ID: <20100505153435.79711e3d@xilun.lan.proformatique.com>
-In-Reply-To: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
-References: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Wed, 5 May 2010 11:11:20 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 06/13] powerpc/4xx: Simple platform for the ISS 4xx
+	simulator
+Message-ID: <20100505151120.GJ29593@zod.rchland.ibm.com>
+References: <20100305204255.18424.85295.sendpatchset@norville.austin.ibm.com>
+	<20100305204329.18424.26544.sendpatchset@norville.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100305204329.18424.26544.sendpatchset@norville.austin.ibm.com>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>, Torez Smith <torez@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +20,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 5 May 2010 19:19:18 +0800
-xiaokun <xiaokun@sf-auto.com> wrote:
+On Fri, Mar 05, 2010 at 01:45:54PM -0700, Dave Kleikamp wrote:
+>+config ISS4xx
+>+	bool "ISS 4xx Simulator"
+>+	depends on (44x || 40x)
+>+	default n
+>+	select 405GP if 40x
+>+	select 440GP if 44x && !PPC_47x
+>+	select PPC_FPU
+>+	select OF_RTC
+>+	help
+>+	  This option enables support for the IBM ISS simulation environment
 
-> I am using MPC8272ADS_20080623-ltib.iso from freescale
-> 
-> The Linux Kernel is 2.6.25.
-> 
-> When I make uImage, the error message is :
-> 
-> WARNING: vmlinux.o(.text+0x159450): Section mismatch in reference from the function cpm_uart_allocbuf() to the function .init.text:__alloc_bootmem()
-> The function cpm_uart_allocbuf() references
-> the function __init __alloc_bootmem().
-> This is often because cpm_uart_allocbuf lacks a __init
-> annotation or the annotation of __alloc_bootmem is wrong.
-> 
-> 
-> It seems that "drivers\serial\cpm_uart\cpm_uart_cpm2.c" needs to be patched.
+This looks like how we want to do this, however...
 
-arghhhh, the "\" heart my eyes!!! ;)
+>+/* We can have either UICs or MPICs */
+>+static void __init iss4xx_init_irq(void)
+>+{
+>+	struct device_node *np;
+>+
+>+	/* Find top level interrupt controller */
+>+	for_each_node_with_property(np, "interrupt-controller") {
+>+		if (of_get_property(np, "interrupts", NULL) == NULL)
+>+			break;
+>+	}
+>+	if (np == NULL)
+>+		panic("Can't find top level interrupt controller");
+>+
+>+	/* Check type and do appropriate initialization */
+>+	if (of_device_is_compatible(np, "ibm,uic")) {
+>+		uic_init_tree();
+>+		ppc_md.get_irq = uic_get_irq;
+>+	} else if (of_device_is_compatible(np, "chrp,open-pic")) {
+>+		/* The MPIC driver will get everything it needs from the
+>+		 * device-tree, just pass 0 to all arguments
+>+		 */
+>+		struct mpic *mpic = mpic_alloc(np, 0, MPIC_PRIMARY, 0, 0,
+>+					       " MPIC     ");
+>+		BUG_ON(mpic == NULL);
+>+		mpic_init(mpic);
+>+		ppc_md.get_irq = mpic_get_irq;
+>+	} else
+>+		panic("Unrecognized top level interrupt controller");
+>+}
 
-> How to find the patch?
+.. on non-476 builds we get link errors:
 
-Maybe do a git log on a recent kernel on this file
-(I have not checked the results)
+arch/powerpc/platforms/built-in.o: In function `as1_writeb':
+(.init.text+0x5d4): undefined reference to `mpic_alloc'
+arch/powerpc/platforms/built-in.o: In function `as1_writeb':
+(.init.text+0x5e4): undefined reference to `mpic_init'
+arch/powerpc/platforms/built-in.o: In function `as1_writeb':
+(.init.text+0x5ea): undefined reference to `mpic_get_irq'
+arch/powerpc/platforms/built-in.o: In function `as1_writeb':
+(.init.text+0x5ee): undefined reference to `mpic_get_irq'
+make: *** [.tmp_vmlinux1] Error 1
 
-> How to search in  the collection of prior postings to this mail list?
+because we don't have CONFIG_MPIC turned on for these.  I'd suggest we guard
+the mpic else chunk in this file behind CONFIG_MPIC.  Agreed?
 
-Maybe try something like :
-http://www.google.com/#q=site%3Alists.ozlabs.org+cpm_uart_allocbuf
-(I have not checked the results)
+I'm less worried about the mpic references that are already guarded behind the
+CONFIG_SMP sections.  Nobody has been crazy enough to make an SMP 440 or 460 SoC
+yet, so CONFIG_SMP should only get selected for 476, and that already selects
+MPIC in the Kconfig.
 
-
-Cheers!
-Guillaume Knispel
+josh
