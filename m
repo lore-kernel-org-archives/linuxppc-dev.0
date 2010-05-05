@@ -1,16 +1,11 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 978DBB7BEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 08:19:05 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] serial: mpc52xx_uart: fix null pointer dereference
-Date: Wed,  5 May 2010 00:18:59 +0200
-Message-Id: <1273011539-13994-1-git-send-email-agust@denx.de>
-In-Reply-To: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
-References: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, leonardo.lists@gmail.com, gregkh@suse.de,
-	Anatolij Gustschin <agust@denx.de>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Simon Horman <horms@verge.net.au>, kexec@lists.infradead.org
+MIME-Version: 1.0
+Subject: [PATCH] kexec-tools, ppc64: fix build error on ppc64
+Date: Wed, 05 May 2010 11:48:53 +1000
+Message-ID: <15110.1273024133@neuling.org>
+Cc: Maxim Uvarov <muvarov@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,28 +15,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 6acc6833510db8f72b5ef343296d97480555fda9
-introduced NULL pointer dereference and kernel crash
-on ppc32 machines while booting. Fix this bug now.
+6adc05c6e3fdbc8b9f5d915af78ca05d0a09cb17 "some kexec MIPS
+improvements" broke pp64 as it turned on -Werror for all archs.
 
-Reported-by: Leonardo Chiquitto <leonardo.lists@gmail.com>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+This fixes the warning and hence ppc64 building.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/serial/mpc52xx_uart.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I've posted a second patch to fix the issue of changing one archs
+Makefile, effecting all other archs.
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index a176ab4..02469c3 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -1467,7 +1467,7 @@ mpc52xx_uart_init(void)
- 	/*
- 	 * Map the PSC FIFO Controller and init if on MPC512x.
- 	 */
--	if (psc_ops->fifoc_init) {
-+	if (psc_ops && psc_ops->fifoc_init) {
- 		ret = psc_ops->fifoc_init();
- 		if (ret)
- 			return ret;
--- 
-1.7.0.4
+ kexec/arch/ppc64/fs2dt.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: kexec-tools/kexec/arch/ppc64/fs2dt.c
+===================================================================
+--- kexec-tools.orig/kexec/arch/ppc64/fs2dt.c
++++ kexec-tools/kexec/arch/ppc64/fs2dt.c
+@@ -357,7 +357,8 @@ static void putprops(char *fn, struct di
+  * Compare function used to sort the device-tree directories
+  * This function will be passed to scandir.
+  */
+-static int comparefunc(const void *dentry1, const void *dentry2)
++static int comparefunc(const struct dirent **dentry1,
++		       const struct dirent **dentry2)
+ {
+ 	char *str1 = (*(struct dirent **)dentry1)->d_name;
+ 	char *str2 = (*(struct dirent **)dentry2)->d_name;
