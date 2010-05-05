@@ -1,17 +1,19 @@
-Return-Path: <xiaokun@sf-auto.com>
-Received: from SFExfe01.sfdomain.com (unknown [211.160.21.39])
-	by ozlabs.org (Postfix) with ESMTP id 6DCD5B7D40
+Return-Path: <gknispel@proformatique.com>
+Received: from mx1.corp.avencall.com (mx1.corp.avencall.com [91.194.178.12])
+	by ozlabs.org (Postfix) with ESMTP id 937BCB7D80
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  5 May 2010 21:25:37 +1000 (EST)
-Message-ID: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
-From: xiaokun <xiaokun@sf-auto.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: question about cpm_uart_cpm2.c "Section mismatch in reference from
-	the function cpm_uart_allocbuf"
-Date: Wed, 5 May 2010 19:19:18 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0224_01CAEC87.DB829A30"
+	Wed,  5 May 2010 23:34:40 +1000 (EST)
+Date: Wed, 5 May 2010 15:34:35 +0200
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: xiaokun <xiaokun@sf-auto.com>
+Subject: Re: question about cpm_uart_cpm2.c "Section mismatch in reference
+	from the function cpm_uart_allocbuf"
+Message-ID: <20100505153435.79711e3d@xilun.lan.proformatique.com>
+In-Reply-To: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
+References: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,74 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-------=_NextPart_000_0224_01CAEC87.DB829A30
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+On Wed, 5 May 2010 19:19:18 +0800
+xiaokun <xiaokun@sf-auto.com> wrote:
 
-SSBhbSB1c2luZyBNUEM4MjcyQURTXzIwMDgwNjIzLWx0aWIuaXNvIGZyb20gZnJlZXNjYWxlDQoN
-ClRoZSBMaW51eCBLZXJuZWwgaXMgMi42LjI1Lg0KDQpXaGVuIEkgbWFrZSB1SW1hZ2UsIHRoZSBl
-cnJvciBtZXNzYWdlIGlzIDoNCg0KV0FSTklORzogdm1saW51eC5vKC50ZXh0KzB4MTU5NDUwKTog
-U2VjdGlvbiBtaXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gY3BtX3VhcnRf
-YWxsb2NidWYoKSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDpfX2FsbG9jX2Jvb3RtZW0oKQ0K
-VGhlIGZ1bmN0aW9uIGNwbV91YXJ0X2FsbG9jYnVmKCkgcmVmZXJlbmNlcw0KdGhlIGZ1bmN0aW9u
-IF9faW5pdCBfX2FsbG9jX2Jvb3RtZW0oKS4NClRoaXMgaXMgb2Z0ZW4gYmVjYXVzZSBjcG1fdWFy
-dF9hbGxvY2J1ZiBsYWNrcyBhIF9faW5pdA0KYW5ub3RhdGlvbiBvciB0aGUgYW5ub3RhdGlvbiBv
-ZiBfX2FsbG9jX2Jvb3RtZW0gaXMgd3JvbmcuDQoNCg0KSXQgc2VlbXMgdGhhdCAiZHJpdmVyc1xz
-ZXJpYWxcY3BtX3VhcnRcY3BtX3VhcnRfY3BtMi5jIiBuZWVkcyB0byBiZSBwYXRjaGVkLg0KSG93
-IHRvIGZpbmQgdGhlIHBhdGNoPw0KSG93IHRvIHNlYXJjaCBpbiAgdGhlIGNvbGxlY3Rpb24gb2Yg
-cHJpb3IgcG9zdGluZ3MgdG8gdGhpcyBtYWlsIGxpc3Q/DQpJIGFtIGEgbmV3YmllLg0KVGhhbmtz
-IGZvciBoZWxwIQ0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0Ksb6159fT08q8
-/rywuL28/ra8yvS7+sPczsS8/qOssqLH0r32uamx6sP3tdjWt7XEuPbIy7vyzcXM5cq508Ohow0K
-yOe5+7G+tefX09PKvP7T68T6zt652KOsx+vJvrP9yKuyv9StyrzQxc+io6iw/MCoyM66ztStyrzQ
-xc+itcSxuLfdo6mjrLKizajWqreivP7Iy6GjDQpUaGlzIGVtYWlsIGFuZCBpdHMgYXR0YWNobWVu
-dHMgbWF5IGJlIGNvbmZpZGVudGlhbCBhbmQgYXJlIGludGVuZGVkIHNvbGVseSBmb3IgdGhlIHVz
-ZSBvZiB0aGUgaW5kaXZpZHVhbCB0byB3aG9tIGl0IGlzIGFkZHJlc3NlZC4NCklmIHlvdSBhcmUg
-bm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQgb2YgdGhpcyBlbWFpbCBhbmQgaXRzIGF0dGFjaG1l
-bnRzLCB5b3UgbXVzdCB0YWtlIG5vIGFjdGlvbiBiYXNlZCB1cG9uIHRoZW0sIG5vciBtdXN0IHlv
-dSBjb3B5IG9yIHNob3cgdGhlbSB0byBhbnlvbmUuIFBsZWFzZSBjb250YWN0IHRoZSBzZW5kZXIg
-aWYgeW91IGJlbGlldmUgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBlbWFpbCBpbiBlcnJvci4NCg==
+> I am using MPC8272ADS_20080623-ltib.iso from freescale
+> 
+> The Linux Kernel is 2.6.25.
+> 
+> When I make uImage, the error message is :
+> 
+> WARNING: vmlinux.o(.text+0x159450): Section mismatch in reference from the function cpm_uart_allocbuf() to the function .init.text:__alloc_bootmem()
+> The function cpm_uart_allocbuf() references
+> the function __init __alloc_bootmem().
+> This is often because cpm_uart_allocbuf lacks a __init
+> annotation or the annotation of __alloc_bootmem is wrong.
+> 
+> 
+> It seems that "drivers\serial\cpm_uart\cpm_uart_cpm2.c" needs to be patched.
 
-------=_NextPart_000_0224_01CAEC87.DB829A30
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+arghhhh, the "\" heart my eyes!!! ;)
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxodG1sPg0KPGhlYWQ+DQo8bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVR5cGUiIGNv
-bnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD1nYjIzMTIiPg0KPG1ldGEgY29udGVudD0iTVNIVE1M
-IDYuMDAuMjkwMC4zNjc2IiBuYW1lPSJHRU5FUkFUT1IiPg0KPHN0eWxlPjwvc3R5bGU+DQo8L2hl
-YWQ+DQo8Ym9keSBiZ2NvbG9yPSIjZmZmZmZmIj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+SSBhbSB1
-c2luZyBNUEM4MjcyQURTXzIwMDgwNjIzLWx0aWIuaXNvIGZyb20gZnJlZXNjYWxlPC9mb250Pjwv
-ZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj48L2ZvbnQ+Jm5ic3A7PC9kaXY+DQo8ZGl2Pjxmb250
-IHNpemU9IjIiPlRoZSBMaW51eCBLZXJuZWwgaXMgMi42LjI1LjwvZm9udD48L2Rpdj4NCjxkaXY+
-PGZvbnQgc2l6ZT0iMiI+PC9mb250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5X
-aGVuIEkgbWFrZSB1SW1hZ2UsIHRoZSZuYnNwO2Vycm9yIG1lc3NhZ2UgaXMgOjwvZm9udD48L2Rp
-dj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+PC9mb250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBz
-aXplPSIyIj5XQVJOSU5HOiB2bWxpbnV4Lm8oLnRleHQmIzQzOzB4MTU5NDUwKTogU2VjdGlvbiBt
-aXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gY3BtX3VhcnRfYWxsb2NidWYo
-KSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDpfX2FsbG9jX2Jvb3RtZW0oKTxicj4NClRoZSBm
-dW5jdGlvbiBjcG1fdWFydF9hbGxvY2J1ZigpIHJlZmVyZW5jZXM8YnI+DQp0aGUgZnVuY3Rpb24g
-X19pbml0IF9fYWxsb2NfYm9vdG1lbSgpLjxicj4NClRoaXMgaXMgb2Z0ZW4gYmVjYXVzZSBjcG1f
-dWFydF9hbGxvY2J1ZiBsYWNrcyBhIF9faW5pdCA8YnI+DQphbm5vdGF0aW9uIG9yIHRoZSBhbm5v
-dGF0aW9uIG9mIF9fYWxsb2NfYm9vdG1lbSBpcyB3cm9uZy48L2ZvbnQ+PC9kaXY+DQo8ZGl2Pjxm
-b250IHNpemU9IjIiPjwvZm9udD4mbmJzcDs8L2Rpdj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+PC9m
-b250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5JdCBzZWVtcyB0aGF0ICZxdW90
-O2RyaXZlcnNcc2VyaWFsXGNwbV91YXJ0XGNwbV91YXJ0X2NwbTIuYyZxdW90OyBuZWVkcyB0byBi
-ZSBwYXRjaGVkLg0KPC9mb250PjwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5Ib3cgdG8gZmlu
-ZCB0aGUgcGF0Y2g/PC9mb250PjwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5Ib3cgdG8gc2Vh
-cmNoIGluJm5ic3A7PC9mb250Pjxmb250IHNpemU9IjMiPiB0aGUgY29sbGVjdGlvbiBvZiBwcmlv
-ciBwb3N0aW5ncyB0byZuYnNwO3RoaXMgbWFpbCZuYnNwO2xpc3Q/PC9mb250PjwvZGl2Pg0KPGRp
-dj48Zm9udCBzaXplPSIyIj5JIGFtJm5ic3A7YSBuZXdiaWUuPC9mb250PjwvZGl2Pg0KPGRpdj48
-Zm9udCBzaXplPSIyIj5UaGFua3MgZm9yIGhlbHAhIDwvZm9udD48L2Rpdj4NCjxicj4NCjxocj4N
-Cjxmb250IGZhY2U9IkFyaWFsIiBjb2xvcj0iR3JheSIgc2l6ZT0iMSI+sb6159fT08q8/rywuL28
-/ra8yvS7+sPczsS8/qOssqLH0r32uamx6sP3tdjWt7XEuPbIy7vyzcXM5cq508Ohozxicj4NCsjn
-ufuxvrXn19PTyrz+0+vE+s7eudijrMfryb6z/cirsr/Urcq80MXPoqOosPzAqMjOus7Urcq80MXP
-orXEsbi33aOpo6yyos2o1qq3orz+yMuhozxicj4NClRoaXMgZW1haWwgYW5kIGl0cyBhdHRhY2ht
-ZW50cyBtYXkgYmUgY29uZmlkZW50aWFsIGFuZCBhcmUgaW50ZW5kZWQgc29sZWx5IGZvciB0aGUg
-dXNlIG9mIHRoZSBpbmRpdmlkdWFsIHRvIHdob20gaXQgaXMgYWRkcmVzc2VkLjxicj4NCklmIHlv
-dSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQgb2YgdGhpcyBlbWFpbCBhbmQgaXRzIGF0
-dGFjaG1lbnRzLCB5b3UgbXVzdCB0YWtlIG5vIGFjdGlvbiBiYXNlZCB1cG9uIHRoZW0sIG5vciBt
-dXN0IHlvdSBjb3B5IG9yIHNob3cgdGhlbSB0byBhbnlvbmUuIFBsZWFzZSBjb250YWN0IHRoZSBz
-ZW5kZXIgaWYgeW91IGJlbGlldmUgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBlbWFpbCBpbiBlcnJv
-ci48YnI+DQo8L2ZvbnQ+DQo8L2JvZHk+DQo8L2h0bWw+DQo=
+> How to find the patch?
 
-------=_NextPart_000_0224_01CAEC87.DB829A30--
+Maybe do a git log on a recent kernel on this file
+(I have not checked the results)
+
+> How to search in  the collection of prior postings to this mail list?
+
+Maybe try something like :
+http://www.google.com/#q=site%3Alists.ozlabs.org+cpm_uart_allocbuf
+(I have not checked the results)
+
+
+Cheers!
+Guillaume Knispel
