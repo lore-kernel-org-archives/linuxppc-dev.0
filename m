@@ -1,22 +1,17 @@
-Return-Path: <muvarov@gmail.com>
-Received: from mail-ww0-f42.google.com (mail-ww0-f42.google.com [74.125.82.42])
-	by ozlabs.org (Postfix) with ESMTP id 10A0EB7D53
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 17:46:28 +1000 (EST)
-Received: by wwb34 with SMTP id 34so3173622wwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 05 May 2010 00:46:25 -0700 (PDT)
+Return-Path: <xiaokun@sf-auto.com>
+Received: from SFExfe01.sfdomain.com (unknown [211.160.21.39])
+	by ozlabs.org (Postfix) with ESMTP id 6DCD5B7D40
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  5 May 2010 21:25:37 +1000 (EST)
+Message-ID: <022701caec44$cd936280$9c1cbcc0@sfdomain.com>
+From: xiaokun <xiaokun@sf-auto.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: question about cpm_uart_cpm2.c "Section mismatch in reference from
+	the function cpm_uart_allocbuf"
+Date: Wed, 5 May 2010 19:19:18 +0800
 MIME-Version: 1.0
-In-Reply-To: <20100505033928.GC2612@verge.net.au>
-References: <15110.1273024133@neuling.org>
-	<20100505023316.GF13035@verge.net.au> <14281.1273030521@neuling.org>
-	<20100505033928.GC2612@verge.net.au>
-Date: Wed, 5 May 2010 11:46:25 +0400
-Message-ID: <q2y572af9171005050046v929117e8ya5b330a1a0c9c298@mail.gmail.com>
-Subject: Re: [PATCH] kexec-tools, ppc64: fix build error on ppc64
-From: Maxim Uvarov <muvarov@gmail.com>
-To: Simon Horman <horms@verge.net.au>
-Content-Type: multipart/alternative; boundary=001485f1e31aea759e0485d4058d
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
-	kexec@lists.infradead.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0224_01CAEC87.DB829A30"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,151 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001485f1e31aea759e0485d4058d
-Content-Type: text/plain; charset=ISO-8859-1
+------=_NextPart_000_0224_01CAEC87.DB829A30
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-2010/5/5 Simon Horman <horms@verge.net.au>
+SSBhbSB1c2luZyBNUEM4MjcyQURTXzIwMDgwNjIzLWx0aWIuaXNvIGZyb20gZnJlZXNjYWxlDQoN
+ClRoZSBMaW51eCBLZXJuZWwgaXMgMi42LjI1Lg0KDQpXaGVuIEkgbWFrZSB1SW1hZ2UsIHRoZSBl
+cnJvciBtZXNzYWdlIGlzIDoNCg0KV0FSTklORzogdm1saW51eC5vKC50ZXh0KzB4MTU5NDUwKTog
+U2VjdGlvbiBtaXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gY3BtX3VhcnRf
+YWxsb2NidWYoKSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDpfX2FsbG9jX2Jvb3RtZW0oKQ0K
+VGhlIGZ1bmN0aW9uIGNwbV91YXJ0X2FsbG9jYnVmKCkgcmVmZXJlbmNlcw0KdGhlIGZ1bmN0aW9u
+IF9faW5pdCBfX2FsbG9jX2Jvb3RtZW0oKS4NClRoaXMgaXMgb2Z0ZW4gYmVjYXVzZSBjcG1fdWFy
+dF9hbGxvY2J1ZiBsYWNrcyBhIF9faW5pdA0KYW5ub3RhdGlvbiBvciB0aGUgYW5ub3RhdGlvbiBv
+ZiBfX2FsbG9jX2Jvb3RtZW0gaXMgd3JvbmcuDQoNCg0KSXQgc2VlbXMgdGhhdCAiZHJpdmVyc1xz
+ZXJpYWxcY3BtX3VhcnRcY3BtX3VhcnRfY3BtMi5jIiBuZWVkcyB0byBiZSBwYXRjaGVkLg0KSG93
+IHRvIGZpbmQgdGhlIHBhdGNoPw0KSG93IHRvIHNlYXJjaCBpbiAgdGhlIGNvbGxlY3Rpb24gb2Yg
+cHJpb3IgcG9zdGluZ3MgdG8gdGhpcyBtYWlsIGxpc3Q/DQpJIGFtIGEgbmV3YmllLg0KVGhhbmtz
+IGZvciBoZWxwIQ0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0Ksb6159fT08q8
+/rywuL28/ra8yvS7+sPczsS8/qOssqLH0r32uamx6sP3tdjWt7XEuPbIy7vyzcXM5cq508Ohow0K
+yOe5+7G+tefX09PKvP7T68T6zt652KOsx+vJvrP9yKuyv9StyrzQxc+io6iw/MCoyM66ztStyrzQ
+xc+itcSxuLfdo6mjrLKizajWqreivP7Iy6GjDQpUaGlzIGVtYWlsIGFuZCBpdHMgYXR0YWNobWVu
+dHMgbWF5IGJlIGNvbmZpZGVudGlhbCBhbmQgYXJlIGludGVuZGVkIHNvbGVseSBmb3IgdGhlIHVz
+ZSBvZiB0aGUgaW5kaXZpZHVhbCB0byB3aG9tIGl0IGlzIGFkZHJlc3NlZC4NCklmIHlvdSBhcmUg
+bm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQgb2YgdGhpcyBlbWFpbCBhbmQgaXRzIGF0dGFjaG1l
+bnRzLCB5b3UgbXVzdCB0YWtlIG5vIGFjdGlvbiBiYXNlZCB1cG9uIHRoZW0sIG5vciBtdXN0IHlv
+dSBjb3B5IG9yIHNob3cgdGhlbSB0byBhbnlvbmUuIFBsZWFzZSBjb250YWN0IHRoZSBzZW5kZXIg
+aWYgeW91IGJlbGlldmUgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBlbWFpbCBpbiBlcnJvci4NCg==
 
-> On Wed, May 05, 2010 at 01:35:21PM +1000, Michael Neuling wrote:
-> >
-> >
-> > In message <20100505023316.GF13035@verge.net.au> you wrote:
-> > > On Wed, May 05, 2010 at 11:48:53AM +1000, Michael Neuling wrote:
-> > > > 6adc05c6e3fdbc8b9f5d915af78ca05d0a09cb17 "some kexec MIPS
-> > > > improvements" broke pp64 as it turned on -Werror for all archs.
-> > > >
-> > > > This fixes the warning and hence ppc64 building.
-> > >
-> > > Thanks.
-> > >
-> > > While I'm very much in favour of using -Werror for testing
-> > > and these kind of patches are great, I think that -Werror
-> > > by default is rather silly. We can't control what will be
-> > > a warning in the future and sometimes fixing warnings isn't
-> > > appropriate - for instance there are warnings in fs2dt.c at
-> > > the moment, that is currently considered an upstream problem.
-> > >
-> > > In short, this patch is great. But I plan to also remove -Werror
-> > > as the default now that its been brought to my attention.
-> >
-> > Cool.  My second patch should do this for all but MIPS.
->
-> Unfortunately the second patch breaks make tarball.
-> For now I have committed the following:
->
-> From 76beff0507360f3001e23c9b4c765ef56384d5d5 Mon Sep 17 00:00:00 2001
-> From: Simon Horman <horms@verge.net.au>
-> Date: Wed, 5 May 2010 13:33:21 +1000
-> Subject: [PATCH] build: Don't modify CFLAGS in kexec/arch/mips/Makefile
->
-> Revert this portion of recent MIPS changes as it actually effects the
-> CFLAGS for all architectures.  Moreover I'm somewhat dubious about
-> defaulting to -Werror for any architecture.
->
-> Signed-off-by: Simon Horman <horms@verge.net.au>
-> ---
->  kexec/arch/mips/Makefile |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
->
-> diff --git a/kexec/arch/mips/Makefile b/kexec/arch/mips/Makefile
-> index 831b263..03bdb9a 100644
-> --- a/kexec/arch/mips/Makefile
-> +++ b/kexec/arch/mips/Makefile
-> @@ -14,5 +14,3 @@ dist += kexec/arch/mips/Makefile $(mips_KEXEC_SRCS)
->             \
->        kexec/arch/mips/kexec-mips.h                                    \
->        kexec/arch/mips/crashdump-mips.h                                \
->        kexec/arch/mips/include/arch/options.h
-> -
-> -CFLAGS +=-Wall -Werror
-> --
-> 1.7.1
->
->
-Plan was to have -Werror only for mips. Thanks for fixes.
+------=_NextPart_000_0224_01CAEC87.DB829A30
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: base64
 
--- 
-Best regards,
-Maxim Uvarov
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxodG1sPg0KPGhlYWQ+DQo8bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVR5cGUiIGNv
+bnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD1nYjIzMTIiPg0KPG1ldGEgY29udGVudD0iTVNIVE1M
+IDYuMDAuMjkwMC4zNjc2IiBuYW1lPSJHRU5FUkFUT1IiPg0KPHN0eWxlPjwvc3R5bGU+DQo8L2hl
+YWQ+DQo8Ym9keSBiZ2NvbG9yPSIjZmZmZmZmIj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+SSBhbSB1
+c2luZyBNUEM4MjcyQURTXzIwMDgwNjIzLWx0aWIuaXNvIGZyb20gZnJlZXNjYWxlPC9mb250Pjwv
+ZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj48L2ZvbnQ+Jm5ic3A7PC9kaXY+DQo8ZGl2Pjxmb250
+IHNpemU9IjIiPlRoZSBMaW51eCBLZXJuZWwgaXMgMi42LjI1LjwvZm9udD48L2Rpdj4NCjxkaXY+
+PGZvbnQgc2l6ZT0iMiI+PC9mb250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5X
+aGVuIEkgbWFrZSB1SW1hZ2UsIHRoZSZuYnNwO2Vycm9yIG1lc3NhZ2UgaXMgOjwvZm9udD48L2Rp
+dj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+PC9mb250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBz
+aXplPSIyIj5XQVJOSU5HOiB2bWxpbnV4Lm8oLnRleHQmIzQzOzB4MTU5NDUwKTogU2VjdGlvbiBt
+aXNtYXRjaCBpbiByZWZlcmVuY2UgZnJvbSB0aGUgZnVuY3Rpb24gY3BtX3VhcnRfYWxsb2NidWYo
+KSB0byB0aGUgZnVuY3Rpb24gLmluaXQudGV4dDpfX2FsbG9jX2Jvb3RtZW0oKTxicj4NClRoZSBm
+dW5jdGlvbiBjcG1fdWFydF9hbGxvY2J1ZigpIHJlZmVyZW5jZXM8YnI+DQp0aGUgZnVuY3Rpb24g
+X19pbml0IF9fYWxsb2NfYm9vdG1lbSgpLjxicj4NClRoaXMgaXMgb2Z0ZW4gYmVjYXVzZSBjcG1f
+dWFydF9hbGxvY2J1ZiBsYWNrcyBhIF9faW5pdCA8YnI+DQphbm5vdGF0aW9uIG9yIHRoZSBhbm5v
+dGF0aW9uIG9mIF9fYWxsb2NfYm9vdG1lbSBpcyB3cm9uZy48L2ZvbnQ+PC9kaXY+DQo8ZGl2Pjxm
+b250IHNpemU9IjIiPjwvZm9udD4mbmJzcDs8L2Rpdj4NCjxkaXY+PGZvbnQgc2l6ZT0iMiI+PC9m
+b250PiZuYnNwOzwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5JdCBzZWVtcyB0aGF0ICZxdW90
+O2RyaXZlcnNcc2VyaWFsXGNwbV91YXJ0XGNwbV91YXJ0X2NwbTIuYyZxdW90OyBuZWVkcyB0byBi
+ZSBwYXRjaGVkLg0KPC9mb250PjwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5Ib3cgdG8gZmlu
+ZCB0aGUgcGF0Y2g/PC9mb250PjwvZGl2Pg0KPGRpdj48Zm9udCBzaXplPSIyIj5Ib3cgdG8gc2Vh
+cmNoIGluJm5ic3A7PC9mb250Pjxmb250IHNpemU9IjMiPiB0aGUgY29sbGVjdGlvbiBvZiBwcmlv
+ciBwb3N0aW5ncyB0byZuYnNwO3RoaXMgbWFpbCZuYnNwO2xpc3Q/PC9mb250PjwvZGl2Pg0KPGRp
+dj48Zm9udCBzaXplPSIyIj5JIGFtJm5ic3A7YSBuZXdiaWUuPC9mb250PjwvZGl2Pg0KPGRpdj48
+Zm9udCBzaXplPSIyIj5UaGFua3MgZm9yIGhlbHAhIDwvZm9udD48L2Rpdj4NCjxicj4NCjxocj4N
+Cjxmb250IGZhY2U9IkFyaWFsIiBjb2xvcj0iR3JheSIgc2l6ZT0iMSI+sb6159fT08q8/rywuL28
+/ra8yvS7+sPczsS8/qOssqLH0r32uamx6sP3tdjWt7XEuPbIy7vyzcXM5cq508Ohozxicj4NCsjn
+ufuxvrXn19PTyrz+0+vE+s7eudijrMfryb6z/cirsr/Urcq80MXPoqOosPzAqMjOus7Urcq80MXP
+orXEsbi33aOpo6yyos2o1qq3orz+yMuhozxicj4NClRoaXMgZW1haWwgYW5kIGl0cyBhdHRhY2ht
+ZW50cyBtYXkgYmUgY29uZmlkZW50aWFsIGFuZCBhcmUgaW50ZW5kZWQgc29sZWx5IGZvciB0aGUg
+dXNlIG9mIHRoZSBpbmRpdmlkdWFsIHRvIHdob20gaXQgaXMgYWRkcmVzc2VkLjxicj4NCklmIHlv
+dSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQgb2YgdGhpcyBlbWFpbCBhbmQgaXRzIGF0
+dGFjaG1lbnRzLCB5b3UgbXVzdCB0YWtlIG5vIGFjdGlvbiBiYXNlZCB1cG9uIHRoZW0sIG5vciBt
+dXN0IHlvdSBjb3B5IG9yIHNob3cgdGhlbSB0byBhbnlvbmUuIFBsZWFzZSBjb250YWN0IHRoZSBz
+ZW5kZXIgaWYgeW91IGJlbGlldmUgeW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBlbWFpbCBpbiBlcnJv
+ci48YnI+DQo8L2ZvbnQ+DQo8L2JvZHk+DQo8L2h0bWw+DQo=
 
---001485f1e31aea759e0485d4058d
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<br><br><div class=3D"gmail_quote">2010/5/5 Simon Horman <span dir=3D"ltr">=
-&lt;<a href=3D"mailto:horms@verge.net.au">horms@verge.net.au</a>&gt;</span>=
-<br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(2=
-04, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class=3D"im">On Wed, May 05, 2010 at 01:35:21PM +1000, Michael Neuling=
- wrote:<br>
-&gt;<br>
-&gt;<br>
-&gt; In message &lt;<a href=3D"mailto:20100505023316.GF13035@verge.net.au">=
-20100505023316.GF13035@verge.net.au</a>&gt; you wrote:<br>
-&gt; &gt; On Wed, May 05, 2010 at 11:48:53AM +1000, Michael Neuling wrote:<=
-br>
-&gt; &gt; &gt; 6adc05c6e3fdbc8b9f5d915af78ca05d0a09cb17 &quot;some kexec MI=
-PS<br>
-&gt; &gt; &gt; improvements&quot; broke pp64 as it turned on -Werror for al=
-l archs.<br>
-&gt; &gt; &gt;<br>
-&gt; &gt; &gt; This fixes the warning and hence ppc64 building.<br>
-&gt; &gt;<br>
-&gt; &gt; Thanks.<br>
-&gt; &gt;<br>
-&gt; &gt; While I&#39;m very much in favour of using -Werror for testing<br=
->
-&gt; &gt; and these kind of patches are great, I think that -Werror<br>
-&gt; &gt; by default is rather silly. We can&#39;t control what will be<br>
-&gt; &gt; a warning in the future and sometimes fixing warnings isn&#39;t<b=
-r>
-&gt; &gt; appropriate - for instance there are warnings in fs2dt.c at<br>
-&gt; &gt; the moment, that is currently considered an upstream problem.<br>
-&gt; &gt;<br>
-&gt; &gt; In short, this patch is great. But I plan to also remove -Werror<=
-br>
-&gt; &gt; as the default now that its been brought to my attention.<br>
-&gt;<br>
-&gt; Cool. =A0My second patch should do this for all but MIPS.<br>
-<br>
-</div>Unfortunately the second patch breaks make tarball.<br>
-For now I have committed the following:<br>
-<br>
->From 76beff0507360f3001e23c9b4c765ef56384d5d5 Mon Sep 17 00:00:00 2001<br>
-From: Simon Horman &lt;<a href=3D"mailto:horms@verge.net.au">horms@verge.ne=
-t.au</a>&gt;<br>
-Date: Wed, 5 May 2010 13:33:21 +1000<br>
-Subject: [PATCH] build: Don&#39;t modify CFLAGS in kexec/arch/mips/Makefile=
-<br>
-<br>
-Revert this portion of recent MIPS changes as it actually effects the<br>
-CFLAGS for all architectures. =A0Moreover I&#39;m somewhat dubious about<br=
->
-defaulting to -Werror for any architecture.<br>
-<br>
-Signed-off-by: Simon Horman &lt;<a href=3D"mailto:horms@verge.net.au">horms=
-@verge.net.au</a>&gt;<br>
----<br>
-=A0kexec/arch/mips/Makefile | =A0 =A02 --<br>
-=A01 files changed, 0 insertions(+), 2 deletions(-)<br>
-<br>
-diff --git a/kexec/arch/mips/Makefile b/kexec/arch/mips/Makefile<br>
-index 831b263..03bdb9a 100644<br>
---- a/kexec/arch/mips/Makefile<br>
-+++ b/kexec/arch/mips/Makefile<br>
-@@ -14,5 +14,3 @@ dist +=3D kexec/arch/mips/Makefile $(mips_KEXEC_SRCS) =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \<br>
- =A0 =A0 =A0 =A0kexec/arch/mips/kexec-mips.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\<br>
- =A0 =A0 =A0 =A0kexec/arch/mips/crashdump-mips.h =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\<br>
- =A0 =A0 =A0 =A0kexec/arch/mips/include/arch/options.h<br>
--<br>
--CFLAGS +=3D-Wall -Werror<br>
-<font color=3D"#888888">--<br>
-1.7.1<br>
-<br>
-</font></blockquote></div><br>Plan was to have -Werror only for mips. Thank=
-s for fixes.<br clear=3D"all"><br>-- <br>Best regards,<br>Maxim Uvarov<br>
-
---001485f1e31aea759e0485d4058d--
+------=_NextPart_000_0224_01CAEC87.DB829A30--
