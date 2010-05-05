@@ -1,20 +1,35 @@
-Return-Path: <PeterHuewe@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 8A7DFB7D6D
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 01:20:31 +1000 (EST)
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH] media/IR: Add missing include file to rc-map.c
-Date: Wed, 5 May 2010 17:20:21 +0200
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B79E0B7D47
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 01:59:49 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o45Fxkag004277
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 08:59:46 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o45GAAVZ027014
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 11:10:10 -0500 (CDT)
+Message-ID: <4BE195F0.9070400@freescale.com>
+Date: Wed, 05 May 2010 10:59:44 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201005051720.22617.PeterHuewe@gmx.de>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	David =?iso-8859-1?q?H=E4rdeman?= <david@hardeman.nu>,
-	linux-m68k@lists.linux-m68k.org, linux-media@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [alsa-devel] [PATCH 1/2] powerpc/8610: add probing for individual
+	DMA channels, not just DMA controllers
+References: <1272923655-31807-1-git-send-email-timur@freescale.com>
+	<2928D88F-057B-498C-8A11-F7193429A90D@freescale.com>
+	<20100505112208.GD5754@opensource.wolfsonmicro.com>
+	<g2ied82fe3e1005050439v70066822h7518ac53f97e97f6@mail.gmail.com>
+	<20100505123545.GA7139@rakim.wolfsonmicro.main>
+In-Reply-To: <20100505123545.GA7139@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
+	alsa-devel@alsa-project.org, lrg@slimlogic.co.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Huewe <peterhuewe@gmx.de>
+Mark Brown wrote:
+> On Wed, May 05, 2010 at 06:39:01AM -0500, Timur Tabi wrote:
+>> On Wed, May 5, 2010 at 6:22 AM, Mark Brown
+> 
+>>> Just looking at the scheduling here with regard to the merge window and
+>>> the fact that this doesn't seem to hurt the existing drivers perhaps it
+>>> makes sense to merge this via the PowerPC tree immediately?
+> 
+>> Aren't we a little late in the cycle for a patch that doesn't do anything?
+> 
+> It seems to be safe enough for -next.
 
-This patch adds a missing include linux/delay.h to prevent
-build failures[1-5]
+Sure, -next is fine.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
-KernelVersion: linux-next-20100505
-
-References:
-[1] http://kisskb.ellerman.id.au/kisskb/buildresult/2571452/
-[2] http://kisskb.ellerman.id.au/kisskb/buildresult/2571188/
-[3] http://kisskb.ellerman.id.au/kisskb/buildresult/2571479/
-[4] http://kisskb.ellerman.id.au/kisskb/buildresult/2571429/
-[5] http://kisskb.ellerman.id.au/kisskb/buildresult/2571432/
-
-drivers/media/IR/rc-map.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/media/IR/rc-map.c b/drivers/media/IR/rc-map.c
-index caf6a27..46a8f15 100644
---- a/drivers/media/IR/rc-map.c
-+++ b/drivers/media/IR/rc-map.c
-@@ -14,6 +14,7 @@
- 
- #include <media/ir-core.h>
- #include <linux/spinlock.h>
-+#include <linux/delay.h>
- 
- /* Used to handle IR raw handler extensions */
- static LIST_HEAD(rc_map_list);
 -- 
-1.6.4.4
+Timur Tabi
+Linux kernel developer at Freescale
