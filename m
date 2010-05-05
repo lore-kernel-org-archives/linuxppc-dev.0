@@ -1,19 +1,38 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 8CD1AB7D4F
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 08:39:59 +1000 (EST)
-Date: Wed, 5 May 2010 15:09:16 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Albrecht =?iso-8859-1?Q?Dre=DF?= <albrecht.dress@arcor.de>
-Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
-Message-ID: <20100505220916.GD3529@ovro.caltech.edu>
-References: <1266433154.2322.0@antares>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 90A11B7D47
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 08:20:07 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o45MCgio009020
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 16:12:42 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o45MJnqr125000
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 16:19:49 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o45MJlCg025734
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 May 2010 16:19:48 -0600
+Date: Wed, 5 May 2010 15:25:53 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
+Message-ID: <20100505222553.GA6555@us.ibm.com>
+References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
+	<1272723382-19470-12-git-send-email-orenl@cs.columbia.edu>
+	<20100505141447.fc2397f6.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1266433154.2322.0@antares>
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100505141447.fc2397f6.randy.dunlap@oracle.com>
+Cc: linux-s390@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+	containers@lists.linux-foundation.org, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Matt Helsley <matthltc@us.ibm.com>, linux-api@vger.kernel.org,
+	Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Pavel Emelyanov <xemul@openvz.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,219 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2010 at 07:59:14PM +0100, Albrecht Dreﬂ wrote:
-> This patch improves the recovery of the MPC's I2C bus from errors like bus
-> hangs resulting in timeouts:
-> 1. make the bus timeout configurable, as it depends on the bus clock and
->     the attached slave chip(s); default is still 1 second;
-> 2. detect any of the cases indicated by the CF, BB and RXAK MSR flags if a
->     timeout occurs, and add a missing (required) MAL reset;
-> 3. use a more reliable method to fixup the bus if a hang has been detected.
->     The sequence is sent 9 times which seems to be necessary if a slave
->     "misses" more than one clock cycle.  For 400 kHz bus speed, the fixup is
->     also ~70us (81us vs. 150us) faster.
-> 
-> Tested on a custom Lite5200b derived board, with a Dallas RTC, AD sensors
-> and NXP IO expander chips attached to the i2c.
-> 
-> Changes vs. v1:
-> - use improved bus fixup sequence for all chips (not only the 5200)
-> - calculate real clock from defaults if no clock is given in the device tree
-> - better description (I hope) of the changes.
-> 
-> I didn't split the changes in this file into three parts as recommended by
-> Grant, as they actually belong together (i.e. they address one single
-> problem, just in three places of one single source file).
-> 
-> Signed-off-by: Albrecht Dreﬂ <albrecht.dress@arcor.de>
-> 
-> ---
-> 
-> Note about the reset sequence: I verified the waveforms for 18.4kHz, 85.9kHz
-> and 375kHz (drop me a note if you want to see scope screen shots).  Not
-> verified on other mpc chips yet.
-> @Ira: thanks in advance for giving it a try on your box!
-> 
+Randy Dunlap [randy.dunlap@oracle.com] wrote:
+| > +		base of the region allocated for stack. These architectures
+| > +		must pass in the size of the stack-region in ->child_stack_size.
+| 
+| 		                             stack region
+| 
+| Seems unfortunate that different architectures use the fields differently.
 
-Did this series get forgotten about? I don't see it in bjdook's next-i2c
-branch or in benh's next branch.
+Yes and no. The field still has a single purpose, just that some architectures
+may not need it. We enforce that if unused on an architecture, the field must
+be 0. It looked like the easiest way to keep the API common across
+architectures.
 
-I've pulled these into my 2.6.31.13 kernel, and they seem to work fine.
-You've got my Tested-by if you didn't get one from me already.
+| 
+| Is this example program meant to build only on i386?
 
-Ira
+Yes. Will add a pointer to the clone*.[chS] and libeclone.a files in
 
-> --- linux-2.6.32-orig/drivers/i2c/busses/i2c-mpc.c	2009-12-03 04:51:21.000000000 +0100
-> +++ linux-2.6.32/drivers/i2c/busses/i2c-mpc.c	2010-02-17 16:23:11.000000000 +0100
-> @@ -59,6 +59,7 @@ struct mpc_i2c {
->   	wait_queue_head_t queue;
->   	struct i2c_adapter adap;
->   	int irq;
-> +	u32 real_clk;
->   };
-> 
->   struct mpc_i2c_divider {
-> @@ -93,20 +94,23 @@ static irqreturn_t mpc_i2c_isr(int irq,
->   /* Sometimes 9th clock pulse isn't generated, and slave doesn't release
->    * the bus, because it wants to send ACK.
->    * Following sequence of enabling/disabling and sending start/stop generates
-> - * the pulse, so it's all OK.
-> + * the 9 pulses, so it's all OK.
->    */
->   static void mpc_i2c_fixup(struct mpc_i2c *i2c)
->   {
-> -	writeccr(i2c, 0);
-> -	udelay(30);
-> -	writeccr(i2c, CCR_MEN);
-> -	udelay(30);
-> -	writeccr(i2c, CCR_MSTA | CCR_MTX);
-> -	udelay(30);
-> -	writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-> -	udelay(30);
-> -	writeccr(i2c, CCR_MEN);
-> -	udelay(30);
-> +	int k;
-> +	u32 delay_val = 1000000 / i2c->real_clk + 1;
-> +
-> +	if (delay_val < 2)
-> +		delay_val = 2;
-> +
-> +	for (k = 9; k; k--) {
-> +		writeccr(i2c, 0);
-> +		writeccr(i2c, CCR_MSTA | CCR_MTX | CCR_MEN);
-> +		udelay(delay_val);
-> +		writeccr(i2c, CCR_MEN);
-> +		udelay(delay_val << 1);
-> +	}
->   }
-> 
->   static int i2c_wait(struct mpc_i2c *i2c, unsigned timeout, int writing)
-> @@ -186,15 +190,19 @@ static const struct mpc_i2c_divider mpc_
->   	{10240, 0x9d}, {12288, 0x9e}, {15360, 0x9f}
->   };
-> 
-> -int mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock, int prescaler)
-> +int mpc_i2c_get_fdr_52xx(struct device_node *node, u32 clock, int prescaler,
-> +			 u32 *real_clk)
->   {
->   	const struct mpc_i2c_divider *div = NULL;
->   	unsigned int pvr = mfspr(SPRN_PVR);
->   	u32 divider;
->   	int i;
-> 
-> -	if (!clock)
-> +	if (!clock) {
-> +		/* see below - default fdr = 0x3f -> div = 2048 */
-> +		*real_clk = mpc5xxx_get_bus_frequency(node) / 2048;
->   		return -EINVAL;
-> +	}
-> 
->   	/* Determine divider value */
->   	divider = mpc5xxx_get_bus_frequency(node) / clock;
-> @@ -212,7 +220,8 @@ int mpc_i2c_get_fdr_52xx(struct device_n
->   			break;
->   	}
-> 
-> -	return div ? (int)div->fdr : -EINVAL;
-> +	*real_clk = mpc5xxx_get_bus_frequency(node) / div->divider;
-> +	return (int)div->fdr;
->   }
-> 
->   static void mpc_i2c_setclock_52xx(struct device_node *node,
-> @@ -221,13 +230,14 @@ static void mpc_i2c_setclock_52xx(struct
->   {
->   	int ret, fdr;
-> 
-> -	ret = mpc_i2c_get_fdr_52xx(node, clock, prescaler);
-> +	ret = mpc_i2c_get_fdr_52xx(node, clock, prescaler, &i2c->real_clk);
->   	fdr = (ret >= 0) ? ret : 0x3f; /* backward compatibility */
-> 
->   	writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
-> 
->   	if (ret >= 0)
-> -		dev_info(i2c->dev, "clock %d Hz (fdr=%d)\n", clock, fdr);
-> +		dev_info(i2c->dev, "clock %u Hz (fdr=%d)\n", i2c->real_clk,
-> +			 fdr);
->   }
->   #else /* !CONFIG_PPC_MPC52xx */
->   static void mpc_i2c_setclock_52xx(struct device_node *node,
-> @@ -287,14 +297,18 @@ u32 mpc_i2c_get_sec_cfg_8xxx(void)
->   	return val;
->   }
-> 
-> -int mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock, u32 prescaler)
-> +int mpc_i2c_get_fdr_8xxx(struct device_node *node, u32 clock, u32 prescaler,
-> +			 u32 *real_clk)
->   {
->   	const struct mpc_i2c_divider *div = NULL;
->   	u32 divider;
->   	int i;
-> 
-> -	if (!clock)
-> +	if (!clock) {
-> +		/* see below - default fdr = 0x1031 -> div = 16 * 3072 */
-> +		*real_clk = fsl_get_sys_freq() / prescaler / (16 * 3072);
->   		return -EINVAL;
-> +	}
-> 
->   	/* Determine proper divider value */
->   	if (of_device_is_compatible(node, "fsl,mpc8544-i2c"))
-> @@ -317,6 +331,7 @@ int mpc_i2c_get_fdr_8xxx(struct device_n
->   			break;
->   	}
-> 
-> +	*real_clk = fsl_get_sys_freq() / prescaler / div->divider;
->   	return div ? (int)div->fdr : -EINVAL;
->   }
-> 
-> @@ -326,7 +341,7 @@ static void mpc_i2c_setclock_8xxx(struct
->   {
->   	int ret, fdr;
-> 
-> -	ret = mpc_i2c_get_fdr_8xxx(node, clock, prescaler);
-> +	ret = mpc_i2c_get_fdr_8xxx(node, clock, prescaler, &i2c->real_clk);
->   	fdr = (ret >= 0) ? ret : 0x1031; /* backward compatibility */
-> 
->   	writeb(fdr & 0xff, i2c->base + MPC_I2C_FDR);
-> @@ -334,7 +349,7 @@ static void mpc_i2c_setclock_8xxx(struct
-> 
->   	if (ret >= 0)
->   		dev_info(i2c->dev, "clock %d Hz (dfsrr=%d fdr=%d)\n",
-> -			 clock, fdr >> 8, fdr & 0xff);
-> +			 i2c->real_clk, fdr >> 8, fdr & 0xff);
->   }
-> 
->   #else /* !CONFIG_FSL_SOC */
-> @@ -446,10 +461,14 @@ static int mpc_xfer(struct i2c_adapter *
->   			return -EINTR;
->   		}
->   		if (time_after(jiffies, orig_jiffies + HZ)) {
-> +			u8 status = readb(i2c->base + MPC_I2C_SR);
-> +
->   			dev_dbg(i2c->dev, "timeout\n");
-> -			if (readb(i2c->base + MPC_I2C_SR) ==
-> -			    (CSR_MCF | CSR_MBB | CSR_RXAK))
-> +			if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) != 0) {
-> +				writeb(status & ~CSR_MAL,
-> +				       i2c->base + MPC_I2C_SR);
->   				mpc_i2c_fixup(i2c);
-> +			}
->   			return -EIO;
->   		}
->   		schedule();
-> @@ -540,6 +559,14 @@ static int __devinit fsl_i2c_probe(struc
->   		}
->   	}
-> 
-> +	prop = of_get_property(op->node, "fsl,timeout", &plen);
-> +	if (prop && plen == sizeof(u32)) {
-> +		mpc_ops.timeout = *prop * HZ / 1000000;
-> +		if (mpc_ops.timeout < 5)
-> +			mpc_ops.timeout = 5;
-> +	}
-> +	dev_info(i2c->dev, "timeout %u us\n", mpc_ops.timeout * 1000000 / HZ);
-> +
->   	dev_set_drvdata(&op->dev, i2c);
-> 
->   	i2c->adap = mpc_ops;
-> 
+	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
+
+for other architectures (currently x86_64, ppc, s390).
+
+Thanks for the review. Will fix the errors and repost.
+
+Sukadev
