@@ -1,25 +1,20 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0ED28B7D5F
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 22:35:51 +1000 (EST)
-Date: Wed, 5 May 2010 13:35:45 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [alsa-devel] [PATCH 1/2] powerpc/8610: add probing for
-	individual DMA channels, not just DMA controllers
-Message-ID: <20100505123545.GA7139@rakim.wolfsonmicro.main>
-References: <1272923655-31807-1-git-send-email-timur@freescale.com>
-	<2928D88F-057B-498C-8A11-F7193429A90D@freescale.com>
-	<20100505112208.GD5754@opensource.wolfsonmicro.com>
-	<g2ied82fe3e1005050439v70066822h7518ac53f97e97f6@mail.gmail.com>
+Return-Path: <leonardo.lists@gmail.com>
+Received: from mail-ww0-f42.google.com (mail-ww0-f42.google.com [74.125.82.42])
+	by ozlabs.org (Postfix) with ESMTP id AEFEAB7D40
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 May 2010 22:40:49 +1000 (EST)
+Received: by wwb34 with SMTP id 34so3348885wwb.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 05 May 2010 05:40:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <g2ied82fe3e1005050439v70066822h7518ac53f97e97f6@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
-	alsa-devel@alsa-project.org, lrg@slimlogic.co.uk
+In-Reply-To: <1273011539-13994-1-git-send-email-agust@denx.de>
+References: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
+	<1273011539-13994-1-git-send-email-agust@denx.de>
+Date: Wed, 5 May 2010 09:40:47 -0300
+Message-ID: <s2ic2d0b6ec1005050540nb382fc0aj70c4f132543a66aa@mail.gmail.com>
+Subject: Re: [PATCH] serial: mpc52xx_uart: fix null pointer dereference
+From: Leonardo Chiquitto <leonardo.lists@gmail.com>
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 05, 2010 at 06:39:01AM -0500, Timur Tabi wrote:
-> On Wed, May 5, 2010 at 6:22 AM, Mark Brown
+On Tue, May 4, 2010 at 7:18 PM, Anatolij Gustschin <agust@denx.de> wrote:
+> Commit 6acc6833510db8f72b5ef343296d97480555fda9
+> introduced NULL pointer dereference and kernel crash
+> on ppc32 machines while booting. Fix this bug now.
+>
+> Reported-by: Leonardo Chiquitto <leonardo.lists@gmail.com>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> ---
+> =A0drivers/serial/mpc52xx_uart.c | =A0 =A02 +-
+> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.=
+c
+> index a176ab4..02469c3 100644
+> --- a/drivers/serial/mpc52xx_uart.c
+> +++ b/drivers/serial/mpc52xx_uart.c
+> @@ -1467,7 +1467,7 @@ mpc52xx_uart_init(void)
+> =A0 =A0 =A0 =A0/*
+> =A0 =A0 =A0 =A0 * Map the PSC FIFO Controller and init if on MPC512x.
+> =A0 =A0 =A0 =A0 */
+> - =A0 =A0 =A0 if (psc_ops->fifoc_init) {
+> + =A0 =A0 =A0 if (psc_ops && psc_ops->fifoc_init) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D psc_ops->fifoc_init();
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ret)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return ret;
+> --
+> 1.7.0.4
 
-> > Just looking at the scheduling here with regard to the merge window and
-> > the fact that this doesn't seem to hurt the existing drivers perhaps it
-> > makes sense to merge this via the PowerPC tree immediately?
+Thanks for the quick fix, Anatolij. I just tested it and confirm it resolve=
+s
+the problem.
 
-> Aren't we a little late in the cycle for a patch that doesn't do anything?
-
-It seems to be safe enough for -next.
+Leonardo
