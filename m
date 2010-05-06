@@ -1,26 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
-	by ozlabs.org (Postfix) with ESMTP id C1D90B7D45
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 May 2010 23:45:08 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
-Subject: Re: [RFC][PATCH resend 8/12] asm-generic: bitops: introduce le bit
-	offset macro
-Date: Thu, 6 May 2010 15:38:54 +0200
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<4BE04677.4060608@redhat.com>
-	<20100505115924.7bb92036.takuya.yoshikawa@gmail.com>
-In-Reply-To: <20100505115924.7bb92036.takuya.yoshikawa@gmail.com>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
+	by ozlabs.org (Postfix) with ESMTP id 96EF6B7D5B
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 May 2010 03:54:35 +1000 (EST)
+Date: Thu, 06 May 2010 19:54:31 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>, Grant Likely
+	<grant.likely@secretlab.ca>
+In-Reply-To: <20100505220916.GD3529@ovro.caltech.edu> (from
+	iws@ovro.caltech.edu on Thu May  6 00:09:16 2010)
+Message-Id: <1273168472.1767.1@antares>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201005061538.54326.arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
-	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, yoshikawa.takuya@oss.ntt.co.jp,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
-	Avi Kivity <avi@redhat.com>, hpa@zytor.com, tglx@linutronix.de
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-GESm4MLGNwyJwiypmWfs"
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 05 May 2010, Takuya Yoshikawa wrote:
-> Date: 
-> Yesterday 04:59:24
-> > That's why the bitmaps are defined as little endian u64 aligned, even on 
-> > big endian 32-bit systems.  Little endian bitmaps are wordsize agnostic, 
-> > and u64 alignment ensures we can use long-sized bitops on mixed size 
-> > systems.
+--=-GESm4MLGNwyJwiypmWfs
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, I see.
+Am 06.05.10 00:09 schrieb(en) Ira W. Snyder:
+> Did this series get forgotten about? I don't see it in bjdook's next-i2c =
+branch or in benh's next branch.
 
-> There was a suggestion to propose set_le_bit_user() kind of macros.
-> But what I thought was these have a constraint you two explained and seemed to be
-> a little bit specific to some area, like KVM.
-> 
-> So I decided to propose just the offset calculation macro.
+It's not in Grant's 5xxx tree either - as it's specific for those processor=
+s, I think he might be the responsible person.  The patch is still in a "ne=
+w" state in patchwork, btw.
 
-I'm not sure I understand how this macro is going to be used though.
-If you are just using this in kernel space, that's fine, please go for
-it.
+> I've pulled these into my 2.6.31.13 kernel, and they seem to work fine. Y=
+ou've got my Tested-by if you didn't get one from me already.
 
-However, if the intention is to use the same macro in user space, putting
-it into asm-generic/bitops/* is not going to help, because those headers
-are not available in user space, and I wouldn't want to change that.
+Tanks a lot!
 
-The definition of the macro is not part of the ABI, so just duplicate
-it in KVM if you need it there.
+I think, though, the whole stuff has been discussed in depth in February, s=
+o I do not understand why it's still pending as "new".  Grant, did we miss =
+something here?
 
-	Arnd
+Thanks, Albrecht.
+
+--=-GESm4MLGNwyJwiypmWfs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iD8DBQBL4wJXn/9unNAn/9ERAnIKAKCtGrks2uRqLy0dIrGrUdSvLi/MvQCgy3zK
+QTMSuK41i8DzgaFSXhZrZUY=
+=khvH
+-----END PGP SIGNATURE-----
+
+--=-GESm4MLGNwyJwiypmWfs--
