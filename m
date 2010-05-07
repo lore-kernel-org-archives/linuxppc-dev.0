@@ -1,25 +1,22 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <sebastian@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+	[85.10.199.196])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0ED72B7D6C
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 May 2010 18:00:44 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o4780PYD019145
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 May 2010 01:00:36 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o47892Hm024011
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 May 2010 03:09:03 -0500 (CDT)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] pte_fsl_booke: fix instruction TLB error permission check
-Date: Fri,  7 May 2010 16:38:34 +0800
-Message-Id: <1273221514-8683-1-git-send-email-leoli@freescale.com>
-Cc: Jin Qing <b24347@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8D8FEB7D6A
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 May 2010 18:10:50 +1000 (EST)
+Date: Fri, 7 May 2010 09:24:51 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] powerpc/kexec: Add support for FSL-BookE
+Message-ID: <20100507072451.GA28507@Chamillionaire.breakpoint.cc>
+References: <1270412343-19334-1-git-send-email-sebastian@breakpoint.cc>
+	<1270412343-19334-4-git-send-email-sebastian@breakpoint.cc>
+	<42CE8E3E-E536-402C-970B-C4BBC036BEB9@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <42CE8E3E-E536-402C-970B-C4BBC036BEB9@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check the user/supervisor execution permission base on the code address.
-This fixes the following oops on module loading or removing.
+* Kumar Gala | 2010-05-07 01:50:29 [-0500]:
 
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0xf938d040
-Oops: Kernel access of bad area, sig: 11 [#1]
+>Can you explain this a bit more.  Mostly would like to have a brief description of the sequence of events as part of the commit message.
+>
+>Something like:
+>
+>* Running kernel calls machine_kexec()
+>* machine_kexec_32()
+>* jump to relocate code
+>* relocate clears out TLBs and sets up 2g mapping
+>...
+>
+>what I have above might not be quite right.
+That is correct:
+- kexec -l loads the kernel, dtb, ... in userland. It sets up the kimage
+  struct including buffers with the new kernel and a copy list which
+  looks like src, dst, bytes.
+  KEXEC_*_MEMORY_LIMIT is limiting the memory which it might allocate.
+- kexec -e start the kexec, that is
+  * syscall reboot - kernel/sys.c
+  * kernel_kexec() kernel/kexec.c
+  * machine_kexec()  arch/powerpc/kernel/machine_kexec.c
+  * default_machine_kexec() arch/powerpc/kernel/machine_kexec_32.c
+- copy relocate_new_kernel() into a buffer which was allocated during
+  kexec -l. That buffer is somewhere between 0..2GiB and will not be
+  overwritten.
+- jump there.
+  Here we clear the tlbs and setup a 1:1 mapping. Then we copy the
+  data from somewhere in 0..2GiB to its final position according to the
+  list. Data means new kernel, device tree and purgatory code.
+- After that, the code ends in
+    mtlr    r5
+    blrl
+  r5 has the address of purgatory_start(), purgatory/arch/ppc/v2wrap.S
+  in kexec userland [0].
+- here we setup stack, jump to purgatory(). We have no console and still
+  the 2GiB 1:1 mapping
+- the code performs a sha256 check to make sure the kernel is correct.
+- then we get back from purgatory(), load r3 - r9 and the blr at the
+  bottom shoots us finally to new kernel.
+- now we boot the kernel.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
----
- arch/powerpc/kernel/head_fsl_booke.S |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+>- k
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 78aac7b..61b6687 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -684,6 +684,13 @@ interrupt_base:
- 	rlwinm	r12,r12,0,16,1
- 	mtspr	SPRN_MAS1,r12
- 
-+	/* Make up the required permissions for kernel code */
-+#ifdef CONFIG_PTE_64BIT
-+	li	r13,_PAGE_PRESENT | _PAGE_BAP_SX
-+	oris	r13,r13,_PAGE_ACCESSED@h
-+#else
-+	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
-+#endif
- 	b	4f
- 
- 	/* Get the PGD for the current thread */
-@@ -691,15 +698,15 @@ interrupt_base:
- 	mfspr	r11,SPRN_SPRG_THREAD
- 	lwz	r11,PGDIR(r11)
- 
--4:
--	/* Make up the required permissions */
-+	/* Make up the required permissions for user code */
- #ifdef CONFIG_PTE_64BIT
--	li	r13,_PAGE_PRESENT | _PAGE_EXEC
-+	li	r13,_PAGE_PRESENT | _PAGE_BAP_UX
- 	oris	r13,r13,_PAGE_ACCESSED@h
- #else
- 	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- #endif
- 
-+4:
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
- 
--- 
-1.6.6-rc1.GIT
+[0] git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools.git
+
+Sebastian
