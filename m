@@ -1,12 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Fri, 7 May 2010 15:46:50 +1000
+Date: Fri, 7 May 2010 15:38:51 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Avoid bad relocations in iSeries code
-Message-ID: <20100507054650.GC25173@drongo>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: Page fault on vmalloc'ed memory
+Message-ID: <20100507053851.GA25173@drongo>
+References: <3A45394FD742FA419B760BB8D398F9ED0183AF33@zch01exm26.fsl.freescale.net>
+	<u2ted82fe3e1005050451q96498ce9jc9f5c0650e00ae2d@mail.gmail.com>
+	<m2x2a27d3731005052128w3e9fe517ie3a068b352adb7f3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Subrata Modak <subrata@linux.vnet.ibm.com>
+In-Reply-To: <m2x2a27d3731005052128w3e9fe517ie3a068b352adb7f3@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur.tabi@gmail.com>,
+	Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,44 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subrata Modak reported that building a CONFIG_RELOCATABLE kernel with
-CONFIG_ISERIES enabled gives the following warnings:
+On Thu, May 06, 2010 at 12:28:44PM +0800, Li Yang wrote:
 
-WARNING: 4 bad relocations
-c00000000007216e R_PPC64_ADDR16_HIGHEST  __ksymtab+0x00000000009dcec8
-c000000000072172 R_PPC64_ADDR16_HIGHER  __ksymtab+0x00000000009dcec8
-c00000000007217a R_PPC64_ADDR16_HI  __ksymtab+0x00000000009dcec8
-c00000000007217e R_PPC64_ADDR16_LO  __ksymtab+0x00000000009dcec8
+> The root cause of this oops might not be related with the vmalloc'ed
+> area processing in Instruction Storage Interrupt.  But x86 does have
+> the code for processing it while we don't.  Is it because we have
+> nothing to do with the vmalloc'ed ISI on PowerPC architecture?
 
-The reason is that decrementer_iSeries_masked is using
-LOAD_REG_IMMEDIATE to get the address of a kernel symbol, which
-creates relocations that aren't handled by the kernel relocator code.
+On PowerPC we always read the kernel page tables rooted at
+swapper_pg_dir to get translations for kernel addresses (those above
+KERNELBASE).  We can do that because it is kernel code (software) that
+reads the Linux page tables.  On x86, it is hardware that reads the
+Linux page tables, and it always reads the page tables for the current
+process.  This means that the kernel part of each process's page
+tables needs to contain copies of all the kernel PTEs on x86.  To
+avoid having to set a PTE in every process's page tables when doing a
+vmalloc or ioremap, x86 just creates them in swapper_pg_dir and then
+creates them on demand in each process's page tables as needed.
+That's why they have code to handle vmalloc faults in their page fault
+handler.
 
-Instead of reading the tb_ticks_per_jiffy variable, we can just set
-the decrementer to its maximum value (0x7fffffff) and that will work
-just as well.  In fact timer_interrupt sets the decrementer to that
-value initially anyway, and we are sure to get into timer_interrupt
-once interrupts are reenabled because we store 1 to the decrementer
-interrupt flag in the lppaca (LPPACADECRINT(r12) here).
-
-Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/platforms/iseries/exception.S |    4 ++--
-
- 1 file changed, 2 insertions(+), 2 deletions(-)
-diff --git a/arch/powerpc/platforms/iseries/exception.S b/arch/powerpc/platforms/iseries/exception.S
-index fba5bf9..32a56c6 100644
---- a/arch/powerpc/platforms/iseries/exception.S
-+++ b/arch/powerpc/platforms/iseries/exception.S
-@@ -252,8 +252,8 @@ decrementer_iSeries_masked:
- 	li	r11,1
- 	ld	r12,PACALPPACAPTR(r13)
- 	stb	r11,LPPACADECRINT(r12)
--	LOAD_REG_IMMEDIATE(r12, tb_ticks_per_jiffy)
--	lwz	r12,0(r12)
-+	li	r12,-1
-+	clrldi	r12,r12,33	/* set DEC to 0x7fffffff */
- 	mtspr	SPRN_DEC,r12
- 	/* fall through */
- 
+Paul.
