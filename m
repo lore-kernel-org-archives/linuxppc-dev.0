@@ -1,19 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix userspace build of ptrace.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <20100509065931.GA6633@merkur.ravnborg.org>
+Return-Path: <avolkov@varma-el.com>
+Message-ID: <4BE6BA7D.7030700@varma-el.com>
+Date: Sun, 09 May 2010 17:37:01 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: Fix [e]glibc build process
 References: <4BE5C203.6060509@varma-el.com>
 	<1273375269.5312.4.camel@norville.austin.ibm.com>
-	<20100509065931.GA6633@merkur.ravnborg.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 May 2010 17:27:40 +1000
-Message-ID: <1273390060.4861.230.camel@pasglop>
-Mime-Version: 1.0
+In-Reply-To: <1273375269.5312.4.camel@norville.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
-	Andrey Volkov <avolkov@varma-el.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>, David Gibson <dwg@au1.ibm.com>
+	Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+	David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-05-09 at 08:59 +0200, Sam Ravnborg wrote:
-> >From ff056c080d2b0b93bac07ad71125fee701919f5e Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Sun, 9 May 2010 08:52:31 +0200
-> Subject: [PATCH] powerpc: fix userspace build of ptrace.h
-> 
-> Build of ptrace.h failed for assembly because it
-> pulls in stdint.h.
-> Use exportable types (__u32, __u64) to avoid the dependency
-> on stdint.h.
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Andrey Volkov <avolkov@varma-el.com>
-> Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> A better fix is to remove the use of stdint like the following patch does.
-> Note - I have not even build tested this patch!
+Dave Kleikamp wrote:
+> On Sat, 2010-05-08 at 23:56 +0400, Andrey Volkov wrote:
+>   
+>> This patch fix [e]glibc build process destruction (more precisely _assembler_
+>> is die when try to compile getcontext.S since stdint.h coldn't be assembled)
+>> intruduced by patch:
+>>
+>> commit: 162d92dfb79a0b5fc03380b8819fa5f870ebf1e
+>> Date: Mon, 8 Feb 2010 11:51:05 +0000 (11:51 +0000)
+>> from: Dave Kleikamp
+>>
+>> Signed-off-by: Andrey Volkov <avolkov@varma-el.com>
+>>
+>> ---
+>>
+>>  arch/powerpc/include/asm/ptrace.h |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>>
+>> diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+>> index 9e2d84c..025912b 100644
+>> --- a/arch/powerpc/include/asm/ptrace.h
+>> +++ b/arch/powerpc/include/asm/ptrace.h
+>> @@ -27,8 +27,10 @@
+>>  #ifdef __KERNEL__
+>>  #include <linux/types.h>
+>>  #else
+>> +#ifndef __ASSEMBLY__
+>>  #include <stdint.h>
+>>  #endif
+>> +#endif
+>>
+>>  #ifndef __ASSEMBLY__
+>>     
+>
+> Assembly code won't need to pull in linux/types.h either, so this would
+> be simpler:
+>   
+Questionable assertion. "linux/types.h" contain (indirectly) not only 
+types definitions, but some useful, for assembly, defines too.
+So patch, which Sam Ravnborg offered, is better for me (if it will work 
+certainly ;)).
 
-Ack, thanks, I'll test and apply.
+--
+Andrey Volkov
 
-Cheers,
-Ben.
-
-> 	Sam
-> 
->  arch/powerpc/include/asm/ptrace.h |   32 ++++++++++++++------------------
->  1 files changed, 14 insertions(+), 18 deletions(-)
-> 
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+>
 > diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-> index 9e2d84c..77bbc68 100644
+> index 9e2d84c..0ed710e 100644
 > --- a/arch/powerpc/include/asm/ptrace.h
 > +++ b/arch/powerpc/include/asm/ptrace.h
-> @@ -24,11 +24,7 @@
+> @@ -24,14 +24,14 @@
 >   * 2 of the License, or (at your option) any later version.
 >   */
 >  
-> -#ifdef __KERNEL__
+> +#ifndef __ASSEMBLY__
+> +
+>  #ifdef __KERNEL__
 >  #include <linux/types.h>
-> -#else
-> -#include <stdint.h>
-> -#endif
+>  #else
+>  #include <stdint.h>
+>  #endif
 >  
->  #ifndef __ASSEMBLY__
->  
-> @@ -300,13 +296,13 @@ do {									      \
->  #ifndef __ASSEMBLY__
->  
->  struct ppc_debug_info {
-> -	uint32_t version;		/* Only version 1 exists to date */
-> -	uint32_t num_instruction_bps;
-> -	uint32_t num_data_bps;
-> -	uint32_t num_condition_regs;
-> -	uint32_t data_bp_alignment;
-> -	uint32_t sizeof_condition;	/* size of the DVC register */
-> -	uint64_t features;
-> +	__u32 version;			/* Only version 1 exists to date */
-> +	__u32 num_instruction_bps;
-> +	__u32 num_data_bps;
-> +	__u32 num_condition_regs;
-> +	__u32 data_bp_alignment;
-> +	__u32 sizeof_condition;		/* size of the DVC register */
-> +	__u64 features;
->  };
->  
->  #endif /* __ASSEMBLY__ */
-> @@ -322,13 +318,13 @@ struct ppc_debug_info {
->  #ifndef __ASSEMBLY__
->  
->  struct ppc_hw_breakpoint {
-> -	uint32_t version;		/* currently, version must be 1 */
-> -	uint32_t trigger_type;		/* only some combinations allowed */
-> -	uint32_t addr_mode;		/* address match mode */
-> -	uint32_t condition_mode;	/* break/watchpoint condition flags */
-> -	uint64_t addr;			/* break/watchpoint address */
-> -	uint64_t addr2;			/* range end or mask */
-> -	uint64_t condition_value;	/* contents of the DVC register */
-> +	__u32 version;		/* currently, version must be 1 */
-> +	__u32 trigger_type;	/* only some combinations allowed */
-> +	__u32 addr_mode;	/* address match mode */
-> +	__u32 condition_mode;	/* break/watchpoint condition flags */
-> +	__u64 addr;		/* break/watchpoint address */
-> +	__u64 addr2;		/* range end or mask */
-> +	__u64 condition_value;	/* contents of the DVC register */
->  };
->  
->  #endif /* __ASSEMBLY__ */
+> -#ifndef __ASSEMBLY__
+> -
+>  struct pt_regs {
+>  	unsigned long gpr[32];
+>  	unsigned long nip;
+>
+>   
