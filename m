@@ -1,12 +1,23 @@
-Return-Path: <jeff@theptrgroup.com>
-Message-ID: <4BE81B7B.7010804@theptrgroup.com>
-Date: Mon, 10 May 2010 10:43:07 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6CFAAB7D61
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 May 2010 02:53:58 +1000 (EST)
+Date: Mon, 10 May 2010 09:25:35 -0700
+From: Greg KH <gregkh@suse.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] serial: mpc52xx_uart: fix null pointer dereference
+Message-ID: <20100510162535.GA15137@suse.de>
+References: <g2xc2d0b6ec1005041339r9c40822w7a642f9bba976820@mail.gmail.com>
+	<1273011539-13994-1-git-send-email-agust@denx.de>
+	<i2xfa686aa41005091504ve2b35a09m23cd2dc13a331f86@mail.gmail.com>
 MIME-Version: 1.0
-To: Linuxppc-dev@lists.ozlabs.org, Andre Prendel <andre.prendel@gmx.de>,
-	Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH] hwmon: (tmp421) Add nfactor support.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <i2xfa686aa41005091504ve2b35a09m23cd2dc13a331f86@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, leonardo.lists@gmail.com,
+	Anatolij Gustschin <agust@denx.de>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,103 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, May 10, 2010 at 12:04:30AM +0200, Grant Likely wrote:
+> On Wed, May 5, 2010 at 12:18 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> > Commit 6acc6833510db8f72b5ef343296d97480555fda9
+> > introduced NULL pointer dereference and kernel crash
+> > on ppc32 machines while booting. Fix this bug now.
+> >
+> > Reported-by: Leonardo Chiquitto <leonardo.lists@gmail.com>
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> 
+> Thanks for being so quick to pick up on this Anatolij.  I've been
+> traveling and not able to respond to stuff.  I see that Greg has
+> already picked this up (thanks Greg!), but FWIW:
+> 
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Actually, now that I look, this fix needs to go into Linus' tree right
+> away (not just linux-next) since the offending patch went in during
+> the 2.6.34 merge window.
+> 
+> Greg, I can either pick this up and push it out to Linus tomorrow, or
+> let you do it.  Whichever you prefer.  Let me know so I don't cause
+> conflicts in your tree.
 
-Add support for reading and writing the n-factor correction
-registers.  This is needed to compensate for the characteristics
-of a particular sensor hanging off of the remote channels.
+I have 2 other tty/serial fixes to go to Linus for .34 along with this
+one, so I'll be glad to send it to him.  I've added your ack to the
+patch.
 
-Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
----
-  drivers/hwmon/tmp421.c |   42 ++++++++++++++++++++++++++++++++++++++++++
-  1 files changed, 42 insertions(+), 0 deletions(-)
+thanks,
 
-diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-index 738c472..c9e9855 100644
---- a/drivers/hwmon/tmp421.c
-+++ b/drivers/hwmon/tmp421.c
-@@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
-
-  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
-  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-+static const u8 TMP421_NFACTOR[3]		= { 0x21, 0x22, 0x23 };
-
-  /* Flags */
-  #define TMP421_CONFIG_SHUTDOWN			0x40
-@@ -157,6 +158,38 @@ static ssize_t show_fault(struct device *dev,
-  		return sprintf(buf, "0\n");
-  }
-
-+static ssize_t show_nfactor(struct device *dev,
-+			  struct device_attribute *devattr, char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct tmp421_data *data = i2c_get_clientdata(client);
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	s8 nfactor;
-+
-+	mutex_lock(&data->update_lock);
-+	nfactor = i2c_smbus_read_byte_data(client, TMP421_NFACTOR[index-1]);
-+	mutex_unlock(&data->update_lock);
-+
-+	return sprintf(buf, "%d\n", nfactor);
-+}
-+
-+static ssize_t set_nfactor(struct device *dev,
-+		struct device_attribute *devattr,
-+		const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct tmp421_data *data = i2c_get_clientdata(client);
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	int nfactor = simple_strtol(buf, NULL, 10);
-+
-+	mutex_lock(&data->update_lock);
-+	i2c_smbus_write_byte_data(client, TMP421_NFACTOR[index-1],
-+			SENSORS_LIMIT(nfactor, -128, 127));
-+	mutex_unlock(&data->update_lock);
-+
-+	return count;
-+}
-+
-  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
-  				int n)
-  {
-@@ -177,19 +210,28 @@ static mode_t tmp421_is_visible(struct kobject 
-*kobj, struct attribute *a,
-  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
-  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
-  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-+static SENSOR_DEVICE_ATTR(temp2_nfactor, S_IRUGO | S_IWUSR,
-+		show_nfactor, set_nfactor, 1);
-  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
-  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-+static SENSOR_DEVICE_ATTR(temp3_nfactor, S_IRUGO | S_IWUSR,
-+		show_nfactor, set_nfactor, 2);
-  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
-  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-+static SENSOR_DEVICE_ATTR(temp4_nfactor, S_IRUGO | S_IWUSR,
-+		show_nfactor, set_nfactor, 3);
-
-  static struct attribute *tmp421_attr[] = {
-  	&sensor_dev_attr_temp1_input.dev_attr.attr,
-  	&sensor_dev_attr_temp2_input.dev_attr.attr,
-  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp2_nfactor.dev_attr.attr,
-  	&sensor_dev_attr_temp3_input.dev_attr.attr,
-  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp3_nfactor.dev_attr.attr,
-  	&sensor_dev_attr_temp4_input.dev_attr.attr,
-  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp4_nfactor.dev_attr.attr,
-  	NULL
-  };
-
--- 
-1.7.0.4
-
-
-
--- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+greg k-h
