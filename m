@@ -1,25 +1,32 @@
-Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
-Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id 31998B7D6B
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 May 2010 22:22:49 +1000 (EST)
-Message-ID: <4BE7FB7B.5010600@oss.ntt.co.jp>
-Date: Mon, 10 May 2010 21:26:35 +0900
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id DE932B7D52
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 10 May 2010 23:40:51 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4ADUQCT019519
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 09:30:26 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4ADeh3W577776
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 09:40:43 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4ADegBR008870
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 10:40:42 -0300
+Message-ID: <4BE80CD5.809@linux.vnet.ibm.com>
+Date: Mon, 10 May 2010 08:40:37 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [RFC][PATCH 0/12] KVM, x86, ppc, asm-generic: moving dirty bitmaps
-	to user space
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<4BE7F6D7.3060005@redhat.com>
-In-Reply-To: <4BE7F6D7.3060005@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, arnd@arndb.de,
-	kvm@vger.kernel.org, kvm-ia64@vger.kernel.org,
-	fernando@oss.ntt.co.jp, mtosatti@redhat.com, agraf@suse.de,
-	kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
-	hpa@zytor.com, tglx@linutronix.de,
-	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 2/2] powerpc: Add power management support to VIO bus
+References: <201005071158.o47BwxPT013700@d03av03.boulder.ibm.com>
+	<1273458906.6591.4.camel@concordia>
+In-Reply-To: <1273458906.6591.4.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
+On 05/09/2010 09:35 PM, Michael Ellerman wrote:
+> On Fri, 2010-05-07 at 13:58 -0500, Brian King wrote:
+>> Adds support for suspend/resume for VIO devices. This is needed for
+>> support for HMC initiated hibernation.
 >>
->> get.org get.opt switch.opt
+>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+>> ---
 >>
->> slots[7].len=32768 278379 66398 64024
->> slots[8].len=32768 181246 270 160
->> slots[7].len=32768 263961 64673 64494
->> slots[8].len=32768 181655 265 160
->> slots[7].len=32768 263736 64701 64610
->> slots[8].len=32768 182785 267 160
->> slots[7].len=32768 260925 65360 65042
->> slots[8].len=32768 182579 264 160
->> slots[7].len=32768 267823 65915 65682
->> slots[8].len=32768 186350 271 160
+>>  arch/powerpc/kernel/vio.c |   24 ++++++++++++++++++++++++
+>>  1 file changed, 24 insertions(+)
 >>
->> At a glance, we know our optimization improved significantly compared
->> to the original get dirty log ioctl. This is true for both get.opt and
->> switch.opt. This has a really big impact for the personal KVM users who
->> drive KVM in GUI mode on their usual PCs.
->>
->> Next, we notice that switch.opt improved a hundred nano seconds or so for
->> these slots. Although this may sound a bit tiny improvement, we can feel
->> this as a difference of GUI's responses like mouse reactions.
->
-> 100 ns... this is a bit on the low side (and if you can measure it
-> interactively you have much better reflexes than I).
->
->> To feel the difference, please try GUI on your PC with our patch series!
->
-> No doubt get.org -> get.opt is measurable, but get.opt->switch.opt is
-> problematic. Have you tried profiling to see where the time is spent
-> (well I can guess, clearing the write access from the sptes).
+>> diff -puN arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm arch/powerpc/kernel/vio.c
+>> --- linux-2.6/arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm	2010-05-07 13:49:16.000000000 -0500
+>> +++ linux-2.6-bjking1/arch/powerpc/kernel/vio.c	2010-05-07 13:49:16.000000000 -0500
+>> @@ -1358,6 +1358,29 @@ static int vio_hotplug(struct device *de
+>>  	return 0;
+>>  }
+>>  
+>> +static int vio_pm_suspend(struct device *dev)
+>> +{
+>> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>> +
+>> +	if (pm && pm->suspend)
+>> +		return pm->suspend(dev);
+>> +	return 0;
+>> +}
+>> +
+>> +static int vio_pm_resume(struct device *dev)
+>> +{
+>> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>> +
+>> +	if (pm && pm->resume)
+>> +		return pm->resume(dev);
+>> +	return 0;
+>> +}
+>> +
+>> +const struct dev_pm_ops vio_dev_pm_ops = {
+>> +	.suspend = vio_pm_suspend,
+>> +	.resume = vio_pm_resume,
+>> +};
+> 
+> That just looks like boiler plate, is there not a generic version
+> somewhere?
 
-Sorry but no, and I agree with your guess.
-Anyway, I want to do some profiling to confirm this guess.
+Looks there is. I'll update the patch to use the generic helpers.
+
+Thanks,
+
+Brian
 
 
-BTW, If we only think about performance improvement of time, optimized
-get(get.opt) may be enough at this stage.
-
-But if we consider the future expansion like using user allocated bitmaps,
-new API's introduced for switch.opt won't become waste, I think, because we
-need a structure to get and export bitmap addresses.
-
-
->>
->> In usual workload, the number of dirty pages varies a lot for each
->> iteration
->> and we should gain really a lot for relatively clean cases.
->
-> Can you post such a test, for an idle large guest?
-
-OK, I'll do!
-
->
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
