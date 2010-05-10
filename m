@@ -1,25 +1,23 @@
 Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
 Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id 2C1C9B7D5C
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 May 2010 22:06:58 +1000 (EST)
-Message-ID: <4BE7F22E.9070504@oss.ntt.co.jp>
-Date: Mon, 10 May 2010 20:46:54 +0900
+	by ozlabs.org (Postfix) with ESMTP id 31998B7D6B
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 May 2010 22:22:49 +1000 (EST)
+Message-ID: <4BE7FB7B.5010600@oss.ntt.co.jp>
+Date: Mon, 10 May 2010 21:26:35 +0900
 From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC][PATCH resend 8/12] asm-generic: bitops: introduce le bit
-	offset macro
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [RFC][PATCH 0/12] KVM, x86, ppc, asm-generic: moving dirty bitmaps
+	to user space
 References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<4BE04677.4060608@redhat.com>
-	<20100505115924.7bb92036.takuya.yoshikawa@gmail.com>
-	<201005061538.54326.arnd@arndb.de>
-In-Reply-To: <201005061538.54326.arnd@arndb.de>
+	<4BE7F6D7.3060005@redhat.com>
+In-Reply-To: <4BE7F6D7.3060005@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
-	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	mingo@redhat.com, paulus@samba.org, Avi Kivity <avi@redhat.com>,
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, arnd@arndb.de,
+	kvm@vger.kernel.org, kvm-ia64@vger.kernel.org,
+	fernando@oss.ntt.co.jp, mtosatti@redhat.com, agraf@suse.de,
+	kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
 	hpa@zytor.com, tglx@linutronix.de,
 	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,40 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2010/05/06 22:38), Arnd Bergmann wrote:
-> On Wednesday 05 May 2010, Takuya Yoshikawa wrote:
->> Date:
->> Yesterday 04:59:24
->>> That's why the bitmaps are defined as little endian u64 aligned, even on
->>> big endian 32-bit systems.  Little endian bitmaps are wordsize agnostic,
->>> and u64 alignment ensures we can use long-sized bitops on mixed size
->>> systems.
->
-> Ok, I see.
->
->> There was a suggestion to propose set_le_bit_user() kind of macros.
->> But what I thought was these have a constraint you two explained and seemed to be
->> a little bit specific to some area, like KVM.
+
 >>
->> So I decided to propose just the offset calculation macro.
+>> get.org get.opt switch.opt
+>>
+>> slots[7].len=32768 278379 66398 64024
+>> slots[8].len=32768 181246 270 160
+>> slots[7].len=32768 263961 64673 64494
+>> slots[8].len=32768 181655 265 160
+>> slots[7].len=32768 263736 64701 64610
+>> slots[8].len=32768 182785 267 160
+>> slots[7].len=32768 260925 65360 65042
+>> slots[8].len=32768 182579 264 160
+>> slots[7].len=32768 267823 65915 65682
+>> slots[8].len=32768 186350 271 160
+>>
+>> At a glance, we know our optimization improved significantly compared
+>> to the original get dirty log ioctl. This is true for both get.opt and
+>> switch.opt. This has a really big impact for the personal KVM users who
+>> drive KVM in GUI mode on their usual PCs.
+>>
+>> Next, we notice that switch.opt improved a hundred nano seconds or so for
+>> these slots. Although this may sound a bit tiny improvement, we can feel
+>> this as a difference of GUI's responses like mouse reactions.
 >
-> I'm not sure I understand how this macro is going to be used though.
-> If you are just using this in kernel space, that's fine, please go for
-> it.
+> 100 ns... this is a bit on the low side (and if you can measure it
+> interactively you have much better reflexes than I).
+>
+>> To feel the difference, please try GUI on your PC with our patch series!
+>
+> No doubt get.org -> get.opt is measurable, but get.opt->switch.opt is
+> problematic. Have you tried profiling to see where the time is spent
+> (well I can guess, clearing the write access from the sptes).
 
-Yes, I'm just using in kernel space: qemu has its own endian related helpers.
+Sorry but no, and I agree with your guess.
+Anyway, I want to do some profiling to confirm this guess.
 
-So if you allow us to place this macro in asm-generic/bitops/* it will help us.
 
-Avi, what do you think? Do you want to place it in kvm.h ?
+BTW, If we only think about performance improvement of time, optimized
+get(get.opt) may be enough at this stage.
 
+But if we consider the future expansion like using user allocated bitmaps,
+new API's introduced for switch.opt won't become waste, I think, because we
+need a structure to get and export bitmap addresses.
+
+
+>>
+>> In usual workload, the number of dirty pages varies a lot for each
+>> iteration
+>> and we should gain really a lot for relatively clean cases.
+>
+> Can you post such a test, for an idle large guest?
+
+OK, I'll do!
 
 >
-> However, if the intention is to use the same macro in user space, putting
-> it into asm-generic/bitops/* is not going to help, because those headers
-> are not available in user space, and I wouldn't want to change that.
->
-> The definition of the macro is not part of the ABI, so just duplicate
-> it in KVM if you need it there.
->
-> 	Arnd
