@@ -1,22 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Bug #15589] 2.6.34-rc1: Badness at fs/proc/generic.c:316
+Subject: Re: [PATCH 2/2] powerpc: Add power management support to VIO bus
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Christian Kujau <lists@nerdbynature.de>
-In-Reply-To: <alpine.DEB.2.01.1005091519130.3067@bogon.housecafe.de>
-References: <10aqDnTJcLO.A.mLE.48y5LB@chimera>
-	<HqroMXsT-CJ.A.DnG.m_y5LB@chimera>
-	<alpine.DEB.2.01.1005091519130.3067@bogon.housecafe.de>
+To: Brian King <brking@linux.vnet.ibm.com>
+In-Reply-To: <201005071158.o47BwxPT013700@d03av03.boulder.ibm.com>
+References: <201005071158.o47BwxPT013700@d03av03.boulder.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-Cx+W6AuJMtKF04V8Q+IB"
-Date: Mon, 10 May 2010 09:34:42 +1000
-Message-ID: <1273448082.1431.1.camel@concordia>
+	boundary="=-7q1u7PTi9Ra9qQX++qWs"
+Date: Mon, 10 May 2010 12:35:06 +1000
+Message-ID: <1273458906.6591.4.camel@concordia>
 Mime-Version: 1.0
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
-	schwab@linux-m68k.org,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	adobriyan@gmail.com, Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,42 +22,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-Cx+W6AuJMtKF04V8Q+IB
+--=-7q1u7PTi9Ra9qQX++qWs
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2010-05-09 at 15:27 -0700, Christian Kujau wrote:
-> On Sun, 9 May 2010 at 23:17, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D15589
-> > Subject		: 2.6.34-rc1: Badness at fs/proc/generic.c:316
-> > Submitter	: Christian Kujau <lists@nerdbynature.de>
-> > Date		: 2010-03-13 23:53 (58 days old)
-> > Message-ID	: <<alpine.DEB.2.01.1003131544340.5493@bogon.housecafe.de>>
-> > References	: http://marc.info/?l=3Dlinux-kernel&m=3D126852442903680&w=
-=3D2
+On Fri, 2010-05-07 at 13:58 -0500, Brian King wrote:
+> Adds support for suspend/resume for VIO devices. This is needed for
+> support for HMC initiated hibernation.
 >=20
-> The bug is still present in -rc6, but Michael Ellerman has a patch[0]=20
-> which made the warning go away.
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
 >=20
-> @Michael: will you post your patch with a Sign-Off, so that it can be=20
->           pushed into mainline?
+>  arch/powerpc/kernel/vio.c |   24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>=20
+> diff -puN arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm arch/powerpc/kerne=
+l/vio.c
+> --- linux-2.6/arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm	2010-05-07 13:=
+49:16.000000000 -0500
+> +++ linux-2.6-bjking1/arch/powerpc/kernel/vio.c	2010-05-07 13:49:16.00000=
+0000 -0500
+> @@ -1358,6 +1358,29 @@ static int vio_hotplug(struct device *de
+>  	return 0;
+>  }
+> =20
+> +static int vio_pm_suspend(struct device *dev)
+> +{
+> +	const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->pm : NULL;
+> +
+> +	if (pm && pm->suspend)
+> +		return pm->suspend(dev);
+> +	return 0;
+> +}
+> +
+> +static int vio_pm_resume(struct device *dev)
+> +{
+> +	const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->pm : NULL;
+> +
+> +	if (pm && pm->resume)
+> +		return pm->resume(dev);
+> +	return 0;
+> +}
+> +
+> +const struct dev_pm_ops vio_dev_pm_ops =3D {
+> +	.suspend =3D vio_pm_suspend,
+> +	.resume =3D vio_pm_resume,
+> +};
 
-No, Benh and I decided it's better to just drop those properties all
-together. But it's too late in this cycle for a patch like that just to
-fix a warning - so we'll do that patch for 35.
+That just looks like boiler plate, is there not a generic version
+somewhere?
 
 cheers
 
---=-Cx+W6AuJMtKF04V8Q+IB
+
+--=-7q1u7PTi9Ra9qQX++qWs
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkvnRo8ACgkQdSjSd0sB4dJLUACcDOW1oY8pgDWviiKGYNWTrwBe
-SbEAn0P0EwEVSV6wG6nfN044aNwlDxI6
-=npWM
+iEYEABECAAYFAkvncNoACgkQdSjSd0sB4dIROgCff8O3KB/7RD1b4BAKljAza546
+mIsAn1bf20aNatX/F73PgTmnHGRXxPQo
+=Y4U7
 -----END PGP SIGNATURE-----
 
---=-Cx+W6AuJMtKF04V8Q+IB--
+--=-7q1u7PTi9Ra9qQX++qWs--
