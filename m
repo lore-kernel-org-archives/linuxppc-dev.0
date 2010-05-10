@@ -1,28 +1,33 @@
 Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 52AFFB7F4C
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id F3F23B7D73
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 May 2010 06:53:41 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4AKk9AS009647
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 14:46:09 -0600
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id o4AKrGR4025696
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 14:53:19 -0600
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4AKrGYs017826
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 14:53:16 -0600
-Message-Id: <201005102053.o4AKrFJL017810@d03av05.boulder.ibm.com>
-Subject: [PATCHv2 2/3] powerpc: Add power management support to VIO bus
-To: benh@kernel.crashing.org
+	Tue, 11 May 2010 06:57:44 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4AKqIaO029732
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 16:52:18 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4AKvegd1073222
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 16:57:40 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4AKvdwF021841
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 17:57:40 -0300
+Message-ID: <4BE8733F.5080905@linux.vnet.ibm.com>
+Date: Mon, 10 May 2010 15:57:35 -0500
 From: Brian King <brking@linux.vnet.ibm.com>
-Date: Mon, 10 May 2010 15:53:12 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 1/2] powerpc: Partition hibernation support
+References: <201005071158.o47Bww77013658@d03av03.boulder.ibm.com>
+	<1273474102.6591.258.camel@concordia>
+	<4BE81A3E.8030501@linux.vnet.ibm.com>
+In-Reply-To: <4BE81A3E.8030501@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,25 +37,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/10/2010 09:37 AM, Brian King wrote:
+> 
+>>>  }
+>>>  #else /* CONFIG_PPC_PSERIES */
+>>>  static int rtas_ibm_suspend_me(struct rtas_args *args)
+>>>  {
+>>>  	return -ENOSYS;
+>>>  }
+>>> +
+>>> +int rtas_suspend_cpu(struct rtas_suspend_me_data *data)
+>>> +{
+>>> +	return -ENOSYS;
+>>> +}
+>>> +
+>>> +int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data)
+>>> +{
+>>> +	return -ENOSYS;
+>>> +}
+>>
+>> Don't see why you need these empty versions, they're only ever called
+>> from pseries code aren't they?
+> 
+> True, but we still need to be able to link the code in a cross platform
+> kernel.
 
-Adds support for suspend/resume for VIO devices. This is needed for
-support for HMC initiated hibernation.
+I was able to fix this up as well with a makefile change to ensure
+suspend.c only gets built when CONFIG_PPC_PSERIES=y
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
 
- arch/powerpc/kernel/vio.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -puN arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm arch/powerpc/kernel/vio.c
---- linux-2.6/arch/powerpc/kernel/vio.c~powerpc_vio_bus_pm	2010-05-10 11:12:15.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/kernel/vio.c	2010-05-10 11:12:15.000000000 -0500
-@@ -1365,6 +1365,7 @@ static struct bus_type vio_bus_type = {
- 	.match = vio_bus_match,
- 	.probe = vio_bus_probe,
- 	.remove = vio_bus_remove,
-+	.pm = GENERIC_SUBSYS_PM_OPS,
- };
- 
- /**
-_
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
