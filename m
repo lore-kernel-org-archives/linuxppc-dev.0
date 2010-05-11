@@ -1,25 +1,20 @@
-Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
-Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id A8BC6B7D7E
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 May 2010 20:08:03 +1000 (EST)
-Message-ID: <4BE92D66.1050000@oss.ntt.co.jp>
-Date: Tue, 11 May 2010 19:11:50 +0900
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [RFC][PATCH 0/12] KVM, x86, ppc, asm-generic: moving dirty bitmaps
-	to user space
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<4BE7F6D7.3060005@redhat.com> <4BE7FB7B.5010600@oss.ntt.co.jp>
-In-Reply-To: <4BE7FB7B.5010600@oss.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, arnd@arndb.de,
-	kvm@vger.kernel.org, kvm-ia64@vger.kernel.org,
-	fernando@oss.ntt.co.jp, mtosatti@redhat.com, agraf@suse.de,
-	kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, mingo@redhat.com, paulus@samba.org,
-	hpa@zytor.com, tglx@linutronix.de,
-	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id AA7C5B7D78
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 11 May 2010 22:38:31 +1000 (EST)
+Subject: Re: [PATCH] 85xx: Fix PCI-E interrupt mapping for slot 0 of P2020DS
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1273518917-10229-1-git-send-email-felix@embedded-sol.com>
+Date: Tue, 11 May 2010 07:36:29 -0500
+Message-Id: <1CA6B1BA-FBD1-4ECF-87DC-D3E50835E781@kernel.crashing.org>
+References: <> <1273518917-10229-1-git-send-email-felix@embedded-sol.com>
+To: Felix Radensky <felix@embedded-sol.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +25,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
->>>
->>> In usual workload, the number of dirty pages varies a lot for each
->>> iteration
->>> and we should gain really a lot for relatively clean cases.
->>
->> Can you post such a test, for an idle large guest?
->
-> OK, I'll do!
+On May 10, 2010, at 2:15 PM, Felix Radensky wrote:
 
+> Fix legacy PCI-E interrupt mapping for PCI-E slot 0 of
+> P2020DS evaluation board. The patch is based on P2020DS
+> device tree from Freescale BSP for this board.
+>=20
+> Signed-off-by: Felix Radensky <felix@embedded-sol.com>
+> ---
+> arch/powerpc/boot/dts/p2020ds.dts |    8 ++++----
+> 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Result of "low workload test" (running top during migration) first,
+I don't understand why this is needed?
 
-4GB guest
-picked up slots[1](len=3757047808) only
-*****************************************
-     get.org     get.opt    switch.opt
+-k
 
-     1060875     310292     190335
-     1076754     301295     188600
-      655504     318284     196029
-      529769     301471        325
-      694796      70216     221172
-      651868     353073     196184
-      543339     312865     213236
-     1061938      72785     203090
-      689527     323901     249519
-      621364     323881        473
-     1063671      70703     192958
-      915903     336318     174008
-     1046462     332384        782
-     1037942      72783     190655
-      680122     318305     243544
-      688156     314935     193526
-      558658     265934     190550
-      652454     372135     196270
-      660140      68613        352
-     1101947     378642     186575
-         ...        ...        ...
-*****************************************
-
-As expected we've got the difference more clearly.
-
-In this case, switch.opt reduced 1/3 (.1 msec) compared to get.opt
-for each iteration.
-
-And when the slot is cleaner, the ratio is bigger.
-
-
-
-
->
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
+>=20
+> diff --git a/arch/powerpc/boot/dts/p2020ds.dts =
+b/arch/powerpc/boot/dts/p2020ds.dts
+> index 1101914..7c5fc07 100644
+> --- a/arch/powerpc/boot/dts/p2020ds.dts
+> +++ b/arch/powerpc/boot/dts/p2020ds.dts
+> @@ -507,10 +507,10 @@
+> 		interrupt-map-mask =3D <0xf800 0x0 0x0 0x7>;
+> 		interrupt-map =3D <
+> 			/* IDSEL 0x0 */
+> -			0000 0x0 0x0 0x1 &mpic 0x8 0x1
+> -			0000 0x0 0x0 0x2 &mpic 0x9 0x1
+> -			0000 0x0 0x0 0x3 &mpic 0xa 0x1
+> -			0000 0x0 0x0 0x4 &mpic 0xb 0x1
+> +			0000 0x0 0x0 0x1 &mpic 0x8 0x2
+> +			0000 0x0 0x0 0x2 &mpic 0x9 0x2
+> +			0000 0x0 0x0 0x3 &mpic 0xa 0x2
+> +			0000 0x0 0x0 0x4 &mpic 0xb 0x2
+> 			>;
+> 		pcie@0 {
+> 			reg =3D <0x0 0x0 0x0 0x0 0x0>;
+> --=20
+> 1.5.4.3
