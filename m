@@ -1,15 +1,18 @@
-Return-Path: <andre.prendel@gmx.de>
-Date: Tue, 11 May 2010 21:03:27 +0200
-From: Andre Prendel <andre.prendel@gmx.de>
-To: Jeff Angielski <jeff@theptrgroup.com>
-Subject: Re: [PATCH] hwmon: (tmp421) Add nfactor support.
-Message-ID: <20100511190327.GA2031@andre-laptop>
-References: <4BE81B7B.7010804@theptrgroup.com>
+Return-Path: <dhbaird@gmail.com>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id 67528B7DA3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 12 May 2010 08:48:50 +1000 (EST)
+Received: by pvg6 with SMTP id 6so91999pvg.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 11 May 2010 15:48:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BE81B7B.7010804@theptrgroup.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Linuxppc-dev@lists.ozlabs.org,
-	lm-sensors <lm-sensors@lm-sensors.org>
+Date: Tue, 11 May 2010 16:48:48 -0600
+Message-ID: <AANLkTimk9eVTBPOSxCaGh12cC7x14bVDpGTQAhaYNGqj@mail.gmail.com>
+Subject: Problem setting link_address too high on PowerPC 40x
+From: David Baird <dhbaird@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,112 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 10, 2010 at 10:43:07AM -0400, Jeff Angielski wrote:
+Hi,
 
-Hi Jeff,
+I am working with the PowerPC 405 in the Virtex-II Pro FPGA.  I've
+come across a possible problem where the device tree is located in at
+an address that the kernel cannot access if link_address (the location
+where zImage executes from, set in the "wrapper" script) is set too
+high (somewhere in the ballpark of 16 MB).  Here is a summary of the
+problem:
 
-A few comments below.
- 
-> Add support for reading and writing the n-factor correction
-> registers.  This is needed to compensate for the characteristics
-> of a particular sensor hanging off of the remote channels.
-> 
-> Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
-> ---
->  drivers/hwmon/tmp421.c |   42 ++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 42 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-> index 738c472..c9e9855 100644
-> --- a/drivers/hwmon/tmp421.c
-> +++ b/drivers/hwmon/tmp421.c
-> @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
-> 
->  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
->  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-> +static const u8 TMP421_NFACTOR[3]		= { 0x21, 0x22, 0x23 };
-> 
->  /* Flags */
->  #define TMP421_CONFIG_SHUTDOWN			0x40
-> @@ -157,6 +158,38 @@ static ssize_t show_fault(struct device *dev,
->  		return sprintf(buf, "0\n");
->  }
-> 
-> +static ssize_t show_nfactor(struct device *dev,
-> +			  struct device_attribute *devattr, char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	struct tmp421_data *data = i2c_get_clientdata(client);
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	s8 nfactor;
-> +
-> +	mutex_lock(&data->update_lock);
-> +	nfactor = i2c_smbus_read_byte_data(client, TMP421_NFACTOR[index-1]);
+In arch/powerpc/boot/main.c, ft_addr (a pointer to the flat? device
+tree) is computed and then passed on to "kentry" to the kernel startup
+code.  At startup, the kernel only has access via the TLB to the first
+16 MB of memory which is initialized by "initial_imu" in
+arch/powerpc/kernel/head_40x.S.  The problem is that ft_addr is
+located relative to link_address / zImage, but this address might be
+outside of the bounds of the 16MB initially mapped by the TLB.
 
-There should be spaces within the array index, [index - 1].
+A symptom of this problem is that the kernel ceases to print any
+messages to the console because it could not read information about
+the console from the flat device tree.  The last thing the user will
+see is this:
 
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return sprintf(buf, "%d\n", nfactor);
-> +}
+zImage starting: loaded at 0x04000000 (sp: 0x0430beb0)
+Allocating 0x6f11b0 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0400c000:0x0430a31a)...done 0x657000 bytes
 
-I'de prefer implementing the sysfs access methods in a consistent way (see other functions). That means adding the nfactor register to the tmp421_data structure and using tmp421_update_device() to update the structure.
+Linux/PowerPC load: console=ttyUL0 root=/dev/ram
+Finalizing device tree... flat tree at 0x4318300
 
-> +static ssize_t set_nfactor(struct device *dev,
-> +		struct device_attribute *devattr,
-> +		const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	struct tmp421_data *data = i2c_get_clientdata(client);
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	int nfactor = simple_strtol(buf, NULL, 10);
-> +
-> +	mutex_lock(&data->update_lock);
-> +	i2c_smbus_write_byte_data(client, TMP421_NFACTOR[index-1],
+...and then the screen goes completely blank...  And it seems that the
+kernel also eventually crashes (but I couldn't tell exactly what
+happened because __log_buf repeatedly gets corrupted with zeros
+whenever I try this particular experiment).
 
-Missing spaces in array index again.
+Maybe there is also more to this problem too than just the ft_addr.
 
-> +			SENSORS_LIMIT(nfactor, -128, 127));
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return count;
-> +}
-> +
->  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
->  				int n)
->  {
-> @@ -177,19 +210,28 @@ static mode_t tmp421_is_visible(struct kobject
-> *kobj, struct attribute *a,
->  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
->  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
->  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-> +static SENSOR_DEVICE_ATTR(temp2_nfactor, S_IRUGO | S_IWUSR,
-> +		show_nfactor, set_nfactor, 1);
->  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
->  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-> +static SENSOR_DEVICE_ATTR(temp3_nfactor, S_IRUGO | S_IWUSR,
-> +		show_nfactor, set_nfactor, 2);
->  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
->  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-> +static SENSOR_DEVICE_ATTR(temp4_nfactor, S_IRUGO | S_IWUSR,
-> +		show_nfactor, set_nfactor, 3);
-> 
->  static struct attribute *tmp421_attr[] = {
->  	&sensor_dev_attr_temp1_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp2_nfactor.dev_attr.attr,
->  	&sensor_dev_attr_temp3_input.dev_attr.attr,
->  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp3_nfactor.dev_attr.attr,
->  	&sensor_dev_attr_temp4_input.dev_attr.attr,
->  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp4_nfactor.dev_attr.attr,
->  	NULL
->  };
-> 
-
-Regards,
-Andre
-
-PS: CC'ed lm-sensors list
+-David
