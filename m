@@ -1,18 +1,17 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/3] powerpc: kdump: CPUs assume the context of the
-	oopsing CPU
+Subject: Re: [PATCH 1/3] powerpc: kdump: Fix NULL pointer dereference in
+	irq disable code
 From: Michael Ellerman <michael@ellerman.id.au>
 To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20100511022551.GF12203@kryten>
-References: <20100511022329.GE12203@kryten>  <20100511022551.GF12203@kryten>
+In-Reply-To: <20100511022329.GE12203@kryten>
+References: <20100511022329.GE12203@kryten>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-1QL28XRoePewfZQR9dq4"
-Date: Tue, 11 May 2010 14:14:31 +1000
-Message-ID: <1273551271.9209.135.camel@concordia>
+	boundary="=-yx9W7Dzj8myQOC4G/UQg"
+Date: Tue, 11 May 2010 14:14:47 +1000
+Message-ID: <1273551287.9209.136.camel@concordia>
 Mime-Version: 1.0
-Cc: mikey@neuling.org, paulus@samba.org, miltonm@bga.com,
-	linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org, miltonm@bga.com, linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,45 +23,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-1QL28XRoePewfZQR9dq4
+--=-yx9W7Dzj8myQOC4G/UQg
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2010-05-11 at 12:25 +1000, Anton Blanchard wrote:
-> We wrap the crash_shutdown_handles[] calls with longjmp/setjmp, so if any
-> of them fault we can recover. The problem is we add a hook to the debugge=
-r
-> fault handler hook which calls longjmp unconditionally.
+On Tue, 2010-05-11 at 12:23 +1000, Anton Blanchard wrote:
+> With sparse irqs we have to check if we have a descriptor before derefere=
+ncing
+> it.
 >=20
-> This first part of kdump is run before we marshall the other CPUs, so the=
-re
-> is a very good chance some CPU on the box is going to page fault. And whe=
-n
-> it does it hits the longjmp code and assumes the context of the oopsing C=
-PU.
-> The machine gets very confused when it has 10 CPUs all with the same stac=
-k,
-> all thinking they have the same CPU id. I get even more confused trying
-> to debug it.
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>=20
+> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> index 6f4613d..5182439 100644
+> --- a/arch/powerpc/kernel/crash.c
+> +++ b/arch/powerpc/kernel/crash.c
+> @@ -375,6 +375,9 @@ void default_machine_crash_shutdown(struct pt_regs *r=
+egs)
+>  	for_each_irq(i) {
+>  		struct irq_desc *desc =3D irq_to_desc(i);
+> =20
+> +		if (!desc)
+> +			continue;
+> +
+>  		if (desc->status & IRQ_INPROGRESS)
+>  			desc->chip->eoi(i);
+> =20
 
-Lol, guess that one didn't get tested that well :)
-
-Fix looks good.
+Ouch, my bad.
 
 cheers
 
-
-
---=-1QL28XRoePewfZQR9dq4
+--=-yx9W7Dzj8myQOC4G/UQg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkvo2acACgkQdSjSd0sB4dLJ1gCdGpeqbMbx9wk9H4UxTzIRitms
-9pwAn1M4XoiwjuXOM+iUskoHjW0XRwuu
-=OU02
+iEYEABECAAYFAkvo2bcACgkQdSjSd0sB4dLoSwCdEmk1RCkPg4K8hm4VUUYnzyVa
+UiUAmwbBm+RPiT6yqgPEYPrqrQkuKF9X
+=ppf3
 -----END PGP SIGNATURE-----
 
---=-1QL28XRoePewfZQR9dq4--
+--=-yx9W7Dzj8myQOC4G/UQg--
