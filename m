@@ -1,18 +1,13 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc: kdump: Fix NULL pointer dereference in
-	irq disable code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20100511022329.GE12203@kryten>
-References: <20100511022329.GE12203@kryten>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-yx9W7Dzj8myQOC4G/UQg"
-Date: Tue, 11 May 2010 14:14:47 +1000
-Message-ID: <1273551287.9209.136.camel@concordia>
-Mime-Version: 1.0
-Cc: mikey@neuling.org, miltonm@bga.com, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 11 May 2010 14:59:18 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, mikey@neuling.org, miltonm@bga.com
+Subject: [PATCH] powerpc: Use more accurate limit for first segment memory
+	allocations
+Message-ID: <20100511045918.GA13509@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,49 +17,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Author: Milton Miller <miltonm@bga.com>
 
---=-yx9W7Dzj8myQOC4G/UQg
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On large machines we are running out of room below 256MB. In some cases we
+only need to ensure the allocation is in the first segment, which may be
+256MB or 1TB.
 
-On Tue, 2010-05-11 at 12:23 +1000, Anton Blanchard wrote:
-> With sparse irqs we have to check if we have a descriptor before derefere=
-ncing
-> it.
->=20
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->=20
-> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-> index 6f4613d..5182439 100644
-> --- a/arch/powerpc/kernel/crash.c
-> +++ b/arch/powerpc/kernel/crash.c
-> @@ -375,6 +375,9 @@ void default_machine_crash_shutdown(struct pt_regs *r=
-egs)
->  	for_each_irq(i) {
->  		struct irq_desc *desc =3D irq_to_desc(i);
-> =20
-> +		if (!desc)
-> +			continue;
-> +
->  		if (desc->status & IRQ_INPROGRESS)
->  			desc->chip->eoi(i);
-> =20
+Add slb0_limit and use it to specify the upper limit for the irqstack and
+emergency stacks.
 
-Ouch, my bad.
+On a large ppc64 box, this fixes a panic at boot when the crashkernel=
+option is specified (previously we would run out of memory below 256MB).
 
-cheers
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
---=-yx9W7Dzj8myQOC4G/UQg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Some things we should add:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+- Specify a more intelligent limit for BookE
+- The allocation of the PACAs should use this limit too
 
-iEYEABECAAYFAkvo2bcACgkQdSjSd0sB4dLoSwCdEmk1RCkPg4K8hm4VUUYnzyVa
-UiUAmwbBm+RPiT6yqgPEYPrqrQkuKF9X
-=ppf3
------END PGP SIGNATURE-----
-
---=-yx9W7Dzj8myQOC4G/UQg--
+Index: linux-2.6/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/setup_64.c	2010-04-22 17:23:42.000000000 +1000
++++ linux-2.6/arch/powerpc/kernel/setup_64.c	2010-04-30 09:46:15.000000000 +1000
+@@ -424,9 +424,18 @@ void __init setup_system(void)
+ 	DBG(" <- setup_system()\n");
+ }
+ 
++static u64 slb0_limit(void)
++{
++	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
++		return 1UL << SID_SHIFT_1T;
++	}
++	return 1UL << SID_SHIFT;
++}
++
+ #ifdef CONFIG_IRQSTACKS
+ static void __init irqstack_early_init(void)
+ {
++	u64 limit = slb0_limit();
+ 	unsigned int i;
+ 
+ 	/*
+@@ -436,10 +445,10 @@ static void __init irqstack_early_init(v
+ 	for_each_possible_cpu(i) {
+ 		softirq_ctx[i] = (struct thread_info *)
+ 			__va(lmb_alloc_base(THREAD_SIZE,
+-					    THREAD_SIZE, 0x10000000));
++					    THREAD_SIZE, limit));
+ 		hardirq_ctx[i] = (struct thread_info *)
+ 			__va(lmb_alloc_base(THREAD_SIZE,
+-					    THREAD_SIZE, 0x10000000));
++					    THREAD_SIZE, limit));
+ 	}
+ }
+ #else
+@@ -470,7 +479,7 @@ static void __init exc_lvl_early_init(vo
+  */
+ static void __init emergency_stack_init(void)
+ {
+-	unsigned long limit;
++	u64 limit;
+ 	unsigned int i;
+ 
+ 	/*
+@@ -482,7 +491,7 @@ static void __init emergency_stack_init(
+ 	 * bringup, we need to get at them in real mode. This means they
+ 	 * must also be within the RMO region.
+ 	 */
+-	limit = min(0x10000000ULL, lmb.rmo_size);
++	limit = min(slb0_limit(), lmb.rmo_size);
+ 
+ 	for_each_possible_cpu(i) {
+ 		unsigned long sp;
