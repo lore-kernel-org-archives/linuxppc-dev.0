@@ -1,21 +1,17 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+Return-Path: <matt@axio.ms>
+Received: from topper.vs.topper.me.uk (vs.topper.me.uk [87.237.59.66])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 550ACB7D94
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 May 2010 17:07:45 +1000 (EST)
-Received: from LPSC0173W (lpsc0173w.in2p3.fr [134.158.40.173])
-	by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with SMTP id o4B6Jm6h019392
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 May 2010 08:19:49 +0200
-Message-ID: <44001372909D4EAD8181655EEA5E416C@LPSC0173W>
-From: "Guillaume Dargaud" <dargaud@lpsc.in2p3.fr>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Curious serial slowdown
-Date: Tue, 11 May 2010 08:18:25 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 16036B7D96
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 May 2010 18:25:33 +1000 (EST)
+Message-ID: <4BE9102C.6040404@axio.ms>
+Date: Tue, 11 May 2010 18:07:08 +1000
+From: Matt Evans <matt@axio.ms>
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=SHA1; boundary="----=_NextPart_000_003A_01CAF0E2.87C41450"
+To: kexec@lists.infradead.org
+Subject: [PATCH] kexec-tools, ppc64: Fix segfault parsing DR memory property
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,104 +21,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_003A_01CAF0E2.87C41450
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
+add_dyn_reconf_usable_mem_property() iterates over memory spans
+in /ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory and intersects
+these with usablemem_rgns ranges.  Not only did it seem to write
+null properties for every range that didn't match, but it used an unchecked
+fixed-size array which will overrun on machines with lots of LMBs.
 
-Hello all,
-I'm looking for hints on a curious problem.
-I have a working kernel on a custom embedded device and it works fine.
-We came up with a variation of the device with a few hardware changes, one 
-of them being the number of serial ports that goes from 4 to 2.
+This patch stops add_dyn_reconf_usable_mem_property() from adding null ranges
+to the linux,drconf-usable-memory property and removes its fixed-size array,
+as well as the array in add_usable_mem_property, in lieu of malloc/realloc/free.
 
-In order to save time I tried my current kernel. When I boot the custom 
-bootlader behaves the same, then the kernel boot behaves the same, but then 
-once usermode is reached (the message "init started: BusyBox..."), the new 
-card console display crawls to a halt (about one character per second 
-instead of 115000 bauds !!!). But the card goes at normal speed as an ssh 
-connection shows.
+Signed-off-by: Matt Evans <matt@ozlabs.org>
+---
+ kexec/arch/ppc64/fs2dt.c |   66 +++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 54 insertions(+), 12 deletions(-)
 
-So my question is: is it caused by the fact that there are 2 missing serial 
-ports ? Will making a new kernel with the correct hardware definition solve 
-it ?
+diff --git a/kexec/arch/ppc64/fs2dt.c b/kexec/arch/ppc64/fs2dt.c
+index 762bf04..7470132 100644
+--- a/kexec/arch/ppc64/fs2dt.c
++++ b/kexec/arch/ppc64/fs2dt.c
+@@ -37,7 +37,7 @@
+ #define NAMESPACE 16384		/* max bytes for property names */
+ #define INIT_TREE_WORDS 65536	/* Initial num words for prop values */
+ #define MEMRESERVE 256		/* max number of reserved memory blocks */
+-#define MAX_MEMORY_RANGES 1024
++#define MEM_RANGE_CHUNK_SZ 2048 /* Initial num dwords for mem ranges */
+ 
+ static char pathname[MAXPATH], *pathstart;
+ static char propnames[NAMESPACE] = { 0 };
+@@ -148,7 +148,8 @@ static void add_dyn_reconf_usable_mem_property(int fd)
+ {
+ 	char fname[MAXPATH], *bname;
+ 	uint64_t buf[32];
+-	uint64_t ranges[2*MAX_MEMORY_RANGES];
++	uint64_t *ranges;
++	int ranges_size = MEM_RANGE_CHUNK_SZ;
+ 	uint64_t base, end, loc_base, loc_end;
+ 	size_t i, rngs_cnt, range;
+ 	int rlen = 0;
+@@ -165,6 +166,11 @@ static void add_dyn_reconf_usable_mem_property(int fd)
+ 		die("unrecoverable error: error seeking in \"%s\": %s\n",
+ 			pathname, strerror(errno));
+ 
++	ranges = malloc(ranges_size*8);
++	if (!ranges)
++		die("unrecoverable error: can't alloc %d bytes for ranges.\n",
++		    ranges_size*8);
++
+ 	rlen = 0;
+ 	for (i = 0; i < num_of_lmbs; i++) {
+ 		if (read(fd, buf, 24) < 0)
+@@ -180,24 +186,41 @@ static void add_dyn_reconf_usable_mem_property(int fd)
+ 
+ 		rngs_cnt = 0;
+ 		for (range = 0; range < usablemem_rgns.size; range++) {
++			int add = 0;
+ 			loc_base = usablemem_rgns.ranges[range].start;
+ 			loc_end = usablemem_rgns.ranges[range].end;
+ 			if (loc_base >= base && loc_end <= end) {
+-				ranges[rlen++] = loc_base;
+-				ranges[rlen++] = loc_end - loc_base;
+-				rngs_cnt++;
++				add = 1;
+ 			} else if (base < loc_end && end > loc_base) {
+ 				if (loc_base < base)
+ 					loc_base = base;
+ 				if (loc_end > end)
+ 					loc_end = end;
++				add = 1;
++			}
++
++			if (add) {
++				if (rlen >= (ranges_size-2)) {
++					ranges_size += MEM_RANGE_CHUNK_SZ;
++					ranges = realloc(ranges, ranges_size*8);
++					if (!ranges)
++						die("unrecoverable error: can't"
++						    " realloc %d bytes for"
++						    " ranges.\n",
++						    ranges_size*8);
++				}
+ 				ranges[rlen++] = loc_base;
+ 				ranges[rlen++] = loc_end - loc_base;
+ 				rngs_cnt++;
+ 			}
+ 		}
+-		/* Store the count of (base, size) duple */
+-		ranges[tmp_indx] = rngs_cnt;
++		if (rngs_cnt == 0) {
++			/* Don't store anything for unwritten iterations! */
++			rlen = tmp_indx;
++		} else {
++			/* Store the count of (base, size) duple */
++			ranges[tmp_indx] = rngs_cnt;
++		}
+ 	}
+ 		
+ 	rlen = rlen * sizeof(uint64_t);
+@@ -210,7 +233,8 @@ static void add_dyn_reconf_usable_mem_property(int fd)
+ 	*dt++ = propnum("linux,drconf-usable-memory");
+ 	if ((rlen >= 8) && ((unsigned long)dt & 0x4))
+ 		dt++;
+-	memcpy(dt, &ranges, rlen);
++	memcpy(dt, ranges, rlen);
++	free(ranges);
+ 	dt += (rlen + 3)/4;
+ }
+ 
+@@ -218,7 +242,8 @@ static void add_usable_mem_property(int fd, size_t len)
+ {
+ 	char fname[MAXPATH], *bname;
+ 	uint64_t buf[2];
+-	uint64_t ranges[2*MAX_MEMORY_RANGES];
++	uint64_t *ranges;
++	int ranges_size = MEM_RANGE_CHUNK_SZ;
+ 	uint64_t base, end, loc_base, loc_end;
+ 	size_t range;
+ 	int rlen = 0;
+@@ -247,17 +272,33 @@ static void add_usable_mem_property(int fd, size_t len)
+ 	base = buf[0];
+ 	end = base + buf[1];
+ 
++	ranges = malloc(ranges_size*8);
++	if (!ranges)
++		die("unrecoverable error: can't alloc %d bytes for ranges.\n",
++		    ranges_size*8);
++
+ 	for (range = 0; range < usablemem_rgns.size; range++) {
++		int add = 0;
+ 		loc_base = usablemem_rgns.ranges[range].start;
+ 		loc_end = usablemem_rgns.ranges[range].end;
+ 		if (loc_base >= base && loc_end <= end) {
+-			ranges[rlen++] = loc_base;
+-			ranges[rlen++] = loc_end - loc_base;
++			add = 1;
+ 		} else if (base < loc_end && end > loc_base) {
+ 			if (loc_base < base)
+ 				loc_base = base;
+ 			if (loc_end > end)
+ 				loc_end = end;
++			add = 1;
++		}
++		if (add) {
++			if (rlen >= (ranges_size-2)) {
++				ranges_size += MEM_RANGE_CHUNK_SZ;
++				ranges = realloc(ranges, ranges_size*8);
++				if (!ranges) 
++					die("unrecoverable error: can't realloc"
++					    "%d bytes for ranges.\n",
++					    ranges_size*8);
++			}
+ 			ranges[rlen++] = loc_base;
+ 			ranges[rlen++] = loc_end - loc_base;
+ 		}
+@@ -283,7 +324,8 @@ static void add_usable_mem_property(int fd, size_t len)
+ 	*dt++ = propnum("linux,usable-memory");
+ 	if ((rlen >= 8) && ((unsigned long)dt & 0x4))
+ 		dt++;
+-	memcpy(dt,&ranges,rlen);
++	memcpy(dt, ranges, rlen);
++	free(ranges);
+ 	dt += (rlen + 3)/4;
+ }
+ 
 -- 
-Guillaume Dargaud
-http://www.gdargaud.net/ 
-
-------=_NextPart_000_003A_01CAF0E2.87C41450
-Content-Type: application/x-pkcs7-signature;
-	name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="smime.p7s"
-
-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
-DQYJKoZIhvcNAQEFBQAwNDELMAkGA1UEBhMCRlIxDTALBgNVBAoTBENOUlMxFjAUBgNVBAMTDUNO
-UlMtU3RhbmRhcmQwHhcNMDgxMTA1MTE0NDM3WhcNMTAxMTA1MTE0NDM3WjBwMQswCQYDVQQGEwJG
-UjENMAsGA1UEChMEQ05SUzEQMA4GA1UECxMHVU1SNTgyMTEaMBgGA1UEAxMRR3VpbGxhdW1lIERh
-cmdhdWQxJDAiBgkqhkiG9w0BCQEWFWRhcmdhdWRAbHBzYy5pbjJwMy5mcjCCASIwDQYJKoZIhvcN
-AQEBBQADggEPADCCAQoCggEBAMC4HJkLqqp0DhpSVFjneK0kabmNTxKhdLZ7iNyNyI5pviepn+4j
-4gJNkj188swskTDQ3QKwh5ukRa7Lxzcfz7fMtLd2lzwTuOcz3LOemwGp3TM6ctcOzl/HBBCoTrZi
-Hj3lQZUirfzeazGjWeRP4D+Utr0bH6B9Q8EriKbsh815EiU11V/KhoSiayPVHoeL+XrmQz3A8v5t
-Ibs0lcmC+MzjhQcmvGcCfwQuLc0yl0cg4Pp6bkn1XL7QlfafvwYdOske0LgJktWBxNYQmm97xTCo
-3IjJ2+FijR2M9Vp67OcDzSwNGkLRerAqBwnnWiGKEs/xUZmutvkoVQ38/nzONkUCAwEAAaOCAY0w
-ggGJMAwGA1UdEwEB/wQCMAAwEQYJYIZIAYb4QgEBBAQDAgSwMA4GA1UdDwEB/wQEAwIF4DB4Bglg
-hkgBhvhCAQ0EaxZpQ2VydGlmaWNhdCBDTlJTLVN0YW5kYXJkLiBQb3VyIHRvdXRlIGluZm9ybWF0
-aW9uIHNlIHJlcG9ydGVyIOAgaHR0cDovL2lnYy5zZXJ2aWNlcy5jbnJzLmZyL0NOUlMtU3RhbmRh
-cmQvMB0GA1UdDgQWBBTokjByrre7NhuZQ06XlpNjg1b1BDBTBgNVHSMETDBKgBRnWaXlB3RJA+8F
-z8wupBjVEMiePKEvpC0wKzELMAkGA1UEBhMCRlIxDTALBgNVBAoTBENOUlMxDTALBgNVBAMTBENO
-UlOCAQIwIAYDVR0RBBkwF4EVZGFyZ2F1ZEBscHNjLmluMnAzLmZyMEYGA1UdHwQ/MD0wO6A5oDeG
-NWh0dHA6Ly9jcmxzLnNlcnZpY2VzLmNucnMuZnIvQ05SUy1TdGFuZGFyZC9nZXRkZXIuY3JsMA0G
-CSqGSIb3DQEBBQUAA4IBAQAPJMyYbojt/U1jJZJD49QroZGWHYgD9OK+qKH6CRYcsa8z018tBosr
-QaGEKt0U5yRWj60cp55fVeEPZsyGRyAeDhbBZNmByVF6UpYTtGHM3DvKIQEvwPXL0cfV4AWnQp12
-vkSZTv2Jr0HZ7RUTTBscC6rdEGG5bIwJkqjuPiEkIPOZ5mrITOT+H8crA7Z4HHlQbOhWmxjT3rfV
-4S14ecMT4Fc8WrEN/iRw1rMHtVY+eEL7opvdoiPS4CBEBUw0YL/+mcRDTc7LdJ43vbA4Wp0N4Ttz
-/mKS8oC+hQfi2nB2P6MWWW0uE9CRZTg2uJiUQ99aXVm6VMi5uFXesQ48vbChMYICHzCCAhsCAQEw
-OzA0MQswCQYDVQQGEwJGUjENMAsGA1UEChMEQ05SUzEWMBQGA1UEAxMNQ05SUy1TdGFuZGFyZAID
-AJC4MAkGBSsOAwIaBQCggbowGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
-DxcNMTAwNTExMDYxODI1WjAjBgkqhkiG9w0BCQQxFgQUOVTBpR7sZw/8pEXHqSJrjjNe0vQwWwYJ
-KoZIhvcNAQkPMU4wTDAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcNAwICAUAw
-BwYFKw4DAgcwDQYIKoZIhvcNAwICASgwBwYFKw4DAh0wDQYJKoZIhvcNAQEBBQAEggEAkArbc0qK
-PoRkPLM64JFgyKisBeJLc58yFZ8gRTb8/a3t2oVP0AOSOLNOGYfRvBXXf3HtflX/mKQH7+6R643a
-su4X4Q6I3y4q6ipSGisQOSL3hTVO9kWf3nr+8eAbwFzYQpEfwbx059UFw5gWiEjjPE7VtQ+lbQ7P
-LLP9SKsd2PJE32q3xEXGY3iheQsxWfRRzm1/yb3wlAXeW/jd7S9ICf06UH139Op0NNxIII4hmuHb
-d7q8nF3AwZOhu0Q3Isd2lBGo9FpOItROUNOAMAldzU8Os3lcnGWF9jabhIY1Cz/Bx4JF3d2z1JqP
-nszyR28hzgwD1cnuDC0ygKUQwKNmggAAAAAAAA==
-
-------=_NextPart_000_003A_01CAF0E2.87C41450--
+1.6.3.3
