@@ -1,26 +1,11 @@
-Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
-Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id 4E1D5B7D70
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 May 2010 15:50:16 +1000 (EST)
-Message-ID: <4BE8F0F2.60706@oss.ntt.co.jp>
-Date: Tue, 11 May 2010 14:53:54 +0900
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-MIME-Version: 1.0
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [RFC][PATCH 11/12] KVM: introduce new API for getting/switching
-	dirty bitmaps
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<20100504220821.d68bde57.takuya.yoshikawa@gmail.com>
-	<20100511034329.GB3458@amt.cnet>
-In-Reply-To: <20100511034329.GB3458@amt.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, arnd@arndb.de, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp, x86@kernel.org,
-	agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	mingo@redhat.com, paulus@samba.org, avi@redhat.com,
-	hpa@zytor.com, tglx@linutronix.de,
-	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
+Return-Path: <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Neuling <mikey@neuling.org>
+Date: Tue, 11 May 2010 16:28:26 +1000
+Subject: [PATCH 1/2] powerpc: Add hcall to read 4 ptes at a time in real mode
+Message-Id: <1273559306.849145.937766276201.qpush@pale>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +15,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2010/05/11 12:43), Marcelo Tosatti wrote:
-> On Tue, May 04, 2010 at 10:08:21PM +0900, Takuya Yoshikawa wrote:
->> +How to Get
->> +
->> +Before calling this, you have to set the slot member of kvm_user_dirty_log
->> +to indicate the target memory slot.
->> +
->> +struct kvm_user_dirty_log {
->> +	__u32 slot;
->> +	__u32 flags;
->> +	__u64 dirty_bitmap;
->> +	__u64 dirty_bitmap_old;
->> +};
->> +
->> +The addresses will be set in the paired members: dirty_bitmap and _old.
->
-> Why not pass the bitmap address to the kernel, instead of having the
-> kernel allocate it. Because apparently you plan to do that in a new
-> generation anyway?
+This adds plpar_pte_read_4_raw() which can be used read 4 PTEs from
+PHYP at a time, while in real mode.
 
-Yes, we want to make qemu allocate and free bitmaps in the future.
-But currently, those are strictly tied with memory slot registration and
-changing it in one patch set is really difficult.
+It also creates a new hcall9 which can be used in real mode.  It's the
+same as plpar_hcall9 but minus the tracing hcall statistics which may
+require variables outside the RMO.
 
-Anyway, we need kernel side allocation mechanism to keep the current
-GET_DIRTY_LOG api. I don't mind not exporting kernel allocated bitmaps
-in this patch set and later introducing a bitmap registration mechanism
-in another patch set.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
 
-As this RFC is suggesting, kernel side double buffering infrastructure is
-designed as general as possible and adding a new API like SWITCH can be done
-naturally.
+ arch/powerpc/include/asm/hvcall.h               |    1 
+ arch/powerpc/platforms/pseries/hvCall.S         |   38 ++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   18 +++++++++++
+ 3 files changed, 57 insertions(+)
 
->
-> Also, why does the kernel need to know about different bitmaps?
-
-Because we need to support current GET API. We don't have any way to get
-a new bitmap in the case of GET and we don't want to do_mmap() every time
-for GET.
-
->
-> One alternative would be:
->
-> KVM_SWITCH_DIRTY_LOG passing the address of a bitmap. If the active
-> bitmap was clean, it returns 0, no switch performed. If the active
-> bitmap was dirty, the kernel switches to the new bitmap and returns 1.
->
-> And the responsability of cleaning the new bitmap could also be left
-> for userspace.
->
-
-That is a beautiful approach but we can do that only when we give up using
-GET api.
-
-
-I follow you and Avi's advice about that kind of maintenance policy!
-What do you think?
+Index: linux-2.6-ozlabs/arch/powerpc/include/asm/hvcall.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/hvcall.h
++++ linux-2.6-ozlabs/arch/powerpc/include/asm/hvcall.h
+@@ -281,6 +281,7 @@ long plpar_hcall_raw(unsigned long opcod
+  */
+ #define PLPAR_HCALL9_BUFSIZE 9
+ long plpar_hcall9(unsigned long opcode, unsigned long *retbuf, ...);
++long plpar_hcall9_raw(unsigned long opcode, unsigned long *retbuf, ...);
+ 
+ /* For hcall instrumentation.  One structure per-hcall, per-CPU */
+ struct hcall_stats {
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hvCall.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/hvCall.S
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/hvCall.S
+@@ -228,3 +228,41 @@ _GLOBAL(plpar_hcall9)
+ 	mtcrf	0xff,r0
+ 
+ 	blr				/* return r3 = status */
++
++/* See plpar_hcall_raw to see why this is needed */
++_GLOBAL(plpar_hcall9_raw)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	std     r4,STK_PARM(r4)(r1)     /* Save ret buffer */
++
++	mr	r4,r5
++	mr	r5,r6
++	mr	r6,r7
++	mr	r7,r8
++	mr	r8,r9
++	mr	r9,r10
++	ld	r10,STK_PARM(r11)(r1)	 /* put arg7 in R10 */
++	ld	r11,STK_PARM(r12)(r1)	 /* put arg8 in R11 */
++	ld	r12,STK_PARM(r13)(r1)    /* put arg9 in R12 */
++
++	HVSC				/* invoke the hypervisor */
++
++	mr	r0,r12
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++	std	r6, 16(r12)
++	std	r7, 24(r12)
++	std	r8, 32(r12)
++	std	r9, 40(r12)
++	std	r10,48(r12)
++	std	r11,56(r12)
++	std	r0, 64(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pseries/plpar_wrappers.h
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pseries/plpar_wrappers.h
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pseries/plpar_wrappers.h
+@@ -191,6 +191,24 @@ static inline long plpar_pte_read_raw(un
+ 	return rc;
+ }
+ 
++/*
++ * plpar_pte_read_4_raw can be called in real mode.
++ * ptes must be 8*sizeof(unsigned long)
++ */
++static inline long plpar_pte_read_4_raw(unsigned long flags, unsigned long ptex,
++					unsigned long *ptes)
++
++{
++	long rc;
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
++
++	rc = plpar_hcall9_raw(H_READ, retbuf, flags | H_READ_4, ptex);
++
++	memcpy(ptes, retbuf, 8*sizeof(unsigned long));
++
++	return rc;
++}
++
+ static inline long plpar_pte_protect(unsigned long flags, unsigned long ptex,
+ 		unsigned long avpn)
+ {
