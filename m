@@ -1,21 +1,15 @@
-Return-Path: <felix@embedded-sol.com>
-Received: from vega.surpasshosting.com (vega.surpasshosting.com [72.29.83.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1CD30B7DB0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 May 2010 05:10:04 +1000 (EST)
-Message-ID: <4BE9AB8D.7010409@embedded-sol.com>
-Date: Tue, 11 May 2010 22:10:05 +0300
-From: Felix Radensky <felix@embedded-sol.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] 85xx: Fix PCI-E interrupt mapping for slot 0 of P2020DS
-References: <> <1273518917-10229-1-git-send-email-felix@embedded-sol.com>
-	<1CA6B1BA-FBD1-4ECF-87DC-D3E50835E781@kernel.crashing.org>
-In-Reply-To: <1CA6B1BA-FBD1-4ECF-87DC-D3E50835E781@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Date: Tue, 11 May 2010 21:12:19 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Andre Prendel <andre.prendel@gmx.de>
+Subject: Re: [PATCH] hwmon: (tmp421) Add nfactor support.
+Message-ID: <20100511211219.7b34cfb8@hyperion.delvare>
+In-Reply-To: <20100511190327.GA2031@andre-laptop>
+References: <4BE81B7B.7010804@theptrgroup.com>
+	<20100511190327.GA2031@andre-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linuxppc-dev@lists.ozlabs.org, lm-sensors <lm-sensors@lm-sensors.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,70 +19,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+On Tue, 11 May 2010 21:03:27 +0200, Andre Prendel wrote:
+> On Mon, May 10, 2010 at 10:43:07AM -0400, Jeff Angielski wrote:
+> 
+> Hi Jeff,
+> 
+> A few comments below.
+>  
+> > Add support for reading and writing the n-factor correction
+> > registers.  This is needed to compensate for the characteristics
+> > of a particular sensor hanging off of the remote channels.
+> > 
+> > Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
+> > ---
+> >  drivers/hwmon/tmp421.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 42 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
+> > index 738c472..c9e9855 100644
+> > --- a/drivers/hwmon/tmp421.c
+> > +++ b/drivers/hwmon/tmp421.c
+> > @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
+> > 
+> >  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
+> >  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
+> > +static const u8 TMP421_NFACTOR[3]		= { 0x21, 0x22, 0x23 };
+> > 
+> >  /* Flags */
+> >  #define TMP421_CONFIG_SHUTDOWN			0x40
+> > @@ -157,6 +158,38 @@ static ssize_t show_fault(struct device *dev,
+> >  		return sprintf(buf, "0\n");
+> >  }
+> > 
+> > +static ssize_t show_nfactor(struct device *dev,
+> > +			  struct device_attribute *devattr, char *buf)
+> > +{
+> > +	struct i2c_client *client = to_i2c_client(dev);
+> > +	struct tmp421_data *data = i2c_get_clientdata(client);
+> > +	int index = to_sensor_dev_attr(devattr)->index;
+> > +	s8 nfactor;
+> > +
+> > +	mutex_lock(&data->update_lock);
+> > +	nfactor = i2c_smbus_read_byte_data(client, TMP421_NFACTOR[index-1]);
+> 
+> There should be spaces within the array index, [index - 1].
+> 
+> > +	mutex_unlock(&data->update_lock);
+> > +
+> > +	return sprintf(buf, "%d\n", nfactor);
+> > +}
+> 
+> I'de prefer implementing the sysfs access methods in a consistent way (see other functions). That means adding the nfactor register to the tmp421_data structure and using tmp421_update_device() to update the structure.
+> 
+> > +static ssize_t set_nfactor(struct device *dev,
+> > +		struct device_attribute *devattr,
+> > +		const char *buf, size_t count)
+> > +{
+> > +	struct i2c_client *client = to_i2c_client(dev);
+> > +	struct tmp421_data *data = i2c_get_clientdata(client);
+> > +	int index = to_sensor_dev_attr(devattr)->index;
+> > +	int nfactor = simple_strtol(buf, NULL, 10);
+> > +
+> > +	mutex_lock(&data->update_lock);
+> > +	i2c_smbus_write_byte_data(client, TMP421_NFACTOR[index-1],
+> 
+> Missing spaces in array index again.
+> 
+> > +			SENSORS_LIMIT(nfactor, -128, 127));
+> > +	mutex_unlock(&data->update_lock);
+> > +
+> > +	return count;
+> > +}
+> > +
+> >  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
+> >  				int n)
+> >  {
+> > @@ -177,19 +210,28 @@ static mode_t tmp421_is_visible(struct kobject
+> > *kobj, struct attribute *a,
+> >  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
+> >  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
+> >  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
+> > +static SENSOR_DEVICE_ATTR(temp2_nfactor, S_IRUGO | S_IWUSR,
+> > +		show_nfactor, set_nfactor, 1);
+> >  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
+> >  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
+> > +static SENSOR_DEVICE_ATTR(temp3_nfactor, S_IRUGO | S_IWUSR,
+> > +		show_nfactor, set_nfactor, 2);
+> >  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
+> >  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
+> > +static SENSOR_DEVICE_ATTR(temp4_nfactor, S_IRUGO | S_IWUSR,
+> > +		show_nfactor, set_nfactor, 3);
+> > 
+> >  static struct attribute *tmp421_attr[] = {
+> >  	&sensor_dev_attr_temp1_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp2_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp2_nfactor.dev_attr.attr,
+> >  	&sensor_dev_attr_temp3_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp3_nfactor.dev_attr.attr,
+> >  	&sensor_dev_attr_temp4_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp4_nfactor.dev_attr.attr,
+> >  	NULL
+> >  };
 
-On 5/11/2010 3:36 PM, Kumar Gala wrote:
-> On May 10, 2010, at 2:15 PM, Felix Radensky wrote:
->
->   
->> Fix legacy PCI-E interrupt mapping for PCI-E slot 0 of
->> P2020DS evaluation board. The patch is based on P2020DS
->> device tree from Freescale BSP for this board.
->>
->> Signed-off-by: Felix Radensky <felix@embedded-sol.com>
->> ---
->> arch/powerpc/boot/dts/p2020ds.dts |    8 ++++----
->> 1 files changed, 4 insertions(+), 4 deletions(-)
->>     
-> I don't understand why this is needed?
->
-> -k
->
->   
+Any hope to standardize on the sysfs attribute files and units? So that
+other drivers can implement the same interface.
 
-With 2.6.34-rc7 I get this nice dump when loading ath9k for PCI-E card
-in slot 0:
-
-irq 17: nobody cared (try booting with the "irqpoll" option)
-Call Trace:
-[ef0d59d0] [c00070b0] show_stack+0x3c/0x17c (unreliable)
-[ef0d5a10] [c00740f8] __report_bad_irq+0x38/0xcc
-[ef0d5a30] [c0074344] note_interrupt+0x1b8/0x228
-[ef0d5a60] [c007539c] handle_fasteoi_irq+0xac/0x138
-[ef0d5a80] [c0004a68] do_IRQ+0xd8/0x104
-[ef0d5aa0] [c00102b0] ret_from_except+0x0/0x18
-[ef0d5b60] [00029000] 0x29000
-[ef0d5bb0] [c000498c] do_softirq+0x6c/0x70
-[ef0d5bc0] [c0043bb4] irq_exit+0xb0/0xb4
-[ef0d5bd0] [c0004a6c] do_IRQ+0xdc/0x104
-[ef0d5bf0] [c00102b0] ret_from_except+0x0/0x18
-[ef0d5cb0] [c00735c4] __setup_irq+0x374/0x3ac
-[ef0d5ce0] [c00736d4] request_threaded_irq+0xd8/0x150
-[ef0d5d10] [f11e8c34] ath_pci_probe+0x28c/0x3f8 [ath9k]
-[ef0d5d90] [c0186334] local_pci_probe+0x24/0x34
-[ef0d5da0] [c0186688] pci_device_probe+0x84/0xc4
-[ef0d5dd0] [c01b7f84] driver_probe_device+0xa4/0x198
-[ef0d5df0] [c01b8328] __driver_attach+0xa4/0xa8
-[ef0d5e10] [c01b71b8] bus_for_each_dev+0x60/0x9c
-[ef0d5e40] [c01b7d98] driver_attach+0x24/0x34
-[ef0d5e50] [c01b7b20] bus_add_driver+0x1bc/0x280
-[ef0d5e80] [c01b85b4] driver_register+0x70/0x168
-[ef0d5ea0] [c01869a0] __pci_register_driver+0x5c/0xe4
-[ef0d5ed0] [f11e88cc] ath_pci_init+0x28/0x38 [ath9k]
-[ef0d5ee0] [f11f104c] ath9k_init+0x4c/0xb0 [ath9k]
-[ef0d5ef0] [c0001cfc] do_one_initcall+0x40/0x1dc
-[ef0d5f20] [c0070a7c] sys_init_module+0xf4/0x21c
-[ef0d5f40] [c000fc58] ret_from_syscall+0x0/0x3c
-handlers:
-[<f11e16ac>] (ath_isr+0x0/0x1b4 [ath9k])
-Disabling IRQ #17
-
-The ath9k driver does not support MSI interrupts, so it has to use 
-legacy ones.
-If MSI interrupts are disabled in the kernel configuration I get similar 
-dump
-with e1000e driver.
-
-The patch I've sent fixes the problem with legacy interrupts.
-
-Felix.
+-- 
+Jean Delvare
