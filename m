@@ -1,12 +1,14 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 11 May 2010 11:38:56 +1000
+Date: Tue, 11 May 2010 12:25:51 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, linasvepstas@gmail.com,
-	leitao@linux.vnet.ibm.com, mmlnx@us.ibm.com, mikey@neuling.org
-Subject: [PATCH] powerpc: eeh: Fix oops when probing in early boot
-Message-ID: <20100511013855.GD12203@kryten>
+To: benh@kernel.crashing.org, mikey@neuling.org, miltonm@bga.com,
+	michael@ellerman.id.au, paulus@samba.org
+Subject: [PATCH 2/3] powerpc: kdump: CPUs assume the context of the oopsing CPU
+Message-ID: <20100511022551.GF12203@kryten>
+References: <20100511022329.GE12203@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100511022329.GE12203@kryten>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,60 +20,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-If we take an EEH early enough, we oops:
+We wrap the crash_shutdown_handles[] calls with longjmp/setjmp, so if any
+of them fault we can recover. The problem is we add a hook to the debugger
+fault handler hook which calls longjmp unconditionally.
 
+This first part of kdump is run before we marshall the other CPUs, so there
+is a very good chance some CPU on the box is going to page fault. And when
+it does it hits the longjmp code and assumes the context of the oopsing CPU.
+The machine gets very confused when it has 10 CPUs all with the same stack,
+all thinking they have the same CPU id. I get even more confused trying
+to debug it.
 
-Call Trace:
-[c000000010483770] [c000000000013ee4] .show_stack+0xd8/0x218 (unreliable)
-[c000000010483850] [c000000000658940] .dump_stack+0x28/0x3c
-[c0000000104838d0] [c000000000057a68] .eeh_dn_check_failure+0x2b8/0x304
-[c000000010483990] [c0000000000259c8] .rtas_read_config+0x120/0x168
-[c000000010483a40] [c000000000025af4] .rtas_pci_read_config+0xe4/0x124
-[c000000010483af0] [c00000000037af18] .pci_bus_read_config_word+0xac/0x104
-[c000000010483bc0] [c0000000008fec98] .pcibios_allocate_resources+0x7c/0x220
-[c000000010483c90] [c0000000008feed8] .pcibios_resource_survey+0x9c/0x418
-[c000000010483d80] [c0000000008fea10] .pcibios_init+0xbc/0xf4
-[c000000010483e20] [c000000000009844] .do_one_initcall+0x98/0x1d8
-[c000000010483ed0] [c0000000008f0560] .kernel_init+0x228/0x2e8
-[c000000010483f90] [c000000000031a08] .kernel_thread+0x54/0x70
-EEH: Detected PCI bus error on device <null>
-EEH: This PCI device has failed 1 times in the last hour:
-EEH: location=U78A5.001.WIH8464-P1 driver= pci addr=0001:00:01.0
-EEH: of node=/pci@800000020000209/usb@1
-EEH: PCI device/vendor: 00351033
-EEH: PCI cmd/status register: 12100146
+The patch below adds crash_shutdown_cpu and uses it to specify which cpu is
+in the protected region. Since it can only be -1 or the oopsing CPU, we don't
+need to use memory barriers since it is only valid on the local CPU - no other
+CPU will ever see a value that matches it's local CPU id.
 
-Unable to handle kernel paging request for data at address 0x00000468
-Oops: Kernel access of bad area, sig: 11 [#1]
-....
-NIP [c000000000057610] .rtas_set_slot_reset+0x38/0x10c
-LR [c000000000058724] .eeh_reset_device+0x5c/0x124
-Call Trace:
-[c00000000bc6bd00] [c00000000005a0e0] .pcibios_remove_pci_devices+0x7c/0xb0 (unreliable)
-[c00000000bc6bd90] [c000000000058724] .eeh_reset_device+0x5c/0x124
-[c00000000bc6be40] [c0000000000589c0] .handle_eeh_events+0x1d4/0x39c
-[c00000000bc6bf00] [c000000000059124] .eeh_event_handler+0xf0/0x188
-[c00000000bc6bf90] [c000000000031a08] .kernel_thread+0x54/0x70
-
-
-We called rtas_set_slot_reset while scanning the bus and before the pci_dn
-to pcidev mapping has been created. Since we only need the pcidev to work
-out the type of reset and that only gets set after the module for the
-device loads, lets just do a hot reset if the pcidev is NULL.
+Eventually we should switch the order and marshall all CPUs before doing the
+crash_shutdown_handles[] calls, but that is a bigger fix.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-2.6/arch/powerpc/platforms/pseries/eeh.c
+Index: linux-2.6/arch/powerpc/kernel/crash.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pseries/eeh.c	2010-05-10 17:25:10.703453565 +1000
-+++ linux-2.6/arch/powerpc/platforms/pseries/eeh.c	2010-05-10 17:25:24.034323030 +1000
-@@ -749,7 +749,7 @@ static void __rtas_set_slot_reset(struct
- 	/* Determine type of EEH reset required by device,
- 	 * default hot reset or fundamental reset
+--- linux-2.6.orig/arch/powerpc/kernel/crash.c	2010-05-10 23:48:35.775954185 +1000
++++ linux-2.6/arch/powerpc/kernel/crash.c	2010-05-11 08:39:14.423453660 +1000
+@@ -281,10 +281,12 @@ int crash_shutdown_unregister(crash_shut
+ EXPORT_SYMBOL(crash_shutdown_unregister);
+ 
+ static unsigned long crash_shutdown_buf[JMP_BUF_LEN];
++static int crash_shutdown_cpu = -1;
+ 
+ static int handle_fault(struct pt_regs *regs)
+ {
+-	longjmp(crash_shutdown_buf, 1);
++	if (crash_shutdown_cpu == smp_processor_id())
++		longjmp(crash_shutdown_buf, 1);
+ 	return 0;
+ }
+ 
+@@ -325,6 +327,7 @@ void default_machine_crash_shutdown(stru
  	 */
--	if (dev->needs_freset)
-+	if (dev && dev->needs_freset)
- 		rtas_pci_slot_reset(pdn, 3);
- 	else
- 		rtas_pci_slot_reset(pdn, 1);
+ 	old_handler = __debugger_fault_handler;
+ 	__debugger_fault_handler = handle_fault;
++	crash_shutdown_cpu = smp_processor_id();
+ 	for (i = 0; crash_shutdown_handles[i]; i++) {
+ 		if (setjmp(crash_shutdown_buf) == 0) {
+ 			/*
+@@ -338,6 +341,7 @@ void default_machine_crash_shutdown(stru
+ 			asm volatile("sync; isync");
+ 		}
+ 	}
++	crash_shutdown_cpu = -1;
+ 	__debugger_fault_handler = old_handler;
+ 
+ 	/*
