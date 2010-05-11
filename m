@@ -1,33 +1,30 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <sonny@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F3F23B7D73
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C6232B7D77
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 11 May 2010 06:57:44 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e1.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4AKqIaO029732
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 16:52:18 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4AKvegd1073222
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 16:57:40 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4AKvdwF021841
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 17:57:40 -0300
-Message-ID: <4BE8733F.5080905@linux.vnet.ibm.com>
-Date: Mon, 10 May 2010 15:57:35 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+	Tue, 11 May 2010 11:13:48 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4B1BhiR010581
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 21:11:43 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4B1DgKx2089082
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 21:13:44 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4B1DgjP027470
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 May 2010 21:13:42 -0400
+Date: Mon, 10 May 2010 20:13:41 -0500
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] need check for devices with bad status status property in
+	__of_scan_bus()
+Message-ID: <20100511011341.GO4036@us.ibm.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 1/2] powerpc: Partition hibernation support
-References: <201005071158.o47Bww77013658@d03av03.boulder.ibm.com>
-	<1273474102.6591.258.camel@concordia>
-	<4BE81A3E.8030501@linux.vnet.ibm.com>
-In-Reply-To: <4BE81A3E.8030501@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: sonnyrao@us.ibm.com, linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,36 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/10/2010 09:37 AM, Brian King wrote:
-> 
->>>  }
->>>  #else /* CONFIG_PPC_PSERIES */
->>>  static int rtas_ibm_suspend_me(struct rtas_args *args)
->>>  {
->>>  	return -ENOSYS;
->>>  }
->>> +
->>> +int rtas_suspend_cpu(struct rtas_suspend_me_data *data)
->>> +{
->>> +	return -ENOSYS;
->>> +}
->>> +
->>> +int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data)
->>> +{
->>> +	return -ENOSYS;
->>> +}
->>
->> Don't see why you need these empty versions, they're only ever called
->> from pseries code aren't they?
-> 
-> True, but we still need to be able to link the code in a cross platform
-> kernel.
+Hi Ben, we ran into an issue where it looks like we're not
+properly ignoring a pci device with a non-good status property
+when we walk the device tree and create our device nodes.
 
-I was able to fix this up as well with a makefile change to ensure
-suspend.c only gets built when CONFIG_PPC_PSERIES=y
+However, the EEH init code does look for the property and 
+disables EEH on these devices.   This leaves us in an
+inconsistent where we are poking at a supposedly bad
+piece of hardware and RTAS will block our config cycles 
+because EEH isn't enabled anyway.
+
+This has only been compile tested.
+
+Signed-of-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
+
+Index: common/arch/powerpc/kernel/pci_of_scan.c
+===================================================================
+--- common/arch/powerpc/kernel.orig/pci_of_scan.c	2010-05-10 20:00:40.000000000 -0500
++++ common/arch/powerpc/kernel/pci_of_scan.c	2010-05-10 20:03:04.000000000 -0500
+@@ -310,6 +310,8 @@ static void __devinit __of_scan_bus(stru
+ 	/* Scan direct children */
+ 	for_each_child_of_node(node, child) {
+ 		pr_debug("  * %s\n", child->full_name);
++		if (!of_device_is_available(child))
++			continue;
+ 		reg = of_get_property(child, "reg", &reglen);
+ 		if (reg == NULL || reglen < 20)
+ 			continue;
 
 
 -- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Sonny Rao, LTC OzLabs, BML team
