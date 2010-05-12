@@ -1,17 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Date: Wed, 12 May 2010 09:27:15 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jeff Angielski <jeff@theptrgroup.com>
-Subject: Re: [PATCH] hwmon: (tmp421) Add nfactor support.
-Message-ID: <20100512092715.12639dcf@hyperion.delvare>
-In-Reply-To: <4BE9B145.7000702@theptrgroup.com>
-References: <4BE81B7B.7010804@theptrgroup.com>
-	<20100511190327.GA2031@andre-laptop>
-	<4BE9B145.7000702@theptrgroup.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7859BB7DCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 17:55:15 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 12 May 2010 17:46:36 +1000
+Message-ID: <1273650396.21352.121.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: lm-sensors <lm-sensors@lm-sensors.org>, Linuxppc-dev@lists.ozlabs.org,
-	Andre Prendel <andre.prendel@gmx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jeff,
+Hi Linus !
 
-On Tue, 11 May 2010 15:34:29 -0400, Jeff Angielski wrote:
-> On 05/11/2010 03:03 PM, Andre Prendel wrote:
-> > I'de prefer implementing the sysfs access methods in a consistent way (see other functions). That means adding the nfactor register to the tmp421_data structure and using tmp421_update_device() to update the structure.
-> 
-> I did this on purpose since the nfactor typically only changes once at 
-> runtime when you program it for your sensor.  It seemed like a waste of 
-> processing power and i2c bandwidth to read a "pseudo static" register 
-> over and over again.
-> 
-> It can easily be changed if that's what will help the community the best.
+Please pull this perf event fix from Paulus. Without it, using perf event
+can potentially oops the machine at any time.
 
-I get your point and it makes sense. However, we also have to ensure
-that no regular user can saturate the I2C link by repeatedly polling
-for the same register value. So, any sysfs attribute which triggers an
-immediate I2C transaction shouldn't be accessible by regular users
-(i.e. change the mode from 0644 to 0640).
+Thanks !
 
-An alternative is to slit the cache into short-lived (~ 1 or 2 seconds)
-and long-lived (1 to 5 minutes.) A number of drivers do this.
+Cheers,
+Ben.
 
--- 
-Jean Delvare
+The following changes since commit cea0d767c29669bf89f86e4aee46ef462d2ebae8:
+  Linus Torvalds (1):
+        Merge branch 'hwmon-for-linus' of git://git.kernel.org/.../jdelvare/staging
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Paul Mackerras (1):
+      powerpc/perf_event: Fix oops due to perf_event_do_pending call
+
+ arch/powerpc/include/asm/hw_irq.h |   38 -----------------------
+ arch/powerpc/kernel/asm-offsets.c |    1 -
+ arch/powerpc/kernel/entry_64.S    |    9 -----
+ arch/powerpc/kernel/irq.c         |    6 ----
+ arch/powerpc/kernel/time.c        |   60 +++++++++++++++++++++++++++++-------
+ 5 files changed, 48 insertions(+), 66 deletions(-)
