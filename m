@@ -1,32 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 28B8CB7DF1
+Return-Path: <muvarov@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id D7343B7DFC
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 May 2010 22:22:57 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4CCGYJc008348
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 May 2010 06:16:34 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4CCMsjS080494
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 May 2010 06:22:54 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4CCMsfE010209
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 May 2010 06:22:54 -0600
-Date: Wed, 12 May 2010 08:22:53 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: Please pull 'next' branch of 4xx (again)
-Message-ID: <20100512122253.GF10526@zod.rchland.ibm.com>
-References: <20100507195453.GN29593@zod.rchland.ibm.com>
+	Wed, 12 May 2010 22:12:15 +1000 (EST)
+Received: by wyf19 with SMTP id 19so966825wyf.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 12 May 2010 05:12:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100507195453.GN29593@zod.rchland.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <4BEA5726.50806@nerdbynature.de>
+References: <20100511174749.19309.44615.stgit@muvarov>
+	<4BEA5726.50806@nerdbynature.de>
+Date: Wed, 12 May 2010 16:12:12 +0400
+Message-ID: <AANLkTil699YohqNmq1UeAZU7jyrl78d3yfvOD3T_Sx57@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
+From: Maxim Uvarov <muvarov@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Content-Type: multipart/alternative; boundary=0016e649864a55b9940486648d2c
+Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
+	linuxppc-dev@lists.ozlabs.org, horms@verge.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 07, 2010 at 03:54:53PM -0400, Josh Boyer wrote:
->Hi Ben,
+--0016e649864a55b9940486648d2c
+Content-Type: text/plain; charset=ISO-8859-1
+
+2010/5/12 Christian Kujau <lists@nerdbynature.de>
+
+> On Tue, 11 May 2010 at 21:47, Maxim Uvarov wrote:
+> > This patch is required in case if you are using new toolchains.
 >
->Two more quick patches from me for -next.  Stefrano's is the Katmai usage of
->the reset type change that just went in.  The 460SX PCI-e patch has been sitting
->for a while and seems to have been skipped over.
+> After kexec-tools compiled, I actually tried it:
+>
+> # kexec -l /boot/2.6/zImage --command-line="root=/dev/hda6 ro"
+> # echo $?
+> 0
+> # kexec -e
+> Starting new kernel
+> Bye!
+>
+> ....but then the system just hung there, no more messages, I had to
+> powercycle it.
+>
+> The --debug options is listed for "dol-ppc" systems (I have a PowerBook
+> G4, not sure if this falls into this category), when I use it the help
+> screen of kexec is displayed again and at the bottom:
+>
+>   Cannot load /boot/2.6/zImage
+>
+>
+> This is with 2.6.34-rc7 (today's git):
+>
+> # file /boot/2.6/zImage
+> /boot/2.6/zImage: ELF 32-bit MSB executable, PowerPC or cisco 4500,
+> version 1 (SYSV), statically linked, with unknown capability 0x41000000
+> = 0x11676e75, with unknown capability 0x10000 = 0x90402, not stripped
+>
+>
+> .config and dmesg: http://nerdbynature.de/bits/2.6.34-rc7/kexec/
+>
+> Christian.
+> --
+> make bzImage, not war
+>
 
-I've updated my next branch with two more patches.  Yours for the 440SPe UART
-clock fix, and the new platform addition of Icon 440SPe from Stefan.  Updated
-diffstat below.
 
-Thanks,
-josh
+Can you try vmlinux? I tested only with vmlinux.
 
-The following changes since commit 1ed31d6db90d51010545921e59d369d2f92b7ac2:
-  Benjamin Herrenschmidt (1):
-        Merge commit 'origin/master' into next
+-- 
+Best regards,
+Maxim Uvarov
 
-are available in the git repository at:
+--0016e649864a55b9940486648d2c
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git next
+<br><br><div class=3D"gmail_quote">2010/5/12 Christian Kujau <span dir=3D"l=
+tr">&lt;<a href=3D"mailto:lists@nerdbynature.de">lists@nerdbynature.de</a>&=
+gt;</span><br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px s=
+olid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<div class=3D"im">On Tue, 11 May 2010 at 21:47, Maxim Uvarov wrote:<br>
+</div><div class=3D"im">&gt; This patch is required in case if you are usin=
+g new toolchains.<br>
+<br>
+</div>After kexec-tools compiled, I actually tried it:<br>
+<br>
+# kexec -l /boot/2.6/zImage --command-line=3D&quot;root=3D/dev/hda6 ro&quot=
+;<br>
+# echo $?<br>
+0<br>
+# kexec -e<br>
+Starting new kernel<br>
+Bye!<br>
+<br>
+....but then the system just hung there, no more messages, I had to<br>
+powercycle it.<br>
+<br>
+The --debug options is listed for &quot;dol-ppc&quot; systems (I have a Pow=
+erBook<br>
+G4, not sure if this falls into this category), when I use it the help<br>
+screen of kexec is displayed again and at the bottom:<br>
+<br>
+ =A0 Cannot load /boot/2.6/zImage<br>
+<br>
+<br>
+This is with 2.6.34-rc7 (today&#39;s git):<br>
+<br>
+# file /boot/2.6/zImage<br>
+/boot/2.6/zImage: ELF 32-bit MSB executable, PowerPC or cisco 4500,<br>
+version 1 (SYSV), statically linked, with unknown capability 0x41000000<br>
+=3D 0x11676e75, with unknown capability 0x10000 =3D 0x90402, not stripped<b=
+r>
+<br>
+<br>
+.config and dmesg: <a href=3D"http://nerdbynature.de/bits/2.6.34-rc7/kexec/=
+" target=3D"_blank">http://nerdbynature.de/bits/2.6.34-rc7/kexec/</a><br>
+<div><div></div><div class=3D"h5"><br>
+Christian.<br>
+--<br>
+make bzImage, not war<br>
+</div></div></blockquote></div><br><br>Can you try vmlinux? I tested only w=
+ith vmlinux.<br clear=3D"all"><br>-- <br>Best regards,<br>Maxim Uvarov<br>
 
-Benjamin Herrenschmidt (1):
-      powerpc/44x: Fix UART clocks on 440SPe
-
-Stefan Roese (2):
-      powerpc/44x: Add reset-type to katmai.dts
-      powerpc/44x: Add basic ICON PPC440SPe board support
-
-Tirumala Marri (1):
-      powerpc/44x: Adding PCI-E support for PowerPC 460SX based SOC.
-
- arch/powerpc/boot/4xx.c                    |   12 +-
- arch/powerpc/boot/dts/icon.dts             |  447 ++++++++++
- arch/powerpc/boot/dts/katmai.dts           |    1 +
- arch/powerpc/boot/dts/redwood.dts          |  122 +++
- arch/powerpc/configs/44x/icon_defconfig    | 1316 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/44x/Kconfig         |   11 +
- arch/powerpc/platforms/44x/ppc44x_simple.c |    3 +-
- arch/powerpc/sysdev/ppc4xx_pci.c           |  119 +++
- arch/powerpc/sysdev/ppc4xx_pci.h           |   58 ++
- 9 files changed, 2082 insertions(+), 7 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/icon.dts
- create mode 100644 arch/powerpc/configs/44x/icon_defconfig
+--0016e649864a55b9940486648d2c--
