@@ -1,21 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc,kexec: Speedup kexec hpte tear down
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <9537.1273626418@neuling.org>
-References: <20100511062826.E1C49D3340@localhost.localdomain>
-	<1273561463.9209.138.camel@concordia> <30983.1273620594@neuling.org>
-	<1273624565.5738.8.camel@concordia> <7247.1273624988@neuling.org>
-	<20100512010003.GB3548@drongo>  <9537.1273626418@neuling.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-bu56UQMJhGcW/DJfYuf8"
-Date: Wed, 12 May 2010 11:36:11 +1000
-Message-ID: <1273628171.5738.36.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 13884B7DBF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 12 May 2010 12:38:00 +1000 (EST)
+Subject: [PATCH] Fix UART clocks on 440SPe
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 12 May 2010 12:22:50 +1000
+Message-ID: <1273630970.21352.85.camel@pasglop>
 Mime-Version: 1.0
-Cc: kexec@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The code to fixup the serial ports on 440SPe uses the incorrect
+addresses for these. This fixes it.
 
---=-bu56UQMJhGcW/DJfYuf8
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-On Wed, 2010-05-12 at 11:06 +1000, Michael Neuling wrote:
-> > > We probably only do the remove on < 1% of the hptes now.  So I doubt =
-we
-> > > would get a speedup since most of the time we aren't do the remove
-> > > anymore.
-> >=20
-> > It would be nice to have some actual numbers.  Could you add some
-> > counters and print the results at the end?  (Or don't you have any
-> > way to print things at that stage?)
->=20
-> Printing is hard at that point but I think we can do it.  I'll try to
-> when I get some time.
+I'm surprised nobody noticed, serial is pretty busted for me without
+that patch :-)
 
-A version of udbg_putcLP() that uses a raw hcall should work, or there
-was code added to purgatory recently to print to the HV console which
-you could nick.
-
-> A heavily loaded system which kdumps will need a lot more hptes removes
-> than kexec, so stats for both these cases might be useful also.
-
-Yeah, or even a system that is kexec'ed while lots of stuff is still
-running.
-
-cheers
-
-
-
---=-bu56UQMJhGcW/DJfYuf8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkvqBgsACgkQdSjSd0sB4dKSBgCfZD3RoXWXft7f8agnCUQbU/Qq
-7/YAn3f/X+Vghs1inbGC4/U57qS/IbaS
-=34Ff
------END PGP SIGNATURE-----
-
---=-bu56UQMJhGcW/DJfYuf8--
+diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+index 27db893..627de25 100644
+--- a/arch/powerpc/boot/4xx.c
++++ b/arch/powerpc/boot/4xx.c
+@@ -544,9 +544,9 @@ void ibm440spe_fixup_clocks(unsigned int sys_clk,
+ 	unsigned int plb_clk = __ibm440eplike_fixup_clocks(sys_clk, tmr_clk, 1);
+ 
+ 	/* serial clocks beed fixup based on int/ext */
+-	eplike_fixup_uart_clk(0, "/plb/opb/serial@10000200", ser_clk, plb_clk);
+-	eplike_fixup_uart_clk(1, "/plb/opb/serial@10000300", ser_clk, plb_clk);
+-	eplike_fixup_uart_clk(2, "/plb/opb/serial@10000600", ser_clk, plb_clk);
++	eplike_fixup_uart_clk(0, "/plb/opb/serial@f0000200", ser_clk, plb_clk);
++	eplike_fixup_uart_clk(1, "/plb/opb/serial@f0000300", ser_clk, plb_clk);
++	eplike_fixup_uart_clk(2, "/plb/opb/serial@f0000600", ser_clk, plb_clk);
+ }
+ 
+ void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
