@@ -1,24 +1,19 @@
-Return-Path: <pbathija@amcc.com>
-Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "Messaging Gateway Appliance Demo Cert",
-	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D9DC3B7D81
+Return-Path: <lists@nerdbynature.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 500C3B7DD4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 May 2010 13:41:06 +1000 (EST)
-Subject: RE: 440SPe/Katmai PCIe problems
+	Wed, 12 May 2010 13:44:31 +1000 (EST)
+Date: Tue, 11 May 2010 20:44:24 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Maxim Uvarov <muvarov@gmail.com>
+Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
+In-Reply-To: <20100511174749.19309.44615.stgit@muvarov>
+Message-ID: <4BEA2375.7040802@nerdbynature.de>
+References: <20100511174749.19309.44615.stgit@muvarov>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Date: Tue, 11 May 2010 20:30:38 -0700
-Message-ID: <9D1E2BDCB5C57B46B56E6D80843439EB0A5EB9B3@SDCEXCHANGE01.ad.amcc.com>
-In-Reply-To: <1273633366.21352.100.camel@pasglop>
-References: <1273632013.21352.88.camel@pasglop>
-	<1273633366.21352.100.camel@pasglop>
-From: "Pravin Bathija" <pbathija@amcc.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Stefan Roese" <sr@denx.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNj
-aG1pZHQgW21haWx0bzpiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IFR1ZXNkYXks
-IE1heSAxMSwgMjAxMCA4OjAzIFBNDQo+IFRvOiBTdGVmYW4gUm9lc2UNCj4gQ2M6IGxpbnV4cHBj
-LWRldjsgUHJhdmluIEJhdGhpamENCj4gU3ViamVjdDogUmU6IDQ0MFNQZS9LYXRtYWkgUENJZSBw
-cm9ibGVtcw0KPiANCj4gT24gV2VkLCAyMDEwLTA1LTEyIGF0IDEyOjQwICsxMDAwLCBCZW5qYW1p
-biBIZXJyZW5zY2htaWR0IHdyb3RlOg0KPiA+IEhpIFN0ZWZhbiAhDQo+ID4NCj4gPiAoT3Igc29t
-ZWJvZHkgZnJvbSBBTUNDKQ0KPiA+DQo+ID4gSSBub3RpY2VkIHdlIHN0aWxsIGhhdmUgdGhpcyBv
-bGQgcHJvYmxlbSBvbiBQQ0llIHdoZXJlIHNvbWUgY2FyZHMNCj4gZG9uJ3QNCj4gPiBzZWVtIHRv
-IHdvcmsuIFRoZSBsaW5rIHRyYWlucyBidXQgdGhleSBkb24ndCByZXNwb25kIG9uIGNvbmZpZyBz
-cGFjZS4NCj4gPiBUaGlzIGlzIHRoZSBjYXNlIGZvciBleGFtcGxlIG9mIHRoYXQgU3VuaXggcXVh
-ZCBVU0IgY2FyZC4gSXQgc2VlbXMgdG8NCj4gYmUNCj4gPiByZWxhdGVkIHRvIHRoZSBraW5kIG9m
-IFRJIFBDSWUgPC0+IFBDSSBicmlkZ2Ugb24gdGhlc2UgdGhvdWdoLg0KPiA+DQo+ID4gSGF2ZSBh
-bnlib2R5IHRyYWNrZWQgZG93biB0aGUgcm9vdCBjYXVzZSBvZiB0aGUgcHJvYmxlbSA/IFNvbWUg
-c2F5DQo+IHRoYXQNCj4gPiBpdCBjb3VsZCBiZSB0aGF0IHRoZSBicmlkZ2UgZG9lc24ndCBjb3Bl
-IHdpdGggdGhlIGRvdWJsZSByZXNldCAodWJvb3QNCj4gPiB0aGVuIGtlcm5lbCkuIFdvdWxkIGl0
-IGJlIHBvc3NpYmxlIHRvIHRlbGwgdWJvb3QgdG8gYXZvaWQgdG91Y2hpbmcNCj4gdGhlDQo+ID4g
-UENJZSBpbnRlcmZhY2UgY29tcGxldGVseSBzbyB0aGUga2VybmVsIGlzIHRoZSBmaXJzdCBvbmUg
-dG8gZ2V0IGluID8NCj4gDQo+IEFjdHVhbGx5Li4uIHRoZSBjYXJkIHdvcmtzIGluIHRoZSBDYW55
-b25sYW5kcyB1c2luZyB0aGUgbGF0ZXN0IHUtYm9vdA0KPiBmcm9tIGZ0cC5kZW54LmRlICh1LWJv
-b3QtbmFuZC5iaW4tMjAwOS4xMS4xKSwgdGhvdWdoIGludGVyZXN0aW5nbHkNCj4gZW5vdWdoLCB0
-aGlzIHUtYm9vdCBmYWlscyB0byBkZXRlY3QgYW4gWEdJIFoxMSB2aWRlbyBjYXJkIHRoYXQgSSBo
-YXZlLA0KPiB3aGljaGV2ZXIgc2xvdCBJIHB1dCBpdCBpbi4NCj4gDQo+IGluIGZhY3QsIHRoZSBr
-ZXJuZWwgaXRzZWxmIGRldGVjdHMgdGhlIGNhcmQgYW5kIHRpbWVzIG91dCB0cnlpbmcgdG8gZ2V0
-DQo+IGEgbGluay4gSXQgd29ya3Mgd2l0aCB3aGF0ZXZlciB1LWJvb3QgSSB1c2VkIHRvIGhhdmUg
-aW4gdGhlcmUgKGFuZCBubw0KPiBsb25nZXIgZG8gLi4uIG9vcHMgOi0pDQo+IA0KPiBDaGVlcnMs
-DQo+IEJlbi4NCj4gDQoNCg0KQmVuLA0KDQpUaGFua3MgZm9yIGJyaW5naW5nIHRoaXMgdG8gb3Vy
-IGF0dGVudGlvbi4gV2UnbGwgcmVzZWFyY2ggdGhpcyBpc3N1ZS4NCg0KUmVnYXJkcywNClByYXZp
-bg0KDQoNCg==
+Maxim Uvarov wrote on 2010-05-11 10:47 :
+> This patch is required in case if you are using new toolchains.
+
+I'm on Debian/stable (binutils 2.18, gcc 4.3.2), so I applied your patches=
+=20
+to the latest -git checkout:
+
+First, compilation fails with:
+
+cc1: warnings being treated as errors
+kexec/arch/ppc/kexec-ppc.c: In function =E2=80=98get_base_ranges=E2=80=99:
+kexec/arch/ppc/kexec-ppc.c:258: error: value computed is not used
+make: *** [kexec/arch/ppc/kexec-ppc.o] Error 1
+
+Somehow a "-" hyphen made it into one of the functions:
+
+> --- a/kexec/arch/ppc/kexec-ppc.c
+> +++ b/kexec/arch/ppc/kexec-ppc.c
+[...]
+>  =09=09=09if (local_memory_ranges >=3D max_memory_ranges) {
+> -=09=09=09=09fclose(file);
+> -=09=09=09=09break;
+> +=09=09=09=09if (realloc_memory_ranges() < 0){
+> +=09-=09=09=09=09fclose(file);
+
+
+Removing this, gets me further, until:
+
+
+purgatory/arch/ppc/crt.o: In function `__lshrdi3':
+(.text+0xf0): multiple definition of `__lshrdi3'
+purgatory/arch/ppc/misc.o:(.text+0x50): first defined here
+collect2: ld returned 1 exit status
+make: *** [purgatory/purgatory.ro] Error 1
+
+And has been defined in purgatory/arch/ppc/crt.S and
+=2E/purgatory/arch/ppc/misc.S. Removing it from e.g. crt.S
+makes it compile, I have not tested it yet, though :-)
+
+Thanks,
+Christian.
+
+PS: Where is -Werror defined? I could not find it anywhere in the kexec=20
+    source (execpt in arch/mips)...
+--=20
+make bzImage, not war
