@@ -1,34 +1,35 @@
 Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E86E7B7DD2
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:32:15 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4C3SrAP009627
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:28:53 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4C3PCTI1237218
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:25:12 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4C3WEa7032594
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:32:14 +1000
-Date: Wed, 12 May 2010 09:02:07 +0530
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 029BBB7DC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:33:23 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4C3XZ3r022607
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:33:35 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4C3QGgg1609822
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:26:16 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4C3XL45008396
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:33:22 +1000
+Date: Wed, 12 May 2010 09:03:15 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: [Patch 1/3] PPC64-HWBKPT: Disable interrupts for data breakpoint
-	exceptions
-Message-ID: <20100512033207.GB6384@in.ibm.com>
+Subject: [Patch 2/3] Allow arch-specific cleanup before breakpoint
+	unregistration
+Message-ID: <20100512033315.GC6384@in.ibm.com>
 References: <20100512022527.857904312@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Michael Neuling <mikey@neuling.org>,
 	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
 	Frederic Weisbecker <fweisbec@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	David Gibson <dwg@au1.ibm.com>, paulus@samba.org,
-	Alan Stern <stern@rowland.harvard.edu>,
+	Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
 	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,67 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Data address breakpoint exceptions are currently handled along with page-faults
-which require interrupts to remain in enabled state. Since exception handling
-for data breakpoints aren't pre-empt safe, we handle them separately.
+Certain architectures (such as PowerPC Book III S) have a need to cleanup
+data-structures before the breakpoint is unregistered. This patch introduces
+an arch-specific hook in release_bp_slot() along with a weak definition in
+the form of a stub funciton.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Acked-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   13 ++++++++++++-
- arch/powerpc/mm/fault.c              |    5 +++--
- 2 files changed, 15 insertions(+), 3 deletions(-)
+ kernel/hw_breakpoint.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Index: linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
+Index: linux-2.6.ppc64_test/kernel/hw_breakpoint.c
 ===================================================================
---- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/exceptions-64s.S
-+++ linux-2.6.ppc64_test/arch/powerpc/kernel/exceptions-64s.S
-@@ -735,8 +735,11 @@ _STATIC(do_hash_page)
- 	std	r3,_DAR(r1)
- 	std	r4,_DSISR(r1)
+--- linux-2.6.ppc64_test.orig/kernel/hw_breakpoint.c
++++ linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+@@ -203,6 +203,17 @@ static void toggle_bp_slot(struct perf_e
+ }
  
--	andis.	r0,r4,0xa450		/* weird error? */
-+	andis.	r0,r4,0xa410		/* weird error? */
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
-+	andis.  r0,r4,DSISR_DABRMATCH@h
-+	bne-    handle_dabr_fault
+ /*
++ * Function to perform processor-specific cleanup during unregistration
++ */
++__weak void arch_unregister_hw_breakpoint(struct perf_event *bp)
++{
++	/*
++	 * A weak stub function here for those archs that don't define
++	 * it inside arch/.../kernel/hw_breakpoint.c
++	 */
++}
 +
- BEGIN_FTR_SECTION
- 	andis.	r0,r4,0x0020		/* Is it a segment table fault? */
- 	bne-	do_ste_alloc		/* If so handle it */
-@@ -823,6 +826,14 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISER
- 	bl	.raw_local_irq_restore
- 	b	11f
++/*
+  * Contraints to check before allowing this new breakpoint counter:
+  *
+  *  == Non-pinned counter == (Considered as pinned for now)
+@@ -280,6 +291,7 @@ void release_bp_slot(struct perf_event *
+ {
+ 	mutex_lock(&nr_bp_mutex);
  
-+/* We have a data breakpoint exception - handle it */
-+handle_dabr_fault:
-+	ld      r4,_DAR(r1)
-+	ld      r5,_DSISR(r1)
-+	addi    r3,r1,STACK_FRAME_OVERHEAD
-+	bl      .do_dabr
-+	b       .ret_from_except_lite
-+
- /* Here we have a page fault that hash_page can't handle. */
- handle_page_fault:
- 	ENABLE_INTS
-Index: linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
-===================================================================
---- linux-2.6.ppc64_test.orig/arch/powerpc/mm/fault.c
-+++ linux-2.6.ppc64_test/arch/powerpc/mm/fault.c
-@@ -151,13 +151,14 @@ int __kprobes do_page_fault(struct pt_re
- 	if (!user_mode(regs) && (address >= TASK_SIZE))
- 		return SIGSEGV;
++	arch_unregister_hw_breakpoint(bp);
+ 	__release_bp_slot(bp);
  
--#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
-+#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE) || \
-+			     defined(CONFIG_PPC_BOOK3S_64))
-   	if (error_code & DSISR_DABRMATCH) {
- 		/* DABR match */
- 		do_dabr(regs, address, error_code);
- 		return 0;
- 	}
--#endif /* !(CONFIG_4xx || CONFIG_BOOKE)*/
-+#endif
- 
- 	if (in_atomic() || mm == NULL) {
- 		if (!user_mode(regs))
+ 	mutex_unlock(&nr_bp_mutex);
