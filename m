@@ -1,19 +1,27 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 500C3B7DD4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 May 2010 13:44:31 +1000 (EST)
-Date: Tue, 11 May 2010 20:44:24 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Maxim Uvarov <muvarov@gmail.com>
-Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
-In-Reply-To: <20100511174749.19309.44615.stgit@muvarov>
-Message-ID: <4BEA2375.7040802@nerdbynature.de>
-References: <20100511174749.19309.44615.stgit@muvarov>
+Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
+Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
+	by ozlabs.org (Postfix) with ESMTP id EC17DB6EFF
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 15:59:54 +1000 (EST)
+Message-ID: <4BEA44B8.7050409@oss.ntt.co.jp>
+Date: Wed, 12 May 2010 15:03:36 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
-	linuxppc-dev@lists.ozlabs.org
+To: Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [RFC][PATCH 11/12] KVM: introduce new API for getting/switching
+	dirty bitmaps
+References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
+	<20100504220821.d68bde57.takuya.yoshikawa@gmail.com>
+	<20100511034329.GB3458@amt.cnet> <4BE8F0F2.60706@oss.ntt.co.jp>
+	<20100511140712.GA7063@amt.cnet>
+In-Reply-To: <20100511140712.GA7063@amt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-arch@vger.kernel.org, arnd@arndb.de, kvm@vger.kernel.org,
+	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp, x86@kernel.org,
+	agraf@suse.de, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	mingo@redhat.com, paulus@samba.org, avi@redhat.com,
+	hpa@zytor.com, tglx@linutronix.de,
+	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Maxim Uvarov wrote on 2010-05-11 10:47 :
-> This patch is required in case if you are using new toolchains.
 
-I'm on Debian/stable (binutils 2.18, gcc 4.3.2), so I applied your patches=
-=20
-to the latest -git checkout:
+>>> One alternative would be:
+>>>
+>>> KVM_SWITCH_DIRTY_LOG passing the address of a bitmap. If the active
+>>> bitmap was clean, it returns 0, no switch performed. If the active
+>>> bitmap was dirty, the kernel switches to the new bitmap and returns 1.
+>>>
+>>> And the responsability of cleaning the new bitmap could also be left
+>>> for userspace.
+>>>
+>>
+>> That is a beautiful approach but we can do that only when we give up using
+>> GET api.
+>>
+>>
+>> I follow you and Avi's advice about that kind of maintenance policy!
+>> What do you think?
+>
+> If you introduce a switch ioctl that frees the bitmap vmalloc'ed by the
+> current set_memory_region (if its not freed already), after pointing the
+> memslot to the user supplied one, it should be fine?
+>
 
-First, compilation fails with:
+You mean switching from vmalloc'ed(not do_mmap'ed) one to user supplied one?
 
-cc1: warnings being treated as errors
-kexec/arch/ppc/kexec-ppc.c: In function =E2=80=98get_base_ranges=E2=80=99:
-kexec/arch/ppc/kexec-ppc.c:258: error: value computed is not used
-make: *** [kexec/arch/ppc/kexec-ppc.o] Error 1
+It may be possible but makes things really complicated in my view:
+until some point we use set_bit, and then use set_bit_user, etc.
 
-Somehow a "-" hyphen made it into one of the functions:
+IMO:
+  - # of slots is limited and the size of dirty_bitmap_old pointer is not problematic.
+  - Both user side and kernel side need not allocate buffers every time and once
+    paired buffers are registered, we will reuse the buffers until user side orders
+    to stop logging.
+  - We have a tiny advantage if we need not copy_from_user to get a bitmap address
+    for switch ioctl.
 
-> --- a/kexec/arch/ppc/kexec-ppc.c
-> +++ b/kexec/arch/ppc/kexec-ppc.c
-[...]
->  =09=09=09if (local_memory_ranges >=3D max_memory_ranges) {
-> -=09=09=09=09fclose(file);
-> -=09=09=09=09break;
-> +=09=09=09=09if (realloc_memory_ranges() < 0){
-> +=09-=09=09=09=09fclose(file);
-
-
-Removing this, gets me further, until:
-
-
-purgatory/arch/ppc/crt.o: In function `__lshrdi3':
-(.text+0xf0): multiple definition of `__lshrdi3'
-purgatory/arch/ppc/misc.o:(.text+0x50): first defined here
-collect2: ld returned 1 exit status
-make: *** [purgatory/purgatory.ro] Error 1
-
-And has been defined in purgatory/arch/ppc/crt.S and
-=2E/purgatory/arch/ppc/misc.S. Removing it from e.g. crt.S
-makes it compile, I have not tested it yet, though :-)
-
-Thanks,
-Christian.
-
-PS: Where is -Werror defined? I could not find it anywhere in the kexec=20
-    source (execpt in arch/mips)...
---=20
-make bzImage, not war
+  => So I think having two __user bitmaps is not a bad thing.
