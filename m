@@ -1,19 +1,17 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 1CAD0B7DDD
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 12 May 2010 17:22:28 +1000 (EST)
-Message-ID: <4BEA5726.50806@nerdbynature.de>
-Date: Wed, 12 May 2010 00:22:14 -0700
-From: Christian Kujau <lists@nerdbynature.de>
-MIME-Version: 1.0
-To: Maxim Uvarov <muvarov@gmail.com>
-Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
-References: <20100511174749.19309.44615.stgit@muvarov>
-In-Reply-To: <20100511174749.19309.44615.stgit@muvarov>
-Content-Type: text/plain; charset=UTF-8
-Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
-	linuxppc-dev@lists.ozlabs.org, horms@verge.net.au
+Return-Path: <khali@linux-fr.org>
+Date: Wed, 12 May 2010 09:27:15 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jeff Angielski <jeff@theptrgroup.com>
+Subject: Re: [PATCH] hwmon: (tmp421) Add nfactor support.
+Message-ID: <20100512092715.12639dcf@hyperion.delvare>
+In-Reply-To: <4BE9B145.7000702@theptrgroup.com>
+References: <4BE81B7B.7010804@theptrgroup.com>
+	<20100511190327.GA2031@andre-laptop>
+	<4BE9B145.7000702@theptrgroup.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: lm-sensors <lm-sensors@lm-sensors.org>, Linuxppc-dev@lists.ozlabs.org,
+	Andre Prendel <andre.prendel@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 May 2010 at 21:47, Maxim Uvarov wrote:
-> This patch is required in case if you are using new toolchains.
+Hi Jeff,
 
-After kexec-tools compiled, I actually tried it:
+On Tue, 11 May 2010 15:34:29 -0400, Jeff Angielski wrote:
+> On 05/11/2010 03:03 PM, Andre Prendel wrote:
+> > I'de prefer implementing the sysfs access methods in a consistent way (see other functions). That means adding the nfactor register to the tmp421_data structure and using tmp421_update_device() to update the structure.
+> 
+> I did this on purpose since the nfactor typically only changes once at 
+> runtime when you program it for your sensor.  It seemed like a waste of 
+> processing power and i2c bandwidth to read a "pseudo static" register 
+> over and over again.
+> 
+> It can easily be changed if that's what will help the community the best.
 
-# kexec -l /boot/2.6/zImage --command-line="root=/dev/hda6 ro"
-# echo $?
-0
-# kexec -e
-Starting new kernel
-Bye!
+I get your point and it makes sense. However, we also have to ensure
+that no regular user can saturate the I2C link by repeatedly polling
+for the same register value. So, any sysfs attribute which triggers an
+immediate I2C transaction shouldn't be accessible by regular users
+(i.e. change the mode from 0644 to 0640).
 
-....but then the system just hung there, no more messages, I had to
-powercycle it.
+An alternative is to slit the cache into short-lived (~ 1 or 2 seconds)
+and long-lived (1 to 5 minutes.) A number of drivers do this.
 
-The --debug options is listed for "dol-ppc" systems (I have a PowerBook
-G4, not sure if this falls into this category), when I use it the help
-screen of kexec is displayed again and at the bottom:
-
-   Cannot load /boot/2.6/zImage
-
-
-This is with 2.6.34-rc7 (today's git):
-
-# file /boot/2.6/zImage
-/boot/2.6/zImage: ELF 32-bit MSB executable, PowerPC or cisco 4500,
-version 1 (SYSV), statically linked, with unknown capability 0x41000000
-= 0x11676e75, with unknown capability 0x10000 = 0x90402, not stripped
-
-
-.config and dmesg: http://nerdbynature.de/bits/2.6.34-rc7/kexec/
-
-Christian.
 -- 
-make bzImage, not war
+Jean Delvare
