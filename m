@@ -1,36 +1,24 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9E223B7DE4
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:34:42 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id o4C3YcHc011382
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 09:04:38 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4C3YbcS3338494
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 09:04:37 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4C3YbGL008652
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 13:34:38 +1000
-Date: Wed, 12 May 2010 09:04:34 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100512033434.GA6319@in.ibm.com>
-References: <20100414033555.746326035@pr> <20100414034827.GC6571@in.ibm.com>
-	<20100503062330.GB19365@drongo> <20100504203302.GA3894@in.ibm.com>
+Return-Path: <pbathija@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D9DC3B7D81
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 12 May 2010 13:41:06 +1000 (EST)
+Subject: RE: 440SPe/Katmai PCIe problems
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100504203302.GA3894@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain;
+	charset="utf-8"
+Date: Tue, 11 May 2010 20:30:38 -0700
+Message-ID: <9D1E2BDCB5C57B46B56E6D80843439EB0A5EB9B3@SDCEXCHANGE01.ad.amcc.com>
+In-Reply-To: <1273633366.21352.100.camel@pasglop>
+References: <1273632013.21352.88.camel@pasglop>
+	<1273633366.21352.100.camel@pasglop>
+From: "Pravin Bathija" <pbathija@amcc.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Stefan Roese" <sr@denx.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 05, 2010 at 02:03:03AM +0530, K.Prasad wrote:
-> On Mon, May 03, 2010 at 04:23:30PM +1000, Paul Mackerras wrote:
-> > On Wed, Apr 14, 2010 at 09:18:27AM +0530, K.Prasad wrote:
-> > 
-[snipped]
-> 
-> It has been pointed out to me before (Roland's mail Ref:linuxppc-dev
-> message-id: 20100119100335.3EB621DE@magilla.sf.frob.com) that there will
-> be too many corner cases that will be difficult to foresee, however your
-> above list appears to be exhaustive. While the alternatives to this being
-> a fallback to one-shot breakpoints (thereby leading to confusing
-> hw-breakpoint interface semantics), this is an attempt to generate
-> continuous and 'trigger-after-execute' (for non-ptrace requests)
-> breakpoint exceptions. I believe that, with the addressal of concerns
-> cited above, the resultant patchset would be one that achieves the
-> stated design goals with no loss to existing functionality.
-> 
-
-Hi Paul,
-
-> I intend to send out another version of this patchset with fixes as
-> described in my replies above (unless I hear objections to it :-)).
-> 
-
-Meanwhile, a little sickness had kept me away from working on this
-patchset. I have now posted a new version of the same here () which
-contains changes as described above.
-
-A few more changes to the patch is impending post merger
-of Frederic's patches (which are now in -tip) into mainline (ref: commit
-73266fc1df2f94cf72b3beba3eee3b88ed0b0664 to
-777d0411cd1e384115985dac5ccd42031e3eee2b);
-mainly due to the new ability for a per-task breakpoint to request
-kernel-space breakpoints (the notion of kernel- vs user-bp would also
-become obsolete, it is better to call them per-cpu vs per-task
-breakpoints).
-
-Also, I find that possibility of a kernel-thread specific breakpoint
-(which can migrate across CPUs) has not been thought and implemented well
-in this patch (will be much easier after merger of Frederic's patch). I
-would prefer to have atleast some version of the patch included in
-mainline before bringing in support for the same.
-
-Thanks,
-K.Prasad
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJlbmphbWluIEhlcnJlbnNj
+aG1pZHQgW21haWx0bzpiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+IFNlbnQ6IFR1ZXNkYXks
+IE1heSAxMSwgMjAxMCA4OjAzIFBNDQo+IFRvOiBTdGVmYW4gUm9lc2UNCj4gQ2M6IGxpbnV4cHBj
+LWRldjsgUHJhdmluIEJhdGhpamENCj4gU3ViamVjdDogUmU6IDQ0MFNQZS9LYXRtYWkgUENJZSBw
+cm9ibGVtcw0KPiANCj4gT24gV2VkLCAyMDEwLTA1LTEyIGF0IDEyOjQwICsxMDAwLCBCZW5qYW1p
+biBIZXJyZW5zY2htaWR0IHdyb3RlOg0KPiA+IEhpIFN0ZWZhbiAhDQo+ID4NCj4gPiAoT3Igc29t
+ZWJvZHkgZnJvbSBBTUNDKQ0KPiA+DQo+ID4gSSBub3RpY2VkIHdlIHN0aWxsIGhhdmUgdGhpcyBv
+bGQgcHJvYmxlbSBvbiBQQ0llIHdoZXJlIHNvbWUgY2FyZHMNCj4gZG9uJ3QNCj4gPiBzZWVtIHRv
+IHdvcmsuIFRoZSBsaW5rIHRyYWlucyBidXQgdGhleSBkb24ndCByZXNwb25kIG9uIGNvbmZpZyBz
+cGFjZS4NCj4gPiBUaGlzIGlzIHRoZSBjYXNlIGZvciBleGFtcGxlIG9mIHRoYXQgU3VuaXggcXVh
+ZCBVU0IgY2FyZC4gSXQgc2VlbXMgdG8NCj4gYmUNCj4gPiByZWxhdGVkIHRvIHRoZSBraW5kIG9m
+IFRJIFBDSWUgPC0+IFBDSSBicmlkZ2Ugb24gdGhlc2UgdGhvdWdoLg0KPiA+DQo+ID4gSGF2ZSBh
+bnlib2R5IHRyYWNrZWQgZG93biB0aGUgcm9vdCBjYXVzZSBvZiB0aGUgcHJvYmxlbSA/IFNvbWUg
+c2F5DQo+IHRoYXQNCj4gPiBpdCBjb3VsZCBiZSB0aGF0IHRoZSBicmlkZ2UgZG9lc24ndCBjb3Bl
+IHdpdGggdGhlIGRvdWJsZSByZXNldCAodWJvb3QNCj4gPiB0aGVuIGtlcm5lbCkuIFdvdWxkIGl0
+IGJlIHBvc3NpYmxlIHRvIHRlbGwgdWJvb3QgdG8gYXZvaWQgdG91Y2hpbmcNCj4gdGhlDQo+ID4g
+UENJZSBpbnRlcmZhY2UgY29tcGxldGVseSBzbyB0aGUga2VybmVsIGlzIHRoZSBmaXJzdCBvbmUg
+dG8gZ2V0IGluID8NCj4gDQo+IEFjdHVhbGx5Li4uIHRoZSBjYXJkIHdvcmtzIGluIHRoZSBDYW55
+b25sYW5kcyB1c2luZyB0aGUgbGF0ZXN0IHUtYm9vdA0KPiBmcm9tIGZ0cC5kZW54LmRlICh1LWJv
+b3QtbmFuZC5iaW4tMjAwOS4xMS4xKSwgdGhvdWdoIGludGVyZXN0aW5nbHkNCj4gZW5vdWdoLCB0
+aGlzIHUtYm9vdCBmYWlscyB0byBkZXRlY3QgYW4gWEdJIFoxMSB2aWRlbyBjYXJkIHRoYXQgSSBo
+YXZlLA0KPiB3aGljaGV2ZXIgc2xvdCBJIHB1dCBpdCBpbi4NCj4gDQo+IGluIGZhY3QsIHRoZSBr
+ZXJuZWwgaXRzZWxmIGRldGVjdHMgdGhlIGNhcmQgYW5kIHRpbWVzIG91dCB0cnlpbmcgdG8gZ2V0
+DQo+IGEgbGluay4gSXQgd29ya3Mgd2l0aCB3aGF0ZXZlciB1LWJvb3QgSSB1c2VkIHRvIGhhdmUg
+aW4gdGhlcmUgKGFuZCBubw0KPiBsb25nZXIgZG8gLi4uIG9vcHMgOi0pDQo+IA0KPiBDaGVlcnMs
+DQo+IEJlbi4NCj4gDQoNCg0KQmVuLA0KDQpUaGFua3MgZm9yIGJyaW5naW5nIHRoaXMgdG8gb3Vy
+IGF0dGVudGlvbi4gV2UnbGwgcmVzZWFyY2ggdGhpcyBpc3N1ZS4NCg0KUmVnYXJkcywNClByYXZp
+bg0KDQoNCg==
