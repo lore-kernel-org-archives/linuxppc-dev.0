@@ -1,19 +1,17 @@
 Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
 Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id EC17DB6EFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 15:59:54 +1000 (EST)
-Message-ID: <4BEA44B8.7050409@oss.ntt.co.jp>
-Date: Wed, 12 May 2010 15:03:36 +0900
+	by ozlabs.org (Postfix) with ESMTP id 348BCB7DBF
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 May 2010 16:24:02 +1000 (EST)
+Message-ID: <4BEA4A62.20100@oss.ntt.co.jp>
+Date: Wed, 12 May 2010 15:27:46 +0900
 From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 MIME-Version: 1.0
 To: Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [RFC][PATCH 11/12] KVM: introduce new API for getting/switching
-	dirty bitmaps
+Subject: Re: [RFC][PATCH RFC 10/12] KVM: move dirty bitmaps to user space
 References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<20100504220821.d68bde57.takuya.yoshikawa@gmail.com>
-	<20100511034329.GB3458@amt.cnet> <4BE8F0F2.60706@oss.ntt.co.jp>
-	<20100511140712.GA7063@amt.cnet>
-In-Reply-To: <20100511140712.GA7063@amt.cnet>
+	<20100504220702.f8ba6ccc.takuya.yoshikawa@gmail.com>
+	<20100511032827.GA3458@amt.cnet>
+In-Reply-To: <20100511032827.GA3458@amt.cnet>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linux-arch@vger.kernel.org, arnd@arndb.de, kvm@vger.kernel.org,
 	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp, x86@kernel.org,
@@ -32,39 +30,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
->>> One alternative would be:
->>>
->>> KVM_SWITCH_DIRTY_LOG passing the address of a bitmap. If the active
->>> bitmap was clean, it returns 0, no switch performed. If the active
->>> bitmap was dirty, the kernel switches to the new bitmap and returns 1.
->>>
->>> And the responsability of cleaning the new bitmap could also be left
->>> for userspace.
->>>
+>>   	r = 0;
+>> @@ -1195,11 +1232,16 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+>>   	gfn = unalias_gfn(kvm, gfn);
+>>   	memslot = gfn_to_memslot_unaliased(kvm, gfn);
+>>   	if (memslot&&  memslot->dirty_bitmap) {
+>> -		unsigned long rel_gfn = gfn - memslot->base_gfn;
+>> +		int nr = generic_le_bit_offset(gfn - memslot->base_gfn);
 >>
->> That is a beautiful approach but we can do that only when we give up using
->> GET api.
->>
->>
->> I follow you and Avi's advice about that kind of maintenance policy!
->> What do you think?
+>> -		generic___set_le_bit(rel_gfn, memslot->dirty_bitmap);
+>> +		if (kvm_set_bit_user(nr, memslot->dirty_bitmap))
+>> +			goto out_fault;
 >
-> If you introduce a switch ioctl that frees the bitmap vmalloc'ed by the
-> current set_memory_region (if its not freed already), after pointing the
-> memslot to the user supplied one, it should be fine?
+> mark_page_dirty is called with the mmu_lock spinlock held in set_spte.
+> Must find a way to move it outside of the spinlock section.
 >
 
-You mean switching from vmalloc'ed(not do_mmap'ed) one to user supplied one?
+Oh, it's a serious problem. I have to consider it.
 
-It may be possible but makes things really complicated in my view:
-until some point we use set_bit, and then use set_bit_user, etc.
 
-IMO:
-  - # of slots is limited and the size of dirty_bitmap_old pointer is not problematic.
-  - Both user side and kernel side need not allocate buffers every time and once
-    paired buffers are registered, we will reuse the buffers until user side orders
-    to stop logging.
-  - We have a tiny advantage if we need not copy_from_user to get a bitmap address
-    for switch ioctl.
-
-  => So I think having two __user bitmaps is not a bad thing.
+Thanks,
+   Takuya
