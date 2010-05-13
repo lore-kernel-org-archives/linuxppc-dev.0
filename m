@@ -1,39 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: Config Items appearing twice in same Kconfig file?
+Subject: Re: [PATCH] [POWEPC] crashdump: do not fail on null pointer
+	dereferencing
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Christoph Egger <siccegge@cs.fau.de>
-In-Reply-To: <20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
-References: <20100512143445.GA32559@faui48a.informatik.uni-erlangen.de>
-	<20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
+To: Vitaly Wool <vitalywool@gmail.com>
+In-Reply-To: <AANLkTinTprEzXRIFeJfu6TEvPqj24UBjrrZN3MtZD6LH@mail.gmail.com>
+References: <20100511154108.11546.12066.stgit@muvarov>
+	<AANLkTinTprEzXRIFeJfu6TEvPqj24UBjrrZN3MtZD6LH@mail.gmail.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-h/kN6/EO2DvGfQAWWQqy"
-Date: Thu, 13 May 2010 11:08:49 +1000
-Message-ID: <1273712929.25436.5.camel@concordia>
+	boundary="=-liqv3gQEbUwpAcn7Zk0Z"
+Date: Thu, 13 May 2010 11:25:02 +1000
+Message-ID: <1273713902.25436.6.camel@concordia>
 Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, vamos@i4.informatik.uni-erlangen.de,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, Timo Teras <timo.teras@iki.fi>,
-	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Lennox Wu <lennox.wu@gmail.com>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	"Pekka Savola \(ipv6\)" <pekkas@netcore.fi>, x86@kernel.org,
-	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
-	Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Matt Turner <mattst88@gmail.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, Mike Frysinger <vapier@gentoo.org>,
-	Arnd Bergmann <arnd@arndb.de>, Graf Yang <graf.yang@analog.com>,
-	Mikael Starvik <starvik@axis.com>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Richard Henderson <rth@twiddle.net>, Karsten Keil <isdn@linux-pingi.de>,
-	Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
-	linuxppc-dev@ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Patrick McHardy <kaber@trash.net>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linux-alpha@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Cc: Maxim Uvarov <muvarov@gmail.com>, uvarov@dev.rtsoft.ru,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -45,48 +25,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-h/kN6/EO2DvGfQAWWQqy
+--=-liqv3gQEbUwpAcn7Zk0Z
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2010-05-12 at 16:40 +0200, Christoph Egger wrote:
-> Just noticed it might have been worth adding the output so everyone
-> out there doesn't ned to grep through his tree for reference:
+On Tue, 2010-05-11 at 18:02 +0200, Vitaly Wool wrote:
+> Hi,
 >=20
-> % grep  ^config **/Kconfig* | sort | uniq -dc                            =
-  =20
+> > diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> > index 6f4613d..341d8af 100644
+> > --- a/arch/powerpc/kernel/crash.c
+> > +++ b/arch/powerpc/kernel/crash.c
+> > @@ -375,6 +375,9 @@ void default_machine_crash_shutdown(struct pt_regs =
+*regs)
+> >        for_each_irq(i) {
+> >                struct irq_desc *desc =3D irq_to_desc(i);
+> >
+> > +               if (!desc || !desc->chip || !desc->chip->eoi)
+> > +                       continue;
+> > +
 
-That didn't actually work for me?
-
->       2 arch/powerpc/Kconfig:config KERNEL_START
->       2 arch/powerpc/Kconfig:config PAGE_OFFSET
->       2 arch/powerpc/Kconfig:config PHYSICAL_START
->       2 arch/powerpc/Kconfig:config RELOCATABLE
-
-The duplication of these is caused by the second definitions being
-inside an "if PPC64" block.
-
-For PAGE_OFFSET and KERNEL_START we want the 2nd definitions, the
-default value is different between 32 & 64 bit.
-
-For RELOCATABLE it's a little weird, but we want the 2nd definition
-because the depends condition is different between 32 & 64bit - though
-they could probably be merged.
-
-I don't really see why we need two versions of PHYSICAL_START.
+Actually almost certain that desc will be NULL. When CONFIG_SPARSE_IRQ=3Dy
+(the default), irq_desc's are allocated lazily.
 
 cheers
 
---=-h/kN6/EO2DvGfQAWWQqy
+--=-liqv3gQEbUwpAcn7Zk0Z
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkvrUR0ACgkQdSjSd0sB4dJ7HwCgmCXXhb0zeKo4q5rwizaQsc1u
-qnUAoKwiE9Qk0disa6OQAd42Mv7OowT2
-=UXV0
+iEYEABECAAYFAkvrVO4ACgkQdSjSd0sB4dLQDgCeKcryuuD2j9JibByyUj9TdNCh
+nQsAoMmHIRfJ7o1c9oLGsbEKEvPVFUyO
+=q29b
 -----END PGP SIGNATURE-----
 
---=-h/kN6/EO2DvGfQAWWQqy--
+--=-liqv3gQEbUwpAcn7Zk0Z--
