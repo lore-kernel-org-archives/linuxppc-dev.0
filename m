@@ -1,17 +1,26 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 648F2B7E2B
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 4307CB7E26
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 May 2010 01:25:26 +1000 (EST)
-Date: Fri, 14 May 2010 00:25:19 +0900
-From: Simon Horman <horms@verge.net.au>
-To: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
-Subject: [patch] ppc: Fix gamecube build
-Message-ID: <20100513152519.GA4143@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Maxim Uvarov <muvarov@gmail.com>,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+	Fri, 14 May 2010 02:12:33 +1000 (EST)
+Received: from hrndva-omtalb.mail.rr.com ([10.128.143.52])
+	by hrndva-qmta01.mail.rr.com with ESMTP
+	id <20100513160731481.IVFN29767@hrndva-qmta01.mail.rr.com>
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 May 2010 16:07:31 +0000
+Subject: Re: ftrace syscalls, PowerPC: Fixes and PowerPC raw syscall
+	tracepoint implementation
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ian Munsie <imunsie@au1.ibm.com>
+In-Reply-To: <1273736594-19320-1-git-send-email-imunsie@au1.ibm.com>
+References: <1273736594-19320-1-git-send-email-imunsie@au1.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Thu, 13 May 2010 12:06:11 -0400
+Message-ID: <1273766771.27703.1069.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,88 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes the kexec-build on ppc32 when
-the --game-cube option is supplied to ./configure.
-It seems to have bit-rotted a little.
+Frederic,
 
-Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: Maxim Uvarov <muvarov@gmail.com>
-Signed-off-by: Simon Horman <horms@verge.net.au>
+I'm fine with these patches, but since you mainly did the syscall work,
+I'll let you take them.
 
-Index: kexec-tools/kexec/arch/ppc/kexec-elf-ppc.c
-===================================================================
---- kexec-tools.orig/kexec/arch/ppc/kexec-elf-ppc.c	2010-05-14 00:18:25.000000000 +0900
-+++ kexec-tools/kexec/arch/ppc/kexec-elf-ppc.c	2010-05-14 00:20:58.000000000 +0900
-@@ -162,17 +162,9 @@ int elf_ppc_load(int argc, char **argv,
- 	unsigned long max_addr, hole_addr;
- 	struct mem_phdr *phdr;
- 	size_t size;
--	unsigned long long *rsvmap_ptr;
--	struct bootblock *bb_ptr;
--	unsigned int nr_segments;
--	unsigned long my_kernel, my_dt_offset;
--	unsigned long my_stack, my_backup_start;
- #ifdef CONFIG_PPC64
- 	unsigned long toc_addr;
- #endif
--	unsigned int slave_code[256 / sizeof(unsigned int)], master_entry;
--	unsigned char *seg_buf = NULL;
--	off_t seg_size = 0;
- #ifdef WITH_GAMECUBE
- 	int target_is_gamecube = 1;
- 	char *arg_buf;
-@@ -183,13 +175,21 @@ int elf_ppc_load(int argc, char **argv,
- 	unsigned char *setup_start;
- 	uint32_t setup_size;
- #else
-+	unsigned long long *rsvmap_ptr;
-+	struct bootblock *bb_ptr;
-+	unsigned int nr_segments;
-+	unsigned long my_kernel, my_dt_offset;
-+	unsigned long my_stack, my_backup_start;
-+	unsigned int slave_code[256 / sizeof(unsigned int)], master_entry;
-+	unsigned char *seg_buf = NULL;
-+	off_t seg_size = 0;
- 	int target_is_gamecube = 0;
- 	unsigned int addr;
- 	unsigned long dtb_addr;
-+#endif
- #define FIXUP_ENTRYS	(20)
- 	char *fixup_nodes[FIXUP_ENTRYS + 1];
- 	int cur_fixup = 0;
--#endif
- 	int opt;
- 
- 	command_line = NULL;
-Index: kexec-tools/kexec/arch/ppc/kexec-ppc.c
-===================================================================
---- kexec-tools.orig/kexec/arch/ppc/kexec-ppc.c	2010-05-14 00:18:25.000000000 +0900
-+++ kexec-tools/kexec/arch/ppc/kexec-ppc.c	2010-05-14 00:20:58.000000000 +0900
-@@ -26,6 +26,11 @@
- 
- #include "config.h"
- 
-+uint64_t rmo_top;
-+unsigned long long crash_base, crash_size;
-+unsigned int rtas_base, rtas_size;
-+int max_memory_ranges;
-+
- #ifdef WITH_GAMECUBE
- #define MAX_MEMORY_RANGES  64
- static struct memory_range memory_range[MAX_MEMORY_RANGES];
-@@ -46,15 +51,11 @@ static int get_memory_ranges_gc(struct m
- }
- #else
- static int use_new_dtb;
--int max_memory_ranges;
- static int nr_memory_ranges, nr_exclude_ranges;
- static struct memory_range *exclude_range;
- static struct memory_range *memory_range;
- static struct memory_range *base_memory_range;
- static uint64_t memory_max;
--uint64_t rmo_top;
--unsigned long long crash_base, crash_size;
--unsigned int rtas_base, rtas_size;
- 
- /*
-  * Count the memory nodes under /proc/device-tree and populate the
+The patches that touch the PowerPC code needs an acked-by from Ben or
+Paul.
+
+-- Steve
+
+
+On Thu, 2010-05-13 at 17:43 +1000, Ian Munsie wrote:
+> This patch series implements raw system call tracepoints on PowerPC that can be
+> used with ftrace and perf. Some problems with the generic ftrace syscall
+> tracepoint code have also been addressed.
+> 
+> The patches are based upon Ben's powerpc/next tree merged with tip/tracing/core
+> 
+> Patch #1 removes all ftrace syscall events that fail to map the system call
+> name from the system call metadata with the system call's number, preventing
+> the events which will not work from showing up in perf list and removing them
+> from /sys/kernel/debug/tracing/events/syscalls.
+> 
+> Patches #2 and #3 allow for archs with unusual system call tables (#2) or
+> unusual symbol names (#3) to override the appropriate functions so that they
+> can still work with ftrace syscalls.
+> 
+> Patch #4 implements the actual raw system call tracepoints that ftrace syscalls
+> builds upon, allowing all of the system calls to be used with the raw_syscalls
+> events category and most to be used with the syscalls category.
+> 
+> 
+> Not all the raw_syscalls are currently mapped to ftrace syscalls - the syscalls
+> defined in /arch/powerpc/include/asm/syscalls.h do not use the SYSCALL_DEFINE
+> class of macros and as such have no meta data, likewise some of the ppc_*
+> syscalls have assembly wrappers. These are on their way, but I wanted to put
+> the work I have done so far out first.
+> 
+> Some of those syscalls have different return types than the __SYSCALL_DEFINE
+> macro uses (unsigned long, int, time_t) and some have different prefixes (ppc,
+> ppc64) - I didn't particularly want to change them straight over without asking
+> the list first, and I certainly don't want to change the return types. I see
+> that Jason Baron ran into similar issues, but his "add compat syscall support"
+> patches have yet to be merged, and do not tackle the differing return types.
+> 
