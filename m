@@ -1,24 +1,22 @@
-Return-Path: <muvarov@gmail.com>
-Received: from mail-ww0-f51.google.com (mail-ww0-f51.google.com [74.125.82.51])
-	by ozlabs.org (Postfix) with ESMTP id EF8D0B7DF7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 May 2010 21:50:16 +1000 (EST)
-Received: by wwb24 with SMTP id 24so736794wwb.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 May 2010 04:50:13 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.01.1005130417590.3356@bogon.housecafe.de>
-References: <20100511174749.19309.44615.stgit@muvarov>
-	<4BEA5726.50806@nerdbynature.de>
-	<alpine.DEB.2.01.1005130417590.3356@bogon.housecafe.de>
-Date: Thu, 13 May 2010 15:50:13 +0400
-Message-ID: <AANLkTik1aRVvqj871qOmGctuP_WjvSFwhU1w4gpJoqp1@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
-From: Maxim Uvarov <muvarov@gmail.com>
-To: Christian Kujau <lists@nerdbynature.de>
-Content-Type: multipart/alternative; boundary=0016e6d99b7883ef570486785cc1
-Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
-	linuxppc-dev@lists.ozlabs.org, horms@verge.net.au
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/4] trace, powerpc: Implement raw syscall tracepoints
+	on PowerPC
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Ian Munsie <imunsie@au1.ibm.com>
+In-Reply-To: <1273736594-19320-5-git-send-email-imunsie@au1.ibm.com>
+References: <1273736594-19320-1-git-send-email-imunsie@au1.ibm.com>
+	<1273736594-19320-5-git-send-email-imunsie@au1.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-HpTfXCVmlRcZ5i46g9PE"
+Date: Thu, 13 May 2010 22:09:31 +1000
+Message-ID: <1273752571.8067.12.camel@concordia>
+Mime-Version: 1.0
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,70 +26,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016e6d99b7883ef570486785cc1
-Content-Type: text/plain; charset=ISO-8859-1
 
-2010/5/13 Christian Kujau <lists@nerdbynature.de>
-
-> On Wed, 12 May 2010 at 00:22, Christian Kujau wrote:
-> > # kexec -e
-> > Starting new kernel
-> > Bye!
-> >
-> > ....but then the system just hung there, no more messages, I had to
-> > powercycle it.
->
-> Are there any debug flags (or kernel options?) I can set, to find out why
-> it hangs here? Or does kexec not understand zImages?
->
->
-zImage should not work with kexec. Only vmlinux.
-
-
-> Thanks,
-> Christian.
-> --
-> BOFH excuse #373:
->
-> Suspicious pointer corrupted virtual machine
->
-
-
-
--- 
-Best regards,
-Maxim Uvarov
-
---0016e6d99b7883ef570486785cc1
-Content-Type: text/html; charset=ISO-8859-1
+--=-HpTfXCVmlRcZ5i46g9PE
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-<br><br><div class=3D"gmail_quote">2010/5/13 Christian Kujau <span dir=3D"l=
-tr">&lt;<a href=3D"mailto:lists@nerdbynature.de">lists@nerdbynature.de</a>&=
-gt;</span><br><blockquote class=3D"gmail_quote" style=3D"border-left: 1px s=
-olid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-<div class=3D"im">On Wed, 12 May 2010 at 00:22, Christian Kujau wrote:<br>
-&gt; # kexec -e<br>
-&gt; Starting new kernel<br>
-&gt; Bye!<br>
-&gt;<br>
-&gt; ....but then the system just hung there, no more messages, I had to<br=
->
-&gt; powercycle it.<br>
-<br>
-</div>Are there any debug flags (or kernel options?) I can set, to find out=
- why<br>
-it hangs here? Or does kexec not understand zImages?<br>
-<br></blockquote><div><br>zImage should not work with kexec. Only vmlinux.<=
-br>=A0<br></div><blockquote class=3D"gmail_quote" style=3D"border-left: 1px=
- solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Thanks,<br>
-Christian.<br>
-<font color=3D"#888888">--<br>
-BOFH excuse #373:<br>
-<br>
-Suspicious pointer corrupted virtual machine<br>
-</font></blockquote></div><br><br clear=3D"all"><br>-- <br>Best regards,<br=
->Maxim Uvarov<br>
+On Thu, 2010-05-13 at 17:43 +1000, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au.ibm.com>
 
---0016e6d99b7883ef570486785cc1--
+Hi Ian,
+
+Just a few comments ..
+
+> This patch implements the raw syscall tracepoints on PowerPC required
+> for ftrace syscalls.
+
+OK. It also adds a bunch of code under CONFIG_FTRACE_*, so does it
+implement raw syscall tracepoints _and_ hook them up to ftrace?
+
+> To minimise reworking existing code, I slightly re-ordered the thread
+> info flags such that the new TIF_SYSCALL_TRACEPOINT bit would still fit
+> within the 16 bits of the andi instruction's UI field.
+
+Which andi instruction? That could use a bit more explaining.
+
+> In the case of 64bit PowerPC, arch_syscall_addr and
+> arch_syscall_match_sym_name are overridden to allow ftrace syscalls to
+> work given the unusual system call table structure and symbol names that
+> start with a period.
+
+Not unusual, just different (ie. better) than x86 ;)
+
+> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/as=
+m/syscall.h
+> index 23913e9..4098105 100644
+> --- a/arch/powerpc/include/asm/syscall.h
+> +++ b/arch/powerpc/include/asm/syscall.h
+> @@ -15,6 +15,15 @@
+> =20
+>  #include <linux/sched.h>
+> =20
+> +/* ftrace syscalls requires exporting the sys_call_table */
+> +#ifdef CONFIG_FTRACE_SYSCALLS
+> +#ifdef CONFIG_PPC64
+> +extern const unsigned long long *sys_call_table;
+
+I'm not sure why this is ULL ? UL and ULL are both 64 bits (on 64bit),
+and it would save you this ifdef block and a cast in
+arch_syscall_addr().
+
+> +#else /* !CONFIG_PPC64 */
+> +extern const unsigned long *sys_call_table;
+> +#endif /* CONFIG_PPC64 */
+> +#endif /* CONFIG_FTRACE_SYSCALLS */
+> +
+>  static inline long syscall_get_nr(struct task_struct *task,
+>  				  struct pt_regs *regs)
+>  {
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/includ=
+e/asm/thread_info.h
+> index aa9d383..e7a8af2 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -110,7 +110,8 @@ static inline struct thread_info *current_thread_info=
+(void)
+>  #define TIF_NOERROR		12	/* Force successful syscall return */
+>  #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+>  #define TIF_FREEZE		14	/* Freezing for suspend */
+> -#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+> +#define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation =
+*/
+> +#define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
+
+I don't grok why this is good or safe, not that it isn't but please tell
+me why it is :)
+
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 8773263..9c404bb 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -98,6 +98,7 @@ obj64-$(CONFIG_AUDIT)		+=3D compat_audit.o
+> =20
+>  obj-$(CONFIG_DYNAMIC_FTRACE)	+=3D ftrace.o
+>  obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+=3D ftrace.o
+> +obj-$(CONFIG_FTRACE_SYSCALLS)	+=3D ftrace.o
+
+You're following the existing pattern there, but it's a little odd.
+Seems like those three config options should really all depend on
+something common and that should trigger the build of ftrace.c
+
+> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+> index ce1f3e4..b34171e 100644
+> --- a/arch/powerpc/kernel/ftrace.c
+> +++ b/arch/powerpc/kernel/ftrace.c
+> @@ -22,6 +22,7 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/code-patching.h>
+>  #include <asm/ftrace.h>
+> +#include <asm/syscall.h>
+> =20
+>=20
+>  #ifdef CONFIG_DYNAMIC_FTRACE
+> @@ -600,3 +601,15 @@ void prepare_ftrace_return(unsigned long *parent, un=
+signed long self_addr)
+>  	}
+>  }
+>  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> +
+> +#if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
+
+Does 32-bit just work using the existing routines? Or do we not support
+it on 32-bit (though that's not what your Kconfig change said).
+
+> +unsigned long __init arch_syscall_addr(int nr)
+> +{
+> +	return (unsigned long)sys_call_table[nr*2];
+
+That's the cast I was referring to.
+
+> +}
+> +
+> +inline bool arch_syscall_match_sym_name(const char *sym, const char *nam=
+e)
+> +{
+> +	return (!strcmp(sym + 4, name + 3));
+
+So the +4 is to skip ".sys" and the +3 is to skip "sys" ? That could use
+a comment IMHO :)
+
+
+cheers
+
+
+
+--=-HpTfXCVmlRcZ5i46g9PE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkvr6/sACgkQdSjSd0sB4dI+HwCgwKGOD6K19HGvhpV5cnyWDwtU
+UPUAoIpXr+Wjp9g18DHSMtPkoYTAfwpg
+=OxIB
+-----END PGP SIGNATURE-----
+
+--=-HpTfXCVmlRcZ5i46g9PE--
