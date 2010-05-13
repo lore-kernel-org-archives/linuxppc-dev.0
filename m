@@ -1,17 +1,20 @@
-Return-Path: <pacman@kosh.dhis.org>
-Received: from kosh.dhis.org (c-98-226-122-10.hsd1.in.comcast.net
-	[98.226.122.10]) by ozlabs.org (Postfix) with SMTP id 37246B7E1A
+Return-Path: <lists@nerdbynature.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
+	by ozlabs.org (Postfix) with ESMTP id 7E8F9B7DEF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 13 May 2010 21:16:05 +1000 (EST)
-Message-ID: <20100513111603.3352.qmail@kosh.dhis.org>
-From: pacman@kosh.dhis.org
-Subject: Re: "event-scan failed" logflood
-To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
-Date: Thu, 13 May 2010 06:16:03 -0500 (GMT+5)
-In-Reply-To: <1273747607.21352.185.camel@pasglop>
+	Thu, 13 May 2010 21:21:20 +1000 (EST)
+Date: Thu, 13 May 2010 04:19:54 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Maxim Uvarov <muvarov@gmail.com>
+Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
+In-Reply-To: <4BEA5726.50806@nerdbynature.de>
+Message-ID: <alpine.DEB.2.01.1005130417590.3356@bogon.housecafe.de>
+References: <20100511174749.19309.44615.stgit@muvarov>
+	<4BEA5726.50806@nerdbynature.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: kexec@lists.infradead.org, uvarov@dev.rtsoft.ru,
+	linuxppc-dev@lists.ozlabs.org, horms@verge.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
+On Wed, 12 May 2010 at 00:22, Christian Kujau wrote:
+> # kexec -e
+> Starting new kernel
+> Bye!
 > 
-> Well, first it should be called once per second, not 60 times per
-> second, so something is wrong there...
+> ....but then the system just hung there, no more messages, I had to
+> powercycle it.
 
-Actually I think it was happening a lot more than 60 times per second, and
-klogd was losing most of the messages because they came too fast. When
-running the new kernel, vmstat shows 170000 context switches per second (and
-CPU usage never going below 5%) even when everything should be idle.
+Are there any debug flags (or kernel options?) I can set, to find out why 
+it hangs here? Or does kexec not understand zImages?
 
-My next experiment was to hack rtas_init to return 0 unconditionally. Now
-everything still runs fine, and the context switches per second are back down
-in the 2-digit range.
-
-> 
-> Then, it wouldn't surprise me if the Pegasos RTAS didn't implement
-> the event scan properly. Maybe we failed silently before that ? I
-> doubt it's necessary there anyways.
-
-If I'm reading things correctly, rtas-event-scan-rate is the key to the
-frequency of attempts. And rtasd.c didn't expect this:
-
-$ od -t x1 /proc/device-tree/rtas/rtas-event-scan-rate
-0000000 00 00 00 00
-0000004
-
+Thanks,
+Christian.
 -- 
-Alan Curry
+BOFH excuse #373:
+
+Suspicious pointer corrupted virtual machine
