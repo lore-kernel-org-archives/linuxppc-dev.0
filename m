@@ -2,15 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65E84B7DFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 May 2010 22:02:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 4437DB7E2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 May 2010 22:05:58 +1000 (EST)
 Subject: Re: Large physical address support on e500 platform
 Mime-Version: 1.0 (Apple Message framework v1078)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <F3189FB9-C04F-4C04-A6D4-25EF4D9B4BD6@kernel.crashing.org>
-Date: Thu, 13 May 2010 07:01:18 -0500
-Message-Id: <7A92278C-0680-412C-94EC-87EFDD0A51F0@kernel.crashing.org>
+Date: Thu, 13 May 2010 07:05:45 -0500
+Message-Id: <1ACA5AF0-2838-4031-9BFE-4D4AF8D47E7B@kernel.crashing.org>
 References: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
 	<C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
 	<bc81dc641001250906o18ba8e9cofbb02421ae046f65@mail.gmail.com>
