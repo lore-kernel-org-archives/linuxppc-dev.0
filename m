@@ -1,20 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/2] Fix kexec on powerpc32
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Christian Kujau <lists@nerdbynature.de>
-In-Reply-To: <alpine.DEB.2.01.1005130417590.3356@bogon.housecafe.de>
-References: <20100511174749.19309.44615.stgit@muvarov>
-	<4BEA5726.50806@nerdbynature.de>
-	<alpine.DEB.2.01.1005130417590.3356@bogon.housecafe.de>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-P0oH1J4HhofOD3Z4wucS"
-Date: Thu, 13 May 2010 21:50:32 +1000
-Message-ID: <1273751432.8067.1.camel@concordia>
-Mime-Version: 1.0
-Cc: Maxim Uvarov <muvarov@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	uvarov@dev.rtsoft.ru, kexec@lists.infradead.org, horms@verge.net.au
-Reply-To: michael@ellerman.id.au
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 65E84B7DFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 May 2010 22:02:01 +1000 (EST)
+Subject: Re: Large physical address support on e500 platform
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <F3189FB9-C04F-4C04-A6D4-25EF4D9B4BD6@kernel.crashing.org>
+Date: Thu, 13 May 2010 07:01:18 -0500
+Message-Id: <7A92278C-0680-412C-94EC-87EFDD0A51F0@kernel.crashing.org>
+References: <bc81dc641001212227w429b0f33hab1e541e69a11bf7@mail.gmail.com>
+	<C8218436-3EA1-46F0-8E7E-4699AA06005B@kernel.crashing.org>
+	<bc81dc641001250906o18ba8e9cofbb02421ae046f65@mail.gmail.com>
+	<F3189FB9-C04F-4C04-A6D4-25EF4D9B4BD6@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Aaron Pace <kodiakuppercut@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-P0oH1J4HhofOD3Z4wucS
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Jan 25, 2010, at 11:25 AM, Kumar Gala wrote:
 
-On Thu, 2010-05-13 at 04:19 -0700, Christian Kujau wrote:
-> On Wed, 12 May 2010 at 00:22, Christian Kujau wrote:
-> > # kexec -e
-> > Starting new kernel
-> > Bye!
-> >=20
-> > ....but then the system just hung there, no more messages, I had to
-> > powercycle it.
 >=20
-> Are there any debug flags (or kernel options?) I can set, to find out why=
-=20
-> it hangs here? Or does kexec not understand zImages?
+> On Jan 25, 2010, at 11:06 AM, Aaron Pace wrote:
+>=20
+>>>=20
+>>> Is a simple "hello world" module sufficient to show the issue?  I'll =
+look into it this week.
+>>>=20
+>>> - k
+>>=20
+>> It wasn't in my situation, unfortunately.  To duplicate this, I had
+>> one relatively large kernel module, and then one simple 'hello world'
+>> module that did nothing more than call an exported function from the
+>> first module as part of its init.
+>=20
+> Ok, if there is a module or something you can post that reproduces the =
+issue that would be extremely helpful.
 
-Not really. There's extra debugging on some systems (with a hypervisor
-console). I think you're on 32-bit, which means I don't really know what
-I'm talking about, but I don't think zImage works - use vmlinux.
+I think we may now have figured this out.
 
-cheers
-
---=-P0oH1J4HhofOD3Z4wucS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkvr54UACgkQdSjSd0sB4dKl3ACfQra7xtusbUVD6mhuUnRjyDvI
-pKwAnicfAryKO2bDkhQSbiU1Ve1cVXsq
-=MnSc
------END PGP SIGNATURE-----
-
---=-P0oH1J4HhofOD3Z4wucS--
+- k=
