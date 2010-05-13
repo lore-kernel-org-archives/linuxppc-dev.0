@@ -1,22 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2312FB7E2D
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id B7F04B7E23
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 May 2010 03:29:40 +1000 (EST)
-In-Reply-To: <20100512070849.9572.84728.stgit@muvarov>
+	Fri, 14 May 2010 05:07:50 +1000 (EST)
+Received: by wyb29 with SMTP id 29so40453wyb.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 13 May 2010 12:07:47 -0700 (PDT)
+Date: Thu, 13 May 2010 23:07:43 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] powerpc new toolchains fix (crt.S)
+Message-ID: <20100513190743.GA14447@oksana.dev.rtsoft.ru>
 References: <20100512070841.9572.78661.stgit@muvarov>
 	<20100512070849.9572.84728.stgit@muvarov>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <15016EE5-7B40-40C9-9E45-58409644CE17@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] powerpc new toolchains fix (crt.S)
-Date: Thu, 13 May 2010 19:27:59 +0200
-To: Maxim Uvarov <muvarov@gmail.com>
-Cc: lists@nerdbynature.de, kexec@lists.infradead.org, horms@verge.net.au,
-	linuxppc-dev@lists.ozlabs.org
+	<15016EE5-7B40-40C9-9E45-58409644CE17@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <15016EE5-7B40-40C9-9E45-58409644CE17@kernel.crashing.org>
+Cc: Maxim Uvarov <muvarov@gmail.com>, lists@nerdbynature.de, horms@verge.net.au,
+	kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Linker does not provide some vital functions when building  
-> freestanding
-> applications with a new toolchain,
+On Thu, May 13, 2010 at 07:27:59PM +0200, Segher Boessenkool wrote:
+> >Linker does not provide some vital functions when building
+> >freestanding
+> >applications with a new toolchain,
+> 
+> That's because the compiler provides those functions, not the linker.
+> 
+> >so we have to provide our own CRT.
+> 
+> ...in libgcc.  Why don't you link against that?
 
-That's because the compiler provides those functions, not the linker.
+For the same reason we don't link kernel against libgcc?
+I.e. just a matter of taste. There are two camps: those who
+argue against libgcc, and those who argue for libgcc.
 
-> so we have to provide our own CRT.
+Hey! You were in this thread! :-)
 
-...in libgcc.  Why don't you link against that?
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg17224.html
 
-> p.s.
-> Without the CRT we won't see any build errors (since the purgatory is
-> linked with --no-undefined), but the purgatory code won't work,
+Purgatory is just a small (tiny) piece of code that runs
+between kernels. Whether use libgcc or not, personally, I have
+no strong opinion. Kexec didn't use it, so we kept it the same
+way.
 
-It would be nice if the build would check if anything unexpectedly
-undefined is left.
+Thanks,
 
-
-Segher
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
