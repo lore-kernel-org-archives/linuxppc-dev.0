@@ -2,19 +2,24 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 056D4B7E43
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 07:46:24 +1000 (EST)
-Subject: Re: [PATCH] pte_fsl_booke: fix instruction TLB error permission check
+	by ozlabs.org (Postfix) with ESMTPS id 7C351B7E47
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 14 May 2010 09:55:33 +1000 (EST)
+Subject: Re: ftrace syscalls, PowerPC: Fixes and PowerPC raw syscall
+	tracepoint implementation
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <0710E9DF-66DF-4D24-95DE-A04E6D869826@kernel.crashing.org>
-References: <1273221514-8683-1-git-send-email-leoli@freescale.com>
-	<0710E9DF-66DF-4D24-95DE-A04E6D869826@kernel.crashing.org>
+To: rostedt@goodmis.org
+In-Reply-To: <1273766771.27703.1069.camel@gandalf.stny.rr.com>
+References: <1273736594-19320-1-git-send-email-imunsie@au1.ibm.com>
+	<1273766771.27703.1069.camel@gandalf.stny.rr.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 14 May 2010 07:46:12 +1000
-Message-ID: <1273787172.21352.198.camel@pasglop>
+Date: Fri, 14 May 2010 09:55:18 +1000
+Message-ID: <1273794918.21352.205.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jin Qing <b24347@freescale.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Ian Munsie <imunsie@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-05-13 at 14:14 -0500, Kumar Gala wrote:
-> On May 7, 2010, at 3:38 AM, Li Yang wrote:
+On Thu, 2010-05-13 at 12:06 -0400, Steven Rostedt wrote:
+> Frederic,
 > 
-> > Check the user/supervisor execution permission base on the code address.
-> > This fixes the following oops on module loading or removing.
-> > 
-> > Unable to handle kernel paging request for instruction fetch
-> > Faulting instruction address: 0xf938d040
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > 
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Jin Qing <b24347@freescale.com>
-> > ---
-> > arch/powerpc/kernel/head_fsl_booke.S |   13 ++++++++++---
-> > 1 files changed, 10 insertions(+), 3 deletions(-)
+> I'm fine with these patches, but since you mainly did the syscall work,
+> I'll let you take them.
 > 
-> applied to merge.
-> 
-> I've updated the commit message to be a bit more clear on why we need to do this.
+> The patches that touch the PowerPC code needs an acked-by from Ben or
+> Paul.
 
-Not looking at the code right now ... but do we have the same issue on
-64e ?
+Done :-)
 
 Cheers,
 Ben.
+
+> -- Steve
+> 
+> 
+> On Thu, 2010-05-13 at 17:43 +1000, Ian Munsie wrote:
+> > This patch series implements raw system call tracepoints on PowerPC that can be
+> > used with ftrace and perf. Some problems with the generic ftrace syscall
+> > tracepoint code have also been addressed.
+> > 
+> > The patches are based upon Ben's powerpc/next tree merged with tip/tracing/core
+> > 
+> > Patch #1 removes all ftrace syscall events that fail to map the system call
+> > name from the system call metadata with the system call's number, preventing
+> > the events which will not work from showing up in perf list and removing them
+> > from /sys/kernel/debug/tracing/events/syscalls.
+> > 
+> > Patches #2 and #3 allow for archs with unusual system call tables (#2) or
+> > unusual symbol names (#3) to override the appropriate functions so that they
+> > can still work with ftrace syscalls.
+> > 
+> > Patch #4 implements the actual raw system call tracepoints that ftrace syscalls
+> > builds upon, allowing all of the system calls to be used with the raw_syscalls
+> > events category and most to be used with the syscalls category.
+> > 
+> > 
+> > Not all the raw_syscalls are currently mapped to ftrace syscalls - the syscalls
+> > defined in /arch/powerpc/include/asm/syscalls.h do not use the SYSCALL_DEFINE
+> > class of macros and as such have no meta data, likewise some of the ppc_*
+> > syscalls have assembly wrappers. These are on their way, but I wanted to put
+> > the work I have done so far out first.
+> > 
+> > Some of those syscalls have different return types than the __SYSCALL_DEFINE
+> > macro uses (unsigned long, int, time_t) and some have different prefixes (ppc,
+> > ppc64) - I didn't particularly want to change them straight over without asking
+> > the list first, and I certainly don't want to change the return types. I see
+> > that Jason Baron ran into similar issues, but his "add compat syscall support"
+> > patches have yet to be merged, and do not tackle the differing return types.
+> > 
+> 
