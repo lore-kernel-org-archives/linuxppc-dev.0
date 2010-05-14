@@ -1,12 +1,22 @@
-Return-Path: <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Fri, 14 May 2010 15:40:11 +1000
-Subject: [PATCH 2/2] powerpc, kdump: Fix race in kdump shutdown
-In-Reply-To: <20100514035700.8B6EDCED6E@localhost.localdomain>
-Message-Id: <20100514054011.5E585D34AB@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	Anton Blanchard <anton@samba.org>, jlarrew@linux.vnet.ibm.com
+Return-Path: <lethal@linux-sh.org>
+Received: from master.linux-sh.org (124x34x33x190.ap124.ftth.ucom.ne.jp
+	[124.34.33.190]) by ozlabs.org (Postfix) with ESMTP id 19516B7E88
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 16:03:30 +1000 (EST)
+Date: Fri, 14 May 2010 15:02:40 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Peter H?we <PeterHuewe@gmx.de>
+Subject: Re: [PATCH] media/IR: Add missing include file to rc-map.c
+Message-ID: <20100514060240.GD12002@linux-sh.org>
+References: <201005051720.22617.PeterHuewe@gmx.de>
+	<201005112042.14889.PeterHuewe@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201005112042.14889.PeterHuewe@gmx.de>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org, David H?rdeman <david@hardeman.nu>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org,
+	linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,73 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we are crashing, the crashing/primary CPU IPIs the secondaries to
-turn off IRQs, go into real mode and wait in kexec_wait.  While this
-is happening, the primary tears down all the MMU maps.  Unfortunately
-the primary doesn't check to make sure the secondaries have entered
-real mode before doing this.
-
-On PHYP machines, the secondaries can take a long time shutting down
-the IRQ controller as RTAS calls are need.  These RTAS calls need to
-be serialised which resilts in the secondaries contending in
-lock_rtas() and hence taking a long time to shut down.
-
-We've hit this on large POWER7 machines, where some secondaries are
-still waiting in lock_rtas(), when the primary tears down the HPTEs.
-
-This patch makes sure all secondaries are in real mode before the
-primary tears down the MMU.  It uses the new kexec_state entry in the
-paca.  It times out if the secondaries don't reach real mode after
-10sec.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-
- arch/powerpc/kernel/crash.c |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/crash.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/crash.c
-@@ -162,6 +162,32 @@ static void crash_kexec_prepare_cpus(int
- 	/* Leave the IPI callback set */
- }
- 
-+/* wait for all the CPUs to hit real mode but timeout if they don't come in */
-+static void crash_kexec_wait_realmode(int cpu)
-+{
-+	unsigned int msecs;
-+	int i;
-+
-+	msecs = 10000;
-+	for (i=0; i < NR_CPUS && msecs > 0; i++) {
-+		if (i == cpu)
-+			continue;
-+
-+		while (paca[i].kexec_state < KEXEC_STATE_REAL_MODE) {
-+			barrier();
-+			if (!cpu_possible(i)) {
-+				break;
-+			}
-+			if (!cpu_online(i)) {
-+				break;
-+			}
-+			msecs--;
-+			mdelay(1);
-+		}
-+	}
-+	mb();
-+}
-+
- /*
-  * This function will be called by secondary cpus or by kexec cpu
-  * if soft-reset is activated to stop some CPUs.
-@@ -412,6 +438,7 @@ void default_machine_crash_shutdown(stru
- 	crash_kexec_prepare_cpus(crashing_cpu);
- 	cpu_set(crashing_cpu, cpus_in_crash);
- 	crash_kexec_stop_spus();
-+	crash_kexec_wait_realmode(crashing_cpu);
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(1, 0);
- }
+On Tue, May 11, 2010 at 08:42:14PM +0200, Peter H?we wrote:
+> Am Mittwoch 05 Mai 2010 17:20:21 schrieb Peter H?we:
+> > From: Peter Huewe <peterhuewe@gmx.de>
+> > 
+> > This patch adds a missing include linux/delay.h to prevent
+> > build failures[1-5]
+> > 
+> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> > ---
+> Any updates on this patch?
+> Issue still exists with today's linux-next tree
+> 
+You might want to send this to the linux-next list at least. If the
+people who introduced the breakage are unresponsive (as often tends to be
+the case with -next) it's still worth getting trivial fixes rolled in for
+the interim. This change doesn't exist outside of -next and whatever tree
+introduced it, so there's not much else anyone can do about it at
+present.
