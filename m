@@ -1,37 +1,33 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B7E84B7E7F
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 16:55:41 +1000 (EST)
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7985BB7E57
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 14 May 2010 18:42:36 +1000 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp01.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4E6rIU0027584
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 16:53:18 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4EIgUY2014334
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 May 2010 04:42:30 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
 	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4E6maCQ1593388
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 16:48:36 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4E6teB9030789
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 16:55:41 +1000
-Date: Fri, 14 May 2010 12:25:31 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100514065530.GA6195@in.ibm.com>
-References: <20100414033555.746326035@pr> <20100414034827.GC6571@in.ibm.com>
-	<20100503062330.GB19365@drongo> <20100504203302.GA3894@in.ibm.com>
-	<20100512063247.GC3548@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100512063247.GC3548@drongo>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	o4E8ZPW11736822
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2010 18:35:25 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4E8gSBp011028
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2010 18:42:29 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] trace,
+	powerpc: Implement raw syscall tracepoints on PowerPC
+Date: Fri, 14 May 2010 18:41:38 +1000
+Message-Id: <1273826498-12222-1-git-send-email-imunsie@au1.ibm.com>
+In-Reply-To: <1273736594-19320-5-git-send-email-imunsie@au1.ibm.com>
+References: <1273736594-19320-5-git-send-email-imunsie@au1.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Ian Munsie <imunsie@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,169 +37,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 12, 2010 at 04:32:47PM +1000, Paul Mackerras wrote:
-> On Wed, May 05, 2010 at 02:03:03AM +0530, K.Prasad wrote:
-> 
-> > It is true that the breakpoint exceptions will go amiss following the
-> > alignment exception, and be restored when the thread single-steps due
-> > to other requests causing undesirable effects. (Borrowing from some of
-> > the discussions I had with BenH, earlier) There can be two ways of
-> > changing the implementation to counter it:
-> > 
-> > - To sense that the impending exception (alignment, page-fault,
-> >   single-step) is a successor to a hw-breakpoint exception (and that
-> >   restoration of debug register values is necessary), somewhere early in
-> >   exceptions-64s.S and jump to a common handler, say
-> >   do_single_step_dabr() which does a majority of
-> >   single_step_dabr_instruction().
-> > - To modify emulate_single_step() to also do a notify_die(DIE_SSTEP,...)
-> >   in addition to its existing code. This would invoke
-> >   single_step_dabr_instruction() where the breakpoints can be restored.
-> 
-> I thought you would change the explicit regs->msr modification in
-> single_step_exception() to clear_single_step(), then just make
-> emulate_single_step() call single_step_exception().
->
+From: Ian Munsie <imunsie@au.ibm.com>
 
-Okay. I will re-use single_step_exception() after modifications; it
-appearsto have no in-kernel users for it. (single_step_exception() clears
-MSR more than what clear_single_step() does, it shouldn't matter though).
+This patch implements the raw syscall tracepoints on PowerPC and exports
+them for ftrace syscalls to use.
 
-> > I must admit that it is not clear to me when you say "doesn't return to
-> > the instruction" and "instruction has been changed underneath". Are you
-> 
-> Suppose the address at which the data breakpoint has been unmapped,
-> and the process has a handler for the SIGSEGV signal.  When we try to
-> single-step the load or store, we will get a DSI (0x300) interrupt,
-> call into do_page_fault, and end up sending the process a SIGSEGV.
-> That will invoke the signal handler, which can then do anything it
-> likes.  It can do a blocking system call, it can longjmp() back into
-> its main event, or it can return from the signal handler.  Only in the
-> last case will it retry the load or store, and then only if the signal
-> handler hasn't modified the NIP value in the signal frame.  That's
-> what I mean by "doesn't return to the instruction".
-> 
+To minimise reworking existing code, I slightly re-ordered the thread
+info flags such that the new TIF_SYSCALL_TRACEPOINT bit would still fit
+within the 16 bits of the andi. instruction's UI field. The instructions
+in question are in /arch/powerpc/kernel/entry_{32,64}.S to and the
+_TIF_SYSCALL_T_OR_A with the thread flags to see if system call tracing
+is enabled.
 
-At the outset, this seemed to be a scary thing to happen; but turns out
-to be harmful only to the extent of generating a false hw-breakpoint
-exception in certain cases. A case-by-case basis analysis reveals thus:
+In the case of 64bit PowerPC, arch_syscall_addr and
+arch_syscall_match_sym_name are overridden to allow ftrace syscalls to
+work given the unusual system call table structure and symbol names that
+start with a period.
 
-Consider an instruction stream i1, i2, i3, ... iN, where i1 has
-finished execution and i2 is about to be executed but has generated a
-DSI interrupt with the above-mentioned conditions i.e. DSISR indicates a
-DABR match + Page-Table entry not found. Now according to do_hash_page
-in exception-64s.S (as pasted below), do_page_fault() and do_dabr() are
-invoked one after the other.
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+Changes since v1: No functional changes, just removed the redundant conditional
+export of sys_call_table on PPC32 vs PPC64, removed a cast and added an extra
+comment to explain the arch_syscall_match_sym_name based on the feedback from
+Michael Ellerman.
 
-_STATIC(do_hash_page)
-	std	r3,_DAR(r1)
-	std	r4,_DSISR(r1)
+ arch/powerpc/Kconfig                   |    1 +
+ arch/powerpc/include/asm/syscall.h     |    5 +++++
+ arch/powerpc/include/asm/thread_info.h |    7 +++++--
+ arch/powerpc/kernel/Makefile           |    1 +
+ arch/powerpc/kernel/ftrace.c           |   19 +++++++++++++++++++
+ arch/powerpc/kernel/ptrace.c           |   10 ++++++++++
+ 6 files changed, 41 insertions(+), 2 deletions(-)
 
-	andis.	r0,r4,0xa410		/* weird error? */
-	bne-	handle_page_fault	/* if not, try to insert a HPTE */
-	andis.  r0,r4,DSISR_DABRMATCH@h
-	bne-    handle_dabr_fault
-
-Thus, when control returns to user-space to instruction 'i2', the
-hw_breakpoint_handler() has completed execution, and a SIGSEGV is pending
-to be delivered and single-stepping enabled MSR_SE is set. Upon return to
-user-space, the handler for SIGSEGV is executed and it may perform one of
-the following (as you stated previously):
-(a) Make a blocking syscall, eventually yielding the CPU to a new thread
-(b) Jump to a different instruction in user-space, say iN, and not complete
-the execution of instruction i2 at all.
-(c) Return to instruction i2 and complete the execution.
-
-In case of (a), the context-switches should not affect the ability to
-single-step the instruction when the thread is eventually scheduled to
-run. The thread, when scheduled onto the CPU will complete signal
-handling, return to execute instruction i2, cause single-step exception,
-restore breakpoints and run smoothly thereafter.
-
-In case of (b), the new instruction iN is single-stepped, the breakpoint
-values are restored and the hw-breakpoint exception callback is invoked
-after iN is executed. The user of this breakpoint i.e. the caller of
-register_user_hw_breakpoint() who had placed a breakpoint on addressed
-accessed by instruction i2 will be confused to find that an unrelated
-instruction (which may not be a load/store) has caused the breakpoint.
-
-If so desired, we may adopt the 'trigger-before-execute' semantics for
-user-space breakpoints wherein the hw-breakpoint callback (through
-perf_bp_event()) is invoked in hw_breakpoint_handler() itself. This
-would indicate to the user that the impending instruction causes a DABR
-'hit' but it may or may not be executed due to the role of
-signal-handler or due to self-modifying code (as mentioned below).
-
-Kindly let me know what you think about it.
-
-(c) is the normal execution path we desire. The instruction i2 will be
-safely single-stepped and breakpoints are restored.
-
-> The instruction could be changed underneath us if the program is
-> multi-threaded and another thread writes another instruction to the
-> instruction word where the load or store is.  Or it could use mmap()
-> to map some other page at the address of the load or store.  Either
-> way we could end up with a different instruction there.
-> 
-
-If the instruction that originally caused the DABR exception is changed,
-the new instruction in its place would still single-step to restore
-breakpoint values. However the user of breakpoint interface will be
-confused to find that the callback is invoked for an irrelevant
-instruction.
-
-It could be circumvented, to an extent, through the use of
-trigger-before-execute semantics (as described before).
-
-> > referring to the fact that the thread which generated breakpoints hits
-> > could have moved out of the CPU due to a scheduler induced context
-> > switch (which is an apparent cause for current->thread.last_hit_ubp to
-> > turn stale) or is there a different source for such a change that I
-> > don't realise?
-> > 
-> > Given that 'last_hit_ubp' is safely ensconced inside 'thread_struct',
-> > the ill-effects of a possible pre-emption during a page-fault will be
-> > suitably handled i.e. the pending single-step exception will be
-> > generated on the processor to which 'current' is migrated to, and the
-> > breakpoint will be set on the new processor.
-> 
-> If we do get a context switch, e.g. as a result of a page fault, and
-> then switch back to the task, it looks to me like we will end up with
-> MSR_SE and DABR both set.  I don't suppose that will actually cause
-> any real problem besides double-counting the hit.
-> 
-
-Page fault exception will be handled before hw_breakpoint_handler(),
-hence MSR_SE would not have been set if a context-switch happened in
-pange-fault handling itself. I don't see a case where both MSR_SE and
-DABR will be set together.
-
-> > However, the possibility that current->thread.last_hit_ubp points to a
-> > perf_event structure that is unregistered and freed does exist, and I
-> > did not foresee the risk. An arch-specific function that hooks onto
-> > release_bp_slot() would be required to perform the cleanup. I will
-> > submit modify the patch to that effect. Thanks for pointing it out.
-> 
-> Yes, I think we need that.
-> 
-
-The same is implemented through arch_unregister_hw_breakpoint()
-in version XVIII of the patch here: linuxppc-dev message-id:
-20100512033315.GC6384@in.ibm.com.
-
-> > In conjunction with what you've stated below, do you suggest that
-> > emulate_step() be replaced with fix_alignment() which appears to be more
-> > powerful at emulation (or carve out a helper function for fix_alignment()
-> > that does only emulation and which can be invoked here)?
-> 
-> Something like that eventually, but not for a first pass.
-> 
-> Paul.
-
-Thanks for the comments. Let me know if the analysis above is incorrect
-or if I've failed to recognise any important issue that you pointed out.
-I will send out a patch with changes to emulate_single_step() in the
-next version of the patchset, if I don't hear any further comments.
-
-Thanks,
-K.Prasad
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c4c4549..41e2f3e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -141,6 +141,7 @@ config PPC
+ 	select GENERIC_ATOMIC64 if PPC32
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
++	select HAVE_SYSCALL_TRACEPOINTS
+ 
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index 23913e9..b54b2ad 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -15,6 +15,11 @@
+ 
+ #include <linux/sched.h>
+ 
++/* ftrace syscalls requires exporting the sys_call_table */
++#ifdef CONFIG_FTRACE_SYSCALLS
++extern const unsigned long *sys_call_table;
++#endif /* CONFIG_FTRACE_SYSCALLS */
++
+ static inline long syscall_get_nr(struct task_struct *task,
+ 				  struct pt_regs *regs)
+ {
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index aa9d383..e7a8af2 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -110,7 +110,8 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_NOERROR		12	/* Force successful syscall return */
+ #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+-#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
++#define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
++#define TIF_RUNLATCH		16	/* Is the runlatch enabled? */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -127,8 +128,10 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
++#define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+-#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
++#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
++				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NOTIFY_RESUME)
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 8773263..9c404bb 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -98,6 +98,7 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
++obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
+ obj-$(CONFIG_PERF_EVENTS)	+= perf_callchain.o
+ 
+ obj-$(CONFIG_PPC_PERF_CTRS)	+= perf_event.o
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index ce1f3e4..f5fadbb 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -22,6 +22,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/code-patching.h>
+ #include <asm/ftrace.h>
++#include <asm/syscall.h>
+ 
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -600,3 +601,21 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 	}
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
++#if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64)
++unsigned long __init arch_syscall_addr(int nr)
++{
++	return sys_call_table[nr*2];
++}
++
++inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
++{
++	/*
++	 * Compare the symbol name with the system call name. Skip the .sys or
++	 * .SyS prefix from the symbol name and the sys prefix from the system
++	 * call name and just match the rest. 32bit can use the generic
++	 * function since their symbol names don't start with a period.
++	 */
++	return (!strcmp(sym + 4, name + 3));
++}
++#endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 7a0c019..eb7eeb8 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -29,6 +29,7 @@
+ #include <linux/signal.h>
+ #include <linux/seccomp.h>
+ #include <linux/audit.h>
++#include <trace/syscall.h>
+ #ifdef CONFIG_PPC32
+ #include <linux/module.h>
+ #endif
+@@ -38,6 +39,9 @@
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/syscalls.h>
++
+ /*
+  * The parameter save area on the stack is used to store arguments being passed
+  * to callee function and is located at fixed offset from stack pointer.
+@@ -1615,6 +1619,9 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 		 */
+ 		ret = -1L;
+ 
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
++		trace_sys_enter(regs, regs->gpr[0]);
++
+ 	if (unlikely(current->audit_context)) {
+ #ifdef CONFIG_PPC64
+ 		if (!test_thread_flag(TIF_32BIT))
+@@ -1643,6 +1650,9 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+ 		audit_syscall_exit((regs->ccr&0x10000000)?AUDITSC_FAILURE:AUDITSC_SUCCESS,
+ 				   regs->result);
+ 
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
++		trace_sys_exit(regs, regs->result);
++
+ 	step = test_thread_flag(TIF_SINGLESTEP);
+ 	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+ 		tracehook_report_syscall_exit(regs, step);
+-- 
+1.7.1
