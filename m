@@ -1,17 +1,19 @@
 Return-Path: <julia@diku.dk>
-Received: from mgw1.diku.dk (mgw1.diku.dk [130.225.96.91])
+Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw1.diku.dk",
+	(Client CN "mgw2.diku.dk",
 	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 90DE7B7E0E
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 May 2010 05:55:16 +1000 (EST)
-Date: Fri, 14 May 2010 21:30:13 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTPS id 00E7FB7E1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 May 2010 05:56:54 +1000 (EST)
+Date: Fri, 14 May 2010 21:31:26 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/10] arch/powerpc/platforms/pseries: Use kstrdup
-Message-ID: <Pine.LNX.4.64.1005142129520.28935@ask.diku.dk>
+	Paul Mackerras <paulus@samba.org>,
+	Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH 10/10] arch/powerpc/platforms/iseries: Use kstrdup
+Message-ID: <Pine.LNX.4.64.1005142131080.28935@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,23 +51,23 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/powerpc/platforms/pseries/reconfig.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/platforms/iseries/vio.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff -u -p a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -118,12 +118,10 @@ static int pSeries_reconfig_add_node(con
- 	if (!np)
- 		goto out_err;
+diff -u -p a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
+--- a/arch/powerpc/platforms/iseries/vio.c
++++ b/arch/powerpc/platforms/iseries/vio.c
+@@ -87,12 +87,11 @@ static struct device_node *new_node(cons
  
+ 	if (!np)
+ 		return NULL;
 -	np->full_name = kmalloc(strlen(path) + 1, GFP_KERNEL);
 +	np->full_name = kstrdup(path, GFP_KERNEL);
- 	if (!np->full_name)
- 		goto out_err;
- 
+ 	if (!np->full_name) {
+ 		kfree(np);
+ 		return NULL;
+ 	}
 -	strcpy(np->full_name, path);
--
- 	np->properties = proplist;
  	of_node_set_flag(np, OF_DYNAMIC);
  	kref_init(&np->kref);
+ 	np->parent = of_node_get(parent);
