@@ -1,21 +1,16 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 00E7FB7E1F
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 May 2010 05:56:54 +1000 (EST)
-Date: Fri, 14 May 2010 21:31:26 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/10] arch/powerpc/platforms/iseries: Use kstrdup
-Message-ID: <Pine.LNX.4.64.1005142131080.28935@ask.diku.dk>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-yw0-f204.google.com (mail-yw0-f204.google.com
+	[209.85.211.204]) by ozlabs.org (Postfix) with ESMTP id B18B4B7E06
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 May 2010 07:41:31 +1000 (EST)
+Received: by ywh42 with SMTP id 42so1425544ywh.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 14:41:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 14 May 2010 14:41:29 -0700
+Message-ID: <AANLkTikk8-jiDZNtP8eucP90DLYRALwu749H-3v9LsHI@mail.gmail.com>
+Subject: mpc870 support in the powerpc arch?
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +20,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+Hi,
 
-Use kstrdup when the goal of an allocation is copy a string into the
-allocated region.
+Is mpc870 fully supported in the powerpc arch? I know it's an old
+processor but 8xx is still one of platforms in the powerpc arch. If
+it's not supported, how much effort will it be to resurrect mpc870 in
+the new arch considering we have substantial 8xx support?
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression from,to;
-expression flag,E1,E2;
-statement S;
-@@
-
--  to = kmalloc(strlen(from) + 1,flag);
-+  to = kstrdup(from, flag);
-   ... when != \(from = E1 \| to = E1 \)
-   if (to==NULL || ...) S
-   ... when != \(from = E2 \| to = E2 \)
--  strcpy(to, from);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/platforms/iseries/vio.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff -u -p a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
---- a/arch/powerpc/platforms/iseries/vio.c
-+++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -87,12 +87,11 @@ static struct device_node *new_node(cons
- 
- 	if (!np)
- 		return NULL;
--	np->full_name = kmalloc(strlen(path) + 1, GFP_KERNEL);
-+	np->full_name = kstrdup(path, GFP_KERNEL);
- 	if (!np->full_name) {
- 		kfree(np);
- 		return NULL;
- 	}
--	strcpy(np->full_name, path);
- 	of_node_set_flag(np, OF_DYNAMIC);
- 	kref_init(&np->kref);
- 	np->parent = of_node_get(parent);
+Thanks,
+-Shawn.
