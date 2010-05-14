@@ -1,11 +1,11 @@
 Return-Path: <PeterHuewe@gmx.de>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id BA291B7E1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 21:22:48 +1000 (EST)
+	by ozlabs.org (Postfix) with SMTP id 99D44B7DF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 21:26:55 +1000 (EST)
 From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: linux-next@vger.kernel.org.
+To: linux-next@vger.kernel.org
 Subject: Re: [PATCH] media/IR: Add missing include file to rc-map.c
-Date: Fri, 14 May 2010 13:22:41 +0200
+Date: Fri, 14 May 2010 13:26:51 +0200
 References: <201005051720.22617.PeterHuewe@gmx.de>
 	<201005112042.14889.PeterHuewe@gmx.de>
 	<20100514060240.GD12002@linux-sh.org>
@@ -13,7 +13,7 @@ In-Reply-To: <20100514060240.GD12002@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
-Message-Id: <201005141322.41370.PeterHuewe@gmx.de>
+Message-Id: <201005141326.52099.PeterHuewe@gmx.de>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
 	linux-kernel@vger.kernel.org, David H?rdeman <david@hardeman.nu>,
 	Mauro Carvalho Chehab <mchehab@infradead.org>,
