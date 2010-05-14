@@ -1,37 +1,32 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <R63238@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 53854B7DB6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 14 May 2010 12:07:09 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4EC7Ehj012224
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2010 22:07:14 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4E202vq1331440
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2010 12:00:02 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4E276Nq028445
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 May 2010 12:07:06 +1000
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH 3/4] ftrace syscalls: Allow arch specific syscall symbol
-	matching
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-reply-to: <1273794896.21352.203.camel@pasglop>
-References: <1273736594-19320-1-git-send-email-imunsie@au1.ibm.com>
-	<1273736594-19320-4-git-send-email-imunsie@au1.ibm.com>
-	<1273794896.21352.203.camel@pasglop>
-Date: Fri, 14 May 2010 12:06:41 +1000
-Message-Id: <1273802608-sup-8186@au1.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E8C8FB7E46
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 May 2010 12:16:38 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o4E2GZYr000745
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 May 2010 19:16:35 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o4E2POvB003842
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 May 2010 21:25:25 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] pte_fsl_booke: fix instruction TLB error permission check
+Date: Fri, 14 May 2010 10:16:35 +0800
+Message-ID: <D7CCA83BB0796C49BC0BB53B6AB12089B97531@zch01exm21.fsl.freescale.net>
+In-Reply-To: <1273787172.21352.198.camel@pasglop>
+References: <1273221514-8683-1-git-send-email-leoli@freescale.com><0710E9DF-66DF-4D24-95DE-A04E6D869826@kernel.crashing.org>
+	<1273787172.21352.198.camel@pasglop>
+From: "Liu Dave-R63238" <r63238@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Jin Qing-B24347 <B24347@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,31 +36,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Benjamin Herrenschmidt's message of Fri May 14 09:54:56 +1000 2010:
-> On Thu, 2010-05-13 at 17:43 +1000, Ian Munsie wrote:
-> > From: Ian Munsie <imunsie@au1.ibm.com>
-> > 
-> > Some architectures have unusual symbol names and the generic code to
-> > match the symbol name with the function name for the syscall metadata
-> > will fail. For example, symbols on PPC64 start with a period and the
-> > generic code will fail to match them.
-> > 
-> > This patch splits out the match logic into a standalone weak function
-> > that can be overridden on archs with unusual symbol names.
-> > 
-> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> > ---
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Ian, I assume you will implement the support for the "special" ppc_*
-> syscalls via a subsequent patch and not a respin of this one right ?
-> 
-> Cheers,
-> Ben.
+> Not looking at the code right now ... but do we have the same=20
+> issue on 64e ?
 
-Yes, that will be in a separate patch or two.
-
-Cheers,
--Ian
+Aaron pointed the issue on FSL BookE.
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079738.html
