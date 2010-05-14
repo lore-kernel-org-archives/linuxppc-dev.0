@@ -1,17 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <4BED8C91.8020107@freescale.com>
-Date: Fri, 14 May 2010 12:46:57 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH v3 3/3] ptp: Added a clock that uses the eTSEC found on
-	the	MPC85xx.
-References: <cover.1273855016.git.richard.cochran@omicron.at>
-	<ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
-In-Reply-To: <ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 2186AB7ED8
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 May 2010 03:57:20 +1000 (EST)
+Subject: Re: [PATCH] powerpc: fix ioremap_flags() with book3e pte definition
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1265602870.8287.232.camel@pasglop>
+Date: Fri, 14 May 2010 12:57:11 -0500
+Message-Id: <87C1CC20-8454-47F7-83C2-E097598BA073@kernel.crashing.org>
+References: <1265302382-15142-1-git-send-email-leoli@freescale.com>
+	<1265602870.8287.232.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: galak@gate.crashing.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,201 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2010 11:46 AM, Richard Cochran wrote:
-> diff --git a/Documentation/powerpc/dts-bindings/fsl/tsec.txt b/Documentation/powerpc/dts-bindings/fsl/tsec.txt
-> index edb7ae1..b09ba66 100644
-> --- a/Documentation/powerpc/dts-bindings/fsl/tsec.txt
-> +++ b/Documentation/powerpc/dts-bindings/fsl/tsec.txt
-> @@ -74,3 +74,59 @@ Example:
->   		interrupt-parent =<&mpic>;
->   		phy-handle =<&phy0>
->   	};
-> +
-> +* Gianfar PTP clock nodes
-> +
-> +General Properties:
-> +
-> +  - device_type  Should be "ptp_clock"
 
-Device_type is deprecated in most contexts for flat device trees.
+On Feb 7, 2010, at 10:21 PM, Benjamin Herrenschmidt wrote:
 
-> +  - model        Model of the device.  Must be "eTSEC"
+> On Fri, 2010-02-05 at 00:53 +0800, Li Yang wrote:
+>> We can't just clear the user read permission in book3e pte, because
+>> that will also clear supervisor read permission.  This surely isn't
+>> desired.  Fix the problem by adding the supervisor read back.
+>>=20
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> arch/powerpc/mm/pgtable_32.c |    5 +++++
+>> 1 files changed, 5 insertions(+), 0 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/mm/pgtable_32.c =
+b/arch/powerpc/mm/pgtable_32.c
+>> index cb96cb2..aff7c04 100644
+>> --- a/arch/powerpc/mm/pgtable_32.c
+>> +++ b/arch/powerpc/mm/pgtable_32.c
+>> @@ -144,6 +144,11 @@ ioremap_flags(phys_addr_t addr, unsigned long =
+size, unsigned long flags)
+>> 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+>> 	flags &=3D ~(_PAGE_USER | _PAGE_EXEC);
+>>=20
+>> +#if defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
+>> +	/* supervisor read permission has just been cleared, add back */
+>> +	flags |=3D _PAGE_BAP_SR;
+>> +#endif
+>> +
+>=20
+> So this is a bit fishy indeed. pgtable_64.c seems to have the same
+> problem in fact.
+>=20
+> It boils down to the "hack" I have in the new PTE format which =
+consists
+> of having _SR be part of _PAGE_USER. I wonder if I should change that
+> instead. Kumar, what do you reckon ?
+>=20
+> _Maybe_ an option is to have _PAGE_NO_USER that defaults to be
+> ~_PAGE_USER in pte-common.h and can be set in pte-book3e.h to
+> only strip out UR and UW ?
 
-Model, while abused by the current gianfar binding code, is not supposed 
-to be something that is ordinarily used to bind on.  It is supposed to 
-be a freeform field for indicating the specific model of hardware, 
-mainly for human consumption or as a last resort for working around 
-problems.
+We never closed on this.  I think lets add _PAGE_NO_USER
 
-Get rid of both device_type and model, and specify a compatible string 
-instead (e.g. "fsl,etsec-ptp").  Or perhaps this should just be some 
-additional properties on the existing gianfar nodes, rather than 
-presenting it as a separate device?  How do you associate a given ptp 
-block with the corresponding gianfar node?  If there are differences in 
-ptp implementation between different versions of etsec, can the ptp 
-driver see the etsec version register?
-
-> +  - reg          Offset and length of the register set for the device
-> +  - interrupts   There should be at least two and as many as four
-> +                 PTP related interrupts
-> +
-> +Clock Properties:
-> +
-> +  - tclk_period  Timer reference clock period in nanoseconds.
-> +  - tmr_prsc     Prescaler, divides the output clock.
-> +  - tmr_add      Frequency compensation value.
-> +  - cksel        0= external clock, 1= eTSEC system clock, 3= RTC clock input.
-> +                 Currently the driver only supports choice "1".
-> +  - tmr_fiper1   Fixed interval period pulse generator.
-> +  - tmr_fiper2   Fixed interval period pulse generator.
-
-Dashes are more typical in OF names than underscores, and it's generally 
-better to be a little more verbose -- these aren't local loop iterators.
-
-They should probably have an "fsl,ptp-" prefix as well.
-
-> +  These properties set the operational parameters for the PTP
-> +  clock. You must choose these carefully for the clock to work right.
-
-Do these values describe the way the hardware is, or how it's been 
-configured by firmware, or a set of values that are clearly optimal for 
-this particular board?  If it's just configuration for the Linux driver, 
-that could reasonably differ based on what a given user or OS will want, 
-the device tree probably isn't the right place for it.
-
-> diff --git a/arch/powerpc/boot/dts/p2020ds.dts b/arch/powerpc/boot/dts/p2020ds.dts
-> index 1101914..f72353a 100644
-> --- a/arch/powerpc/boot/dts/p2020ds.dts
-> +++ b/arch/powerpc/boot/dts/p2020ds.dts
-> @@ -336,6 +336,20 @@
->   			phy_type = "ulpi";
->   		};
->
-> +		ptp_clock@24E00 {
-> +			device_type = "ptp_clock";
-> +			model = "eTSEC";
-> +			reg = <0x24E00 0xB0>;
-> +			interrupts = <68 2 69 2 70 2>;
-> +			interrupt-parent = < &mpic >;
-> +			tclk_period = <5>;
-> +			tmr_prsc = <200>;
-> +			tmr_add = <0xCCCCCCCD>;
-> +			cksel = <1>;
-> +			tmr_fiper1 = <0x3B9AC9FB>;
-> +			tmr_fiper2 = <0x0001869B>;
-> +		};
-> +
-
-This one has 3 interrupts?  The driver supports only two.
-
-> +/* Private globals */
-> +static struct ptp_clock *gianfar_clock;
-
-Do you not support more than one of these?
-
-> +static struct etsects the_clock;
-
-"The" clock?  As oppsed to the "other" clock one line above? :-)
-
-> +static irqreturn_t isr(int irq, void *priv)
-> +{
-> +	struct etsects *etsects = priv;
-> +	struct ptp_clock_event event;
-> +	u64 ns;
-> +	u32 ack=0, lo, hi, mask, val;
-> +
-> +	val = gfar_read(&etsects->regs->tmr_tevent);
-> +
-> +	if (val&  ETS1) {
-> +		ack |= ETS1;
-> +		hi = gfar_read(&etsects->regs->tmr_etts1_h);
-> +		lo = gfar_read(&etsects->regs->tmr_etts1_l);
-> +		event.type = PTP_CLOCK_EXTTS;
-> +		event.index = 0;
-> +		event.timestamp = ((u64) hi)<<  32;
-> +		event.timestamp |= lo;
-> +		ptp_clock_event(gianfar_clock,&event);
-> +	}
-> +
-> +	if (val&  ETS2) {
-> +		ack |= ETS2;
-> +		hi = gfar_read(&etsects->regs->tmr_etts2_h);
-> +		lo = gfar_read(&etsects->regs->tmr_etts2_l);
-> +		event.type = PTP_CLOCK_EXTTS;
-> +		event.index = 1;
-> +		event.timestamp = ((u64) hi)<<  32;
-> +		event.timestamp |= lo;
-> +		ptp_clock_event(gianfar_clock,&event);
-> +	}
-> +
-> +	if (val&  ALM2) {
-> +		ack |= ALM2;
-> +		if (etsects->alarm_value) {
-> +			event.type = PTP_CLOCK_ALARM;
-> +			event.index = 0;
-> +			event.timestamp = etsects->alarm_value;
-> +			ptp_clock_event(gianfar_clock,&event);
-> +		}
-> +		if (etsects->alarm_interval) {
-> +			ns = etsects->alarm_value + etsects->alarm_interval;
-> +			hi = ns>>  32;
-> +			lo = ns&  0xffffffff;
-> +			spin_lock(&register_lock);
-> +			gfar_write(&etsects->regs->tmr_alarm2_l, lo);
-> +			gfar_write(&etsects->regs->tmr_alarm2_h, hi);
-> +			spin_unlock(&register_lock);
-> +			etsects->alarm_value = ns;
-> +		} else {
-> +			gfar_write(&etsects->regs->tmr_tevent, ALM2);
-> +			spin_lock(&register_lock);
-> +			mask = gfar_read(&etsects->regs->tmr_temask);
-> +			mask&= ~ALM2EN;
-> +			gfar_write(&etsects->regs->tmr_temask, mask);
-> +			spin_unlock(&register_lock);
-> +			etsects->alarm_value = 0;
-> +			etsects->alarm_interval = 0;
-> +		}
-> +	}
-> +
-> +	gfar_write(&etsects->regs->tmr_tevent, ack);
-> +
-> +	return IRQ_HANDLED;
-
-Should only return IRQ_HANDLED if you found an event.
-
-> +	if (get_of_u32(node, "tclk_period",&etsects->tclk_period) ||
-> +	    get_of_u32(node, "tmr_prsc",&etsects->tmr_prsc) ||
-> +	    get_of_u32(node, "tmr_add",&etsects->tmr_add) ||
-> +	    get_of_u32(node, "cksel",&etsects->cksel) ||
-> +	    get_of_u32(node, "tmr_fiper1",&etsects->tmr_fiper1) ||
-> +	    get_of_u32(node, "tmr_fiper2",&etsects->tmr_fiper2))
-> +		return -ENODEV;
-
-Might want to print an error so the user knows what's missing.
-
-> +	for (i = 0; i<  N_IRQS; i++) {
-> +
-> +		etsects->irq[i] = irq_of_parse_and_map(node, i);
-> +
-> +		if (etsects->irq[i] == NO_IRQ) {
-> +			pr_err("irq[%d] not in device tree", i);
-> +			return -ENODEV;
-> +		}
-> +
-> +		if (request_irq(etsects->irq[i], isr, 0, DRIVER, etsects)) {
-> +			pr_err("request_irq failed irq %d", etsects->irq[i]);
-> +			return -ENODEV;
-> +		}
-
-You've got two IRQs, with the same handler, and the same dev_id?  From 
-the manual it looks like there's one PTP interrupt per eTSEC (which 
-would explain 3 interrupts on p2020).
-
-> +static struct of_device_id match_table[] = {
-> +	{ .type = "ptp_clock" },
-> +	{},
-> +};
-
-This driver controls every possible PTP implementation?
-
--Scott
+- k=
