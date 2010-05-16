@@ -1,26 +1,24 @@
-Return-Path: <BATV+0307ec0569c9968e5153+2457+infradead.org+mchehab@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id F016FB7DE4
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 May 2010 11:54:51 +1000 (EST)
-Message-ID: <4BEF5060.5050105@infradead.org>
-Date: Sat, 15 May 2010 22:54:40 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
+	by ozlabs.org (Postfix) with ESMTP id 02AC2B7DD5
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 03:48:02 +1000 (EST)
+Date: Sun, 16 May 2010 19:47:59 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
+Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
+To: Grant Likely <grant.likely@secretlab.ca>
+References: <20100505220916.GD3529@ovro.caltech.edu>
+	<1273168472.1767.1@antares>
+	<h2mfa686aa41005061106ofda766f5z64c4f631eaded414@mail.gmail.com>
+In-Reply-To: <h2mfa686aa41005061106ofda766f5z64c4f631eaded414@mail.gmail.com>
+	(from grant.likely@secretlab.ca on Thu May  6 20:06:14 2010)
+Message-Id: <1274032079.1729.3@antares>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>
-Subject: Re: [PATCH] media/IR: Add missing include file to rc-map.c
-References: <201005051720.22617.PeterHuewe@gmx.de>
-	<201005112042.14889.PeterHuewe@gmx.de>
-	<20100514060240.GD12002@linux-sh.org>
-	<201005141326.52099.PeterHuewe@gmx.de>
-In-Reply-To: <201005141326.52099.PeterHuewe@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, Paul Mundt <lethal@linux-sh.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-	David H?rdeman <david@hardeman.nu>, linuxppc-dev@ozlabs.org,
-	linux-m68k@lists.linux-m68k.org, linux-next@vger.kernel.org,
-	linux-media@vger.kernel.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-5nETcC2XTHhzUzma+rvq"
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
+	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Hüwe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> This patch adds a missing include linux/delay.h to prevent
-> build failures[1-5]
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
-> Forwarded to linux-next mailing list - 
-> breakage still exists in linux-next of 20100514 - please apply
-> 
-> KernelVersion: linux-next-20100505
+--=-5nETcC2XTHhzUzma+rvq
+Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for not answer earlier. I was traveling. Anyway, this
-patch got applied on May, 12:
+Am 06.05.10 20:06 schrieb(en) Grant Likely:
+> > I think, though, the whole stuff has been discussed in depth in Februar=
+y, so
+> > I do not understand why it's still pending as "new". =A0Grant, did we m=
+iss
+> > something here?
+>=20
+> I generally let subsystem maintainers pick up the device driver
+> patches for embedded platforms I'm responsible for unless I'm asked to
+> do otherwise.  I think ben has asked me to take these through my tree.
 
-http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-next.git;a=commitdiff;h=4ace7aa2998b2974948f1948a61a5d348ddae472
+That's <http://git.secretlab.ca/?p=3Dlinux-2.6.git;a=3Dshortlog>, isn't it?=
+  Hmmm, didn't find it there... :-/
 
-> 
-> References:
-> [1] http://kisskb.ellerman.id.au/kisskb/buildresult/2571452/
-> [2] http://kisskb.ellerman.id.au/kisskb/buildresult/2571188/
-> [3] http://kisskb.ellerman.id.au/kisskb/buildresult/2571479/
-> [4] http://kisskb.ellerman.id.au/kisskb/buildresult/2571429/
-> [5] http://kisskb.ellerman.id.au/kisskb/buildresult/2571432/
-> 
-> drivers/media/IR/rc-map.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/media/IR/rc-map.c b/drivers/media/IR/rc-map.c
-> index caf6a27..46a8f15 100644
-> --- a/drivers/media/IR/rc-map.c
-> +++ b/drivers/media/IR/rc-map.c
-> @@ -14,6 +14,7 @@
->  
->  #include <media/ir-core.h>
->  #include <linux/spinlock.h>
-> +#include <linux/delay.h>
->  
->  /* Used to handle IR raw handler extensions */
->  static LIST_HEAD(rc_map_list);
+Best, Albrecht.
 
+--=-5nETcC2XTHhzUzma+rvq
+Content-Type: application/pgp-signature
 
--- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
 
-Cheers,
-Mauro
+iD8DBQBL8C/Pn/9unNAn/9ERAvJWAJ0Xzcg4qyz+v7ilWBHZQIWGb3wOHQCfQc3u
+wc/gvVOWze93DMSyw0vuABM=
+=bQki
+-----END PGP SIGNATURE-----
+
+--=-5nETcC2XTHhzUzma+rvq--
