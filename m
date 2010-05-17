@@ -1,43 +1,12 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 04CF2B7DAD
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 15:13:48 +1000 (EST)
-Received: by gyf2 with SMTP id 2so1951767gyf.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 May 2010 22:13:46 -0700 (PDT)
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 17 May 2010 16:01:28 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, nfont@austin.ibm.com
+Subject: [PATCH 1/2] powerpc: Remove ibm,smt-snooze-delay OF property
+Message-ID: <20100517060128.GC13509@kryten>
 MIME-Version: 1.0
-In-Reply-To: <20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
-References: <20100512143445.GA32559@faui48a.informatik.uni-erlangen.de>
-	<20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 17 May 2010 01:13:23 -0400
-Message-ID: <AANLkTinCRYpqKuJ8NM2sk2hvrgFiqvo9mvXLApun0myA@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] Config Items appearing twice in same Kconfig
-	file?
-To: Christoph Egger <siccegge@cs.fau.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-ia64@vger.kernel.org, vamos@i4.informatik.uni-erlangen.de,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, Timo Teras <timo.teras@iki.fi>,
-	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Lennox Wu <lennox.wu@gmail.com>,
-	Jesper Nilsson <jesper.nilsson@axis.com>,
-	"Pekka Savola \(ipv6\)" <pekkas@netcore.fi>, x86@kernel.org,
-	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
-	Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Matt Turner <mattst88@gmail.com>,
-	Fenghua Yu <fenghua.yu@intel.com>, Mike Frysinger <vapier@gentoo.org>,
-	Arnd Bergmann <arnd@arndb.de>, Graf Yang <graf.yang@analog.com>,
-	Mikael Starvik <starvik@axis.com>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Richard Henderson <rth@twiddle.net>, Karsten Keil <isdn@linux-pingi.de>,
-	Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
-	linuxppc-dev@ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Patrick McHardy <kaber@trash.net>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linux-alpha@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,8 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 12, 2010 at 10:40, Christoph Egger wrote:
-> =C2=A0 =C2=A0 =C2=A02 arch/blackfin/Kconfig:config MEM_MT48LC32M8A2_75
 
-thanks, i'll get this simple bug fixed
--mike
+I'm not sure why we have code for parsing an ibm,smt-snooze-delay OF
+property. Since we have a smt-snooze-delay= boot option and we can
+also set it at runtime via sysfs, it should be safe to get rid of
+this code.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: powerpc.git/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/sysfs.c	2010-05-17 15:05:29.917208655 +1000
++++ powerpc.git/arch/powerpc/kernel/sysfs.c	2010-05-17 15:18:24.164704601 +1000
+@@ -67,33 +67,6 @@ static ssize_t show_smt_snooze_delay(str
+ static SYSDEV_ATTR(smt_snooze_delay, 0644, show_smt_snooze_delay,
+ 		   store_smt_snooze_delay);
+ 
+-/* Only parse OF options if the matching cmdline option was not specified */
+-static int smt_snooze_cmdline;
+-
+-static int __init smt_setup(void)
+-{
+-	struct device_node *options;
+-	const unsigned int *val;
+-	unsigned int cpu;
+-
+-	if (!cpu_has_feature(CPU_FTR_SMT))
+-		return -ENODEV;
+-
+-	options = of_find_node_by_path("/options");
+-	if (!options)
+-		return -ENODEV;
+-
+-	val = of_get_property(options, "ibm,smt-snooze-delay", NULL);
+-	if (!smt_snooze_cmdline && val) {
+-		for_each_possible_cpu(cpu)
+-			per_cpu(smt_snooze_delay, cpu) = *val;
+-	}
+-
+-	of_node_put(options);
+-	return 0;
+-}
+-__initcall(smt_setup);
+-
+ static int __init setup_smt_snooze_delay(char *str)
+ {
+ 	unsigned int cpu;
+@@ -102,8 +75,6 @@ static int __init setup_smt_snooze_delay
+ 	if (!cpu_has_feature(CPU_FTR_SMT))
+ 		return 1;
+ 
+-	smt_snooze_cmdline = 1;
+-
+ 	if (get_option(&str, &snooze)) {
+ 		for_each_possible_cpu(cpu)
+ 			per_cpu(smt_snooze_delay, cpu) = snooze;
