@@ -1,24 +1,24 @@
-Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
-Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
-	by ozlabs.org (Postfix) with ESMTP id 7CA65B7D59
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 19:02:33 +1000 (EST)
-Message-ID: <4BF1070B.4000507@oss.ntt.co.jp>
-Date: Mon, 17 May 2010 18:06:19 +0900
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1FE4BB7DAF
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 20:07:01 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]460EX on-chip SATA driver <Kernel 2.6.33> < resubmission >
+Date: Mon, 17 May 2010 12:06:47 +0200
+References: <201005051757.o45HvPmY005954@amcc.com>
+	<4BED8BF1.5080800@ru.mvista.com>
+	<1273966828.21352.670.camel@pasglop>
+In-Reply-To: <1273966828.21352.670.camel@pasglop>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [RFC][PATCH 0/12] KVM, x86, ppc, asm-generic: moving dirty bitmaps
-	to user space
-References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
-	<4BE7F6D7.3060005@redhat.com> <4BE7FB7B.5010600@oss.ntt.co.jp>
-	<4BEBE6D0.8020000@redhat.com>
-In-Reply-To: <4BEBE6D0.8020000@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-arch@vger.kernel.org, arnd@arndb.de, kvm@vger.kernel.org,
-	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
-	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201005171206.47566.sr@denx.de>
+Cc: linux-ide@vger.kernel.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
+	Sergei Shtylyov <sshtylyov@mvista.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,92 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
-> User allocated bitmaps have the advantage of reducing pinned memory.
-> However we have plenty more pinned memory allocated in memory slots, so
-> by itself, user allocated bitmaps don't justify this change.
+On Sunday 16 May 2010 01:40:28 Benjamin Herrenschmidt wrote:
+> > > +		SATA0: sata@bffd1000 {
+> > > +                        compatible = "amcc,sata-460ex";
+> > > +			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
+> > > +                        interrupt-parent = <&UIC3>;
+> > > +                        interrupts = <0x0 0x4       /* SATA */
+> > > +                                      0x5 0x4>;     /* AHBDMA */
+> > > +                };
+> > > +
+> > > 
+> > >  		POB0: opb {
+> > >  		
+> > >  			compatible = "ibm,opb-460ex", "ibm,opb";
+> > >  			#address-cells = <1>;
+> >    
+> >    Please put the device tree update in a separate patch to go thru the
+> > 
+> > PowerPC tree.
+> 
+> Additionally, the boot wrapper should probably either remove the node or
+> at least use a status property "ok" / "disabled" to represent whether
+> the board is configured for SATA or PCIe x1...
 
-In that sense, what do you think about the question I sent last week?
+U-Boot already sets the "status" property of the PCIe or SATA node 
+accordingly. Just let me know if this doesn't work for you.
 
-=== REPOST 1 ===
- >>
- >> mark_page_dirty is called with the mmu_lock spinlock held in set_spte.
- >> Must find a way to move it outside of the spinlock section.
- >>
- >
- > Oh, it's a serious problem. I have to consider it.
-
-Avi, Marcelo,
-
-Sorry but I have to say that mmu_lock spin_lock problem was completely out of
-my mind. Although I looked through the code, it seems not easy to move the
-set_bit_user to outside of spinlock section without breaking the semantics of
-its protection.
-
-So this may take some time to solve.
-
-But personally, I want to do something for x86's "vmallc() every time" problem
-even though moving dirty bitmaps to user space cannot be achieved soon.
-
-In that sense, do you mind if we do double buffering without moving dirty bitmaps to
-user space?
-
-I know that the resource for vmalloc() is precious for x86 but even now, at the timing
-of get_dirty_log, we use the same amount of memory as double buffering.
-=== 1 END ===
-
-
->
-> Perhaps if we optimize memory slot write protection (I have some ideas
-> about this) we can make the performance improvement more pronounced.
->
-
-It's really nice!
-
-Even now we can measure the performance improvement by introducing switch ioctl
-when guest is relatively idle, so the combination will be really effective!
-
-=== REPOST 2 ===
- >>
- >> Can you post such a test, for an idle large guest?
- >
- > OK, I'll do!
-
-
-Result of "low workload test" (running top during migration) first,
-
-4GB guest
-picked up slots[1](len=3757047808) only
-*****************************************
-     get.org     get.opt    switch.opt
-
-     1060875     310292     190335
-     1076754     301295     188600
-      655504     318284     196029
-      529769     301471        325
-      694796      70216     221172
-      651868     353073     196184
-      543339     312865     213236
-     1061938      72785     203090
-      689527     323901     249519
-      621364     323881        473
-     1063671      70703     192958
-      915903     336318     174008
-     1046462     332384        782
-     1037942      72783     190655
-      680122     318305     243544
-      688156     314935     193526
-      558658     265934     190550
-      652454     372135     196270
-      660140      68613        352
-     1101947     378642     186575
-         ...        ...        ...
-*****************************************
-
-As expected we've got the difference more clearly.
-
-In this case, switch.opt reduced 1/3 (.1 msec) compared to get.opt
-for each iteration.
-
-And when the slot is cleaner, the ratio is bigger.
-=== 2 END ===
+Cheers,
+Stefan
