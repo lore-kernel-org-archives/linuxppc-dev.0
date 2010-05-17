@@ -2,16 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4E551B7D94
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 07:17:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 91C07B7DC3
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 07:22:44 +1000 (EST)
 Subject: Re: [PATCH v5] powerpc: Add hibernation support for FSL BookE
 	processors
 Mime-Version: 1.0 (Apple Message framework v1078)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <20100517185652.GA11081@oksana.dev.rtsoft.ru>
-Date: Mon, 17 May 2010 16:17:22 -0500
-Message-Id: <2848DA81-7CF7-422D-B0C4-AF7778328DC9@kernel.crashing.org>
+Date: Mon, 17 May 2010 16:22:37 -0500
+Message-Id: <ECFF23B7-26B3-42D1-8609-FB53054BEF06@kernel.crashing.org>
 References: <20100224213802.GA12843@oksana.dev.rtsoft.ru>
 	<20100415184513.GA27101@oksana.dev.rtsoft.ru>
 	<2954FCF7-F34C-4E9D-A2EB-AC117D287EB5@kernel.crashing.org>
@@ -69,6 +69,13 @@ to
 > 2 files changed, 199 insertions(+), 2 deletions(-)
 > create mode 100644 arch/powerpc/kernel/swsusp_booke.S
 
-applied to next (fixed one white space issue).
+Is there board specific code to go along with this?
+
+When I enable I get:
+
+arch/powerpc/kernel/built-in.o: In function `cpu_idle':
+/home/galak/git/master/powerpc/arch/powerpc/kernel/idle.c:98: undefined =
+reference to `cpu_die'
+make: *** [.tmp_vmlinux1] Error 1
 
 - k=
