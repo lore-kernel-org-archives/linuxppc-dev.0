@@ -1,18 +1,24 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Mon, 17 May 2010 10:27:57 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 3/3] ptp: Added a clock that uses the eTSEC found on
-	the MPC85xx.
-Message-ID: <20100517082757.GA9703@riccoc20.at.omicron.at>
-References: <cover.1273855016.git.richard.cochran@omicron.at>
-	<ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
-	<4BED8C91.8020107@freescale.com>
+Return-Path: <yoshikawa.takuya@oss.ntt.co.jp>
+Received: from serv2.oss.ntt.co.jp (serv2.oss.ntt.co.jp [222.151.198.100])
+	by ozlabs.org (Postfix) with ESMTP id 7CA65B7D59
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 19:02:33 +1000 (EST)
+Message-ID: <4BF1070B.4000507@oss.ntt.co.jp>
+Date: Mon, 17 May 2010 18:06:19 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BED8C91.8020107@freescale.com>
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [RFC][PATCH 0/12] KVM, x86, ppc, asm-generic: moving dirty bitmaps
+	to user space
+References: <20100504215645.6448af8f.takuya.yoshikawa@gmail.com>
+	<4BE7F6D7.3060005@redhat.com> <4BE7FB7B.5010600@oss.ntt.co.jp>
+	<4BEBE6D0.8020000@redhat.com>
+In-Reply-To: <4BEBE6D0.8020000@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-arch@vger.kernel.org, arnd@arndb.de, kvm@vger.kernel.org,
+	kvm-ia64@vger.kernel.org, fernando@oss.ntt.co.jp,
+	mtosatti@redhat.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Takuya Yoshikawa <takuya.yoshikawa@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,170 +28,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 14, 2010 at 12:46:57PM -0500, Scott Wood wrote:
-> On 05/14/2010 11:46 AM, Richard Cochran wrote:
-> >diff --git a/Documentation/powerpc/dts-bindings/fsl/tsec.txt b/Documentation/powerpc/dts-bindings/fsl/tsec.txt
-> 
-> Get rid of both device_type and model, and specify a compatible
-> string instead (e.g. "fsl,etsec-ptp").
 
-Okay, will do. I really am at a loss at understanding all the rules in
-the whole device tree world. I just tried to follow
-Documentation/powerpc and what is already present in the kernel.
+> User allocated bitmaps have the advantage of reducing pinned memory.
+> However we have plenty more pinned memory allocated in memory slots, so
+> by itself, user allocated bitmaps don't justify this change.
 
-> Or perhaps this should just be some additional properties on the
-> existing gianfar nodes, rather than presenting it as a separate
-> device?  How do you associate a given ptp block with the
-> corresponding gianfar node?
+In that sense, what do you think about the question I sent last week?
 
-There only one PTP clock. Its registers repeat in each port's memory
-space, but you are only supposed to touch the first set of PTP
-registers. If you consider how PTP works, there can never be per port
-clocks, since this would make it impossible to make a boundary clock,
-for example.
+=== REPOST 1 ===
+ >>
+ >> mark_page_dirty is called with the mmu_lock spinlock held in set_spte.
+ >> Must find a way to move it outside of the spinlock section.
+ >>
+ >
+ > Oh, it's a serious problem. I have to consider it.
 
-The whole idea of this PTP clock framework is to keep the clock
-drivers separate from the MAC drivers, even when they use the same
-hardware. The functionality is logically divided into two parts. The
-MAC provides time stamps, and the clock provides a way to control its
-offset and frequency.
+Avi, Marcelo,
 
-Up until this point, people have simply hacked new private ioctls into
-the driver for each MAC that supports PTP. That is not a good long
-term solution for PTP support in Linux.
+Sorry but I have to say that mmu_lock spin_lock problem was completely out of
+my mind. Although I looked through the code, it seems not easy to move the
+set_bit_user to outside of spinlock section without breaking the semantics of
+its protection.
 
-In general, I think it will not be hard to keep the MAC and the clock
-drivers from stepping on each other's toes. The eTSEC hardware is
-certainly able to be used in this way.
+So this may take some time to solve.
 
-> If there are differences in ptp implementation between different
-> versions of etsec, can the ptp driver see the etsec version
-> register?
+But personally, I want to do something for x86's "vmallc() every time" problem
+even though moving dirty bitmaps to user space cannot be achieved soon.
 
-There are no differences (that I know of) in how the PTP clocks
-work. I have in house the mpc8313, the mpc8572, and the p2020. The
-mpc8572 appears to lack some of the TMR_CTRL bits, but this is
-probably a documentation bug. I will check it.
+In that sense, do you mind if we do double buffering without moving dirty bitmaps to
+user space?
 
-> >+  - tclk_period  Timer reference clock period in nanoseconds.
-> >+  - tmr_prsc     Prescaler, divides the output clock.
-> >+  - tmr_add      Frequency compensation value.
-> >+  - cksel        0= external clock, 1= eTSEC system clock, 3= RTC clock input.
-> >+                 Currently the driver only supports choice "1".
-> >+  - tmr_fiper1   Fixed interval period pulse generator.
-> >+  - tmr_fiper2   Fixed interval period pulse generator.
-> 
-> Dashes are more typical in OF names than underscores, and it's
-> generally better to be a little more verbose -- these aren't local
-> loop iterators.
+I know that the resource for vmalloc() is precious for x86 but even now, at the timing
+of get_dirty_log, we use the same amount of memory as double buffering.
+=== 1 END ===
 
-The names come from the register mnemonics from the documentation. I
-prefer to use the same names as is found in the manuals. That way, a
-person working with docu in hand will have an easier job.
 
-> They should probably have an "fsl,ptp-" prefix as well.
+>
+> Perhaps if we optimize memory slot write protection (I have some ideas
+> about this) we can make the performance improvement more pronounced.
+>
 
-Okay, but must I then change the following code in order to find them?
-Does adding the prefix just mean that I also add it to my search
-strings, or is it preprocessed (stripped) somehow?
+It's really nice!
 
-static int get_of_u32(struct device_node *node, char *str, u32 *val)
-{
-	int plen;
-	const u32 *prop = of_get_property(node, str, &plen);
+Even now we can measure the performance improvement by introducing switch ioctl
+when guest is relatively idle, so the combination will be really effective!
 
-	if (!prop || plen != sizeof(*prop))
-	   return -1;
-	   *val = *prop;
-	   return 0;
-}
-...
-	if (get_of_u32(node, "tclk_period",&etsects->tclk_period) ||
-	    get_of_u32(node, "tmr_prsc",&etsects->tmr_prsc) ||
-	    get_of_u32(node, "tmr_add",&etsects->tmr_add) ||
-	    get_of_u32(node, "cksel",&etsects->cksel) ||
-	    get_of_u32(node, "tmr_fiper1",&etsects->tmr_fiper1) ||
-	    get_of_u32(node, "tmr_fiper2",&etsects->tmr_fiper2))
-		return -ENODEV;
+=== REPOST 2 ===
+ >>
+ >> Can you post such a test, for an idle large guest?
+ >
+ > OK, I'll do!
 
-> >+  These properties set the operational parameters for the PTP
-> >+  clock. You must choose these carefully for the clock to work right.
-> 
-> Do these values describe the way the hardware is, or how it's been
-> configured by firmware, or a set of values that are clearly optimal
-> for this particular board?  If it's just configuration for the Linux
-> driver, that could reasonably differ based on what a given user or
-> OS will want, the device tree probably isn't the right place for it.
 
-The values are related to the board. One important parameter is the
-input clock, and the rest reflect some engineering decisions/tradeoffs
-related to the signals to and from the PTP clock. There is not just
-one "optimal" choice, so I wanted to let the designer set the
-values. In any case, the parameters are definitely related to the
-board (not to the cpu or to linux), so I think the device tree is the
-right place for them.
+Result of "low workload test" (running top during migration) first,
 
-> This one has 3 interrupts?  The driver supports only two.
+4GB guest
+picked up slots[1](len=3757047808) only
+*****************************************
+     get.org     get.opt    switch.opt
 
-The documentation does not specify the IRQ line that each event
-belongs to. After some trial and error, it appears that all of the
-ancillary clock interrupts arrive on the first interrupt. The other
-lines (one per port) must be for the Tx/Rx packet time stamp
-indication, but we don't need these for the clock or for the MAC.
+     1060875     310292     190335
+     1076754     301295     188600
+      655504     318284     196029
+      529769     301471        325
+      694796      70216     221172
+      651868     353073     196184
+      543339     312865     213236
+     1061938      72785     203090
+      689527     323901     249519
+      621364     323881        473
+     1063671      70703     192958
+      915903     336318     174008
+     1046462     332384        782
+     1037942      72783     190655
+      680122     318305     243544
+      688156     314935     193526
+      558658     265934     190550
+      652454     372135     196270
+      660140      68613        352
+     1101947     378642     186575
+         ...        ...        ...
+*****************************************
 
-I'll just reduce the driver to one interrupt.
+As expected we've got the difference more clearly.
 
-> >+/* Private globals */
-> >+static struct ptp_clock *gianfar_clock;
-> 
-> Do you not support more than one of these?
-> 
-> >+static struct etsects the_clock;
-> 
-> "The" clock?  As oppsed to the "other" clock one line above? :-)
+In this case, switch.opt reduced 1/3 (.1 msec) compared to get.opt
+for each iteration.
 
-The 'gianfar_clock' variable holds the returned instance from the
-class driver, while 'the_clock' is the driver's private data (and
-there can only be one driver).
-
-I'll combine these into one struct to make it more clear and less
-funny sounding.
-
-> >+	return IRQ_HANDLED;
-> 
-> Should only return IRQ_HANDLED if you found an event.
-
-Okay.
-
-> >+	if (get_of_u32(node, "tclk_period",&etsects->tclk_period) ||
-> >+	    get_of_u32(node, "tmr_prsc",&etsects->tmr_prsc) ||
-> >+	    get_of_u32(node, "tmr_add",&etsects->tmr_add) ||
-> >+	    get_of_u32(node, "cksel",&etsects->cksel) ||
-> >+	    get_of_u32(node, "tmr_fiper1",&etsects->tmr_fiper1) ||
-> >+	    get_of_u32(node, "tmr_fiper2",&etsects->tmr_fiper2))
-> >+		return -ENODEV;
-> 
-> Might want to print an error so the user knows what's missing.
-
-Okay.
-
-> You've got two IRQs, with the same handler, and the same dev_id?
-> From the manual it looks like there's one PTP interrupt per eTSEC
-> (which would explain 3 interrupts on p2020).
-
-Will reduce to just one IRQ.
-
-> >+static struct of_device_id match_table[] = {
-> >+	{ .type = "ptp_clock" },
-> >+	{},
-> >+};
-> 
-> This driver controls every possible PTP implementation?
-
-No, I only want to match with the eTSEC clock device. Given the
-compatible string above ("fsl,etsec-ptp"), what is the correct way to
-do this? (pointer to an existing driver to emulate would be enough)
-
-Thanks for your help,
-
-Richard
+And when the slot is cleaner, the ratio is bigger.
+=== 2 END ===
