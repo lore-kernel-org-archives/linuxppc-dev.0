@@ -1,20 +1,30 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 17 May 2010 22:32:41 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
-Message-ID: <20100517123241.GA5379@brick.ozlabs.ibm.com>
-References: <20100414033555.746326035@pr> <20100414034827.GC6571@in.ibm.com>
-	<20100503062330.GB19365@drongo> <20100504203302.GA3894@in.ibm.com>
-	<20100512063247.GC3548@drongo> <20100514065530.GA6195@in.ibm.com>
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0EF26B7DB0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 17 May 2010 22:49:27 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4HCnPdv012924
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:49:25 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4HCgHJO1687750
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:42:17 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4HCnQsa028260
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:49:26 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Add support for IO Event interrupt drivers
+Date: Mon, 17 May 2010 22:53:29 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100514065530.GA6195@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201005172253.29825.markn@au1.ibm.com>
+Cc: Tseng-hui Lin <tsenglin@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,147 +34,310 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 14, 2010 at 12:25:31PM +0530, K.Prasad wrote:
+This patch adds support for handling IO Event interrupts which come
+through at the /event-sources/ibm,io-events device tree node.
 
-> Okay. I will re-use single_step_exception() after modifications; it
-> appearsto have no in-kernel users for it.
+There is one ibm,io-events interrupt, but this interrupt might be used
+for multiple I/O devices, each with their own separate driver. So, we
+create a platform interrupt handler that will do the RTAS check-exception
+call and then call the appropriate driver's interrupt handler (the one(s)
+that registered with a scope that matches the scope of the incoming
+interrupt).
 
-It's called from exceptions-64s.S, head_32.S and head_8xx.S in
-arch/powerpc/kernel.
+So, a driver for a device that uses IO Event interrupts will register
+it's interrupt service routine (or interrupt handler) with the platform
+code using ioei_register_isr(). This register function takes a function
+pointer to the driver's handler and the scope that the driver is
+interested in (scopes defined in arch/powerpc/include/asm/io_events.h).
+The driver's handler must take a pointer to a struct io_events_section
+and must not return anything.
 
-> > Suppose the address at which the data breakpoint has been unmapped,
-> > and the process has a handler for the SIGSEGV signal.  When we try to
-> > single-step the load or store, we will get a DSI (0x300) interrupt,
-> > call into do_page_fault, and end up sending the process a SIGSEGV.
-> > That will invoke the signal handler, which can then do anything it
-> > likes.  It can do a blocking system call, it can longjmp() back into
-> > its main event, or it can return from the signal handler.  Only in the
-> > last case will it retry the load or store, and then only if the signal
-> > handler hasn't modified the NIP value in the signal frame.  That's
-> > what I mean by "doesn't return to the instruction".
-> > 
-> 
-> At the outset, this seemed to be a scary thing to happen; but turns out
-> to be harmful only to the extent of generating a false hw-breakpoint
-> exception in certain cases. A case-by-case basis analysis reveals thus:
-> 
-> Consider an instruction stream i1, i2, i3, ... iN, where i1 has
-> finished execution and i2 is about to be executed but has generated a
-> DSI interrupt with the above-mentioned conditions i.e. DSISR indicates a
-> DABR match + Page-Table entry not found. Now according to do_hash_page
-> in exception-64s.S (as pasted below), do_page_fault() and do_dabr() are
-> invoked one after the other.
-> 
-> _STATIC(do_hash_page)
-> 	std	r3,_DAR(r1)
-> 	std	r4,_DSISR(r1)
-> 
-> 	andis.	r0,r4,0xa410		/* weird error? */
-> 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
-> 	andis.  r0,r4,DSISR_DABRMATCH@h
-> 	bne-    handle_dabr_fault
+The platform code registers io_event_interrupt() as the interrupt handler
+for the ibm,io-events interrupt. Upon receiving an IO Event interrupt, it
+checks the scope of the incoming interrupt and only calls those drivers'
+handlers that have registered as being interested in that scope.
 
-Note that bne is not a procedure call; we'll actually get two DSIs in
-this scenario.  But I don't think that matters.  Also note that the
-branch to handle_page_fault here is not for the HPTE-not-found case;
-it's for the unusual errors.  So we'll handle the HPTE insertion after
-handling the DABR match.
+It is possible for a single driver to register the same function pointer
+more than once with different scopes if it is interested in more than one
+type of IO Event interrupt. If a handler wants to be notified of all
+incoming IO Event interrupts it can register with IOEI_SCOPE_ANY.
 
-> Thus, when control returns to user-space to instruction 'i2', the
-> hw_breakpoint_handler() has completed execution, and a SIGSEGV is pending
-> to be delivered and single-stepping enabled MSR_SE is set. Upon return to
-> user-space, the handler for SIGSEGV is executed and it may perform one of
-> the following (as you stated previously):
-> (a) Make a blocking syscall, eventually yielding the CPU to a new thread
-> (b) Jump to a different instruction in user-space, say iN, and not complete
-> the execution of instruction i2 at all.
-> (c) Return to instruction i2 and complete the execution.
-> 
-> In case of (a), the context-switches should not affect the ability to
-> single-step the instruction when the thread is eventually scheduled to
-> run. The thread, when scheduled onto the CPU will complete signal
-> handling, return to execute instruction i2, cause single-step exception,
-> restore breakpoints and run smoothly thereafter.
+A driver can unregister to stop receiving the IO Event interrupts using
+ioei_unregister_isr(), passing it the same function pointer to the
+driver's handler and the scope the driver was registered with.
 
-Right.  However, the thread is running the signal handler without the
-DABR being set, which is unfortunate.
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+---
+ arch/powerpc/include/asm/io_events.h       |   40 +++++
+ arch/powerpc/platforms/pseries/Makefile    |    2 
+ arch/powerpc/platforms/pseries/io_events.c |  205 +++++++++++++++++++++++++++++
+ 3 files changed, 246 insertions(+), 1 deletion(-)
 
-> In case of (b), the new instruction iN is single-stepped, the breakpoint
-> values are restored and the hw-breakpoint exception callback is invoked
-> after iN is executed. The user of this breakpoint i.e. the caller of
-> register_user_hw_breakpoint() who had placed a breakpoint on addressed
-> accessed by instruction i2 will be confused to find that an unrelated
-> instruction (which may not be a load/store) has caused the breakpoint.
-
-That's the case if the signal handler modifies the NIP value in the
-register set saved on the stack and returns.  If the signal handler
-instead simply jumps to instruction iN (e.g. with longjmp or
-siglongjmp), we'll never get the single-step callback.
-
-> If so desired, we may adopt the 'trigger-before-execute' semantics for
-> user-space breakpoints wherein the hw-breakpoint callback (through
-> perf_bp_event()) is invoked in hw_breakpoint_handler() itself. This
-> would indicate to the user that the impending instruction causes a DABR
-> 'hit' but it may or may not be executed due to the role of
-> signal-handler or due to self-modifying code (as mentioned below).
-> 
-> Kindly let me know what you think about it.
-> 
-> (c) is the normal execution path we desire. The instruction i2 will be
-> safely single-stepped and breakpoints are restored.
-> 
-> > The instruction could be changed underneath us if the program is
-> > multi-threaded and another thread writes another instruction to the
-> > instruction word where the load or store is.  Or it could use mmap()
-> > to map some other page at the address of the load or store.  Either
-> > way we could end up with a different instruction there.
-> > 
-> 
-> If the instruction that originally caused the DABR exception is changed,
-> the new instruction in its place would still single-step to restore
-> breakpoint values. However the user of breakpoint interface will be
-> confused to find that the callback is invoked for an irrelevant
-> instruction.
-> 
-> It could be circumvented, to an extent, through the use of
-> trigger-before-execute semantics (as described before).
-
-I don't think we want to do trigger-before-execute.  Ideally what we
-want to ensure at all times is that either DABR is set (enabled) or
-MSR.SE is set, but not both.  To ensure that we'd have to modify the
-signal delivery code and possibly other places.
-
-> > If we do get a context switch, e.g. as a result of a page fault, and
-> > then switch back to the task, it looks to me like we will end up with
-> > MSR_SE and DABR both set.  I don't suppose that will actually cause
-> > any real problem besides double-counting the hit.
-> > 
-> 
-> Page fault exception will be handled before hw_breakpoint_handler(),
-> hence MSR_SE would not have been set if a context-switch happened in
-> pange-fault handling itself. I don't see a case where both MSR_SE and
-> DABR will be set together.
-
-Imagine this scenario: we get the DABR match, set MSR_SE and return to
-the task.  In the meantime another higher-priority task has become
-runnable and our need_resched flag is set, so we call schedule() on
-the way back out to usermode.  The other task runs and then blocks and
-our task gets scheduled again.  As part of the context switch,
-arch_install_hw_breakpoint() will get called and will set DABR.  So
-we'll return to usermode with both DABR and MSE_SE set.
-
-> Thanks for the comments. Let me know if the analysis above is incorrect
-> or if I've failed to recognise any important issue that you pointed out.
-> I will send out a patch with changes to emulate_single_step() in the
-> next version of the patchset, if I don't hear any further comments.
-
-We haven't discussed at all the case where the breakpoint is a per-cpu
-breakpoint or where it's a per-task breakpoint but the DABR match
-occurs within the kernel -- which can happen, even for a user address,
-in __get_user, __put_user, __copy_tofrom_user, etc.  If the access
-there is to a bad address, we'll invoke the exception case in
-bad_page_fault(), which looks to be another place where we need to
-recognize that single-stepping won't succeed and reinstall the DABR
-setting.  Do we count that as an event or not? - I'm not sure.
-
-Paul.
+Index: upstream/arch/powerpc/include/asm/io_events.h
+===================================================================
+--- /dev/null
++++ upstream/arch/powerpc/include/asm/io_events.h
+@@ -0,0 +1,40 @@
++/*
++ * Copyright 2010 IBM Corporation, Mark Nelson
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _ASM_POWERPC_IOEVENTS_H
++#define _ASM_POWERPC_IOEVENTS_H
++
++struct io_events_section {
++	u16	id;			// Unique section identifier	x00-x01
++	u16	length;			// Section length (bytes)	x02-x03
++	u8	version;		// Section Version		x04-x04
++	u8	sec_subtype;		// Section subtype		x05-x05
++	u16	creator_id;		// Creator Component ID		x06-x07
++	u8	event_type;		// IO-Event Type		x08-x08
++	u8	rpc_field_len;		// PRC Field Length		x09-x09
++	u8	scope;			// Error/Event Scope		x0A-x0A
++	u8	event_subtype;		// I/O-Event Sub-Type		x0B-x0B
++	u32	drc_index;		// DRC Index			x0C-x0F
++	u32	rpc_data[];		// RPC Data (optional)		x10-...
++};
++
++#define IOEI_SCOPE_NOT_APP	0x00
++#define IOEI_SCOPE_RIO_HUB	0x36
++#define IOEI_SCOPE_RIO_BRIDGE	0x37
++#define IOEI_SCOPE_PHB		0x38
++#define IOEI_SCOPE_EADS_GLOBAL	0x39
++#define IOEI_SCOPE_EADS_SLOT	0x3A
++#define IOEI_SCOPE_TORRENT_HUB	0x3B
++#define IOEI_SCOPE_SERVICE_PROC	0x51
++#define IOEI_SCOPE_ANY		-1
++
++int ioei_register_isr(void (*isr)(struct io_events_section *), int scope);
++int ioei_unregister_isr(void (*isr)(struct io_events_section *), int scope);
++
++#endif /* _ASM_POWERPC_IOEVENTS_H */
+Index: upstream/arch/powerpc/platforms/pseries/io_events.c
+===================================================================
+--- /dev/null
++++ upstream/arch/powerpc/platforms/pseries/io_events.c
+@@ -0,0 +1,205 @@
++/*
++ * Copyright 2010 IBM Corporation, Mark Nelson
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/errno.h>
++#include <linux/spinlock.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/of.h>
++
++#include <asm/io_events.h>
++#include <asm/rtas.h>
++#include <asm/irq.h>
++
++#include "event_sources.h"
++
++struct ioei_consumer {
++	void (*ioei_isr)(struct io_events_section *);
++	int scope;
++	struct ioei_consumer *next;
++};
++
++static int ioei_check_exception_token;
++
++static unsigned char ioei_log_buf[RTAS_ERROR_LOG_MAX];
++static DEFINE_SPINLOCK(ioei_log_buf_lock);
++
++static struct ioei_consumer *ioei_isr_list;
++static DEFINE_SPINLOCK(ioei_isr_list_lock);
++
++int ioei_register_isr(void (*isr)(struct io_events_section *), int scope)
++{
++	struct ioei_consumer *iter;
++	struct ioei_consumer *cons;
++	int ret = 0;
++
++	spin_lock(&ioei_isr_list_lock);
++	/* check to see if we've already registered this function with
++	 * this scope. If we have, don't register it again
++	 */
++	iter = ioei_isr_list;
++	while (iter) {
++		if (iter->ioei_isr == isr && iter->scope == scope)
++			break;
++		iter = iter->next;
++	}
++
++	if (iter) {
++		ret = -EEXIST;
++		goto out;
++	}
++
++	cons = kmalloc(sizeof(struct ioei_consumer), GFP_KERNEL);
++
++	if (!cons) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	cons->ioei_isr = isr;
++	cons->scope = scope;
++
++	cons->next = ioei_isr_list;
++	ioei_isr_list = cons;
++
++out:
++	spin_unlock(&ioei_isr_list_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(ioei_register_isr);
++
++int ioei_unregister_isr(void (*isr)(struct io_events_section *), int scope)
++{
++	struct ioei_consumer *iter;
++	struct ioei_consumer *prev = NULL;
++	int ret = 0;
++
++	spin_lock(&ioei_isr_list_lock);
++	iter = ioei_isr_list;
++	while (iter) {
++		if (iter->ioei_isr == isr && iter->scope == scope)
++			break;
++		prev = iter;
++		iter = iter->next;
++	}
++
++	if (!iter) {
++		ret = -ENOENT;
++		goto out;
++	}
++
++	if (prev)
++		prev->next = iter->next;
++	else
++		ioei_isr_list = iter->next;
++
++	kfree(iter);
++
++out:
++	spin_unlock(&ioei_isr_list_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(ioei_unregister_isr);
++
++static void ioei_call_consumers(int scope, struct io_events_section *sec)
++{
++	struct ioei_consumer *iter;
++	unsigned long flags;
++
++	spin_lock_irqsave(&ioei_isr_list_lock, flags);
++	iter = ioei_isr_list;
++	while (iter) {
++		if (iter->scope == scope || iter->scope == IOEI_SCOPE_ANY)
++			iter->ioei_isr(sec);
++		iter = iter->next;
++	}
++
++	spin_unlock_irqrestore(&ioei_isr_list_lock, flags);
++}
++
++#define EXT_INT_VECTOR_OFFSET	0x500
++#define RTAS_TYPE_IO_EVENT	0xE1
++
++static irqreturn_t io_event_interrupt(int irq, void *dev_id)
++{
++	struct rtas_error_log *rtas_elog;
++	struct io_events_section *ioei_sec;
++	char *ch_ptr;
++	int status;
++	u16 *sec_len;
++
++	spin_lock(&ioei_log_buf_lock);
++
++	status = rtas_call(ioei_check_exception_token, 6, 1, NULL,
++			   EXT_INT_VECTOR_OFFSET,
++			   irq_map[irq].hwirq,
++			   RTAS_IO_EVENTS, 1 /*Time Critical */,
++			   __pa(&ioei_log_buf),
++				rtas_get_error_log_max());
++
++	rtas_elog = (struct rtas_error_log *)ioei_log_buf;
++
++	if (status != 0)
++		goto out;
++
++	/* We assume that we will only ever get called for io-event
++	 * interrupts. But if we get called with something else
++	 * make some noise about it.
++	 */
++	if (rtas_elog->type != RTAS_TYPE_IO_EVENT) {
++		pr_warning("IO Events: We got called with an event type of %d"
++			   " rather than %d!\n", rtas_elog->type,
++			   RTAS_TYPE_IO_EVENT);
++		WARN_ON(1);
++		goto out;
++	}
++
++	/* there are 24 bytes of event log data before the first section
++	 * (Main-A) begins
++	 */
++	ch_ptr = (char *)ioei_log_buf + 24;
++
++	/* loop through all the sections until we get to the IO Events
++	 * Section, with section ID "IE"
++	 */
++	while (*ch_ptr != 'I' && *(ch_ptr + 1) != 'E') {
++		sec_len = (u16 *)(ch_ptr + 2);
++		ch_ptr += *sec_len;
++	}
++
++	ioei_sec = (struct io_events_section *)ch_ptr;
++
++	ioei_call_consumers(ioei_sec->scope, ioei_sec);
++
++out:
++	spin_unlock(&ioei_log_buf_lock);
++
++	return IRQ_HANDLED;
++}
++
++static int __init init_ioei_IRQ(void)
++{
++	struct device_node *np;
++
++	ioei_check_exception_token = rtas_token("check-exception");
++
++	np = of_find_node_by_path("/event-sources/ibm,io-events");
++	if (np != NULL) {
++		request_event_sources_irqs(np, io_event_interrupt, "IO_EVENT");
++		of_node_put(np);
++	}
++
++	return 0;
++}
++device_initcall(init_ioei_IRQ);
++
+Index: upstream/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/pseries/Makefile
++++ upstream/arch/powerpc/platforms/pseries/Makefile
+@@ -8,7 +8,7 @@ endif
+ 
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   setup.o iommu.o event_sources.o ras.o \
+-			   firmware.o power.o dlpar.o
++			   firmware.o power.o dlpar.o io_events.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
