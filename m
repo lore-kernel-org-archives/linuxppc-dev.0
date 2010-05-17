@@ -1,31 +1,20 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7C905B7DA7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 May 2010 22:30:10 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4HCU8Pk031685
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:30:08 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4HCU9831814652
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:30:09 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4HCU9sA007087
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:30:09 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: Make request_ras_irqs() available to other
-	pseries code
-Date: Mon, 17 May 2010 22:33:01 +1000
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 17 May 2010 22:32:41 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+Message-ID: <20100517123241.GA5379@brick.ozlabs.ibm.com>
+References: <20100414033555.746326035@pr> <20100414034827.GC6571@in.ibm.com>
+	<20100503062330.GB19365@drongo> <20100504203302.GA3894@in.ibm.com>
+	<20100512063247.GC3548@drongo> <20100514065530.GA6195@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201005172233.01183.markn@au1.ibm.com>
-Cc: Tseng-hui Lin <tsenglin@us.ibm.com>, engebret@us.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100514065530.GA6195@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,247 +24,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment only the RAS code uses event-sources interrupts (for EPOW
-events and internal errors) so request_ras_irqs() (which actually requests
-the event-sources interrupts) is found in ras.c and is static.
+On Fri, May 14, 2010 at 12:25:31PM +0530, K.Prasad wrote:
 
-We want to be able to use event-sources interrupts in other pseries code,
-so let's rename request_ras_irqs() to request_event_sources_irqs() and
-move it to event_sources.c.
+> Okay. I will re-use single_step_exception() after modifications; it
+> appearsto have no in-kernel users for it.
 
-This will be used in an upcoming patch that adds support for IO Event
-interrupts that come through as event sources.
+It's called from exceptions-64s.S, head_32.S and head_8xx.S in
+arch/powerpc/kernel.
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/powerpc/platforms/pseries/Makefile        |    2 
- arch/powerpc/platforms/pseries/event_sources.c |   79 +++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/event_sources.h |   29 +++++++++
- arch/powerpc/platforms/pseries/ras.c           |   63 +------------------
- 4 files changed, 113 insertions(+), 60 deletions(-)
+> > Suppose the address at which the data breakpoint has been unmapped,
+> > and the process has a handler for the SIGSEGV signal.  When we try to
+> > single-step the load or store, we will get a DSI (0x300) interrupt,
+> > call into do_page_fault, and end up sending the process a SIGSEGV.
+> > That will invoke the signal handler, which can then do anything it
+> > likes.  It can do a blocking system call, it can longjmp() back into
+> > its main event, or it can return from the signal handler.  Only in the
+> > last case will it retry the load or store, and then only if the signal
+> > handler hasn't modified the NIP value in the signal frame.  That's
+> > what I mean by "doesn't return to the instruction".
+> > 
+> 
+> At the outset, this seemed to be a scary thing to happen; but turns out
+> to be harmful only to the extent of generating a false hw-breakpoint
+> exception in certain cases. A case-by-case basis analysis reveals thus:
+> 
+> Consider an instruction stream i1, i2, i3, ... iN, where i1 has
+> finished execution and i2 is about to be executed but has generated a
+> DSI interrupt with the above-mentioned conditions i.e. DSISR indicates a
+> DABR match + Page-Table entry not found. Now according to do_hash_page
+> in exception-64s.S (as pasted below), do_page_fault() and do_dabr() are
+> invoked one after the other.
+> 
+> _STATIC(do_hash_page)
+> 	std	r3,_DAR(r1)
+> 	std	r4,_DSISR(r1)
+> 
+> 	andis.	r0,r4,0xa410		/* weird error? */
+> 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
+> 	andis.  r0,r4,DSISR_DABRMATCH@h
+> 	bne-    handle_dabr_fault
 
-Index: upstream/arch/powerpc/platforms/pseries/event_sources.c
-===================================================================
---- /dev/null
-+++ upstream/arch/powerpc/platforms/pseries/event_sources.c
-@@ -0,0 +1,79 @@
-+/*
-+ * Copyright (C) 2001 Dave Engebretsen IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <asm/prom.h>
-+
-+#include "event_sources.h"
-+
-+void request_event_sources_irqs(struct device_node *np,
-+				irq_handler_t handler,
-+				const char *name)
-+{
-+	int i, index, count = 0;
-+	struct of_irq oirq;
-+	const u32 *opicprop;
-+	unsigned int opicplen;
-+	unsigned int virqs[16];
-+
-+	/* Check for obsolete "open-pic-interrupt" property. If present, then
-+	 * map those interrupts using the default interrupt host and default
-+	 * trigger
-+	 */
-+	opicprop = of_get_property(np, "open-pic-interrupt", &opicplen);
-+	if (opicprop) {
-+		opicplen /= sizeof(u32);
-+		for (i = 0; i < opicplen; i++) {
-+			if (count > 15)
-+				break;
-+			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
-+			if (virqs[count] == NO_IRQ)
-+				printk(KERN_ERR "Unable to allocate interrupt "
-+				       "number for %s\n", np->full_name);
-+			else
-+				count++;
-+
-+		}
-+	}
-+	/* Else use normal interrupt tree parsing */
-+	else {
-+		/* First try to do a proper OF tree parsing */
-+		for (index = 0; of_irq_map_one(np, index, &oirq) == 0;
-+		     index++) {
-+			if (count > 15)
-+				break;
-+			virqs[count] = irq_create_of_mapping(oirq.controller,
-+							    oirq.specifier,
-+							    oirq.size);
-+			if (virqs[count] == NO_IRQ)
-+				printk(KERN_ERR "Unable to allocate interrupt "
-+				       "number for %s\n", np->full_name);
-+			else
-+				count++;
-+		}
-+	}
-+
-+	/* Now request them */
-+	for (i = 0; i < count; i++) {
-+		if (request_irq(virqs[i], handler, 0, name, NULL)) {
-+			printk(KERN_ERR "Unable to request interrupt %d for "
-+			       "%s\n", virqs[i], np->full_name);
-+			return;
-+		}
-+	}
-+}
-+
-Index: upstream/arch/powerpc/platforms/pseries/event_sources.h
-===================================================================
---- /dev/null
-+++ upstream/arch/powerpc/platforms/pseries/event_sources.h
-@@ -0,0 +1,29 @@
-+/*
-+ * Copyright (C) 2001 Dave Engebretsen IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#ifndef _POWERPC_EVENT_SOURCES_H
-+#define _POWERPC_EVENT_SOURCES_H
-+
-+#include <linux/interrupt.h>
-+
-+struct device_node;
-+
-+extern void request_event_sources_irqs(struct device_node *np,
-+				       irq_handler_t handler, const char *name);
-+
-+#endif /* _POWERPC_EVENT_SOURCES_H */
-Index: upstream/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- upstream.orig/arch/powerpc/platforms/pseries/Makefile
-+++ upstream/arch/powerpc/platforms/pseries/Makefile
-@@ -7,7 +7,7 @@ EXTRA_CFLAGS		+= -DDEBUG
- endif
- 
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
--			   setup.o iommu.o ras.o \
-+			   setup.o iommu.o event_sources.o ras.o \
- 			   firmware.o power.o dlpar.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_XICS)	+= xics.o
-Index: upstream/arch/powerpc/platforms/pseries/ras.c
-===================================================================
---- upstream.orig/arch/powerpc/platforms/pseries/ras.c
-+++ upstream/arch/powerpc/platforms/pseries/ras.c
-@@ -50,6 +50,7 @@
- #include <asm/firmware.h>
- 
- #include "pseries.h"
-+#include "event_sources.h"
- 
- static unsigned char ras_log_buf[RTAS_ERROR_LOG_MAX];
- static DEFINE_SPINLOCK(ras_log_buf_lock);
-@@ -67,63 +68,6 @@ static irqreturn_t ras_epow_interrupt(in
- static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
- 
- 
--static void request_ras_irqs(struct device_node *np,
--			irq_handler_t handler,
--			const char *name)
--{
--	int i, index, count = 0;
--	struct of_irq oirq;
--	const u32 *opicprop;
--	unsigned int opicplen;
--	unsigned int virqs[16];
--
--	/* Check for obsolete "open-pic-interrupt" property. If present, then
--	 * map those interrupts using the default interrupt host and default
--	 * trigger
--	 */
--	opicprop = of_get_property(np, "open-pic-interrupt", &opicplen);
--	if (opicprop) {
--		opicplen /= sizeof(u32);
--		for (i = 0; i < opicplen; i++) {
--			if (count > 15)
--				break;
--			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
--			if (virqs[count] == NO_IRQ)
--				printk(KERN_ERR "Unable to allocate interrupt "
--				       "number for %s\n", np->full_name);
--			else
--				count++;
--
--		}
--	}
--	/* Else use normal interrupt tree parsing */
--	else {
--		/* First try to do a proper OF tree parsing */
--		for (index = 0; of_irq_map_one(np, index, &oirq) == 0;
--		     index++) {
--			if (count > 15)
--				break;
--			virqs[count] = irq_create_of_mapping(oirq.controller,
--							    oirq.specifier,
--							    oirq.size);
--			if (virqs[count] == NO_IRQ)
--				printk(KERN_ERR "Unable to allocate interrupt "
--				       "number for %s\n", np->full_name);
--			else
--				count++;
--		}
--	}
--
--	/* Now request them */
--	for (i = 0; i < count; i++) {
--		if (request_irq(virqs[i], handler, 0, name, NULL)) {
--			printk(KERN_ERR "Unable to request interrupt %d for "
--			       "%s\n", virqs[i], np->full_name);
--			return;
--		}
--	}
--}
--
- /*
-  * Initialize handlers for the set of interrupts caused by hardware errors
-  * and power system events.
-@@ -138,14 +82,15 @@ static int __init init_ras_IRQ(void)
- 	/* Internal Errors */
- 	np = of_find_node_by_path("/event-sources/internal-errors");
- 	if (np != NULL) {
--		request_ras_irqs(np, ras_error_interrupt, "RAS_ERROR");
-+		request_event_sources_irqs(np, ras_error_interrupt,
-+					   "RAS_ERROR");
- 		of_node_put(np);
- 	}
- 
- 	/* EPOW Events */
- 	np = of_find_node_by_path("/event-sources/epow-events");
- 	if (np != NULL) {
--		request_ras_irqs(np, ras_epow_interrupt, "RAS_EPOW");
-+		request_event_sources_irqs(np, ras_epow_interrupt, "RAS_EPOW");
- 		of_node_put(np);
- 	}
- 
+Note that bne is not a procedure call; we'll actually get two DSIs in
+this scenario.  But I don't think that matters.  Also note that the
+branch to handle_page_fault here is not for the HPTE-not-found case;
+it's for the unusual errors.  So we'll handle the HPTE insertion after
+handling the DABR match.
+
+> Thus, when control returns to user-space to instruction 'i2', the
+> hw_breakpoint_handler() has completed execution, and a SIGSEGV is pending
+> to be delivered and single-stepping enabled MSR_SE is set. Upon return to
+> user-space, the handler for SIGSEGV is executed and it may perform one of
+> the following (as you stated previously):
+> (a) Make a blocking syscall, eventually yielding the CPU to a new thread
+> (b) Jump to a different instruction in user-space, say iN, and not complete
+> the execution of instruction i2 at all.
+> (c) Return to instruction i2 and complete the execution.
+> 
+> In case of (a), the context-switches should not affect the ability to
+> single-step the instruction when the thread is eventually scheduled to
+> run. The thread, when scheduled onto the CPU will complete signal
+> handling, return to execute instruction i2, cause single-step exception,
+> restore breakpoints and run smoothly thereafter.
+
+Right.  However, the thread is running the signal handler without the
+DABR being set, which is unfortunate.
+
+> In case of (b), the new instruction iN is single-stepped, the breakpoint
+> values are restored and the hw-breakpoint exception callback is invoked
+> after iN is executed. The user of this breakpoint i.e. the caller of
+> register_user_hw_breakpoint() who had placed a breakpoint on addressed
+> accessed by instruction i2 will be confused to find that an unrelated
+> instruction (which may not be a load/store) has caused the breakpoint.
+
+That's the case if the signal handler modifies the NIP value in the
+register set saved on the stack and returns.  If the signal handler
+instead simply jumps to instruction iN (e.g. with longjmp or
+siglongjmp), we'll never get the single-step callback.
+
+> If so desired, we may adopt the 'trigger-before-execute' semantics for
+> user-space breakpoints wherein the hw-breakpoint callback (through
+> perf_bp_event()) is invoked in hw_breakpoint_handler() itself. This
+> would indicate to the user that the impending instruction causes a DABR
+> 'hit' but it may or may not be executed due to the role of
+> signal-handler or due to self-modifying code (as mentioned below).
+> 
+> Kindly let me know what you think about it.
+> 
+> (c) is the normal execution path we desire. The instruction i2 will be
+> safely single-stepped and breakpoints are restored.
+> 
+> > The instruction could be changed underneath us if the program is
+> > multi-threaded and another thread writes another instruction to the
+> > instruction word where the load or store is.  Or it could use mmap()
+> > to map some other page at the address of the load or store.  Either
+> > way we could end up with a different instruction there.
+> > 
+> 
+> If the instruction that originally caused the DABR exception is changed,
+> the new instruction in its place would still single-step to restore
+> breakpoint values. However the user of breakpoint interface will be
+> confused to find that the callback is invoked for an irrelevant
+> instruction.
+> 
+> It could be circumvented, to an extent, through the use of
+> trigger-before-execute semantics (as described before).
+
+I don't think we want to do trigger-before-execute.  Ideally what we
+want to ensure at all times is that either DABR is set (enabled) or
+MSR.SE is set, but not both.  To ensure that we'd have to modify the
+signal delivery code and possibly other places.
+
+> > If we do get a context switch, e.g. as a result of a page fault, and
+> > then switch back to the task, it looks to me like we will end up with
+> > MSR_SE and DABR both set.  I don't suppose that will actually cause
+> > any real problem besides double-counting the hit.
+> > 
+> 
+> Page fault exception will be handled before hw_breakpoint_handler(),
+> hence MSR_SE would not have been set if a context-switch happened in
+> pange-fault handling itself. I don't see a case where both MSR_SE and
+> DABR will be set together.
+
+Imagine this scenario: we get the DABR match, set MSR_SE and return to
+the task.  In the meantime another higher-priority task has become
+runnable and our need_resched flag is set, so we call schedule() on
+the way back out to usermode.  The other task runs and then blocks and
+our task gets scheduled again.  As part of the context switch,
+arch_install_hw_breakpoint() will get called and will set DABR.  So
+we'll return to usermode with both DABR and MSE_SE set.
+
+> Thanks for the comments. Let me know if the analysis above is incorrect
+> or if I've failed to recognise any important issue that you pointed out.
+> I will send out a patch with changes to emulate_single_step() in the
+> next version of the patchset, if I don't hear any further comments.
+
+We haven't discussed at all the case where the breakpoint is a per-cpu
+breakpoint or where it's a per-task breakpoint but the DABR match
+occurs within the kernel -- which can happen, even for a user address,
+in __get_user, __put_user, __copy_tofrom_user, etc.  If the access
+there is to a bad address, we'll invoke the exception case in
+bad_page_fault(), which looks to be another place where we need to
+recognize that single-stepping won't succeed and reinstall the DABR
+setting.  Do we count that as an event or not? - I'm not sure.
+
+Paul.
