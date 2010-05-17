@@ -1,13 +1,14 @@
 Return-Path: <wg@grandegger.com>
-Message-ID: <4BF1639F.60900@grandegger.com>
-Date: Mon, 17 May 2010 17:41:19 +0200
+Message-ID: <4BF163B8.9070509@grandegger.com>
+Date: Mon, 17 May 2010 17:41:44 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
 To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH v3 1/3] ptp: Added a brand new class driver for ptp clocks.
+Subject: Re: [PATCH v3 3/3] ptp: Added a clock that uses the eTSEC found on
+	the MPC85xx.
 References: <cover.1273855016.git.richard.cochran@omicron.at>
-	<aa2a85799677c08001b152c2921d0e55d5693ffa.1273855017.git.richard.cochran@omicron.at>
-In-Reply-To: <aa2a85799677c08001b152c2921d0e55d5693ffa.1273855017.git.richard.cochran@omicron.at>
+	<ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
+In-Reply-To: <ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -20,17 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2010 06:45 PM, Richard Cochran wrote:
-> This patch adds an infrastructure for hardware clocks that implement
-> IEEE 1588, the Precision Time Protocol (PTP). A class driver offers a
-> registration method to particular hardware clock drivers. Each clock is
-> exposed to user space as a character device with ioctls that allow tuning
-> of the PTP clock.
+On 05/14/2010 06:46 PM, Richard Cochran wrote:
+> The eTSEC includes a PTP clock with quite a few features. This patch adds
+> support for the basic clock adjustment functions, plus two external time
+> stamps and one alarm.
 > 
 > Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
 
 Tested-by: Wolfgang Grandegger <wg@denx.de>
 
 on my Freescale MPC8313 setup with ptpd and ptpv2d.
+
+FYI: checkplatch.pl reports various errors for this patch series.
 
 Wolfgang.
