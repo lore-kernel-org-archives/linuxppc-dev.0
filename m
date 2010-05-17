@@ -2,18 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 72879B7DBE
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 04:27:15 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch
+	by ozlabs.org (Postfix) with ESMTPS id F0C26B7DC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 04:31:02 +1000 (EST)
+Subject: Re: [PATCH v2] powerpc/e500mc: Implement machine check handler.
 Mime-Version: 1.0 (Apple Message framework v1078)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.1005132327390.30346@localhost.localdomain>
-Date: Mon, 17 May 2010 13:27:08 -0500
-Message-Id: <1A1083A4-5486-484B-BC31-760AA72C8126@kernel.crashing.org>
-References: <Pine.LNX.4.64.1005132327390.30346@localhost.localdomain>
+In-Reply-To: <1270705102-18343-1-git-send-email-galak@kernel.crashing.org>
+Date: Mon, 17 May 2010 13:30:57 -0500
+Message-Id: <D8028169-6752-4A70-82C3-28B8EAB8FBF0@kernel.crashing.org>
+References: <1270705102-18343-1-git-send-email-galak@kernel.crashing.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +24,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 13, 2010, at 11:28 PM, Kumar Gala wrote:
+On Apr 8, 2010, at 12:38 AM, Kumar Gala wrote:
 
-> The following changes since commit =
-131c6c9eddfa252e376edb4aeff9c7fe1b96a798:
->  Benjamin Herrenschmidt (1):
->        Merge commit 'kumar/merge' into merge
+> From: Scott Wood <scottwood@freescale.com>
 >=20
-> are available in the git repository at:
+> Most of the MSCR bit assigments are different in e500mc versus
+> e500, and they are now write-one-to-clear.
 >=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> Some e500mc machine check conditions are made recoverable (as long as
+> they aren't stuck on), most notably L1 instruction cache parity =
+errors.
 >=20
-> Kumar Gala (1):
->      powerpc/fsl-booke: Move loadcam_entry back to asm code to fix SMP =
-ftrace
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> * Fix build error
 >=20
-> Li Yang (1):
->      powerpc/fsl-booke: Fix InstructionTLBError execute permission =
-check
->=20
-> arch/powerpc/kernel/asm-offsets.c    |    8 ++++++++
-> arch/powerpc/kernel/head_fsl_booke.S |   13 ++++++++++---
-> arch/powerpc/mm/fsl_booke_mmu.c      |   25 +++----------------------
-> arch/powerpc/mm/mmu_decl.h           |   10 +++++++++-
-> arch/powerpc/mm/tlb_nohash_low.S     |   28 =
-++++++++++++++++++++++++++++
-> 5 files changed, 58 insertions(+), 26 deletions(-)
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> arch/powerpc/include/asm/cputable.h  |    1 +
+> arch/powerpc/include/asm/reg_booke.h |   33 +++++++++----
+> arch/powerpc/kernel/cputable.c       |    2 +-
+> arch/powerpc/kernel/traps.c          |   88 =
++++++++++++++++++++++++++++++++++-
+> 4 files changed, 112 insertions(+), 12 deletions(-)
 
-I've just moved these into my next branch.  Will send them to stable =
-once they get pulled into .35.
+applied to next
 
 - k=
