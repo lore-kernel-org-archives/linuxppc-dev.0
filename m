@@ -1,24 +1,43 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from smtp5.netcologne.de (smtp5.netcologne.de [194.8.194.25])
-	by ozlabs.org (Postfix) with ESMTP id 02AC2B7DD5
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 03:48:02 +1000 (EST)
-Date: Sun, 16 May 2010 19:47:59 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
-To: Grant Likely <grant.likely@secretlab.ca>
-References: <20100505220916.GD3529@ovro.caltech.edu>
-	<1273168472.1767.1@antares>
-	<h2mfa686aa41005061106ofda766f5z64c4f631eaded414@mail.gmail.com>
-In-Reply-To: <h2mfa686aa41005061106ofda766f5z64c4f631eaded414@mail.gmail.com>
-	(from grant.likely@secretlab.ca on Thu May  6 20:06:14 2010)
-Message-Id: <1274032079.1729.3@antares>
+Return-Path: <vapier.adi@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 04CF2B7DAD
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 15:13:48 +1000 (EST)
+Received: by gyf2 with SMTP id 2so1951767gyf.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 May 2010 22:13:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=PGP-SHA1; boundary="=-5nETcC2XTHhzUzma+rvq"
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+In-Reply-To: <20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
+References: <20100512143445.GA32559@faui48a.informatik.uni-erlangen.de>
+	<20100512144017.GA722@faui48a.informatik.uni-erlangen.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 17 May 2010 01:13:23 -0400
+Message-ID: <AANLkTinCRYpqKuJ8NM2sk2hvrgFiqvo9mvXLApun0myA@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] Config Items appearing twice in same Kconfig
+	file?
+To: Christoph Egger <siccegge@cs.fau.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ia64@vger.kernel.org, vamos@i4.informatik.uni-erlangen.de,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, Timo Teras <timo.teras@iki.fi>,
+	Chen Liqin <liqin.chen@sunplusct.com>, Paul Mackerras <paulus@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Lennox Wu <lennox.wu@gmail.com>,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	"Pekka Savola \(ipv6\)" <pekkas@netcore.fi>, x86@kernel.org,
+	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+	Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Matt Turner <mattst88@gmail.com>,
+	Fenghua Yu <fenghua.yu@intel.com>, Mike Frysinger <vapier@gentoo.org>,
+	Arnd Bergmann <arnd@arndb.de>, Graf Yang <graf.yang@analog.com>,
+	Mikael Starvik <starvik@axis.com>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Richard Henderson <rth@twiddle.net>, Karsten Keil <isdn@linux-pingi.de>,
+	Tony Luck <tony.luck@intel.com>, linux-cris-kernel@axis.com,
+	linuxppc-dev@ozlabs.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Patrick McHardy <kaber@trash.net>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linux-alpha@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +47,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-5nETcC2XTHhzUzma+rvq
-Content-Type: text/plain; charset=ISO-8859-1; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 12, 2010 at 10:40, Christoph Egger wrote:
+> =C2=A0 =C2=A0 =C2=A02 arch/blackfin/Kconfig:config MEM_MT48LC32M8A2_75
 
-Am 06.05.10 20:06 schrieb(en) Grant Likely:
-> > I think, though, the whole stuff has been discussed in depth in Februar=
-y, so
-> > I do not understand why it's still pending as "new". =A0Grant, did we m=
-iss
-> > something here?
->=20
-> I generally let subsystem maintainers pick up the device driver
-> patches for embedded platforms I'm responsible for unless I'm asked to
-> do otherwise.  I think ben has asked me to take these through my tree.
-
-That's <http://git.secretlab.ca/?p=3Dlinux-2.6.git;a=3Dshortlog>, isn't it?=
-  Hmmm, didn't find it there... :-/
-
-Best, Albrecht.
-
---=-5nETcC2XTHhzUzma+rvq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.14 (GNU/Linux)
-
-iD8DBQBL8C/Pn/9unNAn/9ERAvJWAJ0Xzcg4qyz+v7ilWBHZQIWGb3wOHQCfQc3u
-wc/gvVOWze93DMSyw0vuABM=
-=bQki
------END PGP SIGNATURE-----
-
---=-5nETcC2XTHhzUzma+rvq--
+thanks, i'll get this simple bug fixed
+-mike
