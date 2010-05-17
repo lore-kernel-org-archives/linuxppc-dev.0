@@ -1,30 +1,27 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0EF26B7DB0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 17 May 2010 22:49:27 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4HCnPdv012924
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:49:25 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4HCgHJO1687750
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:42:17 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4HCnQsa028260
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 May 2010 22:49:26 +1000
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: Add support for IO Event interrupt drivers
-Date: Mon, 17 May 2010 22:53:29 +1000
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201005172253.29825.markn@au1.ibm.com>
-Cc: Tseng-hui Lin <tsenglin@us.ibm.com>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
+	by ozlabs.org (Postfix) with ESMTP id 8A5B7B7DA9
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 01:40:13 +1000 (EST)
+Received: from list by lo.gmane.org with local (Exim 4.69)
+	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
+	id 1OE2Bj-0006Oi-Or
+	for linuxppc-dev@ozlabs.org; Mon, 17 May 2010 17:25:03 +0200
+Received: from adsl-ull-134-189.46-151.net24.it ([151.46.189.134])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 17:25:03 +0200
+Received: from ppc.addon by adsl-ull-134-189.46-151.net24.it with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 17:25:03 +0200
+To: linuxppc-dev@ozlabs.org
+From: nello martuscielli <ppc.addon@gmail.com>
+Subject: Re: "event-scan failed" logflood
+Date: Mon, 17 May 2010 12:58:25 +0000 (UTC)
+Message-ID: <loom.20100517T145602-17@post.gmane.org>
+References: <20100513111603.3352.qmail@kosh.dhis.org>
+	<1273786104.21352.190.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,310 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for handling IO Event interrupts which come
-through at the /event-sources/ibm,io-events device tree node.
+Benjamin Herrenschmidt <benh <at> kernel.crashing.org> writes:
 
-There is one ibm,io-events interrupt, but this interrupt might be used
-for multiple I/O devices, each with their own separate driver. So, we
-create a platform interrupt handler that will do the RTAS check-exception
-call and then call the appropriate driver's interrupt handler (the one(s)
-that registered with a scope that matches the scope of the incoming
-interrupt).
+_omissis__
+> 
+> Ok, that gives us a good thing to use to not do the scanning then. If
+> that's 0 then we assume it's a bogus OF and we disable the scan
+> completely. I'll do a patch later today, though feel free to beat me to
+> it.
+> 
+> Cheers,
+> Ben.
+> 
 
-So, a driver for a device that uses IO Event interrupts will register
-it's interrupt service routine (or interrupt handler) with the platform
-code using ioei_register_isr(). This register function takes a function
-pointer to the driver's handler and the scope that the driver is
-interested in (scopes defined in arch/powerpc/include/asm/io_events.h).
-The driver's handler must take a pointer to a struct io_events_section
-and must not return anything.
+hi, is there available that patch?
+With the fresh new 2.6.34 the logflood problem is still present.
 
-The platform code registers io_event_interrupt() as the interrupt handler
-for the ibm,io-events interrupt. Upon receiving an IO Event interrupt, it
-checks the scope of the incoming interrupt and only calls those drivers'
-handlers that have registered as being interested in that scope.
-
-It is possible for a single driver to register the same function pointer
-more than once with different scopes if it is interested in more than one
-type of IO Event interrupt. If a handler wants to be notified of all
-incoming IO Event interrupts it can register with IOEI_SCOPE_ANY.
-
-A driver can unregister to stop receiving the IO Event interrupts using
-ioei_unregister_isr(), passing it the same function pointer to the
-driver's handler and the scope the driver was registered with.
-
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/powerpc/include/asm/io_events.h       |   40 +++++
- arch/powerpc/platforms/pseries/Makefile    |    2 
- arch/powerpc/platforms/pseries/io_events.c |  205 +++++++++++++++++++++++++++++
- 3 files changed, 246 insertions(+), 1 deletion(-)
-
-Index: upstream/arch/powerpc/include/asm/io_events.h
-===================================================================
---- /dev/null
-+++ upstream/arch/powerpc/include/asm/io_events.h
-@@ -0,0 +1,40 @@
-+/*
-+ * Copyright 2010 IBM Corporation, Mark Nelson
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _ASM_POWERPC_IOEVENTS_H
-+#define _ASM_POWERPC_IOEVENTS_H
-+
-+struct io_events_section {
-+	u16	id;			// Unique section identifier	x00-x01
-+	u16	length;			// Section length (bytes)	x02-x03
-+	u8	version;		// Section Version		x04-x04
-+	u8	sec_subtype;		// Section subtype		x05-x05
-+	u16	creator_id;		// Creator Component ID		x06-x07
-+	u8	event_type;		// IO-Event Type		x08-x08
-+	u8	rpc_field_len;		// PRC Field Length		x09-x09
-+	u8	scope;			// Error/Event Scope		x0A-x0A
-+	u8	event_subtype;		// I/O-Event Sub-Type		x0B-x0B
-+	u32	drc_index;		// DRC Index			x0C-x0F
-+	u32	rpc_data[];		// RPC Data (optional)		x10-...
-+};
-+
-+#define IOEI_SCOPE_NOT_APP	0x00
-+#define IOEI_SCOPE_RIO_HUB	0x36
-+#define IOEI_SCOPE_RIO_BRIDGE	0x37
-+#define IOEI_SCOPE_PHB		0x38
-+#define IOEI_SCOPE_EADS_GLOBAL	0x39
-+#define IOEI_SCOPE_EADS_SLOT	0x3A
-+#define IOEI_SCOPE_TORRENT_HUB	0x3B
-+#define IOEI_SCOPE_SERVICE_PROC	0x51
-+#define IOEI_SCOPE_ANY		-1
-+
-+int ioei_register_isr(void (*isr)(struct io_events_section *), int scope);
-+int ioei_unregister_isr(void (*isr)(struct io_events_section *), int scope);
-+
-+#endif /* _ASM_POWERPC_IOEVENTS_H */
-Index: upstream/arch/powerpc/platforms/pseries/io_events.c
-===================================================================
---- /dev/null
-+++ upstream/arch/powerpc/platforms/pseries/io_events.c
-@@ -0,0 +1,205 @@
-+/*
-+ * Copyright 2010 IBM Corporation, Mark Nelson
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/spinlock.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/of.h>
-+
-+#include <asm/io_events.h>
-+#include <asm/rtas.h>
-+#include <asm/irq.h>
-+
-+#include "event_sources.h"
-+
-+struct ioei_consumer {
-+	void (*ioei_isr)(struct io_events_section *);
-+	int scope;
-+	struct ioei_consumer *next;
-+};
-+
-+static int ioei_check_exception_token;
-+
-+static unsigned char ioei_log_buf[RTAS_ERROR_LOG_MAX];
-+static DEFINE_SPINLOCK(ioei_log_buf_lock);
-+
-+static struct ioei_consumer *ioei_isr_list;
-+static DEFINE_SPINLOCK(ioei_isr_list_lock);
-+
-+int ioei_register_isr(void (*isr)(struct io_events_section *), int scope)
-+{
-+	struct ioei_consumer *iter;
-+	struct ioei_consumer *cons;
-+	int ret = 0;
-+
-+	spin_lock(&ioei_isr_list_lock);
-+	/* check to see if we've already registered this function with
-+	 * this scope. If we have, don't register it again
-+	 */
-+	iter = ioei_isr_list;
-+	while (iter) {
-+		if (iter->ioei_isr == isr && iter->scope == scope)
-+			break;
-+		iter = iter->next;
-+	}
-+
-+	if (iter) {
-+		ret = -EEXIST;
-+		goto out;
-+	}
-+
-+	cons = kmalloc(sizeof(struct ioei_consumer), GFP_KERNEL);
-+
-+	if (!cons) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	cons->ioei_isr = isr;
-+	cons->scope = scope;
-+
-+	cons->next = ioei_isr_list;
-+	ioei_isr_list = cons;
-+
-+out:
-+	spin_unlock(&ioei_isr_list_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ioei_register_isr);
-+
-+int ioei_unregister_isr(void (*isr)(struct io_events_section *), int scope)
-+{
-+	struct ioei_consumer *iter;
-+	struct ioei_consumer *prev = NULL;
-+	int ret = 0;
-+
-+	spin_lock(&ioei_isr_list_lock);
-+	iter = ioei_isr_list;
-+	while (iter) {
-+		if (iter->ioei_isr == isr && iter->scope == scope)
-+			break;
-+		prev = iter;
-+		iter = iter->next;
-+	}
-+
-+	if (!iter) {
-+		ret = -ENOENT;
-+		goto out;
-+	}
-+
-+	if (prev)
-+		prev->next = iter->next;
-+	else
-+		ioei_isr_list = iter->next;
-+
-+	kfree(iter);
-+
-+out:
-+	spin_unlock(&ioei_isr_list_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(ioei_unregister_isr);
-+
-+static void ioei_call_consumers(int scope, struct io_events_section *sec)
-+{
-+	struct ioei_consumer *iter;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ioei_isr_list_lock, flags);
-+	iter = ioei_isr_list;
-+	while (iter) {
-+		if (iter->scope == scope || iter->scope == IOEI_SCOPE_ANY)
-+			iter->ioei_isr(sec);
-+		iter = iter->next;
-+	}
-+
-+	spin_unlock_irqrestore(&ioei_isr_list_lock, flags);
-+}
-+
-+#define EXT_INT_VECTOR_OFFSET	0x500
-+#define RTAS_TYPE_IO_EVENT	0xE1
-+
-+static irqreturn_t io_event_interrupt(int irq, void *dev_id)
-+{
-+	struct rtas_error_log *rtas_elog;
-+	struct io_events_section *ioei_sec;
-+	char *ch_ptr;
-+	int status;
-+	u16 *sec_len;
-+
-+	spin_lock(&ioei_log_buf_lock);
-+
-+	status = rtas_call(ioei_check_exception_token, 6, 1, NULL,
-+			   EXT_INT_VECTOR_OFFSET,
-+			   irq_map[irq].hwirq,
-+			   RTAS_IO_EVENTS, 1 /*Time Critical */,
-+			   __pa(&ioei_log_buf),
-+				rtas_get_error_log_max());
-+
-+	rtas_elog = (struct rtas_error_log *)ioei_log_buf;
-+
-+	if (status != 0)
-+		goto out;
-+
-+	/* We assume that we will only ever get called for io-event
-+	 * interrupts. But if we get called with something else
-+	 * make some noise about it.
-+	 */
-+	if (rtas_elog->type != RTAS_TYPE_IO_EVENT) {
-+		pr_warning("IO Events: We got called with an event type of %d"
-+			   " rather than %d!\n", rtas_elog->type,
-+			   RTAS_TYPE_IO_EVENT);
-+		WARN_ON(1);
-+		goto out;
-+	}
-+
-+	/* there are 24 bytes of event log data before the first section
-+	 * (Main-A) begins
-+	 */
-+	ch_ptr = (char *)ioei_log_buf + 24;
-+
-+	/* loop through all the sections until we get to the IO Events
-+	 * Section, with section ID "IE"
-+	 */
-+	while (*ch_ptr != 'I' && *(ch_ptr + 1) != 'E') {
-+		sec_len = (u16 *)(ch_ptr + 2);
-+		ch_ptr += *sec_len;
-+	}
-+
-+	ioei_sec = (struct io_events_section *)ch_ptr;
-+
-+	ioei_call_consumers(ioei_sec->scope, ioei_sec);
-+
-+out:
-+	spin_unlock(&ioei_log_buf_lock);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int __init init_ioei_IRQ(void)
-+{
-+	struct device_node *np;
-+
-+	ioei_check_exception_token = rtas_token("check-exception");
-+
-+	np = of_find_node_by_path("/event-sources/ibm,io-events");
-+	if (np != NULL) {
-+		request_event_sources_irqs(np, io_event_interrupt, "IO_EVENT");
-+		of_node_put(np);
-+	}
-+
-+	return 0;
-+}
-+device_initcall(init_ioei_IRQ);
-+
-Index: upstream/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- upstream.orig/arch/powerpc/platforms/pseries/Makefile
-+++ upstream/arch/powerpc/platforms/pseries/Makefile
-@@ -8,7 +8,7 @@ endif
- 
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   setup.o iommu.o event_sources.o ras.o \
--			   firmware.o power.o dlpar.o
-+			   firmware.o power.o dlpar.o io_events.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_XICS)	+= xics.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
+thanks,
+--nello
