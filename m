@@ -1,19 +1,19 @@
-Return-Path: <andre.prendel@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id A5D7BB6EEB
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 May 2010 21:38:45 +1000 (EST)
-Date: Tue, 18 May 2010 13:38:38 +0200
-From: Andre Prendel <andre.prendel@gmx.de>
-To: Jeff Angielski <jeff@theptrgroup.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
-	attempt)
-Message-ID: <20100518113838.GA2052@andre-laptop>
-References: <4BF1A760.2010707@theptrgroup.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BF1A760.2010707@theptrgroup.com>
-Cc: linuxppc-dev@lists.ozlabs.org, lm-sensors@lm-sensors.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: "event-scan failed" logflood
+From: Michael Ellerman <michael@ellerman.id.au>
+To: nello martuscielli <ppc.addon@gmail.com>
+In-Reply-To: <loom.20100517T145602-17@post.gmane.org>
+References: <20100513111603.3352.qmail@kosh.dhis.org>
+	<1273786104.21352.190.camel@pasglop>
+	<loom.20100517T145602-17@post.gmane.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-gn4EI4cw+9UilXriRF45"
+Date: Tue, 18 May 2010 22:33:11 +1000
+Message-ID: <1274185991.26143.1.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,157 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 17, 2010 at 04:30:24PM -0400, Jeff Angielski wrote:
-> 
-> Here is a second attempt at a patch to add nfactor support to the tmp421 driver.
 
-Hi Jeff,
+--=-gn4EI4cw+9UilXriRF45
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-only a few minor issues, see below.
- 
-> This includes the changes as suggested by Andre Prendel, the original driver author.
-> 
-> 
-> >From 8ebe84174ff6bd294656d77183758044f19d8900 Mon Sep 17 00:00:00 2001
-> From: Jeff Angielski <jeff@theptrgroup.com>
-> Date: Mon, 10 May 2010 10:26:34 -0400
-> Subject: [PATCH] hwmon: (tmp421) Add nfactor support
-> 
-> Add support for reading and writing the n-factor correction
-> registers.  This is needed to compensate for the characteristics
-> of a particular sensor hanging off of the remote channels.
-> 
-> Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
-> ---
->  drivers/hwmon/tmp421.c |   41 +++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 41 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-> index 738c472..ce1f6d1 100644
-> --- a/drivers/hwmon/tmp421.c
-> +++ b/drivers/hwmon/tmp421.c
-> @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
->  
->  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
->  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-> +static const u8 TMP421_NFACTOR[3]		= { 0x21, 0x22, 0x23 };
->  
->  /* Flags */
->  #define TMP421_CONFIG_SHUTDOWN			0x40
-> @@ -76,6 +77,7 @@ struct tmp421_data {
->  	int channels;
->  	u8 config;
->  	s16 temp[4];
-> +	s8 nfactor[3];
->  };
->  
->  static int temp_from_s16(s16 reg)
-> @@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
->  			data->temp[i] |= i2c_smbus_read_byte_data(client,
->  				TMP421_TEMP_LSB[i]);
->  		}
-> +		for (i = 1; i < data->channels; i++) {
-> +			data->nfactor[i - 1] = i2c_smbus_read_byte_data(client,
-> +				TMP421_NFACTOR[i - 1]);
-> +		}
+On Mon, 2010-05-17 at 12:58 +0000, nello martuscielli wrote:
+> Benjamin Herrenschmidt <benh <at> kernel.crashing.org> writes:
+>=20
+> _omissis__
+> >=20
+> > Ok, that gives us a good thing to use to not do the scanning then. If
+> > that's 0 then we assume it's a bogus OF and we disable the scan
+> > completely. I'll do a patch later today, though feel free to beat me to
+> > it.
+> >=20
+> > Cheers,
+> > Ben.
+> >=20
+>=20
+> hi, is there available that patch?
+> With the fresh new 2.6.34 the logflood problem is still present.
 
-I'd prefer starting i with 0 and as condition i < data->channels - 1.
+You could try this, completely untested:
 
-for (i = 0; i < data->channels -1; i++) {
-	data->nfactor[i] = i2c_smbus_read_byte_data(client,
-		TMP421_NFACTOR[i]);
-}
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 4190eae..fd68bed 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -490,6 +490,12 @@ static int __init rtas_init(void)
+                return -ENODEV;
+        }
+=20
++       if (!rtas_event_scan_rate) {
++               /* Broken firmware: take a rate of zero to mean don't scan =
+*/
++               printk(KERN_DEBUG "rtasd: scan rate is 0, not scanning\n");
++               return 0;
++       }
++
+        /* Make room for the sequence number */
+        rtas_error_log_max =3D rtas_get_error_log_max();
+        rtas_error_log_buffer_max =3D rtas_error_log_max + sizeof(int);
 
-What do you think?
 
->  		data->last_updated = jiffies;
->  		data->valid = 1;
->  	}
-> @@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
->  		return sprintf(buf, "0\n");
->  }
->  
-> +static ssize_t show_nfactor(struct device *dev,
-> +			  struct device_attribute *devattr, char *buf)
+cheers
 
-Indentation of the arguments is wrong (see other functions).
 
-> +{
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	struct tmp421_data *data = tmp421_update_device(dev);
-> +
-> +	return sprintf(buf, "%d\n", data->nfactor[index - 1]);
-> +}
-> +
-> +static ssize_t set_nfactor(struct device *dev,
-> +		struct device_attribute *devattr,
-> +		const char *buf, size_t count)
+--=-gn4EI4cw+9UilXriRF45
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-ditto
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	struct tmp421_data *data = i2c_get_clientdata(client);
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	int nfactor = simple_strtol(buf, NULL, 10);
-> +
-> +	mutex_lock(&data->update_lock);
-> +	i2c_smbus_write_byte_data(client, TMP421_NFACTOR[index - 1],
-> +			SENSORS_LIMIT(nfactor, -128, 127));
+iEYEABECAAYFAkvyiQcACgkQdSjSd0sB4dIxOQCffIAPqhGO6jn9XyLMhie7vHPE
+w/cAn2hhC3HSxFQ7NptgKDG/xcY8vVcp
+=KV4T
+-----END PGP SIGNATURE-----
 
-ditto
-
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return count;
-> +}
-> +
->  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
->  				int n)
->  {
-> @@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
->  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
->  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
->  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-> +static SENSOR_DEVICE_ATTR(temp2_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-> +		show_nfactor, set_nfactor, 1);
->  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
->  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-> +static SENSOR_DEVICE_ATTR(temp3_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-> +		show_nfactor, set_nfactor, 2);
->  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
->  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-> +static SENSOR_DEVICE_ATTR(temp4_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-> +		show_nfactor, set_nfactor, 3);
-
-And again three times.
-
->  
->  static struct attribute *tmp421_attr[] = {
->  	&sensor_dev_attr_temp1_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp2_nfactor.dev_attr.attr,
->  	&sensor_dev_attr_temp3_input.dev_attr.attr,
->  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp3_nfactor.dev_attr.attr,
->  	&sensor_dev_attr_temp4_input.dev_attr.attr,
->  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp4_nfactor.dev_attr.attr,
->  	NULL
->  };
-
-All the rest looks good.
-
-Thanks,
-Andre
-
-> -- 
-> Jeff Angielski
-> The PTR Group
-> www.theptrgroup.com
-> 
-> _______________________________________________
-> lm-sensors mailing list
-> lm-sensors@lm-sensors.org
-> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+--=-gn4EI4cw+9UilXriRF45--
