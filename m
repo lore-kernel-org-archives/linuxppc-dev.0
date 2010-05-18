@@ -1,19 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C0903B7D6F
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 07:49:45 +1000 (EST)
-Subject: Re: PATA/legacy IDE subsystem on PowerMac
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: JJDaNiMoTh <jjdanimoth@gmail.com>
-In-Reply-To: <201005182116.04092.jjdanimoth@gmail.com>
-References: <201005182116.04092.jjdanimoth@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 19 May 2010 07:49:36 +1000
-Message-ID: <1274219376.21352.857.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 73556B7D7B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 May 2010 07:53:03 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e8.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4ILgNTj027676
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 17:42:23 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4ILqsVB160924
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 17:52:54 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4ILqr6H018651
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 18:52:54 -0300
+Message-ID: <4BF30C32.1020403@linux.vnet.ibm.com>
+Date: Tue, 18 May 2010 16:52:50 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: dvhltc@linux.vnet.ibm.com
+Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
+	(IRQF_NODELAY)
+References: <4BF30793.5070300@us.ibm.com>
+In-Reply-To: <4BF30793.5070300@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, linux-kernel@vger.kernel.org,
+	Will Schmidt <will_schmidt@vnet.ibm.com>, niv@linux.vnet.ibm.com,
+	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +39,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-05-18 at 21:16 +0200, JJDaNiMoTh wrote:
-> Hello,
-> 
-> I hope I've posted to the right list.
-> I'm the maintainer of the linux kernel in ArchlinuxPPC [1].
-> 
-> We actually set statically the support for the PowerMac on-board IDE support 
-> (under ATA/ATAPI/MFM/RLL support (DEPRECATED) ), and the disk is recognized 
-> correctly (hda*).
-> If we try to remove this legacy support, enabling Serial ATA and Parallel ATA 
-> drivers --> Apple PowerMac/PowerBook internal 'MacIO' IDE (NEW) statically, 
-> the kernel doesn't recognize the partition on the HD. We tried different 
-> powerbook, and the result is the same.
-> 
-> Because we haven't log, I take two photos [2] [3].
-> 
-> With legacy stuff, I used hda6 as root device: with PATA, neither hda{5,6,7} or 
-> sda{5,6,7} work.
-> As you can see from the photos, seems that the hd isn't attached to any device 
-> under /dev.
-> With request I could upload somewhere the configs (working and not working) 
-> used, but they differ only for the things above.
+Is IRQF_NODELAY something specific to the RT kernel? I don't see it in mainline...
 
-Nothing obvious... the disk seem to be detected properly. Do you have
-the support for mac partitions and the SCSI disk driver (BLK_DEV_SD)
-enabled ?
+-Brian
 
-Cheers,
-Ben.
 
-> Please let me in the right direction.
-> Many thanks to all.
+On 05/18/2010 04:33 PM, dvhltc@linux.vnet.ibm.com wrote:
+>>From ad81664794e33d785f533c5edee37aaba20dd92d Mon Sep 17 00:00:00 2001
+> From: Darren Hart <dvhltc@us.ibm.com>
+> Date: Tue, 18 May 2010 11:07:13 -0700
+> Subject: [PATCH RT] ehea: make receive irq handler non-threaded (IRQF_NODELAY)
 > 
+> The underlying hardware is edge triggered but presented by XICS as level
+> triggered. The edge triggered interrupts are not reissued after masking. This
+> is not a problem in mainline which does not mask the interrupt (relying on the
+> EOI mechanism instead). The threaded interrupts in PREEMPT_RT do mask the
+> interrupt, and can lose interrupts that occurred while masked, resulting in a
+> hung ethernet interface.
 > 
-> [1] http://www.archlinuxppc.org
-> [2] http://img268.imageshack.us/img268/5787/dsc04701x.jpg
-> [3] http://img204.imageshack.us/img204/6476/dsc04701v.jpg
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> The receive handler simply calls napi_schedule(), as such, there is no
+> significant additional overhead in making this non-threaded, since we either
+> wakeup the threaded irq handler to call napi_schedule(), or just call
+> napi_schedule() directly to wakeup the softirqs.  As the receive handler is
+> lockless, there is no need to convert any of the ehea spinlock_t's to
+> atomic_spinlock_t's.
+> 
+> Without this patch, a simple scp file copy loop would fail quickly (usually
+> seconds). We have over two hours of sustained scp activity with the patch
+> applied.
+> 
+> Credit goes to Will Schmidt for lots of instrumentation and tracing which
+> clarified the scenario and to Thomas Gleixner for the incredibly simple
+> solution.
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Acked-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> Cc: Thomas Gleixner <tglx@linuxtronix.de>
+> Cc: Jan-Bernd Themann <themann@de.ibm.com>
+> Cc: Nivedita Singhvi <niv@us.ibm.com>
+> Cc: Brian King <bjking1@us.ibm.com>
+> Cc: Michael Ellerman <ellerman@au1.ibm.com>
+> Cc: Doug Maxey <doug.maxey@us.ibm.com>
+> ---
+>  drivers/net/ehea/ehea_main.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> index 977c3d3..2c53df2 100644
+> --- a/drivers/net/ehea/ehea_main.c
+> +++ b/drivers/net/ehea/ehea_main.c
+> @@ -1263,7 +1263,7 @@ static int ehea_reg_interrupts(struct net_device *dev)
+>  			 "%s-queue%d", dev->name, i);
+>  		ret = ibmebus_request_irq(pr->eq->attr.ist1,
+>  					  ehea_recv_irq_handler,
+> -					  IRQF_DISABLED, pr->int_send_name,
+> +					  IRQF_DISABLED | IRQF_NODELAY, pr->int_send_name,
+>  					  pr);
+>  		if (ret) {
+>  			ehea_error("failed registering irq for ehea_queue "
+
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
