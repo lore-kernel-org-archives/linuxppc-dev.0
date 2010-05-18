@@ -1,19 +1,36 @@
-Return-Path: <horms@verge.net.au>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id 8525EB7D71
+Return-Path: <niv@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8FC4AB7D69
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 May 2010 10:45:31 +1000 (EST)
-Date: Wed, 19 May 2010 09:22:56 +0900
-From: Simon Horman <horms@verge.net.au>
-To: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
-Subject: Re: [patch] ppc: Fix gamecube build
-Message-ID: <20100519002255.GD8536@verge.net.au>
-References: <20100513152519.GA4143@verge.net.au>
+	Wed, 19 May 2010 08:19:34 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4IMFPeo006961
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 16:15:25 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4IMJE0M049504
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 16:19:19 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4IMJDMJ006753
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 16:19:14 -0600
+Message-ID: <4BF31262.1090303@us.ibm.com>
+Date: Tue, 18 May 2010 15:19:14 -0700
+From: Nivedita Singhvi <niv@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100513152519.GA4143@verge.net.au>
-Cc: Maxim Uvarov <muvarov@gmail.com>,
-	Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
+	(IRQF_NODELAY)
+References: <4BF30793.5070300@us.ibm.com> <4BF30C32.1020403@linux.vnet.ibm.com>
+In-Reply-To: <4BF30C32.1020403@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, dvhltc@linux.vnet.ibm.com,
+	linux-kernel@vger.kernel.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, Michael Ellerman <ellerman@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,13 +40,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 14, 2010 at 12:25:19AM +0900, Simon Horman wrote:
-> This fixes the kexec-build on ppc32 when
-> the --game-cube option is supplied to ./configure.
-> It seems to have bit-rotted a little.
-> 
-> Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-> Cc: Maxim Uvarov <muvarov@gmail.com>
-> Signed-off-by: Simon Horman <horms@verge.net.au>
+Brian King wrote:
+> Is IRQF_NODELAY something specific to the RT kernel? I don't see it in mainline...
 
-I have gone ahead and applied this change.
+Yep, this is RT only.
+
+thanks,
+Nivedita
