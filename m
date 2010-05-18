@@ -1,30 +1,15 @@
-Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 190C1B7D86
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 03:56:11 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e4.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4IHhSQi028107
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 13:43:28 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4IHu4ZQ2236642
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 13:56:05 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4IHu3Ya017011
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 13:56:04 -0400
-Date: Tue, 18 May 2010 10:56:03 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: remove all rcu head initializations
-Message-ID: <20100518175603.GA6098@linux.vnet.ibm.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E3587B7D84
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 04:15:26 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix string library functions
+Date: Tue, 18 May 2010 20:15:21 +0200
+Message-ID: <m2bpcdjcue.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, mathieu.desnoyers@efficios.com,
-	akpm@linux-foundation.org
-Reply-To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +19,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello!
+The powerpc strncmp implementation does not correctly handle a zero
+length, despite the claim in 0119536cd314ef95553604208c25bc35581f7f0a
+(Add hand-coded assembly strcmp).
 
-Would you guys like to carry this patch, or should I push it up
--tip?  If I don't hear otherwise from you, I will push it up -tip.
-The INIT_RCU_HEAD() primitive is going away in favor of debugobjects.
+Additionally, all the length arguments are size_t, not int, so use
+PPC_LCMPI and eq instead of cmpwi and le throughout.
 
-							Thanx, Paul
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ arch/powerpc/lib/string.S |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-------------------------------------------------------------------------
-
-powerpc: remove all rcu head initializations
-
-Remove all rcu head inits. We don't care about the RCU head state before
-passing it to call_rcu() anyway. Only leave the "on_stack" variants so
-debugobjects can keep track of objects on stack.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index ebc2f38..2c7e801 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -92,7 +92,6 @@ static void pte_free_rcu_callback(struct rcu_head *head)
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index 64e2e49..455881a 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -28,7 +28,7 @@ _GLOBAL(strcpy)
+ /* This clears out any unused part of the destination buffer,
+    just as the libc version does.  -- paulus */
+ _GLOBAL(strncpy)
+-	cmpwi	0,r5,0
++	PPC_LCMPI 0,r5,0
+ 	beqlr
+ 	mtctr	r5
+ 	addi	r6,r3,-1
+@@ -39,7 +39,7 @@ _GLOBAL(strncpy)
+ 	bdnzf	2,1b		/* dec ctr, branch if ctr != 0 && !cr0.eq */
+ 	bnelr			/* if we didn't hit a null char, we're done */
+ 	mfctr	r5
+-	cmpwi	0,r5,0		/* any space left in destination buffer? */
++	PPC_LCMPI 0,r5,0	/* any space left in destination buffer? */
+ 	beqlr			/* we know r0 == 0 here */
+ 2:	stbu	r0,1(r6)	/* clear it out if so */
+ 	bdnz	2b
+@@ -70,8 +70,8 @@ _GLOBAL(strcmp)
+ 	blr
  
- static void pte_free_submit(struct pte_freelist_batch *batch)
- {
--	INIT_RCU_HEAD(&batch->rcu);
- 	call_rcu(&batch->rcu, pte_free_rcu_callback);
- }
+ _GLOBAL(strncmp)
+-	PPC_LCMPI r5,0
+-	beqlr
++	PPC_LCMPI 0,r5,0
++	beq-	2f
+ 	mtctr	r5
+ 	addi	r5,r3,-1
+ 	addi	r4,r4,-1
+@@ -82,6 +82,8 @@ _GLOBAL(strncmp)
+ 	beqlr	1
+ 	bdnzt	eq,1b
+ 	blr
++2:	li	r3,0
++	blr
  
+ _GLOBAL(strlen)
+ 	addi	r4,r3,-1
+@@ -92,8 +94,8 @@ _GLOBAL(strlen)
+ 	blr
+ 
+ _GLOBAL(memcmp)
+-	cmpwi	0,r5,0
+-	ble-	2f
++	PPC_LCMPI 0,r5,0
++	beq-	2f
+ 	mtctr	r5
+ 	addi	r6,r3,-1
+ 	addi	r4,r4,-1
+@@ -106,8 +108,8 @@ _GLOBAL(memcmp)
+ 	blr
+ 
+ _GLOBAL(memchr)
+-	cmpwi	0,r5,0
+-	ble-	2f
++	PPC_LCMPI 0,r5,0
++	beq-	2f
+ 	mtctr	r5
+ 	addi	r3,r3,-1
+ 1:	lbzu	r0,1(r3)
+-- 
+1.7.1
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
