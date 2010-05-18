@@ -1,29 +1,20 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id BE801B7D8D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 May 2010 15:59:20 +1000 (EST)
-Received: by wya21 with SMTP id 21so245419wya.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 May 2010 22:59:18 -0700 (PDT)
-Date: Tue, 18 May 2010 09:59:13 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v5] powerpc: Add hibernation support for FSL BookE
-	processors
-Message-ID: <20100518055913.GA15998@oksana.dev.rtsoft.ru>
-References: <20100415184513.GA27101@oksana.dev.rtsoft.ru>
-	<2954FCF7-F34C-4E9D-A2EB-AC117D287EB5@kernel.crashing.org>
-	<4BC77174.1020305@freescale.com> <4BC77497.9070401@freescale.com>
-	<20100416115643.GA3092@oksana.dev.rtsoft.ru>
-	<4BC8883C.8050703@freescale.com>
-	<20100416190319.GA4104@oksana.dev.rtsoft.ru>
-	<4BF18715.8050201@freescale.com>
-	<20100517185652.GA11081@oksana.dev.rtsoft.ru>
-	<ECFF23B7-26B3-42D1-8609-FB53054BEF06@kernel.crashing.org>
+Return-Path: <richardcochran@gmail.com>
+Date: Tue, 18 May 2010 08:36:08 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 3/3] ptp: Added a clock that uses the eTSEC found on
+	the MPC85xx.
+Message-ID: <20100518063608.GA2720@riccoc20.at.omicron.at>
+References: <cover.1273855016.git.richard.cochran@omicron.at>
+	<ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
+	<4BED8C91.8020107@freescale.com>
+	<20100517082757.GA9703@riccoc20.at.omicron.at>
+	<4BF18582.6000500@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <ECFF23B7-26B3-42D1-8609-FB53054BEF06@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Milton Miller <miltonm@bga.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4BF18582.6000500@freescale.com>
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 17, 2010 at 04:22:37PM -0500, Kumar Gala wrote:
-[...]
-> > arch/powerpc/kernel/Makefile       |    8 +-
-> > arch/powerpc/kernel/swsusp_booke.S |  193 ++++++++++++++++++++++++++++++++++++
-> > 2 files changed, 199 insertions(+), 2 deletions(-)
-> > create mode 100644 arch/powerpc/kernel/swsusp_booke.S
+On Mon, May 17, 2010 at 01:05:54PM -0500, Scott Wood wrote:
+> >>> >+  - tmr_fiper1   Fixed interval period pulse generator.
+> >>> >+  - tmr_fiper2   Fixed interval period pulse generator.
+> >>
 > 
-> Is there board specific code to go along with this?
+> MPC8572 and P2020 have fiper3 as well.
 
-Nope.
+I doubt they really have a third fiper.
 
-> When I enable I get:
-> 
-> arch/powerpc/kernel/built-in.o: In function `cpu_idle':
-> /home/galak/git/master/powerpc/arch/powerpc/kernel/idle.c:98: undefined reference to `cpu_die'
-> make: *** [.tmp_vmlinux1] Error 1
+First of all, this signal is not routed anywhere on the boards. Also,
+according to the documentation, it has no bit in the TMR_CTRL or the
+TMR_TEMASK registers. Unless there is a bit in TMR_TEMASK, you cannot
+get an interrupt from it.
 
-This isn't caused by hibernation or my patch specifically.
-Instead, it's a long standing issue, enabling CONFIG_SMP and
-CONFIG_SUSPEND is enough to trigger this. Patch exists:
+If you cannot use the signal externally (in the "real" world) and you
+cannot get an interrupt, what good is it to have such a periodic
+signal? Polling the bit in the TMR_TEVENT to see when a pulse occurs
+seems pointless.
 
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg27982.html
+Scott, you have connections, right? Can you clarify this for me?
 
-No idea why it didn't make Linus' tree.
+Thanks,
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Richard
