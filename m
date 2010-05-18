@@ -1,19 +1,21 @@
-Return-Path: <mrhe00@gmail.com>
-Received: from mail-ew0-f216.google.com (mail-ew0-f216.google.com
-	[209.85.219.216]) by ozlabs.org (Postfix) with ESMTP id DFD24B7D6B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 May 2010 01:00:33 +1000 (EST)
-Received: by ewy8 with SMTP id 8so1707135ewy.8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 18 May 2010 08:00:30 -0700 (PDT)
-Message-ID: <4BF2AB8D.1000600@gmail.com>
-Date: Tue, 18 May 2010 17:00:29 +0200
-From: mrhe00 <mrhe00@gmail.com>
+Return-Path: <B07421@freescale.com>
+Message-ID: <4BF2BF0A.8000405@freescale.com>
+Date: Tue, 18 May 2010 11:23:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: linux for MVME1604
-Content-Type: multipart/alternative;
-	boundary="------------030102040409010901000209"
+To: Richard Cochran <richardcochran@gmail.com>
+Subject: Re: [PATCH v3 3/3] ptp: Added a clock that uses the eTSEC found on
+	the MPC85xx.
+References: <cover.1273855016.git.richard.cochran@omicron.at>
+	<ee6c3edca3ee6aa86565e59da999375f79c9de1b.1273855017.git.richard.cochran@omicron.at>
+	<4BED8C91.8020107@freescale.com>
+	<20100517082757.GA9703@riccoc20.at.omicron.at>
+	<4BF18582.6000500@freescale.com>
+	<20100518063608.GA2720@riccoc20.at.omicron.at>
+In-Reply-To: <20100518063608.GA2720@riccoc20.at.omicron.at>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030102040409010901000209
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On 05/18/2010 01:36 AM, Richard Cochran wrote:
+> On Mon, May 17, 2010 at 01:05:54PM -0500, Scott Wood wrote:
+>>>>>> +  - tmr_fiper1   Fixed interval period pulse generator.
+>>>>>> +  - tmr_fiper2   Fixed interval period pulse generator.
+>>>>
+>>
+>> MPC8572 and P2020 have fiper3 as well.
+>
+> I doubt they really have a third fiper.
+>
+> First of all, this signal is not routed anywhere on the boards.
 
-Hi
-I need help with instalaton linux on MVME1604 with 16 MB RAM, do You 
-know any linux version for that and does anybody have try to install 
-this on that? Thansk for any help.
+OK, but that's a separate issue from whether it exists on the chip and 
+could be used on a different board.
 
-Raul
+> Also, according to the documentation, it has no bit in the TMR_CTRL or the
+> TMR_TEMASK registers.
 
---------------030102040409010901000209
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+It does seem inconsistent -- but could just be bad docs.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
+> Unless there is a bit in TMR_TEMASK, you cannot
+> get an interrupt from it.
+>
+> If you cannot use the signal externally (in the "real" world) and you
+> cannot get an interrupt, what good is it to have such a periodic
+> signal? Polling the bit in the TMR_TEVENT to see when a pulse occurs
+> seems pointless.
+>
+> Scott, you have connections, right? Can you clarify this for me?
 
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-<span
- style="color: rgb(0, 0, 0); font-family: 'MS Shell Dlg 2'; font-size: 8pt;">Hi<br>
-I need help with instalaton linux on MVME1604 with 16 MB RAM, do You
-know any linux version for that and does anybody have try to install
-this on that? Thansk for any help. <br>
-<br>
-Raul<br>
-</span>
-</body>
-</html>
+I'll ask around.
 
---------------030102040409010901000209--
+-Scott
