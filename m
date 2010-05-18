@@ -1,20 +1,19 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
-	by ozlabs.org (Postfix) with ESMTP id A60B6B7D2E
+Return-Path: <mrhe00@gmail.com>
+Received: from mail-ew0-f216.google.com (mail-ew0-f216.google.com
+	[209.85.219.216]) by ozlabs.org (Postfix) with ESMTP id DFD24B7D6B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 May 2010 00:35:49 +1000 (EST)
-Message-ID: <4BF2A5A9.6010907@theptrgroup.com>
-Date: Tue, 18 May 2010 10:35:21 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
+	Wed, 19 May 2010 01:00:33 +1000 (EST)
+Received: by ewy8 with SMTP id 8so1707135ewy.8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 18 May 2010 08:00:30 -0700 (PDT)
+Message-ID: <4BF2AB8D.1000600@gmail.com>
+Date: Tue, 18 May 2010 17:00:29 +0200
+From: mrhe00 <mrhe00@gmail.com>
 MIME-Version: 1.0
-To: Andre Prendel <andre.prendel@gmx.de>
-Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
-	attempt)
-References: <4BF1A760.2010707@theptrgroup.com>
-	<20100518113838.GA2052@andre-laptop>
-In-Reply-To: <20100518113838.GA2052@andre-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, lm-sensors@lm-sensors.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: linux for MVME1604
+Content-Type: multipart/alternative;
+	boundary="------------030102040409010901000209"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,149 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/18/2010 07:38 AM, Andre Prendel wrote:
+This is a multi-part message in MIME format.
+--------------030102040409010901000209
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> I'd prefer starting i with 0 and as condition i < data->channels - 1.
-> 
-> for (i = 0; i < data->channels -1; i++) {
-> 	data->nfactor[i] = i2c_smbus_read_byte_data(client,
-> 		TMP421_NFACTOR[i]);
-> }
-> 
-> What do you think?
+Hi
+I need help with instalaton linux on MVME1604 with 16 MB RAM, do You 
+know any linux version for that and does anybody have try to install 
+this on that? Thansk for any help.
 
-The first channel is the local channel which does not support nfactor,
-so we skip it.  Having the for loop start at 1 illustrates this concept.
+Raul
 
-> Indentation of the arguments is wrong (see other functions).
+--------------030102040409010901000209
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Should be fixed in the patch below.  
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
 
-I am not sure why the patch file itself still shows the function arguments 
-off by one.  When I apply it to a raw tmp421.c all of the arguments 
-line up correctly.
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<span
+ style="color: rgb(0, 0, 0); font-family: 'MS Shell Dlg 2'; font-size: 8pt;">Hi<br>
+I need help with instalaton linux on MVME1604 with 16 MB RAM, do You
+know any linux version for that and does anybody have try to install
+this on that? Thansk for any help. <br>
+<br>
+Raul<br>
+</span>
+</body>
+</html>
 
-After rebasing the changes, I am creating the patch as:
-
-$ git format-patch -1 HEAD
-
-Pretty simple stuff...
-
-
-
->From 467c74e1d8118e34e84a150f18b5e55c6593c777 Mon Sep 17 00:00:00 2001
-From: Jeff Angielski <jeff@theptrgroup.com>
-Date: Mon, 10 May 2010 10:26:34 -0400
-Subject: [PATCH] hwmon: (tmp421) Add nfactor support
-
-Add support for reading and writing the n-factor correction
-registers.  This is needed to compensate for the characteristics
-of a particular sensor hanging off of the remote channels.
-
-Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
----
- drivers/hwmon/tmp421.c |   41 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 41 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-index 738c472..7944627 100644
---- a/drivers/hwmon/tmp421.c
-+++ b/drivers/hwmon/tmp421.c
-@@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
- 
- static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
- static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-+static const u8 TMP421_NFACTOR[3]		= { 0x21, 0x22, 0x23 };
- 
- /* Flags */
- #define TMP421_CONFIG_SHUTDOWN			0x40
-@@ -76,6 +77,7 @@ struct tmp421_data {
- 	int channels;
- 	u8 config;
- 	s16 temp[4];
-+	s8 nfactor[3];
- };
- 
- static int temp_from_s16(s16 reg)
-@@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
- 			data->temp[i] |= i2c_smbus_read_byte_data(client,
- 				TMP421_TEMP_LSB[i]);
- 		}
-+		for (i = 1; i < data->channels; i++) {
-+			data->nfactor[i - 1] = i2c_smbus_read_byte_data(client,
-+				TMP421_NFACTOR[i - 1]);
-+		}
- 		data->last_updated = jiffies;
- 		data->valid = 1;
- 	}
-@@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
- 		return sprintf(buf, "0\n");
- }
- 
-+static ssize_t show_nfactor(struct device *dev,
-+			    struct device_attribute *devattr, char *buf)
-+{
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	struct tmp421_data *data = tmp421_update_device(dev);
-+
-+	return sprintf(buf, "%d\n", data->nfactor[index - 1]);
-+}
-+
-+static ssize_t set_nfactor(struct device *dev,
-+			   struct device_attribute *devattr,
-+			   const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct tmp421_data *data = i2c_get_clientdata(client);
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	int nfactor = simple_strtol(buf, NULL, 10);
-+
-+	mutex_lock(&data->update_lock);
-+	i2c_smbus_write_byte_data(client, TMP421_NFACTOR[index - 1],
-+				  SENSORS_LIMIT(nfactor, -128, 127));
-+	mutex_unlock(&data->update_lock);
-+
-+	return count;
-+}
-+
- static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
- 				int n)
- {
-@@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
- static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
- static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
- static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-+static SENSOR_DEVICE_ATTR(temp2_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_nfactor, set_nfactor, 1);
- static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
- static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-+static SENSOR_DEVICE_ATTR(temp3_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_nfactor, set_nfactor, 2);
- static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
- static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-+static SENSOR_DEVICE_ATTR(temp4_nfactor, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_nfactor, set_nfactor, 3);
- 
- static struct attribute *tmp421_attr[] = {
- 	&sensor_dev_attr_temp1_input.dev_attr.attr,
- 	&sensor_dev_attr_temp2_input.dev_attr.attr,
- 	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp2_nfactor.dev_attr.attr,
- 	&sensor_dev_attr_temp3_input.dev_attr.attr,
- 	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp3_nfactor.dev_attr.attr,
- 	&sensor_dev_attr_temp4_input.dev_attr.attr,
- 	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp4_nfactor.dev_attr.attr,
- 	NULL
- };
- 
--- 
-1.7.0.4
-
-
-
--- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+--------------030102040409010901000209--
