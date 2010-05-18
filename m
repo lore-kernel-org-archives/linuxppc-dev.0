@@ -1,18 +1,18 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: "event-scan failed" logflood
+Subject: Re: [PATCH] powerpc/pseries: Make request_ras_irqs() available to
+	other pseries code
 From: Michael Ellerman <michael@ellerman.id.au>
-To: nello martuscielli <ppc.addon@gmail.com>
-In-Reply-To: <loom.20100517T145602-17@post.gmane.org>
-References: <20100513111603.3352.qmail@kosh.dhis.org>
-	<1273786104.21352.190.camel@pasglop>
-	<loom.20100517T145602-17@post.gmane.org>
+To: Mark Nelson <markn@au1.ibm.com>
+In-Reply-To: <201005172233.01183.markn@au1.ibm.com>
+References: <201005172233.01183.markn@au1.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha1";
 	protocol="application/pgp-signature";
-	boundary="=-gn4EI4cw+9UilXriRF45"
-Date: Tue, 18 May 2010 22:33:11 +1000
-Message-ID: <1274185991.26143.1.camel@concordia>
+	boundary="=-QhU7aKkG+bZYhVenyOmt"
+Date: Tue, 18 May 2010 22:40:51 +1000
+Message-ID: <1274186451.26143.8.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Tseng-hui Lin <tsenglin@us.ibm.com>, engebret@us.ibm.com,
+	linuxppc-dev@lists.ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,62 +24,147 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-gn4EI4cw+9UilXriRF45
+--=-QhU7aKkG+bZYhVenyOmt
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2010-05-17 at 12:58 +0000, nello martuscielli wrote:
-> Benjamin Herrenschmidt <benh <at> kernel.crashing.org> writes:
->=20
-> _omissis__
-> >=20
-> > Ok, that gives us a good thing to use to not do the scanning then. If
-> > that's 0 then we assume it's a bogus OF and we disable the scan
-> > completely. I'll do a patch later today, though feel free to beat me to
-> > it.
-> >=20
-> > Cheers,
-> > Ben.
-> >=20
->=20
-> hi, is there available that patch?
-> With the fresh new 2.6.34 the logflood problem is still present.
+On Mon, 2010-05-17 at 22:33 +1000, Mark Nelson wrote:
+> At the moment only the RAS code uses event-sources interrupts (for EPOW
+> events and internal errors) so request_ras_irqs() (which actually request=
+s
+> the event-sources interrupts) is found in ras.c and is static.
 
-You could try this, completely untested:
+Hi Mark,
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 4190eae..fd68bed 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -490,6 +490,12 @@ static int __init rtas_init(void)
-                return -ENODEV;
-        }
-=20
-+       if (!rtas_event_scan_rate) {
-+               /* Broken firmware: take a rate of zero to mean don't scan =
-*/
-+               printk(KERN_DEBUG "rtasd: scan rate is 0, not scanning\n");
-+               return 0;
-+       }
-+
-        /* Make room for the sequence number */
-        rtas_error_log_max =3D rtas_get_error_log_max();
-        rtas_error_log_buffer_max =3D rtas_error_log_max + sizeof(int);
+Just a few niggles,
+
+...
+
+> +
+> +void request_event_sources_irqs(struct device_node *np,
+> +				irq_handler_t handler,
+> +				const char *name)
+> +{
+> +	int i, index, count =3D 0;
+> +	struct of_irq oirq;
+> +	const u32 *opicprop;
+> +	unsigned int opicplen;
+> +	unsigned int virqs[16];
+> +
+> +	/* Check for obsolete "open-pic-interrupt" property. If present, then
+> +	 * map those interrupts using the default interrupt host and default
+> +	 * trigger
+> +	 */
+> +	opicprop =3D of_get_property(np, "open-pic-interrupt", &opicplen);
+> +	if (opicprop) {
+> +		opicplen /=3D sizeof(u32);
+> +		for (i =3D 0; i < opicplen; i++) {
+> +			if (count > 15)
+> +				break;
+> +			virqs[count] =3D irq_create_mapping(NULL, *(opicprop++));
+> +			if (virqs[count] =3D=3D NO_IRQ)
+> +				printk(KERN_ERR "Unable to allocate interrupt "
+> +				       "number for %s\n", np->full_name);
+> +			else
+> +				count++;
+> +
+> +		}
+> +	}
+> +	/* Else use normal interrupt tree parsing */
+> +	else {
+> +		/* First try to do a proper OF tree parsing */
+> +		for (index =3D 0; of_irq_map_one(np, index, &oirq) =3D=3D 0;
+> +		     index++) {
+> +			if (count > 15)
+> +				break;
+> +			virqs[count] =3D irq_create_of_mapping(oirq.controller,
+> +							    oirq.specifier,
+> +							    oirq.size);
+> +			if (virqs[count] =3D=3D NO_IRQ)
+> +				printk(KERN_ERR "Unable to allocate interrupt "
+> +				       "number for %s\n", np->full_name);
+> +			else
+> +				count++;
+> +		}
+> +	}
+> +
+> +	/* Now request them */
+> +	for (i =3D 0; i < count; i++) {
+> +		if (request_irq(virqs[i], handler, 0, name, NULL)) {
+> +			printk(KERN_ERR "Unable to request interrupt %d for "
+> +			       "%s\n", virqs[i], np->full_name);
+> +			return;
+> +		}
+> +	}
+
+Existing code I know, but the error handling in here is a little lax,
+what's not going to work if we miss some or all of the interrupts?
+
+> Index: upstream/arch/powerpc/platforms/pseries/event_sources.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- /dev/null
+> +++ upstream/arch/powerpc/platforms/pseries/event_sources.h
+> @@ -0,0 +1,29 @@
+> +/*
+> + * Copyright (C) 2001 Dave Engebretsen IBM Corporation
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 =
+USA
+> + */
+> +
+> +#ifndef _POWERPC_EVENT_SOURCES_H
+> +#define _POWERPC_EVENT_SOURCES_H
+> +
+> +#include <linux/interrupt.h>
+> +
+> +struct device_node;
+> +
+> +extern void request_event_sources_irqs(struct device_node *np,
+> +				       irq_handler_t handler, const char *name);
+
+This could just go in platforms/pseries/pseries.h
+
+> Index: upstream/arch/powerpc/platforms/pseries/ras.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- upstream.orig/arch/powerpc/platforms/pseries/ras.c
+> +++ upstream/arch/powerpc/platforms/pseries/ras.c
+> @@ -50,6 +50,7 @@
+>  #include <asm/firmware.h>
+> =20
+>  #include "pseries.h"
+> +#include "event_sources.h"
+
+:)
 
 
 cheers
 
-
---=-gn4EI4cw+9UilXriRF45
+--=-QhU7aKkG+bZYhVenyOmt
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEABECAAYFAkvyiQcACgkQdSjSd0sB4dIxOQCffIAPqhGO6jn9XyLMhie7vHPE
-w/cAn2hhC3HSxFQ7NptgKDG/xcY8vVcp
-=KV4T
+iEYEABECAAYFAkvyitMACgkQdSjSd0sB4dLwXACglHESPsmaEBWIz8AAdNPRbnJ7
+x9gAoImLrXkDeT3ovmLlxzcculphWfu0
+=TVwS
 -----END PGP SIGNATURE-----
 
---=-gn4EI4cw+9UilXriRF45--
+--=-QhU7aKkG+bZYhVenyOmt--
