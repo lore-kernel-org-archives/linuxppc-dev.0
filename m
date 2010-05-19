@@ -1,31 +1,35 @@
-Return-Path: <sonny@us.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <markn@au1.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B5D1B7D40
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C2B57B7D1F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 May 2010 14:27:48 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e39.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4J4J0ex007019
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 22:19:00 -0600
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4J4RjmT178008
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 22:27:45 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4J4Uc94014921
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 May 2010 22:30:38 -0600
-Date: Tue, 18 May 2010 23:27:44 -0500
-From: Sonny Rao <sonnyrao@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: Add support for IO Event interrupt drivers
-Message-ID: <20100519042744.GA26215@us.ibm.com>
+	Wed, 19 May 2010 16:31:39 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp04.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4J6RaVP017911
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 16:27:36 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4J6OQ561687658
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 16:24:28 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4J6VaHg002687
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 16:31:37 +1000
+From: Mark Nelson <markn@au1.ibm.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc/pseries: Make request_ras_irqs() available to
+	other pseries code
+Date: Wed, 19 May 2010 16:35:43 +1000
+References: <201005172233.01183.markn@au1.ibm.com>
+	<1274186451.26143.8.camel@concordia>
+In-Reply-To: <1274186451.26143.8.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1274189851.26143.63.camel@concordia>
-Cc: markn@au1.ibm.com, sonnyrao@us.ibm.com, miltonm@bga.com
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <201005191635.43544.markn@au1.ibm.com>
+Cc: Tseng-hui Lin <tsenglin@us.ibm.com>, engebret@us.ibm.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,242 +39,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 May 2010 23:37:31 +1000, Michael Ellerman wrote:
-> 
-> On Mon, 2010-05-17 at 22:53 +1000, Mark Nelson wrote:
-> > This patch adds support for handling IO Event interrupts which come
-> > through at the /event-sources/ibm,io-events device tree node.
+Hi Michael,
+
+Thanks for looking over these patches!
+
+On Tuesday 18 May 2010 22:40:51 Michael Ellerman wrote:
+> On Mon, 2010-05-17 at 22:33 +1000, Mark Nelson wrote:
+> > At the moment only the RAS code uses event-sources interrupts (for EPOW
+> > events and internal errors) so request_ras_irqs() (which actually requests
+> > the event-sources interrupts) is found in ras.c and is static.
 > 
 > Hi Mark,
 > 
-> You'll have to explain to me offline sometime how it is we ran out of
-> interrupts and started needing to multiplex them ..
-
-Firmware has decided to multiplex all i/o error reporting through a single
-interrupt for reasons unknown, that is the primary reason for this patch.
-
-One question is, we already register a few RAS interrupts which call
-RTAS using check-exception for getting error information.  Those live
-in platforms/pseries/ras.c -- should we combine the two into a common
-implementation somehow?
-
-> > There is one ibm,io-events interrupt, but this interrupt might be used
-> > for multiple I/O devices, each with their own separate driver. So, we
-> > create a platform interrupt handler that will do the RTAS check-exception
-> > call and then call the appropriate driver's interrupt handler (the one(s)
-> > that registered with a scope that matches the scope of the incoming
-> > interrupt).
-> > 
-> > So, a driver for a device that uses IO Event interrupts will register
-> > it's interrupt service routine (or interrupt handler) with the platform
-> > code using ioei_register_isr(). This register function takes a function
-> > pointer to the driver's handler and the scope that the driver is
-> > interested in (scopes defined in arch/powerpc/include/asm/io_events.h).
-> > The driver's handler must take a pointer to a struct io_events_section
-> > and must not return anything.
-> > 
-> > The platform code registers io_event_interrupt() as the interrupt handler
-> > for the ibm,io-events interrupt. Upon receiving an IO Event interrupt, it
-> > checks the scope of the incoming interrupt and only calls those drivers'
-> > handlers that have registered as being interested in that scope.
+> Just a few niggles,
 > 
-> The "checks the scope" requires an RTAS call, which takes a global lock
-> (and you add another) - these aren't going to be used for anything
-> performance critical I hope?
-
-Nope it shouldn't be performance critical, but it does raise the point
-that the current RTAS implementation in Linux *always* uses the global
-lock.  There is a set of calls which are not required to be serialized
-against each other.  This would be a totally different patchset to fix that
-problem.  The "check-exception" call is one that doesn't require the global
-RTAS lock.  I might work on that someday :-)
-
-<snip>
-
-> > +	/* check to see if we've already registered this function with
-> > +	 * this scope. If we have, don't register it again
-> > +	 */
-> > +	iter = ioei_isr_list;
-> > +	while (iter) {
-> > +		if (iter->ioei_isr == isr && iter->scope == scope)
-> > +			break;
-> > +		iter = iter->next;
-> > +	}
-> > +
-> > +	if (iter) {
-> > +		ret = -EEXIST;
-> > +		goto out;
-> > +	}
-> > +
-> > +	cons = kmalloc(sizeof(struct ioei_consumer), GFP_KERNEL);
+> ...
 > 
-> But you don't want to kmalloc while holding the lock and with interrupts
-> off.
-
-Well, he could use GFP_ATOMIC but that's the wrong approach.  You should
-allocate the buffer (using GFP_KERNEL) before taking the spin lock.
-
-<snip>
-
-> > +#define EXT_INT_VECTOR_OFFSET	0x500
-> > +#define RTAS_TYPE_IO_EVENT	0xE1
-
-These defines should probably go in <asm/rtas.h>
-
-I noticed the code in ras.c has it's own define too RAS_VECTOR_OFFSET
-for 0x500 and asm/rtas.h actually has RTAS_TYPE_IO for 0xE1
-
 > > +
-> > +static irqreturn_t io_event_interrupt(int irq, void *dev_id)
+> > +void request_event_sources_irqs(struct device_node *np,
+> > +				irq_handler_t handler,
+> > +				const char *name)
 > > +{
-> > +	struct rtas_error_log *rtas_elog;
-> > +	struct io_events_section *ioei_sec;
-> > +	char *ch_ptr;
-> > +	int status;
-> > +	u16 *sec_len;
+> > +	int i, index, count = 0;
+> > +	struct of_irq oirq;
+> > +	const u32 *opicprop;
+> > +	unsigned int opicplen;
+> > +	unsigned int virqs[16];
 > > +
-> > +	spin_lock(&ioei_log_buf_lock);
-> > +
-> > +	status = rtas_call(ioei_check_exception_token, 6, 1, NULL,
-> > +			   EXT_INT_VECTOR_OFFSET,
-> > +			   irq_map[irq].hwirq,
-> 
-> This is going to be  slow anyway, you may as well use virq_to_hw().
-> 
-> > +			   RTAS_IO_EVENTS, 1 /*Time Critical */,
-> 
-> Missing space before the T                      ^
-> 
-> > +			   __pa(&ioei_log_buf),
-> 
-> Does the buffer need to be aligned, and/or inside the RMO? I'd guess
-> yes.
-
-The docs for check-exception don't particularly specify alignment
-requirements, but RTAS in generally going to want it in the RMO
-
-Also, if we're going to go ahead and use rtas_call() which locks
-it's own buffer which meets the requirements, why do we even need
-a separate buffer?  Really, we should make this call, then copy
-the content of the buffer before handing it over to the drivers.
-
-
-> > +				rtas_get_error_log_max());
-
-Here, we're passing back what RTAS told us what it's max is
-which doesn't necessarily equal the static buffer size we
-allocated which can cause a buffer overflow.  So this
-argument should be the static size of the buffer.
-
-> > +
-> > +	rtas_elog = (struct rtas_error_log *)ioei_log_buf;
-> > +
-> > +	if (status != 0)
-> > +		goto out;
-> > +
-> > +	/* We assume that we will only ever get called for io-event
-> > +	 * interrupts. But if we get called with something else
-> > +	 * make some noise about it.
+> > +	/* Check for obsolete "open-pic-interrupt" property. If present, then
+> > +	 * map those interrupts using the default interrupt host and default
+> > +	 * trigger
 > > +	 */
-> 
-> That would mean we'd requested the wrong interrupt wouldn't it? I'd
-> almost BUG, but benh always bitches that I do that too often so .. :)
-> 
-> > +	if (rtas_elog->type != RTAS_TYPE_IO_EVENT) {
-> > +		pr_warning("IO Events: We got called with an event type of %d"
-> > +			   " rather than %d!\n", rtas_elog->type,
-> > +			   RTAS_TYPE_IO_EVENT);
-> > +		WARN_ON(1);
-> > +		goto out;
+> > +	opicprop = of_get_property(np, "open-pic-interrupt", &opicplen);
+> > +	if (opicprop) {
+> > +		opicplen /= sizeof(u32);
+> > +		for (i = 0; i < opicplen; i++) {
+> > +			if (count > 15)
+> > +				break;
+> > +			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
+> > +			if (virqs[count] == NO_IRQ)
+> > +				printk(KERN_ERR "Unable to allocate interrupt "
+> > +				       "number for %s\n", np->full_name);
+> > +			else
+> > +				count++;
+> > +
+> > +		}
 > > +	}
-
-Should we try to process this instead of just warning?  
-The type we get might be one of the the ones we recognize in
-ras.c; so this is an argument for combining ras.c with this code
-or at least report this in the same manner we report any other
-RTAS error log.
-
-> > +
-> > +	/* there are 24 bytes of event log data before the first section
-> > +	 * (Main-A) begins
-> > +	 */
-> > +	ch_ptr = (char *)ioei_log_buf + 24;
-> 
-> Any reason you're casting from unsigned char to char?
-> 
-> > +	/* loop through all the sections until we get to the IO Events
-> > +	 * Section, with section ID "IE"
-> > +	 */
-> > +	while (*ch_ptr != 'I' && *(ch_ptr + 1) != 'E') {
-> > +		sec_len = (u16 *)(ch_ptr + 2);
-> > +		ch_ptr += *sec_len;
-> > +	}
-> 
-> This would be neater if you cast to io_events_section and used the
-> fields I think.
-> 
-> And even better if you know the length will be a multiple of the
-> section_header size, you can do the arithmetic in those terms.
-> 
-> > +	ioei_sec = (struct io_events_section *)ch_ptr;
-> > +
-> > +	ioei_call_consumers(ioei_sec->scope, ioei_sec);
-> 
-> Guaranteed to be only one section returned to us per call?
-> 
-> We /could/ copy the ioei_sec and drop the buf lock, which would allow
-> another interrupt to come in and start doing the RTAS call (on another
-> cpu, and iff there are actually multiple interrupts). But we probably
-> don't care.
-
-I think we *have* to copy it because we don't want our lock held when we
-call random handlers.
-
-> > +out:
-> > +	spin_unlock(&ioei_log_buf_lock);
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-> > +
-> > +static int __init init_ioei_IRQ(void)
-> 
-> Never understood why IRQ always (sometimes) gets caps ..
-> 
-> > +{
-> > +	struct device_node *np;
-> > +
-> > +	ioei_check_exception_token = rtas_token("check-exception");
-> 
-> Meep, need to check if it actually exists.
-> 
-> > +	np = of_find_node_by_path("/event-sources/ibm,io-events");
-> > +	if (np != NULL) {
-> 
-> if (np) would usually do it
-> 
-> > +		request_event_sources_irqs(np, io_event_interrupt, "IO_EVENT");
-> > +		of_node_put(np);
+> > +	/* Else use normal interrupt tree parsing */
+> > +	else {
+> > +		/* First try to do a proper OF tree parsing */
+> > +		for (index = 0; of_irq_map_one(np, index, &oirq) == 0;
+> > +		     index++) {
+> > +			if (count > 15)
+> > +				break;
+> > +			virqs[count] = irq_create_of_mapping(oirq.controller,
+> > +							    oirq.specifier,
+> > +							    oirq.size);
+> > +			if (virqs[count] == NO_IRQ)
+> > +				printk(KERN_ERR "Unable to allocate interrupt "
+> > +				       "number for %s\n", np->full_name);
+> > +			else
+> > +				count++;
+> > +		}
 > > +	}
 > > +
-> > +	return 0;
-> > +}
-> > +device_initcall(init_ioei_IRQ);
+> > +	/* Now request them */
+> > +	for (i = 0; i < count; i++) {
+> > +		if (request_irq(virqs[i], handler, 0, name, NULL)) {
+> > +			printk(KERN_ERR "Unable to request interrupt %d for "
+> > +			       "%s\n", virqs[i], np->full_name);
+> > +			return;
+> > +		}
+> > +	}
 > 
-> Should probably be a machine_initcall().
+> Existing code I know, but the error handling in here is a little lax,
+> what's not going to work if we miss some or all of the interrupts?
+
+That's a good point. For the existing code, if we miss an EPOW event
+it just means that the event won't be logged (as that's all we do with
+those events at the moment, although there is a comment saying
+that it should be fixed to take appropriate action depending upon the
+type of power failure); but it's a bigger problem if we miss one of the
+RAS errors because then we could miss a fatal event that we should halt
+the machine on. And for the upcoming IO events it's even worse as we'd
+miss an interrupt from the device...
+
+I would do it in a follow-on patch rather than this one, but what would
+be a good course of action if we can't request the interrupt?
+
 > 
-> > Index: upstream/arch/powerpc/platforms/pseries/Makefile
+> > Index: upstream/arch/powerpc/platforms/pseries/event_sources.h
 > > ===================================================================
-> > --- upstream.orig/arch/powerpc/platforms/pseries/Makefile
-> > +++ upstream/arch/powerpc/platforms/pseries/Makefile
-> > @@ -8,7 +8,7 @@ endif
-> >  
-> >  obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
-> >  			   setup.o iommu.o event_sources.o ras.o \
-> > -			   firmware.o power.o dlpar.o
-> > +			   firmware.o power.o dlpar.o io_events.o
+> > --- /dev/null
+> > +++ upstream/arch/powerpc/platforms/pseries/event_sources.h
+> > @@ -0,0 +1,29 @@
+> > +/*
+> > + * Copyright (C) 2001 Dave Engebretsen IBM Corporation
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License
+> > + * along with this program; if not, write to the Free Software
+> > + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+> > + */
+> > +
+> > +#ifndef _POWERPC_EVENT_SOURCES_H
+> > +#define _POWERPC_EVENT_SOURCES_H
+> > +
+> > +#include <linux/interrupt.h>
+> > +
+> > +struct device_node;
+> > +
+> > +extern void request_event_sources_irqs(struct device_node *np,
+> > +				       irq_handler_t handler, const char *name);
 > 
-> The BML guys might appreciate an option to turn it off?
+> This could just go in platforms/pseries/pseries.h
 
-Or, we might subvert it for our own evil purposes ;-)
+That's true - it is only one function. I'll move it.
 
-Sonny
+> 
+> > Index: upstream/arch/powerpc/platforms/pseries/ras.c
+> > ===================================================================
+> > --- upstream.orig/arch/powerpc/platforms/pseries/ras.c
+> > +++ upstream/arch/powerpc/platforms/pseries/ras.c
+> > @@ -50,6 +50,7 @@
+> >  #include <asm/firmware.h>
+> >  
+> >  #include "pseries.h"
+> > +#include "event_sources.h"
+> 
+> :)
+> 
+
+Thanks!
+Mark
