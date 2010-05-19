@@ -1,32 +1,20 @@
-Return-Path: <sonny@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6B04EB7D64
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 19 May 2010 18:47:27 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e6.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4J8jG3t002201
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 04:45:16 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4J8l9be169336
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 04:47:09 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4J8l9cJ032448
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 05:47:09 -0300
-Date: Wed, 19 May 2010 03:47:08 -0500
-From: Sonny Rao <sonnyrao@us.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] need check for devices with bad status status property
-	in __of_scan_bus()
-Message-ID: <20100519084708.GC26215@us.ibm.com>
-References: <20100511011341.GO4036@us.ibm.com>
+Return-Path: <jjdanimoth@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 3D034B7D64
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 19:01:43 +1000 (EST)
+Received: by wyb40 with SMTP id 40so411662wyb.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 02:01:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100511011341.GO4036@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
+In-Reply-To: <1274219376.21352.857.camel@pasglop>
+References: <201005182116.04092.jjdanimoth@gmail.com>
+	<1274219376.21352.857.camel@pasglop>
+From: jjDaNiMoTh <jjdanimoth@gmail.com>
+Date: Wed, 19 May 2010 11:01:21 +0200
+Message-ID: <AANLkTim594fXeuOccGqcFzJlcasFjE9XXj082gMlVu05@mail.gmail.com>
+Subject: Re: PATA/legacy IDE subsystem on PowerMac
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 10, 2010 at 08:13:41PM -0500, Sonny Rao wrote:
-> Hi Ben, we ran into an issue where it looks like we're not
-> properly ignoring a pci device with a non-good status property
-> when we walk the device tree and create our device nodes.
-> 
-> However, the EEH init code does look for the property and 
-> disables EEH on these devices.   This leaves us in an
-> inconsistent where we are poking at a supposedly bad
-> piece of hardware and RTAS will block our config cycles 
-> because EEH isn't enabled anyway.
-> 
-> This has only been compile tested.
-> 
-> Signed-of-by: Sonny Rao <sonnyrao@linux.vnet.ibm.com>
-> 
-> Index: common/arch/powerpc/kernel/pci_of_scan.c
-> ===================================================================
-> --- common/arch/powerpc/kernel.orig/pci_of_scan.c	2010-05-10 20:00:40.000000000 -0500
-> +++ common/arch/powerpc/kernel/pci_of_scan.c	2010-05-10 20:03:04.000000000 -0500
-> @@ -310,6 +310,8 @@ static void __devinit __of_scan_bus(stru
->  	/* Scan direct children */
->  	for_each_child_of_node(node, child) {
->  		pr_debug("  * %s\n", child->full_name);
-> +		if (!of_device_is_available(child))
-> +			continue;
->  		reg = of_get_property(child, "reg", &reglen);
->  		if (reg == NULL || reglen < 20)
->  			continue;
+2010/5/18 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+[cut]
+> Nothing obvious... the disk seem to be detected properly. Do you have
+> the support for mac partitions and the SCSI disk driver (BLK_DEV_SD)
+> enabled ?
 
+The PATA modules was built statically, and BLK_DEV_SD as a module (and
+not included in the ramfs).
+Now it boot correctly, many thanks.
 
-Ok, it's now been actually tested with firmware
-that marks some devices as failed and appears to work.
-
-
--- 
-Sonny Rao, LTC OzLabs, BML team
+Have a nice day
