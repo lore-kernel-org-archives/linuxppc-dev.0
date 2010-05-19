@@ -1,26 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f203.google.com (mail-yw0-f203.google.com
-	[209.85.211.203]) by ozlabs.org (Postfix) with ESMTP id 56AA5B7D64
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 02:03:11 +1000 (EST)
-Received: by ywh41 with SMTP id 41so4326295ywh.9
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 09:03:09 -0700 (PDT)
+Received: from mail-gx0-f221.google.com (mail-gx0-f221.google.com
+	[209.85.217.221]) by ozlabs.org (Postfix) with ESMTP id D68D3B7D4C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 20 May 2010 02:52:24 +1000 (EST)
+Received: by gxk21 with SMTP id 21so994380gxk.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 19 May 2010 09:52:21 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1274032079.1729.3@antares>
-References: <20100505220916.GD3529@ovro.caltech.edu>
-	<1273168472.1767.1@antares>
-	<h2mfa686aa41005061106ofda766f5z64c4f631eaded414@mail.gmail.com>
-	<1274032079.1729.3@antares>
+In-Reply-To: <201003191849.03717.temerkhanov@cifronik.ru>
+References: <201003191847.55823.temerkhanov@cifronik.ru>
+	<201003191849.03717.temerkhanov@cifronik.ru>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 19 May 2010 10:02:48 -0600
-Message-ID: <AANLkTikrF7-oxN5BzdiJga0XbMbQPKKj-SqwLp46_GQb@mail.gmail.com>
-Subject: Re: [Patch v2 1/2] 5200/mpc: improve i2c bus error recovery
-To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>,
-	Devicetree Discussions <devicetree-discuss@lists.ozlabs.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>
+Date: Wed, 19 May 2010 10:52:01 -0600
+Message-ID: <AANLkTil1Gbg7tED2MgheQjFpZIJMjS-qqmQ7Gu2Vbh5f@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] Xilinx Virtex 4 FX Soft FPU support
+To: Sergey Temerkhanov <temerkhanov@cifronik.ru>
+Content-Type: text/plain; charset=KOI8-R
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +27,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 16, 2010 at 11:47 AM, Albrecht Dre=DF <albrecht.dress@arcor.de>=
- wrote:
-> Am 06.05.10 20:06 schrieb(en) Grant Likely:
->>
->> > I think, though, the whole stuff has been discussed in depth in
->> > February, so
->> > I do not understand why it's still pending as "new". =A0Grant, did we =
-miss
->> > something here?
->>
->> I generally let subsystem maintainers pick up the device driver
->> patches for embedded platforms I'm responsible for unless I'm asked to
->> do otherwise. =A0I think ben has asked me to take these through my tree.
+On Fri, Mar 19, 2010 at 9:49 AM, Sergey Temerkhanov
+<temerkhanov@cifronik.ru> wrote:
+> The patch.
 >
-> That's <http://git.secretlab.ca/?p=3Dlinux-2.6.git;a=3Dshortlog>, isn't i=
-t?
-> =A0Hmmm, didn't find it there... :-/
+> Regards, Resgey Temerkhanov
 
-Ugh... Stupid typing too fast.  I meant to say, "I *don't* think ben
-has asked me to take..."
+Hi Sergey.  Comments below.
 
-Well this leaves a bit of a mess.  I'll make sure it gets in one way or ano=
-ther.
+> diff -r 9d9ac97e095d .config
+> --- a/.config	Thu Feb 25 21:23:42 2010 +0300
+> +++ b/.config	Thu Feb 25 21:49:02 2010 +0300
 
+.config changes should not appear in your patch file.
+
+> diff -r 9d9ac97e095d arch/powerpc/include/asm/ppc_asm.h
+> --- a/arch/powerpc/include/asm/ppc_asm.h	Thu Feb 25 21:23:42 2010 +0300
+> +++ b/arch/powerpc/include/asm/ppc_asm.h	Thu Feb 25 21:49:02 2010 +0300
+> @@ -85,13 +85,23 @@
+>  #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
+>  #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
+>
+> -#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
+> +
+> +#ifdef CONFIG_XILINX_FPU
+> +#define stfr stfs
+> +#define lfr lfs
+> +#else
+> +#define stfr stfd
+> +#define lfr lfd
+> +#endif
+
+the stfr/lfr redirect is a little weird.  Why not simply:
+
+> +
+> +#ifdef CONFIG_XILINX_FPU
+> +#define SAVE_FPR(n, base)	stfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
+> +#define REST_FPR(n, base)	lfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
+> +#else
+> +#define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
+> +#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
+> +#endif
+
+A comment here describing that only single precision works with the
+XILINX 405 FPU wouldn't go amiss either.
+
+> diff -r 9d9ac97e095d arch/powerpc/kernel/fpu.S
+> --- a/arch/powerpc/kernel/fpu.S	Thu Feb 25 21:23:42 2010 +0300
+> +++ b/arch/powerpc/kernel/fpu.S	Thu Feb 25 21:49:02 2010 +0300
+> @@ -57,6 +57,9 @@
+>  _GLOBAL(load_up_fpu)
+>  	mfmsr	r5
+>  	ori	r5,r5,MSR_FP
+> +#ifdef CONFIG_XILINX_FPU
+> +	oris r5,r5,MSR_VEC@h
+> +#endif
+
+So AltiVec is being enabled here, but double precision is not
+supported?  What instructions are supported?
+
+Also, please stick with the same whitespace convention used in the
+lines above (tab indent instead of a space).  Again, a comment would
+not go amiss.
+
+>  #ifdef CONFIG_VSX
+>  BEGIN_FTR_SECTION
+>  	oris	r5,r5,MSR_VSX@h
+> @@ -85,6 +88,9 @@
+>  	toreal(r5)
+>  	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+>  	li	r10,MSR_FP|MSR_FE0|MSR_FE1
+> +#ifdef CONFIG_XILINX_FPU
+> +	oris	r10,r10,MSR_VEC@h
+> +#endif
+>  	andc	r4,r4,r10		/* disable FP for previous task */
+>  	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+>  1:
+> @@ -94,6 +100,9 @@
+>  	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
+>  	lwz	r4,THREAD_FPEXC_MODE(r5)
+>  	ori	r9,r9,MSR_FP		/* enable FP for current */
+> +#ifdef CONFIG_XILINX_FPU
+> +	oris	r9,r9,MSR_VEC@h
+> +#endif
+>  	or	r9,r9,r4
+>  #else
+>  	ld	r4,PACACURRENT(r13)
+> @@ -124,6 +133,9 @@
+>  _GLOBAL(giveup_fpu)
+>  	mfmsr	r5
+>  	ori	r5,r5,MSR_FP
+> +#ifdef CONFIG_XILINX_FPU
+> +	oris	r5,r5,MSR_VEC@h
+> +#endif
+>  #ifdef CONFIG_VSX
+>  BEGIN_FTR_SECTION
+>  	oris	r5,r5,MSR_VSX@h
+> @@ -145,6 +157,9 @@
+>  	beq	1f
+>  	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+>  	li	r3,MSR_FP|MSR_FE0|MSR_FE1
+> +#ifdef CONFIG_XILINX_FPU
+> +	oris	r3,r3,MSR_VEC@h
+> +#endif
+>  #ifdef CONFIG_VSX
+>  BEGIN_FTR_SECTION
+>  	oris	r3,r3,MSR_VSX@h
+> diff -r 9d9ac97e095d arch/powerpc/kernel/head_40x.S
+> --- a/arch/powerpc/kernel/head_40x.S	Thu Feb 25 21:23:42 2010 +0300
+> +++ b/arch/powerpc/kernel/head_40x.S	Thu Feb 25 21:49:02 2010 +0300
+> @@ -420,7 +420,19 @@
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD
+>  	EXC_XFER_STD(0x700, program_check_exception)
+>
+> +/* 0x0800 - FPU unavailable Exception */
+> +#ifdef CONFIG_PPC_FPU
+> +	START_EXCEPTION(0x0800, FloatingPointUnavailable)
+> +	NORMAL_EXCEPTION_PROLOG
+> +	beq	1f;							      \
+> +	bl	load_up_fpu;		/* if from user, just load it up */   \
+> +	b	fast_exception_return;					      \
+> +1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+> +	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
+> +#else
+>  	EXCEPTION(0x0800, Trap_08, unknown_exception, EXC_XFER_EE)
+> +#endif
+> +
+>  	EXCEPTION(0x0900, Trap_09, unknown_exception, EXC_XFER_EE)
+>  	EXCEPTION(0x0A00, Trap_0A, unknown_exception, EXC_XFER_EE)
+>  	EXCEPTION(0x0B00, Trap_0B, unknown_exception, EXC_XFER_EE)
+> @@ -432,7 +444,7 @@
+>
+>  	EXCEPTION(0x0D00, Trap_0D, unknown_exception, EXC_XFER_EE)
+>  	EXCEPTION(0x0E00, Trap_0E, unknown_exception, EXC_XFER_EE)
+> -	EXCEPTION(0x0F00, Trap_0F, unknown_exception, EXC_XFER_EE)
+> +	EXCEPTION(0x0F20, Trap_0F, unknown_exception, EXC_XFER_EE)
+
+Why?
+
+>
+>  /* 0x1000 - Programmable Interval Timer (PIT) Exception */
+>  	START_EXCEPTION(0x1000, Decrementer)
+> @@ -821,8 +833,10 @@
+>   * The PowerPC 4xx family of processors do not have an FPU, so this just
+>   * returns.
+>   */
+> +#ifndef CONFIG_PPC_FPU
+>  _ENTRY(giveup_fpu)
+>  	blr
+> +#endif
+>
+>  /* This is where the main kernel code starts.
+>   */
+> diff -r 9d9ac97e095d arch/powerpc/platforms/Kconfig.cputype
+> --- a/arch/powerpc/platforms/Kconfig.cputype	Thu Feb 25 21:23:42 2010 +0300
+> +++ b/arch/powerpc/platforms/Kconfig.cputype	Thu Feb 25 21:49:02 2010 +0300
+> @@ -290,4 +290,9 @@
+>  config CHECK_CACHE_COHERENCY
+>  	bool
+>
+> +config XILINX_FPU
+> +	bool "Xilinx softFPU"
+> +	select PPC_FPU
+> +	depends on 40x
+> +
+
+Should be more specific.  Use something like XILINX_VIRTEX4_405_FPU
+(as opposed to Virtex II pro, or the 440 on the Virtex 5.
+
+Also, this looks to be very multiplatform unfriendly, so you'll need
+to make sure other 405 board support is not selectable when the Xilinx
+FPU is enabled.
+
+Cheers,
 g.
 
---=20
+-- 
 Grant Likely, B.Sc., P.Eng.
 Secret Lab Technologies Ltd.
