@@ -1,23 +1,34 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
-	by ozlabs.org (Postfix) with ESMTP id E7CD8B7D28
+Return-Path: <sonny@us.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 6780FB7D2D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 May 2010 03:13:40 +1000 (EST)
-Message-ID: <4BF41C20.60502@theptrgroup.com>
-Date: Wed, 19 May 2010 13:13:04 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
+	Thu, 20 May 2010 04:34:50 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e39.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4JIQ3Bj000403
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 12:26:03 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4JIYbwr135966
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 12:34:38 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4JIbUwL005852
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 May 2010 12:37:30 -0600
+Date: Wed, 19 May 2010 13:34:35 -0500
+From: Sonny Rao <sonnyrao@us.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: Add support for IO Event interrupt
+	drivers
+Message-ID: <20100519183435.GE26215@us.ibm.com>
+References: <20100519042744.GA26215@us.ibm.com>
+	<1274271058.13433.30.camel@concordia>
 MIME-Version: 1.0
-To: Andre Prendel <andre.prendel@gmx.de>
-Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
-	attempt)
-References: <4BF1A760.2010707@theptrgroup.com>
-	<20100518113838.GA2052@andre-laptop>
-	<4BF2A5A9.6010907@theptrgroup.com>
-	<20100519072659.GA2069@andre-laptop>
-In-Reply-To: <20100519072659.GA2069@andre-laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@lists.ozlabs.org,
-	lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1274271058.13433.30.camel@concordia>
+Cc: markn@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,172 +38,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2010 03:26 AM, Andre Prendel wrote:
-> Ok, so there is only one remaining task :) Please update the documentation under
-> Documentation/hwmon/tmp421. Then you will get my Acked-by.
+On Wed, May 19, 2010 at 10:10:58PM +1000, Michael Ellerman wrote:
+<snip>
+> > > The "checks the scope" requires an RTAS call, which takes a global lock
+> > > (and you add another) - these aren't going to be used for anything
+> > > performance critical I hope?
+> > 
+> > Nope it shouldn't be performance critical, but it does raise the point
+> > that the current RTAS implementation in Linux *always* uses the global
+> > lock.  There is a set of calls which are not required to be serialized
+> > against each other.  This would be a totally different patchset to fix that
+> > problem.  The "check-exception" call is one that doesn't require the global
+> > RTAS lock.  I might work on that someday :-)
+> 
+> Aha, that's kind of what I was wondering. I take it PAPR documents which
+> calls need to be serialised and which don't?
 
-Documentation is updated in this patch along with the source file.
+Yeah, here's my workin list of what calls can avoid the global lock:
 
-There is a small cosmetic change in this patch. I changed the name of the 
-sysfs entry and internal variable name from nfactor to n_adjust.  This was 
-done to make sure the users know we are modifying the N[adjust] parameter 
-in the nfactor corrections register and not the actual nfactor itself. I
-also changed the reference to the register from NFACTOR to N_CORRECT since
-the datasheet uses that name for the register in question.
-
-I think the method of using the nfactor adjustment value is specific to this
-chipset.  Consequently, it's not appropriate to go into the general documentation.
+List of "re-entrant to the number of processors in the system" RTAS Calls
+--
+ibm,get-xive
+ibm,set-xive
+ibm,int-off
+ibm,int-on
 
 
+OS machine check and soft-reset handlerse must be able to call rtas
+(I'm saying these are therefore re-entrant because we could deadlock
+if we took a machine check or reset with the global lock held)
+--
+nvram-fetch
+nvram-store
+check-exception (includes our io-events)
+display-character
+system-reboot
+set-power-level(0,0)
+power-off
+ibm,set-eeh-option
+ibm,set-slot-reset
+ibm,read-slot-reset-state2
+
+additional serialiaztion group by itself
+--
+stop-self
+start-cpu
+set-power-level
 
 
+<snip>
+> > Also, if we're going to go ahead and use rtas_call() which locks
+> > it's own buffer which meets the requirements, why do we even need
+> > a separate buffer?  Really, we should make this call, then copy
+> > the content of the buffer before handing it over to the drivers.
+> 
+> But another CPU could rtas_call() and blow away our buffer after we've
+> dropped the RTAS lock but before we've used the content of the buffer.
 
->From 61f1c203620b06463695b399bae27a884008f169 Mon Sep 17 00:00:00 2001
-From: Jeff Angielski <jeff@theptrgroup.com>
-Date: Mon, 10 May 2010 10:26:34 -0400
-Subject: [PATCH] hwmon: (tmp421) Add nfactor support
+Yeah, maybe I'm getting ahead of myself here -- to me this just highlights
+the whole locking problem with the API as written, since the locking is
+all done inside that call. The API needs to be extended such that
+we have the option of doing our own locking of RTAS calls.
 
-Add support for reading and writing the n-factor correction
-registers.  This is needed to compensate for the characteristics
-of a particular sensor hanging off of the remote channels.
 
-Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
----
- Documentation/hwmon/tmp421 |   19 +++++++++++++++++++
- drivers/hwmon/tmp421.c     |   41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+), 0 deletions(-)
+> > > > +	if (rtas_elog->type != RTAS_TYPE_IO_EVENT) {
+> > > > +		pr_warning("IO Events: We got called with an event type of %d"
+> > > > +			   " rather than %d!\n", rtas_elog->type,
+> > > > +			   RTAS_TYPE_IO_EVENT);
+> > > > +		WARN_ON(1);
+> > > > +		goto out;
+> > > > +	}
+> > 
+> > Should we try to process this instead of just warning?  
+> > The type we get might be one of the the ones we recognize in
+> > ras.c; so this is an argument for combining ras.c with this code
+> > or at least report this in the same manner we report any other
+> > RTAS error log.
+> 
+> We could, but that would be a massive firmware bug - not that it
+> wouldn't happen, but it would be Not Our Problem TM.
 
-diff --git a/Documentation/hwmon/tmp421 b/Documentation/hwmon/tmp421
-index 0cf07f8..668228a 100644
---- a/Documentation/hwmon/tmp421
-+++ b/Documentation/hwmon/tmp421
-@@ -17,6 +17,7 @@ Supported chips:
- 
- Authors:
- 	Andre Prendel <andre.prendel@gmx.de>
-+	Jeff Angielski <jeff@theptrgroup.com>
- 
- Description
- -----------
-@@ -34,3 +35,21 @@ the temperature values via the following sysfs files:
- 
- temp[1-4]_input
- temp[2-4]_fault
-+
-+The chips allow the user to adjust the n-factor value that is used
-+when converting the remote channel measurements to temperature. The
-+adjustment has a range of -128 to +127 that yields an effective
-+n-factor range of 0.706542 to 1.747977.  The power on reset value
-+for the adjustment is 0 which results in an n-factor of 1.008.
-+
-+The effective n-factor is calculated according to the following
-+equation:
-+
-+n_factor = (1.008 * 300) / (300 - nfactor_adjust)
-+
-+The driver exports the n-factor adjustment value via the following 
-+sysfs files:
-+
-+temp[2-4]_n_adjust
-+
-+
-diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-index 738c472..83edbc8 100644
---- a/drivers/hwmon/tmp421.c
-+++ b/drivers/hwmon/tmp421.c
-@@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
- 
- static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
- static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-+static const u8 TMP421_N_CORRECT[3]		= { 0x21, 0x22, 0x23 };
- 
- /* Flags */
- #define TMP421_CONFIG_SHUTDOWN			0x40
-@@ -76,6 +77,7 @@ struct tmp421_data {
- 	int channels;
- 	u8 config;
- 	s16 temp[4];
-+	s8 n_adjust[3];
- };
- 
- static int temp_from_s16(s16 reg)
-@@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
- 			data->temp[i] |= i2c_smbus_read_byte_data(client,
- 				TMP421_TEMP_LSB[i]);
- 		}
-+		for (i = 1; i < data->channels; i++) {
-+			data->n_adjust[i - 1] = i2c_smbus_read_byte_data(client,
-+				TMP421_N_CORRECT[i - 1]);
-+		}
- 		data->last_updated = jiffies;
- 		data->valid = 1;
- 	}
-@@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
- 		return sprintf(buf, "0\n");
- }
- 
-+static ssize_t show_n_adjust(struct device *dev,
-+			     struct device_attribute *devattr, char *buf)
-+{
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	struct tmp421_data *data = tmp421_update_device(dev);
-+
-+	return sprintf(buf, "%d\n", data->n_adjust[index - 1]);
-+}
-+
-+static ssize_t set_n_adjust(struct device *dev,
-+			    struct device_attribute *devattr,
-+			    const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct tmp421_data *data = i2c_get_clientdata(client);
-+	int index = to_sensor_dev_attr(devattr)->index;
-+	int n_adjust= simple_strtol(buf, NULL, 10);
-+
-+	mutex_lock(&data->update_lock);
-+	i2c_smbus_write_byte_data(client, TMP421_N_CORRECT[index - 1],
-+				  SENSORS_LIMIT(n_adjust, -128, 127));
-+	mutex_unlock(&data->update_lock);
-+
-+	return count;
-+}
-+
- static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
- 				int n)
- {
-@@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
- static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
- static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
- static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-+static SENSOR_DEVICE_ATTR(temp2_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_n_adjust, set_n_adjust, 1);
- static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
- static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-+static SENSOR_DEVICE_ATTR(temp3_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_n_adjust, set_n_adjust, 2);
- static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
- static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-+static SENSOR_DEVICE_ATTR(temp4_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-+			  show_n_adjust, set_n_adjust, 3);
- 
- static struct attribute *tmp421_attr[] = {
- 	&sensor_dev_attr_temp1_input.dev_attr.attr,
- 	&sensor_dev_attr_temp2_input.dev_attr.attr,
- 	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp2_n_adjust.dev_attr.attr,
- 	&sensor_dev_attr_temp3_input.dev_attr.attr,
- 	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp3_n_adjust.dev_attr.attr,
- 	&sensor_dev_attr_temp4_input.dev_attr.attr,
- 	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-+	&sensor_dev_attr_temp4_n_adjust.dev_attr.attr,
- 	NULL
- };
- 
--- 
-1.7.0.4
+Yeah, this is paranoia (*cough* Milton's suggestion)
+
+> > > We /could/ copy the ioei_sec and drop the buf lock, which would allow
+> > > another interrupt to come in and start doing the RTAS call (on another
+> > > cpu, and iff there are actually multiple interrupts). But we probably
+> > > don't care.
+> > 
+> > I think we *have* to copy it because we don't want our lock held when we
+> > call random handlers.
+> 
+> They're not really random, and as long as they don't call the
+> register/unregister routines it should be /OK/. But copying is probably
+> good so we don't hold the lock for too long.
+
+Yeah, this is probably ok since it's all happening in interrupt
+context anyway the handlers have to be running in an atomic context
+anyway.
 
 -- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+Sonny Rao, LTC OzLabs, BML team
