@@ -1,18 +1,26 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A592DB7D20
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 05:54:01 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH] powerpc: make the padding for the device tree a configurable
-	option
-Date: Wed, 19 May 2010 14:53:29 -0500
-Message-Id: <1274298809-12772-1-git-send-email-timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f203.google.com (mail-yw0-f203.google.com
+	[209.85.211.203]) by ozlabs.org (Postfix) with ESMTP id B1708B6EFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 06:48:09 +1000 (EST)
+Received: by ywh41 with SMTP id 41so4575733ywh.9
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 May 2010 13:48:07 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100506211800.335baf63@wker>
+References: <1272384698-4359-1-git-send-email-agust@denx.de>
+	<1272384698-4359-2-git-send-email-agust@denx.de>
+	<u2gfa686aa41004270951o9a225091k1f68a7bf34f2972a@mail.gmail.com>
+	<20100506211800.335baf63@wker>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 19 May 2010 14:47:47 -0600
+Message-ID: <AANLkTim0TVjoVdLZE_QOSi-WPSoisdF7Gv0Y_YF-tajL@mail.gmail.com>
+Subject: Re: [PATCH 1/4] powerpc/fsl_soc.c: prepare for addition of mpc5121
+	USB code
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the DTS_PADDING Kconfig option, which allows users and board defconfig
-files to specify a padding value when compiling device trees.
+On Thu, May 6, 2010 at 1:18 PM, Anatolij Gustschin <agust@denx.de> wrote:
+> Hi Grant,
+>
+> On Tue, 27 Apr 2010 10:51:21 -0600
+> Grant Likely <grant.likely@secretlab.ca> wrote:
+>
+>> On Tue, Apr 27, 2010 at 10:11 AM, Anatolij Gustschin <agust@denx.de> wro=
+te:
+>> > Factor out common code for registering a FSL EHCI platform
+>> > device into new fsl_usb2_register_device() function. This
+>> > is done to avoid code duplication while adding code for
+>> > instantiating of MPC5121 dual role USB platform devices.
+>> > Then, the subsequent patch can use
+>> > for_each_compatible_node(np, NULL, "fsl,mpc5121-usb2-dr") {
+>> > =A0 =A0 =A0 =A0...
+>> > =A0 =A0 =A0 =A0fsl_usb2_register_device();
+>> > }
+>> >
+>> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>> > Cc: Kumar Gala <galak@kernel.crashing.org>
+>> > Cc: Grant Likely <grant.likely@secretlab.ca>
+>> > ---
+>> > =A0arch/powerpc/sysdev/fsl_soc.c | =A0231 +++++++++++++++++++---------=
+------------
+>>
+>> Hi Anatolij,
+>>
+>> Thanks for this work. =A0However, I've got concerns.
+>>
+>> Forgive me for ragging on code that you didn't write, but this
+>> fsl_soc.c code for registering the USB device really doesn't belong
+>> here anymore. =A0It should be part of the drivers/usb/host/ehci-fsl.c
+>> and the driver should do of-style binding (Which should be a lot
+>> easier if I manage to get the merge of platform bus and of_platform
+>> bus into 2.6.35).
+>
+> Now I moved the USB devices registration code to
+> drivers/usb/host/ehci-fsl.c and added of-style binding there. It
+> works for one platform driver based on your test-devicetree branch.
+> It seems I can't bind more than one driver to the device described
+> in the tree. But I need to bind at least 2 drivers, ehci-hcd and
+> fsl-usb2-udc. For USB OTG support I need additional one to be bound
+> to the same USB dual role device (also tree different drivers
+> simultaneously).
+> I also can't register UDC device in the ehci-fsl.c since registering
+> of the UDC device should also be possible independent of the EHCI-HDC
+> driver (for USB device support we do not need host controller driver).
+> Is it possible to bind more than one driver to the same device
+> simultaneously? If so, how can I implement this?
 
-When a device tree source (DTS) is compiled into a binary (DTB), a hard-coded
-padding of 1024 bytes is used (i.e. dtc command-line parameter "-p 1024").
-Although this has worked so far, it may not be sufficient in the future for
-some boards.  Newer versions of U-boot perform more and more fixup on the
-device tree, and eventually it will run out.
+No, the linux driver model can bind exactly one driver to a struct
+device.  However, that doesn't mean you can't have multiple struct
+devices (in whatever form they come) to tell the Linux kernel about
+all the details of a single hardware device.
 
-So to accommodate future boards where more padding is needed, we make the
-option for the -p parameter configurable.
+>> This patch series makes the fsl_soc.c code even more complicated, and
+>> scatters what is essentially driver code over even more places in the
+>> arch/powerpc tree. =A0I'm really not keen on it being merged in this
+>> form.
+>
+> Now I see one reason why it has been originally implemented
+> this way.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/boot/Makefile     |    4 ++--
- arch/powerpc/platforms/Kconfig |   13 +++++++++++++
- 2 files changed, 15 insertions(+), 2 deletions(-)
+Should be a solvable problem.  The fsl_soc.c stuff was originally
+written simply because the infrastructure wasn't there for doing it
+any other way.  We're long past that point now.  I don't have time to
+dig into the details now (merge window and all), but ping me in a few
+weeks and I'll take another look to see if I can help you.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index bb2465b..750fa6b 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -35,7 +35,7 @@ endif
- 
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
- 
--DTS_FLAGS	?= -p 1024
-+DTS_FLAGS	?= -p ${CONFIG_DTS_PADDING}
- 
- $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
- $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
-@@ -331,7 +331,7 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- # Rule to build device tree blobs
- DTC = $(objtree)/scripts/dtc/dtc
- 
--$(obj)/%.dtb: $(dtstree)/%.dts
-+$(obj)/%.dtb: $(dtstree)/%.dts $(srctree)/.config
- 	$(DTC) -O dtb -o $(obj)/$*.dtb -b 0 $(DTS_FLAGS) $(dtstree)/$*.dts
- 
- # If there isn't a platform selected then just strip the vmlinux.
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index d1663db..2b0a9c3 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -41,6 +41,19 @@ config PPC_OF_BOOT_TRAMPOLINE
- 
- 	  In case of doubt, say Y
- 
-+config DTS_PADDING
-+	int "Padding for the device tree binary"
-+	default 1024
-+	help
-+	  Specify the padding value to be used when compiling a DTS (device
-+	  tree source) file into a DTB (device tree binary).  The padding is
-+	  used to ensure enough space for any additional nodes and properties
-+	  that the boot loader adds during fix-up.  If your boot loader
-+	  complains about lack of space during fix-up, try increasing this
-+	  value.
-+
-+	  If unsure, leave this value at the default.
-+
- config UDBG_RTAS_CONSOLE
- 	bool "RTAS based debug console"
- 	depends on PPC_RTAS
--- 
-1.6.5
+g.
