@@ -1,26 +1,46 @@
-Return-Path: <andre.prendel@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 0575BB6EEB
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C0713B7D30
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 May 2010 05:36:14 +1000 (EST)
-Date: Thu, 20 May 2010 21:35:56 +0200
-From: Andre Prendel <andre.prendel@gmx.de>
-To: Jeff Angielski <jeff@theptrgroup.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
-	attempt)
-Message-ID: <20100520193556.GB2153@andre-laptop>
-References: <4BF1A760.2010707@theptrgroup.com>
-	<20100518113838.GA2052@andre-laptop>
-	<4BF2A5A9.6010907@theptrgroup.com>
-	<20100519072659.GA2069@andre-laptop>
-	<4BF41C20.60502@theptrgroup.com>
-	<20100520185035.GA2153@andre-laptop>
-	<4BF58859.3090702@theptrgroup.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4BF58859.3090702@theptrgroup.com>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@lists.ozlabs.org,
-	lm-sensors@lm-sensors.org
+	Fri, 21 May 2010 07:44:54 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e31.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4KLYcIg006593
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 15:34:38 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4KLiZsR039610
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 15:44:37 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4KLiYas013238
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 15:44:35 -0600
+Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
+	(IRQF_NODELAY)
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1005201644400.3368@localhost.localdomain>
+References: <4BF30793.5070300@us.ibm.com>
+	<4BF30C32.1020403@linux.vnet.ibm.com>  <4BF31322.5090206@us.ibm.com>
+	<1274232324.29980.9.camel@concordia> <4BF3F2DB.7030701@us.ibm.com>
+	<alpine.LFD.2.00.1005191620350.3368@localhost.localdomain>
+	<alpine.LFD.2.00.1005192244430.3368@localhost.localdomain>
+	<1274319248.22892.40.camel@concordia>
+	<OF17F8F35C.B09E4797-ONC1257729.0028292D-C1257729.0029E9AC@de.ibm.com>
+	<alpine.LFD.2.00.1005200950410.3368@localhost.localdomain>
+	<4BF5499F.8050203@us.ibm.com>
+	<alpine.LFD.2.00.1005201644400.3368@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 20 May 2010 16:44:33 -0500
+Message-ID: <1274391873.1675.33.camel@lexx>
+Mime-Version: 1.0
+Cc: Darren Hart <dvhltc@us.ibm.com>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	dvhltc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
+	Doug Maxey <doug.maxey@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,175 +50,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 20, 2010 at 03:07:05PM -0400, Jeff Angielski wrote:
-> On 05/20/2010 02:50 PM, Andre Prendel wrote:
-> > You made a careless mistake, see below. Please fix this and resend the patch
-> > again. Then I added my Acked-by and I think Jean will schedule the patch for
-> > 2.6.35 (after another review of course :)) 
+On Thu, 2010-05-20 at 16:45 +0200, Thomas Gleixner wrote:
+> On Thu, 20 May 2010, Darren Hart wrote:
 > 
-> You sir, would be correct... *sigh*  I tried using the scripts/Lindent on it to
-> be sure there were no coding style issues but that messed up even your original 
-> code.  
+> > On 05/20/2010 01:14 AM, Thomas Gleixner wrote:
+> > > On Thu, 20 May 2010, Jan-Bernd Themann wrote:
+> > > > > > Thought more about that. The case at hand (ehea) is nasty:
+> > > > > > 
+> > > > > > The driver does _NOT_ disable the rx interrupt in the card in the rx
+> > > > > > interrupt handler - for whatever reason.
+> > > > > 
+> > > > > Yeah I saw that, but I don't know why it's written that way. Perhaps
+> > > > > Jan-Bernd or Doug will chime in and enlighten us? :)
+> > > > 
+> > > >  From our perspective there is no need to disable interrupts for the
+> > > > RX side as the chip does not fire further interrupts until we tell
+> > > > the chip to do so for a particular queue. We have multiple receive
+> > > 
+> > > The traces tell a different story though:
+> > > 
+> > >      ehea_recv_irq_handler()
+> > >        napi_reschedule()
+> > >      eoi()
+> > >      ehea_poll()
+> > >        ...
+> > >        ehea_recv_irq_handler()<---------------- ???
+> > >          napi_reschedule()
+> > >        ...
+> > >        napi_complete()
+> > > 
+> > > Can't tell whether you can see the same behaviour in mainline, but I
+> > > don't see a reason why not.
+> > 
+> > I was going to suggest that because these are threaded handlers, perhaps they
+> > are rescheduled on a different CPU and then receive the interrupt for the
+> > other CPU/queue that Jan was mentioning.
+> > 
+> > But, the handlers are affined if I remember correctly, and we aren't running
+> > with multiple receive queues. So, we're back to the same question, why are we
+> > seeing another irq. It comes in before napi_complete() and therefor before the
+> > ehea_reset*() block of calls which do the equivalent of re-enabling
+> > interrupts.
+> 
+> Can you slap a few trace points into that driver with a stock mainline
+> kernel and verify that ?
 
-/scripts/checkpatch.pl is the key ;)
- 
-> In any event, here it is again:
+2.6.33.4 (non-rt kernel) with similar trace_printk hooks in place...
+Most data lumps look like so:
 
-Acked-by: Andre Prendel <andre.prendel@gmx.de>
+          <idle>-0     [000]  1097.685337: .handle_fasteoi_irq: ENTER 260 4000
+          <idle>-0     [000]  1097.685339: .handle_fasteoi_irq: pre-action 260 4100
+          <idle>-0     [000]  1097.685339: .ehea_recv_irq_handler:  ENTER  c0000000e8980700
+          <idle>-0     [000]  1097.685340: .ehea_recv_irq_handler: napi_schedule ... c0000000e8980700
+          <idle>-0     [000]  1097.685341: .ehea_recv_irq_handler: napi_schedule Calling __napi_schedule ... c0000000e8980700
+          <idle>-0     [000]  1097.685342: .ehea_recv_irq_handler:  EXIT c0000000e8980700
+          <idle>-0     [000]  1097.685343: .handle_fasteoi_irq: post-action 260 4100
+          <idle>-0     [000]  1097.685344: .handle_fasteoi_irq: EXIT. 260 4000
+          <idle>-0     [000]  1097.685346: .ehea_poll:  ENTER c0000000e8980700
+          <idle>-0     [000]  1097.685352: .napi_complete: napi_complete: ENTER c0000000e8980700
+          <idle>-0     [000]  1097.685352: .napi_complete: napi_complete: EXIT c0000000e8980700
+          <idle>-0     [000]  1097.685355: .ehea_poll:  EXIT !cqe rx(1) c0000000e8980700
 
-> 
-> >From 9acd29ff48c64e58a7f5cdb888c86e737c56281c Mon Sep 17 00:00:00 2001
-> From: Jeff Angielski <jeff@theptrgroup.com>
-> Date: Mon, 10 May 2010 10:26:34 -0400
-> Subject: [PATCH] hwmon: (tmp421) Add nfactor support
-> 
-> Add support for reading and writing the n-factor correction
-> registers.  This is needed to compensate for the characteristics
-> of a particular sensor hanging off of the remote channels.
-> 
-> Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
-> ---
->  Documentation/hwmon/tmp421 |   19 +++++++++++++++++++
->  drivers/hwmon/tmp421.c     |   41 +++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 60 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/hwmon/tmp421 b/Documentation/hwmon/tmp421
-> index 0cf07f8..668228a 100644
-> --- a/Documentation/hwmon/tmp421
-> +++ b/Documentation/hwmon/tmp421
-> @@ -17,6 +17,7 @@ Supported chips:
->  
->  Authors:
->  	Andre Prendel <andre.prendel@gmx.de>
-> +	Jeff Angielski <jeff@theptrgroup.com>
->  
->  Description
->  -----------
-> @@ -34,3 +35,21 @@ the temperature values via the following sysfs files:
->  
->  temp[1-4]_input
->  temp[2-4]_fault
-> +
-> +The chips allow the user to adjust the n-factor value that is used
-> +when converting the remote channel measurements to temperature. The
-> +adjustment has a range of -128 to +127 that yields an effective
-> +n-factor range of 0.706542 to 1.747977.  The power on reset value
-> +for the adjustment is 0 which results in an n-factor of 1.008.
-> +
-> +The effective n-factor is calculated according to the following
-> +equation:
-> +
-> +n_factor = (1.008 * 300) / (300 - nfactor_adjust)
-> +
-> +The driver exports the n-factor adjustment value via the following 
-> +sysfs files:
-> +
-> +temp[2-4]_n_adjust
-> +
-> +
-> diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
-> index 738c472..dfd62be 100644
-> --- a/drivers/hwmon/tmp421.c
-> +++ b/drivers/hwmon/tmp421.c
-> @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
->  
->  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
->  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
-> +static const u8 TMP421_N_CORRECT[3]		= { 0x21, 0x22, 0x23 };
->  
->  /* Flags */
->  #define TMP421_CONFIG_SHUTDOWN			0x40
-> @@ -76,6 +77,7 @@ struct tmp421_data {
->  	int channels;
->  	u8 config;
->  	s16 temp[4];
-> +	s8 n_adjust[3];
->  };
->  
->  static int temp_from_s16(s16 reg)
-> @@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
->  			data->temp[i] |= i2c_smbus_read_byte_data(client,
->  				TMP421_TEMP_LSB[i]);
->  		}
-> +		for (i = 1; i < data->channels; i++) {
-> +			data->n_adjust[i - 1] = i2c_smbus_read_byte_data(client,
-> +				TMP421_N_CORRECT[i - 1]);
-> +		}
->  		data->last_updated = jiffies;
->  		data->valid = 1;
->  	}
-> @@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
->  		return sprintf(buf, "0\n");
->  }
->  
-> +static ssize_t show_n_adjust(struct device *dev,
-> +			     struct device_attribute *devattr, char *buf)
-> +{
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	struct tmp421_data *data = tmp421_update_device(dev);
-> +
-> +	return sprintf(buf, "%d\n", data->n_adjust[index - 1]);
-> +}
-> +
-> +static ssize_t set_n_adjust(struct device *dev,
-> +			    struct device_attribute *devattr,
-> +			    const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	struct tmp421_data *data = i2c_get_clientdata(client);
-> +	int index = to_sensor_dev_attr(devattr)->index;
-> +	int n_adjust = simple_strtol(buf, NULL, 10);
-> +
-> +	mutex_lock(&data->update_lock);
-> +	i2c_smbus_write_byte_data(client, TMP421_N_CORRECT[index - 1],
-> +				  SENSORS_LIMIT(n_adjust, -128, 127));
-> +	mutex_unlock(&data->update_lock);
-> +
-> +	return count;
-> +}
-> +
->  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
->  				int n)
->  {
-> @@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
->  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
->  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
->  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
-> +static SENSOR_DEVICE_ATTR(temp2_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-> +			  show_n_adjust, set_n_adjust, 1);
->  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
->  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
-> +static SENSOR_DEVICE_ATTR(temp3_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-> +			  show_n_adjust, set_n_adjust, 2);
->  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
->  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
-> +static SENSOR_DEVICE_ATTR(temp4_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
-> +			  show_n_adjust, set_n_adjust, 3);
->  
->  static struct attribute *tmp421_attr[] = {
->  	&sensor_dev_attr_temp1_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_input.dev_attr.attr,
->  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp2_n_adjust.dev_attr.attr,
->  	&sensor_dev_attr_temp3_input.dev_attr.attr,
->  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp3_n_adjust.dev_attr.attr,
->  	&sensor_dev_attr_temp4_input.dev_attr.attr,
->  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
-> +	&sensor_dev_attr_temp4_n_adjust.dev_attr.attr,
->  	NULL
->  };
->  
-> -- 
-> 1.7.0.4
-> 
-> 
-> -- 
-> Jeff Angielski
-> The PTR Group
-> www.theptrgroup.com
-> 
-> _______________________________________________
-> lm-sensors mailing list
-> lm-sensors@lm-sensors.org
-> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+But I did see one like this, which shows a ehea_recv_irq_handler ENTER
+within a ehea_poll ENTER.   (which I think is what you were expecting,
+or wanted to verify..)       
+
+
+          <idle>-0     [000]  1097.616261: .handle_fasteoi_irq: ENTER 260 4000
+          <idle>-0     [000]  1097.616262: .handle_fasteoi_irq: pre-action 260 4100
+*          <idle>-0     [000]  1097.616263: .ehea_recv_irq_handler:  ENTER  c0000000e8980700
+          <idle>-0     [000]  1097.616264: .ehea_recv_irq_handler: napi_schedule ... c0000000e8980700
+          <idle>-0     [000]  1097.616265: .ehea_recv_irq_handler: napi_schedule Calling __napi_schedule ... c0000000e8980700
+          <idle>-0     [000]  1097.616265: .ehea_recv_irq_handler:  EXIT c0000000e8980700
+          <idle>-0     [000]  1097.616266: .handle_fasteoi_irq: post-action 260 4100
+          <idle>-0     [000]  1097.616268: .handle_fasteoi_irq: EXIT. 260 4000
+*          <idle>-0     [000]  1097.616270: .ehea_poll:  ENTER c0000000e8980700
+          <idle>-0     [000]  1097.616282: .handle_fasteoi_irq: ENTER 260 4000
+          <idle>-0     [000]  1097.616283: .handle_fasteoi_irq: pre-action 260 4100
+*          <idle>-0     [000]  1097.616284: .ehea_recv_irq_handler:  ENTER  c0000000e8980700
+          <idle>-0     [000]  1097.616285: .ehea_recv_irq_handler: napi_schedule ... c0000000e8980700
+          <idle>-0     [000]  1097.616286: .ehea_recv_irq_handler: napi_schedule NOT Calling __napi_schedule... c0000000e8980700
+          <idle>-0     [000]  1097.616286: .ehea_recv_irq_handler:  EXIT c0000000e8980700
+          <idle>-0     [000]  1097.616287: .handle_fasteoi_irq: post-action 260 4100
+          <idle>-0     [000]  1097.616289: .handle_fasteoi_irq: EXIT. 260 4000
+          <idle>-0     [000]  1097.616299: .napi_complete: napi_complete: ENTER c0000000e8980700
+          <idle>-0     [000]  1097.616300: .napi_complete: napi_complete: EXIT c0000000e8980700
+          <idle>-0     [000]  1097.616302: .ehea_poll: napi_reschedule COMpleted c0000000e8980700
+          <idle>-0     [000]  1097.616303: .napi_complete: napi_complete: ENTER c0000000e8980700
+          <idle>-0     [000]  1097.616304: .napi_complete: napi_complete: EXIT c0000000e8980700
+*          <idle>-0     [000]  1097.616306: .ehea_poll:  EXIT !cqe rx(4) c0000000e8980700
+
+
+
+Let me know if you want/need more or a variation, etc.. 
+
+Thanks, 
+-Will
