@@ -1,21 +1,25 @@
-Return-Path: <imp@bsdimp.com>
-Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8FC41B7D24
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 10:50:57 +1000 (EST)
-Date: Wed, 19 May 2010 18:36:32 -0600 (MDT)
-Message-Id: <20100519.183632.1004138037588297483.imp@bsdimp.com>
-To: timur@freescale.com
-Subject: Re: [PATCH] powerpc: make the padding for the device tree a
-	configurable option
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
-References: <4BF4593E.8030101@freescale.com> <1274309050.1931.21.camel@pasglop>
-	<AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
+	(IRQF_NODELAY)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <4BF3F2DB.7030701@us.ibm.com>
+References: <4BF30793.5070300@us.ibm.com>
+	<4BF30C32.1020403@linux.vnet.ibm.com>  <4BF31322.5090206@us.ibm.com>
+	<1274232324.29980.9.camel@concordia>  <4BF3F2DB.7030701@us.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-rZP5bf+tIaO2xBY2bClr"
+Date: Thu, 20 May 2010 11:28:36 +1000
+Message-ID: <1274318916.22892.35.camel@concordia>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, dvhltc@linux.vnet.ibm.com,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	Will Schmidt <will_schmidt@vnet.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
+	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,13 +29,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message: <AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
-            Timur Tabi <timur@freescale.com> writes:
-: I'm stuck between a rock and a hard place, it seems.  No one is
-: willing to compromise on any of my ideas.  It's hard to convince our
-: BSP developers that they should be pushing more code upstream when I
-: get so much resistance for a such a mundane change.
 
-http://www.bikeshed.org/ seems appropriate here.
+--=-rZP5bf+tIaO2xBY2bClr
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Warner
+On Wed, 2010-05-19 at 07:16 -0700, Darren Hart wrote:
+> On 05/18/2010 06:25 PM, Michael Ellerman wrote:
+> > On Tue, 2010-05-18 at 15:22 -0700, Darren Hart wrote:
+> >> On 05/18/2010 02:52 PM, Brian King wrote:
+> >>> Is IRQF_NODELAY something specific to the RT kernel? I don't see it i=
+n mainline...
+> >>
+> >> Yes, it basically says "don't make this handler threaded".
+> >
+> > That is a good fix for EHEA, but the threaded handling is still broken
+> > for anything else that is edge triggered isn't it?
+>=20
+> No, I don't believe so. Edge triggered interrupts that are reported as=20
+> edge triggered interrupts will use the edge handler (which was the=20
+> approach Sebastien took to make this work back in 2008). Since XICS=20
+> presents all interrupts as Level Triggered, they use the fasteoi path.
+
+But that's the point, no interrupts on XICS are reported as edge, even
+if they are actually edge somewhere deep in the hardware. I don't think
+we have any reliable way to determine what is what.
+
+> > The result of the discussion about two years ago on this was that we
+> > needed a custom flow handler for XICS on RT.
+>=20
+> I'm still not clear on why the ultimate solution wasn't to have XICS=20
+> report edge triggered as edge triggered. Probably some complexity of the=20
+> entire power stack that I am ignorant of.
+
+I'm not really sure either, but I think it's a case of a leaky
+abstraction on the part of the hypervisor. Edge interrupts behave as
+level as long as you handle the irq before EOI, but if you mask they
+don't. But Milton's the expert on that.
+
+> > Apart from the issue of loosing interrupts there is also the fact that
+> > masking on the XICS requires an RTAS call which takes a global lock.
+>=20
+> Right, one of may reasons why we felt this was the right fix. The other=20
+> is that there is no real additional overhead in running this as=20
+> non-threaded since the receive handler is so short (just napi_schedule())=
+.
+
+True. It's not a fix in general though. I'm worried that we're going to
+see the exact same bug for MSI(-X) interrupts.
+
+cheers
+
+
+
+--=-rZP5bf+tIaO2xBY2bClr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkv0kEAACgkQdSjSd0sB4dIF2QCcCAoeORbwsKzwzxOVUBfaIIT6
+figAn0n5mFqrMbAliS0Y3RsBEPRhSReQ
+=neam
+-----END PGP SIGNATURE-----
+
+--=-rZP5bf+tIaO2xBY2bClr--
