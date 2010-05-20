@@ -1,16 +1,22 @@
-Return-Path: <hellohello008@163.com>
-Received: from m50-135.163.com (m50-135.163.com [123.125.50.135])
-	by ozlabs.org (Postfix) with ESMTP id 8BF90B7D2E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 May 2010 19:13:52 +1000 (EST)
-Message-ID: <042201caf7fa$9d038a20$a51cbcc0@sfdomain.com>
-From: "hellohello" <hellohello008@163.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Problem of PowerPc 82xx  when using smc
-Date: Thu, 20 May 2010 16:58:27 +0800
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 20 May 2010 23:10:03 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 2/2] PPC64-HWBKPT: Implement hw-breakpoints for PPC64
+Message-ID: <20100520131003.GB29903@brick.ozlabs.ibm.com>
+References: <20100414033555.746326035@pr> <20100414034827.GC6571@in.ibm.com>
+	<20100503062330.GB19365@drongo> <20100504203302.GA3894@in.ibm.com>
+	<20100512063247.GC3548@drongo> <20100514065530.GA6195@in.ibm.com>
+	<20100517123241.GA5379@brick.ozlabs.ibm.com>
+	<20100520040603.GA7448@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_041F_01CAF83D.AABBD350"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100520040603.GA7448@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,51 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Thu, May 20, 2010 at 09:36:03AM +0530, K.Prasad wrote:
 
-------=_NextPart_000_041F_01CAF83D.AABBD350
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+> > Right.  However, the thread is running the signal handler without the
+> > DABR being set, which is unfortunate.
+> > 
+> 
+> In order to keep the breakpoint active during signal handling, a
+> PowerPC specific signal handling code, say do_signal_pending() in
+> arch/powerpc/kernel/signal.c, must be tapped to check for/restore
+> the breakpoint for the process (if it exists).
 
-DQpJIGZpbmQgYSBwcm9ibGVtIGluIA0KZHJpdmVycy9zZXJpYWwvY3BtX3VhcnQvY3BtX3VhcnRf
-Y3BtMi5jOg0KaW50IGNwbV91YXJ0X2FsbG9jYnVmKHN0cnVjdCB1YXJ0X2NwbV9wb3J0ICpwaW5m
-bywgdW5zaWduZWQgaW50IGlzX2NvbikNCnsNCi4uLiAuLi4NCnBpbmZvLT50eF9iZF9iYXNlID0g
-cGluZm8tPnJ4X2JkX2Jhc2UgKyBwaW5mby0+cnhfbnJmaWZvczsNCi8qVGhlIGFib3ZlIGxpbmUg
-c2hvdWxkIGJlIKO6Ki8NCiBwaW5mby0+dHhfYmRfYmFzZSA9IHBpbmZvLT5yeF9iZF9iYXNlICsg
-c2l6ZW9mKGNiZF90KSAqIHBpbmZvLT5yeF9ucmZpZm9zOw0KIA0KcmV0dXJuIDA7DQp9DQoNCldo
-ZXJlIHRvIGdldCB0aGUgbmV3ZXN0IGNvZGUgZm9yIGtlcm5lbD8NCkhvdyB0byBrbm93IHdoZXRo
-ZXIgaXQgaXMgYWxyZWFkeSBwYXRjaGVkIGJ5IGFueW9uZSBlbHNlPyAgSnVzdCBzZWFyY2ggaW4g
-IHRoaXMgbWFpbCBsaXN0Pw0KDQpNeSBMaW51eCBLZXJuZWwgaXMgMi42LjI1LCBwbGF0Zm9ybSBp
-cyBtcGM4MlhYLg0KDQpUaGFua3MgZm9yIGFueSBoZWxwLg0K
+What I would suggest is something slightly different: anything that
+causes the thread to change where it's executing -- signal delivery,
+modification of NIP with ptrace -- should cancel the single-step and
+reinstall the breakpoint in the DABR.  In other words we just forget
+that we hit the breakpoint, and rely on hitting it again if we ever
+get back to that instruction.  I think that is by far the most
+reliable approach.
 
-------=_NextPart_000_041F_01CAF83D.AABBD350
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+That means that the hw-breakpoint code needs to export a function
+called, say, thread_change_pc(), which is called whenever we're
+changing a thread's userspace PC (NIP) value.  If the hw-breakpoint
+code has put that thread into single-step mode, we cancel the
+single-step and if the thread is current, set DABR.
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjM2NzYiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9E
-SVY+DQo8RElWPjxGT05UIHNpemU9Mj5JIGZpbmQgYSBwcm9ibGVtIGluIA0KPEJSPmRyaXZlcnMv
-c2VyaWFsL2NwbV91YXJ0L2NwbV91YXJ0X2NwbTIuYzo8QlI+aW50IGNwbV91YXJ0X2FsbG9jYnVm
-KHN0cnVjdCANCnVhcnRfY3BtX3BvcnQgKnBpbmZvLCB1bnNpZ25lZCBpbnQgaXNfY29uKTxCUj57
-PEJSPi4uLiANCi4uLjxCUj5waW5mby0mZ3Q7dHhfYmRfYmFzZSA9IHBpbmZvLSZndDtyeF9iZF9i
-YXNlICsgDQpwaW5mby0mZ3Q7cnhfbnJmaWZvczs8QlI+LypUaGUgYWJvdmUgbGluZSBzaG91bGQg
-YmUgDQqjuiovPEJSPiZuYnNwO3BpbmZvLSZndDt0eF9iZF9iYXNlID0gcGluZm8tJmd0O3J4X2Jk
-X2Jhc2UgKyBzaXplb2YoY2JkX3QpICogDQpwaW5mby0mZ3Q7cnhfbnJmaWZvczs8QlI+Jm5ic3A7
-PEJSPnJldHVybiAwOzxCUj59PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+PC9GT05U
-PiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+V2hlcmUmbmJzcDt0byBnZXQgdGhlIG5l
-d2VzdCBjb2RlIGZvciBrZXJuZWw/PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+SG93
-IHRvIGtub3cgd2hldGhlciBpdCBpcyBhbHJlYWR5IHBhdGNoZWQgYnkgYW55b25lIA0KZWxzZT8m
-bmJzcDsgPC9GT05UPjxGT05UIHNpemU9Mj5KdXN0IDwvRk9OVD48Rk9OVCBzaXplPTM+c2VhcmNo
-IGluJm5ic3A7IHRoaXMgDQptYWlsIGxpc3Q/PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXpl
-PTI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+TXkgTGludXggS2VybmVs
-IGlzIDIuNi4yNSwgcGxhdGZvcm0gaXMgbXBjODJYWC48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05U
-IHNpemU9Mj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj5UaGFua3MgZm9y
-IGFueSBoZWxwLjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8
-L0RJVj48L0JPRFk+PC9IVE1MPg0K
+> I'm afraid if this is more complexity than we want to handle in the
+> first patchset. I agree that this will create a 'blind-spot' of code
+> which cannot not be monitored using breakpoints and may limit debugging
+> efforts (specially for memory corruption); however suspecting that signal
+> handlers (especially those that don't return to original instruction)
+> would be rare, I feel that this could be a 'feature' that can be brought
+> later-in. What do you think?
 
-------=_NextPart_000_041F_01CAF83D.AABBD350--
+I think the thread_change_pc() approach is quite a bit simpler, and I
+think it's better to get this right at the outset rather than have it
+cause bugs later on, when we've all forgotten all the curly
+details. :)
+
+> > Imagine this scenario: we get the DABR match, set MSR_SE and return to
+> > the task.  In the meantime another higher-priority task has become
+> > runnable and our need_resched flag is set, so we call schedule() on
+> > the way back out to usermode.  The other task runs and then blocks and
+> > our task gets scheduled again.  As part of the context switch,
+> > arch_install_hw_breakpoint() will get called and will set DABR.  So
+> > we'll return to usermode with both DABR and MSE_SE set.
+> > 
+> 
+> I didn't foresee such a possibility. I think this can be handled by
+> putting a check in arch_install_hw_breakpoint() as shown below:
+> 
+> int arch_install_hw_breakpoint(struct perf_event *bp)
+> {
+> 	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
+> 	struct perf_event **slot = &__get_cpu_var(bp_per_reg);
+> 
+> 	*slot = bp;
+> 	if (!current->thread.last_hit_ubp)
+> 		set_dabr(info->address | info->type | DABR_TRANSLATION);
+> 	return 0;
+> }
+
+Yes, basically, but don't we need to handle per-cpu breakpoints as
+well?  That is, we only want the extra check if this breakpoint is a
+per-task breakpoint.  Or am I not seeing enough context here?
+
+Also, I have just posted extensions to emulate_single_step() to handle
+loads and stores.  I think this should be enough to handle DABR
+interrupts that occur in kernel mode, so we should never need to
+actually single-step in that case -- if emulate_step fails we should
+just print a warning, uninstall the breakpoint, and continue.  That
+way we don't have to worry about all the interrupts and other
+eventualities that could occur while single-stepping in the kernel.
+
+For DABR interrupts that occur in user mode, I think the approach of
+single-stepping together with calls to thread_change_pc() in the
+signal delivery and ptrace code should handle all the cases, at least
+for per-task breakpoints.  Per-cpu breakpoints that get hit in user
+mode will be a bit trickier, but I assume we can restrict per-cpu
+breakpoints to kernel addresses for now.  If you want help adding the
+thread_change_pc() calls to signal delivery and ptrace, let me know.
+
+Paul.
