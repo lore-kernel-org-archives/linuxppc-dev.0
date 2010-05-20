@@ -1,32 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C9A99B7D2E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 May 2010 19:19:36 +1000 (EST)
-Date: Thu, 20 May 2010 11:19:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jan-Bernd Themann <THEMANN@de.ibm.com>
-Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
-	(IRQF_NODELAY)
-In-Reply-To: <OFCBBE5EB9.FD616EDA-ONC1257729.0030B539-C1257729.0031FB06@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.1005201112000.3368@localhost.localdomain>
-References: <4BF30793.5070300@us.ibm.com> <4BF30C32.1020403@linux.vnet.ibm.com>
-	<4BF31322.5090206@us.ibm.com> <1274232324.29980.9.camel@concordia>
-	<4BF3F2DB.7030701@us.ibm.com>
-	<alpine.LFD.2.00.1005191620350.3368@localhost.localdomain>
-	<alpine.LFD.2.00.1005192244430.3368@localhost.localdomain>
-	<1274319248.22892.40.camel@concordia>
-	<OF17F8F35C.B09E4797-ONC1257729.0028292D-C1257729.0029E9AC@de.ibm.com>
-	<alpine.LFD.2.00.1005200950410.3368@localhost.localdomain>
-	<OFCBBE5EB9.FD616EDA-ONC1257729.0030B539-C1257729.0031FB06@de.ibm.com>
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id AE9D9B7D2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 19:43:00 +1000 (EST)
+Received: from int-mx05.intmail.prod.int.phx2.redhat.com
+	(int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.18])
+	by mx1.redhat.com (8.13.8/8.13.8) with ESMTP id o4K9grJT010647
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 05:42:53 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] PPC: Fix zero length strncmp() on powerpc
+To: srostedt@redhat.com
+Date: Thu, 20 May 2010 10:42:48 +0100
+Message-ID: <20100520094248.30540.89543.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Darren Hart <dvhltc@us.ibm.com>, dvhltc@linux.vnet.ibm.com,
-	linux-kernel@vger.kernel.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
-	Doug Maxey <doug.maxey@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,96 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jan-Bernd,
+When strncmp() on powerpc is given a length of zero, it detects this and
+returns early to make the comparison loop simpler.  When it does this, however,
+it fails to set a return value, and thus returns the address of the first
+string as the number of the character match.  It should return 0 instead in
+this case.
 
-On Thu, 20 May 2010, Jan-Bernd Themann wrote:
+This can be tested by compiling and attempting to load the following module:
 
-> 
-> Hi Thomas
-> 
-> > Re: [PATCH RT] ehea: make receive irq handler non-threaded (IRQF_NODELAY)
-> >
-> > On Thu, 20 May 2010, Jan-Bernd Themann wrote:
-> > > > > Thought more about that. The case at hand (ehea) is nasty:
-> > > > >
-> > > > > The driver does _NOT_ disable the rx interrupt in the card in the
-> rx
-> > > > > interrupt handler - for whatever reason.
-> > > >
-> > > > Yeah I saw that, but I don't know why it's written that way. Perhaps
-> > > > Jan-Bernd or Doug will chime in and enlighten us? :)
-> > >
-> > > From our perspective there is no need to disable interrupts for the
-> > > RX side as the chip does not fire further interrupts until we tell
-> > > the chip to do so for a particular queue. We have multiple receive
-> >
-> > The traces tell a different story though:
-> >
-> >     ehea_recv_irq_handler()
-> >       napi_reschedule()
-> >     eoi()
-> >     ehea_poll()
-> >       ...
-> >       ehea_recv_irq_handler()    <---------------- ???
-> >         napi_reschedule()
-> >       ...
-> >       napi_complete()
-> >
-> > Can't tell whether you can see the same behaviour in mainline, but I
-> > don't see a reason why not.
-> 
-> Is this the same interrupt we are seeing here, or do we see a second other
-> interrupt popping up on the same CPU? As I said, with multiple receive
-> queues
-> (if enabled) you can have multiple interrupts in parallel.
+	#include <linux/init.h>
+	#include <linux/module.h>
 
-According to the traces it's the very same interrupt number.
+	char string1[1], string2[1];
 
-> Pleaes check if multiple queues are enabled. The following module parameter
-> is used for that:
-> 
-> MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 0
-> ");
-> 
-> you should also see the number of used HEA interrupts in /proc/interrupts
+	size_t count_global = 0;
 
-I leave that for Will and Darren, they have the hardware :)
+	static int __init strncmp_init(void)
+	{
+		string1[0] = string2[0] = 0;
 
-> >
-> > > queues with an own interrupt each so that the interrupts can arrive
-> > > on multiple CPUs in parallel.  Interrupts are enabled again when we
-> > > leave the NAPI Poll function for the corresponding receive queue.
-> >
-> > I can't see a piece of code which does that, but that's probably just
-> > lack of detailed hardware knowledge on my side.
-> 
-> If you mean the "re-enable" piece of code, it is not very obvious,
-> you are right.  Interrupts are only generated if a particular
-> register for our completion queues is written. We do this in the
-> following line:
-> 
->           ehea_reset_cq_ep(pr->recv_cq);
->           ehea_reset_cq_ep(pr->send_cq);
->           ehea_reset_cq_n1(pr->recv_cq);
->           ehea_reset_cq_n1(pr->send_cq);
-> 
-> So this is in a way an indirect way to ask for interrupts when new
-> completions were written to memory. We don't really disable/enable
-> interrupts on the HEA chip itself.
+		if (strncmp(string1, string2, count_global)) {
+			printk("Strncmp Bug!\n");
+			return -EIO;
+		}
+		return -ENOANO;
+	}
 
-Ah, ok. That's after the napi_complete which looks correct.
+	module_init(strncmp_init);
+	MODULE_LICENSE("GPL");
+	MODULE_DESCRIPTION("Probe strncmp() bug");
+
+It should return error "No anode" on success and "I/O error" on failure.  The
+module will not be retained.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ arch/powerpc/lib/string.S |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index 64e2e49..46fe390 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -71,7 +71,7 @@ _GLOBAL(strcmp)
  
-> I think there are some mechanisms build in the HEA chip that should
-> prevent that interrupts don't get lost. But that is something that
-> is / was completely hidden from us, so my skill is very limited
-> there.
->
-> If more details are needed here we should involve the PHYP guys +
-> eHEA HW guys if not already done. Did anyone already talk to them?
-
-Will or Darren might have, but lets gather more information first
-before we rack their nerves :)
-
-Thanks,
-
-	tglx
+ _GLOBAL(strncmp)
+ 	PPC_LCMPI r5,0
+-	beqlr
++	beq-	2f
+ 	mtctr	r5
+ 	addi	r5,r3,-1
+ 	addi	r4,r4,-1
+@@ -82,6 +82,8 @@ _GLOBAL(strncmp)
+ 	beqlr	1
+ 	bdnzt	eq,1b
+ 	blr
++2:	li	r3,0
++	blr
+ 
+ _GLOBAL(strlen)
+ 	addi	r4,r3,-1
