@@ -1,20 +1,33 @@
-Return-Path: <moises.dominguez@ctag.com>
-Received: from jupiter.ctag.com (smtp.ctag.com [193.144.40.36])
-	by ozlabs.org (Postfix) with ESMTP id AF68EB7D57
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 May 2010 01:21:32 +1000 (EST)
-Received: from [193.144.40.38] (helo=INN0072)
-	by jupiter.ctag.com with esmtpa (Exim 4.63)
-	(envelope-from <moises.dominguez@ctag.com>) id 1OF72n-0004vA-7P
-	for linuxppc-dev@lists.ozlabs.org; Thu, 20 May 2010 16:48:18 +0200
-From: =?iso-8859-1?Q?CTAG_/_Mois=E9s_Dom=EDnguez?= <moises.dominguez@ctag.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 20 May 2010 16:48:17 +0200
-Message-ID: <B597D6E3752845929B21C3369FB41730@ctag>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 38773B7D47
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 May 2010 02:04:35 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o4KG4Vw2003326
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 09:04:31 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o4KGFSWe027287
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 May 2010 11:15:28 -0500 (CDT)
+Message-ID: <4BF55D8D.5070801@freescale.com>
+Date: Thu, 20 May 2010 11:04:29 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_004F_01CAF83C.3F048EF0"
-Subject: MBX drivers ads5121-rev4-v20090603
+To: Timur Tabi <timur@freescale.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: make the padding for the device tree
+	a	configurable option
+References: <1274298809-12772-1-git-send-email-timur@freescale.com>	<1274304013.1931.6.camel@pasglop>
+	<4BF4593E.8030101@freescale.com>	<1274309050.1931.21.camel@pasglop>	<AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
+	<20100520011820.GT25892@yookeroo>
+In-Reply-To: <20100520011820.GT25892@yookeroo>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,244 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On 05/19/2010 08:18 PM, David Gibson wrote:
+> On Wed, May 19, 2010 at 07:03:17PM -0500, Timur Tabi wrote:
+>> On Wed, May 19, 2010 at 5:44 PM, Benjamin Herrenschmidt
+>>> The padding in the kernel built is intended to
+>>> make space for DT changes done by the zImage wrapper.
+>>
+>> Well, okay.  I think it would be nice if we expanded that to handle
+>> general usage.
 
-------=_NextPart_000_004F_01CAF83C.3F048EF0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Don't we have dynamic expansion in the zImage wrapper?
 
-Hi all,
+>>> Maybe we could add to libfdt a way to provide a realloc() callback to it
+>>> when it hits the max size, and uboot can then move things around (or
+>>> fail).
+>>
+>> The problem is that the code which allocates a block for the fdt is
+>> completely distinct from the code that manipulates the fdt.  We'd need
+>> to put in either some kind of funky callback mechanism, or insist that
+>> every fdt exist in a block of memory allocated by some specific method
+>> (e.g. lmb).
+>>
+>> I'm stuck between a rock and a hard place, it seems.  No one is
+>> willing to compromise on any of my ideas.  It's hard to convince our
+>> BSP developers that they should be pushing more code upstream when I
+>> get so much resistance for a such a mundane change.
+>
+> Couldn't you use the configurable padding, but put the stuff to do it
+> into u-boot.  i.e. repad the dtb at u-boot build time, rather than
+> u-boot runtime.
 
-=20
+Currently generating a dtb is not done as part of the u-boot build 
+process -- and apparently some people are using the Linux makefile 
+target to do it.
 
-I am trying to use MBX 3D engine driver of my ads5121. AFAIK, drivers =
-were
-built against same kernel as mine but I get problems for testing the =
-demos
-and for loading the service:
+I think the right thing is to do whatever we need to do in u-boot to get 
+dynamic expansion fully working (it already does it in some 
+circumstances, just not always, or necessarily safely).  Static padding 
+is too fragile.
 
-[root@freescale /]# etc/init.d/rc.pvr start
-
-[   29.526994] dbgdrv: module license 'unspecified' taints kernel.
-
-[   29.721065] _IORemapWrapper: mapping 1048576 bytes uncached from
-0x80000000 to 0xe5280000
-
-=85=20
-
-=20
-
-I read in previous threads of this list about similar problems:
-
-- MBX on kernel 2.6.31:
-ttp://old.nabble.com/MPC5121ADS-PowerVR-MBX-driver-on-2.6.31-kernel--td26=
-613
-966.html
-
-- MBX on kernel 2.6.24:
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-February/067967.html
-
-=20
-
-According those posts, I would need to recompile modules against my =
-kernel,
-but, of course, I do not have the sources.  Reading ltib doc I read:
-
-=93Proprietary Packages:
-mbx_build13_binaries: This package provides proprietary binary kernel
-modules, libraries,
-and test code built from the MBX OpenGL ES DDK.=94
-=20
-Have anybody tested MBX demos provided with freescale SDK with ltib
-v20090603 without having to recompile provided .ko=92s?=20
-=20
-
-Regards,
-
-Moises
-
-=20
-
-Board ads5121
-
-Ltib version 20090603
-
-Linux kernel version 2.6.24.6
-
-
-------=_NextPart_000_004F_01CAF83C.3F048EF0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-
-
-<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
-
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-pre
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EstiloCorreo17
-	{font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DES link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi all,</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>I am trying to use MBX 3D engine driver of my =
-ads5121.
-AFAIK, drivers were built against same kernel as mine but I get problems =
-for
-testing the demos and for loading the service:</span></font></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[root@free=
-scale
-/]# etc/init.d/rc.pvr start</span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[=A0=A0 =
-29.526994] dbgdrv:
-module license 'unspecified' taints kernel.</span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[=A0=A0 =
-29.721065] _IORemapWrapper:
-mapping 1048576 bytes uncached from 0x80000000 to =
-0xe5280000</span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&#8230; =
-</span></font></i></p>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-weight:bold'>&nbsp;</spa=
-n></font></b></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>I read in previous threads of this list about =
-similar
-problems:</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>- MBX on kernel 2.6.31: =
-ttp://old.nabble.com/MPC5121ADS-PowerVR-MBX-driver-on-2.6.31-kernel--td26=
-613966.html</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>- MBX on kernel 2.6.24: =
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-February/067967.html<=
-/span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>According those posts, I would need to =
-recompile
-modules against my kernel, but, of course, I do not have the sources. =
-=A0Reading ltib
-doc I read:</span></font></p>
-
-<pre><i><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:10.0pt;
-font-family:Arial;font-style:italic'>&#8220;Proprietary =
-Packages:</span></font></i></pre><pre><i><font
-size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:10.0pt;font-family:Arial;
-font-style:italic'>mbx_build13_binaries: This package provides =
-proprietary binary kernel modules, =
-libraries,</span></font></i></pre><pre><i><font
-size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:10.0pt;font-family:Arial;
-font-style:italic'>and test code built from the MBX OpenGL ES =
-DDK.&#8221;</span></font></i></pre><pre><i><font
-size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
-style=3D'font-size:10.0pt;font-style:
-italic'>&nbsp;</span></font></i></pre><pre><font size=3D2 =
-face=3DArial><span
-lang=3DEN-GB style=3D'font-size:10.0pt;font-family:Arial'>Have anybody =
-tested MBX demos provided with freescale SDK with ltib v20090603 without =
-having to recompile provided .ko&#8217;s? </span></font></pre><pre><font
-size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:10.0pt;font-family:Arial'>&nbsp;</span></font></pre>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Regards,</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Moises</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Board =
-ads5121</span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Ltib =
-version 20090603</span></font></i></p>
-
-<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
-style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Linux =
-kernel version
-2.6.24.6</span></font></i></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_004F_01CAF83C.3F048EF0--
+-Scott
