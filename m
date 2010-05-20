@@ -1,31 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CDE72B7D29
+Return-Path: <andre.prendel@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 14185B7D2D
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 May 2010 03:06:14 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o4KH6APa028527 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 May 2010 10:06:10 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o4KHH63C000240
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 20 May 2010 12:17:07 -0500 (CDT)
-Date: Thu, 20 May 2010 12:06:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: hellohello <hellohello008@163.com>
-Subject: Re: Problem of PowerPc 82xx  when using smc
-Message-ID: <20100520170608.GA10712@schlenkerla.am.freescale.net>
-References: <042201caf7fa$9d038a20$a51cbcc0@sfdomain.com>
+	Fri, 21 May 2010 04:50:45 +1000 (EST)
+Date: Thu, 20 May 2010 20:50:35 +0200
+From: Andre Prendel <andre.prendel@gmx.de>
+To: Jeff Angielski <jeff@theptrgroup.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
+	attempt)
+Message-ID: <20100520185035.GA2153@andre-laptop>
+References: <4BF1A760.2010707@theptrgroup.com>
+	<20100518113838.GA2052@andre-laptop>
+	<4BF2A5A9.6010907@theptrgroup.com>
+	<20100519072659.GA2069@andre-laptop>
+	<4BF41C20.60502@theptrgroup.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <042201caf7fa$9d038a20$a51cbcc0@sfdomain.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4BF41C20.60502@theptrgroup.com>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@lists.ozlabs.org,
+	lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +28,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 20, 2010 at 04:58:27PM +0800, hellohello wrote:
+On Wed, May 19, 2010 at 01:13:04PM -0400, Jeff Angielski wrote:
+> On 05/19/2010 03:26 AM, Andre Prendel wrote:
+> > Ok, so there is only one remaining task :) Please update the documentation under
+> > Documentation/hwmon/tmp421. Then you will get my Acked-by.
 > 
-> I find a problem in 
-> drivers/serial/cpm_uart/cpm_uart_cpm2.c:
-> int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
-> {
-> ... ...
-> pinfo->tx_bd_base = pinfo->rx_bd_base + pinfo->rx_nrfifos;
-> /*The above line should be ：*/
->  pinfo->tx_bd_base = pinfo->rx_bd_base + sizeof(cbd_t) * pinfo->rx_nrfifos;
-
-No, it shouldn't -- rx_bd_base is of type "cbd_t *", so the multiplication
-already happens as part of pointer arithmetic.
-
-> return 0;
-> }
+> Documentation is updated in this patch along with the source file.
 > 
-> Where to get the newest code for kernel?
+> There is a small cosmetic change in this patch. I changed the name of the 
+> sysfs entry and internal variable name from nfactor to n_adjust.  This was 
+> done to make sure the users know we are modifying the N[adjust] parameter 
+> in the nfactor corrections register and not the actual nfactor itself. I
+> also changed the reference to the register from NFACTOR to N_CORRECT since
+> the datasheet uses that name for the register in question.
+> 
+> I think the method of using the nfactor adjustment value is specific to this
+> chipset.  Consequently, it's not appropriate to go into the general documentation.
+> 
 
-git.kernel.org
+You made a careless mistake, see below. Please fix this and resend the patch
+again. Then I added my Acked-by and I think Jean will schedule the patch for
+2.6.35 (after another review of course :)) 
+ 
+> 
+> 
+> 
+> >From 61f1c203620b06463695b399bae27a884008f169 Mon Sep 17 00:00:00 2001
+> From: Jeff Angielski <jeff@theptrgroup.com>
+> Date: Mon, 10 May 2010 10:26:34 -0400
+> Subject: [PATCH] hwmon: (tmp421) Add nfactor support
+> 
+> Add support for reading and writing the n-factor correction
+> registers.  This is needed to compensate for the characteristics
+> of a particular sensor hanging off of the remote channels.
+> 
+> Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
+> ---
+>  Documentation/hwmon/tmp421 |   19 +++++++++++++++++++
+>  drivers/hwmon/tmp421.c     |   41 +++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 60 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/hwmon/tmp421 b/Documentation/hwmon/tmp421
+> index 0cf07f8..668228a 100644
+> --- a/Documentation/hwmon/tmp421
+> +++ b/Documentation/hwmon/tmp421
+> @@ -17,6 +17,7 @@ Supported chips:
+>  
+>  Authors:
+>  	Andre Prendel <andre.prendel@gmx.de>
+> +	Jeff Angielski <jeff@theptrgroup.com>
+>  
+>  Description
+>  -----------
+> @@ -34,3 +35,21 @@ the temperature values via the following sysfs files:
+>  
+>  temp[1-4]_input
+>  temp[2-4]_fault
+> +
+> +The chips allow the user to adjust the n-factor value that is used
+> +when converting the remote channel measurements to temperature. The
+> +adjustment has a range of -128 to +127 that yields an effective
+> +n-factor range of 0.706542 to 1.747977.  The power on reset value
+> +for the adjustment is 0 which results in an n-factor of 1.008.
+> +
+> +The effective n-factor is calculated according to the following
+> +equation:
+> +
+> +n_factor = (1.008 * 300) / (300 - nfactor_adjust)
+> +
+> +The driver exports the n-factor adjustment value via the following 
+> +sysfs files:
+> +
+> +temp[2-4]_n_adjust
+> +
+> +
+> diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
+> index 738c472..83edbc8 100644
+> --- a/drivers/hwmon/tmp421.c
+> +++ b/drivers/hwmon/tmp421.c
+> @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
+>  
+>  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
+>  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
+> +static const u8 TMP421_N_CORRECT[3]		= { 0x21, 0x22, 0x23 };
+>  
+>  /* Flags */
+>  #define TMP421_CONFIG_SHUTDOWN			0x40
+> @@ -76,6 +77,7 @@ struct tmp421_data {
+>  	int channels;
+>  	u8 config;
+>  	s16 temp[4];
+> +	s8 n_adjust[3];
+>  };
+>  
+>  static int temp_from_s16(s16 reg)
+> @@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
+>  			data->temp[i] |= i2c_smbus_read_byte_data(client,
+>  				TMP421_TEMP_LSB[i]);
+>  		}
+> +		for (i = 1; i < data->channels; i++) {
+> +			data->n_adjust[i - 1] = i2c_smbus_read_byte_data(client,
+> +				TMP421_N_CORRECT[i - 1]);
+> +		}
+>  		data->last_updated = jiffies;
+>  		data->valid = 1;
+>  	}
+> @@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
+>  		return sprintf(buf, "0\n");
+>  }
+>  
+> +static ssize_t show_n_adjust(struct device *dev,
+> +			     struct device_attribute *devattr, char *buf)
+> +{
+> +	int index = to_sensor_dev_attr(devattr)->index;
+> +	struct tmp421_data *data = tmp421_update_device(dev);
+> +
+> +	return sprintf(buf, "%d\n", data->n_adjust[index - 1]);
+> +}
+> +
+> +static ssize_t set_n_adjust(struct device *dev,
+> +			    struct device_attribute *devattr,
+> +			    const char *buf, size_t count)
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct tmp421_data *data = i2c_get_clientdata(client);
+> +	int index = to_sensor_dev_attr(devattr)->index;
+> +	int n_adjust= simple_strtol(buf, NULL, 10);
 
-> How to know whether it is already patched by anyone else?  Just search in  this mail list?
+Missing space in front of '='.
 
-As well as the current git tree.
+> +
+> +	mutex_lock(&data->update_lock);
+> +	i2c_smbus_write_byte_data(client, TMP421_N_CORRECT[index - 1],
+> +				  SENSORS_LIMIT(n_adjust, -128, 127));
+> +	mutex_unlock(&data->update_lock);
+> +
+> +	return count;
+> +}
+> +
+>  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
+>  				int n)
+>  {
+> @@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
+>  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
+>  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
+>  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
+> +static SENSOR_DEVICE_ATTR(temp2_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> +			  show_n_adjust, set_n_adjust, 1);
+>  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
+>  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
+> +static SENSOR_DEVICE_ATTR(temp3_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> +			  show_n_adjust, set_n_adjust, 2);
+>  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
+>  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
+> +static SENSOR_DEVICE_ATTR(temp4_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> +			  show_n_adjust, set_n_adjust, 3);
+>  
+>  static struct attribute *tmp421_attr[] = {
+>  	&sensor_dev_attr_temp1_input.dev_attr.attr,
+>  	&sensor_dev_attr_temp2_input.dev_attr.attr,
+>  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
+> +	&sensor_dev_attr_temp2_n_adjust.dev_attr.attr,
+>  	&sensor_dev_attr_temp3_input.dev_attr.attr,
+>  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
+> +	&sensor_dev_attr_temp3_n_adjust.dev_attr.attr,
+>  	&sensor_dev_attr_temp4_input.dev_attr.attr,
+>  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
+> +	&sensor_dev_attr_temp4_n_adjust.dev_attr.attr,
+>  	NULL
+>  };
+>
 
--Scott
+Thanks,
+Andre  
