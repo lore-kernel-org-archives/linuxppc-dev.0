@@ -1,25 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
-	(IRQF_NODELAY)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <4BF3F2DB.7030701@us.ibm.com>
-References: <4BF30793.5070300@us.ibm.com>
-	<4BF30C32.1020403@linux.vnet.ibm.com>  <4BF31322.5090206@us.ibm.com>
-	<1274232324.29980.9.camel@concordia>  <4BF3F2DB.7030701@us.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-rZP5bf+tIaO2xBY2bClr"
-Date: Thu, 20 May 2010 11:28:36 +1000
-Message-ID: <1274318916.22892.35.camel@concordia>
-Mime-Version: 1.0
-Cc: Jan-Bernd Themann <themann@de.ibm.com>, dvhltc@linux.vnet.ibm.com,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
-	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 20 May 2010 11:18:21 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: make the padding for the device tree a
+	configurable option
+Message-ID: <20100520011820.GT25892@yookeroo>
+References: <1274298809-12772-1-git-send-email-timur@freescale.com>
+	<1274304013.1931.6.camel@pasglop> <4BF4593E.8030101@freescale.com>
+	<1274309050.1931.21.camel@pasglop>
+	<AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTilefxXcMnWqKSultu88r4D9W98adHLHxvUwi113@mail.gmail.com>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,69 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, May 19, 2010 at 07:03:17PM -0500, Timur Tabi wrote:
+> On Wed, May 19, 2010 at 5:44 PM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> 
+> > It's still not kernel business to have to deal with u-boot memory
+> > allocation constraints.
+> 
+> I agree, but it still makes sense to me to allow the padding to be configurable.
+> 
+> > The padding in the kernel built is intended to
+> > make space for DT changes done by the zImage wrapper.
+> 
+> Well, okay.  I think it would be nice if we expanded that to handle
+> general usage.
+> 
+> > Maybe we could add to libfdt a way to provide a realloc() callback to it
+> > when it hits the max size, and uboot can then move things around (or
+> > fail).
+> 
+> The problem is that the code which allocates a block for the fdt is
+> completely distinct from the code that manipulates the fdt.  We'd need
+> to put in either some kind of funky callback mechanism, or insist that
+> every fdt exist in a block of memory allocated by some specific method
+> (e.g. lmb).
+> 
+> I'm stuck between a rock and a hard place, it seems.  No one is
+> willing to compromise on any of my ideas.  It's hard to convince our
+> BSP developers that they should be pushing more code upstream when I
+> get so much resistance for a such a mundane change.
 
---=-rZP5bf+tIaO2xBY2bClr
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Couldn't you use the configurable padding, but put the stuff to do it
+into u-boot.  i.e. repad the dtb at u-boot build time, rather than
+u-boot runtime.
 
-On Wed, 2010-05-19 at 07:16 -0700, Darren Hart wrote:
-> On 05/18/2010 06:25 PM, Michael Ellerman wrote:
-> > On Tue, 2010-05-18 at 15:22 -0700, Darren Hart wrote:
-> >> On 05/18/2010 02:52 PM, Brian King wrote:
-> >>> Is IRQF_NODELAY something specific to the RT kernel? I don't see it i=
-n mainline...
-> >>
-> >> Yes, it basically says "don't make this handler threaded".
-> >
-> > That is a good fix for EHEA, but the threaded handling is still broken
-> > for anything else that is edge triggered isn't it?
->=20
-> No, I don't believe so. Edge triggered interrupts that are reported as=20
-> edge triggered interrupts will use the edge handler (which was the=20
-> approach Sebastien took to make this work back in 2008). Since XICS=20
-> presents all interrupts as Level Triggered, they use the fasteoi path.
-
-But that's the point, no interrupts on XICS are reported as edge, even
-if they are actually edge somewhere deep in the hardware. I don't think
-we have any reliable way to determine what is what.
-
-> > The result of the discussion about two years ago on this was that we
-> > needed a custom flow handler for XICS on RT.
->=20
-> I'm still not clear on why the ultimate solution wasn't to have XICS=20
-> report edge triggered as edge triggered. Probably some complexity of the=20
-> entire power stack that I am ignorant of.
-
-I'm not really sure either, but I think it's a case of a leaky
-abstraction on the part of the hypervisor. Edge interrupts behave as
-level as long as you handle the irq before EOI, but if you mask they
-don't. But Milton's the expert on that.
-
-> > Apart from the issue of loosing interrupts there is also the fact that
-> > masking on the XICS requires an RTAS call which takes a global lock.
->=20
-> Right, one of may reasons why we felt this was the right fix. The other=20
-> is that there is no real additional overhead in running this as=20
-> non-threaded since the receive handler is so short (just napi_schedule())=
-.
-
-True. It's not a fix in general though. I'm worried that we're going to
-see the exact same bug for MSI(-X) interrupts.
-
-cheers
-
-
-
---=-rZP5bf+tIaO2xBY2bClr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkv0kEAACgkQdSjSd0sB4dIF2QCcCAoeORbwsKzwzxOVUBfaIIT6
-figAn0n5mFqrMbAliS0Y3RsBEPRhSReQ
-=neam
------END PGP SIGNATURE-----
-
---=-rZP5bf+tIaO2xBY2bClr--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
