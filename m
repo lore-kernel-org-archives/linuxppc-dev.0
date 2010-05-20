@@ -1,45 +1,20 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E7132B7D4A
+Return-Path: <moises.dominguez@ctag.com>
+Received: from jupiter.ctag.com (smtp.ctag.com [193.144.40.36])
+	by ozlabs.org (Postfix) with ESMTP id AF68EB7D57
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 May 2010 00:53:23 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e9.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4KEdjr9029779
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 10:39:45 -0400
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4KErJGq138674
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 10:53:20 -0400
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4KEuAnd032636
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 May 2010 08:56:10 -0600
-Subject: Re: [PATCH RT] ehea: make receive irq handler non-threaded
-	(IRQF_NODELAY)
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Jan-Bernd Themann <THEMANN@de.ibm.com>
-In-Reply-To: <OFCBBE5EB9.FD616EDA-ONC1257729.0030B539-C1257729.0031FB06@de.ibm.com>
-References: <4BF30793.5070300@us.ibm.com>
-	<4BF30C32.1020403@linux.vnet.ibm.com>  <4BF31322.5090206@us.ibm.com>
-	<1274232324.29980.9.camel@concordia> <4BF3F2DB.7030701@us.ibm.com>
-	<alpine.LFD.2.00.1005191620350.3368@localhost.localdomain>
-	<alpine.LFD.2.00.1005192244430.3368@localhost.localdomain>
-	<1274319248.22892.40.camel@concordia>
-	<OF17F8F35C.B09E4797-ONC1257729.0028292D-C1257729.0029E9AC@de.ibm.com>
-	<alpine.LFD.2.00.1005200950410.3368@localhost.localdomain>
-	<OFCBBE5EB9.FD616EDA-ONC1257729.0030B539-C1257729.0031FB06@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 20 May 2010 09:53:14 -0500
-Message-ID: <1274367195.1675.27.camel@lexx>
-Mime-Version: 1.0
-Cc: Darren Hart <dvhltc@us.ibm.com>, dvhltc@linux.vnet.ibm.com,
-	linux-kernel@vger.kernel.org,
-	Brian King <brking@linux.vnet.ibm.com>, niv@linux.vnet.ibm.com,
-	Thomas Gleixner <tglx@linutronix.de>, Doug Maxey <doug.maxey@us.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
-Reply-To: will_schmidt@vnet.ibm.com
+	Fri, 21 May 2010 01:21:32 +1000 (EST)
+Received: from [193.144.40.38] (helo=INN0072)
+	by jupiter.ctag.com with esmtpa (Exim 4.63)
+	(envelope-from <moises.dominguez@ctag.com>) id 1OF72n-0004vA-7P
+	for linuxppc-dev@lists.ozlabs.org; Thu, 20 May 2010 16:48:18 +0200
+From: =?iso-8859-1?Q?CTAG_/_Mois=E9s_Dom=EDnguez?= <moises.dominguez@ctag.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 20 May 2010 16:48:17 +0200
+Message-ID: <B597D6E3752845929B21C3369FB41730@ctag>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_004F_01CAF83C.3F048EF0"
+Subject: MBX drivers ads5121-rev4-v20090603
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,138 +24,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-05-20 at 11:05 +0200, Jan-Bernd Themann wrote:
-> Hi Thomas
-> 
-> > Re: [PATCH RT] ehea: make receive irq handler non-threaded (IRQF_NODELAY)
-> >
-> > On Thu, 20 May 2010, Jan-Bernd Themann wrote:
-> > > > > Thought more about that. The case at hand (ehea) is nasty:
-> > > > >
-> > > > > The driver does _NOT_ disable the rx interrupt in the card in the
-> rx
-> > > > > interrupt handler - for whatever reason.
-> > > >
-> > > > Yeah I saw that, but I don't know why it's written that way. Perhaps
-> > > > Jan-Bernd or Doug will chime in and enlighten us? :)
-> > >
-> > > From our perspective there is no need to disable interrupts for the
-> > > RX side as the chip does not fire further interrupts until we tell
-> > > the chip to do so for a particular queue. We have multiple receive
-> >
-> > The traces tell a different story though:
-> >
-> >     ehea_recv_irq_handler()
-> >       napi_reschedule()
-> >     eoi()
-> >     ehea_poll()
-> >       ...
-> >       ehea_recv_irq_handler()    <---------------- ???
-> >         napi_reschedule()
-> >       ...
-> >       napi_complete()
-> >
-> > Can't tell whether you can see the same behaviour in mainline, but I
-> > don't see a reason why not.
-> 
-> Is this the same interrupt we are seeing here, or do we see a second other
-> interrupt popping up on the same CPU? As I said, with multiple receive
-> queues
-> (if enabled) you can have multiple interrupts in parallel.
+This is a multi-part message in MIME format.
 
-Same interrupt number (260).      Per the trace data, the first
-ehea_recv_irq_handler (at 117.904525) was on cpu 0, the second (at
-117.904689) was on cpu 1.
+------=_NextPart_000_004F_01CAF83C.3F048EF0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
+=20
 
-<...>-2180  [000]  117.904525: .ehea_recv_irq_handler: ENTER 0 c0000000e8bd08b0
-<...>-2180  [000]  117.904527: .ehea_recv_irq_handler: napi_reschedule COMpleted  c0000000e8bd08b0
-<...>-2180  [000]  117.904528: .ehea_recv_irq_handler: EXIT reschedule(1) 1 c0000000e8bd08b0
-<...>-2180  [000]  117.904529: .xics_unmask_irq: xics: unmask virq 260 772
-<...>-2180  [000]  117.904547: .xics_unmask_irq: xics: unmask virq pre-xive 260 772 0 status:0 ff
-<...>-2180  [000]  117.904586: .xics_unmask_irq: xics: unmask virq post-xive 260 772 0 D:11416 status:0 5
-<...>-2180  [000]  117.904602: .handle_fasteoi_irq: 260 8004000
-<...>-2180  [000]  117.904603: .xics_mask_irq: xics: mask virq 260 772
-<...>-2180  [000]  117.904634: .xics_mask_real_irq: xics: before: mask_real 772 status:0 5
-<...>-2180  [000]  117.904668: .xics_mask_real_irq: xics: after: mask_real 772 status:0 ff
-<...>-2180  [000]  117.904669: .handle_fasteoi_irq: pre-action:  260 8004100
-<...>-2180  [000]  117.904671: .handle_fasteoi_irq: post-action: 260 8004100
-<...>-2180  [000]  117.904672: .handle_fasteoi_irq: exit.  260 8004000
-<...>-7     [000]  117.904681: .ehea_poll:  ENTER  1  c0000000e8bd08b0 poll_counter:0 force:0
-<...>-7     [000]  117.904683: .ehea_proc_rwqes: ehea_check_cqe 0
-<...>-2180  [001]  117.904689: .ehea_recv_irq_handler: ENTER 1 c0000000e8bd08b0
-<...>-7     [000]  117.904690: .ehea_proc_rwqes: ehea_check_cqe 0
-<...>-2180  [001]  117.904691: .ehea_recv_irq_handler: napi_reschedule inCOMplete  c0000000e8bd08b0
-<...>-2180  [001]  117.904692: .ehea_recv_irq_handler: EXIT reschedule(0) 1 c0000000e8bd08b0
-<...>-2180  [001]  117.904694: .xics_unmask_irq: xics: unmask virq 260 772
-<...>-7     [000]  117.904702: .ehea_refill_rq2: ehea_refill_rq2
-<...>-7     [000]  117.904703: .ehea_refill_rq_def: ehea_refill_rq_def
-<...>-7     [000]  117.904704: .ehea_refill_rq3: ehea_refill_rq3
-<...>-7     [000]  117.904705: .ehea_refill_rq_def: ehea_refill_rq_def
-<...>-7     [000]  117.904706: .napi_complete: napi_complete: ENTER  state: 1  c0000000e8bd08b0
-<...>-7     [000]  117.904707: .napi_complete: napi_complete: EXIT  state: 0  c0000000e8bd08b0
-<...>-7     [000]  117.904710: .ehea_poll: EXIT  !cqe rx(2).   0  c0000000e8bd08b0
-<...>-2180  [001]  117.904719: .xics_unmask_irq: xics: unmask virq pre-xive 260 772 0 status:0 ff
-<...>-2180  [001]  117.904761: .xics_unmask_irq: xics: unmask virq post-xive 260 772 0 D:12705 status:0 5
+I am trying to use MBX 3D engine driver of my ads5121. AFAIK, drivers =
+were
+built against same kernel as mine but I get problems for testing the =
+demos
+and for loading the service:
+
+[root@freescale /]# etc/init.d/rc.pvr start
+
+[   29.526994] dbgdrv: module license 'unspecified' taints kernel.
+
+[   29.721065] _IORemapWrapper: mapping 1048576 bytes uncached from
+0x80000000 to 0xe5280000
+
+=85=20
+
+=20
+
+I read in previous threads of this list about similar problems:
+
+- MBX on kernel 2.6.31:
+ttp://old.nabble.com/MPC5121ADS-PowerVR-MBX-driver-on-2.6.31-kernel--td26=
+613
+966.html
+
+- MBX on kernel 2.6.24:
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-February/067967.html
+
+=20
+
+According those posts, I would need to recompile modules against my =
+kernel,
+but, of course, I do not have the sources.  Reading ltib doc I read:
+
+=93Proprietary Packages:
+mbx_build13_binaries: This package provides proprietary binary kernel
+modules, libraries,
+and test code built from the MBX OpenGL ES DDK.=94
+=20
+Have anybody tested MBX demos provided with freescale SDK with ltib
+v20090603 without having to recompile provided .ko=92s?=20
+=20
+
+Regards,
+
+Moises
+
+=20
+
+Board ads5121
+
+Ltib version 20090603
+
+Linux kernel version 2.6.24.6
 
 
+------=_NextPart_000_004F_01CAF83C.3F048EF0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
 
 
-> Pleaes check if multiple queues are enabled. The following module parameter
-> is used for that:
-> 
-> MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 0
-> ");
+<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
 
-No module parameters were used, should be plain old defaults.  
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+span.EstiloCorreo17
+	{font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
-> 
-> you should also see the number of used HEA interrupts in /proc/interrupts
-> 
+</head>
 
-256:          1    0    0    0    0    0   0    0   XICS      Level     ehea_neq
-259:          0    0    0    0    0    0   0    0   XICS      Level     eth0-aff
-260:     361965    0    0    0    0    0   0    0   XICS      Level     eth0-queue0
+<body lang=3DES link=3Dblue vlink=3Dpurple>
 
+<div class=3DSection1>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi all,</span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
 
-> 
-> >
-> > > queues with an own interrupt each so that the interrupts can arrive
-> > > on multiple CPUs in parallel.  Interrupts are enabled again when we
-> > > leave the NAPI Poll function for the corresponding receive queue.
-> >
-> > I can't see a piece of code which does that, but that's probably just
-> > lack of detailed hardware knowledge on my side.
-> 
-> If you mean the "re-enable" piece of code, it is not very obvious, you are
-> right.
-> Interrupts are only generated if a particular register for our completion
-> queues
-> is written. We do this in the following line:
-> 
->           ehea_reset_cq_ep(pr->recv_cq);
->           ehea_reset_cq_ep(pr->send_cq);
->           ehea_reset_cq_n1(pr->recv_cq);
->           ehea_reset_cq_n1(pr->send_cq);
-> 
-> So this is in a way an indirect way to ask for interrupts when new
-> completions were
-> written to memory. We don't really disable/enable interrupts on the HEA
-> chip itself.
-> 
-> I think there are some mechanisms build in the HEA chip that should prevent
-> that
-> interrupts don't get lost. But that is something that is / was completely
-> hidden from
-> us, so my skill is very limited there.
-> 
-> If more details are needed here we should involve the PHYP guys + eHEA HW
-> guys if not
-> already done. Did anyone already talk to them?
-> 
-> Regards,
-> Jan-Bernd
-> 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>I am trying to use MBX 3D engine driver of my =
+ads5121.
+AFAIK, drivers were built against same kernel as mine but I get problems =
+for
+testing the demos and for loading the service:</span></font></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[root@free=
+scale
+/]# etc/init.d/rc.pvr start</span></font></i></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[=A0=A0 =
+29.526994] dbgdrv:
+module license 'unspecified' taints kernel.</span></font></i></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>[=A0=A0 =
+29.721065] _IORemapWrapper:
+mapping 1048576 bytes uncached from 0x80000000 to =
+0xe5280000</span></font></i></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>&#8230; =
+</span></font></i></p>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-weight:bold'>&nbsp;</spa=
+n></font></b></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>I read in previous threads of this list about =
+similar
+problems:</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>- MBX on kernel 2.6.31: =
+ttp://old.nabble.com/MPC5121ADS-PowerVR-MBX-driver-on-2.6.31-kernel--td26=
+613966.html</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>- MBX on kernel 2.6.24: =
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-February/067967.html<=
+/span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>According those posts, I would need to =
+recompile
+modules against my kernel, but, of course, I do not have the sources. =
+=A0Reading ltib
+doc I read:</span></font></p>
+
+<pre><i><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-style:italic'>&#8220;Proprietary =
+Packages:</span></font></i></pre><pre><i><font
+size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:Arial;
+font-style:italic'>mbx_build13_binaries: This package provides =
+proprietary binary kernel modules, =
+libraries,</span></font></i></pre><pre><i><font
+size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:Arial;
+font-style:italic'>and test code built from the MBX OpenGL ES =
+DDK.&#8221;</span></font></i></pre><pre><i><font
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-style:
+italic'>&nbsp;</span></font></i></pre><pre><font size=3D2 =
+face=3DArial><span
+lang=3DEN-GB style=3D'font-size:10.0pt;font-family:Arial'>Have anybody =
+tested MBX demos provided with freescale SDK with ltib v20090603 without =
+having to recompile provided .ko&#8217;s? </span></font></pre><pre><font
+size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:Arial'>&nbsp;</span></font></pre>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Regards,</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Moises</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Board =
+ads5121</span></font></i></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Ltib =
+version 20090603</span></font></i></p>
+
+<p class=3DMsoNormal><i><font size=3D2 face=3DArial><span lang=3DEN-GB
+style=3D'font-size:10.0pt;font-family:Arial;font-style:italic'>Linux =
+kernel version
+2.6.24.6</span></font></i></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_004F_01CAF83C.3F048EF0--
