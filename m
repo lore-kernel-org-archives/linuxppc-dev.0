@@ -1,19 +1,19 @@
-Return-Path: <hellohello008@163.com>
-Received: from m50-135.163.com (m50-135.163.com [123.125.50.135])
-	by ozlabs.org (Postfix) with ESMTP id DB69CB7D2E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 21 May 2010 13:33:36 +1000 (EST)
-Message-ID: <051501caf896$5c954630$a51cbcc0@sfdomain.com>
-From: "hellohello" <hellohello008@163.com>
-To: "Scott Wood" <scottwood@freescale.com>
-References: <042201caf7fa$9d038a20$a51cbcc0@sfdomain.com>
-	<20100520170608.GA10712@schlenkerla.am.freescale.net>
-Subject: Re: Problem of PowerPc 82xx  when using smc
-Date: Fri, 21 May 2010 11:33:20 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 95556B7D1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 May 2010 19:12:09 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 21 May 2010 19:11:28 +1000
+Message-ID: <1274433088.1931.63.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +23,320 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBObywgaXQgc2hvdWxkbid0IC0tIHJ4X2JkX2Jhc2UgaXMgb2YgdHlwZSAiY2JkX3QgKiIsIHNv
-IHRoZSBtdWx0aXBsaWNhdGlvbg0KPiBhbHJlYWR5IGhhcHBlbnMgYXMgcGFydCBvZiBwb2ludGVy
-IGFyaXRobWV0aWMuDQotLS1ZZXMsIHlvdSBhcmUgcmlnaHQuIEkgbWFkZSBhIGJhc2ljIG1pc3Rh
-a2UuIA0KDQpCdXQgbm93IEkgaGF2ZSBhbm90aGVyIHF1ZXN0aW9uLg0KVGhlIFNNQzEgcGFyYW1z
-IGNhbiBiZSByZWxvY2F0ZWQgdG8gYW55IG9mZnNldCBvZiB0aGUgRFBSQU0gb24gYSA2NCBieXRl
-IGJvdW5kYXJ5LCBub3QgYXMgdGhlIFNDQzEsIHdoaWNoIG11c3QgYmUgIGF0IDB4ODAwMCBvZmZz
-ZXQgb2YgdGhlIERQUkFNLg0KVGhlIFNNQzEgcGFyYW1zIGJhc2UgaXMgc2V0IGF0IDB4ODdGQyBv
-ZmZzZXQgb2YgdGhlIERQUkFNLg0KDQpTbyBpZiAgSSB3YW50IFNNQzEgcGFyYW1zIHN0YXJ0IGF0
-ICAweDIwMCBpbiBEUFJBTSAgLCBJIHNob3VsZCBzZXQgMHgyMDAgdG8gdGhlIDB4ODdGQyBvZmZz
-ZXQgb2YgdGhlIERQUkFNLg0KSSBoYXZlIHNlZSB0aGlzIGNvZGUgaW4gdS1ib290LCBidXQgSSBj
-YW4gbm90IGZpbmQgdGhpcyBjb2RlIGluIG5laXRoZXIgY3BtX3VhcnRfY3BtMi5jIG5vciBjcG1f
-dWFydF9jb3JlLmMuDQoNClNob3VsZCBJIGFkZCB0aGVzZSBjb2RlIHRvICBjcG1fdWFydF9jb3Jl
-LmM/DQoNCi0tZHBfbWVtID0gY3BtX2RwcmFtX2FkZHIoMHg4N2ZjKTsNCi0tb3V0X2JlMTYoZHBf
-bWVtLCBTTUMxX0JBU0UpOw0KDQoNCg0KDQoNCg0KDQotLS0tLSBPcmlnaW5hbCBNZXNzYWdlIC0t
-LS0tIA0KRnJvbTogIlNjb3R0IFdvb2QiIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4NClRvOiAi
-aGVsbG9oZWxsbyIgPGhlbGxvaGVsbG8wMDhAMTYzLmNvbT4NCkNjOiA8bGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmc+DQpTZW50OiBGcmlkYXksIE1heSAyMSwgMjAxMCAxOjA2IEFNDQpTdWJq
-ZWN0OiBSZTogUHJvYmxlbSBvZiBQb3dlclBjIDgyeHggd2hlbiB1c2luZyBzbWMNCg0KDQo+IE9u
-IFRodSwgTWF5IDIwLCAyMDEwIGF0IDA0OjU4OjI3UE0gKzA4MDAsIGhlbGxvaGVsbG8gd3JvdGU6
-DQo+PiANCj4+IEkgZmluZCBhIHByb2JsZW0gaW4gDQo+PiBkcml2ZXJzL3NlcmlhbC9jcG1fdWFy
-dC9jcG1fdWFydF9jcG0yLmM6DQo+PiBpbnQgY3BtX3VhcnRfYWxsb2NidWYoc3RydWN0IHVhcnRf
-Y3BtX3BvcnQgKnBpbmZvLCB1bnNpZ25lZCBpbnQgaXNfY29uKQ0KPj4gew0KPj4gLi4uIC4uLg0K
-Pj4gcGluZm8tPnR4X2JkX2Jhc2UgPSBwaW5mby0+cnhfYmRfYmFzZSArIHBpbmZvLT5yeF9ucmZp
-Zm9zOw0KPj4gLypUaGUgYWJvdmUgbGluZSBzaG91bGQgYmUg77yaKi8NCj4+ICBwaW5mby0+dHhf
-YmRfYmFzZSA9IHBpbmZvLT5yeF9iZF9iYXNlICsgc2l6ZW9mKGNiZF90KSAqIHBpbmZvLT5yeF9u
-cmZpZm9zOw0KPiANCj4gTm8sIGl0IHNob3VsZG4ndCAtLSByeF9iZF9iYXNlIGlzIG9mIHR5cGUg
-ImNiZF90ICoiLCBzbyB0aGUgbXVsdGlwbGljYXRpb24NCj4gYWxyZWFkeSBoYXBwZW5zIGFzIHBh
-cnQgb2YgcG9pbnRlciBhcml0aG1ldGljLg0KPiANCj4+IHJldHVybiAwOw0KPj4gfQ0KPj4gDQo+
-PiBXaGVyZSB0byBnZXQgdGhlIG5ld2VzdCBjb2RlIGZvciBrZXJuZWw/DQo+IA0KPiBnaXQua2Vy
-bmVsLm9yZw0KPiANCj4+IEhvdyB0byBrbm93IHdoZXRoZXIgaXQgaXMgYWxyZWFkeSBwYXRjaGVk
-IGJ5IGFueW9uZSBlbHNlPyAgSnVzdCBzZWFyY2ggaW4gIHRoaXMgbWFpbCBsaXN0Pw0KPiANCj4g
-QXMgd2VsbCBhcyB0aGUgY3VycmVudCBnaXQgdHJlZS4NCj4gDQo+IC1TY290dA0KPiBfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiBMaW51eHBwYy1kZXYg
-bWFpbGluZyBsaXN0DQo+IExpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IGh0dHBzOi8v
-bGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+Hi Linus !
+
+Here's the powerpc batch for this merge window.
+
+Most of it is in arch/powerpc, a few powerpc specific drivers are hit
+too, including removing one that has been unused (and unselectable in
+Kconfig) for a long time (hdpuftrs), probably remains of a long dead
+platform.
+
+This time around, there's a lot of bits and pieces left and right, no
+huge highlight. Some notable fixes to kexec/kdump that might make this
+thing finally somewhat reliable from Mikey and Anton and a big cpumask
+conversion from Anton as well.
+
+Cheers,
+Ben.
+
+The following changes since commit 7a9b149212f3716c598afe973b6261fd58453b7a:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/usb-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+
+Akinobu Mita (1):
+      powerpc/iseries/pci: Use __ratelimit
+
+Andreas Schwab (1):
+      powerpc: Fix string library functions
+
+Anton Blanchard (25):
+      powerpc/numa: Set a smaller value for RECLAIM_DISTANCE to enable zone reclaim
+      powerpc/pseries: Call ibm,os-term if the ibm,extended-os-term is present
+      powerpc/mm: Bump SECTION_SIZE_BITS from 16MB to 256MB
+      powerpc/cpumask: Use cpu_online_mask
+      powerpc/cpumask: Convert rtasd to new cpumask API
+      powerpc/cpumask: Convert smp_cpus_done to new cpumask API
+      powerpc/cpumask: Convert fixup_irqs to new cpumask API
+      powerpc/cpumask: Convert iseries SMP code to new cpumask API
+      powerpc/cpumask: Convert pseries SMP code to new cpumask API
+      powerpc/cpumask: Convert xics driver to new cpumask API
+      powerpc/cpumask: Refactor /proc/cpuinfo code
+      powerpc/cpumask: Convert /proc/cpuinfo to new cpumask API
+      powerpc/cpumask: Dynamically allocate cpu_sibling_map and cpu_core_map cpumasks
+      powerpc/cpumask: Convert hotplug-cpu code to new cpumask API
+      powerpc/cpumask: Convert NUMA code to new cpumask API
+      powerpc/cpumask: Update some comments
+      powerpc/cpumask: Add DEBUG_PER_CPU_MAPS option
+      powerpc/eeh: Fix oops when probing in early boot
+      powerpc/kdump: CPUs assume the context of the oopsing CPU
+      powerpc/kdump: Use chip->shutdown to disable IRQs
+      powerpc: Use more accurate limit for first segment memory allocations
+      powerpc: Remove check of ibm,smt-snooze-delay OF property
+      powerpc: Use smt_snooze_delay=-1 to always busy loop
+      powerpc/numa: Set a smaller value for RECLAIM_DISTANCE to enable zone reclaim
+      powerpc/numa: Use ibm,architecture-vec-5 to detect form 1 affinity
+
+Anton Vorontsov (3):
+      powerpc/85xx: Add eTSEC 2.0 support for P1020RDB boards
+      powerpc/85xx: Fix P1020RDB boot hang due USB2
+      powerpc/83xx: Add MCU LEDs support for MPC837xRDB and MPC8315RDB boards
+
+Benjamin Herrenschmidt (9):
+      Remove unused HDPU driver
+      powerpc: Fix ioremap_flags() with book3e pte definition
+      powerpc/vio: Add modalias support
+      powerpc/vio: Add power management support
+      Revert "powerpc/mm: Bump SECTION_SIZE_BITS from 16MB to 256MB"
+      powerpc: Fix CONFIG_DEBUG_PAGEALLOC on 603/e300
+      powerpc: Invoke oom-killer from page fault
+      powerpc/cpumask: Convert mpic driver to new cpumask API
+      Merge commit 'origin/master' into next
+
+Brian King (1):
+      powerpc/vio: Switch VIO Bus PM to use generic helpers
+
+Corey Minyard (2):
+      powerpc: Add a new zImage for maple using a different link address
+      powerpc/mpsc: Set the port device in the mpsc serial driver
+
+Dave Kleikamp (5):
+      powerpc/44x: break out cpu init code into stand-alone function
+      powerpc/47x: Base ppc476 support
+      powerpc/476: add machine check handler for 47x core
+      powerpc/476: Add isync after loading mmu and debug spr's
+      powerpc/47x: defconfig for 476 on the iss 4xx simulator
+
+FUJITA Tomonori (1):
+      powerpc: Remove unused 'protect4gb' boot parameter
+
+Jason Gunthorpe (1):
+      powerpc/ppc32: Fixup pmd_page to work when ARCH_PFN_OFFSET is non-zero
+
+Jeff Mahoney (1):
+      powerpc: Fix handling of strncmp with zero len
+
+Joakim Tjernlund (4):
+      powerpc/8xx: Optimze TLB Miss handlers
+      powerpc/8xx: Avoid testing for kernel space in ITLB Miss.
+      powerpc/8xx: Don't touch ACCESSED when no SWAP.
+      powerpc/8xx: Use SPRG2 and DAR registers to stash r11 and cr.
+
+Julia Lawall (6):
+      powerpc/pmac/windfarm: Correct potential double free
+      powerpc/pseries/dlpar: Eliminate use after free
+      powerpc/pseries/dlpar: Use kasprintf
+      powerpc/vio: Add missing unlock in error path
+      powerpc/pmac: Add missing unlocks in error path
+      powerpc: Use set_cpus_allowed_ptr
+
+K.Prasad (1):
+      powerpc: Disable interrupts for data breakpoint exceptions
+
+Kim Phillips (1):
+      powerpc: remove tls_ssl_stream descriptor type capability in sec3.3 node
+
+Kumar Gala (1):
+      powerpc/fsl-booke: Move loadcam_entry back to asm code to fix SMP ftrace
+
+Li Yang (1):
+      powerpc/fsl-booke: Fix InstructionTLBError execute permission check
+
+Mahesh Salgaonkar (1):
+      powerpc: Add kprobe-based event tracer
+
+Mark Nelson (2):
+      powerpc/mm: Track backing pages allocated by vmemmap_populate()
+      powerpc/pseries: Make request_ras_irqs() available to other pseries code
+
+Martyn Welch (1):
+      powerpc: Correct parport interrupt parsing
+
+Maxim Uvarov (1):
+      powerpc/crashdump: Do not fail on NULL pointer dereferencing
+
+Michael Ellerman (1):
+      powerpc/rtasd: Don't start event scan if scan rate is zero
+
+Michael Neuling (7):
+      powerpc/pseries: Make query_cpu_stopped callable outside hotplug cpu
+      powerpc/pseries: Only call start-cpu when a CPU is stopped
+      powerpc/pseries: Add hcall to read 4 ptes at a time in real mode
+      powerpc/kexec: Speedup kexec hash PTE tear down
+      powerpc/kexec: Fix race in kexec shutdown
+      powerpc/kdump: Fix race in kdump shutdown
+      powerpc: Build-in e1000e for pseries & ppc64_defconfig
+
+Milton Miller (1):
+      powerpc: Use common cpu_die (fixes SMP+SUSPEND build)
+
+Paul Mackerras (1):
+      powerpc: Avoid bad relocations in iSeries code
+
+Peter Korsgaard (1):
+      powerpc: Add interrupt support to mpc8xxx_gpio
+
+Sonny Rao (1):
+      powerpc/pci: Check devices status property when scanning OF tree
+
+Stefan Roese (1):
+      powerpc/4xx: Add optional "reset_type" property to control reboot via dts
+
+Timur Tabi (1):
+      powerpc/8610: add probing for individual DMA channels, not just DMA controllers
+
+Torez Smith (2):
+      powerpc/booke: Add Stack Marking support to Booke Exception Prolog
+      powerpc/4xx: Simple platform for the ISS 4xx simulator
+
+Vaidyanathan Srinivasan (1):
+      powerpc/pseries: Export data from new hcall H_EM_GET_PARMS
+
+Wolfram Sang (4):
+      powerpc/pmac: Fix dangling pointers
+      i2c/mpc: Drop NO_IRQ
+      i2c/cpm: Drop NO_IRQ
+      i2c/ibm-iic: Drop NO_IRQ
+
+d binderman (3):
+      powerpc/aoa: gpio-pmf.c: 3 * redundant code
+      powerpc/pmac/low_i2c.c: three minor problems
+      powerpc/pmac/windfarm: Don't test pointers before kfree()
+
+ Documentation/powerpc/dts-bindings/4xx/reboot.txt  |   18 +
+ .../powerpc/dts-bindings/fsl/8xxx_gpio.txt         |   22 +-
+ arch/powerpc/Kconfig                               |    1 +
+ arch/powerpc/Kconfig.debug                         |   12 +
+ arch/powerpc/boot/Makefile                         |    9 +-
+ arch/powerpc/boot/dts/iss4xx-mpic.dts              |  155 +++
+ arch/powerpc/boot/dts/iss4xx.dts                   |  116 +++
+ arch/powerpc/boot/dts/mpc8315erdb.dts              |   16 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts              |   14 +
+ arch/powerpc/boot/dts/mpc8378_rdb.dts              |   14 +
+ arch/powerpc/boot/dts/mpc8379_rdb.dts              |   14 +
+ arch/powerpc/boot/dts/p1020rdb.dts                 |  125 +++
+ arch/powerpc/boot/treeboot-iss4xx.c                |   56 ++
+ arch/powerpc/boot/wrapper                          |    9 +-
+ arch/powerpc/configs/44x/iss476-smp_defconfig      | 1026 ++++++++++++++++++++
+ arch/powerpc/configs/ppc64_defconfig               |    2 +-
+ arch/powerpc/configs/pseries_defconfig             |    2 +-
+ arch/powerpc/include/asm/cache.h                   |    6 +-
+ arch/powerpc/include/asm/cputable.h                |    5 +
+ arch/powerpc/include/asm/hvcall.h                  |    2 +
+ arch/powerpc/include/asm/kexec.h                   |    4 +
+ arch/powerpc/include/asm/mmu-44x.h                 |   51 +-
+ arch/powerpc/include/asm/mmu.h                     |    1 +
+ arch/powerpc/include/asm/mmzone.h                  |    2 +-
+ arch/powerpc/include/asm/mpic.h                    |    3 -
+ arch/powerpc/include/asm/paca.h                    |    1 +
+ arch/powerpc/include/asm/parport.h                 |   11 +-
+ arch/powerpc/include/asm/pgalloc-64.h              |    6 +
+ arch/powerpc/include/asm/pgtable-ppc32.h           |    2 +-
+ arch/powerpc/include/asm/ptrace.h                  |   64 ++
+ arch/powerpc/include/asm/reg.h                     |    4 +
+ arch/powerpc/include/asm/reg_booke.h               |   24 +
+ arch/powerpc/include/asm/smp.h                     |   18 +-
+ arch/powerpc/include/asm/topology.h                |   26 +-
+ arch/powerpc/kernel/asm-offsets.c                  |    9 +
+ arch/powerpc/kernel/cputable.c                     |   29 +
+ arch/powerpc/kernel/crash.c                        |   38 +-
+ arch/powerpc/kernel/entry_32.S                     |    5 +
+ arch/powerpc/kernel/exceptions-64s.S               |   13 +-
+ arch/powerpc/kernel/head_44x.S                     |  828 +++++++++++++----
+ arch/powerpc/kernel/head_8xx.S                     |   70 +-
+ arch/powerpc/kernel/head_booke.h                   |    4 +
+ arch/powerpc/kernel/head_fsl_booke.S               |   13 +-
+ arch/powerpc/kernel/iommu.c                        |   12 -
+ arch/powerpc/kernel/irq.c                          |   17 +-
+ arch/powerpc/kernel/kprobes.c                      |    3 +
+ arch/powerpc/kernel/lparcfg.c                      |   12 +-
+ arch/powerpc/kernel/machine_kexec_64.c             |   48 +-
+ arch/powerpc/kernel/misc_32.S                      |    9 +-
+ arch/powerpc/kernel/misc_64.S                      |    8 +-
+ arch/powerpc/kernel/paca.c                         |    2 +
+ arch/powerpc/kernel/pci_of_scan.c                  |    2 +
+ arch/powerpc/kernel/process.c                      |    3 +
+ arch/powerpc/kernel/ptrace.c                       |  103 ++
+ arch/powerpc/kernel/rtas.c                         |   15 +-
+ arch/powerpc/kernel/rtasd.c                        |   16 +-
+ arch/powerpc/kernel/setup-common.c                 |   86 +-
+ arch/powerpc/kernel/setup_64.c                     |   23 +-
+ arch/powerpc/kernel/smp.c                          |   73 +-
+ arch/powerpc/kernel/sysfs.c                        |   46 +-
+ arch/powerpc/kernel/traps.c                        |   40 +
+ arch/powerpc/kernel/vio.c                          |   26 +-
+ arch/powerpc/lib/string.S                          |   18 +-
+ arch/powerpc/mm/44x_mmu.c                          |  144 +++-
+ arch/powerpc/mm/fault.c                            |   19 +-
+ arch/powerpc/mm/fsl_booke_mmu.c                    |   25 +-
+ arch/powerpc/mm/init_64.c                          |   43 +
+ arch/powerpc/mm/mmu_context_nohash.c               |    8 +
+ arch/powerpc/mm/mmu_decl.h                         |   17 +-
+ arch/powerpc/mm/numa.c                             |   78 ++-
+ arch/powerpc/mm/pgtable_32.c                       |   12 +-
+ arch/powerpc/mm/pgtable_64.c                       |    8 +
+ arch/powerpc/mm/tlb_nohash_low.S                   |  146 +++-
+ arch/powerpc/platforms/44x/Kconfig                 |   20 +
+ arch/powerpc/platforms/44x/Makefile                |    1 +
+ arch/powerpc/platforms/44x/iss4xx.c                |  167 ++++
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c          |    1 +
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c          |    1 +
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |    3 +-
+ arch/powerpc/platforms/Kconfig.cputype             |    5 +-
+ arch/powerpc/platforms/cell/cbe_cpufreq.c          |    2 +-
+ arch/powerpc/platforms/iseries/exception.S         |    4 +-
+ arch/powerpc/platforms/iseries/pci.c               |   10 +-
+ arch/powerpc/platforms/iseries/smp.c               |    2 +-
+ arch/powerpc/platforms/pasemi/cpufreq.c            |    2 +-
+ arch/powerpc/platforms/powermac/cpufreq_64.c       |    2 +-
+ arch/powerpc/platforms/powermac/low_i2c.c          |    7 +-
+ arch/powerpc/platforms/powermac/pmac.h             |    2 +
+ arch/powerpc/platforms/powermac/setup.c            |   13 +-
+ arch/powerpc/platforms/powermac/smp.c              |    9 +-
+ arch/powerpc/platforms/pseries/Makefile            |    2 +-
+ arch/powerpc/platforms/pseries/dlpar.c             |    8 +-
+ arch/powerpc/platforms/pseries/eeh.c               |    2 +-
+ arch/powerpc/platforms/pseries/event_sources.c     |   79 ++
+ arch/powerpc/platforms/pseries/hotplug-cpu.c       |   67 +-
+ arch/powerpc/platforms/pseries/hvCall.S            |   38 +
+ arch/powerpc/platforms/pseries/lpar.c              |   35 +-
+ arch/powerpc/platforms/pseries/plpar_wrappers.h    |   26 +
+ arch/powerpc/platforms/pseries/pseries.h           |    7 +
+ arch/powerpc/platforms/pseries/ras.c               |   62 +--
+ arch/powerpc/platforms/pseries/setup.c             |   10 +-
+ arch/powerpc/platforms/pseries/smp.c               |   42 +-
+ arch/powerpc/platforms/pseries/xics.c              |   38 +-
+ arch/powerpc/sysdev/mpc8xxx_gpio.c                 |  147 +++
+ arch/powerpc/sysdev/mpic.c                         |   72 +-
+ arch/powerpc/sysdev/ppc4xx_soc.c                   |   24 +-
+ drivers/i2c/busses/i2c-cpm.c                       |    2 +-
+ drivers/i2c/busses/i2c-ibm_iic.c                   |   14 +-
+ drivers/i2c/busses/i2c-mpc.c                       |    6 +-
+ drivers/macintosh/macio-adb.c                      |    1 +
+ drivers/macintosh/smu.c                            |    4 +-
+ drivers/macintosh/therm_adt746x.c                  |    2 +
+ drivers/macintosh/windfarm_pm81.c                  |    6 +-
+ drivers/macintosh/windfarm_pm91.c                  |    9 +-
+ drivers/misc/Makefile                              |    1 -
+ drivers/misc/hdpuftrs/Makefile                     |    1 -
+ drivers/misc/hdpuftrs/hdpu_cpustate.c              |  256 -----
+ drivers/misc/hdpuftrs/hdpu_nexus.c                 |  149 ---
+ drivers/serial/mpsc.c                              |    1 +
+ include/linux/hdpu_features.h                      |   26 -
+ sound/aoa/core/gpio-pmf.c                          |    9 +-
+ 121 files changed, 4157 insertions(+), 1152 deletions(-)
+ create mode 100644 Documentation/powerpc/dts-bindings/4xx/reboot.txt
+ create mode 100644 arch/powerpc/boot/dts/iss4xx-mpic.dts
+ create mode 100644 arch/powerpc/boot/dts/iss4xx.dts
+ create mode 100644 arch/powerpc/boot/treeboot-iss4xx.c
+ create mode 100644 arch/powerpc/configs/44x/iss476-smp_defconfig
+ create mode 100644 arch/powerpc/platforms/44x/iss4xx.c
+ create mode 100644 arch/powerpc/platforms/pseries/event_sources.c
+ delete mode 100644 drivers/misc/hdpuftrs/Makefile
+ delete mode 100644 drivers/misc/hdpuftrs/hdpu_cpustate.c
+ delete mode 100644 drivers/misc/hdpuftrs/hdpu_nexus.c
+ delete mode 100644 include/linux/hdpu_features.h
