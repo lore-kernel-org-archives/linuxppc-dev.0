@@ -1,18 +1,17 @@
-Return-Path: <hellohello008@163.com>
-Received: from m50-133.163.com (m50-133.163.com [123.125.50.133])
-	by ozlabs.org (Postfix) with ESMTP id 67254B7D20
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 22 May 2010 16:24:09 +1000 (EST)
-Message-ID: <012e01caf977$5dd2f010$a51cbcc0@sfdomain.com>
-From: "hellohello" <hellohello008@163.com>
-To: "hellohello" <hellohello008@163.com>,
-	"Scott Wood" <scottwood@freescale.com>
-Subject: Re: Problem of PowerPc 82xx  when using smc
-Date: Sat, 22 May 2010 14:23:59 +0800
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (mail.lixom.net [66.141.50.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5068AB7D29
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 May 2010 00:59:39 +1000 (EST)
+Date: Sat, 22 May 2010 10:17:38 -0500
+From: Olof Johansson <olof@lixom.net>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/pasemi: update maintainers file
+Message-ID: <20100522151738.GA19504@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Pj4gTmV3ZXIga2VybmVscyBzdXBwb3J0IGR5bmFtaWNhbGx5IGFsbG9jYXRpbmcgdGhpcyBwYXJh
-bWV0ZXIgUkFNLiAgT2xkZXIgDQo+PiBrZXJuZWxzIHVzZSB3aGF0ZXZlciB1LWJvb3QgY2hvc2Uu
-DQoNCkkgc2VlLiAgICBUaGFua3MgLg0KVS1ib290IGluaXRpYWxpemUgU01DMSBmb3IgdGhlIGZp
-cnN0IHRpbWUsIGFuZCBoYXMgc2V0IFNNQzFfQkFTRSB0byB0aGUgMHg4N0ZDIG9mZnNldCBvZiB0
-aGUgRFBSQU0uDQprZXJuZWwgIDIuNi4yNSBpbml0aWFsaXplIFNNQzEgZm9yIHRoZSBzZWNvbmQg
-dGltZSBhcyB3ZWxsIGFzICB3aGljaCBhcmUgZG9uZSBpbiB1LWJvb3QsICBleGNlcHQgdG8gIHNl
-dCBTTUMxX0JBU0UgYWdhaW4uDQpTbyBpZiBTTUMxX0JBU0UgaXMgdHJhbnNmZXJyZWQgdG8ga2Vy
-bmVsIGJ5IGR0cyBjb3JyZWN0bHksIFNNQzEgc2hvdWxkIHdvcmsgd2VsbC4NClRoZSBwcm9ibGVt
-IG11c3QgYmUgbXkgZHRzIGZpbGUgLG5vdCB0aGUgY29kZS4NCg0KDQoNCg0KLS0tLS0gT3JpZ2lu
-YWwgTWVzc2FnZSAtLS0tLSANCkZyb206ICJoZWxsb2hlbGxvIiA8aGVsbG9oZWxsbzAwOEAxNjMu
-Y29tPg0KVG86ICJTY290dCBXb29kIiA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+DQpDYzogPGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg0KU2VudDogU2F0dXJkYXksIE1heSAyMiwgMjAx
-MCAxMDo1MSBBTQ0KU3ViamVjdDogUmU6IFByb2JsZW0gb2YgUG93ZXJQYyA4Mnh4IHdoZW4gdXNp
-bmcgc21jDQoNCg0KPiANCj4+IE5ld2VyIGtlcm5lbHMgc3VwcG9ydCBkeW5hbWljYWxseSBhbGxv
-Y2F0aW5nIHRoaXMgcGFyYW1ldGVyIFJBTS4gIE9sZGVyIA0KPj4ga2VybmVscyB1c2Ugd2hhdGV2
-ZXIgdS1ib290IGNob3NlLg0KPj4gDQo+PiBXaHkgZG8geW91IHdhbnQgdG8gc2V0IGl0IHRvIGEg
-cGFydGljdWxhciBhZGRyZXNzPw0KPiANCj4gVGhlcmUgc2hvdWxkIGJlIHNvbWUgY29kZSB0byBz
-ZXQgU01DMV9CQVNFIHRvIHRoZSAweDg3RkMgb2Zmc2V0IG9mIHRoZSBEUFJBTSwgd2hhdGV2ZXIg
-U01DMV9CQVNFIGlzIGZpeGVkIG9yIGR5bmFtaWNhbGx5IGFsbG9jYXRlZCAuDQo+IA0KPiBNeSBr
-ZXJuZWwgaXMgMi42LjI1LCB0aGlzIFNNQzFfQkFTRSB2YWx1ZSBjYW4gYmUgdHJhbnNmZXJyZWQg
-dG8gIGtlcm5lbCBieSBkdHMgdHJlZSwgYnV0IEkgaGF2ZSBub3QgZmluZCB0aGUgY29kZSB0byBz
-ZXQgaXQgdG8gIDB4ODdGQyBvZmZzZXQgb2YgdGhlIERQUkFNLiBPciB0aGVyZSBpcyBhbm90aGVy
-IHdheSB0byBzb2x2ZSBpdCA/DQo+IA0KPiANCj4gDQo+IC0tLS0tIE9yaWdpbmFsIE1lc3NhZ2Ug
-LS0tLS0gDQo+IEZyb206ICJTY290dCBXb29kIiA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+DQo+
-IFRvOiAiaGVsbG9oZWxsbyIgPGhlbGxvaGVsbG8wMDhAMTYzLmNvbT4NCj4gQ2M6IDxsaW51eHBw
-Yy1kZXZAbGlzdHMub3psYWJzLm9yZz4NCj4gU2VudDogU2F0dXJkYXksIE1heSAyMiwgMjAxMCAx
-OjI4IEFNDQo+IFN1YmplY3Q6IFJlOiBQcm9ibGVtIG9mIFBvd2VyUGMgODJ4eCB3aGVuIHVzaW5n
-IHNtYw0KPiANCj4gDQo+PiBPbiAwNS8yMC8yMDEwIDEwOjMzIFBNLCBoZWxsb2hlbGxvIHdyb3Rl
-Og0KPj4+PiBObywgaXQgc2hvdWxkbid0IC0tIHJ4X2JkX2Jhc2UgaXMgb2YgdHlwZSAiY2JkX3Qg
-KiIsIHNvIHRoZSBtdWx0aXBsaWNhdGlvbg0KPj4+PiBhbHJlYWR5IGhhcHBlbnMgYXMgcGFydCBv
-ZiBwb2ludGVyIGFyaXRobWV0aWMuDQo+Pj4gLS0tWWVzLCB5b3UgYXJlIHJpZ2h0LiBJIG1hZGUg
-YSBiYXNpYyBtaXN0YWtlLg0KPj4+DQo+Pj4gQnV0IG5vdyBJIGhhdmUgYW5vdGhlciBxdWVzdGlv
-bi4NCj4+PiBUaGUgU01DMSBwYXJhbXMgY2FuIGJlIHJlbG9jYXRlZCB0byBhbnkgb2Zmc2V0IG9m
-IHRoZSBEUFJBTSBvbiBhIDY0IGJ5dGUgYm91bmRhcnksIG5vdCBhcyB0aGUgU0NDMSwgd2hpY2gg
-bXVzdCBiZSAgYXQgMHg4MDAwIG9mZnNldCBvZiB0aGUgRFBSQU0uDQo+Pj4gVGhlIFNNQzEgcGFy
-YW1zIGJhc2UgaXMgc2V0IGF0IDB4ODdGQyBvZmZzZXQgb2YgdGhlIERQUkFNLg0KPj4+DQo+Pj4g
-U28gaWYgIEkgd2FudCBTTUMxIHBhcmFtcyBzdGFydCBhdCAgMHgyMDAgaW4gRFBSQU0gICwgSSBz
-aG91bGQgc2V0IDB4MjAwIHRvIHRoZSAweDg3RkMgb2Zmc2V0IG9mIHRoZSBEUFJBTS4NCj4+PiBJ
-IGhhdmUgc2VlIHRoaXMgY29kZSBpbiB1LWJvb3QsIGJ1dCBJIGNhbiBub3QgZmluZCB0aGlzIGNv
-ZGUgaW4gbmVpdGhlciBjcG1fdWFydF9jcG0yLmMgbm9yIGNwbV91YXJ0X2NvcmUuYy4NCj4+Pg0K
-Pj4+IFNob3VsZCBJIGFkZCB0aGVzZSBjb2RlIHRvICBjcG1fdWFydF9jb3JlLmM/DQo+PiANCj4+
-IE5ld2VyIGtlcm5lbHMgc3VwcG9ydCBkeW5hbWljYWxseSBhbGxvY2F0aW5nIHRoaXMgcGFyYW1l
-dGVyIFJBTS4gIE9sZGVyIA0KPj4ga2VybmVscyB1c2Ugd2hhdGV2ZXIgdS1ib290IGNob3NlLg0K
-Pj4gDQo+PiBXaHkgZG8geW91IHdhbnQgdG8gc2V0IGl0IHRvIGEgcGFydGljdWxhciBhZGRyZXNz
-Pw0KPj4gDQo+PiAtU2NvdHQNCj4+
+PWRficient platform work is definitely in maintenance mode these
+days, update MAINTAINERS file to reflect reality.
+
+Website is long gone as well.
+
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d329b05..78bb64d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3444,9 +3444,8 @@ F:	arch/powerpc/platforms/83xx/
+ 
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+ M:	Olof Johansson <olof@lixom.net>
+-W:	http://www.pasemi.com/
+ L:	linuxppc-dev@ozlabs.org
+-S:	Supported
++S:	Maintained
+ F:	arch/powerpc/platforms/pasemi/
+ F:	drivers/*/*pasemi*
+ F:	drivers/*/*/*pasemi*
