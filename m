@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 85801B7D2D
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 May 2010 08:38:24 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-In-Reply-To: <20100521130417.GB27829@pengutronix.de>
-References: <1274433088.1931.63.camel@pasglop>
-	<20100521130417.GB27829@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 22 May 2010 08:38:13 +1000
-Message-ID: <1274481493.1931.98.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <hellohello008@163.com>
+Received: from m50-133.163.com (m50-133.163.com [123.125.50.133])
+	by ozlabs.org (Postfix) with ESMTP id EFEB9B7D1C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 22 May 2010 13:07:18 +1000 (EST)
+Message-ID: <007001caf959$be8ae660$a51cbcc0@sfdomain.com>
+From: "hellohello" <hellohello008@163.com>
+To: "Scott Wood" <scottwood@freescale.com>
+References: <042201caf7fa$9d038a20$a51cbcc0@sfdomain.com>
+	<20100520170608.GA10712@schlenkerla.am.freescale.net>
+	<051501caf896$5c954630$a51cbcc0@sfdomain.com>
+	<4BF6C2B2.6030705@freescale.com>
+Subject: Re: Problem of PowerPc 82xx  when using smc
+Date: Sat, 22 May 2010 10:51:56 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-05-21 at 15:04 +0200, Wolfram Sang wrote:
-> > Wolfram Sang (4):
-> >       powerpc/pmac: Fix dangling pointers
-> >       i2c/mpc: Drop NO_IRQ
-> >       i2c/cpm: Drop NO_IRQ
-> >       i2c/ibm-iic: Drop NO_IRQ
-> 
-> Sorry for the confusion, but the other Ben (Dooks) has pushed those
-> NO_IRQ-thigies meanwhile.
-
-That shouldn't be a problem. git or Linus should sort it out easily :-)
-I did a test merge before sending the pull request and there was nothing
-it wouldn't resolve automatically.
-
-Cheers,
-Ben.
+DQo+IE5ld2VyIGtlcm5lbHMgc3VwcG9ydCBkeW5hbWljYWxseSBhbGxvY2F0aW5nIHRoaXMgcGFy
+YW1ldGVyIFJBTS4gIE9sZGVyIA0KPiBrZXJuZWxzIHVzZSB3aGF0ZXZlciB1LWJvb3QgY2hvc2Uu
+DQo+IA0KPiBXaHkgZG8geW91IHdhbnQgdG8gc2V0IGl0IHRvIGEgcGFydGljdWxhciBhZGRyZXNz
+Pw0KDQpUaGVyZSBzaG91bGQgYmUgc29tZSBjb2RlIHRvIHNldCBTTUMxX0JBU0UgdG8gdGhlIDB4
+ODdGQyBvZmZzZXQgb2YgdGhlIERQUkFNLCB3aGF0ZXZlciBTTUMxX0JBU0UgaXMgZml4ZWQgb3Ig
+ZHluYW1pY2FsbHkgYWxsb2NhdGVkIC4NCg0KTXkga2VybmVsIGlzIDIuNi4yNSwgdGhpcyBTTUMx
+X0JBU0UgdmFsdWUgY2FuIGJlIHRyYW5zZmVycmVkIHRvICBrZXJuZWwgYnkgZHRzIHRyZWUsIGJ1
+dCBJIGhhdmUgbm90IGZpbmQgdGhlIGNvZGUgdG8gc2V0IGl0IHRvICAweDg3RkMgb2Zmc2V0IG9m
+IHRoZSBEUFJBTS4gT3IgdGhlcmUgaXMgYW5vdGhlciB3YXkgdG8gc29sdmUgaXQgPw0KDQoNCg0K
+LS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLSANCkZyb206ICJTY290dCBXb29kIiA8c2NvdHR3
+b29kQGZyZWVzY2FsZS5jb20+DQpUbzogImhlbGxvaGVsbG8iIDxoZWxsb2hlbGxvMDA4QDE2My5j
+b20+DQpDYzogPGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg0KU2VudDogU2F0dXJkYXks
+IE1heSAyMiwgMjAxMCAxOjI4IEFNDQpTdWJqZWN0OiBSZTogUHJvYmxlbSBvZiBQb3dlclBjIDgy
+eHggd2hlbiB1c2luZyBzbWMNCg0KDQo+IE9uIDA1LzIwLzIwMTAgMTA6MzMgUE0sIGhlbGxvaGVs
+bG8gd3JvdGU6DQo+Pj4gTm8sIGl0IHNob3VsZG4ndCAtLSByeF9iZF9iYXNlIGlzIG9mIHR5cGUg
+ImNiZF90ICoiLCBzbyB0aGUgbXVsdGlwbGljYXRpb24NCj4+PiBhbHJlYWR5IGhhcHBlbnMgYXMg
+cGFydCBvZiBwb2ludGVyIGFyaXRobWV0aWMuDQo+PiAtLS1ZZXMsIHlvdSBhcmUgcmlnaHQuIEkg
+bWFkZSBhIGJhc2ljIG1pc3Rha2UuDQo+Pg0KPj4gQnV0IG5vdyBJIGhhdmUgYW5vdGhlciBxdWVz
+dGlvbi4NCj4+IFRoZSBTTUMxIHBhcmFtcyBjYW4gYmUgcmVsb2NhdGVkIHRvIGFueSBvZmZzZXQg
+b2YgdGhlIERQUkFNIG9uIGEgNjQgYnl0ZSBib3VuZGFyeSwgbm90IGFzIHRoZSBTQ0MxLCB3aGlj
+aCBtdXN0IGJlICBhdCAweDgwMDAgb2Zmc2V0IG9mIHRoZSBEUFJBTS4NCj4+IFRoZSBTTUMxIHBh
+cmFtcyBiYXNlIGlzIHNldCBhdCAweDg3RkMgb2Zmc2V0IG9mIHRoZSBEUFJBTS4NCj4+DQo+PiBT
+byBpZiAgSSB3YW50IFNNQzEgcGFyYW1zIHN0YXJ0IGF0ICAweDIwMCBpbiBEUFJBTSAgLCBJIHNo
+b3VsZCBzZXQgMHgyMDAgdG8gdGhlIDB4ODdGQyBvZmZzZXQgb2YgdGhlIERQUkFNLg0KPj4gSSBo
+YXZlIHNlZSB0aGlzIGNvZGUgaW4gdS1ib290LCBidXQgSSBjYW4gbm90IGZpbmQgdGhpcyBjb2Rl
+IGluIG5laXRoZXIgY3BtX3VhcnRfY3BtMi5jIG5vciBjcG1fdWFydF9jb3JlLmMuDQo+Pg0KPj4g
+U2hvdWxkIEkgYWRkIHRoZXNlIGNvZGUgdG8gIGNwbV91YXJ0X2NvcmUuYz8NCj4gDQo+IE5ld2Vy
+IGtlcm5lbHMgc3VwcG9ydCBkeW5hbWljYWxseSBhbGxvY2F0aW5nIHRoaXMgcGFyYW1ldGVyIFJB
+TS4gIE9sZGVyIA0KPiBrZXJuZWxzIHVzZSB3aGF0ZXZlciB1LWJvb3QgY2hvc2UuDQo+IA0KPiBX
+aHkgZG8geW91IHdhbnQgdG8gc2V0IGl0IHRvIGEgcGFydGljdWxhciBhZGRyZXNzPw0KPiANCj4g
+LVNjb3R0DQo+
