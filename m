@@ -2,16 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 38BD2B7D1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 04:41:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id D902AB7D1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 04:41:11 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: stable@kernel.org
-Subject: [PATCH] powerpc/fsl-booke: Fix InstructionTLBError execute permission
-	check
-Date: Mon, 24 May 2010 13:38:38 -0500
-Message-Id: <1274726319-4673-2-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl-booke: Move loadcam_entry back to asm code to fix
+	SMP ftrace
+Date: Mon, 24 May 2010 13:38:39 -0500
+Message-Id: <1274726319-4673-3-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1274726319-4673-2-git-send-email-galak@kernel.crashing.org>
 References: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
+	<1274726319-4673-2-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,70 +23,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Li Yang <leoli@freescale.com>
+When we build with ftrace enabled its possible that loadcam_entry would
+have used the stack pointer (even though the code doesn't need it).  We
+call loadcam_entry in __secondary_start before the stack is setup.  To
+ensure that loadcam_entry doesn't use the stack pointer the easiest
+solution is to just have it in asm code.
 
-In CONFIG_PTE_64BIT the PTE format has unique permission bits for user
-and supervisor execute.  However on !CONFIG_PTE_64BIT we overload the
-supervisor bit to imply user execute with _PAGE_USER set.  This allows
-us to use the same permission check mask for user or supervisor code on
-!CONFIG_PTE_64BIT.
-
-However, on CONFIG_PTE_64BIT we map _PAGE_EXEC to _PAGE_BAP_UX so we
-need a different permission mask based on the fault coming from a kernel
-address or user space.
-
-Without unique permission masks we see issues like the following with
-modules:
-
-Unable to handle kernel paging request for instruction fetch
-Faulting instruction address: 0xf938d040
-Oops: Kernel access of bad area, sig: 11 [#1]
-
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jin Qing <b24347@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-For 2.6.34 stable commit 78e2e68a2b79f394b7cd61e07987a8a89af907f7
+For 2.6.34 stable commit 78f622377f7d31d988db350a43c5689dd5f31876
 
- arch/powerpc/kernel/head_fsl_booke.S |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c |    8 ++++++++
+ arch/powerpc/mm/fsl_booke_mmu.c   |   25 +++----------------------
+ arch/powerpc/mm/mmu_decl.h        |   10 +++++++++-
+ arch/powerpc/mm/tlb_nohash_low.S  |   28 ++++++++++++++++++++++++++++
+ 4 files changed, 48 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 7255265..edd4a57 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -639,6 +639,13 @@ interrupt_base:
- 	rlwinm	r12,r12,0,16,1
- 	mtspr	SPRN_MAS1,r12
- 
-+	/* Make up the required permissions for kernel code */
-+#ifdef CONFIG_PTE_64BIT
-+	li	r13,_PAGE_PRESENT | _PAGE_BAP_SX
-+	oris	r13,r13,_PAGE_ACCESSED@h
-+#else
-+	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 957ceb7..0271b58 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -448,6 +448,14 @@ int main(void)
+ 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
+ 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
+ #endif
++#ifdef CONFIG_FSL_BOOKE
++	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
++	DEFINE(TLBCAM_MAS0, offsetof(struct tlbcam, MAS0));
++	DEFINE(TLBCAM_MAS1, offsetof(struct tlbcam, MAS1));
++	DEFINE(TLBCAM_MAS2, offsetof(struct tlbcam, MAS2));
++	DEFINE(TLBCAM_MAS3, offsetof(struct tlbcam, MAS3));
++	DEFINE(TLBCAM_MAS7, offsetof(struct tlbcam, MAS7));
 +#endif
- 	b	4f
  
- 	/* Get the PGD for the current thread */
-@@ -646,15 +653,15 @@ interrupt_base:
- 	mfspr	r11,SPRN_SPRG_THREAD
- 	lwz	r11,PGDIR(r11)
+ #ifdef CONFIG_KVM_EXIT_TIMING
+ 	DEFINE(VCPU_TIMING_EXIT_TBU, offsetof(struct kvm_vcpu,
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 1ed6b52..cdc7526 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -2,7 +2,7 @@
+  * Modifications by Kumar Gala (galak@kernel.crashing.org) to support
+  * E500 Book E processors.
+  *
+- * Copyright 2004 Freescale Semiconductor, Inc
++ * Copyright 2004,2010 Freescale Semiconductor, Inc.
+  *
+  * This file contains the routines for initializing the MMU
+  * on the 4xx series of chips.
+@@ -56,19 +56,13 @@
  
--4:
--	/* Make up the required permissions */
-+	/* Make up the required permissions for user code */
- #ifdef CONFIG_PTE_64BIT
--	li	r13,_PAGE_PRESENT | _PAGE_EXEC
-+	li	r13,_PAGE_PRESENT | _PAGE_BAP_UX
- 	oris	r13,r13,_PAGE_ACCESSED@h
- #else
- 	li	r13,_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+ unsigned int tlbcam_index;
+ 
+-#define NUM_TLBCAMS	(64)
+ 
+ #if defined(CONFIG_LOWMEM_CAM_NUM_BOOL) && (CONFIG_LOWMEM_CAM_NUM >= NUM_TLBCAMS)
+ #error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
  #endif
  
-+4:
- 	FIND_PTE
- 	andc.	r13,r13,r11		/* Check permission */
+-struct tlbcam {
+-	u32	MAS0;
+-	u32	MAS1;
+-	unsigned long	MAS2;
+-	u32	MAS3;
+-	u32	MAS7;
+-} TLBCAM[NUM_TLBCAMS];
++#define NUM_TLBCAMS	(64)
++struct tlbcam TLBCAM[NUM_TLBCAMS];
  
+ struct tlbcamrange {
+ 	unsigned long start;
+@@ -109,19 +103,6 @@ unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
+ 	return 0;
+ }
+ 
+-void loadcam_entry(int idx)
+-{
+-	mtspr(SPRN_MAS0, TLBCAM[idx].MAS0);
+-	mtspr(SPRN_MAS1, TLBCAM[idx].MAS1);
+-	mtspr(SPRN_MAS2, TLBCAM[idx].MAS2);
+-	mtspr(SPRN_MAS3, TLBCAM[idx].MAS3);
+-
+-	if (mmu_has_feature(MMU_FTR_BIG_PHYS))
+-		mtspr(SPRN_MAS7, TLBCAM[idx].MAS7);
+-
+-	asm volatile("isync;tlbwe;isync" : : : "memory");
+-}
+-
+ /*
+  * Set up one of the I/D BAT (block address translation) register pairs.
+  * The parameters are not checked; in particular size must be a power
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index eb11d5d..63b84a0 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -144,7 +144,15 @@ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void MMU_init_hw(void);
+ extern unsigned long mmu_mapin_ram(unsigned long top);
+ extern void adjust_total_lowmem(void);
+-
++extern void loadcam_entry(unsigned int index);
++
++struct tlbcam {
++	u32	MAS0;
++	u32	MAS1;
++	unsigned long	MAS2;
++	u32	MAS3;
++	u32	MAS7;
++};
+ #elif defined(CONFIG_PPC32)
+ /* anything 32-bit except 4xx or 8xx */
+ extern void MMU_init_hw(void);
+diff --git a/arch/powerpc/mm/tlb_nohash_low.S b/arch/powerpc/mm/tlb_nohash_low.S
+index e925cb5..cfa7682 100644
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -365,3 +365,31 @@ _GLOBAL(set_context)
+ #else
+ #error Unsupported processor type !
+ #endif
++
++#if defined(CONFIG_FSL_BOOKE)
++/*
++ * extern void loadcam_entry(unsigned int index)
++ *
++ * Load TLBCAM[index] entry in to the L2 CAM MMU
++ */
++_GLOBAL(loadcam_entry)
++	LOAD_REG_ADDR(r4, TLBCAM)
++	mulli	r5,r3,TLBCAM_SIZE
++	add	r3,r5,r4
++	lwz	r4,TLBCAM_MAS0(r3)
++	mtspr	SPRN_MAS0,r4
++	lwz	r4,TLBCAM_MAS1(r3)
++	mtspr	SPRN_MAS1,r4
++	PPC_LL	r4,TLBCAM_MAS2(r3)
++	mtspr	SPRN_MAS2,r4
++	lwz	r4,TLBCAM_MAS3(r3)
++	mtspr	SPRN_MAS3,r4
++BEGIN_MMU_FTR_SECTION
++	lwz	r4,TLBCAM_MAS7(r3)
++	mtspr	SPRN_MAS7,r4
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
++	isync
++	tlbwe
++	isync
++	blr
++#endif
 -- 
 1.6.0.6
