@@ -2,14 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1796CB7EB7
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 04:41:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id ADBA3B7D42
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 05:02:07 +1000 (EST)
+Subject: Re: [PATCH 2/3] powerpc/fsl head: move the entry setup code into a
+	seperate file
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-To: stable@kernel.org
-Subject: [PATCH] powerpc: Fix ioremap_flags() with book3e pte definition
-Date: Mon, 24 May 2010 13:38:37 -0500
-Message-Id: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1270412343-19334-3-git-send-email-sebastian@breakpoint.cc>
+Date: Mon, 24 May 2010 14:01:48 -0500
+Message-Id: <2E25F460-0EA6-4035-8A38-96D42CC9CD24@kernel.crashing.org>
+References: <1270412343-19334-1-git-send-email-sebastian@breakpoint.cc>
+	<1270412343-19334-3-git-send-email-sebastian@breakpoint.cc>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,60 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-We can't just clear the user read permission in book3e pte, because
-that will also clear supervisor read permission.  This surely isn't
-desired.  Fix the problem by adding the supervisor read back.
+On Apr 4, 2010, at 3:19 PM, Sebastian Andrzej Siewior wrote:
 
-BenH: Slightly simplified the ifdef and applied to ppc64 too
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>=20
+> This patch only moves the initial entry code which setups the mapping
+> from what ever to KERNELBASE into a seperate file. No code change has
+> been made here.
+>=20
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+> arch/powerpc/kernel/fsl_booke_entry_mapping.S |  200 =
++++++++++++++++++++++++++
+> arch/powerpc/kernel/head_fsl_booke.S          |  199 =
++------------------------
+> 2 files changed, 201 insertions(+), 198 deletions(-)
+> create mode 100644 arch/powerpc/kernel/fsl_booke_entry_mapping.S
 
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-For 2.6.34 stable commit 55052eeca6d71d76f7c3f156c0501814d8e5e6d3
+applied to next
 
- arch/powerpc/mm/pgtable_32.c |    8 ++++++++
- arch/powerpc/mm/pgtable_64.c |    8 ++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index b9243e7..767b0cf 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -146,6 +146,14 @@ ioremap_flags(phys_addr_t addr, unsigned long size, unsigned long flags)
- 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
- 	flags &= ~(_PAGE_USER | _PAGE_EXEC);
- 
-+#ifdef _PAGE_BAP_SR
-+	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
-+	 * which means that we just cleared supervisor access... oops ;-) This
-+	 * restores it
-+	 */
-+	flags |= _PAGE_BAP_SR;
-+#endif
-+
- 	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap_flags);
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index d95679a..d050fc8 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -265,6 +265,14 @@ void __iomem * ioremap_flags(phys_addr_t addr, unsigned long size,
- 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
- 	flags &= ~(_PAGE_USER | _PAGE_EXEC);
- 
-+#ifdef _PAGE_BAP_SR
-+	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
-+	 * which means that we just cleared supervisor access... oops ;-) This
-+	 * restores it
-+	 */
-+	flags |= _PAGE_BAP_SR;
-+#endif
-+
- 	if (ppc_md.ioremap)
- 		return ppc_md.ioremap(addr, size, flags, caller);
- 	return __ioremap_caller(addr, size, flags, caller);
--- 
-1.6.0.6
+- k=
