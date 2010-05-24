@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id AD235B7D59
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 05:02:23 +1000 (EST)
-Subject: Re: [PATCH 3/3] powerpc/kexec: Add support for FSL-BookE
+	by ozlabs.org (Postfix) with ESMTPS id 2C938B6EFF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 25 May 2010 05:12:43 +1000 (EST)
+Subject: Re: [PATCH v3 1/5] fsl_msi: fix the conflict of virt_msir's chip_data
 Mime-Version: 1.0 (Apple Message framework v1078)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1270412343-19334-4-git-send-email-sebastian@breakpoint.cc>
-Date: Mon, 24 May 2010 14:01:55 -0500
-Message-Id: <00E9E395-DA5C-4503-B279-A209EC1E677C@kernel.crashing.org>
-References: <1270412343-19334-1-git-send-email-sebastian@breakpoint.cc>
-	<1270412343-19334-4-git-send-email-sebastian@breakpoint.cc>
-To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Cc: linuxppc-dev@ozlabs.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+In-Reply-To: <1271925099-29100-1-git-send-email-leoli@freescale.com>
+Date: Mon, 24 May 2010 14:12:37 -0500
+Message-Id: <299762D3-D254-4717-A6F2-53782B1E872F@kernel.crashing.org>
+References: <1271925099-29100-1-git-send-email-leoli@freescale.com>
+To: Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Zhao Chenhui <b26998@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +25,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Apr 4, 2010, at 3:19 PM, Sebastian Andrzej Siewior wrote:
+On Apr 22, 2010, at 3:31 AM, Li Yang wrote:
 
-> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->=20
-> This adds support kexec on FSL-BookE where the MMU can not be simply
-> switched off. The code borrows the initial MMU-setup code to create =
-the
-> identical mapping mapping. The only difference to the original boot =
-code
-> is the size of the mapping(s) and the executeable address.
-> The kexec code maps the first 2 GiB of memory in 256 MiB steps. This
-> should work also on e500v1 boxes.
-> SMP support is still not available.
->=20
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> In fsl_of_msi_probe(), the virt_msir's chip_data have been stored
+> the pointer to struct mpic. We add a struct fsl_msi_cascade_data
+> to store the pointer to struct fsl_msi and msir_index in hanler_data.
+> Otherwise, the pointer to struct mpic will be over-written, and will
+> cause problem when calling eoi() of the irq.
+> 
+> Signed-off-by: Zhao Chenhui <b26998@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
-> arch/powerpc/Kconfig                          |    2 +-
-> arch/powerpc/include/asm/kexec.h              |   13 +++++++++
-> arch/powerpc/kernel/fsl_booke_entry_mapping.S |   37 =
-+++++++++++++++++++++++++
-> arch/powerpc/kernel/head_fsl_booke.S          |    2 +
-> arch/powerpc/kernel/misc_32.S                 |   17 +++++++++++
-> 5 files changed, 70 insertions(+), 1 deletions(-)
+> arch/powerpc/sysdev/fsl_msi.c |   33 +++++++++++++++++++++++++++------
+> 1 files changed, 27 insertions(+), 6 deletions(-)
 
 applied to next
 
-- k=
+- k
