@@ -1,26 +1,27 @@
 Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 98957B7DB9
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:02:58 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp06.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4O42jUU025793
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:02:45 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4O42wJa1511616
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:02:58 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4O42vqd023744
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:02:57 +1000
-Date: Mon, 24 May 2010 09:32:50 +0530
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8BCBFB7D6C
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:03:54 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp08.in.ibm.com (8.14.3/8.13.1) with ESMTP id o4O30q6W002488
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 08:30:52 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4O43lAh3608768
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 09:33:47 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4O43kjn005463
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 May 2010 14:03:46 +1000
+Date: Mon, 24 May 2010 09:33:42 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
-Subject: [RFC Patch 3/5] PPC64-HWBKPT: Handle concurrent alignment interrupts
-Message-ID: <20100524040250.GD20873@in.ibm.com>
+Subject: [RFC Patch 4/5] PPC64-HWBKPT: Enable hw-breakpoints while handling
+	intervening signals
+Message-ID: <20100524040342.GE20873@in.ibm.com>
 References: <20100524034520.964014525@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,38 +39,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An alignment interrupt may intervene between a DSI/hw-breakpoint exception
-and the single-step exception. Enable the alignment interrupt (through
-modifications to emulate_single_step()) to notify the single-step exception
-handler for proper restoration of hw-breakpoints.
+A signal delivered between a hw_breakpoint_handler() and the
+single_step_dabr_instruction() will not have the breakpoint active during
+signal handling (since breakpoint will not be restored through single-stepping
+due to absence of MSR_SE bit on the signal frame). Enable breakpoints before
+signal delivery and clear them during sigreturn() syscall.
+
+Limitation: Nested hw-breakpoint exceptions (where second exception is raised
+inside signal context) will cause a 'double-hit' i.e. the first breakpoint
+exception will be taken twice.
+
+Restore hw-breakpoints if the user-context is altered in the signal handler
+(causing loss of MSR_SE).
+Side-effect: 'Double-hit' of breakpoint if the instruction pointer is
+unaltered in the new context.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/traps.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/hw_breakpoint.h |    3 +++
+ arch/powerpc/kernel/hw_breakpoint.c      |   28 ++++++++++++++++++++++++++++
+ arch/powerpc/kernel/signal.c             |    8 ++++++++
+ arch/powerpc/kernel/signal_32.c          |   10 ++++++++++
+ arch/powerpc/kernel/signal_64.c          |    7 +++++++
+ 5 files changed, 56 insertions(+)
 
-Index: linux-2.6.ppc64_test/arch/powerpc/kernel/traps.c
+Index: linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h
 ===================================================================
---- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/traps.c
-+++ linux-2.6.ppc64_test/arch/powerpc/kernel/traps.c
-@@ -602,7 +602,7 @@ void RunModeException(struct pt_regs *re
- 
- void __kprobes single_step_exception(struct pt_regs *regs)
+--- linux-2.6.ppc64_test.orig/arch/powerpc/include/asm/hw_breakpoint.h
++++ linux-2.6.ppc64_test/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -43,6 +43,9 @@ static inline void hw_breakpoint_disable
  {
--	regs->msr &= ~(MSR_SE | MSR_BE);  /* Turn off 'trace' bits */
-+	clear_single_step(regs);
+ 	set_dabr(0);
+ }
++extern void sighandler_install_bp(struct task_struct *tsk);
++extern void sigreturn_uninstall_bp(struct task_struct *tsk);
++extern void thread_change_pc(struct task_struct *tsk, unsigned long msr);
  
- 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
- 					5, SIGTRAP) == NOTIFY_STOP)
-@@ -621,10 +621,7 @@ void __kprobes single_step_exception(str
-  */
- static void emulate_single_step(struct pt_regs *regs)
- {
--	if (single_stepping(regs)) {
--		clear_single_step(regs);
--		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
--	}
-+	single_step_exception(regs);
+ #endif	/* CONFIG_HAVE_HW_BREAKPOINT */
+ #endif	/* __KERNEL__ */
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/hw_breakpoint.c
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/hw_breakpoint.c
+@@ -188,6 +188,34 @@ int arch_validate_hwbkpt_settings(struct
+ 	return 0;
  }
  
- static inline int __parse_fpscr(unsigned long fpscr)
++void sighandler_install_bp(struct task_struct *tsk)
++{
++	struct arch_hw_breakpoint *info;
++
++	if (likely(!tsk->thread.last_hit_ubp))
++		return;
++
++	info = counter_arch_bp(tsk->thread.last_hit_ubp);
++	set_dabr(info->address | info->type | DABR_TRANSLATION);
++}
++
++void sigreturn_uninstall_bp(struct task_struct *tsk)
++{
++	if (unlikely(tsk->thread.last_hit_ubp))
++		set_dabr(0);
++}
++
++void thread_change_pc(struct task_struct *tsk, unsigned long new_msr)
++{
++	/*
++	 * Do not bother to restore breakpoints if single-stepping is not
++	 * cleared. single_step_dabr_instruction() will handle it if MSR_SE
++	 * is set.
++	 */
++	if (!(new_msr & MSR_SE))
++		sighandler_install_bp(tsk);
++}
++
+ /*
+  * Handle debug exception notifications.
+  */
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/signal.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/signal.c
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/signal.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/tracehook.h>
+ #include <linux/signal.h>
++#include <asm/hw_breakpoint.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ 
+@@ -149,6 +150,13 @@ static int do_signal_pending(sigset_t *o
+ 	if (current->thread.dabr)
+ 		set_dabr(current->thread.dabr);
+ #endif
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++	/*
++	 * Re-enable the breakpoints (if it was previously cleared in
++	 * hw_breakpoint_handler()) for the signal stack.
++	 */
++	sighandler_install_bp(current);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 
+ 	if (is32) {
+         	if (ka.sa.sa_flags & SA_SIGINFO)
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/signal_64.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/signal_64.c
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/signal_64.c
+@@ -33,6 +33,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/syscalls.h>
+ #include <asm/vdso.h>
++#include <asm/hw_breakpoint.h>
+ 
+ #include "signal.h"
+ 
+@@ -312,6 +313,9 @@ int sys_swapcontext(struct ucontext __us
+ 		    || __copy_to_user(&old_ctx->uc_sigmask,
+ 				      &current->blocked, sizeof(sigset_t)))
+ 			return -EFAULT;
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++		thread_change_pc(current, new_msr);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+@@ -364,6 +368,9 @@ int sys_rt_sigreturn(unsigned long r3, u
+ 	if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
+ 		goto badframe;
+ 	restore_sigmask(&set);
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++	sigreturn_uninstall_bp(current);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 	if (restore_sigcontext(regs, NULL, 1, &uc->uc_mcontext))
+ 		goto badframe;
+ 
+Index: linux-2.6.ppc64_test/arch/powerpc/kernel/signal_32.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/signal_32.c
++++ linux-2.6.ppc64_test/arch/powerpc/kernel/signal_32.c
+@@ -42,6 +42,7 @@
+ #include <asm/syscalls.h>
+ #include <asm/sigcontext.h>
+ #include <asm/vdso.h>
++#include <asm/hw_breakpoint.h>
+ #ifdef CONFIG_PPC64
+ #include "ppc32.h"
+ #include <asm/unistd.h>
+@@ -996,6 +997,9 @@ long sys_swapcontext(struct ucontext __u
+ 		    || put_sigset_t(&old_ctx->uc_sigmask, &current->blocked)
+ 		    || __put_user(to_user_ptr(mctx), &old_ctx->uc_regs))
+ 			return -EFAULT;
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++		thread_change_pc(current, new_msr);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+@@ -1034,6 +1038,9 @@ long sys_rt_sigreturn(int r3, int r4, in
+ 		(regs->gpr[1] + __SIGNAL_FRAMESIZE + 16);
+ 	if (!access_ok(VERIFY_READ, rt_sf, sizeof(*rt_sf)))
+ 		goto bad;
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++	sigreturn_uninstall_bp(current);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 	if (do_setcontext(&rt_sf->uc, regs, 1))
+ 		goto bad;
+ 
+@@ -1279,6 +1286,9 @@ long sys_sigreturn(int r3, int r4, int r
+ #endif
+ 	restore_sigmask(&set);
+ 
++#ifdef CONFIG_HAVE_HW_BREAKPOINT
++	sigreturn_uninstall_bp(current);
++#endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ 	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
+ 	addr = sr;
+ 	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
