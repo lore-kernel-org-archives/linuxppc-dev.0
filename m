@@ -1,32 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 358C3B7D59
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 25 May 2010 21:01:10 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4PArnjb002341
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2010 04:53:49 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o4PB11Ae247474
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2010 05:01:03 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4PB0p8D031912
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 May 2010 05:00:51 -0600
-Date: Tue, 25 May 2010 07:00:50 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: mmio_nvram.c users ?
-Message-ID: <20100525110050.GH24511@zod.rchland.ibm.com>
-References: <1274773439.1931.238.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1274773439.1931.238.camel@pasglop>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id 5CEB2B7D30
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 May 2010 21:39:57 +1000 (EST)
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+From: Millton Miller <miltonm@bga.com>
+Subject: [Patch 1/4] Allow arch-specific cleanup before breakpoint
+	unregistration
+In-Reply-To: <20100525091356.GB29003@in.ibm.com>
+References: <20100525083055.342788418@linux.vnet.ibm.com>
+	<20100525091356.GB29003@in.ibm.com>
+Date: Tue, 25 May 2010 06:39:19 -0500
+Message-ID: <1274787559_8162@mail4.comsite.net>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	David Gibson <dwg@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,16 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 25, 2010 at 05:43:59PM +1000, Benjamin Herrenschmidt wrote:
->Hi folks !
->
->Anybody aware of anything other than Cell using that driver ?
->
->I'd like to make it a platform driver instead of having something that
->pokes at anything that has a "device_type" set to "nvram" (which is
->gross and bogus). But I need to know what platforms to fixup...
+On Tue, 25 May 2010 at 14:43:56 +0530, K.Prasad wrote:
+> Certain architectures (such as PowerPC Book III S) have a need to cleanup
+> data-structures before the breakpoint is unregistered. This patch introduces
+> an arch-specific hook in release_bp_slot() along with a weak definition in
+> the form of a stub funciton.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  kernel/hw_breakpoint.c |   12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
-Why bother?  You could just use either drivers/mtd/devices/{phram.c or slram.c}
-and get the same functionality at that point, couldn't you?
 
-josh
+My understanding is weak function definitions must appear in a different C
+file than their call sites to work on some toolchains.
+
+Andrew, can you confirm the above statement?
+
+> Index: linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+> ===================================================================
+> --- linux-2.6.ppc64_test.orig/kernel/hw_breakpoint.c
+> +++ linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+> @@ -242,6 +242,17 @@  toggle_bp_slot(struct perf_event *bp, bo
+>  }
+>  
+>  /*
+> + * Function to perform processor-specific cleanup during unregistration
+> + */
+> +__weak void arch_unregister_hw_breakpoint(struct perf_event *bp)
+> +{
+> +	/*
+> +	 * A weak stub function here for those archs that don't define
+> +	 * it inside arch/.../kernel/hw_breakpoint.c
+> +	 */
+> +}
+> +
+> +/*
+>   * Contraints to check before allowing this new breakpoint counter:
+>   *
+>   *  == Non-pinned counter == (Considered as pinned for now)
+> @@ -339,6 +350,7 @@  void release_bp_slot(struct perf_event *
+>  {
+>  	mutex_lock(&nr_bp_mutex);
+>  
+> +	arch_unregister_hw_breakpoint(bp);
+>  	__release_bp_slot(bp);
+>  
+>  	mutex_unlock(&nr_bp_mutex);
+> 
+
+
+Since the weak version is empty, should it just be delcared (in
+a header, put the comment there) and not defined?
+
+milton
