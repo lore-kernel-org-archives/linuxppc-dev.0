@@ -1,20 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C2597B7D1A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 26 May 2010 14:48:27 +1000 (EST)
-Subject: Re: Spinlock lockup lockup in switch_mmu_context and task_rq_lock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Li, Jianlin (Jianlin)" <jianlin.li@alcatel-lucent.com>
-In-Reply-To: <38A3C77CC1D12D4DB6632EFEE8128BFE1367A668FA@USNAVSXCHMBSA1.ndc.alcatel-lucent.com>
-References: <38A3C77CC1D12D4DB6632EFEE8128BFE1367A668FA@USNAVSXCHMBSA1.ndc.alcatel-lucent.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 26 May 2010 14:48:16 +1000
-Message-ID: <1274849296.1931.301.camel@pasglop>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+	(Client CN "e23smtp08.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 29B03B7D1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 16:51:40 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp08.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4Q6paMp019999
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 16:51:36 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4Q6pbju483338
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 16:51:37 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4Q6pZxr021207
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 16:51:37 +1000
+Date: Wed, 26 May 2010 12:21:29 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Millton Miller <miltonm@bga.com>
+Subject: Re: [Patch 1/4] Allow arch-specific cleanup before breakpoint
+	unregistration
+Message-ID: <20100526065129.GA3746@in.ibm.com>
+References: <20100525083055.342788418@linux.vnet.ibm.com>
+	<20100525091356.GB29003@in.ibm.com>
+	<1274787559_8162@mail4.comsite.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1274787559_8162@mail4.comsite.net>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	David Gibson <dwg@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Roland McGrath <roland@redhat.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +46,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-05-25 at 09:15 -0500, Li, Jianlin (Jianlin) wrote:
-> Hi,
+On Tue, May 25, 2010 at 06:39:19AM -0500, Millton Miller wrote:
+> On Tue, 25 May 2010 at 14:43:56 +0530, K.Prasad wrote:
+> > Certain architectures (such as PowerPC Book III S) have a need to cleanup
+> > data-structures before the breakpoint is unregistered. This patch introduces
+> > an arch-specific hook in release_bp_slot() along with a weak definition in
+> > the form of a stub funciton.
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  kernel/hw_breakpoint.c |   12 ++++++++++++
+> >  1 file changed, 12 insertions(+)
 > 
-> I am running 2.6.29.1 on MPC8572 dual core with SMP enabled on our customized board.
 > 
-> I have two applications running. One is to access CPLD registers via PCI bus and then sleep in an endless loop, the other is to send (and of course receive data) via TSEC port in an endless loop.
+> My understanding is weak function definitions must appear in a different C
+> file than their call sites to work on some toolchains.
 > 
-> Sooner or later, I will encounter spinlock lockup in both cores.
-> 
-> I examined the call traces and found out that it is always the case that one got stuck in switch_mmu_context and the other in task_rq_lock when switching from interrupt context to a waiting process.
 
-This has been fixed since then. I suggest you look at the git changes to
-mmu_context_nohash.c after 2.6.29 and you'll find the fix quickly.
+Atleast, there are quite a few precedents inside the Linux kernel for
+__weak functions being invoked from the file in which they are defined
+(arch_hwblk_init, arch_enable_nonboot_cpus_begin and hw_perf_disable to
+name a few).
+Moreover the online GCC docs haven't any such constraints mentioned.
 
-Cheers,
-Ben.
+> Andrew, can you confirm the above statement?
+> 
+> > Index: linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+> > ===================================================================
+> > --- linux-2.6.ppc64_test.orig/kernel/hw_breakpoint.c
+> > +++ linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+> > @@ -242,6 +242,17 @@  toggle_bp_slot(struct perf_event *bp, bo
+> >  }
+> >  
+> >  /*
+> > + * Function to perform processor-specific cleanup during unregistration
+> > + */
+> > +__weak void arch_unregister_hw_breakpoint(struct perf_event *bp)
+> > +{
+> > +	/*
+> > +	 * A weak stub function here for those archs that don't define
+> > +	 * it inside arch/.../kernel/hw_breakpoint.c
+> > +	 */
+> > +}
+> > +
+> > +/*
+> >   * Contraints to check before allowing this new breakpoint counter:
+> >   *
+> >   *  == Non-pinned counter == (Considered as pinned for now)
+> > @@ -339,6 +350,7 @@  void release_bp_slot(struct perf_event *
+> >  {
+> >  	mutex_lock(&nr_bp_mutex);
+> >  
+> > +	arch_unregister_hw_breakpoint(bp);
+> >  	__release_bp_slot(bp);
+> >  
+> >  	mutex_unlock(&nr_bp_mutex);
+> > 
+> 
+> 
+> Since the weak version is empty, should it just be delcared (in
+> a header, put the comment there) and not defined?
+>
 
-> BUG: spinlock lockup on CPU#0, diag/31023, c0478f64
-> BUG: spinlock lockup on CPU#1, diag/31016, c18123c0
-> Call Trace:
-> [edb4d980] [c0007a78] show_stack+0x48/0x16c (unreliable)
-> [edb4d9b0] [c01c1a48] _raw_spin_lock+0x1b0/0x1c4
-> [edb4d9f0] [c0348e7c] _spin_lock+0x10/0x20
-> [edb4da00] [c002f0c8] task_rq_lock+0x50/0x94
-> [edb4da30] [c0035430] try_to_wake_up+0xb0/0x214
-> [edb4da60] [c00b99ec] pollwake+0x64/0x74
-> [edb4dab0] [c0037970] __wake_up_common+0x5c/0xa0
-> [edb4dae0] [c0037a6c] __wake_up_sync+0x48/0x68
-> [edb4db10] [c0272aa8] sock_def_write_space+0xac/0xbc
-> [edb4db30] [c0271e48] sock_wfree+0x98/0x9c
-> [edb4db50] [c0274bd0] skb_release_head_state+0x8c/0xa8
-> [edb4db70] [c0274c04] skb_release_all+0x18/0x30
-> [edb4db90] [c0274c34] __kfree_skb+0x18/0xec
-> [edb4dbb0] [f106c6fc] csmencaps_rcv+0x474/0x57c [csmencaps]
-> [edb4dbe0] [c027f2c0] netif_receive_skb+0x2ec/0x32c
-> [edb4dc10] [c02167dc] gfar_clean_rx_ring+0x180/0x3dc
-> [edb4dc60] [c0216aa0] gfar_poll+0x68/0x354
-> [edb4dcc0] [c027fd34] net_rx_action+0x12c/0x1a8
-> [edb4dcf0] [c00435b0] __do_softirq+0xa8/0x15c
-> [edb4dd40] [c0004348] do_softirq+0x60/0x68
-> [edb4dd60] [c0043768] irq_exit+0x8c/0x90
-> [edb4dd80] [c00041e4] do_IRQ+0xd8/0x110
-> [edb4ddb0] [c00102f4] ret_from_except+0x0/0x18
-> [edb4de70] [c0014a84] destroy_context+0x3c/0xac
-> [edb4de90] [c003b3fc] __mmdrop+0x3c/0x60
-> [edb4deb0] [c0035880] finish_task_switch+0xd0/0xd4
-> [edb4ded0] [c03467b0] __sched_text_start+0x200/0x6b4
-> [edb4df40] [c00107a8] recheck+0x0/0x24
-> Call Trace:
-> [e92e9e10] [c0007a78] show_stack+0x48/0x16c (unreliable)
-> [e92e9e40] [c01c1a48] _raw_spin_lock+0x1b0/0x1c4
-> [e92e9e80] [c0348e7c] _spin_lock+0x10/0x20
-> [e92e9e90] [c0014700] switch_mmu_context+0x2c/0x35c
-> [e92e9ed0] [c0346778] __sched_text_start+0x1c8/0x6b4
-> [e92e9f40] [c00107a8] recheck+0x0/0x24
-> 
-> Does anyone have some clue on this?
-> 
-> Thanks,
-> 
-> Jane
+The initial thinking behind defining it in the .c file was, for one,
+the function need not be moved (from .h to .c) when other architectures
+have a need to populate them. Secondly, given that powerpc (which has a
+'strong' definition for arch_unregister_hw_breakpoint()) includes the
+header file (in which this can be moved to) I wasn't sure about
+possible conflicts.
+
+> milton
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
 > https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+Thanks,
+K.Prasad
