@@ -1,15 +1,26 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 6CF08B7D16
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 03:23:19 +1000 (EST)
-Received: by fxm2 with SMTP id 2so1293790fxm.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 10:23:17 -0700 (PDT)
-Date: Wed, 26 May 2010 19:23:15 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 185B8B7D1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 03:28:17 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp01.in.ibm.com (8.14.3/8.13.1) with ESMTP id o4QHSF16005430
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 22:58:15 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4QHSFmF3158096
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 22:58:15 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4QHSE7u027015
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 03:28:15 +1000
+Date: Wed, 26 May 2010 22:58:10 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Howells <dhowells@redhat.com>
 Subject: Re: [Patch 1/4] Allow arch-specific cleanup before breakpoint
 	unregistration
-Message-ID: <20100526172314.GD5299@nowhere>
+Message-ID: <20100526172810.GA3701@in.ibm.com>
 References: <20100526065129.GA3746@in.ibm.com>
 	<20100525083055.342788418@linux.vnet.ibm.com>
 	<20100525091356.GB29003@in.ibm.com>
@@ -20,12 +31,14 @@ Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20100526171742.GA5563@in.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
 	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Millton Miller <miltonm@bga.com>, David Gibson <dwg@au1.ibm.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Alan Stern <stern@rowland.harvard.edu>, Paul Mackerras <paulus@samba.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Roland McGrath <roland@redhat.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,17 +69,9 @@ On Wed, May 26, 2010 at 10:47:42PM +0530, K.Prasad wrote:
 > We've seen such behaviour even otherwise....even with noinline attribute
 > in place. I'm not sure if this gcc fix
 > (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=16922) helped correct the
-> behaviour, but the lesson has been to not trust a function to be
-> inlined/remain non-inline consistently.
 
+Looks like I cited the wrong bug. The appropriate one is
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=34563.
 
-If we can't put the call to the function in the same file of its weak
-definition, then perf is totally screwed.
-
-And in fact it makes __weak basically useless and unusable. I guess
-that happened in old gcc versions that have been fixed now.
-
-Anyway, I'm personally fine with this patch (you can put my hack
-if you want).
-
-Thanks.
+Thanks,
+K.Prasad
