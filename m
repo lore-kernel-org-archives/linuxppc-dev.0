@@ -1,32 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 34B2FB6EFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 22:54:39 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4QClHTo012026
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 06:47:17 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4QCsPhs038384
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 06:54:25 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4QCsLhT028694
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 May 2010 06:54:22 -0600
-Date: Wed, 26 May 2010 08:54:09 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] powerpc/44x: icon: select SM502 and frame buffer
-	console support
-Message-ID: <20100526125409.GK24511@zod.rchland.ibm.com>
-References: <1274870190-4712-1-git-send-email-agust@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1274870190-4712-1-git-send-email-agust@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/fsl-booke: Move loadcam_entry back to asm code
+	to fix SMP ftrace
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1274726319-4673-3-git-send-email-galak@kernel.crashing.org>
+References: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
+	<1274726319-4673-2-git-send-email-galak@kernel.crashing.org>
+	<1274726319-4673-3-git-send-email-galak@kernel.crashing.org>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-YxwDlMHoXmpXhMyvtDCR"
+Date: Thu, 27 May 2010 00:59:30 +1000
+Message-ID: <1274885970.21113.6.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,12 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 26, 2010 at 12:36:30PM +0200, Anatolij Gustschin wrote:
->Enables SM502 frame buffer and framebuffer console
->in the default config file
->
->Signed-off-by: Anatolij Gustschin <agust@denx.de>
 
-Thanks.  I put this in my -next branch.  Hopefully Ben pulls soon.
+--=-YxwDlMHoXmpXhMyvtDCR
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-josh
+On Mon, 2010-05-24 at 13:38 -0500, Kumar Gala wrote:
+> When we build with ftrace enabled its possible that loadcam_entry would
+> have used the stack pointer (even though the code doesn't need it).  We
+> call loadcam_entry in __secondary_start before the stack is setup.  To
+> ensure that loadcam_entry doesn't use the stack pointer the easiest
+> solution is to just have it in asm code.
+
+You could move it to a separate file and have that not built with the
+ftrace options (-pg etc.) - but maybe that's not easier.
+
+cheers
+
+
+--=-YxwDlMHoXmpXhMyvtDCR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkv9N1AACgkQdSjSd0sB4dLg1QCfRqJJUQEc133jmBCgAGzIZmDZ
+6dkAniTjLBp8Tj21iSnZ7B4Uc54YF14P
+=2YFG
+-----END PGP SIGNATURE-----
+
+--=-YxwDlMHoXmpXhMyvtDCR--
