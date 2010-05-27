@@ -1,23 +1,33 @@
-Return-Path: <John.Linn@xilinx.com>
-Received: from mail185-va3-R.bigfish.com (mail-va3.bigfish.com
-	[216.32.180.114])
+Return-Path: <ananth@in.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com",
-	Issuer "Microsoft Secure Server Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 11F43B7D1A
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:27:59 +1000 (EST)
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 07825B7D1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 00:12:40 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4REAs8X020029
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:10:54 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4RECRBr117964
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:12:28 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4RECIhJ015075
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:12:20 -0600
+Date: Thu, 27 May 2010 19:42:03 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [RFC PATCH] powerpc: Emulate nop too
+Message-ID: <20100527141203.GA20770@in.ibm.com>
+References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 2/2] net: ll_temac: fix checksum offload logic
-Date: Thu, 27 May 2010 07:26:00 -0600
-In-Reply-To: <20100526.204517.35032653.davem@davemloft.net>
-References: <1274894959-27473-1-git-send-email-john.linn@xilinx.com><0690e798-1e5e-4416-90dc-04a9df16600f@SG2EHSMHS005.ehs.local>
-	<20100526.204517.35032653.davem@davemloft.net>
-From: John Linn <John.Linn@xilinx.com>
-To: "David Miller" <davem@davemloft.net>
-Message-ID: <4d2d980b-53f6-457a-b4ef-b1bf82f95138@VA3EHSMHS017.ehs.local>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, michal.simek@petalogix.com,
-	Brian Hill <bhill@xilinx.com>, john.williams@petalogix.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100520124955.GA29903@brick.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net]
-> Sent: Wednesday, May 26, 2010 9:45 PM
-> To: John Linn
-> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
-grant.likely@secretlab.ca;
-> jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com;
-michal.simek@petalogix.com; Brian Hill
-> Subject: Re: [PATCH 2/2] net: ll_temac: fix checksum offload logic
-> =
+Hi Paul,
 
-> aFrom: John Linn <john.linn@xilinx.com>
-> Date: Wed, 26 May 2010 11:29:19 -0600
-> =
+While we are at it, can we also add nop to the list of emulated
+instructions?
 
-> > The current checksum offload code does not work and this corrects
-> > that functionality. It also updates the interrupt coallescing
-> > initialization so than there are fewer interrupts and performance
-> > is increased.
-> >
-> > Signed-off-by: Brian Hill <brian.hill@xilinx.com>
-> > Signed-off-by: John Linn <john.linn@xilinx.com>
-> =
+Ananth
+---
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-> Applied, although I changed "temac_features" to be explicitly
-> "unsigned int" instead of just plain "unsigned"
+Emulate ori 0,0,0 (nop).
 
-Awesome! Appreciate the help with both patches David.
+The long winded way is to do:
 
-> =
+        case 24:
+                rd = (instr >> 21) & 0x1f;
+                if (rd != 0)
+                        break;
+                rb = (instr >> 11) & 0x1f;
+                if (rb != 0)
+                        break;
+                imm = (instr & 0xffff);
+                if (imm == 0) {
+                        regs->nip += 4;
+                        return 1;
+                }
+                break;
 
+But, the following is more straightforward for this case at least.
 
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/sstep.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+Index: linux-27may/arch/powerpc/lib/sstep.c
+===================================================================
+--- linux-27may.orig/arch/powerpc/lib/sstep.c
++++ linux-27may/arch/powerpc/lib/sstep.c
+@@ -412,6 +412,12 @@ int __kprobes emulate_step(struct pt_reg
+ 	int err;
+ 	mm_segment_t oldfs;
+ 
++	/* ori 0,0,0 is a nop. Emulate that too */
++	if (instr == 0x60000000) {
++		regs->nip += 4;
++		return 1;
++	}
++
+ 	opcode = instr >> 26;
+ 	switch (opcode) {
+ 	case 16:	/* bc */
