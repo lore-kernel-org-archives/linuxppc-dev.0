@@ -1,22 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1481DB7D1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 06:23:05 +1000 (EST)
-Subject: Re: [RFC PATCH] powerpc: Emulate nop too
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100527141203.GA20770@in.ibm.com>
-Date: Thu, 27 May 2010 15:22:45 -0500
-Message-Id: <666A1FDB-C8EC-493A-957E-3C4291CCB439@kernel.crashing.org>
-References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
-	<20100527141203.GA20770@in.ibm.com>
-To: ananth@in.ibm.com
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7F351B7D1E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 May 2010 07:21:19 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4RLH6ND010503
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 15:17:06 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o4RLLE8V222986
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 15:21:14 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4RLLDNN021960
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 15:21:14 -0600
+Message-Id: <201005272121.o4RLLDa4021918@d03av02.boulder.ibm.com>
+Subject: [PATCH 1/2] powerpc: Migration code reorganization / hibernation prep
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 27 May 2010 16:21:13 -0500
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +33,214 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 27, 2010, at 9:12 AM, Ananth N Mavinakayanahalli wrote:
+Partition hibernation will use some of the same code as is
+currently used for Live Partition Migration. This function
+further abstracts this code such that code outside of rtas.c
+can utilize it. It also changes the error field in the suspend
+me data structure to be an atomic type, since it is set and
+checked on different cpus without any barriers or locking.
 
-> Hi Paul,
-> 
-> While we are at it, can we also add nop to the list of emulated
-> instructions?
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-Dare I ask why we need to emulate nop?
+ arch/powerpc/include/asm/rtas.h |   10 +++
+ arch/powerpc/kernel/rtas.c      |  106 ++++++++++++++++++++++++++--------------
+ 2 files changed, 81 insertions(+), 35 deletions(-)
 
-- k
-
-> 
-> Ananth
-> ---
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> Emulate ori 0,0,0 (nop).
-> 
-> The long winded way is to do:
-> 
->        case 24:
->                rd = (instr >> 21) & 0x1f;
->                if (rd != 0)
->                        break;
->                rb = (instr >> 11) & 0x1f;
->                if (rb != 0)
->                        break;
->                imm = (instr & 0xffff);
->                if (imm == 0) {
->                        regs->nip += 4;
->                        return 1;
->                }
->                break;
-> 
-> But, the following is more straightforward for this case at least.
-> 
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> ---
-> arch/powerpc/lib/sstep.c |    6 ++++++
-> 1 file changed, 6 insertions(+)
-> 
-> Index: linux-27may/arch/powerpc/lib/sstep.c
-> ===================================================================
-> --- linux-27may.orig/arch/powerpc/lib/sstep.c
-> +++ linux-27may/arch/powerpc/lib/sstep.c
-> @@ -412,6 +412,12 @@ int __kprobes emulate_step(struct pt_reg
-> 	int err;
-> 	mm_segment_t oldfs;
-> 
-> +	/* ori 0,0,0 is a nop. Emulate that too */
-> +	if (instr == 0x60000000) {
-> +		regs->nip += 4;
-> +		return 1;
-> +	}
-> +
-> 	opcode = instr >> 26;
-> 	switch (opcode) {
-> 	case 16:	/* bc */
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff -puN arch/powerpc/include/asm/rtas.h~powerpc_rtas_hibernate_prep arch/powerpc/include/asm/rtas.h
+--- linux-2.6/arch/powerpc/include/asm/rtas.h~powerpc_rtas_hibernate_prep	2010-05-25 13:05:48.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/include/asm/rtas.h	2010-05-25 13:05:48.000000000 -0500
+@@ -63,6 +63,14 @@ struct rtas_t {
+ 	struct device_node *dev;	/* virtual address pointer */
+ };
+ 
++struct rtas_suspend_me_data {
++	atomic_t working; /* number of cpus accessing this struct */
++	atomic_t done;
++	int token; /* ibm,suspend-me */
++	atomic_t error;
++	struct completion *complete; /* wait on this until working == 0 */
++};
++
+ /* RTAS event classes */
+ #define RTAS_INTERNAL_ERROR		0x80000000 /* set bit 0 */
+ #define RTAS_EPOW_WARNING		0x40000000 /* set bit 1 */
+@@ -174,6 +182,8 @@ extern int rtas_set_indicator(int indica
+ extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
+ extern void rtas_progress(char *s, unsigned short hex);
+ extern void rtas_initialize(void);
++extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
++extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+ 
+ struct rtc_time;
+ extern unsigned long rtas_get_boot_time(void);
+diff -puN arch/powerpc/kernel/rtas.c~powerpc_rtas_hibernate_prep arch/powerpc/kernel/rtas.c
+--- linux-2.6/arch/powerpc/kernel/rtas.c~powerpc_rtas_hibernate_prep	2010-05-25 13:05:48.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/kernel/rtas.c	2010-05-25 13:05:48.000000000 -0500
+@@ -47,14 +47,6 @@ struct rtas_t rtas = {
+ };
+ EXPORT_SYMBOL(rtas);
+ 
+-struct rtas_suspend_me_data {
+-	atomic_t working; /* number of cpus accessing this struct */
+-	atomic_t done;
+-	int token; /* ibm,suspend-me */
+-	int error;
+-	struct completion *complete; /* wait on this until working == 0 */
+-};
+-
+ DEFINE_SPINLOCK(rtas_data_buf_lock);
+ EXPORT_SYMBOL(rtas_data_buf_lock);
+ 
+@@ -714,14 +706,54 @@ void rtas_os_term(char *str)
+ 
+ static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
+ #ifdef CONFIG_PPC_PSERIES
+-static void rtas_percpu_suspend_me(void *info)
++static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
++{
++	u16 slb_size = mmu_slb_size;
++	int rc = H_MULTI_THREADS_ACTIVE;
++	int cpu;
++
++	atomic_inc(&data->working);
++
++	slb_set_size(SLB_MIN_SIZE);
++	printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n", smp_processor_id());
++
++	while (rc == H_MULTI_THREADS_ACTIVE && !atomic_read(&data->done) &&
++	       !atomic_read(&data->error))
++		rc = rtas_call(data->token, 0, 1, NULL);
++
++	if (rc || atomic_read(&data->error)) {
++		printk(KERN_DEBUG "ibm,suspend-me returned %d\n", rc);
++		slb_set_size(slb_size);
++	}
++
++	if (atomic_read(&data->error))
++		rc = atomic_read(&data->error);
++
++	atomic_set(&data->error, rc);
++
++	if (wake_when_done) {
++		atomic_set(&data->done, 1);
++
++		for_each_online_cpu(cpu)
++			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
++	}
++
++	if (atomic_dec_return(&data->working) == 0)
++		complete(data->complete);
++
++	return rc;
++}
++
++int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data)
++{
++	return __rtas_suspend_last_cpu(data, 0);
++}
++
++static int __rtas_suspend_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
+ {
+ 	long rc = H_SUCCESS;
+ 	unsigned long msr_save;
+-	u16 slb_size = mmu_slb_size;
+ 	int cpu;
+-	struct rtas_suspend_me_data *data =
+-		(struct rtas_suspend_me_data *)info;
+ 
+ 	atomic_inc(&data->working);
+ 
+@@ -729,7 +761,7 @@ static void rtas_percpu_suspend_me(void
+ 	msr_save = mfmsr();
+ 	mtmsr(msr_save & ~(MSR_EE));
+ 
+-	while (rc == H_SUCCESS && !atomic_read(&data->done))
++	while (rc == H_SUCCESS && !atomic_read(&data->done) && !atomic_read(&data->error))
+ 		rc = plpar_hcall_norets(H_JOIN);
+ 
+ 	mtmsr(msr_save);
+@@ -741,33 +773,37 @@ static void rtas_percpu_suspend_me(void
+ 		/* All other cpus are in H_JOIN, this cpu does
+ 		 * the suspend.
+ 		 */
+-		slb_set_size(SLB_MIN_SIZE);
+-		printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n",
+-		       smp_processor_id());
+-		data->error = rtas_call(data->token, 0, 1, NULL);
+-
+-		if (data->error) {
+-			printk(KERN_DEBUG "ibm,suspend-me returned %d\n",
+-			       data->error);
+-			slb_set_size(slb_size);
+-		}
++		return __rtas_suspend_last_cpu(data, wake_when_done);
+ 	} else {
+ 		printk(KERN_ERR "H_JOIN on cpu %i failed with rc = %ld\n",
+ 		       smp_processor_id(), rc);
+-		data->error = rc;
++		atomic_set(&data->error, rc);
+ 	}
+ 
+-	atomic_set(&data->done, 1);
++	if (wake_when_done) {
++		atomic_set(&data->done, 1);
+ 
+-	/* This cpu did the suspend or got an error; in either case,
+-	 * we need to prod all other other cpus out of join state.
+-	 * Extra prods are harmless.
+-	 */
+-	for_each_online_cpu(cpu)
+-		plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
++		/* This cpu did the suspend or got an error; in either case,
++		 * we need to prod all other other cpus out of join state.
++		 * Extra prods are harmless.
++		 */
++		for_each_online_cpu(cpu)
++			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
++	}
+ out:
+ 	if (atomic_dec_return(&data->working) == 0)
+ 		complete(data->complete);
++	return rc;
++}
++
++int rtas_suspend_cpu(struct rtas_suspend_me_data *data)
++{
++	return __rtas_suspend_cpu(data, 0);
++}
++
++static void rtas_percpu_suspend_me(void *info)
++{
++	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
+ }
+ 
+ static int rtas_ibm_suspend_me(struct rtas_args *args)
+@@ -802,22 +838,22 @@ static int rtas_ibm_suspend_me(struct rt
+ 
+ 	atomic_set(&data.working, 0);
+ 	atomic_set(&data.done, 0);
++	atomic_set(&data.error, 0);
+ 	data.token = rtas_token("ibm,suspend-me");
+-	data.error = 0;
+ 	data.complete = &done;
+ 
+ 	/* Call function on all CPUs.  One of us will make the
+ 	 * rtas call
+ 	 */
+ 	if (on_each_cpu(rtas_percpu_suspend_me, &data, 0))
+-		data.error = -EINVAL;
++		atomic_set(&data.error, -EINVAL);
+ 
+ 	wait_for_completion(&done);
+ 
+-	if (data.error != 0)
++	if (atomic_read(&data.error) != 0)
+ 		printk(KERN_ERR "Error doing global join\n");
+ 
+-	return data.error;
++	return atomic_read(&data.error);
+ }
+ #else /* CONFIG_PPC_PSERIES */
+ static int rtas_ibm_suspend_me(struct rtas_args *args)
+_
