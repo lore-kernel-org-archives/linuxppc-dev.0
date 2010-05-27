@@ -1,40 +1,23 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <John.Linn@xilinx.com>
+Received: from mail185-va3-R.bigfish.com (mail-va3.bigfish.com
+	[216.32.180.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A298DB7D30
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 May 2010 17:36:26 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4R7X1iB010399
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:33:01 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4R7aPK41798176
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4R7aPLP010035
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o4R7aPPn010028
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
-Received: from ubrain.localnet (haven.au.ibm.com [9.190.164.82])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.au.ibm.com (Postfix) with ESMTP id 43ED473673
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 May 2010 17:36:25 +1000 (EST)
-From: Mark Nelson <markn@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: Rename RAS_VECTOR_OFFSET to
-	RTAS_VECTOR_EXTERNAL_INTERRUPT and move to rtas.h
-Date: Thu, 27 May 2010 17:40:39 +1000
+	(Client CN "*.bigfish.com",
+	Issuer "Microsoft Secure Server Authority" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 11F43B7D1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:27:59 +1000 (EST)
 MIME-Version: 1.0
-Message-Id: <201005271740.39993.markn@au1.ibm.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 2/2] net: ll_temac: fix checksum offload logic
+Date: Thu, 27 May 2010 07:26:00 -0600
+In-Reply-To: <20100526.204517.35032653.davem@davemloft.net>
+References: <1274894959-27473-1-git-send-email-john.linn@xilinx.com><0690e798-1e5e-4416-90dc-04a9df16600f@SG2EHSMHS005.ehs.local>
+	<20100526.204517.35032653.davem@davemloft.net>
+From: John Linn <John.Linn@xilinx.com>
+To: "David Miller" <davem@davemloft.net>
+Message-ID: <4d2d980b-53f6-457a-b4ef-b1bf82f95138@VA3EHSMHS017.ehs.local>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, michal.simek@petalogix.com,
+	Brian Hill <bhill@xilinx.com>, john.williams@petalogix.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,60 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The RAS code has a #define, RAS_VECTOR_OFFSET, that's used in the
-check-exception RTAS call for the vector offset of the exception.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Wednesday, May 26, 2010 9:45 PM
+> To: John Linn
+> Cc: netdev@vger.kernel.org; linuxppc-dev@ozlabs.org;
+grant.likely@secretlab.ca;
+> jwboyer@linux.vnet.ibm.com; john.williams@petalogix.com;
+michal.simek@petalogix.com; Brian Hill
+> Subject: Re: [PATCH 2/2] net: ll_temac: fix checksum offload logic
+> =
 
-We'll be using this same vector offset for the upcoming IO Event interrupts
-code (0x500) so let's move it to include/asm/rtas.h and call it
-RTAS_VECTOR_EXTERNAL_INTERRUPT.
+> aFrom: John Linn <john.linn@xilinx.com>
+> Date: Wed, 26 May 2010 11:29:19 -0600
+> =
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/powerpc/include/asm/rtas.h      |    3 +++
- arch/powerpc/platforms/pseries/ras.c |    5 ++---
- 2 files changed, 5 insertions(+), 3 deletions(-)
+> > The current checksum offload code does not work and this corrects
+> > that functionality. It also updates the interrupt coallescing
+> > initialization so than there are fewer interrupts and performance
+> > is increased.
+> >
+> > Signed-off-by: Brian Hill <brian.hill@xilinx.com>
+> > Signed-off-by: John Linn <john.linn@xilinx.com>
+> =
 
-Index: upstream/arch/powerpc/include/asm/rtas.h
-===================================================================
---- upstream.orig/arch/powerpc/include/asm/rtas.h
-+++ upstream/arch/powerpc/include/asm/rtas.h
-@@ -137,6 +137,9 @@ struct rtas_t {
- #define RTAS_TYPE_PMGM_CONFIG_CHANGE	0x70
- #define RTAS_TYPE_PMGM_SERVICE_PROC	0x71
- 
-+/* RTAS check-exception vector offset */
-+#define RTAS_VECTOR_EXTERNAL_INTERRUPT	0x500
-+
- struct rtas_error_log {
- 	unsigned long version:8;		/* Architectural version */
- 	unsigned long severity:3;		/* Severity level of error */
-Index: upstream/arch/powerpc/platforms/pseries/ras.c
-===================================================================
---- upstream.orig/arch/powerpc/platforms/pseries/ras.c
-+++ upstream/arch/powerpc/platforms/pseries/ras.c
-@@ -61,7 +61,6 @@ static int ras_check_exception_token;
- 
- #define EPOW_SENSOR_TOKEN	9
- #define EPOW_SENSOR_INDEX	0
--#define RAS_VECTOR_OFFSET	0x500
- 
- static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
- static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
-@@ -121,7 +120,7 @@ static irqreturn_t ras_epow_interrupt(in
- 	spin_lock(&ras_log_buf_lock);
- 
- 	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
--			   RAS_VECTOR_OFFSET,
-+			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
- 			   irq_map[irq].hwirq,
- 			   RTAS_EPOW_WARNING | RTAS_POWERMGM_EVENTS,
- 			   critical, __pa(&ras_log_buf),
-@@ -156,7 +155,7 @@ static irqreturn_t ras_error_interrupt(i
- 	spin_lock(&ras_log_buf_lock);
- 
- 	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
--			   RAS_VECTOR_OFFSET,
-+			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
- 			   irq_map[irq].hwirq,
- 			   RTAS_INTERNAL_ERROR, 1 /*Time Critical */,
- 			   __pa(&ras_log_buf),
+> Applied, although I changed "temac_features" to be explicitly
+> "unsigned int" instead of just plain "unsigned"
+
+Awesome! Appreciate the help with both patches David.
+
+> =
+
+
+
+This email and any attachments are intended for the sole use of the named r=
+ecipient(s) and contain(s) confidential information that may be proprietary=
+, privileged or copyrighted under applicable law. If you are not the intend=
+ed recipient, do not read, copy, or forward this email message or any attac=
+hments. Delete this email message and any attachments immediately.
