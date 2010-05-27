@@ -1,35 +1,40 @@
 Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E1097B7D42
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A298DB7D30
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 27 May 2010 16:51:59 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp07.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4R6ptR5031686
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 16:51:55 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4R6prcU1335532
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 16:51:53 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4R6pqO4008808
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 16:51:53 +1000
+	Thu, 27 May 2010 17:36:26 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp03.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4R7X1iB010399
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:33:01 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4R7aPK41798176
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4R7aPLP010035
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
+	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o4R7aPPn010028
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 17:36:25 +1000
+Received: from ubrain.localnet (haven.au.ibm.com [9.190.164.82])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.au.ibm.com (Postfix) with ESMTP id 43ED473673
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 27 May 2010 17:36:25 +1000 (EST)
 From: Mark Nelson <markn@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: powerpc/pseries: Add WARN_ON() to request_event_sources_irqs() on irq
-	allocation/request failure
-Date: Thu, 27 May 2010 16:56:04 +1000
-References: <201005172233.01183.markn@au1.ibm.com>
-	<1274250954.7574.1.camel@concordia>
-	<201005191654.42483.markn@au1.ibm.com>
-In-Reply-To: <201005191654.42483.markn@au1.ibm.com>
+Subject: [PATCH] powerpc/pseries: Rename RAS_VECTOR_OFFSET to
+	RTAS_VECTOR_EXTERNAL_INTERRUPT and move to rtas.h
+Date: Thu, 27 May 2010 17:40:39 +1000
 MIME-Version: 1.0
+Message-Id: <201005271740.39993.markn@au1.ibm.com>
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201005271656.04629.markn@au1.ibm.com>
-Cc: Tseng-hui Lin <tsenglin@us.ibm.com>
+  charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,69 +44,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment if request_event_sources_irqs() can't allocate or request
-the interrupt, it just does a KERN_ERR printk. This may be fine for the
-existing RAS code where if we miss an EPOW event it just means that the
-event won't be logged and if we miss one of the RAS errors then we could
-miss an event that we perhaps should take action on.
+The RAS code has a #define, RAS_VECTOR_OFFSET, that's used in the
+check-exception RTAS call for the vector offset of the exception.
 
-But, for the upcoming IO events code that will use event-sources if we
-can't allocate or request the interrupt it means we'd potentially miss
-an interrupt from the device. So, let's add a WARN_ON() in this error
-case so that we're a bit more vocal when something's amiss.
-
-While we're at it, also use pr_err() to neaten the code up a bit.
+We'll be using this same vector offset for the upcoming IO Event interrupts
+code (0x500) so let's move it to include/asm/rtas.h and call it
+RTAS_VECTOR_EXTERNAL_INTERRUPT.
 
 Signed-off-by: Mark Nelson <markn@au1.ibm.com>
 ---
- arch/powerpc/platforms/pseries/event_sources.c |   23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/rtas.h      |    3 +++
+ arch/powerpc/platforms/pseries/ras.c |    5 ++---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-Index: upstream/arch/powerpc/platforms/pseries/event_sources.c
+Index: upstream/arch/powerpc/include/asm/rtas.h
 ===================================================================
---- upstream.orig/arch/powerpc/platforms/pseries/event_sources.c
-+++ upstream/arch/powerpc/platforms/pseries/event_sources.c
-@@ -41,9 +41,12 @@ void request_event_sources_irqs(struct d
- 			if (count > 15)
- 				break;
- 			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
--			if (virqs[count] == NO_IRQ)
--				printk(KERN_ERR "Unable to allocate interrupt "
--				       "number for %s\n", np->full_name);
-+			if (virqs[count] == NO_IRQ) {
-+				pr_err("event-sources: Unable to allocate "
-+				       "interrupt number for %s\n",
-+				       np->full_name);
-+				WARN_ON(1);
-+			}
- 			else
- 				count++;
+--- upstream.orig/arch/powerpc/include/asm/rtas.h
++++ upstream/arch/powerpc/include/asm/rtas.h
+@@ -137,6 +137,9 @@ struct rtas_t {
+ #define RTAS_TYPE_PMGM_CONFIG_CHANGE	0x70
+ #define RTAS_TYPE_PMGM_SERVICE_PROC	0x71
  
-@@ -59,9 +62,12 @@ void request_event_sources_irqs(struct d
- 			virqs[count] = irq_create_of_mapping(oirq.controller,
- 							    oirq.specifier,
- 							    oirq.size);
--			if (virqs[count] == NO_IRQ)
--				printk(KERN_ERR "Unable to allocate interrupt "
--				       "number for %s\n", np->full_name);
-+			if (virqs[count] == NO_IRQ) {
-+				pr_err("event-sources: Unable to allocate "
-+				       "interrupt number for %s\n",
-+				       np->full_name);
-+				WARN_ON(1);
-+			}
- 			else
- 				count++;
- 		}
-@@ -70,8 +76,9 @@ void request_event_sources_irqs(struct d
- 	/* Now request them */
- 	for (i = 0; i < count; i++) {
- 		if (request_irq(virqs[i], handler, 0, name, NULL)) {
--			printk(KERN_ERR "Unable to request interrupt %d for "
--			       "%s\n", virqs[i], np->full_name);
-+			pr_err("event-sources: Unable to request interrupt "
-+			       "%d for %s\n", virqs[i], np->full_name);
-+			WARN_ON(1);
- 			return;
- 		}
- 	}
++/* RTAS check-exception vector offset */
++#define RTAS_VECTOR_EXTERNAL_INTERRUPT	0x500
++
+ struct rtas_error_log {
+ 	unsigned long version:8;		/* Architectural version */
+ 	unsigned long severity:3;		/* Severity level of error */
+Index: upstream/arch/powerpc/platforms/pseries/ras.c
+===================================================================
+--- upstream.orig/arch/powerpc/platforms/pseries/ras.c
++++ upstream/arch/powerpc/platforms/pseries/ras.c
+@@ -61,7 +61,6 @@ static int ras_check_exception_token;
+ 
+ #define EPOW_SENSOR_TOKEN	9
+ #define EPOW_SENSOR_INDEX	0
+-#define RAS_VECTOR_OFFSET	0x500
+ 
+ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
+ static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
+@@ -121,7 +120,7 @@ static irqreturn_t ras_epow_interrupt(in
+ 	spin_lock(&ras_log_buf_lock);
+ 
+ 	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
+-			   RAS_VECTOR_OFFSET,
++			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
+ 			   irq_map[irq].hwirq,
+ 			   RTAS_EPOW_WARNING | RTAS_POWERMGM_EVENTS,
+ 			   critical, __pa(&ras_log_buf),
+@@ -156,7 +155,7 @@ static irqreturn_t ras_error_interrupt(i
+ 	spin_lock(&ras_log_buf_lock);
+ 
+ 	status = rtas_call(ras_check_exception_token, 6, 1, NULL,
+-			   RAS_VECTOR_OFFSET,
++			   RTAS_VECTOR_EXTERNAL_INTERRUPT,
+ 			   irq_map[irq].hwirq,
+ 			   RTAS_INTERNAL_ERROR, 1 /*Time Critical */,
+ 			   __pa(&ras_log_buf),
