@@ -1,33 +1,23 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <Daniele.Bosi@mta.it>
+Received: from cluster-a.mailcontrol.com (cluster-a.mailcontrol.com
+	[85.115.52.190])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 07825B7D1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 00:12:40 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e37.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4REAs8X020029
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:10:54 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4RECRBr117964
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:12:28 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4RECIhJ015075
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 08:12:20 -0600
-Date: Thu, 27 May 2010 19:42:03 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [RFC PATCH] powerpc: Emulate nop too
-Message-ID: <20100527141203.GA20770@in.ibm.com>
-References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
+	(Client CN "*.mailcontrol.com",
+	Issuer "DigiCert Global CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 4830FB7D1C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 May 2010 01:40:31 +1000 (EST)
+Received: from mail.mta.it (mail.mta.it [91.143.207.180])
+	by rly05a.srv.mailcontrol.com (MailControl) with ESMTP id
+	o4RFeK9B030540
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 May 2010 16:40:24 +0100
+From: Bosi Daniele <Daniele.Bosi@mta.it>
+To: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 27 May 2010 17:39:35 +0200
+Subject: halt the system without any broadcast message on the console
+Message-ID: <531B6536C9F737458807DF75064873C8BE62B40C49@mta-digimail.MTA.INT>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100520124955.GA29903@brick.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,55 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Hi all,
+on the embedded system I'm working (mpc5121e, linux kernel 2.6.24.6) when I=
+ type the command "halt" on the console I see a broadcast message sent to a=
+ll the users like this:
 
-While we are at it, can we also add nop to the list of emulated
-instructions?
+" Broadcast message from root (console) (Thu May 27 09:04:41 2010):
 
-Ananth
----
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+The system is going down for system halt NOW!"
 
-Emulate ori 0,0,0 (nop).
+I'd like to avoid this message on the console I'm using because at producti=
+on time this has to be a simple serial port for external peripheral connect=
+ion. (to do this on the command line we'll leave empty the "console" field)=
+.
 
-The long winded way is to do:
+The only way I found to avoid the broadcast message is the command "telinit=
+ 0" . In this way no one calls the "shutdown" command that is the one which=
+ send the broadcast message.
+I did also some tests with the shutdown parameters but none of them erase t=
+he broadcast message.
 
-        case 24:
-                rd = (instr >> 21) & 0x1f;
-                if (rd != 0)
-                        break;
-                rb = (instr >> 11) & 0x1f;
-                if (rb != 0)
-                        break;
-                imm = (instr & 0xffff);
-                if (imm == 0) {
-                        regs->nip += 4;
-                        return 1;
-                }
-                break;
+So my questions are:
+Does the command  "telinit 0" is safe in order to halt the machine?
+Does the command  "telinit 6" is safe in order to reboot the machine?
+Are there others commands to do the same work without the broadcast message=
+?
 
-But, the following is more straightforward for this case at least.
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
- arch/powerpc/lib/sstep.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux-27may/arch/powerpc/lib/sstep.c
-===================================================================
---- linux-27may.orig/arch/powerpc/lib/sstep.c
-+++ linux-27may/arch/powerpc/lib/sstep.c
-@@ -412,6 +412,12 @@ int __kprobes emulate_step(struct pt_reg
- 	int err;
- 	mm_segment_t oldfs;
- 
-+	/* ori 0,0,0 is a nop. Emulate that too */
-+	if (instr == 0x60000000) {
-+		regs->nip += 4;
-+		return 1;
-+	}
-+
- 	opcode = instr >> 26;
- 	switch (opcode) {
- 	case 16:	/* bc */
+Thanks
+Daniele Bosi
