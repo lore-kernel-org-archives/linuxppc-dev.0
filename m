@@ -1,15 +1,35 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: ananth@in.ibm.com
+Return-Path: <ananth@in.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 66A86B7D1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 13:53:30 +1000 (EST)
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+	by e4.ny.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4S3eY0l011611
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:40:34 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4S3q94i1294432
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:52:09 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4S3q965031152
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 00:52:09 -0300
+Date: Fri, 28 May 2010 09:22:05 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [RFC PATCH] powerpc: Emulate nop too
-In-reply-to: <20100527141203.GA20770@in.ibm.com>
+Message-ID: <20100528035205.GA25946@in.ibm.com>
 References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
 	<20100527141203.GA20770@in.ibm.com>
-Date: Fri, 28 May 2010 12:28:43 +1000
-Message-ID: <23979.1275013723@neuling.org>
+	<666A1FDB-C8EC-493A-957E-3C4291CCB439@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <666A1FDB-C8EC-493A-957E-3C4291CCB439@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
 	"K.Prasad" <prasad@linux.vnet.ibm.com>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,66 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, May 27, 2010 at 03:22:45PM -0500, Kumar Gala wrote:
+> 
+> On May 27, 2010, at 9:12 AM, Ananth N Mavinakayanahalli wrote:
+> 
+> > Hi Paul,
+> > 
+> > While we are at it, can we also add nop to the list of emulated
+> > instructions?
+> 
+> Dare I ask why we need to emulate nop?
 
+We are close to getting userspace probes done. Some userspace apps
+that've gained 'markers' from DTrace or elsewhere, are being enabled to
+expose those in through debuginfo on Linux and the underlying instruction
+there is a nop.
 
-In message <20100527141203.GA20770@in.ibm.com> you wrote:
-> Hi Paul,
-> 
-> While we are at it, can we also add nop to the list of emulated
-> instructions?
-> 
-> Ananth
-> ---
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> 
-> Emulate ori 0,0,0 (nop).
-> 
-> The long winded way is to do:
-> 
->         case 24:
->                 rd = (instr >> 21) & 0x1f;
->                 if (rd != 0)
->                         break;
->                 rb = (instr >> 11) & 0x1f;
->                 if (rb != 0)
->                         break;
-
-Don't we just need rb == rd?
-
->                 imm = (instr & 0xffff);
->                 if (imm == 0) {
->                         regs->nip += 4;
->                         return 1;
->                 }
->                 break;
-> 
-> But, the following is more straightforward for this case at least.
-> 
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/lib/sstep.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> Index: linux-27may/arch/powerpc/lib/sstep.c
-> ===================================================================
-> --- linux-27may.orig/arch/powerpc/lib/sstep.c
-> +++ linux-27may/arch/powerpc/lib/sstep.c
-> @@ -412,6 +412,12 @@ int __kprobes emulate_step(struct pt_reg
->  	int err;
->  	mm_segment_t oldfs;
->  
-> +	/* ori 0,0,0 is a nop. Emulate that too */
-> +	if (instr == 0x60000000) {
-> +		regs->nip += 4;
-> +		return 1;
-> +	}
-> +
->  	opcode = instr >> 26;
->  	switch (opcode) {
->  	case 16:	/* bc */
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Ananth
