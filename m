@@ -1,36 +1,35 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05E89B7D27
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 15:54:47 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e38.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4S5mFk3027751
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:48:15 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4S5si0M121914
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:54:44 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o4S5siHW022916
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:54:44 -0600
-Date: Fri, 28 May 2010 11:24:26 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [RFC PATCH] powerpc: Emulate nop too
-Message-ID: <20100528055426.GD25946@in.ibm.com>
-References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
-	<20100527141203.GA20770@in.ibm.com> <23979.1275013723@neuling.org>
-	<20100528041645.GB25946@in.ibm.com> <7278.1275020610@neuling.org>
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3790DB7D49
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 16:40:04 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp05.in.ibm.com (8.14.3/8.13.1) with ESMTP id o4S6deNc003950
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 12:09:40 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4S6dekC893174
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 12:09:40 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+	by d28av03.in.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o4S6ddCn008270
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 16:39:40 +1000
+Date: Fri, 28 May 2010 12:09:38 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [Patch 1/5] Allow arch-specific cleanup before breakpoint
+	unregistration
+Message-ID: <20100528063938.GB8679@in.ibm.com>
+References: <20100528061928.677651410@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7278.1275020610@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>
-Reply-To: ananth@in.ibm.com
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,49 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 28, 2010 at 02:23:30PM +1000, Michael Neuling wrote:
-> 
-> 
-> In message <20100528041645.GB25946@in.ibm.com> you wrote:
-> > On Fri, May 28, 2010 at 12:28:43PM +1000, Michael Neuling wrote:
-> > > 
-> > > 
-> > > In message <20100527141203.GA20770@in.ibm.com> you wrote:
-> > > > Hi Paul,
-> > > > 
-> > > > While we are at it, can we also add nop to the list of emulated
-> > > > instructions?
-> > > > 
-> > > > Ananth
-> > > > ---
-> > > > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > > > 
-> > > > Emulate ori 0,0,0 (nop).
-> > > > 
-> > > > The long winded way is to do:
-> > > > 
-> > > >         case 24:
-> > > >                 rd = (instr >> 21) & 0x1f;
-> > > >                 if (rd != 0)
-> > > >                         break;
-> > > >                 rb = (instr >> 11) & 0x1f;
-> > > >                 if (rb != 0)
-> > > >                         break;
-> > > 
-> > > Don't we just need rb == rd?
-> > 
-> > Sure. But for this case, just checking against the opcode seems simple
-> > enough.
-> 
-> Simple, sure.  You could not emulate anything and remove the code
-> altogether.  That would be truly simple. :-P
+Certain architectures (such as PowerPC Book III S) have a need to cleanup
+data-structures before the breakpoint is unregistered. This patch introduces
+an arch-specific hook in release_bp_slot() along with a weak definition in
+the form of a stub funciton.
 
-Ah.. I misunderstood your initial point about rb == rd with imm = 0.
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/hw_breakpoint.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-> Why not eliminate as much as possible?
-> 
-> Anyway, sounds like paulus as a better solution.
-
-Right.
-
-Ananth
+Index: linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6.ppc64_test.orig/kernel/hw_breakpoint.c
++++ linux-2.6.ppc64_test/kernel/hw_breakpoint.c
+@@ -242,6 +242,17 @@ toggle_bp_slot(struct perf_event *bp, bo
+ }
+ 
+ /*
++ * Function to perform processor-specific cleanup during unregistration
++ */
++__weak void arch_unregister_hw_breakpoint(struct perf_event *bp)
++{
++	/*
++	 * A weak stub function here for those archs that don't define
++	 * it inside arch/.../kernel/hw_breakpoint.c
++	 */
++}
++
++/*
+  * Contraints to check before allowing this new breakpoint counter:
+  *
+  *  == Non-pinned counter == (Considered as pinned for now)
+@@ -339,6 +350,7 @@ void release_bp_slot(struct perf_event *
+ {
+ 	mutex_lock(&nr_bp_mutex);
+ 
++	arch_unregister_hw_breakpoint(bp);
+ 	__release_bp_slot(bp);
+ 
+ 	mutex_unlock(&nr_bp_mutex);
