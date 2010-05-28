@@ -1,23 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <bounces.tip@hpa.at.zytor.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DDB86B7D20
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8E2F4B6F11
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 May 2010 02:19:05 +1000 (EST)
-Message-ID: <4BFFECF1.9060809@freescale.com>
-Date: Fri, 28 May 2010 11:18:57 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Sat, 29 May 2010 04:28:55 +1000 (EST)
+Date: Fri, 28 May 2010 18:27:40 GMT
+Sender: tip tree robot <bounces.tip@hpa.at.zytor.com>
+From: tip-bot for Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
+References: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] tracing, powerpc: Fix for tracepoint API change
+Message-ID: <tip-a578f4255763514dc9d0c4f2a60cf5b9323e0b6b@git.kernel.org>
 MIME-Version: 1.0
-To: Martyn Welch <martyn.welch@ge.com>
-Subject: Re: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in
-	CPM	early debug console
-References: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>
-In-Reply-To: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, srostedt@redhat.com,
+	mingo@redhat.com, anton@samba.org, hpa@zytor.com,
+	tglx@linutronix.de, torvalds@linux-foundation.org, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
+	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+	peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+	srostedt@redhat.com, sfr@canb.auug.org.au, tglx@linutronix.de,
+	mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/28/2010 10:18 AM, Martyn Welch wrote:
-> The CPM early debug console hardcodes the BAT to cover the IMMR at
-> 0xf0000000. The IMMR (on the mpc8270 at the very least) can be set to a
-> number of locations with bootstrap configuration, which are outside the
-> hardcoded BAT configuration.
->
-> This patch determines the correct location at which to configure a BAT
-> during the boot process from the supplied PPC_EARLY_DEBUG_CPM_ADDR.
->
-> Signed-off-by: Martyn Welch<martyn.welch@ge.com>
-> ---
->
->   arch/powerpc/kernel/head_32.S    |    5 +++--
->   arch/powerpc/sysdev/cpm_common.c |    4 +++-
->   2 files changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-> index e025e89..861cace 100644
-> --- a/arch/powerpc/kernel/head_32.S
-> +++ b/arch/powerpc/kernel/head_32.S
-> @@ -1194,12 +1194,13 @@ setup_disp_bat:
->   #endif /* CONFIG_BOOTX_TEXT */
->
->   #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
-> +#define PPC_EARLY_DEBUG_CPM_ADDR ASM_CONST(CONFIG_PPC_EARLY_DEBUG_CPM_ADDR)
->   setup_cpm_bat:
-> -	lis	r8, 0xf000
-> +	lis	r8, PPC_EARLY_DEBUG_CPM_ADDR@ha
->   	ori	r8, r8,	0x002a
->   	mtspr	SPRN_DBAT1L, r8
->
-> -	lis	r11, 0xf000
-> +	lis	r11, PPC_EARLY_DEBUG_CPM_ADDR@ha
->   	ori	r11, r11, (BL_1M << 2) | 2
->   	mtspr	SPRN_DBAT1U, r11
+Commit-ID:  a578f4255763514dc9d0c4f2a60cf5b9323e0b6b
+Gitweb:     http://git.kernel.org/tip/a578f4255763514dc9d0c4f2a60cf5b9323e0b6b
+Author:     Stephen Rothwell <sfr@canb.auug.org.au>
+AuthorDate: Fri, 28 May 2010 15:08:42 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 28 May 2010 16:27:11 +0200
 
-Only the physical address should depend on where IMMR is.  We should use 
-fixmap instead of an arbitrary address for the effective address. 
-There's a existing FIX_EARLY_DEBUG_BASE, but it's only 128 KiB so we'll 
-have to either grow it, or map only a subset of IMMR.
+tracing, powerpc: Fix for tracepoint API change
 
-Plus, CONFIG_PPC_EARLY_DEBUG_CPM_ADDR points to the TX descriptor, not 
-to the beginning of IMMR, so you should mask off the lower 20 bits (the 
-offset is probably less than 64K, and the BAT might just ignore the 
-extra bits anyway, but why take chances?).
+Commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e "tracing: Let
+tracepoints have data passed to tracepoint callbacks" requires
+this fixup to the powerpc code.
 
--Scott
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Acked-by: Steven Rostedt <srostedt@redhat.com>
+Cc: Linus <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: paulus@samba.org
+Cc: Anton Blanchard ZZ <anton@samba.org>
+LKML-Reference: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/powerpc/platforms/pseries/hvCall_inst.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index 1fefae7..e19ff02 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -102,7 +102,7 @@ static const struct file_operations hcall_inst_seq_fops = {
+ #define CPU_NAME_BUF_SIZE	32
+ 
+ 
+-static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
++static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long *args)
+ {
+ 	struct hcall_stats *h;
+ 
+@@ -114,7 +114,7 @@ static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
+ 	h->purr_start = mfspr(SPRN_PURR);
+ }
+ 
+-static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
++static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
+ 			     unsigned long *retbuf)
+ {
+ 	struct hcall_stats *h;
+@@ -140,11 +140,11 @@ static int __init hcall_inst_init(void)
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR))
+ 		return 0;
+ 
+-	if (register_trace_hcall_entry(probe_hcall_entry))
++	if (register_trace_hcall_entry(probe_hcall_entry, NULL))
+ 		return -EINVAL;
+ 
+-	if (register_trace_hcall_exit(probe_hcall_exit)) {
+-		unregister_trace_hcall_entry(probe_hcall_entry);
++	if (register_trace_hcall_exit(probe_hcall_exit, NULL)) {
++		unregister_trace_hcall_entry(probe_hcall_entry, NULL);
+ 		return -EINVAL;
+ 	}
+ 
