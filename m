@@ -1,24 +1,19 @@
-Return-Path: <srostedt@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 712F1B7D1E
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7056CB7D12
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 May 2010 22:52:02 +1000 (EST)
-Subject: Re: linux-next: build failure after merge of the final tree
-	(linus' tree related)
-From: Steven Rostedt <srostedt@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-References: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 28 May 2010 08:50:57 -0400
-Message-Id: <1275051057.13426.46.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	paulus@samba.org, Anton Blanchard ZZ <anton@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Linus <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+	Sat, 29 May 2010 01:20:44 +1000 (EST)
+From: Martyn Welch <martyn.welch@ge.com>
+Subject: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in CPM
+	early debug console
+To: galak@kernel.crashing.org, benh@kernel.crashing.org
+Date: Fri, 28 May 2010 16:18:38 +0100
+Message-ID: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,85 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-05-28 at 15:08 +1000, Stephen Rothwell wrote:
-> Hi Steven,
-> 
-> After merging the final tree, today's linux-next build (powerpc allyesconfig) failed like this:
-> 
-> arch/powerpc/platforms/pseries/hvCall_inst.c: In function 'hcall_inst_init':
-> arch/powerpc/platforms/pseries/hvCall_inst.c:143: warning: passing argument 1 of 'register_trace_hcall_entry' from incompatible pointer type
-> arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
-> arch/powerpc/platforms/pseries/hvCall_inst.c:143: error: too few arguments to function 'register_trace_hcall_entry'
-> arch/powerpc/platforms/pseries/hvCall_inst.c:146: warning: passing argument 1 of 'register_trace_hcall_exit' from incompatible pointer type
-> arch/powerpc/include/asm/trace.h:122: note: expected 'void (*)(void *, long unsigned int,  long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int,  long unsigned int *)'
-> arch/powerpc/platforms/pseries/hvCall_inst.c:146: error: too few arguments to function 'register_trace_hcall_exit'
-> arch/powerpc/platforms/pseries/hvCall_inst.c:147: warning: passing argument 1 of 'unregister_trace_hcall_entry' from incompatible pointer type
-> arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
-> arch/powerpc/platforms/pseries/hvCall_inst.c:147: error: too few arguments to function 'unregister_trace_hcall_entry'
-> 
-> Probably caused by commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e
-> ("tracing: Let tracepoints have data passed to tracepoint callbacks").
-> 
-> I applied this patch which builds (but may be incorrect).
-> 
+The CPM early debug console hardcodes the BAT to cover the IMMR at
+0xf0000000. The IMMR (on the mpc8270 at the very least) can be set to a
+number of locations with bootstrap configuration, which are outside the
+hardcoded BAT configuration.
 
-Looks good to me.
+This patch determines the correct location at which to configure a BAT
+during the boot process from the supplied PPC_EARLY_DEBUG_CPM_ADDR.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Martyn Welch <martyn.welch@ge.com>
+---
 
--- Steve
+ arch/powerpc/kernel/head_32.S    |    5 +++--
+ arch/powerpc/sysdev/cpm_common.c |    4 +++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 28 May 2010 15:05:00 +1000
-> Subject: [PATCH] tracing: fix for tracepoint API change
-> 
-> Commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e "tracing: Let tracepoints
-> have data passed to tracepoint callbacks" requires this fixup to the
-> powerpc code.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/platforms/pseries/hvCall_inst.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
-> index 1fefae7..e19ff02 100644
-> --- a/arch/powerpc/platforms/pseries/hvCall_inst.c
-> +++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
-> @@ -102,7 +102,7 @@ static const struct file_operations hcall_inst_seq_fops = {
->  #define CPU_NAME_BUF_SIZE	32
->  
-> 
-> -static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
-> +static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long *args)
->  {
->  	struct hcall_stats *h;
->  
-> @@ -114,7 +114,7 @@ static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
->  	h->purr_start = mfspr(SPRN_PURR);
->  }
->  
-> -static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
-> +static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
->  			     unsigned long *retbuf)
->  {
->  	struct hcall_stats *h;
-> @@ -140,11 +140,11 @@ static int __init hcall_inst_init(void)
->  	if (!firmware_has_feature(FW_FEATURE_LPAR))
->  		return 0;
->  
-> -	if (register_trace_hcall_entry(probe_hcall_entry))
-> +	if (register_trace_hcall_entry(probe_hcall_entry, NULL))
->  		return -EINVAL;
->  
-> -	if (register_trace_hcall_exit(probe_hcall_exit)) {
-> -		unregister_trace_hcall_entry(probe_hcall_entry);
-> +	if (register_trace_hcall_exit(probe_hcall_exit, NULL)) {
-> +		unregister_trace_hcall_entry(probe_hcall_entry, NULL);
->  		return -EINVAL;
->  	}
->  
-> -- 
-> 1.7.1
-> 
-> 
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index e025e89..861cace 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -1194,12 +1194,13 @@ setup_disp_bat:
+ #endif /* CONFIG_BOOTX_TEXT */
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
++#define PPC_EARLY_DEBUG_CPM_ADDR ASM_CONST(CONFIG_PPC_EARLY_DEBUG_CPM_ADDR)
+ setup_cpm_bat:
+-	lis	r8, 0xf000
++	lis	r8, PPC_EARLY_DEBUG_CPM_ADDR@ha
+ 	ori	r8, r8,	0x002a
+ 	mtspr	SPRN_DBAT1L, r8
+ 
+-	lis	r11, 0xf000
++	lis	r11, PPC_EARLY_DEBUG_CPM_ADDR@ha
+ 	ori	r11, r11, (BL_1M << 2) | 2
+ 	mtspr	SPRN_DBAT1U, r11
+ 
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 88b9812..984614f 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -57,7 +57,9 @@ void __init udbg_init_cpm(void)
+ {
+ 	if (cpm_udbg_txdesc) {
+ #ifdef CONFIG_CPM2
+-		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, PAGE_KERNEL_NCG);
++#define EARLY_DEBUG_CPM_BAT (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR&0xfff00000)
++		setbat(1, EARLY_DEBUG_CPM_BAT, EARLY_DEBUG_CPM_BAT, 1024*1024,
++			PAGE_KERNEL_NCG);
+ #endif
+ 		udbg_putc = udbg_putc_cpm;
+ 	}
+
+
+--
+Martyn Welch (Principal Software Engineer)   |   Registered in England and
+GE Intelligent Platforms                     |   Wales (3828642) at 100
+T +44(0)127322748                            |   Barbirolli Square, Manchester,
+E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
