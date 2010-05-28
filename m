@@ -1,20 +1,24 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id E5BF4B7D1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 22:33:23 +1000 (EST)
-Received: by wyb32 with SMTP id 32so1136758wyb.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 05:33:22 -0700 (PDT)
-Message-ID: <4BFFB7DD.2080806@ru.mvista.com>
-Date: Fri, 28 May 2010 16:32:29 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-MIME-Version: 1.0
-To: Rupjyoti Sarmah <rsarmah@amcc.com>
-Subject: Re: [PATCH]Device tree update for the 460ex DWC SATA
-References: <201005281215.o4SCFKNi025548@amcc.com>
-In-Reply-To: <201005281215.o4SCFKNi025548@amcc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ide@vger.kernel.org, rsarmah@appliedmicro.com, sr@denx.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <srostedt@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 712F1B7D1E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 28 May 2010 22:52:02 +1000 (EST)
+Subject: Re: linux-next: build failure after merge of the final tree
+	(linus' tree related)
+From: Steven Rostedt <srostedt@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
+References: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Fri, 28 May 2010 08:50:57 -0400
+Message-Id: <1275051057.13426.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	paulus@samba.org, Anton Blanchard ZZ <anton@samba.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Linus <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +28,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Fri, 2010-05-28 at 15:08 +1000, Stephen Rothwell wrote:
+> Hi Steven,
+> 
+> After merging the final tree, today's linux-next build (powerpc allyesconfig) failed like this:
+> 
+> arch/powerpc/platforms/pseries/hvCall_inst.c: In function 'hcall_inst_init':
+> arch/powerpc/platforms/pseries/hvCall_inst.c:143: warning: passing argument 1 of 'register_trace_hcall_entry' from incompatible pointer type
+> arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
+> arch/powerpc/platforms/pseries/hvCall_inst.c:143: error: too few arguments to function 'register_trace_hcall_entry'
+> arch/powerpc/platforms/pseries/hvCall_inst.c:146: warning: passing argument 1 of 'register_trace_hcall_exit' from incompatible pointer type
+> arch/powerpc/include/asm/trace.h:122: note: expected 'void (*)(void *, long unsigned int,  long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int,  long unsigned int *)'
+> arch/powerpc/platforms/pseries/hvCall_inst.c:146: error: too few arguments to function 'register_trace_hcall_exit'
+> arch/powerpc/platforms/pseries/hvCall_inst.c:147: warning: passing argument 1 of 'unregister_trace_hcall_entry' from incompatible pointer type
+> arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
+> arch/powerpc/platforms/pseries/hvCall_inst.c:147: error: too few arguments to function 'unregister_trace_hcall_entry'
+> 
+> Probably caused by commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e
+> ("tracing: Let tracepoints have data passed to tracepoint callbacks").
+> 
+> I applied this patch which builds (but may be incorrect).
+> 
 
-Rupjyoti Sarmah wrote:
+Looks good to me.
 
-> Device tree update for the Applied micro processor 460ex on-chip SATA.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-> Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
+-- Steve
 
-[...]
-
-> diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-> index cd56bb5..d3b2c99 100644
-> --- a/arch/powerpc/boot/dts/canyonlands.dts
-> +++ b/arch/powerpc/boot/dts/canyonlands.dts
-> @@ -163,6 +163,14 @@
->  			interrupts = <0x1e 4>;
->  		};
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 28 May 2010 15:05:00 +1000
+> Subject: [PATCH] tracing: fix for tracepoint API change
+> 
+> Commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e "tracing: Let tracepoints
+> have data passed to tracepoint callbacks" requires this fixup to the
+> powerpc code.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/platforms/pseries/hvCall_inst.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+> index 1fefae7..e19ff02 100644
+> --- a/arch/powerpc/platforms/pseries/hvCall_inst.c
+> +++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+> @@ -102,7 +102,7 @@ static const struct file_operations hcall_inst_seq_fops = {
+>  #define CPU_NAME_BUF_SIZE	32
 >  
-> +		SATA0: sata@bffd1000 {
-> +                        compatible = "amcc,sata-460ex";
-> +			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
-> +                        interrupt-parent = <&UIC3>;
-> +                        interrupts = <0x0 0x4       /* SATA */
-> +                                      0x5 0x4>;     /* AHBDMA */
-
-    Please indent only using tabs consistently.
-
-WBR, Sergei
+> 
+> -static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
+> +static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long *args)
+>  {
+>  	struct hcall_stats *h;
+>  
+> @@ -114,7 +114,7 @@ static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
+>  	h->purr_start = mfspr(SPRN_PURR);
+>  }
+>  
+> -static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
+> +static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
+>  			     unsigned long *retbuf)
+>  {
+>  	struct hcall_stats *h;
+> @@ -140,11 +140,11 @@ static int __init hcall_inst_init(void)
+>  	if (!firmware_has_feature(FW_FEATURE_LPAR))
+>  		return 0;
+>  
+> -	if (register_trace_hcall_entry(probe_hcall_entry))
+> +	if (register_trace_hcall_entry(probe_hcall_entry, NULL))
+>  		return -EINVAL;
+>  
+> -	if (register_trace_hcall_exit(probe_hcall_exit)) {
+> -		unregister_trace_hcall_entry(probe_hcall_entry);
+> +	if (register_trace_hcall_exit(probe_hcall_exit, NULL)) {
+> +		unregister_trace_hcall_entry(probe_hcall_entry, NULL);
+>  		return -EINVAL;
+>  	}
+>  
+> -- 
+> 1.7.1
+> 
+> 
