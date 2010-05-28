@@ -1,36 +1,16 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1A9EFB7D42
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 17:41:43 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp09.au.ibm.com (8.14.3/8.13.1) with ESMTP id o4S7fdgF012192
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 17:41:39 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o4S7fgEP1118452
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 17:41:42 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o4S7ffn0028971
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 17:41:42 +1000
-Date: Fri, 28 May 2010 13:11:35 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Patch 3/4] PPC64-HWBKPT: Handle concurrent alignment interrupts
-Message-ID: <20100528074135.GA10511@in.ibm.com>
-References: <20100525083055.342788418@linux.vnet.ibm.com>
-	<20100525091435.GD29003@in.ibm.com> <20100527062044.GB4105@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100527062044.GB4105@drongo>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Return-Path: <rsarmah@amcc.com>
+Received: from sdcmail01.amcc.com (sdcmail01.amcc.com [198.137.200.72])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client CN "Messaging Gateway Appliance Demo Cert",
+	Issuer "Messaging Gateway Appliance Demo Cert" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 50124B7D12
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 22:15:28 +1000 (EST)
+Date: Fri, 28 May 2010 17:45:20 +0530
+From: Rupjyoti  Sarmah <rsarmah@amcc.com>
+Message-Id: <201005281215.o4SCFKNi025548@amcc.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]Device tree update for the 460ex DWC SATA
+Cc: linuxppc-dev@ozlabs.org, rsarmah@appliedmicro.com, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 27, 2010 at 04:20:44PM +1000, Paul Mackerras wrote:
-> On Tue, May 25, 2010 at 02:44:35PM +0530, K.Prasad wrote:
-> 
-> > An alignment interrupt may intervene between a DSI/hw-breakpoint exception
-> > and the single-step exception. Enable the alignment interrupt (through
-> > modifications to emulate_single_step()) to notify the single-step exception
-> > handler for proper restoration of hw-breakpoints.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/kernel/traps.c |    7 ++-----
-> >  1 file changed, 2 insertions(+), 5 deletions(-)
-> > 
-> > Index: linux-2.6.ppc64_test/arch/powerpc/kernel/traps.c
-> > ===================================================================
-> > --- linux-2.6.ppc64_test.orig/arch/powerpc/kernel/traps.c
-> > +++ linux-2.6.ppc64_test/arch/powerpc/kernel/traps.c
-> > @@ -602,7 +602,7 @@ void RunModeException(struct pt_regs *re
-> >  
-> >  void __kprobes single_step_exception(struct pt_regs *regs)
-> >  {
-> > -	regs->msr &= ~(MSR_SE | MSR_BE);  /* Turn off 'trace' bits */
-> > +	clear_single_step(regs);
-> >  
-> >  	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
-> >  					5, SIGTRAP) == NOTIFY_STOP)
-> > @@ -621,10 +621,7 @@ void __kprobes single_step_exception(str
-> >   */
-> >  static void emulate_single_step(struct pt_regs *regs)
-> >  {
-> > -	if (single_stepping(regs)) {
-> > -		clear_single_step(regs);
-> > -		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
-> > -	}
-> > +	single_step_exception(regs);
-> >  }
-> 
-> We still need the if (single_stepping(regs)) in emulate_single_step.
-> We don't want to send the process a SIGTRAP every time it gets an
-> alignment interrupt. :)
-> 
-> Paul.
+Device tree update for the Applied micro processor 460ex on-chip SATA.
 
-Agreed, and made changes to that effect in version XXII (as seen in
-patch linuxppc-dev message-id: 20100528064017.GD8679@in.ibm.com).
+Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
+---
+ arch/powerpc/boot/dts/canyonlands.dts |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Thanks,
-K.Prasad
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index cd56bb5..d3b2c99 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -163,6 +163,14 @@
+ 			interrupts = <0x1e 4>;
+ 		};
+ 
++		SATA0: sata@bffd1000 {
++                        compatible = "amcc,sata-460ex";
++			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
++                        interrupt-parent = <&UIC3>;
++                        interrupts = <0x0 0x4       /* SATA */
++                                      0x5 0x4>;     /* AHBDMA */
++                };
++
+ 		POB0: opb {
+ 			compatible = "ibm,opb-460ex", "ibm,opb";
+ 			#address-cells = <1>;
+-- 
+1.5.6.3
