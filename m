@@ -1,22 +1,35 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3A6B6B7D40
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 28 May 2010 15:08:49 +1000 (EST)
-Date: Fri, 28 May 2010 15:08:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Steven Rostedt <srostedt@redhat.com>
-Subject: linux-next: build failure after merge of the final tree (linus'
-	tree related)
-Message-Id: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	paulus@samba.org, Anton Blanchard ZZ <anton@samba.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Linus <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <ananth@in.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8C7B4B7D2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 May 2010 15:19:24 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e33.co.us.ibm.com (8.14.3/8.13.1) with ESMTP id o4S5FBi2001622
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:15:11 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o4S5JLVf175502
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:19:21 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.3/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4S5JLgd026372
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 May 2010 23:19:21 -0600
+Date: Fri, 28 May 2010 10:49:20 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: powerpc: remove resume_execution() in kprobes
+Message-ID: <20100528051919.GC25946@in.ibm.com>
+References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
+	<20100527141203.GA20770@in.ibm.com>
+	<20100528020556.GA10586@brick.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100528020556.GA10586@brick.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Steven,
+On Fri, May 28, 2010 at 12:05:56PM +1000, Paul Mackerras wrote:
+> On Thu, May 27, 2010 at 07:42:03PM +0530, Ananth N Mavinakayanahalli wrote:
+> 
+> > While we are at it, can we also add nop to the list of emulated
+> > instructions?
+> 
+> I have a patch in development that emulates most of the arithmetic,
+> logical and shift/rotate instructions, including ori.
 
-After merging the final tree, today's linux-next build (powerpc allyesconfig) failed like this:
+OK.
 
-arch/powerpc/platforms/pseries/hvCall_inst.c: In function 'hcall_inst_init':
-arch/powerpc/platforms/pseries/hvCall_inst.c:143: warning: passing argument 1 of 'register_trace_hcall_entry' from incompatible pointer type
-arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
-arch/powerpc/platforms/pseries/hvCall_inst.c:143: error: too few arguments to function 'register_trace_hcall_entry'
-arch/powerpc/platforms/pseries/hvCall_inst.c:146: warning: passing argument 1 of 'register_trace_hcall_exit' from incompatible pointer type
-arch/powerpc/include/asm/trace.h:122: note: expected 'void (*)(void *, long unsigned int,  long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int,  long unsigned int *)'
-arch/powerpc/platforms/pseries/hvCall_inst.c:146: error: too few arguments to function 'register_trace_hcall_exit'
-arch/powerpc/platforms/pseries/hvCall_inst.c:147: warning: passing argument 1 of 'unregister_trace_hcall_entry' from incompatible pointer type
-arch/powerpc/include/asm/trace.h:100: note: expected 'void (*)(void *, long unsigned int,  long unsigned int *)' but argument is of type 'void (*)(long unsigned int,  long unsigned int *)'
-arch/powerpc/platforms/pseries/hvCall_inst.c:147: error: too few arguments to function 'unregister_trace_hcall_entry'
+> While you're here (in a virtual sense at least :), could you explain
+> what's going on with the emulate_step() call in resume_execution() in
+> arch/powerpc/kernel/kprobes.c?  It looks like, having decided that
+> emulate_step() can't handle the instruction, you single-step the
+> instruction out of line and then call emulate_step again on the same
+> instruction, in resume_execution().  Why on earth is it trying to
+> emulate the instruction when it has already been executed at this
+> point?  Is there any reason why we can't just remove the emulate_step
+> call from resume_execution()?
 
-Probably caused by commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e
-("tracing: Let tracepoints have data passed to tracepoint callbacks").
+You are right. We needed emulate_step() in resume_execution() before we
+had the code to handle the emulation in kprobe_handler() at the time of
+the breakpoint it. At the time we needed it mainly to ensure branch
+targets are reflected correctly in regs->nip if the stepped instruction
+was a branch.
 
-I applied this patch which builds (but may be incorrect).
+However, we now don't get to post_kprobe_handler() at all if
+emulate_step() returned 1 at the time of the breakpoint hit. It suffices
+if we just fixup the nip here. Patch below. Tested for various
+instructions that can and can't be emulated...
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 28 May 2010 15:05:00 +1000
-Subject: [PATCH] tracing: fix for tracepoint API change
-
-Commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e "tracing: Let tracepoints
-have data passed to tracepoint callbacks" requires this fixup to the
-powerpc code.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/pseries/hvCall_inst.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
-index 1fefae7..e19ff02 100644
---- a/arch/powerpc/platforms/pseries/hvCall_inst.c
-+++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
-@@ -102,7 +102,7 @@ static const struct file_operations hcall_inst_seq_fops = {
- #define CPU_NAME_BUF_SIZE	32
- 
- 
--static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
-+static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long *args)
+emulate_step() in kprobe_handler() would've already determined if the
+probed instruction can be emulated. We single-step in hardware only if
+the instruction couldn't be emulated. resume_execution() therefore is
+superfluous -- all we need is to fix up the instruction pointer after
+single-stepping.
+
+Thanks to Paul Mackerras for catching this.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/kernel/kprobes.c |   14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+Index: linux-2.6.34/arch/powerpc/kernel/kprobes.c
+===================================================================
+--- linux-2.6.34.orig/arch/powerpc/kernel/kprobes.c
++++ linux-2.6.34/arch/powerpc/kernel/kprobes.c
+@@ -375,17 +375,6 @@ static int __kprobes trampoline_probe_ha
+  * single-stepped a copy of the instruction.  The address of this
+  * copy is p->ainsn.insn.
+  */
+-static void __kprobes resume_execution(struct kprobe *p, struct pt_regs *regs)
+-{
+-	int ret;
+-	unsigned int insn = *p->ainsn.insn;
+-
+-	regs->nip = (unsigned long)p->addr;
+-	ret = emulate_step(regs, insn);
+-	if (ret == 0)
+-		regs->nip = (unsigned long)p->addr + 4;
+-}
+-
+ static int __kprobes post_kprobe_handler(struct pt_regs *regs)
  {
- 	struct hcall_stats *h;
- 
-@@ -114,7 +114,7 @@ static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
- 	h->purr_start = mfspr(SPRN_PURR);
- }
- 
--static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
-+static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
- 			     unsigned long *retbuf)
- {
- 	struct hcall_stats *h;
-@@ -140,11 +140,11 @@ static int __init hcall_inst_init(void)
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
- 		return 0;
- 
--	if (register_trace_hcall_entry(probe_hcall_entry))
-+	if (register_trace_hcall_entry(probe_hcall_entry, NULL))
- 		return -EINVAL;
- 
--	if (register_trace_hcall_exit(probe_hcall_exit)) {
--		unregister_trace_hcall_entry(probe_hcall_entry);
-+	if (register_trace_hcall_exit(probe_hcall_exit, NULL)) {
-+		unregister_trace_hcall_entry(probe_hcall_entry, NULL);
- 		return -EINVAL;
+ 	struct kprobe *cur = kprobe_running();
+@@ -403,7 +392,8 @@ static int __kprobes post_kprobe_handler
+ 		cur->post_handler(cur, regs, 0);
  	}
  
--- 
-1.7.1
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-	resume_execution(cur, regs);
++	/* Adjust nip to after the single-stepped instruction */
++	regs->nip = (unsigned long)cur->addr + 4;
+ 	regs->msr |= kcb->kprobe_saved_msr;
+ 
+ 	/*Restore back the original saved kprobes variables and continue. */
