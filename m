@@ -1,16 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 28 May 2010 12:05:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: ananth@in.ibm.com
 Subject: Re: [RFC PATCH] powerpc: Emulate nop too
-Message-ID: <20100528020556.GA10586@brick.ozlabs.ibm.com>
+In-reply-to: <20100527141203.GA20770@in.ibm.com>
 References: <20100520124955.GA29903@brick.ozlabs.ibm.com>
 	<20100527141203.GA20770@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100527141203.GA20770@in.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Date: Fri, 28 May 2010 12:28:43 +1000
+Message-ID: <23979.1275013723@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +19,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 27, 2010 at 07:42:03PM +0530, Ananth N Mavinakayanahalli wrote:
 
+
+In message <20100527141203.GA20770@in.ibm.com> you wrote:
+> Hi Paul,
+> 
 > While we are at it, can we also add nop to the list of emulated
 > instructions?
+> 
+> Ananth
+> ---
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> Emulate ori 0,0,0 (nop).
+> 
+> The long winded way is to do:
+> 
+>         case 24:
+>                 rd = (instr >> 21) & 0x1f;
+>                 if (rd != 0)
+>                         break;
+>                 rb = (instr >> 11) & 0x1f;
+>                 if (rb != 0)
+>                         break;
 
-I have a patch in development that emulates most of the arithmetic,
-logical and shift/rotate instructions, including ori.
+Don't we just need rb == rd?
 
-While you're here (in a virtual sense at least :), could you explain
-what's going on with the emulate_step() call in resume_execution() in
-arch/powerpc/kernel/kprobes.c?  It looks like, having decided that
-emulate_step() can't handle the instruction, you single-step the
-instruction out of line and then call emulate_step again on the same
-instruction, in resume_execution().  Why on earth is it trying to
-emulate the instruction when it has already been executed at this
-point?  Is there any reason why we can't just remove the emulate_step
-call from resume_execution()?
-
-Paul.
+>                 imm = (instr & 0xffff);
+>                 if (imm == 0) {
+>                         regs->nip += 4;
+>                         return 1;
+>                 }
+>                 break;
+> 
+> But, the following is more straightforward for this case at least.
+> 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/lib/sstep.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> Index: linux-27may/arch/powerpc/lib/sstep.c
+> ===================================================================
+> --- linux-27may.orig/arch/powerpc/lib/sstep.c
+> +++ linux-27may/arch/powerpc/lib/sstep.c
+> @@ -412,6 +412,12 @@ int __kprobes emulate_step(struct pt_reg
+>  	int err;
+>  	mm_segment_t oldfs;
+>  
+> +	/* ori 0,0,0 is a nop. Emulate that too */
+> +	if (instr == 0x60000000) {
+> +		regs->nip += 4;
+> +		return 1;
+> +	}
+> +
+>  	opcode = instr >> 26;
+>  	switch (opcode) {
+>  	case 16:	/* bc */
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
