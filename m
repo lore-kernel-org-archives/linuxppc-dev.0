@@ -1,18 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B3D45B7D40
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 May 2010 17:16:28 +1000 (EST)
-Date: Sat, 29 May 2010 00:16:36 -0700 (PDT)
-Message-Id: <20100529.001636.42779529.davem@davemloft.net>
-To: mware@elphinstone.net
-Subject: Re: [PATCH] fs_enet: Adjust BDs after tx error
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4BFDC6EC.9090804@elphinstone.net>
-References: <4BFDC6EC.9090804@elphinstone.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, vbordug@ru.mvista.com, netdev@vger.kernel.org
+Return-Path: <acahalan@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 1DF67B7D2D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 29 May 2010 20:31:35 +1000 (EST)
+Received: by vws16 with SMTP id 16so1598358vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 29 May 2010 03:31:33 -0700 (PDT)
+MIME-Version: 1.0
+Date: Sat, 29 May 2010 06:31:32 -0400
+Message-ID: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
+Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
+From: Albert Cahalan <acahalan@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, sukadev@linux.vnet.ibm.com,
+	randy.dunlap@oracle.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mark Ware <mware@elphinstone.net>
-Date: Thu, 27 May 2010 11:12:12 +1000
+Sukadev Bhattiprolu writes:
 
-> This patch fixes an occasional transmit lockup in the mac-fcc which
-> occurs after a tx error.  The test scenario had the local port set
-> to autoneg and the other end fixed at 100FD, resulting in a large
-> number of late collisions.
-> 
-> According to the MPC8280RM 30.10.1.3 (also 8272RM 29.10.1.3), after
-> a tx error occurs, TBPTR may sometimes point beyond BDs still marked
-> as ready.  This patch walks back through the BDs and points TBPTR to
-> the earliest one marked as ready.
-> 
-> Tested on a custom board with a MPC8280.
-> 
-> Signed-off-by: Mark Ware <mware@elphinstone.net>
+> Randy Dunlap [randy.dunlap at oracle.com] wrote:
+>>> base of the region allocated for stack. These architectures
+>>> must pass in the size of the stack-region in ->child_stack_size.
+>>
+>>                               stack region
+>>
+>> Seems unfortunate that different architectures use
+>> the fields differently.
+>
+> Yes and no. The field still has a single purpose, just that
+> some architectures may not need it. We enforce that if unused
+> on an architecture, the field must be 0. It looked like
+> the easiest way to keep the API common across architectures.
 
-Applied, thanks.
+Yuck. You're forcing userspace to have #ifdef messes or,
+more likely, just not work on all architectures. There is
+no reason to have field usage vary by architecture. The
+original clone syscall was not designed with ia64 and hppa
+in mind, and has been causing trouble ever since. Let's not
+perpetuate the problem.
+
+Given code like this:   stack_base = malloc(stack_size);
+stack_base and stack_size are what the kernel needs.
+
+I suspect that you chose the defective method for some reason
+related to restarting processes that were created with the
+older system calls. I can't say most of us even care, but in
+that broken-already case your process restarter can make up
+some numbers that will work. (for i386, the base could be the
+lowest address in the vma in which %esp lies, or even address 0)
+
+A related issue is that stack allocation and deallocation can
+be quite painful: it is difficult (some assembly required) to
+free one's own stack, and impossible if one is already dead.
+We could use a flag to let the kernel handle allocation, with
+the stack getting freed just after any ptracer gets a last look.
+This issue is especially troublesome for me because the syscall
+essentially requires per-thread memory to work; it is currently
+extremely difficult to use the syscall in code which lacks that.
