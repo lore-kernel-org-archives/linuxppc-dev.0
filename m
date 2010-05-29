@@ -2,21 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4EEE6B7D1A
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 May 2010 13:36:06 +1000 (EST)
-Subject: Re: [PATCH v3] powerpc: Add i8042 keyboard and mouse irq parsing
+	by ozlabs.org (Postfix) with ESMTPS id 14A48B7D27
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 29 May 2010 13:40:56 +1000 (EST)
+Subject: Re: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in
+	CPM	early debug console
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <AANLkTikve-ZghgpVl3cyjjgWAch-oCJ0EiYK2127f5gS@mail.gmail.com>
-References: <20100525080834.29149.70967.stgit@ES-J7S4D2J.amer.consind.ge.com>
-	<AANLkTikve-ZghgpVl3cyjjgWAch-oCJ0EiYK2127f5gS@mail.gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <4BFFECF1.9060809@freescale.com>
+References: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>
+	<4BFFECF1.9060809@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 29 May 2010 13:35:53 +1000
-Message-ID: <1275104153.1931.522.camel@pasglop>
+Date: Sat, 29 May 2010 13:37:13 +1000
+Message-ID: <1275104233.1931.523.camel@pasglop>
 Mime-Version: 1.0
-Cc: Martyn Welch <martyn.welch@ge.com>, linuxppc-dev@ozlabs.org,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org
+Cc: Martyn Welch <martyn.welch@ge.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> The patch looks okay to me.
+On Fri, 2010-05-28 at 11:18 -0500, Scott Wood wrote:
+> Only the physical address should depend on where IMMR is.  We should
+> use 
+> fixmap instead of an arbitrary address for the effective address. 
+> There's a existing FIX_EARLY_DEBUG_BASE, but it's only 128 KiB so
+> we'll 
+> have to either grow it, or map only a subset of IMMR.
 > 
-> BTW, where is the i8042 binding documented?  Ben, is this location of
-> the kbd/mouse irq historical, or is it just something that we happened
-> to get when the .dts files were first created?  Having the irq
-> specified directly in the kbd or aux nodes would make a lot more
-> sense, and if this isn't something already nailed down, then it
-> probably does make sense to move the irq specification, fall back to
-> the parent node to still support older trees, and with the hard coded
-> irq numbers as the last resort.
+> Plus, CONFIG_PPC_EARLY_DEBUG_CPM_ADDR points to the TX descriptor,
+> not 
+> to the beginning of IMMR, so you should mask off the lower 20 bits
+> (the 
+> offset is probably less than 64K, and the BAT might just ignore the 
+> extra bits anyway, but why take chances?). 
 
-That's just ISA crap. It should be in the existing OF bindings.
+BAT has other advantages such as limiting TLB usage for things that are
+used often. I think we might want to revive Grant work on early ioremap
+here :-)
 
 Cheers,
 Ben.
