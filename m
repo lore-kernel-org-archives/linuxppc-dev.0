@@ -1,29 +1,20 @@
-Return-Path: <bounces.tip@hpa.at.zytor.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8E2F4B6F11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 May 2010 04:28:55 +1000 (EST)
-Date: Fri, 28 May 2010 18:27:40 GMT
-Sender: tip tree robot <bounces.tip@hpa.at.zytor.com>
-From: tip-bot for Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-References: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] tracing, powerpc: Fix for tracepoint API change
-Message-ID: <tip-a578f4255763514dc9d0c4f2a60cf5b9323e0b6b@git.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, srostedt@redhat.com,
-	mingo@redhat.com, anton@samba.org, hpa@zytor.com,
-	tglx@linutronix.de, torvalds@linux-foundation.org, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
-	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-	peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
-	srostedt@redhat.com, sfr@canb.auug.org.au, tglx@linutronix.de,
-	mingo@elte.hu
+	by ozlabs.org (Postfix) with ESMTPS id 934EDB7D1E
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 May 2010 13:35:38 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: Add i8042 keyboard and mouse irq parsing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Martyn Welch <martyn.welch@ge.com>
+In-Reply-To: <20100525080834.29149.70967.stgit@ES-J7S4D2J.amer.consind.ge.com>
+References: <20100525080834.29149.70967.stgit@ES-J7S4D2J.amer.consind.ge.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 29 May 2010 13:35:26 +1000
+Message-ID: <1275104126.1931.521.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,66 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit-ID:  a578f4255763514dc9d0c4f2a60cf5b9323e0b6b
-Gitweb:     http://git.kernel.org/tip/a578f4255763514dc9d0c4f2a60cf5b9323e0b6b
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Fri, 28 May 2010 15:08:42 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 28 May 2010 16:27:11 +0200
+O
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 48f0a00..3d169bb 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -94,6 +94,10 @@ struct screen_info screen_info = {
+>  	.orig_video_points = 16
+>  };
+>  
+> +/* Variables required to store legacy IO irq routing */
+> +int of_i8042_kbd_irq;
+> +int of_i8042_aux_irq;
 
-tracing, powerpc: Fix for tracepoint API change
+Is there a reasonable ifdef to use for the above or we don't care ?
 
-Commit 38516ab59fbc5b3bb278cf5e1fe2867c70cff32e "tracing: Let
-tracepoints have data passed to tracepoint callbacks" requires
-this fixup to the powerpc code.
+>  #ifdef __DO_IRQ_CANON
+>  /* XXX should go elsewhere eventually */
+>  int ppc_do_canonicalize_irqs;
+> @@ -567,6 +571,15 @@ int check_legacy_ioport(unsigned long base_port)
+>  			np = of_find_compatible_node(NULL, NULL, "pnpPNP,f03");
+>  		if (np) {
+>  			parent = of_get_parent(np);
+> +
+> +			of_i8042_kbd_irq = irq_of_parse_and_map(parent, 0);
+> +			if (!of_i8042_kbd_irq)
+> +				of_i8042_kbd_irq = 1;
+> +
+> +			of_i8042_aux_irq = irq_of_parse_and_map(parent, 1);
+> +			if (!of_i8042_aux_irq)
+> +				of_i8042_aux_irq = 12;
+> +
+>  			of_node_put(np);
+>  			np = parent;
+>  			break;
+> diff --git a/drivers/input/serio/i8042-io.h b/drivers/input/serio/i8042-io.h
+> index 847f4aa..5d48bb6 100644
+> --- a/drivers/input/serio/i8042-io.h
+> +++ b/drivers/input/serio/i8042-io.h
+> @@ -27,6 +27,11 @@
+>  #include <asm/irq.h>
+>  #elif defined(CONFIG_SH_CAYMAN)
+>  #include <asm/irq.h>
+> +#elif defined(CONFIG_PPC)
+> +extern int of_i8042_kbd_irq;
+> +extern int of_i8042_aux_irq;
+> +# define I8042_KBD_IRQ  of_i8042_kbd_irq
+> +# define I8042_AUX_IRQ  of_i8042_aux_irq
+>  #else
+>  # define I8042_KBD_IRQ	1
+>  # define I8042_AUX_IRQ	12
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Steven Rostedt <srostedt@redhat.com>
-Cc: Linus <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: paulus@samba.org
-Cc: Anton Blanchard ZZ <anton@samba.org>
-LKML-Reference: <20100528150842.d5a751ba.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/powerpc/platforms/pseries/hvCall_inst.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Now while that works, I do tend to dislike global variables like that.
 
-diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
-index 1fefae7..e19ff02 100644
---- a/arch/powerpc/platforms/pseries/hvCall_inst.c
-+++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
-@@ -102,7 +102,7 @@ static const struct file_operations hcall_inst_seq_fops = {
- #define CPU_NAME_BUF_SIZE	32
- 
- 
--static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
-+static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long *args)
- {
- 	struct hcall_stats *h;
- 
-@@ -114,7 +114,7 @@ static void probe_hcall_entry(unsigned long opcode, unsigned long *args)
- 	h->purr_start = mfspr(SPRN_PURR);
- }
- 
--static void probe_hcall_exit(unsigned long opcode, unsigned long retval,
-+static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
- 			     unsigned long *retbuf)
- {
- 	struct hcall_stats *h;
-@@ -140,11 +140,11 @@ static int __init hcall_inst_init(void)
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
- 		return 0;
- 
--	if (register_trace_hcall_entry(probe_hcall_entry))
-+	if (register_trace_hcall_entry(probe_hcall_entry, NULL))
- 		return -EINVAL;
- 
--	if (register_trace_hcall_exit(probe_hcall_exit)) {
--		unregister_trace_hcall_entry(probe_hcall_entry);
-+	if (register_trace_hcall_exit(probe_hcall_exit, NULL)) {
-+		unregister_trace_hcall_entry(probe_hcall_entry, NULL);
- 		return -EINVAL;
- 	}
- 
+_Maybe_ a better approach would be to have those #define resolve to
+functions:
+
+#define I8042_KBD_IRQ	of_find_i8042_kbd_irq()
+
+Or something like that ?
+
+That means ending up having 2 functions which more/less reproduce the
+loop to find the driver in the device-tree but that's a minor
+inconvenience.
+
+Now, maybe the variables are less bloat here. What do you think ? Which
+way do you prefer ?
+
+Cheers,
+Ben.
