@@ -1,19 +1,34 @@
-Return-Path: <acahalan@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 1DF67B7D2D
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 59D3FB7D45
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 May 2010 20:31:35 +1000 (EST)
-Received: by vws16 with SMTP id 16so1598358vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 29 May 2010 03:31:33 -0700 (PDT)
+	Sat, 29 May 2010 23:41:51 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o4TDbZTc032309
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 May 2010 07:37:35 -0600
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id o4TDfjgk128364
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 May 2010 07:41:45 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o4TDfjkh006576
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 May 2010 07:41:45 -0600
+Date: Sat, 29 May 2010 09:41:43 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: mmio_nvram.c users ?
+Message-ID: <20100529134143.GL24511@zod.rchland.ibm.com>
+References: <1274773439.1931.238.camel@pasglop>
+	<20100525110050.GH24511@zod.rchland.ibm.com>
+	<1275104704.1931.528.camel@pasglop>
 MIME-Version: 1.0
-Date: Sat, 29 May 2010 06:31:32 -0400
-Message-ID: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
-Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
-From: Albert Cahalan <acahalan@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, sukadev@linux.vnet.ibm.com,
-	randy.dunlap@oracle.com, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1275104704.1931.528.camel@pasglop>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu writes:
-
-> Randy Dunlap [randy.dunlap at oracle.com] wrote:
->>> base of the region allocated for stack. These architectures
->>> must pass in the size of the stack-region in ->child_stack_size.
->>
->>                               stack region
->>
->> Seems unfortunate that different architectures use
->> the fields differently.
+On Sat, May 29, 2010 at 01:45:04PM +1000, Benjamin Herrenschmidt wrote:
+>On Tue, 2010-05-25 at 07:00 -0400, Josh Boyer wrote:
+>> On Tue, May 25, 2010 at 05:43:59PM +1000, Benjamin Herrenschmidt wrote:
+>> >Hi folks !
+>> >
+>> >Anybody aware of anything other than Cell using that driver ?
+>> >
+>> >I'd like to make it a platform driver instead of having something that
+>> >pokes at anything that has a "device_type" set to "nvram" (which is
+>> >gross and bogus). But I need to know what platforms to fixup...
+>> 
+>> Why bother?  You could just use either drivers/mtd/devices/{phram.c or slram.c}
+>> and get the same functionality at that point, couldn't you?
 >
-> Yes and no. The field still has a single purpose, just that
-> some architectures may not need it. We enforce that if unused
-> on an architecture, the field must be 0. It looked like
-> the easiest way to keep the API common across architectures.
+>Won't that break existing userspace ?
 
-Yuck. You're forcing userspace to have #ifdef messes or,
-more likely, just not work on all architectures. There is
-no reason to have field usage vary by architecture. The
-original clone syscall was not designed with ia64 and hppa
-in mind, and has been causing trouble ever since. Let's not
-perpetuate the problem.
+Probably.  Maybe we shouldn't have duplicated a driver in our platform code to
+begin with.
 
-Given code like this:   stack_base = malloc(stack_size);
-stack_base and stack_size are what the kernel needs.
-
-I suspect that you chose the defective method for some reason
-related to restarting processes that were created with the
-older system calls. I can't say most of us even care, but in
-that broken-already case your process restarter can make up
-some numbers that will work. (for i386, the base could be the
-lowest address in the vma in which %esp lies, or even address 0)
-
-A related issue is that stack allocation and deallocation can
-be quite painful: it is difficult (some assembly required) to
-free one's own stack, and impossible if one is already dead.
-We could use a flag to let the kernel handle allocation, with
-the stack getting freed just after any ptracer gets a last look.
-This issue is especially troublesome for me because the syscall
-essentially requires per-thread memory to work; it is currently
-extremely difficult to use the syscall in code which lacks that.
+josh
