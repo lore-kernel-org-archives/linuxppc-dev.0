@@ -1,36 +1,22 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 06A88B7D67
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 May 2010 23:02:05 +1000 (EST)
-Date: Mon, 31 May 2010 14:01:58 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] drivers: remove all i2c_set_clientdata(client, NULL)
-Message-ID: <20100531130157.GA10507@rakim.wolfsonmicro.main>
-References: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 25A3EB7D6E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Jun 2010 01:52:38 +1000 (EST)
+Message-ID: <4C03DB3D.7090007@suse.de>
+Date: Mon, 31 May 2010 17:52:29 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
-	devel@driverdev.osuosl.org, Samuel Ortiz <sameo@linux.intel.com>,
-	lm-sensors@lm-sensors.org, linux-input@vger.kernel.org,
-	linux-media@vger.kernel.org, Paul Gortmaker <p_gortmaker@yahoo.com>,
-	Riku Voipio <riku.voipio@iki.fi>, rtc-linux@googlegroups.com,
-	Alessandro Rubini <rubini@ipvvis.unipv.it>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
-	Jean Delvare <khali@linux-fr.org>,
-	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
-	Liam Girdwood <lrg@slimlogic.co.uk>,
-	Alessandro Zummo <a.zummo@towertech.it>,
-	Guillaume Ligneul <guillaume.ligneul@gmail.com>,
-	George Joseph <george.joseph@fairview5.com>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
-	Colin Leroy <colin@colino.net>, David Woodhouse <dwmw2@infradead.org>
+To: Andreas Schwab <schwab@redhat.com>
+Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU
+	is not set
+References: <1275270628.1931.540.camel@pasglop>	<1275271231.1931.547.camel@pasglop>	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
+	<m3ljb0tn2l.fsf@hase.home>
+In-Reply-To: <m3ljb0tn2l.fsf@hase.home>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,19 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 31, 2010 at 02:55:48PM +0200, Wolfram Sang wrote:
-> I2C-drivers can use the clientdata-pointer to point to private data. As I2C
-> devices are not really unregistered, but merely detached from their driver, it
-> used to be the drivers obligation to clear this pointer during remove() or a
-> failed probe(). As a couple of drivers forgot to do this, it was agreed that it
-> was cleaner if the i2c-core does this clearance when appropriate, as there is
-> no guarantee for the lifetime of the clientdata-pointer after remove() anyhow.
-> This feature was added to the core with commit
-> e4a7b9b04de15f6b63da5ccdd373ffa3057a3681 to fix the faulty drivers.
-> 
-> As there is no need anymore to clear the clientdata-pointer, remove all current
-> occurrences in the drivers to simplify the code and prevent confusion.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Andreas Schwab wrote:
+> Alexander Graf <agraf@suse.de> writes:
+>
+>   
+>> On 31.05.2010, at 04:00, Benjamin Herrenschmidt wrote:
+>>
+>>     
+>>> On Mon, 2010-05-31 at 11:50 +1000, Benjamin Herrenschmidt wrote:
+>>>       
+>>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> ---
+>>>> arch/powerpc/kernel/ppc_ksyms.c |    2 +-
+>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>         
+>>> Alex, this is just a temporary fix to remove the build breakage for 40x
+>>> etc... but please, update KVM to just build-in its own.
+>>>       
+>> What's the bad part in reusing the existing code?
+>>     
+>
+> The bad part is that KVM is wasting a ridiculous amount of stack space
+> by allocating multiple instances of struct task_struct on it.  I have a
+> patch removing all of it, but I haven't tested it yet.
+>   
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Mind to send it over so I can take a look at it :)? Getting rid of the
+task_struct structs lying in the stack is certainly a good idea.
+
+Alex
