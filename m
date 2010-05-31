@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD199B7D4F
+	by ozlabs.org (Postfix) with ESMTPS id 0BED7B7D47
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 30 May 2010 15:13:14 +1000 (EST)
-Subject: Re: mmio_nvram.c users ?
+	Mon, 31 May 2010 11:50:34 +1000 (EST)
+Subject: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU is
+	not set
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <201005300254.22984.arnd@arndb.de>
-References: <1274773439.1931.238.camel@pasglop>
-	<1275104704.1931.528.camel@pasglop>
-	<20100529134143.GL24511@zod.rchland.ibm.com>
-	<201005300254.22984.arnd@arndb.de>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 30 May 2010 15:13:03 +1000
-Message-ID: <1275196383.1931.538.camel@pasglop>
+Date: Mon, 31 May 2010 11:50:28 +1000
+Message-ID: <1275270628.1931.540.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-05-30 at 02:54 +0200, Arnd Bergmann wrote:
-> The reason we have the driver is so that we're able to use the kernel
-> internal functions for arch/powerpc/kernel/nvram_64.c on it, which
-> operated on the well-defined interface for partitions inside of the
-> nvram memory.
-> 
-> mtd/phram provides a completely different abstraction, which is normally
-> used for block- or file system based access. They also both have
-> the character device, but that's not really the main point.
-> 
-> The part that is unfortunate is the device_type matching in the driver,
-> which was a result of clueluess firmware and Linux developers (i.e. me)
-> at the time. 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Right. Which is why I want to change it to be a platform device, so that
-platforms explicitely instanciate it, which is probably the best thing
-for now. That way, platforms that don't want the ppc specific nvram
-stuff don't have to instanciate it, or platforms who want to use the mtd
-bits, etc...
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index bc9f39d..3b4dcc8 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -101,7 +101,7 @@ EXPORT_SYMBOL(pci_dram_offset);
+ EXPORT_SYMBOL(start_thread);
+ EXPORT_SYMBOL(kernel_thread);
  
+-#ifndef CONFIG_BOOKE
++#ifdef CONFIG_PPC_FPU
+ EXPORT_SYMBOL_GPL(cvt_df);
+ EXPORT_SYMBOL_GPL(cvt_fd);
+ #endif
