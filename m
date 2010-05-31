@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 336FDB7D67
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 8D8D0B7D47
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 May 2010 19:17:29 +1000 (EST)
-Subject: Re: halt the system without any broadcast message on the console
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bosi Daniele <Daniele.Bosi@mta.it>
-In-Reply-To: <531B6536C9F737458807DF75064873C8BE62B40C49@mta-digimail.MTA.INT>
-References: <531B6536C9F737458807DF75064873C8BE62B40C49@mta-digimail.MTA.INT>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 31 May 2010 19:17:21 +1000
-Message-ID: <1275297441.1931.593.camel@pasglop>
-Mime-Version: 1.0
-Cc: "'linuxppc-dev@lists.ozlabs.org'" <linuxppc-dev@lists.ozlabs.org>
+	Mon, 31 May 2010 19:33:45 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU is
+	not set
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1275271231.1931.547.camel@pasglop>
+Date: Mon, 31 May 2010 11:33:40 +0200
+Message-Id: <FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
+References: <1275270628.1931.540.camel@pasglop>
+	<1275271231.1931.547.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-05-27 at 17:39 +0200, Bosi Daniele wrote:
+
+On 31.05.2010, at 04:00, Benjamin Herrenschmidt wrote:
+
+> On Mon, 2010-05-31 at 11:50 +1000, Benjamin Herrenschmidt wrote:
+>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> ---
+>> arch/powerpc/kernel/ppc_ksyms.c |    2 +-
+>> 1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> I'd like to avoid this message on the console I'm using because at
-> production time this has to be a simple serial port for external
-> peripheral connection. (to do this on the command line we'll leave
-> empty the "console" field).
+> Alex, this is just a temporary fix to remove the build breakage for 40x
+> etc... but please, update KVM to just build-in its own.
 
-I'm not sure I understand.
+What's the bad part in reusing the existing code?
 
-If the serial port has to talk to an external periph, then you don't
-want the console on it, in which case it will not have the broadcast
-messages. If it's a console, then it will get them ... along with
-everything else a console gets.
+> Don't we have .o's that are always built into modules nowadays ?
 
-Cheers,
-Ben.
+I don't think I understand what you mean.
+
+
+Alex
