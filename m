@@ -1,19 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 41C32B7D57
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 06:00:55 +1000 (EST)
-Subject: Re: [PATCH] KVM: PPC: elide struct thread_struct instances from stack
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <m26323onam.fsf@igel.home>
-Date: Mon, 31 May 2010 22:00:48 +0200
-Message-Id: <B79B7AA8-2BDD-4857-A6E3-72C7D7B3FA47@suse.de>
-References: <m26323onam.fsf@igel.home>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Return-Path: <khali@linux-fr.org>
+Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
+	by ozlabs.org (Postfix) with ESMTP id 56F41B7D16
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 07:04:24 +1000 (EST)
+Date: Mon, 31 May 2010 22:57:50 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] drivers: remove all i2c_set_clientdata(client, NULL)
+Message-ID: <20100531225750.0dc18950@hyperion.delvare>
+In-Reply-To: <20100531190911.GC30712@core.coreip.homeip.net>
+References: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
+	<20100531190911.GC30712@core.coreip.homeip.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
+	linux-i2c@vger.kernel.org, devel@driverdev.osuosl.org,
+	Samuel Ortiz <sameo@linux.intel.com>, lm-sensors@lm-sensors.org,
+	linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+	Paul Gortmaker <p_gortmaker@yahoo.com>,
+	Riku Voipio <riku.voipio@iki.fi>, rtc-linux@googlegroups.com,
+	Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>, "Ben Dooks \(embedded
+	platforms\)" <ben-linux@fluff.org>, Liam Girdwood <lrg@slimlogic.co.uk>,
+	Alessandro Zummo <a.zummo@towertech.it>,
+	Guillaume Ligneul <guillaume.ligneul@gmail.com>,
+	George Joseph <george.joseph@fairview5.com>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Richard Purdie <rpurdie@rpsys.net>, Colin Leroy <colin@colino.net>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +37,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Dmitry,
 
-On 31.05.2010, at 21:59, Andreas Schwab wrote:
+On Mon, 31 May 2010 12:09:12 -0700, Dmitry Torokhov wrote:
+> Frankly I'd prefer taking input stuff through my tree with the goal of
+> .36 merge window just to minimize potential merge issues. This is a
+> simple cleanup patch that has no dependencies, so there is little gain
+> from doing it all in one go.
 
-> Instead of instantiating a whole thread_struct on the stack use only the
-> required parts of it.
-> 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-> Tested-by: Alexander Graf <agraf@suse.de>
+If I take the patch in my i2c tree, the aim is to merge it upstream
+immediately, so merge issues won't exist.
 
-Avi or Marcelo, please pull this in through kvm.git.
-
-Signed-off-by: Alexander Graf <agraf@suse.de>
-
-
-Alex
+-- 
+Jean Delvare
