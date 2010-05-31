@@ -1,20 +1,35 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 8D21EB7D5E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Jun 2010 04:52:06 +1000 (EST)
-Message-ID: <4C040551.1090601@suse.de>
-Date: Mon, 31 May 2010 20:52:01 +0200
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 82643B7D47
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 05:09:21 +1000 (EST)
+Received: by pvc7 with SMTP id 7so26569pvc.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 May 2010 12:09:20 -0700 (PDT)
+Date: Mon, 31 May 2010 12:09:12 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH] drivers: remove all i2c_set_clientdata(client, NULL)
+Message-ID: <20100531190911.GC30712@core.coreip.homeip.net>
+References: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU
-	is not set
-References: <1275270628.1931.540.camel@pasglop>	<1275271231.1931.547.camel@pasglop>	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>	<m3ljb0tn2l.fsf@hase.home>	<4C03DB3D.7090007__38063.9078132392$1275321190$gmane$org@suse.de>
-	<m2aargndy2.fsf@igel.home>
-In-Reply-To: <m2aargndy2.fsf@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
+	devel@driverdev.osuosl.org, Samuel Ortiz <sameo@linux.intel.com>,
+	lm-sensors@lm-sensors.org, linux-input@vger.kernel.org,
+	linux-media@vger.kernel.org, Paul Gortmaker <p_gortmaker@yahoo.com>,
+	Riku Voipio <riku.voipio@iki.fi>, rtc-linux@googlegroups.com,
+	Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	Jean Delvare <khali@linux-fr.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+	Liam Girdwood <lrg@slimlogic.co.uk>,
+	Alessandro Zummo <a.zummo@towertech.it>,
+	Guillaume Ligneul <guillaume.ligneul@gmail.com>,
+	George Joseph <george.joseph@fairview5.com>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
+	Colin Leroy <colin@colino.net>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +39,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Alexander Graf <agraf@suse.de> writes:
->
->   
->> Mind to send it over so I can take a look at it :)? Getting rid of the
->> task_struct structs lying in the stack is certainly a good idea.
->>     
->
-> Still untested, because rc1 does not boot.
->   
+Hi Wolfram,
 
-Normal guests work great with the patch and from a quick look over it,
-it seems sane. I couldn't test the paired single implementation yet,
-because my userspace app for that is in a flux right now.
+On Mon, May 31, 2010 at 02:55:48PM +0200, Wolfram Sang wrote:
+> I2C-drivers can use the clientdata-pointer to point to private data. As I2C
+> devices are not really unregistered, but merely detached from their driver, it
+> used to be the drivers obligation to clear this pointer during remove() or a
+> failed probe(). As a couple of drivers forgot to do this, it was agreed that it
+> was cleaner if the i2c-core does this clearance when appropriate, as there is
+> no guarantee for the lifetime of the clientdata-pointer after remove() anyhow.
+> This feature was added to the core with commit
+> e4a7b9b04de15f6b63da5ccdd373ffa3057a3681 to fix the faulty drivers.
+> 
+> As there is no need anymore to clear the clientdata-pointer, remove all current
+> occurrences in the drivers to simplify the code and prevent confusion.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> ---
+> 
+> Some more notes:
+> 
+> I waited for rc1 as I knew there were some drivers/patches coming along which
+> needed to be processed, too.
+> 
+> I'd suggest that this goes via the i2c-tree, so we get rid of all occurences at
+> once.
+> 
 
-Either way, thanks a lot for the patch. Mind to wrap it up and submit
-it? I'll fix breakages later on. Please CC kvm-ppc@vger.kernel.org and
-kvm@vger.kernel.org, so Avi or Marcelo can pick it up on the KVM tree.
+Frankly I'd prefer taking input stuff through my tree with the goal of
+.36 merge window just to minimize potential merge issues. This is a
+simple cleanup patch that has no dependencies, so there is little gain
+from doing it all in one go.
 
-Alex
+Thanks.
+
+-- 
+Dmitry
