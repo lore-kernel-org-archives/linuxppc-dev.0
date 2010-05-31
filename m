@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9EBFBB7D52
+Return-Path: <schwab@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id CCA40B7D6C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 31 May 2010 20:24:15 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU
-	is not set
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Mon, 31 May 2010 19:52:56 +1000 (EST)
+From: Andreas Schwab <schwab@redhat.com>
 To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
+Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU is
+	not set
 References: <1275270628.1931.540.camel@pasglop>
 	<1275271231.1931.547.camel@pasglop>
 	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 31 May 2010 20:24:06 +1000
-Message-ID: <1275301446.1931.596.camel@pasglop>
-Mime-Version: 1.0
+Date: Mon, 31 May 2010 11:52:50 +0200
+In-Reply-To: <FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de> (Alexander Graf's
+	message of "Mon, 31 May 2010 11:33:40 +0200")
+Message-ID: <m3ljb0tn2l.fsf@hase.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,21 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-05-31 at 11:33 +0200, Alexander Graf wrote:
-> > Alex, this is just a temporary fix to remove the build breakage for
-> 40x
-> > etc... but please, update KVM to just build-in its own.
-> 
+Alexander Graf <agraf@suse.de> writes:
+
+> On 31.05.2010, at 04:00, Benjamin Herrenschmidt wrote:
+>
+>> On Mon, 2010-05-31 at 11:50 +1000, Benjamin Herrenschmidt wrote:
+>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> ---
+>>> arch/powerpc/kernel/ppc_ksyms.c |    2 +-
+>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>> 
+>> Alex, this is just a temporary fix to remove the build breakage for 40x
+>> etc... but please, update KVM to just build-in its own.
+>
 > What's the bad part in reusing the existing code?
 
-I'm not saying we should dup the code, but I'm sure we can find a better
-way for that sort of stuff, along with other base support bits like you
-normally find in libgcc, to be linked directly with all modules.
+The bad part is that KVM is wasting a ridiculous amount of stack space
+by allocating multiple instances of struct task_struct on it.  I have a
+patch removing all of it, but I haven't tested it yet.
 
-calling out of modules symbols sucks for perf too anyways.
+Andreas.
 
-> > Don't we have .o's that are always built into modules nowadays ?
-> 
-> I don't think I understand what you mean.
-
-Ben.
+-- 
+Andreas Schwab, schwab@redhat.com
+GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
+"And now for something completely different."
