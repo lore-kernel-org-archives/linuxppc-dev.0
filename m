@@ -1,27 +1,33 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 13FBAB6F11
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CDBD9B7D1E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Jun 2010 04:58:34 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU is
-	not set
-References: <1275270628.1931.540.camel@pasglop>
-	<1275271231.1931.547.camel@pasglop>
-	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
-	<m3ljb0tn2l.fsf@hase.home>
-	<4C03DB3D.7090007__38063.9078132392$1275321190$gmane$org@suse.de>
-	<m2aargndy2.fsf@igel.home>
-	<1275384716.1931.711.camel__10281.3212587082$1275384770$gmane$org@pasglop>
-	<m3mxvfrt5n.fsf__49359.5060579993$1275385036$gmane$org@hase.home>
-Date: Tue, 01 Jun 2010 20:58:27 +0200
-In-Reply-To: <m3mxvfrt5n.fsf__49359.5060579993$1275385036$gmane$org@hase.home>
-	(Andreas Schwab's message of "Tue, 01 Jun 2010 11:36:36 +0200")
-Message-ID: <m2wruiy3zg.fsf@igel.home>
+	Wed,  2 Jun 2010 05:24:59 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o51JLeqb019086
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:21:40 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o51JOZ0W086040
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:24:37 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o51JOPvZ031210
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:24:25 -0600
+Date: Tue, 1 Jun 2010 12:32:30 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Albert Cahalan <acahalan@gmail.com>
+Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
+Message-ID: <20100601193230.GA17579@us.ibm.com>
+References: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
+Cc: randy.dunlap@oracle.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +37,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andreas Schwab <schwab@redhat.com> writes:
+Albert Cahalan [acahalan@gmail.com] wrote:
+| Sukadev Bhattiprolu writes:
+| 
+| > Randy Dunlap [randy.dunlap at oracle.com] wrote:
+| >>> base of the region allocated for stack. These architectures
+| >>> must pass in the size of the stack-region in ->child_stack_size.
+| >>
+| >>                               stack region
+| >>
+| >> Seems unfortunate that different architectures use
+| >> the fields differently.
+| >
+| > Yes and no. The field still has a single purpose, just that
+| > some architectures may not need it. We enforce that if unused
+| > on an architecture, the field must be 0. It looked like
+| > the easiest way to keep the API common across architectures.
+| 
+| Yuck. You're forcing userspace to have #ifdef messes or,
+| more likely, just not work on all architectures.
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->
->> On Mon, 2010-05-31 at 20:06 +0200, Andreas Schwab wrote:
->>> Alexander Graf <agraf@suse.de> writes:
->>> 
->>> > Mind to send it over so I can take a look at it :)? Getting rid of the
->>> > task_struct structs lying in the stack is certainly a good idea.
->>> 
->>> Still untested, because rc1 does not boot.
->>
->> Ouch ! What machine ?
->
-> It's crashing in macio_pci_add_devices.
+There is going to be #ifdef code in the library interface to eclone().
+But applications should not need any #ifdefs. Please see the test cases
+for eclone in
 
-And snd-aoa is broken, too.
+	git://git.sr71.net/~hallyn/cr_tests.git
 
-Andreas.
+There is no #ifdef and the tests work on x86, x86_64, ppc, s390.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+These use the libeclone.a built from following git-tree, which has the
+arch-dependent user space code.
+
+	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
+
+Is that the #ifdef mess you are talking about ? I don't see that as a
+consequence of the API. So maybe you can elaborate.
+
+| There is no reason to have field usage vary by architecture. The
+
+The field usage does not vary by architecture. Some architectures
+don't use some fields and those fields must be 0. A simple 
+
+	memset(&clone_args, 0, sizeof(clone_args))
+
+before initializing fields is all that is required.
+
+| original clone syscall was not designed with ia64 and hppa
+| in mind, and has been causing trouble ever since. Let's not
+| perpetuate the problem.
+
+and lot of folks contributed to this new API to try and make sure
+it is portable and meets the forseeable requirements.
+
+| 
+| Given code like this:   stack_base = malloc(stack_size);
+| stack_base and stack_size are what the kernel needs.
+| 
+| I suspect that you chose the defective method for some reason
+| related to restarting processes that were created with the
+| older system calls. I can't say most of us even care, but in
+| that broken-already case your process restarter can make up
+| some numbers that will work. (for i386, the base could be the
+| lowest address in the vma in which %esp lies, or even address 0)
+
+I don't understand how "making up some numbers (pids) that will work"
+is more portable/cleaner than the proposed eclone(). 
+
+Sukadev
