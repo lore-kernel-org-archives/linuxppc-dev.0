@@ -1,33 +1,19 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <dkirjanov@hera.kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CDBD9B7D1E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  2 Jun 2010 05:24:59 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o51JLeqb019086
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:21:40 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o51JOZ0W086040
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:24:37 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o51JOPvZ031210
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jun 2010 13:24:25 -0600
-Date: Tue, 1 Jun 2010 12:32:30 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
-Message-ID: <20100601193230.GA17579@us.ibm.com>
-References: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7C710B7D1E
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jun 2010 05:43:50 +1000 (EST)
+Date: Tue, 1 Jun 2010 19:43:34 +0000
+From: Denis Kirjanov <dkirjanov@hera.kernel.org>
+To: arnd@arndb.de, benh@kernel.crashing.org, paulus@samba.org, jkosina@suse.cz
+Subject: [PATCH] powerpc/oprofile: fix potential buffer overrun in
+	op_model_cell.c
+Message-ID: <20100601194334.GA4549@hera.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
-Cc: randy.dunlap@oracle.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
+Cc: robert.richter@amd.com, linuxppc-dev@ozlabs.org, oprofile-list@lists.sf.net,
+	cel@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,70 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Albert Cahalan [acahalan@gmail.com] wrote:
-| Sukadev Bhattiprolu writes:
-| 
-| > Randy Dunlap [randy.dunlap at oracle.com] wrote:
-| >>> base of the region allocated for stack. These architectures
-| >>> must pass in the size of the stack-region in ->child_stack_size.
-| >>
-| >>                               stack region
-| >>
-| >> Seems unfortunate that different architectures use
-| >> the fields differently.
-| >
-| > Yes and no. The field still has a single purpose, just that
-| > some architectures may not need it. We enforce that if unused
-| > on an architecture, the field must be 0. It looked like
-| > the easiest way to keep the API common across architectures.
-| 
-| Yuck. You're forcing userspace to have #ifdef messes or,
-| more likely, just not work on all architectures.
+Fix potential initial_lfsr buffer overrun.
+Writing past the end of the buffer could happen when index == ENTRIES
 
-There is going to be #ifdef code in the library interface to eclone().
-But applications should not need any #ifdefs. Please see the test cases
-for eclone in
+Signed-off-by: Denis Kirjanov <dkirjanov@kernel.org>
+---
+ arch/powerpc/oprofile/op_model_cell.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	git://git.sr71.net/~hallyn/cr_tests.git
-
-There is no #ifdef and the tests work on x86, x86_64, ppc, s390.
-
-These use the libeclone.a built from following git-tree, which has the
-arch-dependent user space code.
-
-	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
-
-Is that the #ifdef mess you are talking about ? I don't see that as a
-consequence of the API. So maybe you can elaborate.
-
-| There is no reason to have field usage vary by architecture. The
-
-The field usage does not vary by architecture. Some architectures
-don't use some fields and those fields must be 0. A simple 
-
-	memset(&clone_args, 0, sizeof(clone_args))
-
-before initializing fields is all that is required.
-
-| original clone syscall was not designed with ia64 and hppa
-| in mind, and has been causing trouble ever since. Let's not
-| perpetuate the problem.
-
-and lot of folks contributed to this new API to try and make sure
-it is portable and meets the forseeable requirements.
-
-| 
-| Given code like this:   stack_base = malloc(stack_size);
-| stack_base and stack_size are what the kernel needs.
-| 
-| I suspect that you chose the defective method for some reason
-| related to restarting processes that were created with the
-| older system calls. I can't say most of us even care, but in
-| that broken-already case your process restarter can make up
-| some numbers that will work. (for i386, the base could be the
-| lowest address in the vma in which %esp lies, or even address 0)
-
-I don't understand how "making up some numbers (pids) that will work"
-is more portable/cleaner than the proposed eclone(). 
-
-Sukadev
+diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
+index 2c9e522..7fd90d0 100644
+--- a/arch/powerpc/oprofile/op_model_cell.c
++++ b/arch/powerpc/oprofile/op_model_cell.c
+@@ -1077,7 +1077,7 @@ static int calculate_lfsr(int n)
+ 		index = ENTRIES-1;
+ 
+ 	/* make sure index is valid */
+-	if ((index > ENTRIES) || (index < 0))
++	if ((index >= ENTRIES) || (index < 0))
+ 		index = ENTRIES-1;
+ 
+ 	return initial_lfsr[index];
