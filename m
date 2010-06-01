@@ -1,22 +1,32 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og101.obsmtp.com (exprod5og101.obsmtp.com [64.18.0.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C5156B7D1C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Jun 2010 23:43:38 +1000 (EST)
-Message-ID: <4C050E84.2010602@ge.com>
-Date: Tue, 01 Jun 2010 14:43:32 +0100
-From: Martyn Welch <martyn.welch@ge.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in
-	CPM	early debug console
-References: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>	<4BFFECF1.9060809@freescale.com>
-	<4C050295.408@ge.com>
-In-Reply-To: <4C050295.408@ge.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from poutre.nerim.net (poutre.nerim.net [62.4.16.124])
+	by ozlabs.org (Postfix) with ESMTP id 3294AB7D1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 23:53:15 +1000 (EST)
+Date: Tue, 1 Jun 2010 15:53:10 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: [PATCH] drivers: remove all i2c_set_clientdata(client, NULL)
+Message-ID: <20100601155310.3781fce6@hyperion.delvare>
+In-Reply-To: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
+References: <1275310552-14685-1-git-send-email-w.sang@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linuxppc-dev@ozlabs.org,
+	linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
+	devel@driverdev.osuosl.org, Samuel Ortiz <sameo@linux.intel.com>,
+	lm-sensors@lm-sensors.org, linux-input@vger.kernel.org,
+	linux-media@vger.kernel.org, Paul Gortmaker <p_gortmaker@yahoo.com>,
+	Riku Voipio <riku.voipio@iki.fi>, rtc-linux@googlegroups.com,
+	Alessandro Rubini <rubini@ipvvis.unipv.it>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	"Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>, Liam Girdwood <lrg@slimlogic.co.uk>,
+	Alessandro Zummo <a.zummo@towertech.it>,
+	Guillaume Ligneul <guillaume.ligneul@gmail.com>,
+	George Joseph <george.joseph@fairview5.com>,
+	Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
+	Colin Leroy <colin@colino.net>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,86 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Martyn Welch wrote:
-> Scott Wood wrote:
->   
->> On 05/28/2010 10:18 AM, Martyn Welch wrote:
->>     
->>> The CPM early debug console hardcodes the BAT to cover the IMMR at
->>> 0xf0000000. The IMMR (on the mpc8270 at the very least) can be set to a
->>> number of locations with bootstrap configuration, which are outside the
->>> hardcoded BAT configuration.
->>>
->>> This patch determines the correct location at which to configure a BAT
->>> during the boot process from the supplied PPC_EARLY_DEBUG_CPM_ADDR.
->>>
->>> Signed-off-by: Martyn Welch<martyn.welch@ge.com>
->>> ---
->>>
->>>   arch/powerpc/kernel/head_32.S    |    5 +++--
->>>   arch/powerpc/sysdev/cpm_common.c |    4 +++-
->>>   2 files changed, 6 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/head_32.S
->>> b/arch/powerpc/kernel/head_32.S
->>> index e025e89..861cace 100644
->>> --- a/arch/powerpc/kernel/head_32.S
->>> +++ b/arch/powerpc/kernel/head_32.S
->>> @@ -1194,12 +1194,13 @@ setup_disp_bat:
->>>   #endif /* CONFIG_BOOTX_TEXT */
->>>
->>>   #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
->>> +#define PPC_EARLY_DEBUG_CPM_ADDR
->>> ASM_CONST(CONFIG_PPC_EARLY_DEBUG_CPM_ADDR)
->>>   setup_cpm_bat:
->>> -    lis    r8, 0xf000
->>> +    lis    r8, PPC_EARLY_DEBUG_CPM_ADDR@ha
->>>       ori    r8, r8,    0x002a
->>>       mtspr    SPRN_DBAT1L, r8
->>>
->>> -    lis    r11, 0xf000
->>> +    lis    r11, PPC_EARLY_DEBUG_CPM_ADDR@ha
->>>       ori    r11, r11, (BL_1M << 2) | 2
->>>       mtspr    SPRN_DBAT1U, r11
->>>       
->> Only the physical address should depend on where IMMR is.  We should
->> use fixmap instead of an arbitrary address for the effective address.
->> There's a existing FIX_EARLY_DEBUG_BASE, but it's only 128 KiB so
->> we'll have to either grow it, or map only a subset of IMMR.
->>
->>     
->
-> I think that's a more fundamental change to CPM early debug than I can
-> handle right now.
->
->   
->> Plus, CONFIG_PPC_EARLY_DEBUG_CPM_ADDR points to the TX descriptor, not
->> to the beginning of IMMR, so you should mask off the lower 20 bits
->> (the offset is probably less than 64K, and the BAT might just ignore
->> the extra bits anyway, but why take chances?).
->>
->>     
->
-> I assume that an extra instruction "andi   r8, r8, 0xfff0" after each
-> "lis" instruction  would be what you are looking for?
->
->   
-"andis" even.
+On Mon, 31 May 2010 14:55:48 +0200, Wolfram Sang wrote:
+> I2C-drivers can use the clientdata-pointer to point to private data. As I2C
+> devices are not really unregistered, but merely detached from their driver, it
+> used to be the drivers obligation to clear this pointer during remove() or a
+> failed probe(). As a couple of drivers forgot to do this, it was agreed that it
+> was cleaner if the i2c-core does this clearance when appropriate, as there is
+> no guarantee for the lifetime of the clientdata-pointer after remove() anyhow.
+> This feature was added to the core with commit
+> e4a7b9b04de15f6b63da5ccdd373ffa3057a3681 to fix the faulty drivers.
+> 
+> As there is no need anymore to clear the clientdata-pointer, remove all current
+> occurrences in the drivers to simplify the code and prevent confusion.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> (...)
 
-Martyn
-
-> Martyn
->
->   
->> -Scott
->>     
->
->
->   
-
+Applied, thanks. Will go to Linus in the next few days.
 
 -- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+Jean Delvare
