@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59225B6EEB
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 17:40:31 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Optimise per cpu accesses on 64bit
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-In-Reply-To: <20100601044511.GF28295@kryten>
-References: <20100601044511.GF28295@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 01 Jun 2010 17:05:20 +1000
-Message-ID: <1275375920.1931.699.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, amodra@gmail.com
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C4E50B7D2D
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 18:36:25 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] KVM: PPC: elide struct thread_struct instances from stack
+References: <m26323onam.fsf@igel.home>
+	<20100531224040.GA22927@brick.ozlabs.ibm.com>
+Date: Tue, 01 Jun 2010 10:36:21 +0200
+In-Reply-To: <20100531224040.GA22927@brick.ozlabs.ibm.com> (Paul Mackerras's
+	message of "Tue, 1 Jun 2010 08:40:40 +1000")
+Message-ID: <m3r5krrvy2.fsf@hase.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Alexander Graf <agraf@suse.de>,
+	kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,111 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-06-01 at 14:45 +1000, Anton Blanchard wrote:
-> Now we dynamically allocate the paca array, it takes an extra load
-> whenever we want to access another cpu's paca. One place we do that a lot
-> is per cpu variables. A simple example:
+Paul Mackerras <paulus@samba.org> writes:
 
-Can't we dedicate a GPR instead ? Or it isn't worth it ? Something we
-almost never use in the kernel like r12 ?
+> I re-read the relevant part of the PowerPC architecture spec
+> yesterday, and it seems pretty clear that the FPSCR doesn't affect the
+> behaviour of lfs and stfs, and is not affected by them.  So in fact 4
+> out of the 7 instructions in each of those procedures are unnecessary
+> (and similarly for the cvt_fd/df used in the alignment fixup code).
 
-Cheers,
-Ben.
+I'd prefer to have this deferred to a separate patch.
 
-> DEFINE_PER_CPU(unsigned long, vara);
-> unsigned long test4(int cpu)
-> {
-> 	return per_cpu(vara, cpu);
-> }
-> 
-> This takes 4 loads, 5 if you include the actual load of the per cpu variable:
-> 
->     ld r11,-32760(r30)  # load address of paca pointer
->     ld r9,-32768(r30)   # load link address of percpu variable
->     sldi r3,r29,9       # get offset into paca (each entry is 512 bytes)
->     ld r0,0(r11)        # load paca pointer
->     add r3,r0,r3        # paca + offset
->     ld r11,64(r3)       # load paca[cpu].data_offset
-> 
->     ldx r3,r9,r11       # load per cpu variable
-> 
-> If we remove the ppc64 specific per_cpu_offset(), we get the generic one
-> which indexes into a statically allocated array. This removes one load and
-> one add:
-> 
->     ld r11,-32760(r30)  # load address of __per_cpu_offset
->     ld r9,-32768(r30)   # load link address of percpu variable
->     sldi r3,r29,3       # get offset into __per_cpu_offset (each entry 8 bytes)
->     ldx r11,r11,r3      # load __per_cpu_offset[cpu]
-> 
->     ldx r3,r9,r11       # load per cpu variable
-> 
-> Having all the offsets in one array also helps when iterating over a per cpu
-> variable across a number of cpus, such as in the scheduler. Before we would
-> need to load one paca cacheline when calculating each per cpu offset. Now we
-> have 16 (128 / sizeof(long)) per cpu offsets in each cacheline.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: powerpc.git/arch/powerpc/include/asm/percpu.h
-> ===================================================================
-> --- powerpc.git.orig/arch/powerpc/include/asm/percpu.h	2010-06-01 11:10:16.225954322 +1000
-> +++ powerpc.git/arch/powerpc/include/asm/percpu.h	2010-06-01 11:32:27.713476455 +1000
-> @@ -1,7 +1,6 @@
->  #ifndef _ASM_POWERPC_PERCPU_H_
->  #define _ASM_POWERPC_PERCPU_H_
->  #ifdef __powerpc64__
-> -#include <linux/compiler.h>
->  
->  /*
->   * Same as asm-generic/percpu.h, except that we store the per cpu offset
-> @@ -12,9 +11,7 @@
->  
->  #include <asm/paca.h>
->  
-> -#define __per_cpu_offset(cpu) (paca[cpu].data_offset)
->  #define __my_cpu_offset local_paca->data_offset
-> -#define per_cpu_offset(x) (__per_cpu_offset(x))
->  
->  #endif /* CONFIG_SMP */
->  #endif /* __powerpc64__ */
-> Index: powerpc.git/arch/powerpc/kernel/asm-offsets.c
-> ===================================================================
-> --- powerpc.git.orig/arch/powerpc/kernel/asm-offsets.c	2010-06-01 11:10:16.195958268 +1000
-> +++ powerpc.git/arch/powerpc/kernel/asm-offsets.c	2010-06-01 11:32:27.713476455 +1000
-> @@ -194,7 +194,6 @@ int main(void)
->  	DEFINE(PACA_STARTSPURR, offsetof(struct paca_struct, startspurr));
->  	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
->  	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
-> -	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
->  	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
->  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
->  	DEFINE(PACA_KVM_SVCPU, offsetof(struct paca_struct, shadow_vcpu));
-> Index: powerpc.git/arch/powerpc/kernel/setup_64.c
-> ===================================================================
-> --- powerpc.git.orig/arch/powerpc/kernel/setup_64.c	2010-06-01 11:10:16.205958158 +1000
-> +++ powerpc.git/arch/powerpc/kernel/setup_64.c	2010-06-01 11:32:27.713476455 +1000
-> @@ -604,6 +604,9 @@ static int pcpu_cpu_distance(unsigned in
->  		return REMOTE_DISTANCE;
->  }
->  
-> +unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-> +EXPORT_SYMBOL(__per_cpu_offset);
-> +
->  void __init setup_per_cpu_areas(void)
->  {
->  	const size_t dyn_size = PERCPU_MODULE_RESERVE + PERCPU_DYNAMIC_RESERVE;
-> @@ -628,8 +631,10 @@ void __init setup_per_cpu_areas(void)
->  		panic("cannot initialize percpu area (err=%d)", rc);
->  
->  	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-> -	for_each_possible_cpu(cpu)
-> -		paca[cpu].data_offset = delta + pcpu_unit_offsets[cpu];
-> +	for_each_possible_cpu(cpu) {
-> +                __per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
-> +		paca[cpu].data_offset = __per_cpu_offset[cpu];
-> +	}
->  }
->  #endif
->  
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
