@@ -1,28 +1,20 @@
-Return-Path: <schwab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 09B0CB7D1D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  1 Jun 2010 19:36:42 +1000 (EST)
-From: Andreas Schwab <schwab@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU is
-	not set
-References: <1275270628.1931.540.camel@pasglop>
-	<1275271231.1931.547.camel@pasglop>
-	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
-	<m3ljb0tn2l.fsf@hase.home>
-	<4C03DB3D.7090007__38063.9078132392$1275321190$gmane$org@suse.de>
-	<m2aargndy2.fsf@igel.home>
-	<1275384716.1931.711.camel__10281.3212587082$1275384770$gmane$org@pasglop>
-Date: Tue, 01 Jun 2010 11:36:36 +0200
-In-Reply-To: <1275384716.1931.711.camel__10281.3212587082$1275384770$gmane$org@pasglop>
-	(Benjamin Herrenschmidt's message of "Tue, 01 Jun 2010 19:31:56
-	+1000")
-Message-ID: <m3mxvfrt5n.fsf@hase.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Alexander Graf <agraf@suse.de>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 926E3B7D12
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 19:38:13 +1000 (EST)
+Date: Tue, 1 Jun 2010 11:38:01 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Timur Tabi <timur.tabi@gmail.com>
+Subject: Re: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
+Message-ID: <20100601113801.5b0ff773@wker>
+In-Reply-To: <y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad@mail.gmail.com>
+References: <1272584978-19063-1-git-send-email-agust@denx.de>
+	<y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,23 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hi Timur,
 
-> On Mon, 2010-05-31 at 20:06 +0200, Andreas Schwab wrote:
->> Alexander Graf <agraf@suse.de> writes:
->> 
->> > Mind to send it over so I can take a look at it :)? Getting rid of the
->> > task_struct structs lying in the stack is certainly a good idea.
->> 
->> Still untested, because rc1 does not boot.
->
-> Ouch ! What machine ?
+On Thu, 29 Apr 2010 20:39:02 -0500
+Timur Tabi <timur.tabi@gmail.com> wrote:
 
-It's crashing in macio_pci_add_devices.
+> On Thu, Apr 29, 2010 at 6:49 PM, Anatolij Gustschin <agust@denx.de> wrote:
+> > This patch series rework DIU support patches submitted
+> > previously. Comments to the previos patch series have
+> > been addressed, not related changes are dropped and some
+> > changes are split out to separate patches to simplify
+> > review. Furthermore a patch has been added to support
+> > setting display mode using EDID block in the device tree.
+> 
+> Have you tested these changes on an MPC8610 HPCD?  If not, do you
+> think your changes will break that platform?
+> 
+> I have an 8610 in-house, but I'm currently working on another issue on
+> that board, so I can't test these patches for you just yet.
 
-Andreas.
+Could you please test these patches on MPC8610 HPCD? I think these
+changes won't break that platform. The patches apply cleanly on
+2.6.35-rc1.
 
--- 
-Andreas Schwab, schwab@redhat.com
-GPG Key fingerprint = D4E8 DBE3 3813 BB5D FA84  5EC7 45C6 250E 6F00 984E
-"And now for something completely different."
+Thanks,
+Anatolij
