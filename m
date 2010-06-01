@@ -1,22 +1,27 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CF33DB7D1A
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Jun 2010 19:19:31 +1000 (EST)
-Subject: Re: [PATCH] KVM: PPC: elide struct thread_struct instances from stack
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <m3r5krrvy2.fsf@hase.home>
-Date: Tue, 1 Jun 2010 11:19:17 +0200
-Message-Id: <C9ECD11F-CF09-4C56-A028-3625266E2807@suse.de>
-References: <m26323onam.fsf@igel.home>
-	<20100531224040.GA22927@brick.ozlabs.ibm.com>
-	<m3r5krrvy2.fsf@hase.home>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id D87C6B7D12
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  1 Jun 2010 19:32:17 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Don't export cvt_fd & _df when CONFIG_PPC_FPU
+	is not set
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <m2aargndy2.fsf@igel.home>
+References: <1275270628.1931.540.camel@pasglop>
+	<1275271231.1931.547.camel@pasglop>
+	<FAE73713-EE73-4FA6-B1C6-88D38E230F01@suse.de>
+	<m3ljb0tn2l.fsf@hase.home>
+	<4C03DB3D.7090007__38063.9078132392$1275321190$gmane$org@suse.de>
+	<m2aargndy2.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 01 Jun 2010 19:31:56 +1000
+Message-ID: <1275384716.1931.711.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2010-05-31 at 20:06 +0200, Andreas Schwab wrote:
+> Alexander Graf <agraf@suse.de> writes:
+> 
+> > Mind to send it over so I can take a look at it :)? Getting rid of the
+> > task_struct structs lying in the stack is certainly a good idea.
+> 
+> Still untested, because rc1 does not boot.
 
-On 01.06.2010, at 10:36, Andreas Schwab wrote:
+Ouch ! What machine ?
 
-> Paul Mackerras <paulus@samba.org> writes:
->=20
->> I re-read the relevant part of the PowerPC architecture spec
->> yesterday, and it seems pretty clear that the FPSCR doesn't affect =
-the
->> behaviour of lfs and stfs, and is not affected by them.  So in fact 4
->> out of the 7 instructions in each of those procedures are unnecessary
->> (and similarly for the cvt_fd/df used in the alignment fixup code).
->=20
-> I'd prefer to have this deferred to a separate patch.
-
-I agree. Andreas' patch takes the current logic and moves it to be KVM =
-contained, so we don't clutter the stack. The fact that the old code was =
-inefficient is a separate story.
-
-Avi / Marcelo, please apply the patch nevertheless.
-
-
-Alex
+Cheers,
+Ben.
