@@ -1,17 +1,18 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id D21EFB7D43
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jun 2010 01:39:29 +1000 (EST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Li Yang <leoli@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix a compile error in fsl_msi.c
-Date: Wed,  2 Jun 2010 20:07:12 +0800
-Message-Id: <1275480432-22970-1-git-send-email-haokexin@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <mtosatti@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 89845B7D2D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jun 2010 02:27:49 +1000 (EST)
+Date: Wed, 2 Jun 2010 13:00:30 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH] KVM: PPC: elide struct thread_struct instances from stack
+Message-ID: <20100602160030.GB23214@amt.cnet>
+References: <m26323onam.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m26323onam.fsf@igel.home>
+Cc: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+	Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The commit 061ca4ad still use the old style to refer to device
-node, and cause the following compile error.
-arch/powerpc/sysdev/fsl_msi.c: In function 'fsl_of_msi_probe':
-arch/powerpc/sysdev/fsl_msi.c:350: error: 'struct of_device' has no member named 'node'
+On Mon, May 31, 2010 at 09:59:13PM +0200, Andreas Schwab wrote:
+> Instead of instantiating a whole thread_struct on the stack use only the
+> required parts of it.
+> 
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> Tested-by: Alexander Graf <agraf@suse.de>
+> ---
+>  arch/powerpc/include/asm/kvm_fpu.h       |   27 +++++----
+>  arch/powerpc/kernel/ppc_ksyms.c          |    4 -
+>  arch/powerpc/kvm/book3s.c                |   49 +++++++++-------
+>  arch/powerpc/kvm/book3s_paired_singles.c |   94 ++++++++++++------------------
+>  arch/powerpc/kvm/fpu.S                   |   18 ++++++
+>  5 files changed, 97 insertions(+), 95 deletions(-)
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- arch/powerpc/sysdev/fsl_msi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 0f5bee9..962c2d8 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -347,7 +347,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
- 		goto error_out;
- 	}
- 	offset = 0;
--	p = of_get_property(dev->node, "msi-available-ranges", &len);
-+	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
- 	if (p)
- 		offset = *p / IRQS_PER_MSI_REG;
- 
--- 
-1.6.3.1
+Applied, thanks.
