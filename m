@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <haokexin@gmail.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5B6E6B7D59
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Jun 2010 22:45:35 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Emulate most Book I instructions in
-	emulate_step()
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100602112903.GB30149@brick.ozlabs.ibm.com>
-Date: Wed, 2 Jun 2010 07:45:27 -0500
-Message-Id: <09904F7B-6319-45FA-ADC4-757A2AD239AB@kernel.crashing.org>
-References: <20100602112903.GB30149@brick.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, "K.Prasad" <prasad@linux.vnet.ibm.com>
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id D21EFB7D43
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jun 2010 01:39:29 +1000 (EST)
+From: Kevin Hao <haokexin@gmail.com>
+To: Li Yang <leoli@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: fix a compile error in fsl_msi.c
+Date: Wed,  2 Jun 2010 20:07:12 +0800
+Message-Id: <1275480432-22970-1-git-send-email-haokexin@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,61 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The commit 061ca4ad still use the old style to refer to device
+node, and cause the following compile error.
+arch/powerpc/sysdev/fsl_msi.c: In function 'fsl_of_msi_probe':
+arch/powerpc/sysdev/fsl_msi.c:350: error: 'struct of_device' has no member named 'node'
 
-On Jun 2, 2010, at 6:29 AM, Paul Mackerras wrote:
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ arch/powerpc/sysdev/fsl_msi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> This extends the emulate_step() function to handle a large proportion
-> of the Book I instructions implemented on current 64-bit server
-> processors.  The aim is to handle all the load and store instructions
-> used in the kernel, plus all of the instructions that appear between
-> l[wd]arx and st[wd]cx., so this handles the Altivec/VMX lvx and stvx
-> and the VSX lxv2dx and stxv2dx instructions (implemented in POWER7).
->=20
-> The new code can emulate user mode instructions, and checks the
-> effective address for a load or store if the saved state is for
-> user mode.  It doesn't handle little-endian mode at present.
->=20
-> For floating-point, Altivec/VMX and VSX instructions, it checks
-> that the saved MSR has the enable bit for the relevant facility
-> set, and if so, assumes that the FP/VMX/VSX registers contain
-> valid state, and does loads or stores directly to/from the
-> FP/VMX/VSX registers, using assembly helpers in ldstfp.S.
->=20
-> Instructions supported now include:
-> * Loads and stores, including some but not all VMX and VSX =
-instructions,
->  and lmw/stmw
-> * Atomic loads and stores (l[dw]arx, st[dw]cx.)
-> * Integer arithmetic instructions (add, subtract, multiply, divide, =
-etc.)
-> * Compare instructions
-> * Rotate and mask instructions
-> * Shift instructions
-> * Logical instructions (and, or, xor, etc.)
-> * Condition register logical instructions
-> * mtcrf, cntlz[wd], exts[bhw]
-> * isync, sync, lwsync, ptesync, eieio
-> * Cache operations (dcbf, dcbst, dcbt, dcbtst)
->=20
-> The overflow-checking arithmetic instructions are not included, but
-> they appear not to be ever used in C code.  None of the floating
-> point, VMX or VSX computational instructions are included.
->=20
-> This uses decimal values for the minor opcodes in the switch =
-statements
-> because that is what appears in the Power ISA specification, thus it =
-is
-> easier to check that they are correct if they are in decimal.
->=20
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> arch/powerpc/lib/Makefile |    4 +-
-> arch/powerpc/lib/ldstfp.S |  207 ++++++
-> arch/powerpc/lib/sstep.c  | 1513 =
-+++++++++++++++++++++++++++++++++++++++++++--
-> 3 files changed, 1677 insertions(+), 47 deletions(-)
-> create mode 100644 arch/powerpc/lib/ldstfp.S
-
-Why do we need to have emu support for all of these instructions?
-
-- k=
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 0f5bee9..962c2d8 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -347,7 +347,7 @@ static int __devinit fsl_of_msi_probe(struct of_device *dev,
+ 		goto error_out;
+ 	}
+ 	offset = 0;
+-	p = of_get_property(dev->node, "msi-available-ranges", &len);
++	p = of_get_property(dev->dev.of_node, "msi-available-ranges", &len);
+ 	if (p)
+ 		offset = *p / IRQS_PER_MSI_REG;
+ 
+-- 
+1.6.3.1
