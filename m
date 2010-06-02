@@ -1,34 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 464EFB7D57
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Jun 2010 02:28:06 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o52GS3In021195 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 2 Jun 2010 09:28:03 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o52GbT4n027123
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 2 Jun 2010 11:37:29 -0500 (CDT)
-Message-ID: <4C068691.6040501@freescale.com>
-Date: Wed, 02 Jun 2010 11:28:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Martyn Welch <martyn.welch@ge.com>
-Subject: Re: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in
-	CPM	early debug console
-References: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>	<4BFFECF1.9060809@freescale.com>
-	<4C050295.408@ge.com> <4C050E84.2010602@ge.com>
-	<4C053008.50306@freescale.com> <4C0610F8.6020801@ge.com>
-In-Reply-To: <4C0610F8.6020801@ge.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7F0B8B7D1D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jun 2010 07:59:31 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Fix ioremap_flags() with book3e pte definition
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
+Date: Wed, 2 Jun 2010 16:59:16 -0500
+Message-Id: <81DFFD59-BF21-4754-B006-805CFDC09576@kernel.crashing.org>
+References: <1274726319-4673-1-git-send-email-galak@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Cc: linuxppc-dev@ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,22 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2010 03:06 AM, Martyn Welch wrote:
->>>> I think that's a more fundamental change to CPM early debug than I can
->>>> handle right now.
->>
->> Is IMMRBASE on your board at some address that has a low likelihood of
->> conflicting when treated as a kernel effective address?
->
-> It's at 0x0f000000, is seems ok, but then I'm not sure I fully
-> understand kernel effective addresses.
 
-That overlaps userspace -- is the BAT cleared before userspace starts?
+On May 24, 2010, at 1:38 PM, Kumar Gala wrote:
 
-If you don't want to do the fixmap stuff, might want to at least just 
-leave it at the current arbitrary effective address, which hasn't seemed 
-to cause much trouble so far.
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>=20
+> We can't just clear the user read permission in book3e pte, because
+> that will also clear supervisor read permission.  This surely isn't
+> desired.  Fix the problem by adding the supervisor read back.
+>=20
+> BenH: Slightly simplified the ifdef and applied to ppc64 too
+>=20
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> For 2.6.34 stable commit 55052eeca6d71d76f7c3f156c0501814d8e5e6d3
+>=20
+> arch/powerpc/mm/pgtable_32.c |    8 ++++++++
+> arch/powerpc/mm/pgtable_64.c |    8 ++++++++
+> 2 files changed, 16 insertions(+), 0 deletions(-)
 
-But fixmap is the right way to do it.
+Wondering what happened to this patch (and 2 other) getting into stable =
+queue for .34.x
 
--Scott
+- k=
