@@ -1,24 +1,18 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9D2E1B7D1F
+Return-Path: <azhar904@gmail.com>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 2EF08B7D2E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  3 Jun 2010 19:12:26 +1000 (EST)
-Message-ID: <4C0771F3.2000106@ge.com>
-Date: Thu, 03 Jun 2010 10:12:19 +0100
-From: Martyn Welch <martyn.welch@ge.com>
+	Thu,  3 Jun 2010 21:41:03 +1000 (EST)
+Received: by pwj6 with SMTP id 6so4606pwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 03 Jun 2010 04:41:02 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] PowerPC: Remove hardcoded BAT configuration of IMMR in
-	CPM	early debug console
-References: <20100528151836.5889.10393.stgit@ES-J7S4D2J.amer.consind.ge.com>	<4BFFECF1.9060809@freescale.com>
-	<4C050295.408@ge.com> <4C050E84.2010602@ge.com>
-	<4C053008.50306@freescale.com> <4C0610F8.6020801@ge.com>
-	<4C068691.6040501@freescale.com>
-In-Reply-To: <4C068691.6040501@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 3 Jun 2010 17:11:02 +0530
+Message-ID: <AANLkTinkw6CbuR8vg6HXs0gE9qGXb6t7E9NezytNRKVM@mail.gmail.com>
+Subject: Adding a section to linux kernel
+From: Azhar Shaikh <azhar904@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001636e0b72755824104881eae18
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> On 06/02/2010 03:06 AM, Martyn Welch wrote:
->>>>> I think that's a more fundamental change to CPM early debug than I
->>>>> can
->>>>> handle right now.
->>>
->>> Is IMMRBASE on your board at some address that has a low likelihood of
->>> conflicting when treated as a kernel effective address?
->>
->> It's at 0x0f000000, is seems ok, but then I'm not sure I fully
->> understand kernel effective addresses.
->
-> That overlaps userspace -- is the BAT cleared before userspace starts?
->
+--001636e0b72755824104881eae18
+Content-Type: text/plain; charset=ISO-8859-1
 
-To be honest, once I'd got the device booting past the early debug
-stage, I rebuilt the kernel without udbg in it...
+Hi,
 
-> If you don't want to do the fixmap stuff, might want to at least just
-> leave it at the current arbitrary effective address, which hasn't
-> seemed to cause much trouble so far.
->
+I am building a kernel module on linux-2.6.31 on a PowerPC architecture.
 
-Given that I've now switched udbg off in the kernel config, I really
-can't substantiate spending much more time on this. This patch was
-mainly to help others that maybe struggling to bring up Linux on a
-device with CPM serial.
+While buildng the module i am including a static library given by the
+client.
 
-I'll try and get a revised patch out soon which keeps the current
-arbitrary effective address.
+I am getting the below warning while building the module with the library:
 
-Martyn
+WARNING: /home/drivers/modules/module.o (.ghsinfo): unexpected
+non-allocatable section.
+Did you forget to use "ax"/"aw" in a .S file?
+Note that for example <linux/init.h> contains
+section definitions for use in .S files.
 
-> But fixmap is the right way to do it.
->
-> -Scott
+The .ghsinfo section i havent used in my code. It is being used in the
+Library given by the client.
+Does anyone know how do i include a section (namely .ghsinfo) into the
+kernel to get rid of the above warning?
 
+Regards,
+Azhar
 
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+--001636e0b72755824104881eae18
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<p>Hi,</p>
+<p>I am building a kernel module on linux-2.6.31 on a PowerPC architecture.=
+</p>
+<p>While buildng the module i am including a static library given by the cl=
+ient.</p>
+<p>I am getting the below warning while building the module with the librar=
+y:</p>
+<p>WARNING: /home/drivers/modules/module.o (.ghsinfo): unexpected non-alloc=
+atable section.<br>Did you forget to use &quot;ax&quot;/&quot;aw&quot; in a=
+ .S file?<br>Note that for example &lt;linux/init.h&gt; contains<br>section=
+ definitions for use in .S files.</p>
+
+<p>The .ghsinfo section i havent used in my code. It is being used in the L=
+ibrary given by the client.</p>
+<div>Does anyone know how do i include a section (namely .ghsinfo) into the=
+ kernel to get rid of the above warning?</div>
+<div>=A0</div>
+<div>Regards,</div>
+<div>Azhar</div>
+
+--001636e0b72755824104881eae18--
