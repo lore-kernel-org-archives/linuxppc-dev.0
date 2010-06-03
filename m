@@ -1,17 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: unconditionally enabled irq stacks
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20100603082426.GA6110@lst.de>
-References: <20100603082426.GA6110@lst.de>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-ppjeqZgX/US0kV8KnW79"
-Date: Thu, 03 Jun 2010 23:39:41 +1000
-Message-ID: <1275572381.32304.9.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <linuxuser330250@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B314AB7D43
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  4 Jun 2010 01:08:41 +1000 (EST)
+From: "Linux User #330250" <linuxuser330250@gmx.net>
+To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
+Subject: Compilation error: KVM support for PowerPC book3s_64 processors
+Date: Thu, 3 Jun 2010 16:10:06 +0200
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201006031610.06459.linuxuser330250@gmx.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,41 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello!
 
---=-ppjeqZgX/US0kV8KnW79
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+My hardware: Apple Power Mac G5 "Late 2005"
 
-On Thu, 2010-06-03 at 10:24 +0200, Christoph Hellwig wrote:
-> Irq stacks provide an essential protection from stack overflows through
-> external interrupts, at the cost of two additionals stacks per CPU.
->=20
-> Enable them unconditionally to simplify the kernel build and prevent
-> people from accidentally disabling them.
+I've just compiled kernel 2.6.34 for Gentoo Linux.
+# ACCEPT_KEYWORDS=3D"~ppc64" emerge -1 sys-kernel/gentoo-sources-2.6.34
 
-Since when did we worry about simplifying the kernel build? :)
+I tried the "KVM support for PowerPC book3s_64 processors" just to see if w=
+hat=20
+I could do with KVM on my Apple Power Mac G5 with IBM PowerPC 970MP process=
+or.=20
+Apperently it isn't supported by this CPU. Or am I wrong?
 
-I'm thinking embedded folks might prefer the reduction in stack space,
-though I guess we'll let them speak for themselves. Perhaps it could
-depend on EMBEDDED?
+Anyway, I get errors that indicate this option requires some VSX support,=20
+which isn't supported by IBM POWER4+/PowerPC G5. I cannot post the complete=
+=20
+error message right now, but maybe some of you can try it.
 
-It's not like it's a lot of extra code.
+Processor support  --->
+[*] AltiVec Support
+[ ]   VSX Support
 
-cheers
+[*] Virtualization  --->
+<*>   KVM support for PowerPC book3s_64 processors
+
+Some maybe relevant .config options:
+CONFIG_PPC_BOOK3S_64=3Dy
+CONFIG_PPC_BOOK3S=3Dy
+CONFIG_POWER4_ONLY=3Dy
+CONFIG_POWER4=3Dy
+CONFIG_PPC_FPU=3Dy
+CONFIG_ALTIVEC=3Dy
+=E2=80=A6
+CONFIG_PPC_PMAC=3Dy
+CONFIG_PPC_PMAC64=3Dy
+=E2=80=A6
+CONFIG_KVM_MMIO=3Dy
+CONFIG_VIRTUALIZATION=3Dy
+CONFIG_KVM=3Dy
+CONFIG_KVM_BOOK3S_64_HANDLER=3Dy
+CONFIG_KVM_BOOK3S_64=3Dy
 
 
+Maybe I've got something wrong though=E2=80=A6 Or there are other dependenc=
+ies, like=20
+CONFIG_VSX that are not met.
 
 
---=-ppjeqZgX/US0kV8KnW79
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwHsJoACgkQdSjSd0sB4dLvAgCgrml9tYUBhnyC2uC1QqfCzJ8V
-sjIAoIyIyDPyNsCP8ikXbyi/8A1DwB1b
-=Wclo
------END PGP SIGNATURE-----
-
---=-ppjeqZgX/US0kV8KnW79--
+Let me know if I can help to test something.
+Cheers,
+Andreas.
