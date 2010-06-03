@@ -1,22 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Emulate most Book I instructions in
-	emulate_step()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <4C0700FD.6060303@ozlabs.org>
-References: <20100602112903.GB30149@brick.ozlabs.ibm.com>
-	<09904F7B-6319-45FA-ADC4-757A2AD239AB@kernel.crashing.org>
-	<20100603004758.GA19618@brick.ozlabs.ibm.com>
-	<4C0700FD.6060303@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-8eW06mBHzlFqplAjs9ye"
-Date: Thu, 03 Jun 2010 11:43:55 +1000
-Message-ID: <1275529435.22020.1.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	"K.Prasad" <prasad@linux.vnet.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <wayneb@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C1482B7D48
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Jun 2010 14:14:21 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o534CZ4s002347
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jun 2010 22:12:35 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o534EIgD131540
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jun 2010 22:14:18 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o534HHLR021180
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 Jun 2010 22:17:18 -0600
+Message-ID: <4C072C18.4030005@linux.vnet.ibm.com>
+Date: Wed, 02 Jun 2010 21:14:16 -0700
+From: Wayne Boyer <wayneb@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] [SCSI] ipr: Fix stack overflow in ipr_format_resource_path
+References: <20100602111658.GH28295@kryten>
+In-Reply-To: <20100602111658.GH28295@kryten>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: betabandido@gmail.com, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +35,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Anton,
 
---=-8eW06mBHzlFqplAjs9ye
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+We also saw a variation of this problem last week and I have an alternative
+patch that I'd prefer over this one.  I'll post the patch in a separate
+email.
 
-On Thu, 2010-06-03 at 11:10 +1000, Matt Evans wrote:
-> Paul Mackerras wrote:
-> > [snip]
-> > The second alternative -- emulating the lwarx/stwcx and all the
-> > instructions in between -- sounds complicated but turns out to be
-> > pretty straightforward in fact, since the code for each instruction is
-> > pretty small, easy to verify that it's correct, and has little
-> > interaction with other code.
->=20
-> Easy to verify -- visually or logically?
->=20
-> Having had a little experience with interpreters 'invisibly' operating
-> behind the scenes I am all for very rigorous testing of these things.
-> I have lost at least four of my nine lives to incorrect flag values,
-> odd data problems and hideous heisenbugs etc. of such interpreters.
-> Looked at another way, you'd be surprised how much one can break in an
-> interpreter and still successfully run various programs.
->=20
-> Presumably your first pass is completely correct already, but I'm
-> thinking that if any future changes are made to it=20
-> it would be good to include test code/modes alongside the interpreter
-> so others can check alterations.  E.g. include the "run user program
-> interpreted" test switch patch, or even better compare the interpreted
-> state to real hardware execution.  There are other more directed test
-> strategies (e.g. handwritten tests, random code) but these would be a
-> good start.
+Thanks,
 
-Emphatic nod. We all trust Paulus to get this right, but I for one would
-not be game to touch it without a test suite.
+-- 
+Wayne Boyer
+IBM - Beaverton, Oregon
+LTC S/W Development - eServerIO
+(503) 578-5236, T/L 775-5236
 
-It's ripe territory for a boot time selftest IMHO.
 
-cheers
-
---=-8eW06mBHzlFqplAjs9ye
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwHCNUACgkQdSjSd0sB4dL7pQCdE+5ptHAiKIInqnFCs54to/hx
-JogAnjUZUWNvHE1sN9AEk3MuKFyaUkMg
-=X7p1
------END PGP SIGNATURE-----
-
---=-8eW06mBHzlFqplAjs9ye--
+On 06/02/2010 04:16 AM, Anton Blanchard wrote:
+> 
+> Victor reported an oops during boot with 2.6.34 on a POWER6 JS22:
+> 
+> https://bugzilla.kernel.org/show_bug.cgi?id=16089
+> 
+> Checking ipr microcode levels
+> Unable to handle kernel paging request for instruction fetch
+> Faulting instruction address: 0x322d30312d31302c
+> ...
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=128 NUMA pSeries
+> last sysfs file:
+> /sys/devices/pci0000:00/0000:00:01.0/host0/target0:255:255/0:255:255:255/resource_path
+> Modules linked in:
+> NIP: 322d30312d31302c LR: 322d30312d31302d CTR: c000000000375bec
+> REGS: c0000003d360f8f0 TRAP: 0400   Not tainted  (2.6.34-vjj)
+> MSR: 8000000040009432 <EE,ME,IR,DR>  CR: 28002484  XER: 20000020
+> TASK = c0000003d587d010[5163] 'iprupdate' THREAD: c0000003d360c000 CPU: 7
+> GPR00: 322d30312d31302d c0000003d360fb70 c000000000ad07c0 00000000000185a0 
+> GPR04: 0000000000000001 c0000003d360fb10 04000affffffffff c0000000006a6700 
+> GPR08: c000000000823383 0000000000000000 0000000000000020 0000000000000000 
+> GPR12: 000000000000f032 c00000000f622e00 00000000000000ed 0000000000000000 
+> GPR16: 00000000100b8808 0000000010020000 0000000010020000 0000000010010000 
+> GPR20: 0000000010010000 0000000000000001 0000000000001000 000000001045eef8 
+> GPR24: c0000003d360fdf8 302d31342d31302d 43302d30302d3030 2d30332d44352d34 
+> GPR28: 422d33382d30302d 30302d30302d3030 2d30302d30302d30 302d30302d30302d 
+> NIP [322d30312d31302c] 0x322d30312d31302c
+> LR [322d30312d31302d] 0x322d30312d31302d
+> 
+> A stack overflow. It turns out ipr_format_resource_path writes to a
+> passed in buffer using sprintf which is dangerous and in this case looks
+> to be the cause of the overflow.
+> 
+> The following patch passes in the length of the buffer and uses snprintf,
+> which fixes the fail for me. It doesn't fix the other issue, which is
+> why the loop in ipr_format_resource_path didn't terminate in the first place.
+> That can be fixed in a follow up patch.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: linux.trees.git/drivers/scsi/ipr.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/scsi/ipr.c	2010-05-31 08:51:20.000000000 +1000
+> +++ linux.trees.git/drivers/scsi/ipr.c	2010-06-02 21:15:41.000000000 +1000
+> @@ -1132,17 +1132,20 @@ static int ipr_is_same_device(struct ipr
+>   * ipr_format_resource_path - Format the resource path for printing.
+>   * @res_path:	resource path
+>   * @buf:	buffer
+> + * @len:	length of the buffer
+>   *
+>   * Return value:
+>   * 	pointer to buffer
+>   **/
+> -static char *ipr_format_resource_path(u8 *res_path, char *buffer)
+> +static char *ipr_format_resource_path(u8 *res_path, char *buffer,
+> +				      unsigned int len)
+>  {
+>  	int i;
+> +	char *p = buffer;
+> 
+> -	sprintf(buffer, "%02X", res_path[0]);
+> +	p += snprintf(p, buffer + len - p, "%02X", res_path[0]);
+>  	for (i=1; res_path[i] != 0xff; i++)
+> -		sprintf(buffer, "%s-%02X", buffer, res_path[i]);
+> +		p += snprintf(p, buffer + len - p, "-%02X", res_path[i]);
+> 
+>  	return buffer;
+>  }
+> @@ -1187,7 +1190,8 @@ static void ipr_update_res_entry(struct 
+> 
+>  		if (res->sdev && new_path)
+>  			sdev_printk(KERN_INFO, res->sdev, "Resource path: %s\n",
+> -				    ipr_format_resource_path(&res->res_path[0], &buffer[0]));
+> +				    ipr_format_resource_path(&res->res_path[0],
+> +				    &buffer[0], sizeof(buffer)));
+>  	} else {
+>  		res->flags = cfgtew->u.cfgte->flags;
+>  		if (res->flags & IPR_IS_IOA_RESOURCE)
+> @@ -1573,7 +1577,8 @@ static void ipr_log_sis64_config_error(s
+>  		ipr_err_separator;
+> 
+>  		ipr_err("Device %d : %s", i + 1,
+> -			 ipr_format_resource_path(&dev_entry->res_path[0], &buffer[0]));
+> +			 ipr_format_resource_path(&dev_entry->res_path[0],
+> +			 &buffer[0], sizeof(buffer)));
+>  		ipr_log_ext_vpd(&dev_entry->vpd);
+> 
+>  		ipr_err("-----New Device Information-----\n");
+> @@ -1919,13 +1924,15 @@ static void ipr_log64_fabric_path(struct
+> 
+>  			ipr_hcam_err(hostrcb, "%s %s: Resource Path=%s\n",
+>  				     path_active_desc[i].desc, path_state_desc[j].desc,
+> -				     ipr_format_resource_path(&fabric->res_path[0], &buffer[0]));
+> +				     ipr_format_resource_path(&fabric->res_path[0],
+> +				     &buffer[0], sizeof(buffer)));
+>  			return;
+>  		}
+>  	}
+> 
+>  	ipr_err("Path state=%02X Resource Path=%s\n", path_state,
+> -		ipr_format_resource_path(&fabric->res_path[0], &buffer[0]));
+> +		ipr_format_resource_path(&fabric->res_path[0], &buffer[0],
+> +		sizeof(buffer)));
+>  }
+> 
+>  static const struct {
+> @@ -2066,7 +2073,9 @@ static void ipr_log64_path_elem(struct i
+> 
+>  			ipr_hcam_err(hostrcb, "%s %s: Resource Path=%s, Link rate=%s, WWN=%08X%08X\n",
+>  				     path_status_desc[j].desc, path_type_desc[i].desc,
+> -				     ipr_format_resource_path(&cfg->res_path[0], &buffer[0]),
+> +				     ipr_format_resource_path(&cfg->res_path[0],
+> +							      &buffer[0],
+> +							      sizeof(buffer)),
+>  				     link_rate[cfg->link_rate & IPR_PHY_LINK_RATE_MASK],
+>  				     be32_to_cpu(cfg->wwid[0]), be32_to_cpu(cfg->wwid[1]));
+>  			return;
+> @@ -2074,7 +2083,8 @@ static void ipr_log64_path_elem(struct i
+>  	}
+>  	ipr_hcam_err(hostrcb, "Path element=%02X: Resource Path=%s, Link rate=%s "
+>  		     "WWN=%08X%08X\n", cfg->type_status,
+> -		     ipr_format_resource_path(&cfg->res_path[0], &buffer[0]),
+> +		     ipr_format_resource_path(&cfg->res_path[0], &buffer[0],
+> +		     sizeof(buffer)),
+>  		     link_rate[cfg->link_rate & IPR_PHY_LINK_RATE_MASK],
+>  		     be32_to_cpu(cfg->wwid[0]), be32_to_cpu(cfg->wwid[1]));
+>  }
+> @@ -2139,7 +2149,8 @@ static void ipr_log_sis64_array_error(st
+> 
+>  	ipr_err("RAID %s Array Configuration: %s\n",
+>  		error->protection_level,
+> -		ipr_format_resource_path(&error->last_res_path[0], &buffer[0]));
+> +		ipr_format_resource_path(&error->last_res_path[0], &buffer[0],
+> +					 sizeof(buffer)));
+> 
+>  	ipr_err_separator;
+> 
+> @@ -2160,9 +2171,12 @@ static void ipr_log_sis64_array_error(st
+>  		ipr_err("Array Member %d:\n", i);
+>  		ipr_log_ext_vpd(&array_entry->vpd);
+>  		ipr_err("Current Location: %s",
+> -			 ipr_format_resource_path(&array_entry->res_path[0], &buffer[0]));
+> +			 ipr_format_resource_path(&array_entry->res_path[0],
+> +						  &buffer[0],
+> +						  sizeof(buffer)));
+>  		ipr_err("Expected Location: %s",
+> -			 ipr_format_resource_path(&array_entry->expected_res_path[0], &buffer[0]));
+> +			 ipr_format_resource_path(&array_entry->expected_res_path[0],
+> +						  &buffer[0], sizeof(buffer)));
+> 
+>  		ipr_err_separator;
+>  	}
+> @@ -4099,7 +4113,9 @@ static ssize_t ipr_show_resource_path(st
+>  	res = (struct ipr_resource_entry *)sdev->hostdata;
+>  	if (res)
+>  		len = snprintf(buf, PAGE_SIZE, "%s\n",
+> -			       ipr_format_resource_path(&res->res_path[0], &buffer[0]));
+> +			       ipr_format_resource_path(&res->res_path[0],
+> +							&buffer[0],
+> +							sizeof(buffer)));
+>  	spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
+>  	return len;
+>  }
+> @@ -4351,7 +4367,9 @@ static int ipr_slave_configure(struct sc
+>  			scsi_adjust_queue_depth(sdev, 0, sdev->host->cmd_per_lun);
+>  		if (ioa_cfg->sis64)
+>  			sdev_printk(KERN_INFO, sdev, "Resource path: %s\n",
+> -			            ipr_format_resource_path(&res->res_path[0], &buffer[0]));
+> +			            ipr_format_resource_path(&res->res_path[0],
+> +							     &buffer[0],
+> +							     sizeof(buffer)));
+>  		return 0;
+>  	}
+>  	spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
+> Index: linux.trees.git/drivers/scsi/ipr.h
+> ===================================================================
+> --- linux.trees.git.orig/drivers/scsi/ipr.h	2010-05-31 08:51:20.000000000 +1000
+> +++ linux.trees.git/drivers/scsi/ipr.h	2010-06-02 21:15:41.000000000 +1000
+> @@ -1685,7 +1685,8 @@ struct ipr_ucode_image_header {
+>  		if ((hostrcb)->ioa_cfg->sis64) {			\
+>  			printk(KERN_ERR IPR_NAME ": %s: " fmt, 		\
+>  				ipr_format_resource_path(&hostrcb->hcam.u.error64.fd_res_path[0], \
+> -					&hostrcb->rp_buffer[0]),	\
+> +					&hostrcb->rp_buffer[0],		\
+> +					sizeof(hostrcb->rp_buffer)),	\
+>  				__VA_ARGS__);				\
+>  		} else {						\
+>  			ipr_ra_err((hostrcb)->ioa_cfg,			\
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
