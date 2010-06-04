@@ -1,21 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3210AB7D1A
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 00:08:37 +1000 (EST)
-Subject: Re: [PATCH] kvm/powerpc: fix a build error in e500_tlb.c
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1275544348-3469-1-git-send-email-haokexin@gmail.com>
-Date: Fri, 4 Jun 2010 16:08:28 +0200
-Message-Id: <2D345913-D563-40A0-AC13-BE897B6F9B4C@suse.de>
-References: <1275544348-3469-1-git-send-email-haokexin@gmail.com>
-To: Kevin Hao <haokexin@gmail.com>
-Cc: "kvm@vger.kernel.org list" <kvm@vger.kernel.org>,
-	Marcelo Tosatti <mtosatti@redhat.com>, linuxppc-dev@ozlabs.org,
-	Avi Kivity <avi@redhat.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 00063B7D43
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 01:46:59 +1000 (EST)
+Received: by pwi5 with SMTP id 5so360889pwi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 08:46:58 -0700 (PDT)
+MIME-Version: 1.0
+Sender: timur.tabi@gmail.com
+In-Reply-To: <20100601113801.5b0ff773@wker>
+References: <1272584978-19063-1-git-send-email-agust@denx.de>
+	<y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad@mail.gmail.com>
+	<20100601113801.5b0ff773@wker>
+From: Timur Tabi <timur@freescale.com>
+Date: Fri, 4 Jun 2010 10:46:28 -0500
+Message-ID: <AANLkTims596hCnLgN5Po6nS1bRFxKywEDlBA4mlreciV@mail.gmail.com>
+Subject: Re: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jun 1, 2010 at 4:38 AM, Anatolij Gustschin <agust@denx.de> wrote:
 
-On 03.06.2010, at 07:52, Kevin Hao wrote:
+> Could you please test these patches on MPC8610 HPCD? I think these
+> changes won't break that platform. The patches apply cleanly on
+> 2.6.35-rc1.
 
-> We use the wrong number arguments when invoking trace_kvm_stlb_inval,
-> and cause the following build error.
-> arch/powerpc/kvm/e500_tlb.c: In function =
-'kvmppc_e500_stlbe_invalidate':
-> arch/powerpc/kvm/e500_tlb.c:230: error: too many arguments to function =
-'trace_kvm_stlb_inval'
+I'll try to get to them as soon as I can.
 
-Liu, I'd like to get an ack from you here.
-
-Alex
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
