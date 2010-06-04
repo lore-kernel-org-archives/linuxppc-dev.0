@@ -1,18 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 4 Jun 2010 19:06:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 0/5] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver
-	XXII
-Message-ID: <20100604090648.GC26154@brick.ozlabs.ibm.com>
-References: <20100528063924.GA8679@in.ibm.com>
-	<20100602113316.GA17061@brick.ozlabs.ibm.com>
-	<20100604065145.GA2408@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100604065145.GA2408@in.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>
+Return-Path: <rsarmah@amcc.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 40045B7D6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jun 2010 20:03:40 +1000 (EST)
+Date: Fri, 4 Jun 2010 15:33:12 +0530
+From: Rupjyoti  Sarmah <rsarmah@amcc.com>
+Message-Id: <201006041003.o54A3CIi024533@amcc.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]Device tree update for the 460ex DWC SATA<resubmission>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, rsarmah@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 04, 2010 at 12:21:45PM +0530, K.Prasad wrote:
 
-> Meanwhile I tested the per-cpu breakpoints with the new emulate_step
-> patch (refer linuxppc-dev message-id:
-> 20100602112903.GB30149@brick.ozlabs.ibm.com) and they continue to fail
-> due to emulate_step() failure, in my case, on a "lwz r0,0(r28)"
-> instruction.
+Device tree update for the Applied micro processor 460ex on-chip SATA
+Signed-off-by: Rupjyoti Sarmah <rsarmah@amcc.com>
+---
+ arch/powerpc/boot/dts/canyonlands.dts |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Strange, what was in r28?  The emulator should handle that instruction.
-
-> About the latest patchset, given that we chose to ignore extraneous
-> interrupts for non-ptrace breakpoints, I thought that re-using
-> current->thread.ptrace_bps as a flag would be efficient than introducing
-> a new member in 'struct thread_struct' to do the same. I'm not sure if
-> you foresee any issues with that.
-
-I just wonder what provides exclusion between its use as a flag and
-its use to hold a real ptrace breakpoint.  As far as I can see nothing
-does.  If there is something, it's off in some other source file,
-unless I'm missing something.  And in that case there should be a bit
-fat comment explaining why it's safe.
-
-> If so, I'd like to send a new patch (rather than a new version of the
-> complete patchset) to fix it along with the dangling put_cpu() in
-> arch_unregister_hw_breakpoint() (I forgot to remove parts of the code
-> between versions XIX and XX).
-
-OK.
-
-Paul.
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index cd56bb5..3f86564 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -163,6 +163,14 @@
+ 			interrupts = <0x1e 4>;
+ 		};
+ 
++		SATA0: sata@bffd1000 {
++			compatible = "amcc,sata-460ex";
++			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
++			interrupt-parent = <&UIC3>;
++			interrupts = <0x0 0x4       /* SATA */
++				      0x5 0x4>;     /* AHBDMA */
++		};
++
+ 		POB0: opb {
+ 			compatible = "ibm,opb-460ex", "ibm,opb";
+ 			#address-cells = <1>;
+-- 
+1.5.6.3
