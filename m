@@ -1,23 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 879FCB7D43
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:21:41 +1000 (EST)
-Received: by gyf2 with SMTP id 2so1218051gyf.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:21:39 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100604205930.2762.17131.stgit@angua>
-References: <20100604205930.2762.17131.stgit@angua>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH 3/5] of/irq: merge of_irq_find_parent()
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 4 Jun 2010 15:13:35 -0600
-Message-ID: <AANLkTim24kEYJplwHYgZK0EGRm_7LtQ3fWm8OmC9rvTK@mail.gmail.com>
-Subject: [PATCH 0/2] Replace of_device with platform_device
-To: David Miller <davem@davemloft.net>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michal Simek <monstr@monstr.eu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org,
-	microblaze-uclinux@itee.uq.edu.au
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Fri, 04 Jun 2010 15:21:45 -0600
+Message-ID: <20100604212145.10552.95452.stgit@angua>
+In-Reply-To: <20100604212134.10552.70717.stgit@angua>
+References: <20100604212134.10552.70717.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
+	microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +20,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is based on Linus' current tree. =A0It eliminate struct
-of_device in preparation for the merge of of_platform_bus_type and
-platform_bus_type.
+Merge common code between PowerPC and Microblaze.  Also create a new
+arch hook, of_irq_find_parent_by_phandle() to handle arch-specific
+quirks.
 
-Assuming there are no objections, I'll be putting these to linux-next
-to stew sometime next week.
-
-g.
-
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: Michal Simek <monstr@monstr.eu>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: microblaze-uclinux@itee.uq.edu.au
+CC: linuxppc-dev@lists.ozlabs.org
+CC: devicetree-discuss@lists.ozlabs.org
 ---
+ arch/microblaze/kernel/prom_parse.c |   22 +++-------------------
+ arch/powerpc/kernel/prom_parse.c    |   30 +++++-------------------------
+ drivers/of/irq.c                    |   28 ++++++++++++++++++++++++++++
+ include/linux/of_irq.h              |    2 ++
+ 4 files changed, 38 insertions(+), 44 deletions(-)
 
-Grant Likely (2):
-=A0 =A0 =A0sparc/of: Move of_device fields into struct pdev_archdata
-=A0 =A0 =A0of: kill struct of_device
-
-
-=A0arch/microblaze/include/asm/of_device.h | =A0 10 ----------
-=A0arch/powerpc/include/asm/of_device.h =A0 =A0| =A0 11 -----------
-=A0arch/powerpc/include/asm/smu.h =A0 =A0 =A0 =A0 =A0| =A0 =A04 ++--
-=A0arch/sparc/include/asm/device.h =A0 =A0 =A0 =A0 | =A0 =A09 +++++++--
-=A0arch/sparc/include/asm/floppy_64.h =A0 =A0 =A0| =A0 =A04 ++--
-=A0arch/sparc/include/asm/of_device.h =A0 =A0 =A0| =A0 19 -----------------=
---
-=A0arch/sparc/include/asm/parport.h =A0 =A0 =A0 =A0| =A0 =A04 ++--
-=A0arch/sparc/kernel/of_device_32.c =A0 =A0 =A0 =A0| =A0 28 ++++++++++++---=
--------------
-=A0arch/sparc/kernel/of_device_64.c =A0 =A0 =A0 =A0| =A0 24 ++++++++++-----=
----------
-=A0arch/sparc/kernel/of_device_common.c =A0 =A0| =A0 =A04 ++--
-=A0arch/sparc/kernel/pci.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0arch/sparc/kernel/pci_psycho.c =A0 =A0 =A0 =A0 =A0| =A0 =A08 ++++----
-=A0arch/sparc/kernel/pci_sabre.c =A0 =A0 =A0 =A0 =A0 | =A0 =A08 ++++----
-=A0arch/sparc/kernel/pci_schizo.c =A0 =A0 =A0 =A0 =A0| =A0 20 ++++++++++---=
--------
-=A0arch/sparc/kernel/power.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0drivers/atm/fore200e.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 +-
-=A0drivers/input/serio/i8042-sparcio.h =A0 =A0 | =A0 =A08 ++++----
-=A0drivers/net/myri_sbus.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0drivers/net/niu.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A06=
- +++---
-=A0drivers/net/niu.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A04=
- ++--
-=A0drivers/net/sunbmac.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0drivers/net/sunhme.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A06 +=
-++---
-=A0drivers/net/sunlance.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 +-
-=A0drivers/net/sunqe.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A06 +=
-++---
-=A0drivers/parport/parport_sunbpp.c =A0 =A0 =A0 =A0| =A0 =A02 +-
-=A0drivers/sbus/char/bbc_i2c.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A06 +++---
-=A0drivers/sbus/char/uctrl.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0drivers/scsi/qlogicpti.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 ++--
-=A0drivers/scsi/sun_esp.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 +-
-=A0drivers/serial/sunhv.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A04 ++-=
+diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
+index af1b2a7..946f14d 100644
+--- a/arch/microblaze/kernel/prom_parse.c
++++ b/arch/microblaze/kernel/prom_parse.c
+@@ -648,25 +648,9 @@ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
+  * Interrupt remapper
+  */
+ 
+-static struct device_node *of_irq_find_parent(struct device_node *child)
++struct device_node *of_irq_find_parent_by_phandle(phandle p)
+ {
+-	struct device_node *p;
+-	const phandle *parp;
 -
-=A0drivers/serial/sunsab.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0drivers/serial/sunsu.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 +-
-=A0drivers/serial/sunzilog.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 10 +++++----=
+-	if (!of_node_get(child))
+-		return NULL;
 -
-=A0drivers/watchdog/cpwd.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0include/linux/of_device.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 17 +++++++++=
-++++++++
-=A0sound/sparc/amd7930.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
-=A0sound/sparc/cs4231.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 14 +++=
-++++-------
-=A0sound/sparc/dbri.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02=
- +-
-=A038 files changed, 120 insertions(+), 146 deletions(-)
-
---
-Signature
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-	do {
+-		parp = of_get_property(child, "interrupt-parent", NULL);
+-		if (parp == NULL)
+-			p = of_get_parent(child);
+-		else
+-			p = of_find_node_by_phandle(*parp);
+-		of_node_put(child);
+-		child = p;
+-	} while (p && of_get_property(p, "#interrupt-cells", NULL) == NULL);
+-
+-	return p;
++	return of_find_node_by_phandle(p);
+ }
+ 
+ int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
+@@ -783,7 +767,7 @@ int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
+ 			pr_debug(" -> match=%d (imaplen=%d)\n", match, imaplen);
+ 
+ 			/* Get the interrupt parent */
+-			newpar = of_find_node_by_phandle((phandle)*imap);
++			newpar = of_irq_find_parent_by_phandle((phandle)*imap);
+ 			imap++;
+ 			--imaplen;
+ 
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 8362620..39e977d 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -685,29 +685,12 @@ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
+ static unsigned int of_irq_workarounds;
+ static struct device_node *of_irq_dflt_pic;
+ 
+-static struct device_node *of_irq_find_parent(struct device_node *child)
++struct device_node *of_irq_find_parent_by_phandle(phandle p)
+ {
+-	struct device_node *p;
+-	const phandle *parp;
+-
+-	if (!of_node_get(child))
+-		return NULL;
+-
+-	do {
+-		parp = of_get_property(child, "interrupt-parent", NULL);
+-		if (parp == NULL)
+-			p = of_get_parent(child);
+-		else {
+-			if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
+-				p = of_node_get(of_irq_dflt_pic);
+-			else
+-				p = of_find_node_by_phandle(*parp);
+-		}
+-		of_node_put(child);
+-		child = p;
+-	} while (p && of_get_property(p, "#interrupt-cells", NULL) == NULL);
++	if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
++		return of_node_get(of_irq_dflt_pic);
+ 
+-	return p;
++	return of_find_node_by_phandle(p);
+ }
+ 
+ /* This doesn't need to be called if you don't have any special workaround
+@@ -859,10 +842,7 @@ int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
+ 			DBG(" -> match=%d (imaplen=%d)\n", match, imaplen);
+ 
+ 			/* Get the interrupt parent */
+-			if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
+-				newpar = of_node_get(of_irq_dflt_pic);
+-			else
+-				newpar = of_find_node_by_phandle((phandle)*imap);
++			newpar = of_irq_find_parent_by_phandle((phandle)*imap);
+ 			imap++;
+ 			--imaplen;
+ 
+diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+index 56ad1aa..ad569ca 100644
+--- a/drivers/of/irq.c
++++ b/drivers/of/irq.c
+@@ -24,6 +24,34 @@
+ #include <linux/of_irq.h>
+ #include <linux/string.h>
+ 
++/**
++ * of_irq_find_parent - Given a device node, find its interrupt parent node
++ * @child: pointer to device node
++ *
++ * Returns a pointer to the interrupt parent node, or NULL if the interrupt
++ * parent could not be determined.
++ */
++struct device_node *of_irq_find_parent(struct device_node *child)
++{
++	struct device_node *p;
++	const phandle *parp;
++
++	if (!of_node_get(child))
++		return NULL;
++
++	do {
++		parp = of_get_property(child, "interrupt-parent", NULL);
++		if (parp == NULL)
++			p = of_get_parent(child);
++		else
++			p = of_irq_find_parent_by_phandle(*parp);
++		of_node_put(child);
++		child = p;
++	} while (p && of_get_property(p, "#interrupt-cells", NULL) == NULL);
++
++	return p;
++}
++
+ unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
+ {
+ 	struct of_irq oirq;
+diff --git a/include/linux/of_irq.h b/include/linux/of_irq.h
+index 0e37c05..f98b27b 100644
+--- a/include/linux/of_irq.h
++++ b/include/linux/of_irq.h
+@@ -30,6 +30,8 @@ struct of_irq {
+ 	u32 specifier[OF_MAX_IRQ_SPEC]; /* Specifier copy */
+ };
+ 
++extern struct device_node *of_irq_find_parent_by_phandle(phandle p);
++extern struct device_node *of_irq_find_parent(struct device_node *child);
+ extern int of_irq_map_one(struct device_node *device, int index,
+ 			  struct of_irq *out_irq);
+ extern unsigned int irq_create_of_mapping(struct device_node *controller,
