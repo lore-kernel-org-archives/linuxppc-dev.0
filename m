@@ -1,22 +1,21 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id F1002B7DD2
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:11:43 +1000 (EST)
-Received: by pwi5 with SMTP id 5so477559pwi.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:11:43 -0700 (PDT)
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id ADF3CB7D43
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:21:40 +1000 (EST)
+Received: by pvc7 with SMTP id 7so771315pvc.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:21:39 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 2/2] of: kill struct of_device
+Subject: [PATCH 1/5] of/irq: Move irq_of_parse_and_map() to common code
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 04 Jun 2010 15:11:38 -0600
-Message-ID: <20100604211138.2762.35074.stgit@angua>
-In-Reply-To: <20100604205930.2762.17131.stgit@angua>
-References: <20100604205930.2762.17131.stgit@angua>
+Date: Fri, 04 Jun 2010 15:21:34 -0600
+Message-ID: <20100604212134.10552.70717.stgit@angua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
+	Jeremy Kerr <jeremy.kerr@canonical.com>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,189 +25,390 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that the device tree node pointer has been moved out of struct
-of_device and into the common struct device, there isn't anything
-unique about of_device anymore.  In fact, there isn't much need
-for a separate of_bus when all busses have access to OF style
-probing.
-
-arch/powerpc and arch/microblaze are moving away from using the of_bus
-and using the regular platform bus instead for mmio devices.  This
-patch makes of_device the same as platform_device as a stepping stone
-in migrating of_platform_drivers over to the platform bus.
+Merge common code between PowerPC and Microblaze.  SPARC implements
+irq_of_parse_and_map(), but the implementation is different, so it
+does not use this code.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 CC: Michal Simek <monstr@monstr.eu>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: "David S. Miller" <davem@davemloft.net>
 CC: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Jeremy Kerr <jeremy.kerr@canonical.com>
 CC: microblaze-uclinux@itee.uq.edu.au
 CC: linuxppc-dev@ozlabs.org
 CC: sparclinux@vger.kernel.org
 CC: devicetree-discuss@lists.ozlabs.org
 ---
- arch/microblaze/include/asm/of_device.h |   10 ----------
- arch/powerpc/include/asm/of_device.h    |   11 -----------
- arch/powerpc/include/asm/smu.h          |    4 ++--
- arch/sparc/include/asm/device.h         |    4 ++--
- arch/sparc/include/asm/of_device.h      |   14 --------------
- drivers/net/niu.h                       |    4 ++--
- include/linux/of_device.h               |   17 +++++++++++++++++
- 7 files changed, 23 insertions(+), 41 deletions(-)
+ arch/microblaze/include/asm/irq.h  |   13 -----------
+ arch/microblaze/include/asm/prom.h |   26 +----------------------
+ arch/microblaze/kernel/irq.c       |   14 ++----------
+ arch/powerpc/include/asm/irq.h     |   13 -----------
+ arch/powerpc/include/asm/prom.h    |   27 +-----------------------
+ arch/powerpc/kernel/irq.c          |   14 ++----------
+ arch/sparc/include/asm/prom.h      |    1 -
+ drivers/of/Kconfig                 |    4 ++++
+ drivers/of/Makefile                |    1 +
+ drivers/of/irq.c                   |   37 ++++++++++++++++++++++++++++++++
+ drivers/of/of_mdio.c               |    1 +
+ include/linux/of_irq.h             |   41 ++++++++++++++++++++++++++++++++++++
+ 12 files changed, 90 insertions(+), 102 deletions(-)
+ create mode 100644 drivers/of/irq.c
+ create mode 100644 include/linux/of_irq.h
 
-diff --git a/arch/microblaze/include/asm/of_device.h b/arch/microblaze/include/asm/of_device.h
-index 73cb980..0a5f3f9 100644
---- a/arch/microblaze/include/asm/of_device.h
-+++ b/arch/microblaze/include/asm/of_device.h
-@@ -15,16 +15,6 @@
- #include <linux/device.h>
- #include <linux/of.h>
+diff --git a/arch/microblaze/include/asm/irq.h b/arch/microblaze/include/asm/irq.h
+index 31a35c3..10d75c1 100644
+--- a/arch/microblaze/include/asm/irq.h
++++ b/arch/microblaze/include/asm/irq.h
+@@ -62,17 +62,4 @@ struct irq_host;
+ extern unsigned int irq_create_mapping(struct irq_host *host,
+ 					irq_hw_number_t hwirq);
  
--/*
-- * The of_device is a kind of "base class" that is a superset of
-- * struct device for use by devices attached to an OF node and
-- * probed using OF properties.
+-/**
+- * irq_create_of_mapping - Map a hardware interrupt into linux virq space
+- * @controller: Device node of the interrupt controller
+- * @inspec: Interrupt specifier from the device-tree
+- * @intsize: Size of the interrupt specifier from the device-tree
+- *
+- * This function is identical to irq_create_mapping except that it takes
+- * as input informations straight from the device-tree (typically the results
+- * of the of_irq_map_*() functions.
 - */
--struct of_device {
--	struct device		dev; /* Generic device interface */
--	struct pdev_archdata	archdata;
--};
+-extern unsigned int irq_create_of_mapping(struct device_node *controller,
+-					u32 *intspec, unsigned int intsize);
 -
- extern ssize_t of_device_get_modalias(struct of_device *ofdev,
- 					char *str, ssize_t len);
+ #endif /* _ASM_MICROBLAZE_IRQ_H */
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+index e7d67a3..e9fb2eb 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -20,6 +20,7 @@
+ #ifndef __ASSEMBLY__
  
-diff --git a/arch/powerpc/include/asm/of_device.h b/arch/powerpc/include/asm/of_device.h
-index 444e97e..cb36632 100644
---- a/arch/powerpc/include/asm/of_device.h
-+++ b/arch/powerpc/include/asm/of_device.h
-@@ -5,17 +5,6 @@
- #include <linux/device.h>
- #include <linux/of.h>
- 
--/*
-- * The of_device is a kind of "base class" that is a superset of
-- * struct device for use by devices attached to an OF node and
-- * probed using OF properties.
-- */
--struct of_device
--{
--	struct device		dev;		/* Generic device interface */
--	struct pdev_archdata	archdata;
--};
--
- extern struct of_device *of_device_alloc(struct device_node *np,
- 					 const char *bus_id,
- 					 struct device *parent);
-diff --git a/arch/powerpc/include/asm/smu.h b/arch/powerpc/include/asm/smu.h
-index 7ae2753..e3bdada 100644
---- a/arch/powerpc/include/asm/smu.h
-+++ b/arch/powerpc/include/asm/smu.h
-@@ -457,8 +457,8 @@ extern void smu_poll(void);
+ #include <linux/types.h>
++#include <linux/of_irq.h>
+ #include <linux/of_fdt.h>
+ #include <linux/proc_fs.h>
+ #include <linux/platform_device.h>
+@@ -92,18 +93,6 @@ extern const void *of_get_mac_address(struct device_node *np);
+  * OF interrupt mapping
   */
- extern int smu_init(void);
- extern int smu_present(void);
--struct of_device;
--extern struct of_device *smu_get_ofdev(void);
-+struct platform_device;
-+extern struct platform_device *smu_get_ofdev(void);
  
- 
- /*
-diff --git a/arch/sparc/include/asm/device.h b/arch/sparc/include/asm/device.h
-index f9740d0..fb220e4 100644
---- a/arch/sparc/include/asm/device.h
-+++ b/arch/sparc/include/asm/device.h
-@@ -9,13 +9,13 @@
- #include <asm/openprom.h>
- 
- struct device_node;
--struct of_device;
-+struct platform_device;
- 
- struct dev_archdata {
- 	void			*iommu;
- 	void			*stc;
- 	void			*host_controller;
--	struct of_device	*op;
-+	struct platform_device	*op;
- 	int			numa_node;
- };
- 
-diff --git a/arch/sparc/include/asm/of_device.h b/arch/sparc/include/asm/of_device.h
-index 6d1844a..22b9828 100644
---- a/arch/sparc/include/asm/of_device.h
-+++ b/arch/sparc/include/asm/of_device.h
-@@ -7,20 +7,6 @@
- #include <linux/mod_devicetable.h>
- #include <asm/openprom.h>
- 
--/*
-- * The of_device is a kind of "base class" that is a superset of
-- * struct device for use by devices attached to an OF node and
-- * probed using OF properties.
+-/* This structure is returned when an interrupt is mapped. The controller
+- * field needs to be put() after use
 - */
--struct of_device
--{
--	struct device			dev;
--	u32				num_resources;
--	struct resource			*resource;
 -
--	struct pdev_archdata		archdata;
+-#define OF_MAX_IRQ_SPEC		4 /* We handle specifiers of at most 4 cells */
+-
+-struct of_irq {
+-	struct device_node *controller; /* Interrupt controller node */
+-	u32 size; /* Specifier size */
+-	u32 specifier[OF_MAX_IRQ_SPEC]; /* Specifier copy */
 -};
 -
- extern void __iomem *of_ioremap(struct resource *res, unsigned long offset, unsigned long size, char *name);
- extern void of_iounmap(struct resource *res, void __iomem *base, unsigned long size);
+ /**
+  * of_irq_map_init - Initialize the irq remapper
+  * @flags:	flags defining workarounds to enable
+@@ -139,19 +128,6 @@ extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
+ 			struct of_irq *out_irq);
  
-diff --git a/drivers/net/niu.h b/drivers/net/niu.h
-index d671546..a41fa8e 100644
---- a/drivers/net/niu.h
-+++ b/drivers/net/niu.h
-@@ -3236,7 +3236,7 @@ struct niu_phy_ops {
- 	int (*link_status)(struct niu *np, int *);
- };
+ /**
+- * of_irq_map_one - Resolve an interrupt for a device
+- * @device:	the device whose interrupt is to be resolved
+- * @index:	index of the interrupt to resolve
+- * @out_irq:	structure of_irq filled by this function
+- *
+- * This function resolves an interrupt, walking the tree, for a given
+- * device-tree node. It's the high level pendant to of_irq_map_raw().
+- * It also implements the workarounds for OldWolrd Macs.
+- */
+-extern int of_irq_map_one(struct device_node *device, int index,
+-			struct of_irq *out_irq);
+-
+-/**
+  * of_irq_map_pci - Resolve the interrupt for a PCI device
+  * @pdev:	the device whose interrupt is to be resolved
+  * @out_irq:	structure of_irq filled by this function
+diff --git a/arch/microblaze/kernel/irq.c b/arch/microblaze/kernel/irq.c
+index 8f120ac..dd32b09 100644
+--- a/arch/microblaze/kernel/irq.c
++++ b/arch/microblaze/kernel/irq.c
+@@ -17,20 +17,10 @@
+ #include <linux/seq_file.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/irq.h>
++#include <linux/of_irq.h>
  
--struct of_device;
-+struct platform_device;
- struct niu {
- 	void __iomem			*regs;
- 	struct net_device		*dev;
-@@ -3297,7 +3297,7 @@ struct niu {
- 	struct niu_vpd			vpd;
- 	u32				eeprom_len;
+ #include <asm/prom.h>
  
--	struct of_device		*op;
-+	struct platform_device		*op;
- 	void __iomem			*vir_regs_1;
- 	void __iomem			*vir_regs_2;
- };
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index 11651fa..a3ae590 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -3,9 +3,26 @@
+-unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
+-{
+-	struct of_irq oirq;
+-
+-	if (of_irq_map_one(dev, index, &oirq))
+-		return NO_IRQ;
+-
+-	return oirq.specifier[0];
+-}
+-EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
+-
+ static u32 concurrent_irq;
  
- #ifdef CONFIG_OF_DEVICE
- #include <linux/device.h>
-+#include <linux/platform_device.h>
+ void __irq_entry do_IRQ(struct pt_regs *regs)
+@@ -104,7 +94,7 @@ unsigned int irq_create_mapping(struct irq_host *host, irq_hw_number_t hwirq)
+ EXPORT_SYMBOL_GPL(irq_create_mapping);
+ 
+ unsigned int irq_create_of_mapping(struct device_node *controller,
+-					u32 *intspec, unsigned int intsize)
++				   const u32 *intspec, unsigned int intsize)
+ {
+ 	return intspec[0];
+ }
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index e054bae..a3b5124 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -304,19 +304,6 @@ extern void irq_free_virt(unsigned int virq, unsigned int count);
+ /* -- OF helpers -- */
+ 
+ /**
+- * irq_create_of_mapping - Map a hardware interrupt into linux virq space
+- * @controller: Device node of the interrupt controller
+- * @inspec: Interrupt specifier from the device-tree
+- * @intsize: Size of the interrupt specifier from the device-tree
+- *
+- * This function is identical to irq_create_mapping except that it takes
+- * as input informations straight from the device-tree (typically the results
+- * of the of_irq_map_*() functions.
+- */
+-extern unsigned int irq_create_of_mapping(struct device_node *controller,
+-					  const u32 *intspec, unsigned int intsize);
+-
+-/**
+  * irq_of_parse_and_map - Parse and Map an interrupt into linux virq space
+  * @device: Device node of the device whose interrupt is to be mapped
+  * @index: Index of the interrupt to map
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index ddd408a..47d41b6 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -18,6 +18,7 @@
+  */
+ #include <linux/types.h>
+ #include <linux/of_fdt.h>
++#include <linux/of_irq.h>
+ #include <linux/proc_fs.h>
+ #include <linux/platform_device.h>
+ #include <asm/irq.h>
+@@ -108,18 +109,6 @@ extern const void *of_get_mac_address(struct device_node *np);
+  * OF interrupt mapping
+  */
+ 
+-/* This structure is returned when an interrupt is mapped. The controller
+- * field needs to be put() after use
+- */
+-
+-#define OF_MAX_IRQ_SPEC		 4 /* We handle specifiers of at most 4 cells */
+-
+-struct of_irq {
+-	struct device_node *controller;	/* Interrupt controller node */
+-	u32 size;			/* Specifier size */
+-	u32 specifier[OF_MAX_IRQ_SPEC];	/* Specifier copy */
+-};
+-
+ /**
+  * of_irq_map_init - Initialize the irq remapper
+  * @flags:	flags defining workarounds to enable
+@@ -154,20 +143,6 @@ extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
+ 			  u32 ointsize, const u32 *addr,
+ 			  struct of_irq *out_irq);
+ 
+-
+-/**
+- * of_irq_map_one - Resolve an interrupt for a device
+- * @device:	the device whose interrupt is to be resolved
+- * @index:     	index of the interrupt to resolve
+- * @out_irq:	structure of_irq filled by this function
+- *
+- * This function resolves an interrupt, walking the tree, for a given
+- * device-tree node. It's the high level pendant to of_irq_map_raw().
+- * It also implements the workarounds for OldWolrd Macs.
+- */
+-extern int of_irq_map_one(struct device_node *device, int index,
+-			  struct of_irq *out_irq);
+-
+ /**
+  * of_irq_map_pci - Resolve the interrupt for a PCI device
+  * @pdev:	the device whose interrupt is to be resolved
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 30817d9..2676ef2 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -53,6 +53,8 @@
+ #include <linux/bootmem.h>
+ #include <linux/pci.h>
+ #include <linux/debugfs.h>
++#include <linux/of.h>
++#include <linux/of_irq.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -813,18 +815,6 @@ unsigned int irq_create_of_mapping(struct device_node *controller,
+ }
+ EXPORT_SYMBOL_GPL(irq_create_of_mapping);
+ 
+-unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
+-{
+-	struct of_irq oirq;
+-
+-	if (of_irq_map_one(dev, index, &oirq))
+-		return NO_IRQ;
+-
+-	return irq_create_of_mapping(oirq.controller, oirq.specifier,
+-				     oirq.size);
+-}
+-EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
+-
+ void irq_dispose_mapping(unsigned int virq)
+ {
+ 	struct irq_host *host;
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index f845828..ac69574 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -56,7 +56,6 @@ extern void of_fill_in_cpu_data(void);
+  * register them in the of_device objects, whereas powerpc computes them
+  * on request.
+  */
+-extern unsigned int irq_of_parse_and_map(struct device_node *node, int index);
+ static inline void irq_dispose_mapping(unsigned int virq)
+ {
+ }
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index 7cecc8f..b87495e 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -6,6 +6,10 @@ config OF_DYNAMIC
+ 	def_bool y
+ 	depends on OF && PPC_OF
+ 
++config OF_IRQ
++	def_bool y
++	depends on OF && !SPARC
++
+ config OF_DEVICE
+ 	def_bool y
+ 	depends on OF && (SPARC || PPC_OF || MICROBLAZE)
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index f232cc9..3631a5e 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -1,5 +1,6 @@
+ obj-y = base.o
+ obj-$(CONFIG_OF_FLATTREE) += fdt.o
++obj-$(CONFIG_OF_IRQ)    += irq.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
+diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+new file mode 100644
+index 0000000..56ad1aa
+--- /dev/null
++++ b/drivers/of/irq.c
+@@ -0,0 +1,37 @@
++/*
++ *  Derived from arch/i386/kernel/irq.c
++ *    Copyright (C) 1992 Linus Torvalds
++ *  Adapted from arch/i386 by Gary Thomas
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *  Updated and modified by Cort Dougan <cort@fsmlabs.com>
++ *    Copyright (C) 1996-2001 Cort Dougan
++ *  Adapted for Power Macintosh by Paul Mackerras
++ *    Copyright (C) 1996 Paul Mackerras (paulus@cs.anu.edu.au)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * This file contains the code used to make IRQ descriptions in the
++ * device tree to actual irq numbers on an interrupt controller
++ * driver.
++ */
++
++#include <linux/errno.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_irq.h>
++#include <linux/string.h>
++
++unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
++{
++	struct of_irq oirq;
++
++	if (of_irq_map_one(dev, index, &oirq))
++		return NO_IRQ;
++
++	return irq_create_of_mapping(oirq.controller, oirq.specifier,
++				     oirq.size);
++}
++EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
+diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+index 42a6715..1fce00e 100644
+--- a/drivers/of/of_mdio.c
++++ b/drivers/of/of_mdio.c
+@@ -15,6 +15,7 @@
+ #include <linux/err.h>
+ #include <linux/phy.h>
  #include <linux/of.h>
- #include <linux/mod_devicetable.h>
++#include <linux/of_irq.h>
+ #include <linux/of_mdio.h>
+ #include <linux/module.h>
  
+diff --git a/include/linux/of_irq.h b/include/linux/of_irq.h
+new file mode 100644
+index 0000000..0e37c05
+--- /dev/null
++++ b/include/linux/of_irq.h
+@@ -0,0 +1,41 @@
++#ifndef __OF_IRQ_H
++#define __OF_IRQ_H
++
++#if defined(CONFIG_OF)
++struct of_irq;
++#include <linux/types.h>
++#include <linux/of.h>
 +
 +/*
-+ * The of_device *was* a kind of "base class" that was a superset of
-+ * struct device for use by devices attached to an OF node and probed
-+ * using OF properties.  However, the important bit of OF-style
-+ * probing, namely the device node pointer, has been moved into the
-+ * common struct device when CONFIG_OF is set to make OF-style probing
-+ * available to all bus types.  So now, just make of_device and
-+ * platform_device equivalent so that current of_platform bus users
-+ * can be transparently migrated over to using the platform bus.
-+ *
-+ * This line will go away once all references to of_device are removed
-+ * from the kernel.
++ * irq_of_parse_and_map() is used ba all OF enabled platforms; but SPARC
++ * implements it differently.  However, the prototype is the same for all,
++ * so declare it here regardless of the CONFIG_OF_IRQ setting.
 + */
-+#define of_device platform_device
++extern unsigned int irq_of_parse_and_map(struct device_node *node, int index);
 +
- #include <asm/of_device.h>
- 
- #define	to_of_device(d) container_of(d, struct of_device, dev)
++#if defined(CONFIG_OF_IRQ)
++/**
++ * of_irq - container for device_node/irq_specifier pair for an irq controller
++ * @controller: pointer to interrupt controller device tree node
++ * @size: size of interrupt specifier
++ * @specifier: array of cells @size long specifing the specific interrupt
++ *
++ * This structure is returned when an interrupt is mapped. The controller
++ * field needs to be put() after use
++ */
++#define OF_MAX_IRQ_SPEC		4 /* We handle specifiers of at most 4 cells */
++struct of_irq {
++	struct device_node *controller; /* Interrupt controller node */
++	u32 size; /* Specifier size */
++	u32 specifier[OF_MAX_IRQ_SPEC]; /* Specifier copy */
++};
++
++extern int of_irq_map_one(struct device_node *device, int index,
++			  struct of_irq *out_irq);
++extern unsigned int irq_create_of_mapping(struct device_node *controller,
++					  const u32 *intspec,
++					  unsigned int intsize);
++
++#endif /* CONFIG_OF_IRQ */
++#endif /* CONFIG_OF */
++#endif /* __OF_IRQ_H */
