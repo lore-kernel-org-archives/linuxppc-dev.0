@@ -1,22 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f203.google.com (mail-yw0-f203.google.com
-	[209.85.211.203]) by ozlabs.org (Postfix) with ESMTP id EE81AB7D1D
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:25:16 +1000 (EST)
-Received: by ywh41 with SMTP id 41so1656880ywh.9
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:25:14 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 4 Jun 2010 15:24:54 -0600
-Message-ID: <AANLkTil1-afn4-qCEAza53taNamu-agigv09VSdyB0sB@mail.gmail.com>
-Subject: [PATCH 0/5] Consolidate OF IRQ handling code
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
-	Jeremy Kerr <jeremy.kerr@canonical.com>,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <eha@doredevelopment.dk>
+Received: from zmta01.irigo.dk (zmta01.cabocomm.dk [193.200.44.52])
+	by ozlabs.org (Postfix) with ESMTP id 7C788B7D74
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:32:51 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by zmta01.irigo.dk (Postfix) with ESMTP id 54711142C1A8E
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jun 2010 23:25:19 +0200 (CEST)
+Received: from zmta01.irigo.dk ([127.0.0.1])
+	by localhost (zmta01.irigo.dk [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id wdQK60CHtnJ6 for <linuxppc-dev@ozlabs.org>;
+	Fri,  4 Jun 2010 23:25:14 +0200 (CEST)
+Received: from [192.168.1.127] (0x55532124.adsl.cybercity.dk [85.83.33.36])
+	by zmta01.irigo.dk (Postfix) with ESMTP id 0A4D4142C1A87
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jun 2010 23:25:14 +0200 (CEST)
+Subject: [PATCH 0/2] ipic and pca953x irq patches
+From: Esben Haabendal <eha@doredevelopment.dk>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 04 Jun 2010 23:25:13 +0200
+Message-ID: <1275686713.2970.12.camel@eha.doredevelopment.dk>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series merges the common IRQ handling code between Microblaze and Powerpc.
+A minor bugfix for the ipic driver, and powerpc support for pca953x irq.
 
-I'll be adding these patches to linux-next next week unless there are
-objections.
+Esben Haabendal (2):
+  powerpc: ipic: use set_irq_chip to ensure irq_chip defaults are
+    applied
+  gpio: pca953x: add powerpc irq support
 
-Cheers,
-g.
-
-Grant Likely (5):
-      of/irq: Move irq_of_parse_and_map() to common code
-      of/microblaze: strip out of_irq_workarounds code
-      of/irq: merge of_irq_find_parent()
-      of/irq: Merge of_irq_map_raw()
-      of/irq: merge of_irq_map_one()
-
- arch/microblaze/include/asm/irq.h   |   13 --
- arch/microblaze/include/asm/prom.h  |   63 +-------
- arch/microblaze/kernel/irq.c        |   14 +--
- arch/microblaze/kernel/prom_parse.c |  321 +---------------------------------
- arch/powerpc/include/asm/irq.h      |   13 --
- arch/powerpc/include/asm/prom.h     |   51 +-----
- arch/powerpc/kernel/irq.c           |   14 +--
- arch/powerpc/kernel/prom_parse.c    |  254 +--------------------------
- arch/sparc/include/asm/prom.h       |    1 -
- drivers/of/Kconfig                  |    4 +
- drivers/of/Makefile                 |    1 +
- drivers/of/irq.c                    |  336 +++++++++++++++++++++++++++++++++++
- drivers/of/of_mdio.c                |    1 +
- include/linux/of_irq.h              |   49 +++++
- 14 files changed, 405 insertions(+), 730 deletions(-)
- create mode 100644 drivers/of/irq.c
- create mode 100644 include/linux/of_irq.h
+ arch/powerpc/sysdev/ipic.c |    4 +-
+ drivers/gpio/pca953x.c     |  347 ++++++++++++++++++++++++++++++--------------
+ 2 files changed, 242 insertions(+), 109 deletions(-)
