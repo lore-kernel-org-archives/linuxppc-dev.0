@@ -1,16 +1,15 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.182])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <rsarmah@amcc.com>
+Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2DAE2B7D61
-	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jun 2010 18:30:14 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/44x: Fix UART2/3 interrupt assignment in PPC460EX/GT
-	dts files
-Date: Fri,  4 Jun 2010 10:29:59 +0200
-Message-Id: <1275640199-32680-1-git-send-email-sr@denx.de>
-Cc: Fabien Proriol <Fabien.Proriol@jdsu.com>
+	by ozlabs.org (Postfix) with ESMTPS id 11C63B7D64
+	for <linuxppc-dev@ozlabs.org>; Fri,  4 Jun 2010 18:46:18 +1000 (EST)
+Date: Fri, 4 Jun 2010 13:34:58 +0530
+From: Rupjyoti  Sarmah <rsarmah@amcc.com>
+Message-Id: <201006040804.o5484wTs005378@amcc.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]Device tree update for the 460ex DWC SATA<resubmission>
+Cc: linuxppc-dev@ozlabs.org, rsarmah@appliedmicro.com, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,64 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-UART2 and UART3 on 460EX/GT have incorrect interrupt mappings right now.
-UART2 should be 28 (0x1c) and UART3 29 (0x1d). This patch fixes this and
-switches to using decimal number instead of hex, since the AppliedMicro
-(AMCC) users manuals describe their inerrupt numbers in decimal.
 
-Thanks to Fabien Proriol for pointing this out.
-
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Fabien Proriol <Fabien.Proriol@jdsu.com>
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Device tree update for the Applied micro processor 460ex on-chip SATA
+Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
 ---
- arch/powerpc/boot/dts/canyonlands.dts |    4 ++--
- arch/powerpc/boot/dts/glacier.dts     |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/dts/canyonlands.dts |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index cd56bb5..5806ef0 100644
+index cd56bb5..3f86564 100644
 --- a/arch/powerpc/boot/dts/canyonlands.dts
 +++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -270,7 +270,7 @@
- 				clock-frequency = <0>; /* Filled in by U-Boot */
- 				current-speed = <0>; /* Filled in by U-Boot */
- 				interrupt-parent = <&UIC1>;
--				interrupts = <0x1d 0x4>;
-+				interrupts = <28 0x4>;
- 			};
+@@ -163,6 +163,14 @@
+ 			interrupts = <0x1e 4>;
+ 		};
  
- 			UART3: serial@ef600600 {
-@@ -281,7 +281,7 @@
- 				clock-frequency = <0>; /* Filled in by U-Boot */
- 				current-speed = <0>; /* Filled in by U-Boot */
- 				interrupt-parent = <&UIC1>;
--				interrupts = <0x1e 0x4>;
-+				interrupts = <29 0x4>;
- 			};
- 
- 			IIC0: i2c@ef600700 {
-diff --git a/arch/powerpc/boot/dts/glacier.dts b/arch/powerpc/boot/dts/glacier.dts
-index d62a4fb..e618fc4 100644
---- a/arch/powerpc/boot/dts/glacier.dts
-+++ b/arch/powerpc/boot/dts/glacier.dts
-@@ -259,7 +259,7 @@
- 				clock-frequency = <0>; /* Filled in by U-Boot */
- 				current-speed = <0>; /* Filled in by U-Boot */
- 				interrupt-parent = <&UIC1>;
--				interrupts = <0x1d 0x4>;
-+				interrupts = <28 0x4>;
- 			};
- 
- 			UART3: serial@ef600600 {
-@@ -270,7 +270,7 @@
- 				clock-frequency = <0>; /* Filled in by U-Boot */
- 				current-speed = <0>; /* Filled in by U-Boot */
- 				interrupt-parent = <&UIC1>;
--				interrupts = <0x1e 0x4>;
-+				interrupts = <29 0x4>;
- 			};
- 
- 			IIC0: i2c@ef600700 {
++		SATA0: sata@bffd1000 {
++			compatible = "amcc,sata-460ex";
++			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
++			interrupt-parent = <&UIC3>;
++			interrupts = <0x0 0x4       /* SATA */
++				      0x5 0x4>;     /* AHBDMA */
++		};
++
+ 		POB0: opb {
+ 			compatible = "ibm,opb-460ex", "ibm,opb";
+ 			#address-cells = <1>;
 -- 
-1.7.1
+1.5.6.3
