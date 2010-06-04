@@ -1,14 +1,14 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 3BAF4B810C
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:21:55 +1000 (EST)
-Received: by pxi6 with SMTP id 6so459142pxi.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:21:53 -0700 (PDT)
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 5F405B7E59
+	for <linuxppc-dev@ozlabs.org>; Sat,  5 Jun 2010 07:21:59 +1000 (EST)
+Received: by mail-px0-f170.google.com with SMTP id 6so459142pxi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 04 Jun 2010 14:21:59 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 4/5] of/irq: Merge of_irq_map_raw()
+Subject: [PATCH 5/5] of/irq: merge of_irq_map_one()
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 04 Jun 2010 15:21:50 -0600
-Message-ID: <20100604212150.10552.3378.stgit@angua>
+Date: Fri, 04 Jun 2010 15:21:55 -0600
+Message-ID: <20100604212155.10552.19260.stgit@angua>
 In-Reply-To: <20100604212134.10552.70717.stgit@angua>
 References: <20100604212134.10552.70717.stgit@angua>
 MIME-Version: 1.0
@@ -25,7 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and Microblaze
+Merge common implementation of of_irq_map_one().  Rename it to
+__of_irq_map_one() so that arch code can either use the stock
+implementation, or override it to handle platform quirks.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 CC: Michal Simek <monstr@monstr.eu>
@@ -36,656 +38,345 @@ CC: microblaze-uclinux@itee.uq.edu.au
 CC: linuxppc-dev@ozlabs.org
 CC: devicetree-discuss@lists.ozlabs.org
 ---
- arch/microblaze/include/asm/prom.h  |   21 ----
- arch/microblaze/kernel/prom_parse.c |  176 ---------------------------------
- arch/powerpc/include/asm/prom.h     |   21 ----
- arch/powerpc/kernel/prom_parse.c    |  171 --------------------------------
- drivers/of/irq.c                    |  188 +++++++++++++++++++++++++++++++++++
- include/linux/of_irq.h              |    2 
- 6 files changed, 190 insertions(+), 389 deletions(-)
+ arch/microblaze/include/asm/prom.h  |    3 -
+ arch/microblaze/kernel/prom_parse.c |   73 ------------------------------
+ arch/powerpc/include/asm/prom.h     |    3 -
+ arch/powerpc/kernel/prom_parse.c    |   55 -----------------------
+ drivers/of/irq.c                    |   85 +++++++++++++++++++++++++++++++++++
+ include/linux/of_irq.h              |    6 ++
+ 6 files changed, 91 insertions(+), 134 deletions(-)
 
 diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
-index da7069c..89fca70 100644
+index 89fca70..3659930 100644
 --- a/arch/microblaze/include/asm/prom.h
 +++ b/arch/microblaze/include/asm/prom.h
-@@ -94,27 +94,6 @@ extern const void *of_get_mac_address(struct device_node *np);
-  */
+@@ -107,9 +107,6 @@ extern const void *of_get_mac_address(struct device_node *np);
+ struct pci_dev;
+ extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
  
+-extern int of_irq_to_resource(struct device_node *dev, int index,
+-			struct resource *r);
+-
  /**
-- * of_irq_map_raw - Low level interrupt tree parsing
-- * @parent:	the device interrupt parent
-- * @intspec:	interrupt specifier ("interrupts" property of the device)
-- * @ointsize:	size of the passed in interrupt specifier
-- * @addr:	address specifier (start of "reg" property of the device)
-- * @out_irq:	structure of_irq filled by this function
-- *
-- * Returns 0 on success and a negative number on error
-- *
-- * This function is a low-level interrupt tree walking function. It
-- * can be used to do a partial walk with synthetized reg and interrupts
-- * properties, for example when resolving PCI interrupts when no device
-- * node exist for the parent.
-- *
-- */
--
--extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
--			u32 ointsize, const u32 *addr,
--			struct of_irq *out_irq);
--
--/**
-  * of_irq_map_pci - Resolve the interrupt for a PCI device
-  * @pdev:	the device whose interrupt is to be resolved
-  * @out_irq:	structure of_irq filled by this function
+  * of_iomap - Maps the memory mapped IO for a given device_node
+  * @device:	the device whose io range will be mapped
 diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
-index 946f14d..02ec946 100644
+index 02ec946..70c0471 100644
 --- a/arch/microblaze/kernel/prom_parse.c
 +++ b/arch/microblaze/kernel/prom_parse.c
-@@ -653,182 +653,6 @@ struct device_node *of_irq_find_parent_by_phandle(phandle p)
- 	return of_find_node_by_phandle(p);
- }
- 
--int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
--		const u32 *addr, struct of_irq *out_irq)
--{
--	struct device_node *ipar, *tnode, *old = NULL, *newpar = NULL;
--	const u32 *tmp, *imap, *imask;
--	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
--	int imaplen, match, i;
--
--	pr_debug("of_irq_map_raw: par=%s,intspec=[0x%08x 0x%08x...],"
--		"ointsize=%d\n",
--		parent->full_name, intspec[0], intspec[1], ointsize);
--
--	ipar = of_node_get(parent);
--
--	/* First get the #interrupt-cells property of the current cursor
--	 * that tells us how to interpret the passed-in intspec. If there
--	 * is none, we are nice and just walk up the tree
--	 */
--	do {
--		tmp = of_get_property(ipar, "#interrupt-cells", NULL);
--		if (tmp != NULL) {
--			intsize = *tmp;
--			break;
--		}
--		tnode = ipar;
--		ipar = of_irq_find_parent(ipar);
--		of_node_put(tnode);
--	} while (ipar);
--	if (ipar == NULL) {
--		pr_debug(" -> no parent found !\n");
--		goto fail;
--	}
--
--	pr_debug("of_irq_map_raw: ipar=%s, size=%d\n",
--			ipar->full_name, intsize);
--
--	if (ointsize != intsize)
--		return -EINVAL;
--
--	/* Look for this #address-cells. We have to implement the old linux
--	 * trick of looking for the parent here as some device-trees rely on it
--	 */
--	old = of_node_get(ipar);
--	do {
--		tmp = of_get_property(old, "#address-cells", NULL);
--		tnode = of_get_parent(old);
--		of_node_put(old);
--		old = tnode;
--	} while (old && tmp == NULL);
--	of_node_put(old);
--	old = NULL;
--	addrsize = (tmp == NULL) ? 2 : *tmp;
--
--	pr_debug(" -> addrsize=%d\n", addrsize);
--
--	/* Now start the actual "proper" walk of the interrupt tree */
--	while (ipar != NULL) {
--		/* Now check if cursor is an interrupt-controller and if it is
--		 * then we are done
--		 */
--		if (of_get_property(ipar, "interrupt-controller", NULL) !=
--				NULL) {
--			pr_debug(" -> got it !\n");
--			memcpy(out_irq->specifier, intspec,
--				intsize * sizeof(u32));
--			out_irq->size = intsize;
--			out_irq->controller = ipar;
--			of_node_put(old);
--			return 0;
--		}
--
--		/* Now look for an interrupt-map */
--		imap = of_get_property(ipar, "interrupt-map", &imaplen);
--		/* No interrupt map, check for an interrupt parent */
--		if (imap == NULL) {
--			pr_debug(" -> no map, getting parent\n");
--			newpar = of_irq_find_parent(ipar);
--			goto skiplevel;
--		}
--		imaplen /= sizeof(u32);
--
--		/* Look for a mask */
--		imask = of_get_property(ipar, "interrupt-map-mask", NULL);
--
--		/* If we were passed no "reg" property and we attempt to parse
--		 * an interrupt-map, then #address-cells must be 0.
--		 * Fail if it's not.
--		 */
--		if (addr == NULL && addrsize != 0) {
--			pr_debug(" -> no reg passed in when needed !\n");
--			goto fail;
--		}
--
--		/* Parse interrupt-map */
--		match = 0;
--		while (imaplen > (addrsize + intsize + 1) && !match) {
--			/* Compare specifiers */
--			match = 1;
--			for (i = 0; i < addrsize && match; ++i) {
--				u32 mask = imask ? imask[i] : 0xffffffffu;
--				match = ((addr[i] ^ imap[i]) & mask) == 0;
--			}
--			for (; i < (addrsize + intsize) && match; ++i) {
--				u32 mask = imask ? imask[i] : 0xffffffffu;
--				match =
--					((intspec[i-addrsize] ^ imap[i])
--						& mask) == 0;
--			}
--			imap += addrsize + intsize;
--			imaplen -= addrsize + intsize;
--
--			pr_debug(" -> match=%d (imaplen=%d)\n", match, imaplen);
--
--			/* Get the interrupt parent */
--			newpar = of_irq_find_parent_by_phandle((phandle)*imap);
--			imap++;
--			--imaplen;
--
--			/* Check if not found */
--			if (newpar == NULL) {
--				pr_debug(" -> imap parent not found !\n");
--				goto fail;
--			}
--
--			/* Get #interrupt-cells and #address-cells of new
--			 * parent
--			 */
--			tmp = of_get_property(newpar, "#interrupt-cells", NULL);
--			if (tmp == NULL) {
--				pr_debug(" -> parent lacks "
--						"#interrupt-cells!\n");
--				goto fail;
--			}
--			newintsize = *tmp;
--			tmp = of_get_property(newpar, "#address-cells", NULL);
--			newaddrsize = (tmp == NULL) ? 0 : *tmp;
--
--			pr_debug(" -> newintsize=%d, newaddrsize=%d\n",
--				newintsize, newaddrsize);
--
--			/* Check for malformed properties */
--			if (imaplen < (newaddrsize + newintsize))
--				goto fail;
--
--			imap += newaddrsize + newintsize;
--			imaplen -= newaddrsize + newintsize;
--
--			pr_debug(" -> imaplen=%d\n", imaplen);
--		}
--		if (!match)
--			goto fail;
--
--		of_node_put(old);
--		old = of_node_get(newpar);
--		addrsize = newaddrsize;
--		intsize = newintsize;
--		intspec = imap - intsize;
--		addr = intspec - addrsize;
--
--skiplevel:
--		/* Iterate again with new parent */
--		pr_debug(" -> new parent: %s\n",
--				newpar ? newpar->full_name : "<>");
--		of_node_put(ipar);
--		ipar = newpar;
--		newpar = NULL;
--	}
--fail:
--	of_node_put(ipar);
--	of_node_put(old);
--	of_node_put(newpar);
--
--	return -EINVAL;
--}
--EXPORT_SYMBOL_GPL(of_irq_map_raw);
--
+@@ -656,49 +656,7 @@ struct device_node *of_irq_find_parent_by_phandle(phandle p)
  int of_irq_map_one(struct device_node *device,
  			int index, struct of_irq *out_irq)
  {
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 47d41b6..187ef4e 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -123,27 +123,6 @@ extern const void *of_get_mac_address(struct device_node *np);
- extern void of_irq_map_init(unsigned int flags);
- 
- /**
-- * of_irq_map_raw - Low level interrupt tree parsing
-- * @parent:	the device interrupt parent
-- * @intspec:	interrupt specifier ("interrupts" property of the device)
-- * @ointsize:   size of the passed in interrupt specifier
-- * @addr:	address specifier (start of "reg" property of the device)
-- * @out_irq:	structure of_irq filled by this function
-- *
-- * Returns 0 on success and a negative number on error
-- *
-- * This function is a low-level interrupt tree walking function. It
-- * can be used to do a partial walk with synthetized reg and interrupts
-- * properties, for example when resolving PCI interrupts when no device
-- * node exist for the parent.
-- *
-- */
+-	struct device_node *p;
+-	const u32 *intspec, *tmp, *addr;
+-	u32 intsize, intlen;
+-	int res;
 -
--extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
--			  u32 ointsize, const u32 *addr,
--			  struct of_irq *out_irq);
+-	pr_debug("of_irq_map_one: dev=%s, index=%d\n",
+-			device->full_name, index);
 -
--/**
-  * of_irq_map_pci - Resolve the interrupt for a PCI device
-  * @pdev:	the device whose interrupt is to be resolved
-  * @out_irq:	structure of_irq filled by this function
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index 39e977d..89ca7b3 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -731,177 +731,6 @@ void of_irq_map_init(unsigned int flags)
- 
- }
- 
--int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
--		const u32 *addr, struct of_irq *out_irq)
--{
--	struct device_node *ipar, *tnode, *old = NULL, *newpar = NULL;
--	const u32 *tmp, *imap, *imask;
--	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
--	int imaplen, match, i;
+-	/* Get the interrupts property */
+-	intspec = of_get_property(device, "interrupts", (int *) &intlen);
+-	if (intspec == NULL)
+-		return -EINVAL;
+-	intlen /= sizeof(u32);
 -
--	DBG("of_irq_map_raw: par=%s,intspec=[0x%08x 0x%08x...],ointsize=%d\n",
--	    parent->full_name, intspec[0], intspec[1], ointsize);
+-	pr_debug(" intspec=%d intlen=%d\n", *intspec, intlen);
 -
--	ipar = of_node_get(parent);
+-	/* Get the reg property (if any) */
+-	addr = of_get_property(device, "reg", NULL);
 -
--	/* First get the #interrupt-cells property of the current cursor
--	 * that tells us how to interpret the passed-in intspec. If there
--	 * is none, we are nice and just walk up the tree
--	 */
--	do {
--		tmp = of_get_property(ipar, "#interrupt-cells", NULL);
--		if (tmp != NULL) {
--			intsize = *tmp;
--			break;
--		}
--		tnode = ipar;
--		ipar = of_irq_find_parent(ipar);
--		of_node_put(tnode);
--	} while (ipar);
--	if (ipar == NULL) {
--		DBG(" -> no parent found !\n");
--		goto fail;
--	}
--
--	DBG("of_irq_map_raw: ipar=%s, size=%d\n", ipar->full_name, intsize);
--
--	if (ointsize != intsize)
+-	/* Look for the interrupt parent. */
+-	p = of_irq_find_parent(device);
+-	if (p == NULL)
 -		return -EINVAL;
 -
--	/* Look for this #address-cells. We have to implement the old linux
--	 * trick of looking for the parent here as some device-trees rely on it
--	 */
--	old = of_node_get(ipar);
--	do {
--		tmp = of_get_property(old, "#address-cells", NULL);
--		tnode = of_get_parent(old);
--		of_node_put(old);
--		old = tnode;
--	} while(old && tmp == NULL);
--	of_node_put(old);
--	old = NULL;
--	addrsize = (tmp == NULL) ? 2 : *tmp;
--
--	DBG(" -> addrsize=%d\n", addrsize);
--
--	/* Now start the actual "proper" walk of the interrupt tree */
--	while (ipar != NULL) {
--		/* Now check if cursor is an interrupt-controller and if it is
--		 * then we are done
--		 */
--		if (of_get_property(ipar, "interrupt-controller", NULL) !=
--				NULL) {
--			DBG(" -> got it !\n");
--			memcpy(out_irq->specifier, intspec,
--			       intsize * sizeof(u32));
--			out_irq->size = intsize;
--			out_irq->controller = ipar;
--			of_node_put(old);
--			return 0;
--		}
--
--		/* Now look for an interrupt-map */
--		imap = of_get_property(ipar, "interrupt-map", &imaplen);
--		/* No interrupt map, check for an interrupt parent */
--		if (imap == NULL) {
--			DBG(" -> no map, getting parent\n");
--			newpar = of_irq_find_parent(ipar);
--			goto skiplevel;
--		}
--		imaplen /= sizeof(u32);
--
--		/* Look for a mask */
--		imask = of_get_property(ipar, "interrupt-map-mask", NULL);
--
--		/* If we were passed no "reg" property and we attempt to parse
--		 * an interrupt-map, then #address-cells must be 0.
--		 * Fail if it's not.
--		 */
--		if (addr == NULL && addrsize != 0) {
--			DBG(" -> no reg passed in when needed !\n");
--			goto fail;
--		}
--
--		/* Parse interrupt-map */
--		match = 0;
--		while (imaplen > (addrsize + intsize + 1) && !match) {
--			/* Compare specifiers */
--			match = 1;
--			for (i = 0; i < addrsize && match; ++i) {
--				u32 mask = imask ? imask[i] : 0xffffffffu;
--				match = ((addr[i] ^ imap[i]) & mask) == 0;
--			}
--			for (; i < (addrsize + intsize) && match; ++i) {
--				u32 mask = imask ? imask[i] : 0xffffffffu;
--				match =
--				   ((intspec[i-addrsize] ^ imap[i]) & mask) == 0;
--			}
--			imap += addrsize + intsize;
--			imaplen -= addrsize + intsize;
--
--			DBG(" -> match=%d (imaplen=%d)\n", match, imaplen);
--
--			/* Get the interrupt parent */
--			newpar = of_irq_find_parent_by_phandle((phandle)*imap);
--			imap++;
--			--imaplen;
--
--			/* Check if not found */
--			if (newpar == NULL) {
--				DBG(" -> imap parent not found !\n");
--				goto fail;
--			}
--
--			/* Get #interrupt-cells and #address-cells of new
--			 * parent
--			 */
--			tmp = of_get_property(newpar, "#interrupt-cells", NULL);
--			if (tmp == NULL) {
--				DBG(" -> parent lacks #interrupt-cells !\n");
--				goto fail;
--			}
--			newintsize = *tmp;
--			tmp = of_get_property(newpar, "#address-cells", NULL);
--			newaddrsize = (tmp == NULL) ? 0 : *tmp;
--
--			DBG(" -> newintsize=%d, newaddrsize=%d\n",
--			    newintsize, newaddrsize);
--
--			/* Check for malformed properties */
--			if (imaplen < (newaddrsize + newintsize))
--				goto fail;
--
--			imap += newaddrsize + newintsize;
--			imaplen -= newaddrsize + newintsize;
--
--			DBG(" -> imaplen=%d\n", imaplen);
--		}
--		if (!match)
--			goto fail;
--
--		of_node_put(old);
--		old = of_node_get(newpar);
--		addrsize = newaddrsize;
--		intsize = newintsize;
--		intspec = imap - intsize;
--		addr = intspec - addrsize;
--
--	skiplevel:
--		/* Iterate again with new parent */
--		DBG(" -> new parent: %s\n", newpar ? newpar->full_name : "<>");
--		of_node_put(ipar);
--		ipar = newpar;
--		newpar = NULL;
+-	/* Get size of interrupt specifier */
+-	tmp = of_get_property(p, "#interrupt-cells", NULL);
+-	if (tmp == NULL) {
+-		of_node_put(p);
+-		return -EINVAL;
 -	}
-- fail:
--	of_node_put(ipar);
--	of_node_put(old);
--	of_node_put(newpar);
+-	intsize = *tmp;
 -
--	return -EINVAL;
+-	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
+-
+-	/* Check index */
+-	if ((index + 1) * intsize > intlen)
+-		return -EINVAL;
+-
+-	/* Get new specifier and map it */
+-	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
+-				addr, out_irq);
+-	of_node_put(p);
+-	return res;
++	return __of_irq_map_one(device, index, out_irq);
+ }
+ EXPORT_SYMBOL_GPL(of_irq_map_one);
+ 
+@@ -740,35 +698,6 @@ const void *of_get_mac_address(struct device_node *np)
+ }
+ EXPORT_SYMBOL(of_get_mac_address);
+ 
+-int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
+-{
+-	struct of_irq out_irq;
+-	int irq;
+-	int res;
+-
+-	res = of_irq_map_one(dev, index, &out_irq);
+-
+-	/* Get irq for the device */
+-	if (res) {
+-		pr_debug("IRQ not found... code = %d", res);
+-		return NO_IRQ;
+-	}
+-	/* Assuming single interrupt controller... */
+-	irq = out_irq.specifier[0];
+-
+-	pr_debug("IRQ found = %d", irq);
+-
+-	/* Only dereference the resource if both the
+-	 * resource and the irq are valid. */
+-	if (r && irq != NO_IRQ) {
+-		r->start = r->end = irq;
+-		r->flags = IORESOURCE_IRQ;
+-	}
+-
+-	return irq;
 -}
--EXPORT_SYMBOL_GPL(of_irq_map_raw);
+-EXPORT_SYMBOL_GPL(of_irq_to_resource);
 -
- #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
- static int of_irq_map_oldworld(struct device_node *device, int index,
- 			       struct of_irq *out_irq)
+ void __iomem *of_iomap(struct device_node *np, int index)
+ {
+ 	struct resource res;
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 187ef4e..2440984 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -136,9 +136,6 @@ extern void of_irq_map_init(unsigned int flags);
+ struct pci_dev;
+ extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
+ 
+-extern int of_irq_to_resource(struct device_node *dev, int index,
+-			struct resource *r);
+-
+ /**
+  * of_iomap - Maps the memory mapped IO for a given device_node
+  * @device:	the device whose io range will be mapped
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 89ca7b3..ef518e3 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -777,49 +777,11 @@ static int of_irq_map_oldworld(struct device_node *device, int index,
+ 
+ int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq)
+ {
+-	struct device_node *p;
+-	const u32 *intspec, *tmp, *addr;
+-	u32 intsize, intlen;
+-	int res = -EINVAL;
+-
+-	DBG("of_irq_map_one: dev=%s, index=%d\n", device->full_name, index);
+-
+ 	/* OldWorld mac stuff is "special", handle out of line */
+ 	if (of_irq_workarounds & OF_IMAP_OLDWORLD_MAC)
+ 		return of_irq_map_oldworld(device, index, out_irq);
+ 
+-	/* Get the interrupts property */
+-	intspec = of_get_property(device, "interrupts", &intlen);
+-	if (intspec == NULL)
+-		return -EINVAL;
+-	intlen /= sizeof(u32);
+-
+-	/* Get the reg property (if any) */
+-	addr = of_get_property(device, "reg", NULL);
+-
+-	/* Look for the interrupt parent. */
+-	p = of_irq_find_parent(device);
+-	if (p == NULL)
+-		return -EINVAL;
+-
+-	/* Get size of interrupt specifier */
+-	tmp = of_get_property(p, "#interrupt-cells", NULL);
+-	if (tmp == NULL)
+-		goto out;
+-	intsize = *tmp;
+-
+-	DBG(" intsize=%d intlen=%d\n", intsize, intlen);
+-
+-	/* Check index */
+-	if ((index + 1) * intsize > intlen)
+-		goto out;
+-
+-	/* Get new specifier and map it */
+-	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
+-			     addr, out_irq);
+-out:
+-	of_node_put(p);
+-	return res;
++	return __of_irq_map_one(device, index, out_irq);
+ }
+ EXPORT_SYMBOL_GPL(of_irq_map_one);
+ 
+@@ -861,21 +823,6 @@ const void *of_get_mac_address(struct device_node *np)
+ }
+ EXPORT_SYMBOL(of_get_mac_address);
+ 
+-int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
+-{
+-	int irq = irq_of_parse_and_map(dev, index);
+-
+-	/* Only dereference the resource if both the
+-	 * resource and the irq are valid. */
+-	if (r && irq != NO_IRQ) {
+-		r->start = r->end = irq;
+-		r->flags = IORESOURCE_IRQ;
+-	}
+-
+-	return irq;
+-}
+-EXPORT_SYMBOL_GPL(of_irq_to_resource);
+-
+ void __iomem *of_iomap(struct device_node *np, int index)
+ {
+ 	struct resource res;
 diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-index ad569ca..351c87a 100644
+index 351c87a..dd420e5 100644
 --- a/drivers/of/irq.c
 +++ b/drivers/of/irq.c
-@@ -52,6 +52,194 @@ struct device_node *of_irq_find_parent(struct device_node *child)
- 	return p;
+@@ -31,7 +31,7 @@
+  * Returns a pointer to the interrupt parent node, or NULL if the interrupt
+  * parent could not be determined.
+  */
+-struct device_node *of_irq_find_parent(struct device_node *child)
++static struct device_node *of_irq_find_parent(struct device_node *child)
+ {
+ 	struct device_node *p;
+ 	const phandle *parp;
+@@ -240,6 +240,67 @@ int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
  }
+ EXPORT_SYMBOL_GPL(of_irq_map_raw);
  
 +/**
-+ * of_irq_map_raw - Low level interrupt tree parsing
-+ * @parent:	the device interrupt parent
-+ * @intspec:	interrupt specifier ("interrupts" property of the device)
-+ * @ointsize:	size of the passed in interrupt specifier
-+ * @addr:	address specifier (start of "reg" property of the device)
-+ * @out_irq:	structure of_irq filled by this function
++ * of_irq_map_one - Resolve an interrupt for a device
++ * @device: the device whose interrupt is to be resolved
++ * @index: index of the interrupt to resolve
++ * @out_irq: structure of_irq filled by this function
 + *
-+ * Returns 0 on success and a negative number on error
++ * This function resolves an interrupt, walking the tree, for a given
++ * device-tree node. It's the high level pendant to of_irq_map_raw().
 + *
-+ * This function is a low-level interrupt tree walking function. It
-+ * can be used to do a partial walk with synthetized reg and interrupts
-+ * properties, for example when resolving PCI interrupts when no device
-+ * node exist for the parent.
++ * Architecture code must provide of_irq_map_one() which can simply be a
++ * wrapper around __of_irq_map_one(), or can override it to deal with
++ * arch specific quirks and bugs.
 + */
-+int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
-+		const u32 *addr, struct of_irq *out_irq)
++int __of_irq_map_one(struct device_node *device, int index,
++		     struct of_irq *out_irq)
 +{
-+	struct device_node *ipar, *tnode, *old = NULL, *newpar = NULL;
-+	const u32 *tmp, *imap, *imask;
-+	u32 intsize = 1, addrsize, newintsize = 0, newaddrsize = 0;
-+	int imaplen, match, i;
++	struct device_node *p;
++	const u32 *intspec, *tmp, *addr;
++	u32 intsize, intlen;
++	int res = -EINVAL;
 +
-+	pr_debug("of_irq_map_raw: par=%s,intspec=[0x%08x 0x%08x...],ointsize=%d\n",
-+		 parent->full_name, intspec[0], intspec[1], ointsize);
++	pr_debug("of_irq_map_one: dev=%s, index=%d\n",
++		 device->full_name, index);
 +
-+	ipar = of_node_get(parent);
++	/* Get the interrupts property */
++	intspec = of_get_property(device, "interrupts", &intlen);
++	if (intspec == NULL)
++		return -EINVAL;
++	intlen /= sizeof(u32);
 +
-+	/* First get the #interrupt-cells property of the current cursor
-+	 * that tells us how to interpret the passed-in intspec. If there
-+	 * is none, we are nice and just walk up the tree
-+	 */
-+	do {
-+		tmp = of_get_property(ipar, "#interrupt-cells", NULL);
-+		if (tmp != NULL) {
-+			intsize = *tmp;
-+			break;
-+		}
-+		tnode = ipar;
-+		ipar = of_irq_find_parent(ipar);
-+		of_node_put(tnode);
-+	} while (ipar);
-+	if (ipar == NULL) {
-+		pr_debug(" -> no parent found !\n");
-+		goto fail;
-+	}
++	pr_debug(" intspec=%d intlen=%d\n", *intspec, intlen);
 +
-+	pr_debug("of_irq_map_raw: ipar=%s, size=%d\n",
-+		 ipar->full_name, intsize);
++	/* Get the reg property (if any) */
++	addr = of_get_property(device, "reg", NULL);
 +
-+	if (ointsize != intsize)
++	/* Look for the interrupt parent. */
++	p = of_irq_find_parent(device);
++	if (p == NULL)
 +		return -EINVAL;
 +
-+	/* Look for this #address-cells. We have to implement the old linux
-+	 * trick of looking for the parent here as some device-trees rely on it
-+	 */
-+	old = of_node_get(ipar);
-+	do {
-+		tmp = of_get_property(old, "#address-cells", NULL);
-+		tnode = of_get_parent(old);
-+		of_node_put(old);
-+		old = tnode;
-+	} while (old && tmp == NULL);
-+	of_node_put(old);
-+	old = NULL;
-+	addrsize = (tmp == NULL) ? 2 : *tmp;
++	/* Get size of interrupt specifier */
++	tmp = of_get_property(p, "#interrupt-cells", NULL);
++	if (tmp == NULL)
++		goto out;
++	intsize = *tmp;
 +
-+	pr_debug(" -> addrsize=%d\n", addrsize);
++	pr_debug(" intsize=%d intlen=%d\n", intsize, intlen);
 +
-+	/* Now start the actual "proper" walk of the interrupt tree */
-+	while (ipar != NULL) {
-+		/* Now check if cursor is an interrupt-controller and if it is
-+		 * then we are done
-+		 */
-+		if (of_get_property(ipar, "interrupt-controller", NULL) !=
-+				NULL) {
-+			pr_debug(" -> got it !\n");
-+			memcpy(out_irq->specifier, intspec,
-+			       intsize * sizeof(u32));
-+			out_irq->size = intsize;
-+			out_irq->controller = ipar;
-+			of_node_put(old);
-+			return 0;
-+		}
++	/* Check index */
++	if ((index + 1) * intsize > intlen)
++		goto out;
 +
-+		/* Now look for an interrupt-map */
-+		imap = of_get_property(ipar, "interrupt-map", &imaplen);
-+		/* No interrupt map, check for an interrupt parent */
-+		if (imap == NULL) {
-+			pr_debug(" -> no map, getting parent\n");
-+			newpar = of_irq_find_parent(ipar);
-+			goto skiplevel;
-+		}
-+		imaplen /= sizeof(u32);
-+
-+		/* Look for a mask */
-+		imask = of_get_property(ipar, "interrupt-map-mask", NULL);
-+
-+		/* If we were passed no "reg" property and we attempt to parse
-+		 * an interrupt-map, then #address-cells must be 0.
-+		 * Fail if it's not.
-+		 */
-+		if (addr == NULL && addrsize != 0) {
-+			pr_debug(" -> no reg passed in when needed !\n");
-+			goto fail;
-+		}
-+
-+		/* Parse interrupt-map */
-+		match = 0;
-+		while (imaplen > (addrsize + intsize + 1) && !match) {
-+			/* Compare specifiers */
-+			match = 1;
-+			for (i = 0; i < addrsize && match; ++i) {
-+				u32 mask = imask ? imask[i] : 0xffffffffu;
-+				match = ((addr[i] ^ imap[i]) & mask) == 0;
-+			}
-+			for (; i < (addrsize + intsize) && match; ++i) {
-+				u32 mask = imask ? imask[i] : 0xffffffffu;
-+				match =
-+				   ((intspec[i-addrsize] ^ imap[i]) & mask) == 0;
-+			}
-+			imap += addrsize + intsize;
-+			imaplen -= addrsize + intsize;
-+
-+			pr_debug(" -> match=%d (imaplen=%d)\n", match, imaplen);
-+
-+			/* Get the interrupt parent */
-+			newpar = of_irq_find_parent_by_phandle((phandle)*imap);
-+			imap++;
-+			--imaplen;
-+
-+			/* Check if not found */
-+			if (newpar == NULL) {
-+				pr_debug(" -> imap parent not found !\n");
-+				goto fail;
-+			}
-+
-+			/* Get #interrupt-cells and #address-cells of new
-+			 * parent
-+			 */
-+			tmp = of_get_property(newpar, "#interrupt-cells", NULL);
-+			if (tmp == NULL) {
-+				pr_debug(" -> parent lacks #interrupt-cells!\n");
-+				goto fail;
-+			}
-+			newintsize = *tmp;
-+			tmp = of_get_property(newpar, "#address-cells", NULL);
-+			newaddrsize = (tmp == NULL) ? 0 : *tmp;
-+
-+			pr_debug(" -> newintsize=%d, newaddrsize=%d\n",
-+			    newintsize, newaddrsize);
-+
-+			/* Check for malformed properties */
-+			if (imaplen < (newaddrsize + newintsize))
-+				goto fail;
-+
-+			imap += newaddrsize + newintsize;
-+			imaplen -= newaddrsize + newintsize;
-+
-+			pr_debug(" -> imaplen=%d\n", imaplen);
-+		}
-+		if (!match)
-+			goto fail;
-+
-+		of_node_put(old);
-+		old = of_node_get(newpar);
-+		addrsize = newaddrsize;
-+		intsize = newintsize;
-+		intspec = imap - intsize;
-+		addr = intspec - addrsize;
-+
-+	skiplevel:
-+		/* Iterate again with new parent */
-+		pr_debug(" -> new parent: %s\n",
-+			 newpar ? newpar->full_name : "<>");
-+		of_node_put(ipar);
-+		ipar = newpar;
-+		newpar = NULL;
-+	}
-+ fail:
-+	of_node_put(ipar);
-+	of_node_put(old);
-+	of_node_put(newpar);
-+
-+	return -EINVAL;
++	/* Get new specifier and map it */
++	res = of_irq_map_raw(p, intspec + index * intsize, intsize,
++			     addr, out_irq);
++ out:
++	of_node_put(p);
++	return res;
 +}
-+EXPORT_SYMBOL_GPL(of_irq_map_raw);
++EXPORT_SYMBOL_GPL(__of_irq_map_one);
 +
  unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
  {
  	struct of_irq oirq;
+@@ -251,3 +312,25 @@ unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
+ 				     oirq.size);
+ }
+ EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
++
++/**
++ * of_irq_to_resource - Decode a node's IRQ and return it as a resource
++ * @dev: pointer to device tree node
++ * @index: zero-based index of the irq
++ * @r: pointer to resource structure to return result into.
++ */
++unsigned int of_irq_to_resource(struct device_node *dev, int index,
++				struct resource *r)
++{
++	unsigned int irq = irq_of_parse_and_map(dev, index);
++
++	/* Only dereference the resource if both the
++	 * resource and the irq are valid. */
++	if (r && irq != NO_IRQ) {
++		r->start = r->end = irq;
++		r->flags = IORESOURCE_IRQ;
++	}
++
++	return irq;
++}
++EXPORT_SYMBOL_GPL(of_irq_to_resource);
 diff --git a/include/linux/of_irq.h b/include/linux/of_irq.h
-index f98b27b..51c520b 100644
+index 51c520b..935a14d 100644
 --- a/include/linux/of_irq.h
 +++ b/include/linux/of_irq.h
-@@ -32,6 +32,8 @@ struct of_irq {
+@@ -5,6 +5,7 @@
+ struct of_irq;
+ #include <linux/types.h>
+ #include <linux/of.h>
++#include <linux/ioport.h>
+ 
+ /*
+  * irq_of_parse_and_map() is used ba all OF enabled platforms; but SPARC
+@@ -31,14 +32,17 @@ struct of_irq {
+ };
  
  extern struct device_node *of_irq_find_parent_by_phandle(phandle p);
- extern struct device_node *of_irq_find_parent(struct device_node *child);
-+extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
-+			 u32 ointsize, const u32 *addr, struct of_irq *out_irq);
+-extern struct device_node *of_irq_find_parent(struct device_node *child);
+ extern int of_irq_map_raw(struct device_node *parent, const u32 *intspec,
+ 			 u32 ointsize, const u32 *addr, struct of_irq *out_irq);
++extern int __of_irq_map_one(struct device_node *device, int index,
++			    struct of_irq *out_irq);
  extern int of_irq_map_one(struct device_node *device, int index,
  			  struct of_irq *out_irq);
  extern unsigned int irq_create_of_mapping(struct device_node *controller,
+ 					  const u32 *intspec,
+ 					  unsigned int intsize);
++extern unsigned int of_irq_to_resource(struct device_node *dev, int index,
++				       struct resource *r);
+ 
+ #endif /* CONFIG_OF_IRQ */
+ #endif /* CONFIG_OF */
