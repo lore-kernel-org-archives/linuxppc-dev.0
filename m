@@ -1,19 +1,19 @@
 Return-Path: <acahalan@gmail.com>
 Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 93F12B7D2F
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id E802AB7D68
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  5 Jun 2010 21:50:14 +1000 (EST)
-Received: by vws8 with SMTP id 8so2537623vws.38
+	Sat,  5 Jun 2010 22:01:48 +1000 (EST)
+Received: by vws8 with SMTP id 8so2548143vws.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 05 Jun 2010 04:50:11 -0700 (PDT)
+	Sat, 05 Jun 2010 05:01:47 -0700 (PDT)
 MIME-Version: 1.0
 In-Reply-To: <20100602013839.GB17579@us.ibm.com>
 References: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
 	<20100601193230.GA17579@us.ibm.com>
 	<AANLkTinxCKl7RVe62UhIpNe5EriCufkgaih2D2mLLmC4@mail.gmail.com>
 	<20100602013839.GB17579@us.ibm.com>
-Date: Sat, 5 Jun 2010 07:49:34 -0400
-Message-ID: <AANLkTimd7vzaOgOr_M8Lvt4Eo6ehfNvOJGu7aiTn83z1@mail.gmail.com>
+Date: Sat, 5 Jun 2010 07:58:45 -0400
+Message-ID: <AANLkTilcyaHmhKPsAXOdbrxFfxDeAc97AvuB_WX8VA7b@mail.gmail.com>
 Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
 From: Albert Cahalan <acahalan@gmail.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
