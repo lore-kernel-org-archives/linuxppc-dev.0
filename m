@@ -1,20 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DA4F5B7D61
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jun 2010 03:44:46 +1000 (EST)
-Date: Sat, 5 Jun 2010 19:44:37 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Sean MacLennan <smaclennan@pikatech.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 5C53BB7D68
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jun 2010 04:00:25 +1000 (EST)
+Date: Sat, 5 Jun 2010 14:00:10 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Olaf Hering <olaf@aepfle.de>
 Subject: Re: [PATCH] [powerpc] do not expect executable permissions for
 	in-tree shell scripts
-Message-ID: <20100605174437.GA16229@aepfle.de>
+Message-ID: <20100605140010.653d9f6e@opus.seanm.ca>
+In-Reply-To: <20100605174437.GA16229@aepfle.de>
 References: <20100605081039.GA21300@aepfle.de>
 	<20100605133210.11f504c3@opus.seanm.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100605133210.11f504c3@opus.seanm.ca>
+	<20100605174437.GA16229@aepfle.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,25 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 05, Sean MacLennan wrote:
+On Sat, 5 Jun 2010 19:44:37 +0200
+Olaf Hering <olaf@aepfle.de> wrote:
 
-> On Sat, 5 Jun 2010 10:10:39 +0200
-> Olaf Hering <olaf@aepfle.de> wrote:
+> Maybe.
+> As it stands right now, mkuboot.sh does not run without bash.
 > 
-> > scripts in the kernel source do not have executable permissions if
-> > they were created with patch(1) run mkuboot.sh with bash, its tagged
-> > as bash script.
 > 
-> Wouldn't it be better to use ${SHELL}? Not every system has bash.
+> And:
+> Reality check please.
+> A _development system_ without bash, installed per default on every
+> sane Linux distro, does most likely not exist.
 
-Maybe.
-As it stands right now, mkuboot.sh does not run without bash.
+Hmmm, can't argue with that. I wouldn't consider building a kernel on
+the warp sane ;) And to be honest, I am not sure anyone has tried. We
+officially support it, but I have never done it and don't plan to try.
 
-
-And:
-Reality check please.
-A _development system_ without bash, installed per default on every sane
-Linux distro, does most likely not exist.
-
-
-Olaf
+Cheers,
+   Sean
