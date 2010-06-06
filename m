@@ -1,24 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id B3C89B7D7F
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jun 2010 13:33:29 +1000 (EST)
-Received: by gwb11 with SMTP id 11so138606gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 05 Jun 2010 20:33:27 -0700 (PDT)
+Return-Path: <sachinp@in.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EECFFB7D1F
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 01:06:59 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id o56F6t5h020579
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jun 2010 01:06:55 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o56F6wSW1286260
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jun 2010 01:06:58 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o56F6vmN013864
+	for <linuxppc-dev@ozlabs.org>; Mon, 7 Jun 2010 01:06:57 +1000
+Message-ID: <4C0BB98E.9030101@in.ibm.com>
+Date: Sun, 06 Jun 2010 20:36:54 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <AANLkTin0Lg8HCpCAmyy_ybPlv6K9_iyE2aFrhifw486D@mail.gmail.com>
-References: <6f264a7a-e5da-494a-a24d-1578ca422807@VA3EHSMHS016.ehs.local>
-	<AANLkTin0Lg8HCpCAmyy_ybPlv6K9_iyE2aFrhifw486D@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 5 Jun 2010 21:33:06 -0600
-Message-ID: <AANLkTilkPhfqRqu8vnYEbGZbYAyw2fmWhK050zAOKkZu@mail.gmail.com>
-Subject: Re: [PATCH 1/2] net: ll_temac: fix interrupt bug when interrupt 0 is
-	used
-To: John Williams <john.williams@petalogix.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Brian Hill <brian.hill@xilinx.com>, michal.simek@petalogix.com,
-	John Linn <john.linn@xilinx.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.35-rc2 : OOPS with LTP memcg regression test run.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-mm@kvack.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 26, 2010 at 10:12 PM, John Williams
-<john.williams@petalogix.com> wrote:
-> On Thu, May 27, 2010 at 3:29 AM, John Linn <john.linn@xilinx.com> wrote:
->> The code is not checking the interrupt for DMA correctly so that an
->> interrupt number of 0 will cause a false error.
->>
->> Signed-off-by: Brian Hill <brian.hill@xilinx.com>
->> Signed-off-by: John Linn <john.linn@xilinx.com>
->> ---
->> =A0drivers/net/ll_temac_main.c | =A0 =A02 +-
->> =A01 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
->> index fa7620e..0615737 100644
->> --- a/drivers/net/ll_temac_main.c
->> +++ b/drivers/net/ll_temac_main.c
->> @@ -950,7 +950,7 @@ temac_of_probe(struct of_device *op, const struct of=
-_device_id *match)
->>
->> =A0 =A0 =A0 =A0lp->rx_irq =3D irq_of_parse_and_map(np, 0);
->> =A0 =A0 =A0 =A0lp->tx_irq =3D irq_of_parse_and_map(np, 1);
->> - =A0 =A0 =A0 if (!lp->rx_irq || !lp->tx_irq) {
->> + =A0 =A0 =A0 if ((lp->rx_irq =3D=3D NO_IRQ) || (lp->tx_irq =3D=3D NO_IR=
-Q)) {
->
-> Personally I think this is the right thing to do. =A0But, I thought the
-> IRQ 0 =3D=3D NO_IRQ (AKA "all-the-world's-an-x86-and-if-not-it-should-be"=
-)
-> holy war was already fought and won (or lost, depending on your
-> perspective)?
->
-> I seem to recall giving reluctant assent to a patch from Grant a few
-> months ago that touched MicroBlaze thus?
+While executing LTP Controller tests(memcg regression) on
+a POWER6 box came across this following OOPS.
 
-I've still got the patch in my private queue.  I can reapply it, test
-it and repost it.  I think what was still a bit up in the air was the
-exact method to map hw irq numbers onto linux irqs.
+Memory cgroup out of memory: kill process 9139 (memcg_test_1) score 3 or a child
+Killed process 9139 (memcg_test_1) vsz:3456kB, anon-rss:448kB, file-rss:1088kB
+Memory cgroup out of memory: kill process 9140 (memcg_test_1) score 3 or a child
+Killed process 9140 (memcg_test_1) vsz:3456kB, anon-rss:448kB, file-rss:1088kB
+Unable to handle kernel paging request for data at address 0x720072007200720
+Faulting instruction address: 0xc00000000015b778
+Oops: Kernel access of bad area, sig: 11 [#2]
+SMP NR_CPUS=1024 NUMA pSeries
+last sysfs file: /sys/devices/system/cpu/cpu1/cache/index1/shared_cpu_map
+Modules linked in: quota_v2 quota_tree ipv6 fuse loop dm_mod sr_mod cdrom sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+NIP: c00000000015b778 LR: c00000000015b740 CTR: 0000000000000000
+REGS: c000000009812ff0 TRAP: 0300   Tainted: G      D      (2.6.35-rc2-autotest)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44004424  XER: 00000001
+DAR: 0720072007200720, DSISR: 0000000040000000
+TASK = c000000005fb1100[9155] 'umount' THREAD: c000000009810000 CPU: 0
+GPR00: 0000000000000000 c000000009813270 c000000000d3d7a0 0000000000000000
+GPR04: 0000000000008050 0000000000160000 0000000000000027 c00000000f2c6870
+GPR08: 00000000000006a5 c000000000b16870 c000000000cf0140 000000000e7b0000
+GPR12: 0000000024004428 c000000007440000 0000000000008000 fffffffffffff000
+GPR16: 0000000000000000 c0000000098138f0 000000000000002d 0000000000000027
+GPR20: 0000000000000000 0000000000000027 0000000000000000 c000000007063138
+GPR24: ffffffffffffffff 0000000000000000 c00000000019bafc c00000000e02e000
+GPR28: 0000000000000001 0000000000008050 c000000000ca6b00 0720072007200720
+NIP [c00000000015b778] .kmem_cache_alloc+0xb0/0x13c
+LR [c00000000015b740] .kmem_cache_alloc+0x78/0x13c
+Call Trace:
+[c000000009813270] [c00000000015b740] .kmem_cache_alloc+0x78/0x13c (unreliable)
+[c000000009813310] [c00000000019bafc] .alloc_buffer_head+0x2c/0x78
+[c000000009813390] [c00000000019c99c] .alloc_page_buffers+0x60/0x114
+[c000000009813450] [c00000000019ca78] .create_empty_buffers+0x28/0x140
+[c0000000098134e0] [c00000000019f2ec] .__block_prepare_write+0xe4/0x4f0
+[c000000009813610] [c00000000019f94c] .block_write_begin_newtrunc+0xa8/0x120
+[c0000000098136d0] [c00000000019fea0] .block_write_begin+0x34/0x8c
+[c000000009813770] [c00000000022b458] .ext3_write_begin+0x13c/0x298
+[c000000009813880] [c000000000117500] .generic_file_buffered_write+0x13c/0x320
+[c0000000098139b0] [c000000000119c80] .__generic_file_aio_write+0x378/0x3dc
+[c000000009813ab0] [c000000000119d68] .generic_file_aio_write+0x84/0xfc
+[c000000009813b60] [c00000000016e460] .do_sync_write+0xac/0x10c
+[c000000009813ce0] [c00000000016f204] .vfs_write+0xd0/0x1dc
+[c000000009813d80] [c00000000016f418] .SyS_write+0x58/0xa0
+[c000000009813e30] [c0000000000085b4] syscall_exit+0x0/0x40
+Instruction dump:
+38600000 409e0090 38000000 8b8d0212 980d0212 e96d0040 e93b0000 7ce95a14
+7fe9582a 2fbf0000 419e0014 e81b001a <7c1f002a> 7c09592a 4800001c 7f46d378
+---[ end trace f24cb0cb5729d2bb ]---
 
-g.
+And few more of these. Previous snapshot release 2.6.35-rc1-git5(6c5de280b6...)
+was good.
+
+Thanks
+-Sachin
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
