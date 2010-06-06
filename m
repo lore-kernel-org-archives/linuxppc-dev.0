@@ -1,20 +1,24 @@
-Return-Path: <smaclennan@pikatech.com>
-Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
-	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 5C53BB7D68
-	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jun 2010 04:00:25 +1000 (EST)
-Date: Sat, 5 Jun 2010 14:00:10 -0400
-From: Sean MacLennan <smaclennan@pikatech.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] [powerpc] do not expect executable permissions for
-	in-tree shell scripts
-Message-ID: <20100605140010.653d9f6e@opus.seanm.ca>
-In-Reply-To: <20100605174437.GA16229@aepfle.de>
-References: <20100605081039.GA21300@aepfle.de>
-	<20100605133210.11f504c3@opus.seanm.ca>
-	<20100605174437.GA16229@aepfle.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, stable@kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id B3C89B7D7F
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Jun 2010 13:33:29 +1000 (EST)
+Received: by gwb11 with SMTP id 11so138606gwb.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 05 Jun 2010 20:33:27 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <AANLkTin0Lg8HCpCAmyy_ybPlv6K9_iyE2aFrhifw486D@mail.gmail.com>
+References: <6f264a7a-e5da-494a-a24d-1578ca422807@VA3EHSMHS016.ehs.local>
+	<AANLkTin0Lg8HCpCAmyy_ybPlv6K9_iyE2aFrhifw486D@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 5 Jun 2010 21:33:06 -0600
+Message-ID: <AANLkTilkPhfqRqu8vnYEbGZbYAyw2fmWhK050zAOKkZu@mail.gmail.com>
+Subject: Re: [PATCH 1/2] net: ll_temac: fix interrupt bug when interrupt 0 is
+	used
+To: John Williams <john.williams@petalogix.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Brian Hill <brian.hill@xilinx.com>, michal.simek@petalogix.com,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 5 Jun 2010 19:44:37 +0200
-Olaf Hering <olaf@aepfle.de> wrote:
+On Wed, May 26, 2010 at 10:12 PM, John Williams
+<john.williams@petalogix.com> wrote:
+> On Thu, May 27, 2010 at 3:29 AM, John Linn <john.linn@xilinx.com> wrote:
+>> The code is not checking the interrupt for DMA correctly so that an
+>> interrupt number of 0 will cause a false error.
+>>
+>> Signed-off-by: Brian Hill <brian.hill@xilinx.com>
+>> Signed-off-by: John Linn <john.linn@xilinx.com>
+>> ---
+>> =A0drivers/net/ll_temac_main.c | =A0 =A02 +-
+>> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+>> index fa7620e..0615737 100644
+>> --- a/drivers/net/ll_temac_main.c
+>> +++ b/drivers/net/ll_temac_main.c
+>> @@ -950,7 +950,7 @@ temac_of_probe(struct of_device *op, const struct of=
+_device_id *match)
+>>
+>> =A0 =A0 =A0 =A0lp->rx_irq =3D irq_of_parse_and_map(np, 0);
+>> =A0 =A0 =A0 =A0lp->tx_irq =3D irq_of_parse_and_map(np, 1);
+>> - =A0 =A0 =A0 if (!lp->rx_irq || !lp->tx_irq) {
+>> + =A0 =A0 =A0 if ((lp->rx_irq =3D=3D NO_IRQ) || (lp->tx_irq =3D=3D NO_IR=
+Q)) {
+>
+> Personally I think this is the right thing to do. =A0But, I thought the
+> IRQ 0 =3D=3D NO_IRQ (AKA "all-the-world's-an-x86-and-if-not-it-should-be"=
+)
+> holy war was already fought and won (or lost, depending on your
+> perspective)?
+>
+> I seem to recall giving reluctant assent to a patch from Grant a few
+> months ago that touched MicroBlaze thus?
 
-> Maybe.
-> As it stands right now, mkuboot.sh does not run without bash.
-> 
-> 
-> And:
-> Reality check please.
-> A _development system_ without bash, installed per default on every
-> sane Linux distro, does most likely not exist.
+I've still got the patch in my private queue.  I can reapply it, test
+it and repost it.  I think what was still a bit up in the air was the
+exact method to map hw irq numbers onto linux irqs.
 
-Hmmm, can't argue with that. I wouldn't consider building a kernel on
-the warp sane ;) And to be honest, I am not sure anyone has tried. We
-officially support it, but I have never done it and don't plan to try.
-
-Cheers,
-   Sean
+g.
