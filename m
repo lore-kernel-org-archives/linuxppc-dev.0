@@ -1,21 +1,17 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A6CEAB7D5C
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 09:45:43 +1000 (EST)
-Date: Mon, 7 Jun 2010 01:45:36 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Esben Haabendal <eha@doredevelopment.dk>
-Subject: Re: [PATCH 1/2] powerpc: ipic: use set_irq_chip to ensure irq_chip
-	defaults are applied
-In-Reply-To: <1275686717.2970.13.camel@eha.doredevelopment.dk>
-Message-ID: <alpine.LFD.2.00.1006070141230.2933@localhost.localdomain>
-References: <cover.1275686504.git.eha@doredevelopment.dk>
-	<1275686717.2970.13.camel@eha.doredevelopment.dk>
+Return-Path: <markus@trippelsdorf.de>
+Received: from smtp-out-192.synserver.de (smtp-out-195.synserver.de
+	[212.40.180.195]) by ozlabs.org (Postfix) with SMTP id 2AF2EB7D65
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 02:22:24 +1000 (EST)
+Date: Sun, 6 Jun 2010 18:15:41 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: 2.6.35-rc2 : OOPS with LTP memcg regression test run.
+Message-ID: <20100606161541.GA1808@arch.tripp.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100606154048.GJ31073@ZenIV.linux.org.uk>
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 4 Jun 2010, Esben Haabendal wrote:
 
-What's the rationale of this patch and which problem does it solve ?
+>> And few more of these. Previous snapshot release 2.6.35-rc1-git5(6c5de280b6...)
+>> was good.
+>
+>That's very odd, since
+>; git diff --stat 6c5de280b6..v2.6.35-rc2         
+> Makefile                             |    2 +-
+> drivers/gpu/drm/i915/intel_display.c |    9 +++++++
+> fs/ext4/inode.c                      |   40 +++++++++++++++++++--------------
+> fs/ext4/move_extent.c                |    3 ++
+> 4 files changed, 36 insertions(+), 18 deletions(-)
+>
+>and nothing of that looks like good candidates...
 
-> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
-> ---
->  arch/powerpc/sysdev/ipic.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-> index d7b9b9c..8464b86 100644
-> --- a/arch/powerpc/sysdev/ipic.c
-> +++ b/arch/powerpc/sysdev/ipic.c
-> @@ -630,10 +630,10 @@ static int ipic_set_irq_type(unsigned int virq, unsigned int flow_type)
->  	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
->  		desc->status |= IRQ_LEVEL;
->  		desc->handle_irq = handle_level_irq;
-> -		desc->chip = &ipic_level_irq_chip;
-> +		set_irq_chip(virq, &ipic_level_irq_chip);
+I may have the same problem on my machine.
+(See also the thread: ext4 2.6.35-rc2 regression (ext4: Make sure the MOVE_EXT ioctl...))
 
-This patch has never been tested with spinlock debugging enabled and
-will break SMP as it causes a deadlock on irq_desc->lock.
-
-Again: See Documentation/Submit*
-
-Thanks,
-
-	tglx
+general protection fault: 0000 [#1] SMP
+last sysfs file: /sys/devices/pci0000:00/0000:00:11.0/host2/target2:0:0/2:0:0:0/block/sdb/size
+CPU 2
+Pid: 1683, comm: iptables-restor Not tainted 2.6.35-rc2-00033-gcc1f375 #46 M4A78T-E/System Product Name
+RIP: 0010:[<ffffffff810cc6e6>]  [<ffffffff810cc6e6>] kmem_cache_alloc+0x59/0xda
+RSP: 0018:ffff88011c993d78  EFLAGS: 00010002
+RAX: 0000000000000000 RBX: 0720072007200720 RCX: ffffffff810bd4c9
+RDX: 00007f076cee3000 RSI: 00000000000000d0 RDI: ffff88011fc01800
+RBP: ffff88011c993db8 R08: ffff880001b13f48 R09: 0000000000000000
+R10: ffff88011d387c00 R11: ffff88011c983930 R12: ffff88011fc01800
+R13: 0000000000000202 R14: 00000000000000d0 R15: 00000000000000d0
+FS:  00007f076dc43700(0000) GS:ffff880001b00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f8595d364f8 CR3: 000000011b8b0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process iptables-restor (pid: 1683, threadinfo ffff88011c992000, task ffff88011ec09610)
+Stack:
+ffff88011d387c10 ffff88011c983930 ffff88011c993d98 000000000000fffa
+<0> ffff88011d387bd0 00007f076cee3000 ffff88011f77ea40 0000000000000000
+<0> ffff88011c993e08 ffffffff810bd4c9 ffff88011b8f5cc0 ffffffff810bd639
+Call Trace:
+[<ffffffff810bd4c9>] __split_vma+0x33/0x18d
+[<ffffffff810bd639>] ? vma_merge+0x16/0x1fc
+[<ffffffff810bdc01>] split_vma+0x23/0x28
+[<ffffffff810bf572>] mprotect_fixup+0x146/0x54c
+[<ffffffff810befff>] ? do_mmap_pgoff+0x2a4/0x2fe
+[<ffffffff810bfaf0>] sys_mprotect+0x178/0x1f4
+[<ffffffff8102b93b>] system_call_fastpath+0x16/0x1b
+Code: 65 4c 8b 04 25 88 d4 00 00 48 8b 07 49 01 c0 49 8b 18 48 85 db 75 10 83 ca ff 44 89 f6 e8 58 fa ff ff 48 89 c3 eb 0b 48 63 47 18 <48> 8b 04 03 49 89 00 41 55 9d 48 85 db 74 15 41 81 e6 00 80 00
+RIP  [<ffffffff810cc6e6>] kmem_cache_alloc+0x59/0xda
+RSP <ffff88011c993d78>
+---[ end trace e2fb1ccd3cb9dd77 ]---
+-- 
+Markus
