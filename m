@@ -2,16 +2,17 @@ Return-Path: <tglx@linutronix.de>
 Received: from www.tglx.de (www.tglx.de [62.245.132.106])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 16CCAB7D94
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 09:39:29 +1000 (EST)
-Date: Mon, 7 Jun 2010 01:39:19 +0200 (CEST)
+	by ozlabs.org (Postfix) with ESMTPS id A6CEAB7D5C
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 09:45:43 +1000 (EST)
+Date: Mon, 7 Jun 2010 01:45:36 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Esben Haabendal <eha@doredevelopment.dk>
-Subject: Re: [PATCH 2/2] gpio: pca953x: add powerpc irq support
-In-Reply-To: <1275686731.2970.14.camel@eha.doredevelopment.dk>
-Message-ID: <alpine.LFD.2.00.1006070129530.2933@localhost.localdomain>
+Subject: Re: [PATCH 1/2] powerpc: ipic: use set_irq_chip to ensure irq_chip
+	defaults are applied
+In-Reply-To: <1275686717.2970.13.camel@eha.doredevelopment.dk>
+Message-ID: <alpine.LFD.2.00.1006070141230.2933@localhost.localdomain>
 References: <cover.1275686504.git.eha@doredevelopment.dk>
-	<1275686731.2970.14.camel@eha.doredevelopment.dk>
+	<1275686717.2970.13.camel@eha.doredevelopment.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
@@ -26,28 +27,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Fri, 4 Jun 2010, Esben Haabendal wrote:
 
-NAK for various reasons (no particular order):
+What's the rationale of this patch and which problem does it solve ?
 
-1) That patch misses a sensible changelog. See Documentation/Submit*
+> Signed-off-by: Esben Haabendal <eha@doredevelopment.dk>
+> ---
+>  arch/powerpc/sysdev/ipic.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+> index d7b9b9c..8464b86 100644
+> --- a/arch/powerpc/sysdev/ipic.c
+> +++ b/arch/powerpc/sysdev/ipic.c
+> @@ -630,10 +630,10 @@ static int ipic_set_irq_type(unsigned int virq, unsigned int flow_type)
+>  	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
+>  		desc->status |= IRQ_LEVEL;
+>  		desc->handle_irq = handle_level_irq;
+> -		desc->chip = &ipic_level_irq_chip;
+> +		set_irq_chip(virq, &ipic_level_irq_chip);
 
-2) patch contains several independent changes, which need to be separated
+This patch has never been tested with spinlock debugging enabled and
+will break SMP as it causes a deadlock on irq_desc->lock.
 
-> @@ -120,6 +124,10 @@ static int pca953x_gpio_direction_input(struct gpio_chip *gc, unsigned off)
->  	chip = container_of(gc, struct pca953x_chip, gpio_chip);
->  
->  	reg_val = chip->reg_direction | (1u << off);
-> +
-> +	if (reg_val == chip->reg_direction)
-> +		return 0;
-> +
-
- This is an optimization of its own value.
-
-3) it breaks the driver. See http://lkml.org/lkml/2010/6/6/177 for a
-   detailed explanation
-
-4) the virq/powerpc churn is horrible and I bet there are sane ways to
-   solve this, but it leave this to the powerpc experts.
+Again: See Documentation/Submit*
 
 Thanks,
 
