@@ -1,24 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 4D90DB7DA1
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 10:48:20 +1000 (EST)
-Received: by gwb11 with SMTP id 11so391967gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 06 Jun 2010 17:48:19 -0700 (PDT)
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 7 Jun 2010 10:46:57 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Disable CONFIG_SYSFS_DEPRECATED
+Message-ID: <20100607004657.GJ28295@kryten>
+References: <20100506033041.GA12203@kryten>
+	<20100506113816.GP2671@hansolo.jdub.homelinux.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1275861445.1931.2974.camel@pasglop>
-References: <6f264a7a-e5da-494a-a24d-1578ca422807@VA3EHSMHS016.ehs.local>
-	<1275861445.1931.2974.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 6 Jun 2010 18:47:59 -0600
-Message-ID: <AANLkTilqN1coce-O9FKF7_xo_k_xsVN6zT1GyXF7I30m@mail.gmail.com>
-Subject: Re: [PATCH 1/2] net: ll_temac: fix interrupt bug when interrupt 0 is
-	used
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Brian Hill <brian.hill@xilinx.com>, michal.simek@petalogix.com,
-	John Linn <john.linn@xilinx.com>, john.williams@petalogix.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100506113816.GP2671@hansolo.jdub.homelinux.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 6, 2010 at 3:57 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2010-05-26 at 11:29 -0600, John Linn wrote:
->> The code is not checking the interrupt for DMA correctly so that an
->> interrupt number of 0 will cause a false error.
->>
->> Signed-off-by: Brian Hill <brian.hill@xilinx.com>
->> Signed-off-by: John Linn <john.linn@xilinx.com>
->> ---
->> =A0drivers/net/ll_temac_main.c | =A0 =A02 +-
->> =A01 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
->> index fa7620e..0615737 100644
->> --- a/drivers/net/ll_temac_main.c
->> +++ b/drivers/net/ll_temac_main.c
->> @@ -950,7 +950,7 @@ temac_of_probe(struct of_device *op, const struct of=
-_device_id *match)
->>
->> =A0 =A0 =A0 lp->rx_irq =3D irq_of_parse_and_map(np, 0);
->> =A0 =A0 =A0 lp->tx_irq =3D irq_of_parse_and_map(np, 1);
->> - =A0 =A0 if (!lp->rx_irq || !lp->tx_irq) {
->> + =A0 =A0 if ((lp->rx_irq =3D=3D NO_IRQ) || (lp->tx_irq =3D=3D NO_IRQ)) =
-{
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "could not determine irqs\=
-n");
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 rc =3D -ENOMEM;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto nodev;
->
-> Hasn't NO_IRQ been deprecated ?
 
-ARM still uses it, plus less than a handful of other arches.  There is
-no reason for Microblaze to use NO_IRQ as -1.
+Hi Josh,
 
-In fact, on ARM, as part of the device tree work I'm hoping to piggy
-back in irq remapping and make 0 no longer a valid irq.
+> I'd like to run a few tests with this disabled on the 4xx boards first please.
+> I can't say that all the boards I have will have any sort of "distro" to begin
+> with, and if they did they might not be running something from the last 3 or
+> 4 years.  I do run -git kernels on them frequently though.
 
-> Linus made it clear a while back that interrupt 0 was not valid and
-> that's the way it should be.
->
-> We now have an interrupt remapping scheme on powerpc, so we ensure that
-> 0 always mean no interrupt. Other archs might need some fixups. Which
-> are specifically needs this patch ?
+Any luck with this? I can submit a patch to fix the 64bit platforms and ignore
+all 32bit if there is going to be a problem.
 
-Microblaze.
-
-BTW jlinn, for xilinx ARM support we should make sure 0 is never used
-as a valid IRQ from day one.  It will result it far less pain in the
-future.
-
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Anton
