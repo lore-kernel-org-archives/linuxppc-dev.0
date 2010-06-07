@@ -1,20 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 7 Jun 2010 21:25:59 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 0/5] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver
-	XXII
-Message-ID: <20100607112559.GA2419@brick.ozlabs.ibm.com>
-References: <20100528063924.GA8679@in.ibm.com>
-	<20100602113316.GA17061@brick.ozlabs.ibm.com>
-	<20100604065145.GA2408@in.ibm.com>
-	<20100604090648.GC26154@brick.ozlabs.ibm.com>
-	<20100607070351.GA3853@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100607070351.GA3853@in.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7E5CDB7D40
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Jun 2010 21:41:25 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc: ipic: use set_irq_chip to ensure irq_chip
+	defaults are applied
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1006071209140.2933@localhost.localdomain>
+References: <cover.1275686504.git.eha@doredevelopment.dk>
+	<1275686717.2970.13.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006070141230.2933@localhost.localdomain>
+	<1275887175.2970.20.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006071209140.2933@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 07 Jun 2010 21:41:05 +1000
+Message-ID: <1275910865.31303.451.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Esben Haabendal <eha@doredevelopment.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 07, 2010 at 12:33:51PM +0530, K.Prasad wrote:
+On Mon, 2010-06-07 at 12:22 +0200, Thomas Gleixner wrote:
 
-> Given that 'ptrace_bps' is used only for ptrace originated breakpoints
-> and that we return early i.e. before detecting extraneous interrupts
-> in hw_breakpoint_handler() (as shown above) they shouldn't overlap each
-> other. The following comment in hw_breakpoint_handler() explains the
-> same.
-> 		/*
-> 		 * To prevent invocation of perf_event_bp(), we shall overload
-> 		 * thread.ptrace_bps[] pointer (unused for non-ptrace
-> 		 * exceptions) to flag an extraneous interrupt which must be
-> 		 * skipped.
-> 		 */
+> > Would it be better to change the call order in __setup_irq(), and
+> > call irq_chip_set_defaults after __irq_set_trigger() ?   Or perhaps
+> > even calling it twice (again after __irq_set_trigger()) ?
+> 
+> Grmpf, set_type() was never meant to change the chip. It's fatal do
+> so, as the code in setup_irq already has a reference to desc->chip and
+> calls the wrong functions anyway aside of having not run through the
+> set defaults code.
+> 
+> That needs more thought, as it requires to reload the reference.
+> 
+> Ben, any thoughts ?
 
-My point is that while we are using ptrace_bps[0] to mark a non-ptrace
-breakpoint that we're single-stepping, some other process could be
-ptracing this process and could get into ptrace_set_debugreg() and
-would think that the process already has a ptrace breakpoint and call
-modify_user_hw_breakpoint() when it should be calling
-register_user_hw_breakpoint().  Or this process could die and so we
-call flush_ptrace_hw_breakpoint() and it incorrectly thinks we have a
-ptrace breakpoint.
+Not off hand. It's common to have a different chip ops for different
+types, so we need to sort that out. I'll try to have a look asap but I'm
+really really swamped at the moment, so I can make no promise that I'll
+come up with a solution tomorrow.
 
-If there is a reason why we can be quite sure that while we are using
-current->thread.ptrace_bps[0] in this way, ptrace_set_debugreg() can
-never get called with this task as the ptracee, and nor can
-flush_ptrace_hw_breakpoint() get called on this task, then maybe it's
-safe.  But it's not at all obviously safe.  So I'd very much rather we
-just use an extra flag somewhere, that isn't used elsewhere for
-anything else, so we can convince ourselves that it is all correct
-without having to look at lots of different pieces of code.
+/me off to bed
 
-There are 3 bytes of padding in struct arch_hw_breakpoint; couldn't we
-use one of them as a "not really hit" flag?
-
-Paul.
+Cheers,
+Ben.
