@@ -1,11 +1,16 @@
-Return-Path: <esbenhaabendal@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id C5723B7D20
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 07:28:27 +1000 (EST)
-Received: by fxm5 with SMTP id 5so306815fxm.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 07 Jun 2010 14:28:25 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E4C99B7D47
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 09:18:39 +1000 (EST)
+Date: Tue, 8 Jun 2010 01:18:09 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Esben Haabendal <esbenhaabendal@gmail.com>
+Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
+	interrupt handlers
+In-Reply-To: <AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1006080015570.2933@localhost.localdomain>
 References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
 	<alpine.LFD.2.00.1006042343150.2933@localhost.localdomain>
 	<AANLkTilb7---Qg1oLwzanKP1RGe04fkAXDtZzz0w9MGz@mail.gmail.com>
@@ -19,13 +24,9 @@ References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
 	<alpine.LFD.2.00.1006062228120.2933@localhost.localdomain>
 	<1275914058.2818.8.camel@eha.doredevelopment.dk>
 	<alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
-Date: Mon, 7 Jun 2010 23:28:23 +0200
-Message-ID: <AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
-Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
-	interrupt handlers
-From: Esben Haabendal <esbenhaabendal@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	<AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: joachim.eastwood@jotron.com, Peter Zijlstra <peterz@infradead.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	Esben Haabendal <eha@doredevelopment.dk>,
@@ -40,34 +41,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+On Mon, 7 Jun 2010, Esben Haabendal wrote:
+> On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > Maybe you understand now, why I was pretty sure upfront, that your
+> > approach was wrong even without knowing all the gory details ? :)
+> 
+> I understand.  There is a better solution, which is to use threaded
+> interrupts where needed.
+> 
+> But I must confess that I am disappointed that you still fail to see
+> how the pca953x
+> patch actually eliminates the need for serialization. But I don't
+> think there is much
+> point in going on about that.
 
-> Maybe you understand now, why I was pretty sure upfront, that your
-> approach was wrong even without knowing all the gory details ? :)
+I return the favour of being disappointed that you are still failing
+to accept that there is a fundamental difference between "it works in
+a particular case" and semantical correctness under all
+circumstances.
 
-I understand.  There is a better solution, which is to use threaded
-interrupts where needed.
+There is no place for "it works in a particular case" in a kernel
+which runs on a gazillion of different devices unless you want to
+create a complete unmaintainable mess. The only way to avoid this is
+to be strict about semantics even if it seems unsensible for a
+particular case.
 
-But I must confess that I am disappointed that you still fail to see
-how the pca953x
-patch actually eliminates the need for serialization. But I don't
-think there is much
-point in going on about that.
+Also I explained it to you in great length, that your patch violates
+the semantical guarantees of existing functions, but you ignore that
+completely.
 
-The phy driver should be rewritten to use a threaded handler, it will
-solve my particular problem.
-And in the meantime, I have been promised to get the phy interrupts ofloade=
-d
-to real CPU interrupt lines :-)
+It's Open Source, go wild and change it for your particular case - but
+don't expect that I accept patches to the generic irq code which will
+cause _me_ predictable trouble as I have to deal with the
+fallout. Neither expect, that I ack patches to users of that code
+which are semantically wrong.
 
-Oh, I still think that the disable_irq_nosync documentaiton is misleading.
-Functions that are allowed in a particular context should not call function=
-s
-that are not allowed to be called in that context. But now I know :-)
+Just for the record, the pca953x driver is broken vs. the local state
+protection anyway as the GPIO functions are not serialized against the
+interrupt controller functions. There is no magic which prevents that,
+neither on your system nor on any other. The GPIO function should take
+buslock when modifying local state and that's one of the reasons why
+buslock it is there and cannot go away.
 
-/Esben
---=20
-Esben Haabendal, Senior Software Consultant
-Dor=E9Development ApS, Ved Stranden 1, 9560 Hadsund, DK-Denmark
-Phone: +45 51 92 53 93, E-mail: eha@doredevelopment.dk
-WWW: http://www.doredevelopment.dk
+I'm anticipating that you are going to tell me that it does not matter
+on your particular powerpc combined with your usage pattern (i.e no
+GPIO users). And I tell you right away, that I'm not interested in
+this answer for well explained reasons.
+
+> Oh, I still think that the disable_irq_nosync documentaiton is misleading.
+> Functions that are allowed in a particular context should not call functions
+> that are not allowed to be called in that context. But now I know :-)
+
+As I said before: I agree and I'm happy to accept a patch to fix that
+documentation problem.
+
+Thanks,
+
+	tglx
