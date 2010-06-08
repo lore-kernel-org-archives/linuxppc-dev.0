@@ -1,11 +1,17 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4C0DF36A.3080401@ozlabs.org>
-Date: Tue, 08 Jun 2010 17:38:18 +1000
-From: Matt Evans <matt@ozlabs.org>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
-Subject: [PATCH] kexec, ppc64:  Wait for online/possible CPUs only.
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id A7C7AB7D47
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  8 Jun 2010 23:12:31 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20100607203957.23695.97675.sendpatchset@squad5-lp1.lab.bos.redhat.com>
+References: <20100607203957.23695.97675.sendpatchset@squad5-lp1.lab.bos.redhat.com>
+To: Steve Best <sfbest@us.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix integer constant warning
+Date: Tue, 08 Jun 2010 14:12:26 +0100
+Message-ID: <9000.1276002746@redhat.com>
+Sender: dhowells@redhat.com
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,51 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec_perpare_cpus_wait() iterates i through NR_CPUS to check
-paca[i].kexec_state of each to make sure they have quiesced.
-However now we have dynamic PACA allocation, paca[NR_CPUS] is not necessarily
-valid and we overrun the array;  spurious "cpu is not possible, ignoring"
-errors result.  This patch iterates for_each_online_cpu so stays
-within the bounds of paca[] -- and every CPU is now 'possible'.
+Steve Best <sfbest@us.ibm.com> wrote:
 
-Signed-off-by: Matt Evans <matt@ozlabs.org>
----
- arch/powerpc/kernel/machine_kexec_64.c |   18 +-----------------
- 1 files changed, 1 insertions(+), 17 deletions(-)
+> -#define KERNELBASE (0xc000000000000000)
+> +#define KERNELBASE (0xc000000000000000ULL)
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 26f9900..ed31a29 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -182,28 +182,12 @@ static void kexec_prepare_cpus_wait(int wait_state)
- 
- 	my_cpu = get_cpu();
- 	/* Make sure each CPU has atleast made it to the state we need */
--	for (i=0; i < NR_CPUS; i++) {
-+	for_each_online_cpu(i) {
- 		if (i == my_cpu)
- 			continue;
- 
- 		while (paca[i].kexec_state < wait_state) {
- 			barrier();
--			if (!cpu_possible(i)) {
--				printk("kexec: cpu %d hw_cpu_id %d is not"
--						" possible, ignoring\n",
--						i, paca[i].hw_cpu_id);
--				break;
--			}
--			if (!cpu_online(i)) {
--				/* Fixme: this can be spinning in
--				 * pSeries_secondary_wait with a paca
--				 * waiting for it to go online.
--				 */
--				printk("kexec: cpu %d hw_cpu_id %d is not"
--						" online, ignoring\n",
--						i, paca[i].hw_cpu_id);
--				break;
--			}
- 			if (i != notified) {
- 				printk( "kexec: waiting for cpu %d (physical"
- 						" %d) to enter %i state\n",
--- 
-1.6.3.3
+Is this the right fix?  The code producing the warning is subtracting
+0xc000000000000000 from a 32-bit number:
+
+	naca = ntohl(*((u_int32_t*) &inbuf[0x0C])) - KERNELBASE;
+
+which seems distinctly odd.
+
+David
