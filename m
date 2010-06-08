@@ -1,21 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 09C0CB7D61
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 00:12:24 +1000 (EST)
-Received: by iwn8 with SMTP id 8so1879239iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jun 2010 07:12:23 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f182.google.com (mail-pz0-f182.google.com
+	[209.85.222.182]) by ozlabs.org (Postfix) with ESMTP id A486FB7DA8
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 00:15:53 +1000 (EST)
+Received: by pzk12 with SMTP id 12so3115654pzk.9
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jun 2010 07:15:53 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH 4/5] of/address: little-endian fixes
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 08 Jun 2010 08:10:13 -0600
+Message-ID: <20100608141013.25879.34892.stgit@angua>
 In-Reply-To: <20100608140917.25879.67745.stgit@angua>
 References: <20100608140917.25879.67745.stgit@angua>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 8 Jun 2010 08:12:03 -0600
-Message-ID: <AANLkTilkT78iqlR6_E2uBLUC-OJnQZ6ax4d_lqUnjAw2@mail.gmail.com>
-Subject: [PATCH 0/5] Merge common address translation code (ppc & mb)
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	microblaze-uclinux@itee.uq.edu.au, Wolfram Sang <w.sang@pengutronix.de>,
-	linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
+	linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,51 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These five patches merge common code for decoding address ranges from
-the device tree. =A0Simple mechanical change. =A0There should be no functio=
-nal
-difference except for the last patch which restricts the no-ranges code
-to be powerpc-only.
+Fix some endian issues in the OF address translation code.
 
-These patches are based on top of the IRQ merge which I posted earlier.
-If you want to test them, I've pushed the commits out to the here:
-
-git://git.secretlab.ca/git/linux-2.6 devicetree-test
-
-Cheers,
-g.
-
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+CC: Michal Simek <monstr@monstr.eu>
+CC: Wolfram Sang <w.sang@pengutronix.de>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: microblaze-uclinux@itee.uq.edu.au
+CC: linuxppc-dev@ozlabs.org
 ---
+ drivers/of/address.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-Grant Likely (5):
-=A0 =A0 =A0of/address: merge of_iomap()
-=A0 =A0 =A0of/address: merge of_address_to_resource()
-=A0 =A0 =A0of/address: Merge all of the bus translation code
-=A0 =A0 =A0of/address: little-endian fixes
-=A0 =A0 =A0of/address: restrict 'no-ranges' kludge to powerpc
-
-
-=A0arch/microblaze/include/asm/pci-bridge.h | =A0 =A05
-=A0arch/microblaze/include/asm/prom.h =A0 =A0 =A0 | =A0 31 +-
-=A0arch/microblaze/kernel/prom_parse.c =A0 =A0 =A0| =A0546 ----------------=
-------------
-=A0arch/powerpc/include/asm/pci-bridge.h =A0 =A0| =A0 =A05
-=A0arch/powerpc/include/asm/prom.h =A0 =A0 =A0 =A0 =A0| =A0 31 +-
-=A0arch/powerpc/kernel/prom_parse.c =A0 =A0 =A0 =A0 | =A0573 --------------=
----------------
-=A0drivers/of/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A0=
-4
-=A0drivers/of/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0=
-1
-=A0drivers/of/address.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0595 ++=
-++++++++++++++++++++++++++++
-=A0include/linux/of_address.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 12 +
-=A010 files changed, 634 insertions(+), 1169 deletions(-)
-=A0create mode 100644 drivers/of/address.c
-=A0create mode 100644 include/linux/of_address.h
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 2a905d5..0b04137 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -22,7 +22,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
+ {
+ 	printk(KERN_DEBUG "%s", s);
+ 	while (na--)
+-		printk(" %08x", *(addr++));
++		printk(" %08x", be32_to_cpu(*(addr++)));
+ 	printk("\n");
+ }
+ #else
+@@ -79,8 +79,8 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
+ 	memset(addr, 0, na * 4);
+ 	a += offset;
+ 	if (na > 1)
+-		addr[na - 2] = a >> 32;
+-	addr[na - 1] = a & 0xffffffffu;
++		addr[na - 2] = cpu_to_be32(a >> 32);
++	addr[na - 1] = cpu_to_be32(a & 0xffffffffu);
+ 
+ 	return 0;
+ }
+@@ -190,14 +190,16 @@ const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+ 	psize /= 4;
+ 
+ 	onesize = na + ns;
+-	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
+-		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++) {
++		u32 val = be32_to_cpu(prop[0]);
++		if ((val & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
+ 			if (size)
+ 				*size = of_read_number(prop + na, ns);
+ 			if (flags)
+ 				*flags = bus->get_flags(prop);
+ 			return prop;
+ 		}
++	}
+ 	return NULL;
+ }
+ EXPORT_SYMBOL(of_get_pci_address);
