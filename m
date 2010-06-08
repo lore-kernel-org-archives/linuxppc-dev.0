@@ -1,12 +1,17 @@
-Return-Path: <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Peter Zijlstra <peterz@infradead.org>
-From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 08 Jun 2010 14:57:02 +1000
-Subject: [PATCH 3/3] powerpc: enabled asymmetric SMT scheduling on POWER7
-In-Reply-To: <1275973022.91203.586435002889.qpush@pale>
-Message-Id: <20100608045702.31FB5CC8C7@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id 4EB0AB7D20
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 16:54:45 +1000 (EST)
+Subject: Re: [PATCH] agp/uninorth: Fix oops caused by flushing too much
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20100602053308.GA24509@drongo>
+References: <20100602053308.GA24509@drongo>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Jun 2010 08:48:11 +0200
+Message-ID: <1275979691.3246.177.camel@thor.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,73 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The POWER7 core has dynamic SMT mode switching which is controlled by
-the hypervisor.  There are 3 SMT modes:
-	SMT1 uses thread  0
-	SMT2 uses threads 0 & 1
-	SMT4 uses threads 0, 1, 2 & 3
-When in any particular SMT mode, all threads have the same performance
-as each other (ie. at any moment in time, all threads perform the same).  
+On Mit, 2010-06-02 at 15:33 +1000, Paul Mackerras wrote:=20
+> This fixes a sporadic oops at boot on G5 Power Macs.  The table_end
+> variable has the address of the last byte of the table.  Adding on
+> PAGE_SIZE means we flush too much, and if the page after the table
+> is not mapped for any reason, the kernel will oops.  Instead we add
+> on 1 because flush_dcache_range() interprets its second argument as
+> the first byte past the range to be flushed.
+>=20
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-The SMT mode switching works such that when linux has threads 2 & 3 idle
-and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
-idle loop and the hypervisor will automatically switch to SMT2 for that
-core (independent of other cores).  The opposite is not true, so if
-threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+Reviewed-by: Michel D=C3=A4nzer <michel@daenzer.net>
+Tested-by: Michel D=C3=A4nzer <michel@daenzer.net>
 
-Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
-into SMT1 mode.  
 
-If we can get the core into a lower SMT mode (SMT1 is best), the threads
-will perform better (since they share less core resources).  Hence when
-we have idle threads, we want them to be the higher ones.
+Thanks for the good catch, Paul.
 
-This adds a feature bit for asymmetric packing to powerpc and then
-enables it on POWER7. 
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>=20
+> diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-=
+agp.c
+> index 6f48931..9aaa0eb 100644
+> --- a/drivers/char/agp/uninorth-agp.c
+> +++ b/drivers/char/agp/uninorth-agp.c
+> @@ -413,7 +413,7 @@ static int uninorth_create_gatt_table(struct agp_brid=
+ge_data *bridge)
+>  	bridge->gatt_table_real =3D (u32 *) table;
+>  	/* Need to clear out any dirty data still sitting in caches */
+>  	flush_dcache_range((unsigned long)table,
+> -			   (unsigned long)(table_end + PAGE_SIZE));
+> +			   (unsigned long)table_end + 1);
+>  	bridge->gatt_table =3D vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NC=
+G);
+> =20
+>  	if (bridge->gatt_table =3D=3D NULL)
 
----
 
- arch/powerpc/include/asm/cputable.h |    3 ++-
- arch/powerpc/kernel/process.c       |    9 +++++++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0100000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/process.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/process.c
-@@ -1265,3 +1265,12 @@ unsigned long randomize_et_dyn(unsigned 
- 
- 	return ret;
- }
-+
-+int arch_sd_sibiling_asym_packing(void)
-+{
-+	if (cpu_has_feature(CPU_FTR_ASYM_SMT)){
-+		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
-+		return SD_ASYM_PACKING;
-+	}
-+	return 0;
-+}
+
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer
