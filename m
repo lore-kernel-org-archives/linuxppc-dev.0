@@ -1,19 +1,15 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 0ED59B7D9D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Jun 2010 00:23:30 +1000 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20100608135554.GF7801@zod.rchland.ibm.com>
-References: <20100608135554.GF7801@zod.rchland.ibm.com>
-	<20100607203957.23695.97675.sendpatchset@squad5-lp1.lab.bos.redhat.com>
-	<9000.1276002746@redhat.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Fix integer constant warning
-Date: Tue, 08 Jun 2010 15:23:24 +0100
-Message-ID: <28860.1276007004@redhat.com>
-Sender: dhowells@redhat.com
-Cc: linuxppc-dev@lists.ozlabs.org, Steve Best <sfbest@us.ibm.com>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH 0/6] OF device code merges and improvements
+To: ben@kernel.crashing.org, sfr@canb.auug.org.au, monstr@monstr.eu,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, jeremy.kerr@canonical.com,
+	linuxppc-dev@lists.ozlabs.org
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 08 Jun 2010 08:26:13 -0600
+Message-ID: <20100608142152.26088.1108.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,10 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+These patches merge more common of_device code between microblaze and
+powerpc and some other miscellaneous improvement in preparation for
+the merge of of_platform_bus_type with platform_bus_type.
 
-> It might not matter, since Paul sent a patch to remove this file entirely.
+These patches are based on top of the IRQ and address code merge which
+I posted earlier.  If you want to test them, I've pushed the commits
+out to the here:
 
-Yeah, I saw that after...
+git://git.secretlab.ca/git/linux-2.6 devicetree-next
 
-David
+Cheers,
+g.
+
+---
+
+Grant Likely (6):
+      of: Use full node name in resource structures
+      of/device: merge of_device_uevent
+      of: Modify of_device_get_modalias to be passed struct device
+      of/device: Merge of_platform_bus_probe()
+      of: Merge of_device_alloc
+      of/device: populate platform_device (of_device) resource table on allocation
+
+
+ arch/microblaze/include/asm/device.h      |    3 
+ arch/microblaze/include/asm/of_device.h   |   21 ---
+ arch/microblaze/include/asm/of_platform.h |   33 ----
+ arch/microblaze/kernel/Makefile           |    2 
+ arch/microblaze/kernel/of_device.c        |  112 ---------------
+ arch/microblaze/kernel/of_platform.c      |  141 ++-----------------
+ arch/powerpc/include/asm/device.h         |    3 
+ arch/powerpc/include/asm/of_device.h      |   13 --
+ arch/powerpc/include/asm/of_platform.h    |   11 -
+ arch/powerpc/kernel/of_device.c           |  110 +-------------
+ arch/powerpc/kernel/of_platform.c         |  131 -----------------
+ drivers/macintosh/macio_sysfs.c           |    5 -
+ drivers/of/address.c                      |    2 
+ drivers/of/device.c                       |   62 +++++++-
+ drivers/of/irq.c                          |    1 
+ drivers/of/platform.c                     |  221 +++++++++++++++++++++++++++++
+ include/linux/of_device.h                 |    6 +
+ include/linux/of_platform.h               |   21 +++
+ 18 files changed, 337 insertions(+), 561 deletions(-)
+ delete mode 100644 arch/microblaze/kernel/of_device.c
