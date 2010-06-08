@@ -1,18 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] kexec, ppc64:  Wait for online/possible CPUs only.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Matt Evans <matt@ozlabs.org>
-In-Reply-To: <4C0DF36A.3080401@ozlabs.org>
-References: <4C0DF36A.3080401@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-KxNLyB8Mjv7qip1R+Pg1"
-Date: Wed, 09 Jun 2010 01:48:40 +1000
-Message-ID: <1276012120.32509.26.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
-	Milton Miller <miltonm@bga.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <cbouatmailru@gmail.com>
+Date: Tue, 8 Jun 2010 19:57:02 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 6/6] of/device: populate platform_device (of_device)
+	resource table on allocation
+Message-ID: <20100608155702.GA5419@oksana.dev.rtsoft.ru>
+References: <20100608142152.26088.1108.stgit@angua>
+	<20100608142643.26088.61366.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20100608142643.26088.61366.stgit@angua>
+Cc: ben@kernel.crashing.org, sfr@canb.auug.org.au, monstr@monstr.eu,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, jeremy.kerr@canonical.com,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,53 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jun 08, 2010 at 08:26:43AM -0600, Grant Likely wrote:
+[...]
+> +	dev = kzalloc(sizeof(*dev) + (sizeof(struct resource) * i), GFP_KERNEL);
+>  	if (!dev)
+>  		return NULL;
+> -
+>  	dev->dev.of_node = of_node_get(np);
+>  	dev->dev.dma_mask = &dev->archdata.dma_mask;
+>  	dev->dev.parent = parent;
+>  	dev->dev.release = of_release_dev;
+>  
+> +	/* Populate the resource table */
+> +	if (num_irq || num_reg) {
+> +		dev->resource = (void*)&dev[1];
 
---=-KxNLyB8Mjv7qip1R+Pg1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This is ugly. Why not allocate the memory specifically for
+dev->resource? Is this because you plan to get rid of
+of_release_dev(), and the generic release_dev() won't
+know if it should free the dev->resource? There must
+be a better way to handle this.
 
-On Tue, 2010-06-08 at 17:38 +1000, Matt Evans wrote:
-> kexec_perpare_cpus_wait() iterates i through NR_CPUS to check
-> paca[i].kexec_state of each to make sure they have quiesced.
-> However now we have dynamic PACA allocation, paca[NR_CPUS] is not necessa=
-rily
-> valid and we overrun the array;  spurious "cpu is not possible, ignoring"
-> errors result.  This patch iterates for_each_online_cpu so stays
-> within the bounds of paca[] -- and every CPU is now 'possible'.
->=20
-> Signed-off-by: Matt Evans <matt@ozlabs.org>
+p.s.
 
-Looks good ..
+[Two Minutes Hate for Grant.]
 
-Cautiously-acked-by: Michael Ellerman <michael@ellerman.id.au>
+Just wonder what happened to of_gpio stuff? You blocked it
+in 2.6.34 for no reason saying "I'll pick it into my OF
+tree before the 2.6.35 merge window" and it's 2.6.36 merge
+window quite soon.
 
-> -			if (!cpu_online(i)) {
-> -				/* Fixme: this can be spinning in
-> -				 * pSeries_secondary_wait with a paca
-> -				 * waiting for it to go online.
-> -				 */
-> -				printk("kexec: cpu %d hw_cpu_id %d is not"
-> -						" online, ignoring\n",
-> -						i, paca[i].hw_cpu_id);
-> -				break;
-> -			}
+It's still in origin/test-devicetree, which is obviously
+not -next. What is your plan now?
 
-I don't see how the state in the Fixme could ever happen, but maybe
-Milton can seeing I think he wrote it?
+Thanks,
 
-cheers
+> +		dev->num_resources = num_reg + num_irq;
+> +		res = dev->resource;
+> +		for (i = 0; i < num_reg; i++, res++) {
+> +			rc = of_address_to_resource(np, i, res);
+> +			WARN_ON(rc);
+> +		}
+> +		for (i = 0; i < num_irq; i++, res++) {
+> +			rc = of_irq_to_resource(np, i, res);
+> +			WARN_ON(rc == NO_IRQ);
+> +		}
+> +	}
+> +
+>  	if (bus_id)
+>  		dev_set_name(&dev->dev, "%s", bus_id);
+>  	else
 
-
---=-KxNLyB8Mjv7qip1R+Pg1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwOZlEACgkQdSjSd0sB4dIZIwCfRrnX1Px5GqEWtsfT7b7s31dc
-bs0AniJbGiQK3IOSHsKPTLekh1JgKo6C
-=l83F
------END PGP SIGNATURE-----
-
---=-KxNLyB8Mjv7qip1R+Pg1--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
