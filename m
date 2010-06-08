@@ -1,12 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 8 Jun 2010 10:27:10 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/boot: Remove addRamdisk.c since it is now unused
-Message-ID: <20100608002710.GB2419@brick.ozlabs.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 8 Jun 2010 11:34:38 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Move kdump default base address to 64MB on 64bit
+Message-ID: <20100608013437.GL28295@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Steve Best <sfbest@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,346 +16,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It was used in the dim distant past for adding initrds to images
-for legacy iSeries, but it's not even used for that now that we
-have initramfs.  So remove it.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+We are seeing boot fails on some System p machines when using the kdump
+crashkernel= boot option. The default kdump base address is 32MB, so if we
+reserve 256MB for kdump then we reserve all of the RMO except the first 32MB.
+
+We really want kdump to reserve some memory in the RMO and most of it
+elsewhere but that will require more significant changes. For now we can shift
+the default base address to 64MB when CONFIG_PPC64 and CONFIG_RELOCATABLE are
+set. This isn't quite correct since what we really care about is the kdump
+kernel is relocatable, but we already make the assumption that base kernel
+and kdump kernel have the same CONFIG_RELOCATABLE setting, eg:
+
+#ifndef CONFIG_RELOCATABLE
+        if (crashk_res.start != KDUMP_KERNELBASE)
+                printk("Crash kernel location must be 0x%x\n",
+                                KDUMP_KERNELBASE);
+...
+
+RTAS is instantiated towards the top of our RMO, so if we were to go any
+higher we risk not having enough RMO memory for the kdump kernel on boxes
+with a 128MB RMO.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/boot/Makefile     |    2 +-
- arch/powerpc/boot/addRamDisk.c |  311 ----------------------------------------
- 2 files changed, 1 insertions(+), 312 deletions(-)
- delete mode 100644 arch/powerpc/boot/addRamDisk.c
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index ad0df7d..fae8192 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -141,7 +141,7 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
- $(obj)/wrapper.a: $(obj-wlib) FORCE
- 	$(call if_changed,bootar)
+Index: powerpc.git/arch/powerpc/include/asm/kdump.h
+===================================================================
+--- powerpc.git.orig/arch/powerpc/include/asm/kdump.h	2010-06-01 09:05:02.847207461 +1000
++++ powerpc.git/arch/powerpc/include/asm/kdump.h	2010-06-07 15:07:58.607203883 +1000
+@@ -3,8 +3,17 @@
  
--hostprogs-y	:= addnote addRamDisk hack-coff mktree
-+hostprogs-y	:= addnote hack-coff mktree
+ #include <asm/page.h>
  
- targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
- extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
-diff --git a/arch/powerpc/boot/addRamDisk.c b/arch/powerpc/boot/addRamDisk.c
-deleted file mode 100644
-index 893f446..0000000
---- a/arch/powerpc/boot/addRamDisk.c
-+++ /dev/null
-@@ -1,311 +0,0 @@
--#include <stdio.h>
--#include <stdlib.h>
--#include <netinet/in.h>
--#include <unistd.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--#include <string.h>
--#include <elf.h>
--
--#define ElfHeaderSize  (64 * 1024)
--#define ElfPages  (ElfHeaderSize / 4096)
--#define KERNELBASE (0xc000000000000000)
--#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
--
--struct addr_range {
--	unsigned long long addr;
--	unsigned long memsize;
--	unsigned long offset;
--};
--
--static int check_elf64(void *p, int size, struct addr_range *r)
--{
--	Elf64_Ehdr *elf64 = p;
--	Elf64_Phdr *elf64ph;
--
--	if (elf64->e_ident[EI_MAG0] != ELFMAG0 ||
--	    elf64->e_ident[EI_MAG1] != ELFMAG1 ||
--	    elf64->e_ident[EI_MAG2] != ELFMAG2 ||
--	    elf64->e_ident[EI_MAG3] != ELFMAG3 ||
--	    elf64->e_ident[EI_CLASS] != ELFCLASS64 ||
--	    elf64->e_ident[EI_DATA] != ELFDATA2MSB ||
--	    elf64->e_type != ET_EXEC || elf64->e_machine != EM_PPC64)
--		return 0;
--
--	if ((elf64->e_phoff + sizeof(Elf64_Phdr)) > size)
--		return 0;
--
--	elf64ph = (Elf64_Phdr *) ((unsigned long)elf64 +
--				  (unsigned long)elf64->e_phoff);
--
--	r->memsize = (unsigned long)elf64ph->p_memsz;
--	r->offset = (unsigned long)elf64ph->p_offset;
--	r->addr = (unsigned long long)elf64ph->p_vaddr;
--
--#ifdef DEBUG
--	printf("PPC64 ELF file, ph:\n");
--	printf("p_type   0x%08x\n", elf64ph->p_type);
--	printf("p_flags  0x%08x\n", elf64ph->p_flags);
--	printf("p_offset 0x%016llx\n", elf64ph->p_offset);
--	printf("p_vaddr  0x%016llx\n", elf64ph->p_vaddr);
--	printf("p_paddr  0x%016llx\n", elf64ph->p_paddr);
--	printf("p_filesz 0x%016llx\n", elf64ph->p_filesz);
--	printf("p_memsz  0x%016llx\n", elf64ph->p_memsz);
--	printf("p_align  0x%016llx\n", elf64ph->p_align);
--	printf("... skipping 0x%08lx bytes of ELF header\n",
--	       (unsigned long)elf64ph->p_offset);
--#endif
--
--	return 64;
--}
--static void get4k(FILE *file, char *buf )
--{
--	unsigned j;
--	unsigned num = fread(buf, 1, 4096, file);
--	for ( j=num; j<4096; ++j )
--		buf[j] = 0;
--}
--
--static void put4k(FILE *file, char *buf )
--{
--	fwrite(buf, 1, 4096, file);
--}
--
--static void death(const char *msg, FILE *fdesc, const char *fname)
--{
--	fprintf(stderr, msg);
--	fclose(fdesc);
--	unlink(fname);
--	exit(1);
--}
--
--int main(int argc, char **argv)
--{
--	char inbuf[4096];
--	struct addr_range vmlinux;
--	FILE *ramDisk;
--	FILE *inputVmlinux;
--	FILE *outputVmlinux;
--
--	char *rd_name, *lx_name, *out_name;
--
--	size_t i;
--	unsigned long ramFileLen;
--	unsigned long ramLen;
--	unsigned long roundR;
--	unsigned long offset_end;
--
--	unsigned long kernelLen;
--	unsigned long actualKernelLen;
--	unsigned long round;
--	unsigned long roundedKernelLen;
--	unsigned long ramStartOffs;
--	unsigned long ramPages;
--	unsigned long roundedKernelPages;
--	unsigned long hvReleaseData;
--	u_int32_t eyeCatcher = 0xc8a5d9c4;
--	unsigned long naca;
--	unsigned long xRamDisk;
--	unsigned long xRamDiskSize;
--	long padPages;
--  
--  
--	if (argc < 2) {
--		fprintf(stderr, "Name of RAM disk file missing.\n");
--		exit(1);
--	}
--	rd_name = argv[1];
--
--	if (argc < 3) {
--		fprintf(stderr, "Name of vmlinux file missing.\n");
--		exit(1);
--	}
--	lx_name = argv[2];
--
--	if (argc < 4) {
--		fprintf(stderr, "Name of vmlinux output file missing.\n");
--		exit(1);
--	}
--	out_name = argv[3];
--
--
--	ramDisk = fopen(rd_name, "r");
--	if ( ! ramDisk ) {
--		fprintf(stderr, "RAM disk file \"%s\" failed to open.\n", rd_name);
--		exit(1);
--	}
--
--	inputVmlinux = fopen(lx_name, "r");
--	if ( ! inputVmlinux ) {
--		fprintf(stderr, "vmlinux file \"%s\" failed to open.\n", lx_name);
--		exit(1);
--	}
--  
--	outputVmlinux = fopen(out_name, "w+");
--	if ( ! outputVmlinux ) {
--		fprintf(stderr, "output vmlinux file \"%s\" failed to open.\n", out_name);
--		exit(1);
--	}
--
--	i = fread(inbuf, 1, sizeof(inbuf), inputVmlinux);
--	if (i != sizeof(inbuf)) {
--		fprintf(stderr, "can not read vmlinux file %s: %u\n", lx_name, i);
--		exit(1);
--	}
--
--	i = check_elf64(inbuf, sizeof(inbuf), &vmlinux);
--	if (i == 0) {
--		fprintf(stderr, "You must have a linux kernel specified as argv[2]\n");
--		exit(1);
--	}
--
--	/* Input Vmlinux file */
--	fseek(inputVmlinux, 0, SEEK_END);
--	kernelLen = ftell(inputVmlinux);
--	fseek(inputVmlinux, 0, SEEK_SET);
--	printf("kernel file size = %lu\n", kernelLen);
--
--	actualKernelLen = kernelLen - ElfHeaderSize;
--
--	printf("actual kernel length (minus ELF header) = %lu\n", actualKernelLen);
--
--	round = actualKernelLen % 4096;
--	roundedKernelLen = actualKernelLen;
--	if ( round )
--		roundedKernelLen += (4096 - round);
--	printf("Vmlinux length rounded up to a 4k multiple = %ld/0x%lx \n", roundedKernelLen, roundedKernelLen);
--	roundedKernelPages = roundedKernelLen / 4096;
--	printf("Vmlinux pages to copy = %ld/0x%lx \n", roundedKernelPages, roundedKernelPages);
--
--	offset_end = _ALIGN_UP(vmlinux.memsize, 4096);
--	/* calc how many pages we need to insert between the vmlinux and the start of the ram disk */
--	padPages = offset_end/4096 - roundedKernelPages;
--
--	/* Check and see if the vmlinux is already larger than _end in System.map */
--	if (padPages < 0) {
--		/* vmlinux is larger than _end - adjust the offset to the start of the embedded ram disk */ 
--		offset_end = roundedKernelLen;
--		printf("vmlinux is larger than _end indicates it needs to be - offset_end = %lx \n", offset_end);
--		padPages = 0;
--		printf("will insert %lx pages between the vmlinux and the start of the ram disk \n", padPages);
--	}
--	else {
--		/* _end is larger than vmlinux - use the offset to _end that we calculated from the system map */
--		printf("vmlinux is smaller than _end indicates is needed - offset_end = %lx \n", offset_end);
--		printf("will insert %lx pages between the vmlinux and the start of the ram disk \n", padPages);
--	}
--
--
--
--	/* Input Ram Disk file */
--	// Set the offset that the ram disk will be started at.
--	ramStartOffs = offset_end;  /* determined from the input vmlinux file and the system map */
--	printf("Ram Disk will start at offset = 0x%lx \n", ramStartOffs);
--  
--	fseek(ramDisk, 0, SEEK_END);
--	ramFileLen = ftell(ramDisk);
--	fseek(ramDisk, 0, SEEK_SET);
--	printf("%s file size = %ld/0x%lx \n", rd_name, ramFileLen, ramFileLen);
--
--	ramLen = ramFileLen;
--
--	roundR = 4096 - (ramLen % 4096);
--	if ( roundR ) {
--		printf("Rounding RAM disk file up to a multiple of 4096, adding %ld/0x%lx \n", roundR, roundR);
--		ramLen += roundR;
--	}
--
--	printf("Rounded RAM disk size is %ld/0x%lx \n", ramLen, ramLen);
--	ramPages = ramLen / 4096;
--	printf("RAM disk pages to copy = %ld/0x%lx\n", ramPages, ramPages);
--
--
--
--  // Copy 64K ELF header
--	for (i=0; i<(ElfPages); ++i) {
--		get4k( inputVmlinux, inbuf );
--		put4k( outputVmlinux, inbuf );
--	}
--
--	/* Copy the vmlinux (as full pages). */
--	fseek(inputVmlinux, ElfHeaderSize, SEEK_SET);
--	for ( i=0; i<roundedKernelPages; ++i ) {
--		get4k( inputVmlinux, inbuf );
--		put4k( outputVmlinux, inbuf );
--	}
--  
--	/* Insert pad pages (if appropriate) that are needed between */
--	/* | the end of the vmlinux and the ram disk. */
--	for (i=0; i<padPages; ++i) {
--		memset(inbuf, 0, 4096);
--		put4k(outputVmlinux, inbuf);
--	}
--
--	/* Copy the ram disk (as full pages). */
--	for ( i=0; i<ramPages; ++i ) {
--		get4k( ramDisk, inbuf );
--		put4k( outputVmlinux, inbuf );
--	}
--
--	/* Close the input files */
--	fclose(ramDisk);
--	fclose(inputVmlinux);
--	/* And flush the written output file */
--	fflush(outputVmlinux);
--
--
--
--	/* Fixup the new vmlinux to contain the ram disk starting offset (xRamDisk) and the ram disk size (xRamDiskSize) */
--	/* fseek to the hvReleaseData pointer */
--	fseek(outputVmlinux, ElfHeaderSize + 0x24, SEEK_SET);
--	if (fread(&hvReleaseData, 4, 1, outputVmlinux) != 1) {
--		death("Could not read hvReleaseData pointer\n", outputVmlinux, out_name);
--	}
--	hvReleaseData = ntohl(hvReleaseData); /* Convert to native int */
--	printf("hvReleaseData is at %08lx\n", hvReleaseData);
--
--	/* fseek to the hvReleaseData */
--	fseek(outputVmlinux, ElfHeaderSize + hvReleaseData, SEEK_SET);
--	if (fread(inbuf, 0x40, 1, outputVmlinux) != 1) {
--		death("Could not read hvReleaseData\n", outputVmlinux, out_name);
--	}
--	/* Check hvReleaseData sanity */
--	if (memcmp(inbuf, &eyeCatcher, 4) != 0) {
--		death("hvReleaseData is invalid\n", outputVmlinux, out_name);
--	}
--	/* Get the naca pointer */
--	naca = ntohl(*((u_int32_t*) &inbuf[0x0C])) - KERNELBASE;
--	printf("Naca is at offset 0x%lx \n", naca);
--
--	/* fseek to the naca */
--	fseek(outputVmlinux, ElfHeaderSize + naca, SEEK_SET);
--	if (fread(inbuf, 0x18, 1, outputVmlinux) != 1) {
--		death("Could not read naca\n", outputVmlinux, out_name);
--	}
--	xRamDisk = ntohl(*((u_int32_t *) &inbuf[0x0c]));
--	xRamDiskSize = ntohl(*((u_int32_t *) &inbuf[0x14]));
--	/* Make sure a RAM disk isn't already present */
--	if ((xRamDisk != 0) || (xRamDiskSize != 0)) {
--		death("RAM disk is already attached to this kernel\n", outputVmlinux, out_name);
--	}
--	/* Fill in the values */
--	*((u_int32_t *) &inbuf[0x0c]) = htonl(ramStartOffs);
--	*((u_int32_t *) &inbuf[0x14]) = htonl(ramPages);
--
--	/* Write out the new naca */
--	fflush(outputVmlinux);
--	fseek(outputVmlinux, ElfHeaderSize + naca, SEEK_SET);
--	if (fwrite(inbuf, 0x18, 1, outputVmlinux) != 1) {
--		death("Could not write naca\n", outputVmlinux, out_name);
--	}
--	printf("Ram Disk of 0x%lx pages is attached to the kernel at offset 0x%08lx\n",
--	       ramPages, ramStartOffs);
--
--	/* Done */
--	fclose(outputVmlinux);
--	/* Set permission to executable */
--	chmod(out_name, S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
--
--	return 0;
--}
--
--- 
-1.7.1
+-/* Kdump kernel runs at 32 MB, change at your peril. */
++/*
++ * If CONFIG_RELOCATABLE is enabled we can place the kdump kernel anywhere.
++ * To keep enough space in the RMO for the first stage kernel on 64bit, we
++ * place it at 64MB. If CONFIG_RELOCATABLE is not enabled we must place
++ * the second stage at 32MB.
++ */
++#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_PPC64)
++#define KDUMP_KERNELBASE	0x4000000
++#else
+ #define KDUMP_KERNELBASE	0x2000000
++#endif
+ 
+ /* How many bytes to reserve at zero for kdump. The reserve limit should
+  * be greater or equal to the trampoline's end address.
