@@ -1,36 +1,11 @@
-Return-Path: <eha@doredevelopment.dk>
-Received: from zmta01.irigo.dk (zmta01.cabocomm.dk [193.200.44.52])
-	by ozlabs.org (Postfix) with ESMTP id 929D5B7D67
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 17:23:49 +1000 (EST)
-Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
-	interrupt handlers
-From: Esben Haabendal <eha@doredevelopment.dk>
-To: Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <alpine.LFD.2.00.1006080853220.2933@localhost.localdomain>
-References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
-	<alpine.LFD.2.00.1006042343150.2933@localhost.localdomain>
-	<AANLkTilb7---Qg1oLwzanKP1RGe04fkAXDtZzz0w9MGz@mail.gmail.com>
-	<20100605151031.2d562268@hina.wild-wind.fr.eu.org>
-	<alpine.LFD.2.00.1006051732270.2933@localhost.localdomain>
-	<AANLkTimlSBEhl58CNuScKjxbqdTwTYgqo7vrHTcd1x9G@mail.gmail.com>
-	<alpine.LFD.2.00.1006051915290.2933@localhost.localdomain>
-	<AANLkTimcB9vRqnNYyBh6hjHXZHcmFvw72MZUEIGfeexq@mail.gmail.com>
-	<alpine.LFD.2.00.1006052155100.2933@localhost.localdomain>
-	<AANLkTik2so7osQJFq6NRaIFK2GVLURVozOqSsejd1K0F@mail.gmail.com>
-	<alpine.LFD.2.00.1006062228120.2933@localhost.localdomain>
-	<1275914058.2818.8.camel@eha.doredevelopment.dk>
-	<alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
-	<AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
-	<alpine.LFD.2.00.1006080853220.2933@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Jun 2010 09:23:40 +0200
-Message-ID: <1275981820.2870.74.camel@eha.doredevelopment.dk>
-Mime-Version: 1.0
-Cc: joachim.eastwood@jotron.com, Esben Haabendal <esbenhaabendal@gmail.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Marc Zyngier <maz@misterjones.org>, Ingo Molnar <mingo@elte.hu>,
-	David Miller <davem@davemloft.net>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C0DF36A.3080401@ozlabs.org>
+Date: Tue, 08 Jun 2010 17:38:18 +1000
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Subject: [PATCH] kexec, ppc64:  Wait for online/possible CPUs only.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,29 +15,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-06-08 at 08:58 +0200, Thomas Gleixner wrote: 
-> On Mon, 7 Jun 2010, Esben Haabendal wrote:
-> 
-> > On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > Maybe you understand now, why I was pretty sure upfront, that your
-> > > approach was wrong even without knowing all the gory details ? :)
-> > 
-> > I understand.  There is a better solution, which is to use threaded
-> > interrupts where needed.
-> 
-> FWIW, it just occured to me, that the only reason why the
-> disable_irq_nosysnc() trips up on the in_atomic() check is your
-> fiddling with the nested irq dispatcher. 
-> 
-> If you just would have changed the phy driver to
-> request_irq_any_context() it would have simply worked out of the box,
-> without any need to remove buslock and changing genirq code at all.
-> 
-> That would not give you the advantage of getting rid of the two
-> additional I2C transfers, but that's nn optimzation not a functional
-> requirement.
+kexec_perpare_cpus_wait() iterates i through NR_CPUS to check
+paca[i].kexec_state of each to make sure they have quiesced.
+However now we have dynamic PACA allocation, paca[NR_CPUS] is not necessarily
+valid and we overrun the array;  spurious "cpu is not possible, ignoring"
+errors result.  This patch iterates for_each_online_cpu so stays
+within the bounds of paca[] -- and every CPU is now 'possible'.
 
-Now, that is good news. Thanks!
+Signed-off-by: Matt Evans <matt@ozlabs.org>
+---
+ arch/powerpc/kernel/machine_kexec_64.c |   18 +-----------------
+ 1 files changed, 1 insertions(+), 17 deletions(-)
 
-/Esben
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 26f9900..ed31a29 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -182,28 +182,12 @@ static void kexec_prepare_cpus_wait(int wait_state)
+ 
+ 	my_cpu = get_cpu();
+ 	/* Make sure each CPU has atleast made it to the state we need */
+-	for (i=0; i < NR_CPUS; i++) {
++	for_each_online_cpu(i) {
+ 		if (i == my_cpu)
+ 			continue;
+ 
+ 		while (paca[i].kexec_state < wait_state) {
+ 			barrier();
+-			if (!cpu_possible(i)) {
+-				printk("kexec: cpu %d hw_cpu_id %d is not"
+-						" possible, ignoring\n",
+-						i, paca[i].hw_cpu_id);
+-				break;
+-			}
+-			if (!cpu_online(i)) {
+-				/* Fixme: this can be spinning in
+-				 * pSeries_secondary_wait with a paca
+-				 * waiting for it to go online.
+-				 */
+-				printk("kexec: cpu %d hw_cpu_id %d is not"
+-						" online, ignoring\n",
+-						i, paca[i].hw_cpu_id);
+-				break;
+-			}
+ 			if (i != notified) {
+ 				printk( "kexec: waiting for cpu %d (physical"
+ 						" %d) to enter %i state\n",
+-- 
+1.6.3.3
