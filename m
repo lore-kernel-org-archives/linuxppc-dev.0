@@ -1,20 +1,36 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f182.google.com (mail-pz0-f182.google.com
-	[209.85.222.182]) by ozlabs.org (Postfix) with ESMTP id A486FB7DA8
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 00:15:53 +1000 (EST)
-Received: by pzk12 with SMTP id 12so3115654pzk.9
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jun 2010 07:15:53 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 4/5] of/address: little-endian fixes
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 08 Jun 2010 08:10:13 -0600
-Message-ID: <20100608141013.25879.34892.stgit@angua>
-In-Reply-To: <20100608140917.25879.67745.stgit@angua>
-References: <20100608140917.25879.67745.stgit@angua>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au
+Return-Path: <eha@doredevelopment.dk>
+Received: from zmta01.irigo.dk (zmta01.cabocomm.dk [193.200.44.52])
+	by ozlabs.org (Postfix) with ESMTP id 61CC21008A7
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 00:15:57 +1000 (EST)
+Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
+	interrupt handlers
+From: Esben Haabendal <eha@doredevelopment.dk>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1006080015570.2933@localhost.localdomain>
+References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006042343150.2933@localhost.localdomain>
+	<AANLkTilb7---Qg1oLwzanKP1RGe04fkAXDtZzz0w9MGz@mail.gmail.com>
+	<20100605151031.2d562268@hina.wild-wind.fr.eu.org>
+	<alpine.LFD.2.00.1006051732270.2933@localhost.localdomain>
+	<AANLkTimlSBEhl58CNuScKjxbqdTwTYgqo7vrHTcd1x9G@mail.gmail.com>
+	<alpine.LFD.2.00.1006051915290.2933@localhost.localdomain>
+	<AANLkTimcB9vRqnNYyBh6hjHXZHcmFvw72MZUEIGfeexq@mail.gmail.com>
+	<alpine.LFD.2.00.1006052155100.2933@localhost.localdomain>
+	<AANLkTik2so7osQJFq6NRaIFK2GVLURVozOqSsejd1K0F@mail.gmail.com>
+	<alpine.LFD.2.00.1006062228120.2933@localhost.localdomain>
+	<1275914058.2818.8.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
+	<AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
+	<alpine.LFD.2.00.1006080015570.2933@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Jun 2010 16:15:47 +0200
+Message-ID: <1276006547.2870.488.camel@eha.doredevelopment.dk>
+Mime-Version: 1.0
+Cc: joachim.eastwood@jotron.com, Esben Haabendal <esbenhaabendal@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Marc Zyngier <maz@misterjones.org>, Ingo Molnar <mingo@elte.hu>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,59 +40,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix some endian issues in the OF address translation code.
+On Tue, 2010-06-08 at 01:18 +0200, Thomas Gleixner wrote: 
+> On Mon, 7 Jun 2010, Esben Haabendal wrote:
+> > On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > Maybe you understand now, why I was pretty sure upfront, that your
+> > > approach was wrong even without knowing all the gory details ? :)
+> > 
+> > I understand.  There is a better solution, which is to use threaded
+> > interrupts where needed.
+> > 
+> > But I must confess that I am disappointed that you still fail to see
+> > how the pca953x
+> > patch actually eliminates the need for serialization. But I don't
+> > think there is much
+> > point in going on about that.
+> 
+> I return the favour of being disappointed that you are still failing
+> to accept that there is a fundamental difference between "it works in
+> a particular case" and semantical correctness under all
+> circumstances.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-CC: Michal Simek <monstr@monstr.eu>
-CC: Wolfram Sang <w.sang@pengutronix.de>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: microblaze-uclinux@itee.uq.edu.au
-CC: linuxppc-dev@ozlabs.org
----
- drivers/of/address.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+No reason to do that.  I must have misunderstood you then.
+I understand that the general case, I just never got the point
+where you understood what I did that (I believe) makes it
+actually work (not just for now, but really work), in my
+particular case.
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 2a905d5..0b04137 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -22,7 +22,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
- {
- 	printk(KERN_DEBUG "%s", s);
- 	while (na--)
--		printk(" %08x", *(addr++));
-+		printk(" %08x", be32_to_cpu(*(addr++)));
- 	printk("\n");
- }
- #else
-@@ -79,8 +79,8 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
- 	memset(addr, 0, na * 4);
- 	a += offset;
- 	if (na > 1)
--		addr[na - 2] = a >> 32;
--	addr[na - 1] = a & 0xffffffffu;
-+		addr[na - 2] = cpu_to_be32(a >> 32);
-+	addr[na - 1] = cpu_to_be32(a & 0xffffffffu);
- 
- 	return 0;
- }
-@@ -190,14 +190,16 @@ const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
- 	psize /= 4;
- 
- 	onesize = na + ns;
--	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
--		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
-+	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++) {
-+		u32 val = be32_to_cpu(prop[0]);
-+		if ((val & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
- 			if (size)
- 				*size = of_read_number(prop + na, ns);
- 			if (flags)
- 				*flags = bus->get_flags(prop);
- 			return prop;
- 		}
-+	}
- 	return NULL;
- }
- EXPORT_SYMBOL(of_get_pci_address);
+> There is no place for "it works in a particular case" in a kernel
+> which runs on a gazillion of different devices unless you want to
+> create a complete unmaintainable mess. The only way to avoid this is
+> to be strict about semantics even if it seems unsensible for a
+> particular case.
+
+I won't argue against.  Not at all.
+
+> Also I explained it to you in great length, that your patch violates
+> the semantical guarantees of existing functions, but you ignore that
+> completely.
+
+And I answered you several times, that I understand your point,
+but 
+
+
+> It's Open Source, go wild and change it for your particular case - but
+> don't expect that I accept patches to the generic irq code which will
+> cause _me_ predictable trouble as I have to deal with the
+> fallout. Neither expect, that I ack patches to users of that code
+> which are semantically wrong.
+> 
+> Just for the record, the pca953x driver is broken vs. the local state
+> protection anyway as the GPIO functions are not serialized against the
+> interrupt controller functions. There is no magic which prevents that,
+> neither on your system nor on any other. The GPIO function should take
+> buslock when modifying local state and that's one of the reasons why
+> buslock it is there and cannot go away.
+
+Ok, so the genirq buslock should be held in fx.
+pca953x_gpio_direction_input and pca953x_gpio_direction_output ?
+That makes sense in combination with the currently implemented
+bus_sync_unlock.
+
+But I still fail to see why it is needed, or even desired, that the
+setting of direction should be related to the genirq code at all.
+
+I see it as a sane seperation to let the actual gpio code handle
+the direction setting, and the irq code to handle the (in software)
+irq mask.  Driver and/or board code should be sane enough to set
+pca953x gpio's as input if/when interrupts from them are needed.
+And they should do this in advance.  And by doing it this way,
+there should not be any hardware state to serialize, and there
+actually is no pca953x driver local state either, as the pca953x_chip
+members are either exclusively managed by gpio or irq code.
+
+> I'm anticipating that you are going to tell me that it does not matter
+> on your particular powerpc combined with your usage pattern (i.e no
+> GPIO users). And I tell you right away, that I'm not interested in
+> this answer for well explained reasons.
+
+No, I don't tie it to my particular usage pattern. I tell you that
+I don't need it (serialization) on powerpc because my pca953x powerpc
+patch have removed the need for shared local state between gpio and irq
+code.
+
+Of-course, for the pca953x driver to be acceptable, it would
+be nice (or more likely, required) to unify it for other archs
+also, I just don't see how to do that.
+
+That said, I will proceed with the request_any_context_irq() in the phy
+driver instead :-)  Case closed for now.
+
+/Esben
