@@ -1,37 +1,12 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E4C99B7D47
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 09:18:39 +1000 (EST)
-Date: Tue, 8 Jun 2010 01:18:09 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Esben Haabendal <esbenhaabendal@gmail.com>
-Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
-	interrupt handlers
-In-Reply-To: <AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1006080015570.2933@localhost.localdomain>
-References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
-	<alpine.LFD.2.00.1006042343150.2933@localhost.localdomain>
-	<AANLkTilb7---Qg1oLwzanKP1RGe04fkAXDtZzz0w9MGz@mail.gmail.com>
-	<20100605151031.2d562268@hina.wild-wind.fr.eu.org>
-	<alpine.LFD.2.00.1006051732270.2933@localhost.localdomain>
-	<AANLkTimlSBEhl58CNuScKjxbqdTwTYgqo7vrHTcd1x9G@mail.gmail.com>
-	<alpine.LFD.2.00.1006051915290.2933@localhost.localdomain>
-	<AANLkTimcB9vRqnNYyBh6hjHXZHcmFvw72MZUEIGfeexq@mail.gmail.com>
-	<alpine.LFD.2.00.1006052155100.2933@localhost.localdomain>
-	<AANLkTik2so7osQJFq6NRaIFK2GVLURVozOqSsejd1K0F@mail.gmail.com>
-	<alpine.LFD.2.00.1006062228120.2933@localhost.localdomain>
-	<1275914058.2818.8.camel@eha.doredevelopment.dk>
-	<alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
-	<AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 8 Jun 2010 10:27:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/boot: Remove addRamdisk.c since it is now unused
+Message-ID: <20100608002710.GB2419@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: joachim.eastwood@jotron.com, Peter Zijlstra <peterz@infradead.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Esben Haabendal <eha@doredevelopment.dk>,
-	linuxppc-dev@ozlabs.org, Marc Zyngier <maz@misterjones.org>,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: Steve Best <sfbest@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,61 +16,346 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 7 Jun 2010, Esben Haabendal wrote:
-> On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > Maybe you understand now, why I was pretty sure upfront, that your
-> > approach was wrong even without knowing all the gory details ? :)
-> 
-> I understand.  There is a better solution, which is to use threaded
-> interrupts where needed.
-> 
-> But I must confess that I am disappointed that you still fail to see
-> how the pca953x
-> patch actually eliminates the need for serialization. But I don't
-> think there is much
-> point in going on about that.
+It was used in the dim distant past for adding initrds to images
+for legacy iSeries, but it's not even used for that now that we
+have initramfs.  So remove it.
 
-I return the favour of being disappointed that you are still failing
-to accept that there is a fundamental difference between "it works in
-a particular case" and semantical correctness under all
-circumstances.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/boot/Makefile     |    2 +-
+ arch/powerpc/boot/addRamDisk.c |  311 ----------------------------------------
+ 2 files changed, 1 insertions(+), 312 deletions(-)
+ delete mode 100644 arch/powerpc/boot/addRamDisk.c
 
-There is no place for "it works in a particular case" in a kernel
-which runs on a gazillion of different devices unless you want to
-create a complete unmaintainable mess. The only way to avoid this is
-to be strict about semantics even if it seems unsensible for a
-particular case.
-
-Also I explained it to you in great length, that your patch violates
-the semantical guarantees of existing functions, but you ignore that
-completely.
-
-It's Open Source, go wild and change it for your particular case - but
-don't expect that I accept patches to the generic irq code which will
-cause _me_ predictable trouble as I have to deal with the
-fallout. Neither expect, that I ack patches to users of that code
-which are semantically wrong.
-
-Just for the record, the pca953x driver is broken vs. the local state
-protection anyway as the GPIO functions are not serialized against the
-interrupt controller functions. There is no magic which prevents that,
-neither on your system nor on any other. The GPIO function should take
-buslock when modifying local state and that's one of the reasons why
-buslock it is there and cannot go away.
-
-I'm anticipating that you are going to tell me that it does not matter
-on your particular powerpc combined with your usage pattern (i.e no
-GPIO users). And I tell you right away, that I'm not interested in
-this answer for well explained reasons.
-
-> Oh, I still think that the disable_irq_nosync documentaiton is misleading.
-> Functions that are allowed in a particular context should not call functions
-> that are not allowed to be called in that context. But now I know :-)
-
-As I said before: I agree and I'm happy to accept a patch to fix that
-documentation problem.
-
-Thanks,
-
-	tglx
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index ad0df7d..fae8192 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -141,7 +141,7 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+ 	$(call if_changed,bootar)
+ 
+-hostprogs-y	:= addnote addRamDisk hack-coff mktree
++hostprogs-y	:= addnote hack-coff mktree
+ 
+ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+ extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+diff --git a/arch/powerpc/boot/addRamDisk.c b/arch/powerpc/boot/addRamDisk.c
+deleted file mode 100644
+index 893f446..0000000
+--- a/arch/powerpc/boot/addRamDisk.c
++++ /dev/null
+@@ -1,311 +0,0 @@
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <netinet/in.h>
+-#include <unistd.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <string.h>
+-#include <elf.h>
+-
+-#define ElfHeaderSize  (64 * 1024)
+-#define ElfPages  (ElfHeaderSize / 4096)
+-#define KERNELBASE (0xc000000000000000)
+-#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
+-
+-struct addr_range {
+-	unsigned long long addr;
+-	unsigned long memsize;
+-	unsigned long offset;
+-};
+-
+-static int check_elf64(void *p, int size, struct addr_range *r)
+-{
+-	Elf64_Ehdr *elf64 = p;
+-	Elf64_Phdr *elf64ph;
+-
+-	if (elf64->e_ident[EI_MAG0] != ELFMAG0 ||
+-	    elf64->e_ident[EI_MAG1] != ELFMAG1 ||
+-	    elf64->e_ident[EI_MAG2] != ELFMAG2 ||
+-	    elf64->e_ident[EI_MAG3] != ELFMAG3 ||
+-	    elf64->e_ident[EI_CLASS] != ELFCLASS64 ||
+-	    elf64->e_ident[EI_DATA] != ELFDATA2MSB ||
+-	    elf64->e_type != ET_EXEC || elf64->e_machine != EM_PPC64)
+-		return 0;
+-
+-	if ((elf64->e_phoff + sizeof(Elf64_Phdr)) > size)
+-		return 0;
+-
+-	elf64ph = (Elf64_Phdr *) ((unsigned long)elf64 +
+-				  (unsigned long)elf64->e_phoff);
+-
+-	r->memsize = (unsigned long)elf64ph->p_memsz;
+-	r->offset = (unsigned long)elf64ph->p_offset;
+-	r->addr = (unsigned long long)elf64ph->p_vaddr;
+-
+-#ifdef DEBUG
+-	printf("PPC64 ELF file, ph:\n");
+-	printf("p_type   0x%08x\n", elf64ph->p_type);
+-	printf("p_flags  0x%08x\n", elf64ph->p_flags);
+-	printf("p_offset 0x%016llx\n", elf64ph->p_offset);
+-	printf("p_vaddr  0x%016llx\n", elf64ph->p_vaddr);
+-	printf("p_paddr  0x%016llx\n", elf64ph->p_paddr);
+-	printf("p_filesz 0x%016llx\n", elf64ph->p_filesz);
+-	printf("p_memsz  0x%016llx\n", elf64ph->p_memsz);
+-	printf("p_align  0x%016llx\n", elf64ph->p_align);
+-	printf("... skipping 0x%08lx bytes of ELF header\n",
+-	       (unsigned long)elf64ph->p_offset);
+-#endif
+-
+-	return 64;
+-}
+-static void get4k(FILE *file, char *buf )
+-{
+-	unsigned j;
+-	unsigned num = fread(buf, 1, 4096, file);
+-	for ( j=num; j<4096; ++j )
+-		buf[j] = 0;
+-}
+-
+-static void put4k(FILE *file, char *buf )
+-{
+-	fwrite(buf, 1, 4096, file);
+-}
+-
+-static void death(const char *msg, FILE *fdesc, const char *fname)
+-{
+-	fprintf(stderr, msg);
+-	fclose(fdesc);
+-	unlink(fname);
+-	exit(1);
+-}
+-
+-int main(int argc, char **argv)
+-{
+-	char inbuf[4096];
+-	struct addr_range vmlinux;
+-	FILE *ramDisk;
+-	FILE *inputVmlinux;
+-	FILE *outputVmlinux;
+-
+-	char *rd_name, *lx_name, *out_name;
+-
+-	size_t i;
+-	unsigned long ramFileLen;
+-	unsigned long ramLen;
+-	unsigned long roundR;
+-	unsigned long offset_end;
+-
+-	unsigned long kernelLen;
+-	unsigned long actualKernelLen;
+-	unsigned long round;
+-	unsigned long roundedKernelLen;
+-	unsigned long ramStartOffs;
+-	unsigned long ramPages;
+-	unsigned long roundedKernelPages;
+-	unsigned long hvReleaseData;
+-	u_int32_t eyeCatcher = 0xc8a5d9c4;
+-	unsigned long naca;
+-	unsigned long xRamDisk;
+-	unsigned long xRamDiskSize;
+-	long padPages;
+-  
+-  
+-	if (argc < 2) {
+-		fprintf(stderr, "Name of RAM disk file missing.\n");
+-		exit(1);
+-	}
+-	rd_name = argv[1];
+-
+-	if (argc < 3) {
+-		fprintf(stderr, "Name of vmlinux file missing.\n");
+-		exit(1);
+-	}
+-	lx_name = argv[2];
+-
+-	if (argc < 4) {
+-		fprintf(stderr, "Name of vmlinux output file missing.\n");
+-		exit(1);
+-	}
+-	out_name = argv[3];
+-
+-
+-	ramDisk = fopen(rd_name, "r");
+-	if ( ! ramDisk ) {
+-		fprintf(stderr, "RAM disk file \"%s\" failed to open.\n", rd_name);
+-		exit(1);
+-	}
+-
+-	inputVmlinux = fopen(lx_name, "r");
+-	if ( ! inputVmlinux ) {
+-		fprintf(stderr, "vmlinux file \"%s\" failed to open.\n", lx_name);
+-		exit(1);
+-	}
+-  
+-	outputVmlinux = fopen(out_name, "w+");
+-	if ( ! outputVmlinux ) {
+-		fprintf(stderr, "output vmlinux file \"%s\" failed to open.\n", out_name);
+-		exit(1);
+-	}
+-
+-	i = fread(inbuf, 1, sizeof(inbuf), inputVmlinux);
+-	if (i != sizeof(inbuf)) {
+-		fprintf(stderr, "can not read vmlinux file %s: %u\n", lx_name, i);
+-		exit(1);
+-	}
+-
+-	i = check_elf64(inbuf, sizeof(inbuf), &vmlinux);
+-	if (i == 0) {
+-		fprintf(stderr, "You must have a linux kernel specified as argv[2]\n");
+-		exit(1);
+-	}
+-
+-	/* Input Vmlinux file */
+-	fseek(inputVmlinux, 0, SEEK_END);
+-	kernelLen = ftell(inputVmlinux);
+-	fseek(inputVmlinux, 0, SEEK_SET);
+-	printf("kernel file size = %lu\n", kernelLen);
+-
+-	actualKernelLen = kernelLen - ElfHeaderSize;
+-
+-	printf("actual kernel length (minus ELF header) = %lu\n", actualKernelLen);
+-
+-	round = actualKernelLen % 4096;
+-	roundedKernelLen = actualKernelLen;
+-	if ( round )
+-		roundedKernelLen += (4096 - round);
+-	printf("Vmlinux length rounded up to a 4k multiple = %ld/0x%lx \n", roundedKernelLen, roundedKernelLen);
+-	roundedKernelPages = roundedKernelLen / 4096;
+-	printf("Vmlinux pages to copy = %ld/0x%lx \n", roundedKernelPages, roundedKernelPages);
+-
+-	offset_end = _ALIGN_UP(vmlinux.memsize, 4096);
+-	/* calc how many pages we need to insert between the vmlinux and the start of the ram disk */
+-	padPages = offset_end/4096 - roundedKernelPages;
+-
+-	/* Check and see if the vmlinux is already larger than _end in System.map */
+-	if (padPages < 0) {
+-		/* vmlinux is larger than _end - adjust the offset to the start of the embedded ram disk */ 
+-		offset_end = roundedKernelLen;
+-		printf("vmlinux is larger than _end indicates it needs to be - offset_end = %lx \n", offset_end);
+-		padPages = 0;
+-		printf("will insert %lx pages between the vmlinux and the start of the ram disk \n", padPages);
+-	}
+-	else {
+-		/* _end is larger than vmlinux - use the offset to _end that we calculated from the system map */
+-		printf("vmlinux is smaller than _end indicates is needed - offset_end = %lx \n", offset_end);
+-		printf("will insert %lx pages between the vmlinux and the start of the ram disk \n", padPages);
+-	}
+-
+-
+-
+-	/* Input Ram Disk file */
+-	// Set the offset that the ram disk will be started at.
+-	ramStartOffs = offset_end;  /* determined from the input vmlinux file and the system map */
+-	printf("Ram Disk will start at offset = 0x%lx \n", ramStartOffs);
+-  
+-	fseek(ramDisk, 0, SEEK_END);
+-	ramFileLen = ftell(ramDisk);
+-	fseek(ramDisk, 0, SEEK_SET);
+-	printf("%s file size = %ld/0x%lx \n", rd_name, ramFileLen, ramFileLen);
+-
+-	ramLen = ramFileLen;
+-
+-	roundR = 4096 - (ramLen % 4096);
+-	if ( roundR ) {
+-		printf("Rounding RAM disk file up to a multiple of 4096, adding %ld/0x%lx \n", roundR, roundR);
+-		ramLen += roundR;
+-	}
+-
+-	printf("Rounded RAM disk size is %ld/0x%lx \n", ramLen, ramLen);
+-	ramPages = ramLen / 4096;
+-	printf("RAM disk pages to copy = %ld/0x%lx\n", ramPages, ramPages);
+-
+-
+-
+-  // Copy 64K ELF header
+-	for (i=0; i<(ElfPages); ++i) {
+-		get4k( inputVmlinux, inbuf );
+-		put4k( outputVmlinux, inbuf );
+-	}
+-
+-	/* Copy the vmlinux (as full pages). */
+-	fseek(inputVmlinux, ElfHeaderSize, SEEK_SET);
+-	for ( i=0; i<roundedKernelPages; ++i ) {
+-		get4k( inputVmlinux, inbuf );
+-		put4k( outputVmlinux, inbuf );
+-	}
+-  
+-	/* Insert pad pages (if appropriate) that are needed between */
+-	/* | the end of the vmlinux and the ram disk. */
+-	for (i=0; i<padPages; ++i) {
+-		memset(inbuf, 0, 4096);
+-		put4k(outputVmlinux, inbuf);
+-	}
+-
+-	/* Copy the ram disk (as full pages). */
+-	for ( i=0; i<ramPages; ++i ) {
+-		get4k( ramDisk, inbuf );
+-		put4k( outputVmlinux, inbuf );
+-	}
+-
+-	/* Close the input files */
+-	fclose(ramDisk);
+-	fclose(inputVmlinux);
+-	/* And flush the written output file */
+-	fflush(outputVmlinux);
+-
+-
+-
+-	/* Fixup the new vmlinux to contain the ram disk starting offset (xRamDisk) and the ram disk size (xRamDiskSize) */
+-	/* fseek to the hvReleaseData pointer */
+-	fseek(outputVmlinux, ElfHeaderSize + 0x24, SEEK_SET);
+-	if (fread(&hvReleaseData, 4, 1, outputVmlinux) != 1) {
+-		death("Could not read hvReleaseData pointer\n", outputVmlinux, out_name);
+-	}
+-	hvReleaseData = ntohl(hvReleaseData); /* Convert to native int */
+-	printf("hvReleaseData is at %08lx\n", hvReleaseData);
+-
+-	/* fseek to the hvReleaseData */
+-	fseek(outputVmlinux, ElfHeaderSize + hvReleaseData, SEEK_SET);
+-	if (fread(inbuf, 0x40, 1, outputVmlinux) != 1) {
+-		death("Could not read hvReleaseData\n", outputVmlinux, out_name);
+-	}
+-	/* Check hvReleaseData sanity */
+-	if (memcmp(inbuf, &eyeCatcher, 4) != 0) {
+-		death("hvReleaseData is invalid\n", outputVmlinux, out_name);
+-	}
+-	/* Get the naca pointer */
+-	naca = ntohl(*((u_int32_t*) &inbuf[0x0C])) - KERNELBASE;
+-	printf("Naca is at offset 0x%lx \n", naca);
+-
+-	/* fseek to the naca */
+-	fseek(outputVmlinux, ElfHeaderSize + naca, SEEK_SET);
+-	if (fread(inbuf, 0x18, 1, outputVmlinux) != 1) {
+-		death("Could not read naca\n", outputVmlinux, out_name);
+-	}
+-	xRamDisk = ntohl(*((u_int32_t *) &inbuf[0x0c]));
+-	xRamDiskSize = ntohl(*((u_int32_t *) &inbuf[0x14]));
+-	/* Make sure a RAM disk isn't already present */
+-	if ((xRamDisk != 0) || (xRamDiskSize != 0)) {
+-		death("RAM disk is already attached to this kernel\n", outputVmlinux, out_name);
+-	}
+-	/* Fill in the values */
+-	*((u_int32_t *) &inbuf[0x0c]) = htonl(ramStartOffs);
+-	*((u_int32_t *) &inbuf[0x14]) = htonl(ramPages);
+-
+-	/* Write out the new naca */
+-	fflush(outputVmlinux);
+-	fseek(outputVmlinux, ElfHeaderSize + naca, SEEK_SET);
+-	if (fwrite(inbuf, 0x18, 1, outputVmlinux) != 1) {
+-		death("Could not write naca\n", outputVmlinux, out_name);
+-	}
+-	printf("Ram Disk of 0x%lx pages is attached to the kernel at offset 0x%08lx\n",
+-	       ramPages, ramStartOffs);
+-
+-	/* Done */
+-	fclose(outputVmlinux);
+-	/* Set permission to executable */
+-	chmod(out_name, S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+-
+-	return 0;
+-}
+-
+-- 
+1.7.1
