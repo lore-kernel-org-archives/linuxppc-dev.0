@@ -1,18 +1,36 @@
-Return-Path: <yaanhyy@gmail.com>
-Received: from mail-px0-f179.google.com (mail-px0-f179.google.com
-	[209.85.212.179]) by ozlabs.org (Postfix) with ESMTP id B99DCB7D64
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  8 Jun 2010 16:26:10 +1000 (EST)
-Received: by pxi3 with SMTP id 3so1721514pxi.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 07 Jun 2010 23:26:08 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 8 Jun 2010 14:26:08 +0800
-Message-ID: <AANLkTik4J5rT1IABynQT3F68gXuw6GoKvrxu537CxoG-@mail.gmail.com>
-Subject: Packet error when using kgdb
-From: yy Hong <yaanhyy@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001636e0a7a8664cae04887edd1f
+Return-Path: <eha@doredevelopment.dk>
+Received: from zmta01.irigo.dk (zmta01.cabocomm.dk [193.200.44.52])
+	by ozlabs.org (Postfix) with ESMTP id 929D5B7D67
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Jun 2010 17:23:49 +1000 (EST)
+Subject: Re: [RFC][PATCH] irq: support IRQ_NESTED_THREAD with non-threaded
+	interrupt handlers
+From: Esben Haabendal <eha@doredevelopment.dk>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1006080853220.2933@localhost.localdomain>
+References: <1275686352.2970.2.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006042343150.2933@localhost.localdomain>
+	<AANLkTilb7---Qg1oLwzanKP1RGe04fkAXDtZzz0w9MGz@mail.gmail.com>
+	<20100605151031.2d562268@hina.wild-wind.fr.eu.org>
+	<alpine.LFD.2.00.1006051732270.2933@localhost.localdomain>
+	<AANLkTimlSBEhl58CNuScKjxbqdTwTYgqo7vrHTcd1x9G@mail.gmail.com>
+	<alpine.LFD.2.00.1006051915290.2933@localhost.localdomain>
+	<AANLkTimcB9vRqnNYyBh6hjHXZHcmFvw72MZUEIGfeexq@mail.gmail.com>
+	<alpine.LFD.2.00.1006052155100.2933@localhost.localdomain>
+	<AANLkTik2so7osQJFq6NRaIFK2GVLURVozOqSsejd1K0F@mail.gmail.com>
+	<alpine.LFD.2.00.1006062228120.2933@localhost.localdomain>
+	<1275914058.2818.8.camel@eha.doredevelopment.dk>
+	<alpine.LFD.2.00.1006071440520.2933@localhost.localdomain>
+	<AANLkTilPhof5cnhBCXSzKJSnWl6Vuu2fRts2pBBBNl6K@mail.gmail.com>
+	<alpine.LFD.2.00.1006080853220.2933@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Jun 2010 09:23:40 +0200
+Message-ID: <1275981820.2870.74.camel@eha.doredevelopment.dk>
+Mime-Version: 1.0
+Cc: joachim.eastwood@jotron.com, Esben Haabendal <esbenhaabendal@gmail.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Marc Zyngier <maz@misterjones.org>, Ingo Molnar <mingo@elte.hu>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001636e0a7a8664cae04887edd1f
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2010-06-08 at 08:58 +0200, Thomas Gleixner wrote: 
+> On Mon, 7 Jun 2010, Esben Haabendal wrote:
+> 
+> > On Mon, Jun 7, 2010 at 5:06 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > Maybe you understand now, why I was pretty sure upfront, that your
+> > > approach was wrong even without knowing all the gory details ? :)
+> > 
+> > I understand.  There is a better solution, which is to use threaded
+> > interrupts where needed.
+> 
+> FWIW, it just occured to me, that the only reason why the
+> disable_irq_nosysnc() trips up on the in_atomic() check is your
+> fiddling with the nested irq dispatcher. 
+> 
+> If you just would have changed the phy driver to
+> request_irq_any_context() it would have simply worked out of the box,
+> without any need to remove buslock and changing genirq code at all.
+> 
+> That would not give you the advantage of getting rid of the two
+> additional I2C transfers, but that's nn optimzation not a functional
+> requirement.
 
-Hi all:
-    I want to use kgdb debug kernel and driver on 8641d_hpcn. I refer to
-Essential linux device drivers. I compile the kernel, open Magic SysRq key
-and kgdb option in menuconfig.
-But, when I use  ttyS0 connect to target board. I meet the error:
+Now, that is good news. Thanks!
 
-Ignoring packet error, continuing...
-Ignoring packet error, continuing...
-Ignoring packet error, continuing...
-Malformed response to offset query, timeout
- Sometimes, I can connect to target board.But when I set breakpoint and ste=
-p
-to debug. I meet the same error above.
-I use kernel v2.6.27.38.Toolchain is ELDK for ppc.
-Is the kgdb tool  not stable=A3=BF
-I am a freeshman. Hope getting some suggestiong.
-Thank you!
-
---001636e0a7a8664cae04887edd1f
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: quoted-printable
-
-<div>Hi all:</div>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;I want to use kgdb debug kernel and driver on =
-8641d_hpcn. I refer to Essential linux device drivers. I compile the kernel=
-, open <font color=3D"#000000">Magic SysRq key and kgdb option in menuconfi=
-g.</font></div>
-<div>But, when I use&nbsp;&nbsp;ttyS0 connect to target board.&nbsp;I meet&=
-nbsp;the error:</div>
-<div><br>Ignoring packet error, continuing...<br>Ignoring packet error, con=
-tinuing...<br>Ignoring packet error, continuing...<br>Malformed response to=
- offset query, timeout<br></div>
-<div>
-<div>Sometimes, I can connect to target board.But when I set breakpoint and=
- step to debug. I meet the same error above.</div>
-<div>I use kernel v2.6.27.38.Toolchain is ELDK for ppc.</div>
-<div>Is&nbsp;the kgdb tool&nbsp; not stable=A3=BF</div>
-<div>I am a freeshman. Hope getting some suggestiong.</div>
-<div>Thank you!</div></div>
-
---001636e0a7a8664cae04887edd1f--
+/Esben
