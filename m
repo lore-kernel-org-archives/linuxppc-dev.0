@@ -1,17 +1,20 @@
 Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 2F761B7D5E
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 00:40:17 +1000 (EST)
+Received: by pxi6 with SMTP id 6so1679497pxi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 08 Jun 2010 07:40:15 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 4/6] of/device: Merge of_platform_bus_probe()
-To: ben@kernel.crashing.org, sfr@canb.auug.org.au, monstr@monstr.eu,
-	microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, jeremy.kerr@canonical.com,
-	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/5] of/address: Merge all of the bus translation code
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 08 Jun 2010 08:26:33 -0600
-Message-ID: <20100608142633.26088.90672.stgit@angua>
-In-Reply-To: <20100608142152.26088.1108.stgit@angua>
-References: <20100608142152.26088.1108.stgit@angua>
+Date: Tue, 08 Jun 2010 08:10:08 -0600
+Message-ID: <20100608141008.25879.2050.stgit@angua>
+In-Reply-To: <20100608140917.25879.67745.stgit@angua>
+References: <20100608140917.25879.67745.stgit@angua>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
+	linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,591 +24,1641 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge common code between PowerPC and microblaze.  This patch merges
-the code that scans the tree and registers devices.  The functions
-merged are of_platform_bus_probe(), of_platform_bus_create(), and
-of_platform_device_create().
-
-This patch also move the of_default_bus_ids[] table out of a Microblaze
-header file and makes it non-static.  The device ids table isn't merged
-because powerpc and microblaze use different default data.
+Microblaze and PowerPC share a large chunk of code for translating
+OF device tree data into usable addresses.  There aren't many differences
+between the two, so merge the codebase wholesale rather than trying to
+work out the independent bits.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 CC: Michal Simek <monstr@monstr.eu>
-CC: Grant Likely <grant.likely@secretlab.ca>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Wolfram Sang <w.sang@pengutronix.de>
 CC: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 CC: microblaze-uclinux@itee.uq.edu.au
 CC: linuxppc-dev@ozlabs.org
 ---
- arch/microblaze/include/asm/of_platform.h |   33 -------
- arch/microblaze/kernel/of_platform.c      |  141 ++++-------------------------
- arch/powerpc/include/asm/of_platform.h    |   11 --
- arch/powerpc/kernel/of_platform.c         |  131 ---------------------------
- drivers/of/platform.c                     |  143 +++++++++++++++++++++++++++++
- include/linux/of_platform.h               |   17 +++
- 6 files changed, 179 insertions(+), 297 deletions(-)
+ arch/microblaze/include/asm/prom.h  |    4 
+ arch/microblaze/kernel/prom_parse.c |  489 ---------------------------------
+ arch/powerpc/include/asm/prom.h     |    4 
+ arch/powerpc/kernel/prom_parse.c    |  515 -----------------------------------
+ drivers/of/address.c                |  517 +++++++++++++++++++++++++++++++++++
+ include/linux/of_address.h          |    4 
+ 6 files changed, 515 insertions(+), 1018 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/of_platform.h b/arch/microblaze/include/asm/of_platform.h
-index 3749127..625003f 100644
---- a/arch/microblaze/include/asm/of_platform.h
-+++ b/arch/microblaze/include/asm/of_platform.h
-@@ -14,39 +14,6 @@
- /* This is just here during the transition */
- #include <linux/of_platform.h>
+diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+index 644fa32..35cb3de 100644
+--- a/arch/microblaze/include/asm/prom.h
++++ b/arch/microblaze/include/asm/prom.h
+@@ -52,10 +52,6 @@ extern void pci_create_OF_bus_map(void);
+  * OF address retreival & translation
+  */
  
--/*
-- * The list of OF IDs below is used for matching bus types in the
-- * system whose devices are to be exposed as of_platform_devices.
-- *
-- * This is the default list valid for most platforms. This file provides
-- * functions who can take an explicit list if necessary though
-- *
-- * The search is always performed recursively looking for children of
-- * the provided device_node and recursively if such a children matches
-- * a bus type in the list
+-/* Translate an OF address block into a CPU physical address
 - */
+-extern u64 of_translate_address(struct device_node *np, const u32 *addr);
 -
--static const struct of_device_id of_default_bus_ids[] = {
--	{ .type = "soc", },
--	{ .compatible = "soc", },
--	{ .type = "plb5", },
--	{ .type = "plb4", },
--	{ .type = "opb", },
--	{ .type = "simple", },
--	{},
+ /* Extract an address from a device, returns the region size and
+  * the address space flags too. The PCI version uses a BAR number
+  * instead of an absolute index
+diff --git a/arch/microblaze/kernel/prom_parse.c b/arch/microblaze/kernel/prom_parse.c
+index 7cb5a98..1d610e6 100644
+--- a/arch/microblaze/kernel/prom_parse.c
++++ b/arch/microblaze/kernel/prom_parse.c
+@@ -10,213 +10,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ 
+-#define PRu64	"%llx"
+-
+-/* Max address size we deal with */
+-#define OF_MAX_ADDR_CELLS	4
+-#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
+-			(ns) > 0)
+-
+-static struct of_bus *of_match_bus(struct device_node *np);
+-
+-/* Debug utility */
+-#ifdef DEBUG
+-static void of_dump_addr(const char *s, const u32 *addr, int na)
+-{
+-	printk(KERN_INFO "%s", s);
+-	while (na--)
+-		printk(KERN_INFO " %08x", *(addr++));
+-	printk(KERN_INFO "\n");
+-}
+-#else
+-static void of_dump_addr(const char *s, const u32 *addr, int na) { }
+-#endif
+-
+-/* Callbacks for bus specific translators */
+-struct of_bus {
+-	const char	*name;
+-	const char	*addresses;
+-	int		(*match)(struct device_node *parent);
+-	void		(*count_cells)(struct device_node *child,
+-					int *addrc, int *sizec);
+-	u64		(*map)(u32 *addr, const u32 *range,
+-				int na, int ns, int pna);
+-	int		(*translate)(u32 *addr, u64 offset, int na);
+-	unsigned int	(*get_flags)(const u32 *addr);
 -};
 -
--/* Platform devices and busses creation */
--extern struct of_device *of_platform_device_create(struct device_node *np,
--						const char *bus_id,
--						struct device *parent);
--/* pseudo "matches" value to not do deep probe */
--#define OF_NO_DEEP_PROBE ((struct of_device_id *)-1)
--
--extern int of_platform_bus_probe(struct device_node *root,
--				const struct of_device_id *matches,
--				struct device *parent);
--
- extern struct of_device *of_find_device_by_phandle(phandle ph);
- 
- extern void of_instantiate_rtc(void);
-diff --git a/arch/microblaze/kernel/of_platform.c b/arch/microblaze/kernel/of_platform.c
-index ccf6f42..a07abdd 100644
---- a/arch/microblaze/kernel/of_platform.c
-+++ b/arch/microblaze/kernel/of_platform.c
-@@ -37,132 +37,27 @@ static int __init of_bus_driver_init(void)
- }
- postcore_initcall(of_bus_driver_init);
- 
--struct of_device *of_platform_device_create(struct device_node *np,
--					    const char *bus_id,
--					    struct device *parent)
--{
--	struct of_device *dev;
--
--	dev = of_device_alloc(np, bus_id, parent);
--	if (!dev)
--		return NULL;
--
--	dev->archdata.dma_mask = 0xffffffffUL;
--	dev->dev.bus = &of_platform_bus_type;
--
--	/* We do not fill the DMA ops for platform devices by default.
--	 * This is currently the responsibility of the platform code
--	 * to do such, possibly using a device notifier
--	 */
--
--	if (of_device_register(dev) != 0) {
--		of_device_free(dev);
--		return NULL;
--	}
--
--	return dev;
--}
--EXPORT_SYMBOL(of_platform_device_create);
--
--/**
-- * of_platform_bus_create - Create an OF device for a bus node and all its
-- * children. Optionally recursively instanciate matching busses.
-- * @bus: device node of the bus to instanciate
-- * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
-- * disallow recursive creation of child busses
+-/*
+- * Default translator (generic bus)
 - */
--static int of_platform_bus_create(const struct device_node *bus,
--				  const struct of_device_id *matches,
--				  struct device *parent)
--{
--	struct device_node *child;
--	struct of_device *dev;
--	int rc = 0;
 -
--	for_each_child_of_node(bus, child) {
--		pr_debug("   create child: %s\n", child->full_name);
--		dev = of_platform_device_create(child, NULL, parent);
--		if (dev == NULL)
--			rc = -ENOMEM;
--		else if (!of_match_node(matches, child))
--			continue;
--		if (rc == 0) {
--			pr_debug("   and sub busses\n");
--			rc = of_platform_bus_create(child, matches, &dev->dev);
--		}
--		if (rc) {
--			of_node_put(child);
--			break;
--		}
--	}
--	return rc;
+-static void of_bus_default_count_cells(struct device_node *dev,
+-					int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = of_n_addr_cells(dev);
+-	if (sizec)
+-		*sizec = of_n_size_cells(dev);
 -}
 -
--
--/**
-- * of_platform_bus_probe - Probe the device-tree for platform busses
-- * @root: parent of the first level to probe or NULL for the root of the tree
-- * @matches: match table, NULL to use the default
-- * @parent: parent to hook devices from, NULL for toplevel
-+/*
-+ * The list of OF IDs below is used for matching bus types in the
-+ * system whose devices are to be exposed as of_platform_devices.
-  *
-- * Note that children of the provided root are not instanciated as devices
-- * unless the specified root itself matches the bus list and is not NULL.
-+ * This is the default list valid for most platforms. This file provides
-+ * functions who can take an explicit list if necessary though
-+ *
-+ * The search is always performed recursively looking for children of
-+ * the provided device_node and recursively if such a children matches
-+ * a bus type in the list
-  */
- 
--int of_platform_bus_probe(struct device_node *root,
--			  const struct of_device_id *matches,
--			  struct device *parent)
+-static u64 of_bus_default_map(u32 *addr, const u32 *range,
+-		int na, int ns, int pna)
 -{
--	struct device_node *child;
--	struct of_device *dev;
--	int rc = 0;
+-	u64 cp, s, da;
 -
--	if (matches == NULL)
--		matches = of_default_bus_ids;
--	if (matches == OF_NO_DEEP_PROBE)
+-	cp = of_read_number(range, na);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr, na);
+-
+-	pr_debug("OF: default map, cp="PRu64", s="PRu64", da="PRu64"\n",
+-		cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_default_translate(u32 *addr, u64 offset, int na)
+-{
+-	u64 a = of_read_number(addr, na);
+-	memset(addr, 0, na * 4);
+-	a += offset;
+-	if (na > 1)
+-		addr[na - 2] = a >> 32;
+-	addr[na - 1] = a & 0xffffffffu;
+-
+-	return 0;
+-}
+-
+-static unsigned int of_bus_default_get_flags(const u32 *addr)
+-{
+-	return IORESOURCE_MEM;
+-}
+-
+ #ifdef CONFIG_PCI
+-/*
+- * PCI bus specific translator
+- */
+-
+-static int of_bus_pci_match(struct device_node *np)
+-{
+-	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
+-	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
+-}
+-
+-static void of_bus_pci_count_cells(struct device_node *np,
+-				int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = 3;
+-	if (sizec)
+-		*sizec = 2;
+-}
+-
+-static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+-{
+-	u64 cp, s, da;
+-
+-	/* Check address type match */
+-	if ((addr[0] ^ range[0]) & 0x03000000)
+-		return OF_BAD_ADDR;
+-
+-	/* Read address values, skipping high cell */
+-	cp = of_read_number(range + 1, na - 1);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr + 1, na - 1);
+-
+-	pr_debug("OF: PCI map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
+-{
+-	return of_bus_default_translate(addr + 1, offset, na - 1);
+-}
+-
+-static unsigned int of_bus_pci_get_flags(const u32 *addr)
+-{
+-	unsigned int flags = 0;
+-	u32 w = addr[0];
+-
+-	switch ((w >> 24) & 0x03) {
+-	case 0x01:
+-		flags |= IORESOURCE_IO;
+-		break;
+-	case 0x02: /* 32 bits */
+-	case 0x03: /* 64 bits */
+-		flags |= IORESOURCE_MEM;
+-		break;
+-	}
+-	if (w & 0x40000000)
+-		flags |= IORESOURCE_PREFETCH;
+-	return flags;
+-}
+-
+-const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+-			unsigned int *flags)
+-{
+-	const u32 *prop;
+-	unsigned int psize;
+-	struct device_node *parent;
+-	struct of_bus *bus;
+-	int onesize, i, na, ns;
+-
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		return NULL;
+-	bus = of_match_bus(parent);
+-	if (strcmp(bus->name, "pci")) {
+-		of_node_put(parent);
+-		return NULL;
+-	}
+-	bus->count_cells(dev, &na, &ns);
+-	of_node_put(parent);
+-	if (!OF_CHECK_COUNTS(na, ns))
+-		return NULL;
+-
+-	/* Get "reg" or "assigned-addresses" property */
+-	prop = of_get_property(dev, bus->addresses, &psize);
+-	if (prop == NULL)
+-		return NULL;
+-	psize /= 4;
+-
+-	onesize = na + ns;
+-	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
+-		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
+-			if (size)
+-				*size = of_read_number(prop + na, ns);
+-			if (flags)
+-				*flags = bus->get_flags(prop);
+-			return prop;
+-		}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_get_pci_address);
+-
+-int of_pci_address_to_resource(struct device_node *dev, int bar,
+-				struct resource *r)
+-{
+-	const u32	*addrp;
+-	u64		size;
+-	unsigned int	flags;
+-
+-	addrp = of_get_pci_address(dev, bar, &size, &flags);
+-	if (addrp == NULL)
 -		return -EINVAL;
--	if (root == NULL)
--		root = of_find_node_by_path("/");
--	else
--		of_node_get(root);
--
--	pr_debug("of_platform_bus_probe()\n");
--	pr_debug(" starting at: %s\n", root->full_name);
--
--	/* Do a self check of bus type, if there's a match, create
--	 * children
--	 */
--	if (of_match_node(matches, root)) {
--		pr_debug(" root match, create all sub devices\n");
--		dev = of_platform_device_create(root, NULL, parent);
--		if (dev == NULL) {
--			rc = -ENOMEM;
--			goto bail;
--		}
--		pr_debug(" create all sub busses\n");
--		rc = of_platform_bus_create(root, matches, &dev->dev);
--		goto bail;
--	}
--	for_each_child_of_node(root, child) {
--		if (!of_match_node(matches, child))
--			continue;
--
--		pr_debug("  match: %s\n", child->full_name);
--		dev = of_platform_device_create(child, NULL, parent);
--		if (dev == NULL)
--			rc = -ENOMEM;
--		else
--			rc = of_platform_bus_create(child, matches, &dev->dev);
--		if (rc) {
--			of_node_put(child);
--			break;
--		}
--	}
-- bail:
--	of_node_put(root);
--	return rc;
+-	return __of_address_to_resource(dev, addrp, size, flags, r);
 -}
--EXPORT_SYMBOL(of_platform_bus_probe);
-+const struct of_device_id of_default_bus_ids[] = {
-+	{ .type = "soc", },
-+	{ .compatible = "soc", },
-+	{ .type = "plb5", },
-+	{ .type = "plb4", },
-+	{ .type = "opb", },
-+	{ .type = "simple", },
-+	{},
-+};
- 
- static int of_dev_node_match(struct device *dev, void *data)
+-EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
+-
+-static u8 of_irq_pci_swizzle(u8 slot, u8 pin)
+-{
+-	return (((pin - 1) + slot) % 4) + 1;
+-}
+-
+ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
  {
-diff --git a/arch/powerpc/include/asm/of_platform.h b/arch/powerpc/include/asm/of_platform.h
-index d4aaa34..b37d2dc 100644
---- a/arch/powerpc/include/asm/of_platform.h
-+++ b/arch/powerpc/include/asm/of_platform.h
-@@ -11,17 +11,6 @@
-  *
-  */
+ 	struct device_node *dn, *ppnode;
+@@ -291,289 +85,6 @@ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
+ EXPORT_SYMBOL_GPL(of_irq_map_pci);
+ #endif /* CONFIG_PCI */
  
--/* Platform devices and busses creation */
--extern struct of_device *of_platform_device_create(struct device_node *np,
--						   const char *bus_id,
--						   struct device *parent);
--/* pseudo "matches" value to not do deep probe */
--#define OF_NO_DEEP_PROBE ((struct of_device_id *)-1)
--
--extern int of_platform_bus_probe(struct device_node *root,
--				 const struct of_device_id *matches,
--				 struct device *parent);
--
- extern struct of_device *of_find_device_by_phandle(phandle ph);
- 
- extern void of_instantiate_rtc(void);
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 487a988..0b5cc6d 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -40,7 +40,7 @@
-  * a bus type in the list
-  */
- 
--static const struct of_device_id of_default_bus_ids[] = {
-+const struct of_device_id of_default_bus_ids[] = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
- 	{ .type = "spider", },
-@@ -64,135 +64,6 @@ static int __init of_bus_driver_init(void)
- 
- postcore_initcall(of_bus_driver_init);
- 
--struct of_device* of_platform_device_create(struct device_node *np,
--					    const char *bus_id,
--					    struct device *parent)
--{
--	struct of_device *dev;
--
--	dev = of_device_alloc(np, bus_id, parent);
--	if (!dev)
--		return NULL;
--
--	dev->archdata.dma_mask = 0xffffffffUL;
--	dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
--
--	dev->dev.bus = &of_platform_bus_type;
--
--	/* We do not fill the DMA ops for platform devices by default.
--	 * This is currently the responsibility of the platform code
--	 * to do such, possibly using a device notifier
--	 */
--
--	if (of_device_register(dev) != 0) {
--		of_device_free(dev);
--		return NULL;
--	}
--
--	return dev;
--}
--EXPORT_SYMBOL(of_platform_device_create);
--
--
--
--/**
-- * of_platform_bus_create - Create an OF device for a bus node and all its
-- * children. Optionally recursively instanciate matching busses.
-- * @bus: device node of the bus to instanciate
-- * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
-- * disallow recursive creation of child busses
+-/*
+- * ISA bus specific translator
 - */
--static int of_platform_bus_create(const struct device_node *bus,
--				  const struct of_device_id *matches,
--				  struct device *parent)
--{
--	struct device_node *child;
--	struct of_device *dev;
--	int rc = 0;
 -
--	for_each_child_of_node(bus, child) {
--		pr_debug("   create child: %s\n", child->full_name);
--		dev = of_platform_device_create(child, NULL, parent);
--		if (dev == NULL)
--			rc = -ENOMEM;
--		else if (!of_match_node(matches, child))
--			continue;
--		if (rc == 0) {
--			pr_debug("   and sub busses\n");
--			rc = of_platform_bus_create(child, matches, &dev->dev);
--		} if (rc) {
--			of_node_put(child);
--			break;
--		}
--	}
--	return rc;
+-static int of_bus_isa_match(struct device_node *np)
+-{
+-	return !strcmp(np->name, "isa");
 -}
 -
--/**
-- * of_platform_bus_probe - Probe the device-tree for platform busses
-- * @root: parent of the first level to probe or NULL for the root of the tree
-- * @matches: match table, NULL to use the default
-- * @parent: parent to hook devices from, NULL for toplevel
+-static void of_bus_isa_count_cells(struct device_node *child,
+-				int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = 2;
+-	if (sizec)
+-		*sizec = 1;
+-}
+-
+-static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+-{
+-	u64 cp, s, da;
+-
+-	/* Check address type match */
+-	if ((addr[0] ^ range[0]) & 0x00000001)
+-		return OF_BAD_ADDR;
+-
+-	/* Read address values, skipping high cell */
+-	cp = of_read_number(range + 1, na - 1);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr + 1, na - 1);
+-
+-	pr_debug("OF: ISA map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
+-{
+-	return of_bus_default_translate(addr + 1, offset, na - 1);
+-}
+-
+-static unsigned int of_bus_isa_get_flags(const u32 *addr)
+-{
+-	unsigned int flags = 0;
+-	u32 w = addr[0];
+-
+-	if (w & 1)
+-		flags |= IORESOURCE_IO;
+-	else
+-		flags |= IORESOURCE_MEM;
+-	return flags;
+-}
+-
+-/*
+- * Array of bus specific translators
+- */
+-
+-static struct of_bus of_busses[] = {
+-#ifdef CONFIG_PCI
+-	/* PCI */
+-	{
+-		.name = "pci",
+-		.addresses = "assigned-addresses",
+-		.match = of_bus_pci_match,
+-		.count_cells = of_bus_pci_count_cells,
+-		.map = of_bus_pci_map,
+-		.translate = of_bus_pci_translate,
+-		.get_flags = of_bus_pci_get_flags,
+-	},
+-#endif /* CONFIG_PCI */
+-	/* ISA */
+-	{
+-		.name = "isa",
+-		.addresses = "reg",
+-		.match = of_bus_isa_match,
+-		.count_cells = of_bus_isa_count_cells,
+-		.map = of_bus_isa_map,
+-		.translate = of_bus_isa_translate,
+-		.get_flags = of_bus_isa_get_flags,
+-	},
+-	/* Default */
+-	{
+-		.name = "default",
+-		.addresses = "reg",
+-		.match = NULL,
+-		.count_cells = of_bus_default_count_cells,
+-		.map = of_bus_default_map,
+-		.translate = of_bus_default_translate,
+-		.get_flags = of_bus_default_get_flags,
+-	},
+-};
+-
+-static struct of_bus *of_match_bus(struct device_node *np)
+-{
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(of_busses); i++)
+-		if (!of_busses[i].match || of_busses[i].match(np))
+-			return &of_busses[i];
+-	BUG();
+-	return NULL;
+-}
+-
+-static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+-			struct of_bus *pbus, u32 *addr,
+-			int na, int ns, int pna)
+-{
+-	const u32 *ranges;
+-	unsigned int rlen;
+-	int rone;
+-	u64 offset = OF_BAD_ADDR;
+-
+-	/* Normally, an absence of a "ranges" property means we are
+-	 * crossing a non-translatable boundary, and thus the addresses
+-	 * below the current not cannot be converted to CPU physical ones.
+-	 * Unfortunately, while this is very clear in the spec, it's not
+-	 * what Apple understood, and they do have things like /uni-n or
+-	 * /ht nodes with no "ranges" property and a lot of perfectly
+-	 * useable mapped devices below them. Thus we treat the absence of
+-	 * "ranges" as equivalent to an empty "ranges" property which means
+-	 * a 1:1 translation at that level. It's up to the caller not to try
+-	 * to translate addresses that aren't supposed to be translated in
+-	 * the first place. --BenH.
+-	 */
+-	ranges = of_get_property(parent, "ranges", (int *) &rlen);
+-	if (ranges == NULL || rlen == 0) {
+-		offset = of_read_number(addr, na);
+-		memset(addr, 0, pna * 4);
+-		pr_debug("OF: no ranges, 1:1 translation\n");
+-		goto finish;
+-	}
+-
+-	pr_debug("OF: walking ranges...\n");
+-
+-	/* Now walk through the ranges */
+-	rlen /= 4;
+-	rone = na + pna + ns;
+-	for (; rlen >= rone; rlen -= rone, ranges += rone) {
+-		offset = bus->map(addr, ranges, na, ns, pna);
+-		if (offset != OF_BAD_ADDR)
+-			break;
+-	}
+-	if (offset == OF_BAD_ADDR) {
+-		pr_debug("OF: not found !\n");
+-		return 1;
+-	}
+-	memcpy(addr, ranges + na, 4 * pna);
+-
+- finish:
+-	of_dump_addr("OF: parent translation for:", addr, pna);
+-	pr_debug("OF: with offset: "PRu64"\n", offset);
+-
+-	/* Translate it into parent bus space */
+-	return pbus->translate(addr, offset, pna);
+-}
+-
+-/*
+- * Translate an address from the device-tree into a CPU physical address,
+- * this walks up the tree and applies the various bus mappings on the
+- * way.
 - *
-- * Note that children of the provided root are not instanciated as devices
-- * unless the specified root itself matches the bus list and is not NULL.
+- * Note: We consider that crossing any level with #size-cells == 0 to mean
+- * that translation is impossible (that is we are not dealing with a value
+- * that can be mapped to a cpu physical address). This is not really specified
+- * that way, but this is traditionally the way IBM at least do things
 - */
--
--int of_platform_bus_probe(struct device_node *root,
--			  const struct of_device_id *matches,
--			  struct device *parent)
+-u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
 -{
--	struct device_node *child;
--	struct of_device *dev;
--	int rc = 0;
+-	struct device_node *parent = NULL;
+-	struct of_bus *bus, *pbus;
+-	u32 addr[OF_MAX_ADDR_CELLS];
+-	int na, ns, pna, pns;
+-	u64 result = OF_BAD_ADDR;
 -
--	if (matches == NULL)
--		matches = of_default_bus_ids;
--	if (matches == OF_NO_DEEP_PROBE)
--		return -EINVAL;
--	if (root == NULL)
--		root = of_find_node_by_path("/");
--	else
--		of_node_get(root);
+-	pr_debug("OF: ** translation for device %s **\n", dev->full_name);
 -
--	pr_debug("of_platform_bus_probe()\n");
--	pr_debug(" starting at: %s\n", root->full_name);
+-	/* Increase refcount at current level */
+-	of_node_get(dev);
 -
--	/* Do a self check of bus type, if there's a match, create
--	 * children
--	 */
--	if (of_match_node(matches, root)) {
--		pr_debug(" root match, create all sub devices\n");
--		dev = of_platform_device_create(root, NULL, parent);
--		if (dev == NULL) {
--			rc = -ENOMEM;
--			goto bail;
--		}
--		pr_debug(" create all sub busses\n");
--		rc = of_platform_bus_create(root, matches, &dev->dev);
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		goto bail;
+-	bus = of_match_bus(parent);
+-
+-	/* Cound address cells & copy address locally */
+-	bus->count_cells(dev, &na, &ns);
+-	if (!OF_CHECK_COUNTS(na, ns)) {
+-		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
+-			dev->full_name);
 -		goto bail;
 -	}
--	for_each_child_of_node(root, child) {
--		if (!of_match_node(matches, child))
--			continue;
+-	memcpy(addr, in_addr, na * 4);
 -
--		pr_debug("  match: %s\n", child->full_name);
--		dev = of_platform_device_create(child, NULL, parent);
--		if (dev == NULL)
--			rc = -ENOMEM;
--		else
--			rc = of_platform_bus_create(child, matches, &dev->dev);
--		if (rc) {
--			of_node_put(child);
+-	pr_debug("OF: bus is %s (na=%d, ns=%d) on %s\n",
+-		bus->name, na, ns, parent->full_name);
+-	of_dump_addr("OF: translating address:", addr, na);
+-
+-	/* Translate */
+-	for (;;) {
+-		/* Switch to parent bus */
+-		of_node_put(dev);
+-		dev = parent;
+-		parent = of_get_parent(dev);
+-
+-		/* If root, we have finished */
+-		if (parent == NULL) {
+-			pr_debug("OF: reached root node\n");
+-			result = of_read_number(addr, na);
 -			break;
 -		}
+-
+-		/* Get new parent bus and counts */
+-		pbus = of_match_bus(parent);
+-		pbus->count_cells(dev, &pna, &pns);
+-		if (!OF_CHECK_COUNTS(pna, pns)) {
+-			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
+-				dev->full_name);
+-			break;
+-		}
+-
+-		pr_debug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
+-			pbus->name, pna, pns, parent->full_name);
+-
+-		/* Apply bus translation */
+-		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna))
+-			break;
+-
+-		/* Complete the move up one level */
+-		na = pna;
+-		ns = pns;
+-		bus = pbus;
+-
+-		of_dump_addr("OF: one level translation:", addr, na);
 -	}
 - bail:
--	of_node_put(root);
--	return rc;
--}
--EXPORT_SYMBOL(of_platform_bus_probe);
+-	of_node_put(parent);
+-	of_node_put(dev);
 -
- static int of_dev_node_match(struct device *dev, void *data)
+-	return result;
+-}
+-EXPORT_SYMBOL(of_translate_address);
+-
+-const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
+-			unsigned int *flags)
+-{
+-	const u32 *prop;
+-	unsigned int psize;
+-	struct device_node *parent;
+-	struct of_bus *bus;
+-	int onesize, i, na, ns;
+-
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		return NULL;
+-	bus = of_match_bus(parent);
+-	bus->count_cells(dev, &na, &ns);
+-	of_node_put(parent);
+-	if (!OF_CHECK_COUNTS(na, ns))
+-		return NULL;
+-
+-	/* Get "reg" or "assigned-addresses" property */
+-	prop = of_get_property(dev, bus->addresses, (int *) &psize);
+-	if (prop == NULL)
+-		return NULL;
+-	psize /= 4;
+-
+-	onesize = na + ns;
+-	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
+-		if (i == index) {
+-			if (size)
+-				*size = of_read_number(prop + na, ns);
+-			if (flags)
+-				*flags = bus->get_flags(prop);
+-			return prop;
+-		}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_get_address);
+-
+ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
+ 		unsigned long *busno, unsigned long *phys, unsigned long *size)
  {
- 	return to_of_device(dev)->dev.of_node == data;
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 7dacc1e..d9c81e9 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -14,6 +14,7 @@
- #include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/device.h>
-+#include <linux/dma-mapping.h>
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index e1c1bdd..8e1d0fe 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -45,10 +45,6 @@ extern void pci_create_OF_bus_map(void);
+  * OF address retreival & translation
+  */
  
-@@ -396,3 +397,145 @@ void of_unregister_driver(struct of_platform_driver *drv)
- 	driver_unregister(&drv->driver);
- }
- EXPORT_SYMBOL(of_unregister_driver);
+-/* Translate an OF address block into a CPU physical address
+- */
+-extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+-
+ /* Translate a DMA address from device space to CPU space */
+ extern u64 of_translate_dma_address(struct device_node *dev,
+ 				    const u32 *in_addr);
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index a2ef129..64f2606 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -10,225 +10,7 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ 
+-#ifdef DEBUG
+-#define DBG(fmt...) do { printk(fmt); } while(0)
+-#else
+-#define DBG(fmt...) do { } while(0)
+-#endif
+-
+-#ifdef CONFIG_PPC64
+-#define PRu64	"%lx"
+-#else
+-#define PRu64	"%llx"
+-#endif
+-
+-/* Max address size we deal with */
+-#define OF_MAX_ADDR_CELLS	4
+-#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
+-			(ns) > 0)
+-
+-static struct of_bus *of_match_bus(struct device_node *np);
+-
+-/* Debug utility */
+-#ifdef DEBUG
+-static void of_dump_addr(const char *s, const u32 *addr, int na)
+-{
+-	printk("%s", s);
+-	while(na--)
+-		printk(" %08x", *(addr++));
+-	printk("\n");
+-}
+-#else
+-static void of_dump_addr(const char *s, const u32 *addr, int na) { }
+-#endif
+-
+-
+-/* Callbacks for bus specific translators */
+-struct of_bus {
+-	const char	*name;
+-	const char	*addresses;
+-	int		(*match)(struct device_node *parent);
+-	void		(*count_cells)(struct device_node *child,
+-				       int *addrc, int *sizec);
+-	u64		(*map)(u32 *addr, const u32 *range,
+-				int na, int ns, int pna);
+-	int		(*translate)(u32 *addr, u64 offset, int na);
+-	unsigned int	(*get_flags)(const u32 *addr);
+-};
+-
+-
+-/*
+- * Default translator (generic bus)
+- */
+-
+-static void of_bus_default_count_cells(struct device_node *dev,
+-				       int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = of_n_addr_cells(dev);
+-	if (sizec)
+-		*sizec = of_n_size_cells(dev);
+-}
+-
+-static u64 of_bus_default_map(u32 *addr, const u32 *range,
+-		int na, int ns, int pna)
+-{
+-	u64 cp, s, da;
+-
+-	cp = of_read_number(range, na);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr, na);
+-
+-	DBG("OF: default map, cp="PRu64", s="PRu64", da="PRu64"\n",
+-	    cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_default_translate(u32 *addr, u64 offset, int na)
+-{
+-	u64 a = of_read_number(addr, na);
+-	memset(addr, 0, na * 4);
+-	a += offset;
+-	if (na > 1)
+-		addr[na - 2] = a >> 32;
+-	addr[na - 1] = a & 0xffffffffu;
+-
+-	return 0;
+-}
+-
+-static unsigned int of_bus_default_get_flags(const u32 *addr)
+-{
+-	return IORESOURCE_MEM;
+-}
+-
+-
+ #ifdef CONFIG_PCI
+-/*
+- * PCI bus specific translator
+- */
+-
+-static int of_bus_pci_match(struct device_node *np)
+-{
+-	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
+-	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
+-}
+-
+-static void of_bus_pci_count_cells(struct device_node *np,
+-				   int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = 3;
+-	if (sizec)
+-		*sizec = 2;
+-}
+-
+-static unsigned int of_bus_pci_get_flags(const u32 *addr)
+-{
+-	unsigned int flags = 0;
+-	u32 w = addr[0];
+-
+-	switch((w >> 24) & 0x03) {
+-	case 0x01:
+-		flags |= IORESOURCE_IO;
+-		break;
+-	case 0x02: /* 32 bits */
+-	case 0x03: /* 64 bits */
+-		flags |= IORESOURCE_MEM;
+-		break;
+-	}
+-	if (w & 0x40000000)
+-		flags |= IORESOURCE_PREFETCH;
+-	return flags;
+-}
+-
+-static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+-{
+-	u64 cp, s, da;
+-	unsigned int af, rf;
+-
+-	af = of_bus_pci_get_flags(addr);
+-	rf = of_bus_pci_get_flags(range);
+-
+-	/* Check address type match */
+-	if ((af ^ rf) & (IORESOURCE_MEM | IORESOURCE_IO))
+-		return OF_BAD_ADDR;
+-
+-	/* Read address values, skipping high cell */
+-	cp = of_read_number(range + 1, na - 1);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr + 1, na - 1);
+-
+-	DBG("OF: PCI map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
+-{
+-	return of_bus_default_translate(addr + 1, offset, na - 1);
+-}
+-
+-const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
+-			unsigned int *flags)
+-{
+-	const u32 *prop;
+-	unsigned int psize;
+-	struct device_node *parent;
+-	struct of_bus *bus;
+-	int onesize, i, na, ns;
+-
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		return NULL;
+-	bus = of_match_bus(parent);
+-	if (strcmp(bus->name, "pci")) {
+-		of_node_put(parent);
+-		return NULL;
+-	}
+-	bus->count_cells(dev, &na, &ns);
+-	of_node_put(parent);
+-	if (!OF_CHECK_COUNTS(na, ns))
+-		return NULL;
+-
+-	/* Get "reg" or "assigned-addresses" property */
+-	prop = of_get_property(dev, bus->addresses, &psize);
+-	if (prop == NULL)
+-		return NULL;
+-	psize /= 4;
+-
+-	onesize = na + ns;
+-	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
+-		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
+-			if (size)
+-				*size = of_read_number(prop + na, ns);
+-			if (flags)
+-				*flags = bus->get_flags(prop);
+-			return prop;
+-		}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_get_pci_address);
+-
+-int of_pci_address_to_resource(struct device_node *dev, int bar,
+-			       struct resource *r)
+-{
+-	const u32	*addrp;
+-	u64		size;
+-	unsigned int	flags;
+-
+-	addrp = of_get_pci_address(dev, bar, &size, &flags);
+-	if (addrp == NULL)
+-		return -EINVAL;
+-	return __of_address_to_resource(dev, addrp, size, flags, r);
+-}
+-EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
+-
+ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
+ {
+ 	struct device_node *dn, *ppnode;
+@@ -310,303 +92,6 @@ int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq)
+ EXPORT_SYMBOL_GPL(of_irq_map_pci);
+ #endif /* CONFIG_PCI */
+ 
+-/*
+- * ISA bus specific translator
+- */
+-
+-static int of_bus_isa_match(struct device_node *np)
+-{
+-	return !strcmp(np->name, "isa");
+-}
+-
+-static void of_bus_isa_count_cells(struct device_node *child,
+-				   int *addrc, int *sizec)
+-{
+-	if (addrc)
+-		*addrc = 2;
+-	if (sizec)
+-		*sizec = 1;
+-}
+-
+-static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+-{
+-	u64 cp, s, da;
+-
+-	/* Check address type match */
+-	if ((addr[0] ^ range[0]) & 0x00000001)
+-		return OF_BAD_ADDR;
+-
+-	/* Read address values, skipping high cell */
+-	cp = of_read_number(range + 1, na - 1);
+-	s  = of_read_number(range + na + pna, ns);
+-	da = of_read_number(addr + 1, na - 1);
+-
+-	DBG("OF: ISA map, cp="PRu64", s="PRu64", da="PRu64"\n", cp, s, da);
+-
+-	if (da < cp || da >= (cp + s))
+-		return OF_BAD_ADDR;
+-	return da - cp;
+-}
+-
+-static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
+-{
+-	return of_bus_default_translate(addr + 1, offset, na - 1);
+-}
+-
+-static unsigned int of_bus_isa_get_flags(const u32 *addr)
+-{
+-	unsigned int flags = 0;
+-	u32 w = addr[0];
+-
+-	if (w & 1)
+-		flags |= IORESOURCE_IO;
+-	else
+-		flags |= IORESOURCE_MEM;
+-	return flags;
+-}
+-
+-
+-/*
+- * Array of bus specific translators
+- */
+-
+-static struct of_bus of_busses[] = {
+-#ifdef CONFIG_PCI
+-	/* PCI */
+-	{
+-		.name = "pci",
+-		.addresses = "assigned-addresses",
+-		.match = of_bus_pci_match,
+-		.count_cells = of_bus_pci_count_cells,
+-		.map = of_bus_pci_map,
+-		.translate = of_bus_pci_translate,
+-		.get_flags = of_bus_pci_get_flags,
+-	},
+-#endif /* CONFIG_PCI */
+-	/* ISA */
+-	{
+-		.name = "isa",
+-		.addresses = "reg",
+-		.match = of_bus_isa_match,
+-		.count_cells = of_bus_isa_count_cells,
+-		.map = of_bus_isa_map,
+-		.translate = of_bus_isa_translate,
+-		.get_flags = of_bus_isa_get_flags,
+-	},
+-	/* Default */
+-	{
+-		.name = "default",
+-		.addresses = "reg",
+-		.match = NULL,
+-		.count_cells = of_bus_default_count_cells,
+-		.map = of_bus_default_map,
+-		.translate = of_bus_default_translate,
+-		.get_flags = of_bus_default_get_flags,
+-	},
+-};
+-
+-static struct of_bus *of_match_bus(struct device_node *np)
+-{
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(of_busses); i ++)
+-		if (!of_busses[i].match || of_busses[i].match(np))
+-			return &of_busses[i];
+-	BUG();
+-	return NULL;
+-}
+-
+-static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+-			    struct of_bus *pbus, u32 *addr,
+-			    int na, int ns, int pna, const char *rprop)
+-{
+-	const u32 *ranges;
+-	unsigned int rlen;
+-	int rone;
+-	u64 offset = OF_BAD_ADDR;
+-
+-	/* Normally, an absence of a "ranges" property means we are
+-	 * crossing a non-translatable boundary, and thus the addresses
+-	 * below the current not cannot be converted to CPU physical ones.
+-	 * Unfortunately, while this is very clear in the spec, it's not
+-	 * what Apple understood, and they do have things like /uni-n or
+-	 * /ht nodes with no "ranges" property and a lot of perfectly
+-	 * useable mapped devices below them. Thus we treat the absence of
+-	 * "ranges" as equivalent to an empty "ranges" property which means
+-	 * a 1:1 translation at that level. It's up to the caller not to try
+-	 * to translate addresses that aren't supposed to be translated in
+-	 * the first place. --BenH.
+-	 */
+-	ranges = of_get_property(parent, rprop, &rlen);
+-	if (ranges == NULL || rlen == 0) {
+-		offset = of_read_number(addr, na);
+-		memset(addr, 0, pna * 4);
+-		DBG("OF: no ranges, 1:1 translation\n");
+-		goto finish;
+-	}
+-
+-	DBG("OF: walking ranges...\n");
+-
+-	/* Now walk through the ranges */
+-	rlen /= 4;
+-	rone = na + pna + ns;
+-	for (; rlen >= rone; rlen -= rone, ranges += rone) {
+-		offset = bus->map(addr, ranges, na, ns, pna);
+-		if (offset != OF_BAD_ADDR)
+-			break;
+-	}
+-	if (offset == OF_BAD_ADDR) {
+-		DBG("OF: not found !\n");
+-		return 1;
+-	}
+-	memcpy(addr, ranges + na, 4 * pna);
+-
+- finish:
+-	of_dump_addr("OF: parent translation for:", addr, pna);
+-	DBG("OF: with offset: "PRu64"\n", offset);
+-
+-	/* Translate it into parent bus space */
+-	return pbus->translate(addr, offset, pna);
+-}
+-
+-
+-/*
+- * Translate an address from the device-tree into a CPU physical address,
+- * this walks up the tree and applies the various bus mappings on the
+- * way.
+- *
+- * Note: We consider that crossing any level with #size-cells == 0 to mean
+- * that translation is impossible (that is we are not dealing with a value
+- * that can be mapped to a cpu physical address). This is not really specified
+- * that way, but this is traditionally the way IBM at least do things
+- */
+-u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
+-			   const char *rprop)
+-{
+-	struct device_node *parent = NULL;
+-	struct of_bus *bus, *pbus;
+-	u32 addr[OF_MAX_ADDR_CELLS];
+-	int na, ns, pna, pns;
+-	u64 result = OF_BAD_ADDR;
+-
+-	DBG("OF: ** translation for device %s **\n", dev->full_name);
+-
+-	/* Increase refcount at current level */
+-	of_node_get(dev);
+-
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		goto bail;
+-	bus = of_match_bus(parent);
+-
+-	/* Cound address cells & copy address locally */
+-	bus->count_cells(dev, &na, &ns);
+-	if (!OF_CHECK_COUNTS(na, ns)) {
+-		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
+-		       dev->full_name);
+-		goto bail;
+-	}
+-	memcpy(addr, in_addr, na * 4);
+-
+-	DBG("OF: bus is %s (na=%d, ns=%d) on %s\n",
+-	    bus->name, na, ns, parent->full_name);
+-	of_dump_addr("OF: translating address:", addr, na);
+-
+-	/* Translate */
+-	for (;;) {
+-		/* Switch to parent bus */
+-		of_node_put(dev);
+-		dev = parent;
+-		parent = of_get_parent(dev);
+-
+-		/* If root, we have finished */
+-		if (parent == NULL) {
+-			DBG("OF: reached root node\n");
+-			result = of_read_number(addr, na);
+-			break;
+-		}
+-
+-		/* Get new parent bus and counts */
+-		pbus = of_match_bus(parent);
+-		pbus->count_cells(dev, &pna, &pns);
+-		if (!OF_CHECK_COUNTS(pna, pns)) {
+-			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
+-			       dev->full_name);
+-			break;
+-		}
+-
+-		DBG("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
+-		    pbus->name, pna, pns, parent->full_name);
+-
+-		/* Apply bus translation */
+-		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna, rprop))
+-			break;
+-
+-		/* Complete the move up one level */
+-		na = pna;
+-		ns = pns;
+-		bus = pbus;
+-
+-		of_dump_addr("OF: one level translation:", addr, na);
+-	}
+- bail:
+-	of_node_put(parent);
+-	of_node_put(dev);
+-
+-	return result;
+-}
+-
+-u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
+-{
+-	return __of_translate_address(dev, in_addr, "ranges");
+-}
+-EXPORT_SYMBOL(of_translate_address);
+-
+-u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
+-{
+-	return __of_translate_address(dev, in_addr, "dma-ranges");
+-}
+-EXPORT_SYMBOL(of_translate_dma_address);
+-
+-const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
+-		    unsigned int *flags)
+-{
+-	const u32 *prop;
+-	unsigned int psize;
+-	struct device_node *parent;
+-	struct of_bus *bus;
+-	int onesize, i, na, ns;
+-
+-	/* Get parent & match bus type */
+-	parent = of_get_parent(dev);
+-	if (parent == NULL)
+-		return NULL;
+-	bus = of_match_bus(parent);
+-	bus->count_cells(dev, &na, &ns);
+-	of_node_put(parent);
+-	if (!OF_CHECK_COUNTS(na, ns))
+-		return NULL;
+-
+-	/* Get "reg" or "assigned-addresses" property */
+-	prop = of_get_property(dev, bus->addresses, &psize);
+-	if (prop == NULL)
+-		return NULL;
+-	psize /= 4;
+-
+-	onesize = na + ns;
+-	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
+-		if (i == index) {
+-			if (size)
+-				*size = of_read_number(prop + na, ns);
+-			if (flags)
+-				*flags = bus->get_flags(prop);
+-			return prop;
+-		}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_get_address);
+-
+ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
+ 		unsigned long *busno, unsigned long *phys, unsigned long *size)
+ {
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index c381955..2a905d5 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -1,11 +1,522 @@
+ 
+ #include <linux/io.h>
+ #include <linux/ioport.h>
++#include <linux/module.h>
+ #include <linux/of_address.h>
++#include <linux/pci_regs.h>
++#include <linux/string.h>
+ 
+-int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+-			     u64 size, unsigned int flags,
+-			     struct resource *r)
++/* Max address size we deal with */
++#define OF_MAX_ADDR_CELLS	4
++#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
++			(ns) > 0)
 +
-+#if !defined(CONFIG_SPARC)
++static struct of_bus *of_match_bus(struct device_node *np);
++static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
++				    u64 size, unsigned int flags,
++				    struct resource *r);
++
++/* Debug utility */
++#ifdef DEBUG
++static void of_dump_addr(const char *s, const u32 *addr, int na)
++{
++	printk(KERN_DEBUG "%s", s);
++	while (na--)
++		printk(" %08x", *(addr++));
++	printk("\n");
++}
++#else
++static void of_dump_addr(const char *s, const u32 *addr, int na) { }
++#endif
++
++/* Callbacks for bus specific translators */
++struct of_bus {
++	const char	*name;
++	const char	*addresses;
++	int		(*match)(struct device_node *parent);
++	void		(*count_cells)(struct device_node *child,
++				       int *addrc, int *sizec);
++	u64		(*map)(u32 *addr, const u32 *range,
++				int na, int ns, int pna);
++	int		(*translate)(u32 *addr, u64 offset, int na);
++	unsigned int	(*get_flags)(const u32 *addr);
++};
++
 +/*
-+ * The following routines scan a subtree and registers a device for
-+ * each applicable node.
-+ *
-+ * Note: sparc doesn't use these routines because it has a different
-+ * mechanism for creating devices from device tree nodes.
++ * Default translator (generic bus)
 + */
 +
-+/**
-+ * of_platform_device_create - Alloc, initialize and register an of_device
-+ * @np: pointer to node to create device for
-+ * @bus_id: name to assign device
-+ * @parent: Linux device model parent device.
-+ */
-+struct of_device *of_platform_device_create(struct device_node *np,
-+					    const char *bus_id,
-+					    struct device *parent)
++static void of_bus_default_count_cells(struct device_node *dev,
++				       int *addrc, int *sizec)
 +{
-+	struct of_device *dev;
-+
-+	dev = of_device_alloc(np, bus_id, parent);
-+	if (!dev)
-+		return NULL;
-+
-+	dev->archdata.dma_mask = 0xffffffffUL;
-+	dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-+	dev->dev.bus = &of_platform_bus_type;
-+
-+	/* We do not fill the DMA ops for platform devices by default.
-+	 * This is currently the responsibility of the platform code
-+	 * to do such, possibly using a device notifier
-+	 */
-+
-+	if (of_device_register(dev) != 0) {
-+		of_device_free(dev);
-+		return NULL;
-+	}
-+
-+	return dev;
-+}
-+EXPORT_SYMBOL(of_platform_device_create);
-+
-+/**
-+ * of_platform_bus_create - Create an OF device for a bus node and all its
-+ * children. Optionally recursively instantiate matching busses.
-+ * @bus: device node of the bus to instantiate
-+ * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
-+ * disallow recursive creation of child busses
-+ */
-+static int of_platform_bus_create(const struct device_node *bus,
-+				  const struct of_device_id *matches,
-+				  struct device *parent)
-+{
-+	struct device_node *child;
-+	struct of_device *dev;
-+	int rc = 0;
-+
-+	for_each_child_of_node(bus, child) {
-+		pr_debug("   create child: %s\n", child->full_name);
-+		dev = of_platform_device_create(child, NULL, parent);
-+		if (dev == NULL)
-+			rc = -ENOMEM;
-+		else if (!of_match_node(matches, child))
-+			continue;
-+		if (rc == 0) {
-+			pr_debug("   and sub busses\n");
-+			rc = of_platform_bus_create(child, matches, &dev->dev);
-+		}
-+		if (rc) {
-+			of_node_put(child);
-+			break;
-+		}
-+	}
-+	return rc;
++	if (addrc)
++		*addrc = of_n_addr_cells(dev);
++	if (sizec)
++		*sizec = of_n_size_cells(dev);
 +}
 +
-+/**
-+ * of_platform_bus_probe - Probe the device-tree for platform busses
-+ * @root: parent of the first level to probe or NULL for the root of the tree
-+ * @matches: match table, NULL to use the default
-+ * @parent: parent to hook devices from, NULL for toplevel
-+ *
-+ * Note that children of the provided root are not instantiated as devices
-+ * unless the specified root itself matches the bus list and is not NULL.
-+ */
-+int of_platform_bus_probe(struct device_node *root,
-+			  const struct of_device_id *matches,
-+			  struct device *parent)
++static u64 of_bus_default_map(u32 *addr, const u32 *range,
++		int na, int ns, int pna)
 +{
-+	struct device_node *child;
-+	struct of_device *dev;
-+	int rc = 0;
++	u64 cp, s, da;
 +
-+	if (matches == NULL)
-+		matches = of_default_bus_ids;
-+	if (matches == OF_NO_DEEP_PROBE)
++	cp = of_read_number(range, na);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr, na);
++
++	pr_debug("OF: default map, cp=%llx, s=%llx, da=%llx\n",
++		 (unsigned long long)cp, (unsigned long long)s,
++		 (unsigned long long)da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_default_translate(u32 *addr, u64 offset, int na)
++{
++	u64 a = of_read_number(addr, na);
++	memset(addr, 0, na * 4);
++	a += offset;
++	if (na > 1)
++		addr[na - 2] = a >> 32;
++	addr[na - 1] = a & 0xffffffffu;
++
++	return 0;
++}
++
++static unsigned int of_bus_default_get_flags(const u32 *addr)
++{
++	return IORESOURCE_MEM;
++}
++
++#ifdef CONFIG_PCI
++/*
++ * PCI bus specific translator
++ */
++
++static int of_bus_pci_match(struct device_node *np)
++{
++	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
++	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
++}
++
++static void of_bus_pci_count_cells(struct device_node *np,
++				   int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = 3;
++	if (sizec)
++		*sizec = 2;
++}
++
++static unsigned int of_bus_pci_get_flags(const u32 *addr)
++{
++	unsigned int flags = 0;
++	u32 w = addr[0];
++
++	switch((w >> 24) & 0x03) {
++	case 0x01:
++		flags |= IORESOURCE_IO;
++		break;
++	case 0x02: /* 32 bits */
++	case 0x03: /* 64 bits */
++		flags |= IORESOURCE_MEM;
++		break;
++	}
++	if (w & 0x40000000)
++		flags |= IORESOURCE_PREFETCH;
++	return flags;
++}
++
++static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++	unsigned int af, rf;
++
++	af = of_bus_pci_get_flags(addr);
++	rf = of_bus_pci_get_flags(range);
++
++	/* Check address type match */
++	if ((af ^ rf) & (IORESOURCE_MEM | IORESOURCE_IO))
++		return OF_BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = of_read_number(range + 1, na - 1);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr + 1, na - 1);
++
++	pr_debug("OF: PCI map, cp=%llx, s=%llx, da=%llx\n",
++		 (unsigned long long)cp, (unsigned long long)s,
++		 (unsigned long long)da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
++{
++	return of_bus_default_translate(addr + 1, offset, na - 1);
++}
++
++const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
++			unsigned int *flags)
++{
++	const u32 *prop;
++	unsigned int psize;
++	struct device_node *parent;
++	struct of_bus *bus;
++	int onesize, i, na, ns;
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		return NULL;
++	bus = of_match_bus(parent);
++	if (strcmp(bus->name, "pci")) {
++		of_node_put(parent);
++		return NULL;
++	}
++	bus->count_cells(dev, &na, &ns);
++	of_node_put(parent);
++	if (!OF_CHECK_COUNTS(na, ns))
++		return NULL;
++
++	/* Get "reg" or "assigned-addresses" property */
++	prop = of_get_property(dev, bus->addresses, &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++
++	onesize = na + ns;
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
++		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
++			if (size)
++				*size = of_read_number(prop + na, ns);
++			if (flags)
++				*flags = bus->get_flags(prop);
++			return prop;
++		}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_pci_address);
++
++int of_pci_address_to_resource(struct device_node *dev, int bar,
++			       struct resource *r)
++{
++	const u32	*addrp;
++	u64		size;
++	unsigned int	flags;
++
++	addrp = of_get_pci_address(dev, bar, &size, &flags);
++	if (addrp == NULL)
 +		return -EINVAL;
-+	if (root == NULL)
-+		root = of_find_node_by_path("/");
++	return __of_address_to_resource(dev, addrp, size, flags, r);
++}
++EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
++#endif /* CONFIG_PCI */
++
++/*
++ * ISA bus specific translator
++ */
++
++static int of_bus_isa_match(struct device_node *np)
++{
++	return !strcmp(np->name, "isa");
++}
++
++static void of_bus_isa_count_cells(struct device_node *child,
++				   int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = 2;
++	if (sizec)
++		*sizec = 1;
++}
++
++static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x00000001)
++		return OF_BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = of_read_number(range + 1, na - 1);
++	s  = of_read_number(range + na + pna, ns);
++	da = of_read_number(addr + 1, na - 1);
++
++	pr_debug("OF: ISA map, cp=%llx, s=%llx, da=%llx\n",
++		 (unsigned long long)cp, (unsigned long long)s,
++		 (unsigned long long)da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
++{
++	return of_bus_default_translate(addr + 1, offset, na - 1);
++}
++
++static unsigned int of_bus_isa_get_flags(const u32 *addr)
++{
++	unsigned int flags = 0;
++	u32 w = addr[0];
++
++	if (w & 1)
++		flags |= IORESOURCE_IO;
 +	else
-+		of_node_get(root);
++		flags |= IORESOURCE_MEM;
++	return flags;
++}
 +
-+	pr_debug("of_platform_bus_probe()\n");
-+	pr_debug(" starting at: %s\n", root->full_name);
++/*
++ * Array of bus specific translators
++ */
 +
-+	/* Do a self check of bus type, if there's a match, create
-+	 * children
++static struct of_bus of_busses[] = {
++#ifdef CONFIG_PCI
++	/* PCI */
++	{
++		.name = "pci",
++		.addresses = "assigned-addresses",
++		.match = of_bus_pci_match,
++		.count_cells = of_bus_pci_count_cells,
++		.map = of_bus_pci_map,
++		.translate = of_bus_pci_translate,
++		.get_flags = of_bus_pci_get_flags,
++	},
++#endif /* CONFIG_PCI */
++	/* ISA */
++	{
++		.name = "isa",
++		.addresses = "reg",
++		.match = of_bus_isa_match,
++		.count_cells = of_bus_isa_count_cells,
++		.map = of_bus_isa_map,
++		.translate = of_bus_isa_translate,
++		.get_flags = of_bus_isa_get_flags,
++	},
++	/* Default */
++	{
++		.name = "default",
++		.addresses = "reg",
++		.match = NULL,
++		.count_cells = of_bus_default_count_cells,
++		.map = of_bus_default_map,
++		.translate = of_bus_default_translate,
++		.get_flags = of_bus_default_get_flags,
++	},
++};
++
++static struct of_bus *of_match_bus(struct device_node *np)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(of_busses); i++)
++		if (!of_busses[i].match || of_busses[i].match(np))
++			return &of_busses[i];
++	BUG();
++	return NULL;
++}
++
++static int of_translate_one(struct device_node *parent, struct of_bus *bus,
++			    struct of_bus *pbus, u32 *addr,
++			    int na, int ns, int pna, const char *rprop)
++{
++	const u32 *ranges;
++	unsigned int rlen;
++	int rone;
++	u64 offset = OF_BAD_ADDR;
++
++	/* Normally, an absence of a "ranges" property means we are
++	 * crossing a non-translatable boundary, and thus the addresses
++	 * below the current not cannot be converted to CPU physical ones.
++	 * Unfortunately, while this is very clear in the spec, it's not
++	 * what Apple understood, and they do have things like /uni-n or
++	 * /ht nodes with no "ranges" property and a lot of perfectly
++	 * useable mapped devices below them. Thus we treat the absence of
++	 * "ranges" as equivalent to an empty "ranges" property which means
++	 * a 1:1 translation at that level. It's up to the caller not to try
++	 * to translate addresses that aren't supposed to be translated in
++	 * the first place. --BenH.
 +	 */
-+	if (of_match_node(matches, root)) {
-+		pr_debug(" root match, create all sub devices\n");
-+		dev = of_platform_device_create(root, NULL, parent);
-+		if (dev == NULL) {
-+			rc = -ENOMEM;
-+			goto bail;
-+		}
-+		pr_debug(" create all sub busses\n");
-+		rc = of_platform_bus_create(root, matches, &dev->dev);
++	ranges = of_get_property(parent, rprop, &rlen);
++	if (ranges == NULL || rlen == 0) {
++		offset = of_read_number(addr, na);
++		memset(addr, 0, pna * 4);
++		pr_debug("OF: no ranges, 1:1 translation\n");
++		goto finish;
++	}
++
++	pr_debug("OF: walking ranges...\n");
++
++	/* Now walk through the ranges */
++	rlen /= 4;
++	rone = na + pna + ns;
++	for (; rlen >= rone; rlen -= rone, ranges += rone) {
++		offset = bus->map(addr, ranges, na, ns, pna);
++		if (offset != OF_BAD_ADDR)
++			break;
++	}
++	if (offset == OF_BAD_ADDR) {
++		pr_debug("OF: not found !\n");
++		return 1;
++	}
++	memcpy(addr, ranges + na, 4 * pna);
++
++ finish:
++	of_dump_addr("OF: parent translation for:", addr, pna);
++	pr_debug("OF: with offset: %llx\n", (unsigned long long)offset);
++
++	/* Translate it into parent bus space */
++	return pbus->translate(addr, offset, pna);
++}
++
++/*
++ * Translate an address from the device-tree into a CPU physical address,
++ * this walks up the tree and applies the various bus mappings on the
++ * way.
++ *
++ * Note: We consider that crossing any level with #size-cells == 0 to mean
++ * that translation is impossible (that is we are not dealing with a value
++ * that can be mapped to a cpu physical address). This is not really specified
++ * that way, but this is traditionally the way IBM at least do things
++ */
++u64 __of_translate_address(struct device_node *dev, const u32 *in_addr,
++			   const char *rprop)
++{
++	struct device_node *parent = NULL;
++	struct of_bus *bus, *pbus;
++	u32 addr[OF_MAX_ADDR_CELLS];
++	int na, ns, pna, pns;
++	u64 result = OF_BAD_ADDR;
++
++	pr_debug("OF: ** translation for device %s **\n", dev->full_name);
++
++	/* Increase refcount at current level */
++	of_node_get(dev);
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		goto bail;
++	bus = of_match_bus(parent);
++
++	/* Cound address cells & copy address locally */
++	bus->count_cells(dev, &na, &ns);
++	if (!OF_CHECK_COUNTS(na, ns)) {
++		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++		       dev->full_name);
 +		goto bail;
 +	}
-+	for_each_child_of_node(root, child) {
-+		if (!of_match_node(matches, child))
-+			continue;
++	memcpy(addr, in_addr, na * 4);
 +
-+		pr_debug("  match: %s\n", child->full_name);
-+		dev = of_platform_device_create(child, NULL, parent);
-+		if (dev == NULL)
-+			rc = -ENOMEM;
-+		else
-+			rc = of_platform_bus_create(child, matches, &dev->dev);
-+		if (rc) {
-+			of_node_put(child);
++	pr_debug("OF: bus is %s (na=%d, ns=%d) on %s\n",
++	    bus->name, na, ns, parent->full_name);
++	of_dump_addr("OF: translating address:", addr, na);
++
++	/* Translate */
++	for (;;) {
++		/* Switch to parent bus */
++		of_node_put(dev);
++		dev = parent;
++		parent = of_get_parent(dev);
++
++		/* If root, we have finished */
++		if (parent == NULL) {
++			pr_debug("OF: reached root node\n");
++			result = of_read_number(addr, na);
 +			break;
 +		}
++
++		/* Get new parent bus and counts */
++		pbus = of_match_bus(parent);
++		pbus->count_cells(dev, &pna, &pns);
++		if (!OF_CHECK_COUNTS(pna, pns)) {
++			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++			       dev->full_name);
++			break;
++		}
++
++		pr_debug("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
++		    pbus->name, pna, pns, parent->full_name);
++
++		/* Apply bus translation */
++		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna, rprop))
++			break;
++
++		/* Complete the move up one level */
++		na = pna;
++		ns = pns;
++		bus = pbus;
++
++		of_dump_addr("OF: one level translation:", addr, na);
 +	}
 + bail:
-+	of_node_put(root);
-+	return rc;
++	of_node_put(parent);
++	of_node_put(dev);
++
++	return result;
 +}
-+EXPORT_SYMBOL(of_platform_bus_probe);
-+#endif /* !CONFIG_SPARC */
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 1643d37..4bbba41 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -25,6 +25,8 @@
-  */
- extern struct bus_type of_platform_bus_type;
++
++u64 of_translate_address(struct device_node *dev, const u32 *in_addr)
++{
++	return __of_translate_address(dev, in_addr, "ranges");
++}
++EXPORT_SYMBOL(of_translate_address);
++
++u64 of_translate_dma_address(struct device_node *dev, const u32 *in_addr)
++{
++	return __of_translate_address(dev, in_addr, "dma-ranges");
++}
++EXPORT_SYMBOL(of_translate_dma_address);
++
++const u32 *of_get_address(struct device_node *dev, int index, u64 *size,
++		    unsigned int *flags)
++{
++	const u32 *prop;
++	unsigned int psize;
++	struct device_node *parent;
++	struct of_bus *bus;
++	int onesize, i, na, ns;
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		return NULL;
++	bus = of_match_bus(parent);
++	bus->count_cells(dev, &na, &ns);
++	of_node_put(parent);
++	if (!OF_CHECK_COUNTS(na, ns))
++		return NULL;
++
++	/* Get "reg" or "assigned-addresses" property */
++	prop = of_get_property(dev, bus->addresses, &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++
++	onesize = na + ns;
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
++		if (i == index) {
++			if (size)
++				*size = of_read_number(prop + na, ns);
++			if (flags)
++				*flags = bus->get_flags(prop);
++			return prop;
++		}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_address);
++
++static int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
++				    u64 size, unsigned int flags,
++				    struct resource *r)
+ {
+ 	u64 taddr;
  
-+extern const struct of_device_id of_default_bus_ids[];
-+
- /*
-  * An of_platform_driver driver is attached to a basic of_device on
-  * the "platform bus" (of_platform_bus_type).
-@@ -63,6 +65,21 @@ static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
- extern struct of_device *of_find_device_by_node(struct device_node *np);
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 474b794..cc567df 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -3,9 +3,7 @@
+ #include <linux/ioport.h>
+ #include <linux/of.h>
  
- extern int of_bus_type_init(struct bus_type *bus, const char *name);
-+
-+#if !defined(CONFIG_SPARC) /* SPARC has its own device registration method */
-+/* Platform devices and busses creation */
-+extern struct of_device *of_platform_device_create(struct device_node *np,
-+						   const char *bus_id,
-+						   struct device *parent);
-+
-+/* pseudo "matches" value to not do deep probe */
-+#define OF_NO_DEEP_PROBE ((struct of_device_id *)-1)
-+
-+extern int of_platform_bus_probe(struct device_node *root,
-+				 const struct of_device_id *matches,
-+				 struct device *parent);
-+#endif /* !CONFIG_SPARC */
-+
- #endif /* CONFIG_OF_DEVICE */
- 
- #endif	/* _LINUX_OF_PLATFORM_H */
+-extern int __of_address_to_resource(struct device_node *dev, const u32 *addrp,
+-				    u64 size, unsigned int flags,
+-				    struct resource *r);
++extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+ extern int of_address_to_resource(struct device_node *dev, int index,
+ 				  struct resource *r);
+ extern void __iomem *of_iomap(struct device_node *device, int index);
