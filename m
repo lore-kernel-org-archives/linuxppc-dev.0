@@ -1,27 +1,17 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8BB42B7D5C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 05:09:47 +1000 (EST)
-Message-ID: <4C0FE17B.10108@zytor.com>
-Date: Wed, 09 Jun 2010 11:46:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <avorontsov@mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 11D35B7D1A
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 05:32:23 +1000 (EST)
+Date: Wed, 9 Jun 2010 23:32:19 +0400
+From: Anton Vorontsov <avorontsov@mvista.com>
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH] gianfar: Revive the driver for eTSEC devices (disable
+	timestamping)
+Message-ID: <20100609193219.GA8629@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
-References: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
-	<20100601193230.GA17579@us.ibm.com>
-	<AANLkTinxCKl7RVe62UhIpNe5EriCufkgaih2D2mLLmC4@mail.gmail.com>
-	<20100602013839.GB17579@us.ibm.com>
-	<AANLkTinFGblE4fW35O0LchJZ22tz_5-qervpGC_lpUj_@mail.gmail.com>
-	<20100609181431.GB1211@us.ibm.com>
-In-Reply-To: <20100609181431.GB1211@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: randy.dunlap@oracle.com, arnd@arndb.de, Albert Cahalan <acahalan@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, roland@redhat.com
+Content-Type: text/plain; charset=utf-8
+Cc: netdev@vger.kernel.org, Manfred Rudigier <Manfred.Rudigier@omicron.at>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/09/2010 11:14 AM, Sukadev Bhattiprolu wrote:
-> | 
-> | Even for x86, it's an easier API. Callers would be specifying
-> | two numbers they already have: the argument and return value
-> | for malloc. Currently the numbers must be added together,
-> | destroying information, except on hppa (must not add size)
-> | and ia64 (must use what I'm proposing already).
-> 
-> I agree its easier and would avoid #ifdefs in the applications.
-> 
-> Peter, Arnd, Roland - do you have any concerns with requiring all
-> architectures to specify the stack to eclone() as [base, offset]
-> 
+Since commit cc772ab7cdcaa24d1fae332d92a1602788644f7a ("gianfar: Add
+hardware RX timestamping support"), the driver no longer works on
+at least MPC8313ERDB and MPC8568EMDS boards (and possibly much more
+boards as well).
 
-Makes sense to me.  There might be advantages to be able to track the
-size of the "stack allocation" even for other architectures, too.
+That's how MPC8313 Reference Manual describes RCTRL_TS_ENABLE bit:
 
-	-hpa
+  Timestamp incoming packets as padding bytes. PAL field is set
+  to 8 if the PAL field is programmed to less than 8. Must be set
+  to zero if TMR_CTRL[TE]=0.
+
+I see that the commit above sets this bit, but it doesn't handle
+TMR_CTRL. Manfred probably had this bit set by the firmware for
+his boards. But obviously this isn't true for all boards in the
+wild.
+
+Also, I recall that Freescale BSPs were explicitly disabling the
+timestamping because of a performance drop.
+
+For now, the best way to deal with this is just disable the
+timestamping, and later we can discuss proper device tree bindings
+and implement enabling this feature via some property.
+
+Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+---
+ drivers/net/gianfar.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index 1830f31..46c69cd 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -747,8 +747,7 @@ static int gfar_of_init(struct of_device *ofdev, struct net_device **pdev)
+ 			FSL_GIANFAR_DEV_HAS_CSUM |
+ 			FSL_GIANFAR_DEV_HAS_VLAN |
+ 			FSL_GIANFAR_DEV_HAS_MAGIC_PACKET |
+-			FSL_GIANFAR_DEV_HAS_EXTENDED_HASH |
+-			FSL_GIANFAR_DEV_HAS_TIMER;
++			FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
+ 
+ 	ctype = of_get_property(np, "phy-connection-type", NULL);
+ 
+-- 
+1.7.0.5
