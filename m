@@ -1,19 +1,37 @@
-Return-Path: <jblack547@gmail.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 1F596B7D47
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 02:19:36 +1000 (EST)
-Received: by gwb11 with SMTP id 11so2142017gwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jun 2010 09:19:34 -0700 (PDT)
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3FAF91007D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 04:05:34 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o59HpxDX017829
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 13:51:59 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o59I5PJV050056
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 14:05:26 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o59I5L3O005243
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 14:05:21 -0400
+Date: Wed, 9 Jun 2010 11:14:31 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Albert Cahalan <acahalan@gmail.com>
+Subject: Re: [PATCH v21 011/100] eclone (11/11): Document sys_eclone
+Message-ID: <20100609181431.GB1211@us.ibm.com>
+References: <AANLkTimDfbJkAuoK1-asvk8Ub9C9QBkK5RkzLR3ilJUY@mail.gmail.com>
+	<20100601193230.GA17579@us.ibm.com>
+	<AANLkTinxCKl7RVe62UhIpNe5EriCufkgaih2D2mLLmC4@mail.gmail.com>
+	<20100602013839.GB17579@us.ibm.com>
+	<AANLkTinFGblE4fW35O0LchJZ22tz_5-qervpGC_lpUj_@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4C0FA73B.4070905@ge.com>
-References: <4C0FA73B.4070905@ge.com>
-Date: Wed, 9 Jun 2010 10:19:30 -0600
-Message-ID: <AANLkTikgO0F7rhv8KCrmkR_0glpX-PGSyJ3P1BwTp4_o@mail.gmail.com>
-Subject: Re: CPM UART on MPC8270
-From: James Black <jblack547@gmail.com>
-To: Martyn Welch <martyn.welch@ge.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTinFGblE4fW35O0LchJZ22tz_5-qervpGC_lpUj_@mail.gmail.com>
+Cc: randy.dunlap@oracle.com, arnd@arndb.de,
+	linux-kernel <linux-kernel@vger.kernel.org>, hpa@zytor.com,
+	linuxppc-dev@lists.ozlabs.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,110 +41,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SSBjb3VsZG4ndCBnZXQgdGhlIGVjaG8gPiAvZGV2L3h4eCB0byB3b3JrLiBJIGhhZCB0byB3cml0
-ZSBhIHNtYWxsIGFwcAp0aGF0IG9wZW5lZCB0aGUgZGV2aWNlIGFuZCB3cml0ZSBhbmQgcmVhZCBj
-aGFyYWN0ZXJzIGZvciB0ZXN0aW5nLgoKU3RhcnQgdGhlcmUgYW5kIHlvdSBtYXkgZmluZCBpdCBp
-cyBhY3R1YWxseSB3b3JraW5nLgoKSkIKCk9uIFdlZCwgSnVuIDksIDIwMTAgYXQgODozNyBBTSwg
-TWFydHluIFdlbGNoIDxtYXJ0eW4ud2VsY2hAZ2UuY29tPiB3cm90ZToKPiBIaSBBbGwsCj4KPiBJ
-J20gYXR0ZW1wdGluZyB0byBnZXQgYW4gU0NDIHBvcnQgb24gYW4gTVBDODI3MCB3b3JraW5nIHdp
-dGggTGludXguIEknbQo+IG5vdCBvdmVybHkgZmFtaWxpYXIgd2l0aCB0aGUgQ1BNIGFuZCBhbSBo
-YXZpbmcgYSBiaXQgb2YgdHJvdWJsZS4KPgo+IExpbnV4IGlzIGJvb3RpbmcgbmF0aXZlbHkgb24g
-dGhlIDgyNzAuIEkgaGF2ZSBhY2Nlc3MgdG8gdGhlIDgyNzAgdmlhIGEKPiBzZXQgb2YgUENJIHdp
-bmRvd3MgZnJvbSBhIHNlY29uZCBjb3JlIChpbmNsdWRlcyBvbmUgc2V0dXAgb3ZlciB0aGUgbWFp
-bgo+IG1lbW9yeSBhbmQgb25lIG92ZXIgdGhlIElNTVIpIGFuZCBTTUMxIGlzIHVwIGFuZCB3b3Jr
-aW5nIHdpdGggYSBjb25zb2xlLgo+Cj4gVGhlIFNDQ3Mgc2VlbSB0byBiZSBkZXRlY3RlZCBjb3Jy
-ZWN0bHkgYXQgYm9vdDoKPgo+IGYwMTFhODAuc2VyaWFsOiB0dHlDUE0wIGF0IE1NSU8gMHhjMzAx
-NGE4MCAoaXJxID0gMTYpIGlzIGEgQ1BNIFVBUlQKPiBmMDExYTAwLnNlcmlhbDogdHR5Q1BNMSBh
-dCBNTUlPIDB4YzMwMThhMDAgKGlycSA9IDQwKSBpcyBhIENQTSBVQVJUCj4gZjAxMWEyMC5zZXJp
-YWw6IHR0eUNQTTIgYXQgTU1JTyAweGMzMDIwYTIwIChpcnEgPSA0MSkgaXMgYSBDUE0gVUFSVAo+
-IGYwMTFhNDAuc2VyaWFsOiB0dHlDUE0zIGF0IE1NSU8gMHhjMzAyOGE0MCAoaXJxID0gNDIpIGlz
-IGEgQ1BNIFVBUlQKPgo+IFdpdGggdGhlIERUUyByZWFkaW5nOgo+Cj4gwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqBzbWMxOiBzZXJpYWxAMTFhODAgewo+IMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGV2aWNlX3R5cGUgPSAic2VyaWFsIjsK
-PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNvbXBhdGli
-bGUgPSAiZnNsLG1wYzgyNzAtc21jLXVhcnQiLAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgICJmc2wsY3BtMi1zbWMtdWFy
-dCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqByZWcg
-PSA8MHgxMWE4MCAweDIwIDB4ODdmYyAyPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdHMgPSA8NCA4PjsKPiDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47
-Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3Bt
-LWJyZyA9IDw3PjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDFkMDAwMDAwPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoH07Cj4KPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oHNjYzE6IHNlcmlhbEAxMWEwMCB7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqBkZXZpY2VfdHlwZSA9ICJzZXJpYWwiOwo+IMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgY29tcGF0aWJsZSA9ICJmc2wsbXBjODI3MC1z
-Y2MtdWFydCIsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgImZzbCxjcG0yLXNjYy11YXJ0IjsKPiDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHJlZyA9IDwweDExYTAwIDB4MjAgMHg4
-MDAwIDB4MTAwPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoGludGVycnVwdHMgPSA8NDAgOD47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+Owo+IMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZnNsLGNwbS1icmcgPSA8Mz47Cj4g
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3BtLWNv
-bW1hbmQgPSA8MHg4MDAwMDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-fTsKPgo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc2NjMjogc2VyaWFsQDEx
-YTIwIHsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRl
-dmljZV90eXBlID0gInNlcmlhbCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqBjb21wYXRpYmxlID0gImZzbCxtcGM4MjcwLXNjYy11YXJ0IiwKPiDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCAiZnNsLGNwbTItc2NjLXVhcnQiOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgcmVnID0gPDB4MTFhMjAgMHgyMCAweDgxMDAgMHgxMDA+Owo+IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgaW50ZXJydXB0cyA9
-IDw0MSA4PjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3BtLWJyZyA9IDw2PjsKPiDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDRhMDAw
-MDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfTsKPgo+IMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc2NjMzogc2VyaWFsQDExYTQwIHsKPiDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRldmljZV90eXBlID0gInNl
-cmlhbCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBj
-b21wYXRpYmxlID0gImZzbCxtcGM4MjcwLXNjYy11YXJ0IiwKPiDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAiZnNsLGNwbTIt
-c2NjLXVhcnQiOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgcmVnID0gPDB4MTFhNDAgMHgyMCAweDgyMDAgMHgxMDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgaW50ZXJydXB0cyA9IDw0MiA4PjsKPiDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdC1wYXJl
-bnQgPSA8JlBJQz47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqBmc2wsY3BtLWJyZyA9IDwxPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDhjMDAwMDA+Owo+IMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfTsKPgo+IEkgYmVsaWV2ZSB0aGF0IEkgaGF2ZSB0
-aGUgcGlucyBzZXR1cCBjb3JyZWN0bHkgYW5kIHRoZSBCUkdzIGNvbm5lY3RlZAo+IGNvcnJlY3Rs
-eSBpbiB0aGUgc2V0dXBfYXJjaCBmdW5jdGlvbi4KPgo+IEF0IHRoZSBtb21lbnQgSSBoYXZlIFND
-QzMgd2lyZWQgb3V0LiBJZiBJIGF0dGVtcHQgdG8gZWNobyBkYXRhIG91dCBvZgo+IHRoZSBTQ0Mg
-KGVjaG8gIkhlbGxvIiA+IC9kZXYvdHR5Q1BNMykgSSBnZXQgdGhlIHByb21wdCBzaXRzIHdhaXRp
-bmcuCj4gUmVib290aW5nIGFuZCB0dXJuaW5nIG9uIHRoZSBkZWJ1ZyB5aWVsZHMgdGhlIGZvbGxv
-d2luZyBvdXRwdXQgb24gdGhlCj4gY29uc29sZSAoYnV0IG5vdGhpbmcgb3V0IG9mIHRoZSBTQ0Mg
-cG9ydCk6Cj4KPiBDUE0gdWFydFszXTpzdGFydHVwCj4gSW50ZXJydXB0IGF0dGFjaGVkCj4gQ1BN
-IHVhcnRbM106c2V0X3Rlcm1pb3MKPiBDUE0gdWFydFszXTpzdGFydCB0eAo+IENQTSB1YXJ0WzNd
-OnN0b3AgdHgKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5
-OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+
-IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0g
-dWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRb
-M106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4
-X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106c3RvcCByeAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAw
-Cj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQ
-TSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFy
-dFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnNodXRkb3duCj4gQ1BNIHVhcnRbM106dHhf
-ZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5
-OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+
-IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiAuLi4K
-Pgo+Cj4gSXQgc2VlbWVkIHRvIGJlIHdhaXRpbmcgZm9yIHJlYWR5IGJpdCBvZiB0aGUgVHJhbnNt
-aXQgQnVmZmVyIERlc2NyaXB0b3IKPiB0byBiZSBjbGVhcmVkICh3aGljaCBpdCBuZXZlciBzZWVt
-cyB0byBiZSksIHByb2RkaW5nIHRoaXMgYml0IHRocm91Z2gKPiB0aGUgcGNpIHdpbmRvdyBkaWQg
-Y2F1c2UgdGhlIHByb2Nlc3MgdG8gY29udGludWUsIG5vIGRhdGEgb3V0IGJ1dCBJIGRpZAo+IGdl
-dCBiYWNrIHRvIHRoZSBwcm9tcHQgb24gdGhlIGNvbnNvbGUuCj4KPiBJJ20gc3VyZSBJJ20ganVz
-dCBtaXNzaW5nIHNvbWV0aGluZyByZWFsbHkgYmFzaWMgLSBjYW4gYW55b25lIGVubGlnaHRlbiBt
-ZT8KPgo+IE1hcnR5bgo+Cj4gLS0KPiBNYXJ0eW4gV2VsY2ggKFByaW5jaXBhbCBTb2Z0d2FyZSBF
-bmdpbmVlcikgwqAgfCDCoCBSZWdpc3RlcmVkIGluIEVuZ2xhbmQgYW5kCj4gR0UgSW50ZWxsaWdl
-bnQgUGxhdGZvcm1zIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHwgwqAgV2FsZXMgKDM4
-Mjg2NDIpIGF0IDEwMAo+IFQgKzQ0KDApMTI3MzIyNzQ4IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgfCDCoCBCYXJiaXJvbGxpIFNxdWFyZSwgTWFuY2hlc3RlciwKPiBF
-IG1hcnR5bi53ZWxjaEBnZS5jb20gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB8
-IMKgIE0yIDNBQiDCoFZBVDpHQiA5Mjc1NTkxODkKPgo+IF9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdAo+IExp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xp
-c3RpbmZvL2xpbnV4cHBjLWRldgo+CgoKCi0tIApKaW0gQmxhY2sKU2VuaW9yIFNvZnR3YXJlIEVu
-Z2luZWVyCkF6dGVrIE5ldHdvcmtzLCBJbmMuCjI0NzcgNTV0aCBTdHJlZXQsIFN1aXRlIDIwMgpC
-b3VsZGVyLCBDTyA4MDMwMQp3d3cuYXp0ZWtuZXR3b3Jrcy5jb20K
+Albert Cahalan [acahalan@gmail.com] wrote:
+| On Tue, Jun 1, 2010 at 9:38 PM, Sukadev Bhattiprolu
+| <sukadev@linux.vnet.ibm.com> wrote:
+| > | Come on, seriously, you know it's ia64 and hppa that
+| > | have issues. Maybe the nommu ports also have issues.
+| > |
+| > | The only portable way to specify the stack is base and offset,
+| > | with flags or magic values for "share" and "kernel managed".
+| >
+| > Ah, ok, we have not yet ported to IA64 and I see now where the #ifdef
+| > comes in.
+| >
+| > But are you saying that we should force x86 and other architectures to
+| > specify base and offset for eclone() even though they currently specify
+| > just the stack pointer to clone() ?
+| 
+| Even for x86, it's an easier API. Callers would be specifying
+| two numbers they already have: the argument and return value
+| for malloc. Currently the numbers must be added together,
+| destroying information, except on hppa (must not add size)
+| and ia64 (must use what I'm proposing already).
+
+I agree its easier and would avoid #ifdefs in the applications.
+
+Peter, Arnd, Roland - do you have any concerns with requiring all
+architectures to specify the stack to eclone() as [base, offset]
+
+To recap, currently we have 
+
+struct clone_args {
+	u64 clone_flags_high;
+	/*
+	 * Architectures can use child_stack for either the stack pointer or
+	 * the base of of stack. If child_stack is used as the stack pointer,
+	 * child_stack_size must be 0. Otherwise child_stack_size must be
+	 * set to size of allocated stack.
+	 */
+	u64 child_stack;
+	u64 child_stack_size;
+	u64 parent_tid_ptr;
+	u64 child_tid_ptr;
+	u32 nr_pids;
+	u32 reserved0;
+};
+
+sys_eclone(u32 flags_low, struct clone_args * __user cargs, int cargs_size,
+		pid_t * __user pids)
+
+
+Most architecutres would specify the stack pointer in ->child_stack and
+ignore the ->child_stack_size.
+
+IA64 specifies the *stack-base* in ->child_stack and the stack size in
+->child_stack_size.
+
+Albert and Randy point out that this would require #ifdefs in the
+application code that intends to be portable across say IA64 and x86.
+
+Can we instead have all architectures specify [base, size] ?
+
+Thanks
+
+Sukadev
