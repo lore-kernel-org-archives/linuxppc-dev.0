@@ -1,20 +1,20 @@
-Return-Path: <joe@perches.com>
-Received: from mail.perches.com (mail.perches.com [173.55.12.10])
-	by ozlabs.org (Postfix) with ESMTP id 1ADEDB7D61
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Jun 2010 17:53:06 +1000 (EST)
-Subject: Re: [PATCH 00/12] treewide: Remove unnecessary kmalloc casts
-From: Joe Perches <joe@perches.com>
-To: Milton Miller <miltonm@bga.com>, Jiri Kosina <trivial@kernel.org>
-In-Reply-To: <1276068001_13533@mail4.comsite.net>
-References: <cover.1275968594.git.joe@perches.com>
-	<96933b66aa5f995746a34410ca63e5e8b84593cb.1275968594.git.joe@perches.com>
-	<1276068001_13533@mail4.comsite.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7D56CB6F11
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 18:54:46 +1000 (EST)
+Subject: Re: [PATCH 3/3] powerpc: enabled asymmetric SMT scheduling on POWER7
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20100608045702.31FB5CC8C7@localhost.localdomain>
+References: <20100608045702.31FB5CC8C7@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 09 Jun 2010 00:46:24 -0700
-Message-ID: <1276069584.1556.27.camel@Joe-Laptop.home>
+Date: Wed, 09 Jun 2010 18:54:13 +1000
+Message-ID: <1276073653.1242.0.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +24,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-06-09 at 02:20 -0500, Milton Miller wrote:
-> On Mon Jun 07 2010 at around 23:53:18 EST, Joe Perches wrote:
-> > Trivial cleanups
-> The reason they casts are present is to guard against someone changing
-> the type of p at the top of the function and not changing the type at
-> the kmalloc.
+On Tue, 2010-06-08 at 14:57 +1000, Michael Neuling wrote:
+> The POWER7 core has dynamic SMT mode switching which is controlled by
+> the hypervisor.  There are 3 SMT modes:
+> 	SMT1 uses thread  0
+> 	SMT2 uses threads 0 & 1
+> 	SMT4 uses threads 0, 1, 2 & 3
+> When in any particular SMT mode, all threads have the same performance
+> as each other (ie. at any moment in time, all threads perform the same).  
+> 
+> The SMT mode switching works such that when linux has threads 2 & 3 idle
+> and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
+> idle loop and the hypervisor will automatically switch to SMT2 for that
+> core (independent of other cores).  The opposite is not true, so if
+> threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+> 
+> Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
+> into SMT1 mode.  
+> 
+> If we can get the core into a lower SMT mode (SMT1 is best), the threads
+> will perform better (since they share less core resources).  Hence when
+> we have idle threads, we want them to be the higher ones.
+> 
+> This adds a feature bit for asymmetric packing to powerpc and then
+> enables it on POWER7. 
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-That'd be true for most all of the kernel mallocs.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> I know some maintainers have already taken some of
-> the series the last time you posted; could you please augment the
-> CC list.
-
-I did not send to trivial any of kmalloc cast removal patches that
-were acked.  The patches in this series were not acked, so I think
-no CC list needs augmentation.
-
-Original: http://lkml.org/lkml/2010/5/31/471
-Newest:   http://lkml.org/lkml/2010/6/7/428
-
-cheers, Joe
+> 
+> ---
+> 
+>  arch/powerpc/include/asm/cputable.h |    3 ++-
+>  arch/powerpc/kernel/process.c       |    9 +++++++++
+>  2 files changed, 11 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/include/asm/cputable.h
+> +++ linux-2.6-ozlabs/arch/powerpc/include/asm/cputable.h
+> @@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
+>  #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
+>  #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
+>  #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
+> +#define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0100000000000000)
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
+>  	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+>  	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+>  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+> -	    CPU_FTR_DSCR | CPU_FTR_SAO)
+> +	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT)
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/process.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/process.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/process.c
+> @@ -1265,3 +1265,12 @@ unsigned long randomize_et_dyn(unsigned 
+>  
+>  	return ret;
+>  }
+> +
+> +int arch_sd_sibiling_asym_packing(void)
+> +{
+> +	if (cpu_has_feature(CPU_FTR_ASYM_SMT)){
+> +		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+> +		return SD_ASYM_PACKING;
+> +	}
+> +	return 0;
+> +}
