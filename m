@@ -1,21 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6CC6EB7D69
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id D6CE2B7D4A
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Jun 2010 16:13:34 +1000 (EST)
-To: Jon Smirl <jonsmirl@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
-References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
-	<AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
-Date: Wed, 09 Jun 2010 08:13:30 +0200
-Message-Id: <20100609061330.620AC14E867@gemini.denx.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+	Wed,  9 Jun 2010 17:20:07 +1000 (EST)
+From: Milton Miller <miltonm@bga.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 00/12] treewide: Remove unnecessary kmalloc casts
+In-Reply-To: <cover.1275968594.git.joe@perches.com>
+References: <cover.1275968594.git.joe@perches.com>
+	<96933b66aa5f995746a34410ca63e5e8b84593cb.1275968594.git.joe@perches.com>
+Date: Wed, 09 Jun 2010 02:20:01 -0500
+Message-ID: <1276068001_13533@mail4.comsite.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Jon Smirl,
 
-In message <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com> you wrote:
->
-> Would making a change in uboot be a better solution? Eric, can you
-> verify if changing uboot also fixes the problem?
+On Mon Jun 07 2010 at around 23:53:18 EST, Joe Perches wrote:
+> Trivial cleanups
+> 
+> arch/cris: Remove unnecessary kmalloc casts
+> arch/powerpc: Remove unnecessary kmalloc casts
+> arch/x86/kernel/tlb_uv.c: Remove unnecessary kmalloc casts
+> drivers/gpu/drm: Remove unnecessary kmalloc casts
+> drivers/isdn/capi/capidrv.c: Remove unnecessary kmalloc casts
+> drivers/media: Remove unnecesary kmalloc casts
+> drivers/message/i2o/i20_config.c: Remove unnecessary kmalloc casts
+> drivers/parisc/iosapic.c: Remove unnecessary kzalloc cast
+> drivers/s390: Remove unnecessary kmalloc casts
+> drivers/serial/icom.c: Remove unnecessary kmalloc casts
+> drivers/usb/storage/isd200.c: Remove unnecessary kmalloc casts
+> fs/ufs/util.c: Remove unnecessary kmalloc casts
+> 
 
-To me it seems better if the driver itself does what needs to be done
-instead of relying on specific settings that may or may not be done in
-U-Boot. Keep in mind that drivers may be loaded as modules, and that
-we even see cases where the same port serves multiple purposes by
-loading different driver modules (yes, this is not exactly a clever
-idea, but hardware designers come up with such solutions).
+Joe,
+
+Thanks for doing cleanups.
+
+However, in this case you are removing casts that, while not necessary
+for C, are indeed there for a reason.
+
+Specifically, they are of the form
+   type *p;
+   <code>
+   p = (type *)kmalloc(sizeof(type), ...);
+
+For example, from the powerpc patch:
+> goto out;
+> }
+> - tmp_part = (struct nvram_partition *)
+> - kmalloc(sizeof(struct nvram_partition), GFP_KERNEL);
+> + tmp_part = kmalloc(sizeof(struct nvram_partition), GFP_KERNEL);
+> err = -ENOMEM;
+
+The reason they casts are present is to guard against someone changing
+the type of p at the top of the function and not changing the type at
+the kmalloc.
+
+This was discussed some years ago, possibly around the time kcalloc
+got its underflow detection.
+
+Should we create a kmalloc wrapper that enforces this type saftey?
+While we have added static analysis tools that can check these things,
+and we have slab redzoning options, they tend to be run in batch by
+"someone else" or in response to debugging a problem.
 
 
-Best regards,
+There may have been discussion of doing the above vs
+   p = kmalloc(sizeof(*p), ...);
 
-Wolfgang Denk
+I don't remember if it was programmer preference or issues when p is
+an array type.
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The typical page layout program is nothing more  than  an  electronic
-light table for cutting and pasting documents.
+
+I am not subscribed so I don't have the full list that you sent
+these to, and I know some maintainers have already taken some of
+the series the last time you posted; could you please augment the
+CC list.
+
+thanks,
+milton
