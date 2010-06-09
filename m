@@ -1,25 +1,33 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 2F6481007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Jun 2010 22:21:43 +1000 (EST)
-Received: by vws6 with SMTP id 6so4487437vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 09 Jun 2010 05:21:42 -0700 (PDT)
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2FC0B1007D3
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 22:36:21 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o59CW08k013651
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 06:32:00 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o59Ca0HI095394
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 06:36:02 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o59CZxTh019942
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 06:36:00 -0600
+Date: Wed, 9 Jun 2010 08:35:57 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Christoph Egger <siccegge@cs.fau.de>
+Subject: Re: [PATCH 3/5] Removing dead CONFIG_SMP_750
+Message-ID: <20100609123557.GJ7801@zod.rchland.ibm.com>
+References: <cover.1275925219.git.siccegge@cs.fau.de>
+	<8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
 MIME-Version: 1.0
-In-Reply-To: <20100609061330.620AC14E867@gemini.denx.de>
-References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
-	<AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
-	<20100609061330.620AC14E867@gemini.denx.de>
-Date: Wed, 9 Jun 2010 08:21:41 -0400
-Message-ID: <AANLkTikDE14Y_r7nMpj5lNMy5anAyU3cuLjk_uxStHvo@mail.gmail.com>
-Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Wolfgang Denk <wd@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
+Cc: vamos@i4.informatik.uni-erlangen.de, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 9, 2010 at 2:13 AM, Wolfgang Denk <wd@denx.de> wrote:
-> Dear Jon Smirl,
->
-> In message <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>=
- you wrote:
->>
->> Would making a change in uboot be a better solution? Eric, can you
->> verify if changing uboot also fixes the problem?
->
-> To me it seems better if the driver itself does what needs to be done
-> instead of relying on specific settings that may or may not be done in
-> U-Boot. Keep in mind that drivers may be loaded as modules, and that
-> we even see cases where the same port serves multiple purposes by
-> loading different driver modules (yes, this is not exactly a clever
-> idea, but hardware designers come up with such solutions).
+On Wed, Jun 09, 2010 at 12:00:21PM +0200, Christoph Egger wrote:
+>CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
+>references for it from the source code.
 
+Yeah, we don't support SMP on 750 at the moment.  This code was carried over
+from the arch/ppc days, and that code was present pre-git.  I think we can
+drop it, but I'll leave that up to Ben.  Maybe he has crazy plans for a 750 SMP
+board.
 
-Someone with a scope can verify this, but my understanding of what
-happens is that uboot by default puts the pins into GPIO mode. Linux
-boots and reprograms the pins into AC97 mode. When the pins are
-reprogrammed it generates glitches on the reset line. About half of
-the time these glitches put the attached codec into test mode. Once
-the chip is in test mode it won't respond to normal commands.
-
-Does the opposite happen? What if uboot has the pins in AC97 mode and
-Linux reprograms them into GPIO mode. Will it also put the chip into
-test mode? The piece of information I've been missing is an
-understanding of what is making the glitches that trigger test mode.
-
-Another strategy would be to leave reset as is. If the chip is
-unresponsive send it the commands to get it out of test mode. That
-could be made part of the reset logic in the Linux driver.
-
+josh
 
 >
+>Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+>---
+> arch/powerpc/mm/tlb_hash32.c |    4 ----
+> 1 files changed, 0 insertions(+), 4 deletions(-)
 >
-> Best regards,
+>diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
+>index 8aaa8b7..925fecb 100644
+>--- a/arch/powerpc/mm/tlb_hash32.c
+>+++ b/arch/powerpc/mm/tlb_hash32.c
+>@@ -94,11 +94,7 @@ void tlb_flush(struct mmu_gather *tlb)
+>  * the cache operations on the bus.  Hence we need to use an IPI
+>  * to get the other CPU(s) to invalidate their TLBs.
+>  */
+>-#ifdef CONFIG_SMP_750
+>-#define FINISH_FLUSH	smp_send_tlb_invalidate(0)
+>-#else
+> #define FINISH_FLUSH	do { } while (0)
+>-#endif
 >
-> Wolfgang Denk
+> static void flush_range(struct mm_struct *mm, unsigned long start,
+> 			unsigned long end)
+>-- 
+>1.6.3.3
 >
-> --
-> DENX Software Engineering GmbH, =A0 =A0 MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> The typical page layout program is nothing more =A0than =A0an =A0electron=
-ic
-> light table for cutting and pasting documents.
->
-
-
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
