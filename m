@@ -1,19 +1,19 @@
-Return-Path: <emillbrandt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
-	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 1B09CB7D48
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 02:15:45 +1000 (EST)
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/2 v2] sound/soc: mpc5200_psc_ac97: Use gpio pins for cold
-	reset.
-Date: Wed, 9 Jun 2010 11:54:32 -0400
-Message-ID: <1276098872-6663-1-git-send-email-emillbrandt@dekaresearch.com>
+Return-Path: <jblack547@gmail.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 1F596B7D47
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 02:19:36 +1000 (EST)
+Received: by gwb11 with SMTP id 11so2142017gwb.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jun 2010 09:19:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+In-Reply-To: <4C0FA73B.4070905@ge.com>
+References: <4C0FA73B.4070905@ge.com>
+Date: Wed, 9 Jun 2010 10:19:30 -0600
+Message-ID: <AANLkTikgO0F7rhv8KCrmkR_0glpX-PGSyJ3P1BwTp4_o@mail.gmail.com>
+Subject: Re: CPM UART on MPC8270
+From: James Black <jblack547@gmail.com>
+To: Martyn Welch <martyn.welch@ge.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,284 +23,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The implementation of the ac97 "cold" reset is flawed.  If the sync and
-output lines are high when reset is asserted the attached ac97 device
-may go into test mode.  Avoid this by reconfiguring the psc to gpio mode
-and generating the reset manually.
-
->From MPC5200B User's Manual:
-"Some AC97 devices goes to a test mode, if the Sync line is high
-during the Res line is low (reset phase). To avoid this behavior the
-Sync line must be also forced to zero during the reset phase. To do
-that, the pin muxing should switch to GPIO mode and the GPIO control
-register should be used to control the output lines."
-
-Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
----
-
-changes since v1
-- Amended with comments from Mark Brown
-- Fall back to the original reset implementation if no gpio pins are define=
-d
-  in the device tree
-
- arch/powerpc/boot/dts/lite5200.dts  |    3 +
- arch/powerpc/boot/dts/lite5200b.dts |    3 +
- arch/powerpc/boot/dts/pcm030.dts    |    3 +
- arch/powerpc/boot/dts/pcm032.dts    |    3 +
- sound/soc/fsl/mpc5200_dma.h         |    5 ++
- sound/soc/fsl/mpc5200_psc_ac97.c    |   98 +++++++++++++++++++++++++++++++=
-++--
- 6 files changed, 111 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lit=
-e5200.dts
-index 82ff2b1..cb4e49b 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -180,6 +180,9 @@
-                //      compatible =3D "fsl,mpc5200-psc-ac97";
-                //      cell-index =3D <1>;
-                //      reg =3D <0x2200 0x100>;
-+               //      gpios =3D <&gpio 7 0              /* AC97_1_RES */
-+               //               &gpio_simple 29 0      /* AC97_1_SYNC */
-+               //               &gpio_simple 31 0>;    /* AC97_1_SDATA_OUT=
- */
-                //      interrupts =3D <2 2 0>;
-                //};
-
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/li=
-te5200b.dts
-index e45a63b..1fb0ac7 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -184,6 +184,9 @@
-                //      compatible =3D "fsl,mpc5200b-psc-ac97","fsl,mpc5200=
--psc-ac97";
-                //      cell-index =3D <1>;
-                //      reg =3D <0x2200 0x100>;
-+               //      gpios =3D <&gpio 7 0              /* AC97_1_RES */
-+               //               &gpio_simple 29 0      /* AC97_1_SYNC */
-+               //               &gpio_simple 31 0>;    /* AC97_1_SDATA_OUT=
- */
-                //      interrupts =3D <2 2 0>;
-                //};
-
-diff --git a/arch/powerpc/boot/dts/pcm030.dts b/arch/powerpc/boot/dts/pcm03=
-0.dts
-index 8a4ec30..0085e0f 100644
---- a/arch/powerpc/boot/dts/pcm030.dts
-+++ b/arch/powerpc/boot/dts/pcm030.dts
-@@ -189,6 +189,9 @@
-                        compatible =3D "mpc5200b-psc-ac97","fsl,mpc5200b-ps=
-c-ac97";
-                        cell-index =3D <0>;
-                        reg =3D <0x2000 0x100>;
-+                       gpios =3D <&gpio 7 0              /* AC97_1_RES */
-+                                &gpio_simple 29 0      /* AC97_1_SYNC */
-+                                &gpio_simple 31 0>;    /* AC97_1_SDATA_OUT=
- */
-                        interrupts =3D <2 1 0>;
-                };
-
-diff --git a/arch/powerpc/boot/dts/pcm032.dts b/arch/powerpc/boot/dts/pcm03=
-2.dts
-index 85d857a..76f86d3 100644
---- a/arch/powerpc/boot/dts/pcm032.dts
-+++ b/arch/powerpc/boot/dts/pcm032.dts
-@@ -189,6 +189,9 @@
-                        compatible =3D "fsl,mpc5200b-psc-ac97","fsl,mpc5200=
--psc-ac97";
-                        cell-index =3D <0>;
-                        reg =3D <0x2000 0x100>;
-+                       gpios =3D <&gpio 7 0              /* AC97_1_RES */
-+                                &gpio_simple 29 0      /* AC97_1_SYNC */
-+                                &gpio_simple 31 0>;    /* AC97_1_SDATA_OUT=
- */
-                        interrupts =3D <2 1 0>;
-                };
-
-diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
-index 22208b3..9fb0248 100644
---- a/sound/soc/fsl/mpc5200_dma.h
-+++ b/sound/soc/fsl/mpc5200_dma.h
-@@ -61,6 +61,11 @@ struct psc_dma {
-        int id;
-        unsigned int slots;
-
-+       /* gpio pins locations for cold reset */
-+       int reset_gpio;
-+       int sync_gpio;
-+       int out_gpio;
-+
-        /* per-stream data */
-        struct psc_dma_stream playback;
-        struct psc_dma_stream capture;
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_a=
-c97.c
-index e2ee220..08cd51f 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -9,8 +9,10 @@
-  * published by the Free Software Foundation.
-  */
-
-+#include <linux/gpio.h>
- #include <linux/module.h>
- #include <linux/of_device.h>
-+#include <linux/of_gpio.h>
- #include <linux/of_platform.h>
- #include <linux/delay.h>
-
-@@ -20,12 +22,17 @@
-
- #include <asm/time.h>
- #include <asm/delay.h>
-+#include <asm/mpc52xx.h>
- #include <asm/mpc52xx_psc.h>
-
- #include "mpc5200_dma.h"
- #include "mpc5200_psc_ac97.h"
-
- #define DRV_NAME "mpc5200-psc-ac97"
-+#define MPC52xx_GPIO_PSC1_MASK 0x7
-+#define MPC52xx_GPIO_PSC2_MASK (0x7<<4)
-+#define MPC52xx_AC97_PSC1 0x2
-+#define MPC52xx_AC97_PSC2 (0x2<<4)
-
- /* ALSA only supports a single AC97 device so static is recommend here */
- static struct psc_dma *psc_dma;
-@@ -100,19 +107,84 @@ static void psc_ac97_warm_reset(struct snd_ac97 *ac97=
-)
- {
-        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
-
-+       mutex_lock(&psc_dma->mutex);
-+
-        out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
-        udelay(3);
-        out_be32(&regs->sicr, psc_dma->sicr);
-+
-+       mutex_unlock(&psc_dma->mutex);
- }
-
- static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
- {
-        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
-+       u32 gpio_mux;
-+
-+       mutex_lock(&psc_dma->mutex);
-+
-+       if ((psc_dma->reset_gpio < 0) ||
-+           (psc_dma->sync_gpio < 0) ||
-+           (psc_dma->out_gpio < 0)) {
-+               /* Use the psc function to do a cold reset */
-+               out_8(&regs->op1, MPC52xx_PSC_OP_RES);
-+               udelay(10);
-+               out_8(&regs->op0, MPC52xx_PSC_OP_RES);
-+               goto warm;
-+       }
-+
-+       /* Reconfigure pin-muxing to gpio */
-+       switch (psc_dma->id) {
-+       case 0:
-+               gpio_mux =3D MPC52xx_GPIO_PSC1_MASK;
-+               break;
-+       case 1:
-+               gpio_mux =3D MPC52xx_GPIO_PSC2_MASK;
-+               break;
-+       default:
-+               dev_err(psc_dma->dev,
-+                       "Unable to determine PSC, no cold-reset will be "
-+                       "performed\n");
-+               goto warm;
-+       }
-+
-+       dev_info(psc_dma->dev, "cold reset\n");
-+       mpc52xx_write_port_config(~gpio_mux, 1);
-+
-+       /* Assert cold reset */
-+       gpio_direction_output(psc_dma->sync_gpio, 0);
-+       gpio_direction_output(psc_dma->out_gpio, 0);
-+       gpio_direction_output(psc_dma->reset_gpio, 0);
-+
-+       /* Notify the PSC that a cold reset is occurring */
-+       out_be32(&regs->sicr, 0);
-+       udelay(2);
-+
-+       /* Deassert reset */
-+       gpio_direction_output(psc_dma->reset_gpio, 1);
-+       msleep(1);
-+
-+       /* Restore pin-muxing */
-+       switch (psc_dma->id) {
-+       case 0:
-+               gpio_mux =3D MPC52xx_AC97_PSC1;
-+               break;
-+       case 1:
-+               gpio_mux =3D MPC52xx_AC97_PSC2;
-+               break;
-+       default:
-+               goto warm;
-+       }
-+
-+       mpc52xx_write_port_config(gpio_mux, 0);
-+
-+       /* Restore the serial interface mode to AC97 */
-+       out_be32(&regs->sicr, psc_dma->sicr);
-+       out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_RX_ENABLE=
-);
-+
-+warm:
-+       mutex_unlock(&psc_dma->mutex);
-
--       /* Do a cold reset */
--       out_8(&regs->op1, MPC52xx_PSC_OP_RES);
--       udelay(10);
--       out_8(&regs->op0, MPC52xx_PSC_OP_RES);
-        msleep(1);
-        psc_ac97_warm_reset(ac97);
- }
-@@ -287,6 +359,24 @@ static int __devinit psc_ac97_of_probe(struct of_devic=
-e *op,
-        regs =3D psc_dma->psc_regs;
-        ac97.private_data =3D psc_dma;
-
-+       psc_dma->reset_gpio =3D of_get_gpio_flags(op->dev.of_node, 0, NULL)=
-;
-+       psc_dma->sync_gpio =3D of_get_gpio_flags(op->dev.of_node, 1, NULL);
-+       psc_dma->out_gpio =3D of_get_gpio_flags(op->dev.of_node, 2, NULL);
-+       if ((psc_dma->reset_gpio < 0) ||
-+           (psc_dma->sync_gpio < 0) ||
-+           (psc_dma->out_gpio < 0)) {
-+               dev_err(&op->dev, "error: cannot get GPIO pins; "
-+                       "reset=3D%i sync=3D%i out=3D%i, defaulting to norma=
-l ac97 "
-+                       "reset\n",
-+                       psc_dma->reset_gpio,
-+                       psc_dma->sync_gpio,
-+                       psc_dma->out_gpio);
-+       } else {
-+               gpio_request(psc_dma->reset_gpio, "psc_dma-reset");
-+               gpio_request(psc_dma->sync_gpio, "psc_dma-sync");
-+               gpio_request(psc_dma->out_gpio, "psc_dma-out");
-+       }
-+
-        for (i =3D 0; i < ARRAY_SIZE(psc_ac97_dai); i++)
-                psc_ac97_dai[i].private_data =3D psc_dma;
-
---
-1.6.3.1
-
-
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
-
-Thank you.
-
-Please consider the environment before printing this email.
+SSBjb3VsZG4ndCBnZXQgdGhlIGVjaG8gPiAvZGV2L3h4eCB0byB3b3JrLiBJIGhhZCB0byB3cml0
+ZSBhIHNtYWxsIGFwcAp0aGF0IG9wZW5lZCB0aGUgZGV2aWNlIGFuZCB3cml0ZSBhbmQgcmVhZCBj
+aGFyYWN0ZXJzIGZvciB0ZXN0aW5nLgoKU3RhcnQgdGhlcmUgYW5kIHlvdSBtYXkgZmluZCBpdCBp
+cyBhY3R1YWxseSB3b3JraW5nLgoKSkIKCk9uIFdlZCwgSnVuIDksIDIwMTAgYXQgODozNyBBTSwg
+TWFydHluIFdlbGNoIDxtYXJ0eW4ud2VsY2hAZ2UuY29tPiB3cm90ZToKPiBIaSBBbGwsCj4KPiBJ
+J20gYXR0ZW1wdGluZyB0byBnZXQgYW4gU0NDIHBvcnQgb24gYW4gTVBDODI3MCB3b3JraW5nIHdp
+dGggTGludXguIEknbQo+IG5vdCBvdmVybHkgZmFtaWxpYXIgd2l0aCB0aGUgQ1BNIGFuZCBhbSBo
+YXZpbmcgYSBiaXQgb2YgdHJvdWJsZS4KPgo+IExpbnV4IGlzIGJvb3RpbmcgbmF0aXZlbHkgb24g
+dGhlIDgyNzAuIEkgaGF2ZSBhY2Nlc3MgdG8gdGhlIDgyNzAgdmlhIGEKPiBzZXQgb2YgUENJIHdp
+bmRvd3MgZnJvbSBhIHNlY29uZCBjb3JlIChpbmNsdWRlcyBvbmUgc2V0dXAgb3ZlciB0aGUgbWFp
+bgo+IG1lbW9yeSBhbmQgb25lIG92ZXIgdGhlIElNTVIpIGFuZCBTTUMxIGlzIHVwIGFuZCB3b3Jr
+aW5nIHdpdGggYSBjb25zb2xlLgo+Cj4gVGhlIFNDQ3Mgc2VlbSB0byBiZSBkZXRlY3RlZCBjb3Jy
+ZWN0bHkgYXQgYm9vdDoKPgo+IGYwMTFhODAuc2VyaWFsOiB0dHlDUE0wIGF0IE1NSU8gMHhjMzAx
+NGE4MCAoaXJxID0gMTYpIGlzIGEgQ1BNIFVBUlQKPiBmMDExYTAwLnNlcmlhbDogdHR5Q1BNMSBh
+dCBNTUlPIDB4YzMwMThhMDAgKGlycSA9IDQwKSBpcyBhIENQTSBVQVJUCj4gZjAxMWEyMC5zZXJp
+YWw6IHR0eUNQTTIgYXQgTU1JTyAweGMzMDIwYTIwIChpcnEgPSA0MSkgaXMgYSBDUE0gVUFSVAo+
+IGYwMTFhNDAuc2VyaWFsOiB0dHlDUE0zIGF0IE1NSU8gMHhjMzAyOGE0MCAoaXJxID0gNDIpIGlz
+IGEgQ1BNIFVBUlQKPgo+IFdpdGggdGhlIERUUyByZWFkaW5nOgo+Cj4gwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqBzbWMxOiBzZXJpYWxAMTFhODAgewo+IMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGV2aWNlX3R5cGUgPSAic2VyaWFsIjsK
+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNvbXBhdGli
+bGUgPSAiZnNsLG1wYzgyNzAtc21jLXVhcnQiLAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgICJmc2wsY3BtMi1zbWMtdWFy
+dCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqByZWcg
+PSA8MHgxMWE4MCAweDIwIDB4ODdmYyAyPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdHMgPSA8NCA4PjsKPiDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47
+Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3Bt
+LWJyZyA9IDw3PjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDFkMDAwMDAwPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoH07Cj4KPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oHNjYzE6IHNlcmlhbEAxMWEwMCB7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqBkZXZpY2VfdHlwZSA9ICJzZXJpYWwiOwo+IMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgY29tcGF0aWJsZSA9ICJmc2wsbXBjODI3MC1z
+Y2MtdWFydCIsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgImZzbCxjcG0yLXNjYy11YXJ0IjsKPiDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHJlZyA9IDwweDExYTAwIDB4MjAgMHg4
+MDAwIDB4MTAwPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoGludGVycnVwdHMgPSA8NDAgOD47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQSUM+Owo+IMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZnNsLGNwbS1icmcgPSA8Mz47Cj4g
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3BtLWNv
+bW1hbmQgPSA8MHg4MDAwMDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+fTsKPgo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc2NjMjogc2VyaWFsQDEx
+YTIwIHsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRl
+dmljZV90eXBlID0gInNlcmlhbCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqBjb21wYXRpYmxlID0gImZzbCxtcGM4MjcwLXNjYy11YXJ0IiwKPiDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCAiZnNsLGNwbTItc2NjLXVhcnQiOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgcmVnID0gPDB4MTFhMjAgMHgyMCAweDgxMDAgMHgxMDA+Owo+IMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgaW50ZXJydXB0cyA9
+IDw0MSA4PjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oGludGVycnVwdC1wYXJlbnQgPSA8JlBJQz47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqBmc2wsY3BtLWJyZyA9IDw2PjsKPiDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDRhMDAw
+MDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfTsKPgo+IMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc2NjMzogc2VyaWFsQDExYTQwIHsKPiDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRldmljZV90eXBlID0gInNl
+cmlhbCI7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBj
+b21wYXRpYmxlID0gImZzbCxtcGM4MjcwLXNjYy11YXJ0IiwKPiDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAiZnNsLGNwbTIt
+c2NjLXVhcnQiOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgcmVnID0gPDB4MTFhNDAgMHgyMCAweDgyMDAgMHgxMDA+Owo+IMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgaW50ZXJydXB0cyA9IDw0MiA4PjsKPiDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdC1wYXJl
+bnQgPSA8JlBJQz47Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqBmc2wsY3BtLWJyZyA9IDwxPjsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoGZzbCxjcG0tY29tbWFuZCA9IDwweDhjMDAwMDA+Owo+IMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfTsKPgo+IEkgYmVsaWV2ZSB0aGF0IEkgaGF2ZSB0
+aGUgcGlucyBzZXR1cCBjb3JyZWN0bHkgYW5kIHRoZSBCUkdzIGNvbm5lY3RlZAo+IGNvcnJlY3Rs
+eSBpbiB0aGUgc2V0dXBfYXJjaCBmdW5jdGlvbi4KPgo+IEF0IHRoZSBtb21lbnQgSSBoYXZlIFND
+QzMgd2lyZWQgb3V0LiBJZiBJIGF0dGVtcHQgdG8gZWNobyBkYXRhIG91dCBvZgo+IHRoZSBTQ0Mg
+KGVjaG8gIkhlbGxvIiA+IC9kZXYvdHR5Q1BNMykgSSBnZXQgdGhlIHByb21wdCBzaXRzIHdhaXRp
+bmcuCj4gUmVib290aW5nIGFuZCB0dXJuaW5nIG9uIHRoZSBkZWJ1ZyB5aWVsZHMgdGhlIGZvbGxv
+d2luZyBvdXRwdXQgb24gdGhlCj4gY29uc29sZSAoYnV0IG5vdGhpbmcgb3V0IG9mIHRoZSBTQ0Mg
+cG9ydCk6Cj4KPiBDUE0gdWFydFszXTpzdGFydHVwCj4gSW50ZXJydXB0IGF0dGFjaGVkCj4gQ1BN
+IHVhcnRbM106c2V0X3Rlcm1pb3MKPiBDUE0gdWFydFszXTpzdGFydCB0eAo+IENQTSB1YXJ0WzNd
+OnN0b3AgdHgKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5
+OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+
+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0g
+dWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRb
+M106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4
+X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106c3RvcCByeAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAw
+Cj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQ
+TSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFy
+dFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnNodXRkb3duCj4gQ1BNIHVhcnRbM106dHhf
+ZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5
+OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMAo+
+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwCj4gQ1BNIHVhcnRbM106dHhfZW1wdHk6IDAKPiAuLi4K
+Pgo+Cj4gSXQgc2VlbWVkIHRvIGJlIHdhaXRpbmcgZm9yIHJlYWR5IGJpdCBvZiB0aGUgVHJhbnNt
+aXQgQnVmZmVyIERlc2NyaXB0b3IKPiB0byBiZSBjbGVhcmVkICh3aGljaCBpdCBuZXZlciBzZWVt
+cyB0byBiZSksIHByb2RkaW5nIHRoaXMgYml0IHRocm91Z2gKPiB0aGUgcGNpIHdpbmRvdyBkaWQg
+Y2F1c2UgdGhlIHByb2Nlc3MgdG8gY29udGludWUsIG5vIGRhdGEgb3V0IGJ1dCBJIGRpZAo+IGdl
+dCBiYWNrIHRvIHRoZSBwcm9tcHQgb24gdGhlIGNvbnNvbGUuCj4KPiBJJ20gc3VyZSBJJ20ganVz
+dCBtaXNzaW5nIHNvbWV0aGluZyByZWFsbHkgYmFzaWMgLSBjYW4gYW55b25lIGVubGlnaHRlbiBt
+ZT8KPgo+IE1hcnR5bgo+Cj4gLS0KPiBNYXJ0eW4gV2VsY2ggKFByaW5jaXBhbCBTb2Z0d2FyZSBF
+bmdpbmVlcikgwqAgfCDCoCBSZWdpc3RlcmVkIGluIEVuZ2xhbmQgYW5kCj4gR0UgSW50ZWxsaWdl
+bnQgUGxhdGZvcm1zIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHwgwqAgV2FsZXMgKDM4
+Mjg2NDIpIGF0IDEwMAo+IFQgKzQ0KDApMTI3MzIyNzQ4IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgfCDCoCBCYXJiaXJvbGxpIFNxdWFyZSwgTWFuY2hlc3RlciwKPiBF
+IG1hcnR5bi53ZWxjaEBnZS5jb20gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB8
+IMKgIE0yIDNBQiDCoFZBVDpHQiA5Mjc1NTkxODkKPgo+IF9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdAo+IExp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xp
+c3RpbmZvL2xpbnV4cHBjLWRldgo+CgoKCi0tIApKaW0gQmxhY2sKU2VuaW9yIFNvZnR3YXJlIEVu
+Z2luZWVyCkF6dGVrIE5ldHdvcmtzLCBJbmMuCjI0NzcgNTV0aCBTdHJlZXQsIFN1aXRlIDIwMgpC
+b3VsZGVyLCBDTyA4MDMwMQp3d3cuYXp0ZWtuZXR3b3Jrcy5jb20K
