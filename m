@@ -1,33 +1,38 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CDC041007DD
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 20:28:29 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o59ALmHI026808
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 04:21:48 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o59ASJTc121022
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 04:28:23 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o59ASHOA011588
-	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 04:28:19 -0600
-Date: Wed, 9 Jun 2010 06:28:15 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Christoph Egger <siccegge@cs.fau.de>
-Subject: Re: [PATCH 4/5] Removing dead CONFIG_SERIAL_TEXT_DEBUG
-Message-ID: <20100609102815.GG7801@zod.rchland.ibm.com>
-References: <cover.1275925219.git.siccegge@cs.fau.de>
-	<ddcbd960ff300073939bb0c6f20a38118c0875d4.1275925219.git.siccegge@cs.fau.de>
+	(Client CN "e28smtp05.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 99F1B1007DE
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 20:32:32 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp05.in.ibm.com (8.14.4/8.13.1) with ESMTP id o59AWP36007461
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 16:02:25 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o59AWPnV3395784
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 16:02:25 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+	by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o59AWOPO008046
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 20:32:24 +1000
+Date: Wed, 9 Jun 2010 16:02:23 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [Patch 0/5] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver
+	XXII
+Message-ID: <20100609103223.GA10656@in.ibm.com>
+References: <20100528063924.GA8679@in.ibm.com>
+	<20100602113316.GA17061@brick.ozlabs.ibm.com>
+	<20100604065145.GA2408@in.ibm.com>
+	<20100604090648.GC26154@brick.ozlabs.ibm.com>
+	<20100607070351.GA3853@in.ibm.com>
+	<20100607112559.GA2419@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ddcbd960ff300073939bb0c6f20a38118c0875d4.1275925219.git.siccegge@cs.fau.de>
-Cc: vamos@i4.informatik.uni-erlangen.de, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <20100607112559.GA2419@brick.ozlabs.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,56 +42,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 09, 2010 at 12:00:46PM +0200, Christoph Egger wrote:
->CONFIG_SERIAL_TEXT_DEBUG doesn't exist in Kconfig, therefore removing all
->references for it from the source code.
->
->Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+On Mon, Jun 07, 2010 at 09:25:59PM +1000, Paul Mackerras wrote:
+> On Mon, Jun 07, 2010 at 12:33:51PM +0530, K.Prasad wrote:
+> 
+> > Given that 'ptrace_bps' is used only for ptrace originated breakpoints
+> > and that we return early i.e. before detecting extraneous interrupts
+> > in hw_breakpoint_handler() (as shown above) they shouldn't overlap each
+> > other. The following comment in hw_breakpoint_handler() explains the
+> > same.
+> > 		/*
+> > 		 * To prevent invocation of perf_event_bp(), we shall overload
+> > 		 * thread.ptrace_bps[] pointer (unused for non-ptrace
+> > 		 * exceptions) to flag an extraneous interrupt which must be
+> > 		 * skipped.
+> > 		 */
+> 
+> My point is that while we are using ptrace_bps[0] to mark a non-ptrace
+> breakpoint that we're single-stepping, some other process could be
+> ptracing this process and could get into ptrace_set_debugreg() and
+> would think that the process already has a ptrace breakpoint and call
+> modify_user_hw_breakpoint() when it should be calling
+> register_user_hw_breakpoint().  Or this process could die and so we
+> call flush_ptrace_hw_breakpoint() and it incorrectly thinks we have a
+> ptrace breakpoint.
+> 
+> If there is a reason why we can be quite sure that while we are using
+> current->thread.ptrace_bps[0] in this way, ptrace_set_debugreg() can
+> never get called with this task as the ptracee, and nor can
+> flush_ptrace_hw_breakpoint() get called on this task, then maybe it's
+> safe.  But it's not at all obviously safe.  So I'd very much rather we
+> just use an extra flag somewhere, that isn't used elsewhere for
+> anything else, so we can convince ourselves that it is all correct
+> without having to look at lots of different pieces of code.
+> 
+> There are 3 bytes of padding in struct arch_hw_breakpoint; couldn't we
+> use one of them as a "not really hit" flag?
+> 
+> Paul.
+> _______________________________________________
 
-It would be better to conver this to work with CONFIG_PPC_EARLY_DEBUG and
-CONFIG_PPC_EARLY_DEBUG_40x.  I'd rather just leave this for now until we can
-get it switched over.
+I get your reasoning now; ptrace_bps[] re-use will cause failures under
+these circumstances. I've sent a new version of the patchset which adds
+a new flag in 'struct arch_hw_breakpoint' (I was always thinking of
+'struct thread_struct' before and was scared to introduce another new
+member in it, thereby leading me to incorrectly optimise using ptrace_bps)
+to flag extraneous_interrupt (Given that it's your idea I've added your
+signed-off too).
 
-josh
+Kindly let me know your comments, if any.
 
->---
-> arch/powerpc/kernel/head_40x.S |   19 -------------------
-> 1 files changed, 0 insertions(+), 19 deletions(-)
->
->diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
->index a90625f..1a10e4d 100644
->--- a/arch/powerpc/kernel/head_40x.S
->+++ b/arch/powerpc/kernel/head_40x.S
->@@ -939,25 +939,6 @@ initial_mmu:
-> 	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
-> 	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
->
->-#if defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(SERIAL_DEBUG_IO_BASE)
->-
->-	/* Load a TLB entry for the UART, so that ppc4xx_progress() can use
->-	 * the UARTs nice and early.  We use a 4k real==virtual mapping. */
->-
->-	lis	r3,SERIAL_DEBUG_IO_BASE@h
->-	ori	r3,r3,SERIAL_DEBUG_IO_BASE@l
->-	mr	r4,r3
->-	clrrwi	r4,r4,12
->-	ori	r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
->-
->-	clrrwi	r3,r3,12
->-	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
->-
->-	li	r0,0			/* TLB slot 0 */
->-	tlbwe	r4,r0,TLB_DATA
->-	tlbwe	r3,r0,TLB_TAG
->-#endif /* CONFIG_SERIAL_DEBUG_TEXT && SERIAL_DEBUG_IO_BASE */
->-
-> 	isync
->
-> 	/* Establish the exception vector base
->-- 
->1.6.3.3
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+Thanks,
+K.Prasad
