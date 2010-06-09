@@ -3,15 +3,18 @@ Received: from faui40.informatik.uni-erlangen.de
 	(faui40.informatik.uni-erlangen.de [131.188.34.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 80CE0B7D5B
+	by ozlabs.org (Postfix) with ESMTPS id B2AD1B7D64
 	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 20:09:47 +1000 (EST)
-Date: Wed, 9 Jun 2010 12:00:46 +0200
+Date: Wed, 9 Jun 2010 12:01:12 +0200
 From: Christoph Egger <siccegge@cs.fau.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Torez Smith <lnxtorez@linux.vnet.ibm.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] Removing dead CONFIG_SERIAL_TEXT_DEBUG
-Message-ID: <ddcbd960ff300073939bb0c6f20a38118c0875d4.1275925219.git.siccegge@cs.fau.de>
+Subject: [PATCH 5/5] Removing dead CONFIG_PPC47x
+Message-ID: <b7f3a0f1bbcd39544df81c12719a820ba5906bd5.1275925219.git.siccegge@cs.fau.de>
 References: <cover.1275925219.git.siccegge@cs.fau.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,43 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_SERIAL_TEXT_DEBUG doesn't exist in Kconfig, therefore removing all
+CONFIG_PPC47x doesn't exist in Kconfig, therefore removing all
 references for it from the source code.
 
 Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
 ---
- arch/powerpc/kernel/head_40x.S |   19 -------------------
- 1 files changed, 0 insertions(+), 19 deletions(-)
+ arch/powerpc/mm/44x_mmu.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index a90625f..1a10e4d 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -939,25 +939,6 @@ initial_mmu:
- 	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
- 	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
- 
--#if defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(SERIAL_DEBUG_IO_BASE)
--
--	/* Load a TLB entry for the UART, so that ppc4xx_progress() can use
--	 * the UARTs nice and early.  We use a 4k real==virtual mapping. */
--
--	lis	r3,SERIAL_DEBUG_IO_BASE@h
--	ori	r3,r3,SERIAL_DEBUG_IO_BASE@l
--	mr	r4,r3
--	clrrwi	r4,r4,12
--	ori	r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
--
--	clrrwi	r3,r3,12
--	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
--
--	li	r0,0			/* TLB slot 0 */
--	tlbwe	r4,r0,TLB_DATA
--	tlbwe	r3,r0,TLB_TAG
--#endif /* CONFIG_SERIAL_DEBUG_TEXT && SERIAL_DEBUG_IO_BASE */
--
- 	isync
- 
- 	/* Establish the exception vector base
+diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
+index d8c6efb..f70da7e 100644
+--- a/arch/powerpc/mm/44x_mmu.c
++++ b/arch/powerpc/mm/44x_mmu.c
+@@ -76,11 +76,7 @@ static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
+ 		"tlbwe	%1,%3,%5\n"
+ 		"tlbwe	%0,%3,%6\n"
+ 	:
+-#ifdef CONFIG_PPC47x
+-	: "r" (PPC47x_TLB2_S_RWX),
+-#else
+ 	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
+-#endif
+ 	  "r" (phys),
+ 	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
+ 	  "r" (entry),
 -- 
 1.6.3.3
