@@ -1,23 +1,28 @@
-Return-Path: <bounces.tip@hpa.at.zytor.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
+	[80.75.67.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E5794B7D20
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 01:07:06 +1000 (EST)
-Date: Wed, 9 Jun 2010 15:06:37 GMT
-Sender: tip tree robot <bounces.tip@hpa.at.zytor.com>
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:irq/urgent] genirq: Deal with desc->set_type() changing
-	desc->chip
-Message-ID: <tip-4673247562e39a17e09440fa1400819522ccd446@git.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id BE7BC1007D5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 01:11:28 +1000 (EST)
+Date: Wed, 9 Jun 2010 16:11:25 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
+Message-ID: <20100609151124.GB17945@opensource.wolfsonmicro.com>
+References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
+	<AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
+	<20100609061330.620AC14E867@gemini.denx.de>
+	<AANLkTikDE14Y_r7nMpj5lNMy5anAyU3cuLjk_uxStHvo@mail.gmail.com>
+	<0A40042D85E7C84DB443060EC44B3FD3253ECB8C84@dekaexchange07.deka.local>
+	<20100609143246.GA17945@opensource.wolfsonmicro.com>
+	<AANLkTinxoQ7PL2OssJc5dZi2WnhkXMaTTGR7OVWxqL2g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: eha@doredevelopment.dk, linuxppc-dev@ozlabs.org, mingo@redhat.com,
-	hpa@zytor.com, tglx@linutronix.de
-Reply-To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-	benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-	eha@doredevelopment.dk, tglx@linutronix.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTinxoQ7PL2OssJc5dZi2WnhkXMaTTGR7OVWxqL2g@mail.gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Eric Millbrandt <emillbrandt@dekaresearch.com>, Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +32,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit-ID:  4673247562e39a17e09440fa1400819522ccd446
-Gitweb:     http://git.kernel.org/tip/4673247562e39a17e09440fa1400819522ccd446
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 7 Jun 2010 17:53:51 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 9 Jun 2010 17:05:08 +0200
+On Wed, Jun 09, 2010 at 10:41:23AM -0400, Jon Smirl wrote:
+> On Wed, Jun 9, 2010 at 10:32 AM, Mark Brown
 
-genirq: Deal with desc->set_type() changing desc->chip
+> > Please include this quote in the changelog for the patch, if this a
+> > documented workaround from the vendor that's a very different thing to
+> > something that you've found happens to work on your systems (which is
+> > more what your changelog sounded like).
 
-The set_type() function can change the chip implementation when the
-trigger mode changes. That might result in using an non-initialized
-irq chip when called from __setup_irq() or when called via
-set_irq_type() on an already enabled irq. 
+> Mark, is there a way to ask the chip if it is in test mode? We need to
+> be sure that's whats happening and it isn't some other glitch.
 
-The set_irq_type() function should not be called on an enabled irq,
-but because we forgot to put a check into it, we have a bunch of users
-which grew the habit of doing that and it never blew up as the
-function is serialized via desc->lock against all users of desc->chip
-and they never hit the non-initialized irq chip issue.
-
-The easy fix for the __setup_irq() issue would be to move the
-irq_chip_set_defaults(desc->chip) call after the trigger setting to
-make sure that a chip change is covered.
-
-But as we have already users, which do the type setting after
-request_irq(), the safe fix for now is to call irq_chip_set_defaults()
-from __irq_set_trigger() when desc->set_type() changed the irq chip.
-
-It needs a deeper analysis whether we should refuse to change the chip
-on an already enabled irq, but that'd be a large scale change to fix
-all the existing users. So that's neither stable nor 2.6.35 material.
-
-Reported-by: Esben Haabendal <eha@doredevelopment.dk>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: stable@kernel.org
----
- kernel/irq/manage.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 3164ba7..e149748 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -456,6 +456,9 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned int irq,
- 		/* note that IRQF_TRIGGER_MASK == IRQ_TYPE_SENSE_MASK */
- 		desc->status &= ~(IRQ_LEVEL | IRQ_TYPE_SENSE_MASK);
- 		desc->status |= flags;
-+
-+		if (chip != desc->chip)
-+			irq_chip_set_defaults(desc->chip);
- 	}
- 
- 	return ret;
+I'd need to work with the hardware teams to obtain this information, but
+I can confirm that having SYNC high while doing a reset is not supported
+and so fixing the driver to not do that is a good idea independantly of
+what it actually does to the chip.
