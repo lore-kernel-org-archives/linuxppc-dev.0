@@ -1,30 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19BB71007D1
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 2F6481007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  9 Jun 2010 22:09:48 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o59C6SQk022138
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 06:06:28 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o59C9gtG258670
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 06:09:43 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o59C9X99011707
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jun 2010 06:09:33 -0600
-Date: Wed, 9 Jun 2010 08:09:31 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Please pull 'merge' branch of 4xx tree
-Message-ID: <20100609120931.GI7801@zod.rchland.ibm.com>
+	Wed,  9 Jun 2010 22:21:43 +1000 (EST)
+Received: by vws6 with SMTP id 6so4487437vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 09 Jun 2010 05:21:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20100609061330.620AC14E867@gemini.denx.de>
+References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
+	<AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
+	<20100609061330.620AC14E867@gemini.denx.de>
+Date: Wed, 9 Jun 2010 08:21:41 -0400
+Message-ID: <AANLkTikDE14Y_r7nMpj5lNMy5anAyU3cuLjk_uxStHvo@mail.gmail.com>
+Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Eric Millbrandt <emillbrandt@dekaresearch.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On Wed, Jun 9, 2010 at 2:13 AM, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Jon Smirl,
+>
+> In message <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>=
+ you wrote:
+>>
+>> Would making a change in uboot be a better solution? Eric, can you
+>> verify if changing uboot also fixes the problem?
+>
+> To me it seems better if the driver itself does what needs to be done
+> instead of relying on specific settings that may or may not be done in
+> U-Boot. Keep in mind that drivers may be loaded as modules, and that
+> we even see cases where the same port serves multiple purposes by
+> loading different driver modules (yes, this is not exactly a clever
+> idea, but hardware designers come up with such solutions).
 
-Two small fixes that should go into 2.6.35.  Please pull them and shuffle along
-to Linus.  I know Linus is leaving for a while at the end of this week, so if
-you want me to ask him to pull directly just let me know.
 
-josh
+Someone with a scope can verify this, but my understanding of what
+happens is that uboot by default puts the pins into GPIO mode. Linux
+boots and reprograms the pins into AC97 mode. When the pins are
+reprogrammed it generates glitches on the reset line. About half of
+the time these glitches put the attached codec into test mode. Once
+the chip is in test mode it won't respond to normal commands.
 
-The following changes since commit c2cdf6aba0dfcfb54be646ab630c1bccd180e890:
-  Benjamin Herrenschmidt (1):
-        powerpc/macio: Fix probing of macio devices by using the right of match table
+Does the opposite happen? What if uboot has the pins in AC97 mode and
+Linux reprograms them into GPIO mode. Will it also put the chip into
+test mode? The piece of information I've been missing is an
+understanding of what is making the glitches that trigger test mode.
 
-are available in the git repository at:
+Another strategy would be to leave reset as is. If the chip is
+unresponsive send it the commands to get it out of test mode. That
+could be made part of the reset logic in the Linux driver.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git merge
 
-Christoph Egger (1):
-      powerpc/47x: Correct typo in ifdef guard for 47x
+>
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> DENX Software Engineering GmbH, =A0 =A0 MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> The typical page layout program is nothing more =A0than =A0an =A0electron=
+ic
+> light table for cutting and pasting documents.
+>
 
-Stefan Roese (1):
-      powerpc/44x: Fix UART2/3 interrupt assignment in PPC460EX/GT dts files
 
- arch/powerpc/boot/dts/canyonlands.dts |    4 ++--
- arch/powerpc/boot/dts/glacier.dts     |    4 ++--
- arch/powerpc/mm/44x_mmu.c             |    2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
