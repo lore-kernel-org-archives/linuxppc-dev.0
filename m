@@ -1,16 +1,22 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C54161007F0
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Jun 2010 05:55:58 +1000 (EST)
-Date: Tue, 8 Jun 2010 23:55:57 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/85xx: Cleanup QE initialization for MPC85xxMDS
-	boards
-Message-ID: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
+Return-Path: <jonsmirl@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 7D025B7D4F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  9 Jun 2010 10:24:07 +1000 (EST)
+Received: by vws6 with SMTP id 6so3748772vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 08 Jun 2010 17:24:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
+References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
+Date: Tue, 8 Jun 2010 20:24:05 -0400
+Message-ID: <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
+Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,338 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mpc85xx_mds_setup_arch() function is incomprehensible
-and unmaintainable. Factor out all QE specific stuff into
-mpc85xx_mds_qe_init() and mpc85xx_mds_reset_ucc_phys().
+On Tue, Jun 8, 2010 at 12:46 PM, Eric Millbrandt
+<emillbrandt@dekaresearch.com> wrote:
+> These patches reimplement the reset fuction in the ac97 to use gpio pins
+> instead of using the mpc5200 ac97 reset functionality in the psc. =A0This
+> avoids a problem in which attached ac97 devices go into "test" mode appea=
+r
+> unresponsive.
 
-Also move QE stuff out of mpc85xx_mds_pic_init().
+I'm aware of this problem but I was unable to solve it when I first
+wrote the driver. I didn't have access to a scope so I wasn't able to
+figure out what was causing the lock up.  I worked around it by
+looping in reset until the chip did actually reset, but Mark wouldn't
+let me submit that code.
 
-The diff is unreadable, but only because the code was so. ;-)
-It should be better now, and less indented.
+A while ago Maximilian Mueth <maximilian.mueth@mp-ndt.de> sent me a
+note saying another solution was to configure the PSC into AC97 mode
+in uboot. His impression was that uboot was setting PSC into its
+default mode. Then Linux booted and set the PSC into AC97 mode. The
+transition from default mode into AC97 mode caused glitches on the
+AC97 reset pins and triggered test mode.
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |  272 +++++++++++++++--------------
- 1 files changed, 143 insertions(+), 129 deletions(-)
+Would making a change in uboot be a better solution? Eric, can you
+verify if changing uboot also fixes the problem?
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 9dadcff..c8be7b5 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -177,63 +177,89 @@ static void __init mpc85xx_publish_qe_devices(void)
- 
- 	of_platform_bus_probe(NULL, mpc85xx_qe_ids, NULL);
- }
--#else
--static void __init mpc85xx_publish_qe_devices(void) { }
--#endif /* CONFIG_QUICC_ENGINE */
- 
--static void __init mpc85xx_mds_setup_arch(void)
-+static void __init mpc85xx_mds_reset_ucc_phys(void)
- {
- 	struct device_node *np;
--	static u8 __iomem *bcsr_regs = NULL;
--#ifdef CONFIG_PCI
--	struct pci_controller *hose;
--#endif
--	dma_addr_t max = 0xffffffff;
--
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
-+	static u8 __iomem *bcsr_regs;
- 
- 	/* Map BCSR area */
- 	np = of_find_node_by_name(NULL, "bcsr");
--	if (np != NULL) {
--		struct resource res;
-+	if (!np)
-+		return;
- 
--		of_address_to_resource(np, 0, &res);
--		bcsr_regs = ioremap(res.start, res.end - res.start +1);
--		of_node_put(np);
--	}
-+	bcsr_regs = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!bcsr_regs)
-+		return;
- 
--#ifdef CONFIG_PCI
--	for_each_node_by_type(np, "pci") {
--		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
--		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
--			struct resource rsrc;
--			of_address_to_resource(np, 0, &rsrc);
--			if ((rsrc.start & 0xfffff) == 0x8000)
--				fsl_add_bridge(np, 1);
--			else
--				fsl_add_bridge(np, 0);
-+	if (machine_is(mpc8568_mds)) {
-+#define BCSR_UCC1_GETH_EN	(0x1 << 7)
-+#define BCSR_UCC2_GETH_EN	(0x1 << 7)
-+#define BCSR_UCC1_MODE_MSK	(0x3 << 4)
-+#define BCSR_UCC2_MODE_MSK	(0x3 << 0)
- 
--			hose = pci_find_hose_for_OF_device(np);
--			max = min(max, hose->dma_window_base_cur +
--					hose->dma_window_size);
-+		/* Turn off UCC1 & UCC2 */
-+		clrbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
-+		clrbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+
-+		/* Mode is RGMII, all bits clear */
-+		clrbits8(&bcsr_regs[11], BCSR_UCC1_MODE_MSK |
-+					 BCSR_UCC2_MODE_MSK);
-+
-+		/* Turn UCC1 & UCC2 on */
-+		setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
-+		setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
-+	} else if (machine_is(mpc8569_mds)) {
-+#define BCSR7_UCC12_GETHnRST	(0x1 << 2)
-+#define BCSR8_UEM_MARVELL_RST	(0x1 << 1)
-+#define BCSR_UCC_RGMII		(0x1 << 6)
-+#define BCSR_UCC_RTBI		(0x1 << 5)
-+		/*
-+		 * U-Boot mangles interrupt polarity for Marvell PHYs,
-+		 * so reset built-in and UEM Marvell PHYs, this puts
-+		 * the PHYs into their normal state.
-+		 */
-+		clrbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
-+		setbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
-+
-+		setbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
-+		clrbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
-+
-+		for (np = NULL; (np = of_find_compatible_node(np,
-+						"network",
-+						"ucc_geth")) != NULL;) {
-+			const unsigned int *prop;
-+			int ucc_num;
-+
-+			prop = of_get_property(np, "cell-index", NULL);
-+			if (prop == NULL)
-+				continue;
-+
-+			ucc_num = *prop - 1;
-+
-+			prop = of_get_property(np, "phy-connection-type", NULL);
-+			if (prop == NULL)
-+				continue;
-+
-+			if (strcmp("rtbi", (const char *)prop) == 0)
-+				clrsetbits_8(&bcsr_regs[7 + ucc_num],
-+					BCSR_UCC_RGMII, BCSR_UCC_RTBI);
- 		}
-+	} else if (machine_is(p1021_mds)) {
-+#define BCSR11_ENET_MICRST     (0x1 << 5)
-+		/* Reset Micrel PHY */
-+		clrbits8(&bcsr_regs[11], BCSR11_ENET_MICRST);
-+		setbits8(&bcsr_regs[11], BCSR11_ENET_MICRST);
- 	}
--#endif
- 
--#ifdef CONFIG_SMP
--	mpc85xx_smp_init();
--#endif
-+	iounmap(bcsr_regs);
-+}
- 
--#ifdef CONFIG_SWIOTLB
--	if (lmb_end_of_DRAM() > max) {
--		ppc_swiotlb_enable = 1;
--		set_pci_dma_ops(&swiotlb_dma_ops);
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
--	}
--#endif
-+static void __init mpc85xx_mds_qe_init(void)
-+{
-+	struct device_node *np;
- 
--#ifdef CONFIG_QUICC_ENGINE
- 	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
- 	if (!np) {
- 		np = of_find_node_by_name(NULL, "qe");
-@@ -260,70 +286,7 @@ static void __init mpc85xx_mds_setup_arch(void)
- 			par_io_of_config(ucc);
- 	}
- 
--	if (bcsr_regs) {
--		if (machine_is(mpc8568_mds)) {
--#define BCSR_UCC1_GETH_EN	(0x1 << 7)
--#define BCSR_UCC2_GETH_EN	(0x1 << 7)
--#define BCSR_UCC1_MODE_MSK	(0x3 << 4)
--#define BCSR_UCC2_MODE_MSK	(0x3 << 0)
--
--			/* Turn off UCC1 & UCC2 */
--			clrbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
--			clrbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
--
--			/* Mode is RGMII, all bits clear */
--			clrbits8(&bcsr_regs[11], BCSR_UCC1_MODE_MSK |
--						 BCSR_UCC2_MODE_MSK);
--
--			/* Turn UCC1 & UCC2 on */
--			setbits8(&bcsr_regs[8], BCSR_UCC1_GETH_EN);
--			setbits8(&bcsr_regs[9], BCSR_UCC2_GETH_EN);
--		} else if (machine_is(mpc8569_mds)) {
--#define BCSR7_UCC12_GETHnRST	(0x1 << 2)
--#define BCSR8_UEM_MARVELL_RST	(0x1 << 1)
--#define BCSR_UCC_RGMII		(0x1 << 6)
--#define BCSR_UCC_RTBI		(0x1 << 5)
--			/*
--			 * U-Boot mangles interrupt polarity for Marvell PHYs,
--			 * so reset built-in and UEM Marvell PHYs, this puts
--			 * the PHYs into their normal state.
--			 */
--			clrbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
--			setbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
--
--			setbits8(&bcsr_regs[7], BCSR7_UCC12_GETHnRST);
--			clrbits8(&bcsr_regs[8], BCSR8_UEM_MARVELL_RST);
--
--			for (np = NULL; (np = of_find_compatible_node(np,
--							"network",
--							"ucc_geth")) != NULL;) {
--				const unsigned int *prop;
--				int ucc_num;
--
--				prop = of_get_property(np, "cell-index", NULL);
--				if (prop == NULL)
--					continue;
--
--				ucc_num = *prop - 1;
--
--				prop = of_get_property(np, "phy-connection-type", NULL);
--				if (prop == NULL)
--					continue;
--
--				if (strcmp("rtbi", (const char *)prop) == 0)
--					clrsetbits_8(&bcsr_regs[7 + ucc_num],
--						BCSR_UCC_RGMII, BCSR_UCC_RTBI);
--			}
--
--		} else if (machine_is(p1021_mds)) {
--#define BCSR11_ENET_MICRST     (0x1 << 5)
--			/* Reset Micrel PHY */
--			clrbits8(&bcsr_regs[11], BCSR11_ENET_MICRST);
--			setbits8(&bcsr_regs[11], BCSR11_ENET_MICRST);
--		}
--
--		iounmap(bcsr_regs);
--	}
-+	mpc85xx_mds_reset_ucc_phys();
- 
- 	if (machine_is(p1021_mds)) {
- #define MPC85xx_PMUXCR_OFFSET           0x60
-@@ -358,7 +321,79 @@ static void __init mpc85xx_mds_setup_arch(void)
- 		}
- 
- 	}
-+}
-+
-+static void __init mpc85xx_mds_qeic_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!of_device_is_available(np)) {
-+		of_node_put(np);
-+		return;
-+	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (!np) {
-+		np = of_find_node_by_type(NULL, "qeic");
-+		if (!np)
-+			return;
-+	}
-+
-+	if (machine_is(p1021_mds))
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+	else
-+		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
-+	of_node_put(np);
-+}
-+#else
-+static void __init mpc85xx_publish_qe_devices(void) { }
-+static void __init mpc85xx_mds_qe_init(void) { }
-+static void __init mpc85xx_mds_qeic_init(void) { }
- #endif	/* CONFIG_QUICC_ENGINE */
-+
-+static void __init mpc85xx_mds_setup_arch(void)
-+{
-+#ifdef CONFIG_PCI
-+	struct pci_controller *hose;
-+#endif
-+	dma_addr_t max = 0xffffffff;
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
-+
-+#ifdef CONFIG_PCI
-+	for_each_node_by_type(np, "pci") {
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-+		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
-+			struct resource rsrc;
-+			of_address_to_resource(np, 0, &rsrc);
-+			if ((rsrc.start & 0xfffff) == 0x8000)
-+				fsl_add_bridge(np, 1);
-+			else
-+				fsl_add_bridge(np, 0);
-+
-+			hose = pci_find_hose_for_OF_device(np);
-+			max = min(max, hose->dma_window_base_cur +
-+					hose->dma_window_size);
-+		}
-+	}
-+#endif
-+
-+#ifdef CONFIG_SMP
-+	mpc85xx_smp_init();
-+#endif
-+
-+	mpc85xx_mds_qe_init();
-+
-+#ifdef CONFIG_SWIOTLB
-+	if (lmb_end_of_DRAM() > max) {
-+		ppc_swiotlb_enable = 1;
-+		set_pci_dma_ops(&swiotlb_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-+	}
-+#endif
- }
- 
- 
-@@ -465,28 +500,7 @@ static void __init mpc85xx_mds_pic_init(void)
- 	of_node_put(np);
- 
- 	mpic_init(mpic);
--
--#ifdef CONFIG_QUICC_ENGINE
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
--	if (!of_device_is_available(np)) {
--		of_node_put(np);
--		return;
--	}
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (!np) {
--		np = of_find_node_by_type(NULL, "qeic");
--		if (!np)
--			return;
--	}
--
--	if (machine_is(p1021_mds))
--		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--				qe_ic_cascade_high_mpic);
--	else
--		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
--	of_node_put(np);
--#endif				/* CONFIG_QUICC_ENGINE */
-+	mpc85xx_mds_qeic_init();
- }
- 
- static int __init mpc85xx_mds_probe(void)
--- 
-1.7.0.5
+I'm glad were finally getting to the root cause of the problem.
+
+
+>
+> These patches were tested on a pcm030 baseboard and on custom hardware wi=
+th
+> a wm9715 audio codec/touchscreen controller.
+>
+> Eric Millbrandt
+>
+> ---
+>
+> Eric Millbrandt (2):
+> =A0 =A0powerpc/5200: Export port-config
+> =A0 =A0sound/soc: mpc5200_psc_ac97: Use gpio pins for cold reset.
+>
+> =A0arch/powerpc/boot/dts/lite5200.dts =A0 =A0 =A0 =A0 =A0 | =A0 =A03 +
+> =A0arch/powerpc/boot/dts/lite5200b.dts =A0 =A0 =A0 =A0 =A0| =A0 =A03 +
+> =A0arch/powerpc/boot/dts/pcm030.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A03 +
+> =A0arch/powerpc/boot/dts/pcm032.dts =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A03 +
+> =A0arch/powerpc/include/asm/mpc52xx.h =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +
+> =A0arch/powerpc/platforms/52xx/mpc52xx_common.c | =A0 61 ++++++++++++++++=
++++
+> =A0sound/soc/fsl/mpc5200_dma.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
+=A05 ++
+> =A0sound/soc/fsl/mpc5200_psc_ac97.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 83 ++++=
+++++++++++++++++++++-
+> =A08 files changed, 159 insertions(+), 4 deletions(-)
+>
+> -DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+> -to a public e-mail mailing list I hereby grant permission to distribute-
+> -and copy this message.-
+>
+>
+> This e-mail and the information, including any attachments, it contains a=
+re intended to be a confidential communication only to the person or entity=
+ to whom it is addressed and may contain information that is privileged. If=
+ the reader of this message is not the intended recipient, you are hereby n=
+otified that any dissemination, distribution or copying of this communicati=
+on is strictly prohibited. If you have received this communication in error=
+, please immediately notify the sender and destroy the original message.
+>
+> Thank you.
+>
+> Please consider the environment before printing this email.
+>
+
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
