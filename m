@@ -1,19 +1,22 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 25B711007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Jun 2010 05:47:33 +1000 (EST)
-Message-ID: <4C11414F.5070602@harris.com>
-Date: Thu, 10 Jun 2010 15:47:27 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <maciej.rutecki@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
+	by ozlabs.org (Postfix) with ESMTP id 37533B7D83
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 06:01:05 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id l26so19680fgb.3
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 13:01:04 -0700 (PDT)
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: 2.6.35-rc2 : OOPS with LTP memcg regression test run.
+Date: Thu, 10 Jun 2010 22:00:57 +0200
+References: <4C0BB98E.9030101@in.ibm.com>
+In-Reply-To: <4C0BB98E.9030101@in.ibm.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH][RFC] ibm_newemac and SIOCGMIIREG
-References: <4C10EFE0.6030106@harris.com> <201006101631.29591.arnd@arndb.de>
-	<4C11046D.4080205@harris.com> <201006101903.43882.arnd@arndb.de>
-In-Reply-To: <201006101903.43882.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201006102200.57617.maciej.rutecki@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Reply-To: maciej.rutecki@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,279 +26,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2010 01:03 PM, Arnd Bergmann wrote:
+I created a Bugzilla entry at 
+https://bugzilla.kernel.org/show_bug.cgi?id=16178
+for your bug report, please add your address to the CC list in there, thanks!
+
+On niedziela, 6 czerwca 2010 o 17:06:54 Sachin Sant wrote:
+> While executing LTP Controller tests(memcg regression) on
+> a POWER6 box came across this following OOPS.
 > 
-> On Thursday 10 June 2010, Steven A. Falco wrote:
->>> The ifreq structure passed into the ndo_ioctl function is in kernel
->>> space, it gets copied there by net/core/dev.c:dev_ioctl().
->>> emac_ioctl only accesses the data in that structure, so a copy_from_user
->>> is wrong here as far as I can tell.
->>
->> net/core/dev.c:dev_ioctl() does a copy_from_user on the overall structure,
->> but the structure contains a union, one member of which is an embedded
->> pointer to an array.  This pointer member is only used in the case of these
->> two ioctls.  Other ioctls use different union members, which are not pointers.
+> Memory cgroup out of memory: kill process 9139 (memcg_test_1) score 3 or a
+>  child Killed process 9139 (memcg_test_1) vsz:3456kB, anon-rss:448kB,
+>  file-rss:1088kB Memory cgroup out of memory: kill process 9140
+>  (memcg_test_1) score 3 or a child Killed process 9140 (memcg_test_1)
+>  vsz:3456kB, anon-rss:448kB, file-rss:1088kB Unable to handle kernel paging
+>  request for data at address 0x720072007200720 Faulting instruction
+>  address: 0xc00000000015b778
+> Oops: Kernel access of bad area, sig: 11 [#2]
+> SMP NR_CPUS=1024 NUMA pSeries
+> last sysfs file: /sys/devices/system/cpu/cpu1/cache/index1/shared_cpu_map
+> Modules linked in: quota_v2 quota_tree ipv6 fuse loop dm_mod sr_mod cdrom
+>  sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod NIP:
+>  c00000000015b778 LR: c00000000015b740 CTR: 0000000000000000
+> REGS: c000000009812ff0 TRAP: 0300   Tainted: G      D     
+>  (2.6.35-rc2-autotest) MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44004424 
+>  XER: 00000001
+> DAR: 0720072007200720, DSISR: 0000000040000000
+> TASK = c000000005fb1100[9155] 'umount' THREAD: c000000009810000 CPU: 0
+> GPR00: 0000000000000000 c000000009813270 c000000000d3d7a0 0000000000000000
+> GPR04: 0000000000008050 0000000000160000 0000000000000027 c00000000f2c6870
+> GPR08: 00000000000006a5 c000000000b16870 c000000000cf0140 000000000e7b0000
+> GPR12: 0000000024004428 c000000007440000 0000000000008000 fffffffffffff000
+> GPR16: 0000000000000000 c0000000098138f0 000000000000002d 0000000000000027
+> GPR20: 0000000000000000 0000000000000027 0000000000000000 c000000007063138
+> GPR24: ffffffffffffffff 0000000000000000 c00000000019bafc c00000000e02e000
+> GPR28: 0000000000000001 0000000000008050 c000000000ca6b00 0720072007200720
+> NIP [c00000000015b778] .kmem_cache_alloc+0xb0/0x13c
+> LR [c00000000015b740] .kmem_cache_alloc+0x78/0x13c
+> Call Trace:
+> [c000000009813270] [c00000000015b740] .kmem_cache_alloc+0x78/0x13c
+>  (unreliable) [c000000009813310] [c00000000019bafc]
+>  .alloc_buffer_head+0x2c/0x78 [c000000009813390] [c00000000019c99c]
+>  .alloc_page_buffers+0x60/0x114 [c000000009813450] [c00000000019ca78]
+>  .create_empty_buffers+0x28/0x140 [c0000000098134e0] [c00000000019f2ec]
+>  .__block_prepare_write+0xe4/0x4f0 [c000000009813610] [c00000000019f94c]
+>  .block_write_begin_newtrunc+0xa8/0x120 [c0000000098136d0]
+>  [c00000000019fea0] .block_write_begin+0x34/0x8c [c000000009813770]
+>  [c00000000022b458] .ext3_write_begin+0x13c/0x298 [c000000009813880]
+>  [c000000000117500] .generic_file_buffered_write+0x13c/0x320
+>  [c0000000098139b0] [c000000000119c80]
+>  .__generic_file_aio_write+0x378/0x3dc [c000000009813ab0]
+>  [c000000000119d68] .generic_file_aio_write+0x84/0xfc [c000000009813b60]
+>  [c00000000016e460] .do_sync_write+0xac/0x10c
+> [c000000009813ce0] [c00000000016f204] .vfs_write+0xd0/0x1dc
+> [c000000009813d80] [c00000000016f418] .SyS_write+0x58/0xa0
+> [c000000009813e30] [c0000000000085b4] syscall_exit+0x0/0x40
+> Instruction dump:
+> 38600000 409e0090 38000000 8b8d0212 980d0212 e96d0040 e93b0000 7ce95a14
+> 7fe9582a 2fbf0000 419e0014 e81b001a <7c1f002a> 7c09592a 4800001c 7f46d378
+> ---[ end trace f24cb0cb5729d2bb ]---
 > 
-> Still unconvinced.
-
-Ok - here is the user-space program I am using to test this.  It simply
-uses the ioctl to peek and poke the phy.  If I run it on an unmodified
-kernel, and I read the phy ID registers, i.e. registers 2 and 3, I get:
-
-# ./phy -r -a 2
-2: 0000
-# ./phy -r -a 3
-3: 0000
-
-which is clearly wrong.  Once I load my modified kernel, I get:
-
-# ./phy -a 2
-2: 0022
-# ./phy -a 3
-3: 1512
-
-which is correct for the phy on my board (i.e. phy id is 00221512).  If you
-could try this program on a sequoia or similar, I'd be interested in whether
-you see the problem.
-
------- cut here ------
-
-#define _GNU_SOURCE
-
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <getopt.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <linux/mii.h>
-#include <linux/sockios.h>
-
-#include <net/if.h>
-
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-
-#define READING 0
-#define WRITING 1
-
-void use()
-{
-    fprintf(stderr, "\nphy [OPTIONS]\n\n");
-    fprintf(stderr, "  -a address (register within phy to access)\n");
-    fprintf(stderr, "  -d device (something like eth0, eth1, etc.)\n");
-    fprintf(stderr, "  -r (read the register)\n");
-    fprintf(stderr, "  -w (write the register)\n");
-    fprintf(stderr, "  -v value (the value to write)\n");
-    fprintf(stderr, "  -h (this help message)\n");
-}
-
-int
-main(int argc, char *argv[])
-{
-    int		    fd;
-    struct ifreq    request;
-    struct mii_ioctl_data data;
-    int		    opt;
-    int		    dir = READING;
-    char	    *pDev = "eth0";
-    uint32_t	    addr = 0;
-    uint32_t	    value = 0;
-
-    while((opt = getopt(argc, argv, "a:d:hrv:w")) != -1) {
-	switch(opt) {
-	    case 'a':
-		addr = strtoul(optarg, NULL, 16);
-		break;
-
-	    case 'd':
-		pDev = optarg;
-		break;
-
-	    case 'h':
-		use();
-		exit(0);
-
-	    case 'r':
-		dir = READING;
-		break;
-
-	    case 'v':
-		value = strtoul(optarg, NULL, 16);
-		break;
-
-	    case 'w':
-		dir = WRITING;
-		break;
-
-	    default:
-		fprintf(stderr, "bad option\n");
-		use();
-		exit(1);
-	}
-    }
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if(fd < 0) {
-	fprintf(stderr, "no sock\n");
-	exit(1);
-    }
-
-    memset(&request, 0, sizeof(request));
-    memset(&data, 0, sizeof(data));
-    strncpy(request.ifr_name, pDev, sizeof(request.ifr_name));
-    data.reg_num = addr;
-    y
-
-    if(dir == READING) {
-	if(ioctl(fd, SIOCGMIIREG, &request) < 0) {
-	    fprintf(stderr, "SIOCGMIIREG failed\n");
-	    exit(1);
-	}
-
-	printf("%d: %04x\n", addr, data.val_out);
-    } else {
-	data.val_in = value;
-	if(ioctl(fd, SIOCSMIIREG, &request) < 0) {
-	    fprintf(stderr, "SIOCSMIIREG failed\n");
-	    exit(1);
-	}
-    }
-
-    exit(0);
-}
-
------- cut here ------
-
+> And few more of these. Previous snapshot release
+>  2.6.35-rc1-git5(6c5de280b6...) was good.
 > 
-> I don't see anywhere in the structure where we actually use a
-> pointer from ifr_ifru. The if_mii function is defined as
+> Thanks
+> -Sachin
 > 
-> static inline struct mii_ioctl_data *if_mii(struct ifreq *rq)
-> {
->         return (struct mii_ioctl_data *) &rq->ifr_ifru;
-> }
-> 
-> That just returns a pointer to the ifr_ifru member itself,
 
-But that pointer points to a separate "struct mii_ioctl_data"
-in user space.  In my test code above, I do:
-
-request.ifr_data = (__caddr_t)&data;
-
-where data is a "struct mii_ioctl_data" that is separate from the
-"struct ifreq".  It's not one monolithic structure, it is two
-structures, one pointing to the other, both in user space.
-
-> it does not read a __user pointer. Note how if_mii even
-> returns a kernel pointer (struct mii_ioctl_data *), not
-> a struct mii_ioctl_data __user *. You even added a cast
-> that otherwise should not be needed.
-
-I disagree - the structure, as shown in "include/linux/if.h" has
-"void __user *ifru_data", which is clearly a user pointer.
-
-> 
->> As I understand it, the copy_from_user in dev_ioctl does not recursively
->> copy the array.  In fact it could not do so, because the pointer to array
->> is only 4 bytes long, while the array itself is 8 bytes long - so it would
->> not fit.  I.e., dev_ioctl would have to allocate storage, and do a second
->> copy_from_user to retrieve the array.  It would have to clean up after the
->> emac_ioctl ran.  And it would have to do this only for these specific
->> ioctl calls which use the array pointer in the union.
->>
->> Also, the result has to be returned to the user in the same array, which
->> needs a copy_to_user of the array data, which is also not done in dev_ioctl.
-> 
-> There is no array, and no pointer in struct ifreq
-
-struct ifreq {
-	.....
-	union {
-		.....
-		void __user *	ifru_data;
-		.....
-	} ifr_ifru;
-};
-
-I claim that "ifru_data" is a pointer to a user-space structure,
-which for these two ioctls is defined as:
-
-struct mii_ioctl_data {
-	__u16		phy_id;
-	__u16		reg_num;
-	__u16		val_in;
-	__u16		val_out;
-};
-
-I misspoke when calling this an array.  In earlier versions of the
-kernel code, this was simply an array of four __u16, but it is now a
-struct.  Doesn't really matter though - it is a separate structure from
-the ifreq one.  So in my test program, I have:
-
-    struct ifreq    request;
-    struct mii_ioctl_data data;
-	.....
-    request.ifr_data = (__caddr_t)&data;
-
-which is where I fill in the "struct ifreq" with my user pointer to my
-"struct mii_ioctl_data".
-
-The key is that the union does not have:
-
-	struct mii_ioctl_data ifru_data;
-
-rather it has a pointer:
-
-	void __user *	ifru_data;
-
-and that is why the second copy_from_user is needed.  It would have been
-much nicer if the union contained the actual mii_ioctl_data structure,
-but I guess the void pointer is more flexible.
-
->  
->> So I think this second copy_from/copy_to needs to be done somewhere.  I
->> added it in the emac_ioctl because that is where the command is fully
->> decoded.  It also avoids the problem of allocating space for the copied
->> array.  But other fixes are certainly possible as well, which is why I am
->> not sure I've hit on the "proper" fix.
-> 
-> No other device driver implementing SIOCGMIIREG does any of this,
-> so I'm pretty sure it's not the proper fix.
-
-That is my main worry as well.  However, my test program does not work
-unless I modify the kernel.  Perhaps there is something wrong with the
-program, but I don't think so, based on the union definition as I showed
-it above.
-
-> 
->> Thanks very much for reviewing - please let me know if my explanation is
->> unclear, or if you see a better way to fix this problem.
-> 
-> In theory, your patch should break the code. Doing a direct access
-> in place of a copy_to/from_user is a security hole but should still work,
-> while adding a copy_to/from_user on a kernel pointer should always result
-> in an EFAULT.
-
-My patch does not give an EFAULT, as you will see if you are able to try
-my test program.  I won't claim that proves I am right however. :-)
-
-Your statement that copy_to/from_user is just there for security is
-something I did not know.  Yet, that doesn't appear to be the case,
-given my experiments.
-
-I appreciate your patience - perhaps there is something unique about the
-4xx CPU's that makes the direct access fail.  I should add that my
-kernel does have Xenomai patches added.  I also don't know if that has
-any bearing on the problem.
-
-I'll try to resurrect my sequoia board with an unmodified kernel and
-test further.  One thing for sure - something strange is going on.
-
-	Steve
-
-> 
-> 	Arnd
-> 
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
