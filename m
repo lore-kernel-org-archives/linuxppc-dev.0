@@ -1,18 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 58B5BB7D5B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Jun 2010 00:31:34 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH][RFC] ibm_newemac and SIOCGMIIREG
-Date: Thu, 10 Jun 2010 16:31:29 +0200
-References: <4C10EFE0.6030106@harris.com>
-In-Reply-To: <4C10EFE0.6030106@harris.com>
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201006101631.29591.arnd@arndb.de>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1276152275.1962.61.camel@pasglop>
+References: <20100608140917.25879.67745.stgit@angua>
+	<20100608141018.25879.44413.stgit@angua>
+	<1276152275.1962.61.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 10 Jun 2010 08:28:34 -0600
+Message-ID: <AANLkTikg1hLdV_OUjc3QIhFatP_iLfVClhzmyixmjje1@mail.gmail.com>
+Subject: Re: [PATCH 5/5] of/address: restrict 'no-ranges' kludge to powerpc
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +22,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 10 June 2010, Steven A. Falco wrote:
-> I believe there is a bug in the way the ibm_newemac driver handles the
-> SIOCGMIIREG (and SIOCSMIIREG) ioctl.  The problem is that emac_ioctl
-> is handed a "struct ifreq *rq" which contains a user-land pointer to
-> an array of 16-bit integers.
+On Thu, Jun 10, 2010 at 12:44 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2010-06-08 at 08:10 -0600, Grant Likely wrote:
+>> Certain Apple machines don't use the ranges property correctly, but the
+>> workaround should not be applied on other architectures. =A0This patch
+>> disables the workaround for non-powerpc architectures.
+>
+> I'm half tempted to add it to the quirk list (which should really be
+> made generic) so I can disable it on more 'modern' powerpc as well.
 
-Did you actually see a bug here, or just think that this could be
-a problem?
+In the mean time, are you okay with this version of the patch?
 
-> However, emac_ioctl directly accesses the data, which doesn't work.
-> I added the following patch to copy the data in and out.
-> 
-> Please note that this patch was tested in an older kernel (2.6.30)
-> because that is what we are using on our custom hardware.  I think
-> this is still a problem in the current code, but I'd like reviewers
-> to take a look, to be sure.
+g.
 
-The ifreq structure passed into the ndo_ioctl function is in kernel
-space, it gets copied there by net/core/dev.c:dev_ioctl().
-emac_ioctl only accesses the data in that structure, so a copy_from_user
-is wrong here as far as I can tell.
+>
+> Cheers,
+> Ben.
+>
+>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: linuxppc-dev@lists.ozlabs.org
+>> CC: devicetree-discuss@lists.ozlabs.org
+>> ---
+>> =A0drivers/of/address.c | =A0 11 ++++++++++-
+>> =A01 files changed, 10 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/of/address.c b/drivers/of/address.c
+>> index 0b04137..5c220c3 100644
+>> --- a/drivers/of/address.c
+>> +++ b/drivers/of/address.c
+>> @@ -346,12 +346,21 @@ static int of_translate_one(struct device_node *pa=
+rent, struct of_bus *bus,
+>> =A0 =A0 =A0 =A0* a 1:1 translation at that level. It's up to the caller =
+not to try
+>> =A0 =A0 =A0 =A0* to translate addresses that aren't supposed to be trans=
+lated in
+>> =A0 =A0 =A0 =A0* the first place. --BenH.
+>> + =A0 =A0 =A0*
+>> + =A0 =A0 =A0* As far as we know, this damage only exists on Apple machi=
+nes, so
+>> + =A0 =A0 =A0* This code is only enabled on powerpc. --gcl
+>> =A0 =A0 =A0 =A0*/
+>> =A0 =A0 =A0 ranges =3D of_get_property(parent, rprop, &rlen);
+>> +#if !defined(CONFIG_PPC)
+>> + =A0 =A0 if (ranges =3D=3D NULL) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_err("OF: no ranges; cannot translate\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return 1;
+>> + =A0 =A0 }
+>> +#endif /* !defined(CONFIG_PPC) */
+>> =A0 =A0 =A0 if (ranges =3D=3D NULL || rlen =3D=3D 0) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 offset =3D of_read_number(addr, na);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 memset(addr, 0, pna * 4);
+>> - =A0 =A0 =A0 =A0 =A0 =A0 pr_debug("OF: no ranges, 1:1 translation\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_debug("OF: empty ranges; 1:1 translation\n"=
+);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto finish;
+>> =A0 =A0 =A0 }
+>>
+>
+>
+>
 
-	Arnd
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
