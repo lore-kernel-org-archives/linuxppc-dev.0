@@ -1,28 +1,22 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1636D1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Jun 2010 07:47:32 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o5ALddGX029661
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2010 15:39:39 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5ALlRqt121632
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2010 15:47:27 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o5ALlPQ2028257
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jun 2010 15:47:26 -0600
-Message-Id: <201006102147.o5ALlPh7028211@d03av04.boulder.ibm.com>
-Subject: [PATCH 2/2] powerpc: Partition hibernation support
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 10 Jun 2010 16:47:24 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
+	[209.85.213.170]) by ozlabs.org (Postfix) with ESMTP id 7F34F1007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 07:49:04 +1000 (EST)
+Received: by yxs7 with SMTP id 7so112001yxs.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 14:49:02 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1276186867-29094-1-git-send-email-agust@denx.de>
+References: <1276185950-28451-1-git-send-email-agust@denx.de>
+	<1276186867-29094-1-git-send-email-agust@denx.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 10 Jun 2010 15:48:42 -0600
+Message-ID: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
+Subject: Re: [PATCH V4] powerpc/mpc512x: Add gpio driver
+To: Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, Matthias Fuchs <matthias.fuchs@esd.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,297 +26,340 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Jun 10, 2010 at 10:21 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> From: Matthias Fuchs <matthias.fuchs@esd.eu>
+>
+> This patch adds a gpio driver for MPC512X PowerPCs.
+>
+> It has been tested on our CAN-CBX-CPU5201 module that
+> uses a MPC5121 CPU. This platform comes with a couple of
+> LEDs and configuration switches that have been used for testing.
+>
+> Signed-off-by: Matthias Fuchs <matthias.fuchs@esd.eu>
+> Signed-off-by: Anatolij Gustschin <agust@denx.de>
 
-Enables support for HMC initiated partition hibernation. This is
-a firmware assisted hibernation, since the firmware handles writing
-the memory out to disk, along with other partition information,
-so we just mimic suspend to ram.
+Hi Anatolij,
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+Can you please rework this one on top of my next-devicetree branch.
+Change have been made to the of-gpio apis.
 
- arch/powerpc/Kconfig                         |    2 
- arch/powerpc/include/asm/hvcall.h            |    1 
- arch/powerpc/include/asm/machdep.h           |    1 
- arch/powerpc/platforms/pseries/Makefile      |    4 
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    3 
- arch/powerpc/platforms/pseries/suspend.c     |  214 +++++++++++++++++++++++++++
- 6 files changed, 224 insertions(+), 1 deletion(-)
+g.
 
-diff -puN /dev/null arch/powerpc/platforms/pseries/suspend.c
---- /dev/null	2009-12-15 17:58:07.000000000 -0600
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/suspend.c	2010-05-27 10:10:28.000000000 -0500
-@@ -0,0 +1,214 @@
-+/*
-+  * Copyright (C) 2010 Brian King IBM Corporation
-+  *
-+  * This program is free software; you can redistribute it and/or modify
-+  * it under the terms of the GNU General Public License as published by
-+  * the Free Software Foundation; either version 2 of the License, or
-+  * (at your option) any later version.
-+  *
-+  * This program is distributed in the hope that it will be useful,
-+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+  * GNU General Public License for more details.
-+  *
-+  * You should have received a copy of the GNU General Public License
-+  * along with this program; if not, write to the Free Software
-+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+  */
-+
-+#include <linux/delay.h>
-+#include <linux/suspend.h>
-+#include <asm/firmware.h>
-+#include <asm/hvcall.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu.h>
-+#include <asm/rtas.h>
-+
-+static u64 stream_id;
-+static struct sys_device suspend_sysdev;
-+static DECLARE_COMPLETION(suspend_work);
-+static struct rtas_suspend_me_data suspend_data;
-+static atomic_t suspending;
-+
-+/**
-+ * pseries_suspend_begin - First phase of hibernation
-+ *
-+ * Check to ensure we are in a valid state to hibernate
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_begin(suspend_state_t state)
-+{
-+	long vasi_state, rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	/* Make sure the state is valid */
-+	rc = plpar_hcall(H_VASI_STATE, retbuf, stream_id);
-+
-+	vasi_state = retbuf[0];
-+
-+	if (rc) {
-+		pr_err("pseries_suspend_begin: vasi_state returned %ld\n",rc);
-+		return rc;
-+	} else if (vasi_state == H_VASI_ENABLED) {
-+		return -EAGAIN;
-+	} else if (vasi_state != H_VASI_SUSPENDING) {
-+		pr_err("pseries_suspend_begin: vasi_state returned state %ld\n",
-+		       vasi_state);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_cpu - Suspend a single CPU
-+ *
-+ * Makes the H_JOIN call to suspend the CPU
-+ *
-+ **/
-+static int pseries_suspend_cpu(void)
-+{
-+	if (atomic_read(&suspending))
-+		return rtas_suspend_cpu(&suspend_data);
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_enter - Final phase of hibernation
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_enter(suspend_state_t state)
-+{
-+	int rc = rtas_suspend_last_cpu(&suspend_data);
-+
-+	atomic_set(&suspending, 0);
-+	atomic_set(&suspend_data.done, 1);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_prepare_late - Prepare to suspend all other CPUs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_prepare_late(void)
-+{
-+	atomic_set(&suspending, 1);
-+	atomic_set(&suspend_data.working, 0);
-+	atomic_set(&suspend_data.done, 0);
-+	atomic_set(&suspend_data.error, 0);
-+	suspend_data.complete = &suspend_work;
-+	INIT_COMPLETION(suspend_work);
-+	return 0;
-+}
-+
-+/**
-+ * store_hibernate - Initiate partition hibernation
-+ * @classdev:	sysdev class struct
-+ * @attr:		class device attribute struct
-+ * @buf:		buffer
-+ * @count:		buffer size
-+ *
-+ * Write the stream ID received from the HMC to this file
-+ * to trigger hibernating the partition
-+ *
-+ * Return value:
-+ * 	number of bytes printed to buffer / other on failure
-+ **/
-+static ssize_t store_hibernate(struct sysdev_class *classdev,
-+			       struct sysdev_class_attribute *attr,
-+			       const char *buf, size_t count)
-+{
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	stream_id = simple_strtoul(buf, NULL, 16);
-+
-+	do {
-+		rc = pseries_suspend_begin(PM_SUSPEND_MEM);
-+		if (rc == -EAGAIN)
-+			ssleep(1);
-+	} while (rc == -EAGAIN);
-+
-+	if (!rc)
-+		rc = pm_suspend(PM_SUSPEND_MEM);
-+
-+	stream_id = 0;
-+
-+	if (!rc)
-+		rc = count;
-+	return rc;
-+}
-+
-+static SYSDEV_CLASS_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
-+
-+static struct sysdev_class suspend_sysdev_class = {
-+	.name = "power",
-+};
-+
-+static struct platform_suspend_ops pseries_suspend_ops = {
-+	.valid		= suspend_valid_only_mem,
-+	.begin		= pseries_suspend_begin,
-+	.prepare_late	= pseries_prepare_late,
-+	.enter		= pseries_suspend_enter,
-+};
-+
-+/**
-+ * pseries_suspend_sysfs_register - Register with sysfs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_sysfs_register(struct sys_device *sysdev)
-+{
-+	int rc;
-+
-+	if ((rc = sysdev_class_register(&suspend_sysdev_class)))
-+		return rc;
-+
-+	sysdev->id = 0;
-+	sysdev->cls = &suspend_sysdev_class;
-+
-+	if ((rc = sysdev_class_create_file(&suspend_sysdev_class, &attr_hibernate)))
-+		goto class_unregister;
-+
-+	return 0;
-+
-+class_unregister:
-+	sysdev_class_unregister(&suspend_sysdev_class);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_suspend_init - initcall for pSeries suspend
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int __init pseries_suspend_init(void)
-+{
-+	int rc;
-+
-+	if (!machine_is(pseries) || !firmware_has_feature(FW_FEATURE_LPAR))
-+		return 0;
-+
-+	suspend_data.token = rtas_token("ibm,suspend-me");
-+	if (suspend_data.token == RTAS_UNKNOWN_SERVICE)
-+		return 0;
-+
-+	if ((rc = pseries_suspend_sysfs_register(&suspend_sysdev)))
-+		return rc;
-+
-+	ppc_md.suspend_disable_cpu = pseries_suspend_cpu;
-+	suspend_set_ops(&pseries_suspend_ops);
-+	return 0;
-+}
-+
-+__initcall(pseries_suspend_init);
-diff -puN arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation arch/powerpc/Kconfig
---- linux-2.6/arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation	2010-05-27 10:10:28.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/Kconfig	2010-05-27 10:10:28.000000000 -0500
-@@ -218,7 +218,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   PPC_85xx || PPC_86xx
-+		   PPC_85xx || PPC_86xx || PPC_PSERIES
- 
- config PPC_DCR_NATIVE
- 	bool
-diff -puN arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/Makefile
---- linux-2.6/arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation	2010-05-27 10:10:28.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/Makefile	2010-05-27 10:10:28.000000000 -0500
-@@ -26,3 +26,7 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+
-+ifeq ($(CONFIG_PPC_PSERIES),y)
-+obj-$(CONFIG_SUSPEND)		+= suspend.o
-+endif
-diff -puN arch/powerpc/include/asm/hvcall.h~powerpc_allarch_pseries_hibernation arch/powerpc/include/asm/hvcall.h
---- linux-2.6/arch/powerpc/include/asm/hvcall.h~powerpc_allarch_pseries_hibernation	2010-05-27 10:10:28.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/include/asm/hvcall.h	2010-05-27 10:10:28.000000000 -0500
-@@ -74,6 +74,7 @@
- #define H_NOT_ENOUGH_RESOURCES -44
- #define H_R_STATE       -45
- #define H_RESCINDEND    -46
-+#define H_MULTI_THREADS_ACTIVE -9005
- 
- 
- /* Long Busy is a condition that can be returned by the firmware
-diff -puN arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation arch/powerpc/include/asm/machdep.h
---- linux-2.6/arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation	2010-05-27 10:10:28.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/include/asm/machdep.h	2010-05-27 10:10:28.000000000 -0500
-@@ -266,6 +266,7 @@ struct machdep_calls {
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+	int (*suspend_disable_cpu)(void);
- 
- #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 	ssize_t (*cpu_probe)(const char *, size_t);
-diff -puN arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/hotplug-cpu.c
---- linux-2.6/arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation	2010-05-27 10:10:28.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-05-27 10:10:28.000000000 -0500
-@@ -116,6 +116,9 @@ static void pseries_mach_cpu_die(void)
- 
- 	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
- 		set_cpu_current_state(cpu, CPU_STATE_INACTIVE);
-+		if (ppc_md.suspend_disable_cpu)
-+			ppc_md.suspend_disable_cpu();
-+
- 		cede_latency_hint = 2;
- 
- 		get_lppaca()->idle = 1;
-_
+
+> ---
+> Please consider this patch for inclusion in 2.6.36. Thanks!
+>
+> v4: - actually v3 was rebased but without shadow
+> =A0 =A0 =A0registers init code as stated in the v3 changelog.
+> =A0 =A0 =A0Correct it now.
+>
+> v3: - rebase to apply on current mainline tree
+> =A0 =A0- v2 switched to shadow registers but these are
+> =A0 =A0 =A0not pre-initialized (zero). As a result, setting
+> =A0 =A0 =A0pin direction or ODR register will clear other bits
+> =A0 =A0 =A0in direction and ODR registers. Fix this bug by adding
+> =A0 =A0 =A0shadow registers initialization code.
+>
+> v2: - move driver to arch/powerpc/platforms/512x directory
+> =A0 =A0- Kconfig changes are now in arch/powerpc/platform/512x/Kconfig
+> =A0 =A0- put struct mpc512x_gpio_regs in driver's .c file
+> =A0 =A0- rename GPIO_MASK into MPC512x_GPIO_MASK
+> =A0 =A0- use shadow registers instead of r/m/w-operations
+> =A0 =A0- don't use arch_initcall but call mpc512x_add_gpiochips()
+> =A0 =A0 =A0from mpc512x platform setup code.
+>
+> =A0arch/powerpc/platforms/512x/Kconfig =A0 =A0 =A0 =A0 =A0| =A0 =A09 +
+> =A0arch/powerpc/platforms/512x/Makefile =A0 =A0 =A0 =A0 | =A0 =A01 +
+> =A0arch/powerpc/platforms/512x/mpc512x.h =A0 =A0 =A0 =A0| =A0 =A03 +
+> =A0arch/powerpc/platforms/512x/mpc512x_gpio.c =A0 | =A0204 ++++++++++++++=
+++++++++++++
+> =A0arch/powerpc/platforms/512x/mpc512x_shared.c | =A0 =A03 +
+> =A05 files changed, 220 insertions(+), 0 deletions(-)
+> =A0create mode 100644 arch/powerpc/platforms/512x/mpc512x_gpio.c
+>
+> diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms=
+/512x/Kconfig
+> index 4dac9b0..bd763ee 100644
+> --- a/arch/powerpc/platforms/512x/Kconfig
+> +++ b/arch/powerpc/platforms/512x/Kconfig
+> @@ -30,3 +30,12 @@ config MPC5121_GENERIC
+>
+> =A0 =A0 =A0 =A0 =A0Compatible boards include: =A0Protonic LVT base boards=
+ (ZANMCU
+> =A0 =A0 =A0 =A0 =A0and VICVT2).
+> +
+> +config MPC512x_GPIO
+> + =A0 =A0 =A0 bool "MPC512x GPIO support"
+> + =A0 =A0 =A0 depends on PPC_MPC512x
+> + =A0 =A0 =A0 select GENERIC_GPIO
+> + =A0 =A0 =A0 select ARCH_REQUIRE_GPIOLIB
+> + =A0 =A0 =A0 help
+> + =A0 =A0 =A0 =A0 Say Y here if you're going to use hardware that connect=
+s to the
+> + =A0 =A0 =A0 =A0 MPC512x GPIOs.
+> diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platform=
+s/512x/Makefile
+> index 90be2f5..12518e3 100644
+> --- a/arch/powerpc/platforms/512x/Makefile
+> +++ b/arch/powerpc/platforms/512x/Makefile
+> @@ -4,3 +4,4 @@
+> =A0obj-y =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D clock.o =
+mpc512x_shared.o
+> =A0obj-$(CONFIG_MPC5121_ADS) =A0 =A0 =A0+=3D mpc5121_ads.o mpc5121_ads_cp=
+ld.o
+> =A0obj-$(CONFIG_MPC5121_GENERIC) =A0+=3D mpc5121_generic.o
+> +obj-$(CONFIG_MPC512x_GPIO) =A0 =A0 +=3D mpc512x_gpio.o
+> diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platfor=
+ms/512x/mpc512x.h
+> index b2daca0..4a1b094 100644
+> --- a/arch/powerpc/platforms/512x/mpc512x.h
+> +++ b/arch/powerpc/platforms/512x/mpc512x.h
+> @@ -16,4 +16,7 @@ extern void __init mpc512x_init(void);
+> =A0extern int __init mpc5121_clk_init(void);
+> =A0void __init mpc512x_declare_of_platform_devices(void);
+> =A0extern void mpc512x_restart(char *cmd);
+> +#ifdef CONFIG_MPC512x_GPIO
+> +extern int mpc512x_add_gpiochips(void);
+> +#endif
+> =A0#endif =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* __MPC512X_H_=
+_ */
+> diff --git a/arch/powerpc/platforms/512x/mpc512x_gpio.c b/arch/powerpc/pl=
+atforms/512x/mpc512x_gpio.c
+> new file mode 100644
+> index 0000000..13b2478
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/512x/mpc512x_gpio.c
+> @@ -0,0 +1,204 @@
+> +/*
+> + * MPC512x gpio driver
+> + *
+> + * Copyright (c) 2010 Matthias Fuchs <matthias.fuchs@esd.eu>, esd gmbh
+> + *
+> + * derived from ppc4xx gpio driver
+> + *
+> + * Copyright (c) 2008 Harris Corporation
+> + * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+> + * Copyright (c) MontaVista Software, Inc. 2008.
+> + *
+> + * Author: Steve Falco <sfalco@harris.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. =A0See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA =A002111-130=
+7 =A0USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_gpio.h>
+> +#include <linux/gpio.h>
+> +#include <linux/types.h>
+> +
+> +#define MPC512x_GPIO_MASK(gpio) (0x80000000 >> (gpio))
+> +
+> +struct mpc512x_gpio_regs {
+> + =A0 =A0 =A0 u32 gpdir;
+> + =A0 =A0 =A0 u32 gpodr;
+> + =A0 =A0 =A0 u32 gpdat;
+> + =A0 =A0 =A0 u32 gpier;
+> + =A0 =A0 =A0 u32 gpimr;
+> + =A0 =A0 =A0 u32 gpicr1;
+> + =A0 =A0 =A0 u32 gpicr2;
+> +};
+> +
+> +struct mpc512x_chip {
+> + =A0 =A0 =A0 struct of_mm_gpio_chip mm_gc;
+> + =A0 =A0 =A0 spinlock_t lock;
+> +
+> + =A0 =A0 =A0 /* shadow registers */
+> + =A0 =A0 =A0 u32 dat;
+> + =A0 =A0 =A0 u32 odr;
+> + =A0 =A0 =A0 u32 dir;
+> +};
+> +
+> +/*
+> + * GPIO LIB API implementation for GPIOs
+> + *
+> + * There are a maximum of 32 gpios in each gpio controller.
+> + */
+> +static inline struct mpc512x_chip *
+> +to_mpc512x_gpiochip(struct of_mm_gpio_chip *mm_gc)
+> +{
+> + =A0 =A0 =A0 return container_of(mm_gc, struct mpc512x_chip, mm_gc);
+> +}
+> +
+> +static int mpc512x_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> + =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
+> + =A0 =A0 =A0 struct mpc512x_gpio_regs __iomem *regs =3D mm_gc->regs;
+> +
+> + =A0 =A0 =A0 return in_be32(&regs->gpdat) & MPC512x_GPIO_MASK(gpio);
+> +}
+> +
+> +static inline void
+> +__mpc512x_gpio_set(struct of_mm_gpio_chip *mm_gc, unsigned int gpio, int=
+ val)
+> +{
+> + =A0 =A0 =A0 struct mpc512x_chip *chip =3D to_mpc512x_gpiochip(mm_gc);
+> + =A0 =A0 =A0 struct mpc512x_gpio_regs __iomem *regs =3D mm_gc->regs;
+> +
+> +
+> + =A0 =A0 =A0 if (val)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->dat |=3D MPC512x_GPIO_MASK(gpio);
+> + =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->dat &=3D ~MPC512x_GPIO_MASK(gpio);
+> +
+> + =A0 =A0 =A0 out_be32(&regs->gpdat, chip->dat);
+> +}
+> +
+> +static void
+> +mpc512x_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+> +{
+> + =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
+> + =A0 =A0 =A0 struct mpc512x_chip *chip =3D to_mpc512x_gpiochip(mm_gc);
+> + =A0 =A0 =A0 unsigned long flags;
+> +
+> + =A0 =A0 =A0 spin_lock_irqsave(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 __mpc512x_gpio_set(mm_gc, gpio, val);
+> +
+> + =A0 =A0 =A0 spin_unlock_irqrestore(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
+> +}
+> +
+> +static int mpc512x_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> + =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
+> + =A0 =A0 =A0 struct mpc512x_chip *chip =3D to_mpc512x_gpiochip(mm_gc);
+> + =A0 =A0 =A0 struct mpc512x_gpio_regs __iomem *regs =3D mm_gc->regs;
+> + =A0 =A0 =A0 unsigned long flags;
+> +
+> + =A0 =A0 =A0 spin_lock_irqsave(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 /* Disable open-drain function */
+> + =A0 =A0 =A0 chip->odr &=3D ~MPC512x_GPIO_MASK(gpio);
+> + =A0 =A0 =A0 out_be32(&regs->gpodr, chip->odr);
+> +
+> + =A0 =A0 =A0 /* Float the pin */
+> + =A0 =A0 =A0 chip->dir &=3D ~MPC512x_GPIO_MASK(gpio);
+> + =A0 =A0 =A0 out_be32(&regs->gpdir, chip->dir);
+> +
+> + =A0 =A0 =A0 spin_unlock_irqrestore(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +static int
+> +mpc512x_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+> +{
+> + =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc);
+> + =A0 =A0 =A0 struct mpc512x_chip *chip =3D to_mpc512x_gpiochip(mm_gc);
+> + =A0 =A0 =A0 struct mpc512x_gpio_regs __iomem *regs =3D mm_gc->regs;
+> + =A0 =A0 =A0 unsigned long flags;
+> +
+> + =A0 =A0 =A0 spin_lock_irqsave(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 /* First set initial value */
+> + =A0 =A0 =A0 __mpc512x_gpio_set(mm_gc, gpio, val);
+> +
+> + =A0 =A0 =A0 /* Disable open-drain function */
+> + =A0 =A0 =A0 chip->odr &=3D ~MPC512x_GPIO_MASK(gpio);
+> + =A0 =A0 =A0 out_be32(&regs->gpodr, chip->odr);
+> +
+> + =A0 =A0 =A0 /* Drive the pin */
+> + =A0 =A0 =A0 chip->dir |=3D MPC512x_GPIO_MASK(gpio);
+> + =A0 =A0 =A0 out_be32(&regs->gpdir, chip->dir);
+> +
+> + =A0 =A0 =A0 spin_unlock_irqrestore(&chip->lock, flags);
+> +
+> + =A0 =A0 =A0 pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +void __init mpc512x_add_gpiochips(void)
+> +{
+> + =A0 =A0 =A0 struct device_node *np;
+> +
+> + =A0 =A0 =A0 for_each_compatible_node(np, NULL, "fsl,mpc5121-gpio") {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 int ret;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct mpc512x_chip *chip;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct of_mm_gpio_chip *mm_gc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct of_gpio_chip *of_gc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct gpio_chip *gc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct mpc512x_gpio_regs __iomem *regs;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip =3D kzalloc(sizeof(*chip), GFP_KERNEL)=
+;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!chip) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOMEM;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_lock_init(&chip->lock);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mm_gc =3D &chip->mm_gc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_gc =3D &mm_gc->of_gc;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc =3D &of_gc->gc;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc->ngpio =3D 32;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc->direction_input =3D mpc512x_gpio_dir_in=
+;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc->direction_output =3D mpc512x_gpio_dir_o=
+ut;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc->get =3D mpc512x_gpio_get;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gc->set =3D mpc512x_gpio_set;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_mm_gpiochip_add(np, mm_gc);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err;
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 regs =3D mm_gc->regs;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->dat =3D in_be32(&regs->gpdat);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->dir =3D in_be32(&regs->gpdir);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 chip->odr =3D in_be32(&regs->gpodr);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
+> +err:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: registration failed with status=
+ %d\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0np->full_name, ret);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(chip);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* try others anyway */
+> + =A0 =A0 =A0 }
+> +}
+> diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/=
+platforms/512x/mpc512x_shared.c
+> index 707e572..15da1bc 100644
+> --- a/arch/powerpc/platforms/512x/mpc512x_shared.c
+> +++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+> @@ -178,4 +178,7 @@ void __init mpc512x_init(void)
+> =A0 =A0 =A0 =A0mpc5121_clk_init();
+> =A0 =A0 =A0 =A0mpc512x_restart_init();
+> =A0 =A0 =A0 =A0mpc512x_psc_fifo_init();
+> +#ifdef CONFIG_MPC512x_GPIO
+> + =A0 =A0 =A0 mpc512x_add_gpiochips();
+> +#endif
+> =A0}
+> --
+> 1.7.0.4
+>
+>
+
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
