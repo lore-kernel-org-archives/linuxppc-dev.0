@@ -1,25 +1,18 @@
-Return-Path: <imp@bsdimp.com>
-Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id EDC831007D4
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 7183FB7D88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Jun 2010 01:23:47 +1000 (EST)
-Date: Thu, 10 Jun 2010 09:13:57 -0600 (MDT)
-Message-Id: <20100610.091357.513168276793712624.imp@bsdimp.com>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 6/6] of/device: populate platform_device (of_device)
-	resource table on allocation
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
-References: <20100608194809.GA32732@oksana.dev.rtsoft.ru>
-	<1276150663.1962.43.camel@pasglop>
-	<AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, jeremy.kerr@canonical.com,
-	linuxppc-dev@lists.ozlabs.org
+	Fri, 11 Jun 2010 01:44:56 +1000 (EST)
+Message-ID: <4C11046D.4080205@harris.com>
+Date: Thu, 10 Jun 2010 11:27:41 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH][RFC] ibm_newemac and SIOCGMIIREG
+References: <4C10EFE0.6030106@harris.com> <201006101631.29591.arnd@arndb.de>
+In-Reply-To: <201006101631.29591.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message: <AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
-            Grant Likely <grant.likely@secretlab.ca> writes:
-: On Thu, Jun 10, 2010 at 12:17 AM, Benjamin Herrenschmidt
-: <benh@kernel.crashing.org> wrote:
-: >
-: >> You just introduced an unnamed structure of device + resources,
-: >> it isn't declared anywhere but in the code itself (either via
-: >> &foo[1] or buf + sizeof(*foo)).
-: >>
-: >> You're not the only one who hacks (or at least have to
-: >> understand) the OF stuff, so let's try keep this stuff
-: >> readable?
-: >>
-: >> I told you several ways of how to improve the code (based on
-: >> the ideas from drivers/base/, so the ideas aren't even mine,
-: >> fwiw).
-: >
-: > I tend to agree with Anton here.
-: 
-: The reason I'm confident doing it that way is that it is *not* a
-: structure.  There is no structure relationship between the resource
-: table and the platform_device other than they are allocated with the
-: same kzalloc() call.  All the code that cares about that is contained
-: within 4 lines of code.  I'm resistant to using a structure because it
-: is adds an additional 5-6 lines of code to add a structure that won't
-: be used anywhere else, and is only 4 lines to begin with.
+On 06/10/2010 10:31 AM, Arnd Bergmann wrote:
+> 
+> On Thursday 10 June 2010, Steven A. Falco wrote:
+>> I believe there is a bug in the way the ibm_newemac driver handles the
+>> SIOCGMIIREG (and SIOCSMIIREG) ioctl.  The problem is that emac_ioctl
+>> is handed a "struct ifreq *rq" which contains a user-land pointer to
+>> an array of 16-bit integers.
+> 
+> Did you actually see a bug here, or just think that this could be
+> a problem?
 
-I tend to agree with Grant here.  The idiom he's using is very wide
-spread in the industry and works extremely well.  It keeps the
-ugliness confined to a couple of lines and is less ugly than the
-alternatives for this design pattern.  It is a little surprising when
-you see the code the first time, granted, but I think its expressive
-power trumps that small surprise.
+I did see a problem.  I tried using the ioctl, and I didn't get the
+correct result.  I then added some printk in the driver, and saw that
+garbage was being passed in the data array.
 
-Warner
+I added the copy_from/copy_to, and the ioctl started working.
+
+> 
+>> However, emac_ioctl directly accesses the data, which doesn't work.
+>> I added the following patch to copy the data in and out.
+>>
+>> Please note that this patch was tested in an older kernel (2.6.30)
+>> because that is what we are using on our custom hardware.  I think
+>> this is still a problem in the current code, but I'd like reviewers
+>> to take a look, to be sure.
+> 
+> The ifreq structure passed into the ndo_ioctl function is in kernel
+> space, it gets copied there by net/core/dev.c:dev_ioctl().
+> emac_ioctl only accesses the data in that structure, so a copy_from_user
+> is wrong here as far as I can tell.
+
+net/core/dev.c:dev_ioctl() does a copy_from_user on the overall structure,
+but the structure contains a union, one member of which is an embedded
+pointer to an array.  This pointer member is only used in the case of these
+two ioctls.  Other ioctls use different union members, which are not pointers.
+
+As I understand it, the copy_from_user in dev_ioctl does not recursively
+copy the array.  In fact it could not do so, because the pointer to array
+is only 4 bytes long, while the array itself is 8 bytes long - so it would
+not fit.  I.e., dev_ioctl would have to allocate storage, and do a second
+copy_from_user to retrieve the array.  It would have to clean up after the
+emac_ioctl ran.  And it would have to do this only for these specific
+ioctl calls which use the array pointer in the union.
+
+Also, the result has to be returned to the user in the same array, which
+needs a copy_to_user of the array data, which is also not done in dev_ioctl.
+
+So I think this second copy_from/copy_to needs to be done somewhere.  I
+added it in the emac_ioctl because that is where the command is fully
+decoded.  It also avoids the problem of allocating space for the copied
+array.  But other fixes are certainly possible as well, which is why I am
+not sure I've hit on the "proper" fix.
+
+Thanks very much for reviewing - please let me know if my explanation is
+unclear, or if you see a better way to fix this problem.
+
+	Steve
+
+> 
+> 	Arnd
+
+
+-- 
+A: Because it makes the logic of the discussion difficult to follow.
+Q: Why shouldn't I top post?
+A: No.
+Q: Should I top post?
