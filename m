@@ -2,22 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8F703B7D81
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 16:14:42 +1000 (EST)
-Subject: Re: [PATCH 3/5] Removing dead CONFIG_SMP_750
+	by ozlabs.org (Postfix) with ESMTPS id C2FC71007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 16:18:03 +1000 (EST)
+Subject: Re: [PATCH 1/5] Removing dead BOOK3E_MMU_TLB_STATS
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20100609123557.GJ7801@zod.rchland.ibm.com>
+To: Christoph Egger <siccegge@cs.fau.de>
+In-Reply-To: <20aa4815e07e1be0b073bcf4f63331a68b8f74be.1275925219.git.siccegge@cs.fau.de>
 References: <cover.1275925219.git.siccegge@cs.fau.de>
-	<8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
-	<20100609123557.GJ7801@zod.rchland.ibm.com>
+	<20aa4815e07e1be0b073bcf4f63331a68b8f74be.1275925219.git.siccegge@cs.fau.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Jun 2010 16:14:21 +1000
-Message-ID: <1276150461.1962.42.camel@pasglop>
+Date: Thu, 10 Jun 2010 15:20:19 +1000
+Message-ID: <1276147219.1962.41.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, vamos@i4.informatik.uni-erlangen.de,
-	Christoph Egger <siccegge@cs.fau.de>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+	vamos@i4.informatik.uni-erlangen.de, Huang Weiyi <weiyi.huang@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +27,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-06-09 at 08:35 -0400, Josh Boyer wrote:
-> On Wed, Jun 09, 2010 at 12:00:21PM +0200, Christoph Egger wrote:
-> >CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
-> >references for it from the source code.
-> 
-> Yeah, we don't support SMP on 750 at the moment.  This code was carried over
-> from the arch/ppc days, and that code was present pre-git.  I think we can
-> drop it, but I'll leave that up to Ben.  Maybe he has crazy plans for a 750 SMP
-> board.
+On Wed, 2010-06-09 at 11:59 +0200, Christoph Egger wrote:
+> BOOK3E_MMU_TLB_STATS doesn't exist in Kconfig, therefore removing all
+> references for it from the source code.
 
-Nope :-) Though it would be nice to also remove the call sites too and
-thus remove the macro entirely.
+Heh, thanks but no :-)
+
+I want to keep that code here, until we hook it up again. It was hooked
+up properly in some internal stuff that didn't go upstream for some
+reason and I need to fix that.
 
 Cheers,
 Ben.
 
-> josh
+> Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+> ---
+>  arch/powerpc/include/asm/exception-64e.h |   38 ------------------------------
+>  arch/powerpc/mm/tlb_low_64e.S            |    9 -------
+>  2 files changed, 0 insertions(+), 47 deletions(-)
 > 
-> >
-> >Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
-> >---
-> > arch/powerpc/mm/tlb_hash32.c |    4 ----
-> > 1 files changed, 0 insertions(+), 4 deletions(-)
-> >
-> >diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
-> >index 8aaa8b7..925fecb 100644
-> >--- a/arch/powerpc/mm/tlb_hash32.c
-> >+++ b/arch/powerpc/mm/tlb_hash32.c
-> >@@ -94,11 +94,7 @@ void tlb_flush(struct mmu_gather *tlb)
-> >  * the cache operations on the bus.  Hence we need to use an IPI
-> >  * to get the other CPU(s) to invalidate their TLBs.
-> >  */
-> >-#ifdef CONFIG_SMP_750
-> >-#define FINISH_FLUSH	smp_send_tlb_invalidate(0)
-> >-#else
-> > #define FINISH_FLUSH	do { } while (0)
-> >-#endif
-> >
-> > static void flush_range(struct mm_struct *mm, unsigned long start,
-> > 			unsigned long end)
-> >-- 
-> >1.6.3.3
-> >
-> >_______________________________________________
-> >Linuxppc-dev mailing list
-> >Linuxppc-dev@lists.ozlabs.org
-> >https://lists.ozlabs.org/listinfo/linuxppc-dev
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+> index 6d53f31..db74814 100644
+> --- a/arch/powerpc/include/asm/exception-64e.h
+> +++ b/arch/powerpc/include/asm/exception-64e.h
+> @@ -65,14 +65,7 @@
+>  #define EX_TLB_MMUCR0	(12 * 8) /* Level 0 */
+>  #define EX_TLB_MAS1	(12 * 8) /* Level 0 */
+>  #define EX_TLB_MAS2	(13 * 8) /* Level 0 */
+> -#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
+> -#define EX_TLB_R8	(14 * 8)
+> -#define EX_TLB_R9	(15 * 8)
+> -#define EX_TLB_LR	(16 * 8)
+> -#define EX_TLB_SIZE	(17 * 8)
+> -#else
+>  #define EX_TLB_SIZE	(14 * 8)
+> -#endif
+>  
+>  #define	START_EXCEPTION(label)						\
+>  	.globl exc_##label##_book3e;					\
+> @@ -157,36 +150,6 @@ exc_##label##_book3e:
+>  	addi	r11,r13,PACA_EXTLB;					    \
+>  	TLB_MISS_RESTORE(r11)
+>  
+> -#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
+> -#define TLB_MISS_PROLOG_STATS						    \
+> -	mflr	r10;							    \
+> -	std	r8,EX_TLB_R8(r12);					    \
+> -	std	r9,EX_TLB_R9(r12);					    \
+> -	std	r10,EX_TLB_LR(r12);
+> -#define TLB_MISS_RESTORE_STATS					            \
+> -	ld	r16,EX_TLB_LR(r12);					    \
+> -	ld	r9,EX_TLB_R9(r12);					    \
+> -	ld	r8,EX_TLB_R8(r12);					    \
+> -	mtlr	r16;
+> -#define TLB_MISS_STATS_D(name)						    \
+> -	addi	r9,r13,MMSTAT_DSTATS+name;				    \
+> -	bl	.tlb_stat_inc;
+> -#define TLB_MISS_STATS_I(name)						    \
+> -	addi	r9,r13,MMSTAT_ISTATS+name;				    \
+> -	bl	.tlb_stat_inc;
+> -#define TLB_MISS_STATS_X(name)						    \
+> -	ld	r8,PACA_EXTLB+EX_TLB_ESR(r13);				    \
+> -	cmpdi	cr2,r8,-1;						    \
+> -	beq	cr2,61f;						    \
+> -	addi	r9,r13,MMSTAT_DSTATS+name;				    \
+> -	b	62f;							    \
+> -61:	addi	r9,r13,MMSTAT_ISTATS+name;				    \
+> -62:	bl	.tlb_stat_inc;
+> -#define TLB_MISS_STATS_SAVE_INFO					    \
+> -	std	r14,EX_TLB_ESR(r12);	/* save ESR */			    \
+> -
+> -
+> -#else
+>  #define TLB_MISS_PROLOG_STATS
+>  #define TLB_MISS_RESTORE_STATS
+>  #define TLB_MISS_STATS_D(name)
+> @@ -194,7 +157,6 @@ exc_##label##_book3e:
+>  #define TLB_MISS_STATS_X(name)
+>  #define TLB_MISS_STATS_Y(name)
+>  #define TLB_MISS_STATS_SAVE_INFO
+> -#endif
+>  
+>  #define SET_IVOR(vector_number, vector_offset)	\
+>  	li	r3,vector_offset@l; 		\
+> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+> index 8b04c54..4d7d059 100644
+> --- a/arch/powerpc/mm/tlb_low_64e.S
+> +++ b/arch/powerpc/mm/tlb_low_64e.S
+> @@ -758,12 +758,3 @@ tlb_load_linear_fault:
+>  1:	TLB_MISS_EPILOG_ERROR_SPECIAL
+>  	b	exc_instruction_storage_book3e
+>  
+> -
+> -#ifdef CONFIG_BOOK3E_MMU_TLB_STATS
+> -.tlb_stat_inc:
+> -1:	ldarx	r8,0,r9
+> -	addi	r8,r8,1
+> -	stdcx.	r8,0,r9
+> -	bne-	1b
+> -	blr
+> -#endif
