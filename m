@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <skrishnakar@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id CF2F11007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 17:04:58 +1000 (EST)
+Received: by vws6 with SMTP id 6so5507970vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 00:04:56 -0700 (PDT)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100610154741.GA7484@oksana.dev.rtsoft.ru>
-References: <20100608194809.GA32732@oksana.dev.rtsoft.ru>
-	<1276150663.1962.43.camel@pasglop>
-	<AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
-	<20100610.091357.513168276793712624.imp@bsdimp.com>
-	<20100610154741.GA7484@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Jun 2010 10:30:26 -0600
-Message-ID: <AANLkTimjIyclTWZZW1A26zOcWroK-bwOkmEqsLm4DINk@mail.gmail.com>
-Subject: Re: [PATCH 6/6] of/device: populate platform_device (of_device)
-	resource table on allocation
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au, jeremy.kerr@canonical.com,
-	linuxppc-dev@lists.ozlabs.org, "M. Warner Losh" <imp@bsdimp.com>
+In-Reply-To: <BAY152-w7029D1872C3896BB5E40DBCD70@phx.gbl>
+References: <BAY152-w7029D1872C3896BB5E40DBCD70@phx.gbl>
+Date: Thu, 10 Jun 2010 12:34:56 +0530
+Message-ID: <AANLkTimQNPb0WAvAk6mNAsy25k0OZ482EwLCD0wlukvl@mail.gmail.com>
+Subject: Re: Port Linux to ML510
+From: srikanth krishnakar <skrishnakar@gmail.com>
+To: kostas padarnitsas <kpada84@hotmail.com>
+Content-Type: multipart/alternative; boundary=00c09f88ceb0d434a40488a7a3f9
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,110 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 10, 2010 at 9:47 AM, Anton Vorontsov <cbouatmailru@gmail.com> w=
-rote:
-> On Thu, Jun 10, 2010 at 09:13:57AM -0600, M. Warner Losh wrote:
-> [...]
->> : >> I told you several ways of how to improve the code (based on
->> : >> the ideas from drivers/base/, so the ideas aren't even mine,
->> : >> fwiw).
->> : >
->> : > I tend to agree with Anton here.
->> :
->> : The reason I'm confident doing it that way is that it is *not* a
->> : structure. =A0There is no structure relationship between the resource
->> : table and the platform_device other than they are allocated with the
->> : same kzalloc() call. =A0All the code that cares about that is containe=
-d
->> : within 4 lines of code. =A0I'm resistant to using a structure because =
-it
->> : is adds an additional 5-6 lines of code to add a structure that won't
->> : be used anywhere else, and is only 4 lines to begin with.
->>
->> I tend to agree with Grant here. =A0The idiom he's using is very wide
->> spread in the industry and works extremely well. =A0It keeps the
->> ugliness confined to a couple of lines and is less ugly than the
->> alternatives for this design pattern. =A0It is a little surprising when
->> you see the code the first time, granted, but I think its expressive
->> power trumps that small surprise.
+--00c09f88ceb0d434a40488a7a3f9
+Content-Type: text/plain; charset=ISO-8859-1
+
+Hi kostas,
+
+You need to verify that the driver version of serial and Ethernet (probably
+X-LLTEMAC) provided in the virtex440.dts matches version used in kernel.
+Look for "compatible = <version>" in the drivers. You can probably use EDK
+11.2 as it is the latest from Xilinx.
+
+Have you generated your own DTS and Bitstream (download.bit) files ?
+
+If not then you should look for suitable download.bit for you kernel.
+
+-Srikant
+
+2010/6/10 kostas padarnitsas <kpada84@hotmail.com>
+
+>  Hello,
 >
-> Oh, come on. Both constructions are binary equivalent.
+> I am trying to port Linux to PowerPC on the ML510 Xilinx board. I am using
+> EDK 10.1.3 to build the hardware and also device tree generator and the
+> linux kernel from xilinx git. I followed the tutorial from
+> http://xilinx.wikidot.com/powerpc-linux but I have no output. I have
+> attached my .mhs file and the .dts.  Any ideas what may cause this problem
+> because I did the same thing with ML507 and it was working perfectly?
 >
-> So how can people seriously be with *that* code:
+> Thanks in advance,
+> Kostas
 >
-> =A0 =A0 =A0 =A0dev->resource =3D (void *)&dev[1];
+> ------------------------------
+> Your E-mail and More On-the-Go. Get Windows Live Hotmail Free. Sign up
+> now. <https://signup.live.com/signup.aspx?id=60969>
 >
-> which, semantically, is a nonsense and asks for a fix.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
-> While
-> =A0 =A0 =A0 =A0dev_obj->dev.resource =3D dev_obj->resource;
->
-> simply makes sense.
 
-Well, my choices are (without whitespace so as not to bias line count):
 
-A)
-struct of_device *alloc_function(int num_res)
-{
-	struct device *ofdev;
-	struct resource *res;
-	ofdev =3D kzalloc(sizeof(*ofdev) + (sizeof(*res) * num_res), GFP_KERNEL);
-	if (!ofdev)
-		return NULL;
-	res =3D (struct resource *)&ofdev[1];
-	...
-	return ofdev;
-}
-10 lines of code
 
-B)
-struct of_device_object {
-	struct of_device ofdev;
-	struct resource resource[0];
-};
-struct of_device *alloc_function(int num_res)
-{
-	struct of_device_object *ofobj;
-	struct of_device *ofdev;
-	struct resource *res;
-	ofobj =3D kzalloc(sizeof(*ofobj) + (sizeof(*res) * num_res), GFP_KERNEL);
-	if (!ofobj)
-		return NULL;
-	res =3D ofobj->resource;
-	...
-	return &ofobj->ofdev;
-}
-15 lines of code
+-- 
+"The Good You Do, The Best You GET"
 
-C)
-struct of_device *alloc_function(int num_res)
-{
-	struct device *ofdev;
-	struct resource *res;
-	ofdev =3D kzalloc(sizeof(*ofdev), GFP_KERNEL)
-	if (!ofdev)
-		return NULL;
-	res =3D kzalloc((sizeof(*res) * num_res), GFP_KERNEL);
-	if (!res) {
-		kfree(ofdev);  /* or goto an error unwind label */
-		return NULL;
-	}
-	res =3D (struct resource *)&ofdev[1];
-	...
-	return ofdev;
-}
-15 lines of code, plus an extra few lines at kfree(ofdev) time.
+Regards
+Srikanth Krishnakar
+**********************
 
-When I look at the three, option A is more concise and clearer in it's
-intent to me.
+--00c09f88ceb0d434a40488a7a3f9
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That being said, I'm looking at refactoring to use
-platform_device_alloc() instead, which is effectively option C. (which
-I'd normally avoid, but it removes otherwise duplicate code from
-drivers/of).
+Hi kostas,<br><br>You need to verify that the driver version of serial and =
+Ethernet (probably X-LLTEMAC) provided in the virtex440.dts matches version=
+ used in kernel. Look for &quot;compatible =3D &lt;version&gt;&quot; in the=
+ drivers. You can probably use EDK 11.2 as it is the latest from Xilinx. <b=
+r>
+<br>Have you generated your own DTS and Bitstream (download.bit) files ?<br=
+><br>If not then you should look for suitable download.bit for you kernel.<=
+br><br>-Srikant<br><br><div class=3D"gmail_quote">2010/6/10 kostas padarnit=
+sas <span dir=3D"ltr">&lt;<a href=3D"mailto:kpada84@hotmail.com">kpada84@ho=
+tmail.com</a>&gt;</span><br>
+<blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; borde=
+r-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">
 
-g.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+
+<div>
+Hello,<div><br></div><div>I am trying to port Linux to PowerPC on the ML510=
+ Xilinx board. I am using EDK 10.1.3 to build the hardware and also device =
+tree generator and the linux kernel from xilinx git. I followed the tutoria=
+l from=A0<a href=3D"http://xilinx.wikidot.com/powerpc-linux" target=3D"_bla=
+nk">http://xilinx.wikidot.com/powerpc-linux</a>=A0but I have no output. I h=
+ave attached my .mhs file and the .dts. =A0Any ideas what may cause this pr=
+oblem because I did the same thing with ML507 and it was working perfectly?=
+</div>
+<div><br></div><div>Thanks in advance,</div><div>Kostas</div><font color=3D=
+"#888888"> 		 	   		  </font><br><div class=3D"hm"><hr>Your E-mail and More=
+ On-the-Go. Get Windows Live Hotmail Free. <a href=3D"https://signup.live.c=
+om/signup.aspx?id=3D60969" target=3D"_blank">Sign up now.</a></div>
+</div>
+<br>_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br></blockquote></div>=
+<br><br clear=3D"all"><br>-- <br>&quot;The Good You Do, The Best You GET&qu=
+ot;<br>
+<br>Regards<br>Srikanth Krishnakar<br>**********************<br>
+
+--00c09f88ceb0d434a40488a7a3f9--
