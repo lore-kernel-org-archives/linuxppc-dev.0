@@ -1,22 +1,20 @@
-Return-Path: <siccegge@stud.informatik.uni-erlangen.de>
-Received: from faui03.informatik.uni-erlangen.de
-	(faui03.informatik.uni-erlangen.de [131.188.30.103])
-	by ozlabs.org (Postfix) with ESMTP id 5D358B7D8F
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 22:30:58 +1000 (EST)
-Date: Thu, 10 Jun 2010 14:23:11 +0200
-From: Christoph Egger <siccegge@cs.fau.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] Removing dead CONFIG_SMP_750
-Message-ID: <20100610122311.GA3885@stud.informatik.uni-erlangen.de>
-References: <cover.1275925219.git.siccegge@cs.fau.de>
-	<8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
-	<20100609123557.GJ7801@zod.rchland.ibm.com>
-	<1276150461.1962.42.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 10 Jun 2010 22:40:24 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: Re: [Patch 5/5] PPC64-HWBKPT: Discard extraneous interrupt due to
+	accesses outside symbol length
+Message-ID: <20100610124024.GA28613@brick.ozlabs.ibm.com>
+References: <20100609101417.644628763@linux.vnet.ibm.com>
+	<20100609102559.GF20332@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1276150461.1962.42.camel@pasglop>
-Cc: Paul Mackerras <paulus@samba.org>, vamos@i4.informatik.uni-erlangen.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <20100609102559.GF20332@in.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
+	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,77 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 10, 2010 at 04:14:21PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-06-09 at 08:35 -0400, Josh Boyer wrote:
-> > On Wed, Jun 09, 2010 at 12:00:21PM +0200, Christoph Egger wrote:
-> > >CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
-> > >references for it from the source code.
-> > 
-> > Yeah, we don't support SMP on 750 at the moment.  This code was carried over
-> > from the arch/ppc days, and that code was present pre-git.  I think we can
-> > drop it, but I'll leave that up to Ben.  Maybe he has crazy plans for a 750 SMP
-> > board.
-> 
-> Nope :-) Though it would be nice to also remove the call sites too and
-> thus remove the macro entirely.
+On Wed, Jun 09, 2010 at 03:55:59PM +0530, K.Prasad wrote:
 
-SOmething like below?
+> +	if (!((bp->attr.bp_addr <= dar) &&
+> +	     (dar <= (bp->attr.bp_addr + bp->attr.bp_len)))) {
+> +		/*
+> +		 * This exception is triggered not because of a memory access
+> +		 * on the monitored variable but in the double-word address
+> +		 * range in which it is contained. We will consume this
+> +		 * exception, considering it as 'noise'.
+> +		 */
+> +		info->extraneous_interrupt = true;
+> +	}
 
------
-From: Christoph Egger <siccegge@cs.fau.de>
-Subject: [PATCH 3/5] Removing dead CONFIG_SMP_750
+Ummm, don't you need to add "else info->extraneous_interrupt = false;"
+here?  I don't see anywhere that you ever clear it otherwise.
 
-CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
-references for it from the source code.
+Also, I think you need to do the "if (!info->extraneous_interrupt)"
+check around the call to perf_bp_event() later on in
+hw_breakpoint_handler() as well as around the call in
+single_step_dabr_instruction().
 
-Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
-
-diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
-index 8aaa8b7..09c7820 100644
---- a/arch/powerpc/mm/tlb_hash32.c
-+++ b/arch/powerpc/mm/tlb_hash32.c
-@@ -94,11 +94,6 @@ void tlb_flush(struct mmu_gather *tlb)
-  * the cache operations on the bus.  Hence we need to use an IPI
-  * to get the other CPU(s) to invalidate their TLBs.
-  */
--#ifdef CONFIG_SMP_750
--#define FINISH_FLUSH   smp_send_tlb_invalidate(0)
--#else
--#define FINISH_FLUSH   do { } while (0)
--#endif
- 
- static void flush_range(struct mm_struct *mm, unsigned long start,
-                        unsigned long end)
-@@ -138,7 +133,6 @@ static void flush_range(struct mm_struct *mm, unsigned long start,
- void flush_tlb_kernel_range(unsigned long start, unsigned long end)
- {
-        flush_range(&init_mm, start, end);
--       FINISH_FLUSH;
- }
- EXPORT_SYMBOL(flush_tlb_kernel_range);
- 
-@@ -162,7 +156,6 @@ void flush_tlb_mm(struct mm_struct *mm)
-         */
-        for (mp = mm->mmap; mp != NULL; mp = mp->vm_next)
-                flush_range(mp->vm_mm, mp->vm_start, mp->vm_end);
--       FINISH_FLUSH;
- }
- EXPORT_SYMBOL(flush_tlb_mm);
- 
-@@ -179,7 +172,6 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
-        pmd = pmd_offset(pud_offset(pgd_offset(mm, vmaddr), vmaddr), vmaddr);
-        if (!pmd_none(*pmd))
-                flush_hash_pages(mm->context.id, vmaddr, pmd_val(*pmd), 1);
--       FINISH_FLUSH;
- }
- EXPORT_SYMBOL(flush_tlb_page);
- 
-@@ -192,6 +184,5 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
-                     unsigned long end)
- {
-        flush_range(vma->vm_mm, start, end);
--       FINISH_FLUSH;
- }
- EXPORT_SYMBOL(flush_tlb_range);
--- 
-1.6.3.3
+Paul.
