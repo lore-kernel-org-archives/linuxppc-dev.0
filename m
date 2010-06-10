@@ -1,17 +1,32 @@
-Return-Path: <hellohello008@163.com>
-Received: from m50-135.163.com (m50-135.163.com [123.125.50.135])
-	by ozlabs.org (Postfix) with ESMTP id 7BF57B7D57
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 12:20:10 +1000 (EST)
-Message-ID: <045f01cb0841$42bf97a0$591dbcc0@sfdomain.com>
-From: "hellohello" <hellohello008@163.com>
-To: "Martyn Welch" <martyn.welch@ge.com>,
-	"linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-References: <4C0FA73B.4070905@ge.com>
-Subject: Re: CPM UART on MPC8270
-Date: Thu, 10 Jun 2010 10:04:28 +0800
+Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 21B5EB7D4F
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 13:13:43 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o5A0uMfS022213
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 20:56:22 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5A18tVu101912
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 21:08:55 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5A18t4J024693
+	for <linuxppc-dev@ozlabs.org>; Wed, 9 Jun 2010 21:08:55 -0400
+Date: Wed, 9 Jun 2010 18:08:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: BUG: scheduling while atomic: swapper/0/0x00000002
+Message-ID: <20100610010854.GA11432@linux.vnet.ibm.com>
+References: <20100609215229.GA12774@linux.vnet.ibm.com>
+	<1276125608.1962.0.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1276125608.1962.0.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,103 +36,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QWx0aG91Z2ggSSAgaGF2ZW4ndCB1c2VkIHNjYyBwb3J0IGFzIHVhcnQsICBJIHRoaW5rIHlvdXIg
-c21jMSBwYXJ0IGluIHlvdXIgZHRzIGZpbGUgbWF5YmUgaXMgd3JvbmcuDQoNCnNlcmlhbEAxMWE4
-MiB7IC4uLg0KIHJlZyA9IDwweDExYTgwIDB4MjAgMHg4N2ZjIDI+Ow0Kc2hvdWxkIGJlOg0KICBy
-ZWcgPSA8MHgxMWE4MCAweDIwIFhYWCA0MD47DQpYWFggaXMgdGhlIHZhbHVlIHdoaWNoIGlzIHNl
-dCBhdCAweDg3ZmMgaW4geW91ciBib290bG9hZGVyLiAgDQpJIGp1c3QgZ290IHRoaXMgbWlzdGFr
-ZSBhIGZldyBkYXlzIGFnby4NCiANCg0KDQoNCg0KDQotLS0tLSBPcmlnaW5hbCBNZXNzYWdlIC0t
-LS0tIA0KRnJvbTogIk1hcnR5biBXZWxjaCIgPG1hcnR5bi53ZWxjaEBnZS5jb20+DQpUbzogImxp
-bnV4cHBjLWRldiBsaXN0IiA8bGludXhwcGMtZGV2QG96bGFicy5vcmc+DQpTZW50OiBXZWRuZXNk
-YXksIEp1bmUgMDksIDIwMTAgMTA6MzcgUE0NClN1YmplY3Q6IENQTSBVQVJUIG9uIE1QQzgyNzAN
-Cg0KDQo+IEhpIEFsbCwNCj4gDQo+IEknbSBhdHRlbXB0aW5nIHRvIGdldCBhbiBTQ0MgcG9ydCBv
-biBhbiBNUEM4MjcwIHdvcmtpbmcgd2l0aCBMaW51eC4gSSdtDQo+IG5vdCBvdmVybHkgZmFtaWxp
-YXIgd2l0aCB0aGUgQ1BNIGFuZCBhbSBoYXZpbmcgYSBiaXQgb2YgdHJvdWJsZS4NCj4gDQo+IExp
-bnV4IGlzIGJvb3RpbmcgbmF0aXZlbHkgb24gdGhlIDgyNzAuIEkgaGF2ZSBhY2Nlc3MgdG8gdGhl
-IDgyNzAgdmlhIGENCj4gc2V0IG9mIFBDSSB3aW5kb3dzIGZyb20gYSBzZWNvbmQgY29yZSAoaW5j
-bHVkZXMgb25lIHNldHVwIG92ZXIgdGhlIG1haW4NCj4gbWVtb3J5IGFuZCBvbmUgb3ZlciB0aGUg
-SU1NUikgYW5kIFNNQzEgaXMgdXAgYW5kIHdvcmtpbmcgd2l0aCBhIGNvbnNvbGUuDQo+IA0KPiBU
-aGUgU0NDcyBzZWVtIHRvIGJlIGRldGVjdGVkIGNvcnJlY3RseSBhdCBib290Og0KPiANCj4gZjAx
-MWE4MC5zZXJpYWw6IHR0eUNQTTAgYXQgTU1JTyAweGMzMDE0YTgwIChpcnEgPSAxNikgaXMgYSBD
-UE0gVUFSVA0KPiBmMDExYTAwLnNlcmlhbDogdHR5Q1BNMSBhdCBNTUlPIDB4YzMwMThhMDAgKGly
-cSA9IDQwKSBpcyBhIENQTSBVQVJUDQo+IGYwMTFhMjAuc2VyaWFsOiB0dHlDUE0yIGF0IE1NSU8g
-MHhjMzAyMGEyMCAoaXJxID0gNDEpIGlzIGEgQ1BNIFVBUlQNCj4gZjAxMWE0MC5zZXJpYWw6IHR0
-eUNQTTMgYXQgTU1JTyAweGMzMDI4YTQwIChpcnEgPSA0MikgaXMgYSBDUE0gVUFSVA0KPiANCj4g
-V2l0aCB0aGUgRFRTIHJlYWRpbmc6DQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgIHNtYzE6
-IHNlcmlhbEAxMWE4MCB7DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXZpY2Vf
-dHlwZSA9ICJzZXJpYWwiOw0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0
-aWJsZSA9ICJmc2wsbXBjODI3MC1zbWMtdWFydCIsDQo+ICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLXNtYy11YXJ0IjsNCj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDExYTgwIDB4MjAgMHg4N2ZjIDI+Ow0KPiAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDw0IDg+Ow0KPiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgaW50ZXJydXB0LXBhcmVudCA9IDwmUElDPjsNCj4gICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGZzbCxjcG0tYnJnID0gPDc+Ow0KPiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgZnNsLGNwbS1jb21tYW5kID0gPDB4MWQwMDAwMDA+Ow0K
-PiAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAg
-IHNjYzE6IHNlcmlhbEAxMWEwMCB7DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBk
-ZXZpY2VfdHlwZSA9ICJzZXJpYWwiOw0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-Y29tcGF0aWJsZSA9ICJmc2wsbXBjODI3MC1zY2MtdWFydCIsDQo+ICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLXNjYy11YXJ0IjsNCj4gICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDExYTAwIDB4MjAgMHg4MDAwIDB4MTAw
-PjsNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludGVycnVwdHMgPSA8NDAgOD47
-DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbnRlcnJ1cHQtcGFyZW50ID0gPCZQ
-SUM+Ow0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZnNsLGNwbS1icmcgPSA8Mz47
-DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmc2wsY3BtLWNvbW1hbmQgPSA8MHg4
-MDAwMDA+Ow0KPiAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+IA0KPiAgICAgICAgICAgICAg
-ICAgICAgICAgIHNjYzI6IHNlcmlhbEAxMWEyMCB7DQo+ICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBkZXZpY2VfdHlwZSA9ICJzZXJpYWwiOw0KPiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsbXBjODI3MC1zY2MtdWFydCIsDQo+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImZzbCxjcG0yLXNjYy11YXJ0IjsN
-Cj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDExYTIwIDB4MjAgMHg4
-MTAwIDB4MTAwPjsNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludGVycnVwdHMg
-PSA8NDEgOD47DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbnRlcnJ1cHQtcGFy
-ZW50ID0gPCZQSUM+Ow0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZnNsLGNwbS1i
-cmcgPSA8Nj47DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmc2wsY3BtLWNvbW1h
-bmQgPSA8MHg0YTAwMDAwPjsNCj4gICAgICAgICAgICAgICAgICAgICAgICB9Ow0KPiANCj4gICAg
-ICAgICAgICAgICAgICAgICAgICBzY2MzOiBzZXJpYWxAMTFhNDAgew0KPiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAic2VyaWFsIjsNCj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLG1wYzgyNzAtc2NjLXVhcnQiLA0K
-PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJmc2wsY3BtMi1z
-Y2MtdWFydCI7DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWcgPSA8MHgxMWE0
-MCAweDIwIDB4ODIwMCAweDEwMD47DQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBp
-bnRlcnJ1cHRzID0gPDQyIDg+Ow0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW50
-ZXJydXB0LXBhcmVudCA9IDwmUElDPjsNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IGZzbCxjcG0tYnJnID0gPDE+Ow0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZnNs
-LGNwbS1jb21tYW5kID0gPDB4OGMwMDAwMD47DQo+ICAgICAgICAgICAgICAgICAgICAgICAgfTsN
-Cj4gDQo+IEkgYmVsaWV2ZSB0aGF0IEkgaGF2ZSB0aGUgcGlucyBzZXR1cCBjb3JyZWN0bHkgYW5k
-IHRoZSBCUkdzIGNvbm5lY3RlZA0KPiBjb3JyZWN0bHkgaW4gdGhlIHNldHVwX2FyY2ggZnVuY3Rp
-b24uDQo+IA0KPiBBdCB0aGUgbW9tZW50IEkgaGF2ZSBTQ0MzIHdpcmVkIG91dC4gSWYgSSBhdHRl
-bXB0IHRvIGVjaG8gZGF0YSBvdXQgb2YNCj4gdGhlIFNDQyAoZWNobyAiSGVsbG8iID4gL2Rldi90
-dHlDUE0zKSBJIGdldCB0aGUgcHJvbXB0IHNpdHMgd2FpdGluZy4NCj4gUmVib290aW5nIGFuZCB0
-dXJuaW5nIG9uIHRoZSBkZWJ1ZyB5aWVsZHMgdGhlIGZvbGxvd2luZyBvdXRwdXQgb24gdGhlDQo+
-IGNvbnNvbGUgKGJ1dCBub3RoaW5nIG91dCBvZiB0aGUgU0NDIHBvcnQpOg0KPiANCj4gQ1BNIHVh
-cnRbM106c3RhcnR1cA0KPiBJbnRlcnJ1cHQgYXR0YWNoZWQNCj4gQ1BNIHVhcnRbM106c2V0X3Rl
-cm1pb3MNCj4gQ1BNIHVhcnRbM106c3RhcnQgdHgNCj4gQ1BNIHVhcnRbM106c3RvcCB0eA0KPiBD
-UE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0g
-dWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFy
-dFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFsz
-XTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0
-eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9lbXB0eTogMA0KPiBDUE0gdWFydFszXTp0eF9l
-bXB0eTogMA0KPiBDUE0gdWFydFszXTpzdG9wIHJ4DQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAw
-DQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+
-IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQ
-TSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnNodXRkb3duDQo+IENQTSB1YXJ0
-WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNd
-OnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4
-X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2VtcHR5OiAwDQo+IENQTSB1YXJ0WzNdOnR4X2Vt
-cHR5OiAwDQo+IC4uLg0KPiANCj4gDQo+IEl0IHNlZW1lZCB0byBiZSB3YWl0aW5nIGZvciByZWFk
-eSBiaXQgb2YgdGhlIFRyYW5zbWl0IEJ1ZmZlciBEZXNjcmlwdG9yDQo+IHRvIGJlIGNsZWFyZWQg
-KHdoaWNoIGl0IG5ldmVyIHNlZW1zIHRvIGJlKSwgcHJvZGRpbmcgdGhpcyBiaXQgdGhyb3VnaA0K
-PiB0aGUgcGNpIHdpbmRvdyBkaWQgY2F1c2UgdGhlIHByb2Nlc3MgdG8gY29udGludWUsIG5vIGRh
-dGEgb3V0IGJ1dCBJIGRpZA0KPiBnZXQgYmFjayB0byB0aGUgcHJvbXB0IG9uIHRoZSBjb25zb2xl
-Lg0KPiANCj4gSSdtIHN1cmUgSSdtIGp1c3QgbWlzc2luZyBzb21ldGhpbmcgcmVhbGx5IGJhc2lj
-IC0gY2FuIGFueW9uZSBlbmxpZ2h0ZW4gbWU/DQo+IA0KPiBNYXJ0eW4NCj4gDQo+IC0tIA0KPiBN
-YXJ0eW4gV2VsY2ggKFByaW5jaXBhbCBTb2Z0d2FyZSBFbmdpbmVlcikgICB8ICAgUmVnaXN0ZXJl
-ZCBpbiBFbmdsYW5kIGFuZA0KPiBHRSBJbnRlbGxpZ2VudCBQbGF0Zm9ybXMgICAgICAgICAgICAg
-ICAgICAgICB8ICAgV2FsZXMgKDM4Mjg2NDIpIGF0IDEwMA0KPiBUICs0NCgwKTEyNzMyMjc0OCAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgQmFyYmlyb2xsaSBTcXVhcmUsIE1hbmNoZXN0
-ZXIsDQo+IEUgbWFydHluLndlbGNoQGdlLmNvbSAgICAgICAgICAgICAgICAgICAgICAgIHwgICBN
-MiAzQUIgIFZBVDpHQiA5Mjc1NTkxODkNCj4gDQo+IF9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QNCj4gTGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xp
-c3RpbmZvL2xpbnV4cHBjLWRldg==
+On Thu, Jun 10, 2010 at 09:20:08AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2010-06-09 at 14:52 -0700, Paul E. McKenney wrote:
+> > Hello!
+> > 
+> > I get the following during boot on a 16 CPU Power box.  Thoughts?
+> > (/proc/config attached)
+> 
+> Wow... looks like the preempt count of the idle task got busted or
+> something ... how reproduceable ? Something like a record of previous
+> interrupts might be useful..
+
+I have seen it only once, but it did get my attention.  I will try running
+it again this evening when/if kernel-ml8 is free again.  2.6.35-rc2,
+I should have mentioned.
+
+							Thanx, Paul
+
+> Cheers,
+> Ben.
+> 
+> > 							Thanx, Paul
+> > 
+> > UDP hash table entries: 2048 (order: 6, 262144 bytes)
+> > UDP-Lite hash table entries: 2048 (order: 6, 262144 bytes)
+> > NET: Registered protocol family 1
+> > RPC: Registered udp transport module.
+> > RPC: Registered tcp transport module.
+> > RPC: Registered tcp NFSv4.1 backchannel transport module.
+> > Trying to unpack rootfs image as initramfs...
+> > Freeing initrd memory: 2455k freed
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> > Call Trace:
+> > [c00000008e1afc20] [c000000000011990] .show_stack+0x70/0x184 (unreliable)
+> > [c00000008e1afcd0] [c00000000005cb60] .__schedule_bug+0xac/0xd0
+> > [c00000008e1afd70] [c0000000005f0c34] .schedule+0xc0/0x894
+> > [c00000008e1afe40] [c0000000000142d0] .cpu_idle+0x1f8/0x20c
+> > [c00000008e1afed0] [c000000000600b08] .start_secondary+0x3bc/0x3fc
+> > [c00000008e1aff90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> > Call Trace:
+> > [c00000008e1afc20] [c000000000011990] .show_stack+0x70/0x184 (unreliable)
+> > [c00000008e1afcd0] [c00000000005cb60] .__schedule_bug+0xac/0xd0
+> > [c00000008e1afd70] [c0000000005f0c34] .schedule+0xc0/0x894
+> > [c00000008e1afe40] [c0000000000142d0] .cpu_idle+0x1f8/0x20c
+> > [c00000008e1afed0] [c000000000600b08] .start_secondary+0x3bc/0x3fc
+> > [c00000008e1aff90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> > Call Trace:
+> > [c00000008e1afc20] [c000000000011990] .show_stack+0x70/0x184 (unreliable)
+> > [c00000008e1afcd0] [c00000000005cb60] .__schedule_bug+0xac/0xd0
+> > [c00000008e1afd70] [c0000000005f0c34] .schedule+0xc0/0x894
+> > [c00000008e1afe40] [c0000000000142d0] .cpu_idle+0x1f8/0x20c
+> > [c00000008e1afed0] [c000000000600b08] .start_secondary+0x3bc/0x3fc
+> > [c00000008e1aff90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> > Call Trace:
+> > [c00000008e1afc20] [c000000000011990] .show_stack+0x70/0x184 (unreliable)
+> > [c00000008e1afcd0] [c00000000005cb60] .__schedule_bug+0xac/0xd0
+> > [c00000008e1afd70] [c0000000005f0c34] .schedule+0xc0/0x894
+> > [c00000008e1afe40] [c0000000000142d0] .cpu_idle+0x1f8/0x20c
+> > [c00000008e1afed0] [c000000000600b08] .start_secondary+0x3bc/0x3fc
+> > [c00000008e1aff90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+> > audit: initializing netlink socket (disabled)
+> > type=2000 audit(1276043741.388:1): initialized
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> > Call Trace:
+> > [c00000008e1afc20] [c000000000011990] .show_stack+0x70/0x184 (unreliable)
+> > [c00000008e1afcd0] [c00000000005cb60] .__schedule_bug+0xac/0xd0
+> > [c00000008e1afd70] [c0000000005f0c34] .schedule+0xc0/0x894
+> > [c00000008e1afe40] [c0000000000142d0] .cpu_idle+0x1f8/0x20c
+> > [c00000008e1afed0] [c000000000600b08] .start_secondary+0x3bc/0x3fc
+> > [c00000008e1aff90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > no locks held by swapper/0.
+> > Modules linked in:
+> 
+> 
