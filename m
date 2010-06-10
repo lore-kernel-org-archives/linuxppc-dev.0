@@ -1,19 +1,24 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1D2E6B7D6D
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 19:37:50 +1000 (EST)
-Message-ID: <4C10B266.3070601@grandegger.com>
-Date: Thu, 10 Jun 2010 11:37:42 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 4FB4D1007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 20:21:44 +1000 (EST)
+Received: by fxm5 with SMTP id 5so2134125fxm.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 03:21:42 -0700 (PDT)
+Date: Thu, 10 Jun 2010 12:22:26 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: Re: [PATCH] gianfar: Revive the driver for eTSEC devices (disable
+	timestamping)
+Message-ID: <20100610102226.GA10653@riccoc20.at.omicron.at>
+References: <20100609193219.GA8629@oksana.dev.rtsoft.ru>
+	<20100610062907.GA3390@riccoc20.at.omicron.at>
+	<20100610093159.GA30822@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Roman Fietze <roman.fietze@telemotive.de>
-Subject: Re: CAN Subsystem and MPC52xx onboard controller
-References: <201006101041.27926.roman.fietze@telemotive.de>	<20100610085923.GE5333@pengutronix.de>
-	<201006101129.15581.roman.fietze@telemotive.de>
-In-Reply-To: <201006101129.15581.roman.fietze@telemotive.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100610093159.GA30822@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>,
+	Manfred Rudigier <Manfred.Rudigier@omicron.at>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2010 11:29 AM, Roman Fietze wrote:
-> Hello Wolfram,
+On Thu, Jun 10, 2010 at 01:31:59PM +0400, Anton Vorontsov wrote:
+> > No, we did not set TMR_CTRL[TE].
 > 
-> On Thursday 10 June 2010 10:59:23 Wolfram Sang wrote:
-> 
->> The mainline kernel works fine here with Phytec based MPC5xxx-boards.
-> 
-> Reading your answer made me hope again, and I just pulled the newest
-> HEAD from the mainline kernel and tried it once more. Now it compiles.
-> Thanks for retriggering me again.
-> 
-> All the other's sill have problems, except pengutronix, most of them
-> with an inconsistency (with the socket CAN files?), which shows up as
-> 
->   'struct can_bittime_std' declared inside parameter list
-> 
-> in net/can/dev.c:69
+> So, you deliberately violate the spec and expect it to work
+> everywhere? :-)
 
-With all other you mean the linux-2.6-denx tree!? These seem to be some
-reminders of the old Socket-CAN support merged into that tree (master
-branch). I will clean that up a.s.a.p. Nevertheless, whenever possible,
-you should use the mainline kernel.
+Sometimes one must read the manual with a grain of salt ;)
 
-> So I assume we will switch to the mainline kernel, which we already
-> use for Atom based x86 development on the MEN boards.
-
-DENX tries to push patches upstream as fast as possible and new projects
-are usually based on the mainline kernel tree.
-
-Wolfgang.
-
-
+> > > Also, I recall that Freescale BSPs were explicitly disabling the
+> > > timestamping because of a performance drop.
+> > 
+> > The BSPs that we have, for the MPC8313ERDB and the P2020RBD both
+> > include a (hacky) PTP timestmaping driver. Can you be more specific
+> > about where and when Freescale is disabling timestamping?
 > 
-> Thanks once more
+> Well, bitshrine site no longer allows[1] to list patches at
+> http://www.bitshrine.org/gpp/ , but there was a patch for sure.
 > 
-> Roman
-> 
+> I'll try to find it in a bunch of .iso files that I have on disk
+> tho.
+
+Thanks, that will help to track the problem down.
+
+> U-Boot 1.1.6 (Oct  9 2007 - 20:42:39) MPC83XX
+...
+> CPU: MPC8313E, Rev: 10 at 333.333 MHz
+
+We have a newer CPU revision:
+
+   U-Boot 1.3.0 (Dec 23 2008 - 13:38:14) MPC83XX
+   CPU:   e300c3, MPC8313E, Rev: 21 at 333.333 MHz, CSB:  166 MHz
+
+Perhaps a bug was fixed between revision 10 and 21...
+
+You mentioned having trouble on the MPC8568EMDS. Was it the same
+problem?
+
+Thanks,
+Richard
