@@ -1,22 +1,20 @@
-Return-Path: <maciej.rutecki@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.159])
-	by ozlabs.org (Postfix) with ESMTP id 37533B7D83
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 06:01:05 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id l26so19680fgb.3
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 13:01:04 -0700 (PDT)
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: 2.6.35-rc2 : OOPS with LTP memcg regression test run.
-Date: Thu, 10 Jun 2010 22:00:57 +0200
-References: <4C0BB98E.9030101@in.ibm.com>
-In-Reply-To: <4C0BB98E.9030101@in.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 6A5CEB7D66
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 11 Jun 2010 06:36:29 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: [PATCH][RFC] ibm_newemac and SIOCGMIIREG
+Date: Thu, 10 Jun 2010 22:35:48 +0200
+References: <4C10EFE0.6030106@harris.com> <201006101903.43882.arnd@arndb.de>
+	<4C11414F.5070602@harris.com>
+In-Reply-To: <4C11414F.5070602@harris.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201006102200.57617.maciej.rutecki@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: maciej.rutecki@gmail.com
+  charset="iso-8859-1"
+Message-Id: <201006102235.48632.arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I created a Bugzilla entry at 
-https://bugzilla.kernel.org/show_bug.cgi?id=16178
-for your bug report, please add your address to the CC list in there, thanks!
+On Thursday 10 June 2010 21:47:27 Steven A. Falco wrote:
+> On 06/10/2010 01:03 PM, Arnd Bergmann wrote:
+> > Still unconvinced.
+> 
+> Ok - here is the user-space program I am using to test this.  It simply
+> uses the ioctl to peek and poke the phy.  If I run it on an unmodified
+> kernel, and I read the phy ID registers, i.e. registers 2 and 3, I get:
+> 
+> # ./phy -r -a 2
+> 2: 0000
+> # ./phy -r -a 3
+> 3: 0000
+> 
+> which is clearly wrong.  Once I load my modified kernel, I get:
+> 
+> # ./phy -a 2
+> 2: 0022
+> # ./phy -a 3
+> 3: 1512
+> 
+> which is correct for the phy on my board (i.e. phy id is 00221512).  If you
+> could try this program on a sequoia or similar, I'd be interested in whether
+> you see the problem.
 
-On niedziela, 6 czerwca 2010 o 17:06:54 Sachin Sant wrote:
-> While executing LTP Controller tests(memcg regression) on
-> a POWER6 box came across this following OOPS.
-> 
-> Memory cgroup out of memory: kill process 9139 (memcg_test_1) score 3 or a
->  child Killed process 9139 (memcg_test_1) vsz:3456kB, anon-rss:448kB,
->  file-rss:1088kB Memory cgroup out of memory: kill process 9140
->  (memcg_test_1) score 3 or a child Killed process 9140 (memcg_test_1)
->  vsz:3456kB, anon-rss:448kB, file-rss:1088kB Unable to handle kernel paging
->  request for data at address 0x720072007200720 Faulting instruction
->  address: 0xc00000000015b778
-> Oops: Kernel access of bad area, sig: 11 [#2]
-> SMP NR_CPUS=1024 NUMA pSeries
-> last sysfs file: /sys/devices/system/cpu/cpu1/cache/index1/shared_cpu_map
-> Modules linked in: quota_v2 quota_tree ipv6 fuse loop dm_mod sr_mod cdrom
->  sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod NIP:
->  c00000000015b778 LR: c00000000015b740 CTR: 0000000000000000
-> REGS: c000000009812ff0 TRAP: 0300   Tainted: G      D     
->  (2.6.35-rc2-autotest) MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44004424 
->  XER: 00000001
-> DAR: 0720072007200720, DSISR: 0000000040000000
-> TASK = c000000005fb1100[9155] 'umount' THREAD: c000000009810000 CPU: 0
-> GPR00: 0000000000000000 c000000009813270 c000000000d3d7a0 0000000000000000
-> GPR04: 0000000000008050 0000000000160000 0000000000000027 c00000000f2c6870
-> GPR08: 00000000000006a5 c000000000b16870 c000000000cf0140 000000000e7b0000
-> GPR12: 0000000024004428 c000000007440000 0000000000008000 fffffffffffff000
-> GPR16: 0000000000000000 c0000000098138f0 000000000000002d 0000000000000027
-> GPR20: 0000000000000000 0000000000000027 0000000000000000 c000000007063138
-> GPR24: ffffffffffffffff 0000000000000000 c00000000019bafc c00000000e02e000
-> GPR28: 0000000000000001 0000000000008050 c000000000ca6b00 0720072007200720
-> NIP [c00000000015b778] .kmem_cache_alloc+0xb0/0x13c
-> LR [c00000000015b740] .kmem_cache_alloc+0x78/0x13c
-> Call Trace:
-> [c000000009813270] [c00000000015b740] .kmem_cache_alloc+0x78/0x13c
->  (unreliable) [c000000009813310] [c00000000019bafc]
->  .alloc_buffer_head+0x2c/0x78 [c000000009813390] [c00000000019c99c]
->  .alloc_page_buffers+0x60/0x114 [c000000009813450] [c00000000019ca78]
->  .create_empty_buffers+0x28/0x140 [c0000000098134e0] [c00000000019f2ec]
->  .__block_prepare_write+0xe4/0x4f0 [c000000009813610] [c00000000019f94c]
->  .block_write_begin_newtrunc+0xa8/0x120 [c0000000098136d0]
->  [c00000000019fea0] .block_write_begin+0x34/0x8c [c000000009813770]
->  [c00000000022b458] .ext3_write_begin+0x13c/0x298 [c000000009813880]
->  [c000000000117500] .generic_file_buffered_write+0x13c/0x320
->  [c0000000098139b0] [c000000000119c80]
->  .__generic_file_aio_write+0x378/0x3dc [c000000009813ab0]
->  [c000000000119d68] .generic_file_aio_write+0x84/0xfc [c000000009813b60]
->  [c00000000016e460] .do_sync_write+0xac/0x10c
-> [c000000009813ce0] [c00000000016f204] .vfs_write+0xd0/0x1dc
-> [c000000009813d80] [c00000000016f418] .SyS_write+0x58/0xa0
-> [c000000009813e30] [c0000000000085b4] syscall_exit+0x0/0x40
-> Instruction dump:
-> 38600000 409e0090 38000000 8b8d0212 980d0212 e96d0040 e93b0000 7ce95a14
-> 7fe9582a 2fbf0000 419e0014 e81b001a <7c1f002a> 7c09592a 4800001c 7f46d378
-> ---[ end trace f24cb0cb5729d2bb ]---
-> 
-> And few more of these. Previous snapshot release
->  2.6.35-rc1-git5(6c5de280b6...) was good.
-> 
-> Thanks
-> -Sachin
-> 
+It seems that your program is wrong. On my PC here, it also shows zero,
+while mii-tool works fine.
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+> int
+> main(int argc, char *argv[])
+> {
+>     int		    fd;
+>     struct ifreq    request;
+>     struct mii_ioctl_data data;
+
+This should be
+
+struct mii_ioctl_data *data = &request.ifr_ifru
+
+> > I don't see anywhere in the structure where we actually use a
+> > pointer from ifr_ifru. The if_mii function is defined as
+> > 
+> > static inline struct mii_ioctl_data *if_mii(struct ifreq *rq)
+> > {
+> >         return (struct mii_ioctl_data *) &rq->ifr_ifru;
+> > }
+> > 
+> > That just returns a pointer to the ifr_ifru member itself,
+> 
+> But that pointer points to a separate "struct mii_ioctl_data"
+> in user space.  In my test code above, I do:
+> 
+> request.ifr_data = (__caddr_t)&data;
+> 
+> where data is a "struct mii_ioctl_data" that is separate from the
+> "struct ifreq".  It's not one monolithic structure, it is two
+> structures, one pointing to the other, both in user space.
+
+Only in your code, when you look at mii-tool, it does (correctly)
+
+static int mdio_read(int skfd, int location)
+{
+    struct mii_data *mii = (struct mii_data *)&ifr.ifr_data;
+    mii->reg_num = location;
+    if (ioctl(skfd, SIOCGMIIREG, &ifr) < 0) {
+        fprintf(stderr, "SIOCGMIIREG on %s failed: %s\n", ifr.ifr_name,
+                strerror(errno));
+        return -1;
+    }
+    return mii->val_out;
+}
+
+> > it does not read a __user pointer. Note how if_mii even
+> > returns a kernel pointer (struct mii_ioctl_data *), not
+> > a struct mii_ioctl_data __user *. You even added a cast
+> > that otherwise should not be needed.
+> 
+> I disagree - the structure, as shown in "include/linux/if.h" has
+> "void __user *ifru_data", which is clearly a user pointer.
+
+This is used for SIOCSHWTSTAMP, SIOCBONDINFOQUERY, SIOCETHTOOL
+and possibly a few others but not SIOCGMIIREG.
+ 
+> and that is why the second copy_from_user is needed.  It would have been
+> much nicer if the union contained the actual mii_ioctl_data structure,
+> but I guess the void pointer is more flexible.
+
+No, the void pointer is broken for a number of reasons, that's why
+we don't use it.
+
+> My patch does not give an EFAULT, as you will see if you are able to try
+> my test program.  I won't claim that proves I am right however. :-)
+> 
+> Your statement that copy_to/from_user is just there for security is
+> something I did not know.  Yet, that doesn't appear to be the case,
+> given my experiments.
+
+Right, I misread one line of your patch: when you do
+
+	if (copy_from_user(user_data, (char __user *)data, sizeof(user_data)))
+		return -EFAULT;
+	user_data->val_out = emac_mdio_read(ndev, dev->phy.address,
+				       user_data->reg_num);
+	if (copy_to_user((char __user *)rq->ifr_data, user_data, sizeof(user_data)))
+
+You actually copy in from a different pointer than you copy out to.
+The first one is a cast from a kernel to a user pointer, which
+should actually result in -EFAULT (I don't known why it doesn't)
+while the second one is where you change the interface to match
+your (broken) program.
+
+	Arnd
