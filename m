@@ -1,19 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <4C111C34.1010708@firmworks.com>
-References: <AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
+In-Reply-To: <20100610171029.GA18824@oksana.dev.rtsoft.ru>
+References: <20100608194809.GA32732@oksana.dev.rtsoft.ru>
+	<1276150663.1962.43.camel@pasglop>
+	<AANLkTilpUi1cazljWSFbzliY78RKyHUlvBshUD3NPHPv@mail.gmail.com>
 	<20100610.091357.513168276793712624.imp@bsdimp.com>
 	<20100610154741.GA7484@oksana.dev.rtsoft.ru>
-	<20100610.100140.8559628065321695.imp@bsdimp.com>
-	<20100610165243.GA18043@oksana.dev.rtsoft.ru>
-	<4C111C34.1010708@firmworks.com>
+	<AANLkTimjIyclTWZZW1A26zOcWroK-bwOkmEqsLm4DINk@mail.gmail.com>
+	<20100610171029.GA18824@oksana.dev.rtsoft.ru>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Jun 2010 11:20:13 -0600
-Message-ID: <AANLkTinf2X79ROUekvP3_plImaImI1nuKc369TcqRcFo@mail.gmail.com>
+Date: Thu, 10 Jun 2010 11:21:16 -0600
+Message-ID: <AANLkTinG8oDNsTEjFrV36Sv4okTL1RBuaFCpOvH_PJt1@mail.gmail.com>
 Subject: Re: [PATCH 6/6] of/device: populate platform_device (of_device)
 	resource table on allocation
-To: Mitch Bradley <wmb@firmworks.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: sfr@canb.auug.org.au, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org, jeremy.kerr@canonical.com,
@@ -27,10 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 10, 2010 at 11:09 AM, Mitch Bradley <wmb@firmworks.com> wrote:
-> Wow, there is some serious bikeshedding going on with this argument about
-> structures and arrays .
+On Thu, Jun 10, 2010 at 11:10 AM, Anton Vorontsov
+<cbouatmailru@gmail.com> wrote:
+> On Thu, Jun 10, 2010 at 10:30:26AM -0600, Grant Likely wrote:
+> [...]
+>> =A0 =A0 =A0 res =3D kzalloc((sizeof(*res) * num_res), GFP_KERNEL);
+>> =A0 =A0 =A0 if (!res) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(ofdev); =A0/* or goto an error unwind =
+label */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return NULL;
+>> =A0 =A0 =A0 }
+>> =A0 =A0 =A0 res =3D (struct resource *)&ofdev[1];
+>
+> You mean ofdev->resource =3D res; ?
 
-I know! Isn't it fun?
+Yeah, cut-and-paste error.
 
 g.
