@@ -1,14 +1,14 @@
 Return-Path: <dbaryshkov@gmail.com>
 Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 7A0771007D6
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 17:11:15 +1000 (EST)
-Received: by bwz8 with SMTP id 8so1330066bwz.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 00:11:12 -0700 (PDT)
+	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 5AAD3B7D59
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 17:16:25 +1000 (EST)
+Received: by bwz8 with SMTP id 8so1331855bwz.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 00:16:23 -0700 (PDT)
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] lite5200: fix ethernet phy address
-Date: Thu, 10 Jun 2010 11:11:10 +0400
-Message-Id: <1276153870-24634-1-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH v2] lite5200: fix ethernet phy address
+Date: Thu, 10 Jun 2010 11:16:20 +0400
+Message-Id: <1276154181-25534-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Yogesh Chaudhari <mr.yogesh@gmail.com>, Paul Mackerras <paulus@samba.org>,
@@ -31,12 +31,13 @@ Cc: René Bürgel <r.buergel@unicontrol.de>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 Cc: Yogesh Chaudhari <mr.yogesh@gmail.com>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 ---
- arch/powerpc/boot/dts/lite5200.dts |   25 +++++++++++++++++++++++--
- 1 files changed, 23 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/lite5200.dts |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index 82ff2b1..3532e6f 100644
+index 82ff2b1..2b64d8e 100644
 --- a/arch/powerpc/boot/dts/lite5200.dts
 +++ b/arch/powerpc/boot/dts/lite5200.dts
 @@ -230,8 +230,8 @@
@@ -50,31 +51,5 @@ index 82ff2b1..3532e6f 100644
  			};
  		};
  
-@@ -281,4 +281,25 @@
- 			  0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
- 			  0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- 	};
-+
-+		/*
-+	localbus {
-+		compatible = "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
-+
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+
-+		ranges = <0 0 0xff000000 0x01000000>;
-+
-+		flash@0,0 {
-+			compatible = "cfi-flash";
-+			reg = <0 0x01000000 0x00800000>;
-+			bank-width = <1>;
-+			#size-cells = <1>;
-+			#address-cells = <1>;
-+
-+		};
-+	};
-+*/
-+
- };
 -- 
 1.7.1
