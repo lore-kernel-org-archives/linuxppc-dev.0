@@ -1,21 +1,16 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BBB0D100806
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 16:44:12 +1000 (EST)
-Subject: Re: [PATCH 4/5] of/address: little-endian fixes
+Subject: Re: [PATCH 5/5] of/address: restrict 'no-ranges' kludge to powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20100608141013.25879.34892.stgit@angua>
+In-Reply-To: <20100608141018.25879.44413.stgit@angua>
 References: <20100608140917.25879.67745.stgit@angua>
-	<20100608141013.25879.34892.stgit@angua>
+	<20100608141018.25879.44413.stgit@angua>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Jun 2010 16:43:57 +1000
-Message-ID: <1276152237.1962.60.camel@pasglop>
+Date: Thu, 10 Jun 2010 16:44:35 +1000
+Message-ID: <1276152275.1962.61.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +21,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2010-06-08 at 08:10 -0600, Grant Likely wrote:
-> Fix some endian issues in the OF address translation code.
-> 
+> Certain Apple machines don't use the ranges property correctly, but the
+> workaround should not be applied on other architectures.  This patch
+> disables the workaround for non-powerpc architectures.
+
+I'm half tempted to add it to the quirk list (which should really be
+made generic) so I can disable it on more 'modern' powerpc as well.
+
+Cheers,
+Ben.
+
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: Michal Simek <monstr@monstr.eu>
-> CC: Wolfram Sang <w.sang@pengutronix.de>
 > CC: Stephen Rothwell <sfr@canb.auug.org.au>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> CC: microblaze-uclinux@itee.uq.edu.au
-> CC: linuxppc-dev@ozlabs.org
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: devicetree-discuss@lists.ozlabs.org
 > ---
->  drivers/of/address.c |   12 +++++++-----
->  1 files changed, 7 insertions(+), 5 deletions(-)
+>  drivers/of/address.c |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
 > 
 > diff --git a/drivers/of/address.c b/drivers/of/address.c
-> index 2a905d5..0b04137 100644
+> index 0b04137..5c220c3 100644
 > --- a/drivers/of/address.c
 > +++ b/drivers/of/address.c
-> @@ -22,7 +22,7 @@ static void of_dump_addr(const char *s, const u32 *addr, int na)
->  {
->  	printk(KERN_DEBUG "%s", s);
->  	while (na--)
-> -		printk(" %08x", *(addr++));
-> +		printk(" %08x", be32_to_cpu(*(addr++)));
->  	printk("\n");
->  }
->  #else
-> @@ -79,8 +79,8 @@ static int of_bus_default_translate(u32 *addr, u64 offset, int na)
->  	memset(addr, 0, na * 4);
->  	a += offset;
->  	if (na > 1)
-> -		addr[na - 2] = a >> 32;
-> -	addr[na - 1] = a & 0xffffffffu;
-> +		addr[na - 2] = cpu_to_be32(a >> 32);
-> +	addr[na - 1] = cpu_to_be32(a & 0xffffffffu);
->  
->  	return 0;
->  }
-> @@ -190,14 +190,16 @@ const u32 *of_get_pci_address(struct device_node *dev, int bar_no, u64 *size,
->  	psize /= 4;
->  
->  	onesize = na + ns;
-> -	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
-> -		if ((prop[0] & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
-> +	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++) {
-> +		u32 val = be32_to_cpu(prop[0]);
-> +		if ((val & 0xff) == ((bar_no * 4) + PCI_BASE_ADDRESS_0)) {
->  			if (size)
->  				*size = of_read_number(prop + na, ns);
->  			if (flags)
->  				*flags = bus->get_flags(prop);
->  			return prop;
->  		}
+> @@ -346,12 +346,21 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+>  	 * a 1:1 translation at that level. It's up to the caller not to try
+>  	 * to translate addresses that aren't supposed to be translated in
+>  	 * the first place. --BenH.
+> +	 *
+> +	 * As far as we know, this damage only exists on Apple machines, so
+> +	 * This code is only enabled on powerpc. --gcl
+>  	 */
+>  	ranges = of_get_property(parent, rprop, &rlen);
+> +#if !defined(CONFIG_PPC)
+> +	if (ranges == NULL) {
+> +		pr_err("OF: no ranges; cannot translate\n");
+> +		return 1;
 > +	}
->  	return NULL;
->  }
->  EXPORT_SYMBOL(of_get_pci_address);
+> +#endif /* !defined(CONFIG_PPC) */
+>  	if (ranges == NULL || rlen == 0) {
+>  		offset = of_read_number(addr, na);
+>  		memset(addr, 0, pna * 4);
+> -		pr_debug("OF: no ranges, 1:1 translation\n");
+> +		pr_debug("OF: empty ranges; 1:1 translation\n");
+>  		goto finish;
+>  	}
+>  
