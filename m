@@ -1,20 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 10 Jun 2010 22:40:24 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 5/5] PPC64-HWBKPT: Discard extraneous interrupt due to
-	accesses outside symbol length
-Message-ID: <20100610124024.GA28613@brick.ozlabs.ibm.com>
-References: <20100609101417.644628763@linux.vnet.ibm.com>
-	<20100609102559.GF20332@in.ibm.com>
+Return-Path: <crichton@gmail.com>
+Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
+	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 83C25B7D80
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 23:50:33 +1000 (EST)
+Received: by yxd5 with SMTP id 5so1427253yxd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 10 Jun 2010 06:50:31 -0700 (PDT)
+Message-ID: <4C10EDA2.2080303@gmail.com>
+Date: Thu, 10 Jun 2010 09:50:26 -0400
+From: Mark Crichton <crichton@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100609102559.GF20332@in.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>, shaggy@linux.vnet.ibm.com,
-	Frederic Weisbecker <fweisbec@gmail.com>, David Gibson <dwg@au1.ibm.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Mac Mini suspend issues - misidentified model
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 09, 2010 at 03:55:59PM +0530, K.Prasad wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> +	if (!((bp->attr.bp_addr <= dar) &&
-> +	     (dar <= (bp->attr.bp_addr + bp->attr.bp_len)))) {
-> +		/*
-> +		 * This exception is triggered not because of a memory access
-> +		 * on the monitored variable but in the double-word address
-> +		 * range in which it is contained. We will consume this
-> +		 * exception, considering it as 'noise'.
-> +		 */
-> +		info->extraneous_interrupt = true;
-> +	}
+I've dug up and revived my old Mac Mini (PPC) and been trying to get it
+to work again. I was looking at getting the system to suspend to ram,
+but it didn't seem to be working. So, I tried to trace down the problem.
 
-Ummm, don't you need to add "else info->extraneous_interrupt = false;"
-here?  I don't see anywhere that you ever clear it otherwise.
+I took a look at the kernel code, and I think I may have found the
+issue. According to /proc/cpuinfo, my model is a "PowerMac10,2". Looking
+at platforms/powermac/feature.c, I only see an entry for "PowerMac10,1".
+- From my understanding of the code, this means my machine doesn't get
+PMAC_MB_MAY_SLEEP set, hence no suspend to ram.
 
-Also, I think you need to do the "if (!info->extraneous_interrupt)"
-check around the call to perf_bp_event() later on in
-hw_breakpoint_handler() as well as around the call in
-single_step_dabr_instruction().
+I can easily get a patch together to just copy the PowerMac10,1 entry in
+pmac_mb_defs, for the PowerMac10,2, but I also was wondering if there's
+some issues I may run into. However, from what I see in the code, this
+seems to be a pretty risk-free operation.
 
-Paul.
+Am I on the right track for this one?
+
+Thanks,
+Mark Crichton
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkwQ7aIACgkQOfj2Ja/u/oBxYACeOX5jUQOJ5XloojtoZJXneZL/
+734An1mP41QPuLg/RtVllmgQjgdBxdBJ
+=LLH3
+-----END PGP SIGNATURE-----
