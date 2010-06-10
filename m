@@ -1,24 +1,26 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 98FAD1007D3
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	by ozlabs.org (Postfix) with ESMTP id 36983B7D88
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 11 Jun 2010 08:03:12 +1000 (EST)
-Received: by gyd10 with SMTP id 10so344652gyd.38
+	Fri, 11 Jun 2010 08:08:03 +1000 (EST)
+Received: by gwaa18 with SMTP id a18so369778gwa.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 15:03:10 -0700 (PDT)
+	Thu, 10 Jun 2010 15:08:02 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1276097965-6592-1-git-send-email-emillbrandt@dekaresearch.com>
-References: <1276097965-6592-1-git-send-email-emillbrandt@dekaresearch.com>
+In-Reply-To: <20100609103046.GC5618@opensource.wolfsonmicro.com>
+References: <1276015562-28928-1-git-send-email-emillbrandt@dekaresearch.com>
+	<AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com>
+	<20100609061330.620AC14E867@gemini.denx.de>
+	<20100609103046.GC5618@opensource.wolfsonmicro.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 10 Jun 2010 16:02:50 -0600
-Message-ID: <AANLkTimF4LId2swnWtxQ9WXs7KM30_eskpXSFzxsoRlw@mail.gmail.com>
-Subject: Re: [PATCH 2/2 v2] sound/soc: mpc5200_psc_ac97: Use gpio pins for
-	cold reset.
-To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Date: Thu, 10 Jun 2010 16:07:37 -0600
+Message-ID: <AANLkTinascmPq38PptPH3tRJS-P8IqO9tdLbVb5erLRY@mail.gmail.com>
+Subject: Re: [PATCH 0/2] mpc5200 ac97 gpio reset
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Eric Millbrandt <emillbrandt@dekaresearch.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 9, 2010 at 9:39 AM, Eric Millbrandt
-<emillbrandt@dekaresearch.com> wrote:
-> The implementation of the ac97 "cold" reset is flawed. =A0If the sync and
-> output lines are high when reset is asserted the attached ac97 device
-> may go into test mode. =A0Avoid this by reconfiguring the psc to gpio mod=
-e
-> and generating the reset manually.
+On Wed, Jun 9, 2010 at 4:30 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Wed, Jun 09, 2010 at 08:13:30AM +0200, Wolfgang Denk wrote:
+>> In message <AANLkTimIs90kR5uqhdBQ02oSd94dn08sOITm51Ylrl4-@mail.gmail.com=
+> you wrote:
+>
+>> > Would making a change in uboot be a better solution? Eric, can you
+>> > verify if changing uboot also fixes the problem?
+>
+>> To me it seems better if the driver itself does what needs to be done
+>> instead of relying on specific settings that may or may not be done in
+>> U-Boot. Keep in mind that drivers may be loaded as modules, and that
+>> we even see cases where the same port serves multiple purposes by
+>> loading different driver modules (yes, this is not exactly a clever
+>> idea, but hardware designers come up with such solutions).
+>
+> I do tend to agree that having the driver be able to cope with things is
+> a bit more robust - it's not terribly discoverable for users and people
+> are often justifiably nervous about updating their bootloader.
+>
+> It might, however, be sensible to make the GPIO based reset be optional
+> based on having the OF data for the GPIOs. =A0That way existing DTs will
+> work without changes and systems that can use the reset implementation
+> in the controller will be able to do so.
 
-Hi Eric,
+To me, this seems firmly in the realm of silicon bug workaround.
+Considering that the pins aren't relocatable (ie, the GPIO numbers
+never change), I've got no problem having the GPIO reset logic added
+to arch/powerpc/platforms/52xx and hard coding the GPIO numbers.
 
-Thanks for the patch.  Given a) that this is essentially a silicon
-bug, b) that AC97 only works on PSCs 1 & 2 which cannot be relocated
-to different pins, c) that I really want to avoid giving drivers
-access to port_config even through an API, and d) All mpc5200 AC97
-systems will probably have the same issue, I think this is something
-that shouldn't require a change to the device tree, and can probably
-be contained within arch/powerpc/platforms/52xx.
-
-Overall, I have no problem with the function of the change, but I'd
-like to see these two changes:
-- Add a helper function ot arch/powerpc/platforms/52xx to perform an
-AC97 reset using GPIOs (select GPIO in port_config, toggle reset,
-select PSC in port_config).  Something like
-mpc5200_psc_ac97_gpio_reset(int psc_number).  Just move the GPIO bits.
- The PSC mode setting can be left in the driver.
-- Go ahead and hardcode the GPIO numbers into the platform code.  It
-is definitely a hardware bug workaround, and it isn't something that
-would normally be described in the device tree (though you probably
-need to make the gpio_lock spinlock non-static to maintain mutual
-exclusion).
+I completely agree that it should not require a firmware update to get
+the hardware to work correctly.
 
 g.
