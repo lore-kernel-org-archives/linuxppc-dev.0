@@ -1,23 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 6/6] of/device: populate platform_device (of_device)
-	resource table on allocation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-In-Reply-To: <20100608194809.GA32732@oksana.dev.rtsoft.ru>
-References: <20100608142152.26088.1108.stgit@angua>
-	<20100608142643.26088.61366.stgit@angua>
-	<20100608155702.GA5419@oksana.dev.rtsoft.ru>
-	<AANLkTinZT4z93SWxjce5oRZzmaQHtVnO96zsXO9OX2UZ@mail.gmail.com>
-	<20100608164645.GA15216@oksana.dev.rtsoft.ru>
-	<AANLkTinHH-YhdWpH60Z2BYsiEjzLb_imrk6KUmQRH07P@mail.gmail.com>
-	<20100608194809.GA32732@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 10 Jun 2010 16:17:43 +1000
-Message-ID: <1276150663.1962.43.camel@pasglop>
-Mime-Version: 1.0
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, jeremy.kerr@canonical.com,
-	linuxppc-dev@lists.ozlabs.org
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 89E871007D4
+	for <linuxppc-dev@ozlabs.org>; Thu, 10 Jun 2010 16:28:27 +1000 (EST)
+Received: by fxm5 with SMTP id 5so1973970fxm.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 09 Jun 2010 23:28:24 -0700 (PDT)
+Date: Thu, 10 Jun 2010 08:29:08 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Subject: Re: [PATCH] gianfar: Revive the driver for eTSEC devices (disable
+	timestamping)
+Message-ID: <20100610062907.GA3390@riccoc20.at.omicron.at>
+References: <20100609193219.GA8629@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100609193219.GA8629@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	David Miller <davem@davemloft.net>,
+	Manfred Rudigier <Manfred.Rudigier@omicron.at>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jun 09, 2010 at 11:32:19PM +0400, Anton Vorontsov wrote:
+> Since commit cc772ab7cdcaa24d1fae332d92a1602788644f7a ("gianfar: Add
+> hardware RX timestamping support"), the driver no longer works on
+> at least MPC8313ERDB and MPC8568EMDS boards (and possibly much more
+> boards as well).
 
-> You just introduced an unnamed structure of device + resources,
-> it isn't declared anywhere but in the code itself (either via
-> &foo[1] or buf + sizeof(*foo)).
+What do you mean by, "no longer works?" The driver works fine for us,
+even without TMR_CTRL[TE] set. We tested the driver on two MPC8313ERDB
+REV C boards, one P2020DS, and one P2020RDB.
+
+> That's how MPC8313 Reference Manual describes RCTRL_TS_ENABLE bit:
 > 
-> You're not the only one who hacks (or at least have to
-> understand) the OF stuff, so let's try keep this stuff
-> readable?
+>   Timestamp incoming packets as padding bytes. PAL field is set
+>   to 8 if the PAL field is programmed to less than 8. Must be set
+>   to zero if TMR_CTRL[TE]=0.
 > 
-> I told you several ways of how to improve the code (based on
-> the ideas from drivers/base/, so the ideas aren't even mine,
-> fwiw).
+> I see that the commit above sets this bit, but it doesn't handle
+> TMR_CTRL. Manfred probably had this bit set by the firmware for
+> his boards. But obviously this isn't true for all boards in the
+> wild.
 
-I tend to agree with Anton here.
+No, we did not set TMR_CTRL[TE].
 
-BTW. Why not make of_device a wrapper (or even alias of)
-platform_device ? :-) That way you get the resource array etc.. for free
-and it will make the whole of_device vs. platform_device issue moot.
+For the Rx timestamps, we simply enabled them unconditionally. The
+effect of not setting TMR_CTRL[TE] was that the timestamps were
+invalid, but that should not matter if user space has not configured
+the PTP clock. We left the TMR_CTRL[TE] bit for the PTP clock driver
+(recently submitted and discussed on netdev). Actually, I copy the PTP
+clock driver to the target via 'scp' during development, and I never
+had any trouble.
 
-Cheers,
-Ben.
+> Also, I recall that Freescale BSPs were explicitly disabling the
+> timestamping because of a performance drop.
+
+The BSPs that we have, for the MPC8313ERDB and the P2020RBD both
+include a (hacky) PTP timestmaping driver. Can you be more specific
+about where and when Freescale is disabling timestamping?
+
+> For now, the best way to deal with this is just disable the
+> timestamping, and later we can discuss proper device tree bindings
+> and implement enabling this feature via some property.
+
+Okay, but now we want to identify what exactly works and what not. As
+mentioned, we tested this driver on four different boards and did not
+see any problems.
+
+Thanks,
+Richard
