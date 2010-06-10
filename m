@@ -1,17 +1,13 @@
-Return-Path: <crichton@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 83C25B7D80
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 23:50:33 +1000 (EST)
-Received: by yxd5 with SMTP id 5so1427253yxd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 10 Jun 2010 06:50:31 -0700 (PDT)
-Message-ID: <4C10EDA2.2080303@gmail.com>
-Date: Thu, 10 Jun 2010 09:50:26 -0400
-From: Mark Crichton <crichton@gmail.com>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 13DBE1007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 00:17:12 +1000 (EST)
+Message-ID: <4C10EFE0.6030106@harris.com>
+Date: Thu, 10 Jun 2010 10:00:00 -0400
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Mac Mini suspend issues - misidentified model
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH][RFC] ibm_newemac and SIOCGMIIREG
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,33 +18,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+SIOCGMIIREG and SIOCSMIIREG access a user data structure via a void
+pointer to user space.  So, we need copy_from_user and copy_to_user
+to move the data.
 
-I've dug up and revived my old Mac Mini (PPC) and been trying to get it
-to work again. I was looking at getting the system to suspend to ram,
-but it didn't seem to be working. So, I tried to trace down the problem.
+Signed-off-by: Steven A. Falco <sfalco@harris.com>
 
-I took a look at the kernel code, and I think I may have found the
-issue. According to /proc/cpuinfo, my model is a "PowerMac10,2". Looking
-at platforms/powermac/feature.c, I only see an entry for "PowerMac10,1".
-- From my understanding of the code, this means my machine doesn't get
-PMAC_MB_MAY_SLEEP set, hence no suspend to ram.
+---
 
-I can easily get a patch together to just copy the PowerMac10,1 entry in
-pmac_mb_defs, for the PowerMac10,2, but I also was wondering if there's
-some issues I may run into. However, from what I see in the code, this
-seems to be a pretty risk-free operation.
+I believe there is a bug in the way the ibm_newemac driver handles the
+SIOCGMIIREG (and SIOCSMIIREG) ioctl.  The problem is that emac_ioctl
+is handed a "struct ifreq *rq" which contains a user-land pointer to
+an array of 16-bit integers.
 
-Am I on the right track for this one?
+However, emac_ioctl directly accesses the data, which doesn't work.
+I added the following patch to copy the data in and out.
 
-Thanks,
-Mark Crichton
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Please note that this patch was tested in an older kernel (2.6.30)
+because that is what we are using on our custom hardware.  I think
+this is still a problem in the current code, but I'd like reviewers
+to take a look, to be sure.
 
-iEYEARECAAYFAkwQ7aIACgkQOfj2Ja/u/oBxYACeOX5jUQOJ5XloojtoZJXneZL/
-734An1mP41QPuLg/RtVllmgQjgdBxdBJ
-=LLH3
------END PGP SIGNATURE-----
+--- drivers/net/ibm_newemac/core.c	2010-06-09 19:57:26.000000000 -0400
++++ /home/sfalco/core.c	2010-06-10 09:38:22.000000000 -0400
+@@ -2218,6 +2218,7 @@
+ {
+ 	struct emac_instance *dev = netdev_priv(ndev);
+ 	struct mii_ioctl_data *data = if_mii(rq);
++	struct mii_ioctl_data user_data;
+ 
+ 	DBG(dev, "ioctl %08x" NL, cmd);
+ 
+@@ -2229,13 +2230,19 @@
+ 		data->phy_id = dev->phy.address;
+ 		/* Fall through */
+ 	case SIOCGMIIREG:
+-		data->val_out = emac_mdio_read(ndev, dev->phy.address,
+-					       data->reg_num);
++		if (copy_from_user(user_data, (char __user *)data, sizeof(user_data)))
++			return -EFAULT;
++		user_data->val_out = emac_mdio_read(ndev, dev->phy.address,
++					       user_data->reg_num);
++		if (copy_to_user((char __user *)rq->ifr_data, user_data, sizeof(user_data)))
++			return -EFAULT;
+ 		return 0;
+ 
+ 	case SIOCSMIIREG:
+-		emac_mdio_write(ndev, dev->phy.address, data->reg_num,
+-				data->val_in);
++		if (copy_from_user(user_data, (char __user *)data, sizeof(user_data)))
++			return -EFAULT;
++		emac_mdio_write(ndev, dev->phy.address, user_data->reg_num,
++				user_data->val_in);
+ 		return 0;
+ 	default:
+ 		return -EOPNOTSUPP;
