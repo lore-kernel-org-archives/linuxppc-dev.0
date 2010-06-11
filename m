@@ -1,16 +1,22 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A3F3F1007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 18:37:30 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V5] powerpc/mpc512x: Add gpio driver
-Date: Fri, 11 Jun 2010 10:35:37 +0200
-Message-Id: <1276245337-22897-1-git-send-email-agust@denx.de>
-In-Reply-To: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
-References: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
-Cc: Anatolij Gustschin <agust@denx.de>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, Matthias Fuchs <matthias.fuchs@esd.eu>
+Return-Path: <esbenhaabendal@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 0DDBD1007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 18:45:27 +1000 (EST)
+Received: by fxm5 with SMTP id 5so517046fxm.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 01:45:25 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100303181858.GA458@oksana.dev.rtsoft.ru>
+References: <20100303181858.GA458@oksana.dev.rtsoft.ru>
+Date: Fri, 11 Jun 2010 10:45:24 +0200
+Message-ID: <AANLkTiljLE2pgD5dK6Wa9WrYMCn8oNX_7OtEySrmttsU@mail.gmail.com>
+Subject: Re: [PATCH] gianfar: Fix TX ring processing on SMP machines
+From: Esben Haabendal <esbenhaabendal@gmail.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, netdev@vger.kernel.org,
+	Martyn Welch <martyn.welch@ge.com>, linuxppc-dev@ozlabs.org,
+	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,291 +26,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Matthias Fuchs <matthias.fuchs@esd.eu>
+On Wed, Mar 3, 2010 at 8:18 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> Starting with commit a3bc1f11e9b867a4f49505 ("gianfar: Revive SKB
+> recycling") gianfar driver sooner or later stops transmitting any
+> packets on SMP machines.
+>
+> start_xmit() prepares new skb for transmitting, generally it does
+> three things:
+>
+> 1. sets up all BDs (marks them ready to send), except the first one.
+> 2. stores skb into tx_queue->tx_skbuff so that clean_tx_ring()
+> =A0 would cleanup it later.
+> 3. sets up the first BD, i.e. marks it ready.
+>
+> Here is what clean_tx_ring() does:
+>
+> 1. reads skbs from tx_queue->tx_skbuff
+> 2. checks if the *last* BD is ready. If it's still ready [to send]
+> =A0 then it it isn't transmitted, so clean_tx_ring() returns.
+> =A0 Otherwise it actually cleanups BDs. All is OK.
+>
+> Now, if there is just one BD, code flow:
+>
+> - start_xmit(): stores skb into tx_skbuff. Note that the first BD
+> =A0(which is also the last one) isn't marked as ready, yet.
+> - clean_tx_ring(): sees that skb is not null, *and* its lstatus
+> =A0says that it is NOT ready (like if BD was sent), so it cleans
+> =A0it up (bad!)
+> - start_xmit(): marks BD as ready [to send], but it's too late.
+>
+> We can fix this simply by reordering lstatus/tx_skbuff writes.
+>
+> Reported-by: Martyn Welch <martyn.welch@ge.com>
+> Bisected-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Tested-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Tested-by: Martyn Welch <martyn.welch@ge.com>
+> Cc: Sandeep Gopalpet <Sandeep.Kumar@freescale.com>
+> Cc: Stable <stable@vger.kernel.org> [2.6.33]
+> ---
+> =A0drivers/net/gianfar.c | =A0 =A05 ++++-
+> =A01 files changed, 4 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 8bd3c9f..cccb409 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -2021,7 +2021,6 @@ static int gfar_start_xmit(struct sk_buff *skb, str=
+uct net_device *dev)
+> =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0/* setup the TxBD length and buffer pointer for the first =
+BD */
+> - =A0 =A0 =A0 tx_queue->tx_skbuff[tx_queue->skb_curtx] =3D skb;
+> =A0 =A0 =A0 =A0txbdp_start->bufPtr =3D dma_map_single(&priv->ofdev->dev, =
+skb->data,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0skb_headlen(skb), DMA_TO_D=
+EVICE);
+>
+> @@ -2053,6 +2052,10 @@ static int gfar_start_xmit(struct sk_buff *skb, st=
+ruct net_device *dev)
+>
+> =A0 =A0 =A0 =A0txbdp_start->lstatus =3D lstatus;
+>
+> + =A0 =A0 =A0 eieio(); /* force lstatus write before tx_skbuff */
+> +
+> + =A0 =A0 =A0 tx_queue->tx_skbuff[tx_queue->skb_curtx] =3D skb;
+> +
+> =A0 =A0 =A0 =A0/* Update the current skb pointer to the next entry we wil=
+l use
+> =A0 =A0 =A0 =A0 * (wrapping if necessary) */
+> =A0 =A0 =A0 =A0tx_queue->skb_curtx =3D (tx_queue->skb_curtx + 1) &
 
-This patch adds a gpio driver for MPC512X PowerPCs.
+This patch also makes gianfar work stable on mpc8313 with 2.6.33/RT_PREEMPT=
+.
+WIthout it, I see exactly the same problems as reported by Anton on SMP.
 
-It has been tested on our CAN-CBX-CPU5201 module that
-uses a MPC5121 CPU. This platform comes with a couple of
-LEDs and configuration switches that have been used for testing.
-
-After change to the of-gpio api the reworked driver has been
-tested on pdm360ng board with some configuration switches.
-
-Signed-off-by: Matthias Fuchs <matthias.fuchs@esd.eu>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
-Please consider this patch for inclusion in 2.6.36. Thanks!
-
-v4 -> v5:
- - reworked after change to the of-gpio api,
-   tested on top of the next-devicetree branch.
-
- arch/powerpc/platforms/512x/Kconfig          |    9 +
- arch/powerpc/platforms/512x/Makefile         |    1 +
- arch/powerpc/platforms/512x/mpc512x.h        |    3 +
- arch/powerpc/platforms/512x/mpc512x_gpio.c   |  202 ++++++++++++++++++++++++++
- arch/powerpc/platforms/512x/mpc512x_shared.c |    3 +
- 5 files changed, 218 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/512x/mpc512x_gpio.c
-
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index 4dac9b0..bd763ee 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -30,3 +30,12 @@ config MPC5121_GENERIC
- 
- 	  Compatible boards include:  Protonic LVT base boards (ZANMCU
- 	  and VICVT2).
-+
-+config MPC512x_GPIO
-+	bool "MPC512x GPIO support"
-+	depends on PPC_MPC512x
-+	select GENERIC_GPIO
-+	select ARCH_REQUIRE_GPIOLIB
-+	help
-+	  Say Y here if you're going to use hardware that connects to the
-+	  MPC512x GPIOs.
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 90be2f5..12518e3 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -4,3 +4,4 @@
- obj-y				+= clock.o mpc512x_shared.o
- obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
-+obj-$(CONFIG_MPC512x_GPIO)	+= mpc512x_gpio.o
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index b2daca0..4a1b094 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -16,4 +16,7 @@ extern void __init mpc512x_init(void);
- extern int __init mpc5121_clk_init(void);
- void __init mpc512x_declare_of_platform_devices(void);
- extern void mpc512x_restart(char *cmd);
-+#ifdef CONFIG_MPC512x_GPIO
-+extern int mpc512x_add_gpiochips(void);
-+#endif
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc512x_gpio.c b/arch/powerpc/platforms/512x/mpc512x_gpio.c
-new file mode 100644
-index 0000000..346942e
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/mpc512x_gpio.c
-@@ -0,0 +1,202 @@
-+/*
-+ * MPC512x gpio driver
-+ *
-+ * Copyright (c) 2010 Matthias Fuchs <matthias.fuchs@esd.eu>, esd gmbh
-+ *
-+ * derived from ppc4xx gpio driver
-+ *
-+ * Copyright (c) 2008 Harris Corporation
-+ * Copyright (c) 2008 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
-+ * Copyright (c) MontaVista Software, Inc. 2008.
-+ *
-+ * Author: Steve Falco <sfalco@harris.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/spinlock.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/gpio.h>
-+#include <linux/types.h>
-+
-+#define MPC512x_GPIO_MASK(gpio) (0x80000000 >> (gpio))
-+
-+struct mpc512x_gpio_regs {
-+	u32 gpdir;
-+	u32 gpodr;
-+	u32 gpdat;
-+	u32 gpier;
-+	u32 gpimr;
-+	u32 gpicr1;
-+	u32 gpicr2;
-+};
-+
-+struct mpc512x_chip {
-+	struct of_mm_gpio_chip mm_gc;
-+	spinlock_t lock;
-+
-+	/* shadow registers */
-+	u32 dat;
-+	u32 odr;
-+	u32 dir;
-+};
-+
-+/*
-+ * GPIO LIB API implementation for GPIOs
-+ *
-+ * There are a maximum of 32 gpios in each gpio controller.
-+ */
-+static inline struct mpc512x_chip *
-+to_mpc512x_gpiochip(struct of_mm_gpio_chip *mm_gc)
-+{
-+	return container_of(mm_gc, struct mpc512x_chip, mm_gc);
-+}
-+
-+static int mpc512x_gpio_get(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
-+
-+	return in_be32(&regs->gpdat) & MPC512x_GPIO_MASK(gpio);
-+}
-+
-+static inline void
-+__mpc512x_gpio_set(struct of_mm_gpio_chip *mm_gc, unsigned int gpio, int val)
-+{
-+	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
-+	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
-+
-+
-+	if (val)
-+		chip->dat |= MPC512x_GPIO_MASK(gpio);
-+	else
-+		chip->dat &= ~MPC512x_GPIO_MASK(gpio);
-+
-+	out_be32(&regs->gpdat, chip->dat);
-+}
-+
-+static void
-+mpc512x_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+
-+	__mpc512x_gpio_set(mm_gc, gpio, val);
-+
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
-+}
-+
-+static int mpc512x_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
-+	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+
-+	/* Disable open-drain function */
-+	chip->odr &= ~MPC512x_GPIO_MASK(gpio);
-+	out_be32(&regs->gpodr, chip->odr);
-+
-+	/* Float the pin */
-+	chip->dir &= ~MPC512x_GPIO_MASK(gpio);
-+	out_be32(&regs->gpdir, chip->dir);
-+
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int
-+mpc512x_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct mpc512x_chip *chip = to_mpc512x_gpiochip(mm_gc);
-+	struct mpc512x_gpio_regs __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+
-+	/* First set initial value */
-+	__mpc512x_gpio_set(mm_gc, gpio, val);
-+
-+	/* Disable open-drain function */
-+	chip->odr &= ~MPC512x_GPIO_MASK(gpio);
-+	out_be32(&regs->gpodr, chip->odr);
-+
-+	/* Drive the pin */
-+	chip->dir |= MPC512x_GPIO_MASK(gpio);
-+	out_be32(&regs->gpdir, chip->dir);
-+
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
-+
-+	return 0;
-+}
-+
-+void __init mpc512x_add_gpiochips(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "fsl,mpc5121-gpio") {
-+		int ret;
-+		struct mpc512x_chip *chip;
-+		struct of_mm_gpio_chip *mm_gc;
-+		struct gpio_chip *gc;
-+		struct mpc512x_gpio_regs __iomem *regs;
-+
-+		chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+		if (!chip) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
-+
-+		spin_lock_init(&chip->lock);
-+
-+		mm_gc = &chip->mm_gc;
-+		gc = &mm_gc->gc;
-+
-+		gc->ngpio = 32;
-+		gc->direction_input = mpc512x_gpio_dir_in;
-+		gc->direction_output = mpc512x_gpio_dir_out;
-+		gc->get = mpc512x_gpio_get;
-+		gc->set = mpc512x_gpio_set;
-+
-+		ret = of_mm_gpiochip_add(np, mm_gc);
-+		if (ret)
-+			goto err;
-+
-+		regs = mm_gc->regs;
-+		chip->dat = in_be32(&regs->gpdat);
-+		chip->dir = in_be32(&regs->gpdir);
-+		chip->odr = in_be32(&regs->gpodr);
-+		continue;
-+err:
-+		pr_err("%s: registration failed with status %d\n",
-+		       np->full_name, ret);
-+		kfree(chip);
-+		/* try others anyway */
-+	}
-+}
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index 707e572..15da1bc 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -178,4 +178,7 @@ void __init mpc512x_init(void)
- 	mpc5121_clk_init();
- 	mpc512x_restart_init();
- 	mpc512x_psc_fifo_init();
-+#ifdef CONFIG_MPC512x_GPIO
-+	mpc512x_add_gpiochips();
-+#endif
- }
--- 
-1.7.0.4
+/Esben
+--=20
+Esben Haabendal, Senior Software Consultant
+Dor=E9Development ApS, Ved Stranden 1, 9560 Hadsund, DK-Denmark
+Phone: +45 51 92 53 93, E-mail: eha@doredevelopment.dk
+WWW: http://www.doredevelopment.dk
