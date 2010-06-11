@@ -1,33 +1,24 @@
-Return-Path: <sachinp@in.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 364EFB7D84
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 15:39:23 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5B5dI4O017204
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 15:39:18 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5B5dMRR1609916
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 15:39:22 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5B5dMXQ024752
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 15:39:22 +1000
-Message-ID: <4C11CC08.9080503@in.ibm.com>
-Date: Fri, 11 Jun 2010 11:09:20 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: 2.6.35-rc2 : OOPS with LTP memcg regression test run.
-References: <4C0BB98E.9030101@in.ibm.com>
-	<201006102200.57617.maciej.rutecki@gmail.com>
-	<20100611103509.520671b2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100611103509.520671b2.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, linux-mm@kvack.org,
-	linux-kernel <linux-kernel@vger.kernel.org>, maciej.rutecki@gmail.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DBC45B6ED0
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 16:41:21 +1000 (EST)
+Subject: Re: [PATCH 3/5] Removing dead CONFIG_SMP_750
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Egger <siccegge@cs.fau.de>
+In-Reply-To: <20100610122311.GA3885@stud.informatik.uni-erlangen.de>
+References: <cover.1275925219.git.siccegge@cs.fau.de>
+	<8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
+	<20100609123557.GJ7801@zod.rchland.ibm.com>
+	<1276150461.1962.42.camel@pasglop>
+	<20100610122311.GA3885@stud.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 11 Jun 2010 16:41:04 +1000
+Message-ID: <1276238464.1962.112.camel@pasglop>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, vamos@i4.informatik.uni-erlangen.de,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,36 +28,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KAMEZAWA Hiroyuki wrote:
-> On Thu, 10 Jun 2010 22:00:57 +0200
-> Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
->
->   
->> I created a Bugzilla entry at 
->> https://bugzilla.kernel.org/show_bug.cgi?id=16178
->> for your bug report, please add your address to the CC list in there, thanks!
->>
->>     
->
-> Hmm... It seems a panic in SLUB or SLAB.
-> Is .config available ?
->   
-I think the root cause for this problem was same as the one
-mentioned in this thread (Bug kmalloc-4096 : Poison overwritten)
+On Thu, 2010-06-10 at 14:23 +0200, Christoph Egger wrote:
+> On Thu, Jun 10, 2010 at 04:14:21PM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2010-06-09 at 08:35 -0400, Josh Boyer wrote:
+> > > On Wed, Jun 09, 2010 at 12:00:21PM +0200, Christoph Egger wrote:
+> > > >CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
+> > > >references for it from the source code.
+> > > 
+> > > Yeah, we don't support SMP on 750 at the moment.  This code was carried over
+> > > from the arch/ppc days, and that code was present pre-git.  I think we can
+> > > drop it, but I'll leave that up to Ben.  Maybe he has crazy plans for a 750 SMP
+> > > board.
+> > 
+> > Nope :-) Though it would be nice to also remove the call sites too and
+> > thus remove the macro entirely.
+> 
+> SOmething like below?
 
-http://marc.info/?l=linux-kernel&m=127586004308747&w=2 <http://marc.info/?l=linux-kernel&m=127586004308747&w=2>
+Excellent. Thanks. I'll add that to the batch I'm preparing for Linus.
 
-I verified that the problem goes away after applying the commit 386f40c.
+Cheers,
+Ben.
 
-Thanks
--Sachin 
-
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+> -----
+> From: Christoph Egger <siccegge@cs.fau.de>
+> Subject: [PATCH 3/5] Removing dead CONFIG_SMP_750
+> 
+> CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
+> references for it from the source code.
+> 
+> Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+> 
+> diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
+> index 8aaa8b7..09c7820 100644
+> --- a/arch/powerpc/mm/tlb_hash32.c
+> +++ b/arch/powerpc/mm/tlb_hash32.c
+> @@ -94,11 +94,6 @@ void tlb_flush(struct mmu_gather *tlb)
+>   * the cache operations on the bus.  Hence we need to use an IPI
+>   * to get the other CPU(s) to invalidate their TLBs.
+>   */
+> -#ifdef CONFIG_SMP_750
+> -#define FINISH_FLUSH   smp_send_tlb_invalidate(0)
+> -#else
+> -#define FINISH_FLUSH   do { } while (0)
+> -#endif
+>  
+>  static void flush_range(struct mm_struct *mm, unsigned long start,
+>                         unsigned long end)
+> @@ -138,7 +133,6 @@ static void flush_range(struct mm_struct *mm, unsigned long start,
+>  void flush_tlb_kernel_range(unsigned long start, unsigned long end)
+>  {
+>         flush_range(&init_mm, start, end);
+> -       FINISH_FLUSH;
+>  }
+>  EXPORT_SYMBOL(flush_tlb_kernel_range);
+>  
+> @@ -162,7 +156,6 @@ void flush_tlb_mm(struct mm_struct *mm)
+>          */
+>         for (mp = mm->mmap; mp != NULL; mp = mp->vm_next)
+>                 flush_range(mp->vm_mm, mp->vm_start, mp->vm_end);
+> -       FINISH_FLUSH;
+>  }
+>  EXPORT_SYMBOL(flush_tlb_mm);
+>  
+> @@ -179,7 +172,6 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+>         pmd = pmd_offset(pud_offset(pgd_offset(mm, vmaddr), vmaddr), vmaddr);
+>         if (!pmd_none(*pmd))
+>                 flush_hash_pages(mm->context.id, vmaddr, pmd_val(*pmd), 1);
+> -       FINISH_FLUSH;
+>  }
+>  EXPORT_SYMBOL(flush_tlb_page);
+>  
+> @@ -192,6 +184,5 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+>                      unsigned long end)
+>  {
+>         flush_range(vma->vm_mm, start, end);
+> -       FINISH_FLUSH;
+>  }
+>  EXPORT_SYMBOL(flush_tlb_range);
