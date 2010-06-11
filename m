@@ -1,24 +1,18 @@
-Return-Path: <amit.shah@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 86B51B7D43
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:36:27 +1000 (EST)
-Date: Fri, 11 Jun 2010 19:07:50 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH 5/5] hvc_console: Fix race between hvc_close and hvc_remove
-Message-ID: <20100611133750.GU20595@amit-laptop.redhat.com>
-References: <1683892268.3009511276260172853.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-	<186819076.3013051276262029056.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	by ozlabs.org (Postfix) with ESMTP id BC139B7D8B
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:46:07 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1ON4Yf-00089t-8i
+	for linuxppc-dev@ozlabs.org; Fri, 11 Jun 2010 06:46:05 -0700
+Message-ID: <28855378.post@talk.nabble.com>
+Date: Fri, 11 Jun 2010 06:46:05 -0700 (PDT)
+From: "acrux@cruxppc.org" <acrux@linuxmail.org>
+To: linuxppc-dev@ozlabs.org
+Subject: powermac G5 fails to power off with 2.6.33.x and newer
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <186819076.3013051276262029056.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Clark Williams <williams@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	"Luis Claudio R. Goncalves" <lgoncalv@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (Fri) Jun 11 2010 [09:13:49], John Kacur wrote:
-> 
-> I was just listing patches that Thomas could potentially include
-> in the real-time kernel which is currently based on 2.6.33.5
 
-There's a fix to this patch: 320718ee074acce5ffced6506cb51af1388942aa
-that you might want to include as well.
+hi all,
+this powermac G5 ( PowerMac7,2 - dual 1.8 pci-x) fails to power off and just
+stops there and after a minute or so the fans start to roar. Reboot works
+fine.
 
-		Amit
+Here my kernel config:
+http://clinker.cruxppc.org/~acrux/config-2.6.33.5-powermacg5
+
+
+thanks,
+Nico
+
+-- 
+View this message in context: http://old.nabble.com/powermac-G5-fails-to-power-off-with-2.6.33.x-and-newer-tp28855378p28855378.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
