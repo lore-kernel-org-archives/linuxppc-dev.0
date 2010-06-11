@@ -1,21 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D4148B7D8C
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 07:10:13 +1000 (EST)
-Subject: Re: [PATCH 2.6.35 & stable (v2)] powerpc: fix logic error in
-	fixup_irqs
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1276289756.3918.4.camel@jlt3.sipsolutions.net>
-References: <1276289669.3918.3.camel@jlt3.sipsolutions.net>
-	<1276289756.3918.4.camel@jlt3.sipsolutions.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Jun 2010 23:10:08 +0200
-Message-ID: <1276290608.3918.5.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, alastair.bridgewater@gmail.com
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id B0C36B7D86
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 09:00:12 +1000 (EST)
+Received: by gwb11 with SMTP id 11so1175291gwb.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 16:00:10 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 11 Jun 2010 16:59:46 -0600
+Message-ID: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
+Subject: Request review of device tree documentation
+To: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>, John Rigby <jcrigby@gmail.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au,
+	Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-06-11 at 22:55 +0200, Johannes Berg wrote:
-> When SPARSE_IRQ is set, irq_to_desc() can
-> return NULL. While the code here has a
-> check for NULL, it's not really correct.
-> Fix it by separating the check for it.
+I've been doing a bit of work on some introductory level documentation
+of the flattened device tree.  I've got a rough copy up on the
+devicetree.org wiki, and I could use some feedback.  If anyone has
+some time to look at it, you can find it here:
 
-Incidentally, there's another quirk in fixup_irqs():
+http://devicetree.org/Device_Tree_Usage
 
-...
-        alloc_cpumask_var(&mask, GFP_KERNEL);
-...
-        local_irq_enable();
-        mdelay(1);
-        local_irq_disable();
+Thanks,
+g.
 
-
-Either it's called with IRQs disabled, in which case it shouldn't do
-GFP_KERNEL, or it's called with IRQs enabled, in which case it doesn't
-need the local_irq_enable(), no?
-
-johannes
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
