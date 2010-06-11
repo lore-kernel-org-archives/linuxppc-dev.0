@@ -2,23 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DBC45B6ED0
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 16:41:21 +1000 (EST)
-Subject: Re: [PATCH 3/5] Removing dead CONFIG_SMP_750
+	by ozlabs.org (Postfix) with ESMTPS id 139671007D9
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 17:22:06 +1000 (EST)
+Subject: Re: PCIe bus seems work while 'dma' can't under linux
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Egger <siccegge@cs.fau.de>
-In-Reply-To: <20100610122311.GA3885@stud.informatik.uni-erlangen.de>
-References: <cover.1275925219.git.siccegge@cs.fau.de>
-	<8bf8cfaf47590e1a85f9510bb546ca35e3458bf8.1275925219.git.siccegge@cs.fau.de>
-	<20100609123557.GJ7801@zod.rchland.ibm.com>
-	<1276150461.1962.42.camel@pasglop>
-	<20100610122311.GA3885@stud.informatik.uni-erlangen.de>
+To: jxnuxdy <jxnuxdy@163.com>
+In-Reply-To: <c3ef46.1e4c.12924a10776.Coremail.jxnuxdy@163.com>
+References: <1276219072.1962.82.camel@pasglop>
+	<20100604212134.10552.70717.stgit@angua>
+	<20100604212155.10552.19260.stgit@angua>
+	<1276152002.1962.55.camel@pasglop>
+	<AANLkTinmDFBvAjcjrgf3RHuiXgNxVV20yLzBaqhE5lrk@mail.gmail.com>
+	<c3ef46.1e4c.12924a10776.Coremail.jxnuxdy@163.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Jun 2010 16:41:04 +1000
-Message-ID: <1276238464.1962.112.camel@pasglop>
+Date: Fri, 11 Jun 2010 17:21:24 +1000
+Message-ID: <1276240884.1962.132.camel@pasglop>
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, vamos@i4.informatik.uni-erlangen.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Michal Simek <monstr@monstr.eu>,
+	devicetree-discuss@lists.ozlabs.org, microblaze-uclinux@itee.uq.edu.au,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,81 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-06-10 at 14:23 +0200, Christoph Egger wrote:
-> On Thu, Jun 10, 2010 at 04:14:21PM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2010-06-09 at 08:35 -0400, Josh Boyer wrote:
-> > > On Wed, Jun 09, 2010 at 12:00:21PM +0200, Christoph Egger wrote:
-> > > >CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
-> > > >references for it from the source code.
-> > > 
-> > > Yeah, we don't support SMP on 750 at the moment.  This code was carried over
-> > > from the arch/ppc days, and that code was present pre-git.  I think we can
-> > > drop it, but I'll leave that up to Ben.  Maybe he has crazy plans for a 750 SMP
-> > > board.
-> > 
-> > Nope :-) Though it would be nice to also remove the call sites too and
-> > thus remove the macro entirely.
+On Fri, 2010-06-11 at 09:30 +0800, jxnuxdy wrote:
+> Hi guys,
 > 
-> SOmething like below?
+> I encountered a PCIe problem under linux, the two PCIe bus on my board seems work, 
+> at least I can access the registers through the PCIe bus, however the dma for the
+> PCIe bus can't work, so I just dumped the pci device, but I am curiously to find
+> there is no regions displayed on PCIe controlers, why? is it relate with my 'dma' issue then?
 
-Excellent. Thanks. I'll add that to the batch I'm preparing for Linus.
+It would help if you told us a bit more what the HW is, what you are
+doing with it, etc...
+
+IE. What is your host, what is your device, what platform, etc...
+
+DMA should work provided that your platform code sets it up properly.
+The DMA regions don't appear in /proc/pci or lspci.
 
 Cheers,
 Ben.
 
-> -----
-> From: Christoph Egger <siccegge@cs.fau.de>
-> Subject: [PATCH 3/5] Removing dead CONFIG_SMP_750
 > 
-> CONFIG_SMP_750 doesn't exist in Kconfig, therefore removing all
-> references for it from the source code.
+> bash-2.04# cat /proc/pci
+> PCI devices found:
+>   Bus  0, device   0, function  0:
+>     Class 0b20  Header Type 01: PCI device 1957:0032 (rev 17).
+>   Bus  1, device   0, function  0:
+>     Class 0580  Header Type 00: PCI device 11ab:db90 (rev 1).
+>       Prefetchable 64 bit memory at 0x80000000 [0x800fffff].
+>       Prefetchable 64 bit memory at 0x84000000 [0x87ffffff].
+>   Bus  9, device   0, function  0:
+>     Class 0b20  Header Type 01: PCI device 1957:0032 (rev 17).
+>   Bus 10, device   0, function  0:
+>     Class 0580  Header Type 00: PCI device 11ab:db90 (rev 1).
+>       Prefetchable 64 bit memory at 0xa0000000 [0xa00fffff].
+>       Prefetchable 64 bit memory at 0xa4000000 [0xa7ffffff].
+> bash-2.04# lspci -vv
+> 00:00.0 Power PC: Unknown device 1957:0032 (rev 11)
+>         !!! Invalid class 0b20 for header type 01
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0, cache line size 08
+>         Bus: primary=00, secondary=01, subordinate=06, sec-latency=0
+>         I/O behind bridge: 00000000-00000fff
+>         Memory behind bridge: 80000000-9fffffff
+>         BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+>         Capabilities: [44] Power Management version 2
+>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [4c] #10 [0041]
 > 
-> Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+> 01:00.0 Memory controller: Galileo Technology Ltd.: Unknown device db90 (rev 01)
+>         Subsystem: Galileo Technology Ltd.: Unknown device 11ab
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0, cache line size 08
+>         Interrupt: pin A routed to IRQ 0
+>         Region 0: Memory at 80000000 (64-bit, prefetchable) [size=1M]
+>         Region 2: Memory at 84000000 (64-bit, prefetchable) [size=64M]
+>         Capabilities: [40] Power Management version 2
+>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [50] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+>                 Address: 0000000000000000  Data: 0000
+>         Capabilities: [60] #10 [0011]
 > 
-> diff --git a/arch/powerpc/mm/tlb_hash32.c b/arch/powerpc/mm/tlb_hash32.c
-> index 8aaa8b7..09c7820 100644
-> --- a/arch/powerpc/mm/tlb_hash32.c
-> +++ b/arch/powerpc/mm/tlb_hash32.c
-> @@ -94,11 +94,6 @@ void tlb_flush(struct mmu_gather *tlb)
->   * the cache operations on the bus.  Hence we need to use an IPI
->   * to get the other CPU(s) to invalidate their TLBs.
->   */
-> -#ifdef CONFIG_SMP_750
-> -#define FINISH_FLUSH   smp_send_tlb_invalidate(0)
-> -#else
-> -#define FINISH_FLUSH   do { } while (0)
-> -#endif
->  
->  static void flush_range(struct mm_struct *mm, unsigned long start,
->                         unsigned long end)
-> @@ -138,7 +133,6 @@ static void flush_range(struct mm_struct *mm, unsigned long start,
->  void flush_tlb_kernel_range(unsigned long start, unsigned long end)
->  {
->         flush_range(&init_mm, start, end);
-> -       FINISH_FLUSH;
->  }
->  EXPORT_SYMBOL(flush_tlb_kernel_range);
->  
-> @@ -162,7 +156,6 @@ void flush_tlb_mm(struct mm_struct *mm)
->          */
->         for (mp = mm->mmap; mp != NULL; mp = mp->vm_next)
->                 flush_range(mp->vm_mm, mp->vm_start, mp->vm_end);
-> -       FINISH_FLUSH;
->  }
->  EXPORT_SYMBOL(flush_tlb_mm);
->  
-> @@ -179,7 +172,6 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
->         pmd = pmd_offset(pud_offset(pgd_offset(mm, vmaddr), vmaddr), vmaddr);
->         if (!pmd_none(*pmd))
->                 flush_hash_pages(mm->context.id, vmaddr, pmd_val(*pmd), 1);
-> -       FINISH_FLUSH;
->  }
->  EXPORT_SYMBOL(flush_tlb_page);
->  
-> @@ -192,6 +184,5 @@ void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
->                      unsigned long end)
->  {
->         flush_range(vma->vm_mm, start, end);
-> -       FINISH_FLUSH;
->  }
->  EXPORT_SYMBOL(flush_tlb_range);
+> 09:00.0 Power PC: Unknown device 1957:0032 (rev 11)
+>         !!! Invalid class 0b20 for header type 01
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0, cache line size 08
+>         Bus: primary=00, secondary=0a, subordinate=0f, sec-latency=0
+>         I/O behind bridge: 00000000-00000fff
+>         Memory behind bridge: a0000000-bfffffff
+>         BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+>         Capabilities: [44] Power Management version 2
+>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [4c] #10 [0041]
+> 
+> 0a:00.0 Memory controller: Galileo Technology Ltd.: Unknown device db90 (rev 01)
+>         Subsystem: Galileo Technology Ltd.: Unknown device 11ab
+>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0, cache line size 08
+>         Interrupt: pin A routed to IRQ 0
+>         Region 0: Memory at a0000000 (64-bit, prefetchable) [size=1M]
+>         Region 2: Memory at a4000000 (64-bit, prefetchable) [size=64M]
+>         Capabilities: [40] Power Management version 2
+>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [50] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+>                 Address: 0000000000000000  Data: 0000
+>         Capabilities: [60] #10 [0011]
+> 
+> bash-2.04# 
+> 
+> Thanks
+> Denny
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
