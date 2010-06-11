@@ -1,26 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 17DB3B7D88
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 10:54:00 +1000 (EST)
-Date: Fri, 11 Jun 2010 10:53:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH 5/5] hvc_console: Fix race between hvc_close and hvc_remove
-Message-Id: <20100611105353.e4074525.sfr@canb.auug.org.au>
-In-Reply-To: <1276167780-23002-6-git-send-email-jkacur@redhat.com>
-References: <1276167780-23002-1-git-send-email-jkacur@redhat.com>
-	<1276167780-23002-6-git-send-email-jkacur@redhat.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] of/address: restrict 'no-ranges' kludge to powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <AANLkTikg1hLdV_OUjc3QIhFatP_iLfVClhzmyixmjje1@mail.gmail.com>
+References: <20100608140917.25879.67745.stgit@angua>
+	<20100608141018.25879.44413.stgit@angua>
+	<1276152275.1962.61.camel@pasglop>
+	<AANLkTikg1hLdV_OUjc3QIhFatP_iLfVClhzmyixmjje1@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 11 Jun 2010 11:12:17 +1000
+Message-ID: <1276218737.1962.78.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__11_Jun_2010_10_53_53_+1000_3q4/VhSy9uDpcNKZ"
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Clark Williams <williams@redhat.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	linuxppc-dev@ozlabs.org, Amit Shah <amit.shah@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	"Luis Claudio R. Goncalves" <lgoncalv@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__11_Jun_2010_10_53_53_+1000_3q4/VhSy9uDpcNKZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2010-06-10 at 08:28 -0600, Grant Likely wrote:
+> On Thu, Jun 10, 2010 at 12:44 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Tue, 2010-06-08 at 08:10 -0600, Grant Likely wrote:
+> >> Certain Apple machines don't use the ranges property correctly, but the
+> >> workaround should not be applied on other architectures.  This patch
+> >> disables the workaround for non-powerpc architectures.
+> >
+> > I'm half tempted to add it to the quirk list (which should really be
+> > made generic) so I can disable it on more 'modern' powerpc as well.
+> 
+> In the mean time, are you okay with this version of the patch?
 
-Hi John,
+For the time being yes.
 
-On Thu, 10 Jun 2010 13:03:00 +0200 John Kacur <jkacur@redhat.com> wrote:
->
-> From: Amit Shah <amit.shah@redhat.com>
->=20
-> Alan pointed out a race in the code where hvc_remove is invoked. The
-> recent virtio_console work is the first user of hvc_remove().
-
-I am not sure where this comes from (linuxppc-dev only got 5/5) but this
-patch was applied to Linus' tree quite some time age (and fixed since
-then).
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Fri__11_Jun_2010_10_53_53_+1000_3q4/VhSy9uDpcNKZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkwRiSEACgkQjjKRsyhoI8yylgCfY9U0dyrAfTP2rvGW8lRRF+jW
-9JAAnAoWjPq8AtNfjOOBMrXBHP6uuph+
-=DcOM
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Jun_2010_10_53_53_+1000_3q4/VhSy9uDpcNKZ--
+> g.
+> 
+> >
+> > Cheers,
+> > Ben.
+> >
+> >> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> >> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+> >> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >> CC: linuxppc-dev@lists.ozlabs.org
+> >> CC: devicetree-discuss@lists.ozlabs.org
+> >> ---
+> >>  drivers/of/address.c |   11 ++++++++++-
+> >>  1 files changed, 10 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> >> index 0b04137..5c220c3 100644
+> >> --- a/drivers/of/address.c
+> >> +++ b/drivers/of/address.c
+> >> @@ -346,12 +346,21 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+> >>        * a 1:1 translation at that level. It's up to the caller not to try
+> >>        * to translate addresses that aren't supposed to be translated in
+> >>        * the first place. --BenH.
+> >> +      *
+> >> +      * As far as we know, this damage only exists on Apple machines, so
+> >> +      * This code is only enabled on powerpc. --gcl
+> >>        */
+> >>       ranges = of_get_property(parent, rprop, &rlen);
+> >> +#if !defined(CONFIG_PPC)
+> >> +     if (ranges == NULL) {
+> >> +             pr_err("OF: no ranges; cannot translate\n");
+> >> +             return 1;
+> >> +     }
+> >> +#endif /* !defined(CONFIG_PPC) */
+> >>       if (ranges == NULL || rlen == 0) {
+> >>               offset = of_read_number(addr, na);
+> >>               memset(addr, 0, pna * 4);
+> >> -             pr_debug("OF: no ranges, 1:1 translation\n");
+> >> +             pr_debug("OF: empty ranges; 1:1 translation\n");
+> >>               goto finish;
+> >>       }
+> >>
+> >
+> >
+> >
+> 
+> 
+> 
