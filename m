@@ -1,24 +1,24 @@
-Return-Path: <tartler@faui48a.informatik.uni-erlangen.de>
-Received: from faui40.informatik.uni-erlangen.de
-	(faui40.informatik.uni-erlangen.de [131.188.34.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id D1BA31007E5
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 17:34:52 +1000 (EST)
-From: Reinhard Tartler <Reinhard.Tartler@informatik.uni-erlangen.de>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 0/5] Removing dead code
-References: <cover.1275925219.git.siccegge@cs.fau.de>
-	<1276195612.1556.279.camel@Joe-Laptop.home>
-Date: Fri, 11 Jun 2010 09:26:02 +0200
-In-Reply-To: <1276195612.1556.279.camel@Joe-Laptop.home> (Joe Perches's
-	message of "Thu, 10 Jun 2010 11:46:52 -0700")
-Message-ID: <rwutypado8l.fsf@faui48a.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-	vamos@i4.informatik.uni-erlangen.de, Christoph Egger <siccegge@cs.fau.de>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B7C811007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 21:25:01 +1000 (EST)
+Date: Fri, 11 Jun 2010 13:24:43 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/4] powerpc/fsl_soc.c: prepare for addition of mpc5121
+	USB code
+Message-ID: <20100611132443.567daf79@wker>
+In-Reply-To: <AANLkTim0TVjoVdLZE_QOSi-WPSoisdF7Gv0Y_YF-tajL@mail.gmail.com>
+References: <1272384698-4359-1-git-send-email-agust@denx.de>
+	<1272384698-4359-2-git-send-email-agust@denx.de>
+	<u2gfa686aa41004270951o9a225091k1f68a7bf34f2972a@mail.gmail.com>
+	<20100506211800.335baf63@wker>
+	<AANLkTim0TVjoVdLZE_QOSi-WPSoisdF7Gv0Y_YF-tajL@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>, linux-usb@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joe Perches <joe@perches.com> writes:
+On Wed, 19 May 2010 14:47:47 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-> (cc's trimmed and rpjday added)
->
-> On Wed, 2010-06-09 at 11:58 +0200, Christoph Egger wrote:
->> I've been running a check on the arch/powerpc sourcetree for
->> config Items not defined in Kconfig and found5 such chases.
->
-> Are you aware of
-> http://www.crashcourse.ca/wiki/index.php/Kernel_cleanup_scripts
+> On Thu, May 6, 2010 at 1:18 PM, Anatolij Gustschin <agust@denx.de> wrote:
+> > Hi Grant,
+> >
+> > On Tue, 27 Apr 2010 10:51:21 -0600
+> > Grant Likely <grant.likely@secretlab.ca> wrote:
+> >
+> >> On Tue, Apr 27, 2010 at 10:11 AM, Anatolij Gustschin <agust@denx.de> w=
+rote:
+> >> > Factor out common code for registering a FSL EHCI platform
+> >> > device into new fsl_usb2_register_device() function. This
+> >> > is done to avoid code duplication while adding code for
+> >> > instantiating of MPC5121 dual role USB platform devices.
+> >> > Then, the subsequent patch can use
+> >> > for_each_compatible_node(np, NULL, "fsl,mpc5121-usb2-dr") {
+> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0...
+> >> > =C2=A0 =C2=A0 =C2=A0 =C2=A0fsl_usb2_register_device();
+> >> > }
+> >> >
+> >> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> >> > Cc: Kumar Gala <galak@kernel.crashing.org>
+> >> > Cc: Grant Likely <grant.likely@secretlab.ca>
+> >> > ---
+> >> > =C2=A0arch/powerpc/sysdev/fsl_soc.c | =C2=A0231 +++++++++++++++++++-=
+--------------------
+> >>
+> >> Hi Anatolij,
+> >>
+> >> Thanks for this work. =C2=A0However, I've got concerns.
+> >>
+> >> Forgive me for ragging on code that you didn't write, but this
+> >> fsl_soc.c code for registering the USB device really doesn't belong
+> >> here anymore. =C2=A0It should be part of the drivers/usb/host/ehci-fsl=
+.c
+> >> and the driver should do of-style binding (Which should be a lot
+> >> easier if I manage to get the merge of platform bus and of_platform
+> >> bus into 2.6.35).
+> >
+> > Now I moved the USB devices registration code to
+> > drivers/usb/host/ehci-fsl.c and added of-style binding there. It
+> > works for one platform driver based on your test-devicetree branch.
+> > It seems I can't bind more than one driver to the device described
+> > in the tree. But I need to bind at least 2 drivers, ehci-hcd and
+> > fsl-usb2-udc. For USB OTG support I need additional one to be bound
+> > to the same USB dual role device (also tree different drivers
+> > simultaneously).
+> > I also can't register UDC device in the ehci-fsl.c since registering
+> > of the UDC device should also be possible independent of the EHCI-HDC
+> > driver (for USB device support we do not need host controller driver).
+> > Is it possible to bind more than one driver to the same device
+> > simultaneously? If so, how can I implement this?
+>=20
+> No, the linux driver model can bind exactly one driver to a struct
+> device.  However, that doesn't mean you can't have multiple struct
+> devices (in whatever form they come) to tell the Linux kernel about
+> all the details of a single hardware device.
+>=20
+> >> This patch series makes the fsl_soc.c code even more complicated, and
+> >> scatters what is essentially driver code over even more places in the
+> >> arch/powerpc tree. =C2=A0I'm really not keen on it being merged in this
+> >> form.
+> >
+> > Now I see one reason why it has been originally implemented
+> > this way.
+>=20
+> Should be a solvable problem.  The fsl_soc.c stuff was originally
+> written simply because the infrastructure wasn't there for doing it
+> any other way.  We're long past that point now.  I don't have time to
+> dig into the details now (merge window and all), but ping me in a few
+> weeks and I'll take another look to see if I can help you.
 
-Yes, we are. These scripts aim at a very similar goal.  However, we are
-using a more sound approach that actually involves parsing CPP
-statements and the kconfig language and checking the resulting
-constraints with SAT solving tools.  This way, we get way more precise
-results.
+Hi Grant,
 
-You can read about our approach in [1].
+Ping. Do you have any suggestions how to realize this using current
+infrastructure? Thanks!
 
-[1] http://portal.acm.org/citation.cfm?id=1629732
-
--- 
-Reinhard Tartler                     Department of Computer Science IV
-Martensstr 1, 91058 Erlangen Germany, University of Erlangen-Nuremberg
-            http://www4.informatik.uni-erlangen.de/~tartler
+Anatolij
