@@ -1,23 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	by ozlabs.org (Postfix) with ESMTP id 515681007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:54:03 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1ON4Le-0006yj-NO
-	for linuxppc-dev@ozlabs.org; Fri, 11 Jun 2010 06:32:38 -0700
-Message-ID: <28855222.post@talk.nabble.com>
-Date: Fri, 11 Jun 2010 06:32:38 -0700 (PDT)
-From: "acrux@cruxppc.org" <acrux@linuxmail.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: "event-scan failed" logflood
-In-Reply-To: <1274233162.29980.13.camel@concordia>
+Return-Path: <jkacur@redhat.com>
+Received: from mx02.colomx.prod.int.phx2.redhat.com (mx4-phx2.redhat.com
+	[209.132.183.25]) by ozlabs.org (Postfix) with ESMTP id B74711007D2
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 00:07:38 +1000 (EST)
+Date: Fri, 11 Jun 2010 09:13:49 -0400 (EDT)
+From: John Kacur <jkacur@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Message-ID: <186819076.3013051276262029056.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1683892268.3009511276260172853.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+Subject: Re: [PATCH 5/5] hvc_console: Fix race between hvc_close and hvc_remove
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <loom.20100517T145602-17@post.gmane.org>
-	<1274185991.26143.1.camel@concordia>
-	<loom.20100518T182547-195@post.gmane.org>
-	<1274233162.29980.13.camel@concordia>
+Content-Type: text/plain; charset=utf-8
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Clark Williams <williams@redhat.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	linuxppc-dev@ozlabs.org, Amit Shah <amit.shah@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"Luis Claudio R. Goncalves" <lgoncalv@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,56 +27,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+----- "Stephen Rothwell" <sfr@canb.auug.org.au> wrote:
 
-Michael Ellerman wrote:
+> Hi John,
 > 
-> On Tue, 2010-05-18 at 16:30 +0000, nello martuscielli wrote:
->> Michael Ellerman <michael <at> ellerman.id.au> writes:
->> 
->> _omissis__
->> > > 
->> > > hi, is there available that patch?
->> > > With the fresh new 2.6.34 the logflood problem is still present.
->> > 
->> > You could try this, completely untested:
->> > 
->> > diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
->> > index 4190eae..fd68bed 100644
->> > --- a/arch/powerpc/kernel/rtasd.c
->> > +++ b/arch/powerpc/kernel/rtasd.c
->> > @@ -490,6 +490,12 @@ static int __init rtas_init(void)
->> >                 return -ENODEV;
->> >         }
->> > 
->> > +       if (!rtas_event_scan_rate) {
->> > +               /* Broken firmware: take a rate of zero to mean don't
->> scan */
->> > +               printk(KERN_DEBUG "rtasd: scan rate is 0, not
->> scanning\n");
->> > +               return 0;
->> > +       }
->> > +
->> >         /* Make room for the sequence number */
->> >         rtas_error_log_max = rtas_get_error_log_max();
->> >         rtas_error_log_buffer_max = rtas_error_log_max + sizeof(int);
->> > 
->> 
->> 
->> hi Michael, thanks for pointing me to that patch, now my Pegasos2 G4
->> seems to
->> work fine.
+> On Thu, 10 Jun 2010 13:03:00 +0200 John Kacur <jkacur@redhat.com>
+> wrote:
+> >
+> > From: Amit Shah <amit.shah@redhat.com>
+> > 
+> > Alan pointed out a race in the code where hvc_remove is invoked.
+> The
+> > recent virtio_console work is the first user of hvc_remove().
 > 
-> Great. Can I add Tested-by you?
-> 
+> I am not sure where this comes from (linuxppc-dev only got 5/5) but
+> this
+> patch was applied to Linus' tree quite some time age (and fixed since
+> then).
 > 
 
-hi Michael,
-thanks, this patch seems to solve that problem on my Pegasos2 too.
+Thanks for responding Stephen.
 
+I was just listing patches that Thomas could potentially include
+in the real-time kernel which is currently based on 2.6.33.5
 
-thanks,
-Nico
+I hadn't intended for git-send-email to cc everyone, but it
+automatically included authors. sigh. I'll make sure to suppress that
+next time.
 
--- 
-View this message in context: http://old.nabble.com/Re%3A-%22event-scan-failed%22-logflood-tp28585064p28855222.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+John
