@@ -1,23 +1,17 @@
-Return-Path: <wmb@firmworks.com>
-Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+Return-Path: <thirumalai.p@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (mx0.datapatterns.co.in [121.242.18.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B5013B7D8E
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 14:48:58 +1000 (EST)
-Message-ID: <4C131195.1000009@firmworks.com>
-Date: Fri, 11 Jun 2010 18:48:21 -1000
-From: Mitch Bradley <wmb@firmworks.com>
+	by ozlabs.org (Postfix) with ESMTPS id 4C876B7D8E
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 15:10:24 +1000 (EST)
+Message-ID: <19C9E63006DB43CBA8CD5BA6EDA1E832@itd210>
+From: "Thirumalai" <thirumalai.p@datapatterns.co.in>
+To: <u-boot@lists.denx.de>, <linuxppc-dev@ozlabs.org>
+Subject: random exception on ppc based board
+Date: Sat, 12 Jun 2010 10:40:35 +0530
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Request review of device tree documentation
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
-	<1276311487.1962.172.camel@pasglop>
-In-Reply-To: <1276311487.1962.172.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: microblaze-uclinux@itee.uq.edu.au, Dan Malek <ppc6dev@digitaldans.com>,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Jeremy Kerr <jeremy.kerr@canonical.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Fri, 2010-06-11 at 16:47 -0700, Dan Malek wrote:
->   
->> Hi Grant.
->>
->> On Jun 11, 2010, at 3:59 PM, Grant Likely wrote:
->>
->>     
->>> I've been doing a bit of work on some introductory level documentation
->>> of the flattened device tree.
->>>       
->> Wow, I feel empowered to create device trees now :-)
->> Seriously, I never understood this well and this is a
->> great document.
->>
->> I have one source of confusion.  Your first Initial structure
->> example uses 'compatible' to describe the machine, the
->> paragraph below then mentions the 'model' property,
->> and all subsequent examples use model.
->>
->> Does this mean if I use just the single line in the dts,
->> using 'compatible' implies the ARM machine ID?  If I
->> have more description I use 'model'?
->>     
->
-> Normally, "compatible" is what is used for code to match,
-> and model is more like a user-visible thingy.
->   
+Hi,
+    I am having a ppc based target on which linux-2.4.20 kernel is running 
+with u-boot 1.3.4 as boot loader. The target is having MPC7410 as processor 
+and MPC107 as system controller. Regarding memory it is having 128 MB of ram 
+and 16 MB of Flash memory. Also the kernel is patched with RTLinux-3.2 for 
+realtime performance. I am getting a random Program and DSI exception on the 
+target. Normally the exeption occurs during loading of rtl_time.o. The panic 
+message is given below.
 
-Indeed, one common use of "model" - at least in the systems I work on - 
-is to display the name of the machine in a system identification banner 
-that the user sees.
-> It's possible to peek at 'model' tho, in some cases, I've seen the case
-> for example where things are -supposed- to be identical from an arch
-> point of view, have the same compatible, but later on, a quirk is found
-> and a test against model is used to differentiate. But that's something
-> to avoid in general. Better off having multiple strings in "compatible"
-> then, one more "generic" to have the BSP match against, and one more
-> "specific" that can be used if a quirk is needed.
->
-> Of course, it doesn't help that all pseries have "chrp" and nothing else
-> as compatible :-) But then, both IBM and Apple have been quite lax with
-> their (ab)use of the DT.
->
-> Cheers,
-> Ben.
->
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
->
->   
+==================
+Using /usr/rtlinux/modules/rtl_time.okernel BUG at page_alloc.c:221!
+Oops: Exception in kernel mode, sig: 4
+NIP: C0032980 XER: 00000000 LR: C0032980 SP: C7CEDBA0 REGS: c7cedaf0 TRAP: 
+0700    Not tainted
+MSR: 00089032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c7cec000[366] 'exe' Last syscall: 3
+last math c7cec000 last altivec 00000000
+GPR00: C0032980 C7CEDBA0 C7CEC000 00000020 00000001 00000001 00001137 
+00000000
+GPR08: 00000002 00000000 CD879EC0 C7CEDAB0 CD876108 C0011934 00000000 
+00000000
+GPR16: 00000004 00000001 C002A0E8 C789E840 00009032 07CEDD90 C01A2C70 
+C01A2C70
+GPR24: 00000001 00000000 C016E080 00000000 C79966E0 00000000 C016E0B8 
+C016E0C4
+Call backtrace:
+C0032980 C0033020 C0032C4C C0025A18 C0025B58 C0025D8C C000EF88
+C0005D48 C03A8B28 C0029B28 C002A258 C003A99C C0005AFC 00000000
+0FF15DBC 0FF175DC 0FF09894 10012190 100127D0 100356AC 100352A4
+0FEBCF6C 00000000
+
+Oops: kernel access of bad area, sig: 11
+NIP: C00326DC XER: 00000000 LR: C0032588 SP: C7CED880 REGS: c7ced7d0 TRAP: 
+0300    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000000, DSISR: 42000000
+TASK = c7cec000[366] 'exe' Last syscall: 3
+last math c7cec000 last altivec 00000000
+GPR00: 00000000 C7CED880 C7CEC000 C7CED888 FFFFFFFF 30026000 C0388250 
+00000000
+GPR08: 00008000 00000000 00155210 00000000 CD876CD4 C0032588 00000000 
+00000000
+GPR16: 00000004 00000001 C002A0E8 C789E840 00009032 C01A2C70 C01A2C70 
+C016E130
+GPR24: C0233024 C0388234 00003E06 00007C0C C016E080 FFFFFFFE C016E0B8 
+C0388260
+Call backtrace:
+C003249C C0033398 C0033B18 C00243D8 C0026234 C00246D0 C0027A70
+C001326C C00187D4 C0005ED4 C0005F44 C00062B0 C0005D48 C0032980
+C0033020 C0032C4C C0025A18 C0025B58 C0025D8C C000EF88 C0005D48
+C03A8B28 C0029B28 C002A258 C003A99C C0005AFC 00000000 0FF15DBC
+0FF175DC 0FF09894 10012190 100127D0 100356AC
+Illegal instruction
+========
+Sometimes i am getting the following panic message.
+===========
+Oops: kernel access of bad area, sig: 11
+NIP: C0033360 XER: 20000000 LR: C00DE9A8 SP: C016C0D0 REGS: c016c020 TRAP: 
+0300    Tainted: P
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 03910018, DSISR: 40000000
+TASK = c016a480[0] 'swapper' Last syscall: 120
+last math c505c000 last altivec 00000000
+GPR00: C00DE9A8 C016C0D0 C016A480 03910000 00000000 00000000 C5A469DC 
+FFFFFFFF
+GPR08: 00000001 03910014 00000043 C5A2FE20 2490C022 C0030A04 07FF0D00 
+00000000
+GPR16: 00044008 00000000 00000000 00000000 00001032 00000003 FFFFFFFF 
+0A050393
+GPR24: C5A46980 C5A2F842 00000040 00000000 C5A2F842 C01C0000 C5A46980 
+00000001
+Call backtrace:
+00000040 C00DE9A8 C00DE9DC C00DEB28 C01163D4 C01166EC C00F4898
+C00F44E4 C00F4AC8 C00F468C C00E3664 C00E3810 C00E397C C001A200
+C0007620 CD876CAC C0005D40 C000744C C0007460 C0003918 C01815E0
+000035F0
+Kernel panic: Aiee, killing interrupt handler!
+In interrupt handler - not syncing
+ <0>Rebooting in 180 seconds..
+================
+
+
+How to debug this???
+
+-Thirumalai 
