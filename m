@@ -1,19 +1,15 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 33C34B7D8C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Jun 2010 22:56:16 +1000 (EST)
-Date: Sat, 12 Jun 2010 14:56:08 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH] powerpc: fix obsolete device tree code for the UPM NAND
-	driver.
-Message-ID: <20100612145608.28ba3953@wker>
-In-Reply-To: <20100612123943.GA1982@riccoc20.at.omicron.at>
-References: <20100612123943.GA1982@riccoc20.at.omicron.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 12 Jun 2010 23:46:28 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Milton Miller <miltonm@us.ibm.com>
+Subject: Re: [PATCH] powerpc: rtas_flash cannot be a module
+Message-ID: <20100612134628.GP28295@kryten>
+References: <20100609060110.GM28295@kryten>
+ <20100610-reply@mdm.bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100610-reply@mdm.bga.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 12 Jun 2010 14:39:43 +0200
-Richard Cochran <richardcochran@gmail.com> wrote:
+ 
+Hi,
 
-> Commit 58f9b0b02414062eaff46716bc04b47d7e79add5 removed of_device->node.
-> This driver was apparently overlooked in the processes.
+> So we should use that rtas_data_buf with its lock ...
 > 
-> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
-> ---
->  drivers/mtd/nand/fsl_upm.c |   18 ++++++++++--------
->  1 files changed, 10 insertions(+), 8 deletions(-)
+> Oh look, the driver already uses that buffer for the call to verify_flash
+> 
+> untested patch to follow
 
-This is already fixed in 2.6.35-rc2, please update your tree.
+Thanks, it built and tested OK with the following patch. Will send a
+complete patch with these changes in a minute.
+
+Anton
+
+--- build/arch/powerpc/kernel/rtas_flash.c~	2010-06-12 09:06:43.000000000 -0400
++++ build/arch/powerpc/kernel/rtas_flash.c	2010-06-12 09:08:30.000000000 -0400
+@@ -613,9 +613,9 @@
+ 	 * the kernel data segment.
+ 	 */
+ 	spin_lock(&rtas_data_buf_lock);
+-	flist = (struct rtas_flash_list *)&rtas_data_buf[0];
+-	flist.num_blocks = 0;
+-	flist.next = rtas_firmware_flash_list;
++	flist = (struct flash_block_list *)&rtas_data_buf[0];
++	flist->num_blocks = 0;
++	flist->next = rtas_firmware_flash_list;
+ 	rtas_block_list = virt_to_abs(flist);
+ 	if (rtas_block_list >= 4UL*1024*1024*1024) {
+ 		printk(KERN_ALERT "FLASH: kernel bug...flash list header addr above 4GB\n");
