@@ -1,15 +1,28 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sat, 12 Jun 2010 23:48:47 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Milton Miller <miltonm@us.ibm.com>
-Subject: Re: [PATCH] powerpc: rtas_flash needs to use rtas_data_buf
-Message-ID: <20100612134847.GQ28295@kryten>
-References: <20100609060110.GM28295@kryten> <20100610-reply@mdm.bga.com>
-	<20100610-rtas-flash@mdm.bga.com>
+Return-Path: <wmb@firmworks.com>
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9D53C1007DD
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 02:30:36 +1000 (EST)
+Message-ID: <4C13B618.1030006@firmworks.com>
+Date: Sat, 12 Jun 2010 06:30:16 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100610-rtas-flash@mdm.bga.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Request review of device tree documentation
+References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>	
+	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>	
+	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>	
+	<4C13430B.5000907@firmworks.com>
+	<1276339529.1962.184.camel@pasglop>
+	<1276339684.1962.186.camel@pasglop>
+In-Reply-To: <1276339684.1962.186.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
+	Dan Malek <ppc6dev@digitaldans.com>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,138 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Milton Miller <miltonm@us.ibm.com>
+Benjamin Herrenschmidt wrote:
+> On Sat, 2010-06-12 at 20:45 +1000, Benjamin Herrenschmidt wrote:
+>   
+>> On Fri, 2010-06-11 at 22:19 -1000, Mitch Bradley wrote:
+>>     
+>>> It seems that many of the differences at the CPU level can be determined 
+>>> by looking at "coprocessor" registers.  For what purpose(s) do we need 
+>>> to identify the core?  That will inform our choice of a core ID schema.
+>>>       
+>> The primary thing I see would be architecture version compliance,
+>> though this is better carried additionally via a binary field in
+>> the header or a GPR at the entry point, to help the initial asm
+>> code to setup the MMU etc... before getting into C code.
+>>     
+>
+> Also, if you're going to revive a "real" OF port to ARM (with client
+> interface etc...), should we start considering moving some of powerpc's
+> prom_init.c to a generic place ?
+>
+> IE. prom_init is a trampoline that uses the client interface to
+> essentially create a flatten device-tree and enter the kernel via the
+> common "epapr" style entry point.
+>
+> The main drawback is that it doesn't allow to keep OF alive along with
+> the OS, but then, only sparc does that successfully and I'm not sure
+> it's something that would be practical to do on ARM either.
+>   
 
-When trying to flash a machine via the update_flash command, Anton received the
-following error:
+I'm certainly going to try keeping OFW alive.  On the x86 OLPC machines, 
+the ability to
+dive into OFW via a SysRq key combo was very helpful for debugging some 
+difficult
+problems.  The team has asked me to support the feature on ARM.
 
-
-    Restarting system.
-    FLASH: kernel bug...flash list header addr above 4GB
-
-
-The code in question has a comment that the flash list should be in
-the kernel data and therefore under 4GB:
-
-        /* NOTE: the "first" block list is a global var with no data
-         * blocks in the kernel data segment.  We do this because
-         * we want to ensure this block_list addr is under 4GB.
-         */
-
-Unfortunately the Kconfig option is marked tristate which means the variable
-may not be in the kernel data and could be above 4GB.
-
-Instead of relying on the data segment being below 4GB, use the static
-data buffer allocated by the kernel for use by rtas.  Since we don't
-use the header struct directly anymore, convert it to a simple pointer.
-
-Reported-By: Anton Blanchard <anton@samba.org>
-Signed-Off-By: Milton Miller <miltonm@bga.com
-Tested-By: Anton Blanchard <anton@samba.org>
----
-
-Index: powerpc.git/arch/powerpc/kernel/rtas_flash.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/rtas_flash.c	2010-05-05 16:17:00.883456148 +1000
-+++ powerpc.git/arch/powerpc/kernel/rtas_flash.c	2010-06-12 23:44:25.973458269 +1000
-@@ -94,12 +94,8 @@ struct flash_block_list {
- 	struct flash_block_list *next;
- 	struct flash_block blocks[FLASH_BLOCKS_PER_NODE];
- };
--struct flash_block_list_header { /* just the header of flash_block_list */
--	unsigned long num_blocks;
--	struct flash_block_list *next;
--};
- 
--static struct flash_block_list_header rtas_firmware_flash_list = {0, NULL};
-+static struct flash_block_list *rtas_firmware_flash_list;
- 
- /* Use slab cache to guarantee 4k alignment */
- static struct kmem_cache *flash_block_cache = NULL;
-@@ -108,13 +104,14 @@ static struct kmem_cache *flash_block_ca
- 
- /* Local copy of the flash block list.
-  * We only allow one open of the flash proc file and create this
-- * list as we go.  This list will be put in the
-- * rtas_firmware_flash_list var once it is fully read.
-+ * list as we go.  The rtas_firmware_flash_list varable will be
-+ * set once the data is fully read.
-  *
-  * For convenience as we build the list we use virtual addrs,
-  * we do not fill in the version number, and the length field
-  * is treated as the number of entries currently in the block
-- * (i.e. not a byte count).  This is all fixed on release.
-+ * (i.e. not a byte count).  This is all fixed when calling 
-+ * the flash routine.
-  */
- 
- /* Status int must be first member of struct */
-@@ -201,16 +198,16 @@ static int rtas_flash_release(struct ino
- 	if (uf->flist) {    
- 		/* File was opened in write mode for a new flash attempt */
- 		/* Clear saved list */
--		if (rtas_firmware_flash_list.next) {
--			free_flash_list(rtas_firmware_flash_list.next);
--			rtas_firmware_flash_list.next = NULL;
-+		if (rtas_firmware_flash_list) {
-+			free_flash_list(rtas_firmware_flash_list);
-+			rtas_firmware_flash_list = NULL;
- 		}
- 
- 		if (uf->status != FLASH_AUTH)  
- 			uf->status = flash_list_valid(uf->flist);
- 
- 		if (uf->status == FLASH_IMG_READY) 
--			rtas_firmware_flash_list.next = uf->flist;
-+			rtas_firmware_flash_list = uf->flist;
- 		else
- 			free_flash_list(uf->flist);
- 
-@@ -593,7 +590,7 @@ static void rtas_flash_firmware(int rebo
- 	unsigned long rtas_block_list;
- 	int i, status, update_token;
- 
--	if (rtas_firmware_flash_list.next == NULL)
-+	if (rtas_firmware_flash_list == NULL)
- 		return;		/* nothing to do */
- 
- 	if (reboot_type != SYS_RESTART) {
-@@ -610,20 +607,25 @@ static void rtas_flash_firmware(int rebo
- 		return;
- 	}
- 
--	/* NOTE: the "first" block list is a global var with no data
--	 * blocks in the kernel data segment.  We do this because
--	 * we want to ensure this block_list addr is under 4GB.
-+	/*
-+	 * NOTE: the "first" block must be under 4GB, so we create
-+	 * an entry with no data blocks in the reserved buffer in
-+	 * the kernel data segment.
- 	 */
--	rtas_firmware_flash_list.num_blocks = 0;
--	flist = (struct flash_block_list *)&rtas_firmware_flash_list;
-+	spin_lock(&rtas_data_buf_lock);
-+	flist = (struct flash_block_list *)&rtas_data_buf[0];
-+	flist->num_blocks = 0;
-+	flist->next = rtas_firmware_flash_list;
- 	rtas_block_list = virt_to_abs(flist);
- 	if (rtas_block_list >= 4UL*1024*1024*1024) {
- 		printk(KERN_ALERT "FLASH: kernel bug...flash list header addr above 4GB\n");
-+		spin_unlock(&rtas_data_buf_lock);
- 		return;
- 	}
- 
- 	printk(KERN_ALERT "FLASH: preparing saved firmware image for flash\n");
- 	/* Update the block_list in place. */
-+	rtas_firmware_flash_list = NULL; /* too hard to backout on error */
- 	image_size = 0;
- 	for (f = flist; f; f = next) {
- 		/* Translate data addrs to absolute */
-@@ -664,6 +666,7 @@ static void rtas_flash_firmware(int rebo
- 		printk(KERN_ALERT "FLASH: unknown flash return code %d\n", status);
- 		break;
- 	}
-+	spin_unlock(&rtas_data_buf_lock);
- }
- 
- static void remove_flash_pde(struct proc_dir_entry *dp)
+> Cheers,
+> Ben.
+>  
+>
+>   
