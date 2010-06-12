@@ -1,24 +1,24 @@
-Return-Path: <21cnbao@gmail.com>
-Received: from mail-yw0-f195.google.com (mail-yw0-f195.google.com
-	[209.85.211.195]) by ozlabs.org (Postfix) with ESMTP id D52D9B7D8A
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 16:27:33 +1000 (EST)
-Received: by ywh33 with SMTP id 33so1626652ywh.11
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:27:32 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id EB817B7D85
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 16:54:21 +1000 (EST)
+Received: by gyf2 with SMTP id 2so1361060gyf.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:54:19 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20090818214622.GA22651@oksana.dev.rtsoft.ru>
-References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
-	<20090818214622.GA22651@oksana.dev.rtsoft.ru>
-From: Barry Song <21cnbao@gmail.com>
-Date: Sat, 12 Jun 2010 14:27:12 +0800
-Message-ID: <AANLkTikg60s6ZRSEDCq9PQK1z7hJtBDk6t4VE1lYDv8u@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mtd: m25p80: Rework probing/JEDEC code
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
+References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
+	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 12 Jun 2010 00:53:59 -0600
+Message-ID: <AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
+Subject: Re: Request review of device tree documentation
+To: Dan Malek <ppc6dev@digitaldans.com>, Mitch Bradley <wmb@firmworks.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,118 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gV2VkLCBBdWcgMTksIDIwMDkgYXQgNTo0NiBBTSwgQW50b24gVm9yb250c292Cjxhdm9yb250
-c292QHJ1Lm12aXN0YS5jb20+IHdyb3RlOgo+Cj4gUHJldmlvc2x5IHRoZSBkcml2ZXIgYWx3YXlz
-IHRyaWVkIEpFREVDIHByb2JpbmcsIGFzc3VtaW5nIHRoYXQgbm9uLUpFREVDCj4gY2hpcHMgd2ls
-bCByZXR1cm4gJzAnLiBCdXQgdHJ1bHkgbm9uLUpFREVDIGNoaXBzIChsaWtlIENBVDI1KSB3b24n
-dCBkbwo+IHRoYXQsIHRoZWlyIGJlaGF2aW91ciBvbiBSRElEIGNvbW1hbmQgaXMgdW5kZWZpbmVk
-LCBzbyB0aGUgZHJpdmVyIHNob3VsZAo+IG5vdCBjYWxsIGplZGVjX3Byb2JlKCkgZm9yIHRoZXNl
-IGNoaXBzLgo+Cj4gQWxzbywgYmUgbGVzcyBzdHJpY3Qgb24gZXJyb3IgY29uZGl0aW9ucywgZG9u
-J3QgZmFpbCB0byBwcm9iZSBpZiBKRURFQwo+IGZvdW5kIGEgY2hpcCB0aGF0IGlzIGRpZmZlcmVu
-dCBmcm9tIHdoYXQgcGxhdGZvcm0gY29kZSB0b2xkLCBpbnN0ZWFkCj4ganVzdCBwcmludCBzb21l
-IHdhcm5pbmdzIGFuZCB1c2UgYW4gaW5mb3JtYXRpb24gb2J0YWluZWQgdmlhIEpFREVDLiBJbgpU
-aGlzIHBhdGNoIGNhdXNlZCBhIHByb2JsZW06CmV2ZW4gdGhvdWdoIHRoZSBleHRlcm5hbCBmbGFz
-aCBkb2Vzbid0IGV4aXN0LCBpdCB3aWxsIHN0aWxsIHBhc3MgdGhlCnByb2JlKCkgYW5kIGJlIHJl
-Z2lzdGVycmVkIGludG8ga2VybmVsIGFuZCBnaXZlbiB0aGUgcGFydGl0aW9uIHRhYmxlLgpZb3Ug
-bWF5IHJlZmVyIHRvIHRoaXMgYnVnIHJlcG9ydDoKaHR0cDovL2JsYWNrZmluLnVjbGludXgub3Jn
-L2dmL3Byb2plY3QvdWNsaW51eC1kaXN0L3RyYWNrZXIvP2FjdGlvbj1UcmFja2VySXRlbUVkaXQm
-dHJhY2tlcl9pdGVtX2lkPTU5NzUmc3RhcnQ9MAoKPiB0aGF0IGNhc2Ugd2Ugc2hvdWxkIG5vdCB0
-cnVzdCBwYXJ0aXRpb25zIGFueSBsb25nZXIsIGJ1dCB0aGV5IG1pZ2h0IGJlCj4gc3RpbGwgdXNl
-ZnVsIChpLmUuIHRoZXkgY291bGQgcHJvdGVjdCBzb21lIHBhcnRzIG9mIHRoZSBjaGlwKS4KPgo+
-IFNpZ25lZC1vZmYtYnk6IEFudG9uIFZvcm9udHNvdiA8YXZvcm9udHNvdkBydS5tdmlzdGEuY29t
-Pgo+IC0tLQo+IMKgZHJpdmVycy9tdGQvZGV2aWNlcy9tMjVwODAuYyB8IMKgIDY5ICsrKysrKysr
-KysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0tCj4gwqAxIGZpbGVzIGNoYW5nZWQsIDQw
-IGluc2VydGlvbnMoKyksIDI5IGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-bXRkL2RldmljZXMvbTI1cDgwLmMgYi9kcml2ZXJzL210ZC9kZXZpY2VzL20yNXA4MC5jCj4gaW5k
-ZXggMGQ3NGIzOC4uYjc1ZTMxOSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL210ZC9kZXZpY2VzL20y
-NXA4MC5jCj4gKysrIGIvZHJpdmVycy9tdGQvZGV2aWNlcy9tMjVwODAuYwo+IEBAIC01ODEsNiAr
-NTgxLDE0IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgc3BpX2RldmljZV9pZCAqX19kZXZpbml0IGpl
-ZGVjX3Byb2JlKHN0cnVjdCBzcGlfZGV2aWNlICpzcGkpCj4gwqAgwqAgwqAgwqBqZWRlYyA9IGpl
-ZGVjIDw8IDg7Cj4gwqAgwqAgwqAgwqBqZWRlYyB8PSBpZFsyXTsKPgo+ICsgwqAgwqAgwqAgLyoK
-PiArIMKgIMKgIMKgIMKgKiBTb21lIGNoaXBzIChsaWtlIE51bW9ueXggTTI1UDgwKSBoYXZlIEpF
-REVDIGFuZCBub24tSkVERUMgdmFyaWFudHMsCj4gKyDCoCDCoCDCoCDCoCogd2hpY2ggZGVwZW5k
-IG9uIHRlY2hub2xvZ3kgcHJvY2Vzcy4gT2ZmaWNpYWxseSBSRElEIGNvbW1hbmQgZG9lc24ndAo+
-ICsgwqAgwqAgwqAgwqAqIGV4aXN0IGZvciBub24tSkVERUMgY2hpcHMsIGJ1dCBmb3IgY29tcGF0
-aWJpbGl0eSB0aGV5IHJldHVybiBJRCAwLgo+ICsgwqAgwqAgwqAgwqAqLwo+ICsgwqAgwqAgwqAg
-aWYgKGplZGVjID09IDApCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gTlVMTDsKPiAr
-Cj4gwqAgwqAgwqAgwqBleHRfamVkZWMgPSBpZFszXSA8PCA4IHwgaWRbNF07Cj4KPiDCoCDCoCDC
-oCDCoGZvciAodG1wID0gMDsgdG1wIDwgQVJSQVlfU0laRShtMjVwX2lkcykgLSAxOyB0bXArKykg
-ewo+IEBAIC02MDIsNyArNjEwLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBzcGlfZGV2aWNlX2lk
-ICpfX2RldmluaXQgamVkZWNfcHJvYmUoc3RydWN0IHNwaV9kZXZpY2UgKnNwaSkKPiDCoCovCj4g
-wqBzdGF0aWMgaW50IF9fZGV2aW5pdCBtMjVwX3Byb2JlKHN0cnVjdCBzcGlfZGV2aWNlICpzcGkp
-Cj4gwqB7Cj4gLSDCoCDCoCDCoCBjb25zdCBzdHJ1Y3Qgc3BpX2RldmljZV9pZCDCoCDCoCDCoCpp
-ZDsKPiArIMKgIMKgIMKgIGNvbnN0IHN0cnVjdCBzcGlfZGV2aWNlX2lkIMKgIMKgIMKgKmlkID0g
-c3BpX2dldF9kZXZpY2VfaWQoc3BpKTsKPiDCoCDCoCDCoCDCoHN0cnVjdCBmbGFzaF9wbGF0Zm9y
-bV9kYXRhIMKgIMKgIMKgKmRhdGE7Cj4gwqAgwqAgwqAgwqBzdHJ1Y3QgbTI1cCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCAqZmxhc2g7Cj4gwqAgwqAgwqAgwqBzdHJ1Y3QgZmxhc2hfaW5m
-byDCoCDCoCDCoCDCoCDCoCDCoCDCoCAqaW5mbzsKPiBAQCAtNjE1LDQxICs2MjMsNDQgQEAgc3Rh
-dGljIGludCBfX2RldmluaXQgbTI1cF9wcm9iZShzdHJ1Y3Qgc3BpX2RldmljZSAqc3BpKQo+IMKg
-IMKgIMKgIMKgICovCj4gwqAgwqAgwqAgwqBkYXRhID0gc3BpLT5kZXYucGxhdGZvcm1fZGF0YTsK
-PiDCoCDCoCDCoCDCoGlmIChkYXRhICYmIGRhdGEtPnR5cGUpIHsKPiArIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIGNvbnN0IHN0cnVjdCBzcGlfZGV2aWNlX2lkICpwbGF0X2lkOwo+ICsKPiDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoGZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKG0yNXBfaWRzKSAtIDE7
-IGkrKykgewo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgaWQgPSAmbTI1cF9p
-ZHNbaV07Cj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpbmZvID0gKHZvaWQg
-KiltMjVwX2lkc1tpXS5kcml2ZXJfZGF0YTsKPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIGlmIChzdHJjbXAoZGF0YS0+dHlwZSwgaWQtPm5hbWUpKQo+ICsgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgcGxhdF9pZCA9ICZtMjVwX2lkc1tpXTsKPiArIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChzdHJjbXAoZGF0YS0+dHlwZSwgcGxhdF9pZC0+
-bmFtZSkpCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBj
-b250aW51ZTsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGJyZWFrOwo+IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgfQo+Cj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCAvKiB1bnJl
-Y29nbml6ZWQgY2hpcD8gKi8KPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChpID09IEFSUkFZ
-X1NJWkUobTI1cF9pZHMpIC0gMSkgewo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgREVCVUcoTVREX0RFQlVHX0xFVkVMMCwgIiVzOiB1bnJlY29nbml6ZWQgaWQgJXNcbiIsCj4g
-LSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCBkZXZfbmFtZSgmc3BpLT5kZXYpLCBkYXRhLT50eXBlKTsKPiAtIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIGluZm8gPSBOVUxMOwo+IC0KPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IC8qIHJlY29nbml6ZWQ7IGlzIHRoYXQgY2hpcCByZWFsbHkgd2hhdCdzIHRoZXJlPyAqLwo+IC0g
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgfSBlbHNlIGlmIChpbmZvLT5qZWRlY19pZCkgewo+IC0gwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgaWQgPSBqZWRlY19wcm9iZShzcGkpOwo+IC0K
-PiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChpZCAhPSAmbTI1cF9pZHNb
-aV0pIHsKPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRl
-dl93YXJuKCZzcGktPmRldiwgImZvdW5kICVzLCBleHBlY3RlZCAlc1xuIiwKPiAtIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIGlkID8gaWQtPm5hbWUgOiAiVU5LTk9XTiIsCj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBtMjVwX2lkc1tp
-XS5uYW1lKTsKPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IGluZm8gPSBOVUxMOwo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgfQo+IC0g
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgfQo+IC0gwqAgwqAgwqAgfSBlbHNlIHsKPiAtIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIGlkID0gamVkZWNfcHJvYmUoc3BpKTsKPiAtIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIGlmICghaWQpCj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZCA9IHNw
-aV9nZXRfZGV2aWNlX2lkKHNwaSk7Cj4gLQo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgaW5mbyA9
-ICh2b2lkICopaWQtPmRyaXZlcl9kYXRhOwo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKHBs
-YXRfaWQpCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZCA9IHBsYXRfaWQ7
-Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBlbHNlCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCBkZXZfd2Fybigmc3BpLT5kZXYsICJ1bnJlY29nbml6ZWQgaWQgJXNcbiIsIGRh
-dGEtPnR5cGUpOwo+IMKgIMKgIMKgIMKgfQo+Cj4gLSDCoCDCoCDCoCBpZiAoIWluZm8pCj4gLSDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gLUVOT0RFVjsKPiArIMKgIMKgIMKgIGluZm8gPSAo
-dm9pZCAqKWlkLT5kcml2ZXJfZGF0YTsKPiArCj4gKyDCoCDCoCDCoCBpZiAoaW5mby0+amVkZWNf
-aWQpIHsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGNvbnN0IHN0cnVjdCBzcGlfZGV2aWNlX2lk
-ICpqaWQ7Cj4gKwo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgamlkID0gamVkZWNfcHJvYmUoc3Bp
-KTsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGlmICghamlkKSB7Cj4gKyDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZfaW5mbygmc3BpLT5kZXYsICJub24tSkVERUMgdmFyaWFu
-dCBvZiAlc1xuIiwKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgaWQtPm5hbWUpOwo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgfSBlbHNlIGlmIChqaWQg
-IT0gaWQpIHsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIC8qCj4gKyDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCogSkVERUMga25vd3MgYmV0dGVyLCBzbyBv
-dmVyd3JpdGUgcGxhdGZvcm0gSUQuIFdlCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCogY2FuJ3QgdHJ1c3QgcGFydGl0aW9ucyBhbnkgbG9uZ2VyLCBidXQgd2UnbGwgbGV0
-Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCogbXRkIGFwcGx5IHRoZW0g
-YW55d2F5LCBzaW5jZSBzb21lIHBhcnRpdGlvbnMgbWF5IGJlCj4gKyDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCogbWFya2VkIHJlYWQtb25seSwgYW5kIHdlIGRvbid0IHdhbnQg
-dG8gbG9zZSB0aGF0Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCogaW5m
-b3JtYXRpb24sIGV2ZW4gaWYgaXQncyBub3QgMTAwJSBhY2N1cmF0ZS4KPiArIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgKi8KPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIGRldl93YXJuKCZzcGktPmRldiwgImZvdW5kICVzLCBleHBlY3RlZCAlc1xuIiwKPiAr
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgamlkLT5uYW1l
-LCBpZC0+bmFtZSk7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZCA9IGpp
-ZDsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGluZm8gPSAodm9pZCAqKWpp
-ZC0+ZHJpdmVyX2RhdGE7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCB9Cj4gKyDCoCDCoCDCoCB9
-Cj4KPiDCoCDCoCDCoCDCoGZsYXNoID0ga3phbGxvYyhzaXplb2YgKmZsYXNoLCBHRlBfS0VSTkVM
-KTsKPiDCoCDCoCDCoCDCoGlmICghZmxhc2gpCj4gLS0KPiAxLjYuMy4zCj4KPiAtLQo+IFRvIHVu
-c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
-eC1rZXJuZWwiIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtl
-cm5lbC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0IMKgaHR0cDovL3ZnZXIua2VybmVsLm9y
-Zy9tYWpvcmRvbW8taW5mby5odG1sCj4gUGxlYXNlIHJlYWQgdGhlIEZBUSBhdCDCoGh0dHA6Ly93
-d3cudHV4Lm9yZy9sa21sLwo=
+On Fri, Jun 11, 2010 at 5:47 PM, Dan Malek <ppc6dev@digitaldans.com> wrote:
+>
+> Hi Grant.
+>
+> On Jun 11, 2010, at 3:59 PM, Grant Likely wrote:
+>
+>> I've been doing a bit of work on some introductory level documentation
+>> of the flattened device tree.
+>
+> Wow, I feel empowered to create device trees now :-)
+> Seriously, I never understood this well and this is a
+> great document.
+
+Hey, thanks!  That's a fantastic compliment!
+
+> I have one source of confusion. =A0Your first Initial structure
+> example uses 'compatible' to describe the machine, the
+> paragraph below then mentions the 'model' property,
+> and all subsequent examples use model.
+>
+> Does this mean if I use just the single line in the dts,
+> using 'compatible' implies the ARM machine ID? =A0If I
+> have more description I use 'model'?
+
+No, that is just a reflection of a late change I made to the document.
+ It should be compatible all the way down.  I was trying to keep
+things simple because on a lot of boards both compatible and model
+properties will exist in the root node.  I started writing with model,
+and then changed it last minute without fixing everything up which is
+why the document was confusing.
+
+I've fixed it now if you want to take a look.
+
+I also changed the property in the cpu nodes from model to compatible
+so that the exact CPU version can be specified.  This isn't actually
+in any spec anywhere, but I need something to properly identify the
+different ARM cores.
+
+Mitch, I know you were working on a draft ARM binding a while ago,
+have you resurrected it at all?  How do you think the core should be
+identified?
+
+Cheers,
+g.
