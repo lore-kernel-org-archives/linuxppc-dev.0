@@ -1,26 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A1190B7DA9
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 20:48:23 +1000 (EST)
-Subject: Re: Request review of device tree documentation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mitch Bradley <wmb@firmworks.com>
-In-Reply-To: <1276339529.1962.184.camel@pasglop>
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
-	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
-	<4C13430B.5000907@firmworks.com>  <1276339529.1962.184.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 12 Jun 2010 20:48:04 +1000
-Message-ID: <1276339684.1962.186.camel@pasglop>
-Mime-Version: 1.0
-Cc: microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
-	Dan Malek <ppc6dev@digitaldans.com>,
-	Jeremy Kerr <jeremy.kerr@canonical.com>
+Return-Path: <richardcochran@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id 2E704B7D8B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 12 Jun 2010 22:38:59 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id e12so808299fga.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 12 Jun 2010 05:38:57 -0700 (PDT)
+Date: Sat, 12 Jun 2010 14:39:43 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: fix obsolete device tree code for the UPM NAND
+	driver.
+Message-ID: <20100612123943.GA1982@riccoc20.at.omicron.at>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-06-12 at 20:45 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2010-06-11 at 22:19 -1000, Mitch Bradley wrote:
-> > It seems that many of the differences at the CPU level can be determined 
-> > by looking at "coprocessor" registers.  For what purpose(s) do we need 
-> > to identify the core?  That will inform our choice of a core ID schema.
-> 
-> The primary thing I see would be architecture version compliance,
-> though this is better carried additionally via a binary field in
-> the header or a GPR at the entry point, to help the initial asm
-> code to setup the MMU etc... before getting into C code.
+Commit 58f9b0b02414062eaff46716bc04b47d7e79add5 removed of_device->node.
+This driver was apparently overlooked in the processes.
 
-Also, if you're going to revive a "real" OF port to ARM (with client
-interface etc...), should we start considering moving some of powerpc's
-prom_init.c to a generic place ?
+Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
+---
+ drivers/mtd/nand/fsl_upm.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-IE. prom_init is a trampoline that uses the client interface to
-essentially create a flatten device-tree and enter the kernel via the
-common "epapr" style entry point.
-
-The main drawback is that it doesn't allow to keep OF alive along with
-the OS, but then, only sparc does that successfully and I'm not sure
-it's something that would be practical to do on ARM either.
-
-Cheers,
-Ben.
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index 00aea6f..81ec87a 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -232,7 +232,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	if (!fun)
+ 		return -ENOMEM;
  
+-	ret = of_address_to_resource(ofdev->node, 0, &io_res);
++	ret = of_address_to_resource(ofdev->dev.of_node, 0, &io_res);
+ 	if (ret) {
+ 		dev_err(&ofdev->dev, "can't get IO base\n");
+ 		goto err1;
+@@ -244,7 +244,8 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 		goto err1;
+ 	}
+ 
+-	prop = of_get_property(ofdev->node, "fsl,upm-addr-offset", &size);
++	prop = of_get_property(ofdev->dev.of_node,
++			       "fsl,upm-addr-offset", &size);
+ 	if (!prop || size != sizeof(uint32_t)) {
+ 		dev_err(&ofdev->dev, "can't get UPM address offset\n");
+ 		ret = -EINVAL;
+@@ -252,7 +253,8 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_addr_offset = *prop;
+ 
+-	prop = of_get_property(ofdev->node, "fsl,upm-cmd-offset", &size);
++	prop = of_get_property(ofdev->dev.of_node,
++			       "fsl,upm-cmd-offset", &size);
+ 	if (!prop || size != sizeof(uint32_t)) {
+ 		dev_err(&ofdev->dev, "can't get UPM command offset\n");
+ 		ret = -EINVAL;
+@@ -260,7 +262,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	}
+ 	fun->upm_cmd_offset = *prop;
+ 
+-	prop = of_get_property(ofdev->node,
++	prop = of_get_property(ofdev->dev.of_node,
+ 			       "fsl,upm-addr-line-cs-offsets", &size);
+ 	if (prop && (size / sizeof(uint32_t)) > 0) {
+ 		fun->mchip_count = size / sizeof(uint32_t);
+@@ -276,7 +278,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 
+ 	for (i = 0; i < fun->mchip_count; i++) {
+ 		fun->rnb_gpio[i] = -1;
+-		rnb_gpio = of_get_gpio(ofdev->node, i);
++		rnb_gpio = of_get_gpio(ofdev->dev.of_node, i);
+ 		if (rnb_gpio >= 0) {
+ 			ret = gpio_request(rnb_gpio, dev_name(&ofdev->dev));
+ 			if (ret) {
+@@ -292,13 +294,13 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 		}
+ 	}
+ 
+-	prop = of_get_property(ofdev->node, "chip-delay", NULL);
++	prop = of_get_property(ofdev->dev.of_node, "chip-delay", NULL);
+ 	if (prop)
+ 		fun->chip_delay = *prop;
+ 	else
+ 		fun->chip_delay = 50;
+ 
+-	prop = of_get_property(ofdev->node, "fsl,upm-wait-flags", &size);
++	prop = of_get_property(ofdev->dev.of_node, "fsl,upm-wait-flags", &size);
+ 	if (prop && size == sizeof(uint32_t))
+ 		fun->wait_flags = *prop;
+ 	else
+@@ -315,7 +317,7 @@ static int __devinit fun_probe(struct of_device *ofdev,
+ 	fun->dev = &ofdev->dev;
+ 	fun->last_ctrl = NAND_CLE;
+ 
+-	ret = fun_chip_init(fun, ofdev->node, &io_res);
++	ret = fun_chip_init(fun, ofdev->dev.of_node, &io_res);
+ 	if (ret)
+ 		goto err2;
+ 
+-- 
+1.6.3.3
