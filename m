@@ -1,23 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id EB817B7D85
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 16:54:21 +1000 (EST)
-Received: by gyf2 with SMTP id 2so1361060gyf.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 11 Jun 2010 23:54:19 -0700 (PDT)
+Return-Path: <wmb@firmworks.com>
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B5836B7DBC
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 18:20:00 +1000 (EST)
+Message-ID: <4C13430B.5000907@firmworks.com>
+Date: Fri, 11 Jun 2010 22:19:23 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Request review of device tree documentation
 References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 12 Jun 2010 00:53:59 -0600
-Message-ID: <AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
-Subject: Re: Request review of device tree documentation
-To: Dan Malek <ppc6dev@digitaldans.com>, Mitch Bradley <wmb@firmworks.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
+In-Reply-To: <AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
+	Dan Malek <ppc6dev@digitaldans.com>,
 	Jeremy Kerr <jeremy.kerr@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,47 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 11, 2010 at 5:47 PM, Dan Malek <ppc6dev@digitaldans.com> wrote:
+Grant Likely wrote:
 >
-> Hi Grant.
+> I also changed the property in the cpu nodes from model to compatible
+> so that the exact CPU version can be specified.  This isn't actually
+> in any spec anywhere, but I need something to properly identify the
+> different ARM cores.
 >
-> On Jun 11, 2010, at 3:59 PM, Grant Likely wrote:
+> Mitch, I know you were working on a draft ARM binding a while ago,
+> have you resurrected it at all?
+
+As it turns out, today I re-began ARM OFW work in earnest, after a 
+hiatus of something like 10 years.
+
+I haven't thought much about a binding yet.  I'm still getting my head 
+around the current state of the ARM art.
+
+>   How do you think the core should be identified?
+>   
+
+When I was last working on ARM, few ARM devices had enough resources to 
+run a general purpose OS.   To first approximation, StrongARM was the 
+only game in town - so there wasn't much need to address the 
+identification question.
+
+It seems that many of the differences at the CPU level can be determined 
+by looking at "coprocessor" registers.  For what purpose(s) do we need 
+to identify the core?  That will inform our choice of a core ID schema.
+
+> Cheers,
+> g.
 >
->> I've been doing a bit of work on some introductory level documentation
->> of the flattened device tree.
 >
-> Wow, I feel empowered to create device trees now :-)
-> Seriously, I never understood this well and this is a
-> great document.
-
-Hey, thanks!  That's a fantastic compliment!
-
-> I have one source of confusion. =A0Your first Initial structure
-> example uses 'compatible' to describe the machine, the
-> paragraph below then mentions the 'model' property,
-> and all subsequent examples use model.
->
-> Does this mean if I use just the single line in the dts,
-> using 'compatible' implies the ARM machine ID? =A0If I
-> have more description I use 'model'?
-
-No, that is just a reflection of a late change I made to the document.
- It should be compatible all the way down.  I was trying to keep
-things simple because on a lot of boards both compatible and model
-properties will exist in the root node.  I started writing with model,
-and then changed it last minute without fixing everything up which is
-why the document was confusing.
-
-I've fixed it now if you want to take a look.
-
-I also changed the property in the cpu nodes from model to compatible
-so that the exact CPU version can be specified.  This isn't actually
-in any spec anywhere, but I need something to properly identify the
-different ARM cores.
-
-Mitch, I know you were working on a draft ARM binding a while ago,
-have you resurrected it at all?  How do you think the core should be
-identified?
-
-Cheers,
-g.
+>   
