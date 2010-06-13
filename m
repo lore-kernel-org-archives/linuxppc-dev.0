@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 358531007E5
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 18:30:15 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 86B7CB7DDE
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 18:58:00 +1000 (EST)
 Subject: Re: Request review of device tree documentation
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Mitch Bradley <wmb@firmworks.com>
@@ -18,8 +18,8 @@ References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<4C146F18.9030008@firmworks.com> <1276408773.1962.574.camel@pasglop>
 	<4C147EA5.3060500@firmworks.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 13 Jun 2010 18:29:52 +1000
-Message-ID: <1276417792.1962.731.camel@pasglop>
+Date: Sun, 13 Jun 2010 18:57:40 +1000
+Message-ID: <1276419460.1962.759.camel@pasglop>
 Mime-Version: 1.0
 Cc: microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
@@ -36,61 +36,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sat, 2010-06-12 at 20:45 -1000, Mitch Bradley wrote:
-
-> Either fought or embraced.  To the extent that it is possible to focus 
-> solely on Linux and ARM, one could image doing a good HAL.
-
-That will come with a huge amount of comunity resistance sadly, but I
-can imagine distros liking it.
-
-In general, I much prefer having all the necessary native drivers in the
-kernel, and the device-tree to provide the right representation, and
-avoid trying to abstract "methods" via a HAL. It's the Linux philosophy
-as much as possible (even when defeated by ACPI).
-
-But if we're going to be forced by vendors into HALs, we can also make
-sure that whatever they come up with is half reasonable :-)
- 
-> (The reason I say ARM-only is  because the
-> only other non-x86 architecture that has any "legs" left is PowerPC, and 
-> PPC already has a coherent story.)
-
-Well, ppc story isn't that coherent as far as this goes :-) We don't
-keep OF alive, we have RTAS which is a pile of poo... etc...
-
-But yeah, we are fine without a HAL, so if we stick to OF as a
-bootloader and provider of the device-tree, we are fine.
-
-> > To some extent, in fact, doing that sort of stuff in OF or even in RTAS
-> > like we do on power is even worse than ACPI-like tables. At least with
-> > those tables, the interpreter is in the operating system, thus can run
-> > with interrupts on, scheduling on, etc...
+> > BTW. I notice no ARM list is CCed on this discussion ... maybe we
+> should
+> > fix that ?
+> >   
 > 
-> I have an FCode interpreter that can live inside the OS.  It's 
-> considerably simpler than the ACPI interpreter.
+> Sounds like a good idea.  Do you know which list(s) would be good 
+> candidates?
 
-That's the one thing I purposefully avoided mentioning :-)
+Forgot to reply to that one ... I'd say
 
-It's an interesting idea, I've though about it. If course, there's all
-sort of things to be careful about, such as who provides the f-code with
-virtual->physical mappings to devices, how they are represented, how
-much of the OF "forth" environment is accessible to such f-code, locking
-between f-code and kernel use of shared resources (especially true when
-dealing with things like i2c devices, plls, etc...).
+ linux-arm-kernel@lists.infradead.org
 
-IE. THe base idea is simple. The implementation can be a huge can of
-worms.
+For now. If the discussion starts taking too much bandwidth, it might be
+worth creating a special list for ARM device-tree / OF.
 
 Cheers,
 Ben.
-
-> >  With RTAS, or client interface
-> > calls, you'll end up with potentially huge slumps of CPU time "lost"
-> > into the bowels of the firmware.
-> >
-> >
-> > Cheers,
-> > Ben.
-> >
-> >
-> >   
