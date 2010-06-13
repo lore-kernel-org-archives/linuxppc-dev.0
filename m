@@ -1,23 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id AEA2EB7D86
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 13 Jun 2010 04:19:43 +1000 (EST)
-Received: by gwj19 with SMTP id 19so1192857gwj.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 12 Jun 2010 11:19:42 -0700 (PDT)
+Return-Path: <alastair.bridgewater@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
+	by ozlabs.org (Postfix) with ESMTP id B3F86B7D89
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 11:36:50 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id l26so604632fgb.3
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 18:36:48 -0700 (PDT)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4C13C4D9.2030108@gatzka.org>
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<4C13C4D9.2030108@gatzka.org>
-Date: Sat, 12 Jun 2010 12:19:42 -0600
-Message-ID: <AANLkTilAIr4XZvmcrNFIp-6Y1NdCV9SvFXceWWxaRCSP@mail.gmail.com>
-Subject: Re: Request review of device tree documentation
-From: Grant Likely <grant.likely@secretlab.ca>
-To: stephan@gatzka.org
-Content-Type: multipart/alternative; boundary=000e0cd4c308aa29500488d94cad
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Sat, 12 Jun 2010 21:36:48 -0400
+Message-ID: <AANLkTimrq40Pd-ulPkfb8T2LJ0NSybd5InviirU7fK5D@mail.gmail.com>
+Subject: [PATCH] powerpc: Fix mpic_resume on early G5 macs
+From: Alastair Bridgewater <alastair.bridgewater@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd4c308aa29500488d94cad
-Content-Type: text/plain; charset=ISO-8859-1
+mpic_resume() on G5 macs blindly dereferences mpic->fixups, but
+it may legitimately be NULL (as on PowerMac7,2).  Add an explicit
+check.
 
-That would be great.  Thank you.
+This fixes suspend-to-disk with one processor (maxcpus=1) for me.
 
-On 12 Jun 2010 11:44, "Stephan Gatzka" <stephan@gatzka.org> wrote:
+Signed-off-by: Alastair Bridgewater <alastair.bridgewater@gmail.com>
+---
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 4fd57ab..28668ba 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1666,7 +1666,7 @@ static int mpic_resume(struct sys_device *dev)
+                               mpic->save_data[i].dest);
 
-Hi Grant,
+ #ifdef CONFIG_MPIC_U3_HT_IRQS
+-       {
++       if (mpic->fixups) {
+                struct mpic_irq_fixup *fixup = &mpic->fixups[i];
 
-
-
-> I've been doing a bit of work on some introductory level documentation
-> of the flattened device...
-this looks good. Maybe an example of a complete host/PCI bridge might be
-helpful. Probably I can write something during the next week.
-
-Regards,
-
-Stephan
-
-
-
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---000e0cd4c308aa29500488d94cad
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<p>That would be great.=A0 Thank you.</p>
-<p><blockquote type=3D"cite">On 12 Jun 2010 11:44, &quot;Stephan Gatzka&quo=
-t; &lt;<a href=3D"mailto:stephan@gatzka.org">stephan@gatzka.org</a>&gt; wro=
-te:<br><br>Hi Grant,<p><font color=3D"#500050"><br><br>&gt; I&#39;ve been d=
-oing a bit of work on some introductory level documentation<br>
-&gt; of the flattened device...</font></p>
-this looks good. Maybe an example of a complete host/PCI bridge might be he=
-lpful. Probably I can write something during the next week.<br>
-<br>
-Regards,<br><font color=3D"#888888">
-<br>
-Stephan<br>
-<br>
-<br>
-<br>
-</font><br>_______________________________________________<br>
-Linuxppc-dev mailing list<br>
-<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
-org</a><br>
-<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
-">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br></blockquote></p>
-
---000e0cd4c308aa29500488d94cad--
+                if (fixup->base) {
