@@ -1,28 +1,18 @@
-Return-Path: <edgar.iglesias@gmail.com>
-Received: from mail-ww0-f42.google.com (mail-ww0-f42.google.com [74.125.82.42])
-	by ozlabs.org (Postfix) with ESMTP id 87919B7D9C
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 16:47:59 +1000 (EST)
-Received: by wwb28 with SMTP id 28so2652996wwb.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 12 Jun 2010 23:47:57 -0700 (PDT)
-Date: Sun, 13 Jun 2010 08:47:52 +0200
-From: "Edgar E. Iglesias" <edgar.iglesias@gmail.com>
-To: microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [microblaze-uclinux] Re: Request review of device tree
-	documentation
-Message-ID: <20100613064752.GA10238@laped.lan>
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
-	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
-	<20100612221554.GA17876@lixom.net>
-	<AANLkTimgvKoCBOkhVeLX-uHtRzFPMWpVtZNipKvekOJv@mail.gmail.com>
+Return-Path: <flar@cynthia.pants.nu>
+Received: from cynthia.pants.nu (cynthia.allandria.com [76.245.85.235])
+	by ozlabs.org (Postfix) with ESMTP id 6C484B7DAA
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 17:10:50 +1000 (EST)
+Date: Sat, 12 Jun 2010 23:37:16 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Gary Thomas <gary@mlbassoc.com>
+Subject: Re: Anyone using "PowerPC" little-endian mode?
+Message-ID: <20100613063716.GA8026@cynthia.pants.nu>
+References: <20100603122012.GA22799@brick.ozlabs.ibm.com>
+	<4C079F1D.7000707@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <AANLkTimgvKoCBOkhVeLX-uHtRzFPMWpVtZNipKvekOJv@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Mitch Bradley <wmb@firmworks.com>, Olof Johansson <olof@lixom.net>,
-	Dan Malek <ppc6dev@digitaldans.com>,
-	Jeremy Kerr <jeremy.kerr@canonical.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4C079F1D.7000707@mlbassoc.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 12, 2010 at 05:09:36PM -0600, Grant Likely wrote:
-> On Sat, Jun 12, 2010 at 4:15 PM, Olof Johansson <olof@lixom.net> wrote:
-> > On Sat, Jun 12, 2010 at 12:53:59AM -0600, Grant Likely wrote:
-> >
-> >> I also changed the property in the cpu nodes from model to compatible
-> >> so that the exact CPU version can be specified.  This isn't actually
-> >> in any spec anywhere, but I need something to properly identify the
-> >> different ARM cores.
-> >
-> > I don't see why this has to be in the device tree. It's not there on PPC.
-> > The exact CPU version is found through the PVR register on PPC, ARM also
-> > has cpu version and feature registers for runtime probing.
-> 
-> I had been told that they runtime registers weren't reliable.  If I'm
-> misinformed, then yes the compatible value can be dropped from the cpu
-> nodes.
+On Thu, Jun 03, 2010 at 06:25:01AM -0600, Gary Thomas wrote:
+> I don't know about today, but my recollection is that the only
+> use of little-endian mode on PowerPC was during the early days
+> attempt to run Windows-NT.
 
-Hi all,
+You could potentially hit this case by running Mac on Linux. A handful
+of Mac programs (like early versions of VirtualPC) used this mode. Any
+that did had to get fixed to run on a PowerMac G5, obviously. I haven't
+personally tried this, and I wouldn't be shocked to find that MoL
+chokes on this case for some other reason.
 
-If it's not too painful to keep, I think it will be valuable if one
-want's to instantiate HW based/from this same device tree. For example
-for emulators.
+I do know that VirtualPC did this because it was G3/G4 only for a while
+until they rewrote it to not use the little-endian mode.
 
-Cheers
+	Brad Boyer
+	flar@allandria.com
