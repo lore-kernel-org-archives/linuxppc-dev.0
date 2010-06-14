@@ -1,12 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 61B3BB7D8B
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 02:16:25 +1000 (EST)
-Received: by gyf2 with SMTP id 2so2620232gyf.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 09:16:23 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <alpine.LFD.2.00.1006141143480.13427@xanadu.home>
+Return-Path: <nico@fluxnic.net>
+Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
+	by ozlabs.org (Postfix) with ESMTP id 256D1B7D4F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 00:51:53 +1000 (EST)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Received: from xanadu.home ([66.130.28.92]) by VL-MH-MR002.ip.videotron.ca
+	(Sun Java(tm) System Messaging Server 6.3-4.01 (built Aug  3 2007;
+	32bit))
+	with ESMTP id <0L40008PZBUFA630@VL-MH-MR002.ip.videotron.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 14 Jun 2010 09:51:51 -0400 (EDT)
+Date: Mon, 14 Jun 2010 09:51:50 -0400 (EDT)
+From: Nicolas Pitre <nico@fluxnic.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Request review of device tree documentation
+In-reply-to: <AANLkTinwL0XtMNG13inr_1UliOlqZkyr4dlvG-ZGL9JT@mail.gmail.com>
+Message-id: <alpine.LFD.2.00.1006140943350.13427@xanadu.home>
 References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
 	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
@@ -16,19 +24,10 @@ References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
 	<4C146F18.9030008@firmworks.com> <1276408773.1962.574.camel@pasglop>
 	<AANLkTinwL0XtMNG13inr_1UliOlqZkyr4dlvG-ZGL9JT@mail.gmail.com>
-	<alpine.LFD.2.00.1006140943350.13427@xanadu.home>
-	<AANLkTim1mYpaxe-_OGbOF3AaZ6m5_SVUXLbeyKnAyvjs@mail.gmail.com>
-	<alpine.LFD.2.00.1006141143480.13427@xanadu.home>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Jun 2010 10:16:03 -0600
-Message-ID: <AANLkTikOC5lRVOTf__UKxcF_KMnvAXi23lK6BoCzMUNC@mail.gmail.com>
-Subject: Re: Request review of device tree documentation
-To: Nicolas Pitre <nico@fluxnic.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mitch Bradley <wmb@firmworks.com>, microblaze-uclinux@itee.uq.edu.au,
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
-	Dan Malek <ppc6dev@digitaldans.com>,
+	Olof Johansson <olof@lixom.net>, microblaze-uclinux@itee.uq.edu.au,
+	Mitch Bradley <wmb@firmworks.com>, Dan Malek <ppc6dev@digitaldans.com>,
 	Jeremy Kerr <jeremy.kerr@canonical.com>,
 	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,22 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 14, 2010 at 9:58 AM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> On Mon, 14 Jun 2010, Grant Likely wrote:
->
->> The discussion *started* with a request to review this document:
->>
->> http://devicetree.org/Device_Tree_Usage
->>
->> Which is in early draft form (which is why the arm list wasn't
->> initially cc'd. I was soliciting feedback from the current device tree
->> users. =A0A second request for review will go out after rework is done
->> to the document).
->
-> I'm therefore assuming I can safely ignore it for now then.
+On Sun, 13 Jun 2010, Grant Likely wrote:
 
-Correct.
+> [cc'ing linux-arm-kernel]
+> 
+> On Sat, Jun 12, 2010 at 11:59 PM, Benjamin Herrenschmidt
+> > BTW. I notice no ARM list is CCed on this discussion ... maybe we should
+> > fix that ?
+> 
+> cc'ing linux-arm-kernel in all my replies
 
-I'll let Mitch answer the rest of your questions.
+I'm afraid this won't be enough.
 
-g.
+I'm seeing a stream of frightening crazy talk involving ARM and some 
+other stuff I still can't make head and tail of.  So, before you get a 
+wholesale NAK on everything from me, please I'd suggest you guys rewind 
+a bit now that the ARM list is in CC and just explain what this is all 
+about and why we should feel concerned.  Then maybe the ARM savvy people 
+amongst us could suggest more appropriate approaches?
+
+Thank you.
+
+
+Nicolas
