@@ -1,12 +1,12 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 8431DB7D82
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:24:09 +1000 (EST)
-Received: by gwb15 with SMTP id 15so241320gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:24:07 -0700 (PDT)
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id F02211007D2
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:37:18 +1000 (EST)
+Received: by gyf2 with SMTP id 2so2248988gyf.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:37:17 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1276408773.1962.574.camel@pasglop>
+In-Reply-To: <1276417792.1962.731.camel@pasglop>
 References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
 	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
@@ -15,9 +15,10 @@ References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<1276383132.1962.195.camel@pasglop>
 	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
 	<4C146F18.9030008@firmworks.com> <1276408773.1962.574.camel@pasglop>
+	<4C147EA5.3060500@firmworks.com> <1276417792.1962.731.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 13 Jun 2010 23:23:45 -0600
-Message-ID: <AANLkTinwL0XtMNG13inr_1UliOlqZkyr4dlvG-ZGL9JT@mail.gmail.com>
+Date: Sun, 13 Jun 2010 23:36:57 -0600
+Message-ID: <AANLkTimc12G-YYTd4yQiviY-ijvJ9TzVEmxxaoF43xVR@mail.gmail.com>
 Subject: Re: Request review of device tree documentation
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -36,95 +37,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[cc'ing linux-arm-kernel]
-
-On Sat, Jun 12, 2010 at 11:59 PM, Benjamin Herrenschmidt
+On Sun, Jun 13, 2010 at 2:29 AM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
-> On Sat, 2010-06-12 at 19:39 -1000, Mitch Bradley wrote:
+> On Sat, 2010-06-12 at 20:45 -1000, Mitch Bradley wrote:
 >
->> Minimally, OFW needs to own some memory that the kernel won't steal.
->> OFW on ARM is position-independent, so it can be tucked up at the top of=
- memory
->> fairly easily.
+>> Either fought or embraced. =A0To the extent that it is possible to focus
+>> solely on Linux and ARM, one could image doing a good HAL.
 >
-> Amen :-)
+> That will come with a huge amount of comunity resistance sadly, but I
+> can imagine distros liking it.
 >
->> To call back into OFW, the virtual mapping for that memory needs to be
->> reestablished.
+> In general, I much prefer having all the necessary native drivers in the
+> kernel, and the device-tree to provide the right representation, and
+> avoid trying to abstract "methods" via a HAL. It's the Linux philosophy
+> as much as possible (even when defeated by ACPI).
 >
-> That's a nasty part unless ARM provides a usable "real mode" which
-> allows MMIO accesses, which I -think- it does. I don't remember the
-> details that much.
->
-> Maybe we could define a binding tho where we could somewhat standardize
-> the portion of the virtual address space used by OF. IE. from the top of
-> the address space down to the max size it requires. It might require
-> some games to play with the fixmap on ARM side tho...
->
-> Another option would be something more RTAS-like where a specific call
-> can be done by the OS itself to 'relocate' (not physically but virtually
-> in this case) OF into the OS preferred location. Be prepared to have
-> multiple of these called though as kernels kexec into one another.
+> But if we're going to be forced by vendors into HALs, we can also make
+> sure that whatever they come up with is half reasonable :-)
 
-This sounds reasonable to me.
+I think there is more to be concerned about regarding binary blobs
+than HALs.  Many of the new SoCs require closed binaries to use all
+the hardware right now (graphics cores in particular).
 
->> Or perhaps the MMU and caches can be turned off for the duration of the
->> callback.
->> I don't have the details of ARM MMUs and caches reloaded into my head
->> yet. =A0Maybe next week...
->
-> Forgot most of it too. Looks like it's about time I read the ARM
-> architecture again, this sounds like fun :-)
->
-> BTW. I notice no ARM list is CCed on this discussion ... maybe we should
-> fix that ?
+Board vendors seem to be taking the plunge and modifying the kernel
+rather than trying to create a HAL for driving board specific
+features.
 
-cc'ing linux-arm-kernel in all my replies
+>> (The reason I say ARM-only is =A0because the
+>> only other non-x86 architecture that has any "legs" left is PowerPC, and
+>> PPC already has a coherent story.)
+>
+> Well, ppc story isn't that coherent as far as this goes :-) We don't
+> keep OF alive, we have RTAS which is a pile of poo... etc...
+>
+> But yeah, we are fine without a HAL, so if we stick to OF as a
+> bootloader and provider of the device-tree, we are fine.
+>
+>> > To some extent, in fact, doing that sort of stuff in OF or even in RTA=
+S
+>> > like we do on power is even worse than ACPI-like tables. At least with
+>> > those tables, the interpreter is in the operating system, thus can run
+>> > with interrupts on, scheduling on, etc...
+>>
+>> I have an FCode interpreter that can live inside the OS. =A0It's
+>> considerably simpler than the ACPI interpreter.
+>
+> That's the one thing I purposefully avoided mentioning :-)
+>
+> It's an interesting idea, I've though about it. If course, there's all
+> sort of things to be careful about, such as who provides the f-code with
+> virtual->physical mappings to devices, how they are represented, how
+> much of the OF "forth" environment is accessible to such f-code, locking
+> between f-code and kernel use of shared resources (especially true when
+> dealing with things like i2c devices, plls, etc...).
+>
+> IE. THe base idea is simple. The implementation can be a huge can of
+> worms.
+>
+> Cheers,
+> Ben.
+>
+>> > =A0With RTAS, or client interface
+>> > calls, you'll end up with potentially huge slumps of CPU time "lost"
+>> > into the bowels of the firmware.
+>> >
+>> >
+>> > Cheers,
+>> > Ben.
+>> >
+>> >
+>> >
+>
+>
+>
 
->> Also, for debugging, OFW typically needs access to a UART. =A0If the OS =
-is
->> using the UART, it's often possible for OFW to use it just by turning of=
-f interrupts and
->> polling the UART.
->
-> That might not be a big deal unless the OS plays with the clocks which
-> it -does- tend to do. It might be worth defining some kind of property
-> OF puts in the UART node to inform the OS not to play games and keep
-> that one enabled, though that could affect power management, so might
-> need to be conditional on some nvram option (debug-enabled?)
->
->> The use case for a dynamic device tree is not compelling.
->
-> Right, generally not, except in virtualized environments (see my other
-> response).
->
-> Now, the -one- thing that WILL happen if we have something like OF that
-> remains alive is of course vendors will try to use it as a HAL. You know
-> as well as I do that it -will- happen :-)
->
-> There's two reasons that typically happen. The misguided "good" one
-> which is to think it helps keeping a single/more maintainable kernel
-> image by stuffing the horrible details of nvram, rtc, etc.. access,
-> poweron/off GPIOs, clock control, etc... in there. The "bad" one which
-> is to stash code you don't want to show the source code for (codec
-> control, etc...).
->
-> This is bad for so many reasons that I don't think I need to even start
-> listing them :-) So that's something that will have to be strongly kept
-> in check and fought I suspect.
 
-With a stout 2x4 if needed.  I'm going to try very hard to dissuade
-this.  Yet another reason why I only what one method for passing the
-device tree into the kernel.
 
-> To some extent, in fact, doing that sort of stuff in OF or even in RTAS
-> like we do on power is even worse than ACPI-like tables. At least with
-> those tables, the interpreter is in the operating system, thus can run
-> with interrupts on, scheduling on, etc... With RTAS, or client interface
-> calls, you'll end up with potentially huge slumps of CPU time "lost"
-> into the bowels of the firmware.
-
-Unfortunately, on the newer ARM SoCs, binary blobs are all over the
-place anyway.  :-(
-
-g.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
