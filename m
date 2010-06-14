@@ -1,12 +1,12 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f195.google.com (mail-yw0-f195.google.com
-	[209.85.211.195]) by ozlabs.org (Postfix) with ESMTP id 3BCB7B7D5C
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:14:11 +1000 (EST)
-Received: by ywh33 with SMTP id 33so2583802ywh.11
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:14:10 -0700 (PDT)
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 8431DB7D82
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:24:09 +1000 (EST)
+Received: by gwb15 with SMTP id 15so241320gwb.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:24:07 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1276408087.1962.552.camel@pasglop>
+In-Reply-To: <1276408773.1962.574.camel@pasglop>
 References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
 	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
@@ -14,10 +14,10 @@ References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
 	<1276339684.1962.186.camel@pasglop> <4C13B618.1030006@firmworks.com>
 	<1276383132.1962.195.camel@pasglop>
 	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
-	<1276408087.1962.552.camel@pasglop>
+	<4C146F18.9030008@firmworks.com> <1276408773.1962.574.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 13 Jun 2010 23:13:50 -0600
-Message-ID: <AANLkTikBjwuVvij8I91XaQgLfn8r_lZDrAsIBfJrHDBF@mail.gmail.com>
+Date: Sun, 13 Jun 2010 23:23:45 -0600
+Message-ID: <AANLkTinwL0XtMNG13inr_1UliOlqZkyr4dlvG-ZGL9JT@mail.gmail.com>
 Subject: Re: Request review of device tree documentation
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -36,53 +36,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 12, 2010 at 11:48 PM, Benjamin Herrenschmidt
+[cc'ing linux-arm-kernel]
+
+On Sat, Jun 12, 2010 at 11:59 PM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
-> On Sat, 2010-06-12 at 23:07 -0600, Grant Likely wrote:
->>
->> What is needed to keep OFW alive? =A0I've got no problem with doing so
->> if it isn't invasive, and as long as the same boot entry interface can
->> be used.
+> On Sat, 2010-06-12 at 19:39 -1000, Mitch Bradley wrote:
 >
-> Well, no. OF has a well defined "client interface" which is what gets us
-> in prom_init.c on powerpc when r5 is non NULL. You can use it to do
-> things like access devices or the device-tree.
+>> Minimally, OFW needs to own some memory that the kernel won't steal.
+>> OFW on ARM is position-independent, so it can be tucked up at the top of=
+ memory
+>> fairly easily.
 >
-> We use that to suck the device-tree, which we flatten, and then re-enter
-> the kernel with the "common" entry interface.
-
-I don't think I want to do the same on ARM.  I'd rather have the
-prom_init stuff in a boot wrapper, or have OFW itself generate the
-flat representation before booting the kernel.  I'm trying to
-constrain the number of things that could go wrong by defining only
-one way for getting the device tree data into the kernel.
-
-> If you want to keep OF alive, you -can- probably do that too, but it's
-> more tricky. You need to keep the memory where OF resides reserved, OF
-> might need special MMU translations, you maybe need to install hooks in
-> OF itself for it to be able to manipulate some of those, etc...
+> Amen :-)
 >
->> What is the use-case for having a dynamic device tree? =A0I can see
->> keeping OFW alive being useful for some debug facilities, but once the
->> kernel has started, I'm really not interested in relying on firmware
->> to manage the hardware. =A0(but then again it's no secret that I'm
->> suspicious of anything that depends on runtime interaction with
->> firmware).
+>> To call back into OFW, the virtual mapping for that memory needs to be
+>> reestablished.
 >
-> As we all are :-)
-
-:-)
-
-> I see one genuine use of dynamic device-tree though, which is in a
-> virtualized environment (where the host can be Linux itself). Hotplug
-> can then be a matter of getting new nodes & properties fed down to the
-> OS by the hypervisor/firmware.
+> That's a nasty part unless ARM provides a usable "real mode" which
+> allows MMIO accesses, which I -think- it does. I don't remember the
+> details that much.
 >
-> pSeries somewhat works like that, but using weirdo rtas calls. We could
-> do something saner for kvm or whatever other hypervisors we have some
-> amount of control onto, where bits of compiled dtb can be handed down
-> representing a sub-hierarchy of the tree.
+> Maybe we could define a binding tho where we could somewhat standardize
+> the portion of the virtual address space used by OF. IE. from the top of
+> the address space down to the max size it requires. It might require
+> some games to play with the fixmap on ARM side tho...
+>
+> Another option would be something more RTAS-like where a specific call
+> can be done by the OS itself to 'relocate' (not physically but virtually
+> in this case) OF into the OS preferred location. Be prepared to have
+> multiple of these called though as kernels kexec into one another.
 
-Right.  We don't need to use OFW/RTAS to handle this use case.
+This sounds reasonable to me.
+
+>> Or perhaps the MMU and caches can be turned off for the duration of the
+>> callback.
+>> I don't have the details of ARM MMUs and caches reloaded into my head
+>> yet. =A0Maybe next week...
+>
+> Forgot most of it too. Looks like it's about time I read the ARM
+> architecture again, this sounds like fun :-)
+>
+> BTW. I notice no ARM list is CCed on this discussion ... maybe we should
+> fix that ?
+
+cc'ing linux-arm-kernel in all my replies
+
+>> Also, for debugging, OFW typically needs access to a UART. =A0If the OS =
+is
+>> using the UART, it's often possible for OFW to use it just by turning of=
+f interrupts and
+>> polling the UART.
+>
+> That might not be a big deal unless the OS plays with the clocks which
+> it -does- tend to do. It might be worth defining some kind of property
+> OF puts in the UART node to inform the OS not to play games and keep
+> that one enabled, though that could affect power management, so might
+> need to be conditional on some nvram option (debug-enabled?)
+>
+>> The use case for a dynamic device tree is not compelling.
+>
+> Right, generally not, except in virtualized environments (see my other
+> response).
+>
+> Now, the -one- thing that WILL happen if we have something like OF that
+> remains alive is of course vendors will try to use it as a HAL. You know
+> as well as I do that it -will- happen :-)
+>
+> There's two reasons that typically happen. The misguided "good" one
+> which is to think it helps keeping a single/more maintainable kernel
+> image by stuffing the horrible details of nvram, rtc, etc.. access,
+> poweron/off GPIOs, clock control, etc... in there. The "bad" one which
+> is to stash code you don't want to show the source code for (codec
+> control, etc...).
+>
+> This is bad for so many reasons that I don't think I need to even start
+> listing them :-) So that's something that will have to be strongly kept
+> in check and fought I suspect.
+
+With a stout 2x4 if needed.  I'm going to try very hard to dissuade
+this.  Yet another reason why I only what one method for passing the
+device tree into the kernel.
+
+> To some extent, in fact, doing that sort of stuff in OF or even in RTAS
+> like we do on power is even worse than ACPI-like tables. At least with
+> those tables, the interpreter is in the operating system, thus can run
+> with interrupts on, scheduling on, etc... With RTAS, or client interface
+> calls, you'll end up with potentially huge slumps of CPU time "lost"
+> into the bowels of the firmware.
+
+Unfortunately, on the newer ARM SoCs, binary blobs are all over the
+place anyway.  :-(
 
 g.
