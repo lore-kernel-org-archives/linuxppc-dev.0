@@ -1,23 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id 28BEEB7D84
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:54:25 +1000 (EST)
-Received: by gxk21 with SMTP id 21so685092gxk.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:54:24 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <4C13C4D9.2030108@gatzka.org>
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<4C13C4D9.2030108@gatzka.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 13 Jun 2010 23:54:04 -0600
-Message-ID: <AANLkTim4d2Red_abGwrSbOQ-9FrM89pArFvo2ISbkWP2@mail.gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B3EC9100813
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 16:12:01 +1000 (EST)
 Subject: Re: Request review of device tree documentation
-To: stephan@gatzka.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: microblaze-uclinux@itee.uq.edu.au,
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <AANLkTikBjwuVvij8I91XaQgLfn8r_lZDrAsIBfJrHDBF@mail.gmail.com>
+References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
+	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
+	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
+	<4C13430B.5000907@firmworks.com> <1276339529.1962.184.camel@pasglop>
+	<1276339684.1962.186.camel@pasglop> <4C13B618.1030006@firmworks.com>
+	<1276383132.1962.195.camel@pasglop>
+	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
+	<1276408087.1962.552.camel@pasglop>
+	<AANLkTikBjwuVvij8I91XaQgLfn8r_lZDrAsIBfJrHDBF@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Jun 2010 16:09:32 +1000
+Message-ID: <1276495772.2552.22.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+	Nicolas Pitre <nico@fluxnic.net>, Olof Johansson <olof@lixom.net>,
+	Mitch Bradley <wmb@firmworks.com>, Dan Malek <ppc6dev@digitaldans.com>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +36,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 12, 2010 at 11:33 AM, Stephan Gatzka <stephan@gatzka.org> wrote=
-:
-> Hi Grant,
->
->> I've been doing a bit of work on some introductory level documentation
->> of the flattened device tree. =A0I've got a rough copy up on the
->> devicetree.org wiki, and I could use some feedback. =A0If anyone has
->> some time to look at it, you can find it here:
->>
->> http://devicetree.org/Device_Tree_Usage
->>
->> Thanks,
->> g.
->>
->
-> this looks good. Maybe an example of a complete host/PCI bridge might be
-> helpful. Probably I can write something during the next week.
+On Sun, 2010-06-13 at 23:13 -0600, Grant Likely wrote:
+> > We use that to suck the device-tree, which we flatten, and then
+> re-enter
+> > the kernel with the "common" entry interface.
+> 
+> I don't think I want to do the same on ARM.  I'd rather have the
+> prom_init stuff in a boot wrapper, or have OFW itself generate the
+> flat representation before booting the kernel.
 
-Hi Stephan,
+But then it's no longer OF. IE. A compliant OF implementation provides a
+client interface API :-)
 
-I see that you started drafting some of this on the wiki.  Thanks for
-the draft you've done so far.  Some comments:
+This is going to be especially important if Mitch wants to keep OF
+alive.
 
-- Instead, of using an MPC5200 example, add a pci bus to the sample
-Coyote's Revenge system used in the rest of the page and describe
-that.  The goal of this document is to lead a user step-by-step how
-each part of the device tree works.  So, instead of plopping down the
-complete PCI bus node, the document should gradually build it up, and
-talk about each element as it is added.  Focus on how it all works
-together.
+I suppose it could be done via a wrapper like prom_init, which flattens
+the tree, and sticks somewhere in a property the address of the OF
+client interface callback though it's a tad awkward. If well defined, I
+suppose Mitch might even be able to make his OF natively boot kernels
+that way but that's of course up to him.
 
-- It would be userful to also show a PCI-to-PCI bridge, and maybe a
-fixed PCI device as children of the host bridge node.
+> I'm trying to constrain the number of things that could go wrong by
+> defining only one way for getting the device tree data into the
+> kernel.
 
-- The current PCI nodes on all powerpc boards depend on a device_type
-=3D "PCI" property, but I'd like to look at moving away from that for
-new PCI controllers (device_type describes facilities in real open
-firmware.  It shouldn't have any meaning in the flattened device
-tree).  I need to look into the details though to see if it is
-feasible or not.
+I understand, and the flattened method is the most versatile, I'm just
+pointing out the situation here :-)
 
-- Describing the interrupt-map property will be particularly fiddly.
-It could have a section all to itself before you even get to talking
-about PCI irq swizzling.
+> Right.  We don't need to use OFW/RTAS to handle this use case.
 
-Thanks again for the help!
-g.
+Definitely not. It will depend on whatever hypervisor interface is
+implemented in a given environment. Though I do like the idea of passing
+precompiled bits of .dtb around for hotplug :-) We could make that a
+standard way of KVM to do things in embedded space.
+
+Cheers,
+Ben.
