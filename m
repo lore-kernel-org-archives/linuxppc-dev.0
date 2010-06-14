@@ -1,15 +1,17 @@
 Return-Path: <emillbrandt@dekaresearch.com>
 Received: from dekaexchange07.deka.local (mail.dekaresearch.com
-	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 0CB711007D3
+	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id CA1BB100800
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Tue, 15 Jun 2010 07:55:09 +1000 (EST)
 From: Eric Millbrandt <emillbrandt@dekaresearch.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/2 v2] powerpc/5200: add mpc5200_psc_ac97_gpio_reset
-Date: Mon, 14 Jun 2010 17:55:17 -0400
-Message-ID: <1276552518-11441-2-git-send-email-emillbrandt@dekaresearch.com>
-In-Reply-To: <1276552518-11441-1-git-send-email-emillbrandt@dekaresearch.com>
+Subject: [PATCH 2/2 v3] sound/soc: mpc5200_psc_ac97: Use gpio pins for cold
+	reset
+Date: Mon, 14 Jun 2010 17:55:18 -0400
+Message-ID: <1276552518-11441-3-git-send-email-emillbrandt@dekaresearch.com>
+In-Reply-To: <1276552518-11441-2-git-send-email-emillbrandt@dekaresearch.com>
 References: <1276552518-11441-1-git-send-email-emillbrandt@dekaresearch.com>
+	<1276552518-11441-2-git-send-email-emillbrandt@dekaresearch.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
@@ -24,11 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Work around a silicon bug in the ac97 reset functionality of the
-mpc5200(b).  The implementation of the ac97 "cold" reset is flawed.
-If the sync and output lines are high when reset is asserted the
-attached ac97 device may go into test mode.  Avoid this by
-reconfiguring the psc to gpio mode and generating the reset manually.
+Call the gpio reset platform function instead of using the flawed
+ac97 functionality of the MPC5200(b)
 
 >From MPC5200B User's Manual:
 "Some AC97 devices goes to a test mode, if the Sync line is high
@@ -41,183 +40,82 @@ Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
 ---
 
 changes since v1
-- Refactored to manipulate port_config and gpio pins internally instead of
-  exporting an API.
+- Amended with comments from Mark Brown
+- Fall back to the original reset implementation if no gpio pins are define=
+d
+  in the device tree
 
- arch/powerpc/include/asm/mpc52xx.h           |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_common.c |  103 ++++++++++++++++++++++=
-++++
- 2 files changed, 104 insertions(+), 0 deletions(-)
+changes since v2
+- Refactored to move the port_config manipulation to platform code.
+- Remove the gpio pins from the device-tree
 
-diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/=
-mpc52xx.h
-index b664ce7..1f41382 100644
---- a/arch/powerpc/include/asm/mpc52xx.h
-+++ b/arch/powerpc/include/asm/mpc52xx.h
-@@ -271,6 +271,7 @@ struct mpc52xx_intr {
- /* mpc52xx_common.c */
- extern void mpc5200_setup_xlb_arbiter(void);
- extern void mpc52xx_declare_of_platform_devices(void);
-+extern int mpc5200_psc_ac97_gpio_reset(int psc_number);
- extern void mpc52xx_map_common_devices(void);
- extern int mpc52xx_set_psc_clkdiv(int psc_id, int clkdiv);
- extern unsigned int mpc52xx_get_xtal_freq(struct device_node *node);
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/pl=
-atforms/52xx/mpc52xx_common.c
-index a46bad0..a9866fa 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -12,9 +12,11 @@
+ sound/soc/fsl/mpc5200_psc_ac97.c |   33 +++++++++++++++++++++++++++++----
+ 1 files changed, 29 insertions(+), 4 deletions(-)
 
- #undef DEBUG
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_a=
+c97.c
+index e2ee220..380a127 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -20,6 +20,7 @@
 
-+#include <linux/gpio.h>
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
- #include <linux/of_platform.h>
-+#include <linux/of_gpio.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/mpc52xx.h>
-@@ -37,6 +39,11 @@ static struct of_device_id mpc52xx_bus_ids[] __initdata =
-=3D {
-        {}
- };
+ #include <asm/time.h>
+ #include <asm/delay.h>
++#include <asm/mpc52xx.h>
+ #include <asm/mpc52xx_psc.h>
 
-+static struct of_device_id mpc52xx_gpio_simple[] =3D {
-+       { .compatible =3D "fsl,mpc5200-gpio", },
-+       {}
-+};
-+
- /*
-  * This variable is mapped in mpc52xx_map_wdt() and used in mpc52xx_restar=
-t().
-  * Permanent mapping is required because mpc52xx_restart() can be called
-@@ -82,6 +89,13 @@ mpc5200_setup_xlb_arbiter(void)
-        iounmap(xlb);
- }
-
-+/*
-+ * This variable is mapped in mpc52xx_write_port_config() and
-+ * mpc52xx_read_port_config().
-+ */
-+DEFINE_SPINLOCK(mpc52xx_gpio_lock);
-+static u32 __iomem *port_config;
-+
- /**
-  * mpc52xx_declare_of_platform_devices: register internal devices and chil=
-dren
-  *                                     of the localplus bus to the of_plat=
-form
-@@ -117,6 +131,7 @@ void __init
- mpc52xx_map_common_devices(void)
+ #include "mpc5200_dma.h"
+@@ -100,19 +101,43 @@ static void psc_ac97_warm_reset(struct snd_ac97 *ac97=
+)
  {
-        struct device_node *np;
-+       const u32 *regaddr;
+        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
 
-        /* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
-         * possibly from a interrupt context. wdt is only implement
-@@ -135,6 +150,13 @@ mpc52xx_map_common_devices(void)
-        np =3D of_find_matching_node(NULL, mpc52xx_cdm_ids);
-        mpc52xx_cdm =3D of_iomap(np, 0);
-        of_node_put(np);
++       mutex_lock(&psc_dma->mutex);
 +
-+       /* port_config register */
-+       np =3D of_find_matching_node(NULL, mpc52xx_gpio_simple);
-+       regaddr =3D of_get_address(np, 0, NULL, NULL);
-+       port_config =3D ioremap((u32) of_translate_address(np, regaddr), 0x=
-4);
+        out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
+        udelay(3);
+        out_be32(&regs->sicr, psc_dma->sicr);
 +
-+       of_node_put(np);
++       mutex_unlock(&psc_dma->mutex);
  }
 
- /**
-@@ -233,3 +255,84 @@ mpc52xx_restart(char *cmd)
++#define  MPC52xx_PSC_SICR_ACRB (0x8 << 24)
+ static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
+ {
+        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
 
-        while (1);
- }
+-       /* Do a cold reset */
+-       out_8(&regs->op1, MPC52xx_PSC_OP_RES);
+-       udelay(10);
+-       out_8(&regs->op0, MPC52xx_PSC_OP_RES);
++       mutex_lock(&psc_dma->mutex);
 +
-+#define PSC1_RESET     254
-+#define PSC1_SYNC      244
-+#define PSC1_SDATA_OUT 246
-+#define PSC2_RESET     253
-+#define PSC2_SYNC      240
-+#define PSC2_SDATA_OUT 242
-+#define MPC52xx_GPIO_PSC1_MASK 0x7
-+#define MPC52xx_GPIO_PSC2_MASK (0x7<<4)
-+
-+/**
-+ * mpc5200_psc_ac97_gpio_reset: Use gpio pins to reset the ac97 bus
-+ *
-+ * @psc: psc number to reset (only psc 1 and 2 support ac97)
-+ */
-+int mpc5200_psc_ac97_gpio_reset(int psc_number)
-+{
-+       unsigned long flags;
-+       u32 gpio;
-+       u32 mux;
-+       int out;
-+       int reset;
-+       int sync;
-+
-+       if (!port_config)
-+               return -ENODEV;
-+
-+       switch (psc_number) {
++       switch (psc_dma->id) {
 +       case 0:
-+               reset   =3D PSC1_RESET;           /* AC97_1_RES */
-+               sync    =3D PSC1_SYNC;            /* AC97_1_SYNC */
-+               out     =3D PSC1_SDATA_OUT;       /* AC97_1_SDATA_OUT */
-+               gpio    =3D MPC52xx_GPIO_PSC1_MASK;
-+               break;
 +       case 1:
-+               reset   =3D PSC2_RESET;           /* AC97_2_RES */
-+               sync    =3D PSC2_SYNC;            /* AC97_2_SYNC */
-+               out     =3D PSC2_SDATA_OUT;       /* AC97_2_SDATA_OUT */
-+               gpio    =3D MPC52xx_GPIO_PSC2_MASK;
++               mpc5200_psc_ac97_gpio_reset(psc_dma->id);
++               dev_info(psc_dma->dev, "cold reset\n");
++
++               /* Notify the PSC that a reset has occurred */
++               out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_ACRB=
+);
++
++               /* Re-enable RX and TX */
++               out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_R=
+X_ENABLE);
++
 +               break;
 +       default:
-+               printk(KERN_ERR __FILE__ ": "
-+                     "Unable to determine PSC, no ac97 cold-reset will be =
-"
-+                     "performed\n");
-+               return -ENODEV;
++               dev_err(psc_dma->dev,
++                       "Unable to determine PSC, no cold-reset will be "
++                       "performed\n");
 +       }
 +
-+       gpio_request(reset, "reset");
-+       gpio_request(sync, "sync");
-+       gpio_request(out, "out");
++       mutex_unlock(&psc_dma->mutex);
 +
-+       spin_lock_irqsave(&mpc52xx_gpio_lock, flags);
-+
-+       mux =3D in_be32(port_config);
-+
-+       /* Reconfiure pin-muxing to gpio */
-+       out_be32(port_config, mux & (~gpio));
-+
-+       /* Assert cold reset */
-+       gpio_direction_output(sync, 0);
-+       gpio_direction_output(out, 0);
-+       gpio_direction_output(reset, 0);
-+
-+       /* wait at lease 1 us */
-+       udelay(2);
-+
-+       /* Deassert reset */
-+       gpio_direction_output(reset, 1);
-+
-+       /* Restore pin-muxing */
-+       out_be32(port_config, mux);
-+
-+       spin_unlock_irqrestore(&mpc52xx_gpio_lock, flags);
-+
-+       gpio_free(out);
-+       gpio_free(sync);
-+       gpio_free(reset);
-+
-+       return 0;
-+}
-+EXPORT_SYMBOL(mpc5200_psc_ac97_gpio_reset);
+        msleep(1);
+        psc_ac97_warm_reset(ac97);
+ }
 --
 -DISCLAIMER: an automatically appended disclaimer may follow. By posting-
 -to a public e-mail mailing list I hereby grant permission to distribute-
