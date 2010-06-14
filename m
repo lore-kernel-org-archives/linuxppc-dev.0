@@ -1,24 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 62477B7D88
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:41:05 +1000 (EST)
-Received: by gwb15 with SMTP id 15so245890gwb.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:41:04 -0700 (PDT)
+Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
+	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id 28BEEB7D84
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 15:54:25 +1000 (EST)
+Received: by gxk21 with SMTP id 21so685092gxk.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Jun 2010 22:54:24 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <201006132112.36728.jeremy.kerr@canonical.com>
+In-Reply-To: <4C13C4D9.2030108@gatzka.org>
 References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<1276311610.1962.173.camel@pasglop> <1276312071.1962.175.camel@pasglop>
-	<201006132112.36728.jeremy.kerr@canonical.com>
+	<4C13C4D9.2030108@gatzka.org>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 13 Jun 2010 23:40:43 -0600
-Message-ID: <AANLkTimc84MnPvfZgVHoSkQuruS1KzLId_EgYl3DJn6w@mail.gmail.com>
+Date: Sun, 13 Jun 2010 23:54:04 -0600
+Message-ID: <AANLkTim4d2Red_abGwrSbOQ-9FrM89pArFvo2ISbkWP2@mail.gmail.com>
 Subject: Re: Request review of device tree documentation
-To: Jeremy Kerr <jeremy.kerr@canonical.com>
+To: stephan@gatzka.org
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+Cc: microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Olof Johansson <olof@lixom.net>, microblaze-uclinux@itee.uq.edu.au
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 13, 2010 at 7:12 AM, Jeremy Kerr <jeremy.kerr@canonical.com> wrote:
-> hi Ben,
+On Sat, Jun 12, 2010 at 11:33 AM, Stephan Gatzka <stephan@gatzka.org> wrote=
+:
+> Hi Grant,
 >
->> Maybe a paragraph on the new proposed clock binding that Jeremy is
->> working would be of use btw.
+>> I've been doing a bit of work on some introductory level documentation
+>> of the flattened device tree. =A0I've got a rough copy up on the
+>> devicetree.org wiki, and I could use some feedback. =A0If anyone has
+>> some time to look at it, you can find it here:
+>>
+>> http://devicetree.org/Device_Tree_Usage
+>>
+>> Thanks,
+>> g.
+>>
 >
-> Here's one I prepared earlier:
->
-> http://devicetree.org/ClockBindings
+> this looks good. Maybe an example of a complete host/PCI bridge might be
+> helpful. Probably I can write something during the next week.
 
-Yup, but the documents have difference purposes.  ClockBindings is the
-formal description.  Device_Tree_Usage leads someone step by step how
-everything actually fits together.  I think it would be useful to add
-a clock binding section, especially with how important it is shaping
-up to be for the ARM SoC work we're doing.
+Hi Stephan,
 
+I see that you started drafting some of this on the wiki.  Thanks for
+the draft you've done so far.  Some comments:
+
+- Instead, of using an MPC5200 example, add a pci bus to the sample
+Coyote's Revenge system used in the rest of the page and describe
+that.  The goal of this document is to lead a user step-by-step how
+each part of the device tree works.  So, instead of plopping down the
+complete PCI bus node, the document should gradually build it up, and
+talk about each element as it is added.  Focus on how it all works
+together.
+
+- It would be userful to also show a PCI-to-PCI bridge, and maybe a
+fixed PCI device as children of the host bridge node.
+
+- The current PCI nodes on all powerpc boards depend on a device_type
+=3D "PCI" property, but I'd like to look at moving away from that for
+new PCI controllers (device_type describes facilities in real open
+firmware.  It shouldn't have any meaning in the flattened device
+tree).  I need to look into the details though to see if it is
+feasible or not.
+
+- Describing the interrupt-map property will be particularly fiddly.
+It could have a section all to itself before you even get to talking
+about PCI irq swizzling.
+
+Thanks again for the help!
 g.
