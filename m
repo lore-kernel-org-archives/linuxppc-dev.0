@@ -1,34 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 9AD89B7D69
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 01:35:45 +1000 (EST)
-Received: by gyf2 with SMTP id 2so2579270gyf.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Jun 2010 08:35:43 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <alpine.LFD.2.00.1006140943350.13427@xanadu.home>
-References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
-	<33BD8E86-9397-432A-97BF-F154812C157B@digitaldans.com>
-	<AANLkTilv6TtPZs0DAwd8JlSV_J3VvMsvtVVOOeQauOIn@mail.gmail.com>
-	<4C13430B.5000907@firmworks.com> <1276339529.1962.184.camel@pasglop>
-	<1276339684.1962.186.camel@pasglop> <4C13B618.1030006@firmworks.com>
+Return-Path: <jamie@shareable.org>
+Received: from mail2.shareable.org (mail2.shareable.org [80.68.89.115])
+	by ozlabs.org (Postfix) with ESMTP id D0108B7D84
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 02:02:14 +1000 (EST)
+Date: Mon, 14 Jun 2010 17:02:01 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Nicolas Pitre <nico@fluxnic.net>
+Subject: Re: Request review of device tree documentation
+Message-ID: <20100614160201.GD9550@shareable.org>
+References: <4C13430B.5000907@firmworks.com>
+	<1276339529.1962.184.camel@pasglop>
+	<1276339684.1962.186.camel@pasglop>
+	<4C13B618.1030006@firmworks.com>
 	<1276383132.1962.195.camel@pasglop>
 	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
-	<4C146F18.9030008@firmworks.com> <1276408773.1962.574.camel@pasglop>
-	<AANLkTinwL0XtMNG13inr_1UliOlqZkyr4dlvG-ZGL9JT@mail.gmail.com>
-	<alpine.LFD.2.00.1006140943350.13427@xanadu.home>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Jun 2010 09:35:23 -0600
-Message-ID: <AANLkTim1mYpaxe-_OGbOF3AaZ6m5_SVUXLbeyKnAyvjs@mail.gmail.com>
-Subject: Re: Request review of device tree documentation
-To: Nicolas Pitre <nico@fluxnic.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	<4C146F18.9030008@firmworks.com>
+	<AANLkTikls3hjXOmKFqG2D_9GaJSjOXNuuRXPlanAjo5E@mail.gmail.com>
+	<20100614124438.GF9323@yookeroo>
+	<alpine.LFD.2.00.1006141044510.13427@xanadu.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <alpine.LFD.2.00.1006141044510.13427@xanadu.home>
+Cc: microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Olof Johansson <olof@lixom.net>, microblaze-uclinux@itee.uq.edu.au,
-	Mitch Bradley <wmb@firmworks.com>, Dan Malek <ppc6dev@digitaldans.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Mitch Bradley <wmb@firmworks.com>,
+	Dan Malek <ppc6dev@digitaldans.com>,
 	Jeremy Kerr <jeremy.kerr@canonical.com>,
-	linux-arm-kernel@lists.infradead.org
+	linux-arm-kernel@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +36,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 14, 2010 at 7:51 AM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> On Sun, 13 Jun 2010, Grant Likely wrote:
->
->> [cc'ing linux-arm-kernel]
->>
->> On Sat, Jun 12, 2010 at 11:59 PM, Benjamin Herrenschmidt
->> > BTW. I notice no ARM list is CCed on this discussion ... maybe we shou=
-ld
->> > fix that ?
->>
->> cc'ing linux-arm-kernel in all my replies
->
-> I'm afraid this won't be enough.
->
-> I'm seeing a stream of frightening crazy talk involving ARM and some
-> other stuff I still can't make head and tail of. =A0So, before you get a
-> wholesale NAK on everything from me, please I'd suggest you guys rewind
-> a bit now that the ARM list is in CC and just explain what this is all
-> about and why we should feel concerned. =A0Then maybe the ARM savvy peopl=
-e
-> amongst us could suggest more appropriate approaches?
+Nicolas Pitre wrote:
+> On Mon, 14 Jun 2010, David Gibson wrote:
+> 
+> > On Sun, Jun 13, 2010 at 11:02:15PM -0600, Grant Likely wrote:
+> > [sni]
+> > > > That's sort of a self-fulfilling prophecy.  If the OS doesn't trust the
+> > > > firmware, there is no pressure for the firmware to "get it right".
+> > > 
+> > > Firmware will not get it right.  Period.  There will always be
+> > > something wrong.  It is never right on PCs.  It will never be right on
+> > > the other architectures.
+> > 
+> > Yes, yes, yes.  And there is a great deal of empirical evidence to
+> > back that assertion.
+> > 
+> > >  That goes for OSes too, but upgrading an OS
+> > > isn't as risky as upgrading firmware.  That isn't to say that it can't
+> > > be close, but every firmware feature that the OS depends on is a
+> > > feature that could force a risky firmware upgrade when the bug in it
+> > > is discovered.
+> > 
+> > Indeed.  In fact, the general rule of thumb is really "put as much as
+> > possible into the most easily replaced layer of the stack".  This is,
+> > incidentally, why I've always been dubious about simple firmwares
+> > supplying a flattened device tree rather than including the device
+> > tree template in the kernel, cuboot style.
+> 
+> The biggest advantage, IMHO, for adding DT to ARM, is actually to 
+> decouple the hardware config information and the kernel.  If in the end 
+> the DT has to be shipped in the kernel then we're losing all this 
+> advantage over the current state of things on ARM which still works 
+> pretty well otherwise.
+> 
+> In the best case, the simple firmware simply has to retrieve the 
+> flattened device tree from flash, and pass it to the kernel just like 
+> some anonymous blob.  And the simple firmware only needs to provide a 
+> way for that DT blob to be updatable, like through an upload of a 
+> replacement blob that was prepared offline.  Just like a ramdisk image 
+> or the like.
+> 
+> That doesn't need to be fancier than that, and the goal of having the DT 
+> data tied to the hardware instead of the kernel is achieved.
 
-The discussion *started* with a request to review this document:
+Imho that puts the DT in a similar category as initrd/initramfs, from
+the bootloader's point of view.  It's another blob whose address is
+passed to the kernel, just like initrd.
 
-http://devicetree.org/Device_Tree_Usage
+Some bootloaders can't update blobs independently for technical
+reasons, or to be minimal.
 
-Which is in early draft form (which is why the arm list wasn't
-initially cc'd. I was soliciting feedback from the current device tree
-users.  A second request for review will go out after rework is done
-to the document).
+A device I'm using does kernel updates by updating the whole romfs
+boot image, which contains the kernel and other auxiliary blobs used
+for booting (splash screen, early irq handlers etc.) as well as the
+root filesystem.
 
-In one of the reply threads Mitch stated that he is working on an ARM
-project that will use Open Firmware as the bootloader, and that he'd
-like the ability to keep OFW available after the kernel is booted
-which is something currently done on both Sparc and OLPC x86.  Mitch
-will correct me if I'm made any misrepresentations here.
+It is done that way to pack everything together in the small flash,
+and because the NOR flash eraseblocks are too large relative to the
+whole flash size to use separate partitions for kernel, boot
+filesystem and other blobs for booting.
 
-Conceptually I'm not opposed to allowing OFW to stay resident
-providing that it does not impose new requirements on the boot
-interface (the kernel would still need to be handed the flattened
-representation of the device tree) and that the code to do so is well
-contained in the kernel.  The devil is of course in the details on how
-feasible it is to accomplish.  ARM machines with Open Firmware are
-going to be the minority, so I'm not interested in doing anything
-special or out of the ordinary specifically to support it.
+Dedicating a 64kiB eraseblock out of 2MB just for a small DT would be
+quite wasteful.  Dedicating two to make it powerfail-safe would be
+even worse.
 
-g.
+So requiring that a bootloader can update the DT _independently_ of
+everything else is a bit much for some devices.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+But requiring that it's generally treated like other separate blob,
+i.e. in a similar way to initrd, and the kernel image itself, seems
+not unreasonable.
+
+Like initrd, some people will find they need to compile it in to the
+kernel image to fit some bootloader they can't change, or daren't risk
+changing in already rolled out devices that they want to update to a
+DT-using kernel.
+
+I won't be surprised if I see some vendor SDK containing a kernel
+patch to early-parse the bootloader-supplied ROMFS image to extract
+"devicetree.bin.gz" at some point :-)
+
+We can discourage that sort of thing (but not prevent it) by ensuring
+the open source bootloaders support a DT blob as easily as possible.
+
+-- Jamie
