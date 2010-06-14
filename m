@@ -1,19 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
-	[209.85.213.179]) by ozlabs.org (Postfix) with ESMTP id 40DB61007D2
+Received: from mail-yw0-f181.google.com (mail-yw0-f181.google.com
+	[209.85.211.181]) by ozlabs.org (Postfix) with ESMTP id B188CB7D7F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 15 Jun 2010 08:09:11 +1000 (EST)
-Received: by yxp4 with SMTP id 4so966773yxp.38
+	Tue, 15 Jun 2010 09:09:37 +1000 (EST)
+Received: by ywh11 with SMTP id 11so3276780ywh.7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 14 Jun 2010 15:09:09 -0700 (PDT)
+	Mon, 14 Jun 2010 16:09:35 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1276552518-11441-1-git-send-email-emillbrandt@dekaresearch.com>
+In-Reply-To: <1276552518-11441-3-git-send-email-emillbrandt@dekaresearch.com>
 References: <1276552518-11441-1-git-send-email-emillbrandt@dekaresearch.com>
+	<1276552518-11441-2-git-send-email-emillbrandt@dekaresearch.com>
+	<1276552518-11441-3-git-send-email-emillbrandt@dekaresearch.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 14 Jun 2010 16:08:49 -0600
-Message-ID: <AANLkTinA4IQeyGE7EsxJwcicKRo7N4-_ez_sqz5G_za_@mail.gmail.com>
-Subject: Re: [PATCH 0/2 v2] mpc5200 ac97 gpio reset
+Date: Mon, 14 Jun 2010 17:09:15 -0600
+Message-ID: <AANLkTikdzQ2i5QWDTG9sfpS_TChu44NbZWft936nCNFi@mail.gmail.com>
+Subject: Re: [PATCH 2/2 v3] sound/soc: mpc5200_psc_ac97: Use gpio pins for
+	cold reset
 To: Eric Millbrandt <emillbrandt@dekaresearch.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
@@ -29,65 +32,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mon, Jun 14, 2010 at 3:55 PM, Eric Millbrandt
 <emillbrandt@dekaresearch.com> wrote:
-> These patches reimplement the reset fuction in the ac97 to use gpio pins
-> instead of using the mpc5200 ac97 reset functionality in the psc. =A0This
-> avoids a problem in which attached ac97 devices go into "test" mode appea=
-r
-> unresponsive.
+> Call the gpio reset platform function instead of using the flawed
+> ac97 functionality of the MPC5200(b)
 >
-> These patches were tested on a pcm030 baseboard and on custom hardware wi=
-th
-> a wm9715 audio codec/touchscreen controller.
+> From MPC5200B User's Manual:
+> "Some AC97 devices goes to a test mode, if the Sync line is high
+> during the Res line is low (reset phase). To avoid this behavior the
+> Sync line must be also forced to zero during the reset phase. To do
+> that, the pin muxing should switch to GPIO mode and the GPIO control
+> register should be used to control the output lines."
 >
-> Eric Millbrandt
->
+> Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
 > ---
 >
 > changes since v1
-> - Refactored to manipulate port_config and gpio pins internally instead o=
-f
-> =A0exporting an API.
-> - Amended commit message with comments from Mark Brown
+> - Amended with comments from Mark Brown
+> - Fall back to the original reset implementation if no gpio pins are defi=
+ned
+> =A0in the device tree
+>
+> changes since v2
 > - Refactored to move the port_config manipulation to platform code.
 > - Remove the gpio pins from the device-tree
 >
-> Eric Millbrandt (2):
-> =A0 =A0powerpc/5200: add mpc5200_psc_ac97_gpio_reset
-> =A0 =A0sound/soc: mpc5200_psc_ac97: Use gpio pins for cold reset
+> =A0sound/soc/fsl/mpc5200_psc_ac97.c | =A0 33 ++++++++++++++++++++++++++++=
++----
+> =A01 files changed, 29 insertions(+), 4 deletions(-)
 >
-> =A0arch/powerpc/include/asm/mpc52xx.h =A0 =A0 =A0 =A0 =A0 | =A0 =A01 +
-> =A0arch/powerpc/platforms/52xx/mpc52xx_common.c | =A0103 ++++++++++++++++=
-++++++++++
-> =A0sound/soc/fsl/mpc5200_psc_ac97.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 33 ++++=
-+++-
-> =A03 files changed, 133 insertions(+), 4 deletions(-)
+> diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc=
+_ac97.c
+> index e2ee220..380a127 100644
+> --- a/sound/soc/fsl/mpc5200_psc_ac97.c
+> +++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+> @@ -20,6 +20,7 @@
 >
-> -DISCLAIMER: an automatically appended disclaimer may follow. By posting-
-> -to a public e-mail mailing list I hereby grant permission to distribute-
-> -and copy this message.-
+> =A0#include <asm/time.h>
+> =A0#include <asm/delay.h>
+> +#include <asm/mpc52xx.h>
+> =A0#include <asm/mpc52xx_psc.h>
+>
+> =A0#include "mpc5200_dma.h"
+> @@ -100,19 +101,43 @@ static void psc_ac97_warm_reset(struct snd_ac97 *ac=
+97)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
+>
+> + =A0 =A0 =A0 mutex_lock(&psc_dma->mutex);
+> +
+> =A0 =A0 =A0 =A0out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR=
+);
+> =A0 =A0 =A0 =A0udelay(3);
+> =A0 =A0 =A0 =A0out_be32(&regs->sicr, psc_dma->sicr);
+> +
+> + =A0 =A0 =A0 mutex_unlock(&psc_dma->mutex);
+> =A0}
+>
+> +#define =A0MPC52xx_PSC_SICR_ACRB (0x8 << 24)
 
-Hahahahaha!  You're disclaimer to the disclaimer is awesome.
+Put this #define with the rest of the MPC52xx_PSC_SICR_* #defines.
 
+> =A0static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
+> =A0{
+> =A0 =A0 =A0 =A0struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
+>
+> - =A0 =A0 =A0 /* Do a cold reset */
+> - =A0 =A0 =A0 out_8(&regs->op1, MPC52xx_PSC_OP_RES);
+> - =A0 =A0 =A0 udelay(10);
+> - =A0 =A0 =A0 out_8(&regs->op0, MPC52xx_PSC_OP_RES);
+> + =A0 =A0 =A0 mutex_lock(&psc_dma->mutex);
+> +
+> + =A0 =A0 =A0 switch (psc_dma->id) {
+> + =A0 =A0 =A0 case 0:
+> + =A0 =A0 =A0 case 1:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc5200_psc_ac97_gpio_reset(psc_dma->id);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_info(psc_dma->dev, "cold reset\n");
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Notify the PSC that a reset has occurred=
+ */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_be32(&regs->sicr, psc_dma->sicr | MPC52=
+xx_PSC_SICR_ACRB);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Re-enable RX and TX */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 out_8(&regs->command, MPC52xx_PSC_TX_ENABLE=
+ | MPC52xx_PSC_RX_ENABLE);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> + =A0 =A0 =A0 default:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(psc_dma->dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "Unable to determine PSC, n=
+o cold-reset will be "
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "performed\n");
+> + =A0 =A0 =A0 }
+
+You can drop the switch block and the error message.  You do exactly
+the same thing in the common code.  Just call
+mpc5200_psc_ac97_gpio_reset() unconditionally.
+
+Otherwise, this version looks pretty good.  After you've respun both
+patches (I've got comments to make on the other too), and if it's okay
+by Mark, then I can merge both patches through my tree.
+
+Cheers,
 g.
-
->
->
->
-> This e-mail and the information, including any attachments, it contains a=
-re intended to be a confidential communication only to the person or entity=
- to whom it is addressed and may contain information that is privileged. If=
- the reader of this message is not the intended recipient, you are hereby n=
-otified that any dissemination, distribution or copying of this communicati=
-on is strictly prohibited. If you have received this communication in error=
-, please immediately notify the sender and destroy the original message.
->
-> Thank you.
->
-> Please consider the environment before printing this email.
->
-
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
