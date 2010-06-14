@@ -1,34 +1,17 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (cassiel.sirena.org.uk [80.68.93.111])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 94007B7D4F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 06:33:45 +1000 (EST)
-Date: Mon, 14 Jun 2010 21:08:01 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Nicolas Pitre <nico@fluxnic.net>
-Subject: Re: Request review of device tree documentation
-Message-ID: <20100614200800.GF10776@sirena.org.uk>
-References: <AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
-	<4C146F18.9030008@firmworks.com>
-	<AANLkTikls3hjXOmKFqG2D_9GaJSjOXNuuRXPlanAjo5E@mail.gmail.com>
-	<20100614124438.GF9323@yookeroo>
-	<alpine.LFD.2.00.1006141044510.13427@xanadu.home>
-	<20100614160201.GD9550@shareable.org>
-	<4C165FD1.6080505@firmworks.com>
-	<alpine.LFD.2.00.1006141311580.13427@xanadu.home>
-	<4C1672FF.3060407@firmworks.com>
-	<alpine.LFD.2.00.1006141432530.13427@xanadu.home>
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange07.deka.local (mail.dekaresearch.com
+	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 45CC11007D3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 15 Jun 2010 07:55:07 +1000 (EST)
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/2 v2] mpc5200 ac97 gpio reset
+Date: Mon, 14 Jun 2010 17:55:16 -0400
+Message-ID: <1276552518-11441-1-git-send-email-emillbrandt@dekaresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LFD.2.00.1006141432530.13427@xanadu.home>
-Cc: microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	Jamie Lokier <jamie@shareable.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Mitch Bradley <wmb@firmworks.com>, Dan Malek <ppc6dev@digitaldans.com>,
-	Jeremy Kerr <jeremy.kerr@canonical.com>,
-	linux-arm-kernel@lists.infradead.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 14, 2010 at 03:40:19PM -0400, Nicolas Pitre wrote:
-> On Mon, 14 Jun 2010, Mitch Bradley wrote:
+These patches reimplement the reset fuction in the ac97 to use gpio pins
+instead of using the mpc5200 ac97 reset functionality in the psc.  This
+avoids a problem in which attached ac97 devices go into "test" mode appear
+unresponsive.
 
-> > Arranging for a JTAG dongle to appear at the customer site, then 
-> > getting it set up and the necessary software installed and configured 
-> > on a suitable host system, typically requires several days at best, 
-> > plus potentially a lot of fiddling depending on what sort of host 
-> > system the customer happens to have.
+These patches were tested on a pcm030 baseboard and on custom hardware with
+a wm9715 audio codec/touchscreen controller.
 
-> Well, if I may use the SheevaPlug as an example, the actual FT2232 chip 
-> currently used in most of those USB-JTAG dongle was provided directly on 
-> the board.  So you have this standard mini-B type USB connector on the 
-> side of the device from which you get both a serial console and a JTAG 
-> interface.  All you need is a standard USB cable, just like the one you 
-> get with a MP3 player or a digital camera, so there are plenty of those 
-> around.
+Eric Millbrandt
 
-The other thing here is of course that if JTAG is a problem serial or
-other console access is likely to also be a problem - it's likely to not
-be physically present and at least as painful to set up as JTAG.
+---
+
+changes since v1
+- Refactored to manipulate port_config and gpio pins internally instead of
+  exporting an API.
+- Amended commit message with comments from Mark Brown
+- Refactored to move the port_config manipulation to platform code.
+- Remove the gpio pins from the device-tree
+
+Eric Millbrandt (2):
+    powerpc/5200: add mpc5200_psc_ac97_gpio_reset
+    sound/soc: mpc5200_psc_ac97: Use gpio pins for cold reset
+
+ arch/powerpc/include/asm/mpc52xx.h           |    1 +
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |  103 ++++++++++++++++++++++=
+++++
+ sound/soc/fsl/mpc5200_psc_ac97.c             |   33 +++++++-
+ 3 files changed, 133 insertions(+), 4 deletions(-)
+
+-DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+-to a public e-mail mailing list I hereby grant permission to distribute-
+-and copy this message.-
+
+
+
+This e-mail and the information, including any attachments, it contains are=
+ intended to be a confidential communication only to the person or entity t=
+o whom it is addressed and may contain information that is privileged. If t=
+he reader of this message is not the intended recipient, you are hereby not=
+ified that any dissemination, distribution or copying of this communication=
+ is strictly prohibited. If you have received this communication in error, =
+please immediately notify the sender and destroy the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
