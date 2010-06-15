@@ -2,18 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1DD25B7D1F
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:30:08 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git next branch
+	by ozlabs.org (Postfix) with ESMTPS id F0F331007F6
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 17:13:08 +1000 (EST)
+Subject: Re: Re:Re: PCIe bus seems work while 'dma' can't under linux
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: jxnuxdy <jxnuxdy@163.com>
+In-Reply-To: <1a6d876.2342.1293a6db848.Coremail.jxnuxdy@163.com>
+References: <1276240884.1962.132.camel@pasglop>
+	<1276219072.1962.82.camel@pasglop>
+	<20100604212134.10552.70717.stgit@angua>
+	<20100604212155.10552.19260.stgit@angua>
+	<1276152002.1962.55.camel@pasglop>
+	<AANLkTinmDFBvAjcjrgf3RHuiXgNxVV20yLzBaqhE5lrk@mail.gmail.com>
+	<c3ef46.1e4c.12924a10776.Coremail.jxnuxdy@163.com>
+	<1a6d876.2342.1293a6db848.Coremail.jxnuxdy@163.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 15 Jun 2010 16:29:58 +1000
-Message-ID: <1276583398.2552.89.camel@pasglop>
+Date: Tue, 15 Jun 2010 17:12:42 +1000
+Message-ID: <1276585962.2552.102.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, Michal Simek <monstr@monstr.eu>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	devicetree-discuss@lists.ozlabs.org, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,132 +32,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Tue, 2010-06-15 at 15:05 +0800, jxnuxdy wrote:
+> Thanks Benjamin, the regions don't display as what we expect, that's why we suspect if there any configuration probelms in CPU host bridge, but we changed the uboot/linux a lot, seems take no effect on that problems.
+> 
+> We use CPU MPC8544, and connect two PCIE devices to CPU PCIE1 and PCIE2 directly without a  extended PCIE bridge, so we disabled PCIE3 and PCI controlers in uboot level.
+> 
+> More settings pls take a look at the attach file log.txt.
 
-Here's a few powerpc fixes for 2.6.35. The diffstat is sadly bloated by
-a small defconfig change, I hate that too :-) We'll switch to some
-better mechanism as soon as the dust as settled on what that mechanism
-should be, hopefully real soon.
+I'm not familiar with those freescale parts, so I'll let others comment
+on your settings since it's most likely to be where the problem is.
 
 Cheers,
 Ben.
 
-The following changes since commit 7e27d6e778cd87b6f2415515d7127eba53fe5d02:
-  Linus Torvalds (1):
-        Linux 2.6.35-rc3
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Alastair Bridgewater (1):
-      powerpc: Fix mpic_resume on early G5 macs
-
-Anton Blanchard (1):
-      powerpc: Move kdump default base address to 64MB on 64bit
-
-Benjamin Herrenschmidt (1):
-      Merge commit 'kumar/merge' into merge
-
-Christoph Egger (1):
-      powerpc: Remove dead CONFIG_HIGHPTE
-
-Christoph Hellwig (1):
-      powerpc: Unconditionally enabled irq stacks
-
-Grant Likely (1):
-      powerpc: Disable CONFIG_SYSFS_DEPRECATED
-
-Kumar Gala (1):
-      powerpc/fsl-booke: Move loadcam_entry back to asm code to fix SMP ftrace
-
-Li Yang (1):
-      powerpc/fsl-booke: Fix InstructionTLBError execute permission check
-
-Matt Evans (1):
-      powerpc/kexec: Wait for online/possible CPUs only.
-
-Milton Miller (1):
-      powerpc: rtas_flash needs to use rtas_data_buf
-
-Paul Mackerras (1):
-      powerpc/boot: Remove addRamdisk.c since it is now unused
-
- arch/powerpc/Kconfig.debug                       |    7 -
- arch/powerpc/boot/Makefile                       |    2 +-
- arch/powerpc/boot/addRamDisk.c                   |  311 ----------------------
- arch/powerpc/configs/40x/acadia_defconfig        |    3 +-
- arch/powerpc/configs/40x/ep405_defconfig         |    3 +-
- arch/powerpc/configs/40x/hcu4_defconfig          |    3 +-
- arch/powerpc/configs/40x/kilauea_defconfig       |    3 +-
- arch/powerpc/configs/40x/makalu_defconfig        |    3 +-
- arch/powerpc/configs/40x/virtex_defconfig        |    3 +-
- arch/powerpc/configs/40x/walnut_defconfig        |    3 +-
- arch/powerpc/configs/44x/arches_defconfig        |    3 +-
- arch/powerpc/configs/44x/bamboo_defconfig        |    3 +-
- arch/powerpc/configs/44x/canyonlands_defconfig   |    3 +-
- arch/powerpc/configs/44x/ebony_defconfig         |    3 +-
- arch/powerpc/configs/44x/eiger_defconfig         |    3 +-
- arch/powerpc/configs/44x/katmai_defconfig        |    3 +-
- arch/powerpc/configs/44x/rainier_defconfig       |    3 +-
- arch/powerpc/configs/44x/redwood_defconfig       |    3 +-
- arch/powerpc/configs/44x/sam440ep_defconfig      |    3 +-
- arch/powerpc/configs/44x/sequoia_defconfig       |    3 +-
- arch/powerpc/configs/44x/taishan_defconfig       |    3 +-
- arch/powerpc/configs/44x/virtex5_defconfig       |    3 +-
- arch/powerpc/configs/52xx/cm5200_defconfig       |    3 +-
- arch/powerpc/configs/52xx/lite5200b_defconfig    |    3 +-
- arch/powerpc/configs/52xx/motionpro_defconfig    |    3 +-
- arch/powerpc/configs/52xx/pcm030_defconfig       |    3 +-
- arch/powerpc/configs/52xx/tqm5200_defconfig      |    3 +-
- arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    3 +-
- arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    3 +-
- arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    3 +-
- arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig |    3 +-
- arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig |    3 +-
- arch/powerpc/configs/86xx/sbc8641d_defconfig     |    3 +-
- arch/powerpc/configs/adder875_defconfig          |    3 +-
- arch/powerpc/configs/amigaone_defconfig          |    3 +-
- arch/powerpc/configs/c2k_defconfig               |    3 +-
- arch/powerpc/configs/cell_defconfig              |    3 +-
- arch/powerpc/configs/celleb_defconfig            |    3 +-
- arch/powerpc/configs/chrp32_defconfig            |    3 +-
- arch/powerpc/configs/ep8248e_defconfig           |    3 +-
- arch/powerpc/configs/ep88xc_defconfig            |    3 +-
- arch/powerpc/configs/g5_defconfig                |    3 +-
- arch/powerpc/configs/gamecube_defconfig          |    3 +-
- arch/powerpc/configs/holly_defconfig             |    1 -
- arch/powerpc/configs/iseries_defconfig           |    3 +-
- arch/powerpc/configs/linkstation_defconfig       |    3 +-
- arch/powerpc/configs/maple_defconfig             |    3 +-
- arch/powerpc/configs/mgcoge_defconfig            |    3 +-
- arch/powerpc/configs/mgsuvd_defconfig            |    3 +-
- arch/powerpc/configs/mpc512x_defconfig           |    3 +-
- arch/powerpc/configs/mpc5200_defconfig           |    3 +-
- arch/powerpc/configs/mpc7448_hpc2_defconfig      |    3 +-
- arch/powerpc/configs/pasemi_defconfig            |    3 +-
- arch/powerpc/configs/pmac32_defconfig            |    3 +-
- arch/powerpc/configs/ppc40x_defconfig            |    3 +-
- arch/powerpc/configs/ppc44x_defconfig            |    3 +-
- arch/powerpc/configs/ppc64_defconfig             |    3 +-
- arch/powerpc/configs/ppc64e_defconfig            |    3 +-
- arch/powerpc/configs/pq2fads_defconfig           |    3 +-
- arch/powerpc/configs/prpmc2800_defconfig         |    3 +-
- arch/powerpc/configs/pseries_defconfig           |    3 +-
- arch/powerpc/configs/storcenter_defconfig        |    3 +-
- arch/powerpc/configs/wii_defconfig               |    3 +-
- arch/powerpc/include/asm/irq.h                   |    6 -
- arch/powerpc/include/asm/kdump.h                 |   11 +-
- arch/powerpc/kernel/irq.c                        |   12 -
- arch/powerpc/kernel/machine_kexec_64.c           |   18 +--
- arch/powerpc/kernel/misc_32.S                    |    2 -
- arch/powerpc/kernel/misc_64.S                    |    2 -
- arch/powerpc/kernel/process.c                    |    5 -
- arch/powerpc/kernel/rtas_flash.c                 |   39 ++--
- arch/powerpc/kernel/setup_32.c                   |    4 -
- arch/powerpc/kernel/setup_64.c                   |    4 -
- arch/powerpc/mm/pgtable_32.c                     |    4 -
- arch/powerpc/sysdev/mpic.c                       |    2 +-
- 75 files changed, 93 insertions(+), 514 deletions(-)
- delete mode 100644 arch/powerpc/boot/addRamDisk.c
- 
+> 
+> Many thanks,
+> Denny
+> ----------------------------------------------------------------------------------------------------------------------------
+> 在2010-06-11 15:21:24，"Benjamin Herrenschmidt" <benh@kernel.crashing.org> 写道：
+> >On Fri, 2010-06-11 at 09:30 +0800, jxnuxdy wrote:
+> >> Hi guys,
+> >> 
+> >> I encountered a PCIe problem under linux, the two PCIe bus on my board seems work, 
+> >> at least I can access the registers through the PCIe bus, however the dma for the
+> >> PCIe bus can't work, so I just dumped the pci device, but I am curiously to find
+> >> there is no regions displayed on PCIe controlers, why? is it relate with my 'dma' issue then?
+> >
+> >It would help if you told us a bit more what the HW is, what you are
+> >doing with it, etc...
+> >
+> >IE. What is your host, what is your device, what platform, etc...
+> >
+> >DMA should work provided that your platform code sets it up properly.
+> >The DMA regions don't appear in /proc/pci or lspci.
+> >
+> >Cheers,
+> >Ben.
+> >
+> >> 
+> >> bash-2.04# cat /proc/pci
+> >> PCI devices found:
+> >>   Bus  0, device   0, function  0:
+> >>     Class 0b20  Header Type 01: PCI device 1957:0032 (rev 17).
+> >>   Bus  1, device   0, function  0:
+> >>     Class 0580  Header Type 00: PCI device 11ab:db90 (rev 1).
+> >>       Prefetchable 64 bit memory at 0x80000000 [0x800fffff].
+> >>       Prefetchable 64 bit memory at 0x84000000 [0x87ffffff].
+> >>   Bus  9, device   0, function  0:
+> >>     Class 0b20  Header Type 01: PCI device 1957:0032 (rev 17).
+> >>   Bus 10, device   0, function  0:
+> >>     Class 0580  Header Type 00: PCI device 11ab:db90 (rev 1).
+> >>       Prefetchable 64 bit memory at 0xa0000000 [0xa00fffff].
+> >>       Prefetchable 64 bit memory at 0xa4000000 [0xa7ffffff].
+> >> bash-2.04# lspci -vv
+> >> 00:00.0 Power PC: Unknown device 1957:0032 (rev 11)
+> >>         !!! Invalid class 0b20 for header type 01
+> >>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> >>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> >>         Latency: 0, cache line size 08
+> >>         Bus: primary=00, secondary=01, subordinate=06, sec-latency=0
+> >>         I/O behind bridge: 00000000-00000fff
+> >>         Memory behind bridge: 80000000-9fffffff
+> >>         BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+> >>         Capabilities: [44] Power Management version 2
+> >>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> >>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> >>         Capabilities: [4c] #10 [0041]
+> >> 
+> >> 01:00.0 Memory controller: Galileo Technology Ltd.: Unknown device db90 (rev 01)
+> >>         Subsystem: Galileo Technology Ltd.: Unknown device 11ab
+> >>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> >>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> >>         Latency: 0, cache line size 08
+> >>         Interrupt: pin A routed to IRQ 0
+> >>         Region 0: Memory at 80000000 (64-bit, prefetchable) [size=1M]
+> >>         Region 2: Memory at 84000000 (64-bit, prefetchable) [size=64M]
+> >>         Capabilities: [40] Power Management version 2
+> >>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> >>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> >>         Capabilities: [50] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+> >>                 Address: 0000000000000000  Data: 0000
+> >>         Capabilities: [60] #10 [0011]
+> >> 
+> >> 09:00.0 Power PC: Unknown device 1957:0032 (rev 11)
+> >>         !!! Invalid class 0b20 for header type 01
+> >>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> >>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> >>         Latency: 0, cache line size 08
+> >>         Bus: primary=00, secondary=0a, subordinate=0f, sec-latency=0
+> >>         I/O behind bridge: 00000000-00000fff
+> >>         Memory behind bridge: a0000000-bfffffff
+> >>         BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+> >>         Capabilities: [44] Power Management version 2
+> >>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> >>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> >>         Capabilities: [4c] #10 [0041]
+> >> 
+> >> 0a:00.0 Memory controller: Galileo Technology Ltd.: Unknown device db90 (rev 01)
+> >>         Subsystem: Galileo Technology Ltd.: Unknown device 11ab
+> >>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> >>         Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> >>         Latency: 0, cache line size 08
+> >>         Interrupt: pin A routed to IRQ 0
+> >>         Region 0: Memory at a0000000 (64-bit, prefetchable) [size=1M]
+> >>         Region 2: Memory at a4000000 (64-bit, prefetchable) [size=64M]
+> >>         Capabilities: [40] Power Management version 2
+> >>                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> >>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> >>         Capabilities: [50] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+> >>                 Address: 0000000000000000  Data: 0000
+> >>         Capabilities: [60] #10 [0011]
+> >> 
+> >> bash-2.04# 
+> >> 
+> >> Thanks
+> >> Denny
+> >> 
+> >> _______________________________________________
+> >> Linuxppc-dev mailing list
+> >> Linuxppc-dev@lists.ozlabs.org
+> >> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+> >
+> >_______________________________________________
+> >Linuxppc-dev mailing list
+> >Linuxppc-dev@lists.ozlabs.org
+> >https://lists.ozlabs.org/listinfo/linuxppc-dev
