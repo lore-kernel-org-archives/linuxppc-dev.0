@@ -1,9 +1,10 @@
 Return-Path: <richardcochran@gmail.com>
-Date: Tue, 15 Jun 2010 18:08:20 +0200
+Date: Tue, 15 Jun 2010 18:08:46 +0200
 From: Richard Cochran <richardcochran@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH 04/12] phylib: add a way to make PHY time stamps possible.
-Message-ID: <27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
+Subject: [PATCH 05/12] phylib: Allow reading and writing a mii bus from
+	atomic context.
+Message-ID: <1b8219e7d7993d0e8204b94e959477e3007534ce.1276615626.git.richard.cochran@omicron.at>
 References: <cover.1276615626.git.richard.cochran@omicron.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -19,112 +20,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a new networking option to allow hardware time stamps
-from PHY devices. Using PHY time stamps will still require adding two
-inline function calls to each MAC driver. The CONFIG option makes these
-calls safe to add, since the calls become NOOPs when the option is
-disabled.
+In order to support hardware time stamping from a PHY, it is necessary to
+read from the PHY while running in_interrupt(). This patch allows a mii
+bus to operate in an atomic context. An mii_bus driver may declare itself
+capable for this mode. Drivers which do not do this will remain with the
+default that bus operations may sleep.
 
 Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
 ---
- include/linux/phy.h    |    4 ++++
- include/linux/skbuff.h |   32 ++++++++++++++++++++++++++++++++
- net/Kconfig            |   11 +++++++++++
- 3 files changed, 47 insertions(+), 0 deletions(-)
+ drivers/net/phy/mdio_bus.c |   35 ++++++++++++++++++++++++++++-------
+ include/linux/phy.h        |   13 +++++++++++--
+ 2 files changed, 39 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index 6a6b819..441be7d 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -36,6 +36,22 @@
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+ 
++static inline void mdiobus_lock(struct mii_bus *bus)
++{
++	if (MDIOBUS_SLEEPS_RW == bus->locktype)
++		mutex_lock(&bus->mdio_lock.m);
++	else
++		spin_lock(&bus->mdio_lock.s);
++}
++
++static inline void mdiobus_unlock(struct mii_bus *bus)
++{
++	if (MDIOBUS_SLEEPS_RW == bus->locktype)
++		mutex_unlock(&bus->mdio_lock.m);
++	else
++		spin_unlock(&bus->mdio_lock.s);
++}
++
+ /**
+  * mdiobus_alloc - allocate a mii_bus structure
+  *
+@@ -107,7 +123,10 @@ int mdiobus_register(struct mii_bus *bus)
+ 		return -EINVAL;
+ 	}
+ 
+-	mutex_init(&bus->mdio_lock);
++	if (MDIOBUS_SLEEPS_RW == bus->locktype)
++		mutex_init(&bus->mdio_lock.m);
++	else
++		spin_lock_init(&bus->mdio_lock.s);
+ 
+ 	if (bus->reset)
+ 		bus->reset(bus);
+@@ -212,11 +231,12 @@ int mdiobus_read(struct mii_bus *bus, int addr, u32 regnum)
+ {
+ 	int retval;
+ 
+-	BUG_ON(in_interrupt());
++	if (MDIOBUS_SLEEPS_RW == bus->locktype)
++		BUG_ON(in_interrupt());
+ 
+-	mutex_lock(&bus->mdio_lock);
++	mdiobus_lock(bus);
+ 	retval = bus->read(bus, addr, regnum);
+-	mutex_unlock(&bus->mdio_lock);
++	mdiobus_unlock(bus);
+ 
+ 	return retval;
+ }
+@@ -237,11 +257,12 @@ int mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val)
+ {
+ 	int err;
+ 
+-	BUG_ON(in_interrupt());
++	if (MDIOBUS_SLEEPS_RW == bus->locktype)
++		BUG_ON(in_interrupt());
+ 
+-	mutex_lock(&bus->mdio_lock);
++	mdiobus_lock(bus);
+ 	err = bus->write(bus, addr, regnum, val);
+-	mutex_unlock(&bus->mdio_lock);
++	mdiobus_unlock(bus);
+ 
+ 	return err;
+ }
 diff --git a/include/linux/phy.h b/include/linux/phy.h
-index a5e9df1..7a8caac 100644
+index 7a8caac..352b030 100644
 --- a/include/linux/phy.h
 +++ b/include/linux/phy.h
-@@ -234,6 +234,8 @@ enum phy_state {
- 	PHY_RESUMING
- };
+@@ -98,11 +98,20 @@ struct mii_bus {
+ 	int (*write)(struct mii_bus *bus, int phy_id, int regnum, u16 val);
+ 	int (*reset)(struct mii_bus *bus);
  
-+struct sk_buff;
++	/* Indicates whether bus may be used from an atomic context. */
++	enum {
++		MDIOBUS_SLEEPS_RW,
++		MDIOBUS_ATOMIC_RW
++	} locktype;
 +
- /* phy_device: An instance of a PHY
-  *
-  * drv: Pointer to the driver for this PHY instance
-@@ -404,6 +406,8 @@ struct phy_driver {
+ 	/*
+-	 * A lock to ensure that only one thing can read/write
++	 * A lock or mutex to ensure that only one thing can read/write
+ 	 * the MDIO bus at a time
+ 	 */
+-	struct mutex mdio_lock;
++	union {
++		struct mutex m;
++		spinlock_t s;
++	} mdio_lock;
  
- 	/* Handles SIOCSHWTSTAMP ioctl for hardware time stamping. */
- 	int (*hwtstamp)(struct phy_device *phydev, struct ifreq *ifr);
-+	int (*rxtstamp)(struct phy_device *phydev, struct sk_buff *skb);
-+	int (*txtstamp)(struct phy_device *phydev, struct sk_buff *skb);
- 
- 	struct device_driver driver;
- };
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 645e78d..7b650d4 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -29,6 +29,7 @@
- #include <linux/rcupdate.h>
- #include <linux/dmaengine.h>
- #include <linux/hrtimer.h>
-+#include <linux/phy.h>
- 
- /* Don't change this without changing skb_csum_unnecessary! */
- #define CHECKSUM_NONE 0
-@@ -1942,6 +1943,37 @@ static inline ktime_t net_invalid_timestamp(void)
- extern void skb_tstamp_tx(struct sk_buff *orig_skb,
- 			struct skb_shared_hwtstamps *hwtstamps);
- 
-+#ifdef CONFIG_NETWORK_PHY_TIMESTAMPING
-+
-+static inline void skb_tx_timetamp(struct phy_device *phy, struct sk_buff *skb)
-+{
-+	union skb_shared_tx *shtx = skb_tx(skb);
-+
-+	if (shtx->hardware && phy && phy->drv->txtstamp)
-+		phy->drv->txtstamp(phy, skb);
-+
-+	if (shtx->software && !shtx->in_progress)
-+		skb_tstamp_tx(skb, NULL);
-+}
-+
-+static inline void skb_rx_timetamp(struct phy_device *phy, struct sk_buff *skb)
-+{
-+	if (phy && phy->drv->rxtstamp)
-+		phy->drv->rxtstamp(phy, skb);
-+}
-+
-+#else /* CONFIG_NETWORK_PHY_TIMESTAMPING */
-+
-+static inline void skb_tx_timetamp(struct phy_device *phy, struct sk_buff *skb)
-+{
-+}
-+
-+static inline void skb_rx_timetamp(struct phy_device *phy, struct sk_buff *skb)
-+{
-+}
-+
-+#endif /* !CONFIG_NETWORK_PHY_TIMESTAMPING */
-+
- extern __sum16 __skb_checksum_complete_head(struct sk_buff *skb, int len);
- extern __sum16 __skb_checksum_complete(struct sk_buff *skb);
- 
-diff --git a/net/Kconfig b/net/Kconfig
-index 0d68b40..3fa7ae3 100644
---- a/net/Kconfig
-+++ b/net/Kconfig
-@@ -86,6 +86,17 @@ config NETWORK_SECMARK
- 	  to nfmark, but designated for security purposes.
- 	  If you are unsure how to answer this question, answer N.
- 
-+config NETWORK_PHY_TIMESTAMPING
-+	bool "Timestamping in PHY devices"
-+	depends on EXPERIMENTAL
-+	help
-+	  This allows timestamping of network packets by PHYs with
-+	  hardware timestamping capabilities. This option adds some
-+	  overhead in the transmit and receive paths. Note that this
-+	  option also requires support in the MAC driver.
-+
-+	  If you are unsure how to answer this question, answer N.
-+
- menuconfig NETFILTER
- 	bool "Network packet filtering framework (Netfilter)"
- 	---help---
+ 	struct device *parent;
+ 	enum {
 -- 
 1.6.3.3
