@@ -1,35 +1,19 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79493B7DA0
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:09:47 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5F69goo025944
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:09:42 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5F69laJ1761420
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:09:47 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5F69kna007015
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:09:46 +1000
-Date: Tue, 15 Jun 2010 11:39:42 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Patch 0/5] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver
-	XXII
-Message-ID: <20100615060942.GB2971@in.ibm.com>
-References: <20100528063924.GA8679@in.ibm.com>
-	<20100602113316.GA17061@brick.ozlabs.ibm.com>
-	<20100604065145.GA2408@in.ibm.com> <20100615015459.GA30479@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100615015459.GA30479@drongo>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1DD25B7D1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 16:30:08 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git next branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Jun 2010 16:29:58 +1000
+Message-ID: <1276583398.2552.89.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 15, 2010 at 11:54:59AM +1000, Paul Mackerras wrote:
-> On Fri, Jun 04, 2010 at 12:21:45PM +0530, K.Prasad wrote:
-> 
-> > Meanwhile I tested the per-cpu breakpoints with the new emulate_step
-> > patch (refer linuxppc-dev message-id:
-> > 20100602112903.GB30149@brick.ozlabs.ibm.com) and they continue to fail
-> > due to emulate_step() failure, in my case, on a "lwz r0,0(r28)"
-> > instruction.
-> 
-> You need to pass the instruction word to emulate_step(), not the
-> instruction address.  Also you need to have the full GPR set
-> available.  The patch below fixes these problems.  I'll fold these
-> changes into your patch 2/5.
-> 
-> Paul.
+Hi Linus !
 
-The breakpoints that used to fail before (due to emulate_step() failure)
-are now working fine upon applying this patch.
+Here's a few powerpc fixes for 2.6.35. The diffstat is sadly bloated by
+a small defconfig change, I hate that too :-) We'll switch to some
+better mechanism as soon as the dust as settled on what that mechanism
+should be, hopefully real soon.
 
-Please include this patch along with my 2/5 as indicated by you.
+Cheers,
+Ben.
 
-Thanks,
-K.Prasad
+The following changes since commit 7e27d6e778cd87b6f2415515d7127eba53fe5d02:
+  Linus Torvalds (1):
+        Linux 2.6.35-rc3
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Alastair Bridgewater (1):
+      powerpc: Fix mpic_resume on early G5 macs
+
+Anton Blanchard (1):
+      powerpc: Move kdump default base address to 64MB on 64bit
+
+Benjamin Herrenschmidt (1):
+      Merge commit 'kumar/merge' into merge
+
+Christoph Egger (1):
+      powerpc: Remove dead CONFIG_HIGHPTE
+
+Christoph Hellwig (1):
+      powerpc: Unconditionally enabled irq stacks
+
+Grant Likely (1):
+      powerpc: Disable CONFIG_SYSFS_DEPRECATED
+
+Kumar Gala (1):
+      powerpc/fsl-booke: Move loadcam_entry back to asm code to fix SMP ftrace
+
+Li Yang (1):
+      powerpc/fsl-booke: Fix InstructionTLBError execute permission check
+
+Matt Evans (1):
+      powerpc/kexec: Wait for online/possible CPUs only.
+
+Milton Miller (1):
+      powerpc: rtas_flash needs to use rtas_data_buf
+
+Paul Mackerras (1):
+      powerpc/boot: Remove addRamdisk.c since it is now unused
+
+ arch/powerpc/Kconfig.debug                       |    7 -
+ arch/powerpc/boot/Makefile                       |    2 +-
+ arch/powerpc/boot/addRamDisk.c                   |  311 ----------------------
+ arch/powerpc/configs/40x/acadia_defconfig        |    3 +-
+ arch/powerpc/configs/40x/ep405_defconfig         |    3 +-
+ arch/powerpc/configs/40x/hcu4_defconfig          |    3 +-
+ arch/powerpc/configs/40x/kilauea_defconfig       |    3 +-
+ arch/powerpc/configs/40x/makalu_defconfig        |    3 +-
+ arch/powerpc/configs/40x/virtex_defconfig        |    3 +-
+ arch/powerpc/configs/40x/walnut_defconfig        |    3 +-
+ arch/powerpc/configs/44x/arches_defconfig        |    3 +-
+ arch/powerpc/configs/44x/bamboo_defconfig        |    3 +-
+ arch/powerpc/configs/44x/canyonlands_defconfig   |    3 +-
+ arch/powerpc/configs/44x/ebony_defconfig         |    3 +-
+ arch/powerpc/configs/44x/eiger_defconfig         |    3 +-
+ arch/powerpc/configs/44x/katmai_defconfig        |    3 +-
+ arch/powerpc/configs/44x/rainier_defconfig       |    3 +-
+ arch/powerpc/configs/44x/redwood_defconfig       |    3 +-
+ arch/powerpc/configs/44x/sam440ep_defconfig      |    3 +-
+ arch/powerpc/configs/44x/sequoia_defconfig       |    3 +-
+ arch/powerpc/configs/44x/taishan_defconfig       |    3 +-
+ arch/powerpc/configs/44x/virtex5_defconfig       |    3 +-
+ arch/powerpc/configs/52xx/cm5200_defconfig       |    3 +-
+ arch/powerpc/configs/52xx/lite5200b_defconfig    |    3 +-
+ arch/powerpc/configs/52xx/motionpro_defconfig    |    3 +-
+ arch/powerpc/configs/52xx/pcm030_defconfig       |    3 +-
+ arch/powerpc/configs/52xx/tqm5200_defconfig      |    3 +-
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig    |    3 +-
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig   |    3 +-
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig   |    3 +-
+ arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig |    3 +-
+ arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig |    3 +-
+ arch/powerpc/configs/86xx/sbc8641d_defconfig     |    3 +-
+ arch/powerpc/configs/adder875_defconfig          |    3 +-
+ arch/powerpc/configs/amigaone_defconfig          |    3 +-
+ arch/powerpc/configs/c2k_defconfig               |    3 +-
+ arch/powerpc/configs/cell_defconfig              |    3 +-
+ arch/powerpc/configs/celleb_defconfig            |    3 +-
+ arch/powerpc/configs/chrp32_defconfig            |    3 +-
+ arch/powerpc/configs/ep8248e_defconfig           |    3 +-
+ arch/powerpc/configs/ep88xc_defconfig            |    3 +-
+ arch/powerpc/configs/g5_defconfig                |    3 +-
+ arch/powerpc/configs/gamecube_defconfig          |    3 +-
+ arch/powerpc/configs/holly_defconfig             |    1 -
+ arch/powerpc/configs/iseries_defconfig           |    3 +-
+ arch/powerpc/configs/linkstation_defconfig       |    3 +-
+ arch/powerpc/configs/maple_defconfig             |    3 +-
+ arch/powerpc/configs/mgcoge_defconfig            |    3 +-
+ arch/powerpc/configs/mgsuvd_defconfig            |    3 +-
+ arch/powerpc/configs/mpc512x_defconfig           |    3 +-
+ arch/powerpc/configs/mpc5200_defconfig           |    3 +-
+ arch/powerpc/configs/mpc7448_hpc2_defconfig      |    3 +-
+ arch/powerpc/configs/pasemi_defconfig            |    3 +-
+ arch/powerpc/configs/pmac32_defconfig            |    3 +-
+ arch/powerpc/configs/ppc40x_defconfig            |    3 +-
+ arch/powerpc/configs/ppc44x_defconfig            |    3 +-
+ arch/powerpc/configs/ppc64_defconfig             |    3 +-
+ arch/powerpc/configs/ppc64e_defconfig            |    3 +-
+ arch/powerpc/configs/pq2fads_defconfig           |    3 +-
+ arch/powerpc/configs/prpmc2800_defconfig         |    3 +-
+ arch/powerpc/configs/pseries_defconfig           |    3 +-
+ arch/powerpc/configs/storcenter_defconfig        |    3 +-
+ arch/powerpc/configs/wii_defconfig               |    3 +-
+ arch/powerpc/include/asm/irq.h                   |    6 -
+ arch/powerpc/include/asm/kdump.h                 |   11 +-
+ arch/powerpc/kernel/irq.c                        |   12 -
+ arch/powerpc/kernel/machine_kexec_64.c           |   18 +--
+ arch/powerpc/kernel/misc_32.S                    |    2 -
+ arch/powerpc/kernel/misc_64.S                    |    2 -
+ arch/powerpc/kernel/process.c                    |    5 -
+ arch/powerpc/kernel/rtas_flash.c                 |   39 ++--
+ arch/powerpc/kernel/setup_32.c                   |    4 -
+ arch/powerpc/kernel/setup_64.c                   |    4 -
+ arch/powerpc/mm/pgtable_32.c                     |    4 -
+ arch/powerpc/sysdev/mpic.c                       |    2 +-
+ 75 files changed, 93 insertions(+), 514 deletions(-)
+ delete mode 100644 arch/powerpc/boot/addRamDisk.c
+ 
