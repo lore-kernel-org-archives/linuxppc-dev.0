@@ -1,18 +1,28 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 15 Jun 2010 11:54:59 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: Re: [Patch 0/5] PPC64-HWBKPT: Hardware Breakpoint interfaces - ver
-	XXII
-Message-ID: <20100615015459.GA30479@drongo>
-References: <20100528063924.GA8679@in.ibm.com>
-	<20100602113316.GA17061@brick.ozlabs.ibm.com>
-	<20100604065145.GA2408@in.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 15 Jun 2010 12:02:24 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nicolas Pitre <nico@fluxnic.net>
+Subject: Re: Request review of device tree documentation
+Message-ID: <20100615020224.GK9323@yookeroo>
+References: <4C13430B.5000907@firmworks.com>
+	<1276339529.1962.184.camel@pasglop>
+	<1276339684.1962.186.camel@pasglop>
+	<4C13B618.1030006@firmworks.com>
+	<1276383132.1962.195.camel@pasglop>
+	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
+	<4C146F18.9030008@firmworks.com>
+	<AANLkTikls3hjXOmKFqG2D_9GaJSjOXNuuRXPlanAjo5E@mail.gmail.com>
+	<20100614124438.GF9323@yookeroo>
+	<alpine.LFD.2.00.1006141044510.13427@xanadu.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100604065145.GA2408@in.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <alpine.LFD.2.00.1006141044510.13427@xanadu.home>
+Cc: microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Mitch Bradley <wmb@firmworks.com>,
+	Dan Malek <ppc6dev@digitaldans.com>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,63 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 04, 2010 at 12:21:45PM +0530, K.Prasad wrote:
+On Mon, Jun 14, 2010 at 10:59:20AM -0400, Nicolas Pitre wrote:
+> On Mon, 14 Jun 2010, David Gibson wrote:
+> 
+> > On Sun, Jun 13, 2010 at 11:02:15PM -0600, Grant Likely wrote:
+> > [sni]
+> > > > That's sort of a self-fulfilling prophecy.  If the OS doesn't trust the
+> > > > firmware, there is no pressure for the firmware to "get it right".
+> > > 
+> > > Firmware will not get it right.  Period.  There will always be
+> > > something wrong.  It is never right on PCs.  It will never be right on
+> > > the other architectures.
+> > 
+> > Yes, yes, yes.  And there is a great deal of empirical evidence to
+> > back that assertion.
+> > 
+> > >  That goes for OSes too, but upgrading an OS
+> > > isn't as risky as upgrading firmware.  That isn't to say that it can't
+> > > be close, but every firmware feature that the OS depends on is a
+> > > feature that could force a risky firmware upgrade when the bug in it
+> > > is discovered.
+> > 
+> > Indeed.  In fact, the general rule of thumb is really "put as much as
+> > possible into the most easily replaced layer of the stack".  This is,
+> > incidentally, why I've always been dubious about simple firmwares
+> > supplying a flattened device tree rather than including the device
+> > tree template in the kernel, cuboot style.
+> 
+> The biggest advantage, IMHO, for adding DT to ARM, is actually to 
+> decouple the hardware config information and the kernel.  If in the end 
+> the DT has to be shipped in the kernel then we're losing all this 
+> advantage over the current state of things on ARM which still works 
+> pretty well otherwise.
 
-> Meanwhile I tested the per-cpu breakpoints with the new emulate_step
-> patch (refer linuxppc-dev message-id:
-> 20100602112903.GB30149@brick.ozlabs.ibm.com) and they continue to fail
-> due to emulate_step() failure, in my case, on a "lwz r0,0(r28)"
-> instruction.
+Right, which is why I'm just dubious, not dead against it.  If
+firmware supplies a device tree that's so awful you have to replace
+most of it, then you haven't won much over having a kernel wrapper
+which uses ad-hoc logic to detect the board type from whatever random
+clues the firmware leaves and selects a device tree from it's library
+of them based on that.  On ARM this sort of approach is probably more
+effective than powerpc, even, since you could use the machine number
+to select from a bag of canned device trees and still have a
+multi-board kernel.
 
-You need to pass the instruction word to emulate_step(), not the
-instruction address.  Also you need to have the full GPR set
-available.  The patch below fixes these problems.  I'll fold these
-changes into your patch 2/5.
+> In the best case, the simple firmware simply has to retrieve the 
+> flattened device tree from flash, and pass it to the kernel just like 
+> some anonymous blob.  And the simple firmware only needs to provide a 
+> way for that DT blob to be updatable, like through an upload of a 
+> replacement blob that was prepared offline.  Just like a ramdisk image 
+> or the like.
 
-Paul.
----
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 3e423fb..f53029a 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -828,6 +828,7 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_ISERIES)
- 
- /* We have a data breakpoint exception - handle it */
- handle_dabr_fault:
-+	bl	.save_nvgprs
- 	ld      r4,_DAR(r1)
- 	ld      r5,_DSISR(r1)
- 	addi    r3,r1,STACK_FRAME_OVERHEAD
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index ef70cf0..489049c 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -35,6 +35,7 @@
- #include <asm/hw_breakpoint.h>
- #include <asm/processor.h>
- #include <asm/sstep.h>
-+#include <asm/uaccess.h>
- 
- /*
-  * Stores the breakpoints currently in use on each breakpoint address
-@@ -203,6 +204,7 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
- 	int stepped = 1;
- 	struct arch_hw_breakpoint *info;
- 	unsigned long dar = regs->dar;
-+	unsigned int instr;
- 
- 	/* Disable breakpoints during exception handling */
- 	set_dabr(0);
-@@ -255,7 +257,11 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
- 		goto out;
- 	}
- 
--	stepped = emulate_step(regs, regs->nip);
-+	stepped = 0;
-+	instr = 0;
-+	if (!__get_user_inatomic(instr, (unsigned int *) regs->nip))
-+		stepped = emulate_step(regs, instr);
-+
- 	/*
- 	 * emulate_step() could not execute it. We've failed in reliably
- 	 * handling the hw-breakpoint. Unregister it and throw a warning
+Yes, having the firmware DT independently updateable makes most of my
+concerns about it go away.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
