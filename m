@@ -1,28 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 15 Jun 2010 12:02:24 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Nicolas Pitre <nico@fluxnic.net>
-Subject: Re: Request review of device tree documentation
-Message-ID: <20100615020224.GK9323@yookeroo>
-References: <4C13430B.5000907@firmworks.com>
-	<1276339529.1962.184.camel@pasglop>
-	<1276339684.1962.186.camel@pasglop>
-	<4C13B618.1030006@firmworks.com>
-	<1276383132.1962.195.camel@pasglop>
-	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>
-	<4C146F18.9030008@firmworks.com>
-	<AANLkTikls3hjXOmKFqG2D_9GaJSjOXNuuRXPlanAjo5E@mail.gmail.com>
-	<20100614124438.GF9323@yookeroo>
-	<alpine.LFD.2.00.1006141044510.13427@xanadu.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <alpine.LFD.2.00.1006141044510.13427@xanadu.home>
-Cc: microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Mitch Bradley <wmb@firmworks.com>,
-	Dan Malek <ppc6dev@digitaldans.com>,
-	Jeremy Kerr <jeremy.kerr@canonical.com>,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A1C50B7D66
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 15:05:04 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Fix mpic_resume on early G5 macs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alastair Bridgewater <alastair.bridgewater@gmail.com>
+In-Reply-To: <AANLkTimrq40Pd-ulPkfb8T2LJ0NSybd5InviirU7fK5D@mail.gmail.com>
+References: <AANLkTimrq40Pd-ulPkfb8T2LJ0NSybd5InviirU7fK5D@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 15 Jun 2010 15:04:55 +1000
+Message-ID: <1276578295.2552.85.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 14, 2010 at 10:59:20AM -0400, Nicolas Pitre wrote:
-> On Mon, 14 Jun 2010, David Gibson wrote:
+On Sat, 2010-06-12 at 21:36 -0400, Alastair Bridgewater wrote:
+> mpic_resume() on G5 macs blindly dereferences mpic->fixups, but
+> it may legitimately be NULL (as on PowerMac7,2).  Add an explicit
+> check.
 > 
-> > On Sun, Jun 13, 2010 at 11:02:15PM -0600, Grant Likely wrote:
-> > [sni]
-> > > > That's sort of a self-fulfilling prophecy.  If the OS doesn't trust the
-> > > > firmware, there is no pressure for the firmware to "get it right".
-> > > 
-> > > Firmware will not get it right.  Period.  There will always be
-> > > something wrong.  It is never right on PCs.  It will never be right on
-> > > the other architectures.
-> > 
-> > Yes, yes, yes.  And there is a great deal of empirical evidence to
-> > back that assertion.
-> > 
-> > >  That goes for OSes too, but upgrading an OS
-> > > isn't as risky as upgrading firmware.  That isn't to say that it can't
-> > > be close, but every firmware feature that the OS depends on is a
-> > > feature that could force a risky firmware upgrade when the bug in it
-> > > is discovered.
-> > 
-> > Indeed.  In fact, the general rule of thumb is really "put as much as
-> > possible into the most easily replaced layer of the stack".  This is,
-> > incidentally, why I've always been dubious about simple firmwares
-> > supplying a flattened device tree rather than including the device
-> > tree template in the kernel, cuboot style.
+> This fixes susend-to-disk with one processor (maxcpus=1) for me.
+
+Thanks. Patch is terribly mangled tho (word wrapped and tabs have been
+replaced with spaces). I fixed it up manually but check your email setup
+next time.
+
+Cheers,
+Ben.
+
+> Signed-off-by: Alastair Bridgewater <alastair.bridgewater@gmail.com>
+> ---
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 4fd57ab..28668ba 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1666,7 +1666,7 @@ static int mpic_resume(struct sys_device *dev)
+>                                mpic->save_data[i].dest);
 > 
-> The biggest advantage, IMHO, for adding DT to ARM, is actually to 
-> decouple the hardware config information and the kernel.  If in the end 
-> the DT has to be shipped in the kernel then we're losing all this 
-> advantage over the current state of things on ARM which still works 
-> pretty well otherwise.
-
-Right, which is why I'm just dubious, not dead against it.  If
-firmware supplies a device tree that's so awful you have to replace
-most of it, then you haven't won much over having a kernel wrapper
-which uses ad-hoc logic to detect the board type from whatever random
-clues the firmware leaves and selects a device tree from it's library
-of them based on that.  On ARM this sort of approach is probably more
-effective than powerpc, even, since you could use the machine number
-to select from a bag of canned device trees and still have a
-multi-board kernel.
-
-> In the best case, the simple firmware simply has to retrieve the 
-> flattened device tree from flash, and pass it to the kernel just like 
-> some anonymous blob.  And the simple firmware only needs to provide a 
-> way for that DT blob to be updatable, like through an upload of a 
-> replacement blob that was prepared offline.  Just like a ramdisk image 
-> or the like.
-
-Yes, having the firmware DT independently updateable makes most of my
-concerns about it go away.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> -       {
+> +       if (mpic->fixups) {
+>                 struct mpic_irq_fixup *fixup = &mpic->fixups[i];
+> 
+>                 if (fixup->base) {
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
