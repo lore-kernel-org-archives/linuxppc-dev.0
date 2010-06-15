@@ -1,16 +1,26 @@
-Return-Path: <c.alfred@internode.on.net>
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
-	[150.101.137.131]) by ozlabs.org (Postfix) with ESMTP id C885CB7D8B
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 08:19:50 +1000 (EST)
-Message-ID: <57F24E98919C4D22A784127E6CF1C9DA@kos>
-From: "Chris Alfred" <c.alfred@internode.on.net>
-To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
-Subject: Porting a driver to powerpc using FDT
-Date: Wed, 16 Jun 2010 08:19:50 +1000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
+	by ozlabs.org (Postfix) with ESMTP id C1454B7D97
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 09:00:16 +1000 (EST)
+Received: from list by lo.gmane.org with local (Exim 4.69)
+	(envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+	id 1OOesR-0001xT-NB
+	for linuxppc-dev@ozlabs.org; Wed, 16 Jun 2010 00:45:03 +0200
+Received: from ppp89-110-3-77.pppoe.avangarddsl.ru ([89.110.3.77])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 00:45:03 +0200
+Received: from dbaryshkov by ppp89-110-3-77.pppoe.avangarddsl.ru with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 00:45:03 +0200
+To: linuxppc-dev@ozlabs.org
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH v2] lite5200: fix ethernet phy address
+Date: Tue, 15 Jun 2010 22:19:51 +0000 (UTC)
+Message-ID: <hv8ua6$uq0$1@dough.gmane.org>
+References: <1276154181-25534-1-git-send-email-dbaryshkov__1637.54533646188$1276154215$gmane$org@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I am trying to port a DSA (Distributed Switch Architecture) driver for
-the Micrel KS8995M managed switch connected to a MPC5200. There is an
-SPI interface and MII interface managed by the DSA driver.
+Dmitry Eremin-Solenikov wrote:
 
-I can't understand how probe gets called when the flatted device tree
-(FDT) system is used, and how to bind such a driver using the FDT (if
-you have to at all).
+> According to my schematics, on Lite5200 board ethernet phy uses address
+> 0 (all ADDR lines are pulled down). With this change I can talk to
+> onboard phy (LXT971) and correctly use autonegotiation.
 
-The DSA driver is initialised via:
+What about this patch?
 
-    // net/dsa/dsa.c
-
-    static struct platform_driver dsa_driver = {
-     .probe  = dsa_probe,
-     .remove  = dsa_remove,
-     .shutdown = dsa_shutdown,
-     .driver = {
-      .name = "dsa",
-      .owner = THIS_MODULE,
-     },
-    };
-
-    static int __init dsa_init_module(void)
-    {
-     return platform_driver_register(&dsa_driver);
-    }
-
-dsa_init_module is being called; but how do I get the system to call
-.probe?
-
-Chris
+-- 
+With best wishes
+Dmitry
