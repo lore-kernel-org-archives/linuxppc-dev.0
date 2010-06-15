@@ -1,22 +1,13 @@
-Return-Path: <emillbrandt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
-	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id 282C81007E3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 02:04:56 +1000 (EST)
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/2 v4] sound/soc: mpc5200_psc_ac97: Use gpio pins for cold
-	reset
-Date: Tue, 15 Jun 2010 12:05:07 -0400
-Message-ID: <1276617907-10862-3-git-send-email-emillbrandt@dekaresearch.com>
-In-Reply-To: <1276617907-10862-2-git-send-email-emillbrandt@dekaresearch.com>
-References: <1276617907-10862-1-git-send-email-emillbrandt@dekaresearch.com>
-	<1276617907-10862-2-git-send-email-emillbrandt@dekaresearch.com>
+Return-Path: <richardcochran@gmail.com>
+Date: Tue, 15 Jun 2010 18:06:48 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH v4 00/12] ptp: IEEE 1588 clock support
+Message-ID: <cover.1276615626.git.richard.cochran@omicron.at>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,103 +17,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call the gpio reset platform function instead of using the flawed
-ac97 functionality of the MPC5200(b)
+Now and again there has been talk on the netdev list of adding PTP
+support into Linux. One part of the picture is already in place, the
+SO_TIMESTAMPING API for hardware time stamping. This patch set offers
+the missing second part needed for complete IEEE 1588 support.
 
->From MPC5200B User's Manual:
-"Some AC97 devices goes to a test mode, if the Sync line is high
-during the Res line is low (reset phase). To avoid this behavior the
-Sync line must be also forced to zero during the reset phase. To do
-that, the pin muxing should switch to GPIO mode and the GPIO control
-register should be used to control the output lines."
+The only feature still to be implemented is the hook into the PPS
+subsystem, to synchronize the Linux clock to the PTP clock.
 
-Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
----
+The first seven patches concern phylib. A new generation of PHYs with
+timestamping capabilities is appearing on the market. In order to
+support hardware timestamping on these devices in Linux, a number of
+adjustments will have to be made in the PHY subsystem. The reasons for
+the changes are explained inline at the top of the patches.
 
-changes since v1
-- Amended with comments from Mark Brown
-- Fall back to the original reset implementation if no gpio pins are define=
-d
-  in the device tree
+The last five patches provide the PTP subsystem itself.
 
-changes since v2
-- Refactored to move the port_config manipulation to platform code.
-- Remove the gpio pins from the device-tree
+* Why all the CCs?
 
-changes since v3
-- Remove redundant checks around call to mpc5200_psc_ac97_gpio_reset()
+  1. The patches probably should go through netdev.
+  2. One driver is for PowerPC, and adds device tree stuff.
+  3. One driver is for the ARM Xscale IXP465
 
- sound/soc/fsl/mpc5200_psc_ac97.c |   22 ++++++++++++++++++----
- 1 files changed, 18 insertions(+), 4 deletions(-)
+* Open Issues:
 
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_a=
-c97.c
-index e2ee220..e7f5d50 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -20,6 +20,7 @@
+** DP83640
+   In order to make this work, three lines must be added into the MAC
+   driver. Since this PHY can be connected to almost any MAC, I did
+   not do anything about that. If you have the DP83640 and want to try
+   the driver, you need to add three lines to your MAC driver.
 
- #include <asm/time.h>
- #include <asm/delay.h>
-+#include <asm/mpc52xx.h>
- #include <asm/mpc52xx_psc.h>
+   1. Before mdio_register, add
+		bus->locktype = MDIOBUS_ATOMIC_RW;
+   2. In the .ndo_start_xmit function, add
+		skb_tx_timestamp()
+   3. In the NAPI poll function, add
+		skb_rx_timestamp()
 
- #include "mpc5200_dma.h"
-@@ -100,19 +101,32 @@ static void psc_ac97_warm_reset(struct snd_ac97 *ac97=
-)
- {
-        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
+** IXP465
+   I do not know how to correctly choose the timestamp "channel" based
+   on the port identifier:
 
-+       mutex_lock(&psc_dma->mutex);
-+
-        out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_AWR);
-        udelay(3);
-        out_be32(&regs->sicr, psc_dma->sicr);
-+
-+       mutex_unlock(&psc_dma->mutex);
- }
+	#define PORT2CHANNEL(p)		1
+	/*
+	 * PHYSICAL_ID(p->id) ?
+	 * TODO - Figure out correct mapping.
+	 */
 
- static void psc_ac97_cold_reset(struct snd_ac97 *ac97)
- {
-        struct mpc52xx_psc __iomem *regs =3D psc_dma->psc_regs;
+* Patch ChangeLog
 
--       /* Do a cold reset */
--       out_8(&regs->op1, MPC52xx_PSC_OP_RES);
--       udelay(10);
--       out_8(&regs->op0, MPC52xx_PSC_OP_RES);
-+       mutex_lock(&psc_dma->mutex);
-+       dev_dbg(psc_dma->dev, "cold reset\n");
-+
-+       mpc5200_psc_ac97_gpio_reset(psc_dma->id);
-+
-+       /* Notify the PSC that a reset has occurred */
-+       out_be32(&regs->sicr, psc_dma->sicr | MPC52xx_PSC_SICR_ACRB);
-+
-+       /* Re-enable RX and TX */
-+       out_8(&regs->command, MPC52xx_PSC_TX_ENABLE | MPC52xx_PSC_RX_ENABLE=
-);
-+
-+       mutex_unlock(&psc_dma->mutex);
-+
-        msleep(1);
-        psc_ac97_warm_reset(ac97);
- }
---
--DISCLAIMER: an automatically appended disclaimer may follow. By posting-
--to a public e-mail mailing list I hereby grant permission to distribute-
--and copy this message.-
+** v4
+*** general
+   - Added a clock driver for the National Semiconductor PHYTER.
+   - Added a clock driver for the Intel IXP465.
+   - Made more stylish according to checkstyle.pl.
+*** gianfar
+   - Replace device_type and model with compatible string ("fsl,etsec-ptp")
+   - Register only one interrupt, since others are superfluous.
+   - Combine ptp clock instance with private variable structure.
+   - ISR now returns NONE or HANDLED properly.
+   - Print error message if something is missing from the device nodes.
 
-1.6.3.1
+** v3
+*** general
+   - Added documentation on writing clock drivers.
+   - Added the ioctls for the ancillary clock features.
+   - Changed wrong subsys_initcall() to module_init() in clock drivers.
+   - Removed the (too coarse) character device mutex.
+   - Setting the clock now requires CAP_SYS_TIME.
+*** gianfar
+   - Added alarm feature.
+   - Added device tree node binding description.
+   - Added fine grain locking of the clock registers.
+   - Added the external time stamp feature.
+   - Added white space for better style.
+   - Coverted base+offset to structure pointers for register access.
+   - When removing the driver, we now disable all PTP functions.
+
+** v2
+   - Changed clock list from a static array into a dynamic list. Also,
+     use a bitmap to manage the clock's minor numbers.
+   - Replaced character device semaphore with a mutex.
+   - Drop .ko from module names in Kbuild help.
+   - Replace deprecated unifdef-y with header-y for user space header file.
+   - Added links to both of the ptpd patches on sourceforge.
+   - Gianfar driver now gets parameters from device tree.
+   - Added API documentation to Documentation/ptp/ptp.txt
+
+Looking forward to your feedback,
+Richard
 
 
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
+Richard Cochran (12):
+  phylib: preserve ifreq parameter when calling generic phy_mii_ioctl()
+  phylib: do not filter phy_mii_ioctl()
+  phylib: add a driver method for the SIOCSHWTSTAMP ioctl.
+  phylib: add a way to make PHY time stamps possible.
+  phylib: Allow reading and writing a mii bus from atomic context.
+  ptp: add a BPF to help drivers detect PTP packets.
+  phylib: support the National Semiconductor DP83640 PHY.
+  ptp: Added a brand new class driver for ptp clocks.
+  ptp: Added a clock that uses the Linux system time.
+  ptp: Added a clock that uses the eTSEC found on the MPC85xx.
+  ptp: Added a clock driver for the IXP46x.
+  ptp: Added a clock driver for the National Semiconductor PHYTER.
 
-Thank you.
-
-Please consider the environment before printing this email.
+ Documentation/powerpc/dts-bindings/fsl/tsec.txt |   54 ++
+ Documentation/ptp/ptp.txt                       |   95 ++++
+ Documentation/ptp/testptp.c                     |  269 ++++++++++
+ Documentation/ptp/testptp.mk                    |   33 ++
+ arch/arm/mach-ixp4xx/include/mach/ixp46x_ts.h   |   67 +++
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   13 +
+ arch/powerpc/boot/dts/p2020ds.dts               |   13 +
+ arch/powerpc/boot/dts/p2020rdb.dts              |   13 +
+ drivers/Kconfig                                 |    2 +
+ drivers/Makefile                                |    1 +
+ drivers/net/Makefile                            |    1 +
+ drivers/net/arm/ixp4xx_eth.c                    |  197 ++++++++-
+ drivers/net/au1000_eth.c                        |    2 +-
+ drivers/net/bcm63xx_enet.c                      |    2 +-
+ drivers/net/cpmac.c                             |    5 +-
+ drivers/net/dnet.c                              |    2 +-
+ drivers/net/ethoc.c                             |    2 +-
+ drivers/net/fec.c                               |    2 +-
+ drivers/net/fec_mpc52xx.c                       |    2 +-
+ drivers/net/fs_enet/fs_enet-main.c              |    3 +-
+ drivers/net/gianfar.c                           |    2 +-
+ drivers/net/gianfar_ptp.c                       |  518 ++++++++++++++++++++
+ drivers/net/gianfar_ptp_reg.h                   |  113 +++++
+ drivers/net/macb.c                              |    2 +-
+ drivers/net/mv643xx_eth.c                       |    2 +-
+ drivers/net/octeon/octeon_mgmt.c                |    2 +-
+ drivers/net/phy/Kconfig                         |   16 +
+ drivers/net/phy/Makefile                        |    1 +
+ drivers/net/phy/dp83640.c                       |  595 +++++++++++++++++++++++
+ drivers/net/phy/dp83640_reg.h                   |  237 +++++++++
+ drivers/net/phy/mdio_bus.c                      |   35 ++-
+ drivers/net/phy/phy.c                           |    8 +-
+ drivers/net/sb1250-mac.c                        |    2 +-
+ drivers/net/sh_eth.c                            |    2 +-
+ drivers/net/smsc911x.c                          |    2 +-
+ drivers/net/smsc9420.c                          |    2 +-
+ drivers/net/stmmac/stmmac_main.c                |   22 +-
+ drivers/net/tc35815.c                           |    2 +-
+ drivers/net/tg3.c                               |    2 +-
+ drivers/ptp/Kconfig                             |   64 +++
+ drivers/ptp/Makefile                            |    7 +
+ drivers/ptp/ptp_clock.c                         |  514 ++++++++++++++++++++
+ drivers/ptp/ptp_ixp46x.c                        |  231 +++++++++
+ drivers/ptp/ptp_linux.c                         |  136 ++++++
+ drivers/staging/octeon/ethernet-mdio.c          |    2 +-
+ include/linux/Kbuild                            |    1 +
+ include/linux/phy.h                             |   22 +-
+ include/linux/ptp_classify.h                    |  118 +++++
+ include/linux/ptp_clock.h                       |   79 +++
+ include/linux/ptp_clock_kernel.h                |  137 ++++++
+ include/linux/skbuff.h                          |   32 ++
+ kernel/time/ntp.c                               |    2 +
+ net/Kconfig                                     |   11 +
+ net/dsa/slave.c                                 |    3 +-
+ 54 files changed, 3651 insertions(+), 51 deletions(-)
+ create mode 100644 Documentation/ptp/ptp.txt
+ create mode 100644 Documentation/ptp/testptp.c
+ create mode 100644 Documentation/ptp/testptp.mk
+ create mode 100644 arch/arm/mach-ixp4xx/include/mach/ixp46x_ts.h
+ create mode 100644 drivers/net/gianfar_ptp.c
+ create mode 100644 drivers/net/gianfar_ptp_reg.h
+ create mode 100644 drivers/net/phy/dp83640.c
+ create mode 100644 drivers/net/phy/dp83640_reg.h
+ create mode 100644 drivers/ptp/Kconfig
+ create mode 100644 drivers/ptp/Makefile
+ create mode 100644 drivers/ptp/ptp_clock.c
+ create mode 100644 drivers/ptp/ptp_ixp46x.c
+ create mode 100644 drivers/ptp/ptp_linux.c
+ create mode 100644 include/linux/ptp_classify.h
+ create mode 100644 include/linux/ptp_clock.h
+ create mode 100644 include/linux/ptp_clock_kernel.h
