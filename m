@@ -1,30 +1,20 @@
-Return-Path: <fubar@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DF5A51007F0
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 02:46:07 +1000 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o5FGXMWm031527
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 12:33:22 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5FGk1YA067644
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 12:46:01 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o5FGjp6S012181
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 10:45:52 -0600
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: "Jan-Bernd Themann" <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/2] ehea: fix delayed packet processing
-In-reply-to: <201006151735.17258.ossthema@de.ibm.com>
-References: <201006151735.17258.ossthema@de.ibm.com>
-Date: Tue, 15 Jun 2010 09:45:47 -0700
-Message-ID: <6663.1276620347@death.nxdomain.ibm.com>
-Cc: themann@de.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, tklein@linux.ibm.com,
-	Andre Detsch <adetsch@br.ibm.com>, David Miller <davem@davemloft.net>
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange07.deka.local (mail.dekaresearch.com
+	[208.65.175.196]) by ozlabs.org (Postfix) with ESMTP id BF2AF1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Jun 2010 07:53:41 +1000 (EST)
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 1/2 v4] powerpc/5200: add mpc5200_psc_ac97_gpio_reset
+Date: Tue, 15 Jun 2010 17:53:35 -0400
+Message-ID: <1276638815-6834-1-git-send-email-emillbrandt@dekaresearch.com>
+In-Reply-To: <1276617907-10862-2-git-send-email-emillbrandt@dekaresearch.com>
+References: <1276617907-10862-2-git-send-email-emillbrandt@dekaresearch.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Eric Millbrandt <emillbrandt@dekaresearch.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +24,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+Work around a silicon bug in the ac97 reset functionality of the
+mpc5200(b).  The implementation of the ac97 "cold" reset is flawed.
+If the sync and output lines are high when reset is asserted the
+attached ac97 device may go into test mode.  Avoid this by
+reconfiguring the psc to gpio mode and generating the reset manually.
 
->In the eHEA poll function an rmb() is required. Without that some packets
->on the receive queue are not seen and thus delayed until the next interrupt
->is handled for the same receive queue.
->
->Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+>From MPC5200B User's Manual:
+"Some AC97 devices goes to a test mode, if the Sync line is high
+during the Res line is low (reset phase). To avoid this behavior the
+Sync line must be also forced to zero during the reset phase. To do
+that, the pin muxing should switch to GPIO mode and the GPIO control
+register should be used to control the output lines."
 
-	To add a bit of background, this could manifest during a netperf
-TCP_RR or UDP_RR on an otherwise idle network.  TCP would occasionally
-retransmit, but then both the original segment and the retransmission
-would simultaneously appear at the receiver.  For UDP_RR, message sizes
-in excess of the mtu would occasionally "lose" an IP fragment, and
-eventually IP reassembly would time out.
+Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+---
 
-	-J
+changes since v1
+- Amended with comments from Mark Brown
+- Fall back to the original reset implementation if no gpio pins are define=
+d
+  in the device tree
 
-Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+changes since v2
+- Refactored to move the port_config manipulation to platform code.
+- Remove the gpio pins from the device-tree
+
+changes since v3
+- Remove redundant checks around call to mpc5200_psc_ac97_gpio_reset()
+
+changes since v4
+- cleanup inverted logic
+
+ arch/powerpc/include/asm/mpc52xx.h           |    1 +
+ arch/powerpc/include/asm/mpc52xx_psc.h       |    1 +
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |  111 ++++++++++++++++++++++=
+++++
+ 3 files changed, 113 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mpc52xx.h b/arch/powerpc/include/asm/=
+mpc52xx.h
+index b664ce7..1f41382 100644
+--- a/arch/powerpc/include/asm/mpc52xx.h
++++ b/arch/powerpc/include/asm/mpc52xx.h
+@@ -271,6 +271,7 @@ struct mpc52xx_intr {
+ /* mpc52xx_common.c */
+ extern void mpc5200_setup_xlb_arbiter(void);
+ extern void mpc52xx_declare_of_platform_devices(void);
++extern int mpc5200_psc_ac97_gpio_reset(int psc_number);
+ extern void mpc52xx_map_common_devices(void);
+ extern int mpc52xx_set_psc_clkdiv(int psc_id, int clkdiv);
+ extern unsigned int mpc52xx_get_xtal_freq(struct device_node *node);
+diff --git a/arch/powerpc/include/asm/mpc52xx_psc.h b/arch/powerpc/include/=
+asm/mpc52xx_psc.h
+index ecc4fc6..2966df6 100644
+--- a/arch/powerpc/include/asm/mpc52xx_psc.h
++++ b/arch/powerpc/include/asm/mpc52xx_psc.h
+@@ -131,6 +131,7 @@
+ #define MPC52xx_PSC_SICR_SIM_FIR               (0x6 << 24)
+ #define MPC52xx_PSC_SICR_SIM_CODEC_24          (0x7 << 24)
+ #define MPC52xx_PSC_SICR_SIM_CODEC_32          (0xf << 24)
++#define MPC52xx_PSC_SICR_ACRB                  (0x8 << 24)
+ #define MPC52xx_PSC_SICR_AWR                   (1 << 30)
+ #define MPC52xx_PSC_SICR_GENCLK                        (1 << 23)
+ #define MPC52xx_PSC_SICR_I2S                   (1 << 22)
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/pl=
+atforms/52xx/mpc52xx_common.c
+index a46bad0..1887872 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -12,9 +12,11 @@
+
+ #undef DEBUG
+
++#include <linux/gpio.h>
+ #include <linux/kernel.h>
+ #include <linux/spinlock.h>
+ #include <linux/of_platform.h>
++#include <linux/of_gpio.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/mpc52xx.h>
+@@ -82,6 +84,14 @@ mpc5200_setup_xlb_arbiter(void)
+        iounmap(xlb);
+ }
+
++/*
++ * This variable is mapped in mpc52xx_map_common_devices and
++ * used in mpc5200_psc_ac97_gpio_reset().
++ */
++static DEFINE_SPINLOCK(gpio_lock);
++struct mpc52xx_gpio __iomem *simple_gpio;
++struct mpc52xx_gpio_wkup __iomem *wkup_gpio;
++
+ /**
+  * mpc52xx_declare_of_platform_devices: register internal devices and chil=
+dren
+  *                                     of the localplus bus to the of_plat=
+form
+@@ -109,6 +119,19 @@ static struct of_device_id mpc52xx_cdm_ids[] __initdat=
+a =3D {
+        { .compatible =3D "mpc5200-cdm", }, /* old */
+        {}
+ };
++static const struct of_device_id mpc52xx_gpio_simple[] =3D {
++       {
++               .compatible =3D "fsl,mpc5200-gpio",
++       },
++       {}
++};
++static const struct of_device_id mpc52xx_gpio_wkup[] =3D {
++       {
++               .compatible =3D "fsl,mpc5200-gpio-wkup",
++       },
++       {}
++};
++
+
+ /**
+  * mpc52xx_map_common_devices: iomap devices required by common code
+@@ -135,6 +158,16 @@ mpc52xx_map_common_devices(void)
+        np =3D of_find_matching_node(NULL, mpc52xx_cdm_ids);
+        mpc52xx_cdm =3D of_iomap(np, 0);
+        of_node_put(np);
++
++       /* simple_gpio registers */
++       np =3D of_find_matching_node(NULL, mpc52xx_gpio_simple);
++       simple_gpio =3D of_iomap(np, 0);
++       of_node_put(np);
++
++       /* wkup_gpio registers */
++       np =3D of_find_matching_node(NULL, mpc52xx_gpio_wkup);
++       wkup_gpio =3D of_iomap(np, 0);
++       of_node_put(np);
+ }
+
+ /**
+@@ -233,3 +266,81 @@ mpc52xx_restart(char *cmd)
+
+        while (1);
+ }
++
++#define PSC1_RESET     0x1
++#define PSC1_SYNC      0x4
++#define PSC1_SDATA_OUT 0x1
++#define PSC2_RESET     0x2
++#define PSC2_SYNC      (0x4<<4)
++#define PSC2_SDATA_OUT (0x1<<4)
++#define MPC52xx_GPIO_PSC1_MASK 0x7
++#define MPC52xx_GPIO_PSC2_MASK (0x7<<4)
++
++/**
++ * mpc5200_psc_ac97_gpio_reset: Use gpio pins to reset the ac97 bus
++ *
++ * @psc: psc number to reset (only psc 1 and 2 support ac97)
++ */
++int mpc5200_psc_ac97_gpio_reset(int psc_number)
++{
++       unsigned long flags;
++       u32 gpio;
++       u32 mux;
++       int out;
++       int reset;
++       int sync;
++
++       if ((!simple_gpio) || (!wkup_gpio))
++               return -ENODEV;
++
++       switch (psc_number) {
++       case 0:
++               reset   =3D PSC1_RESET;           /* AC97_1_RES */
++               sync    =3D PSC1_SYNC;            /* AC97_1_SYNC */
++               out     =3D PSC1_SDATA_OUT;       /* AC97_1_SDATA_OUT */
++               gpio    =3D MPC52xx_GPIO_PSC1_MASK;
++               break;
++       case 1:
++               reset   =3D PSC2_RESET;           /* AC97_2_RES */
++               sync    =3D PSC2_SYNC;            /* AC97_2_SYNC */
++               out     =3D PSC2_SDATA_OUT;       /* AC97_2_SDATA_OUT */
++               gpio    =3D MPC52xx_GPIO_PSC2_MASK;
++               break;
++       default:
++               printk(KERN_ERR __FILE__ ": "
++                     "Unable to determine PSC, no ac97 cold-reset will be =
+"
++                     "performed\n");
++               return -ENODEV;
++       }
++
++       spin_lock_irqsave(&gpio_lock, flags);
++
++       /* Reconfiure pin-muxing to gpio */
++       mux =3D in_be32(&simple_gpio->port_config);
++       out_be32(&simple_gpio->port_config, mux & (~gpio));
++
++       /* enable gpio pins for output */
++       setbits8(&wkup_gpio->wkup_gpioe, reset);
++       setbits32(&simple_gpio->simple_gpioe, sync | out);
++
++       setbits8(&wkup_gpio->wkup_ddr, reset);
++       setbits32(&simple_gpio->simple_ddr, sync | out);
++
++       /* Assert cold reset */
++       clrbits32(&simple_gpio->simple_dvo, sync | out);
++       clrbits8(&wkup_gpio->wkup_dvo, reset);
++
++       /* wait at lease 1 us */
++       udelay(2);
++
++       /* Deassert reset */
++       setbits8(&wkup_gpio->wkup_dvo, reset);
++
++       /* Restore pin-muxing */
++       out_be32(&simple_gpio->port_config, mux);
++
++       spin_unlock_irqrestore(&gpio_lock, flags);
++
++       return 0;
++}
++EXPORT_SYMBOL(mpc5200_psc_ac97_gpio_reset);
+--
+-DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+-to a public e-mail mailing list I hereby grant permission to distribute-
+-and copy this message.-
+
+1.6.3.1
 
 
->---
->Patch created against 2.6.35-rc3
->
-> drivers/net/ehea/ehea_main.c |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
->
->diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
->index f547894..fd890fa 100644
->--- a/drivers/net/ehea/ehea_main.c
->+++ b/drivers/net/ehea/ehea_main.c
->@@ -867,6 +867,7 @@ static int ehea_poll(struct napi_struct *napi, int budget)
-> 		ehea_reset_cq_ep(pr->send_cq);
-> 		ehea_reset_cq_n1(pr->recv_cq);
-> 		ehea_reset_cq_n1(pr->send_cq);
->+		rmb();
-> 		cqe = ehea_poll_rq1(pr->qp, &wqe_index);
-> 		cqe_skb = ehea_poll_cq(pr->send_cq);
->
->-- 
->1.7.0
->--
->To unsubscribe from this list: send the line "unsubscribe netdev" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This e-mail and the information, including any attachments, it contains are=
+ intended to be a confidential communication only to the person or entity t=
+o whom it is addressed and may contain information that is privileged. If t=
+he reader of this message is not the intended recipient, you are hereby not=
+ified that any dissemination, distribution or copying of this communication=
+ is strictly prohibited. If you have received this communication in error, =
+please immediately notify the sender and destroy the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
