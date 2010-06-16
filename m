@@ -1,24 +1,23 @@
-Return-Path: <imp@bsdimp.com>
-Received: from harmony.bsdimp.com (bsdimp.com [199.45.160.85])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BF2BF100807
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 17:03:27 +1000 (EST)
-Date: Wed, 16 Jun 2010 00:52:37 -0600 (MDT)
-Message-Id: <20100616.005237.338122493954307067.imp@bsdimp.com>
-To: wmb@firmworks.com
-Subject: Re: Request review of device tree documentation
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <4C187013.5000400@firmworks.com>
-References: <4C186B7B.1060308@firmworks.com> <4C186C72.2020506@compulab.co.il>
-	<4C187013.5000400@firmworks.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: nico@fluxnic.net, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org, jamie@shareable.org,
-	linuxppc-dev@ozlabs.org, mike@compulab.co.il,
-	ppc6dev@digitaldans.com, jeremy.kerr@canonical.com,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <micha@neli.hopto.org>
+Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
+	by ozlabs.org (Postfix) with ESMTP id 0FBE2B7D5B
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Jun 2010 17:04:25 +1000 (EST)
+Received: from neli.hopto.org (98-215.ftth.onsbrabantnet.nl [88.159.215.98])
+	by edu-smtp-01.edutel.nl (Postfix) with ESMTPSA id 79AFC3818D
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 16 Jun 2010 08:58:47 +0200 (CEST)
+Received: from conroe.local ([90.0.0.126] ident=micha)
+	by neli.hopto.org with esmtp (Exim 4.69)
+	(envelope-from <micha@neli.hopto.org>) id 1OOmaE-00031B-57
+	for linuxppc-dev@lists.ozlabs.org; Wed, 16 Jun 2010 08:58:46 +0200
+Message-ID: <4C187616.4000303@neli.hopto.org>
+Date: Wed, 16 Jun 2010 08:58:30 +0200
+From: Micha Nelissen <micha@neli.hopto.org>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
+Content-Type: multipart/mixed; boundary="------------060509020102060705070908"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,93 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In message: <4C187013.5000400@firmworks.com>
-            Mitch Bradley <wmb@firmworks.com> writes:
-: Mike Rapoport wrote:
-: > Mitch Bradley wrote:
-: >> Mike Rapoport wrote:
-: >>> Mitch Bradley wrote:
-: >>>
-: >>>> The second topic is the hypothetical use of OFW as a HAL. That will
-: >>>> not happen for several reasons.  The opposition to the idea is
-: >>>> widespread and deeply held, and there are good arguments to support
-: >>>> that opposition.  Furthermore, the economic conditions necessary for
-: >>>> the creation of such a HAL do not exist in the ARM world, nor indeed
-: >>>> in the Linux world in general.  (The necessary condition is the
-: >>>> ability for one company to impose a substantial change by fiat -
-: >>>> essentially a monopoly position.)
-: >>>>
-: >>>> Shall we agree, then, that any further discussion of the HAL issue is
-: >>>> "just for fun", and that nobody needs to feel threatened that it would
-: >>>> actually happen?
-: >>>
-: >>> I've recently worked with vendor versions of U-Boot for advanced ARM
-: >>> SoCs. There is already *huge* chunk of HAL code in those versions. And
-: >>> if there would be possibility to have callbacks into the firmware
-: >>> these chunks would only grow, IMHO.
-: >>
-: >> How can there be HAL code in U-Boot unless there is already the
-: >> possibility to have callbacks into the firmware?
-: >
-: > Currently it aims to abstract hardware from U-Boot and reuse the same
-: > HW access code across operating systems and bootloaders. If this code
-: > would have callbacks I afraid the things would became worse.
-: 
-: The only way I can understand what you said is if I assume that by
-: "callback", you mean the following sequence:
-: 
-: a) U-boot loads and executes the OS, providing to the OS the address
-: of some HW access routines that it can use
-: b) The OS calls one of those HW access routines
-: c) During the execution of that HW access routine, that routine calls
-: "back" into the OS, before returning.  So a call into the OS is nested
-: inside a call into U-boot resident code.
-: 
-: If that is what you are worried about, it is not what we were
-: discussing.  We were discussing - and many people were against - step
-: (b).
-: 
-: Are you saying that step (b) - the OS calling into routines provided
-: by U-Boot - is already the status quo?
+This is a multi-part message in MIME format.
+--------------060509020102060705070908
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I don't know about status quo, but it certainly is supported.  There's
-an option to allow for a secondary boot loader, such as FreeBSD's
-/boot/loader, to call back into uboot to read things from
-flash/disk/whatever, do network access, etc.  Not so much a HAL, but
-more of an echo of the functionality provided by PC BIOS functions.
-/boot/loader can be viewed as a mini OS that calls back into uboot to
-have it do things.  Once /boot/loader loads FreeBSD, btw, it and uboot
-disappear from the scene, so this isn't exactly a HAL situation...
+Hi,
 
-Warner
+Attached is a patch to fix large physical address support for the e500v2 
+core. When >4GB addresses are used, the MAS7 register needs to be valid 
+for tlbsx instruction usage.
 
+Please review and apply.
 
-: >
-: >> It is not HAL if it can't be called.
-: >>
-: >>>
-: >>>
-: >>>> The potential for "vendors breaking out of the debugging use case and
-: >>>> turning it into a HAL" is miniscule, because
-: >>>>
-: >>>> a) The callback is disabled by default
-: >>>> b) The technical challenges of the callback interface limit its
-: >>>> applicability to specific "wizard user" scenarios
-: >>>> c) OFW is unlikely to achieve sufficient market penetration for the
-: >>>> HAL thing to be worth doing
-: >>>>
-: >>>>
-: >>>> _______________________________________________
-: >>>> linux-arm-kernel mailing list
-: >>>> linux-arm-kernel@lists.infradead.org
-: >>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-: >>>
-: >>>
-: >
-: >
-: _______________________________________________
-: devicetree-discuss mailing list
-: devicetree-discuss@lists.ozlabs.org
-: https://lists.ozlabs.org/listinfo/devicetree-discuss
-: 
-: 
+Micha
+
+--------------060509020102060705070908
+Content-Type: text/plain;
+ name="en-mas7-update.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="en-mas7-update.diff"
+
+diff -u -ru linux-2.6.34/arch/powerpc/include/asm/reg.h linux-2.6.34-fix/arch/powerpc/include/asm/reg.h
+--- linux-2.6.34/arch/powerpc/include/asm/reg.h	2010-05-16 23:17:36.000000000 +0200
++++ linux-2.6.34-fix/arch/powerpc/include/asm/reg.h	2010-06-16 08:43:28.000000000 +0200
+@@ -272,6 +272,7 @@
+ #define HID0_DAPUEN	(1<<8)		/* Debug APU enable */
+ #define HID0_SGE	(1<<7)		/* Store Gathering Enable */
+ #define HID0_SIED	(1<<7)		/* Serial Instr. Execution [Disable] */
++#define HID0_EN_MAS7_UPDATE (1<<7)      /* tlbre/tlbsx update MAS7 - e500v2 */
+ #define HID0_DCFA	(1<<6)		/* Data Cache Flush Assist */
+ #define HID0_LRSTK	(1<<4)		/* Link register stack - 745x */
+ #define HID0_BTIC	(1<<5)		/* Branch Target Instr Cache Enable */
+diff -u -ru linux-2.6.34/arch/powerpc/kernel/head_fsl_booke.S linux-2.6.34-fix/arch/powerpc/kernel/head_fsl_booke.S
+--- linux-2.6.34/arch/powerpc/kernel/head_fsl_booke.S	2010-05-16 23:17:36.000000000 +0200
++++ linux-2.6.34-fix/arch/powerpc/kernel/head_fsl_booke.S	2010-06-16 08:45:10.000000000 +0200
+@@ -328,6 +328,13 @@
+ 	oris	r2,r2,HID0_DOZE@h
+ 	mtspr	SPRN_HID0, r2
+ #endif
++#ifdef CONFIG_PTE_64BIT
++BEGIN_MMU_FTR_SECTION
++	mfspr	r2,SPRN_HID0
++	ori	r2,r2,HID0_EN_MAS7_UPDATE@l
++	mtspr	SPRN_HID0, r2
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
++#endif
+ 
+ #if !defined(CONFIG_BDI_SWITCH)
+ 	/*
+
+--------------060509020102060705070908--
