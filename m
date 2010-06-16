@@ -1,19 +1,19 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
-	by ozlabs.org (Postfix) with ESMTP id D3C571007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 19:27:14 +1000 (EST)
-Message-ID: <4C189860.3040702@neli.hopto.org>
-Date: Wed, 16 Jun 2010 11:24:48 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+Return-Path: <richardcochran@gmail.com>
+Date: Wed, 16 Jun 2010 12:05:39 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 12/12] ptp: Added a clock driver for the National
+	Semiconductor PHYTER.
+Message-ID: <20100616100539.GA3569@riccoc20.at.omicron.at>
+References: <cover.1276615626.git.richard.cochran@omicron.at>
+	<37f5015b186bdd51f8451ade042f90c8b39a5cc8.1276615626.git.richard.cochran@omicron.at>
+	<AANLkTilqd-wxqMWDxssC-XMDJqZ8iIiSrvp2t8xARAQV@mail.gmail.com>
 MIME-Version: 1.0
-To: Aggrwal Poonam-B10812 <B10812@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
-References: <4C187616.4000303@neli.hopto.org>
-	<8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
-In-Reply-To: <8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTilqd-wxqMWDxssC-XMDJqZ8iIiSrvp2t8xARAQV@mail.gmail.com>
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aggrwal Poonam-B10812 wrote:
->> Attached is a patch to fix large physical address support for the
->
-> This is already being done by u-boot, should linux set it again?
+On Tue, Jun 15, 2010 at 12:49:13PM -0600, Grant Likely wrote:
+> Won't this break things for existing DP83640 users?
 
-Yikes! Took me 5 min to reformat your email.
+Nope, the driver was only added five patches ago, and it only offers
+the timestamping stuff. The standard PHY functions just call the
+generic functions, so the PHY works fine even without this driver.
 
-Our version of U-boot does not but it's not latest greatest.
+> > +static struct ptp_clock *dp83640_clock;
+> > +DEFINE_SPINLOCK(clock_lock); /* protects the one and only dp83640_clock */
+> 
+> Why only one?  Is it not possible to have 2 of these PHYs in a system?
 
-IMHO:
-1) Linux should not be dependent on U-boot or any other bootloader, or 
-at least as possible
-2) U-boot cannot (and does not want to) know whether Linux is going to 
-use large physical addresses.
+Yes, you can have multiple PHYs, but only one PTP clock.
 
-Regards,
+If you do use multiple PHYs, then you must wire their clocks together
+and adjust the PTP clock on only one of the PHYs.
 
-Micha
+
+Thanks for your other comments,
+
+Richard
