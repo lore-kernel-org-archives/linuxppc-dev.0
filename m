@@ -1,19 +1,32 @@
-Return-Path: <micha@neli.hopto.org>
-Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 35046B7D69
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Jun 2010 01:21:01 +1000 (EST)
-Message-ID: <4C18EB4C.4060201@neli.hopto.org>
-Date: Wed, 16 Jun 2010 17:18:36 +0200
-From: Micha Nelissen <micha@neli.hopto.org>
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 907C1B7D8B
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jun 2010 01:42:33 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o5GFgU2N025884
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 08:42:30 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o5GFsOAd018525
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 10:54:24 -0500 (CDT)
+Message-ID: <4C18F0E4.90309@freescale.com>
+Date: Wed, 16 Jun 2010 10:42:28 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
-References: <4C187616.4000303@neli.hopto.org>	<A79B65D2-CDAF-4B16-8E97-E3522F154056@kernel.crashing.org>
-	<4C18E9EA.2090903@neli.hopto.org>
-In-Reply-To: <4C18E9EA.2090903@neli.hopto.org>
-Content-Type: multipart/mixed; boundary="------------080403030108020403010605"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
+References: <1272584978-19063-1-git-send-email-agust@denx.de>	<y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad@mail.gmail.com>	<20100601113801.5b0ff773@wker>	<AANLkTims596hCnLgN5Po6nS1bRFxKywEDlBA4mlreciV@mail.gmail.com>
+	<20100616093805.3a8df747@wker>
+In-Reply-To: <20100616093805.3a8df747@wker>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
+	yorksun@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +36,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080403030108020403010605
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Anatolij Gustschin wrote:
 
-Micha Nelissen wrote:
-> Do you mean like attached? I had to change the order of the '_GLOBAL' 
-> definitions __setup_cpu_e500v1/__setup_cpu_e500v2 since this bit is 
-> e500v2 only.
+> Any chance this could be done soon? I'd like to include the MPC5121e DIU
+> support in 2.6.36 since it is currently broken in mainline and the patches
+> provide the fix.
 
-Hmm, maybe need to use r0 or r3 instead of r2?
-
-Micha
-
---------------080403030108020403010605
-Content-Type: text/plain;
- name="en-mas7-update-v2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="en-mas7-update-v2.diff"
-
-Index: linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-===================================================================
---- linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S	(revision 2871)
-+++ linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S	(working copy)
-@@ -57,8 +57,14 @@
- 	ori	r3,r3,HID0_DAPUEN@l
- 	mtspr	SPRN_HID0,r3
- 	b	__setup_e200_ivors
-+_GLOBAL(__setup_cpu_e500v2)
-+#ifdef CONFIG_PTE_64BIT
-+	/* enable mas7 register for tlbre/tlbsx */
-+	mfspr	r0,SPRN_HID0
-+	ori 	r0,r0,HID0_EN_MAS7_UPDATE@l
-+	mtspr	SPRN_HID0,r0
-+#endif
- _GLOBAL(__setup_cpu_e500v1)
--_GLOBAL(__setup_cpu_e500v2)
- 	mflr	r4
- 	bl	__e500_icache_setup
- 	bl	__e500_dcache_setup
-Index: linux/arch/powerpc/include/asm/reg.h
-===================================================================
---- linux/arch/powerpc/include/asm/reg.h	(revision 2871)
-+++ linux/arch/powerpc/include/asm/reg.h	(working copy)
-@@ -276,6 +276,7 @@
- #define HID0_DAPUEN	(1<<8)		/* Debug APU enable */
- #define HID0_SGE	(1<<7)		/* Store Gathering Enable */
- #define HID0_SIED	(1<<7)		/* Serial Instr. Execution [Disable] */
-+#define HID0_EN_MAS7_UPDATE (1<<7)	/* Enable MAS7 reg for tlbre/tlbsx */
- #define HID0_DCFA	(1<<6)		/* Data Cache Flush Assist */
- #define HID0_LRSTK	(1<<4)		/* Link register stack - 745x */
- #define HID0_BTIC	(1<<5)		/* Branch Target Instr Cache Enable */
-
---------------080403030108020403010605--
+Ok, I'll try it today.
