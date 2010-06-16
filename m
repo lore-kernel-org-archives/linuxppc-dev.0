@@ -1,31 +1,19 @@
-Return-Path: <B10812@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 31FAA1007D2
+Return-Path: <micha@neli.hopto.org>
+Received: from edu-smtp-02.edutel.nl (edu-smtp-02.edutel.nl [88.159.1.176])
+	by ozlabs.org (Postfix) with ESMTP id D3C571007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 17:30:05 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o5G7TvR4028102 for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 00:29:57 -0700 (MST)
-Received: from zin33exm24.fsl.freescale.net (zin33exm24.ap.freescale.net
-	[10.232.192.24])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o5G7dkk1004611
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 02:39:47 -0500 (CDT)
+	Wed, 16 Jun 2010 19:27:14 +1000 (EST)
+Message-ID: <4C189860.3040702@neli.hopto.org>
+Date: Wed, 16 Jun 2010 11:24:48 +0200
+From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
-Date: Wed, 16 Jun 2010 12:59:52 +0530
-Message-ID: <8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
-In-Reply-To: <4C187616.4000303@neli.hopto.org>
+To: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
 References: <4C187616.4000303@neli.hopto.org>
-From: "Aggrwal Poonam-B10812" <B10812@freescale.com>
-To: "Micha Nelissen" <micha@neli.hopto.org>, <linuxppc-dev@lists.ozlabs.org>
+	<8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
+In-Reply-To: <8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Aggrwal Poonam-B10812 wrote:
+>> Attached is a patch to fix large physical address support for the
+>
+> This is already being done by u-boot, should linux set it again?
 
+Yikes! Took me 5 min to reformat your email.
 
-> -----Original Message-----
-> From:
-linuxppc-dev-bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-
-> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+Our version of U-boot does not but it's not latest greatest.
+
+IMHO:
+1) Linux should not be dependent on U-boot or any other bootloader, or 
+at least as possible
+2) U-boot cannot (and does not want to) know whether Linux is going to 
+use large physical addresses.
+
+Regards,
+
 Micha
-> Nelissen
-> Sent: Wednesday, June 16, 2010 12:29 PM
-> To: linuxppc-dev@lists.ozlabs.org
-> Subject: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
->=20
-> Hi,
->=20
-> Attached is a patch to fix large physical address support for the
-e500v2
-> core. When >4GB addresses are used, the MAS7 register needs to be
-valid
-> for tlbsx instruction usage.
->=20
-> Please review and apply.
-[Aggrwal Poonam] This is already being done by u-boot, should linux set
-it again?
->=20
-> Micha
