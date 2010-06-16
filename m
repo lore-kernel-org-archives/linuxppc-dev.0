@@ -1,17 +1,18 @@
-Return-Path: <horms@verge.net.au>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id 0314CB7D29
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 12:38:47 +1000 (EST)
-Date: Wed, 16 Jun 2010 11:38:44 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Matthew McClintock <msm@freescale.com>
-Subject: Re: [PATCH] Restore kexec uImage-ppc to working state
-Message-ID: <20100616023844.GC28659@verge.net.au>
-References: <1276544322-30412-1-git-send-email-msm@freescale.com>
+Return-Path: <richardcochran@gmail.com>
+Date: Wed, 16 Jun 2010 07:40:47 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 04/12] phylib: add a way to make PHY time stamps possible.
+Message-ID: <20100616054047.GA2887@riccoc20.at.omicron.at>
+References: <cover.1276615626.git.richard.cochran@omicron.at>
+	<27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
+	<AANLkTimhAvu0_WuMCwnCrw9Rbcy6dKxvTlzepJm7ZDdR@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1276544322-30412-1-git-send-email-msm@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+In-Reply-To: <AANLkTimhAvu0_WuMCwnCrw9Rbcy6dKxvTlzepJm7ZDdR@mail.gmail.com>
+Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,143 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CCed linuxppc-dev to fish for an ack.
+On Tue, Jun 15, 2010 at 10:33:51AM -0600, Grant Likely wrote:
+> > +config NETWORK_PHY_TIMESTAMPING
+> Some overhead?  At a brief glance of the series it looks like it could
+> add a lot of overhead, but I'm not fully clear on what the full
+> process is.  Can you describe how the hardware timestamping works?  I
+> could use an overview of what the kernel has to do.
 
-On Mon, Jun 14, 2010 at 02:38:42PM -0500, Matthew McClintock wrote:
-> Booting with uImage-ppc was broken by previous work, this
-> patch should restore it to working order
-> 
-> Signed-off-by: Matthew McClintock <msm@freescale.com>
-> ---
->  kexec/arch/ppc/kexec-ppc.c         |   68 ++++++++++++++++++++++-------------
->  kexec/arch/ppc/kexec-uImage-ppc.c  |    5 +--
->  purgatory/arch/ppc/purgatory-ppc.c |    5 +++
->  3 files changed, 49 insertions(+), 29 deletions(-)
-> 
-> diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
-> index 55cadd6..c073f56 100644
-> --- a/kexec/arch/ppc/kexec-ppc.c
-> +++ b/kexec/arch/ppc/kexec-ppc.c
-> @@ -261,11 +261,28 @@ static int get_base_ranges(void)
->  					break;
->  				}
->  			}
-> -			base_memory_range[local_memory_ranges].start =
-> -				((uint32_t *)buf)[0];
-> -			base_memory_range[local_memory_ranges].end  =
-> -				base_memory_range[local_memory_ranges].start +
-> -				((uint32_t *)buf)[1];
-> +
-> +			if (n == 8)
-> +			{
-> +				base_memory_range[local_memory_ranges].start =
-> +					((uint32_t *)buf)[0];
-> +				base_memory_range[local_memory_ranges].end  =
-> +					base_memory_range[local_memory_ranges].start +
-> +					((uint32_t *)buf)[1];
-> +			}
-> +			else if (n == 16)
-> +			{
-> +				base_memory_range[local_memory_ranges].start =
-> +                                        ((uint64_t *)buf)[0];
-> +                                base_memory_range[local_memory_ranges].end  =
-> +                                        base_memory_range[local_memory_ranges].start +
-> +                                        ((uint64_t *)buf)[1];
-> +			}
-> +			else
-> +			{
-> +				fprintf(stderr, "Mem node has invalid size: %d\n", n);
-> +				return -1;
-> +			}
->  			base_memory_range[local_memory_ranges].type = RANGE_RAM;
->  			local_memory_ranges++;
->  			dbgprintf("%016llx-%016llx : %x\n",
-> @@ -327,27 +344,28 @@ static int get_devtree_details(unsigned long kexec_flags)
->  		}
->  
->  		if (strncmp(dentry->d_name, "chosen", 6) == 0) {
-> -			strcat(fname, "/linux,kernel-end");
-> -			file = fopen(fname, "r");
-> -			if (!file) {
-> -				perror(fname);
-> -				goto error_opencdir;
-> -			}
-> -			if (fread(&tmp_long, sizeof(unsigned long), 1, file)
-> -					!= 1) {
-> -				perror(fname);
-> -				goto error_openfile;
-> -			}
-> -			kernel_end = tmp_long;
-> -			fclose(file);
-> -
-> -			/* Add kernel memory to exclude_range */
-> -			exclude_range[i].start = 0x0UL;
-> -			exclude_range[i].end = kernel_end;
-> -			i++;
-> -			if (i >= max_memory_ranges)
-> -				realloc_memory_ranges();
-> +			/* only reserve kernel region if we are doing a crash kernel */
->  			if (kexec_flags & KEXEC_ON_CRASH) {
-> +				strcat(fname, "/linux,kernel-end");
-> +				file = fopen(fname, "r");
-> +				if (!file) {
-> +					perror(fname);
-> +					goto error_opencdir;
-> +				}
-> +				if (fread(&tmp_long, sizeof(unsigned long), 1, file)
-> +						!= 1) {
-> +					perror(fname);
-> +					goto error_openfile;
-> +				}
-> +				kernel_end = tmp_long;
-> +				fclose(file);
-> +
-> +				/* Add kernel memory to exclude_range */
-> +				exclude_range[i].start = 0x0UL;
-> +				exclude_range[i].end = kernel_end;
-> +				i++;
-> +				if (i >= max_memory_ranges)
-> +					realloc_memory_ranges();
->  				memset(fname, 0, sizeof(fname));
->  				strcpy(fname, device_tree);
->  				strcat(fname, dentry->d_name);
-> diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
-> index 45cde2f..4a8d28d 100644
-> --- a/kexec/arch/ppc/kexec-uImage-ppc.c
-> +++ b/kexec/arch/ppc/kexec-uImage-ppc.c
-> @@ -133,13 +133,10 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
->  	addr = dtb_addr;
->  	elf_rel_set_symbol(&info->rhdr, "dt_offset", &addr, sizeof(addr));
->  
-> -	addr = rmo_top;
-> -	elf_rel_set_symbol(&info->rhdr, "mem_size", &addr, sizeof(addr));
-> -
->  #define PUL_STACK_SIZE  (16 * 1024)
->  	addr = locate_hole(info, PUL_STACK_SIZE, 0, 0, -1, 1);
->  	addr += PUL_STACK_SIZE;
-> -	elf_rel_set_symbol(&info->rhdr, "pul_stack", &addr, sizeof(addr));
-> +	elf_rel_set_symbol(&info->rhdr, "stack", &addr, sizeof(addr));
->  	/* No allocation past here in order not to overwrite the stack */
->  #undef PUL_STACK_SIZE
->  
-> diff --git a/purgatory/arch/ppc/purgatory-ppc.c b/purgatory/arch/ppc/purgatory-ppc.c
-> index 3d7d484..349e750 100644
-> --- a/purgatory/arch/ppc/purgatory-ppc.c
-> +++ b/purgatory/arch/ppc/purgatory-ppc.c
-> @@ -39,3 +39,8 @@ void post_verification_setup_arch(void)
->  	if (panic_kernel)
->  		crashdump_backup_memory();
->  }
-> +
-> +void crashdump_backup_memory(void)
-> +{
-> +	return;
-> +}
-> -- 
-> 1.6.0.6
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+First of all, I want to emphasize that this network stack option is
+purely voluntary. Only those people who know that they have a PTP
+capable PHY and really want the timestamps will (or should) enable
+this option. When it is not enabled, it has no effect at all.
+
+Hardware timestamping is described in
+
+   Documentation/networking/timestamping.txt
+   Documentation/networking/timestamping/timestamping.c
+
+The PTP subsystem is described in
+
+   Documentation/ptp/ptp.txt
+
+There really is more to say about the issue than appears in those
+documents, but they are a good starting place for discussion.
+
+BTW I am submitting a conference paper on the design on the PTP
+subsystem. If you would like to have it, just ask me off-list.
+
+Richard
