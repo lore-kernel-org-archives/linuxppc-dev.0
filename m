@@ -1,16 +1,27 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Wed, 16 Jun 2010 08:29:40 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: netdev@vger.kernel.org
-Subject: Re: [PATCH 04/12] phylib: add a way to make PHY time stamps possible.
-Message-ID: <20100616062940.GC2887@riccoc20.at.omicron.at>
-References: <cover.1276615626.git.richard.cochran@omicron.at>
-	<27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
+Return-Path: <wmb@firmworks.com>
+Received: from rs35.luxsci.com (rs35.luxsci.com [66.216.127.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 9CA60B7D16
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 16:33:30 +1000 (EST)
+Message-ID: <4C187013.5000400@firmworks.com>
+Date: Tue, 15 Jun 2010 20:32:51 -1000
+From: Mitch Bradley <wmb@firmworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+To: Mike Rapoport <mike@compulab.co.il>
+Subject: Re: Request review of device tree documentation
+References: <4C13430B.5000907@firmworks.com>	<1276339529.1962.184.camel@pasglop>	<1276339684.1962.186.camel@pasglop>	<4C13B618.1030006@firmworks.com>	<1276383132.1962.195.camel@pasglop>	<AANLkTimRV8u3gDNCAIlROJoPcKs7jFwj2na3ZDFOg3O0@mail.gmail.com>	<4C146F18.9030008@firmworks.com>	<AANLkTikls3hjXOmKFqG2D_9GaJSjOXNuuRXPlanAjo5E@mail.gmail.com>	<20100614124438.GF9323@yookeroo>	<alpine.LFD.2.00.1006141044510.13427@xanadu.home>	<20100614160201.GD9550@shareable.org>
+	<4C165FD1.6080505@firmworks.com> <4C186AA8.4040709@compulab.co.il>
+	<4C186B7B.1060308@firmworks.com> <4C186C72.2020506@compulab.co.il>
+In-Reply-To: <4C186C72.2020506@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nicolas Pitre <nico@fluxnic.net>, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	Jamie Lokier <jamie@shareable.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Dan Malek <ppc6dev@digitaldans.com>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>,
+	linux-arm-kernel@lists.infradead.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,25 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 15, 2010 at 06:08:20PM +0200, Richard Cochran wrote:
+Mike Rapoport wrote:
+> Mitch Bradley wrote:
+>> Mike Rapoport wrote:
+>>> Mitch Bradley wrote:
+>>>
+>>>> The second topic is the hypothetical use of OFW as a HAL. That will 
+>>>> not happen for several reasons.  The opposition to the idea is 
+>>>> widespread and deeply held, and there are good arguments to support 
+>>>> that opposition.   Furthermore, the economic conditions necessary 
+>>>> for the creation of such a HAL do not exist in the ARM world, nor 
+>>>> indeed in the Linux world in general.  (The necessary condition is 
+>>>> the ability for one company to impose a substantial change by fiat 
+>>>> - essentially a monopoly position.)
+>>>>
+>>>> Shall we agree, then, that any further discussion of the HAL issue 
+>>>> is "just for fun", and that nobody needs to feel threatened that it 
+>>>> would actually happen?
+>>>
+>>> I've recently worked with vendor versions of U-Boot for advanced ARM 
+>>> SoCs. There is already *huge* chunk of HAL code in those versions. 
+>>> And if there would be possibility to have callbacks into the 
+>>> firmware these chunks would only grow, IMHO.
+>>
+>> How can there be HAL code in U-Boot unless there is already the 
+>> possibility to have callbacks into the firmware?
+>
+> Currently it aims to abstract hardware from U-Boot and reuse the same 
+> HW access code across operating systems and bootloaders. If this code 
+> would have callbacks I afraid the things would became worse.
 
-> +static inline void skb_tx_timetamp(struct phy_device *phy, struct sk_buff *skb)
-> +{
-> +	union skb_shared_tx *shtx = skb_tx(skb);
-> +
-> +	if (shtx->hardware && phy && phy->drv->txtstamp)
-> +		phy->drv->txtstamp(phy, skb);
-> +
-> +	if (shtx->software && !shtx->in_progress)
-> +		skb_tstamp_tx(skb, NULL);
-> +}
+The only way I can understand what you said is if I assume that by 
+"callback", you mean the following sequence:
 
-I forgot to mention this patch also provides a way to fix the broken
-software timestamp fallback mode of the SO_TIMESTAMPING API.
+a) U-boot loads and executes the OS, providing to the OS the address of 
+some HW access routines that it can use
+b) The OS calls one of those HW access routines
+c) During the execution of that HW access routine, that routine calls 
+"back" into the OS, before returning.  So a call into the OS is nested 
+inside a call into U-boot resident code.
 
-We would have to add this inline call to every MAC driver in an
-appropriate spot within the hard_xmit function. It is not too pretty,
-but providing this as a compile time option will promote
-standardization of the SO_TIMESTAMPING API for applications.
+If that is what you are worried about, it is not what we were 
+discussing.  We were discussing - and many people were against - step (b).
 
-Richard
+Are you saying that step (b) - the OS calling into routines provided by 
+U-Boot - is already the status quo?
+
+>
+>> It is not HAL if it can't be called.
+>>
+>>>
+>>>
+>>>> The potential for "vendors breaking out of the debugging use case 
+>>>> and turning it into a HAL" is miniscule, because
+>>>>
+>>>> a) The callback is disabled by default
+>>>> b) The technical challenges of the callback interface limit its 
+>>>> applicability to specific "wizard user" scenarios
+>>>> c) OFW is unlikely to achieve sufficient market penetration for the 
+>>>> HAL thing to be worth doing
+>>>>
+>>>>
+>>>> _______________________________________________
+>>>> linux-arm-kernel mailing list
+>>>> linux-arm-kernel@lists.infradead.org
+>>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>>>
+>>>
+>
+>
