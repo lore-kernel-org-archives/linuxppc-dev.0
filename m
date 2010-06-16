@@ -1,23 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 6C878B7D84
+Return-Path: <c.alfred@internode.on.net>
+Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
+	[150.101.137.143]) by ozlabs.org (Postfix) with ESMTP id 10175B7D89
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Jun 2010 08:43:42 +1000 (EST)
-Received: by gxk5 with SMTP id 5so1356828gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 15:43:39 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <EBEDB9C789D344D9A8D459B6FCB1A0AD@kos>
-References: <57F24E98919C4D22A784127E6CF1C9DA@kos>
-	<AANLkTimArb-UjJMe84Qrd4iNquGHEehbGW1Uciq_zGYm@mail.gmail.com>
+	Thu, 17 Jun 2010 08:48:59 +1000 (EST)
+Message-ID: <162C87D14617439384076F797228B1EF@kos>
+From: "Chris Alfred" <c.alfred@internode.on.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+References: <57F24E98919C4D22A784127E6CF1C9DA@kos><AANLkTimArb-UjJMe84Qrd4iNquGHEehbGW1Uciq_zGYm@mail.gmail.com>
 	<EBEDB9C789D344D9A8D459B6FCB1A0AD@kos>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 16 Jun 2010 16:43:19 -0600
-Message-ID: <AANLkTinBJgwL9qcw0Ouzuvc55C1Gs2KtIoY2NbBy34V2@mail.gmail.com>
+	<AANLkTinBJgwL9qcw0Ouzuvc55C1Gs2KtIoY2NbBy34V2@mail.gmail.com>
 Subject: Re: Porting a driver to powerpc using FDT
-To: Chris Alfred <c.alfred@internode.on.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 17 Jun 2010 08:48:59 +1000
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,154 +24,387 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 16, 2010 at 4:06 PM, Chris Alfred <c.alfred@internode.on.net> w=
-rote:
-> Grant Likely wrote:
->> On Tue, Jun 15, 2010 at 4:19 PM, Chris Alfred
->> <c.alfred@internode.on.net> wrote:
->>> I am trying to port a DSA (Distributed Switch Architecture) driver
->>> for the Micrel KS8995M managed switch connected to a MPC5200. There
->>> is an SPI interface and MII interface managed by the DSA driver.
->>>
->>> I can't understand how probe gets called when the flatted device
->>> tree
->>> (FDT) system is used, and how to bind such a driver using the FDT
->>> (if
->>> you have to at all).
->>>
->>> The DSA driver is initialised via:
->>>
->>> // net/dsa/dsa.c
->>>
->>> static struct platform_driver dsa_driver =3D {
->>> .probe =3D dsa_probe,
->>> .remove =3D dsa_remove,
->>> .shutdown =3D dsa_shutdown,
->>> .driver =3D {
->>> .name =3D "dsa",
->>> .owner =3D THIS_MODULE,
->>> },
->>> };
->>>
->>> static int __init dsa_init_module(void)
->>> {
->>> return platform_driver_register(&dsa_driver);
->>> }
->>>
->>> dsa_init_module is being called; but how do I get the system to
->>> call
->>> .probe?
->>
->> To avoid writing new machine-specific code in
->> arch/powerpc/platforms,
->> then I recommend that you add a node to your .dts file to describe
->> the
->> DSA complex and write a very simple of_platform_driver that binds
->> against it. =A0Then use the probe hook to extract data out of the
->> device
->> tree node (if needed) and register the appropriate platform_device
->> (don't forget to make the of_device the parent of the
->> platform_device). =A0This can be considered a temporary solution, but
->> it
->> will not break when I make the infrastructure changes, and then you
->> can migrate over to the new method at your leisure.
+>> dsa_of_init is successfully called; but dsa_of_probe is not called.
 >
->
-> Thanks for the great response.
->
-> I still have some learning to do. To start, I tried to get a simple
-> of_platform_driver going.
-> In my .dts I added:
->
-> =A0 =A0/ {
-> =A0 =A0 =A0 =A0...
-> =A0 =A0 =A0 =A0 dsa {
-> =A0 =A0 =A0 =A0 =A0compatible =3D "dsa-of";
+> That means the node is not being used to register an of_device.  I
+> need some more information to suggest how best to fix this.
 
-This is too generic.  Until there is a real generic binding for DSA
-devices, use a name specific to your board.  An of driver can bind to
-more than one compatible value.  Don't forget to include the vendor
-prefix in your compatible value.
+> What SoC are you using?
+> What file in arch/powerpc/platforms/* is used to setup your machine?
 
-> =A0 =A0 =A0 =A0 =A0reg =3D <0 0>; =A0 // TODO: might need config values e=
-.g. number
-> of phys, cpu port
+We are using the MPC5200. Very similar to the Lite5200.
 
-Just drop this property until you have real data to populate it with.
-For a virtual device like this you probably don't need a reg property.
- What you probably do need in this node is references (phandles) to
-the node for the marvel switch which I imagine hangs off of an MDIO or
-SPI bus.
+> It would help to have a copy of your full .dts file.
 
-> =A0 =A0 =A0 =A0 };
-> =A0 =A0 =A0 =A0...
-> =A0 =A0};
->
-> I created net/dsa/dsa_of.c - the simple of_platform_driver that will
-> bind to the DSA platform driver (in net/dsa/dsa.c):
->
-> =A0 =A0#include <linux/of.h>
-> =A0 =A0#include <linux/kernel.h>
-> =A0 =A0#include <linux/of_platform.h>
->
-> =A0 =A0static int __devinit dsa_of_probe(struct of_device *ofdev, const
-> struct of_device_id *match)
-> =A0 =A0{
-> =A0 =A0 printk("dsa_of_probe\n");
-> =A0 =A0 return 0;
-> =A0 =A0}
->
-> =A0 =A0static int dsa_of_remove(struct of_device *ofdev)
-> =A0 =A0{
-> =A0 =A0 printk("dsa_of_remove\n");
-> =A0 =A0 return 0;
-> =A0 =A0}
->
->
-> =A0 =A0static const struct of_device_id dsa_of_match[] =3D {
-> =A0 =A0 {
-> =A0 =A0 =A0.compatible =3D "dsa-of",
-> =A0 =A0 },
-> =A0 =A0 {}
-> =A0 =A0};
->
-> =A0 =A0static struct of_platform_driver dsa_of_driver =3D {
-> =A0 =A0 .name =3D "dsa-of",
-> =A0 =A0 .match_table =3D dsa_of_match,
-> =A0 =A0 .probe =3D dsa_of_probe,
-> =A0 =A0 .remove =3D dsa_of_remove,
-> =A0 =A0};
->
-> =A0 =A0static int __init dsa_of_init(void)
-> =A0 =A0{
-> =A0 =A0 printk("dsa_of_init\n");
->
-> =A0 =A0 if (of_register_platform_driver(&dsa_of_driver))
-> =A0 =A0 =A0printk(KERN_ERR "Unable to register DSA OF platform driver\n")=
-;
->
-> =A0 =A0 return 0;
-> =A0 =A0}
-> =A0 =A0module_init(dsa_of_init);
->
-> =A0 =A0static void __exit dsa_of_cleanup(void)
-> =A0 =A0{
-> =A0 =A0 printk("dsa_of_cleanup\n");
->
-> =A0 =A0 of_unregister_platform_driver(&dsa_of_driver);
-> =A0 =A0}
-> =A0 =A0module_exit(dsa_of_cleanup);
->
-> =A0 =A0MODULE_DESCRIPTION("DSA OF platform driver");
-> =A0 =A0MODULE_AUTHOR("Chris Alfred <chris@greyfog.com.au");
-> =A0 =A0MODULE_LICENSE("GPL v2");
->
-> dsa_of_init is successfully called; but dsa_of_probe is not called.
+/*
+ * jkc5200n8 board Device Tree Source
+ *
+ * Copyright 2006-2007 Secret Lab Technologies Ltd.
+ * Grant Likely <grant.likely@secretlab.ca>
+ *
+ * This program is free software; you can redistribute  it and/or 
+modify it
+ * under  the terms of  the GNU General  Public License as published 
+by the
+ * Free Software Foundation;  either version 2 of the  License, or (at 
+your
+ * option) any later version.
+ */
 
-That means the node is not being used to register an of_device.  I
-need some more information to suggest how best to fix this.  What SoC
-are you using?  What file in arch/powerpc/platforms/* is used to setup
-your machine?  It would help to have a copy of your full .dts file.
+/dts-v1/;
 
-Cheers,
-g.
+/ {
+ model = "fsl,jkc5200n8";
+ compatible = "fsl,jkc5200n8";
+ #address-cells = <1>;
+ #size-cells = <1>;
+ interrupt-parent = <&mpc5200_pic>;
+
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  PowerPC,5200@0 {
+   device_type = "cpu";
+   reg = <0>;
+   d-cache-line-size = <32>;
+   i-cache-line-size = <32>;
+   d-cache-size = <0x4000>; // L1, 16K
+   i-cache-size = <0x4000>; // L1, 16K
+   timebase-frequency = <0>; // from bootloader
+   bus-frequency = <0>;  // from bootloader
+   clock-frequency = <0>;  // from bootloader
+  };
+ };
+
+ memory {
+  device_type = "memory";
+  reg = <0x00000000 0x10000000>; // 256MB
+ };
+
+ dsa {
+  compatible = "dsa-of";
+  reg = <0 0>;   // unused
+ };
+
+ soc5200@f0000000 {
+  #address-cells = <1>;
+  #size-cells = <1>;
+  compatible = "fsl,mpc5200b-immr";
+  ranges = <0 0xf0000000 0x0000c000>;
+  reg = <0xf0000000 0x00000100>;
+  bus-frequency = <0>;  // from bootloader
+  system-frequency = <0>;  // from bootloader
+
+  cdm@200 {
+   compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
+   reg = <0x200 0x38>;
+  };
+
+  mpc5200_pic: interrupt-controller@500 {
+   // 5200 interrupts are encoded into two levels;
+   interrupt-controller;
+   #interrupt-cells = <3>;
+   compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
+   reg = <0x500 0x80>;
+  };
+
+  timer@600 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x600 0x10>;
+   interrupts = <1 9 0>;
+   fsl,has-wdt;
+  };
+
+  timer@610 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x610 0x10>;
+   interrupts = <1 10 0>;
+  };
+
+  timer@620 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x620 0x10>;
+   interrupts = <1 11 0>;
+  };
+
+  timer@630 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x630 0x10>;
+   interrupts = <1 12 0>;
+  };
+
+  timer@640 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x640 0x10>;
+   interrupts = <1 13 0>;
+  };
+
+  timer@650 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x650 0x10>;
+   interrupts = <1 14 0>;
+  };
+
+  timer@660 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x660 0x10>;
+   interrupts = <1 15 0>;
+  };
+
+  timer@670 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x670 0x10>;
+   interrupts = <1 16 0>;
+  };
+
+  rtc@800 { // Real time clock
+   compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+   reg = <0x800 0x100>;
+   interrupts = <1 5 0 1 6 0>;
+  };
+
+  can@900 {
+   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
+   interrupts = <2 17 0>;
+   reg = <0x900 0x80>;
+  };
+
+  can@980 {
+   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
+   interrupts = <2 18 0>;
+   reg = <0x980 0x80>;
+  };
+
+  gpio_simple: gpio@b00 {
+   compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
+   reg = <0xb00 0x40>;
+   interrupts = <1 7 0>;
+   gpio-controller;
+   #gpio-cells = <2>;
+  };
+
+  gpio_wkup: gpio@c00 {
+   compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
+   reg = <0xc00 0x40>;
+   interrupts = <1 8 0 0 3 0>;
+   gpio-controller;
+   #gpio-cells = <2>;
+  };
+
+  spi@f00 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+   reg = <0xf00 0x20>;
+   interrupts = <2 13 0 2 14 0>;
+   interrupt-parent = <&mpc5200_pic>;
+
+   switch0: ethernet-switch@0 {
+    //compatible = "spidev";
+    //compatible = "micrel,spi-ks8995";
+    compatible = "micrel,spi-ks8995-dsa";
+    spi-max-frequency = <1000000>;
+    reg = <0>;
+   };
+  };
+
+  usb@1000 {
+   compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci","ohci-be";
+   reg = <0x1000 0xff>;
+   interrupts = <2 6 0>;
+  };
+
+  dma-controller@1200 {
+   compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
+   reg = <0x1200 0x80>;
+   interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+                 3 4 0  3 5 0  3 6 0  3 7 0
+                 3 8 0  3 9 0  3 10 0  3 11 0
+                 3 12 0  3 13 0  3 14 0  3 15 0>;
+  };
+
+  xlb@1f00 {
+   compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
+   reg = <0x1f00 0x100>;
+  };
+
+  serial@2000 {  // PSC1
+   compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
+   cell-index = <0>;
+   reg = <0x2000 0x100>;
+   interrupts = <2 1 0>;
+  };
+
+  // PSC2 in ac97 mode example
+  ac97@2200 {  // PSC2
+   compatible = "fsl,mpc5200b-psc-ac97","fsl,mpc5200-psc-ac97";
+   cell-index = <1>;
+   reg = <0x2200 0x100>;
+   interrupts = <2 2 0>;
+  };
+
+  // PSC3 in CODEC mode example
+  i2s@2400 {  // PSC3
+   compatible = "fsl,mpc5200b-psc-i2s"; //not 5200 compatible
+   cell-index = <2>;
+   reg = <0x2400 0x100>;
+   interrupts = <2 3 0>;
+   //codec-handle = <&dummycodec>;
+  };
+
+  // PSC4 in uart mode example
+  //serial@2600 {  // PSC4
+  // compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
+  // cell-index = <3>;
+  // reg = <0x2600 0x100>;
+  // interrupts = <2 11 0>;
+  //};
+
+  // PSC5 in uart mode example
+  //serial@2800 {  // PSC5
+  // compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
+  // cell-index = <4>;
+  // reg = <0x2800 0x100>;
+  // interrupts = <2 12 0>;
+  //};
+
+  // PSC6 in spi mode example
+  //spi@2c00 {  // PSC6
+  // compatible = "fsl,mpc5200b-psc-spi","fsl,mpc5200-psc-spi";
+  // cell-index = <5>;
+  // reg = <0x2c00 0x100>;
+  // interrupts = <2 4 0>;
+  //};
+
+  ethernet@3000 {
+   compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
+   reg = <0x3000 0x400>;
+   local-mac-address = [ 00 00 00 00 00 00 ];
+   interrupts = <2 5 0>;
+   phy-handle = <&phy0>;
+  };
+
+  mdio@3000 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
+   reg = <0x3000 0x400>; // fec range, since we need to setup fec 
+interrupts
+   interrupts = <2 5 0>; // these are for "mii command finished", not 
+link changes & co.
+
+   phy0: ethernet-phy@1 {
+    reg = <1>;
+   };
+   phy1: ethernet-phy@2 {
+    reg = <1>;
+   };
+   phy2: ethernet-phy@3 {
+    reg = <1>;
+   };
+   phy3: ethernet-phy@4 {
+    reg = <1>;
+   };
+  };
+
+  ata@3a00 {
+   compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
+   reg = <0x3a00 0x100>;
+   interrupts = <2 7 0>;
+  };
+
+  i2c@3d00 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+   reg = <0x3d00 0x40>;
+   interrupts = <2 15 0>;
+  };
+
+  i2c@3d40 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+   reg = <0x3d40 0x40>;
+   interrupts = <2 16 0>;
+  };
+
+  sram@8000 {
+   compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
+   reg = <0x8000 0x4000>;
+  };
+ };
+
+ pci@f0000d00 {
+  #interrupt-cells = <1>;
+  #size-cells = <2>;
+  #address-cells = <3>;
+  device_type = "pci";
+  compatible = "fsl,mpc5200b-pci","fsl,mpc5200-pci";
+  reg = <0xf0000d00 0x100>;
+  interrupt-map-mask = <0xf800 0 0 7>;
+  interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
+     0xc000 0 0 2 &mpc5200_pic 1 1 3
+     0xc000 0 0 3 &mpc5200_pic 1 2 3
+     0xc000 0 0 4 &mpc5200_pic 1 3 3
+
+     0xc800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
+     0xc800 0 0 2 &mpc5200_pic 1 2 3
+     0xc800 0 0 3 &mpc5200_pic 1 3 3
+     0xc800 0 0 4 &mpc5200_pic 0 0 3>;
+  clock-frequency = <0>; // From boot loader
+  interrupts = <2 8 0 2 9 0 2 10 0>;
+  bus-range = <0 0>;
+  ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+     0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+     0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ };
+
+ localbus {
+  compatible = "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
+
+  #address-cells = <2>;
+  #size-cells = <1>;
+
+  ranges = <0 0 0xff000000 0x01000000  /* CS0: Flash */
+     1 0 0x10000000 0x10000000>; /* CS1: USB ISP1761 */
+
+  flash@0,0 {
+   compatible = "cfi-flash";
+   reg = <0 0 0x01000000>;
+   bank-width = <2>;
+   #size-cells = <1>;
+   #address-cells = <1>;
+
+   // fe000000 aliased at ff000000
+
+   partition@0 {
+    label = "spare";
+    reg = <0x00000000 0x00f00000>;
+   };
+   partition@f00000 {
+    label = "u-boot";
+    reg = <0x00f00000 0x00040000>;
+   };
+   partition@f40000 {
+    label = "u-boot-env";
+    reg = <0x00f40000 0x00020000>;
+   };
+   partition@f60000 {
+    label = "spare2";
+    reg = <0x00f60000 0x000a0000>;
+   };
+  };
+
+  isp1761@1,0 {
+                        compatible = "nxp,usb-isp1761";
+                        reg = <1 0 0x10000000>;
+                        bus-width = <16>;
+   big-endian;
+                        interrupts = <1 1 3>; /* HC INT */
+                        //interrupts = <0 0 0>;
+  };
+ };
+
+};
