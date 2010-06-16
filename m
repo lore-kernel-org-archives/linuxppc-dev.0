@@ -1,19 +1,19 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Wed, 16 Jun 2010 12:05:39 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 12/12] ptp: Added a clock driver for the National
-	Semiconductor PHYTER.
-Message-ID: <20100616100539.GA3569@riccoc20.at.omicron.at>
-References: <cover.1276615626.git.richard.cochran@omicron.at>
-	<37f5015b186bdd51f8451ade042f90c8b39a5cc8.1276615626.git.richard.cochran@omicron.at>
-	<AANLkTilqd-wxqMWDxssC-XMDJqZ8iIiSrvp2t8xARAQV@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTilqd-wxqMWDxssC-XMDJqZ8iIiSrvp2t8xARAQV@mail.gmail.com>
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (he.sipsolutions.net [78.46.109.217])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 97D88B7D69
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 20:09:45 +1000 (EST)
+Subject: [PATCH 2.6.35 v3] powerpc: fix logic error in fixup_irqs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1276289669.3918.3.camel@jlt3.sipsolutions.net>
+References: <1276289669.3918.3.camel@jlt3.sipsolutions.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 16 Jun 2010 12:09:35 +0200
+Message-ID: <1276682975.3640.15.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, alastair.bridgewater@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 15, 2010 at 12:49:13PM -0600, Grant Likely wrote:
-> Won't this break things for existing DP83640 users?
+When SPARSE_IRQ is set, irq_to_desc() can
+return NULL. While the code here has a
+check for NULL, it's not really correct.
+Fix it by separating the check for it.
 
-Nope, the driver was only added five patches ago, and it only offers
-the timestamping stuff. The standard PHY functions just call the
-generic functions, so the PHY works fine even without this driver.
+This fixes CPU hot unplug for me.
 
-> > +static struct ptp_clock *dp83640_clock;
-> > +DEFINE_SPINLOCK(clock_lock); /* protects the one and only dp83640_clock */
-> 
-> Why only one?  Is it not possible to have 2 of these PHYs in a system?
+Reported-by: Alastair Bridgewater <alastair.bridgewater@gmail.com>
+Cc: stable@kernel.org [2.6.32+]
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+v2: cc Alastair, sorry
+v3: indicate stable versions
 
-Yes, you can have multiple PHYs, but only one PTP clock.
+ arch/powerpc/kernel/irq.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-If you do use multiple PHYs, then you must wire their clocks together
-and adjust the PTP clock on only one of the PHYs.
-
-
-Thanks for your other comments,
-
-Richard
+--- wireless-testing.orig/arch/powerpc/kernel/irq.c	2010-06-11 22:51:08.000000000 +0200
++++ wireless-testing/arch/powerpc/kernel/irq.c	2010-06-11 22:54:11.000000000 +0200
+@@ -295,7 +295,10 @@ void fixup_irqs(const struct cpumask *ma
+ 
+ 	for_each_irq(irq) {
+ 		desc = irq_to_desc(irq);
+-		if (desc && desc->status & IRQ_PER_CPU)
++		if (!desc)
++			continue;
++
++		if (desc->status & IRQ_PER_CPU)
+ 			continue;
+ 
+ 		cpumask_and(mask, desc->affinity, map);
