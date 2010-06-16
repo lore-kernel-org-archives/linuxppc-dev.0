@@ -1,23 +1,17 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 65E9A1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Jun 2010 00:24:11 +1000 (EST)
-Received: by vws6 with SMTP id 6so355152vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 16 Jun 2010 07:24:09 -0700 (PDT)
+Return-Path: <dkirjanov@hera.kernel.org>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3BA9FB7D7F
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jun 2010 00:34:55 +1000 (EST)
+Date: Wed, 16 Jun 2010 14:34:44 +0000
+From: Denis Kirjanov <dkirjanov@hera.kernel.org>
+To: benh@kernel.crashing.org, sfr@canb.auug.org.au
+Subject: [PATCH] powerpc/iseries: fix constant warning
+Message-ID: <20100616143444.GA5095@hera.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <4C189860.3040702@neli.hopto.org>
-References: <4C187616.4000303@neli.hopto.org>
-	<8660DA277DC57B4BAAC78225F03146B6AB1B5C@zin33exm24.fsl.freescale.net>
-	<4C189860.3040702@neli.hopto.org>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Wed, 16 Jun 2010 09:23:38 -0500
-Message-ID: <AANLkTikDywS1B5i2kCQfTvJAWBuq7K3UuOmGQzi45UAX@mail.gmail.com>
-Subject: Re: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
-To: Micha Nelissen <micha@neli.hopto.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 16, 2010 at 4:24 AM, Micha Nelissen <micha@neli.hopto.org> wrote:
+Fix smatch warning: constant 0x8000000000000000 is so big it is unsigned long
 
-> IMHO:
-> 1) Linux should not be dependent on U-boot or any other bootloader, or at
-> least as possible
-> 2) U-boot cannot (and does not want to) know whether Linux is going to use
-> large physical addresses.
+Signed-off-by: Denis Kirjanov <dkirjanov@kernel.org>
+---
+arch/powerpc/include/asm/abs_addr.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-To quote The Dude: "Yeah, well, you know, that's just, like, your opinion, man."
-
-I'm sorry, but Linux does depend on the boot loader, and U-Boot does
-need to know whether Linux is going to use 36-bit addressing.  That's
-just the way it works.  Linux patches that repeat what U-Boot already
-does just so that you don't need to update your U-boot are going to be
-rejected.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+diff --git a/arch/powerpc/include/asm/abs_addr.h b/arch/powerpc/include/asm/abs_addr.h
+index 98324c5..c3bffc3 100644
+--- a/arch/powerpc/include/asm/abs_addr.h
++++ b/arch/powerpc/include/asm/abs_addr.h
+@@ -69,7 +69,7 @@ static inline unsigned long phys_to_abs(unsigned long pa)
+  * Legacy iSeries Hypervisor calls
+  */
+ #define iseries_hv_addr(virtaddr)	\
+-	(0x8000000000000000 | virt_to_abs(virtaddr))
++	(0x8000000000000000UL | virt_to_abs(virtaddr))
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_ABS_ADDR_H */
