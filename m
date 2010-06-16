@@ -1,20 +1,15 @@
 Return-Path: <richardcochran@gmail.com>
-Date: Wed, 16 Jun 2010 08:20:19 +0200
+Date: Wed, 16 Jun 2010 08:29:40 +0200
 From: Richard Cochran <richardcochran@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 05/12] phylib: Allow reading and writing a mii bus from
-	atomic context.
-Message-ID: <20100616062019.GB2887@riccoc20.at.omicron.at>
+To: netdev@vger.kernel.org
+Subject: Re: [PATCH 04/12] phylib: add a way to make PHY time stamps possible.
+Message-ID: <20100616062940.GC2887@riccoc20.at.omicron.at>
 References: <cover.1276615626.git.richard.cochran@omicron.at>
-	<1b8219e7d7993d0e8204b94e959477e3007534ce.1276615626.git.richard.cochran@omicron.at>
-	<AANLkTikeae2t4KmnawOCo2LqfSI57BKjNnUayY09DfEC@mail.gmail.com>
-	<20100615170806.GB10668@riccoc20.at.omicron.at>
-	<AANLkTin8RI4UKzA58k_qER_urdwnD037u5GZrVQS8IoS@mail.gmail.com>
+	<27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTin8RI4UKzA58k_qER_urdwnD037u5GZrVQS8IoS@mail.gmail.com>
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+In-Reply-To: <27c0ad283f025c2bb71e7ceb71be07f969939429.1276615626.git.richard.cochran@omicron.at>
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,66 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> That's right, and I fully agree with that change.  To me, going back
-> to allowing spin locks is a regression because it adds a new source of
-> scheduling latency.
+On Tue, Jun 15, 2010 at 06:08:20PM +0200, Richard Cochran wrote:
 
-I think that the change was not about reducing scheduling
-latency. Rather, the idea was simply to allow mdio bus drivers that
-sleep. Here is the change log message:
+> +static inline void skb_tx_timetamp(struct phy_device *phy, struct sk_buff *skb)
+> +{
+> +	union skb_shared_tx *shtx = skb_tx(skb);
+> +
+> +	if (shtx->hardware && phy && phy->drv->txtstamp)
+> +		phy->drv->txtstamp(phy, skb);
+> +
+> +	if (shtx->software && !shtx->in_progress)
+> +		skb_tstamp_tx(skb, NULL);
+> +}
 
-    commit 35b5f6b1a82b5c586e0b24c711dc6ba944e88ef1
+I forgot to mention this patch also provides a way to fix the broken
+software timestamp fallback mode of the SO_TIMESTAMPING API.
 
-    PHYLIB: Locking fixes for PHY I/O potentially sleeping
-    
-    PHY read/write functions can potentially sleep (e.g., a PHY accessed
-    via I2C).  The following changes were made to account for this:
-    
-        * Change spin locks to mutex locks
-        * Add a BUG_ON() to phy_read() phy_write() to warn against
-          calling them from an interrupt context.
-        * Use work queue for PHY state machine handling since
-          it can potentially sleep
-        * Change phydev lock from spinlock to mutex
-
-The fundamental issue is this: Fro the SO_TIMESTAMPING API, receive
-timestamps must appear in a control message along with the packet
-data. Only the MAC driver (or the PHY driver) knows how to get the
-timestamp. The stack calls the MAC driver via its napi poll
-function. During the call, the driver must provide the skb with Rx
-timestamp.
-
-The only reasonable way to do this is to have the driver fetch the
-timestamp durng the napi poll function. For MAC drivers with fast
-register access, the performance penalty is small. For PHY drivers
-with must go via the MDIO bus, the performance penalty is obviously
-larger, and the user must be willing to live with it.
-
-You might suggest the alternate that the driver would defer the
-netif_receive_skb() callback until a work queue completes, providing
-the Rx timestamp. The driver would then call netif_receive_skb() at
-some later time.
-
-However, there are a number of problems with this idea:
-
-1. It is really icky for the drivers to be creating new skb queues for
-   this purpose. MAC drivers would have to maintain such queues on
-   behalf of the PHY drivers, but only when the PHYs support
-   timestamping. Yuck.
-
-2. There is a (soft) real time constraint on the delivery of the PTP
-   packets to the user space application. Basicly, delays and jitter
-   in the time to receive the packet negatively affect the clock servo
-   loop.
-
-3. It cannot work for many kinds of PTP timestamping hardware. Some of
-   hardware only timestamps PTP packets. That means that not every
-   received packet will have a timestamp. Such hardware provides some
-   key data from the packet (like PTP UUID and sequence number) with
-   the timestamp. Software must match this information to a particular
-   packet. In order to defer a skb, the driver must first obtain the
-   timestamp information. This is a catch-22.
-
-Having said all that, I am still open to suggestions...
+We would have to add this inline call to every MAC driver in an
+appropriate spot within the hard_xmit function. It is not too pretty,
+but providing this as a compile time option will promote
+standardization of the SO_TIMESTAMPING API for applications.
 
 Richard
