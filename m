@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <micha@neli.hopto.org>
+Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
+	by ozlabs.org (Postfix) with ESMTP id B039D1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Jun 2010 01:15:08 +1000 (EST)
+Message-ID: <4C18E9EA.2090903@neli.hopto.org>
+Date: Wed, 16 Jun 2010 17:12:42 +0200
+From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100616100539.GA3569@riccoc20.at.omicron.at>
-References: <cover.1276615626.git.richard.cochran@omicron.at>
-	<37f5015b186bdd51f8451ade042f90c8b39a5cc8.1276615626.git.richard.cochran@omicron.at>
-	<AANLkTilqd-wxqMWDxssC-XMDJqZ8iIiSrvp2t8xARAQV@mail.gmail.com>
-	<20100616100539.GA3569@riccoc20.at.omicron.at>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 16 Jun 2010 09:10:42 -0600
-Message-ID: <AANLkTilYBL6gpeg5Yp0wOmqwIo3K5YKW4mtVlE2p6jkp@mail.gmail.com>
-Subject: Re: [PATCH 12/12] ptp: Added a clock driver for the National
-	Semiconductor PHYTER.
-To: Richard Cochran <richardcochran@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] e500v2 36 bit large physical HID0[EN_MAS7_UPDATE]
+References: <4C187616.4000303@neli.hopto.org>
+	<A79B65D2-CDAF-4B16-8E97-E3522F154056@kernel.crashing.org>
+In-Reply-To: <A79B65D2-CDAF-4B16-8E97-E3522F154056@kernel.crashing.org>
+Content-Type: multipart/mixed; boundary="------------010908060301010301090409"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 16, 2010 at 4:05 AM, Richard Cochran
-<richardcochran@gmail.com> wrote:
-> On Tue, Jun 15, 2010 at 12:49:13PM -0600, Grant Likely wrote:
->> Won't this break things for existing DP83640 users?
->
-> Nope, the driver was only added five patches ago, and it only offers
-> the timestamping stuff. The standard PHY functions just call the
-> generic functions, so the PHY works fine even without this driver.
->
->> > +static struct ptp_clock *dp83640_clock;
->> > +DEFINE_SPINLOCK(clock_lock); /* protects the one and only dp83640_clo=
-ck */
->>
->> Why only one? =A0Is it not possible to have 2 of these PHYs in a system?
->
-> Yes, you can have multiple PHYs, but only one PTP clock.
->
-> If you do use multiple PHYs, then you must wire their clocks together
-> and adjust the PTP clock on only one of the PHYs.
->
->
-> Thanks for your other comments,
+This is a multi-part message in MIME format.
+--------------010908060301010301090409
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-You're welcome.  Make sure to cc: linux-kernel on your next posting.
-I commented on what I could, but there is a lot of code outside my
-areas of expertise.  In particular the time keeping code needs to be
-looked at by the maintainers in that area.
+Kumar Gala wrote:
+>> +BEGIN_MMU_FTR_SECTION
+>> +	mfspr	r2,SPRN_HID0
+>> +	ori	r2,r2,HID0_EN_MAS7_UPDATE@l
+>> +	mtspr	SPRN_HID0, r2
+>> +END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+>> +#endif
+> 
+> If you want to do this, do it in:
+> 
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S
 
-Cheers,
-g.
+Do you mean like attached? I had to change the order of the '_GLOBAL' 
+definitions __setup_cpu_e500v1/__setup_cpu_e500v2 since this bit is 
+e500v2 only.
+
+Thanks,
+
+Micha
+
+--------------010908060301010301090409
+Content-Type: text/plain;
+ name="en-mas7-update-v2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="en-mas7-update-v2.diff"
+
+Index: linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+===================================================================
+--- linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S	(revision 2871)
++++ linux/arch/powerpc/kernel/cpu_setup_fsl_booke.S	(working copy)
+@@ -57,8 +57,14 @@
+ 	ori	r3,r3,HID0_DAPUEN@l
+ 	mtspr	SPRN_HID0,r3
+ 	b	__setup_e200_ivors
++_GLOBAL(__setup_cpu_e500v2)
++#ifdef CONFIG_PTE_64BIT
++	/* enable mas7 register for tlbre/tlbsx */
++	mfspr	r2,SPRN_HID0
++	ori 	r2,r2,HID0_EN_MAS7_UPDATE@l
++	mtspr	SPRN_HID0,r2
++#endif
+ _GLOBAL(__setup_cpu_e500v1)
+-_GLOBAL(__setup_cpu_e500v2)
+ 	mflr	r4
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+Index: linux/arch/powerpc/include/asm/reg.h
+===================================================================
+--- linux/arch/powerpc/include/asm/reg.h	(revision 2871)
++++ linux/arch/powerpc/include/asm/reg.h	(working copy)
+@@ -276,6 +276,7 @@
+ #define HID0_DAPUEN	(1<<8)		/* Debug APU enable */
+ #define HID0_SGE	(1<<7)		/* Store Gathering Enable */
+ #define HID0_SIED	(1<<7)		/* Serial Instr. Execution [Disable] */
++#define HID0_EN_MAS7_UPDATE (1<<7)	/* Enable MAS7 reg for tlbre/tlbsx */
+ #define HID0_DCFA	(1<<6)		/* Data Cache Flush Assist */
+ #define HID0_LRSTK	(1<<4)		/* Link register stack - 745x */
+ #define HID0_BTIC	(1<<5)		/* Branch Target Instr Cache Enable */
+
+--------------010908060301010301090409--
