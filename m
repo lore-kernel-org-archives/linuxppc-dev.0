@@ -1,33 +1,17 @@
-Return-Path: <paulmck@paulmck-laptop.linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 25AA11007D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 10:48:44 +1000 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o5G0lCUR009223
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 20:47:12 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5G0meYA149458
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 20:48:40 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5G0meiQ015115
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 20:48:40 -0400
-Received: from paulmck-laptop.localdomain
-	(paulmck-laptop-009047022149.beaverton.ibm.com [9.47.22.149])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o5G0medW015112
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Jun 2010 20:48:40 -0400
-Date: Tue, 15 Jun 2010 17:48:39 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RFC] ppc: fix default_machine_crash_shutdown #ifdef botch
-Message-ID: <20100616004839.GA18110@linux.vnet.ibm.com>
+Return-Path: <horms@verge.net.au>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id 0314CB7D29
+	for <linuxppc-dev@ozlabs.org>; Wed, 16 Jun 2010 12:38:47 +1000 (EST)
+Date: Wed, 16 Jun 2010 11:38:44 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [PATCH] Restore kexec uImage-ppc to working state
+Message-ID: <20100616023844.GC28659@verge.net.au>
+References: <1276544322-30412-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Reply-To: paulmck@linux.vnet.ibm.com
+In-Reply-To: <1276544322-30412-1-git-send-email-msm@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,25 +21,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-crash_kexec_wait_realmode() is defined only if CONFIG_PPC_STD_MMU_64
-and CONFIG_SMP, but is called if CONFIG_PPC_STD_MMU_64 even if !CONFIG_SMP.
-Fix the conditional compilation around the invocation.
+CCed linuxppc-dev to fish for an ack.
 
-Untested, probably does not compile.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index b46f2e0..29df48f 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -447,7 +447,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
- 	crash_kexec_prepare_cpus(crashing_cpu);
- 	cpu_set(crashing_cpu, cpus_in_crash);
- 	crash_kexec_stop_spus();
--#ifdef CONFIG_PPC_STD_MMU_64
-+#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
- 	crash_kexec_wait_realmode(crashing_cpu);
- #endif
- 	if (ppc_md.kexec_cpu_down)
+On Mon, Jun 14, 2010 at 02:38:42PM -0500, Matthew McClintock wrote:
+> Booting with uImage-ppc was broken by previous work, this
+> patch should restore it to working order
+> 
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> ---
+>  kexec/arch/ppc/kexec-ppc.c         |   68 ++++++++++++++++++++++-------------
+>  kexec/arch/ppc/kexec-uImage-ppc.c  |    5 +--
+>  purgatory/arch/ppc/purgatory-ppc.c |    5 +++
+>  3 files changed, 49 insertions(+), 29 deletions(-)
+> 
+> diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
+> index 55cadd6..c073f56 100644
+> --- a/kexec/arch/ppc/kexec-ppc.c
+> +++ b/kexec/arch/ppc/kexec-ppc.c
+> @@ -261,11 +261,28 @@ static int get_base_ranges(void)
+>  					break;
+>  				}
+>  			}
+> -			base_memory_range[local_memory_ranges].start =
+> -				((uint32_t *)buf)[0];
+> -			base_memory_range[local_memory_ranges].end  =
+> -				base_memory_range[local_memory_ranges].start +
+> -				((uint32_t *)buf)[1];
+> +
+> +			if (n == 8)
+> +			{
+> +				base_memory_range[local_memory_ranges].start =
+> +					((uint32_t *)buf)[0];
+> +				base_memory_range[local_memory_ranges].end  =
+> +					base_memory_range[local_memory_ranges].start +
+> +					((uint32_t *)buf)[1];
+> +			}
+> +			else if (n == 16)
+> +			{
+> +				base_memory_range[local_memory_ranges].start =
+> +                                        ((uint64_t *)buf)[0];
+> +                                base_memory_range[local_memory_ranges].end  =
+> +                                        base_memory_range[local_memory_ranges].start +
+> +                                        ((uint64_t *)buf)[1];
+> +			}
+> +			else
+> +			{
+> +				fprintf(stderr, "Mem node has invalid size: %d\n", n);
+> +				return -1;
+> +			}
+>  			base_memory_range[local_memory_ranges].type = RANGE_RAM;
+>  			local_memory_ranges++;
+>  			dbgprintf("%016llx-%016llx : %x\n",
+> @@ -327,27 +344,28 @@ static int get_devtree_details(unsigned long kexec_flags)
+>  		}
+>  
+>  		if (strncmp(dentry->d_name, "chosen", 6) == 0) {
+> -			strcat(fname, "/linux,kernel-end");
+> -			file = fopen(fname, "r");
+> -			if (!file) {
+> -				perror(fname);
+> -				goto error_opencdir;
+> -			}
+> -			if (fread(&tmp_long, sizeof(unsigned long), 1, file)
+> -					!= 1) {
+> -				perror(fname);
+> -				goto error_openfile;
+> -			}
+> -			kernel_end = tmp_long;
+> -			fclose(file);
+> -
+> -			/* Add kernel memory to exclude_range */
+> -			exclude_range[i].start = 0x0UL;
+> -			exclude_range[i].end = kernel_end;
+> -			i++;
+> -			if (i >= max_memory_ranges)
+> -				realloc_memory_ranges();
+> +			/* only reserve kernel region if we are doing a crash kernel */
+>  			if (kexec_flags & KEXEC_ON_CRASH) {
+> +				strcat(fname, "/linux,kernel-end");
+> +				file = fopen(fname, "r");
+> +				if (!file) {
+> +					perror(fname);
+> +					goto error_opencdir;
+> +				}
+> +				if (fread(&tmp_long, sizeof(unsigned long), 1, file)
+> +						!= 1) {
+> +					perror(fname);
+> +					goto error_openfile;
+> +				}
+> +				kernel_end = tmp_long;
+> +				fclose(file);
+> +
+> +				/* Add kernel memory to exclude_range */
+> +				exclude_range[i].start = 0x0UL;
+> +				exclude_range[i].end = kernel_end;
+> +				i++;
+> +				if (i >= max_memory_ranges)
+> +					realloc_memory_ranges();
+>  				memset(fname, 0, sizeof(fname));
+>  				strcpy(fname, device_tree);
+>  				strcat(fname, dentry->d_name);
+> diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
+> index 45cde2f..4a8d28d 100644
+> --- a/kexec/arch/ppc/kexec-uImage-ppc.c
+> +++ b/kexec/arch/ppc/kexec-uImage-ppc.c
+> @@ -133,13 +133,10 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
+>  	addr = dtb_addr;
+>  	elf_rel_set_symbol(&info->rhdr, "dt_offset", &addr, sizeof(addr));
+>  
+> -	addr = rmo_top;
+> -	elf_rel_set_symbol(&info->rhdr, "mem_size", &addr, sizeof(addr));
+> -
+>  #define PUL_STACK_SIZE  (16 * 1024)
+>  	addr = locate_hole(info, PUL_STACK_SIZE, 0, 0, -1, 1);
+>  	addr += PUL_STACK_SIZE;
+> -	elf_rel_set_symbol(&info->rhdr, "pul_stack", &addr, sizeof(addr));
+> +	elf_rel_set_symbol(&info->rhdr, "stack", &addr, sizeof(addr));
+>  	/* No allocation past here in order not to overwrite the stack */
+>  #undef PUL_STACK_SIZE
+>  
+> diff --git a/purgatory/arch/ppc/purgatory-ppc.c b/purgatory/arch/ppc/purgatory-ppc.c
+> index 3d7d484..349e750 100644
+> --- a/purgatory/arch/ppc/purgatory-ppc.c
+> +++ b/purgatory/arch/ppc/purgatory-ppc.c
+> @@ -39,3 +39,8 @@ void post_verification_setup_arch(void)
+>  	if (panic_kernel)
+>  		crashdump_backup_memory();
+>  }
+> +
+> +void crashdump_backup_memory(void)
+> +{
+> +	return;
+> +}
+> -- 
+> 1.6.0.6
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
