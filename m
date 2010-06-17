@@ -1,27 +1,22 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2358710081B
+Return-Path: <c.alfred@internode.on.net>
+Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
+	[150.101.137.143]) by ozlabs.org (Postfix) with ESMTP id CD762B7D4F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Jun 2010 07:54:11 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o5HLb7Sh014156
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2010 17:37:07 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5HLs6Do1699920
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2010 17:54:06 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5HLs5nw025258
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jun 2010 18:54:06 -0300
-Message-Id: <201006172154.o5HLs5U2025218@d01av03.pok.ibm.com>
-Subject: [PATCHv2 2/2] powerpc: Partition hibernation support
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 17 Jun 2010 16:54:05 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+	Fri, 18 Jun 2010 08:16:00 +1000 (EST)
+Message-ID: <22A1E29F767448EAA7D4A460123D989A@kos>
+From: "Chris Alfred" <c.alfred@internode.on.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+References: <57F24E98919C4D22A784127E6CF1C9DA@kos><AANLkTimArb-UjJMe84Qrd4iNquGHEehbGW1Uciq_zGYm@mail.gmail.com>
+	<EBEDB9C789D344D9A8D459B6FCB1A0AD@kos><AANLkTinBJgwL9qcw0Ouzuvc55C1Gs2KtIoY2NbBy34V2@mail.gmail.com>
+	<162C87D14617439384076F797228B1EF@kos><AANLkTim8kD9PH7BqOIV0GvElIfOgUDMw1VfWcOJhj-8r@mail.gmail.com>
+	<6EAB45775B71486B8E72844E797E1D0F@kos>
+	<AANLkTilWdUcjK29QAJki75miWQt7Hzv8KWOXrtCvtPi8@mail.gmail.com>
+Subject: Re: Porting a driver to powerpc using FDT
+Date: Fri, 18 Jun 2010 08:15:58 +1000
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,285 +26,356 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>> (1) The .dts file - this is the Flattened Device Tree (FDT)
+>> descriptor:
+>>
+>> / {
+>> ...
+>>
+>> virtual-device {
+>> compatible = "simple-bus";
+>> mydevice0 {
+>> compatible = "myvendor,mydevice";
+>> };
+>> };
+>>
+>> ...
+>> };
+>>
+>> For my board "simple-bus" is an already defined bus in the .dts.
+>> In my case the .dts had:
+>
+> This comment raised warning flags for me.  Can you post your new
+> current device tree?  It sounds like you put your DSA device into 
+> the
+> localbus node.  You shouldn't need to do that.  Many nodes in a 
+> single
+> tree can claim compatibility with "simple-bus".
 
-Enables support for HMC initiated partition hibernation. This is
-a firmware assisted hibernation, since the firmware handles writing
-the memory out to disk, along with other partition information,
-so we just mimic suspend to ram.
+I guess my example structure was not clear. virtual-device is not 
+inside localbus. My current .dts is below.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+/dts-v1/;
 
- arch/powerpc/Kconfig                         |    2 
- arch/powerpc/include/asm/machdep.h           |    1 
- arch/powerpc/platforms/pseries/Makefile      |    4 
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    3 
- arch/powerpc/platforms/pseries/suspend.c     |  214 +++++++++++++++++++++++++++
- 5 files changed, 223 insertions(+), 1 deletion(-)
+/ {
+ model = "jkc,jkc5200n8";
+ compatible = "jkc,jkc5200n8";
+ #address-cells = <1>;
+ #size-cells = <1>;
+ interrupt-parent = <&mpc5200_pic>;
 
-diff -puN /dev/null arch/powerpc/platforms/pseries/suspend.c
---- /dev/null	2009-12-15 17:58:07.000000000 -0600
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/suspend.c	2010-06-16 13:49:30.000000000 -0500
-@@ -0,0 +1,214 @@
-+/*
-+  * Copyright (C) 2010 Brian King IBM Corporation
-+  *
-+  * This program is free software; you can redistribute it and/or modify
-+  * it under the terms of the GNU General Public License as published by
-+  * the Free Software Foundation; either version 2 of the License, or
-+  * (at your option) any later version.
-+  *
-+  * This program is distributed in the hope that it will be useful,
-+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+  * GNU General Public License for more details.
-+  *
-+  * You should have received a copy of the GNU General Public License
-+  * along with this program; if not, write to the Free Software
-+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+  */
-+
-+#include <linux/delay.h>
-+#include <linux/suspend.h>
-+#include <asm/firmware.h>
-+#include <asm/hvcall.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu.h>
-+#include <asm/rtas.h>
-+
-+static u64 stream_id;
-+static struct sys_device suspend_sysdev;
-+static DECLARE_COMPLETION(suspend_work);
-+static struct rtas_suspend_me_data suspend_data;
-+static atomic_t suspending;
-+
-+/**
-+ * pseries_suspend_begin - First phase of hibernation
-+ *
-+ * Check to ensure we are in a valid state to hibernate
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_begin(suspend_state_t state)
-+{
-+	long vasi_state, rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	/* Make sure the state is valid */
-+	rc = plpar_hcall(H_VASI_STATE, retbuf, stream_id);
-+
-+	vasi_state = retbuf[0];
-+
-+	if (rc) {
-+		pr_err("pseries_suspend_begin: vasi_state returned %ld\n",rc);
-+		return rc;
-+	} else if (vasi_state == H_VASI_ENABLED) {
-+		return -EAGAIN;
-+	} else if (vasi_state != H_VASI_SUSPENDING) {
-+		pr_err("pseries_suspend_begin: vasi_state returned state %ld\n",
-+		       vasi_state);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_cpu - Suspend a single CPU
-+ *
-+ * Makes the H_JOIN call to suspend the CPU
-+ *
-+ **/
-+static int pseries_suspend_cpu(void)
-+{
-+	if (atomic_read(&suspending))
-+		return rtas_suspend_cpu(&suspend_data);
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_enter - Final phase of hibernation
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_enter(suspend_state_t state)
-+{
-+	int rc = rtas_suspend_last_cpu(&suspend_data);
-+
-+	atomic_set(&suspending, 0);
-+	atomic_set(&suspend_data.done, 1);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_prepare_late - Prepare to suspend all other CPUs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_prepare_late(void)
-+{
-+	atomic_set(&suspending, 1);
-+	atomic_set(&suspend_data.working, 0);
-+	atomic_set(&suspend_data.done, 0);
-+	atomic_set(&suspend_data.error, 0);
-+	suspend_data.complete = &suspend_work;
-+	INIT_COMPLETION(suspend_work);
-+	return 0;
-+}
-+
-+/**
-+ * store_hibernate - Initiate partition hibernation
-+ * @classdev:	sysdev class struct
-+ * @attr:		class device attribute struct
-+ * @buf:		buffer
-+ * @count:		buffer size
-+ *
-+ * Write the stream ID received from the HMC to this file
-+ * to trigger hibernating the partition
-+ *
-+ * Return value:
-+ * 	number of bytes printed to buffer / other on failure
-+ **/
-+static ssize_t store_hibernate(struct sysdev_class *classdev,
-+			       struct sysdev_class_attribute *attr,
-+			       const char *buf, size_t count)
-+{
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	stream_id = simple_strtoul(buf, NULL, 16);
-+
-+	do {
-+		rc = pseries_suspend_begin(PM_SUSPEND_MEM);
-+		if (rc == -EAGAIN)
-+			ssleep(1);
-+	} while (rc == -EAGAIN);
-+
-+	if (!rc)
-+		rc = pm_suspend(PM_SUSPEND_MEM);
-+
-+	stream_id = 0;
-+
-+	if (!rc)
-+		rc = count;
-+	return rc;
-+}
-+
-+static SYSDEV_CLASS_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
-+
-+static struct sysdev_class suspend_sysdev_class = {
-+	.name = "power",
-+};
-+
-+static struct platform_suspend_ops pseries_suspend_ops = {
-+	.valid		= suspend_valid_only_mem,
-+	.begin		= pseries_suspend_begin,
-+	.prepare_late	= pseries_prepare_late,
-+	.enter		= pseries_suspend_enter,
-+};
-+
-+/**
-+ * pseries_suspend_sysfs_register - Register with sysfs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_sysfs_register(struct sys_device *sysdev)
-+{
-+	int rc;
-+
-+	if ((rc = sysdev_class_register(&suspend_sysdev_class)))
-+		return rc;
-+
-+	sysdev->id = 0;
-+	sysdev->cls = &suspend_sysdev_class;
-+
-+	if ((rc = sysdev_class_create_file(&suspend_sysdev_class, &attr_hibernate)))
-+		goto class_unregister;
-+
-+	return 0;
-+
-+class_unregister:
-+	sysdev_class_unregister(&suspend_sysdev_class);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_suspend_init - initcall for pSeries suspend
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int __init pseries_suspend_init(void)
-+{
-+	int rc;
-+
-+	if (!machine_is(pseries) || !firmware_has_feature(FW_FEATURE_LPAR))
-+		return 0;
-+
-+	suspend_data.token = rtas_token("ibm,suspend-me");
-+	if (suspend_data.token == RTAS_UNKNOWN_SERVICE)
-+		return 0;
-+
-+	if ((rc = pseries_suspend_sysfs_register(&suspend_sysdev)))
-+		return rc;
-+
-+	ppc_md.suspend_disable_cpu = pseries_suspend_cpu;
-+	suspend_set_ops(&pseries_suspend_ops);
-+	return 0;
-+}
-+
-+__initcall(pseries_suspend_init);
-diff -puN arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation arch/powerpc/Kconfig
---- linux-2.6/arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/Kconfig	2010-06-16 13:49:30.000000000 -0500
-@@ -218,7 +218,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   PPC_85xx || PPC_86xx
-+		   PPC_85xx || PPC_86xx || PPC_PSERIES
- 
- config PPC_DCR_NATIVE
- 	bool
-diff -puN arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/Makefile
---- linux-2.6/arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/Makefile	2010-06-16 13:49:30.000000000 -0500
-@@ -26,3 +26,7 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+
-+ifeq ($(CONFIG_PPC_PSERIES),y)
-+obj-$(CONFIG_SUSPEND)		+= suspend.o
-+endif
-diff -puN arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation arch/powerpc/include/asm/machdep.h
---- linux-2.6/arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/include/asm/machdep.h	2010-06-16 13:49:30.000000000 -0500
-@@ -266,6 +266,7 @@ struct machdep_calls {
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+	int (*suspend_disable_cpu)(void);
- 
- #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 	ssize_t (*cpu_probe)(const char *, size_t);
-diff -puN arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/hotplug-cpu.c
---- linux-2.6/arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-06-16 13:49:30.000000000 -0500
-@@ -116,6 +116,9 @@ static void pseries_mach_cpu_die(void)
- 
- 	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
- 		set_cpu_current_state(cpu, CPU_STATE_INACTIVE);
-+		if (ppc_md.suspend_disable_cpu)
-+			ppc_md.suspend_disable_cpu();
-+
- 		cede_latency_hint = 2;
- 
- 		get_lppaca()->idle = 1;
-_
+ cpus {
+  #address-cells = <1>;
+  #size-cells = <0>;
+
+  PowerPC,5200@0 {
+   device_type = "cpu";
+   reg = <0>;
+   d-cache-line-size = <32>;
+   i-cache-line-size = <32>;
+   d-cache-size = <0x4000>; // L1, 16K
+   i-cache-size = <0x4000>; // L1, 16K
+   timebase-frequency = <0>; // from bootloader
+   bus-frequency = <0>;  // from bootloader
+   clock-frequency = <0>;  // from bootloader
+  };
+ };
+
+ memory {
+  device_type = "memory";
+  reg = <0x00000000 0x10000000>; // 256MB
+ };
+
+ soc5200@f0000000 {
+  #address-cells = <1>;
+  #size-cells = <1>;
+  compatible = "fsl,mpc5200b-immr";
+  ranges = <0 0xf0000000 0x0000c000>;
+  reg = <0xf0000000 0x00000100>;
+  bus-frequency = <0>;  // from bootloader
+  system-frequency = <0>;  // from bootloader
+
+  cdm@200 {
+   compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
+   reg = <0x200 0x38>;
+  };
+
+  mpc5200_pic: interrupt-controller@500 {
+   // 5200 interrupts are encoded into two levels;
+   interrupt-controller;
+   #interrupt-cells = <3>;
+   compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
+   reg = <0x500 0x80>;
+  };
+
+  timer@600 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x600 0x10>;
+   interrupts = <1 9 0>;
+   fsl,has-wdt;
+  };
+
+  timer@610 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x610 0x10>;
+   interrupts = <1 10 0>;
+  };
+
+  timer@620 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x620 0x10>;
+   interrupts = <1 11 0>;
+  };
+
+  timer@630 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x630 0x10>;
+   interrupts = <1 12 0>;
+  };
+
+  timer@640 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x640 0x10>;
+   interrupts = <1 13 0>;
+  };
+
+  timer@650 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x650 0x10>;
+   interrupts = <1 14 0>;
+  };
+
+  timer@660 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x660 0x10>;
+   interrupts = <1 15 0>;
+  };
+
+  timer@670 { // General Purpose Timer
+   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+   reg = <0x670 0x10>;
+   interrupts = <1 16 0>;
+  };
+
+  rtc@800 { // Real time clock
+   compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+   reg = <0x800 0x100>;
+   interrupts = <1 5 0 1 6 0>;
+  };
+
+  can@900 {
+   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
+   interrupts = <2 17 0>;
+   reg = <0x900 0x80>;
+  };
+
+  can@980 {
+   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
+   interrupts = <2 18 0>;
+   reg = <0x980 0x80>;
+  };
+
+  gpio_simple: gpio@b00 {
+   compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
+   reg = <0xb00 0x40>;
+   interrupts = <1 7 0>;
+   gpio-controller;
+   #gpio-cells = <2>;
+  };
+
+  gpio_wkup: gpio@c00 {
+   compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
+   reg = <0xc00 0x40>;
+   interrupts = <1 8 0 0 3 0>;
+   gpio-controller;
+   #gpio-cells = <2>;
+  };
+
+  spi@f00 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+   reg = <0xf00 0x20>;
+   interrupts = <2 13 0 2 14 0>;
+   interrupt-parent = <&mpc5200_pic>;
+
+   switch0: ethernet-switch@0 {
+    compatible = "micrel,spi-ks8995-dsa";
+    spi-max-frequency = <1000000>;
+    reg = <0>;
+   };
+  };
+
+  usb@1000 {
+   compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci","ohci-be";
+   reg = <0x1000 0xff>;
+   interrupts = <2 6 0>;
+  };
+
+  dma-controller@1200 {
+   compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
+   reg = <0x1200 0x80>;
+   interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
+                 3 4 0  3 5 0  3 6 0  3 7 0
+                 3 8 0  3 9 0  3 10 0  3 11 0
+                 3 12 0  3 13 0  3 14 0  3 15 0>;
+  };
+
+  xlb@1f00 {
+   compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
+   reg = <0x1f00 0x100>;
+  };
+
+  serial@2000 {  // PSC1
+   compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
+   cell-index = <0>;
+   reg = <0x2000 0x100>;
+   interrupts = <2 1 0>;
+  };
+
+  // PSC2 in ac97 mode example
+  ac97@2200 {  // PSC2
+   compatible = "fsl,mpc5200b-psc-ac97","fsl,mpc5200-psc-ac97";
+   cell-index = <1>;
+   reg = <0x2200 0x100>;
+   interrupts = <2 2 0>;
+  };
+
+  // PSC3 in CODEC mode example
+  i2s@2400 {  // PSC3
+   compatible = "fsl,mpc5200b-psc-i2s"; //not 5200 compatible
+   cell-index = <2>;
+   reg = <0x2400 0x100>;
+   interrupts = <2 3 0>;
+  };
+
+  ethernet0: ethernet@3000 {
+   compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
+   reg = <0x3000 0x400>;
+   local-mac-address = [ 00 00 00 00 00 00 ];
+   interrupts = <2 5 0>;
+   phy-handle = <&phy0>;
+  };
+
+  mdio0: mdio@3000 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
+   reg = <0x3000 0x400>; // fec range, since we need to setup fec 
+interrupts
+   interrupts = <2 5 0>; // these are for "mii command finished", not 
+link changes & co.
+
+   phy0: ethernet-phy@1 {
+    reg = <1>;
+   };
+  };
+
+  ata@3a00 {
+   compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
+   reg = <0x3a00 0x100>;
+   interrupts = <2 7 0>;
+  };
+
+  i2c@3d00 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+   reg = <0x3d00 0x40>;
+   interrupts = <2 15 0>;
+  };
+
+  i2c@3d40 {
+   #address-cells = <1>;
+   #size-cells = <0>;
+   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
+   reg = <0x3d40 0x40>;
+   interrupts = <2 16 0>;
+  };
+
+  sram@8000 {
+   compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
+   reg = <0x8000 0x4000>;
+  };
+ };
+
+ pci@f0000d00 {
+  #interrupt-cells = <1>;
+  #size-cells = <2>;
+  #address-cells = <3>;
+  device_type = "pci";
+  compatible = "fsl,mpc5200b-pci","fsl,mpc5200-pci";
+  reg = <0xf0000d00 0x100>;
+  interrupt-map-mask = <0xf800 0 0 7>;
+  interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
+     0xc000 0 0 2 &mpc5200_pic 1 1 3
+     0xc000 0 0 3 &mpc5200_pic 1 2 3
+     0xc000 0 0 4 &mpc5200_pic 1 3 3
+
+     0xc800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
+     0xc800 0 0 2 &mpc5200_pic 1 2 3
+     0xc800 0 0 3 &mpc5200_pic 1 3 3
+     0xc800 0 0 4 &mpc5200_pic 0 0 3>;
+  clock-frequency = <0>; // From boot loader
+  interrupts = <2 8 0 2 9 0 2 10 0>;
+  bus-range = <0 0>;
+  ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
+     0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
+     0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
+ };
+
+ virtual-device {
+  compatible = "simple-bus";
+  dsa {
+   compatible = "jkc,jkc5200n8-dsa-of";
+   ethernet-handle = <&ethernet0>;
+   mdio-handle = <&mdio0>;
+   // TODO: incomplete, in design
+  };
+ };
+
+ localbus {
+  compatible = "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
+
+  #address-cells = <2>;
+  #size-cells = <1>;
+
+  ranges = <0 0 0xff000000 0x01000000  /* CS0: Flash */
+     1 0 0x10000000 0x10000000>; /* CS1: USB ISP1761 */
+
+  flash@0,0 {
+   compatible = "cfi-flash";
+   reg = <0 0 0x01000000>;
+   bank-width = <2>;
+   #size-cells = <1>;
+   #address-cells = <1>;
+
+   // fe000000 aliased at ff000000
+
+   partition@0 {
+    label = "spare";
+    reg = <0x00000000 0x00f00000>;
+   };
+   partition@f00000 {
+    label = "u-boot";
+    reg = <0x00f00000 0x00040000>;
+   };
+   partition@f40000 {
+    label = "u-boot-env";
+    reg = <0x00f40000 0x00020000>;
+   };
+   partition@f60000 {
+    label = "spare2";
+    reg = <0x00f60000 0x000a0000>;
+   };
+  };
+
+  isp1761@1,0 {
+   compatible = "nxp,usb-isp1761";
+   reg = <1 0 0x10000000>;
+   bus-width = <16>;
+   big-endian;
+   interrupts = <1 1 3>; /* HC INT */
+  };
+ };
+};
