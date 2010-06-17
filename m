@@ -1,19 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0918CB7D9D
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jun 2010 11:09:38 +1000 (EST)
-Date: Wed, 16 Jun 2010 18:09:49 -0700 (PDT)
-Message-Id: <20100616.180949.258118943.davem@davemloft.net>
-To: avorontsov@mvista.com
-Subject: Re: [PATCH] gianfar: Fix oversized packets handling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100611205103.GA4255@oksana.dev.rtsoft.ru>
-References: <20100611205103.GA4255@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com,
-	Sandeep.Kumar@freescale.com, netdev@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by ozlabs.org (Postfix) with ESMTP id 960661007D5
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jun 2010 11:56:53 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC] ppc: fix default_machine_crash_shutdown #ifdef botch
+In-reply-to: <20100616004839.GA18110@linux.vnet.ibm.com>
+References: <20100616004839.GA18110@linux.vnet.ibm.com>
+Date: Thu, 17 Jun 2010 11:56:53 +1000
+Message-ID: <6286.1276739813@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Vorontsov <avorontsov@mvista.com>
-Date: Sat, 12 Jun 2010 00:51:03 +0400
 
-> Issuing the following command on host:
-> 
-> $ ifconfig eth2 mtu 1600 ; ping 10.0.0.27 -s 1485 -c 1
-> 
-> Makes some boards (tested with MPC8315 rev 1.1 and MPC8313 rev 1.0)
-> oops like this:
- ...
-> Dumped buffer descriptors showed that eTSEC's length/truncation
-> logic sometimes passes oversized packets, i.e. for the above ICMP
-> packet the following two buffer descriptors may become ready:
-> 
->   status=1400 length=1536
->   status=1800 length=1541
-> 
-> So, it seems that gianfar actually receives the whole big frame,
-> and it tries to place the packet into two BDs. This situation
-> confuses the driver, and so the skb_put() sanity check fails.
-> 
-> This patch fixes the issue by adding an appropriate check, i.e.
-> the driver should not try to process frames with buffer
-> descriptor's length over rx_buffer_size (i.e. maxfrm and mrblr).
-> 
-> Note that sometimes eTSEC works correctly, i.e. in the second
-> (last) buffer descriptor bits 'truncated' and 'crcerr' are set,
-> and so there's no oops. Though I couldn't find any logic when
-> it works correctly and when not.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 
-Applied, thanks Anton.
+In message <20100616004839.GA18110@linux.vnet.ibm.com> you wrote:
+> crash_kexec_wait_realmode() is defined only if CONFIG_PPC_STD_MMU_64
+> and CONFIG_SMP, but is called if CONFIG_PPC_STD_MMU_64 even if !CONFIG_SMP.
+> Fix the conditional compilation around the invocation.
+> 
+> Untested, probably does not compile.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+This should be right since we don't need to wait for the other CPUs if
+there are no others... 
+
+Compiles for me and even fixes the SMP=N case.  Thanks!
+
+Acked-by: Michael Neuling <mikey@neuling.org>
+
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+> index b46f2e0..29df48f 100644
+> --- a/arch/powerpc/kernel/crash.c
+> +++ b/arch/powerpc/kernel/crash.c
+> @@ -447,7 +447,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
+>  	crash_kexec_prepare_cpus(crashing_cpu);
+>  	cpu_set(crashing_cpu, cpus_in_crash);
+>  	crash_kexec_stop_spus();
+> -#ifdef CONFIG_PPC_STD_MMU_64
+> +#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
+>  	crash_kexec_wait_realmode(crashing_cpu);
+>  #endif
+>  	if (ppc_md.kexec_cpu_down)
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
