@@ -1,22 +1,26 @@
-Return-Path: <c.alfred@internode.on.net>
-Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
-	[150.101.137.143]) by ozlabs.org (Postfix) with ESMTP id CD762B7D4F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Jun 2010 08:16:00 +1000 (EST)
-Message-ID: <22A1E29F767448EAA7D4A460123D989A@kos>
-From: "Chris Alfred" <c.alfred@internode.on.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-References: <57F24E98919C4D22A784127E6CF1C9DA@kos><AANLkTimArb-UjJMe84Qrd4iNquGHEehbGW1Uciq_zGYm@mail.gmail.com>
-	<EBEDB9C789D344D9A8D459B6FCB1A0AD@kos><AANLkTinBJgwL9qcw0Ouzuvc55C1Gs2KtIoY2NbBy34V2@mail.gmail.com>
-	<162C87D14617439384076F797228B1EF@kos><AANLkTim8kD9PH7BqOIV0GvElIfOgUDMw1VfWcOJhj-8r@mail.gmail.com>
-	<6EAB45775B71486B8E72844E797E1D0F@kos>
-	<AANLkTilWdUcjK29QAJki75miWQt7Hzv8KWOXrtCvtPi8@mail.gmail.com>
-Subject: Re: Porting a driver to powerpc using FDT
-Date: Fri, 18 Jun 2010 08:15:58 +1000
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 557961007D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Jun 2010 09:11:24 +1000 (EST)
+Received: by gyf2 with SMTP id 2so413100gyf.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Jun 2010 16:11:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1276219072.1962.82.camel@pasglop>
+References: <20100604212134.10552.70717.stgit@angua>
+	<20100604212155.10552.19260.stgit@angua>
+	<1276152002.1962.55.camel@pasglop>
+	<AANLkTinmDFBvAjcjrgf3RHuiXgNxVV20yLzBaqhE5lrk@mail.gmail.com>
+	<1276219072.1962.82.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 17 Jun 2010 17:11:02 -0600
+Message-ID: <AANLkTin5K0IL5iKj9i9qBucSpQz2-p5wIvUtC4iU0jUP@mail.gmail.com>
+Subject: Re: [PATCH 5/5] of/irq: merge of_irq_map_one()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
+	microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,356 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> (1) The .dts file - this is the Flattened Device Tree (FDT)
->> descriptor:
+On Thu, Jun 10, 2010 at 7:17 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2010-06-10 at 17:36 -0600, Grant Likely wrote:
 >>
->> / {
->> ...
->>
->> virtual-device {
->> compatible = "simple-bus";
->> mydevice0 {
->> compatible = "myvendor,mydevice";
->> };
->> };
->>
->> ...
->> };
->>
->> For my board "simple-bus" is an already defined bus in the .dts.
->> In my case the .dts had:
+>> Okay. =A0I had been trying to avoid #ifdefs in the common code, but
+>> you're probably right. =A0I'll rework.
 >
-> This comment raised warning flags for me.  Can you post your new
-> current device tree?  It sounds like you put your DSA device into 
-> the
-> localbus node.  You shouldn't need to do that.  Many nodes in a 
-> single
-> tree can claim compatibility with "simple-bus".
+> Not even ifdef's ... just move the quirk map there. You can always
+> #define the quirk variable to 0 on archs that have no quirks, to
+> make it compile away if you believe it represents bloat, but they
+> are simple well localized things so I doubt it matters.
 
-I guess my example structure was not clear. virtual-device is not 
-inside localbus. My current .dts is below.
+They're pretty small, but powermac32 is the only code that actually
+uses the quirk facility.  Everything else parses sanely it would
+appear.  I'd rather have them localized to the powermac code and
+eliminate the quirks from the common code.
 
-/dts-v1/;
+If other platforms show up with bad irq mappings, then I want to take
+the approach of fixing the data rather than adding more quirks cases.
 
-/ {
- model = "jkc,jkc5200n8";
- compatible = "jkc,jkc5200n8";
- #address-cells = <1>;
- #size-cells = <1>;
- interrupt-parent = <&mpc5200_pic>;
+Anyway, let me try my hand at reworking to be a lot clearer and see
+what it looks like.
 
- cpus {
-  #address-cells = <1>;
-  #size-cells = <0>;
-
-  PowerPC,5200@0 {
-   device_type = "cpu";
-   reg = <0>;
-   d-cache-line-size = <32>;
-   i-cache-line-size = <32>;
-   d-cache-size = <0x4000>; // L1, 16K
-   i-cache-size = <0x4000>; // L1, 16K
-   timebase-frequency = <0>; // from bootloader
-   bus-frequency = <0>;  // from bootloader
-   clock-frequency = <0>;  // from bootloader
-  };
- };
-
- memory {
-  device_type = "memory";
-  reg = <0x00000000 0x10000000>; // 256MB
- };
-
- soc5200@f0000000 {
-  #address-cells = <1>;
-  #size-cells = <1>;
-  compatible = "fsl,mpc5200b-immr";
-  ranges = <0 0xf0000000 0x0000c000>;
-  reg = <0xf0000000 0x00000100>;
-  bus-frequency = <0>;  // from bootloader
-  system-frequency = <0>;  // from bootloader
-
-  cdm@200 {
-   compatible = "fsl,mpc5200b-cdm","fsl,mpc5200-cdm";
-   reg = <0x200 0x38>;
-  };
-
-  mpc5200_pic: interrupt-controller@500 {
-   // 5200 interrupts are encoded into two levels;
-   interrupt-controller;
-   #interrupt-cells = <3>;
-   compatible = "fsl,mpc5200b-pic","fsl,mpc5200-pic";
-   reg = <0x500 0x80>;
-  };
-
-  timer@600 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x600 0x10>;
-   interrupts = <1 9 0>;
-   fsl,has-wdt;
-  };
-
-  timer@610 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x610 0x10>;
-   interrupts = <1 10 0>;
-  };
-
-  timer@620 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x620 0x10>;
-   interrupts = <1 11 0>;
-  };
-
-  timer@630 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x630 0x10>;
-   interrupts = <1 12 0>;
-  };
-
-  timer@640 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x640 0x10>;
-   interrupts = <1 13 0>;
-  };
-
-  timer@650 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x650 0x10>;
-   interrupts = <1 14 0>;
-  };
-
-  timer@660 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x660 0x10>;
-   interrupts = <1 15 0>;
-  };
-
-  timer@670 { // General Purpose Timer
-   compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
-   reg = <0x670 0x10>;
-   interrupts = <1 16 0>;
-  };
-
-  rtc@800 { // Real time clock
-   compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
-   reg = <0x800 0x100>;
-   interrupts = <1 5 0 1 6 0>;
-  };
-
-  can@900 {
-   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
-   interrupts = <2 17 0>;
-   reg = <0x900 0x80>;
-  };
-
-  can@980 {
-   compatible = "fsl,mpc5200b-mscan","fsl,mpc5200-mscan";
-   interrupts = <2 18 0>;
-   reg = <0x980 0x80>;
-  };
-
-  gpio_simple: gpio@b00 {
-   compatible = "fsl,mpc5200b-gpio","fsl,mpc5200-gpio";
-   reg = <0xb00 0x40>;
-   interrupts = <1 7 0>;
-   gpio-controller;
-   #gpio-cells = <2>;
-  };
-
-  gpio_wkup: gpio@c00 {
-   compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
-   reg = <0xc00 0x40>;
-   interrupts = <1 8 0 0 3 0>;
-   gpio-controller;
-   #gpio-cells = <2>;
-  };
-
-  spi@f00 {
-   #address-cells = <1>;
-   #size-cells = <0>;
-   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
-   reg = <0xf00 0x20>;
-   interrupts = <2 13 0 2 14 0>;
-   interrupt-parent = <&mpc5200_pic>;
-
-   switch0: ethernet-switch@0 {
-    compatible = "micrel,spi-ks8995-dsa";
-    spi-max-frequency = <1000000>;
-    reg = <0>;
-   };
-  };
-
-  usb@1000 {
-   compatible = "fsl,mpc5200b-ohci","fsl,mpc5200-ohci","ohci-be";
-   reg = <0x1000 0xff>;
-   interrupts = <2 6 0>;
-  };
-
-  dma-controller@1200 {
-   compatible = "fsl,mpc5200b-bestcomm","fsl,mpc5200-bestcomm";
-   reg = <0x1200 0x80>;
-   interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-                 3 4 0  3 5 0  3 6 0  3 7 0
-                 3 8 0  3 9 0  3 10 0  3 11 0
-                 3 12 0  3 13 0  3 14 0  3 15 0>;
-  };
-
-  xlb@1f00 {
-   compatible = "fsl,mpc5200b-xlb","fsl,mpc5200-xlb";
-   reg = <0x1f00 0x100>;
-  };
-
-  serial@2000 {  // PSC1
-   compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-   cell-index = <0>;
-   reg = <0x2000 0x100>;
-   interrupts = <2 1 0>;
-  };
-
-  // PSC2 in ac97 mode example
-  ac97@2200 {  // PSC2
-   compatible = "fsl,mpc5200b-psc-ac97","fsl,mpc5200-psc-ac97";
-   cell-index = <1>;
-   reg = <0x2200 0x100>;
-   interrupts = <2 2 0>;
-  };
-
-  // PSC3 in CODEC mode example
-  i2s@2400 {  // PSC3
-   compatible = "fsl,mpc5200b-psc-i2s"; //not 5200 compatible
-   cell-index = <2>;
-   reg = <0x2400 0x100>;
-   interrupts = <2 3 0>;
-  };
-
-  ethernet0: ethernet@3000 {
-   compatible = "fsl,mpc5200b-fec","fsl,mpc5200-fec";
-   reg = <0x3000 0x400>;
-   local-mac-address = [ 00 00 00 00 00 00 ];
-   interrupts = <2 5 0>;
-   phy-handle = <&phy0>;
-  };
-
-  mdio0: mdio@3000 {
-   #address-cells = <1>;
-   #size-cells = <0>;
-   compatible = "fsl,mpc5200b-mdio","fsl,mpc5200-mdio";
-   reg = <0x3000 0x400>; // fec range, since we need to setup fec 
-interrupts
-   interrupts = <2 5 0>; // these are for "mii command finished", not 
-link changes & co.
-
-   phy0: ethernet-phy@1 {
-    reg = <1>;
-   };
-  };
-
-  ata@3a00 {
-   compatible = "fsl,mpc5200b-ata","fsl,mpc5200-ata";
-   reg = <0x3a00 0x100>;
-   interrupts = <2 7 0>;
-  };
-
-  i2c@3d00 {
-   #address-cells = <1>;
-   #size-cells = <0>;
-   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-   reg = <0x3d00 0x40>;
-   interrupts = <2 15 0>;
-  };
-
-  i2c@3d40 {
-   #address-cells = <1>;
-   #size-cells = <0>;
-   compatible = "fsl,mpc5200b-i2c","fsl,mpc5200-i2c","fsl-i2c";
-   reg = <0x3d40 0x40>;
-   interrupts = <2 16 0>;
-  };
-
-  sram@8000 {
-   compatible = "fsl,mpc5200b-sram","fsl,mpc5200-sram";
-   reg = <0x8000 0x4000>;
-  };
- };
-
- pci@f0000d00 {
-  #interrupt-cells = <1>;
-  #size-cells = <2>;
-  #address-cells = <3>;
-  device_type = "pci";
-  compatible = "fsl,mpc5200b-pci","fsl,mpc5200-pci";
-  reg = <0xf0000d00 0x100>;
-  interrupt-map-mask = <0xf800 0 0 7>;
-  interrupt-map = <0xc000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
-     0xc000 0 0 2 &mpc5200_pic 1 1 3
-     0xc000 0 0 3 &mpc5200_pic 1 2 3
-     0xc000 0 0 4 &mpc5200_pic 1 3 3
-
-     0xc800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
-     0xc800 0 0 2 &mpc5200_pic 1 2 3
-     0xc800 0 0 3 &mpc5200_pic 1 3 3
-     0xc800 0 0 4 &mpc5200_pic 0 0 3>;
-  clock-frequency = <0>; // From boot loader
-  interrupts = <2 8 0 2 9 0 2 10 0>;
-  bus-range = <0 0>;
-  ranges = <0x42000000 0 0x80000000 0x80000000 0 0x20000000
-     0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
-     0x01000000 0 0x00000000 0xb0000000 0 0x01000000>;
- };
-
- virtual-device {
-  compatible = "simple-bus";
-  dsa {
-   compatible = "jkc,jkc5200n8-dsa-of";
-   ethernet-handle = <&ethernet0>;
-   mdio-handle = <&mdio0>;
-   // TODO: incomplete, in design
-  };
- };
-
- localbus {
-  compatible = "fsl,mpc5200b-lpb","fsl,mpc5200-lpb","simple-bus";
-
-  #address-cells = <2>;
-  #size-cells = <1>;
-
-  ranges = <0 0 0xff000000 0x01000000  /* CS0: Flash */
-     1 0 0x10000000 0x10000000>; /* CS1: USB ISP1761 */
-
-  flash@0,0 {
-   compatible = "cfi-flash";
-   reg = <0 0 0x01000000>;
-   bank-width = <2>;
-   #size-cells = <1>;
-   #address-cells = <1>;
-
-   // fe000000 aliased at ff000000
-
-   partition@0 {
-    label = "spare";
-    reg = <0x00000000 0x00f00000>;
-   };
-   partition@f00000 {
-    label = "u-boot";
-    reg = <0x00f00000 0x00040000>;
-   };
-   partition@f40000 {
-    label = "u-boot-env";
-    reg = <0x00f40000 0x00020000>;
-   };
-   partition@f60000 {
-    label = "spare2";
-    reg = <0x00f60000 0x000a0000>;
-   };
-  };
-
-  isp1761@1,0 {
-   compatible = "nxp,usb-isp1761";
-   reg = <1 0 0x10000000>;
-   bus-width = <16>;
-   big-endian;
-   interrupts = <1 1 3>; /* HC INT */
-  };
- };
-};
+g.
