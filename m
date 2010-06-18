@@ -1,29 +1,24 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 160AEB7D84
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-wy0-f179.google.com (mail-wy0-f179.google.com
+	[74.125.82.179]) by ozlabs.org (Postfix) with ESMTP id 7F1A41007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Jun 2010 15:38:31 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o5I5cEAZ015240 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 17 Jun 2010 22:38:24 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id o5I5cFcn026493
+	Fri, 18 Jun 2010 15:46:21 +1000 (EST)
+Received: by wyb40 with SMTP id 40so331232wyb.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Jun 2010 00:38:19 -0500 (CDT)
-From: Li Yang <leoli@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] fsl_rio: fix non-standard HID1 register access
-Date: Fri, 18 Jun 2010 13:29:18 +0800
-Message-Id: <1276838958-28947-3-git-send-email-leoli@freescale.com>
-In-Reply-To: <1276838958-28947-2-git-send-email-leoli@freescale.com>
+	Thu, 17 Jun 2010 22:46:18 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1276838958-28947-3-git-send-email-leoli@freescale.com>
 References: <1276838958-28947-1-git-send-email-leoli@freescale.com>
 	<1276838958-28947-2-git-send-email-leoli@freescale.com>
+	<1276838958-28947-3-git-send-email-leoli@freescale.com>
+Date: Fri, 18 Jun 2010 07:46:18 +0200
+Message-ID: <AANLkTind1zMrnldhZmeacglmVyfX8VN2qO_JJlkPAe0v@mail.gmail.com>
+Subject: Re: [PATCH 3/3] fsl_rio: fix non-standard HID1 register access
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Li Yang <leoli@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The access to HID1 register is only legitimate for e500 v1/v2 cores.
+On Fri, Jun 18, 2010 at 07:29, Li Yang <leoli@freescale.com> wrote:
+> The access to HID1 register is only legitimate for e500 v1/v2 cores.
+>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> =C2=A0arch/powerpc/sysdev/fsl_rio.c | =C2=A0 =C2=A07 +++++--
+> =C2=A01 files changed, 5 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.=
+c
+> index 954a754..785a882 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -1523,9 +1523,12 @@ int fsl_rio_setup(struct of_device *dev)
+> =C2=A0#ifdef CONFIG_E500
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0saved_mcheck_exception =3D ppc_md.machine_chec=
+k_exception;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0ppc_md.machine_check_exception =3D fsl_rio_mch=
+eck_exception;
+> -#endif
+> - =C2=A0 =C2=A0 =C2=A0 /* Ensure that RFXE is set */
+> +
+> +#ifndef CONFIG_E500MC
+> + =C2=A0 =C2=A0 =C2=A0 /* Ensure that RFXE is set on e500 v1/v2 */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000))=
+;
+> +#endif /* !E500MC */
+> +#endif /* E500 */
+>
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
+> =C2=A0err:
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/sysdev/fsl_rio.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+This prevents you from building a kernel for both normal E500 and E500MC.
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 954a754..785a882 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1523,9 +1523,12 @@ int fsl_rio_setup(struct of_device *dev)
- #ifdef CONFIG_E500
- 	saved_mcheck_exception = ppc_md.machine_check_exception;
- 	ppc_md.machine_check_exception = fsl_rio_mcheck_exception;
--#endif
--	/* Ensure that RFXE is set */
-+	
-+#ifndef CONFIG_E500MC
-+	/* Ensure that RFXE is set on e500 v1/v2 */
- 	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
-+#endif /* !E500MC */
-+#endif /* E500 */
- 
- 	return 0;
- err:
--- 
-1.6.4
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+							    -- Linus Torvalds
