@@ -1,23 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <R58472@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DC0591007D3
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C4D8F1007D3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 18 Jun 2010 15:51:18 +1000 (EST)
-Subject: Re: [PATCH 3/3] fsl_rio: fix non-standard HID1 register access
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <AANLkTind1zMrnldhZmeacglmVyfX8VN2qO_JJlkPAe0v@mail.gmail.com>
-Date: Fri, 18 Jun 2010 00:51:02 -0500
-Message-Id: <E50EF7DA-34F9-4AD2-9496-D03F163ECE89@kernel.crashing.org>
-References: <1276838958-28947-1-git-send-email-leoli@freescale.com>
-	<1276838958-28947-2-git-send-email-leoli@freescale.com>
-	<1276838958-28947-3-git-send-email-leoli@freescale.com>
-	<AANLkTind1zMrnldhZmeacglmVyfX8VN2qO_JJlkPAe0v@mail.gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+	Fri, 18 Jun 2010 16:33:18 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o5I6XF7n002768 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 17 Jun 2010 23:33:15 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o5I6h9mk016659
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 18 Jun 2010 01:43:10 -0500 (CDT)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/4] fsl_rio: fix compile errors
+Date: Fri, 18 Jun 2010 14:24:20 +0800
+Message-Id: <1276842263-4186-1-git-send-email-leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fixes the following compile problem on E500 platforms:
+arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
+arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared (first use in this function)
 
-On Jun 18, 2010, at 12:46 AM, Geert Uytterhoeven wrote:
+Also fixes the compile problem on non-E500 platforms.
 
-> On Fri, Jun 18, 2010 at 07:29, Li Yang <leoli@freescale.com> wrote:
->> The access to HID1 register is only legitimate for e500 v1/v2 cores.
->> 
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->>  arch/powerpc/sysdev/fsl_rio.c |    7 +++++--
->>  1 files changed, 5 insertions(+), 2 deletions(-)
->> 
->> diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
->> index 954a754..785a882 100644
->> --- a/arch/powerpc/sysdev/fsl_rio.c
->> +++ b/arch/powerpc/sysdev/fsl_rio.c
->> @@ -1523,9 +1523,12 @@ int fsl_rio_setup(struct of_device *dev)
->>  #ifdef CONFIG_E500
->>        saved_mcheck_exception = ppc_md.machine_check_exception;
->>        ppc_md.machine_check_exception = fsl_rio_mcheck_exception;
->> -#endif
->> -       /* Ensure that RFXE is set */
->> +
->> +#ifndef CONFIG_E500MC
->> +       /* Ensure that RFXE is set on e500 v1/v2 */
->>        mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
->> +#endif /* !E500MC */
->> +#endif /* E500 */
->> 
->>        return 0;
->>  err:
-> 
-> This prevents you from building a kernel for both normal E500 and E500MC.
-> 
-> Gr{oetje,eeting}s,
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_rio.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Also, not a fan of the magic number 0x20000.
-
-- k
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index 30e1626..f908ba6 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -240,12 +240,13 @@ struct rio_priv {
+ 
+ static void __iomem *rio_regs_win;
+ 
++#ifdef CONFIG_E500
+ static int (*saved_mcheck_exception)(struct pt_regs *regs);
+ 
+ static int fsl_rio_mcheck_exception(struct pt_regs *regs)
+ {
+ 	const struct exception_table_entry *entry = NULL;
+-	unsigned long reason = (mfspr(SPRN_MCSR) & MCSR_MASK);
++	unsigned long reason = mfspr(SPRN_MCSR);
+ 
+ 	if (reason & MCSR_BUS_RBERR) {
+ 		reason = in_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR));
+@@ -269,6 +270,7 @@ static int fsl_rio_mcheck_exception(struct pt_regs *regs)
+ 	else
+ 		return cur_cpu_spec->machine_check(regs);
+ }
++#endif
+ 
+ /**
+  * fsl_rio_doorbell_send - Send a MPC85xx doorbell message
+@@ -1517,8 +1519,10 @@ int fsl_rio_setup(struct of_device *dev)
+ 	fsl_rio_doorbell_init(port);
+ 	fsl_rio_port_write_init(port);
+ 
++#ifdef CONFIG_E500
+ 	saved_mcheck_exception = ppc_md.machine_check_exception;
+ 	ppc_md.machine_check_exception = fsl_rio_mcheck_exception;
++#endif
+ 	/* Ensure that RFXE is set */
+ 	mtspr(SPRN_HID1, (mfspr(SPRN_HID1) | 0x20000));
+ 
+-- 
+1.6.4
