@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: How to find macro defination in source code ?
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "wilbur.chan" <wilbur512@gmail.com>
-In-Reply-To: <AANLkTikS7AKQ0IaQQebh5MNlXLVEwQmsH8uk5GOwcckd@mail.gmail.com>
-References: <AANLkTikS7AKQ0IaQQebh5MNlXLVEwQmsH8uk5GOwcckd@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-C89jglM3X+r4sEXQngAV"
-Date: Sat, 19 Jun 2010 15:52:22 +1000
-Message-ID: <1276926742.18166.3.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id 28624B6F11
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 03:27:32 +1000 (EST)
+Received: by vws16 with SMTP id 16so468586vws.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 20 Jun 2010 10:27:30 -0700 (PDT)
+MIME-Version: 1.0
+Date: Mon, 21 Jun 2010 01:27:30 +0800
+Message-ID: <AANLkTil2XkHxcryRNcnUDgYv5iZJD76GCUcvHOYe9l9O@mail.gmail.com>
+Subject: where do 8250 serial port initialize its mapbase and membase when
+	booting?
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: chelly wilbur <wilbur512@gmail.com>, "chen.yu10" <chen.yu10@zte.com.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+linux 2.6.21.7
 
---=-C89jglM3X+r4sEXQngAV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+where do serial 8250 port fill its membase and mapbase  fileds  in
+system initializing ?
 
-On Sat, 2010-06-19 at 00:47 +0800, wilbur.chan wrote:
-> For example, a macro in serial driver 8250.c , SERIAL_PORT_DFNS ,I
-> can't find where it is implement.
 
-It looks to be in 8250.c, so I don't know why you can't find it.
 
-> Is there any solutions to find a macro defination in code ?
+I found that , when calling do_initcalls--->  serial8250_init ---->
+platform_driver_register--->bus_for_each_dev,  system found
 
-# make tags
-# vi -t SERIAL_PORT_DFNS
+an device of serial 8250, which has already fill the membase and mapbase fileds.
 
-Or in general:
-http://ctags.sourceforge.net/
+That is to say,  before serial8250_init ---->
+platform_driver_register, system has create a serial device with
+membase and mapbase initialized.
 
-cheers
+ do_initcalls--->  serial8250_init ----> platform_driver_register--->
+dev = bus_for_each_dev
 
---=-C89jglM3X+r4sEXQngAV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+             --->  struct plat_serial8250_port *p = dev->platform_data;
 
-iEYEABECAAYFAkwcWxMACgkQdSjSd0sB4dKVaACfepFEZUSAD2j9Hw7M7ELjskQx
-pq0Anj6X2slqThLOfQ4UGZ+Ku08fe+Xl
-=oBYt
------END PGP SIGNATURE-----
+                    /*  at this point , p->membase and p->mapbase are
+all assigned with proper value by system */
 
---=-C89jglM3X+r4sEXQngAV--
+
+
+
+I searched the whole source code with keyword 'membase' , and found
+the following code :
+
+
+serial8250_request_std_resource:
+
+case UPIO_MEM:
+	if (!up->port.mapbase)
+		break;
+
+	if (!request_mem_region(up->port.mapbase, size, "serial")) {
+		ret = -EBUSY;
+		break;
+	}
+  /*I guess membase is generated according to mapbase ,*
+    so I add some debug print  here.
+    However, I found membase and mapbase are already initialized
+before these codes. */
+
+
+                if (up->port.flags & UPF_IOREMAP) {
+	                 up->port.membase = ioremap(up->port.mapbase, size);
+	                 if (!up->port.membase) {
+		          release_mem_region(up->port.mapbase, size);
+		          ret = -ENOMEM;
+	                 }
+                 }
+
+
+So I am really confused with serial 8250
+initializing----------------where do kernel apply membase and mapbase
+filed to  8250 port?
+
+Thx
