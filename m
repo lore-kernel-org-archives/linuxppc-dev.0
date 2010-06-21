@@ -1,11 +1,15 @@
-Return-Path: <21cnbao@gmail.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 305CBB7D68
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 17:23:10 +1000 (EST)
-Received: by gwj17 with SMTP id 17so1265018gwj.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 00:23:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100621071551.GA16109@oksana.dev.rtsoft.ru>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id A88C7B7D81
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 17:39:15 +1000 (EST)
+Received: by wyf22 with SMTP id 22so2452764wyf.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 00:39:13 -0700 (PDT)
+Date: Mon, 21 Jun 2010 11:39:09 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Barry Song <21cnbao@gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH 1/2] mtd: m25p80:
+	Reworkprobing/JEDEC code
+Message-ID: <20100621073909.GA20674@oksana.dev.rtsoft.ru>
 References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
 	<20090818214622.GA22651@oksana.dev.rtsoft.ru>
 	<AANLkTikg60s6ZRSEDCq9PQK1z7hJtBDk6t4VE1lYDv8u@mail.gmail.com>
@@ -13,13 +17,10 @@ References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
 	<0F1B54C89D5F954D8535DB252AF412FA065551D8@chinexm1.ad.analog.com>
 	<AANLkTiksYofs6hhWta6uFX2cla_g8pBu0Mtbtcbv-2tl@mail.gmail.com>
 	<20100621071551.GA16109@oksana.dev.rtsoft.ru>
-From: Barry Song <21cnbao@gmail.com>
-Date: Mon, 21 Jun 2010 15:22:48 +0800
-Message-ID: <AANLkTiknH95loHJsQNxvCCyQbriCFWqM5LHl3wKzmdWX@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH 1/2] mtd: m25p80: Reworkprobing/JEDEC
-	code
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	<AANLkTiknH95loHJsQNxvCCyQbriCFWqM5LHl3wKzmdWX@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AANLkTiknH95loHJsQNxvCCyQbriCFWqM5LHl3wKzmdWX@mail.gmail.com>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Artem Bityutskiy <dedekind1@gmail.com>,
 	linux-kernel@vger.kernel.org, "Song,
@@ -35,40 +36,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCBKdW4gMjEsIDIwMTAgYXQgMzoxNSBQTSwgQW50b24gVm9yb250c292IDxjYm91YXRt
-YWlscnVAZ21haWwuY29tPiB3cm90ZToKPiBPbiBNb24sIEp1biAyMSwgMjAxMCBhdCAxMToyNzoz
-MUFNICswODAwLCBCYXJyeSBTb25nIHdyb3RlOgo+IFsuLi5dCj4+ID4gSG93IGFib3V0IHdlIGFk
-ZCBhIG5vbl9qZWRlYyBmbGFnIGluIHBsYXRmb3JtX2RhdGEsIGlmIHRoZSBmbGFnIGlzIDEsIHdl
-Cj4+ID4gbGV0IHRoZSBkZXRlY3Rpb24gcGFzcyBldmVuIHRob3VnaCB0aGUgSUQgaXMgMD8gT3Ro
-ZXJ3aXNlLCB3ZSBuZWVkIGEKPj4gPiB2YWxpZCBJRD8KPj4gSGVyZSBpIG1lYW46Cj4KPiBUaGlz
-IHdpbGwgYnJlYWsgYXQgbGVhc3QgT0YtZW5hYmxlZCBwbGF0Zm9ybXMgKGUuZy4gUG93ZXJQQyks
-Cj4gdGhleSBhc3N1bWUgdGhhdCB0aGUgZHJpdmVyIHdpbGwgc3VjY2VzcyBmb3Igbm9uLUpFREVD
-IGZsYXNoZXMuCj4gT0YgcGxhdGZvcm1zIGRvbid0IHBhc3MgcGxhdGZvcm0gZGF0YSwgYW5kIGV2
-ZW4gaWYgdGhleSBkaWQsCj4gZGV2aWNlIHRyZWUgZG9lc24ndCBzcGVjaWZ5IGlmIHRoZSBmbGFz
-aCBpcyBKRURFQyBvciBub24tSkVERUMuCj4KPiBXaGljaCBpcyB3aHkgSSB0aGluayB0aGF0LCBi
-eSBkZWZhdWx0LCB0aGUgZHJpdmVyIHNob3VsZAo+IHN1Y2Nlc3NmdWxseSByZWdpc3RlciB0aGUg
-Zmxhc2ggZXZlbiBpZiBKRURFQyBwcm9iZSBmYWlscy4gU28sCj4gaW5zdGVhZCBvZiBjaGVja2lu
-ZyBmb3IgIiFub25famVkZWMiLCBJIHdvdWxkIHJlY29tbWVuZAo+ICJmb3JjZV9qZWRlYyIgY2hl
-Y2suCgpNaWtlIEZyeXNpbmdlciBzdWdnZXN0ZWQgdG8gdXNlIG5vbl9qZWRlYyBzaW5jZSBtb3N0
-IGRldmljZXMgYXJlCnN0YW5kYXJkIGplZGVjIGRldmljZXMuIE9ubHkgaWYgbm9uX2plZGVjPTEs
-IHdlIGxldCB0aGUgZGV0ZWN0aW9uIHBhc3MKaWYgSUQgaXMgMC4KCj4KPj4gSW5kZXg6IGRyaXZl
-cnMvbXRkL2RldmljZXMvbTI1cDgwLmMKPj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+PiAtLS0gZHJpdmVycy9tdGQv
-ZGV2aWNlcy9tMjVwODAuYyDCoCDCoCDCoChyZXZpc2lvbiA4OTI3KQo+PiArKysgZHJpdmVycy9t
-dGQvZGV2aWNlcy9tMjVwODAuYyDCoCDCoCDCoChyZXZpc2lvbiA4OTI5KQo+PiBAQCAtNzk1LDgg
-Kzc5NSwxMyBAQAo+Pgo+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCBqaWQgPSBqZWRlY19wcm9iZShz
-cGkpOwo+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZiAoIWppZCkgewo+PiAtIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIGRldl9pbmZvKCZzcGktPmRldiwgIm5vbi1KRURFQyB2YXJpYW50
-IG9mICVzXG4iLAo+PiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgaWQtPm5hbWUpOwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGlmICghZGF0
-YS0+bm9uX2plZGVjKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgZGV2X2Vycigmc3BpLT5kZXYsICJmYWlsIHRvIGRldGVjdCVzXG4iLAo+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIGlkLT5uYW1lKTsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCByZXR1cm4gLUVOT0RFVjsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCB9
-IGVsc2UKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZf
-aW5mbygmc3BpLT5kZXYsICJub24tSkVERUMgdmFyaWFudCBvZiAlc1xuIiwKPj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCBpZC0+bmFtZSk7Cj4+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIH0gZWxzZSBpZiAoamlkICE9IGlk
-KSB7Cj4KPiAtLQo+IEFudG9uIFZvcm9udHNvdgo+IGVtYWlsOiBjYm91YXRtYWlscnVAZ21haWwu
-Y29tCj4gaXJjOi8vaXJjLmZyZWVub2RlLm5ldC9iZDIKPgo=
+On Mon, Jun 21, 2010 at 03:22:48PM +0800, Barry Song wrote:
+> On Mon, Jun 21, 2010 at 3:15 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+> > On Mon, Jun 21, 2010 at 11:27:31AM +0800, Barry Song wrote:
+> > [...]
+> >> > How about we add a non_jedec flag in platform_data, if the flag is 1, we
+> >> > let the detection pass even though the ID is 0? Otherwise, we need a
+> >> > valid ID?
+> >> Here i mean:
+> >
+> > This will break at least OF-enabled platforms (e.g. PowerPC),
+> > they assume that the driver will success for non-JEDEC flashes.
+> > OF platforms don't pass platform data, and even if they did,
+> > device tree doesn't specify if the flash is JEDEC or non-JEDEC.
+> >
+> > Which is why I think that, by default, the driver should
+> > successfully register the flash even if JEDEC probe fails. So,
+> > instead of checking for "!non_jedec", I would recommend
+> > "force_jedec" check.
+> 
+> Mike Frysinger suggested to use non_jedec since most devices are
+> standard jedec devices.
+
+Well, on OF platforms most devices that I'm aware of are non-JEDEC.
+
+> Only if non_jedec=1, we let the detection pass
+> if ID is 0.
+
+Then please #ifdef it with CONFIG_OF.
+
+Thanks,
+
+> >> Index: drivers/mtd/devices/m25p80.c
+> >> ===================================================================
+> >> --- drivers/mtd/devices/m25p80.c      (revision 8927)
+> >> +++ drivers/mtd/devices/m25p80.c      (revision 8929)
+> >> @@ -795,8 +795,13 @@
+> >>
+> >>               jid = jedec_probe(spi);
+> >>               if (!jid) {
+> >> -                     dev_info(&spi->dev, "non-JEDEC variant of %s\n",
+> >> -                              id->name);
+> >> +                     if (!data->non_jedec) {
+> >> +                             dev_err(&spi->dev, "fail to detect%s\n",
+> >> +                                             id->name);
+> >> +                             return -ENODEV;
+> >> +                     } else
+> >> +                             dev_info(&spi->dev, "non-JEDEC variant of %s\n",
+> >> +                                             id->name);
+> >>               } else if (jid != id) {
+> >
+> > --
+> > Anton Vorontsov
+> > email: cbouatmailru@gmail.com
+> > irc://irc.freenode.net/bd2
+> >
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
