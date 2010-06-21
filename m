@@ -1,13 +1,17 @@
 Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 96E60B7D81
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2227F1007F5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Jun 2010 23:44:03 +1000 (EST)
+	Mon, 21 Jun 2010 23:44:06 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/2] KVM: PPC: Add generic hpte management functions
-Date: Mon, 21 Jun 2010 15:44:00 +0200
-Message-Id: <1277127841-32704-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 2/2] KVM: PPC: Make use of hash based Shadow MMU
+Date: Mon, 21 Jun 2010 15:44:01 +0200
+Message-Id: <1277127841-32704-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1277127841-32704-1-git-send-email-agraf@suse.de>
+References: <1277127841-32704-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,317 +22,395 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the shadow paging code keeps an array of entries it knows about.
-Whenever the guest invalidates an entry, we loop through that entry,
-trying to invalidate matching parts.
-
-While this is a really simple implementation, it is probably the most
-ineffective one possible. So instead, let's keep an array of lists around
-that are indexed by a hash. This way each PTE can be added by 4 list_add,
-removed by 4 list_del invocations and the search only needs to loop through
-entries that share the same hash.
-
-This patch implements said lookup and exports generic functions that both
-the 32-bit and 64-bit backend can use.
+We just introduced generic functions to handle shadow pages on PPC.
+This patch makes the respective backends make use of them, getting
+rid of a lot of duplicate code along the way.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/book3s_mmu_hpte.c |  287 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 287 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_mmu_hpte.c
+ arch/powerpc/include/asm/kvm_book3s.h |    7 ++
+ arch/powerpc/include/asm/kvm_host.h   |   16 ++++-
+ arch/powerpc/kvm/Makefile             |    2 +
+ arch/powerpc/kvm/book3s_32_mmu_host.c |  104 +++-----------------------------
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   98 ++----------------------------
+ 5 files changed, 39 insertions(+), 188 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
-new file mode 100644
-index 0000000..8ee0f1e
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
-@@ -0,0 +1,287 @@
-+/*
-+ * Copyright (C) 2010 SUSE Linux Products GmbH. All rights reserved.
-+ *
-+ * Authors:
-+ *     Alexander Graf <agraf@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ */
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 4e99559..a96e405 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -115,6 +115,13 @@ extern void kvmppc_mmu_book3s_32_init(struct kvm_vcpu *vcpu);
+ extern int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *pte);
+ extern int kvmppc_mmu_map_segment(struct kvm_vcpu *vcpu, ulong eaddr);
+ extern void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu);
 +
-+#include <linux/kvm_host.h>
-+#include <linux/hash.h>
-+#include <linux/slab.h>
++extern void kvmppc_mmu_hpte_cache_map(struct kvm_vcpu *vcpu, struct hpte_cache *pte);
++extern struct hpte_cache *kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu);
++extern void kvmppc_mmu_hpte_destroy(struct kvm_vcpu *vcpu);
++extern int kvmppc_mmu_hpte_init(struct kvm_vcpu *vcpu);
++extern void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte);
 +
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu_context.h>
-+#include <asm/hw_irq.h>
+ extern int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr, bool data);
+ extern int kvmppc_st(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr, bool data);
+ extern void kvmppc_book3s_queue_irqprio(struct kvm_vcpu *vcpu, unsigned int vec);
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 0c9ad86..0e3fc82 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -38,7 +38,9 @@
+ #define KVM_NR_PAGE_SIZES	1
+ #define KVM_PAGES_PER_HPAGE(x)	(1UL<<31)
+ 
+-#define HPTEG_CACHE_NUM 1024
++#define HPTEG_CACHE_NUM		(1 << 15)
++#define HPTEG_HASH_BITS		13
++#define HPTEG_HASH_NUM		(1 << HPTEG_HASH_BITS)
+ 
+ struct kvm;
+ struct kvm_run;
+@@ -151,6 +153,10 @@ struct kvmppc_mmu {
+ };
+ 
+ struct hpte_cache {
++	struct list_head list_all;
++	struct list_head list_pte;
++	struct list_head list_vpte;
++	struct list_head list_vpte_long;
+ 	u64 host_va;
+ 	u64 pfn;
+ 	ulong slot;
+@@ -282,8 +288,12 @@ struct kvm_vcpu_arch {
+ 	unsigned long pending_exceptions;
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+-	struct hpte_cache hpte_cache[HPTEG_CACHE_NUM];
+-	int hpte_cache_offset;
++	struct kmem_cache *hpte_cache;
++	struct list_head hpte_hash_pte[HPTEG_HASH_NUM];
++	struct list_head hpte_hash_vpte[HPTEG_HASH_NUM];
++	struct list_head hpte_hash_vpte_long[HPTEG_HASH_NUM];
++	struct list_head hpte_all;
++	int hpte_cache_count;
+ #endif
+ };
+ 
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index ff43606..d45c818 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -45,6 +45,7 @@ kvm-book3s_64-objs := \
+ 	book3s.o \
+ 	book3s_emulate.o \
+ 	book3s_interrupts.o \
++	book3s_mmu_hpte.o \
+ 	book3s_64_mmu_host.o \
+ 	book3s_64_mmu.o \
+ 	book3s_32_mmu.o
+@@ -57,6 +58,7 @@ kvm-book3s_32-objs := \
+ 	book3s.o \
+ 	book3s_emulate.o \
+ 	book3s_interrupts.o \
++	book3s_mmu_hpte.o \
+ 	book3s_32_mmu_host.o \
+ 	book3s_32_mmu.o
+ kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 904f5ac..0b51ef8 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -58,105 +58,19 @@
+ static ulong htab;
+ static u32 htabmask;
+ 
+-static void invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
++void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+ {
+ 	volatile u32 *pteg;
+ 
+-	dprintk_mmu("KVM: Flushing SPTE: 0x%llx (0x%llx) -> 0x%llx\n",
+-		    pte->pte.eaddr, pte->pte.vpage, pte->host_va);
+-
++	/* Remove from host HTAB */
+ 	pteg = (u32*)pte->slot;
+-
+ 	pteg[0] = 0;
 +
-+#define PTE_SIZE	12
++	/* And make sure it's gone from the TLB too */
+ 	asm volatile ("sync");
+ 	asm volatile ("tlbie %0" : : "r" (pte->pte.eaddr) : "memory");
+ 	asm volatile ("sync");
+ 	asm volatile ("tlbsync");
+-
+-	pte->host_va = 0;
+-
+-	if (pte->pte.may_write)
+-		kvm_release_pfn_dirty(pte->pfn);
+-	else
+-		kvm_release_pfn_clean(pte->pfn);
+-}
+-
+-void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%x & 0x%x\n",
+-		    vcpu->arch.hpte_cache_offset, guest_ea, ea_mask);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	guest_ea &= ea_mask;
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.eaddr & ea_mask) == guest_ea) {
+-			invalidate_pte(vcpu, pte);
+-		}
+-	}
+-
+-	/* Doing a complete flush -> start from scratch */
+-	if (!ea_mask)
+-		vcpu->arch.hpte_cache_offset = 0;
+-}
+-
+-void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
+-		    vcpu->arch.hpte_cache_offset, guest_vp, vp_mask);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	guest_vp &= vp_mask;
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.vpage & vp_mask) == guest_vp) {
+-			invalidate_pte(vcpu, pte);
+-		}
+-	}
+-}
+-
+-void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%llx & 0x%llx\n",
+-		    vcpu->arch.hpte_cache_offset, pa_start, pa_end);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.raddr >= pa_start) &&
+-		    (pte->pte.raddr < pa_end)) {
+-			invalidate_pte(vcpu, pte);
+-		}
+-	}
+-}
+-
+-static int kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
+-{
+-	if (vcpu->arch.hpte_cache_offset == HPTEG_CACHE_NUM)
+-		kvmppc_mmu_pte_flush(vcpu, 0, 0);
+-
+-	return vcpu->arch.hpte_cache_offset++;
+ }
+ 
+ /* We keep 512 gvsid->hvsid entries, mapping the guest ones to the array using
+@@ -230,7 +144,6 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+ 	register int rr = 0;
+ 	bool primary = false;
+ 	bool evict = false;
+-	int hpte_id;
+ 	struct hpte_cache *pte;
+ 
+ 	/* Get host physical address for gpa */
+@@ -315,8 +228,7 @@ next_pteg:
+ 
+ 	/* Now tell our Shadow PTE code about the new page */
+ 
+-	hpte_id = kvmppc_mmu_hpte_cache_next(vcpu);
+-	pte = &vcpu->arch.hpte_cache[hpte_id];
++	pte = kvmppc_mmu_hpte_cache_next(vcpu);
+ 
+ 	dprintk_mmu("KVM: %c%c Map 0x%llx: [%lx] 0x%llx (0x%llx) -> %lx\n",
+ 		    orig_pte->may_write ? 'w' : '-',
+@@ -329,6 +241,8 @@ next_pteg:
+ 	pte->pte = *orig_pte;
+ 	pte->pfn = hpaddr >> PAGE_SHIFT;
+ 
++	kvmppc_mmu_hpte_cache_map(vcpu, pte);
 +
-+/* #define DEBUG_MMU */
-+/* #define DEBUG_SLB */
+ 	return 0;
+ }
+ 
+@@ -413,7 +327,7 @@ void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
+ {
+-	kvmppc_mmu_pte_flush(vcpu, 0, 0);
++	kvmppc_mmu_hpte_destroy(vcpu);
+ 	preempt_disable();
+ 	__destroy_context(to_book3s(vcpu)->context_id);
+ 	preempt_enable();
+@@ -453,5 +367,7 @@ int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
+ 	htabmask = ((sdr1 & 0x1FF) << 16) | 0xFFC0;
+ 	htab = (ulong)__va(sdr1 & 0xffff0000);
+ 
++	kvmppc_mmu_hpte_init(vcpu);
 +
-+#ifdef DEBUG_MMU
-+#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
-+#else
-+#define dprintk_mmu(a, ...) do { } while(0)
-+#endif
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index 4ccdde1..384179a 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -47,98 +47,11 @@
+ #define dprintk_slb(a, ...) do { } while(0)
+ #endif
+ 
+-static void invalidate_pte(struct hpte_cache *pte)
++void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+ {
+-	dprintk_mmu("KVM: Flushing SPT: 0x%lx (0x%llx) -> 0x%llx\n",
+-		    pte->pte.eaddr, pte->pte.vpage, pte->host_va);
+-
+ 	ppc_md.hpte_invalidate(pte->slot, pte->host_va,
+ 			       MMU_PAGE_4K, MMU_SEGSIZE_256M,
+ 			       false);
+-	pte->host_va = 0;
+-
+-	if (pte->pte.may_write)
+-		kvm_release_pfn_dirty(pte->pfn);
+-	else
+-		kvm_release_pfn_clean(pte->pfn);
+-}
+-
+-void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%lx & 0x%lx\n",
+-		    vcpu->arch.hpte_cache_offset, guest_ea, ea_mask);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	guest_ea &= ea_mask;
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.eaddr & ea_mask) == guest_ea) {
+-			invalidate_pte(pte);
+-		}
+-	}
+-
+-	/* Doing a complete flush -> start from scratch */
+-	if (!ea_mask)
+-		vcpu->arch.hpte_cache_offset = 0;
+-}
+-
+-void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
+-		    vcpu->arch.hpte_cache_offset, guest_vp, vp_mask);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	guest_vp &= vp_mask;
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.vpage & vp_mask) == guest_vp) {
+-			invalidate_pte(pte);
+-		}
+-	}
+-}
+-
+-void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
+-{
+-	int i;
+-
+-	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%lx & 0x%lx\n",
+-		    vcpu->arch.hpte_cache_offset, pa_start, pa_end);
+-	BUG_ON(vcpu->arch.hpte_cache_offset > HPTEG_CACHE_NUM);
+-
+-	for (i = 0; i < vcpu->arch.hpte_cache_offset; i++) {
+-		struct hpte_cache *pte;
+-
+-		pte = &vcpu->arch.hpte_cache[i];
+-		if (!pte->host_va)
+-			continue;
+-
+-		if ((pte->pte.raddr >= pa_start) &&
+-		    (pte->pte.raddr < pa_end)) {
+-			invalidate_pte(pte);
+-		}
+-	}
+-}
+-
+-static int kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
+-{
+-	if (vcpu->arch.hpte_cache_offset == HPTEG_CACHE_NUM)
+-		kvmppc_mmu_pte_flush(vcpu, 0, 0);
+-
+-	return vcpu->arch.hpte_cache_offset++;
+ }
+ 
+ /* We keep 512 gvsid->hvsid entries, mapping the guest ones to the array using
+@@ -246,8 +159,7 @@ map_again:
+ 		attempt++;
+ 		goto map_again;
+ 	} else {
+-		int hpte_id = kvmppc_mmu_hpte_cache_next(vcpu);
+-		struct hpte_cache *pte = &vcpu->arch.hpte_cache[hpte_id];
++		struct hpte_cache *pte = kvmppc_mmu_hpte_cache_next(vcpu);
+ 
+ 		dprintk_mmu("KVM: %c%c Map 0x%lx: [%lx] 0x%lx (0x%llx) -> %lx\n",
+ 			    ((rflags & HPTE_R_PP) == 3) ? '-' : 'w',
+@@ -265,6 +177,8 @@ map_again:
+ 		pte->host_va = va;
+ 		pte->pte = *orig_pte;
+ 		pte->pfn = hpaddr >> PAGE_SHIFT;
 +
-+#ifdef DEBUG_SLB
-+#define dprintk_slb(a, ...) printk(KERN_INFO a, __VA_ARGS__)
-+#else
-+#define dprintk_slb(a, ...) do { } while(0)
-+#endif
++		kvmppc_mmu_hpte_cache_map(vcpu, pte);
+ 	}
+ 
+ 	return 0;
+@@ -391,7 +305,7 @@ void kvmppc_mmu_flush_segments(struct kvm_vcpu *vcpu)
+ 
+ void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
+ {
+-	kvmppc_mmu_pte_flush(vcpu, 0, 0);
++	kvmppc_mmu_hpte_destroy(vcpu);
+ 	__destroy_context(to_book3s(vcpu)->context_id);
+ }
+ 
+@@ -409,5 +323,7 @@ int kvmppc_mmu_init(struct kvm_vcpu *vcpu)
+ 	vcpu3s->vsid_first = vcpu3s->context_id << USER_ESID_BITS;
+ 	vcpu3s->vsid_next = vcpu3s->vsid_first;
+ 
++	kvmppc_mmu_hpte_init(vcpu);
 +
-+static inline u64 kvmppc_mmu_hash_pte(u64 eaddr) {
-+	return hash_64(eaddr >> PTE_SIZE, HPTEG_HASH_BITS);
-+}
-+
-+static inline u64 kvmppc_mmu_hash_vpte(u64 vpage) {
-+	return hash_64(vpage & 0xfffffffffULL, HPTEG_HASH_BITS);
-+}
-+
-+static inline u64 kvmppc_mmu_hash_vpte_long(u64 vpage) {
-+	return hash_64((vpage & 0xffffff000ULL) >> 12, HPTEG_HASH_BITS);
-+}
-+
-+void kvmppc_mmu_hpte_cache_map(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
-+{
-+	u64 index;
-+
-+	/* Add to ePTE list */
-+	index = kvmppc_mmu_hash_pte(pte->pte.eaddr);
-+	list_add(&pte->list_pte, &vcpu->arch.hpte_hash_pte[index]);
-+
-+	/* Add to vPTE list */
-+	index = kvmppc_mmu_hash_vpte(pte->pte.vpage);
-+	list_add(&pte->list_vpte, &vcpu->arch.hpte_hash_vpte[index]);
-+
-+	/* Add to vPTE_long list */
-+	index = kvmppc_mmu_hash_vpte_long(pte->pte.vpage);
-+	list_add(&pte->list_vpte_long, &vcpu->arch.hpte_hash_vpte_long[index]);
-+
-+	/* Add to all list */
-+	list_add(&pte->list_all, &vcpu->arch.hpte_all);
-+}
-+
-+static void invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
-+{
-+	dprintk_mmu("KVM: Flushing SPT: 0x%lx (0x%llx) -> 0x%llx\n",
-+		    pte->pte.eaddr, pte->pte.vpage, pte->host_va);
-+
-+	/* Different for 32 and 64 bit */
-+	kvmppc_mmu_invalidate_pte(vcpu, pte);
-+
-+	if (pte->pte.may_write)
-+		kvm_release_pfn_dirty(pte->pfn);
-+	else
-+		kvm_release_pfn_clean(pte->pfn);
-+
-+	list_del(&pte->list_pte);
-+	list_del(&pte->list_vpte);
-+	list_del(&pte->list_vpte_long);
-+	list_del(&pte->list_all);
-+
-+	kmem_cache_free(vcpu->arch.hpte_cache, pte);
-+}
-+
-+static void kvmppc_mmu_pte_flush_all(struct kvm_vcpu *vcpu)
-+{
-+	struct hpte_cache *pte, *tmp;
-+
-+	list_for_each_entry_safe(pte, tmp, &vcpu->arch.hpte_all, list_all) {
-+		/* Jump over the helper entry */
-+		if (&pte->list_all == &vcpu->arch.hpte_all)
-+			continue;
-+
-+		invalidate_pte(vcpu, pte);
-+	}
-+}
-+
-+void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
-+{
-+	u64 i;
-+
-+	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%lx & 0x%lx\n",
-+		    vcpu->arch.hpte_cache_count, guest_ea, ea_mask);
-+
-+	switch (ea_mask) {
-+	case ~0xfffUL:
-+	{
-+		struct list_head *list;
-+		struct hpte_cache *pte, *tmp;
-+
-+		/* Find the list of entries in the map */
-+		list = &vcpu->arch.hpte_hash_pte[kvmppc_mmu_hash_pte(guest_ea)];
-+
-+		/* Check the list for matching entries */
-+		list_for_each_entry_safe(pte, tmp, list, list_pte) {
-+			/* Jump over the helper entry */
-+			if (&pte->list_pte == list)
-+				continue;
-+
-+			/* Invalidate matching PTE */
-+			if ((pte->pte.eaddr & ~0xfffULL) == guest_ea)
-+				invalidate_pte(vcpu, pte);
-+		}
-+		break;
-+	}
-+	case 0x0ffff000:
-+		/* 32-bit flush w/o segment, go through all possible segments */
-+		for (i = 0; i < 0x100000000ULL; i += 0x10000000ULL)
-+			kvmppc_mmu_pte_flush(vcpu, guest_ea | i, ~0xfffUL);
-+		break;
-+	case 0:
-+		/* Doing a complete flush -> start from scratch */
-+		kvmppc_mmu_pte_flush_all(vcpu);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		break;
-+	}
-+}
-+
-+/* Flush with mask 0xfffffffff */
-+static void kvmppc_mmu_pte_vflush_short(struct kvm_vcpu *vcpu, u64 guest_vp)
-+{
-+	struct list_head *list;
-+	struct hpte_cache *pte, *tmp;
-+	u64 vp_mask = 0xfffffffffULL;
-+
-+	list = &vcpu->arch.hpte_hash_vpte[kvmppc_mmu_hash_vpte(guest_vp)];
-+
-+	/* Check the list for matching entries */
-+	list_for_each_entry_safe(pte, tmp, list, list_vpte) {
-+		/* Jump over the helper entry */
-+		if (&pte->list_vpte == list)
-+			continue;
-+
-+		/* Invalidate matching PTEs */
-+		if ((pte->pte.vpage & vp_mask) == guest_vp)
-+			invalidate_pte(vcpu, pte);
-+	}
-+}
-+
-+/* Flush with mask 0xffffff000 */
-+static void kvmppc_mmu_pte_vflush_long(struct kvm_vcpu *vcpu, u64 guest_vp)
-+{
-+	struct list_head *list;
-+	struct hpte_cache *pte, *tmp;
-+	u64 vp_mask = 0xffffff000ULL;
-+
-+	list = &vcpu->arch.hpte_hash_vpte_long[kvmppc_mmu_hash_vpte_long(guest_vp)];
-+
-+	/* No entries to flush */
-+	if (!list)
-+		return;
-+
-+	/* Check the list for matching entries */
-+	list_for_each_entry_safe(pte, tmp, list, list_vpte_long)
-+		/* Jump over the helper entry */
-+		if (&pte->list_vpte_long == list)
-+			continue;
-+
-+		if ((pte->pte.vpage & vp_mask) == guest_vp)
-+			invalidate_pte(vcpu, pte);
-+}
-+
-+void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
-+{
-+	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
-+		    vcpu->arch.hpte_cache_count, guest_vp, vp_mask);
-+	guest_vp &= vp_mask;
-+
-+	switch(vp_mask) {
-+	case 0xfffffffffULL:
-+		kvmppc_mmu_pte_vflush_short(vcpu, guest_vp);
-+		break;
-+	case 0xffffff000ULL:
-+		kvmppc_mmu_pte_vflush_long(vcpu, guest_vp);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		return;
-+	}
-+}
-+
-+void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
-+{
-+	struct hpte_cache *pte, *tmp;
-+
-+	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%lx & 0x%lx\n",
-+		    vcpu->arch.hpte_cache_count, pa_start, pa_end);
-+
-+	/* Search in all entries for matching maps */
-+	list_for_each_entry_safe(pte, tmp, &vcpu->arch.hpte_all, list_all) {
-+		/* Jump over the helper entry */
-+		if (&pte->list_all == &vcpu->arch.hpte_all)
-+			continue;
-+
-+		if ((pte->pte.raddr >= pa_start) &&
-+		    (pte->pte.raddr < pa_end)) {
-+			invalidate_pte(vcpu, pte);
-+		}
-+	}
-+}
-+
-+struct hpte_cache *kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
-+{
-+	struct hpte_cache *pte;
-+
-+	pte = kmem_cache_zalloc(vcpu->arch.hpte_cache, GFP_KERNEL);
-+	vcpu->arch.hpte_cache_count++;
-+
-+	if (vcpu->arch.hpte_cache_count == HPTEG_CACHE_NUM)
-+		kvmppc_mmu_pte_flush_all(vcpu);
-+
-+	return pte;
-+}
-+
-+void kvmppc_mmu_hpte_destroy(struct kvm_vcpu *vcpu)
-+{
-+	kvmppc_mmu_pte_flush(vcpu, 0, 0);
-+	kmem_cache_destroy(vcpu->arch.hpte_cache);
-+}
-+
-+static void kvmppc_mmu_hpte_init_hash(struct list_head *hash_list, int len)
-+{
-+	int i;
-+
-+	for (i = 0; i < len; i++) {
-+		INIT_LIST_HEAD(&hash_list[i]);
-+	}
-+}
-+
-+int kvmppc_mmu_hpte_init(struct kvm_vcpu *vcpu)
-+{
-+	char kmem_name[128];
-+
-+	/* init hpte slab cache */
-+	snprintf(kmem_name, 128, "kvm-spt-%p", vcpu);
-+	vcpu->arch.hpte_cache = kmem_cache_create(kmem_name,
-+		sizeof(struct hpte_cache), sizeof(struct hpte_cache), 0, NULL);
-+
-+	/* init hpte lookup hashes */
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_pte,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_pte));
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_vpte,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_vpte));
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_vpte_long,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_vpte_long));
-+	INIT_LIST_HEAD(&vcpu->arch.hpte_all);
-+
-+	return 0;
-+}
+ 	return 0;
+ }
 -- 
 1.6.0.2
