@@ -1,18 +1,24 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 3F068B6F1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 06:23:37 +1000 (EST)
-Message-ID: <4C1FCA47.7070809@mlbassoc.com>
-Date: Mon, 21 Jun 2010 14:23:35 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 9E527B6F14
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 07:06:22 +1000 (EST)
+Received: by gyf2 with SMTP id 2so2627868gyf.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 14:06:21 -0700 (PDT)
 MIME-Version: 1.0
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Subject: Re: UCC interactions
-References: <4C1FB6BB.4040705@mlbassoc.com>
-	<1628E43D99629C46988BE46087A3FBB9011BEA2B@ep-01.EmbeddedPlanet.local>
-In-Reply-To: <1628E43D99629C46988BE46087A3FBB9011BEA2B@ep-01.EmbeddedPlanet.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <AANLkTiltEWJQa5FL0Pjpd8JeQdo-ECBSM5EJHruIAJK0@mail.gmail.com>
+References: <20100608140917.25879.67745.stgit@angua>
+	<20100608141008.25879.2050.stgit@angua>
+	<1276152212.1962.59.camel@pasglop>
+	<AANLkTiltEWJQa5FL0Pjpd8JeQdo-ECBSM5EJHruIAJK0@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 21 Jun 2010 15:06:00 -0600
+Message-ID: <AANLkTin5sMa-imgNeY4kM8wofnxUyQOtOT-gLILL7rlj@mail.gmail.com>
+Subject: Re: [PATCH 3/5] of/address: Merge all of the bus translation code
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,98 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/21/2010 01:19 PM, Steven Blakeslee wrote:
-> I believe the offset for UCC3 is wrong.  The usermanual says UCC3's
-> registers are at 0x2200-0x23FF.  0x4000 is SDMA.  Hope that helps.
-
-Looks like that was it (not sure where I got that value from!)
-
-Thanks
-
->> -----Original Message-----
->> From:
-> linuxppc-dev-bounces+blakeslees=embeddedplanet.com@lists.ozlabs.org
->> [mailto:linuxppc-dev-
->> bounces+blakeslees=embeddedplanet.com@lists.ozlabs.org] On Behalf Of
-> Gary
->> Thomas
->> Sent: Monday, June 21, 2010 3:00 PM
->> To: Linux PPC Development
->> Subject: UCC interactions
->>
->> I'm running 2.6.33.3 on MPC8358.  I have UCC1+UCC2 working fine
->> for ethernet, but when I add UCC3 as a UART, the network devices
->> quit working.
->>
->> Here are my device tree entries:
->>            /* ETH0 (UCC1, MDIO 0x02, RMII) */
->>            enet_eth0: ethernet@2000 {
->>               device_type = "network";
->>               compatible = "ucc_geth";
->>               cell-index =<1>;
->>               reg =<0x2000 0x200>;
->>               interrupts =<32>;
->>               interrupt-parent =<&qeic>;
->>               local-mac-address = [ 00 00 00 00 00 00 ];
->>               rx-clock-name = "none";
->>               tx-clock-name = "clk16";
->>               phy-handle =<&phy_eth0>;
->>               phy-connection-type = "rmii";
->>               pio-handle =<&pio_ucc1>;
->>               linux,network-index =<0>;
->>            };
->>
->>            /* ETH1 (UCC2, MDIO 0x01, GMII) */
->>            enet_eth1: ethernet@3000 {
->>               device_type = "network";
->>               compatible = "ucc_geth";
->>               cell-index =<2>;
->>               reg =<0x3000 0x200>;
->>               interrupts =<33>;
->>               interrupt-parent =<&qeic>;
->>               local-mac-address = [ 00 00 00 00 00 00 ];
->>               rx-clock-name = "clk4";
->>               tx-clock-name = "none";
->>               fixed-link =<1 1 1000 0 0>;
->>               phy-connection-type = "gmii";
->>               pio-handle =<&pio_ucc2>;
->>               linux,network-index =<1>;
->>            };
->>
->>            /* ttyQE0 (UCC3) */
->>            serial_qe0: serial@4000 {
->>               device_type = "serial";
->>               compatible = "ucc_uart";
->>               cell-index =<3>;
->>               reg =<0x4000 0x200>;
->>               interrupts =<34>;
->>               interrupt-parent =<&qeic>;
->>               port-number =<0>;
->>               rx-clock-name = "brg1";
->>               tx-clock-name = "brg1";
->>            };
->>
->> Are there known interactions between these two drivers/ports?
->> Maybe there's something obviously wrong with my device tree?
->>
->> Thanks for any ideas/pointers
->>
->> --
->> ------------------------------------------------------------
->> Gary Thomas                 |  Consulting for the
->> MLB Associates              |    Embedded world
->> ------------------------------------------------------------
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+On Thu, Jun 10, 2010 at 8:26 AM, Grant Likely <grant.likely@secretlab.ca> w=
+rote:
+> On Thu, Jun 10, 2010 at 12:43 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>> On Tue, 2010-06-08 at 08:10 -0600, Grant Likely wrote:
+>>> Microblaze and PowerPC share a large chunk of code for translating
+>>> OF device tree data into usable addresses. =A0There aren't many differe=
+nces
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ^^^^
+>> Care to comment on these differences ?
 >
-> --
-> ExchangeDefender Message Security: Click below to verify authenticity
-> http://www.exchangedefender.com/verify.asp?id=o5LJJcQU009752&from=blakeslees@embeddedplanet.com
+> Purely cosmetic IIRC, but I will go back and double check. =A0Things
+> like printk vs. pr_info and some style differences. =A0I looked at them
+> side-by-side and fixed each difference individually until they were
+> identical.
+>
+>>> between the two, so merge the codebase wholesale rather than trying to
+>>> work out the independent bits.
+>>
+>> Well, I don't see ifdef's in the resulting code (but I'm a bit blind),
+>> so what did you do with the differences ?
+>>
+>> This is complex and fragile code, so any change to it must be very
+>> carefully scrutinized.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Hi Ben,
+
+I've double checked side-by-side.  The changes are all cosmetic expect
+for the addition of dma-ranges support on the powerpc version that
+hadn't been applied to microblaze.  This patch takes the powerpc code
+plus the cosmetic changes (spaces, pr_debug vs DBG, etc) from the
+microblaze side.  There should be no functional changes to either
+platform since microblaze doesn't currently use dma-ranges anyway.
+
+Here's the new commit text:
+
+----
+    of/address: Merge all of the bus translation code
+
+    Microblaze and PowerPC share a large chunk of code for translating
+    OF device tree data into usable addresses.  Differences between the two
+    consist of cosmetic differences, and the addition of dma-ranges support
+    to powerpc but not microblaze.  This patch moves the powerpc
+    version into common code and applies many of the cosmetic (non-function=
+al)
+    changes from the microblaze version.
+----
+
+I've only changed the commit text.  The patch remains unchanged.  Are
+you okay with this patch?
+
+Cheers,
+g.
+
+
+>>
+>> Cheers,
+>> Ben.
+>>
+>>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>>> CC: Michal Simek <monstr@monstr.eu>
+>>> CC: Wolfram Sang <w.sang@pengutronix.de>
+>>> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> CC: microblaze-uclinux@itee.uq.edu.au
+>>> CC: linuxppc-dev@ozlabs.org
