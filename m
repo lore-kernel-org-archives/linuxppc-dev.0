@@ -1,21 +1,14 @@
-Return-Path: <timur.tabi@gmail.com>
-Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
-	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id A21BEB6F14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Jun 2010 03:55:51 +1000 (EST)
-Received: by pvc22 with SMTP id 22so499546pvc.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Jun 2010 10:55:50 -0700 (PDT)
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 501F0B6EF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 05:00:14 +1000 (EST)
+Message-ID: <4C1FB6BB.4040705@mlbassoc.com>
+Date: Mon, 21 Jun 2010 13:00:11 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-In-Reply-To: <4C1B7312.6080708@ThePTRGroup.com>
-References: <4C1B7312.6080708@ThePTRGroup.com>
-From: Timur Tabi <timur.tabi@gmail.com>
-Date: Mon, 21 Jun 2010 12:55:18 -0500
-Message-ID: <AANLkTimcsYA04Qo9IZ2B-nULW0-WEkQvG2KxorwE34Zd@mail.gmail.com>
-Subject: Re: [PATCH] serial: Add missing call to init UCC UART port timeout
-To: Chuck Meade <chuck@theptrgroup.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Linux PPC Development <linuxppc-dev@ozlabs.org>
+Subject: UCC interactions
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +18,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 18, 2010 at 8:22 AM, Chuck Meade <chuck@theptrgroup.com> wrote:
-> From: Chuck Meade <chuck@ThePTRGroup.com>
->
-> The UCC UART driver is missing a call to uart_update_timeout().
-> Without this call, attempting to close the port after outputting large
-> amounts of data (i.e. using tty and uart buffering) results in long
-> timeouts before the port will actually be shut down.
->
-> For example, cat a large file to a UCC UART port. =A0With the current
-> driver, the port will stay open for 30 seconds after the last byte
-> of data is output. =A0But with this patch, the port is closed as
-> expected, just after the data has been output (tx fifos empty).
->
-> Signed-off-by: Chuck Meade <chuck@ThePTRGroup.com>
+I'm running 2.6.33.3 on MPC8358.  I have UCC1+UCC2 working fine
+for ethernet, but when I add UCC3 as a UART, the network devices
+quit working.
 
-Acked-by: Timur Tabi <timur@freescale.com>
+Here are my device tree entries:
+          /* ETH0 (UCC1, MDIO 0x02, RMII) */
+          enet_eth0: ethernet@2000 {
+             device_type = "network";
+             compatible = "ucc_geth";
+             cell-index = <1>;
+             reg = <0x2000 0x200>;
+             interrupts = <32>;
+             interrupt-parent = <&qeic>;
+             local-mac-address = [ 00 00 00 00 00 00 ];
+             rx-clock-name = "none";
+             tx-clock-name = "clk16";
+             phy-handle = <&phy_eth0>;
+             phy-connection-type = "rmii";
+             pio-handle = <&pio_ucc1>;
+             linux,network-index = <0>;
+          };
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale
+          /* ETH1 (UCC2, MDIO 0x01, GMII) */
+          enet_eth1: ethernet@3000 {
+             device_type = "network";
+             compatible = "ucc_geth";
+             cell-index = <2>;
+             reg = <0x3000 0x200>;
+             interrupts = <33>;
+             interrupt-parent = <&qeic>;
+             local-mac-address = [ 00 00 00 00 00 00 ];
+             rx-clock-name = "clk4";
+             tx-clock-name = "none";
+             fixed-link = <1 1 1000 0 0>;
+             phy-connection-type = "gmii";
+             pio-handle = <&pio_ucc2>;
+             linux,network-index = <1>;
+          };
+
+          /* ttyQE0 (UCC3) */
+          serial_qe0: serial@4000 {
+             device_type = "serial";
+             compatible = "ucc_uart";
+             cell-index = <3>;
+             reg = <0x4000 0x200>;
+             interrupts = <34>;
+             interrupt-parent = <&qeic>;
+             port-number = <0>;
+             rx-clock-name = "brg1";
+             tx-clock-name = "brg1";
+          };
+
+Are there known interactions between these two drivers/ports?
+Maybe there's something obviously wrong with my device tree?
+
+Thanks for any ideas/pointers
+
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
