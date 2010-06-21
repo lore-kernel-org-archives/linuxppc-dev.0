@@ -1,19 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1276151887.1962.53.camel@pasglop>
-References: <20100604212134.10552.70717.stgit@angua>
-	<20100604212145.10552.95452.stgit@angua>
-	<1276151887.1962.53.camel@pasglop>
+Return-Path: <grant.likely@secretlab.ca>
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH v2 0/5] Consolidate OF IRQ handling code
+To: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Jun 2010 15:11:28 -0600
-Message-ID: <AANLkTimW92nSwxqo_Pbrm1KR2rmagHigaLTBEJipmZIU@mail.gmail.com>
-Subject: Re: [PATCH 3/5] of/irq: merge of_irq_find_parent()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
-	microblaze-uclinux@itee.uq.edu.au
+Date: Mon, 21 Jun 2010 16:30:11 -0600
+Message-ID: <20100621222052.18925.61569.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: sfr@canb.auug.org.au, monstr@monstr.eu, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 10, 2010 at 12:38 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2010-06-04 at 15:21 -0600, Grant Likely wrote:
->> Merge common code between PowerPC and Microblaze. =A0Also create a new
->> arch hook, of_irq_find_parent_by_phandle() to handle arch-specific
->> quirks.
->
-> First, you changeset comment should be much more verbose as to
-> what that arch specific quirk is about etc... it took me time to figure
-> it out again :-)
->
-> I dislike the naming you use. Your "of_irq_find_parent_by_phandle"
-> doesn't ring "right" to me.
->
-> I'm tempted to say we should put the quirks in the common code, your
-> attempt at "abstracting" them just makes the code much harder to follow.
->
-> Also, if we stick to your approach the "default" variant should either
-> be an inline protected by an ifndef or a weak function.
+This series merges the common IRQ handling code between Microblaze and Powerpc
 
-Alright, I've rewritten all the IRQ changes and I've left the quirk
-handling in common code, while moving the powermac quirk code into
-arch/powerpc/platforms/powermac.  I'll repost today.
+Changes in v2:
+- The 3 patches to merge of_irq_find_parent(), of_irq_map_raw() and
+  of_irq_map_one() have been merged into a single patch.
+- Patch added to move powermac quirk handing into
+  arch/powerpc/platforms/powermac.
+- Add endian fixes patch from Rob Herring
 
+Ben, please take a look and let me know if you like this better.
+
+Thanks,
 g.
+
+---
+
+Grant Likely (4):
+      of/irq: Move irq_of_parse_and_map() to common code
+      of/microblaze: strip out of_irq_workarounds code
+      of/powerpc: Move Powermac irq quirk code into powermac pic driver code
+      of/irq: merge irq mapping code
+
+Rob Herring (1):
+      of/irq: little endian fixes
+
+
+ arch/microblaze/include/asm/irq.h     |   13 -
+ arch/microblaze/include/asm/prom.h    |   67 ------
+ arch/microblaze/kernel/irq.c          |   14 -
+ arch/microblaze/kernel/prom_parse.c   |  331 -------------------------------
+ arch/powerpc/include/asm/irq.h        |   13 -
+ arch/powerpc/include/asm/prom.h       |   68 ------
+ arch/powerpc/kernel/irq.c             |   14 -
+ arch/powerpc/kernel/prom_parse.c      |  351 ---------------------------------
+ arch/powerpc/platforms/powermac/pic.c |   72 ++++++-
+ arch/sparc/include/asm/prom.h         |    1 
+ drivers/of/Kconfig                    |    4 
+ drivers/of/Makefile                   |    1 
+ drivers/of/irq.c                      |  339 ++++++++++++++++++++++++++++++++
+ drivers/of/of_mdio.c                  |    1 
+ include/linux/of_irq.h                |   70 +++++++
+ 15 files changed, 487 insertions(+), 872 deletions(-)
+ create mode 100644 drivers/of/irq.c
+ create mode 100644 include/linux/of_irq.h
