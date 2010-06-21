@@ -1,15 +1,13 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 71FAD1007D1
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id EC6BA1007D5
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 21 Jun 2010 23:25:02 +1000 (EST)
+	Mon, 21 Jun 2010 23:25:21 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Make BAT only guest segments work
-Date: Mon, 21 Jun 2010 15:24:55 +0200
-Message-Id: <1277126695-32081-1-git-send-email-agraf@suse.de>
+Subject: [PATCH] KVM: PPC: Use kernel hash function
+Date: Mon, 21 Jun 2010 15:25:19 +0200
+Message-Id: <1277126719-32150-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,36 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a guest sets its SR entry to invalid, we may still find a
-corresponding entry in a BAT. So we need to make sure we're not
-faulting on invalid SR entries, but instead just claim them to be
-BAT resolved.
-
-This resolves breakage experienced when using libogc based guests.
+The linux kernel already provides a hash function. Let's reuse that
+instead of reinventing the wheel!
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kvm/book3s_32_mmu.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_32_mmu_host.c |   10 ++--------
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   11 ++---------
+ 2 files changed, 4 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
-index 0b10503..3292d76 100644
---- a/arch/powerpc/kvm/book3s_32_mmu.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu.c
-@@ -354,10 +354,10 @@ static int kvmppc_mmu_book3s_32_esid_to_vsid(struct kvm_vcpu *vcpu, ulong esid,
- 		*vsid = VSID_REAL_DR | gvsid;
- 		break;
- 	case MSR_DR|MSR_IR:
--		if (!sr->valid)
--			return -1;
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 0bb6600..37779a5 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <linux/kvm_host.h>
++#include <linux/hash.h>
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -182,14 +183,7 @@ static int kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
+  * a hash, so we don't waste cycles on looping */
+ static u16 kvmppc_sid_hash(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+-	return (u16)(((gvsid >> (SID_MAP_BITS * 7)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 6)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 5)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 4)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 3)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 2)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 1)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 0)) & SID_MAP_MASK));
++	return hash_64(gvsid, SID_MAP_BITS);
+ }
+ 
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index e4b5744..5d0e281 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include <linux/kvm_host.h>
++#include <linux/hash.h>
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -164,17 +165,9 @@ static int kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
+  * a hash, so we don't waste cycles on looping */
+ static u16 kvmppc_sid_hash(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+-	return (u16)(((gvsid >> (SID_MAP_BITS * 7)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 6)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 5)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 4)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 3)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 2)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 1)) & SID_MAP_MASK) ^
+-		     ((gvsid >> (SID_MAP_BITS * 0)) & SID_MAP_MASK));
++	return hash_64(gvsid, SID_MAP_BITS);
+ }
+ 
 -
--		*vsid = sr->vsid;
-+		if (sr->valid)
-+			*vsid = sr->vsid;
-+		else
-+			*vsid = VSID_BAT | gvsid;
- 		break;
- 	default:
- 		BUG();
+ static struct kvmppc_sid_map *find_sid_vsid(struct kvm_vcpu *vcpu, u64 gvsid)
+ {
+ 	struct kvmppc_sid_map *map;
 -- 
 1.6.0.2
