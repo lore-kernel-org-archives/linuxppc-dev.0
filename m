@@ -1,17 +1,24 @@
-Return-Path: <grant.likely@secretlab.ca>
-Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH v2 3/5] of/powerpc: Move Powermac irq quirk code into powermac
-	pic driver code
-To: microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@lists.ozlabs.org
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 21 Jun 2010 16:32:02 -0600
-Message-ID: <20100621223043.18925.782.stgit@angua>
-In-Reply-To: <20100621222052.18925.61569.stgit@angua>
-References: <20100621222052.18925.61569.stgit@angua>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8C0FAB707D
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 09:16:25 +1000 (EST)
+Subject: Re: [PATCH 3/5] of/address: Merge all of the bus translation code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <AANLkTin5sMa-imgNeY4kM8wofnxUyQOtOT-gLILL7rlj@mail.gmail.com>
+References: <20100608140917.25879.67745.stgit@angua>
+	<20100608141008.25879.2050.stgit@angua>
+	<1276152212.1962.59.camel@pasglop>
+	<AANLkTiltEWJQa5FL0Pjpd8JeQdo-ECBSM5EJHruIAJK0@mail.gmail.com>
+	<AANLkTin5sMa-imgNeY4kM8wofnxUyQOtOT-gLILL7rlj@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 22 Jun 2010 09:16:05 +1000
+Message-ID: <1277162165.8826.219.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,272 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The code that figures out what is wrong with the powermac irq device
-tree data belongs with the rest of the powermac irq code.  This patch
-moves it out of prom_parse.c and into powermac/pic.c so that it is only
-compiled in when actually needed.
+On Mon, 2010-06-21 at 15:06 -0600, Grant Likely wrote:
+> On Thu, Jun 10, 2010 at 8:26 AM, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Thu, Jun 10, 2010 at 12:43 AM, Benjamin Herrenschmidt
+> > <benh@kernel.crashing.org> wrote:
+> >> On Tue, 2010-06-08 at 08:10 -0600, Grant Likely wrote:
+> >>> Microblaze and PowerPC share a large chunk of code for translating
+> >>> OF device tree data into usable addresses.  There aren't many differences
+> >>                                                           ^^^^
+> >> Care to comment on these differences ?
+> >
+> > Purely cosmetic IIRC, but I will go back and double check.  Things
+> > like printk vs. pr_info and some style differences.  I looked at them
+> > side-by-side and fixed each difference individually until they were
+> > identical.
+> >
+> >>> between the two, so merge the codebase wholesale rather than trying to
+> >>> work out the independent bits.
+> >>
+> >> Well, I don't see ifdef's in the resulting code (but I'm a bit blind),
+> >> so what did you do with the differences ?
+> >>
+> >> This is complex and fragile code, so any change to it must be very
+> >> carefully scrutinized.
+> 
+> Hi Ben,
+> 
+> I've double checked side-by-side.  The changes are all cosmetic expect
+> for the addition of dma-ranges support on the powerpc version that
+> hadn't been applied to microblaze.  This patch takes the powerpc code
+> plus the cosmetic changes (spaces, pr_debug vs DBG, etc) from the
+> microblaze side.  There should be no functional changes to either
+> platform since microblaze doesn't currently use dma-ranges anyway.
+> 
+> Here's the new commit text:
 
-The quirk flags are also conditionally compiled out to discourage their
-use by other platforms.
+Ok.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/prom.h       |   24 ++++++---
- arch/powerpc/kernel/prom_parse.c      |   85 ---------------------------------
- arch/powerpc/platforms/powermac/pic.c |   72 ++++++++++++++++++++++++++--
- 3 files changed, 81 insertions(+), 100 deletions(-)
+Cheers
+,Ben.
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index 47d41b6..4486765 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -109,18 +109,24 @@ extern const void *of_get_mac_address(struct device_node *np);
-  * OF interrupt mapping
-  */
- 
--/**
-- * of_irq_map_init - Initialize the irq remapper
-- * @flags:	flags defining workarounds to enable
-- *
-- * Some machines have bugs in the device-tree which require certain workarounds
-- * to be applied. Call this before any interrupt mapping attempts to enable
-- * those workarounds.
-- */
- #define OF_IMAP_OLDWORLD_MAC	0x00000001
- #define OF_IMAP_NO_PHANDLE	0x00000002
- 
--extern void of_irq_map_init(unsigned int flags);
-+#if defined(CONFIG_PPC32) && defined(CONFIG_PPC_PMAC)
-+/* Workarounds only needed for 32bit powermac machines */
-+extern unsigned int of_irq_workarounds;
-+extern struct device_node *of_irq_dflt_pic;
-+extern int of_irq_map_oldworld(struct device_node *device, int index,
-+			       struct of_irq *out_irq);
-+#else
-+#define of_irq_workarounds (0)
-+#define of_irq_dflt_pic (NULL)
-+static inline int of_irq_map_oldworld(struct device_node *device, int index,
-+				      struct of_irq *out_irq)
-+{
-+	return -EINVAL;
-+}
-+#endif
- 
- /**
-  * of_irq_map_raw - Low level interrupt tree parsing
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index 8362620..dfa6de6 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -682,9 +682,6 @@ void of_parse_dma_window(struct device_node *dn, const void *dma_window_prop,
-  * Interrupt remapper
-  */
- 
--static unsigned int of_irq_workarounds;
--static struct device_node *of_irq_dflt_pic;
--
- static struct device_node *of_irq_find_parent(struct device_node *child)
- {
- 	struct device_node *p;
-@@ -710,44 +707,6 @@ static struct device_node *of_irq_find_parent(struct device_node *child)
- 	return p;
- }
- 
--/* This doesn't need to be called if you don't have any special workaround
-- * flags to pass
-- */
--void of_irq_map_init(unsigned int flags)
--{
--	of_irq_workarounds = flags;
--
--	/* OldWorld, don't bother looking at other things */
--	if (flags & OF_IMAP_OLDWORLD_MAC)
--		return;
--
--	/* If we don't have phandles, let's try to locate a default interrupt
--	 * controller (happens when booting with BootX). We do a first match
--	 * here, hopefully, that only ever happens on machines with one
--	 * controller.
--	 */
--	if (flags & OF_IMAP_NO_PHANDLE) {
--		struct device_node *np;
--
--		for_each_node_with_property(np, "interrupt-controller") {
--			/* Skip /chosen/interrupt-controller */
--			if (strcmp(np->name, "chosen") == 0)
--				continue;
--			/* It seems like at least one person on this planet wants
--			 * to use BootX on a machine with an AppleKiwi controller
--			 * which happens to pretend to be an interrupt
--			 * controller too.
--			 */
--			if (strcmp(np->name, "AppleKiwi") == 0)
--				continue;
--			/* I think we found one ! */
--			of_irq_dflt_pic = np;
--			break;
--		}
--	}
--
--}
--
- int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
- 		const u32 *addr, struct of_irq *out_irq)
- {
-@@ -922,50 +881,6 @@ int of_irq_map_raw(struct device_node *parent, const u32 *intspec, u32 ointsize,
- }
- EXPORT_SYMBOL_GPL(of_irq_map_raw);
- 
--#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
--static int of_irq_map_oldworld(struct device_node *device, int index,
--			       struct of_irq *out_irq)
--{
--	const u32 *ints = NULL;
--	int intlen;
--
--	/*
--	 * Old machines just have a list of interrupt numbers
--	 * and no interrupt-controller nodes. We also have dodgy
--	 * cases where the APPL,interrupts property is completely
--	 * missing behind pci-pci bridges and we have to get it
--	 * from the parent (the bridge itself, as apple just wired
--	 * everything together on these)
--	 */
--	while (device) {
--		ints = of_get_property(device, "AAPL,interrupts", &intlen);
--		if (ints != NULL)
--			break;
--		device = device->parent;
--		if (device && strcmp(device->type, "pci") != 0)
--			break;
--	}
--	if (ints == NULL)
--		return -EINVAL;
--	intlen /= sizeof(u32);
--
--	if (index >= intlen)
--		return -EINVAL;
--
--	out_irq->controller = NULL;
--	out_irq->specifier[0] = ints[index];
--	out_irq->size = 1;
--
--	return 0;
--}
--#else /* defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) */
--static int of_irq_map_oldworld(struct device_node *device, int index,
--			       struct of_irq *out_irq)
--{
--	return -EINVAL;
--}
--#endif /* !(defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)) */
--
- int of_irq_map_one(struct device_node *device, int index, struct of_irq *out_irq)
- {
- 	struct device_node *p;
-diff --git a/arch/powerpc/platforms/powermac/pic.c b/arch/powerpc/platforms/powermac/pic.c
-index 630a533..890d5f7 100644
---- a/arch/powerpc/platforms/powermac/pic.c
-+++ b/arch/powerpc/platforms/powermac/pic.c
-@@ -46,6 +46,10 @@ struct pmac_irq_hw {
-         unsigned int    level;
- };
- 
-+/* Workaround flags for 32bit powermac machines */
-+unsigned int of_irq_workarounds;
-+struct device_node *of_irq_dflt_pic;
-+
- /* Default addresses */
- static volatile struct pmac_irq_hw __iomem *pmac_irq_hw[4];
- 
-@@ -428,6 +432,42 @@ static void __init pmac_pic_probe_oldstyle(void)
- 	setup_irq(irq_create_mapping(NULL, 20), &xmon_action);
- #endif
- }
-+
-+int of_irq_map_oldworld(struct device_node *device, int index,
-+			struct of_irq *out_irq)
-+{
-+	const u32 *ints = NULL;
-+	int intlen;
-+
-+	/*
-+	 * Old machines just have a list of interrupt numbers
-+	 * and no interrupt-controller nodes. We also have dodgy
-+	 * cases where the APPL,interrupts property is completely
-+	 * missing behind pci-pci bridges and we have to get it
-+	 * from the parent (the bridge itself, as apple just wired
-+	 * everything together on these)
-+	 */
-+	while (device) {
-+		ints = of_get_property(device, "AAPL,interrupts", &intlen);
-+		if (ints != NULL)
-+			break;
-+		device = device->parent;
-+		if (device && strcmp(device->type, "pci") != 0)
-+			break;
-+	}
-+	if (ints == NULL)
-+		return -EINVAL;
-+	intlen /= sizeof(u32);
-+
-+	if (index >= intlen)
-+		return -EINVAL;
-+
-+	out_irq->controller = NULL;
-+	out_irq->specifier[0] = ints[index];
-+	out_irq->size = 1;
-+
-+	return 0;
-+}
- #endif /* CONFIG_PPC32 */
- 
- static void pmac_u3_cascade(unsigned int irq, struct irq_desc *desc)
-@@ -559,19 +599,39 @@ static int __init pmac_pic_probe_mpic(void)
- 
- void __init pmac_pic_init(void)
- {
--	unsigned int flags = 0;
--
- 	/* We configure the OF parsing based on our oldworld vs. newworld
- 	 * platform type and wether we were booted by BootX.
- 	 */
- #ifdef CONFIG_PPC32
- 	if (!pmac_newworld)
--		flags |= OF_IMAP_OLDWORLD_MAC;
-+		of_irq_workarounds |= OF_IMAP_OLDWORLD_MAC;
- 	if (of_get_property(of_chosen, "linux,bootx", NULL) != NULL)
--		flags |= OF_IMAP_NO_PHANDLE;
--#endif /* CONFIG_PPC_32 */
-+		of_irq_workarounds |= OF_IMAP_NO_PHANDLE;
- 
--	of_irq_map_init(flags);
-+	/* If we don't have phandles on a newworld, then try to locate a
-+	 * default interrupt controller (happens when booting with BootX).
-+	 * We do a first match here, hopefully, that only ever happens on
-+	 * machines with one controller.
-+	 */
-+	if (pmac_newworld && (of_irq_workarounds & OF_IMAP_NO_PHANDLE)) {
-+		struct device_node *np;
-+
-+		for_each_node_with_property(np, "interrupt-controller") {
-+			/* Skip /chosen/interrupt-controller */
-+			if (strcmp(np->name, "chosen") == 0)
-+				continue;
-+			/* It seems like at least one person wants
-+			 * to use BootX on a machine with an AppleKiwi
-+			 * controller which happens to pretend to be an
-+			 * interrupt controller too. */
-+			if (strcmp(np->name, "AppleKiwi") == 0)
-+				continue;
-+			/* I think we found one ! */
-+			of_irq_dflt_pic = np;
-+			break;
-+		}
-+	}
-+#endif /* CONFIG_PPC32 */
- 
- 	/* We first try to detect Apple's new Core99 chipset, since mac-io
- 	 * is quite different on those machines and contains an IBM MPIC2.
+> ----
+>     of/address: Merge all of the bus translation code
+> 
+>     Microblaze and PowerPC share a large chunk of code for translating
+>     OF device tree data into usable addresses.  Differences between the two
+>     consist of cosmetic differences, and the addition of dma-ranges support
+>     to powerpc but not microblaze.  This patch moves the powerpc
+>     version into common code and applies many of the cosmetic (non-functional)
+>     changes from the microblaze version.
+> ----
+> 
+> I've only changed the commit text.  The patch remains unchanged.  Are
+> you okay with this patch?
+> 
+> Cheers,
+> g.
+> 
+> 
+> >>
+> >> Cheers,
+> >> Ben.
+> >>
+> >>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> >>> CC: Michal Simek <monstr@monstr.eu>
+> >>> CC: Wolfram Sang <w.sang@pengutronix.de>
+> >>> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+> >>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >>> CC: microblaze-uclinux@itee.uq.edu.au
+> >>> CC: linuxppc-dev@ozlabs.org
