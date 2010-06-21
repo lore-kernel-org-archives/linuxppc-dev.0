@@ -1,34 +1,16 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
-	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 192AB1007D1
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 21:20:56 +1000 (EST)
-Received: by wyf22 with SMTP id 22so2616666wyf.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Jun 2010 04:20:54 -0700 (PDT)
-Date: Mon, 21 Jun 2010 15:20:49 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Barry Song <21cnbao@gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH 1/2] mtd: m25p80:
-	Reworkprobing/JEDEC code
-Message-ID: <20100621112049.GA9273@oksana.dev.rtsoft.ru>
-References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
-	<20090818214622.GA22651@oksana.dev.rtsoft.ru>
-	<AANLkTikg60s6ZRSEDCq9PQK1z7hJtBDk6t4VE1lYDv8u@mail.gmail.com>
-	<20100618133212.GA5276@oksana.dev.rtsoft.ru>
-	<0F1B54C89D5F954D8535DB252AF412FA065551D8@chinexm1.ad.analog.com>
-	<AANLkTiksYofs6hhWta6uFX2cla_g8pBu0Mtbtcbv-2tl@mail.gmail.com>
-	<20100621071551.GA16109@oksana.dev.rtsoft.ru>
-	<AANLkTiknH95loHJsQNxvCCyQbriCFWqM5LHl3wKzmdWX@mail.gmail.com>
-	<20100621073909.GA20674@oksana.dev.rtsoft.ru>
-	<AANLkTinjhmkQafVlrtQC5yDnqIZz859_wrZqo45QOEJ2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AANLkTinjhmkQafVlrtQC5yDnqIZz859_wrZqo45QOEJ2@mail.gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	linux-kernel@vger.kernel.org, "Song,
-	Barry" <Barry.Song@analog.com>, linuxppc-dev@ozlabs.org,
-	linux-mtd@lists.infradead.org, uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 71FAD1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 21 Jun 2010 23:25:02 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Make BAT only guest segments work
+Date: Mon, 21 Jun 2010 15:24:55 +0200
+Message-Id: <1277126695-32081-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,98 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 21, 2010 at 06:31:44PM +0800, Barry Song wrote:
-> On Mon, Jun 21, 2010 at 3:39 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
-> > On Mon, Jun 21, 2010 at 03:22:48PM +0800, Barry Song wrote:
-> >> On Mon, Jun 21, 2010 at 3:15 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
-> >> > On Mon, Jun 21, 2010 at 11:27:31AM +0800, Barry Song wrote:
-> >> > [...]
-> >> >> > How about we add a non_jedec flag in platform_data, if the flag is 1, we
-> >> >> > let the detection pass even though the ID is 0? Otherwise, we need a
-> >> >> > valid ID?
-> >> >> Here i mean:
-> >> >
-> >> > This will break at least OF-enabled platforms (e.g. PowerPC),
-> >> > they assume that the driver will success for non-JEDEC flashes.
-> >> > OF platforms don't pass platform data, and even if they did,
-> >> > device tree doesn't specify if the flash is JEDEC or non-JEDEC.
-> >> >
-> >> > Which is why I think that, by default, the driver should
-> >> > successfully register the flash even if JEDEC probe fails. So,
-> >> > instead of checking for "!non_jedec", I would recommend
-> >> > "force_jedec" check.
-> >>
-> >> Mike Frysinger suggested to use non_jedec since most devices are
-> >> standard jedec devices.
-> >
-> > Well, on OF platforms most devices that I'm aware of are non-JEDEC.
-> >
-> >> Only if non_jedec=1, we let the detection pass
-> >> if ID is 0.
-> >
-> > Then please #ifdef it with CONFIG_OF.
-> I think the patch has nothing to do with platform. Here SPI Flash is a
-> peripherals, doesn't depend on any platform. Adding a CONFIG_OF
-> doesn't make sense very much.
+When a guest sets its SR entry to invalid, we may still find a
+corresponding entry in a BAT. So we need to make sure we're not
+faulting on invalid SR entries, but instead just claim them to be
+BAT resolved.
 
-With OF we don't place non-existent devices into the device
-tree (or we mark them with status = "not-ok/disabled/absent"
-property).
+This resolves breakage experienced when using libogc based guests.
 
-> If you think most devices are non-JEDEC, we can change non_JEDEC to
-> force_JEDEC as you said.
-> But anyway, is that real that most devices are non_JEDEC?
-
-Why would this matter? We have to support both.
-
-> If not, I think we should change OF platform codes to
-> fit with this patch.
-
-You can't easily change OF. It's like "let's change ACPI tables
-or BIOS in these PCs". Doable, but involves things like reflashing.
-And we usually have to support old BIOSes as well.
-
-OTOH, I see (git grep m25p arch/powerpc/boot/dts/) that in
-mainline kernel only MPC8569 board has a correct m25p
-node, and it is STMicro variant (it is JEDEC capable).
-
-As we don't really have to support out of tree code, I'd
-just go with this patch, assuming that we have to change
-device tree for boards with non-JEDEC flashes. It's
-effectively the same thing as platform data flag, except
-that it works automatically for OF platforms.
-
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
+ arch/powerpc/kvm/book3s_32_mmu.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 81e49a9..a610ca9 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -680,6 +680,16 @@ static const struct spi_device_id m25p_ids[] = {
- 	{ "m25p64",  INFO(0x202017,  0,  64 * 1024, 128, 0) },
- 	{ "m25p128", INFO(0x202018,  0, 256 * 1024,  64, 0) },
- 
-+	{ "m25p05-nonjedec",  INFO(0, 0,  32 * 1024,   2, 0) },
-+	{ "m25p10-nonjedec",  INFO(0, 0,  32 * 1024,   4, 0) },
-+	{ "m25p20-nonjedec",  INFO(0, 0,  64 * 1024,   4, 0) },
-+	{ "m25p40-nonjedec",  INFO(0, 0,  64 * 1024,   8, 0) },
-+	{ "m25p80-nonjedec",  INFO(0, 0,  64 * 1024,  16, 0) },
-+	{ "m25p16-nonjedec",  INFO(0, 0,  64 * 1024,  32, 0) },
-+	{ "m25p32-nonjedec",  INFO(0, 0,  64 * 1024,  64, 0) },
-+	{ "m25p64-nonjedec",  INFO(0, 0,  64 * 1024, 128, 0) },
-+	{ "m25p128-nonjedec", INFO(0, 0, 256 * 1024,  64, 0) },
-+
- 	{ "m45pe10", INFO(0x204011,  0, 64 * 1024,    2, 0) },
- 	{ "m45pe80", INFO(0x204014,  0, 64 * 1024,   16, 0) },
- 	{ "m45pe16", INFO(0x204015,  0, 64 * 1024,   32, 0) },
-@@ -795,8 +805,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
- 
- 		jid = jedec_probe(spi);
- 		if (!jid) {
--			dev_info(&spi->dev, "non-JEDEC variant of %s\n",
--				 id->name);
-+			return -ENODEV;
- 		} else if (jid != id) {
- 			/*
- 			 * JEDEC knows better, so overwrite platform ID. We
+diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
+index 0b10503..3292d76 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu.c
++++ b/arch/powerpc/kvm/book3s_32_mmu.c
+@@ -354,10 +354,10 @@ static int kvmppc_mmu_book3s_32_esid_to_vsid(struct kvm_vcpu *vcpu, ulong esid,
+ 		*vsid = VSID_REAL_DR | gvsid;
+ 		break;
+ 	case MSR_DR|MSR_IR:
+-		if (!sr->valid)
+-			return -1;
+-
+-		*vsid = sr->vsid;
++		if (sr->valid)
++			*vsid = sr->vsid;
++		else
++			*vsid = VSID_BAT | gvsid;
+ 		break;
+ 	default:
+ 		BUG();
+-- 
+1.6.0.2
