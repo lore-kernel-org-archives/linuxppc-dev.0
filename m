@@ -1,26 +1,22 @@
-Return-Path: <vapier.adi@gmail.com>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id BA619B6F0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 03:56:22 +1000 (EST)
-Received: by gyf2 with SMTP id 2so3230705gyf.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 10:56:21 -0700 (PDT)
+Return-Path: <chuck@ThePTRGroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
+	by ozlabs.org (Postfix) with ESMTP id 1B079B6F11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 23 Jun 2010 04:15:04 +1000 (EST)
+Received: from [10.11.13.50] (unknown [10.11.13.50])
+	by mail.theptrgroup.com (Postfix) with ESMTP id A33C11E002
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Jun 2010 14:15:02 -0400 (EDT)
+Message-ID: <4C20FDA0.5050208@ThePTRGroup.com>
+Date: Tue, 22 Jun 2010 14:14:56 -0400
+From: Chuck Meade <chuck@ThePTRGroup.com>
 MIME-Version: 1.0
-In-Reply-To: <20100622165734.GA20699@oksana.dev.rtsoft.ru>
-References: <20100622165545.GA10255@oksana.dev.rtsoft.ru>
-	<20100622165734.GA20699@oksana.dev.rtsoft.ru>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 22 Jun 2010 13:56:00 -0400
-Message-ID: <AANLkTinP63VyX2LjY-zIbnluasCiT3tOv6tlfZ6k1WqM@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mtd: m25p80: Fix false-positive probing
-To: Anton Vorontsov <avorontsov@mvista.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Barry Song <21cnbao@gmail.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: UCC UART
+References: <4C20CECB.9050609@mlbassoc.com>	<4C20D27D.5000503@ThePTRGroup.com>	<4C20D34A.80202@mlbassoc.com>	<4C20D699.1080404@ThePTRGroup.com>	<4C20DABA.5030301@mlbassoc.com>	<4C20DC5F.80902@ThePTRGroup.com>
+	<4C20F671.9090605@mlbassoc.com>
+In-Reply-To: <4C20F671.9090605@mlbassoc.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 22, 2010 at 12:57, Anton Vorontsov wrote:
-> Since commit 18c6182bae0acca220ed6611f741034d563cd19f ("Rework
-> probing/JEDEC code"), m25p80 driver successfully registers chips
-> even if JEDEC probing fails.
->
-> This was needed to support non-JEDEC flashes. Though, it appears
-> that some platforms (e.g. blackfin bf533 stamp[1]) used the old
-> behavior to detect if there's any flash connected, so the driver
-> have to fail on JEDEC probing errors.
->
-> This patch restores the old behavior for JEDEC flashes, and adds
-> "-nonjedec" SPI device IDs for M25Pxx flashes, so that the kernel
-> still supports non-JEDEC flashes.
+>> I did not do that, and I have it running here.  I will say though that I
+>> hardcoded the driver to run in soft UART mode.  You will need to at least
+>> add the appropriate line to your dts to get the driver to operate in
+>> Soft UART mode.
+>>
+>> I hardcoded mine because I had to backport this UCC UART driver to an
+>> older
+>> Linux kernel, and that kernel was from before dts existed.
+>>
+>> Add whatever you need to your dts to make it run in soft UART mode and
+>> get
+>> the firmware loaded.  Use two different BRGs for tx and rx.  Make sure
+>> your
+>> BRG choice is valid for your UCC3.
+>>
+>> I believe that the UCC UART support has not had too much use so far, but
+>> I do have it working (in that older kernel after backporting).
+> 
+> I've done all this but sadly the behaviour is the same :-(
+> 
+> Any ideas what I might be missing?
 
-Acked-by: Mike Frysinger <vapier@gentoo.org>
+Check your setup of the UCC3 pins for UART mode.  Make sure you either have
+the UCC3 CD, CTS, RTS pins at the correct levels, or deconfigure those pins
+(set them up as GPIOs).  Just verify every pin is properly set up for UCC3.
+The UCC3 TxD and RxD signals must be set up properly.
 
-> [1] http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=5975
+What BRGs did you choose for tx and rx?
 
-http://blackfin.uclinux.org/gf/tracker/5975
+Get a scope on the UCC3 tx pin and try to output some chars.  See if there is
+any digital activity on that pin at all.  If you are looking at a terminal for
+output, there are too many things that could be wrong between that tx pin and
+your display (e.g. level translation issue, null modem issue, baud incompatibility,
+terminal program set for XON/XOFF or HW flow control and UART not set up compatibly).
 
-> Reported-by: Mingquan Pan
+For now get the probe directly on the CPU's UCC3 Tx pin, output chars and see
+if there is any activity.
 
-<Grace.Pan@analog.com>
--mike
+Chuck Meade
+chuck@ThePTRGroup.com
