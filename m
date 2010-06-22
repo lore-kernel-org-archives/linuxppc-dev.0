@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 467CDB6F10
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 02:57:37 +1000 (EST)
-Date: Tue, 22 Jun 2010 20:57:34 +0400
+	by ozlabs.org (Postfix) with ESMTP id 363CBB734B
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 02:57:44 +1000 (EST)
+Date: Tue, 22 Jun 2010 20:57:42 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 1/2] mtd: m25p80: Fix false-positive probing
-Message-ID: <20100622165734.GA20699@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/2] mtd: m25p80: Make jedec_probe() return proper errno values
+Message-ID: <20100622165742.GB20699@oksana.dev.rtsoft.ru>
 References: <20100622165545.GA10255@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -27,59 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 18c6182bae0acca220ed6611f741034d563cd19f ("Rework
-probing/JEDEC code"), m25p80 driver successfully registers chips
-even if JEDEC probing fails.
+spi_write_then_read() may return its own return codes (e.g. -EIO),
+so let's propagate the value down to the probe().
 
-This was needed to support non-JEDEC flashes. Though, it appears
-that some platforms (e.g. blackfin bf533 stamp[1]) used the old
-behavior to detect if there's any flash connected, so the driver
-have to fail on JEDEC probing errors.
+Also, remove jedec == 0 check, it isn't needed as nowadays we use
+dedicated SPI device IDs for non-JEDEC flashes.
 
-This patch restores the old behavior for JEDEC flashes, and adds
-"-nonjedec" SPI device IDs for M25Pxx flashes, so that the kernel
-still supports non-JEDEC flashes.
-
-[1] http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=5975
-
-Reported-by: Mingquan Pan
-Reported-by: Barry Song <21cnbao@gmail.com>
+Suggested-by: Barry Song <21cnbao@gmail.com>
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
 
-This is for 2.6.35.
+This is for 2.6.36.
 
- drivers/mtd/devices/m25p80.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+ drivers/mtd/devices/m25p80.c |   18 ++++++------------
+ 1 files changed, 6 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 81e49a9..a610ca9 100644
+index a610ca9..7bf5c45 100644
 --- a/drivers/mtd/devices/m25p80.c
 +++ b/drivers/mtd/devices/m25p80.c
-@@ -680,6 +680,16 @@ static const struct spi_device_id m25p_ids[] = {
- 	{ "m25p64",  INFO(0x202017,  0,  64 * 1024, 128, 0) },
- 	{ "m25p128", INFO(0x202018,  0, 256 * 1024,  64, 0) },
+@@ -16,6 +16,8 @@
+  */
  
-+	{ "m25p05-nonjedec",  INFO(0, 0,  32 * 1024,   2, 0) },
-+	{ "m25p10-nonjedec",  INFO(0, 0,  32 * 1024,   4, 0) },
-+	{ "m25p20-nonjedec",  INFO(0, 0,  64 * 1024,   4, 0) },
-+	{ "m25p40-nonjedec",  INFO(0, 0,  64 * 1024,   8, 0) },
-+	{ "m25p80-nonjedec",  INFO(0, 0,  64 * 1024,  16, 0) },
-+	{ "m25p16-nonjedec",  INFO(0, 0,  64 * 1024,  32, 0) },
-+	{ "m25p32-nonjedec",  INFO(0, 0,  64 * 1024,  64, 0) },
-+	{ "m25p64-nonjedec",  INFO(0, 0,  64 * 1024, 128, 0) },
-+	{ "m25p128-nonjedec", INFO(0, 0, 256 * 1024,  64, 0) },
-+
- 	{ "m45pe10", INFO(0x204011,  0, 64 * 1024,    2, 0) },
- 	{ "m45pe80", INFO(0x204014,  0, 64 * 1024,   16, 0) },
- 	{ "m45pe16", INFO(0x204015,  0, 64 * 1024,   32, 0) },
-@@ -795,8 +805,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
+ #include <linux/init.h>
++#include <linux/err.h>
++#include <linux/errno.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
+@@ -733,7 +735,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
+ 	if (tmp < 0) {
+ 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
+ 			dev_name(&spi->dev), tmp);
+-		return NULL;
++		return ERR_PTR(tmp);
+ 	}
+ 	jedec = id[0];
+ 	jedec = jedec << 8;
+@@ -741,14 +743,6 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
+ 	jedec = jedec << 8;
+ 	jedec |= id[2];
+ 
+-	/*
+-	 * Some chips (like Numonyx M25P80) have JEDEC and non-JEDEC variants,
+-	 * which depend on technology process. Officially RDID command doesn't
+-	 * exist for non-JEDEC chips, but for compatibility they return ID 0.
+-	 */
+-	if (jedec == 0)
+-		return NULL;
+-
+ 	ext_jedec = id[3] << 8 | id[4];
+ 
+ 	for (tmp = 0; tmp < ARRAY_SIZE(m25p_ids) - 1; tmp++) {
+@@ -759,7 +753,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
+ 			return &m25p_ids[tmp];
+ 		}
+ 	}
+-	return NULL;
++	return ERR_PTR(-ENODEV);
+ }
+ 
+ 
+@@ -804,8 +798,8 @@ static int __devinit m25p_probe(struct spi_device *spi)
+ 		const struct spi_device_id *jid;
  
  		jid = jedec_probe(spi);
- 		if (!jid) {
--			dev_info(&spi->dev, "non-JEDEC variant of %s\n",
--				 id->name);
-+			return -ENODEV;
+-		if (!jid) {
+-			return -ENODEV;
++		if (IS_ERR(jid)) {
++			return PTR_ERR(jid);
  		} else if (jid != id) {
  			/*
  			 * JEDEC knows better, so overwrite platform ID. We
