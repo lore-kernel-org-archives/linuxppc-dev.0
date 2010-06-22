@@ -1,23 +1,19 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 363CBB734B
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 02:57:44 +1000 (EST)
-Date: Tue, 22 Jun 2010 20:57:42 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 2/2] mtd: m25p80: Make jedec_probe() return proper errno values
-Message-ID: <20100622165742.GB20699@oksana.dev.rtsoft.ru>
-References: <20100622165545.GA10255@oksana.dev.rtsoft.ru>
+Return-Path: <gary@mlbassoc.com>
+Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
+	by ozlabs.org (Postfix) with ESMTP id 73796B6EF3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 23 Jun 2010 03:44:20 +1000 (EST)
+Message-ID: <4C20F671.9090605@mlbassoc.com>
+Date: Tue, 22 Jun 2010 11:44:17 -0600
+From: Gary Thomas <gary@mlbassoc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100622165545.GA10255@oksana.dev.rtsoft.ru>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Barry Song <21cnbao@gmail.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Andrew Morton <akpm@linux-foundation.org>
+To: Chuck Meade <chuck@ThePTRGroup.com>
+Subject: Re: UCC UART
+References: <4C20CECB.9050609@mlbassoc.com>	<4C20D27D.5000503@ThePTRGroup.com>	<4C20D34A.80202@mlbassoc.com>	<4C20D699.1080404@ThePTRGroup.com>	<4C20DABA.5030301@mlbassoc.com>
+	<4C20DC5F.80902@ThePTRGroup.com>
+In-Reply-To: <4C20DC5F.80902@ThePTRGroup.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-spi_write_then_read() may return its own return codes (e.g. -EIO),
-so let's propagate the value down to the probe().
+On 06/22/2010 09:53 AM, Chuck Meade wrote:
+>>> Sure.  Go to opensource.freescale.com/firmware and download (for your
+>>> MPC8358)
+>>> the 8360 soft UART mode microcode patch.  You will need to know if
+>>> your CPU
+>>> is a 2.0 or 2.1 silicon, since there is a different microcode patch
+>>> for each.
+>>>
+>>> Then in the kernel config I believe I included CONFIG_FW_LOADER and
+>>> CONFIG_HOTPLUG
+>>> (one of those may have autoselected the other).
+>>>
+>>> Make sure in your ucc_uart.c driver that soft uart mode is enabled.
+>>>
+>>> At boot time, the driver will kick off a 10 second timer that will expect
+>>> the microcode patch to be loaded before the end of that 10 secs.
+>>>
+>>> Very early in my boot sequence, I have a startup script send the
+>>> microcode patch
+>>> file to the driver through the firmware-loading sysfs entry.  But you
+>>> need to
+>>> be aware that the UCC number in the sysfs path will be offset by one.
+>>> Since you
+>>> are using UCC3, you should use a '2' in the path as shown below.  This
+>>> sequence
+>>> worked for me (I changed the number for you to '2' in my command
+>>> sequence, since
+>>> I use a different UCC):
+>>>
+>>>     echo 1>   /sys/class/firmware/fsl-ucc-uart2/loading
+>>>     cat /root/fsl_qe_ucode_uart_8360_21.bin>
+>>> /sys/class/firmware/fsl-ucc-uart2/data
+>>>     echo 0>   /sys/class/firmware/fsl-ucc-uart2/loading
+>>>
+>>> Note that the above presupposes you are using the file for silicon 2.1.
+>>> Also presupposes that you have put the microcode under your rootfs
+>>> /root directory.
+>>
+>> Thanks, I'll give this a try.  When I download the firmware this way,
+>> do I need to follow the directions in
+>>    Documentation/powerpc/dts-bindings/fsl/cpm_qe/qe/firmware.txt
+>
+> I did not do that, and I have it running here.  I will say though that I
+> hardcoded the driver to run in soft UART mode.  You will need to at least
+> add the appropriate line to your dts to get the driver to operate in
+> Soft UART mode.
+>
+> I hardcoded mine because I had to backport this UCC UART driver to an older
+> Linux kernel, and that kernel was from before dts existed.
+>
+> Add whatever you need to your dts to make it run in soft UART mode and get
+> the firmware loaded.  Use two different BRGs for tx and rx.  Make sure your
+> BRG choice is valid for your UCC3.
+>
+> I believe that the UCC UART support has not had too much use so far, but
+> I do have it working (in that older kernel after backporting).
 
-Also, remove jedec == 0 check, it isn't needed as nowadays we use
-dedicated SPI device IDs for non-JEDEC flashes.
+I've done all this but sadly the behaviour is the same :-(
 
-Suggested-by: Barry Song <21cnbao@gmail.com>
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
+Any ideas what I might be missing?
 
-This is for 2.6.36.
-
- drivers/mtd/devices/m25p80.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index a610ca9..7bf5c45 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -16,6 +16,8 @@
-  */
- 
- #include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/interrupt.h>
-@@ -733,7 +735,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
- 	if (tmp < 0) {
- 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
- 			dev_name(&spi->dev), tmp);
--		return NULL;
-+		return ERR_PTR(tmp);
- 	}
- 	jedec = id[0];
- 	jedec = jedec << 8;
-@@ -741,14 +743,6 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
- 	jedec = jedec << 8;
- 	jedec |= id[2];
- 
--	/*
--	 * Some chips (like Numonyx M25P80) have JEDEC and non-JEDEC variants,
--	 * which depend on technology process. Officially RDID command doesn't
--	 * exist for non-JEDEC chips, but for compatibility they return ID 0.
--	 */
--	if (jedec == 0)
--		return NULL;
--
- 	ext_jedec = id[3] << 8 | id[4];
- 
- 	for (tmp = 0; tmp < ARRAY_SIZE(m25p_ids) - 1; tmp++) {
-@@ -759,7 +753,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
- 			return &m25p_ids[tmp];
- 		}
- 	}
--	return NULL;
-+	return ERR_PTR(-ENODEV);
- }
- 
- 
-@@ -804,8 +798,8 @@ static int __devinit m25p_probe(struct spi_device *spi)
- 		const struct spi_device_id *jid;
- 
- 		jid = jedec_probe(spi);
--		if (!jid) {
--			return -ENODEV;
-+		if (IS_ERR(jid)) {
-+			return PTR_ERR(jid);
- 		} else if (jid != id) {
- 			/*
- 			 * JEDEC knows better, so overwrite platform ID. We
 -- 
-1.7.0.5
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
