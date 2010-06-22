@@ -1,18 +1,22 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 7168FB6F16
+Return-Path: <chuck@ThePTRGroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
+	by ozlabs.org (Postfix) with ESMTP id 18D40B6F16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Jun 2010 01:14:20 +1000 (EST)
-Message-ID: <4C20D34A.80202@mlbassoc.com>
-Date: Tue, 22 Jun 2010 09:14:18 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+	Wed, 23 Jun 2010 01:15:26 +1000 (EST)
+Received: from [10.11.13.50] (unknown [10.11.13.50])
+	by mail.theptrgroup.com (Postfix) with ESMTP id C8CF71E002
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 22 Jun 2010 11:15:24 -0400 (EDT)
+Message-ID: <4C20D386.2000506@ThePTRGroup.com>
+Date: Tue, 22 Jun 2010 11:15:18 -0400
+From: Chuck Meade <chuck@ThePTRGroup.com>
 MIME-Version: 1.0
-To: Chuck Meade <chuck@ThePTRGroup.com>
-Subject: Re: UCC UART
-References: <4C20CECB.9050609@mlbassoc.com> <4C20D27D.5000503@ThePTRGroup.com>
-In-Reply-To: <4C20D27D.5000503@ThePTRGroup.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: UCC interactions
+References: <4C1FB6BB.4040705@mlbassoc.com>
+	<AANLkTinyt8phAgxJk30G0XuA5kJ78Xy1WdTg_yQpTCsS@mail.gmail.com>
+In-Reply-To: <AANLkTinyt8phAgxJk30G0XuA5kJ78Xy1WdTg_yQpTCsS@mail.gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,63 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/22/2010 09:10 AM, Chuck Meade wrote:
-> On 06/22/2010 10:55 AM, Gary Thomas wrote:
->> I'm still trying to get UCC UART to work on my MPC8358 with
->> the 2.6.33.3 kernel.
->>
->> When I try to send data to the port, there is no output, not
->> even any interrupts on the device.  What I see is that the UART
->> driver seems to initialize fine and pushes characters into
->> the output buffers&  descriptors.  However, there are no
->> interrupts hence it just sits there...
->>
->> My device tree entry for this device now looks like this:
->>      /* ttyQE0 (UCC3) */
->>      serial_qe0: serial@4000 {
->>                  device_type = "serial";
->>                  compatible = "ucc_uart";
->>                  cell-index =<3>;
->>          reg =<0x2200 0x200>;
->>          interrupts =<34>;
->>          interrupt-parent =<&qeic>;
->>                  port-number =<0>;
->>          rx-clock-name = "brg1";
->>          tx-clock-name = "brg1";
->>      };
->>
->> * Are there any known issues with this driver?
->> * Is there any way to get a handle on why no data is moving?
->> * Is there some way to tell if the QE even sees the descriptors?
->> * The driver and documentation mention a "soft UART" mode for
->>    chips with broken UART hardware.  How do I know if my board
->>    has functioning UART hardware?
->>
->> Note: I have UCC1+UCC2 working great with ethernet.
->>
->> Thanks for any pointers or ideas
->
-> Hi Gary,
->
-> According to the errata, it looks like the MPC8358 is subject to
-> erratum QE_UART6.  You'll need to use soft UART mode and load the
-> microcode patch.  Once that is done you will also need to use two
-> different BRG's, one for tx and one for rx, since the soft UART mode
-> microcode patch requires them to be set to different rates (I believe
-> Rx is 16*baud under soft UART mode, and Tx is 1*baud).
+On 06/22/2010 10:51 AM, Timur Tabi wrote:
+> On Mon, Jun 21, 2010 at 2:00 PM, Gary Thomas <gary@mlbassoc.com> wrote:
+>> I'm running 2.6.33.3 on MPC8358.  I have UCC1+UCC2 working fine
+>> for ethernet, but when I add UCC3 as a UART, the network devices
+>> quit working.
+> 
+> Since you're using QE UART, would you mind testing this patch:
+> 
+> http://patchwork.ozlabs.org/patch/56181/
+> 
+> and letting us know if it works for you?
+> 
 
-As I feared!  Can you tell me where/how to get the microcode patch?
+Hi Timur,
 
-> Also, I don't know if it matters or not, but you should change your
-> dts entry "serial@4000" to "serial@2200", just like you recently changed
-> your "reg =" to 0x2200.
+His UART is not working yet.  I am fine with him testing my patch (I hope he does),
+just he still is working on getting his UART to work at all.  I think since he is
+using MPC8358, he needs the soft UART mode microcode patch.
 
-I did that as soon as I sent this and saw the glaring inconsistency :-)
+The patch that you mention above is one I wrote that affects how the UART close
+operation handles being closed when buffered output is still present.  I fixed the
+timeout so it closes in the correct amount of time.  Gary is not quite ready for
+testing this yet.
 
-Thanks
-
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Thanks,
+Chuck
