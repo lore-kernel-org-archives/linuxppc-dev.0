@@ -1,22 +1,31 @@
-Return-Path: <chuck@ThePTRGroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
-	by ozlabs.org (Postfix) with ESMTP id 3D804B6EF7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 23 Jun 2010 07:28:03 +1000 (EST)
-Received: from [10.11.13.50] (unknown [10.11.13.50])
-	by mail.theptrgroup.com (Postfix) with ESMTP id 6B3641E002
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 22 Jun 2010 17:28:01 -0400 (EDT)
-Message-ID: <4C212ADA.3070409@ThePTRGroup.com>
-Date: Tue, 22 Jun 2010 17:27:54 -0400
-From: Chuck Meade <chuck@ThePTRGroup.com>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5D505B6EF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 07:29:04 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o5MLT0He017343
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 14:29:00 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o5MLf7vA003505
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 16:41:08 -0500 (CDT)
+Date: Tue, 22 Jun 2010 16:28:59 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: hellohello <hellohello008@163.com>
+Subject: Re: CPM UART on MPC8270
+Message-ID: <20100622212859.GA5796@schlenkerla.am.freescale.net>
+References: <4C0FA73B.4070905@ge.com>
+	<045f01cb0841$42bf97a0$591dbcc0@sfdomain.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: UCC UART
-References: <4C20CECB.9050609@mlbassoc.com>	<4C20D27D.5000503@ThePTRGroup.com>	<4C20D34A.80202@mlbassoc.com>	<4C20D699.1080404@ThePTRGroup.com>	<4C20DABA.5030301@mlbassoc.com>	<4C20DC5F.80902@ThePTRGroup.com>	<4C20F671.9090605@mlbassoc.com>	<4C20FDA0.5050208@ThePTRGroup.com>	<4C2103DE.6020801@mlbassoc.com>
-	<4C210892.3040503@ThePTRGroup.com> <4C2128E6.7010201@mlbassoc.com>
-In-Reply-To: <4C2128E6.7010201@mlbassoc.com>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <045f01cb0841$42bf97a0$591dbcc0@sfdomain.com>
+Cc: Martyn Welch <martyn.welch@ge.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +35,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Also in the current Linux kernel, there is a dependence on the
->> correctness
->> of the "brg-frequency" property from the dts.  Look up above
->> qe_setbrg() at
->> the qe_get_brg_clk() function.  Before the return (there are multiple
->> return
->> points) printk the brg_clk being returned.  That must be correct for your
->> hardware -- must be the actual brg freq.  I assume that you are
->> booting from
->> U-Boot.  I believe in modern implementations that U-Boot fills in the
->> brg-frequency in the device tree at boot time.
+On Thu, Jun 10, 2010 at 10:04:28AM +0800, hellohello wrote:
+> Although I  haven't used scc port as uart,  I think your smc1 part in your dts file maybe is wrong.
 > 
-> The driver claims to work with either bus-frequency or brg-frequency set.
-> I only had bus-frequency; when I set brg-frequency, it has started to work.
-> Now to test it with a scope to see what else is wrong...
-> 
-> BTW, I use RedBoot - being the original author, how could I not?
-> 
-> Thanks for the help
+> serial@11a82 { ...
+>  reg = <0x11a80 0x20 0x87fc 2>;
+> should be:
+>   reg = <0x11a80 0x20 XXX 40>;
+> XXX is the value which is set at 0x87fc in your bootloader.  
+> I just got this mistake a few days ago.
 
-No problem -- I am glad it is working for you now.
+"0x87fc 2" should work fine with recent kernels (and you want 0x40, not 40,
+for the old way).  Besides, he said SMC1 was working, it's SCC3 that wasn't.
 
-Chuck Meade
-chuck@ThePTRGroup.com
+-Scott
