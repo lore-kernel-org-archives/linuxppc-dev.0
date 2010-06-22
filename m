@@ -1,15 +1,20 @@
-Return-Path: <gary@mlbassoc.com>
-Received: from mail.chez-thomas.org (hermes.mlbassoc.com [76.76.67.137])
-	by ozlabs.org (Postfix) with ESMTP id 4476CB6EDD
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 00:55:09 +1000 (EST)
-Message-ID: <4C20CECB.9050609@mlbassoc.com>
-Date: Tue, 22 Jun 2010 08:55:07 -0600
-From: Gary Thomas <gary@mlbassoc.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id EDB99B6F0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 01:00:06 +1000 (EST)
+Received: by pxi1 with SMTP id 1so240216pxi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Jun 2010 08:00:05 -0700 (PDT)
 MIME-Version: 1.0
-To: Linux PPC Development <linuxppc-dev@ozlabs.org>
-Subject: UCC UART
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Timur Tabi <timur@freescale.com>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <4C1FB6BB.4040705@mlbassoc.com>
+References: <4C1FB6BB.4040705@mlbassoc.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Tue, 22 Jun 2010 09:51:33 -0500
+Message-ID: <AANLkTinyt8phAgxJk30G0XuA5kJ78Xy1WdTg_yQpTCsS@mail.gmail.com>
+Subject: Re: UCC interactions
+To: Gary Thomas <gary@mlbassoc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,42 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm still trying to get UCC UART to work on my MPC8358 with
-the 2.6.33.3 kernel.
+On Mon, Jun 21, 2010 at 2:00 PM, Gary Thomas <gary@mlbassoc.com> wrote:
+> I'm running 2.6.33.3 on MPC8358. =A0I have UCC1+UCC2 working fine
+> for ethernet, but when I add UCC3 as a UART, the network devices
+> quit working.
 
-When I try to send data to the port, there is no output, not
-even any interrupts on the device.  What I see is that the UART
-driver seems to initialize fine and pushes characters into
-the output buffers & descriptors.  However, there are no
-interrupts hence it just sits there...
+Since you're using QE UART, would you mind testing this patch:
 
-My device tree entry for this device now looks like this:
-	/* ttyQE0 (UCC3) */
-	serial_qe0: serial@4000 {
-                 device_type = "serial";
-                 compatible = "ucc_uart";
-                 cell-index = <3>;
-		reg = <0x2200 0x200>;
-		interrupts = <34>;
-		interrupt-parent = <&qeic>;
-                 port-number = <0>;
-		rx-clock-name = "brg1";
-		tx-clock-name = "brg1";
-	};
+http://patchwork.ozlabs.org/patch/56181/
 
-* Are there any known issues with this driver?
-* Is there any way to get a handle on why no data is moving?
-* Is there some way to tell if the QE even sees the descriptors?
-* The driver and documentation mention a "soft UART" mode for
-   chips with broken UART hardware.  How do I know if my board
-   has functioning UART hardware?
+and letting us know if it works for you?
 
-Note: I have UCC1+UCC2 working great with ethernet.
-
-Thanks for any pointers or ideas
-
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
