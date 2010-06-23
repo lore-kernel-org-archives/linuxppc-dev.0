@@ -1,29 +1,64 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id DDB25B70D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 21:41:19 +1000 (EST)
-Received: by bwz1 with SMTP id 1so2373042bwz.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 04:41:17 -0700 (PDT)
-Date: Wed, 23 Jun 2010 13:41:17 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 12/40] x86, compat: convert ia32 layer to use
-Message-ID: <20100623114116.GE5242@nowhere>
-References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-13-git-send-email-imunsie@au1.ibm.com>
-	<20100623101402.GA10564@lst.de> <20100623103619.GC5242@nowhere>
-	<20100623104603.GB11845@lst.de>
+Return-Path: <kosaki.motohiro@jp.fujitsu.com>
+Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
+	by ozlabs.org (Postfix) with ESMTP id 40B46B713F
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 21:04:02 +1000 (EST)
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o5NAUqsS022087 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kosaki.motohiro@jp.fujitsu.com); Wed, 23 Jun 2010 19:30:52 +0900
+Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o5NAUobn028327 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kosaki.motohiro@jp.fujitsu.com); Wed, 23 Jun 2010 19:30:50 +0900
+Received: from smail (m4 [127.0.0.1])
+	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id AECA245DE7C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 77ABD45DE70
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 462DFE38009
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
+Received: from m108.s.css.fujitsu.com (m108.s.css.fujitsu.com [10.249.87.108])
+	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id EB159E38002
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:48 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 31/40] trace syscalls: Convert various generic compat
+	syscalls
+In-Reply-To: <4C21DFBA.2070202@linux.intel.com>
+References: <1277287401-28571-32-git-send-email-imunsie@au1.ibm.com>
+	<4C21DFBA.2070202@linux.intel.com>
+Message-Id: <20100623192930.B5A9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100623104603.GB11845@lst.de>
-Cc: Jason Baron <jbaron@redhat.com>, x86@kernel.org,
-	Greg Ungerer <gerg@uclinux.org>, linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
+Content-Type: text/plain; charset="US-ASCII"
+Date: Wed, 23 Jun 2010 19:30:47 +0900 (JST)
+Cc: Christoph Lameter <cl@linux-foundation.org>, WANG Cong <amwang@redhat.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
+	Eric Dumazet <eric.dumazet@gmail.com>,
+	Jeff Moyer <jmoyer@redhat.com>, Ingo Molnar <mingo@redhat.com>,
+	kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
+	Arnd Bergmann <arnd@arndb.de>, David Rientjes <rientjes@google.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Ian Munsie <imunsie@au1.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>
+	Johannes Berg <johannes@sipsolutions.net>,
+	Roland McGrath <roland@redhat.com>,
+	Lee Schermerhorn <lee.schermerhorn@hp.com>,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Neil Horman <nhorman@tuxdriver.com>, linux-mm@kvack.org,
+	netdev@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Roel Kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org,
+	kexec@lists.infradead.org, Eric Biederman <ebiederm@xmission.com>,
+	linux-fsdevel@vger.kernel.org,
+	Simon Kagstrom <simon.kagstrom@netinsight.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +68,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 23, 2010 at 12:46:04PM +0200, Christoph Hellwig wrote:
-> On Wed, Jun 23, 2010 at 12:36:21PM +0200, Frederic Weisbecker wrote:
-> > I think we wanted that to keep the sys32_ prefixed based naming, to avoid
-> > collisions with generic compat handler names.
+> , Ian Munsie wrote:
+> > From: Ian Munsie<imunsie@au1.ibm.com>
+> >
+> > This patch converts numerous trivial compat syscalls through the generic
+> > kernel code to use the COMPAT_SYSCALL_DEFINE family of macros.
 > 
-> For native syscalls we do this by adding a arch prefix inside the
-> syscall name, e.g.:
-> 
-> arch/s390/kernel/sys_s390.c:SYSCALL_DEFINE(s390_fallocate)(int fd, int mode, loff_t offset,
-> arch/sparc/kernel/sys_sparc_64.c:SYSCALL_DEFINE1(sparc_pipe_real, struct pt_regs *, regs)
+> Why? This just makes the code look uglier and the functions harder
+> to grep for.
 
-
-In fact we sort of wanted to standardize the name of arch overriden compat
-syscalls, so that userspace programs playing with syscalls tracing won't have
-to deal with arch naming differences.
+I guess trace-syscall feature need to override COMPAT_SYSCALL_DEFINE. but
+It's only guess...
