@@ -1,26 +1,36 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 14510B707F
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 01:26:29 +1000 (EST)
-Subject: Re: [PATCH 10/40] tracing: add tracing support for compat syscalls
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ian Munsie <imunsie@au1.ibm.com>
-In-Reply-To: <1277287401-28571-11-git-send-email-imunsie@au1.ibm.com>
-References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-11-git-send-email-imunsie@au1.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 23 Jun 2010 11:26:26 -0400
-Message-ID: <1277306786.9181.51.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Masami Hiramatsu <mhiramat@redhat.com>
-Reply-To: rostedt@goodmis.org
+Return-Path: <sv@in.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp04.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C07A6B6F10
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 24 Jun 2010 01:35:57 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp04.in.ibm.com (8.14.4/8.13.1) with ESMTP id o5NFZqKq018613
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2010 21:05:52 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5NFZqMH3547352
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2010 21:05:52 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NFZqEH023387
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2010 21:05:52 +0530
+Received: from dirshya.in.ibm.com ([9.77.65.72])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o5NFZkDK022761
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jun 2010 21:05:50 +0530
+Resent-Message-ID: <20100623153543.GA508@dirshya.in.ibm.com>
+Subject: [PATCH v3 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+	<paulus@samba.org>, Anton Blanchard <anton@samba.org>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Wed, 23 Jun 2010 11:33:56 +0530
+Message-ID: <20100623060122.4957.33819.stgit@drishya.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlab.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,87 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-06-23 at 20:02 +1000, Ian Munsie wrote:
-> From: Jason Baron <jbaron@redhat.com>
-> 
-> Add core support to event tracing for compat syscalls. The basic idea is that we
-> check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
-> new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
-> check syscall arguments and whether or not we are enabled.
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
->  include/linux/compat.h        |    2 +
->  include/trace/syscall.h       |    4 ++
->  kernel/trace/trace.h          |    2 +
->  kernel/trace/trace_syscalls.c |   86 +++++++++++++++++++++++++++++++++++++----
->  4 files changed, 86 insertions(+), 8 deletions(-)
-> 
-> diff --git a/include/linux/compat.h b/include/linux/compat.h
-> index ab638e9..a94f13d 100644
-> --- a/include/linux/compat.h
-> +++ b/include/linux/compat.h
-> @@ -363,6 +363,8 @@ extern ssize_t compat_rw_copy_check_uvector(int type,
->  
->  #else /* CONFIG_COMPAT */
->  
-> +#define NR_syscalls_compat 0
-> +
->  static inline int is_compat_task(void)
->  {
->  	return 0;
-> diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-> index 75f3dce..67d4e64 100644
-> --- a/include/trace/syscall.h
-> +++ b/include/trace/syscall.h
-> @@ -22,6 +22,7 @@
->  struct syscall_metadata {
->  	const char	*name;
->  	int		syscall_nr;
-> +	int		compat_syscall_nr;
+Hi Ben,
 
-This is also bloating the kernel. I don't like to add fields to the
-syscall_metadata lightly.
+The following series adds a kernel module for powerpc pseries platforms in
+order to export platform energy management capabilities.
 
-You're adding 4 more bytes to this structure to handle a few items. Find
-a better way to do this.
+The module exports data from a new hypervisor call H_BEST_ENERGY.
 
->  	int		nb_args;
->  	const char	**types;
->  	const char	**args;
-> @@ -38,6 +39,9 @@ struct syscall_metadata {
->  
->  #ifdef CONFIG_FTRACE_SYSCALLS
->  extern unsigned long arch_syscall_addr(int nr);
-> +#ifdef CONFIG_COMPAT
-> +extern unsigned long arch_compat_syscall_addr(int nr);
-> +#endif
->  extern int init_syscall_trace(struct ftrace_event_call *call);
->  
->  extern int reg_event_syscall_enter(struct ftrace_event_call *call);
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 01ce088..53ace4b 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -79,12 +79,14 @@ enum trace_type {
->  struct syscall_trace_enter {
->  	struct trace_entry	ent;
->  	int			nr;
-> +	int			compat;
+Comments and suggestions made on the previous iteration of the patch
+has been incorporated.
 
-You're adding 4 bytes to a trace (taking up precious buffer space) for a
-single flag. If anything, set the 31st bit of nr if it is compat.
+Changed in v3:
 
--- Steve
+* Added more documentation in the cleanup patch
+* Removed RFC tag, rebased and tested on 2.6.35-rc3
+* Ready for inclusion in powerpc/next tree for further testing
 
->  	unsigned long		args[];
->  };
->  
->  struct syscall_trace_exit {
->  	struct trace_entry	ent;
->  	int			nr;
-> +	int			compat;
->  	long			ret;
->  };
->  
+Changes in v2:
+
+[1] [RFC PATCH v2 0/2] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-May/082246.html
+
+* Cleanup cpu/thread/core APIs
+* Export APIs to module instead of threads_per_core
+* Use of_find_node_by_path() instead of of_find_node_by_name()
+* Error checking and whitespace cleanups
+
+First version:
+[2] [RFC] powerpc: add support for new hcall H_BEST_ENERGY
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-March/080796.html
+
+Please review and include in powerpc/next tree for further testing.  I will
+add the following enhancements incrementally:
+
+* Detect h_call support from ibm,hypertas-functions
+* Limit sysfs file creation only on hcall availability
+
+This patch series will apply on 2.6.35-rc3 as well as powerpc/next tree.
+
+Thanks,
+Vaidy
+---
+
+Vaidyanathan Srinivasan (2):
+      powerpc: cleanup APIs for cpu/thread/core mappings
+      powerpc: add support for new hcall H_BEST_ENERGY
+
+
+ arch/powerpc/include/asm/cputhreads.h           |   15 +
+ arch/powerpc/include/asm/hvcall.h               |    3 
+ arch/powerpc/kernel/smp.c                       |   19 +-
+ arch/powerpc/mm/mmu_context_nohash.c            |   12 +
+ arch/powerpc/platforms/pseries/Kconfig          |   10 +
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/pseries_energy.c |  258 +++++++++++++++++++++++
+ 7 files changed, 302 insertions(+), 16 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/pseries_energy.c
+
+-- 
