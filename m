@@ -1,48 +1,32 @@
-Return-Path: <kosaki.motohiro@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
-	by ozlabs.org (Postfix) with ESMTP id 40B46B713F
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 21:04:02 +1000 (EST)
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o5NAUqsS022087 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kosaki.motohiro@jp.fujitsu.com); Wed, 23 Jun 2010 19:30:52 +0900
-Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
-	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o5NAUobn028327 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kosaki.motohiro@jp.fujitsu.com); Wed, 23 Jun 2010 19:30:50 +0900
-Received: from smail (m4 [127.0.0.1])
-	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id AECA245DE7C
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
-	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 77ABD45DE70
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 462DFE38009
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:49 +0900 (JST)
-Received: from m108.s.css.fujitsu.com (m108.s.css.fujitsu.com [10.249.87.108])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id EB159E38002
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 19:30:48 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
+	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id B4640B70B9
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 21:38:07 +1000 (EST)
+Received: by bwz1 with SMTP id 1so2371508bwz.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 04:38:04 -0700 (PDT)
+Date: Wed, 23 Jun 2010 13:38:07 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Andi Kleen <ak@linux.intel.com>
 Subject: Re: [PATCH 31/40] trace syscalls: Convert various generic compat
 	syscalls
-In-Reply-To: <4C21DFBA.2070202@linux.intel.com>
-References: <1277287401-28571-32-git-send-email-imunsie@au1.ibm.com>
-	<4C21DFBA.2070202@linux.intel.com>
-Message-Id: <20100623192930.B5A9.A69D9226@jp.fujitsu.com>
+Message-ID: <20100623113806.GD5242@nowhere>
+References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
+	<1277287401-28571-32-git-send-email-imunsie@au1.ibm.com>
+	<4C21DFBA.2070202@linux.intel.com> <20100623102931.GB5242@nowhere>
+	<4C21E3F8.9000405@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Date: Wed, 23 Jun 2010 19:30:47 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4C21E3F8.9000405@linux.intel.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>, WANG Cong <amwang@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
 	Heiko Carstens <heiko.carstens@de.ibm.com>,
 	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
 	Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier.adi@gmail.com>,
 	Eric Dumazet <eric.dumazet@gmail.com>,
 	Jeff Moyer <jmoyer@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-	kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-	Arnd Bergmann <arnd@arndb.de>, David Rientjes <rientjes@google.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	David Rientjes <rientjes@google.com>,
+	Ingo Molnar <mingo@elte.hu>, Arnd Bergmann <arnd@arndb.de>,
 	Steven Rostedt <rostedt@goodmis.org>, Ian Munsie <imunsie@au1.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Johannes Berg <johannes@sipsolutions.net>,
@@ -68,14 +52,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> , Ian Munsie wrote:
-> > From: Ian Munsie<imunsie@au1.ibm.com>
-> >
-> > This patch converts numerous trivial compat syscalls through the generic
-> > kernel code to use the COMPAT_SYSCALL_DEFINE family of macros.
-> 
-> Why? This just makes the code look uglier and the functions harder
-> to grep for.
+On Wed, Jun 23, 2010 at 12:37:44PM +0200, Andi Kleen wrote:
+> , Frederic Weisbecker wrote:
+>> On Wed, Jun 23, 2010 at 12:19:38PM +0200, Andi Kleen wrote:
+>>> , Ian Munsie wrote:
+>>>> From: Ian Munsie<imunsie@au1.ibm.com>
+>>>>
+>>>> This patch converts numerous trivial compat syscalls through the generic
+>>>> kernel code to use the COMPAT_SYSCALL_DEFINE family of macros.
+>>>
+>>> Why? This just makes the code look uglier and the functions harder
+>>> to grep for.
+>>
+>>
+>> Because it makes them usable with syscall tracing.
+>
+> Ok that information is missing in the changelog then.
 
-I guess trace-syscall feature need to override COMPAT_SYSCALL_DEFINE. but
-It's only guess...
+
+Agreed, the changelog lacks the purpose of what it does.
+
+
+
+> Also I hope the uglification<->usefullness factor is really worth it.
+> The patch is certainly no slouch on the uglification side.
+
+
+It's worth because the kernel's syscall tracing is not complete, we lack all
+the compat part.
+
+These wrappers let us create TRACE_EVENT() for every syscalls automatically.
+If we had to create them manually, the uglification would be way much more worse.
+
+Most syscalls use the syscall wrappers already, so the uglification
+is there mostly. We just forgot to uglify a bunch of them :)
+
+
+> It also has maintenance costs, e.g. I doubt ctags and cscope
+> will be able to deal with these kinds of macros, so it has a
+> high cost for everyone using these tools. For those
+> it would be actually better if you used separate annotation
+> that does not confuse standard C parsers.
+
+
+I haven't heard any complains about existing syscalls wrappers.
+
+What kind of annotations could solve that?
