@@ -1,38 +1,48 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AE6ECB7219
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:45 +1000 (EST)
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9EB5EB7221
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:46 +1000 (EST)
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA4oWX006799
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:50 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA4eoN025393
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:40 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NA4jXm1613842
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:45 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NA4h8b008073
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:44 +1000
+	o5NA4gvE1507420
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:42 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NA4bfG005523
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:42 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 40/40] trace syscalls,
-	PPC: Convert morphing native/compat syscalls
-Date: Wed, 23 Jun 2010 20:03:21 +1000
-Message-Id: <1277287401-28571-41-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 32/40] trace syscalls: Record metadata for syscalls with their
+	own wrappers
+Date: Wed, 23 Jun 2010 20:03:13 +1000
+Message-Id: <1277287401-28571-33-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Chase Douglas <cndougla@linux.vnet.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+Cc: Jan Kara <jack@suse.cz>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+	Frederic Weisbecker <fweisbec@gmail.com>, Julia Lawall <julia@diku.dk>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+	Paul Mackerras <paulus@samba.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Jan Blunck <jblunck@suse.de>,
+	Christoph Hellwig <hch@lst.de>, Nick Piggin <npiggin@suse.de>,
+	linux-s390@vger.kernel.org, Jesper Nilsson <jesper.nilsson@axis.com>,
+	Manfred Spraul <manfred@colorfullife.com>,
+	James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
 	Steven Rostedt <rostedt@goodmis.org>,
-	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
+	linux-fsdevel@vger.kernel.org, Ian Munsie <imunsie@au1.ibm.com>,
+	"Serge E. Hallyn" <serue@us.ibm.com>,
+	Jason Baron <jbaron@redhat.com>, Eric Paris <eparis@redhat.com>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@linux.intel.com>, Christoph Hellwig <hch@lst.de>,
-	Anton Blanchard <anton@samba.org>
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,161 +54,212 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-Several of the PowerPC system call implementations are used as both the
-32bit compat version on PPC64 and the 32bit native version on PPC32.
+This patch adds support for syscalls using the SYSCALL_DEFINE macro
+(i.e. ones that require a specialised syscall wrapper) to record their
+meta-data for system call tracing.
 
-Previousely these used the preprocessor to change the function names on
-PPC64 to add the compat_ prefix.
-
-This patch converts these system calls to use the SYSCALL_DEFINE family
-of macros, with the preprocessor selecting which macro to use at their
-implementation (which should also make things a little clearer, if more
-verbose).
-
-This patch also renames the swapcontext syscall and it's assembly
-wrapper such that only the first three characters of their names will
-differ which ftrace syscalls ignores when matching the syscall names
-to their symbol names. This ensures that the appropriate meta-data will
-match for this system call.
+The semantics of the SYSCALL_DEFINE macro therefore change to include
+the number of arguments to the syscall and the arguments and types. All
+instances of this macro have been updated to the new semantics.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/include/asm/systbl.h |    2 +-
- arch/powerpc/kernel/entry_64.S    |    4 +-
- arch/powerpc/kernel/signal_32.c   |   56 +++++++++++++++++++++++++-----------
- 3 files changed, 42 insertions(+), 20 deletions(-)
+ arch/s390/kernel/sys_s390.c |    4 ++--
+ fs/dcookies.c               |    2 +-
+ fs/open.c                   |    6 +++---
+ fs/read_write.c             |    8 ++++----
+ fs/sync.c                   |    8 ++++----
+ include/linux/syscalls.h    |    9 +++++++--
+ ipc/sem.c                   |    2 +-
+ mm/fadvise.c                |    4 ++--
+ mm/filemap.c                |    2 +-
+ 9 files changed, 25 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 06c0a73..a0afa14 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -252,7 +252,7 @@ COMPAT_SYS_SPU(clock_settime)
- COMPAT_SYS_SPU(clock_gettime)
- COMPAT_SYS_SPU(clock_getres)
- COMPAT_SYS_SPU(clock_nanosleep)
--SYSX(ppc64_swapcontext,ppc32_swapcontext,ppc_swapcontext)
-+SYSX(ppc_swapcontext,ppc32_swapcontext,ppc_swapcontext)
- COMPAT_SYS_SPU(tgkill)
- COMPAT_SYS_SPU(utimes)
- COMPAT_SYS_SPU(statfs64)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 42e9d90..8c23ff1 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -346,10 +346,10 @@ _GLOBAL(ppc_clone)
- 
- _GLOBAL(ppc32_swapcontext)
- 	bl	.save_nvgprs
--	bl	.compat_sys_swapcontext
-+	bl	.sys32_swapcontext
- 	b	syscall_exit
- 
--_GLOBAL(ppc64_swapcontext)
-+_GLOBAL(ppc_swapcontext)
- 	bl	.save_nvgprs
- 	bl	.sys_swapcontext
- 	b	syscall_exit
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 212583d..2c4071f 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -55,13 +55,6 @@
- #undef DEBUG_SIG
- 
- #ifdef CONFIG_PPC64
--#define sys_sigsuspend	compat_sys_sigsuspend
--#define sys_rt_sigsuspend	compat_sys_rt_sigsuspend
--#define sys_rt_sigreturn	compat_sys_rt_sigreturn
--#define sys_sigaction	compat_sys_sigaction
--#define sys_swapcontext	compat_sys_swapcontext
--#define sys_sigreturn	compat_sys_sigreturn
--
- #define old_sigaction	old_sigaction32
- #define sigcontext	sigcontext32
- #define mcontext	mcontext32
-@@ -239,7 +232,11 @@ static inline int restore_general_regs(struct pt_regs *regs,
- /*
-  * Atomically swap in the new signal mask, and wait for a signal.
+diff --git a/arch/s390/kernel/sys_s390.c b/arch/s390/kernel/sys_s390.c
+index 7b6b0f8..7773c87 100644
+--- a/arch/s390/kernel/sys_s390.c
++++ b/arch/s390/kernel/sys_s390.c
+@@ -185,8 +185,8 @@ SYSCALL_DEFINE1(s390_fadvise64_64, struct fadvise64_64_args __user *, args)
+  * to
+  *   %r2: fd, %r3: mode, %r4/%r5: offset, 96(%r15)-103(%r15): len
   */
--long sys_sigsuspend(old_sigset_t mask)
-+#ifdef CONFIG_PPC64
-+COMPAT_SYSCALL_DEFINE1(sigsuspend, old_sigset_t, mask)
-+#else
-+SYSCALL_DEFINE1(sigsuspend, old_sigset_t, mask)
-+#endif
+-SYSCALL_DEFINE(s390_fallocate)(int fd, int mode, loff_t offset,
+-			       u32 len_high, u32 len_low)
++SYSCALL_DEFINE(s390_fallocate, 5, int, fd, int, mode, loff_t, offset,
++			       u32, len_high, u32, len_low)
  {
- 	mask &= _BLOCKABLE;
- 	spin_lock_irq(&current->sighand->siglock);
-@@ -254,8 +251,15 @@ long sys_sigsuspend(old_sigset_t mask)
-  	return -ERESTARTNOHAND;
+ 	return sys_fallocate(fd, mode, offset, ((u64)len_high << 32) | len_low);
+ }
+diff --git a/fs/dcookies.c b/fs/dcookies.c
+index a21cabd..794cf94 100644
+--- a/fs/dcookies.c
++++ b/fs/dcookies.c
+@@ -145,7 +145,7 @@ out:
+ /* And here is where the userspace process can look up the cookie value
+  * to retrieve the path.
+  */
+-SYSCALL_DEFINE(lookup_dcookie)(u64 cookie64, char __user * buf, size_t len)
++SYSCALL_DEFINE(lookup_dcookie, 3, u64, cookie64, char __user *, buf, size_t, len)
+ {
+ 	unsigned long cookie = (unsigned long)cookie64;
+ 	int err = -EINVAL;
+diff --git a/fs/open.c b/fs/open.c
+index 5463266..4107638 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -185,7 +185,7 @@ SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
+ 
+ /* LFS versions of truncate are only needed on 32 bit machines */
+ #if BITS_PER_LONG == 32
+-SYSCALL_DEFINE(truncate64)(const char __user * path, loff_t length)
++SYSCALL_DEFINE(truncate64, 2, const char __user *, path, loff_t, length)
+ {
+ 	return do_sys_truncate(path, length);
+ }
+@@ -197,7 +197,7 @@ asmlinkage long SyS_truncate64(long path, loff_t length)
+ SYSCALL_ALIAS(sys_truncate64, SyS_truncate64);
+ #endif
+ 
+-SYSCALL_DEFINE(ftruncate64)(unsigned int fd, loff_t length)
++SYSCALL_DEFINE(ftruncate64, 2, unsigned int, fd, loff_t, length)
+ {
+ 	long ret = do_sys_ftruncate(fd, length, 0);
+ 	/* avoid REGPARM breakage on x86: */
+@@ -256,7 +256,7 @@ int do_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
+ 	return inode->i_op->fallocate(inode, mode, offset, len);
  }
  
--long sys_sigaction(int sig, struct old_sigaction __user *act,
--		struct old_sigaction __user *oact)
-+#ifdef CONFIG_PPC64
-+COMPAT_SYSCALL_DEFINE3(sigaction, int, sig,
-+		struct old_sigaction __user *, act,
-+		struct old_sigaction __user *, oact)
-+#else
-+SYSCALL_DEFINE3(sigaction, int, sig,
-+		struct old_sigaction __user *, act,
-+		struct old_sigaction __user *, oact)
-+#endif
+-SYSCALL_DEFINE(fallocate)(int fd, int mode, loff_t offset, loff_t len)
++SYSCALL_DEFINE(fallocate, 4, int, fd, int, mode, loff_t, offset, loff_t, len)
  {
- 	struct k_sigaction new_ka, old_ka;
+ 	struct file *file;
+ 	int error = -EBADF;
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 9c04852..5b4044f 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -423,8 +423,8 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
+ 	return ret;
+ }
+ 
+-SYSCALL_DEFINE(pread64)(unsigned int fd, char __user *buf,
+-			size_t count, loff_t pos)
++SYSCALL_DEFINE(pread64, 4, unsigned int, fd, char __user *, buf,
++			size_t, count, loff_t, pos)
+ {
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+@@ -452,8 +452,8 @@ asmlinkage long SyS_pread64(long fd, long buf, long count, loff_t pos)
+ SYSCALL_ALIAS(sys_pread64, SyS_pread64);
+ #endif
+ 
+-SYSCALL_DEFINE(pwrite64)(unsigned int fd, const char __user *buf,
+-			 size_t count, loff_t pos)
++SYSCALL_DEFINE(pwrite64, 4, unsigned int, fd, const char __user *, buf,
++			 size_t, count, loff_t, pos)
+ {
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+diff --git a/fs/sync.c b/fs/sync.c
+index 15aa6f0..5cb8072 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -292,8 +292,8 @@ EXPORT_SYMBOL(generic_write_sync);
+  * already-instantiated disk blocks, there are no guarantees here that the data
+  * will be available after a crash.
+  */
+-SYSCALL_DEFINE(sync_file_range)(int fd, loff_t offset, loff_t nbytes,
+-				unsigned int flags)
++SYSCALL_DEFINE(sync_file_range, 4, int, fd, loff_t, offset, loff_t, nbytes,
++				unsigned int, flags)
+ {
  	int ret;
-@@ -938,9 +942,21 @@ static int do_setcontext(struct ucontext __user *ucp, struct pt_regs *regs, int
- 	return 0;
+ 	struct file *file;
+@@ -387,8 +387,8 @@ SYSCALL_ALIAS(sys_sync_file_range, SyS_sync_file_range);
+ 
+ /* It would be nice if people remember that not all the world's an i386
+    when they introduce new system calls */
+-SYSCALL_DEFINE(sync_file_range2)(int fd, unsigned int flags,
+-				 loff_t offset, loff_t nbytes)
++SYSCALL_DEFINE(sync_file_range2, 4, int, fd, unsigned int, flags,
++				 loff_t, offset, loff_t, nbytes)
+ {
+ 	return sys_sync_file_range(fd, offset, nbytes, flags);
+ }
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 1076ae8..d7eaa4b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -251,7 +251,9 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 
+ #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
+ 
+-#define SYSCALL_DEFINE(name) static inline long SYSC_##name
++#define SYSCALL_DEFINE(name, x, ...)					\
++	SYSCALL_METADATAx(sys_##name, sys_##name, x, syscall, __VA_ARGS__);\
++	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
+ 
+ #define __SYSCALL_DEFINEx(x, name, ...)					\
+ 	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));		\
+@@ -266,7 +268,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 
+ #else /* CONFIG_HAVE_SYSCALL_WRAPPERS */
+ 
+-#define SYSCALL_DEFINE(name) asmlinkage long sys_##name
++#define SYSCALL_DEFINE(name, x, ...)					\
++	SYSCALL_METADATAx(sys_##name, sys_##name, x, syscall, __VA_ARGS__);\
++	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__))
++
+ #define __SYSCALL_DEFINEx(x, name, ...)					\
+ 	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
+ 
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 506c849..1a1716b 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -1074,7 +1074,7 @@ out_up:
+ 	return err;
  }
  
--long sys_swapcontext(struct ucontext __user *old_ctx,
--		     struct ucontext __user *new_ctx,
--		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
-+/*
-+ * Note: Named sys_swapcontext on PPC32 and sys32_swapcontext on PPC64.
-+ * Ensures that it's name will still match when compared with it's wrappers
-+ * name (ppc_swapcontext on PPC32, ppc32_swapcontext on PPC64) for ftrace
-+ * syscalls (which ignores the 1st three characters).
-+ */
-+#ifdef CONFIG_PPC64
-+PPC_REGS_COMPAT_SYSCALL_DEFINEx(3, long, sys32_, swapcontext, regs,
-+		struct ucontext __user *, old_ctx,
-+		struct ucontext __user *, new_ctx, int, ctx_size)
-+#else
-+PPC_REGS_SYSCALL_DEFINE3_RET(long, swapcontext, regs,
-+		struct ucontext __user *, old_ctx,
-+		struct ucontext __user *, new_ctx, int, ctx_size)
-+#endif
+-SYSCALL_DEFINE(semctl)(int semid, int semnum, int cmd, union semun arg)
++SYSCALL_DEFINE(semctl, 4, int, semid, int, semnum, int, cmd, union semun, arg)
  {
- 	unsigned char tmp;
- 	int ctx_has_vsx_region = 0;
-@@ -1029,8 +1045,11 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- 	return 0;
- }
- 
--long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		     struct pt_regs *regs)
-+#ifdef CONFIG_PPC64
-+PPC_REGS_COMPAT_SYSCALL_DEFINE0_RET(long, rt_sigreturn, regs)
-+#else
-+PPC_REGS_SYSCALL_DEFINE0_RET(long, rt_sigreturn, regs)
-+#endif
- {
- 	struct rt_sigframe __user *rt_sf;
- 
-@@ -1256,8 +1275,11 @@ badframe:
- /*
-  * Do a signal return; undo the signal stack.
+ 	int err = -EINVAL;
+ 	int version;
+diff --git a/mm/fadvise.c b/mm/fadvise.c
+index 8d723c9..5105afa 100644
+--- a/mm/fadvise.c
++++ b/mm/fadvise.c
+@@ -24,7 +24,7 @@
+  * POSIX_FADV_WILLNEED could set PG_Referenced, and POSIX_FADV_NOREUSE could
+  * deactivate the pages and clear PG_Referenced.
   */
--long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		       struct pt_regs *regs)
-+#ifdef CONFIG_PPC64
-+PPC_REGS_COMPAT_SYSCALL_DEFINE0_RET(long, sigreturn, regs)
-+#else
-+PPC_REGS_SYSCALL_DEFINE0_RET(long, sigreturn, regs)
-+#endif
+-SYSCALL_DEFINE(fadvise64_64)(int fd, loff_t offset, loff_t len, int advice)
++SYSCALL_DEFINE(fadvise64_64, 4, int, fd, loff_t, offset, loff_t, len, int, advice)
  {
- 	struct sigcontext __user *sc;
- 	struct sigcontext sigctx;
+ 	struct file *file = fget(fd);
+ 	struct address_space *mapping;
+@@ -144,7 +144,7 @@ SYSCALL_ALIAS(sys_fadvise64_64, SyS_fadvise64_64);
+ 
+ #ifdef __ARCH_WANT_SYS_FADVISE64
+ 
+-SYSCALL_DEFINE(fadvise64)(int fd, loff_t offset, size_t len, int advice)
++SYSCALL_DEFINE(fadvise64, 4, int, fd, loff_t, offset, size_t, len, int, advice)
+ {
+ 	return sys_fadvise64_64(fd, offset, len, advice);
+ }
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 20e5642..967d6bb 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1372,7 +1372,7 @@ do_readahead(struct address_space *mapping, struct file *filp,
+ 	return 0;
+ }
+ 
+-SYSCALL_DEFINE(readahead)(int fd, loff_t offset, size_t count)
++SYSCALL_DEFINE(readahead, 3, int, fd, loff_t, offset, size_t, count)
+ {
+ 	ssize_t ret;
+ 	struct file *file;
 -- 
 1.7.1
