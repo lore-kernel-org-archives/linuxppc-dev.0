@@ -1,27 +1,24 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id E0E39B6EF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 05:45:51 +1000 (EST)
-Subject: Re: [PATCH 08/40] tracing: remove syscall bitmaps in preparation
-	for compat support
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jason Baron <jbaron@redhat.com>
-In-Reply-To: <20100623193455.GE2680@redhat.com>
+Return-Path: <jbaron@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 9548EB6F11
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 04:04:37 +1000 (EST)
+Date: Wed, 23 Jun 2010 14:03:54 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH 39/40] trace syscalls: Clean confusing {s,r,}name and
+	fix ABI breakage
+Message-ID: <20100623180353.GB2680@redhat.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-9-git-send-email-imunsie@au1.ibm.com>
-	<1277306204.9181.43.camel@gandalf.stny.rr.com>
-	<20100623191454.GC2680@redhat.com> <20100623193455.GE2680@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 23 Jun 2010 15:45:47 -0400
-Message-ID: <1277322347.9181.54.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	<1277287401-28571-40-git-send-email-imunsie@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1277287401-28571-40-git-send-email-imunsie@au1.ibm.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
 	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	Masami Hiramatsu <mhiramat@redhat.com>
-Reply-To: rostedt@goodmis.org
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,15 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-06-23 at 15:34 -0400, Jason Baron wrote:
+On Wed, Jun 23, 2010 at 08:03:20PM +1000, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> This patch cleans up the preprocessor macros defining system calls by
+> standidising on the parameters passing around the system call name, with
+> and without it's prefix.
+> 
+> Overall this makes the preprocessor code easier to understand and
+> follow and less likely to introduce bugs due to misunderstanding what to
+> place into each parameter.
+> 
+> The parameters henceforth should be named:
+> 
+> sname is the system call name WITHOUT the prefix (e.g. read)
+> prefix is the prefix INCLUDING the trailing underscore (e.g. sys_)
+> 
+> These are mashed together to form the full syscall name when required
+> like blah##prefix##sname. For just prefix##sname please use the provided
+> SYSNAME(prefix,sname) macro instead as it will be safe if prefix itself
+> is a macro.
+> 
+> This patch also fixes an ABI breakage - the ftrace events are once again
+> named like 'sys_enter_read' instead of 'enter_sys_read'. The rwtop
+> script shipped with perf relies on this ABI. Others may as well.
+> 
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> ---
 
-> Actually, looking at this further, what we probably want to do change
-> the "int nb_args" field, which is already in syscall_metadata into a bit
-> field. nb_args I think can be at most 6, or 3 bits, and we only need 4
-> bits for storing the enabled/disabled data, so we could even make it a
-> char. Thus, actually saving space with this patch :) (at least as far as
-> the syscall_metadata field is concerned).
+overall this patch is a major improvement! My question though is
+about the naming of the compat syscalls in the context of events. I
+believe this patch differeniates compat syscall event names as:
+"sys32_enter_sname", and "compat_sys_enter_sname". I agree that we keep that
+distinction for purposes of defining the actual syscall function. However,
+we had discuessed previously about keeping the event name the same for
+all compat syscalls. ie they are all called "compat_sys_sname" or some
+such. Reason being you could just do "compat_*" to match all compat
+events.
 
-Yeah, I'm fine with turning that into a count/flags field.
+thanks,
 
--- Steve
+-Jason
