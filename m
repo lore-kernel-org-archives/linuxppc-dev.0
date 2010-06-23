@@ -1,28 +1,27 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [198.137.202.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 65244B6EFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 05:25:15 +1000 (EST)
-Message-ID: <4C225F40.8000008@zytor.com>
-Date: Wed, 23 Jun 2010 12:23:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 12/40] x86, compat: convert ia32 layer to use
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id E0E39B6EF7
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 05:45:51 +1000 (EST)
+Subject: Re: [PATCH 08/40] tracing: remove syscall bitmaps in preparation
+	for compat support
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Jason Baron <jbaron@redhat.com>
+In-Reply-To: <20100623193455.GE2680@redhat.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-13-git-send-email-imunsie@au1.ibm.com>
-	<20100623101402.GA10564@lst.de> <20100623103619.GC5242@nowhere>
-	<20100623104603.GB11845@lst.de> <20100623114116.GE5242@nowhere>
-In-Reply-To: <20100623114116.GE5242@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jason Baron <jbaron@redhat.com>,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	<1277287401-28571-9-git-send-email-imunsie@au1.ibm.com>
+	<1277306204.9181.43.camel@gandalf.stny.rr.com>
+	<20100623191454.GC2680@redhat.com> <20100623193455.GE2680@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 23 Jun 2010 15:45:47 -0400
+Message-ID: <1277322347.9181.54.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Greg Ungerer <gerg@uclinux.org>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Thomas Gleixner <tglx@linutronix.de>, Christoph Hellwig <hch@lst.de>
+	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	Masami Hiramatsu <mhiramat@redhat.com>
+Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/23/2010 04:41 AM, Frederic Weisbecker wrote:
-> On Wed, Jun 23, 2010 at 12:46:04PM +0200, Christoph Hellwig wrote:
->> On Wed, Jun 23, 2010 at 12:36:21PM +0200, Frederic Weisbecker wrote:
->>> I think we wanted that to keep the sys32_ prefixed based naming, to avoid
->>> collisions with generic compat handler names.
->>
->> For native syscalls we do this by adding a arch prefix inside the
->> syscall name, e.g.:
->>
->> arch/s390/kernel/sys_s390.c:SYSCALL_DEFINE(s390_fallocate)(int fd, int mode, loff_t offset,
->> arch/sparc/kernel/sys_sparc_64.c:SYSCALL_DEFINE1(sparc_pipe_real, struct pt_regs *, regs)
-> 
-> In fact we sort of wanted to standardize the name of arch overriden compat
-> syscalls, so that userspace programs playing with syscalls tracing won't have
-> to deal with arch naming differences.
-> 
+On Wed, 2010-06-23 at 15:34 -0400, Jason Baron wrote:
 
-That seems totally wrong in so many ways.
+> Actually, looking at this further, what we probably want to do change
+> the "int nb_args" field, which is already in syscall_metadata into a bit
+> field. nb_args I think can be at most 6, or 3 bits, and we only need 4
+> bits for storing the enabled/disabled data, so we could even make it a
+> char. Thus, actually saving space with this patch :) (at least as far as
+> the syscall_metadata field is concerned).
 
-What userspace sees is the system call name, e.g. fallocate or pipe.  It
-should *not* be visible to userspace that there is an arch-specici
-implementation.
+Yeah, I'm fine with turning that into a count/flags field.
 
-There are already a huge amount of gratuitous user space ABI
-differences, of course, partly because we *still* don't actually have a
-systematic model for argument passing.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+-- Steve
