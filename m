@@ -1,22 +1,24 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.124]) by ozlabs.org (Postfix) with ESMTP id AEFE7B6F05
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 01:16:48 +1000 (EST)
-Subject: Re: [PATCH 08/40] tracing: remove syscall bitmaps in preparation
-	for compat support
+	[71.74.56.125]) by ozlabs.org (Postfix) with ESMTP id 14510B707F
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 01:26:29 +1000 (EST)
+Subject: Re: [PATCH 10/40] tracing: add tracing support for compat syscalls
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Ian Munsie <imunsie@au1.ibm.com>
-In-Reply-To: <1277287401-28571-9-git-send-email-imunsie@au1.ibm.com>
+In-Reply-To: <1277287401-28571-11-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-9-git-send-email-imunsie@au1.ibm.com>
+	<1277287401-28571-11-git-send-email-imunsie@au1.ibm.com>
 Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 23 Jun 2010 11:16:44 -0400
-Message-ID: <1277306204.9181.43.camel@gandalf.stny.rr.com>
+Date: Wed, 23 Jun 2010 11:26:26 -0400
+Message-ID: <1277306786.9181.51.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>,
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
 	Masami Hiramatsu <mhiramat@redhat.com>
 Reply-To: rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,61 +33,84 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Wed, 2010-06-23 at 20:02 +1000, Ian Munsie wrote:
 > From: Jason Baron <jbaron@redhat.com>
 > 
-> In preparation for compat syscall tracing support, let's store the enabled
-> syscalls, with the struct syscall_metadata itself. That way we don't duplicate
-> enabled information when the compat table points to an entry in the regular
-> syscall table. Also, allows us to remove the bitmap data structures completely.
+> Add core support to event tracing for compat syscalls. The basic idea is that we
+> check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
+> new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
+> check syscall arguments and whether or not we are enabled.
 > 
 > Signed-off-by: Jason Baron <jbaron@redhat.com>
 > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 > ---
->  include/linux/syscalls.h      |    8 +++++++
->  include/trace/syscall.h       |    4 +++
->  kernel/trace/trace_syscalls.c |   42 +++++++++++++++++++---------------------
->  3 files changed, 32 insertions(+), 22 deletions(-)
+>  include/linux/compat.h        |    2 +
+>  include/trace/syscall.h       |    4 ++
+>  kernel/trace/trace.h          |    2 +
+>  kernel/trace/trace_syscalls.c |   86 +++++++++++++++++++++++++++++++++++++----
+>  4 files changed, 86 insertions(+), 8 deletions(-)
 > 
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index 86f082b..755d05b 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -163,6 +163,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
->  		.nb_args 	= nb,				\
->  		.types		= types_##sname,		\
->  		.args		= args_##sname,			\
-> +		.ftrace_enter	= 0,				\
-> +		.ftrace_exit	= 0,				\
-> +		.perf_enter	= 0,				\
-> +		.perf_exit	= 0,				\
+> diff --git a/include/linux/compat.h b/include/linux/compat.h
+> index ab638e9..a94f13d 100644
+> --- a/include/linux/compat.h
+> +++ b/include/linux/compat.h
+> @@ -363,6 +363,8 @@ extern ssize_t compat_rw_copy_check_uvector(int type,
+>  
+>  #else /* CONFIG_COMPAT */
+>  
+> +#define NR_syscalls_compat 0
+> +
+>  static inline int is_compat_task(void)
+>  {
+>  	return 0;
+> diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+> index 75f3dce..67d4e64 100644
+> --- a/include/trace/syscall.h
+> +++ b/include/trace/syscall.h
+> @@ -22,6 +22,7 @@
+>  struct syscall_metadata {
+>  	const char	*name;
+>  	int		syscall_nr;
+> +	int		compat_syscall_nr;
 
-I really hate this change!
+This is also bloating the kernel. I don't like to add fields to the
+syscall_metadata lightly.
 
-You just removed a nice compressed bitmap (1 bit per syscall) to add 4
-bytes per syscall. On my box I have 308 syscalls being traced. That was
-308 bits per bitmask = 39 bytes * 2 = 78 * 2 (perf and ftrace) = 156.
+You're adding 4 more bytes to this structure to handle a few items. Find
+a better way to do this.
 
-Now we have 8 bytes per syscall (enter and exit), which is 1232 bytes.
+>  	int		nb_args;
+>  	const char	**types;
+>  	const char	**args;
+> @@ -38,6 +39,9 @@ struct syscall_metadata {
+>  
+>  #ifdef CONFIG_FTRACE_SYSCALLS
+>  extern unsigned long arch_syscall_addr(int nr);
+> +#ifdef CONFIG_COMPAT
+> +extern unsigned long arch_compat_syscall_addr(int nr);
+> +#endif
+>  extern int init_syscall_trace(struct ftrace_event_call *call);
+>  
+>  extern int reg_event_syscall_enter(struct ftrace_event_call *call);
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 01ce088..53ace4b 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -79,12 +79,14 @@ enum trace_type {
+>  struct syscall_trace_enter {
+>  	struct trace_entry	ent;
+>  	int			nr;
+> +	int			compat;
 
-Thus this change added 1076 bytes.
-
-This may not seem as much, but the change is not worth 1K. Can't we just
-add another bitmask or something for the compat case?
-
-I also hate the moving of ftrace and perf internal data to an external
-interface.
+You're adding 4 bytes to a trace (taking up precious buffer space) for a
+single flag. If anything, set the 31st bit of nr if it is compat.
 
 -- Steve
 
->  		.enter_event	= &event_enter_##sname,		\
->  		.exit_event	= &event_exit_##sname,		\
->  		.enter_fields	= LIST_HEAD_INIT(__syscall_meta_##sname.enter_fields), \
-> @@ -179,6 +183,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
->  		.name 		= "sys_"#sname,			\
->  		.syscall_nr	= -1,	/* Filled in at boot */	\
->  		.nb_args 	= 0,				\
-> +		.ftrace_enter	= 0,				\
-> +		.ftrace_exit	= 0,				\
-> +		.perf_enter	= 0,				\
-> +		.perf_exit	= 0,				\
->  		.enter_event	= &event_enter__##sname,	\
->  		.exit_event	= &event_exit__##sname,		\
->  		.enter_fields	= LIST_HEAD_INIT(__syscall_meta__##sname.enter_fields), \
+>  	unsigned long		args[];
+>  };
+>  
+>  struct syscall_trace_exit {
+>  	struct trace_entry	ent;
+>  	int			nr;
+> +	int			compat;
+>  	long			ret;
+>  };
+>  
