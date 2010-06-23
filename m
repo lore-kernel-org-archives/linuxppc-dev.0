@@ -1,49 +1,28 @@
 Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.10])
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73F82B6F29
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 02:10:08 +1000 (EST)
-Message-ID: <4C222D91.9030803@zytor.com>
-Date: Wed, 23 Jun 2010 08:51:45 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 65244B6EFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 05:25:15 +1000 (EST)
+Message-ID: <4C225F40.8000008@zytor.com>
+Date: Wed, 23 Jun 2010 12:23:44 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
 To: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 31/40] trace syscalls: Convert various generic compat
-	syscalls
+Subject: Re: [PATCH 12/40] x86, compat: convert ia32 layer to use
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-32-git-send-email-imunsie@au1.ibm.com>
-	<4C21DFBA.2070202@linux.intel.com> <20100623102931.GB5242@nowhere>
-	<4C21E3F8.9000405@linux.intel.com> <20100623113806.GD5242@nowhere>
-In-Reply-To: <20100623113806.GD5242@nowhere>
+	<1277287401-28571-13-git-send-email-imunsie@au1.ibm.com>
+	<20100623101402.GA10564@lst.de> <20100623103619.GC5242@nowhere>
+	<20100623104603.GB11845@lst.de> <20100623114116.GE5242@nowhere>
+In-Reply-To: <20100623114116.GE5242@nowhere>
 Content-Type: text/plain; charset=UTF-8
-Cc: Christoph Lameter <cl@linux-foundation.org>, WANG Cong <amwang@redhat.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Oleg Nesterov <oleg@redhat.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <ak@linux.intel.com>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Eric Dumazet <eric.dumazet@gmail.com>,
-	Jeff Moyer <jmoyer@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	David Rientjes <rientjes@google.com>,
-	Ingo Molnar <mingo@elte.hu>, Arnd Bergmann <arnd@arndb.de>,
-	Steven Rostedt <rostedt@goodmis.org>, Ian Munsie <imunsie@au1.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Roland McGrath <roland@redhat.com>,
-	Lee Schermerhorn <lee.schermerhorn@hp.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Neil Horman <nhorman@tuxdriver.com>, linux-mm@kvack.org,
-	netdev@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Roel Kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org,
-	kexec@lists.infradead.org, Eric Biederman <ebiederm@xmission.com>,
-	linux-fsdevel@vger.kernel.org,
-	Simon Kagstrom <simon.kagstrom@netinsight.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jason Baron <jbaron@redhat.com>,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	Ian Munsie <imunsie@au1.ibm.com>, Greg Ungerer <gerg@uclinux.org>,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	Thomas Gleixner <tglx@linutronix.de>, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,12 +32,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/23/2010 04:38 AM, Frederic Weisbecker wrote:
+On 06/23/2010 04:41 AM, Frederic Weisbecker wrote:
+> On Wed, Jun 23, 2010 at 12:46:04PM +0200, Christoph Hellwig wrote:
+>> On Wed, Jun 23, 2010 at 12:36:21PM +0200, Frederic Weisbecker wrote:
+>>> I think we wanted that to keep the sys32_ prefixed based naming, to avoid
+>>> collisions with generic compat handler names.
+>>
+>> For native syscalls we do this by adding a arch prefix inside the
+>> syscall name, e.g.:
+>>
+>> arch/s390/kernel/sys_s390.c:SYSCALL_DEFINE(s390_fallocate)(int fd, int mode, loff_t offset,
+>> arch/sparc/kernel/sys_sparc_64.c:SYSCALL_DEFINE1(sparc_pipe_real, struct pt_regs *, regs)
 > 
-> I haven't heard any complains about existing syscalls wrappers.
+> In fact we sort of wanted to standardize the name of arch overriden compat
+> syscalls, so that userspace programs playing with syscalls tracing won't have
+> to deal with arch naming differences.
 > 
 
-Then you truly haven't been listening.
+That seems totally wrong in so many ways.
+
+What userspace sees is the system call name, e.g. fallocate or pipe.  It
+should *not* be visible to userspace that there is an arch-specici
+implementation.
+
+There are already a huge amount of gratuitous user space ABI
+differences, of course, partly because we *still* don't actually have a
+systematic model for argument passing.
 
 	-hpa
 
