@@ -1,21 +1,31 @@
 Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5A35DB770C
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0wJt020453
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:58 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5NA4T691097778
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:29 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NA4Sl4028102
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:29 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 22/40] trace syscalls, PPC: Convert syscalls to SYSCALL_DEFINE
-Date: Wed, 23 Jun 2010 20:03:03 +1000
-Message-Id: <1277287401-28571-23-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 25/40] trace syscalls: Refactor syscall metadata creation
+Date: Wed, 23 Jun 2010 20:03:06 +1000
+Message-Id: <1277287401-28571-26-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Arnd Bergmann <arnd@arndb.de>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
-	Chase Douglas <cndougla@linux.vnet.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Michal Simek <monstr@monstr.eu>, Ingo Molnar <mingo@redhat.com>,
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
 	Paul Mackerras <paulus@samba.org>,
-	Ian Munsie <imunsie@au1.ibm.com>, Tejun Heo <tj@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org
+	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,146 +37,150 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch alters the trivial syscalls (with a return type of long) in
-PPC to use the SYSCALL_DEFINE family of macros to record their metadata
-for ftrace syscalls.
+The syscall metadata creation macros are a bit convoluted with some
+duplicated code - particularly the duplication in SYSCALL_DEFINE0 with
+SYSCALL_METADATA and related macros.
 
-It does not alter any non-trivial syscalls with different return types.
+As demonstrated by the compat syscalls, there may be needs to introduce
+additional high level *_SYSCALL_DEFINE[0-6] macros with subtle
+differences from the existing ones. This patch aims to make the macros
+more atomic, move more of the complexity of the macros down, and remove
+some duplicated code without changing existing functionality so that
+defining new high level macros is easier.
 
-Several of the syscalls with a ppc_ prefix are renamed by this patch to
-have a sys_ppc_ prefix so that they can be used easily with the
-SYSCALL_DEFINE macro.
+In particular, certain system calls on PowerPC access the state of the
+registers, through the use of some assembly that places the registers on
+the stack in the place of the 7th argument to the function. These system
+calls require specialised macros to record their metadata and this patch
+greatly simplifies their implementation.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/include/asm/syscalls.h        |    2 +-
- arch/powerpc/include/asm/systbl.h          |    4 ++--
- arch/powerpc/kernel/pci_32.c               |    5 +++--
- arch/powerpc/kernel/pci_64.c               |    4 ++--
- arch/powerpc/kernel/syscalls.c             |    6 +++---
- arch/powerpc/platforms/cell/spu_syscalls.c |    6 +++---
- 6 files changed, 14 insertions(+), 13 deletions(-)
+ include/linux/syscalls.h |   77 ++++++++++++++++------------------------------
+ 1 files changed, 27 insertions(+), 50 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 4084e56..be37ef8 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -34,7 +34,7 @@ asmlinkage long sys_pipe2(int __user *fildes, int flags);
- asmlinkage long sys_rt_sigaction(int sig,
- 		const struct sigaction __user *act,
- 		struct sigaction __user *oact, size_t sigsetsize);
--asmlinkage long ppc64_personality(unsigned long personality);
-+asmlinkage long sys_ppc64_personality(unsigned long personality);
- asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
- asmlinkage time_t sys64_time(time_t __user * tloc);
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 55a9f2b..a608565 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -153,7 +153,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 		.data			= (void *)&__syscall_meta_##sname,\
+ 	}
  
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index a5ee345..dd8494a 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -139,7 +139,7 @@ COMPAT_SYS_SPU(getpgid)
- SYSCALL_SPU(fchdir)
- SYSCALL_SPU(bdflush)
- COMPAT_SYS(sysfs)
--SYSX_SPU(ppc64_personality,ppc64_personality,sys_personality)
-+SYSX_SPU(sys_ppc64_personality,sys_ppc64_personality,sys_personality)
- SYSCALL(ni_syscall)
- SYSCALL_SPU(setfsuid)
- SYSCALL_SPU(setfsgid)
-@@ -257,7 +257,7 @@ COMPAT_SYS_SPU(tgkill)
- COMPAT_SYS_SPU(utimes)
- COMPAT_SYS_SPU(statfs64)
- COMPAT_SYS_SPU(fstatfs64)
--SYSX(sys_ni_syscall, ppc_fadvise64_64, ppc_fadvise64_64)
-+SYSX(sys_ni_syscall, sys_ppc_fadvise64_64, sys_ppc_fadvise64_64)
- PPC_SYS_SPU(rtas)
- OLDSYS(debug_setcontext)
- SYSCALL(ni_syscall)
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index e7db5b4..fb2391a 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -15,6 +15,7 @@
- #include <linux/list.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-+#include <linux/syscalls.h>
+-#define SYSCALL_METADATA(rname, sname, nb, event_class)		\
++#define SYSCALL_METADATA(rname, sname, nb, event_class, stypes, sargs)\
+ 	SYSCALL_TRACE_ENTER_EVENT(sname, event_class);		\
+ 	SYSCALL_TRACE_EXIT_EVENT(sname, event_class);		\
+ 	static struct syscall_metadata __used			\
+@@ -162,9 +162,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 	  __syscall_meta_##sname = {				\
+ 		.name 		= #rname,			\
+ 		.syscall_nr	= -1,	/* Filled in at boot */	\
++		.compat_syscall_nr = -1,/* Filled in at boot */	\
+ 		.nb_args 	= nb,				\
+-		.types		= types_##sname,		\
+-		.args		= args_##sname,			\
++		.types		= stypes,			\
++		.args		= sargs,			\
+ 		.ftrace_enter	= 0,				\
+ 		.ftrace_exit	= 0,				\
+ 		.perf_enter	= 0,				\
+@@ -175,29 +176,22 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 		.exit_fields	= LIST_HEAD_INIT(__syscall_meta_##sname.exit_fields), \
+ 	};
  
- #include <asm/processor.h>
- #include <asm/io.h>
-@@ -423,8 +424,8 @@ pci_bus_to_hose(int bus)
-  * root bridge.
-  * Note that the returned IO or memory base is a physical address
-  */
--
--long sys_pciconfig_iobase(long which, unsigned long bus, unsigned long devfn)
-+SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, bus,
-+		unsigned long, devfn)
- {
- 	struct pci_controller* hose;
- 	long result = -EOPNOTSUPP;
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index d43fc65..1b1b846 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -211,8 +211,8 @@ void __devinit pcibios_setup_phb_io_space(struct pci_controller *hose)
- #define IOBASE_ISA_IO		3
- #define IOBASE_ISA_MEM		4
+-#define SYSCALL_DEFINE0(sname)					\
+-	SYSCALL_TRACE_ENTER_EVENT(sys_##sname, syscall);	\
+-	SYSCALL_TRACE_EXIT_EVENT(sys_##sname, syscall);		\
+-	static struct syscall_metadata __used			\
+-	  __attribute__((__aligned__(4)))			\
+-	  __attribute__((section("__syscalls_metadata")))	\
+-	  __syscall_meta_sys_##sname = {			\
+-		.name 		= "sys_"#sname,			\
+-		.syscall_nr	= -1,	/* Filled in at boot */	\
+-		.nb_args 	= 0,				\
+-		.ftrace_enter	= 0,				\
+-		.ftrace_exit	= 0,				\
+-		.perf_enter	= 0,				\
+-		.perf_exit	= 0,				\
+-		.enter_event	= &event_enter_sys_##sname,	\
+-		.exit_event	= &event_exit_sys_##sname,	\
+-		.enter_fields	= LIST_HEAD_INIT(__syscall_meta__##sname.enter_fields), \
+-		.exit_fields	= LIST_HEAD_INIT(__syscall_meta__##sname.exit_fields), \
++#define SYSCALL_METADATAx(rname, sname, nb, event_class, ...)	\
++	static const char *types_##sname[] = {			\
++		__SC_STR_TDECL##nb(__VA_ARGS__)			\
+ 	};							\
+-	asmlinkage long sys_##sname(void)
+-#else
+-#define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
+-#endif
++	static const char *args_##sname[] = {			\
++		__SC_STR_ADECL##nb(__VA_ARGS__)			\
++	};							\
++	SYSCALL_METADATA(rname, sname, nb, event_class, types_##sname, args_##sname)
++
++#define SYSCALL_METADATA0(rname, sname, event_class)			\
++	SYSCALL_METADATA(rname, sname, 0, event_class, NULL, NULL)
++
++#else /* !CONFIG_FTRACE_SYSCALLS */
++#define SYSCALL_METADATAx(...)
++#define SYSCALL_METADATA0(...)
++#endif /* CONFIG_FTRACE_SYSCALLS */
  
--long sys_pciconfig_iobase(long which, unsigned long in_bus,
--			  unsigned long in_devfn)
-+SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, in_bus,
-+			  unsigned long, in_devfn)
- {
- 	struct pci_controller* hose;
- 	struct list_head *ln;
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index f2496f2..f3bce3a 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -102,7 +102,7 @@ ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, s
- #endif
+ #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
+ #define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
+@@ -222,22 +216,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ #define COMPAT_SYSCALL_DEFINE5(name, ...) COMPAT_SYSCALL_DEFINEx(5, compat_sys_##name, name, __VA_ARGS__)
+ #define COMPAT_SYSCALL_DEFINE6(name, ...) COMPAT_SYSCALL_DEFINEx(6, compat_sys_##name, name, __VA_ARGS__)
+ 
+-#ifdef CONFIG_COMPAT_FTRACE_SYSCALLS
+ #define COMPAT_SYSCALL_DEFINEx(x, syscall, sname, ...)			\
+-	static const char *types_compat_sys_##sname[] = {		\
+-		__SC_STR_TDECL##x(__VA_ARGS__)				\
+-	};								\
+-	static const char *args_compat_sys_##sname[] = {		\
+-		__SC_STR_ADECL##x(__VA_ARGS__)				\
+-	};								\
+-	SYSCALL_METADATA(syscall, compat_sys_##sname, x, compat_syscall);\
++	SYSCALL_METADATAx(syscall, compat_sys_##sname, x, compat_syscall, __VA_ARGS__);\
+ 	asmlinkage long syscall(__SC_DECL##x(__VA_ARGS__))
+-#else
+-#define COMPAT_SYSCALL_DEFINEx(x, syscall, sname, ...)			\
+-	asmlinkage long syscall(__SC_DECL##x(__VA_ARGS__))
+-#endif
+ 
+-#endif
++#endif /* CONFIG_COMPAT */
++
  
  #ifdef CONFIG_PPC64
--long ppc64_personality(unsigned long personality)
-+SYSCALL_DEFINE1(ppc64_personality, unsigned long, personality)
- {
- 	long ret;
- 
-@@ -116,8 +116,8 @@ long ppc64_personality(unsigned long personality)
- }
+ #define SYSCALL_ALIAS(alias, name)					\
+@@ -253,20 +237,13 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ #endif
  #endif
  
--long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
--		      u32 len_high, u32 len_low)
-+SYSCALL_DEFINE6(ppc_fadvise64_64, int, fd, int, advice, u32, offset_high,
-+		u32, offset_low, u32, len_high, u32, len_low)
- {
- 	return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low,
- 			     (u64)len_high << 32 | len_low, advice);
-diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
-index 75530d9..68ce26e 100644
---- a/arch/powerpc/platforms/cell/spu_syscalls.c
-+++ b/arch/powerpc/platforms/cell/spu_syscalls.c
-@@ -65,8 +65,8 @@ static inline void spufs_calls_put(struct spufs_calls *calls) { }
+-#ifdef CONFIG_FTRACE_SYSCALLS
+-#define SYSCALL_DEFINEx(x, sname, ...)				\
+-	static const char *types_sys##sname[] = {		\
+-		__SC_STR_TDECL##x(__VA_ARGS__)			\
+-	};							\
+-	static const char *args_sys##sname[] = {		\
+-		__SC_STR_ADECL##x(__VA_ARGS__)			\
+-	};							\
+-	SYSCALL_METADATA(sys##sname, sys##sname, x, syscall);	\
+-	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+-#else
+ #define SYSCALL_DEFINEx(x, sname, ...)				\
++	SYSCALL_METADATAx(sys##sname, sys##sname, x, syscall, __VA_ARGS__);\
+ 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+-#endif
++
++#define SYSCALL_DEFINE0(name)					\
++	SYSCALL_METADATA0(sys_##name, name, syscall)		\
++	asmlinkage long sys_##name(void)
  
- #endif /* CONFIG_SPU_FS_MODULE */
+ #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
  
--asmlinkage long sys_spu_create(const char __user *name,
--		unsigned int flags, mode_t mode, int neighbor_fd)
-+SYSCALL_DEFINE4(spu_create, const char __user *, name,
-+		unsigned int, flags, mode_t, mode, int, neighbor_fd)
- {
- 	long ret;
- 	struct file *neighbor;
-@@ -91,7 +91,7 @@ asmlinkage long sys_spu_create(const char __user *name,
- 	return ret;
- }
- 
--asmlinkage long sys_spu_run(int fd, __u32 __user *unpc, __u32 __user *ustatus)
-+SYSCALL_DEFINE3(spu_run, int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
- {
- 	long ret;
- 	struct file *filp;
 -- 
 1.7.1
