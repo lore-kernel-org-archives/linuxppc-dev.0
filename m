@@ -1,35 +1,33 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A9FA8B7755
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000 (EST)
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
-	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0iDk022187
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:44 +1000
+	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 5C0A7B7366
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:34 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA4UHZ025291
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NA4XDq1429536
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5NA4XOY1552638
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
 	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NA4VHW028254
+	o5NA4VUh028265
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 29/40] trace syscalls,
-	PPC: Convert ppc32_ syscalls to ARCH_COMPAT_SYSCALL_DEFINE
-Date: Wed, 23 Jun 2010 20:03:10 +1000
-Message-Id: <1277287401-28571-30-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 30/40] trace syscalls: Convert remaining kernel/compat.c
+	syscalls to COMPAT_SYSCALL_DEFINE
+Date: Wed, 23 Jun 2010 20:03:11 +1000
+Message-Id: <1277287401-28571-31-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Chase Douglas <cndougla@linux.vnet.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@redhat.com>,
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
 	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-	"Eric W. Biederman" <ebiederm@xmission.com>
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Tejun Heo <tj@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +39,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch renames the 32bit compat syscalls prefixed with ppc32_ to
-sys32_ and uses the ARCH_COMPAT_SYSCALL_DEFINE macros to record their
-metadata for tracing.
+This patch converts the remaining system calls from kernel/compat.c to
+use the COMPAT_SYSCALL_DEFINE family of macros.
+
+The particular system calls in question did not originally have the
+asmlinkage tag which will be added by this conversion.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/include/asm/systbl.h |    4 ++--
- arch/powerpc/kernel/sys_ppc32.c   |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ kernel/compat.c |   34 +++++++++++++++++-----------------
+ 1 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 228eecb..bbcc700 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -236,9 +236,9 @@ COMPAT_SYS_SPU(io_getevents)
- COMPAT_SYS_SPU(io_submit)
- SYSCALL_SPU(io_cancel)
- SYSCALL(set_tid_address)
--SYSX_SPU(sys_fadvise64,ppc32_fadvise64,sys_fadvise64)
-+SYSX_SPU(sys_fadvise64,sys32_fadvise64,sys_fadvise64)
- SYSCALL(exit_group)
--SYSX(sys_lookup_dcookie,ppc32_lookup_dcookie,sys_lookup_dcookie)
-+SYSX(sys_lookup_dcookie,sys32_lookup_dcookie,sys_lookup_dcookie)
- SYSCALL_SPU(epoll_create)
- SYSCALL_SPU(epoll_ctl)
- SYSCALL_SPU(epoll_wait)
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index 27cf460..cf18164 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -594,15 +594,15 @@ asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long h
- 	return sys_ftruncate(fd, (high << 32) | low);
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 7ab99e1..81762e4 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -535,9 +535,9 @@ int put_compat_itimerspec(struct compat_itimerspec __user *dst,
+ 	return 0;
  }
  
--long ppc32_lookup_dcookie(u32 cookie_high, u32 cookie_low, char __user *buf,
--			  size_t len)
-+ARCH_COMPAT_SYSCALL_DEFINE4(lookup_dcookie, u32, cookie_high, u32, cookie_low,
-+		char __user *, buf, size_t, len)
+-long compat_sys_timer_create(clockid_t which_clock,
+-			struct compat_sigevent __user *timer_event_spec,
+-			timer_t __user *created_timer_id)
++COMPAT_SYSCALL_DEFINE3(timer_create, clockid_t, which_clock,
++			struct compat_sigevent __user *, timer_event_spec,
++			timer_t __user *, created_timer_id)
  {
- 	return sys_lookup_dcookie((u64)cookie_high << 32 | cookie_low,
- 				  buf, len);
+ 	struct sigevent __user *event = NULL;
+ 
+@@ -553,9 +553,9 @@ long compat_sys_timer_create(clockid_t which_clock,
+ 	return sys_timer_create(which_clock, event, created_timer_id);
  }
  
--long ppc32_fadvise64(int fd, u32 unused, u32 offset_high, u32 offset_low,
--		     size_t len, int advice)
-+ARCH_COMPAT_SYSCALL_DEFINE6(fadvise64, int, fd, u32, unused, u32, offset_high,
-+		u32, offset_low, size_t, len, int, advice)
+-long compat_sys_timer_settime(timer_t timer_id, int flags,
+-			  struct compat_itimerspec __user *new,
+-			  struct compat_itimerspec __user *old)
++COMPAT_SYSCALL_DEFINE4(timer_settime, timer_t, timer_id, int, flags,
++			  struct compat_itimerspec __user *, new,
++			  struct compat_itimerspec __user *, old)
  {
- 	return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low, len,
- 			     advice);
+ 	long err;
+ 	mm_segment_t oldfs;
+@@ -576,8 +576,8 @@ long compat_sys_timer_settime(timer_t timer_id, int flags,
+ 	return err;
+ }
+ 
+-long compat_sys_timer_gettime(timer_t timer_id,
+-		struct compat_itimerspec __user *setting)
++COMPAT_SYSCALL_DEFINE2(timer_gettime, timer_t, timer_id,
++		struct compat_itimerspec __user *, setting)
+ {
+ 	long err;
+ 	mm_segment_t oldfs;
+@@ -593,8 +593,8 @@ long compat_sys_timer_gettime(timer_t timer_id,
+ 	return err;
+ }
+ 
+-long compat_sys_clock_settime(clockid_t which_clock,
+-		struct compat_timespec __user *tp)
++COMPAT_SYSCALL_DEFINE2(clock_settime, clockid_t, which_clock,
++		struct compat_timespec __user *, tp)
+ {
+ 	long err;
+ 	mm_segment_t oldfs;
+@@ -610,8 +610,8 @@ long compat_sys_clock_settime(clockid_t which_clock,
+ 	return err;
+ }
+ 
+-long compat_sys_clock_gettime(clockid_t which_clock,
+-		struct compat_timespec __user *tp)
++COMPAT_SYSCALL_DEFINE2(clock_gettime, clockid_t, which_clock,
++		struct compat_timespec __user *, tp)
+ {
+ 	long err;
+ 	mm_segment_t oldfs;
+@@ -627,8 +627,8 @@ long compat_sys_clock_gettime(clockid_t which_clock,
+ 	return err;
+ }
+ 
+-long compat_sys_clock_getres(clockid_t which_clock,
+-		struct compat_timespec __user *tp)
++COMPAT_SYSCALL_DEFINE2(clock_getres, clockid_t, which_clock,
++		struct compat_timespec __user *, tp)
+ {
+ 	long err;
+ 	mm_segment_t oldfs;
+@@ -668,9 +668,9 @@ static long compat_clock_nanosleep_restart(struct restart_block *restart)
+ 	return err;
+ }
+ 
+-long compat_sys_clock_nanosleep(clockid_t which_clock, int flags,
+-			    struct compat_timespec __user *rqtp,
+-			    struct compat_timespec __user *rmtp)
++COMPAT_SYSCALL_DEFINE4(clock_nanosleep, clockid_t, which_clock, int, flags,
++			    struct compat_timespec __user *, rqtp,
++			    struct compat_timespec __user *, rmtp)
+ {
+ 	long err;
+ 	mm_segment_t oldfs;
 -- 
 1.7.1
