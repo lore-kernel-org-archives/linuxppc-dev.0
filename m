@@ -1,24 +1,25 @@
 Return-Path: <jbaron@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 9548EB6F11
-	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 04:04:37 +1000 (EST)
-Date: Wed, 23 Jun 2010 14:03:54 -0400
+	by ozlabs.org (Postfix) with ESMTP id E1F25B6F0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 05:15:29 +1000 (EST)
+Date: Wed, 23 Jun 2010 15:14:54 -0400
 From: Jason Baron <jbaron@redhat.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH 39/40] trace syscalls: Clean confusing {s,r,}name and
-	fix ABI breakage
-Message-ID: <20100623180353.GB2680@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 08/40] tracing: remove syscall bitmaps in preparation
+	for compat support
+Message-ID: <20100623191454.GC2680@redhat.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-	<1277287401-28571-40-git-send-email-imunsie@au1.ibm.com>
+	<1277287401-28571-9-git-send-email-imunsie@au1.ibm.com>
+	<1277306204.9181.43.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1277287401-28571-40-git-send-email-imunsie@au1.ibm.com>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+In-Reply-To: <1277306204.9181.43.camel@gandalf.stny.rr.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
 	Frederic Weisbecker <fweisbec@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	Ian Munsie <imunsie@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 23, 2010 at 08:03:20PM +1000, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Wed, Jun 23, 2010 at 11:16:44AM -0400, Steven Rostedt wrote:
+> On Wed, 2010-06-23 at 20:02 +1000, Ian Munsie wrote:
+> > From: Jason Baron <jbaron@redhat.com>
+> > 
+> > In preparation for compat syscall tracing support, let's store the enabled
+> > syscalls, with the struct syscall_metadata itself. That way we don't duplicate
+> > enabled information when the compat table points to an entry in the regular
+> > syscall table. Also, allows us to remove the bitmap data structures completely.
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> > ---
+> >  include/linux/syscalls.h      |    8 +++++++
+> >  include/trace/syscall.h       |    4 +++
+> >  kernel/trace/trace_syscalls.c |   42 +++++++++++++++++++---------------------
+> >  3 files changed, 32 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> > index 86f082b..755d05b 100644
+> > --- a/include/linux/syscalls.h
+> > +++ b/include/linux/syscalls.h
+> > @@ -163,6 +163,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+> >  		.nb_args 	= nb,				\
+> >  		.types		= types_##sname,		\
+> >  		.args		= args_##sname,			\
+> > +		.ftrace_enter	= 0,				\
+> > +		.ftrace_exit	= 0,				\
+> > +		.perf_enter	= 0,				\
+> > +		.perf_exit	= 0,				\
 > 
-> This patch cleans up the preprocessor macros defining system calls by
-> standidising on the parameters passing around the system call name, with
-> and without it's prefix.
+> I really hate this change!
 > 
-> Overall this makes the preprocessor code easier to understand and
-> follow and less likely to introduce bugs due to misunderstanding what to
-> place into each parameter.
+> You just removed a nice compressed bitmap (1 bit per syscall) to add 4
+> bytes per syscall. On my box I have 308 syscalls being traced. That was
+> 308 bits per bitmask = 39 bytes * 2 = 78 * 2 (perf and ftrace) = 156.
 > 
-> The parameters henceforth should be named:
+> Now we have 8 bytes per syscall (enter and exit), which is 1232 bytes.
 > 
-> sname is the system call name WITHOUT the prefix (e.g. read)
-> prefix is the prefix INCLUDING the trailing underscore (e.g. sys_)
+> Thus this change added 1076 bytes.
 > 
-> These are mashed together to form the full syscall name when required
-> like blah##prefix##sname. For just prefix##sname please use the provided
-> SYSNAME(prefix,sname) macro instead as it will be safe if prefix itself
-> is a macro.
+> This may not seem as much, but the change is not worth 1K. Can't we just
+> add another bitmask or something for the compat case?
 > 
-> This patch also fixes an ABI breakage - the ftrace events are once again
-> named like 'sys_enter_read' instead of 'enter_sys_read'. The rwtop
-> script shipped with perf relies on this ABI. Others may as well.
+> I also hate the moving of ftrace and perf internal data to an external
+> interface.
 > 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
+> -- Steve
+> 
 
-overall this patch is a major improvement! My question though is
-about the naming of the compat syscalls in the context of events. I
-believe this patch differeniates compat syscall event names as:
-"sys32_enter_sname", and "compat_sys_enter_sname". I agree that we keep that
-distinction for purposes of defining the actual syscall function. However,
-we had discuessed previously about keeping the event name the same for
-all compat syscalls. ie they are all called "compat_sys_sname" or some
-such. Reason being you could just do "compat_*" to match all compat
-events.
+I made this change (I also wrote the original bitmap), b/c compat
+syscalls can share "regular" syscalls. That is the compat syscall table
+points to syscalls from non-compat mode. (looking at ia32 on x86 it
+looks like at least half).
+
+Thus, if we continue along the bitmap path, we would have to introduce
+another 4 bitmaps for compat. 2 for enter and exit and 2 for perf and
+ftrace. Thus, using your math above: 39 bytes * 8 = 312 bytes. So
+approximately 1 byte per system call.
+
+Instead, if we store this data in the syscall metadata, we actually only
+need 4 bits per syscall. Now, the above implementation uses 4 chars,
+where we really only need 1 char (or really 4 bits, which we could
+eventually store in the last last bit of the four existing pointer
+assuming they are 2 byte aligned for no increased storage space at all).
+But even assuming we use 1 byte per system call we are going to have in
+the worse case the above 312 bytes + (1 byte * # of non-shared compat
+syscalls). So, yes we might need a little more storage in this scheme.
+Another consideration too, is obviously the alignment of
+syscall_metadata, since the extra 1 byte, might be more...
+
+However, we don't have to compute the location of the bits in the
+compat syscall map each time a tracing syscall is enable/disable. This
+would be more expensive, especially if we don't store the compat syscall
+number with each syscall meta data structure (which you have proposed
+dropping). So with compat syscalls, we are setting two bit locations
+with each enable/disable instead of 1 with this new scheme.
+
+Also, I think the more important reason to store these bits in the
+syscall meta data structure is simplicity. Not all arches start their tables
+counting from 0 (requiring a constant shift factor), and obviously we
+waste bits for non-implemented syscalls. I don't want to have to deal
+with these arch specific implementation issues, if I don't need to.
 
 thanks,
 
