@@ -1,35 +1,34 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D8E7DB7369
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0x6p020472
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:59 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NA4Ug3618500
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NA4RYV005221
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:29 +1000
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A9FA8B7755
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000 (EST)
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [202.81.31.247])
+	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0iDk022187
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:44 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5NA4XDq1429536
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NA4VHW028254
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 24/40] trace syscalls,
-	PPC: Convert more ppc32 compat syscalls to COMPAT_SYSCALL
-Date: Wed, 23 Jun 2010 20:03:05 +1000
-Message-Id: <1277287401-28571-25-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 29/40] trace syscalls,
+	PPC: Convert ppc32_ syscalls to ARCH_COMPAT_SYSCALL_DEFINE
+Date: Wed, 23 Jun 2010 20:03:10 +1000
+Message-Id: <1277287401-28571-30-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 Cc: Chase Douglas <cndougla@linux.vnet.ibm.com>,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
 	Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
 	Steven Rostedt <rostedt@goodmis.org>,
-	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@redhat.com>,
 	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
 	"Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,148 +41,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-Convert the remaining trivial 32bit compat syscalls to use the
-COMPAT_SYSCALL_DEFINE family of macros.
-
-The syscalls addressed by this commit were lacking the asmlinkage flag,
-which will be added by the COMPAT_SYSCALL_DEFINE macros. This should not
-be an issue as asmlinkage has no effect on PowerPC.
+This patch renames the 32bit compat syscalls prefixed with ppc32_ to
+sys32_ and uses the ARCH_COMPAT_SYSCALL_DEFINE macros to record their
+metadata for tracing.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/kernel/signal_32.c |   19 +++++++++++++------
- arch/powerpc/kernel/sys_ppc32.c |   20 ++++++++++----------
- 2 files changed, 23 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/systbl.h |    4 ++--
+ arch/powerpc/kernel/sys_ppc32.c   |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 2666101..e65d311 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -595,8 +595,10 @@ static long restore_user_regs(struct pt_regs *regs,
- }
- 
- #ifdef CONFIG_PPC64
--long compat_sys_rt_sigaction(int sig, const struct sigaction32 __user *act,
--		struct sigaction32 __user *oact, size_t sigsetsize)
-+COMPAT_SYSCALL_DEFINE4(rt_sigaction, int, sig,
-+		const struct sigaction32 __user *, act,
-+		struct sigaction32 __user *, oact,
-+		size_t, sigsetsize)
- {
- 	struct k_sigaction new_ka, old_ka;
- 	int ret;
-@@ -632,8 +634,10 @@ long compat_sys_rt_sigaction(int sig, const struct sigaction32 __user *act,
-  * of a signed int (msr in 32-bit mode) and the register representation
-  * of a signed int (msr in 64-bit mode) is performed.
-  */
--long compat_sys_rt_sigprocmask(u32 how, compat_sigset_t __user *set,
--		compat_sigset_t __user *oset, size_t sigsetsize)
-+COMPAT_SYSCALL_DEFINE4(rt_sigprocmask, u32, how,
-+		compat_sigset_t __user *, set,
-+		compat_sigset_t __user *, oset,
-+		size_t, sigsetsize)
- {
- 	sigset_t s;
- 	sigset_t __user *up;
-@@ -660,7 +664,9 @@ long compat_sys_rt_sigprocmask(u32 how, compat_sigset_t __user *set,
- 	return 0;
- }
- 
--long compat_sys_rt_sigpending(compat_sigset_t __user *set, compat_size_t sigsetsize)
-+COMPAT_SYSCALL_DEFINE2(rt_sigpending,
-+		compat_sigset_t __user *, set,
-+		compat_size_t, sigsetsize)
- {
- 	sigset_t s;
- 	int ret;
-@@ -754,7 +760,8 @@ int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from)
-  * (msr in 32-bit mode) and the register representation of a signed int
-  * (msr in 64-bit mode) is performed.
-  */
--long compat_sys_rt_sigqueueinfo(u32 pid, u32 sig, compat_siginfo_t __user *uinfo)
-+COMPAT_SYSCALL_DEFINE3(rt_sigqueueinfo, u32, pid, u32, sig,
-+		compat_siginfo_t __user *, uinfo)
- {
- 	siginfo_t info;
- 	int ret;
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 228eecb..bbcc700 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -236,9 +236,9 @@ COMPAT_SYS_SPU(io_getevents)
+ COMPAT_SYS_SPU(io_submit)
+ SYSCALL_SPU(io_cancel)
+ SYSCALL(set_tid_address)
+-SYSX_SPU(sys_fadvise64,ppc32_fadvise64,sys_fadvise64)
++SYSX_SPU(sys_fadvise64,sys32_fadvise64,sys_fadvise64)
+ SYSCALL(exit_group)
+-SYSX(sys_lookup_dcookie,ppc32_lookup_dcookie,sys_lookup_dcookie)
++SYSX(sys_lookup_dcookie,sys32_lookup_dcookie,sys_lookup_dcookie)
+ SYSCALL_SPU(epoll_create)
+ SYSCALL_SPU(epoll_ctl)
+ SYSCALL_SPU(epoll_wait)
 diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index ab45dde..6fc8ba9 100644
+index 27cf460..cf18164 100644
 --- a/arch/powerpc/kernel/sys_ppc32.c
 +++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -73,8 +73,8 @@ COMPAT_SYSCALL_DEFINE3(sysfs, u32, option, u32, arg1,
+@@ -594,15 +594,15 @@ asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long h
+ 	return sys_ftruncate(fd, (high << 32) | low);
  }
  
- #ifdef CONFIG_SYSVIPC
--long compat_sys_ipc(u32 call, u32 first, u32 second, u32 third, compat_uptr_t ptr,
--	       u32 fifth)
-+COMPAT_SYSCALL_DEFINE6(ipc, u32, call, u32, first, u32, second, u32, third,
-+		compat_uptr_t, ptr, u32, fifth)
+-long ppc32_lookup_dcookie(u32 cookie_high, u32 cookie_low, char __user *buf,
+-			  size_t len)
++ARCH_COMPAT_SYSCALL_DEFINE4(lookup_dcookie, u32, cookie_high, u32, cookie_low,
++		char __user *, buf, size_t, len)
  {
- 	int version;
- 
-@@ -340,7 +340,7 @@ COMPAT_SYSCALL_DEFINE2(mkdir, const char __user *, pathname,
- 	return sys_mkdir(pathname, (int)mode);
+ 	return sys_lookup_dcookie((u64)cookie_high << 32 | cookie_low,
+ 				  buf, len);
  }
  
--long compat_sys_nice(u32 increment)
-+COMPAT_SYSCALL_DEFINE1(nice, u32, increment)
+-long ppc32_fadvise64(int fd, u32 unused, u32 offset_high, u32 offset_low,
+-		     size_t len, int advice)
++ARCH_COMPAT_SYSCALL_DEFINE6(fadvise64, int, fd, u32, unused, u32, offset_high,
++		u32, offset_low, size_t, len, int, advice)
  {
- 	/* sign extend increment */
- 	return sys_nice((int)increment);
-@@ -352,13 +352,13 @@ off_t ppc32_lseek(unsigned int fd, u32 offset, unsigned int origin)
- 	return sys_lseek(fd, (int)offset, origin);
- }
- 
--long compat_sys_truncate(const char __user * path, u32 length)
-+COMPAT_SYSCALL_DEFINE2(truncate, const char __user *, path, u32, length)
- {
- 	/* sign extend length */
- 	return sys_truncate(path, (int)length);
- }
- 
--long compat_sys_ftruncate(int fd, u32 length)
-+COMPAT_SYSCALL_DEFINE2(ftruncate, int, fd, u32, length)
- {
- 	/* sign extend length */
- 	return sys_ftruncate(fd, (int)length);
-@@ -486,25 +486,25 @@ COMPAT_SYSCALL_DEFINE2(setpgid, u32, pid, u32, pgid)
- 	return sys_setpgid((int)pid, (int)pgid);
- }
- 
--long compat_sys_getpriority(u32 which, u32 who)
-+COMPAT_SYSCALL_DEFINE2(getpriority, u32, which, u32, who)
- {
- 	/* sign extend which and who */
- 	return sys_getpriority((int)which, (int)who);
- }
- 
--long compat_sys_setpriority(u32 which, u32 who, u32 niceval)
-+COMPAT_SYSCALL_DEFINE3(setpriority, u32, which, u32, who, u32, niceval)
- {
- 	/* sign extend which, who and niceval */
- 	return sys_setpriority((int)which, (int)who, (int)niceval);
- }
- 
--long compat_sys_ioprio_get(u32 which, u32 who)
-+COMPAT_SYSCALL_DEFINE2(ioprio_get, u32, which, u32, who)
- {
- 	/* sign extend which and who */
- 	return sys_ioprio_get((int)which, (int)who);
- }
- 
--long compat_sys_ioprio_set(u32 which, u32 who, u32 ioprio)
-+COMPAT_SYSCALL_DEFINE3(ioprio_set, u32, which, u32, who, u32, ioprio)
- {
- 	/* sign extend which, who and ioprio */
- 	return sys_ioprio_set((int)which, (int)who, (int)ioprio);
-@@ -546,7 +546,7 @@ unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
- 	return sys_mmap(addr, len, prot, flags, fd, pgoff << 12);
- }
- 
--long compat_sys_tgkill(u32 tgid, u32 pid, int sig)
-+COMPAT_SYSCALL_DEFINE3(tgkill, u32, tgid, u32, pid, int, sig)
- {
- 	/* sign extend tgid, pid */
- 	return sys_tgkill((int)tgid, (int)pid, sig);
+ 	return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low, len,
+ 			     advice);
 -- 
 1.7.1
