@@ -1,33 +1,40 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp09.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5C0A7B7366
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8225DB7170
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:34 +1000 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp09.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA4UHZ025291
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by e23smtp02.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0j1U022199
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:45 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
 	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NA4XOY1552638
+	o5NA4XOV1732664
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NA4VUh028265
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NA4Uk4005281
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:33 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 30/40] trace syscalls: Convert remaining kernel/compat.c
-	syscalls to COMPAT_SYSCALL_DEFINE
-Date: Wed, 23 Jun 2010 20:03:11 +1000
-Message-Id: <1277287401-28571-31-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 28/40] trace syscalls,
+	PPC: Convert syscalls using regs to REGS_SYSCALL_DEFINE macros
+Date: Wed, 23 Jun 2010 20:03:09 +1000
+Message-Id: <1277287401-28571-29-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	David Gibson <dwg@au1.ibm.com>, Ingo Molnar <mingo@redhat.com>,
 	Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Tejun Heo <tj@kernel.org>
+	Andrew Morton <akpm@linux-foundation.org>,
+	Chase Douglas <cndougla@linux.vnet.ibm.com>,
+	Christoph Hellwig <hch@lst.de>, "Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,103 +46,224 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This patch converts the remaining system calls from kernel/compat.c to
-use the COMPAT_SYSCALL_DEFINE family of macros.
-
-The particular system calls in question did not originally have the
-asmlinkage tag which will be added by this conversion.
+This patch coverts a number of system calls on PowerPC to use the new
+PPC_REGS_SYSCALL_DEFINE class of macros, to record their metadata but
+still use the correct syntax to access the registers through the 7th
+parameter.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- kernel/compat.c |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/syscalls.h |   10 ++++++----
+ arch/powerpc/kernel/process.c       |   27 +++++++++++----------------
+ arch/powerpc/kernel/signal.c        |    7 ++++---
+ arch/powerpc/kernel/signal_32.c     |   11 +++++------
+ arch/powerpc/kernel/signal_64.c     |   11 ++++-------
+ arch/powerpc/kernel/sys_ppc32.c     |   11 ++++++-----
+ 6 files changed, 36 insertions(+), 41 deletions(-)
 
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 7ab99e1..81762e4 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -535,9 +535,9 @@ int put_compat_itimerspec(struct compat_itimerspec __user *dst,
- 	return 0;
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 72badaa..531b45d 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -71,12 +71,14 @@ asmlinkage unsigned long sys_mmap(unsigned long addr, size_t len,
+ asmlinkage unsigned long sys_mmap2(unsigned long addr, size_t len,
+ 		unsigned long prot, unsigned long flags,
+ 		unsigned long fd, unsigned long pgoff);
+-asmlinkage int sys_execve(unsigned long a0, unsigned long a1,
+-		unsigned long a2, unsigned long a3, unsigned long a4,
+-		unsigned long a5, struct pt_regs *regs);
++asmlinkage int sys_execve(char __user * ufilename,
++		char __user * __user * argv,
++		char __user * __user * envp,
++		unsigned long, unsigned long, unsigned long,
++		struct pt_regs *regs);
+ asmlinkage int sys_clone(unsigned long clone_flags, unsigned long usp,
+ 		int __user *parent_tidp, void __user *child_threadptr,
+-		int __user *child_tidp, int p6, struct pt_regs *regs);
++		int __user *child_tidp, unsigned long p6, struct pt_regs *regs);
+ asmlinkage int sys_fork(unsigned long p1, unsigned long p2,
+ 		unsigned long p3, unsigned long p4, unsigned long p5,
+ 		unsigned long p6, struct pt_regs *regs);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9b41ece..df08d05 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -950,10 +950,9 @@ int get_unalign_ctl(struct task_struct *tsk, unsigned long adr)
+ 
+ #define TRUNC_PTR(x)	((typeof(x))(((unsigned long)(x)) & 0xffffffff))
+ 
+-int sys_clone(unsigned long clone_flags, unsigned long usp,
+-	      int __user *parent_tidp, void __user *child_threadptr,
+-	      int __user *child_tidp, int p6,
+-	      struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE5_RET(int, clone, regs, unsigned long, clone_flags, unsigned long, usp,
++	      int __user *, parent_tidp, void __user *, child_threadptr,
++	      int __user *, child_tidp)
+ {
+ 	CHECK_FULL_REGS(regs);
+ 	if (usp == 0)
+@@ -967,39 +966,35 @@ int sys_clone(unsigned long clone_flags, unsigned long usp,
+  	return do_fork(clone_flags, usp, regs, 0, parent_tidp, child_tidp);
  }
  
--long compat_sys_timer_create(clockid_t which_clock,
--			struct compat_sigevent __user *timer_event_spec,
--			timer_t __user *created_timer_id)
-+COMPAT_SYSCALL_DEFINE3(timer_create, clockid_t, which_clock,
-+			struct compat_sigevent __user *, timer_event_spec,
-+			timer_t __user *, created_timer_id)
+-int sys_fork(unsigned long p1, unsigned long p2, unsigned long p3,
+-	     unsigned long p4, unsigned long p5, unsigned long p6,
+-	     struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE0_RET(int, fork, regs)
  {
- 	struct sigevent __user *event = NULL;
- 
-@@ -553,9 +553,9 @@ long compat_sys_timer_create(clockid_t which_clock,
- 	return sys_timer_create(which_clock, event, created_timer_id);
+ 	CHECK_FULL_REGS(regs);
+ 	return do_fork(SIGCHLD, regs->gpr[1], regs, 0, NULL, NULL);
  }
  
--long compat_sys_timer_settime(timer_t timer_id, int flags,
--			  struct compat_itimerspec __user *new,
--			  struct compat_itimerspec __user *old)
-+COMPAT_SYSCALL_DEFINE4(timer_settime, timer_t, timer_id, int, flags,
-+			  struct compat_itimerspec __user *, new,
-+			  struct compat_itimerspec __user *, old)
+-int sys_vfork(unsigned long p1, unsigned long p2, unsigned long p3,
+-	      unsigned long p4, unsigned long p5, unsigned long p6,
+-	      struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE0_RET(int, vfork, regs)
  {
- 	long err;
- 	mm_segment_t oldfs;
-@@ -576,8 +576,8 @@ long compat_sys_timer_settime(timer_t timer_id, int flags,
- 	return err;
+ 	CHECK_FULL_REGS(regs);
+ 	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs->gpr[1],
+ 			regs, 0, NULL, NULL);
  }
  
--long compat_sys_timer_gettime(timer_t timer_id,
--		struct compat_itimerspec __user *setting)
-+COMPAT_SYSCALL_DEFINE2(timer_gettime, timer_t, timer_id,
-+		struct compat_itimerspec __user *, setting)
+-int sys_execve(unsigned long a0, unsigned long a1, unsigned long a2,
+-	       unsigned long a3, unsigned long a4, unsigned long a5,
+-	       struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE3_RET(int, execve, regs,
++		char __user *, ufilename,
++		char __user * __user *, argv,
++		char __user * __user *, envp)
  {
- 	long err;
- 	mm_segment_t oldfs;
-@@ -593,8 +593,8 @@ long compat_sys_timer_gettime(timer_t timer_id,
- 	return err;
+ 	int error;
+ 	char *filename;
+ 
+-	filename = getname((char __user *) a0);
++	filename = getname(ufilename);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+ 		goto out;
+ 	flush_fp_to_thread(current);
+ 	flush_altivec_to_thread(current);
+ 	flush_spe_to_thread(current);
+-	error = do_execve(filename, (char __user * __user *) a1,
+-			  (char __user * __user *) a2, regs);
++	error = do_execve(filename, argv, envp, regs);
+ 	putname(filename);
+ out:
+ 	return error;
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index a0afb55..8ebc83b 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -13,6 +13,7 @@
+ #include <linux/signal.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
++#include <asm/syscalls.h>
+ 
+ #include "signal.h"
+ 
+@@ -197,9 +198,9 @@ void do_signal(struct pt_regs *regs, unsigned long thread_info_flags)
+ 	}
  }
  
--long compat_sys_clock_settime(clockid_t which_clock,
--		struct compat_timespec __user *tp)
-+COMPAT_SYSCALL_DEFINE2(clock_settime, clockid_t, which_clock,
-+		struct compat_timespec __user *, tp)
+-long sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+-		unsigned long r5, unsigned long r6, unsigned long r7,
+-		unsigned long r8, struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE2_RET(long, sigaltstack, regs,
++		const stack_t __user *, uss,
++		stack_t __user *, uoss)
  {
- 	long err;
- 	mm_segment_t oldfs;
-@@ -610,8 +610,8 @@ long compat_sys_clock_settime(clockid_t which_clock,
- 	return err;
+ 	return do_sigaltstack(uss, uoss, regs->gpr[1]);
+ }
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index e65d311..212583d 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -784,8 +784,8 @@ COMPAT_SYSCALL_DEFINE3(rt_sigqueueinfo, u32, pid, u32, sig,
+  *       sigaltatck               compat_sys_sigaltstack
+  */
+ 
+-int compat_sys_sigaltstack(u32 __new, u32 __old, int r5,
+-		      int r6, int r7, int r8, struct pt_regs *regs)
++PPC_REGS_COMPAT_SYSCALL_DEFINE2_RET(int, sigaltstack, regs,
++		u32, __new, u32, __old)
+ {
+ 	stack_32_t __user * newstack = compat_ptr(__new);
+ 	stack_32_t __user * oldstack = compat_ptr(__old);
+@@ -1076,10 +1076,9 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
  }
  
--long compat_sys_clock_gettime(clockid_t which_clock,
--		struct compat_timespec __user *tp)
-+COMPAT_SYSCALL_DEFINE2(clock_gettime, clockid_t, which_clock,
-+		struct compat_timespec __user *, tp)
+ #ifdef CONFIG_PPC32
+-int sys_debug_setcontext(struct ucontext __user *ctx,
+-			 int ndbg, struct sig_dbg_op __user *dbg,
+-			 int r6, int r7, int r8,
+-			 struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE3_RET(int, debug_setcontext, regs,
++		struct ucontext __user *, ctx, int, ndbg,
++		struct sig_dbg_op __user *, dbg)
  {
- 	long err;
- 	mm_segment_t oldfs;
-@@ -627,8 +627,8 @@ long compat_sys_clock_gettime(clockid_t which_clock,
- 	return err;
+ 	struct sig_dbg_op op;
+ 	int i;
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 2fe6fc6..a44781a 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -276,9 +276,9 @@ static long setup_trampoline(unsigned int syscall, unsigned int __user *tramp)
+ /*
+  * Handle {get,set,swap}_context operations
+  */
+-int sys_swapcontext(struct ucontext __user *old_ctx,
+-		    struct ucontext __user *new_ctx,
+-		    long ctx_size, long r6, long r7, long r8, struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE3_RET(int, swapcontext, regs,
++		struct ucontext __user *, old_ctx,
++		struct ucontext __user *, new_ctx, long, ctx_size)
+ {
+ 	unsigned char tmp;
+ 	sigset_t set;
+@@ -347,10 +347,7 @@ int sys_swapcontext(struct ucontext __user *old_ctx,
+ /*
+  * Do a signal return; undo the signal stack.
+  */
+-
+-int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
+-		     unsigned long r6, unsigned long r7, unsigned long r8,
+-		     struct pt_regs *regs)
++PPC_REGS_SYSCALL_DEFINE0_RET(int, rt_sigreturn, regs)
+ {
+ 	struct ucontext __user *uc = (struct ucontext __user *)regs->gpr[1];
+ 	sigset_t set;
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 6fc8ba9..27cf460 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -189,21 +189,22 @@ asmlinkage int compat_sys_sendfile64(int out_fd, int in_fd, compat_loff_t __user
+ 	return ret;
  }
  
--long compat_sys_clock_getres(clockid_t which_clock,
--		struct compat_timespec __user *tp)
-+COMPAT_SYSCALL_DEFINE2(clock_getres, clockid_t, which_clock,
-+		struct compat_timespec __user *, tp)
+-long compat_sys_execve(unsigned long a0, unsigned long a1, unsigned long a2,
+-		  unsigned long a3, unsigned long a4, unsigned long a5,
+-		  struct pt_regs *regs)
++PPC_REGS_COMPAT_SYSCALL_DEFINE3_RET(long, execve, regs,
++		char __user *, ufilename,
++		unsigned long, argv,
++		unsigned long, envp)
  {
- 	long err;
- 	mm_segment_t oldfs;
-@@ -668,9 +668,9 @@ static long compat_clock_nanosleep_restart(struct restart_block *restart)
- 	return err;
- }
+ 	int error;
+ 	char * filename;
+ 	
+-	filename = getname((char __user *) a0);
++	filename = getname(ufilename);
+ 	error = PTR_ERR(filename);
+ 	if (IS_ERR(filename))
+ 		goto out;
+ 	flush_fp_to_thread(current);
+ 	flush_altivec_to_thread(current);
  
--long compat_sys_clock_nanosleep(clockid_t which_clock, int flags,
--			    struct compat_timespec __user *rqtp,
--			    struct compat_timespec __user *rmtp)
-+COMPAT_SYSCALL_DEFINE4(clock_nanosleep, clockid_t, which_clock, int, flags,
-+			    struct compat_timespec __user *, rqtp,
-+			    struct compat_timespec __user *, rmtp)
- {
- 	long err;
- 	mm_segment_t oldfs;
+-	error = compat_do_execve(filename, compat_ptr(a1), compat_ptr(a2), regs);
++	error = compat_do_execve(filename, compat_ptr(argv), compat_ptr(envp), regs);
+ 
+ 	putname(filename);
+ 
 -- 
 1.7.1
