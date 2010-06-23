@@ -1,38 +1,28 @@
-Return-Path: <sv@in.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DD60AB72A3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 24 Jun 2010 01:36:16 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NFaLLs017938
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2010 01:36:21 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NFaGKh1609962
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2010 01:36:16 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NFaGWe015275
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2010 01:36:16 +1000
-Received: from dirshya.in.ibm.com ([9.77.65.72])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o5NFa56w015160
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jun 2010 01:36:10 +1000
-Resent-Message-ID: <20100623153601.GC508@dirshya.in.ibm.com>
-Subject: [PATCH v3 2/2] powerpc: add support for new hcall H_BEST_ENERGY
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, Anton Blanchard <anton@samba.org>
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Wed, 23 Jun 2010 11:34:15 +0530
-Message-ID: <20100623060415.4957.24478.stgit@drishya.in.ibm.com>
-In-Reply-To: <20100623060122.4957.33819.stgit@drishya.in.ibm.com>
-References: <20100623060122.4957.33819.stgit@drishya.in.ibm.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.152])
+	by ozlabs.org (Postfix) with ESMTP id C766EB6EEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Jun 2010 02:10:23 +1000 (EST)
+Received: by fg-out-1718.google.com with SMTP id d23so1242490fga.3
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 09:10:21 -0700 (PDT)
+Date: Wed, 23 Jun 2010 18:02:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 10/40] tracing: add tracing support for compat syscalls
+Message-ID: <20100623160249.GF5242@nowhere>
+References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
+	<1277287401-28571-11-git-send-email-imunsie@au1.ibm.com>
+	<1277306786.9181.51.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlab.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1277306786.9181.51.camel@gandalf.stny.rr.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+	Ian Munsie <imunsie@au1.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Masami Hiramatsu <mhiramat@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,335 +32,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Create sysfs interface to export data from H_BEST_ENERGY hcall
-	that can be used by administrative tools on supported pseries
-	platforms for energy management	optimizations.
+On Wed, Jun 23, 2010 at 11:26:26AM -0400, Steven Rostedt wrote:
+> On Wed, 2010-06-23 at 20:02 +1000, Ian Munsie wrote:
+> > From: Jason Baron <jbaron@redhat.com>
+> > 
+> > Add core support to event tracing for compat syscalls. The basic idea is that we
+> > check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
+> > new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
+> > check syscall arguments and whether or not we are enabled.
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> > ---
+> >  include/linux/compat.h        |    2 +
+> >  include/trace/syscall.h       |    4 ++
+> >  kernel/trace/trace.h          |    2 +
+> >  kernel/trace/trace_syscalls.c |   86 +++++++++++++++++++++++++++++++++++++----
+> >  4 files changed, 86 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/include/linux/compat.h b/include/linux/compat.h
+> > index ab638e9..a94f13d 100644
+> > --- a/include/linux/compat.h
+> > +++ b/include/linux/compat.h
+> > @@ -363,6 +363,8 @@ extern ssize_t compat_rw_copy_check_uvector(int type,
+> >  
+> >  #else /* CONFIG_COMPAT */
+> >  
+> > +#define NR_syscalls_compat 0
+> > +
+> >  static inline int is_compat_task(void)
+> >  {
+> >  	return 0;
+> > diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+> > index 75f3dce..67d4e64 100644
+> > --- a/include/trace/syscall.h
+> > +++ b/include/trace/syscall.h
+> > @@ -22,6 +22,7 @@
+> >  struct syscall_metadata {
+> >  	const char	*name;
+> >  	int		syscall_nr;
+> > +	int		compat_syscall_nr;
+> 
+> This is also bloating the kernel. I don't like to add fields to the
+> syscall_metadata lightly.
+> 
+> You're adding 4 more bytes to this structure to handle a few items. Find
+> a better way to do this.
 
-	/sys/device/system/cpu/pseries_(de)activate_hint_list and
-	/sys/device/system/cpu/cpuN/pseries_(de)activate_hint will provide
-	hints for activation and deactivation of cpus respectively.
 
-	Added new driver module
-		arch/powerpc/platforms/pseries/pseries_energy.c
-	under new config option CONFIG_PSERIES_ENERGY
+This is for cases when the compat and normal handlers are the same.
+I haven't checked whether such case happen enough to make this a
+benefit. I suspect it's not. Moreover I guess this adds more
+complexity to the code.
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/hvcall.h               |    3 
- arch/powerpc/platforms/pseries/Kconfig          |   10 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/pseries_energy.c |  258 +++++++++++++++++++++++
- 4 files changed, 271 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/pseries_energy.c
+May be this should be simply dropped.
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 5119b7d..34b66e0 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -231,7 +231,8 @@
- #define H_GET_EM_PARMS		0x2B8
- #define H_SET_MPP		0x2D0
- #define H_GET_MPP		0x2D4
--#define MAX_HCALL_OPCODE	H_GET_MPP
-+#define H_BEST_ENERGY		0x2F4
-+#define MAX_HCALL_OPCODE	H_BEST_ENERGY
 
- #ifndef __ASSEMBLY__
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index c667f0f..b3dd108 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -33,6 +33,16 @@ config PSERIES_MSI
-        depends on PCI_MSI && EEH
-        default y
+ 
+> >  	int		nb_args;
+> >  	const char	**types;
+> >  	const char	**args;
+> > @@ -38,6 +39,9 @@ struct syscall_metadata {
+> >  
+> >  #ifdef CONFIG_FTRACE_SYSCALLS
+> >  extern unsigned long arch_syscall_addr(int nr);
+> > +#ifdef CONFIG_COMPAT
+> > +extern unsigned long arch_compat_syscall_addr(int nr);
+> > +#endif
+> >  extern int init_syscall_trace(struct ftrace_event_call *call);
+> >  
+> >  extern int reg_event_syscall_enter(struct ftrace_event_call *call);
+> > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> > index 01ce088..53ace4b 100644
+> > --- a/kernel/trace/trace.h
+> > +++ b/kernel/trace/trace.h
+> > @@ -79,12 +79,14 @@ enum trace_type {
+> >  struct syscall_trace_enter {
+> >  	struct trace_entry	ent;
+> >  	int			nr;
+> > +	int			compat;
+> 
+> You're adding 4 bytes to a trace (taking up precious buffer space) for a
+> single flag. If anything, set the 31st bit of nr if it is compat.
 
-+config PSERIES_ENERGY
-+	tristate "pseries energy management capabilities driver"
-+	depends on PPC_PSERIES
-+	default y
-+	help
-+	  Provides interface to platform energy management capabilities
-+	  on supported PSERIES platforms.
-+	  Provides: /sys/devices/system/cpu/pseries_(de)activation_hint_list
-+	  and /sys/devices/system/cpu/cpuN/pseries_(de)activation_hint
-+
- config SCANLOG
- 	tristate "Scanlog dump interface"
- 	depends on RTAS_PROC && PPC_PSERIES
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 3dbef30..32ae72e 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o eeh_sysfs.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
- obj-$(CONFIG_PSERIES_MSI)	+= msi.o
-+obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
 
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
- obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-new file mode 100644
-index 0000000..9a936b1
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -0,0 +1,258 @@
-+/*
-+ * POWER platform energy management driver
-+ * Copyright (C) 2010 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This pseries platform device driver provides access to
-+ * platform energy management capabilities.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/seq_file.h>
-+#include <linux/sysdev.h>
-+#include <linux/cpu.h>
-+#include <linux/of.h>
-+#include <asm/cputhreads.h>
-+#include <asm/page.h>
-+#include <asm/hvcall.h>
-+
-+
-+#define MODULE_VERS "1.0"
-+#define MODULE_NAME "pseries_energy"
-+
-+/* Helper Routines to convert between drc_index to cpu numbers */
-+
-+static u32 cpu_to_drc_index(int cpu)
-+{
-+	struct device_node *dn = NULL;
-+	const int *indexes;
-+	int i;
-+	dn = of_find_node_by_path("/cpus");
-+	if (dn == NULL)
-+		goto err;
-+	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+	if (indexes == NULL)
-+		goto err;
-+	/* Convert logical cpu number to core number */
-+	i = cpu_core_of_thread(cpu);
-+	/*
-+	 * The first element indexes[0] is the number of drc_indexes
-+	 * returned in the list.  Hence i+1 will get the drc_index
-+	 * corresponding to core number i.
-+	 */
-+	WARN_ON(i > indexes[0]);
-+	return indexes[i + 1];
-+err:
-+	printk(KERN_WARNING "cpu_to_drc_index(%d) failed", cpu);
-+	return 0;
-+}
-+
-+static int drc_index_to_cpu(u32 drc_index)
-+{
-+	struct device_node *dn = NULL;
-+	const int *indexes;
-+	int i, cpu;
-+	dn = of_find_node_by_path("/cpus");
-+	if (dn == NULL)
-+		goto err;
-+	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+	if (indexes == NULL)
-+		goto err;
-+	/*
-+	 * First element in the array is the number of drc_indexes
-+	 * returned.  Search through the list to find the matching
-+	 * drc_index and get the core number
-+	 */
-+	for (i = 0; i < indexes[0]; i++) {
-+		if (indexes[i + 1] == drc_index)
-+			break;
-+	}
-+	/* Convert core number to logical cpu number */
-+	cpu = cpu_first_thread_of_core(i);
-+	return cpu;
-+err:
-+	printk(KERN_WARNING "drc_index_to_cpu(%d) failed", drc_index);
-+	return 0;
-+}
-+
-+/*
-+ * pseries hypervisor call H_BEST_ENERGY provides hints to OS on
-+ * preferred logical cpus to activate or deactivate for optimized
-+ * energy consumption.
-+ */
-+
-+#define FLAGS_MODE1	0x004E200000080E01
-+#define FLAGS_MODE2	0x004E200000080401
-+#define FLAGS_ACTIVATE  0x100
-+
-+static ssize_t get_best_energy_list(char *page, int activate)
-+{
-+	int rc, cnt, i, cpu;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long flags = 0;
-+	u32 *buf_page;
-+	char *s = page;
-+
-+	buf_page = (u32 *) get_zeroed_page(GFP_KERNEL);
-+	if (!buf_page)
-+		return -ENOMEM;
-+
-+	flags = FLAGS_MODE1;
-+	if (activate)
-+		flags |= FLAGS_ACTIVATE;
-+
-+	rc = plpar_hcall9(H_BEST_ENERGY, retbuf, flags, 0, __pa(buf_page),
-+				0, 0, 0, 0, 0, 0);
-+	if (rc != H_SUCCESS) {
-+		free_page((unsigned long) buf_page);
-+		return -EINVAL;
-+	}
-+
-+	cnt = retbuf[0];
-+	for (i = 0; i < cnt; i++) {
-+		cpu = drc_index_to_cpu(buf_page[2*i+1]);
-+		if ((cpu_online(cpu) && !activate) ||
-+		    (!cpu_online(cpu) && activate))
-+			s += sprintf(s, "%d,", cpu);
-+	}
-+	if (s > page) { /* Something to show */
-+		s--; /* Suppress last comma */
-+		s += sprintf(s, "\n");
-+	}
-+
-+	free_page((unsigned long) buf_page);
-+	return s-page;
-+}
-+
-+static ssize_t get_best_energy_data(struct sys_device *dev,
-+					char *page, int activate)
-+{
-+	int rc;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+	unsigned long flags = 0;
-+
-+	flags = FLAGS_MODE2;
-+	if (activate)
-+		flags |= FLAGS_ACTIVATE;
-+
-+	rc = plpar_hcall9(H_BEST_ENERGY, retbuf, flags,
-+				cpu_to_drc_index(dev->id),
-+				0, 0, 0, 0, 0, 0, 0);
-+
-+	if (rc != H_SUCCESS)
-+		return -EINVAL;
-+
-+	return sprintf(page, "%lu\n", retbuf[1] >> 32);
-+}
-+
-+/* Wrapper functions */
-+
-+static ssize_t cpu_activate_hint_list_show(struct sysdev_class *class,
-+			struct sysdev_class_attribute *attr, char *page)
-+{
-+	return get_best_energy_list(page, 1);
-+}
-+
-+static ssize_t cpu_deactivate_hint_list_show(struct sysdev_class *class,
-+			struct sysdev_class_attribute *attr, char *page)
-+{
-+	return get_best_energy_list(page, 0);
-+}
-+
-+static ssize_t percpu_activate_hint_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *page)
-+{
-+	return get_best_energy_data(dev, page, 1);
-+}
-+
-+static ssize_t percpu_deactivate_hint_show(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *page)
-+{
-+	return get_best_energy_data(dev, page, 0);
-+}
-+
-+/*
-+ * Create sysfs interface:
-+ * /sys/devices/system/cpu/pseries_activate_hint_list
-+ * /sys/devices/system/cpu/pseries_deactivate_hint_list
-+ * 	Comma separated list of cpus to activate or deactivate
-+ * /sys/devices/system/cpu/cpuN/pseries_activate_hint
-+ * /sys/devices/system/cpu/cpuN/pseries_deactivate_hint
-+ *	Per-cpu value of the hint
-+ */
-+
-+struct sysdev_class_attribute attr_cpu_activate_hint_list =
-+		_SYSDEV_CLASS_ATTR(pseries_activate_hint_list, 0444,
-+		cpu_activate_hint_list_show, NULL);
-+
-+struct sysdev_class_attribute attr_cpu_deactivate_hint_list =
-+		_SYSDEV_CLASS_ATTR(pseries_deactivate_hint_list, 0444,
-+		cpu_deactivate_hint_list_show, NULL);
-+
-+struct sysdev_attribute attr_percpu_activate_hint =
-+		_SYSDEV_ATTR(pseries_activate_hint, 0444,
-+		percpu_activate_hint_show, NULL);
-+
-+struct sysdev_attribute attr_percpu_deactivate_hint =
-+		_SYSDEV_ATTR(pseries_deactivate_hint, 0444,
-+		percpu_deactivate_hint_show, NULL);
-+
-+static int __init pseries_energy_init(void)
-+{
-+	int cpu, err;
-+	struct sys_device *cpu_sys_dev;
-+
-+	/* Create the sysfs files */
-+	err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_activate_hint_list.attr);
-+	if (!err)
-+		err = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_deactivate_hint_list.attr);
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_sys_dev = get_cpu_sysdev(cpu);
-+		err = sysfs_create_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_activate_hint.attr);
-+		if (err)
-+			break;
-+		err = sysfs_create_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_deactivate_hint.attr);
-+		if (err)
-+			break;
-+	}
-+	return err;
-+
-+}
-+
-+static void __exit pseries_energy_cleanup(void)
-+{
-+	int cpu;
-+	struct sys_device *cpu_sys_dev;
-+
-+	/* Remove the sysfs files */
-+	sysfs_remove_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_activate_hint_list.attr);
-+
-+	sysfs_remove_file(&cpu_sysdev_class.kset.kobj,
-+				&attr_cpu_deactivate_hint_list.attr);
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_sys_dev = get_cpu_sysdev(cpu);
-+		sysfs_remove_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_activate_hint.attr);
-+		sysfs_remove_file(&cpu_sys_dev->kobj,
-+				&attr_percpu_deactivate_hint.attr);
-+	}
-+}
-+
-+module_init(pseries_energy_init);
-+module_exit(pseries_energy_cleanup);
-+MODULE_DESCRIPTION("Driver for pseries platform energy management");
-+MODULE_AUTHOR("Vaidyanathan Srinivasan");
-+MODULE_LICENSE("GPL");
+
+That too can be dropped I think. compat syscalls and normal syscalls are
+different events, so the difference can be made in the event id or name.
