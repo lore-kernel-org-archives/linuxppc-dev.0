@@ -2,24 +2,24 @@ Return-Path: <imunsie@au1.ibm.com>
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5A35DB770C
+	by ozlabs.org (Postfix) with ESMTPS id 69788B7705
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000 (EST)
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0wJt020453
+	by e23smtp03.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5NA0woi020456
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:00:58 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
 	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o5NA4T691097778
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:29 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o5NA4Sl4028102
+	o5NA4U041814572
+	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:30 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5NA4TSF007737
 	for <linuxppc-dev@ozlabs.org>; Wed, 23 Jun 2010 20:04:29 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 25/40] trace syscalls: Refactor syscall metadata creation
-Date: Wed, 23 Jun 2010 20:03:06 +1000
-Message-Id: <1277287401-28571-26-git-send-email-imunsie@au1.ibm.com>
+Subject: [PATCH 27/40] trace syscalls: Add COMPAT_SYSCALL_DEFINE0 macro
+Date: Wed, 23 Jun 2010 20:03:08 +1000
+Message-Id: <1277287401-28571-28-git-send-email-imunsie@au1.ibm.com>
 In-Reply-To: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 References: <1277287401-28571-1-git-send-email-imunsie@au1.ibm.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, Jason Baron <jbaron@redhat.com>,
@@ -37,150 +37,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-The syscall metadata creation macros are a bit convoluted with some
-duplicated code - particularly the duplication in SYSCALL_DEFINE0 with
-SYSCALL_METADATA and related macros.
-
-As demonstrated by the compat syscalls, there may be needs to introduce
-additional high level *_SYSCALL_DEFINE[0-6] macros with subtle
-differences from the existing ones. This patch aims to make the macros
-more atomic, move more of the complexity of the macros down, and remove
-some duplicated code without changing existing functionality so that
-defining new high level macros is easier.
-
-In particular, certain system calls on PowerPC access the state of the
-registers, through the use of some assembly that places the registers on
-the stack in the place of the 7th argument to the function. These system
-calls require specialised macros to record their metadata and this patch
-greatly simplifies their implementation.
+This patchs adds the COMPAT_SYSCALL_DEFINE0 macros for compat syscalls
+that do not take any arguments.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- include/linux/syscalls.h |   77 ++++++++++++++++------------------------------
- 1 files changed, 27 insertions(+), 50 deletions(-)
+ include/linux/syscalls.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 55a9f2b..a608565 100644
+index a608565..1076ae8 100644
 --- a/include/linux/syscalls.h
 +++ b/include/linux/syscalls.h
-@@ -153,7 +153,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- 		.data			= (void *)&__syscall_meta_##sname,\
- 	}
- 
--#define SYSCALL_METADATA(rname, sname, nb, event_class)		\
-+#define SYSCALL_METADATA(rname, sname, nb, event_class, stypes, sargs)\
- 	SYSCALL_TRACE_ENTER_EVENT(sname, event_class);		\
- 	SYSCALL_TRACE_EXIT_EVENT(sname, event_class);		\
- 	static struct syscall_metadata __used			\
-@@ -162,9 +162,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- 	  __syscall_meta_##sname = {				\
- 		.name 		= #rname,			\
- 		.syscall_nr	= -1,	/* Filled in at boot */	\
-+		.compat_syscall_nr = -1,/* Filled in at boot */	\
- 		.nb_args 	= nb,				\
--		.types		= types_##sname,		\
--		.args		= args_##sname,			\
-+		.types		= stypes,			\
-+		.args		= sargs,			\
- 		.ftrace_enter	= 0,				\
- 		.ftrace_exit	= 0,				\
- 		.perf_enter	= 0,				\
-@@ -175,29 +176,22 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- 		.exit_fields	= LIST_HEAD_INIT(__syscall_meta_##sname.exit_fields), \
- 	};
- 
--#define SYSCALL_DEFINE0(sname)					\
--	SYSCALL_TRACE_ENTER_EVENT(sys_##sname, syscall);	\
--	SYSCALL_TRACE_EXIT_EVENT(sys_##sname, syscall);		\
--	static struct syscall_metadata __used			\
--	  __attribute__((__aligned__(4)))			\
--	  __attribute__((section("__syscalls_metadata")))	\
--	  __syscall_meta_sys_##sname = {			\
--		.name 		= "sys_"#sname,			\
--		.syscall_nr	= -1,	/* Filled in at boot */	\
--		.nb_args 	= 0,				\
--		.ftrace_enter	= 0,				\
--		.ftrace_exit	= 0,				\
--		.perf_enter	= 0,				\
--		.perf_exit	= 0,				\
--		.enter_event	= &event_enter_sys_##sname,	\
--		.exit_event	= &event_exit_sys_##sname,	\
--		.enter_fields	= LIST_HEAD_INIT(__syscall_meta__##sname.enter_fields), \
--		.exit_fields	= LIST_HEAD_INIT(__syscall_meta__##sname.exit_fields), \
-+#define SYSCALL_METADATAx(rname, sname, nb, event_class, ...)	\
-+	static const char *types_##sname[] = {			\
-+		__SC_STR_TDECL##nb(__VA_ARGS__)			\
- 	};							\
--	asmlinkage long sys_##sname(void)
--#else
--#define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
--#endif
-+	static const char *args_##sname[] = {			\
-+		__SC_STR_ADECL##nb(__VA_ARGS__)			\
-+	};							\
-+	SYSCALL_METADATA(rname, sname, nb, event_class, types_##sname, args_##sname)
-+
-+#define SYSCALL_METADATA0(rname, sname, event_class)			\
-+	SYSCALL_METADATA(rname, sname, 0, event_class, NULL, NULL)
-+
-+#else /* !CONFIG_FTRACE_SYSCALLS */
-+#define SYSCALL_METADATAx(...)
-+#define SYSCALL_METADATA0(...)
-+#endif /* CONFIG_FTRACE_SYSCALLS */
- 
- #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
- #define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
-@@ -222,22 +216,12 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- #define COMPAT_SYSCALL_DEFINE5(name, ...) COMPAT_SYSCALL_DEFINEx(5, compat_sys_##name, name, __VA_ARGS__)
- #define COMPAT_SYSCALL_DEFINE6(name, ...) COMPAT_SYSCALL_DEFINEx(6, compat_sys_##name, name, __VA_ARGS__)
- 
--#ifdef CONFIG_COMPAT_FTRACE_SYSCALLS
- #define COMPAT_SYSCALL_DEFINEx(x, syscall, sname, ...)			\
--	static const char *types_compat_sys_##sname[] = {		\
--		__SC_STR_TDECL##x(__VA_ARGS__)				\
--	};								\
--	static const char *args_compat_sys_##sname[] = {		\
--		__SC_STR_ADECL##x(__VA_ARGS__)				\
--	};								\
--	SYSCALL_METADATA(syscall, compat_sys_##sname, x, compat_syscall);\
-+	SYSCALL_METADATAx(syscall, compat_sys_##sname, x, compat_syscall, __VA_ARGS__);\
+@@ -220,6 +220,10 @@ extern struct trace_event_functions exit_syscall_print_funcs;
+ 	SYSCALL_METADATAx(syscall, compat_sys_##sname, x, compat_syscall, __VA_ARGS__);\
  	asmlinkage long syscall(__SC_DECL##x(__VA_ARGS__))
--#else
--#define COMPAT_SYSCALL_DEFINEx(x, syscall, sname, ...)			\
--	asmlinkage long syscall(__SC_DECL##x(__VA_ARGS__))
--#endif
  
--#endif
-+#endif /* CONFIG_COMPAT */
++#define COMPAT_SYSCALL_DEFINE0(name)					\
++	SYSCALL_METADATA0(compat_sys_##name, name, compat_syscall)	\
++	asmlinkage long compat_sys_##name()
 +
+ #endif /* CONFIG_COMPAT */
  
- #ifdef CONFIG_PPC64
- #define SYSCALL_ALIAS(alias, name)					\
-@@ -253,20 +237,13 @@ extern struct trace_event_functions exit_syscall_print_funcs;
- #endif
- #endif
- 
--#ifdef CONFIG_FTRACE_SYSCALLS
--#define SYSCALL_DEFINEx(x, sname, ...)				\
--	static const char *types_sys##sname[] = {		\
--		__SC_STR_TDECL##x(__VA_ARGS__)			\
--	};							\
--	static const char *args_sys##sname[] = {		\
--		__SC_STR_ADECL##x(__VA_ARGS__)			\
--	};							\
--	SYSCALL_METADATA(sys##sname, sys##sname, x, syscall);	\
--	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
--#else
- #define SYSCALL_DEFINEx(x, sname, ...)				\
-+	SYSCALL_METADATAx(sys##sname, sys##sname, x, syscall, __VA_ARGS__);\
- 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
--#endif
-+
-+#define SYSCALL_DEFINE0(name)					\
-+	SYSCALL_METADATA0(sys_##name, name, syscall)		\
-+	asmlinkage long sys_##name(void)
- 
- #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
  
 -- 
 1.7.1
