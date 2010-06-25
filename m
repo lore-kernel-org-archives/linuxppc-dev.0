@@ -1,15 +1,13 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id F17DB10084E
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 78A11100864
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Jun 2010 09:25:18 +1000 (EST)
+	Sat, 26 Jun 2010 09:25:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 10/26] KVM: PPC: Tell guest about pending interrupts
-Date: Sat, 26 Jun 2010 01:24:58 +0200
-Message-Id: <1277508314-915-11-git-send-email-agraf@suse.de>
+Subject: [PATCH 22/26] KVM: PPC: PV assembler helpers
+Date: Sat, 26 Jun 2010 01:25:10 +0200
+Message-Id: <1277508314-915-23-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,81 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the guest turns on interrupts again, it needs to know if we have an
-interrupt pending for it. Because if so, it should rather get out of guest
-context and get the interrupt.
+When we hook an instruction we need to make sure we don't clobber any of
+the registers at that point. So we write them out to scratch space in the
+magic page. To make sure we don't fall into a race with another piece of
+hooked code, we need to disable interrupts.
 
-So we introduce a new field in the shared page that we use to tell the guest
-that there's a pending interrupt lying around.
+To make the later patches and code in general easier readable, let's introduce
+a set of defines that save and restore r30, r31 and cr. Let's also define some
+helpers to read the lower 32 bits of a 64 bit field on 32 bit systems.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_para.h |    1 +
- arch/powerpc/kvm/book3s.c           |    7 +++++++
- arch/powerpc/kvm/booke.c            |    7 +++++++
- 3 files changed, 15 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kvm_emul.S |   29 +++++++++++++++++++++++++++++
+ 1 files changed, 29 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index edf8f83..c7305d7 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -36,6 +36,7 @@ struct kvm_vcpu_arch_shared {
- 	__u64 dar;
- 	__u64 msr;
- 	__u32 dsisr;
-+	__u32 int_pending;	/* Tells the guest if we have an interrupt */
- };
+diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
+index c7b9fc9..7da835a 100644
+--- a/arch/powerpc/kernel/kvm_emul.S
++++ b/arch/powerpc/kernel/kvm_emul.S
+@@ -25,3 +25,32 @@
  
- #define KVM_PVR_PARA		0x4b564d3f /* "KVM?" */
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index f0e8047..e76c950 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -334,6 +334,7 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
- void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- {
- 	unsigned long *pending = &vcpu->arch.pending_exceptions;
-+	unsigned long old_pending = vcpu->arch.pending_exceptions;
- 	unsigned int priority;
+ #define KVM_MAGIC_PAGE		(-4096)
  
- #ifdef EXIT_DEBUG
-@@ -353,6 +354,12 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- 					 BITS_PER_BYTE * sizeof(*pending),
- 					 priority + 1);
- 	}
++#ifdef CONFIG_64BIT
++#define LL64(reg, offs, reg2)	ld	reg, (offs)(reg2)
++#define STL64(reg, offs, reg2)	std	reg, (offs)(reg2)
++#else
++#define LL64(reg, offs, reg2)	lwz	reg, (offs + 4)(reg2)
++#define STL64(reg, offs, reg2)	stw	reg, (offs + 4)(reg2)
++#endif
 +
-+	/* Tell the guest about our interrupt status */
-+	if (*pending)
-+		vcpu->arch.shared->int_pending = 1;
-+	else if (old_pending)
-+		vcpu->arch.shared->int_pending = 0;
- }
- 
- void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 485f8fa..2229df9 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -221,6 +221,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- {
- 	unsigned long *pending = &vcpu->arch.pending_exceptions;
-+	unsigned long old_pending = vcpu->arch.pending_exceptions;
- 	unsigned int priority;
- 
- 	priority = __ffs(*pending);
-@@ -232,6 +233,12 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- 		                         BITS_PER_BYTE * sizeof(*pending),
- 		                         priority + 1);
- 	}
++#define SCRATCH_SAVE							\
++	/* Enable critical section. We are critical if			\
++	   shared->critical == r1 */					\
++	STL64(r1, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);		\
++									\
++	/* Save state */						\
++	PPC_STL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
++	PPC_STL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
++	mfcr	r31;							\
++	stw	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);
 +
-+	/* Tell the guest about our interrupt status */
-+	if (*pending)
-+		vcpu->arch.shared->int_pending = 1;
-+	else if (old_pending)
-+		vcpu->arch.shared->int_pending = 0;
- }
- 
- /**
++#define SCRATCH_RESTORE							\
++	/* Restore state */						\
++	PPC_LL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
++	lwz	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);		\
++	mtcr	r30;							\
++	PPC_LL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
++									\
++	/* Disable critical section. We are critical if			\
++	   shared->critical == r1 and r2 is always != r1 */		\
++	STL64(r2, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);
 -- 
 1.6.0.2
