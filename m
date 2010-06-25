@@ -1,15 +1,13 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 81CF0100813
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id F0B9010084D
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 01/26] KVM: PPC: Introduce shared page
-Date: Sat, 26 Jun 2010 01:24:49 +0200
-Message-Id: <1277508314-915-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 21/26] KVM: PPC: Introduce kvm_tmp framework
+Date: Sat, 26 Jun 2010 01:25:09 +0200
+Message-Id: <1277508314-915-22-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,156 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For transparent variable sharing between the hypervisor and guest, I introduce
-a shared page. This shared page will contain all the registers the guest can
-read and write safely without exiting guest context.
+We will soon require more sophisticated methods to replace single instructions
+with multiple instructions. We do that by branching to a memory region where we
+write replacement code for the instruction to.
 
-This patch only implements the stubs required for the basic structure of the
-shared page. The actual register moving follows.
+This region needs to be within 32 MB of the patched instruction though, because
+that's the furthest we can jump with immediate branches.
+
+So we keep 1MB of free space around in bss. After we're done initing we can just
+tell the mm system that the unused pages are free, but until then we have enough
+space to fit all our code in.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_host.h |    2 ++
- arch/powerpc/include/asm/kvm_para.h |    5 +++++
- arch/powerpc/kernel/asm-offsets.c   |    1 +
- arch/powerpc/kvm/44x.c              |    7 +++++++
- arch/powerpc/kvm/book3s.c           |    7 +++++++
- arch/powerpc/kvm/e500.c             |    7 +++++++
- 6 files changed, 29 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kvm.c |   41 +++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 895eb63..bca9391 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/types.h>
- #include <linux/kvm_types.h>
-+#include <linux/kvm_para.h>
- #include <asm/kvm_asm.h>
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index b091f94..7e8fe6f 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -64,6 +64,8 @@
+ #define KVM_INST_TLBSYNC	0x7c00046c
  
- #define KVM_MAX_VCPUS 1
-@@ -289,6 +290,7 @@ struct kvm_vcpu_arch {
- 	struct tasklet_struct tasklet;
- 	u64 dec_jiffies;
- 	unsigned long pending_exceptions;
-+	struct kvm_vcpu_arch_shared *shared;
+ static bool kvm_patching_worked = true;
++static char kvm_tmp[1024 * 1024];
++static int kvm_tmp_index;
  
- #ifdef CONFIG_PPC_BOOK3S
- 	struct kmem_cache *hpte_cache;
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 2d48f6a..1485ba8 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -20,6 +20,11 @@
- #ifndef __POWERPC_KVM_PARA_H__
- #define __POWERPC_KVM_PARA_H__
- 
-+#include <linux/types.h>
-+
-+struct kvm_vcpu_arch_shared {
-+};
-+
- #ifdef __KERNEL__
- 
- static inline int kvm_para_available(void)
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 496cc5b..944f593 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -400,6 +400,7 @@ int main(void)
- 	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
- 	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
- 	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
-+	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
- 
- 	/* book3s */
- #ifdef CONFIG_PPC_BOOK3S
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 73c0a3f..e7b1f3f 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto free_vcpu;
- 
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_vcpu;
-+
- 	return vcpu;
- 
-+uninit_vcpu:
-+	kvm_vcpu_uninit(vcpu);
- free_vcpu:
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
- out:
-@@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ static void kvm_patch_ins_ld(u32 *inst, long addr, u32 rt)
  {
- 	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
- 
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvm_vcpu_uninit(vcpu);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+@@ -98,6 +100,23 @@ static void kvm_patch_ins_nop(u32 *inst)
+ 	*inst = KVM_INST_NOP;
  }
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 884d4a5..ba79b35 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -1247,6 +1247,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto free_shadow_vcpu;
  
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_vcpu;
++static u32 *kvm_alloc(int len)
++{
++	u32 *p;
 +
- 	vcpu->arch.host_retip = kvm_return_point;
- 	vcpu->arch.host_msr = mfmsr();
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -1277,6 +1281,8 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 
- 	return vcpu;
- 
-+uninit_vcpu:
-+	kvm_vcpu_uninit(vcpu);
- free_shadow_vcpu:
- 	kfree(vcpu_book3s->shadow_vcpu);
- free_vcpu:
-@@ -1289,6 +1295,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
- 
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvm_vcpu_uninit(vcpu);
- 	kfree(vcpu_book3s->shadow_vcpu);
- 	vfree(vcpu_book3s);
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index e8a00b0..71750f2 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto uninit_vcpu;
- 
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_tlb;
++	if ((kvm_tmp_index + len) > ARRAY_SIZE(kvm_tmp)) {
++		printk(KERN_ERR "KVM: No more space (%d + %d)\n",
++				kvm_tmp_index, len);
++		kvm_patching_worked = false;
++		return NULL;
++	}
 +
- 	return vcpu;
- 
-+uninit_tlb:
-+	kvmppc_e500_tlb_uninit(vcpu_e500);
- uninit_vcpu:
- 	kvm_vcpu_uninit(vcpu);
- free_vcpu:
-@@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
++	p = (void*)&kvm_tmp[kvm_tmp_index];
++	kvm_tmp_index += len;
++
++	return p;
++}
++
+ static void kvm_map_magic_page(void *data)
  {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+@@ -197,12 +216,27 @@ static void kvm_use_magic_page(void)
+ 		kvm_check_ins(p);
+ }
  
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvmppc_e500_tlb_uninit(vcpu_e500);
- 	kvm_vcpu_uninit(vcpu);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
++static void kvm_free_tmp(void)
++{
++	unsigned long start, end;
++
++	start = (ulong)&kvm_tmp[kvm_tmp_index + (PAGE_SIZE - 1)] & PAGE_MASK;
++	end = (ulong)&kvm_tmp[ARRAY_SIZE(kvm_tmp)] & PAGE_MASK;
++
++	/* Free the tmp space we don't need */
++	for (; start < end; start += PAGE_SIZE) {
++		ClearPageReserved(virt_to_page(start));
++		init_page_count(virt_to_page(start));
++		free_page(start);
++		totalram_pages++;
++	}
++}
++
+ static int __init kvm_guest_init(void)
+ {
+-	char *p;
+ 
+ 	if (!kvm_para_available())
+-		return 0;
++		goto free_tmp;
+ 
+ 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
+ 		kvm_use_magic_page();
+@@ -210,6 +244,9 @@ static int __init kvm_guest_init(void)
+ 	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
+ 			 kvm_patching_worked ? "worked" : "failed");
+ 
++free_tmp:
++	kvm_free_tmp();
++
+ 	return 0;
+ }
+ 
 -- 
 1.6.0.2
