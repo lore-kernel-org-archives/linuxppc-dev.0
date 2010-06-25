@@ -1,15 +1,13 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A2277100821
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id A016910081F
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/26] KVM: PPC: Convert SPRG[0-4] to shared page
-Date: Sat, 26 Jun 2010 01:24:54 +0200
-Message-Id: <1277508314-915-7-git-send-email-agraf@suse.de>
+Subject: [PATCH 13/26] KVM: PPC: Magic Page Book3s support
+Date: Sat, 26 Jun 2010 01:25:01 +0200
+Message-Id: <1277508314-915-14-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,166 +21,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When in kernel mode there are 4 additional registers available that are
-simple data storage. Instead of exiting to the hypervisor to read and
-write those, we can just share them with the guest using the page.
+We need to override EA as well as PA lookups for the magic page. When the guest
+tells us to project it, the magic page overrides any guest mappings.
 
-This patch converts all users of the current field to the shared page.
+In order to reflect that, we need to hook into all the MMU layers of KVM to
+force map the magic page if necessary.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_host.h |    4 ----
- arch/powerpc/include/asm/kvm_para.h |    4 ++++
- arch/powerpc/kvm/book3s.c           |   16 ++++++++--------
- arch/powerpc/kvm/booke.c            |   16 ++++++++--------
- arch/powerpc/kvm/emulate.c          |   24 ++++++++++++++++--------
- 5 files changed, 36 insertions(+), 28 deletions(-)
+ arch/powerpc/kvm/book3s.c             |    7 +++++++
+ arch/powerpc/kvm/book3s_32_mmu.c      |   16 ++++++++++++++++
+ arch/powerpc/kvm/book3s_32_mmu_host.c |   12 ++++++++++++
+ arch/powerpc/kvm/book3s_64_mmu.c      |   30 +++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_mmu_host.c |   12 ++++++++++++
+ 5 files changed, 76 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 6bcf62f..83c45ea 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -216,10 +216,6 @@ struct kvm_vcpu_arch {
- 	ulong guest_owned_ext;
- #endif
- 	u32 mmucr;
--	ulong sprg0;
--	ulong sprg1;
--	ulong sprg2;
--	ulong sprg3;
- 	ulong sprg4;
- 	ulong sprg5;
- 	ulong sprg6;
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index d7fc6c2..e402999 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -23,6 +23,10 @@
- #include <linux/types.h>
- 
- struct kvm_vcpu_arch_shared {
-+	__u64 sprg0;
-+	__u64 sprg1;
-+	__u64 sprg2;
-+	__u64 sprg3;
- 	__u64 srr0;
- 	__u64 srr1;
- 	__u64 dar;
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index b144697..5a6f055 100644
+index 2f55aa5..6ce7fa1 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -1062,10 +1062,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->srr0 = vcpu->arch.shared->srr0;
- 	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
--	regs->sprg0 = vcpu->arch.sprg0;
--	regs->sprg1 = vcpu->arch.sprg1;
--	regs->sprg2 = vcpu->arch.sprg2;
--	regs->sprg3 = vcpu->arch.sprg3;
-+	regs->sprg0 = vcpu->arch.shared->sprg0;
-+	regs->sprg1 = vcpu->arch.shared->sprg1;
-+	regs->sprg2 = vcpu->arch.shared->sprg2;
-+	regs->sprg3 = vcpu->arch.shared->sprg3;
- 	regs->sprg5 = vcpu->arch.sprg4;
- 	regs->sprg6 = vcpu->arch.sprg5;
- 	regs->sprg7 = vcpu->arch.sprg6;
-@@ -1088,10 +1088,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	kvmppc_set_msr(vcpu, regs->msr);
- 	vcpu->arch.shared->srr0 = regs->srr0;
- 	vcpu->arch.shared->srr1 = regs->srr1;
--	vcpu->arch.sprg0 = regs->sprg0;
--	vcpu->arch.sprg1 = regs->sprg1;
--	vcpu->arch.sprg2 = regs->sprg2;
--	vcpu->arch.sprg3 = regs->sprg3;
-+	vcpu->arch.shared->sprg0 = regs->sprg0;
-+	vcpu->arch.shared->sprg1 = regs->sprg1;
-+	vcpu->arch.shared->sprg2 = regs->sprg2;
-+	vcpu->arch.shared->sprg3 = regs->sprg3;
- 	vcpu->arch.sprg5 = regs->sprg4;
- 	vcpu->arch.sprg6 = regs->sprg5;
- 	vcpu->arch.sprg7 = regs->sprg6;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 8b546fe..984c461 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -495,10 +495,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->srr0 = vcpu->arch.shared->srr0;
- 	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
--	regs->sprg0 = vcpu->arch.sprg0;
--	regs->sprg1 = vcpu->arch.sprg1;
--	regs->sprg2 = vcpu->arch.sprg2;
--	regs->sprg3 = vcpu->arch.sprg3;
-+	regs->sprg0 = vcpu->arch.shared->sprg0;
-+	regs->sprg1 = vcpu->arch.shared->sprg1;
-+	regs->sprg2 = vcpu->arch.shared->sprg2;
-+	regs->sprg3 = vcpu->arch.shared->sprg3;
- 	regs->sprg5 = vcpu->arch.sprg4;
- 	regs->sprg6 = vcpu->arch.sprg5;
- 	regs->sprg7 = vcpu->arch.sprg6;
-@@ -521,10 +521,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	kvmppc_set_msr(vcpu, regs->msr);
- 	vcpu->arch.shared->srr0 = regs->srr0;
- 	vcpu->arch.shared->srr1 = regs->srr1;
--	vcpu->arch.sprg0 = regs->sprg0;
--	vcpu->arch.sprg1 = regs->sprg1;
--	vcpu->arch.sprg2 = regs->sprg2;
--	vcpu->arch.sprg3 = regs->sprg3;
-+	vcpu->arch.shared->sprg0 = regs->sprg0;
-+	vcpu->arch.shared->sprg1 = regs->sprg1;
-+	vcpu->arch.shared->sprg2 = regs->sprg2;
-+	vcpu->arch.shared->sprg3 = regs->sprg3;
- 	vcpu->arch.sprg5 = regs->sprg4;
- 	vcpu->arch.sprg6 = regs->sprg5;
- 	vcpu->arch.sprg7 = regs->sprg6;
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index ad0fa4f..454869b 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -263,13 +263,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 				kvmppc_set_gpr(vcpu, rt, get_tb()); break;
+@@ -551,6 +551,13 @@ mmio:
  
- 			case SPRN_SPRG0:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg0); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg0);
-+				break;
- 			case SPRN_SPRG1:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg1); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg1);
-+				break;
- 			case SPRN_SPRG2:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg2); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg2);
-+				break;
- 			case SPRN_SPRG3:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg3); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg3);
-+				break;
- 			/* Note: SPRG4-7 are user-readable, so we don't get
- 			 * a trap. */
+ static int kvmppc_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+ {
++	ulong mp_pa = vcpu->arch.magic_page_pa;
++
++	if (unlikely(mp_pa) &&
++	    unlikely((mp_pa & KVM_RMO) >> PAGE_SHIFT == gfn)) {
++		return 1;
++	}
++
+ 	return kvm_is_visible_gfn(vcpu->kvm, gfn);
+ }
  
-@@ -341,13 +345,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 				break;
+diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
+index 41130c8..d2bd1a6 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu.c
++++ b/arch/powerpc/kvm/book3s_32_mmu.c
+@@ -281,8 +281,24 @@ static int kvmppc_mmu_book3s_32_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 				      struct kvmppc_pte *pte, bool data)
+ {
+ 	int r;
++	ulong mp_ea = vcpu->arch.magic_page_ea;
  
- 			case SPRN_SPRG0:
--				vcpu->arch.sprg0 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->sprg0 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 			case SPRN_SPRG1:
--				vcpu->arch.sprg1 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->sprg1 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 			case SPRN_SPRG2:
--				vcpu->arch.sprg2 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->sprg2 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 			case SPRN_SPRG3:
--				vcpu->arch.sprg3 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->sprg3 = kvmppc_get_gpr(vcpu, rs);
-+				break;
+ 	pte->eaddr = eaddr;
++
++	/* Magic page override */
++	if (unlikely(mp_ea) &&
++	    unlikely((eaddr & ~0xfffULL) == (mp_ea & ~0xfffULL)) &&
++	    !(vcpu->arch.shared->msr & MSR_PR)) {
++		pte->vpage = kvmppc_mmu_book3s_32_ea_to_vp(vcpu, eaddr, data);
++		pte->raddr = vcpu->arch.magic_page_pa | (pte->raddr & 0xfff);
++		pte->raddr &= KVM_RMO;
++		pte->may_execute = true;
++		pte->may_read = true;
++		pte->may_write = true;
++
++		return 0;
++	}
++
+ 	r = kvmppc_mmu_book3s_32_xlate_bat(vcpu, eaddr, pte, data);
+ 	if (r < 0)
+ 	       r = kvmppc_mmu_book3s_32_xlate_pte(vcpu, eaddr, pte, data, true);
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 67b8c38..658d3e0 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -145,6 +145,16 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+ 	bool primary = false;
+ 	bool evict = false;
+ 	struct hpte_cache *pte;
++	ulong mp_pa = vcpu->arch.magic_page_pa;
++
++	/* Magic page override */
++	if (unlikely(mp_pa) &&
++	    unlikely((orig_pte->raddr & ~0xfffUL & KVM_RMO) ==
++		     (mp_pa & ~0xfffUL & KVM_RMO))) {
++		hpaddr = (pfn_t)virt_to_phys(vcpu->arch.shared);
++		get_page(pfn_to_page(hpaddr >> PAGE_SHIFT));
++		goto mapped;
++	}
  
- 			default:
- 				emulated = kvmppc_core_emulate_mtspr(vcpu, sprn, rs);
+ 	/* Get host physical address for gpa */
+ 	hpaddr = gfn_to_pfn(vcpu->kvm, orig_pte->raddr >> PAGE_SHIFT);
+@@ -155,6 +165,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+ 	}
+ 	hpaddr <<= PAGE_SHIFT;
+ 
++mapped:
++
+ 	/* and write the mapping ea -> hpa into the pt */
+ 	vcpu->arch.mmu.esid_to_vsid(vcpu, orig_pte->eaddr >> SID_SHIFT, &vsid);
+ 	map = find_sid_vsid(vcpu, vsid);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index 58aa840..4a2e5fc 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -163,6 +163,22 @@ static int kvmppc_mmu_book3s_64_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 	bool found = false;
+ 	bool perm_err = false;
+ 	int second = 0;
++	ulong mp_ea = vcpu->arch.magic_page_ea;
++
++	/* Magic page override */
++	if (unlikely(mp_ea) &&
++	    unlikely((eaddr & ~0xfffULL) == (mp_ea & ~0xfffULL)) &&
++	    !(vcpu->arch.shared->msr & MSR_PR)) {
++		gpte->eaddr = eaddr;
++		gpte->vpage = kvmppc_mmu_book3s_64_ea_to_vp(vcpu, eaddr, data);
++		gpte->raddr = vcpu->arch.magic_page_pa | (gpte->raddr & 0xfff);
++		gpte->raddr &= KVM_RMO;
++		gpte->may_execute = true;
++		gpte->may_read = true;
++		gpte->may_write = true;
++
++		return 0;
++	}
+ 
+ 	slbe = kvmppc_mmu_book3s_64_find_slbe(vcpu_book3s, eaddr);
+ 	if (!slbe)
+@@ -445,6 +461,7 @@ static int kvmppc_mmu_book3s_64_esid_to_vsid(struct kvm_vcpu *vcpu, ulong esid,
+ 	ulong ea = esid << SID_SHIFT;
+ 	struct kvmppc_slb *slb;
+ 	u64 gvsid = esid;
++	ulong mp_ea = vcpu->arch.magic_page_ea;
+ 
+ 	if (vcpu->arch.shared->msr & (MSR_DR|MSR_IR)) {
+ 		slb = kvmppc_mmu_book3s_64_find_slbe(to_book3s(vcpu), ea);
+@@ -464,7 +481,7 @@ static int kvmppc_mmu_book3s_64_esid_to_vsid(struct kvm_vcpu *vcpu, ulong esid,
+ 		break;
+ 	case MSR_DR|MSR_IR:
+ 		if (!slb)
+-			return -ENOENT;
++			goto no_slb;
+ 
+ 		*vsid = gvsid;
+ 		break;
+@@ -477,6 +494,17 @@ static int kvmppc_mmu_book3s_64_esid_to_vsid(struct kvm_vcpu *vcpu, ulong esid,
+ 		*vsid |= VSID_PR;
+ 
+ 	return 0;
++
++no_slb:
++	/* Catch magic page case */
++	if (unlikely(mp_ea) &&
++	    unlikely(esid == (mp_ea >> SID_SHIFT)) &&
++	    !(vcpu->arch.shared->msr & MSR_PR)) {
++		*vsid = VSID_REAL | esid;
++		return 0;
++	}
++
++	return -EINVAL;
+ }
+ 
+ static bool kvmppc_mmu_book3s_64_is_dcbz32(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
+index 71c1f90..d880c88 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
+@@ -99,6 +99,16 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+ 	int vflags = 0;
+ 	int attempt = 0;
+ 	struct kvmppc_sid_map *map;
++	ulong mp_pa = vcpu->arch.magic_page_pa;
++
++	/* Magic page override */
++	if (unlikely(mp_pa) &&
++	    unlikely((orig_pte->raddr & ~0xfffULL & KVM_RMO) ==
++		     (mp_pa & ~0xfffULL & KVM_RMO))) {
++		hpaddr = (pfn_t)virt_to_phys(vcpu->arch.shared);
++		get_page(pfn_to_page(hpaddr >> PAGE_SHIFT));
++		goto mapped;
++	}
+ 
+ 	/* Get host physical address for gpa */
+ 	hpaddr = gfn_to_pfn(vcpu->kvm, orig_pte->raddr >> PAGE_SHIFT);
+@@ -114,6 +124,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+ #error Unknown page size
+ #endif
+ 
++mapped:
++
+ 	/* and write the mapping ea -> hpa into the pt */
+ 	vcpu->arch.mmu.esid_to_vsid(vcpu, orig_pte->eaddr >> SID_SHIFT, &vsid);
+ 	map = find_sid_vsid(vcpu, vsid);
 -- 
 1.6.0.2
