@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 78A11100864
+	by ozlabs.org (Postfix) with ESMTP id 805AD10081F
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:19 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 22/26] KVM: PPC: PV assembler helpers
-Date: Sat, 26 Jun 2010 01:25:10 +0200
-Message-Id: <1277508314-915-23-git-send-email-agraf@suse.de>
+Subject: [PATCH 23/26] KVM: PPC: PV mtmsrd L=1
+Date: Sat, 26 Jun 2010 01:25:11 +0200
+Message-Id: <1277508314-915-24-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,56 +21,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we hook an instruction we need to make sure we don't clobber any of
-the registers at that point. So we write them out to scratch space in the
-magic page. To make sure we don't fall into a race with another piece of
-hooked code, we need to disable interrupts.
+The PowerPC ISA has a special instruction for mtmsr that only changes the EE
+and RI bits, namely the L=1 form.
 
-To make the later patches and code in general easier readable, let's introduce
-a set of defines that save and restore r30, r31 and cr. Let's also define some
-helpers to read the lower 32 bits of a 64 bit field on 32 bit systems.
+Since that one is reasonably often occuring and simple to implement, let's
+go with this first. Writing EE=0 is always just a store. Doing EE=1 also
+requires us to check for pending interrupts and if necessary exit back to the
+hypervisor.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/kvm_emul.S |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kvm.c      |   45 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S |   56 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 7e8fe6f..71153d0 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -62,6 +62,7 @@
+ #define KVM_INST_MTSPR_DSISR	0x7c1203a6
+ 
+ #define KVM_INST_TLBSYNC	0x7c00046c
++#define KVM_INST_MTMSRD_L1	0x7c010164
+ 
+ static bool kvm_patching_worked = true;
+ static char kvm_tmp[1024 * 1024];
+@@ -117,6 +118,43 @@ static u32 *kvm_alloc(int len)
+ 	return p;
+ }
+ 
++extern u32 kvm_emulate_mtmsrd_branch_offs;
++extern u32 kvm_emulate_mtmsrd_reg_offs;
++extern u32 kvm_emulate_mtmsrd_len;
++extern u32 kvm_emulate_mtmsrd[];
++
++static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
++{
++	u32 *p;
++	int distance_start;
++	int distance_end;
++	ulong next_inst;
++
++	p = kvm_alloc(kvm_emulate_mtmsrd_len * 4);
++	if (!p)
++		return;
++
++	/* Find out where we are and put everything there */
++	distance_start = (ulong)p - (ulong)inst;
++	next_inst = ((ulong)inst + 4);
++	distance_end = next_inst - (ulong)&p[kvm_emulate_mtmsrd_branch_offs];
++
++	/* Make sure we only write valid b instructions */
++	if (distance_start > KVM_INST_B_MAX) {
++		kvm_patching_worked = false;
++		return;
++	}
++
++	/* Modify the chunk to fit the invocation */
++	memcpy(p, kvm_emulate_mtmsrd, kvm_emulate_mtmsrd_len * 4);
++	p[kvm_emulate_mtmsrd_branch_offs] |= distance_end & KVM_INST_B_MASK;
++	p[kvm_emulate_mtmsrd_reg_offs] |= rt;
++	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsrd_len * 4);
++
++	/* Patch the invocation */
++	*inst = KVM_INST_B | (distance_start & KVM_INST_B_MASK);
++}
++
+ static void kvm_map_magic_page(void *data)
+ {
+ 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+@@ -190,6 +228,13 @@ static void kvm_check_ins(u32 *inst)
+ 	case KVM_INST_TLBSYNC:
+ 		kvm_patch_ins_nop(inst);
+ 		break;
++
++	/* Rewrites */
++	case KVM_INST_MTMSRD_L1:
++		/* We use r30 and r31 during the hook */
++		if (get_rt(inst_rt) < 30)
++			kvm_patch_ins_mtmsrd(inst, inst_rt);
++		break;
+ 	}
+ 
+ 	switch (_inst) {
 diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index c7b9fc9..7da835a 100644
+index 7da835a..25e6683 100644
 --- a/arch/powerpc/kernel/kvm_emul.S
 +++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -25,3 +25,32 @@
- 
- #define KVM_MAGIC_PAGE		(-4096)
- 
-+#ifdef CONFIG_64BIT
-+#define LL64(reg, offs, reg2)	ld	reg, (offs)(reg2)
-+#define STL64(reg, offs, reg2)	std	reg, (offs)(reg2)
-+#else
-+#define LL64(reg, offs, reg2)	lwz	reg, (offs + 4)(reg2)
-+#define STL64(reg, offs, reg2)	stw	reg, (offs + 4)(reg2)
-+#endif
+@@ -54,3 +54,59 @@
+ 	/* Disable critical section. We are critical if			\
+ 	   shared->critical == r1 and r2 is always != r1 */		\
+ 	STL64(r2, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);
 +
-+#define SCRATCH_SAVE							\
-+	/* Enable critical section. We are critical if			\
-+	   shared->critical == r1 */					\
-+	STL64(r1, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);		\
-+									\
-+	/* Save state */						\
-+	PPC_STL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
-+	PPC_STL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
-+	mfcr	r31;							\
-+	stw	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);
++.global kvm_emulate_mtmsrd
++kvm_emulate_mtmsrd:
 +
-+#define SCRATCH_RESTORE							\
-+	/* Restore state */						\
-+	PPC_LL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
-+	lwz	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);		\
-+	mtcr	r30;							\
-+	PPC_LL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
-+									\
-+	/* Disable critical section. We are critical if			\
-+	   shared->critical == r1 and r2 is always != r1 */		\
-+	STL64(r2, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);
++	SCRATCH_SAVE
++
++	/* Put MSR & ~(MSR_EE|MSR_RI) in r31 */
++	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
++	lis	r30, (~(MSR_EE | MSR_RI))@h
++	ori	r30, r30, (~(MSR_EE | MSR_RI))@l
++	and	r31, r31, r30
++
++	/* OR the register's (MSR_EE|MSR_RI) on MSR */
++kvm_emulate_mtmsrd_reg:
++	andi.	r30, r0, (MSR_EE|MSR_RI)
++	or	r31, r31, r30
++
++	/* Put MSR back into magic page */
++	STL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
++
++	/* Check if we have to fetch an interrupt */
++	lwz	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_INT)(0)
++	cmpwi	r31, 0
++	beq+	no_check
++
++	/* Check if we may trigger an interrupt */
++	andi.	r30, r30, MSR_EE
++	beq	no_check
++
++	SCRATCH_RESTORE
++
++	/* Nag hypervisor */
++	tlbsync
++
++	b	kvm_emulate_mtmsrd_branch
++
++no_check:
++
++	SCRATCH_RESTORE
++
++	/* Go back to caller */
++kvm_emulate_mtmsrd_branch:
++	b	.
++kvm_emulate_mtmsrd_end:
++
++.global kvm_emulate_mtmsrd_branch_offs
++kvm_emulate_mtmsrd_branch_offs:
++	.long (kvm_emulate_mtmsrd_branch - kvm_emulate_mtmsrd) / 4
++
++.global kvm_emulate_mtmsrd_reg_offs
++kvm_emulate_mtmsrd_reg_offs:
++	.long (kvm_emulate_mtmsrd_reg - kvm_emulate_mtmsrd) / 4
++
++.global kvm_emulate_mtmsrd_len
++kvm_emulate_mtmsrd_len:
++	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
 -- 
 1.6.0.2
