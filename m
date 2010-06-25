@@ -1,19 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5670F1008F5
+Return-Path: <stevedeiters@basler.com>
+Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
+	by ozlabs.org (Postfix) with ESMTP id 3BD441007D1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Jun 2010 09:25:23 +1000 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 25/26] KVM: PPC: PV wrteei
-Date: Sat, 26 Jun 2010 01:25:13 +0200
-Message-Id: <1277508314-915-26-git-send-email-agraf@suse.de>
-In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
-References: <1277508314-915-1-git-send-email-agraf@suse.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>
+	Sat, 26 Jun 2010 09:54:10 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: JFFS2 corruption when mounting filesystem with filenames
+	oflength> 7
+Date: Fri, 25 Jun 2010 18:48:23 -0500
+Message-ID: <181804936ABC2349BE503168465576460F20CB90@exchserver.basler.com>
+In-Reply-To: <181804936ABC2349BE503168465576460F1AB73E@exchserver.basler.com>
+References: <181804936ABC2349BE503168465576460F1AAEC6@exchserver.basler.com>
+	<181804936ABC2349BE503168465576460F1AAEE1@exchserver.basler.com>
+	<181804936ABC2349BE503168465576460F1AB73E@exchserver.basler.com>
+From: "Steve Deiters" <SteveDeiters@BASLER.com>
+To: <linux-mtd@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,141 +25,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On BookE the preferred way to write the EE bit is the wrteei instruction. It
-already encodes the EE bit in the instruction.
+> -----Original Message-----
+> From: linux-mtd-bounces@lists.infradead.org=20
+> [mailto:linux-mtd-bounces@lists.infradead.org] On Behalf Of=20
+> Steve Deiters
+> Sent: Thursday, June 24, 2010 3:02 PM
+> To: linux-mtd@lists.infradead.org
+> Subject: RE: JFFS2 corruption when mounting filesystem with=20
+> filenames oflength> 7
+>=20
+> > -----Original Message-----
+> > From: linux-mtd-bounces@lists.infradead.org
+> > [mailto:linux-mtd-bounces@lists.infradead.org] On Behalf Of Steve=20
+> > Deiters
+> > Sent: Wednesday, June 23, 2010 5:42 PM
+> > To: linux-mtd@lists.infradead.org
+> > Subject: RE: JFFS2 corruption when mounting filesystem with=20
+> filenames=20
+> > oflength > 7
+> >=20
+> > > -----Original Message-----
+> > > From: linux-mtd-bounces@lists.infradead.org
+> > > [mailto:linux-mtd-bounces@lists.infradead.org] On Behalf Of Steve=20
+> > > Deiters
+> > > Sent: Wednesday, June 23, 2010 5:21 PM
+> > > To: linux-mtd@lists.infradead.org
+> > > Subject: JFFS2 corruption when mounting filesystem with
+> > filenames of
+> > > length > 7
+> > >=20
+> > > I found an archived post which seems to be identical to my issue.
+> > > However, this is quite old and there never seemed to be any=20
+> > > resolution.
+> > >=20
+> > > http://www.infradead.org/pipermail/linux-mtd/2006-September/01
+> > > 6491.html
+> > >=20
+> > > If I mount a filesystem that has filenames greater than 7
+> > characters
+> > > in length, the files are corrupted when I mount.
+> > > In my case, I am making a
+> > > JFFS2 image with mkfs.jffs2 and flashing it in with u-boot. =20
+> > > However, I have attached a workflow where I erase the Flash
+> > and create
+> > > a new filesystem completely within Linux and it gives the same=20
+> > > behavior.  I can list the files with the 'ls'
+> > > command from within u-boot.  If I mount from within=20
+> Linux, and then=20
+> > > reboot into u-boot, it will not display any files that had
+> > a filename
+> > > greater than 7 characters.
+> > >=20
+> > > I enabled the MTD debug verbosity at level 2 for the
+> > attached example
+> > > session.
+> > >=20
+> > > I am running on a custom board with a MPC5121 and Linux 2.6.33.4.
+> > >=20
+> > > Thanks in advance for any help.
+> >=20
+> >=20
+> > Sorry for the jumbled mess.  Looks like the line endings are messed=20
+> > up.
+> > Trying again.  I also provided this as an attachment in=20
+> case it gets=20
+> > messed up again.
+>=20
+> Once again sorry for the mess.
+>=20
+> I tried this again with the DENX-v2.6.34 tag in the DENX git=20
+> repository (git://git.denx.de/linux-2.6-denx.git).  The only=20
+> modification I made was to add my dts file.  I still get the=20
+> same issue I had before.
+>=20
+> I've attached my kernel config if that gives any clues.
+>=20
+> Are there any thoughts on what may be causing this?
+>=20
+> Thanks.
 
-So in order to get BookE some speedups as well, let's also PV'nize thati
-instruction.
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kernel/kvm.c      |   50 ++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/kvm_emul.S |   41 ++++++++++++++++++++++++++++++++
- 2 files changed, 91 insertions(+), 0 deletions(-)
+I think there may be something weird going on with the memcpy in my
+build.  If I use the following patch I no longer get errors when I mount
+the filesystem.  All I did was replace the memcpy with a loop.
 
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 3557bc8..85e2163 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -66,6 +66,9 @@
- #define KVM_INST_MTMSRD_L1	0x7c010164
- #define KVM_INST_MTMSR		0x7c000124
- 
-+#define KVM_INST_WRTEEI_0	0x7c000146
-+#define KVM_INST_WRTEEI_1	0x7c008146
-+
- static bool kvm_patching_worked = true;
- static char kvm_tmp[1024 * 1024];
- static int kvm_tmp_index;
-@@ -200,6 +203,47 @@ static void kvm_patch_ins_mtmsr(u32 *inst, u32 rt)
- 	*inst = KVM_INST_B | (distance_start & KVM_INST_B_MASK);
- }
- 
-+#ifdef CONFIG_BOOKE
-+
-+extern u32 kvm_emulate_wrteei_branch_offs;
-+extern u32 kvm_emulate_wrteei_ee_offs;
-+extern u32 kvm_emulate_wrteei_len;
-+extern u32 kvm_emulate_wrteei[];
-+
-+static void kvm_patch_ins_wrteei(u32 *inst)
-+{
-+	u32 *p;
-+	int distance_start;
-+	int distance_end;
-+	ulong next_inst;
-+
-+	p = kvm_alloc(kvm_emulate_wrteei_len * 4);
-+	if (!p)
-+		return;
-+
-+	/* Find out where we are and put everything there */
-+	distance_start = (ulong)p - (ulong)inst;
-+	next_inst = ((ulong)inst + 4);
-+	distance_end = next_inst - (ulong)&p[kvm_emulate_wrteei_branch_offs];
-+
-+	/* Make sure we only write valid b instructions */
-+	if (distance_start > KVM_INST_B_MAX) {
-+		kvm_patching_worked = false;
-+		return;
-+	}
-+
-+	/* Modify the chunk to fit the invocation */
-+	memcpy(p, kvm_emulate_wrteei, kvm_emulate_wrteei_len * 4);
-+	p[kvm_emulate_wrteei_branch_offs] |= distance_end & KVM_INST_B_MASK;
-+	p[kvm_emulate_wrteei_ee_offs] |= (*inst & MSR_EE);
-+	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_wrteei_len * 4);
-+
-+	/* Patch the invocation */
-+	*inst = KVM_INST_B | (distance_start & KVM_INST_B_MASK);
-+}
-+
-+#endif
-+
- static void kvm_map_magic_page(void *data)
- {
- 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-@@ -289,6 +333,12 @@ static void kvm_check_ins(u32 *inst)
+I'm not sure what's special about this particular use of memcpy.  I
+can't believe that things would be working as well as they do if memcpy
+was broken in general.
+
+This is on a PowerPC 32 bit build for a MPC5121.  I am using a GCC 4.1.2
+to compile.  Is anyone aware of any issues with memcpy in this
+configuration?
+
+Thanks.
+
+-------
+
+diff --git a/fs/jffs2/scan.c b/fs/jffs2/scan.c
+index 46f870d..673caa2 100644
+--- a/fs/jffs2/scan.c
++++ b/fs/jffs2/scan.c
+@@ -1038,7 +1038,10 @@ static int jffs2_scan_dirent_node(struct
+jffs2_sb_info *c, struct jffs2_eraseblo
+ 	if (!fd) {
+ 		return -ENOMEM;
  	}
- 
- 	switch (_inst) {
-+#ifdef CONFIG_BOOKE
-+	case KVM_INST_WRTEEI_0:
-+	case KVM_INST_WRTEEI_1:
-+		kvm_patch_ins_wrteei(inst);
-+		break;
-+#endif
- 	}
- 
- 	flush_icache_range((ulong)inst, (ulong)inst + 4);
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index ccf5a42..b79b9de 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -194,3 +194,44 @@ kvm_emulate_mtmsr_orig_ins_offs:
- .global kvm_emulate_mtmsr_len
- kvm_emulate_mtmsr_len:
- 	.long (kvm_emulate_mtmsr_end - kvm_emulate_mtmsr) / 4
+-	memcpy(&fd->name, rd->name, checkedlen);
++	int i;
++	for(i =3D 0; i < checkedlen; i++)
++		((unsigned char*)fd->name)[i] =3D ((const unsigned
+char*)rd->name)[i];
 +
-+
-+
-+.global kvm_emulate_wrteei
-+kvm_emulate_wrteei:
-+
-+	SCRATCH_SAVE
-+
-+	/* Fetch old MSR in r31 */
-+	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	/* Remove MSR_EE from old MSR */
-+	li	r30, 0
-+	ori	r30, r30, MSR_EE
-+	andc	r31, r31, r30
-+
-+	/* OR new MSR_EE onto the old MSR */
-+kvm_emulate_wrteei_ee:
-+	ori	r31, r31, 0
-+
-+	/* Write new MSR value back */
-+	STL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	SCRATCH_RESTORE
-+
-+	/* Go back to caller */
-+kvm_emulate_wrteei_branch:
-+	b	.
-+kvm_emulate_wrteei_end:
-+
-+.global kvm_emulate_wrteei_branch_offs
-+kvm_emulate_wrteei_branch_offs:
-+	.long (kvm_emulate_wrteei_branch - kvm_emulate_wrteei) / 4
-+
-+.global kvm_emulate_wrteei_ee_offs
-+kvm_emulate_wrteei_ee_offs:
-+	.long (kvm_emulate_wrteei_ee - kvm_emulate_wrteei) / 4
-+
-+.global kvm_emulate_wrteei_len
-+kvm_emulate_wrteei_len:
-+	.long (kvm_emulate_wrteei_end - kvm_emulate_wrteei) / 4
--- 
-1.6.0.2
+ 	fd->name[checkedlen] =3D 0;
+=20
+ 	crc =3D crc32(0, fd->name, rd->nsize);
