@@ -1,24 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 9CB281007D4
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id DD7BFB6F16
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 26 Jun 2010 09:05:16 +1000 (EST)
-Received: by iwn5 with SMTP id 5so1349349iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 25 Jun 2010 16:05:14 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100622230026.GA2453@opensource.wolfsonmicro.com>
-References: <1276617907-10862-1-git-send-email-emillbrandt@dekaresearch.com>
-	<20100622230026.GA2453@opensource.wolfsonmicro.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 25 Jun 2010 17:04:54 -0600
-Message-ID: <AANLkTiluyeGSwVSXgTeRxS3hVWTe3Gkn8qHrqbHJFMun@mail.gmail.com>
-Subject: Re: [PATCH 0/2 v3] mpc5200 ac97 gpio reset
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+	Sat, 26 Jun 2010 09:11:53 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S_32 MMU debug compile fixes
+Date: Sat, 26 Jun 2010 01:11:51 +0200
+Message-Id: <1277507511-413-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 22, 2010 at 5:00 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Tue, Jun 15, 2010 at 12:05:05PM -0400, Eric Millbrandt wrote:
->> These patches reimplement the reset fuction in the ac97 to use gpio pins
->> instead of using the mpc5200 ac97 reset functionality in the psc. =A0Thi=
-s
->> avoids a problem in which attached ac97 devices go into "test" mode appe=
-ar
->> unresponsive.
->>
->> These patches were tested on a pcm030 baseboard and on custom hardware w=
-ith
->> a wm9715 audio codec/touchscreen controller.
->
-> Grant, are you OK with this series?
+Due to previous changes, the Book3S_32 guest MMU code didn't compile properly
+when enabling debugging.
 
-Yes, I'm going to pick it up.
+This patch repairs the broken code paths, making it possible to define DEBUG_MMU
+and friends again.
 
-g.
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kvm/book3s_32_mmu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
+index 3292d76..079760b 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu.c
++++ b/arch/powerpc/kvm/book3s_32_mmu.c
+@@ -104,7 +104,7 @@ static hva_t kvmppc_mmu_book3s_32_get_pteg(struct kvmppc_vcpu_book3s *vcpu_book3
+ 	pteg = (vcpu_book3s->sdr1 & 0xffff0000) | hash;
+ 
+ 	dprintk("MMU: pc=0x%lx eaddr=0x%lx sdr1=0x%llx pteg=0x%x vsid=0x%x\n",
+-		vcpu_book3s->vcpu.arch.pc, eaddr, vcpu_book3s->sdr1, pteg,
++		kvmppc_get_pc(&vcpu_book3s->vcpu), eaddr, vcpu_book3s->sdr1, pteg,
+ 		sre->vsid);
+ 
+ 	r = gfn_to_hva(vcpu_book3s->vcpu.kvm, pteg >> PAGE_SHIFT);
+@@ -269,7 +269,7 @@ no_page_found:
+ 		dprintk_pte("KVM MMU: No PTE found (sdr1=0x%llx ptegp=0x%lx)\n",
+ 			    to_book3s(vcpu)->sdr1, ptegp);
+ 		for (i=0; i<16; i+=2) {
+-			dprintk_pte("   %02d: 0x%x - 0x%x (0x%llx)\n",
++			dprintk_pte("   %02d: 0x%x - 0x%x (0x%x)\n",
+ 				    i, pteg[i], pteg[i+1], ptem);
+ 		}
+ 	}
+-- 
+1.6.0.2
