@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 3DFE4B6F44
+	by ozlabs.org (Postfix) with ESMTP id 4053FB707F
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:16 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/26] KVM: PPC: Convert SRR0 and SRR1 to shared page
-Date: Sat, 26 Jun 2010 01:24:53 +0200
-Message-Id: <1277508314-915-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 04/26] KVM: PPC: Convert DAR to shared page.
+Date: Sat, 26 Jun 2010 01:24:52 +0200
+Message-Id: <1277508314-915-5-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,198 +21,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SRR0 and SRR1 registers contain cached values of the PC and MSR
-respectively. They get written to by the hypervisor when an interrupt
-occurs or directly by the kernel. They are also used to tell the rfi(d)
-instruction where to jump to.
-
-Because it only gets touched on defined events that, it's very simple to
-share with the guest. Hypervisor and guest both have full r/w access.
+The DAR register contains the address a data page fault occured at. This
+register behaves pretty much like a simple data storage register that gets
+written to on data faults. There is no hypervisor interaction required on
+read or write.
 
 This patch converts all users of the current field to the shared page.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_host.h |    2 --
- arch/powerpc/include/asm/kvm_para.h |    2 ++
- arch/powerpc/kvm/book3s.c           |   12 ++++++------
- arch/powerpc/kvm/book3s_emulate.c   |    4 ++--
- arch/powerpc/kvm/booke.c            |   15 ++++++++-------
- arch/powerpc/kvm/booke_emulate.c    |    4 ++--
- arch/powerpc/kvm/emulate.c          |   12 ++++++++----
- 7 files changed, 28 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h      |    1 -
+ arch/powerpc/include/asm/kvm_para.h      |    1 +
+ arch/powerpc/kvm/book3s.c                |   14 +++++++-------
+ arch/powerpc/kvm/book3s_emulate.c        |    6 +++---
+ arch/powerpc/kvm/book3s_paired_singles.c |    2 +-
+ arch/powerpc/kvm/booke.c                 |    2 +-
+ arch/powerpc/kvm/booke_emulate.c         |    4 ++--
+ 7 files changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 108dabc..6bcf62f 100644
+index 249c242..108dabc 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -224,8 +224,6 @@ struct kvm_vcpu_arch {
- 	ulong sprg5;
- 	ulong sprg6;
- 	ulong sprg7;
--	ulong srr0;
--	ulong srr1;
- 	ulong csrr0;
+@@ -230,7 +230,6 @@ struct kvm_vcpu_arch {
  	ulong csrr1;
  	ulong dsrr0;
+ 	ulong dsrr1;
+-	ulong dear;
+ 	ulong esr;
+ 	u32 dec;
+ 	u32 decar;
 diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index ec72a1c..d7fc6c2 100644
+index 9f7565b..ec72a1c 100644
 --- a/arch/powerpc/include/asm/kvm_para.h
 +++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -23,6 +23,8 @@
+@@ -23,6 +23,7 @@
  #include <linux/types.h>
  
  struct kvm_vcpu_arch_shared {
-+	__u64 srr0;
-+	__u64 srr1;
- 	__u64 dar;
++	__u64 dar;
  	__u64 msr;
  	__u32 dsisr;
+ };
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 245bd2d..b144697 100644
+index 57fd73e..245bd2d 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -162,8 +162,8 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
+@@ -594,14 +594,14 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
  
- void kvmppc_inject_interrupt(struct kvm_vcpu *vcpu, int vec, u64 flags)
- {
--	vcpu->arch.srr0 = kvmppc_get_pc(vcpu);
--	vcpu->arch.srr1 = vcpu->arch.shared->msr | flags;
-+	vcpu->arch.shared->srr0 = kvmppc_get_pc(vcpu);
-+	vcpu->arch.shared->srr1 = vcpu->arch.shared->msr | flags;
- 	kvmppc_set_pc(vcpu, to_book3s(vcpu)->hior + vec);
- 	vcpu->arch.mmu.reset_msr(vcpu);
- }
-@@ -1059,8 +1059,8 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->lr = kvmppc_get_lr(vcpu);
- 	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.shared->msr;
--	regs->srr0 = vcpu->arch.srr0;
--	regs->srr1 = vcpu->arch.srr1;
-+	regs->srr0 = vcpu->arch.shared->srr0;
-+	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
- 	regs->sprg0 = vcpu->arch.sprg0;
- 	regs->sprg1 = vcpu->arch.sprg1;
-@@ -1086,8 +1086,8 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	kvmppc_set_lr(vcpu, regs->lr);
- 	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
--	vcpu->arch.srr0 = regs->srr0;
--	vcpu->arch.srr1 = regs->srr1;
-+	vcpu->arch.shared->srr0 = regs->srr0;
-+	vcpu->arch.shared->srr1 = regs->srr1;
- 	vcpu->arch.sprg0 = regs->sprg0;
- 	vcpu->arch.sprg1 = regs->sprg1;
- 	vcpu->arch.sprg2 = regs->sprg2;
+ 	if (page_found == -ENOENT) {
+ 		/* Page not found in guest PTE entries */
+-		vcpu->arch.dear = kvmppc_get_fault_dar(vcpu);
++		vcpu->arch.shared->dar = kvmppc_get_fault_dar(vcpu);
+ 		vcpu->arch.shared->dsisr = to_svcpu(vcpu)->fault_dsisr;
+ 		vcpu->arch.shared->msr |=
+ 			(to_svcpu(vcpu)->shadow_srr1 & 0x00000000f8000000ULL);
+ 		kvmppc_book3s_queue_irqprio(vcpu, vec);
+ 	} else if (page_found == -EPERM) {
+ 		/* Storage protection */
+-		vcpu->arch.dear = kvmppc_get_fault_dar(vcpu);
++		vcpu->arch.shared->dar = kvmppc_get_fault_dar(vcpu);
+ 		vcpu->arch.shared->dsisr =
+ 			to_svcpu(vcpu)->fault_dsisr & ~DSISR_NOHPTE;
+ 		vcpu->arch.shared->dsisr |= DSISR_PROTFAULT;
+@@ -610,7 +610,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		kvmppc_book3s_queue_irqprio(vcpu, vec);
+ 	} else if (page_found == -EINVAL) {
+ 		/* Page not found in guest SLB */
+-		vcpu->arch.dear = kvmppc_get_fault_dar(vcpu);
++		vcpu->arch.shared->dar = kvmppc_get_fault_dar(vcpu);
+ 		kvmppc_book3s_queue_irqprio(vcpu, vec + 0x80);
+ 	} else if (!is_mmio &&
+ 		   kvmppc_visible_gfn(vcpu, pte.raddr >> PAGE_SHIFT)) {
+@@ -867,17 +867,17 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		if (to_svcpu(vcpu)->fault_dsisr & DSISR_NOHPTE) {
+ 			r = kvmppc_handle_pagefault(run, vcpu, dar, exit_nr);
+ 		} else {
+-			vcpu->arch.dear = dar;
++			vcpu->arch.shared->dar = dar;
+ 			vcpu->arch.shared->dsisr = to_svcpu(vcpu)->fault_dsisr;
+ 			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+-			kvmppc_mmu_pte_flush(vcpu, vcpu->arch.dear, ~0xFFFUL);
++			kvmppc_mmu_pte_flush(vcpu, dar, ~0xFFFUL);
+ 			r = RESUME_GUEST;
+ 		}
+ 		break;
+ 	}
+ 	case BOOK3S_INTERRUPT_DATA_SEGMENT:
+ 		if (kvmppc_mmu_map_segment(vcpu, kvmppc_get_fault_dar(vcpu)) < 0) {
+-			vcpu->arch.dear = kvmppc_get_fault_dar(vcpu);
++			vcpu->arch.shared->dar = kvmppc_get_fault_dar(vcpu);
+ 			kvmppc_book3s_queue_irqprio(vcpu,
+ 				BOOK3S_INTERRUPT_DATA_SEGMENT);
+ 		}
+@@ -997,7 +997,7 @@ program_interrupt:
+ 		if (kvmppc_read_inst(vcpu) == EMULATE_DONE) {
+ 			vcpu->arch.shared->dsisr = kvmppc_alignment_dsisr(vcpu,
+ 				kvmppc_get_last_inst(vcpu));
+-			vcpu->arch.dear = kvmppc_alignment_dar(vcpu,
++			vcpu->arch.shared->dar = kvmppc_alignment_dar(vcpu,
+ 				kvmppc_get_last_inst(vcpu));
+ 			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+ 		}
 diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index c147864..f333cb4 100644
+index 9982ff1..c147864 100644
 --- a/arch/powerpc/kvm/book3s_emulate.c
 +++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -73,8 +73,8 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		switch (get_xop(inst)) {
- 		case OP_19_XOP_RFID:
- 		case OP_19_XOP_RFI:
--			kvmppc_set_pc(vcpu, vcpu->arch.srr0);
--			kvmppc_set_msr(vcpu, vcpu->arch.srr1);
-+			kvmppc_set_pc(vcpu, vcpu->arch.shared->srr0);
-+			kvmppc_set_msr(vcpu, vcpu->arch.shared->srr1);
- 			*advance = 0;
- 			break;
+@@ -212,7 +212,7 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			r = kvmppc_st(vcpu, &addr, 32, zeros, true);
+ 			if ((r == -ENOENT) || (r == -EPERM)) {
+ 				*advance = 0;
+-				vcpu->arch.dear = vaddr;
++				vcpu->arch.shared->dar = vaddr;
+ 				to_svcpu(vcpu)->fault_dar = vaddr;
  
+ 				dsisr = DSISR_ISSTORE;
+@@ -330,7 +330,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 		vcpu->arch.shared->dsisr = spr_val;
+ 		break;
+ 	case SPRN_DAR:
+-		vcpu->arch.dear = spr_val;
++		vcpu->arch.shared->dar = spr_val;
+ 		break;
+ 	case SPRN_HIOR:
+ 		to_book3s(vcpu)->hior = spr_val;
+@@ -443,7 +443,7 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 		kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->dsisr);
+ 		break;
+ 	case SPRN_DAR:
+-		kvmppc_set_gpr(vcpu, rt, vcpu->arch.dear);
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->dar);
+ 		break;
+ 	case SPRN_HIOR:
+ 		kvmppc_set_gpr(vcpu, rt, to_book3s(vcpu)->hior);
+diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
+index 749dfbd..807576f 100644
+--- a/arch/powerpc/kvm/book3s_paired_singles.c
++++ b/arch/powerpc/kvm/book3s_paired_singles.c
+@@ -169,7 +169,7 @@ static void kvmppc_inject_pf(struct kvm_vcpu *vcpu, ulong eaddr, bool is_store)
+ 
+ 	shared->msr = kvmppc_set_field(shared->msr, 33, 36, 0);
+ 	shared->msr = kvmppc_set_field(shared->msr, 42, 47, 0);
+-	vcpu->arch.dear = eaddr;
++	shared->dar = eaddr;
+ 	/* Page Fault */
+ 	dsisr = kvmppc_set_field(0, 33, 33, 1);
+ 	if (is_store)
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 5844bcf..8b546fe 100644
+index ddb4cac..5844bcf 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -64,7 +64,8 @@ void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu)
- 
- 	printk("pc:   %08lx msr:  %08llx\n", vcpu->arch.pc, vcpu->arch.shared->msr);
- 	printk("lr:   %08lx ctr:  %08lx\n", vcpu->arch.lr, vcpu->arch.ctr);
--	printk("srr0: %08lx srr1: %08lx\n", vcpu->arch.srr0, vcpu->arch.srr1);
-+	printk("srr0: %08llx srr1: %08llx\n", vcpu->arch.shared->srr0,
-+					    vcpu->arch.shared->srr1);
- 
- 	printk("exceptions: %08lx\n", vcpu->arch.pending_exceptions);
- 
-@@ -189,8 +190,8 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	}
- 
- 	if (allowed) {
--		vcpu->arch.srr0 = vcpu->arch.pc;
--		vcpu->arch.srr1 = vcpu->arch.shared->msr;
-+		vcpu->arch.shared->srr0 = vcpu->arch.pc;
-+		vcpu->arch.shared->srr1 = vcpu->arch.shared->msr;
- 		vcpu->arch.pc = vcpu->arch.ivpr | vcpu->arch.ivor[priority];
+@@ -195,7 +195,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
  		if (update_esr == true)
  			vcpu->arch.esr = vcpu->arch.queued_esr;
-@@ -491,8 +492,8 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->lr = vcpu->arch.lr;
- 	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.shared->msr;
--	regs->srr0 = vcpu->arch.srr0;
--	regs->srr1 = vcpu->arch.srr1;
-+	regs->srr0 = vcpu->arch.shared->srr0;
-+	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
- 	regs->sprg0 = vcpu->arch.sprg0;
- 	regs->sprg1 = vcpu->arch.sprg1;
-@@ -518,8 +519,8 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	vcpu->arch.lr = regs->lr;
- 	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
--	vcpu->arch.srr0 = regs->srr0;
--	vcpu->arch.srr1 = regs->srr1;
-+	vcpu->arch.shared->srr0 = regs->srr0;
-+	vcpu->arch.shared->srr1 = regs->srr1;
- 	vcpu->arch.sprg0 = regs->sprg0;
- 	vcpu->arch.sprg1 = regs->sprg1;
- 	vcpu->arch.sprg2 = regs->sprg2;
+ 		if (update_dear == true)
+-			vcpu->arch.dear = vcpu->arch.queued_dear;
++			vcpu->arch.shared->dar = vcpu->arch.queued_dear;
+ 		kvmppc_set_msr(vcpu, vcpu->arch.shared->msr & msr_mask);
+ 
+ 		clear_bit(priority, &vcpu->arch.pending_exceptions);
 diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_emulate.c
-index 51ef453..1260f5f 100644
+index b115203..51ef453 100644
 --- a/arch/powerpc/kvm/booke_emulate.c
 +++ b/arch/powerpc/kvm/booke_emulate.c
-@@ -31,8 +31,8 @@
+@@ -105,7 +105,7 @@ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
  
- static void kvmppc_emul_rfi(struct kvm_vcpu *vcpu)
- {
--	vcpu->arch.pc = vcpu->arch.srr0;
--	kvmppc_set_msr(vcpu, vcpu->arch.srr1);
-+	vcpu->arch.pc = vcpu->arch.shared->srr0;
-+	kvmppc_set_msr(vcpu, vcpu->arch.shared->srr1);
- }
- 
- int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index 4568ec3..ad0fa4f 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -242,9 +242,11 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 
- 			switch (sprn) {
- 			case SPRN_SRR0:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.srr0); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->srr0);
-+				break;
- 			case SPRN_SRR1:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.srr1); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->srr1);
-+				break;
- 			case SPRN_PVR:
- 				kvmppc_set_gpr(vcpu, rt, vcpu->arch.pvr); break;
- 			case SPRN_PIR:
-@@ -320,9 +322,11 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 			rs = get_rs(inst);
- 			switch (sprn) {
- 			case SPRN_SRR0:
--				vcpu->arch.srr0 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->srr0 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 			case SPRN_SRR1:
--				vcpu->arch.srr1 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->srr1 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 
- 			/* XXX We need to context-switch the timebase for
- 			 * watchdog and FIT. */
+ 	switch (sprn) {
+ 	case SPRN_DEAR:
+-		vcpu->arch.dear = spr_val; break;
++		vcpu->arch.shared->dar = spr_val; break;
+ 	case SPRN_ESR:
+ 		vcpu->arch.esr = spr_val; break;
+ 	case SPRN_DBCR0:
+@@ -200,7 +200,7 @@ int kvmppc_booke_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 	case SPRN_IVPR:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu->arch.ivpr); break;
+ 	case SPRN_DEAR:
+-		kvmppc_set_gpr(vcpu, rt, vcpu->arch.dear); break;
++		kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->dar); break;
+ 	case SPRN_ESR:
+ 		kvmppc_set_gpr(vcpu, rt, vcpu->arch.esr); break;
+ 	case SPRN_DBCR0:
 -- 
 1.6.0.2
