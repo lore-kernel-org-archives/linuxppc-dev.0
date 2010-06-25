@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 81757100812
+	by ozlabs.org (Postfix) with ESMTP id A68F1100823
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 11/26] KVM: PPC: Make RMO a define
-Date: Sat, 26 Jun 2010 01:24:59 +0200
-Message-Id: <1277508314-915-12-git-send-email-agraf@suse.de>
+Subject: [PATCH 15/26] KVM: PPC: Expose magic page support to guest
+Date: Sat, 26 Jun 2010 01:25:03 +0200
+Message-Id: <1277508314-915-16-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,53 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerPC it's very normal to not support all of the physical RAM in real mode.
-To check if we're matching on the shared page or not, we need to know the limits
-so we can restrain ourselves to that range.
-
-So let's make it a define instead of open-coding it. And while at it, let's also
-increase it.
+Now that we have the shared page in place and the MMU code knows about
+the magic page, we can expose that capability to the guest!
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_host.h |    2 ++
- arch/powerpc/kvm/book3s.c           |    4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/kvm_para.h |    2 ++
+ arch/powerpc/kvm/powerpc.c          |   11 +++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 83c45ea..e35c1ac 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -47,6 +47,8 @@
- #define HPTEG_HASH_NUM_VPTE		(1 << HPTEG_HASH_BITS_VPTE)
- #define HPTEG_HASH_NUM_VPTE_LONG	(1 << HPTEG_HASH_BITS_VPTE_LONG)
+diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
+index c7305d7..9f8efa4 100644
+--- a/arch/powerpc/include/asm/kvm_para.h
++++ b/arch/powerpc/include/asm/kvm_para.h
+@@ -43,6 +43,8 @@ struct kvm_vcpu_arch_shared {
+ #define KVM_SC_MAGIC_R3		0x4b564d52 /* "KVMR" */
+ #define KVM_SC_MAGIC_R4		0x554c455a /* "ULEZ" */
  
-+#define KVM_RMO			0x0fffffffffffffffULL
++#define KVM_FEATURE_MAGIC_PAGE	1
 +
- struct kvm;
- struct kvm_run;
- struct kvm_vcpu;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index e76c950..2f55aa5 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -462,7 +462,7 @@ static int kvmppc_xlate(struct kvm_vcpu *vcpu, ulong eaddr, bool data,
- 		r = vcpu->arch.mmu.xlate(vcpu, eaddr, pte, data);
- 	} else {
- 		pte->eaddr = eaddr;
--		pte->raddr = eaddr & 0xffffffff;
-+		pte->raddr = eaddr & KVM_RMO;
- 		pte->vpage = VSID_REAL | eaddr >> 12;
- 		pte->may_read = true;
- 		pte->may_write = true;
-@@ -576,7 +576,7 @@ int kvmppc_handle_pagefault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		pte.may_execute = true;
- 		pte.may_read = true;
- 		pte.may_write = true;
--		pte.raddr = eaddr & 0xffffffff;
-+		pte.raddr = eaddr & KVM_RMO;
- 		pte.eaddr = eaddr;
- 		pte.vpage = eaddr >> 12;
+ #ifdef __KERNEL__
+ 
+ static inline int kvm_para_available(void)
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index fe7a1c8..1d28a81 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -60,8 +60,19 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
  	}
+ 
+ 	switch (nr) {
++	case KVM_HC_PPC_MAP_MAGIC_PAGE:
++	{
++		vcpu->arch.magic_page_pa = param1;
++		vcpu->arch.magic_page_ea = param2;
++
++		r = 0;
++		break;
++	}
+ 	case KVM_HC_FEATURES:
+ 		r = 0;
++#if !defined(CONFIG_KVM_440) /* XXX missing bits on 440 */
++		r |= (1 << KVM_FEATURE_MAGIC_PAGE);
++#endif
+ 		break;
+ 	default:
+ 		r = -KVM_ENOSYS;
 -- 
 1.6.0.2
