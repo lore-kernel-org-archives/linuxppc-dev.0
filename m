@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id A68F1100823
+	by ozlabs.org (Postfix) with ESMTP id 7DF65100810
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Sat, 26 Jun 2010 09:25:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 15/26] KVM: PPC: Expose magic page support to guest
-Date: Sat, 26 Jun 2010 01:25:03 +0200
-Message-Id: <1277508314-915-16-git-send-email-agraf@suse.de>
+Subject: [PATCH 07/26] KVM: PPC: Implement hypervisor interface
+Date: Sat, 26 Jun 2010 01:24:55 +0200
+Message-Id: <1277508314-915-8-git-send-email-agraf@suse.de>
 In-Reply-To: <1277508314-915-1-git-send-email-agraf@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,51 +21,283 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have the shared page in place and the MMU code knows about
-the magic page, we can expose that capability to the guest!
+To communicate with KVM directly we need to plumb some sort of interface
+between the guest and KVM. Usually those interfaces use hypercalls.
+
+This hypercall implementation is described in the last patch of the series
+in a special documentation file. Please read that for further information.
+
+This patch implements stubs to handle KVM PPC hypercalls on the host and
+guest side alike.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_para.h |    2 ++
- arch/powerpc/kvm/powerpc.c          |   11 +++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/kvm_para.h |  100 ++++++++++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/kvm_ppc.h  |    1 +
+ arch/powerpc/kvm/book3s.c           |   10 +++-
+ arch/powerpc/kvm/booke.c            |   11 ++++-
+ arch/powerpc/kvm/emulate.c          |   11 ++++-
+ arch/powerpc/kvm/powerpc.c          |   28 ++++++++++
+ include/linux/kvm_para.h            |    1 +
+ 7 files changed, 156 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index c7305d7..9f8efa4 100644
+index e402999..eaab306 100644
 --- a/arch/powerpc/include/asm/kvm_para.h
 +++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -43,6 +43,8 @@ struct kvm_vcpu_arch_shared {
- #define KVM_SC_MAGIC_R3		0x4b564d52 /* "KVMR" */
- #define KVM_SC_MAGIC_R4		0x554c455a /* "ULEZ" */
+@@ -34,16 +34,112 @@ struct kvm_vcpu_arch_shared {
+ 	__u32 dsisr;
+ };
  
-+#define KVM_FEATURE_MAGIC_PAGE	1
++#define KVM_PVR_PARA		0x4b564d3f /* "KVM?" */
++#define KVM_SC_MAGIC_R3		0x4b564d52 /* "KVMR" */
++#define KVM_SC_MAGIC_R4		0x554c455a /* "ULEZ" */
 +
  #ifdef __KERNEL__
  
  static inline int kvm_para_available(void)
+ {
+-	return 0;
++	unsigned long pvr = KVM_PVR_PARA;
++
++	asm volatile("mfpvr %0" : "=r"(pvr) : "0"(pvr));
++	return pvr == KVM_PVR_PARA;
++}
++
++static inline long kvm_hypercall0(unsigned int nr)
++{
++	unsigned long register r3 asm("r3") = KVM_SC_MAGIC_R3;
++	unsigned long register r4 asm("r4") = KVM_SC_MAGIC_R4;
++	unsigned long register _nr asm("r5") = nr;
++
++	asm volatile("sc"
++		     : "=r"(r3)
++		     : "r"(r3), "r"(r4), "r"(_nr)
++		     : "memory");
++
++	return r3;
+ }
+ 
++static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
++{
++	unsigned long register r3 asm("r3") = KVM_SC_MAGIC_R3;
++	unsigned long register r4 asm("r4") = KVM_SC_MAGIC_R4;
++	unsigned long register _nr asm("r5") = nr;
++	unsigned long register _p1 asm("r6") = p1;
++
++	asm volatile("sc"
++		     : "=r"(r3)
++		     : "r"(r3), "r"(r4), "r"(_nr), "r"(_p1)
++		     : "memory");
++
++	return r3;
++}
++
++static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
++				  unsigned long p2)
++{
++	unsigned long register r3 asm("r3") = KVM_SC_MAGIC_R3;
++	unsigned long register r4 asm("r4") = KVM_SC_MAGIC_R4;
++	unsigned long register _nr asm("r5") = nr;
++	unsigned long register _p1 asm("r6") = p1;
++	unsigned long register _p2 asm("r7") = p2;
++
++	asm volatile("sc"
++		     : "=r"(r3)
++		     : "r"(r3), "r"(r4), "r"(_nr), "r"(_p1), "r"(_p2)
++		     : "memory");
++
++	return r3;
++}
++
++static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
++				  unsigned long p2, unsigned long p3)
++{
++	unsigned long register r3 asm("r3") = KVM_SC_MAGIC_R3;
++	unsigned long register r4 asm("r4") = KVM_SC_MAGIC_R4;
++	unsigned long register _nr asm("r5") = nr;
++	unsigned long register _p1 asm("r6") = p1;
++	unsigned long register _p2 asm("r7") = p2;
++	unsigned long register _p3 asm("r8") = p3;
++
++	asm volatile("sc"
++		     : "=r"(r3)
++		     : "r"(r3), "r"(r4), "r"(_nr), "r"(_p1), "r"(_p2), "r"(_p3)
++		     : "memory");
++
++	return r3;
++}
++
++static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
++				  unsigned long p2, unsigned long p3,
++				  unsigned long p4)
++{
++	unsigned long register r3 asm("r3") = KVM_SC_MAGIC_R3;
++	unsigned long register r4 asm("r4") = KVM_SC_MAGIC_R4;
++	unsigned long register _nr asm("r5") = nr;
++	unsigned long register _p1 asm("r6") = p1;
++	unsigned long register _p2 asm("r7") = p2;
++	unsigned long register _p3 asm("r8") = p3;
++	unsigned long register _p4 asm("r9") = p4;
++
++	asm volatile("sc"
++		     : "=r"(r3)
++		     : "r"(r3), "r"(r4), "r"(_nr), "r"(_p1), "r"(_p2), "r"(_p3),
++		       "r"(_p4)
++		     : "memory");
++
++	return r3;
++}
++
++
+ static inline unsigned int kvm_arch_para_features(void)
+ {
+-	return 0;
++	if (!kvm_para_available())
++		return 0;
++
++	return kvm_hypercall0(KVM_HC_FEATURES);
+ }
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 18d139e..ecb3bc7 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -107,6 +107,7 @@ extern int kvmppc_booke_init(void);
+ extern void kvmppc_booke_exit(void);
+ 
+ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
++extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
+ 
+ /*
+  * Cuts out inst bits with ordering according to spec.
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 5a6f055..e8001c5 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -947,10 +947,10 @@ program_interrupt:
+ 		break;
+ 	}
+ 	case BOOK3S_INTERRUPT_SYSCALL:
+-		// XXX make user settable
+ 		if (vcpu->arch.osi_enabled &&
+ 		    (((u32)kvmppc_get_gpr(vcpu, 3)) == OSI_SC_MAGIC_R3) &&
+ 		    (((u32)kvmppc_get_gpr(vcpu, 4)) == OSI_SC_MAGIC_R4)) {
++			/* MOL hypercalls */
+ 			u64 *gprs = run->osi.gprs;
+ 			int i;
+ 
+@@ -959,8 +959,14 @@ program_interrupt:
+ 				gprs[i] = kvmppc_get_gpr(vcpu, i);
+ 			vcpu->arch.osi_needed = 1;
+ 			r = RESUME_HOST_NV;
+-
++		} else if (!(vcpu->arch.shared->msr & MSR_PR) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 3)) == KVM_SC_MAGIC_R3) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 4)) == KVM_SC_MAGIC_R4)) {
++			/* KVM PV hypercalls */
++			kvmppc_set_gpr(vcpu, 3, kvmppc_kvm_pv(vcpu));
++			r = RESUME_GUEST;
+ 		} else {
++			/* Guest syscalls */
+ 			vcpu->stat.syscall_exits++;
+ 			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+ 			r = RESUME_GUEST;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 984c461..e7d1216 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -338,7 +338,16 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_SYSCALL:
+-		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SYSCALL);
++		if (!(vcpu->arch.shared->msr & MSR_PR) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 3)) == KVM_SC_MAGIC_R3) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 4)) == KVM_SC_MAGIC_R4)) {
++			/* KVM PV hypercalls */
++			kvmppc_set_gpr(vcpu, 3, kvmppc_kvm_pv(vcpu));
++			r = RESUME_GUEST;
++		} else {
++			/* Guest syscalls */
++			kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SYSCALL);
++		}
+ 		kvmppc_account_exit(vcpu, SYSCALL_EXITS);
+ 		r = RESUME_GUEST;
+ 		break;
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 454869b..5efde36 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -248,7 +248,16 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->srr1);
+ 				break;
+ 			case SPRN_PVR:
+-				kvmppc_set_gpr(vcpu, rt, vcpu->arch.pvr); break;
++			{
++				/* Expose PV interface */
++				if (kvmppc_get_gpr(vcpu, rt) == KVM_PVR_PARA) {
++					kvmppc_set_gpr(vcpu, rt, KVM_PVR_PARA);
++					break;
++				}
++
++				kvmppc_set_gpr(vcpu, rt, vcpu->arch.pvr);
++				break;
++			}
+ 			case SPRN_PIR:
+ 				kvmppc_set_gpr(vcpu, rt, vcpu->vcpu_id); break;
+ 			case SPRN_MSSSR0:
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index fe7a1c8..1d28a81 100644
+index 22f6fa2..fe7a1c8 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -60,8 +60,19 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 	}
+@@ -42,6 +42,34 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *v)
+ 	       !!(v->arch.pending_exceptions);
+ }
  
- 	switch (nr) {
-+	case KVM_HC_PPC_MAP_MAGIC_PAGE:
-+	{
-+		vcpu->arch.magic_page_pa = param1;
-+		vcpu->arch.magic_page_ea = param2;
++int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
++{
++	int nr = kvmppc_get_gpr(vcpu, 5);
++	int r;
++	unsigned long __maybe_unused param1 = kvmppc_get_gpr(vcpu, 6);
++	unsigned long __maybe_unused param2 = kvmppc_get_gpr(vcpu, 7);
++	unsigned long __maybe_unused param3 = kvmppc_get_gpr(vcpu, 8);
++	unsigned long __maybe_unused param4 = kvmppc_get_gpr(vcpu, 9);
 +
++	if (!(vcpu->arch.shared->msr & MSR_SF)) {
++		/* 32 bit mode */
++		param1 &= 0xffffffff;
++		param2 &= 0xffffffff;
++		param3 &= 0xffffffff;
++		param4 &= 0xffffffff;
++	}
++
++	switch (nr) {
++	case KVM_HC_FEATURES:
 +		r = 0;
 +		break;
++	default:
++		r = -KVM_ENOSYS;
++		break;
 +	}
- 	case KVM_HC_FEATURES:
- 		r = 0;
-+#if !defined(CONFIG_KVM_440) /* XXX missing bits on 440 */
-+		r |= (1 << KVM_FEATURE_MAGIC_PAGE);
-+#endif
- 		break;
- 	default:
- 		r = -KVM_ENOSYS;
++
++	return r;
++}
+ 
+ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ {
+diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
+index d731092..3b8080e 100644
+--- a/include/linux/kvm_para.h
++++ b/include/linux/kvm_para.h
+@@ -17,6 +17,7 @@
+ 
+ #define KVM_HC_VAPIC_POLL_IRQ		1
+ #define KVM_HC_MMU_OP			2
++#define KVM_HC_FEATURES			3
+ 
+ /*
+  * hypercalls use architecture specific
 -- 
 1.6.0.2
