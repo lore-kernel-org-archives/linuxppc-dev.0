@@ -1,24 +1,20 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E8BFBB6F07
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id D552FB6F07
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 19:49:32 +1000 (EST)
+	Sun, 27 Jun 2010 19:50:32 +1000 (EST)
+Message-ID: <4C271EE5.1060401@redhat.com>
+Date: Sun, 27 Jun 2010 12:50:29 +0300
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 02/26] KVM: PPC: Convert MSR to shared page
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-27-git-send-email-agraf@suse.de>
-	<4C270CFE.2040600@redhat.com>
-Message-Id: <0066CB6A-917A-42F0-93AA-E0934D15096A@suse.de>
-From: Alexander Graf <agraf@suse.de>
-To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4C270CFE.2040600@redhat.com>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Mime-Version: 1.0 (iPhone Mail 7E18)
-Subject: Re: [PATCH 26/26] KVM: PPC: Add Documentation about PV interface
-Date: Sun, 27 Jun 2010 11:49:43 +0200
+	<1277508314-915-3-git-send-email-agraf@suse.de>
+	<4C2708EB.9020500@redhat.com>
+	<651805F1-54AB-466F-8D23-D053D8082177@suse.de>
+In-Reply-To: <651805F1-54AB-466F-8D23-D053D8082177@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -31,43 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Am 27.06.2010 um 10:34 schrieb Avi Kivity <avi@redhat.com>:
-
-> On 06/26/2010 02:25 AM, Alexander Graf wrote:
->> We just introduced a new PV interface that screams for  
->> documentation. So here
->> it is - a shiny new and awesome text file describing the internal  
->> works of
->> the PPC KVM paravirtual interface.
->>
->>
->> +Querying for existence
->> +======================
->> +
->> +To find out if we're running on KVM or not, we overlay the PVR  
->> register. Usually
->> +the PVR register contains an id that identifies your CPU type. If,  
->> however, you
->> +pass KVM_PVR_PARA in the register that you want the PVR result in,  
->> the register
->> +still contains KVM_PVR_PARA after the mfpvr call.
->> +
->> +    LOAD_REG_IMM(r5, KVM_PVR_PARA)
->> +    mfpvr    r5
->> +    [r5 still contains KVM_PVR_PARA]
->> +
->> +Once determined to run under a PV capable KVM, you can now use  
->> hypercalls as
->> +described below.
->>
+On 06/27/2010 12:38 PM, Alexander Graf wrote:
 >
-> On x86 we allow host userspace to determine whether the guest sees  
-> the paravirt interface (and what features are exposed).  This allows  
-> you to live migrate from a newer host to an older host, by not  
-> exposing the newer features.
+> Am 27.06.2010 um 10:16 schrieb Avi Kivity <avi@redhat.com>:
+>
+>> On 06/26/2010 02:24 AM, Alexander Graf wrote:
+>>> One of the most obvious registers to share with the guest directly 
+>>> is the
+>>> MSR. The MSR contains the "interrupts enabled" flag which the guest 
+>>> has to
+>>> toggle in critical sections.
+>>>
+>>> So in order to bring the overhead of interrupt en- and disabling 
+>>> down, let's
+>>> put msr into the shared page. Keep in mind that even though you can 
+>>> fully read
+>>> its contents, writing to it doesn't always update all state. There 
+>>> are a few
+>>> safe fields that don't require hypervisor interaction. See the guest
+>>> implementation that follows later for reference.
+>>>
+>>
+>>
+>> You mean, see the documentation for reference.
+>>
+>> It should be possible to write the guest code looking only at the 
+>> documentation.
+>
+> *shrug* since we're writing open source I don't mind telling people to 
+> read code for a reference implemenration. 
 
-A very good idea indeed. Let's postpone that to when we expose enough  
-state to make live migration possible.
+It's impossible to infer from the source what's a guaranteed part of the 
+interface and what is just an implementation artifact.  So people rely 
+on implementation artifacts (or even bugs) and that reduces our ability 
+to change things.
 
-Alex
+> If well written, that's more comprehensible than documentation anyways 
+> :).
+
+If the documentation is poorly written, yes.
+
+-- 
+error compiling committee.c: too many arguments to function
