@@ -1,26 +1,22 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B39BB6EDD
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 0FA75B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 20:33:14 +1000 (EST)
+	Sun, 27 Jun 2010 20:34:58 +1000 (EST)
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
 	<1277508314-915-9-git-send-email-agraf@suse.de>
-	<4C2709F4.10805@redhat.com>
-	<77DBE095-884F-4986-BE2B-15B2EEAD8CAC@suse.de>
-	<4C271F5A.1030409@redhat.com>
-Message-Id: <DFC77851-3BE7-4746-93DE-287D5E27EF7D@suse.de>
+	<4C27220D.7090508@redhat.com>
+Message-Id: <C45453BB-0B06-4089-9E44-C9FED2D78646@suse.de>
 From: Alexander Graf <agraf@suse.de>
 To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4C271F5A.1030409@redhat.com>
+In-Reply-To: <4C27220D.7090508@redhat.com>
 Content-Type: text/plain;
 	charset=us-ascii;
 	format=flowed;
 	delsp=yes
 Mime-Version: 1.0 (iPhone Mail 7E18)
 Subject: Re: [PATCH 08/26] KVM: PPC: Add PV guest critical sections
-Date: Sun, 27 Jun 2010 12:33:31 +0200
+Date: Sun, 27 Jun 2010 12:35:22 +0200
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -34,38 +30,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 27.06.2010 um 11:52 schrieb Avi Kivity <avi@redhat.com>:
+Am 27.06.2010 um 12:03 schrieb Avi Kivity <avi@redhat.com>:
 
-> On 06/27/2010 12:40 PM, Alexander Graf wrote:
+> On 06/26/2010 02:24 AM, Alexander Graf wrote:
+>> When running in hooked code we need a way to disable interrupts  
+>> without
+>> clobbering any interrupts or exiting out to the hypervisor.
 >>
->> Am 27.06.2010 um 10:21 schrieb Avi Kivity <avi@redhat.com>:
+>> To achieve this, we have an additional critical field in the shared  
+>> page. If
+>> that field is equal to the r1 register of the guest, it tells the  
+>> hypervisor
+>> that we're in such a critical section and thus may not receive any  
+>> interrupts.
 >>
->>> On 06/26/2010 02:24 AM, Alexander Graf wrote:
->>>> When running in hooked code we need a way to disable interrupts  
->>>> without
->>>> clobbering any interrupts or exiting out to the hypervisor.
->>>>
->>>> To achieve this, we have an additional critical field in the  
->>>> shared page. If
->>>> that field is equal to the r1 register of the guest, it tells the  
->>>> hypervisor
->>>> that we're in such a critical section and thus may not receive  
->>>> any interrupts.
->>>>
->>>
->>> Is r1 reserved for this purpose?  Can't it match accidentally?
 >>
->> r1 is defined by the abi to be the stack.
+>> --- a/arch/powerpc/kvm/book3s.c
+>> +++ b/arch/powerpc/kvm/book3s.c
+>> @@ -251,14 +251,25 @@ int kvmppc_book3s_irqprio_deliver(struct  
+>> kvm_vcpu *vcpu, unsigned int priority)
+>>      int deliver = 1;
+>>      int vec = 0;
+>>      ulong flags = 0ULL;
+>> +    ulong crit_raw = vcpu->arch.shared->critical;
+>> +    ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
+>> +    bool crit;
+>> +
+>> +    /* Truncate crit indicators in 32 bit mode */
+>> +    if (!(vcpu->arch.shared->msr&  MSR_SF)) {
+>> +        crit_raw&= 0xffffffff;
+>> +        crit_r1&= 0xffffffff;
+>> +    }
+>> +
+>> +    crit = (crit_raw == crit_r1);
+>>
 >
-> Neat trick!
->
->>>
->>> Why won't zero/nonzero work for this?
->>
->> Because there is no store immediate opcode on powerpc :(.
->
-> Or inc/dec...
+> I think you need to qualify that for supervisor mode only.   
+> Otherwise guest userspace can guess the value of shared->critical  
+> and disable interrupts.
 
-Uh - huh? How would that help?
+
+Yes, you're right. Good catch!
 
 Alex
+
+>
