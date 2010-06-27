@@ -1,22 +1,24 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 0FA75B6EF7
+	by ozlabs.org (Postfix) with ESMTP id 6E9E2B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 20:34:58 +1000 (EST)
+	Sun, 27 Jun 2010 20:37:59 +1000 (EST)
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-9-git-send-email-agraf@suse.de>
-	<4C27220D.7090508@redhat.com>
-Message-Id: <C45453BB-0B06-4089-9E44-C9FED2D78646@suse.de>
+	<1277508314-915-19-git-send-email-agraf@suse.de>
+	<4C270BB8.60404@redhat.com>
+	<0E529B3E-541C-4E3B-81E7-AACCD96CBF2C@suse.de>
+	<4C272503.7030605@redhat.com>
+Message-Id: <1B0A8E57-8CCE-4A0D-AF9A-3007024AF298@suse.de>
 From: Alexander Graf <agraf@suse.de>
 To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4C27220D.7090508@redhat.com>
+In-Reply-To: <4C272503.7030605@redhat.com>
 Content-Type: text/plain;
 	charset=us-ascii;
 	format=flowed;
 	delsp=yes
 Mime-Version: 1.0 (iPhone Mail 7E18)
-Subject: Re: [PATCH 08/26] KVM: PPC: Add PV guest critical sections
-Date: Sun, 27 Jun 2010 12:35:22 +0200
+Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
+Date: Sun, 27 Jun 2010 12:38:11 +0200
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -30,48 +32,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 27.06.2010 um 12:03 schrieb Avi Kivity <avi@redhat.com>:
+Am 27.06.2010 um 12:16 schrieb Avi Kivity <avi@redhat.com>:
 
-> On 06/26/2010 02:24 AM, Alexander Graf wrote:
->> When running in hooked code we need a way to disable interrupts  
->> without
->> clobbering any interrupts or exiting out to the hypervisor.
+> On 06/27/2010 12:47 PM, Alexander Graf wrote:
 >>
->> To achieve this, we have an additional critical field in the shared  
->> page. If
->> that field is equal to the r1 register of the guest, it tells the  
->> hypervisor
->> that we're in such a critical section and thus may not receive any  
->> interrupts.
+>> Am 27.06.2010 um 10:28 schrieb Avi Kivity <avi@redhat.com>:
 >>
+>>> On 06/26/2010 02:25 AM, Alexander Graf wrote:
+>>>> We will soon start and replace instructions from the text section  
+>>>> with
+>>>> other, paravirtualized versions. To ease the readability of those  
+>>>> patches
+>>>> I split out the generic looping and magic page mapping code out.
+>>>>
+>>>> This patch still only contains stubs. But at least it loops  
+>>>> through the
+>>>> text section :).
+>>>>
+>>>>
+>>>> +
+>>>> +static void kvm_check_ins(u32 *inst)
+>>>> +{
+>>>> +    u32 _inst = *inst;
+>>>> +    u32 inst_no_rt = _inst&  ~KVM_MASK_RT;
+>>>> +    u32 inst_rt = _inst&  KVM_MASK_RT;
+>>>> +
+>>>> +    switch (inst_no_rt) {
+>>>> +    }
+>>>> +
+>>>> +    switch (_inst) {
+>>>> +    }
+>>>> +
+>>>> +    flush_icache_range((ulong)inst, (ulong)inst + 4);
+>>>> +}
+>>>>
+>>>
+>>> Shouldn't we flush only if we patched something?
 >>
->> --- a/arch/powerpc/kvm/book3s.c
->> +++ b/arch/powerpc/kvm/book3s.c
->> @@ -251,14 +251,25 @@ int kvmppc_book3s_irqprio_deliver(struct  
->> kvm_vcpu *vcpu, unsigned int priority)
->>      int deliver = 1;
->>      int vec = 0;
->>      ulong flags = 0ULL;
->> +    ulong crit_raw = vcpu->arch.shared->critical;
->> +    ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
->> +    bool crit;
->> +
->> +    /* Truncate crit indicators in 32 bit mode */
->> +    if (!(vcpu->arch.shared->msr&  MSR_SF)) {
->> +        crit_raw&= 0xffffffff;
->> +        crit_r1&= 0xffffffff;
->> +    }
->> +
->> +    crit = (crit_raw == crit_r1);
->>
+>> We introduce the patching in the next patches. This is only a  
+>> preparation stub.
 >
-> I think you need to qualify that for supervisor mode only.   
-> Otherwise guest userspace can guess the value of shared->critical  
-> and disable interrupts.
+> Well, unless I missed something, this remains unconditional after  
+> all the patches.
+>
+> A helper patch(pc, replacement) could patch and flush in one go.
 
+Oh I see what you mean. While not necessary, it would save a few  
+cycles on guest bootup.
 
-Yes, you're right. Good catch!
+>
+>>
+>>>
+>>>> +
+>>>> +static void kvm_use_magic_page(void)
+>>>> +{
+>>>> +    u32 *p;
+>>>> +    u32 *start, *end;
+>>>> +
+>>>> +    /* Tell the host to map the magic page to -4096 on all CPUs */
+>>>> +
+>>>> +    on_each_cpu(kvm_map_magic_page, NULL, 1);
+>>>> +
+>>>> +    /* Now loop through all code and find instructions */
+>>>> +
+>>>> +    start = (void*)_stext;
+>>>> +    end = (void*)_etext;
+>>>> +
+>>>> +    for (p = start; p<  end; p++)
+>>>> +        kvm_check_ins(p);
+>>>> +}
+>>>> +
+>>>>
+>>>
+>>> Or, flush the entire thing here.
+>>
+>> I did that at first. It breaks. During the patching we may take  
+>> interrupts (pahe faults for example) that contain just patched  
+>> instructions. And really, hell breaks loose if we don't flush it  
+>> immediately :). I was hoping at first a 32 bit replace would be  
+>> atomic in cache, but the cpu tried to execute invalid instructions,  
+>> so it must have gotten some intermediate state.
+>
+> Surprising.  Maybe you need a flush after writing to the out-of-line  
+> code?
+
+I do that too now :). Better flush too often that too rarely. It's not  
+_that_ expensive after all.
 
 Alex
-
->
