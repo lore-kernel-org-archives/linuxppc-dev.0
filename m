@@ -1,17 +1,17 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id A67C7B6F05
+	by ozlabs.org (Postfix) with ESMTP id E3F52B6EFF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 18:24:05 +1000 (EST)
-Message-ID: <4C270AA1.5030801@redhat.com>
-Date: Sun, 27 Jun 2010 11:24:01 +0300
+	Sun, 27 Jun 2010 18:28:44 +1000 (EST)
+Message-ID: <4C270BB8.60404@redhat.com>
+Date: Sun, 27 Jun 2010 11:28:40 +0300
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 12/26] KVM: PPC: First magic page steps
+Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-13-git-send-email-agraf@suse.de>
-In-Reply-To: <1277508314-915-13-git-send-email-agraf@suse.de>
+	<1277508314-915-19-git-send-email-agraf@suse.de>
+In-Reply-To: <1277508314-915-19-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
@@ -25,29 +25,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 06/26/2010 02:25 AM, Alexander Graf wrote:
-> We will be introducing a method to project the shared page in guest context.
-> As soon as we're talking about this coupling, the shared page is colled magic
-> page.
+> We will soon start and replace instructions from the text section with
+> other, paravirtualized versions. To ease the readability of those patches
+> I split out the generic looping and magic page mapping code out.
 >
-> This patch introduces simple defines, so the follow-up patches are easier to
-> read.
+> This patch still only contains stubs. But at least it loops through the
+> text section :).
 >
 >
->
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index e35c1ac..5f8c214 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -285,6 +285,8 @@ struct kvm_vcpu_arch {
->   	u64 dec_jiffies;
->   	unsigned long pending_exceptions;
->   	struct kvm_vcpu_arch_shared *shared;
-> +	unsigned long magic_page_pa; /* phys addr to map the magic page to */
-> +	unsigned long magic_page_ea; /* effect. addr to map the magic page to */
+> +
+> +static void kvm_check_ins(u32 *inst)
+> +{
+> +	u32 _inst = *inst;
+> +	u32 inst_no_rt = _inst&  ~KVM_MASK_RT;
+> +	u32 inst_rt = _inst&  KVM_MASK_RT;
+> +
+> +	switch (inst_no_rt) {
+> +	}
+> +
+> +	switch (_inst) {
+> +	}
+> +
+> +	flush_icache_range((ulong)inst, (ulong)inst + 4);
+> +}
 >    
 
-Is ea like a va?  If so, can't the guest specify it by manipulating the 
-hash table (or tlb)?
+Shouldn't we flush only if we patched something?
+
+> +
+> +static void kvm_use_magic_page(void)
+> +{
+> +	u32 *p;
+> +	u32 *start, *end;
+> +
+> +	/* Tell the host to map the magic page to -4096 on all CPUs */
+> +
+> +	on_each_cpu(kvm_map_magic_page, NULL, 1);
+> +
+> +	/* Now loop through all code and find instructions */
+> +
+> +	start = (void*)_stext;
+> +	end = (void*)_etext;
+> +
+> +	for (p = start; p<  end; p++)
+> +		kvm_check_ins(p);
+> +}
+> +
+>    
+
+Or, flush the entire thing here.
+
 
 -- 
 error compiling committee.c: too many arguments to function
