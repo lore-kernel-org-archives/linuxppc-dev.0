@@ -2,26 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4DBA1B6EF0
+	by ozlabs.org (Postfix) with ESMTPS id A789DB6EF1
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Jun 2010 08:03:11 +1000 (EST)
-Subject: Re: [PATCH 08/26] KVM: PPC: Add PV guest critical sections
+	Mon, 28 Jun 2010 08:05:05 +1000 (EST)
+Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <CF78C6B8-F600-4781-82CA-27865F745A60@suse.de>
+In-Reply-To: <0E529B3E-541C-4E3B-81E7-AACCD96CBF2C@suse.de>
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-9-git-send-email-agraf@suse.de>
-	<4C2709F4.10805@redhat.com>
-	<77DBE095-884F-4986-BE2B-15B2EEAD8CAC@suse.de>
-	<4C271F5A.1030409@redhat.com>
-	<DFC77851-3BE7-4746-93DE-287D5E27EF7D@suse.de>
-	<4C272F08.8090709@redhat.com>
-	<C90A3ABA-60E4-48D4-8332-3B49F3554447@suse.de>
-	<4C273BAD.2090305@redhat.com>
-	<CF78C6B8-F600-4781-82CA-27865F745A60@suse.de>
+	<1277508314-915-19-git-send-email-agraf@suse.de>
+	<4C270BB8.60404@redhat.com>
+	<0E529B3E-541C-4E3B-81E7-AACCD96CBF2C@suse.de>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Jun 2010 08:03:03 +1000
-Message-ID: <1277676183.4200.131.camel@pasglop>
+Date: Mon, 28 Jun 2010 08:04:59 +1000
+Message-ID: <1277676299.4200.132.camel@pasglop>
 Mime-Version: 1.0
 Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
 	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -35,15 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-06-27 at 14:06 +0200, Alexander Graf wrote:
-> > Right, I was agreeing with you.  I meant there was no inc/dec mem  
-> > insns.
-> 
-> Ah, I see :). I think that's really the only point where I deem the  
-> x86 isa superior :). 
+On Sun, 2010-06-27 at 11:47 +0200, Alexander Graf wrote:
+> I did that at first. It breaks. During the patching we may take  
+> interrupts (pahe faults for example) that contain just patched  
+> instructions. And really, hell breaks loose if we don't flush it  
+> immediately :). I was hoping at first a 32 bit replace would be
+> atomic  
+> in cache, but the cpu tried to execute invalid instructions, so it  
+> must have gotten some intermediate state.
 
-Heh, well, that's a typical RISC thing tho. I think ARM and MIPS are
-like PowerPC here at least :-)
+A 32-bit aligned store -is- atomic. The other threads/cpu will see
+either the old or the new instruction, nothing in between.
 
 Cheers,
 Ben.
