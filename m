@@ -1,24 +1,24 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 6E9E2B6EF7
+	by ozlabs.org (Postfix) with ESMTP id 66032B6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 20:37:59 +1000 (EST)
+	Sun, 27 Jun 2010 20:39:35 +1000 (EST)
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-19-git-send-email-agraf@suse.de>
-	<4C270BB8.60404@redhat.com>
-	<0E529B3E-541C-4E3B-81E7-AACCD96CBF2C@suse.de>
-	<4C272503.7030605@redhat.com>
-Message-Id: <1B0A8E57-8CCE-4A0D-AF9A-3007024AF298@suse.de>
+	<1277508314-915-3-git-send-email-agraf@suse.de>
+	<4C2708EB.9020500@redhat.com>
+	<651805F1-54AB-466F-8D23-D053D8082177@suse.de>
+	<4C271EE5.1060401@redhat.com>
+Message-Id: <543BC582-D2A6-497C-BB9F-633966DB3FAB@suse.de>
 From: Alexander Graf <agraf@suse.de>
 To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4C272503.7030605@redhat.com>
+In-Reply-To: <4C271EE5.1060401@redhat.com>
 Content-Type: text/plain;
 	charset=us-ascii;
 	format=flowed;
 	delsp=yes
 Mime-Version: 1.0 (iPhone Mail 7E18)
-Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
-Date: Sun, 27 Jun 2010 12:38:11 +0200
+Subject: Re: [PATCH 02/26] KVM: PPC: Convert MSR to shared page
+Date: Sun, 27 Jun 2010 12:40:01 +0200
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>,
 	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
@@ -32,91 +32,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Am 27.06.2010 um 12:16 schrieb Avi Kivity <avi@redhat.com>:
+Am 27.06.2010 um 11:50 schrieb Avi Kivity <avi@redhat.com>:
 
-> On 06/27/2010 12:47 PM, Alexander Graf wrote:
+> On 06/27/2010 12:38 PM, Alexander Graf wrote:
 >>
->> Am 27.06.2010 um 10:28 schrieb Avi Kivity <avi@redhat.com>:
+>> Am 27.06.2010 um 10:16 schrieb Avi Kivity <avi@redhat.com>:
 >>
->>> On 06/26/2010 02:25 AM, Alexander Graf wrote:
->>>> We will soon start and replace instructions from the text section  
->>>> with
->>>> other, paravirtualized versions. To ease the readability of those  
->>>> patches
->>>> I split out the generic looping and magic page mapping code out.
+>>> On 06/26/2010 02:24 AM, Alexander Graf wrote:
+>>>> One of the most obvious registers to share with the guest  
+>>>> directly is the
+>>>> MSR. The MSR contains the "interrupts enabled" flag which the  
+>>>> guest has to
+>>>> toggle in critical sections.
 >>>>
->>>> This patch still only contains stubs. But at least it loops  
->>>> through the
->>>> text section :).
->>>>
->>>>
->>>> +
->>>> +static void kvm_check_ins(u32 *inst)
->>>> +{
->>>> +    u32 _inst = *inst;
->>>> +    u32 inst_no_rt = _inst&  ~KVM_MASK_RT;
->>>> +    u32 inst_rt = _inst&  KVM_MASK_RT;
->>>> +
->>>> +    switch (inst_no_rt) {
->>>> +    }
->>>> +
->>>> +    switch (_inst) {
->>>> +    }
->>>> +
->>>> +    flush_icache_range((ulong)inst, (ulong)inst + 4);
->>>> +}
+>>>> So in order to bring the overhead of interrupt en- and disabling  
+>>>> down, let's
+>>>> put msr into the shared page. Keep in mind that even though you  
+>>>> can fully read
+>>>> its contents, writing to it doesn't always update all state.  
+>>>> There are a few
+>>>> safe fields that don't require hypervisor interaction. See the  
+>>>> guest
+>>>> implementation that follows later for reference.
 >>>>
 >>>
->>> Shouldn't we flush only if we patched something?
->>
->> We introduce the patching in the next patches. This is only a  
->> preparation stub.
->
-> Well, unless I missed something, this remains unconditional after  
-> all the patches.
->
-> A helper patch(pc, replacement) could patch and flush in one go.
-
-Oh I see what you mean. While not necessary, it would save a few  
-cycles on guest bootup.
-
->
->>
 >>>
->>>> +
->>>> +static void kvm_use_magic_page(void)
->>>> +{
->>>> +    u32 *p;
->>>> +    u32 *start, *end;
->>>> +
->>>> +    /* Tell the host to map the magic page to -4096 on all CPUs */
->>>> +
->>>> +    on_each_cpu(kvm_map_magic_page, NULL, 1);
->>>> +
->>>> +    /* Now loop through all code and find instructions */
->>>> +
->>>> +    start = (void*)_stext;
->>>> +    end = (void*)_etext;
->>>> +
->>>> +    for (p = start; p<  end; p++)
->>>> +        kvm_check_ins(p);
->>>> +}
->>>> +
->>>>
+>>> You mean, see the documentation for reference.
 >>>
->>> Or, flush the entire thing here.
+>>> It should be possible to write the guest code looking only at the  
+>>> documentation.
 >>
->> I did that at first. It breaks. During the patching we may take  
->> interrupts (pahe faults for example) that contain just patched  
->> instructions. And really, hell breaks loose if we don't flush it  
->> immediately :). I was hoping at first a 32 bit replace would be  
->> atomic in cache, but the cpu tried to execute invalid instructions,  
->> so it must have gotten some intermediate state.
+>> *shrug* since we're writing open source I don't mind telling people  
+>> to read code for a reference implemenration.
 >
-> Surprising.  Maybe you need a flush after writing to the out-of-line  
-> code?
+> It's impossible to infer from the source what's a guaranteed part of  
+> the interface and what is just an implementation artifact.  So  
+> people rely on implementation artifacts (or even bugs) and that  
+> reduces our ability to change things.
+>
+>> If well written, that's more comprehensible than documentation  
+>> anyways :).
+>
+> If the documentation is poorly written, yes.
 
-I do that too now :). Better flush too often that too rarely. It's not  
-_that_ expensive after all.
+I think I start to agree. I guess i should just list all fields of the  
+MSR that are ok to modify inside the guest context.
 
 Alex
