@@ -1,21 +1,23 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 0D1C6B6EF3
-	for <linuxppc-dev@ozlabs.org>; Sun, 27 Jun 2010 16:38:43 +1000 (EST)
-Received: by gwj17 with SMTP id 17so4769091gwj.15
-	for <linuxppc-dev@ozlabs.org>; Sat, 26 Jun 2010 23:38:42 -0700 (PDT)
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id DDDE6B6EF3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sun, 27 Jun 2010 17:53:07 +1000 (EST)
+Message-ID: <4C27035D.1010604@redhat.com>
+Date: Sun, 27 Jun 2010 10:53:01 +0300
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <352874.17151.qm@web180303.mail.gq1.yahoo.com>
-References: <1276778870-1065-1-git-send-email-dbaryshkov@gmail.com>
-	<352874.17151.qm@web180303.mail.gq1.yahoo.com>
-Date: Sun, 27 Jun 2010 10:38:41 +0400
-Message-ID: <AANLkTilGXSg4b2a_-4eSOFwzGrZxU4oAdXS8Wc2CdTZO@mail.gmail.com>
-Subject: Re: [PATCH] pcf857x: support working w/o platform data
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] KVM: PPC: Add generic hpte management functions
+References: <1277127841-32704-1-git-send-email-agraf@suse.de>	
+	<4C20A64D.2070805@redhat.com> <4C20A6C8.4070002@suse.de>	
+	<4C20A795.6040607@redhat.com> <4C20A836.2010908@suse.de>	
+	<4C20A890.9040806@redhat.com> <4C20A91A.1080607@suse.de>	
+	<4C20AA9B.8000807@redhat.com> <1277593118.4200.122.camel@pasglop>
+In-Reply-To: <1277593118.4200.122.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,112 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On 06/27/2010 01:58 AM, Benjamin Herrenschmidt wrote:
+>
+>> Then mmu intensive loads can expect to be slow.
+>>      
+> Well, depends. ppc64 indeed requires the hash to be managed by the
+> hypervisor, so inserting or invalidating translations will mean a
+> roundtrip to the hypervisor, though there are ways at least the
+> insertion could be alleviated (for example, the HV could service the
+> hash misses directly walking the guest page tables).
+>    
 
-On 6/25/10, David Brownell <david-b@pacbell.net> wrote:
->
-> --- On Thu, 6/17/10, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->
->> Provide sane defaults for pcf857x, so
->> the driver can be used w/o
->> providing platform data (and thus can be simply bound via OF tree).
->
->
-> Maybe we can get an ack from some OF folk
-> who are using it in that way?
+But the guest page tables are software defined, no?  That means the 
+interface will break if the page table format changes.
 
-Please see arch/powerpc/boot//dts/mpc8349emitx.dts (the platform I'm using it).
+> But that's due in part to a design choice (whether it's a good one or
+> not I'm not going to argue here) which favors huge reasonably static
+> workloads where the hash is expected to contain all translations for
+> everything.
+>    
 
->> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->> ---
->>  drivers/gpio/pcf857x.c |    9 ++++-----
->>  1 files changed, 4 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/gpio/pcf857x.c
->> b/drivers/gpio/pcf857x.c
->> index 29f19ce..879b473 100644
->> --- a/drivers/gpio/pcf857x.c
->> +++ b/drivers/gpio/pcf857x.c
->> @@ -190,7 +190,6 @@ static int pcf857x_probe(struct
->> i2c_client *client,
->>      pdata = client->dev.platform_data;
->>      if (!pdata) {
->>
->> dev_dbg(&client->dev, "no platform data\n");
->> -        return -EINVAL;
->>      }
->>
->>      /* Allocate, initialize, and register
->> this gpio_chip. */
->> @@ -200,7 +199,7 @@ static int pcf857x_probe(struct
->> i2c_client *client,
->>
->>      mutex_init(&gpio->lock);
->>
->> -    gpio->chip.base =
->> pdata->gpio_base;
->> +    gpio->chip.base = pdata ?
->> pdata->gpio_base : -1;
->>      gpio->chip.can_sleep = 1;
->>      gpio->chip.dev =
->> &client->dev;
->>      gpio->chip.owner = THIS_MODULE;
->> @@ -278,7 +277,7 @@ static int pcf857x_probe(struct
->> i2c_client *client,
->>       * to zero, our software copy
->> of the "latch" then matches the chip's
->>       * all-ones reset
->> state.  Otherwise it flags pins to be driven low.
->>       */
->> -    gpio->out = ~pdata->n_latch;
->> +    gpio->out = pdata ?
->> ~pdata->n_latch : ~0;
->>
->>      status =
->> gpiochip_add(&gpio->chip);
->>      if (status < 0)
->> @@ -299,7 +298,7 @@ static int pcf857x_probe(struct
->> i2c_client *client,
->>      /* Let platform code set up the GPIOs
->> and their users.
->>       * Now is the first time
->> anyone could use them.
->>       */
->> -    if (pdata->setup) {
->> +    if (pdata && pdata->setup)
->> {
->>          status =
->> pdata->setup(client,
->>
->>     gpio->chip.base, gpio->chip.ngpio,
->>
->>     pdata->context);
->> @@ -322,7 +321,7 @@ static int pcf857x_remove(struct
->> i2c_client *client)
->>      struct pcf857x
->>         *gpio =
->> i2c_get_clientdata(client);
->>      int
->>
->> status = 0;
->>
->> -    if (pdata->teardown) {
->> +    if (pdata &&
->> pdata->teardown) {
->>          status =
->> pdata->teardown(client,
->>
->>     gpio->chip.base, gpio->chip.ngpio,
->>
->>     pdata->context);
->> --
->> 1.7.1
->>
->>
->
->
+What about when you have memory pressure?  The hash will have to reflect 
+those pte_clear_flush_young(), no?
 
+It seems horribly expensive.
+
+> However, note that BookE (the embedded variant of the architecture) uses
+> a different model for virtualization, including options in its latest
+> variant for a HW logical->real translation (via a small dedicated TLB)
+> and direct access to some TLB ops from the guest.
+>    
+
+I'm somewhat familiar with it, yes.
 
 -- 
-With best wishes
-Dmitry
+error compiling committee.c: too many arguments to function
