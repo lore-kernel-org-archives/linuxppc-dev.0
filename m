@@ -1,27 +1,31 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource2.wolfsonmicro.com (opensource.wolfsonmicro.com
-	[80.75.67.52])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 059E7B6EEF
+	by ozlabs.org (Postfix) with ESMTPS id 4DBA1B6EF0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Jun 2010 08:01:15 +1000 (EST)
-References: <1276617907-10862-1-git-send-email-emillbrandt@dekaresearch.com>
-	<20100622230026.GA2453@opensource.wolfsonmicro.com>
-	<AANLkTiluyeGSwVSXgTeRxS3hVWTe3Gkn8qHrqbHJFMun@mail.gmail.com>
-	(sfid-20100626_000520_848782_4E1D9DF3)
-Message-Id: <D37786F8-EBA7-4E55-AE83-5D0ABF1E17BF@opensource.wolfsonmicro.com>
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <AANLkTiluyeGSwVSXgTeRxS3hVWTe3Gkn8qHrqbHJFMun@mail.gmail.com>
-	(sfid-20100626_000520_848782_4E1D9DF3)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (iPad Mail 7B367)
-Subject: Re: [PATCH 0/2 v3] mpc5200 ac97 gpio reset
-Date: Sun, 27 Jun 2010 23:01:53 +0100
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	Eric Millbrandt <emillbrandt@dekaresearch.com>
+	Mon, 28 Jun 2010 08:03:11 +1000 (EST)
+Subject: Re: [PATCH 08/26] KVM: PPC: Add PV guest critical sections
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+In-Reply-To: <CF78C6B8-F600-4781-82CA-27865F745A60@suse.de>
+References: <1277508314-915-1-git-send-email-agraf@suse.de>
+	<1277508314-915-9-git-send-email-agraf@suse.de>
+	<4C2709F4.10805@redhat.com>
+	<77DBE095-884F-4986-BE2B-15B2EEAD8CAC@suse.de>
+	<4C271F5A.1030409@redhat.com>
+	<DFC77851-3BE7-4746-93DE-287D5E27EF7D@suse.de>
+	<4C272F08.8090709@redhat.com>
+	<C90A3ABA-60E4-48D4-8332-3B49F3554447@suse.de>
+	<4C273BAD.2090305@redhat.com>
+	<CF78C6B8-F600-4781-82CA-27865F745A60@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Jun 2010 08:03:03 +1000
+Message-ID: <1277676183.4200.131.camel@pasglop>
+Mime-Version: 1.0
+Cc: "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Avi Kivity <avi@redhat.com>, KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, 2010-06-27 at 14:06 +0200, Alexander Graf wrote:
+> > Right, I was agreeing with you.  I meant there was no inc/dec mem  
+> > insns.
+> 
+> Ah, I see :). I think that's really the only point where I deem the  
+> x86 isa superior :). 
 
-On 26 Jun 2010, at 00:04, Grant Likely <grant.likely@secretlab.ca> =
-wrote:
+Heh, well, that's a typical RISC thing tho. I think ARM and MIPS are
+like PowerPC here at least :-)
 
-> On Tue, Jun 22, 2010 at 5:00 PM, Mark Brown
->> On Tue, Jun 15, 2010 at 12:05:05PM -0400, Eric Millbrandt wrote:
->>> These patches reimplement the reset fuction in the ac97 to use gpio =
-pins
->>> instead of using the mpc5200 ac97 reset functionality in the psc.  =
-This
->>> avoids a problem in which attached ac97 devices go into "test" mode =
-appear
->>> unresponsive.
->>>=20
->>> These patches were tested on a pcm030 baseboard and on custom =
-hardware with
->>> a wm9715 audio codec/touchscreen controller.
->>=20
->> Grant, are you OK with this series?
->=20
-> Yes, I'm going to pick it up.
-
-I'm a little concerned with a collision with multi codec here. It'd
-be handy if you could keep it separate in case it needs merging
-into both trees (or we could merge via ASoC only).=
+Cheers,
+Ben.
