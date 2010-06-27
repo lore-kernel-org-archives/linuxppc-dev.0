@@ -1,19 +1,19 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 7A2FDB6F07
+	by ozlabs.org (Postfix) with ESMTP id 113BDB6F0C
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 19:52:29 +1000 (EST)
-Message-ID: <4C271F5A.1030409@redhat.com>
-Date: Sun, 27 Jun 2010 12:52:26 +0300
+	Sun, 27 Jun 2010 19:53:16 +1000 (EST)
+Message-ID: <4C271F8A.5090903@redhat.com>
+Date: Sun, 27 Jun 2010 12:53:14 +0300
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 08/26] KVM: PPC: Add PV guest critical sections
+Subject: Re: [PATCH 09/26] KVM: PPC: Add PV guest scratch registers
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-9-git-send-email-agraf@suse.de>
-	<4C2709F4.10805@redhat.com>
-	<77DBE095-884F-4986-BE2B-15B2EEAD8CAC@suse.de>
-In-Reply-To: <77DBE095-884F-4986-BE2B-15B2EEAD8CAC@suse.de>
+	<1277508314-915-10-git-send-email-agraf@suse.de>
+	<4C270A34.4020706@redhat.com>
+	<27BB673F-F34E-4CC6-A22D-02CF95E7529F@suse.de>
+In-Reply-To: <27BB673F-F34E-4CC6-A22D-02CF95E7529F@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>,
@@ -27,34 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2010 12:40 PM, Alexander Graf wrote:
+On 06/27/2010 12:41 PM, Alexander Graf wrote:
 >
-> Am 27.06.2010 um 10:21 schrieb Avi Kivity <avi@redhat.com>:
+> Am 27.06.2010 um 10:22 schrieb Avi Kivity <avi@redhat.com>:
 >
 >> On 06/26/2010 02:24 AM, Alexander Graf wrote:
->>> When running in hooked code we need a way to disable interrupts without
->>> clobbering any interrupts or exiting out to the hypervisor.
+>>> While running in hooked code we need to store register contents out 
+>>> because
+>>> we must not clobber any registers.
 >>>
->>> To achieve this, we have an additional critical field in the shared 
->>> page. If
->>> that field is equal to the r1 register of the guest, it tells the 
->>> hypervisor
->>> that we're in such a critical section and thus may not receive any 
->>> interrupts.
+>>> So let's add some fields to the shared page we can just happily 
+>>> write to.
+>>>
 >>>
 >>
->> Is r1 reserved for this purpose?  Can't it match accidentally?
+>> How are these protected during interrupts?
 >
-> r1 is defined by the abi to be the stack.
+> By the 'critical section' bit. When in a critical section (read: using 
+> scratch registers), we don't issue interrupts.
 
-Neat trick!
-
->>
->> Why won't zero/nonzero work for this?
->
-> Because there is no store immediate opcode on powerpc :(.
-
-Or inc/dec...
+Ok.  I thought you needed scratch registers to set up the critical 
+section, but you don't.  Neat stuff.
 
 -- 
 error compiling committee.c: too many arguments to function
