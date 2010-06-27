@@ -1,17 +1,17 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id E3F52B6EFF
+	by ozlabs.org (Postfix) with ESMTP id 00CCBB6EF3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 27 Jun 2010 18:28:44 +1000 (EST)
-Message-ID: <4C270BB8.60404@redhat.com>
-Date: Sun, 27 Jun 2010 11:28:40 +0300
+	Sun, 27 Jun 2010 18:34:08 +1000 (EST)
+Message-ID: <4C270CFE.2040600@redhat.com>
+Date: Sun, 27 Jun 2010 11:34:06 +0300
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
+Subject: Re: [PATCH 26/26] KVM: PPC: Add Documentation about PV interface
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-19-git-send-email-agraf@suse.de>
-In-Reply-To: <1277508314-915-19-git-send-email-agraf@suse.de>
+	<1277508314-915-27-git-send-email-agraf@suse.de>
+In-Reply-To: <1277508314-915-27-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
@@ -25,56 +25,31 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 06/26/2010 02:25 AM, Alexander Graf wrote:
-> We will soon start and replace instructions from the text section with
-> other, paravirtualized versions. To ease the readability of those patches
-> I split out the generic looping and magic page mapping code out.
->
-> This patch still only contains stubs. But at least it loops through the
-> text section :).
+> We just introduced a new PV interface that screams for documentation. So here
+> it is - a shiny new and awesome text file describing the internal works of
+> the PPC KVM paravirtual interface.
 >
 >
+> +Querying for existence
+> +======================
 > +
-> +static void kvm_check_ins(u32 *inst)
-> +{
-> +	u32 _inst = *inst;
-> +	u32 inst_no_rt = _inst&  ~KVM_MASK_RT;
-> +	u32 inst_rt = _inst&  KVM_MASK_RT;
+> +To find out if we're running on KVM or not, we overlay the PVR register. Usually
+> +the PVR register contains an id that identifies your CPU type. If, however, you
+> +pass KVM_PVR_PARA in the register that you want the PVR result in, the register
+> +still contains KVM_PVR_PARA after the mfpvr call.
 > +
-> +	switch (inst_no_rt) {
-> +	}
+> +	LOAD_REG_IMM(r5, KVM_PVR_PARA)
+> +	mfpvr	r5
+> +	[r5 still contains KVM_PVR_PARA]
 > +
-> +	switch (_inst) {
-> +	}
-> +
-> +	flush_icache_range((ulong)inst, (ulong)inst + 4);
-> +}
+> +Once determined to run under a PV capable KVM, you can now use hypercalls as
+> +described below.
 >    
 
-Shouldn't we flush only if we patched something?
-
-> +
-> +static void kvm_use_magic_page(void)
-> +{
-> +	u32 *p;
-> +	u32 *start, *end;
-> +
-> +	/* Tell the host to map the magic page to -4096 on all CPUs */
-> +
-> +	on_each_cpu(kvm_map_magic_page, NULL, 1);
-> +
-> +	/* Now loop through all code and find instructions */
-> +
-> +	start = (void*)_stext;
-> +	end = (void*)_etext;
-> +
-> +	for (p = start; p<  end; p++)
-> +		kvm_check_ins(p);
-> +}
-> +
->    
-
-Or, flush the entire thing here.
-
+On x86 we allow host userspace to determine whether the guest sees the 
+paravirt interface (and what features are exposed).  This allows you to 
+live migrate from a newer host to an older host, by not exposing the 
+newer features.
 
 -- 
 error compiling committee.c: too many arguments to function
