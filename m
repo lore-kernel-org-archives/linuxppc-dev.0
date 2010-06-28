@@ -1,23 +1,22 @@
-Return-Path: <kyle@moffetthome.net>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.153])
-	by ozlabs.org (Postfix) with ESMTP id D0049B6EEB
+Return-Path: <stevedeiters@basler.com>
+Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
+	by ozlabs.org (Postfix) with ESMTP id 98691B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Jun 2010 03:06:19 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 19so744869fgg.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Jun 2010 10:06:16 -0700 (PDT)
+	Tue, 29 Jun 2010 07:25:09 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <1277709539_13309@mail4.comsite.net>
-References: <AANLkTikMtZsg5ameUY9dnZoEqV-hfa7tkfGIO1hBtDq1@mail.gmail.com>
-	<1277709539_13309@mail4.comsite.net>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Mon, 28 Jun 2010 13:05:56 -0400
-Message-ID: <AANLkTiliAex8bgu5UPrEwpVjgfwZHUuFbE2R199wow-H@mail.gmail.com>
-Subject: Re: of-flash: Unable to ioremap() both 128MB NOR flashes on 32-bit
-	system with 2GB+ RAM
-To: Milton Miller <miltonm@bga.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: JFFS2 corruption when mounting filesystem with filenamesoflength>
+	7
+Date: Mon, 28 Jun 2010 16:25:02 -0500
+Message-ID: <181804936ABC2349BE503168465576460F20D651@exchserver.basler.com>
+In-Reply-To: <181804936ABC2349BE503168465576460F20CB90@exchserver.basler.com>
+References: <181804936ABC2349BE503168465576460F1AAEC6@exchserver.basler.com>
+	<181804936ABC2349BE503168465576460F1AAEE1@exchserver.basler.com>
+	<181804936ABC2349BE503168465576460F1AB73E@exchserver.basler.com>
+	<181804936ABC2349BE503168465576460F20CB90@exchserver.basler.com>
+From: "Steve Deiters" <SteveDeiters@BASLER.com>
+To: <linux-mtd@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 28, 2010 at 03:18, Milton Miller <miltonm@bga.com> wrote:
-> On Fri Jun 25 around 14:01:51 EST 2010 Kyle Moffett wrote:
->> I've got a new P2020 (32bit mpc85xx family) board I'm working on a
->> port for that includes 2 NOR flashes (128MB each) and a removable
->> SO-RDIMM of 2GB or 4GB. =C2=A0Unfortunately when I configure both flashe=
-s
->> in the device-tree off my elbc, Linux is completely unable to access
->> the second one because it attempts to ioremap() the entire virtual
->> address space of both FLASH chips.
->>
->> Even with only one flash chip enabled, there's a bit of a noticeable
->> performance degradation because the mapping consumes almost all of my
->> available vmalloc space and forces bounce-buffering for all my
->> HIGHMEM.
->>
->> It looks like the "of-flash" driver currently requires that the whole
->> chip be mapped in the kernel at once. =C2=A0I would much rather have a 5=
-0%
->> performance penalty on flash accesses (which are already very slow)
->> and regain most of the vmap space.
->>
->> So the question is, is there a way to convince the MTD layer to
->> iomap() only what it needs to access to do reads and writes? =C2=A0If no=
-t,
->> what changes would need to be made to MTD and/or "of-flash" to create
->> such functionality?
->
-> I believe the MTD layer would be happy, but it is beyond the scope of
-> the physmap_of driver.
+> I think there may be something weird going on with the memcpy=20
+> in my build.  If I use the following patch I no longer get=20
+> errors when I mount the filesystem.  All I did was replace=20
+> the memcpy with a loop.
+>=20
+> I'm not sure what's special about this particular use of=20
+> memcpy.  I can't believe that things would be working as well=20
+> as they do if memcpy was broken in general.
+>=20
+> This is on a PowerPC 32 bit build for a MPC5121.  I am using=20
+> a GCC 4.1.2 to compile.  Is anyone aware of any issues with=20
+> memcpy in this configuration?
+>=20
+> Thanks.
 
-Well, I believe that the physmap_of driver is the correct place for
-it; that driver is used by a large number of embedded PPC systems and
-at present it is completely unable to handle some of the larger flash
-memories currently being produced (256MByte+), and there's a decent
-system-wide performance penalty (due to lack of ioremap space) even
-for the larger flash memories which do function.
+It seems this processor is mangling the data when it access unaligned
+addresses into Flash with a lwz instruction.  The memcpy implementation
+in copy_32.S aligns the destination, leaving the source possibly
+unaligned.  In this particular instance the source is an address into=
+ my
+Flash address space which is causing the problem.  When the filenames
+were < 8 it always does a bytewise copy which is why I wasn't having
+problems with those.
 
-Cheers,
-Kyle Moffett
+It seems this only occurs when I have the translation enabled.  If I
+clear the DR bit in the MSR and then repeat the instruction with the
+corresponding physical address it will read correctly.
+
+I'm not sure if this is expected behavior with this core.  I can fix at
+least this one problem by using memcpy_fromio since it does alignment
+checks for the source and destination.
+
+I'm not sure what the proper fix is for this.  If I use memcpy_fromio=
+ I
+think I'll just run into problems somewhere else.  Any other
+suggestions?
+
+Thanks.
