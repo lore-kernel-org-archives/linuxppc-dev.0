@@ -1,16 +1,14 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4C282794.1040209@ozlabs.org>
-Date: Mon, 28 Jun 2010 14:39:48 +1000
-From: Matt Evans <matt@ozlabs.org>
-MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
-References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-19-git-send-email-agraf@suse.de>
-In-Reply-To: <1277508314-915-19-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 0FDDFB6F06
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jun 2010 14:59:03 +1000 (EST)
+Date: Mon, 28 Jun 2010 00:59:00 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: section .data..init_task
+Message-ID: <20100628005900.28d4a8e0@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,93 +18,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Howdy Alex!
+Anybody else seeing these messages?
 
-Alexander Graf wrote:
-> We will soon start and replace instructions from the text section with
-> other, paravirtualized versions. To ease the readability of those patches
-> I split out the generic looping and magic page mapping code out.
-> 
-> This patch still only contains stubs. But at least it loops through the
-> text section :).
-> 
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kernel/kvm.c |   59 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 59 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-> index 2d8dd73..d873bc6 100644
-> --- a/arch/powerpc/kernel/kvm.c
-> +++ b/arch/powerpc/kernel/kvm.c
-> @@ -32,3 +32,62 @@
->  #define KVM_MAGIC_PAGE		(-4096L)
->  #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
->  
-> +static bool kvm_patching_worked = true;
-> +
-> +static void kvm_map_magic_page(void *data)
-> +{
-> +	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-> +		       KVM_MAGIC_PAGE,  /* Physical Address */
-> +		       KVM_MAGIC_PAGE); /* Effective Address */
-> +}
-> +
-> +static void kvm_check_ins(u32 *inst)
-> +{
-> +	u32 _inst = *inst;
-> +	u32 inst_no_rt = _inst & ~KVM_MASK_RT;
-> +	u32 inst_rt = _inst & KVM_MASK_RT;
-> +
-> +	switch (inst_no_rt) {
-> +	}
-> +
-> +	switch (_inst) {
-> +	}
-> +
-> +	flush_icache_range((ulong)inst, (ulong)inst + 4);
-> +}
-> +
-> +static void kvm_use_magic_page(void)
-> +{
-> +	u32 *p;
-> +	u32 *start, *end;
-> +
-> +	/* Tell the host to map the magic page to -4096 on all CPUs */
-> +
-> +	on_each_cpu(kvm_map_magic_page, NULL, 1);
-> +
-> +	/* Now loop through all code and find instructions */
-> +
-> +	start = (void*)_stext;
-> +	end = (void*)_etext;
-> +
-> +	for (p = start; p < end; p++)
-> +		kvm_check_ins(p);
-> +}
+ppc_4xxFP-ld: .tmp_vmlinux1: section .data..init_task lma 0xc0374000 overlaps previous sections
+ppc_4xxFP-ld: .tmp_vmlinux2: section .data..init_task lma 0xc03a2000 overlaps previous sections
+ppc_4xxFP-ld: vmlinux: section .data..init_task lma 0xc03a2000 overlaps previous sections
 
-Could you do something similar in module_finalize() to patch loaded modules' .text sections?
+Or does anybody know what they mean? They started showing up in 2.6.35.
 
-> +
-> +static int __init kvm_guest_init(void)
-> +{
-> +	char *p;
-> +
-> +	if (!kvm_para_available())
-> +		return 0;
-> +
-> +	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
-> +		kvm_use_magic_page();
-> +
-> +	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
-> +			 kvm_patching_worked ? "worked" : "failed");
-> +
-> +	return 0;
-> +}
-> +
-> +postcore_initcall(kvm_guest_init);
+Very easy to reproduce, so don't hesitate to ask for more info.
 
 Cheers,
-
-
-Matt
+   Sean
