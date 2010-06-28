@@ -1,23 +1,22 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 8E2B5B6F35
+	by ozlabs.org (Postfix) with ESMTP id C467BB7085
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Jun 2010 18:13:08 +1000 (EST)
-Message-ID: <4C285991.1050303@redhat.com>
-Date: Mon, 28 Jun 2010 11:13:05 +0300
+	Mon, 28 Jun 2010 18:15:20 +1000 (EST)
+Message-ID: <4C285A13.8070208@redhat.com>
+Date: Mon, 28 Jun 2010 11:15:15 +0300
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 26/26] KVM: PPC: Add Documentation about PV interface
+Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
 References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<07C9A4B8-881A-438C-AA99-AEC23887C6B8@suse.de>
-	<4C270876.2050806%40redhat.com>
-	<1277709531_13308@mail4.comsite.net>
-	<92F4A3F3-A89F-418D-BD4D-66E2489F2E42@suse.de>
-In-Reply-To: <92F4A3F3-A89F-418D-BD4D-66E2489F2E42@suse.de>
+	<1277508314-915-19-git-send-email-agraf@suse.de>
+	<4C282794.1040209@ozlabs.org>
+	<168E1B5F-44F7-4FF5-80A5-64B0E2E94D68@suse.de>
+In-Reply-To: <168E1B5F-44F7-4FF5-80A5-64B0E2E94D68@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org,
-	Milton Miller <miltonm@bga.com>, KVM list <kvm@vger.kernel.org>
+	Matt Evans <matt@ozlabs.org>, KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/28/2010 10:49 AM, Alexander Graf wrote:
+On 06/28/2010 09:33 AM, Alexander Graf wrote:
 >
->> I don't believe we support the kernel actually doing a syscall to itself
->> anymore, at least on powerpc.  The callers call the underlying system
->> call function, or kernel_thread.
->>
->> That said, I would suggest we allocate a syscall number for this, as it
->> would document the usage.  (In additon to 0..nr_syscalls - 1 we have
->> 0x1ebe in use).
+>> Could you do something similar in module_finalize() to patch loaded modules' .text sections?
 >>      
-> That's actually a pretty good idea.
+> I could, but do we need it? I objdump -d | grep'ed all my modules and didn't find any need to do so.
 >    
 
-Since the syscall register is not architectual (or rather it is 
-architectural but Linux ignores it) I don't see the point.  It would 
-work for Linux but may alias some random parameter for a different 
-guest.  We need a reliable method of distinguishing between syscalls and 
-hypercalls.  Matching pc would work (but is defeated by inlining) so 
-long as we find some other way of identifying the hc pc to the hypervisor.
-
-
+You mean even kvm.ko doesn't use privileged instructions?
 
 -- 
 error compiling committee.c: too many arguments to function
