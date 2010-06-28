@@ -1,26 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5A415B6EF3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 28 Jun 2010 08:11:01 +1000 (EST)
-Subject: Re: [PATCH 1/2] KVM: PPC: Add generic hpte management functions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Avi Kivity <avi@redhat.com>
-In-Reply-To: <4C27035D.1010604@redhat.com>
-References: <1277127841-32704-1-git-send-email-agraf@suse.de>
-	<4C20A64D.2070805@redhat.com> <4C20A6C8.4070002@suse.de>
-	<4C20A795.6040607@redhat.com> <4C20A836.2010908@suse.de>
-	<4C20A890.9040806@redhat.com> <4C20A91A.1080607@suse.de>
-	<4C20AA9B.8000807@redhat.com> <1277593118.4200.122.camel@pasglop>
-	<4C27035D.1010604@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Jun 2010 08:10:54 +1000
-Message-ID: <1277676654.4200.136.camel@pasglop>
-Mime-Version: 1.0
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C282794.1040209@ozlabs.org>
+Date: Mon, 28 Jun 2010 14:39:48 +1000
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 18/26] KVM: PPC: KVM PV guest stubs
+References: <1277508314-915-1-git-send-email-agraf@suse.de>
+	<1277508314-915-19-git-send-email-agraf@suse.de>
+In-Reply-To: <1277508314-915-19-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +20,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2010-06-27 at 10:53 +0300, Avi Kivity wrote:
-> On 06/27/2010 01:58 AM, Benjamin Herrenschmidt wrote:
-> >
-> >> Then mmu intensive loads can expect to be slow.
-> >>      
-> > Well, depends. ppc64 indeed requires the hash to be managed by the
-> > hypervisor, so inserting or invalidating translations will mean a
-> > roundtrip to the hypervisor, though there are ways at least the
-> > insertion could be alleviated (for example, the HV could service the
-> > hash misses directly walking the guest page tables).
-> >    
+Howdy Alex!
+
+Alexander Graf wrote:
+> We will soon start and replace instructions from the text section with
+> other, paravirtualized versions. To ease the readability of those patches
+> I split out the generic looping and magic page mapping code out.
 > 
-> But the guest page tables are software defined, no?  That means the 
-> interface will break if the page table format changes.
-
-Yes. Unless the hypervisor or architecture defines the format to be
-used :-) IE. That's what Niagara 1 did. But we don't do that indeed
-currently.
-
-> > But that's due in part to a design choice (whether it's a good one or
-> > not I'm not going to argue here) which favors huge reasonably static
-> > workloads where the hash is expected to contain all translations for
-> > everything.
-> >    
+> This patch still only contains stubs. But at least it loops through the
+> text section :).
 > 
-> What about when you have memory pressure?  The hash will have to reflect 
-> those pte_clear_flush_young(), no?
-
-Well, our architects would argue that the kind of workloads we target
-don't have memory pressure :-)
-
-But yes, I agree, harvesting of dirty and young bits is going to force a
-hash flush which can be pretty expensive. Heh, we've been trying to
-convince our own architects at designers that the MMU sucks for long
-enough...
-
-> It seems horribly expensive.
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+> ---
+>  arch/powerpc/kernel/kvm.c |   59 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 59 insertions(+), 0 deletions(-)
 > 
-> > However, note that BookE (the embedded variant of the architecture) uses
-> > a different model for virtualization, including options in its latest
-> > variant for a HW logical->real translation (via a small dedicated TLB)
-> > and direct access to some TLB ops from the guest.
-> >    
-> 
-> I'm somewhat familiar with it, yes.
+> diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+> index 2d8dd73..d873bc6 100644
+> --- a/arch/powerpc/kernel/kvm.c
+> +++ b/arch/powerpc/kernel/kvm.c
+> @@ -32,3 +32,62 @@
+>  #define KVM_MAGIC_PAGE		(-4096L)
+>  #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
+>  
+> +static bool kvm_patching_worked = true;
+> +
+> +static void kvm_map_magic_page(void *data)
+> +{
+> +	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+> +		       KVM_MAGIC_PAGE,  /* Physical Address */
+> +		       KVM_MAGIC_PAGE); /* Effective Address */
+> +}
+> +
+> +static void kvm_check_ins(u32 *inst)
+> +{
+> +	u32 _inst = *inst;
+> +	u32 inst_no_rt = _inst & ~KVM_MASK_RT;
+> +	u32 inst_rt = _inst & KVM_MASK_RT;
+> +
+> +	switch (inst_no_rt) {
+> +	}
+> +
+> +	switch (_inst) {
+> +	}
+> +
+> +	flush_icache_range((ulong)inst, (ulong)inst + 4);
+> +}
+> +
+> +static void kvm_use_magic_page(void)
+> +{
+> +	u32 *p;
+> +	u32 *start, *end;
+> +
+> +	/* Tell the host to map the magic page to -4096 on all CPUs */
+> +
+> +	on_each_cpu(kvm_map_magic_page, NULL, 1);
+> +
+> +	/* Now loop through all code and find instructions */
+> +
+> +	start = (void*)_stext;
+> +	end = (void*)_etext;
+> +
+> +	for (p = start; p < end; p++)
+> +		kvm_check_ins(p);
+> +}
+
+Could you do something similar in module_finalize() to patch loaded modules' .text sections?
+
+> +
+> +static int __init kvm_guest_init(void)
+> +{
+> +	char *p;
+> +
+> +	if (!kvm_para_available())
+> +		return 0;
+> +
+> +	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
+> +		kvm_use_magic_page();
+> +
+> +	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
+> +			 kvm_patching_worked ? "worked" : "failed");
+> +
+> +	return 0;
+> +}
+> +
+> +postcore_initcall(kvm_guest_init);
 
 Cheers,
-Ben.
+
+
+Matt
