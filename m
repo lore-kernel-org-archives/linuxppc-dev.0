@@ -1,18 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A2B3FB6F01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 08:02:40 +1000 (EST)
-To: Stevan Ignjatovic <stevan@iritel.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ftp login problem using wu-ftpd
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <1277820991.4257.18.camel@stevan>
-References: <1277820991.4257.18.camel@stevan>
-Date: Wed, 30 Jun 2010 00:02:37 +0200
-Message-Id: <20100629220237.30A75152442@gemini.denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id CCF51B6F05
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 08:16:14 +1000 (EST)
+Date: Tue, 29 Jun 2010 15:16:26 -0700 (PDT)
+Message-Id: <20100629.151626.90794001.davem@davemloft.net>
+To: avorontsov@mvista.com
+Subject: Re: [PATCH 1/3] gianfar: Implement workaround for eTSEC74 erratum
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100629205959.GA10905@oksana.dev.rtsoft.ru>
+References: <20100629205959.GA10905@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com,
+	Sandeep.Kumar@freescale.com, manfred.rudigier@omicron.at,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +24,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Stevan Ignjatovic,
 
-In message <1277820991.4257.18.camel@stevan> you wrote:
-> 
-> I ported Linux-2.6.30-rc8 on my custom mpc885 board. The filesystem I am
-> using is jffs2 which I created from
-> eldk-4.2/ppc_8xx/images/ramdisk_image.gz. Linux boots fine and I can
-> telnet to the board but I cannot ftp:
-...
-> Here ftp connection hangs. Do I have to create another user (beside
-> root) in order to make ftp connection? Earlier, when I was using 2.4
-> linux I didn't have problems with ftp connection as root.
+I really don't see any value at all to this config option,
+the errata fixup code should be there all the time.
 
-check your kernel configuration. You might be missing options like
-CONFIG_UNIX98_PTYS or CONFIG_LEGACY_PTYS or similar.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one instruction - from which, by induction, one can deduce that every
-program can be reduced to one instruction which doesn't work.
+It really does no harm to be there in the cases where it isn't
+used, and forcing users to turn this on is just another
+obscure way to end up with an incorrect configuration.
