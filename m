@@ -1,18 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [213.115.205.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A3A87B6F0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 18:18:25 +1000 (EST)
-In-Reply-To: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
-References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
-Subject: Re: machine check in kernel for a mpc870 board
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <OF0E653CF5.2ED4C3A3-ONC1257751.002C6D6E-C1257751.002C903E@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 29 Jun 2010 10:06:45 +0200
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id D06CFB6ED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 18:37:08 +1000 (EST)
+Received: by iwn1 with SMTP id 1so2036887iwn.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 01:37:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+In-Reply-To: <OF0E653CF5.2ED4C3A3-ONC1257751.002C6D6E-C1257751.002C903E@transmode.se>
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
+	<OF0E653CF5.2ED4C3A3-ONC1257751.002C6D6E-C1257751.002C903E@transmode.se>
+Date: Tue, 29 Jun 2010 01:37:07 -0700
+Message-ID: <AANLkTimZyozjYbQeQrR14oGCi3caqrox0JRPkJGp-lnS@mail.gmail.com>
+Subject: Re: machine check in kernel for a mpc870 board
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,21 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Shawn Jin <shawnxjin@gmail.com>
+>> =3D> bootm 1000000
+>> ## Booting image at 01000000 ...
+>> =A0 =A0Image Name: =A0 Linux-2.6.33.5
+>> =A0 =A0Image Type: =A0 PowerPC Linux Kernel Image (gzip compressed)
+>> =A0 =A0Data Size: =A0 =A0747319 Bytes =3D 729.8 kB
+>> =A0 =A0Load Address: 00400000
+>> =A0 =A0Entry Point: =A0004004d4
 >
-> I'm porting a mpc870 board to the powerpc arch. The base is the
-> adder-875 board. My first try to boot the cuImage.my870 is
-> experiencing a machine check. And I have no clue where to look. Any
-> help?
->
-> => bootm 1000000
-> ## Booting image at 01000000 ...
->    Image Name:   Linux-2.6.33.5
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    747319 Bytes = 729.8 kB
->    Load Address: 00400000
->    Entry Point:  004004d4
+> Load and Entry Point should probably be 0
 
-Load and Entry Point should probably be 0
+But the cuImage.adder875-uboot image also has the same load address as
+mine and the entry point is 0x4004d8. Also cuImage.mpc885ads has the
+same load address and entry point as cuImage.adder875-uboot. So I
+don't suspect them.
 
- Jocke
+All right. I built a uImage for mpc885ads and the uImage's load
+address and entry point are both 0. So this is because I'm using
+cuImage instead of uImage.
+
+Thanks Joake, anyway.
+
+-Shawn.
