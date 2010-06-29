@@ -1,22 +1,25 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id B953DB6EE8
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 22:44:21 +1000 (EST)
-Received: by bwz19 with SMTP id 19so1057371bwz.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 05:44:19 -0700 (PDT)
-Date: Tue, 29 Jun 2010 16:44:15 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Marek Vasut <marek.vasut@gmail.com>
-Subject: Re: [PATCH]460EX on-chip SATA driver<kernel 2.6.33><resubmission>
-Message-ID: <20100629124415.GA32738@oksana.dev.rtsoft.ru>
-References: <201006041226.o54CQH2V017366@amcc.com>
-	<201006290333.50673.marek.vasut@gmail.com>
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 070B0B6EF2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Jun 2010 22:56:58 +1000 (EST)
+Message-ID: <4C29ED94.6060904@suse.de>
+Date: Tue, 29 Jun 2010 14:56:52 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <201006290333.50673.marek.vasut@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Rupjyoti Sarmah <rsarmah@amcc.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	sr@denx.de, jgarzik@pobox.com
+To: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] KVM: PPC: Add generic hpte management functions
+References: <1277507817-626-1-git-send-email-agraf@suse.de>
+	<1277507817-626-2-git-send-email-agraf@suse.de>
+	<4C285D1C.5060508@redhat.com>
+	<20417D40-9345-485B-9201-8B3722B7457F@suse.de>
+	<4C286770.6010204@redhat.com>
+In-Reply-To: <4C286770.6010204@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 29, 2010 at 03:33:50AM +0200, Marek Vasut wrote:
-> Dne Pá 4. června 2010 14:26:17 Rupjyoti Sarmah napsal(a):
-> > This patch enables the on-chip DWC SATA controller of the AppliedMicro
-> > processor 460EX.
-> > 
-> > Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
-> > Signed-off-by: Mark Miesfeld <mmiesfeld@appliedmicro.com>
-> > Signed-off-by: Prodyut Hazarika <phazarika@appliedmicro.com>
-> > 
-> 
-> --SNIP--
-> 
-> > +		dev_err(ap->dev, "%s: Command not pending cmd_issued=%d "
-> > +			"(tag=%d) DMA NOT started\n", __func__,
-> > +			hsdevp->cmd_issued[tag], tag);
-> 
-> Just a nitpick, but don't break strings if possible.
+Avi Kivity wrote:
+> On 06/28/2010 11:55 AM, Alexander Graf wrote:
+>>
+>>>> +
+>>>> +static inline u64 kvmppc_mmu_hash_pte(u64 eaddr) {
+>>>> +    return hash_64(eaddr>>   PTE_SIZE, HPTEG_HASH_BITS_PTE);
+>>>> +}
+>>>> +
+>>>> +static inline u64 kvmppc_mmu_hash_vpte(u64 vpage) {
+>>>> +    return hash_64(vpage&   0xfffffffffULL, HPTEG_HASH_BITS_VPTE);
+>>>> +}
+>>>> +
+>>>> +static inline u64 kvmppc_mmu_hash_vpte_long(u64 vpage) {
+>>>> +    return hash_64((vpage&   0xffffff000ULL)>>   12,
+>>>> +               HPTEG_HASH_BITS_VPTE_LONG);
+>>>> +}
+>>>>
+>>>>        
+>>> Still with the wierd coding style?
+>>>      
+>> Not sure what's going on there. My editor displays it normally. Weird.
+>>    
+>
+> Try hitting 'save'.
 
-Note that in this particular case breaking strings was OK, and
-was actually done in a clever manner.
+hexdump -C on the respective section in the exact patch file I submitted
+above shows:
 
-That is, I doubt that anyone grep for error messages with
-regexps, so grep "Command not pending" or grep "DMA NOT started"
-would work.
+00000a80  75 72 6e 20 68 61 73 68  5f 36 34 28 65 61 64 64  |urn
+hash_64(eadd|
+00000a90  72 20 3e 3e 20 50 54 45  5f 53 49 5a 45 2c 20 48  |r >>
+PTE_SIZE, H|
 
-This makes the code more readable (literally, because you don't
-have to scroll to see dev_err's arguments) without sacrificing
-grep'ability.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Maybe your mail client breaks it?
+
+
+Alex
