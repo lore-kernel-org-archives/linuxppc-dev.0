@@ -1,16 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 56544B6EEE
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A3531B6EF7
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Jun 2010 17:08:29 +1000 (EST)
-Date: Tue, 29 Jun 2010 17:08:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix feature-fixup tests for gcc 4.5
-Message-Id: <20100629170829.8ff9a7a1.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Tue, 29 Jun 2010 17:32:29 +1000 (EST)
+In-Reply-To: <9B84B663-7DC6-4543-96F7-23F77106065C@suse.de>
+References: <1277508314-915-1-git-send-email-agraf@suse.de>
+	<1277508314-915-12-git-send-email-agraf@suse.de>
+	<2078D8A9-7D36-4B5D-A779-9BBAB545A53D@kernel.crashing.org>
+	<9B84B663-7DC6-4543-96F7-23F77106065C@suse.de>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <07830DA6-1B53-4E84-A0E2-8449289C71F1@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 11/26] KVM: PPC: Make RMO a define
+Date: Tue, 29 Jun 2010 09:32:20 +0200
+To: Alexander Graf <agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>,
+	"kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,93 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The feature-fixup test declare some extern void variables and then take
-their addresses.  Fix this by declaring them as extern u8 instead.
+>>> On PowerPC it's very normal to not support all of the physical  
+>>> RAM in real mode.
+>>
+>> Oh?  Are you referring to "real mode limit", or 32-bit  
+>> implementations with
+>> more than 32 address lines, or something else?
+>
+> The former.
 
-Fixes these warnings (treated as errors):
+Okay.  In that case, the hypervisor can usually access all of physical
+ram directly, unless it limits itself; and a supervisor gets either
+no real mode access, or all ram, or some part -- whatever the hypervisor
+likes.
 
-  CC      arch/powerpc/lib/feature-fixups.o
-cc1: warnings being treated as errors
-arch/powerpc/lib/feature-fixups.c: In function 'test_cpu_macros':
-arch/powerpc/lib/feature-fixups.c:293:23: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:294:9: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:297:2: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:297:2: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c: In function 'test_fw_macros':
-arch/powerpc/lib/feature-fixups.c:306:23: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:307:9: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:310:2: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:310:2: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c: In function 'test_lwsync_macros':
-arch/powerpc/lib/feature-fixups.c:321:23: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:322:9: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:326:3: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:326:3: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:329:3: error: taking address of expression of type 'void'
-arch/powerpc/lib/feature-fixups.c:329:3: error: taking address of expression of type 'void'
+If you access outside of ram, you will most likely get a machine check.
+Depends on the implementation (like most things here).
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/lib/feature-fixups.c |   17 +++++++++--------
- 1 files changed, 9 insertions(+), 8 deletions(-)
+>> Either way, RMO is a really bad name for this, since that name is  
+>> already
+>> used for a similar but different concept.
+>
+> It's the same concept, no? Not all physical memory is accessible  
+> from real mode.
 
-I haven't actually booted this, just built it.
+I think you're looking for "real mode limit":
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index e640175..0d08d01 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -12,6 +12,7 @@
-  *  2 of the License, or (at your option) any later version.
-  */
- 
-+#include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/init.h>
-@@ -288,8 +289,8 @@ static void test_alternative_case_with_external_branch(void)
- 
- static void test_cpu_macros(void)
- {
--	extern void ftr_fixup_test_FTR_macros;
--	extern void ftr_fixup_test_FTR_macros_expected;
-+	extern u8 ftr_fixup_test_FTR_macros;
-+	extern u8 ftr_fixup_test_FTR_macros_expected;
- 	unsigned long size = &ftr_fixup_test_FTR_macros_expected -
- 			     &ftr_fixup_test_FTR_macros;
- 
-@@ -301,8 +302,8 @@ static void test_cpu_macros(void)
- static void test_fw_macros(void)
- {
- #ifdef CONFIG_PPC64
--	extern void ftr_fixup_test_FW_FTR_macros;
--	extern void ftr_fixup_test_FW_FTR_macros_expected;
-+	extern u8 ftr_fixup_test_FW_FTR_macros;
-+	extern u8 ftr_fixup_test_FW_FTR_macros_expected;
- 	unsigned long size = &ftr_fixup_test_FW_FTR_macros_expected -
- 			     &ftr_fixup_test_FW_FTR_macros;
- 
-@@ -314,10 +315,10 @@ static void test_fw_macros(void)
- 
- static void test_lwsync_macros(void)
- {
--	extern void lwsync_fixup_test;
--	extern void end_lwsync_fixup_test;
--	extern void lwsync_fixup_test_expected_LWSYNC;
--	extern void lwsync_fixup_test_expected_SYNC;
-+	extern u8 lwsync_fixup_test;
-+	extern u8 end_lwsync_fixup_test;
-+	extern u8 lwsync_fixup_test_expected_LWSYNC;
-+	extern u8 lwsync_fixup_test_expected_SYNC;
- 	unsigned long size = &end_lwsync_fixup_test -
- 			     &lwsync_fixup_test;
- 
--- 
-1.7.1
+The concept is called "offset real mode".
+
+RMO ("real mode offset") is the value that is ORed to an effective  
+address
+to make the physical address (not added, "offset" is a pretty bad name).
+RML ("real mode limit") is the value that has to be bigger than the  
+effective
+address or you will get an exception.
+RMA ("real mode area") is the name for the range of addresses usable  
+in offset
+real mode.
+
+>> Also, it seems you construct the physical address by masking out  
+>> bits from
+>> the effective address.  Most implementations will trap or machine  
+>> check if
+>> you address outside of physical address space, instead.
+>
+> Well the only case where I remember to have hit a real RMO case is  
+> on the PS3 - that issues a data/instruction storage interrupt when  
+> accessing anything > 8MB in real mode.
+>
+> So I'd argue this is heavily implementation specific.
+
+It is.  So what is the behaviour you want to implement?
+
+> Apart from that what I'm trying to cover is that on ppc64 accessing  
+> 0xc0000000000000 in real mode gets you 0x0. Is there a better name  
+> for this?
+
+(You missed two zeroes).
+In hypervisor real mode, the top few bits are magic.  They are used  
+for e.g.
+enabling hypervisor offset real mode.
+In supervisor real mode, those bits are ignored (and all other bits  
+that do
+not correspond to physical address lines may also be ignored).
 
 
+Maybe you want to call it physical_address_mask or similar?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+
+Segher
