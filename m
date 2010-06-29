@@ -1,19 +1,15 @@
 Return-Path: <David.Daney@caviumnetworks.com>
 Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
-	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 9C6441007D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 09:22:38 +1000 (EST)
-Message-ID: <4C2A8038.50204@caviumnetworks.com>
-Date: Tue, 29 Jun 2010 16:22:32 -0700
+	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 40A171007F0
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 09:22:40 +1000 (EST)
+Message-ID: <4C2A7E14.4060802@caviumnetworks.com>
+Date: Tue, 29 Jun 2010 16:13:24 -0700
 From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 4/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-References: <12778468223309-git-send-email-fchen@apm.com>
-	<12778468233898-git-send-email-fchen@apm.com>
-	<12778468231438-git-send-email-fchen@apm.com>
-	<1277846824673-git-send-email-fchen@apm.com>
-	<20100629231302.7E6E314EBF8@gemini.denx.de>
-In-Reply-To: <20100629231302.7E6E314EBF8@gemini.denx.de>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/9] Add Synopsys DesignWare HS USB OTG Controller driver.
+References: <5569.83301.qm@web180304.mail.gq1.yahoo.com>
+In-Reply-To: <5569.83301.qm@web180304.mail.gq1.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
 	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de,
@@ -27,29 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2010 04:13 PM, Wolfgang Denk wrote:
-> Dear Fushen Chen,
+On 06/29/2010 03:41 PM, David Brownell wrote:
+> Good -- MUSB won't be the only one.  ;)
 >
-> In message<1277846824673-git-send-email-fchen@apm.com>  you wrote:
->> Implements DWC OTG USB Host Controller Driver (HCD) and interface to
->> USB Host controller Driver framework.
->>
->> Signed-off-by: Fushen Chen<fchen@apm.com>
->> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
->> ---
->>   drivers/usb/otg/dwc_otg_hcd.c | 2397 +++++++++++++++++++++++++++++++++++++++++
->>   drivers/usb/otg/dwc_otg_hcd.h |  421 ++++++++
->>   2 files changed, 2818 insertions(+), 0 deletions(-)
->>   create mode 100644 drivers/usb/otg/dwc_otg_hcd.c
->>   create mode 100644 drivers/usb/otg/dwc_otg_hcd.h
->
->
-> Why are you posting this old driver version without trying to sync
-> against our tree which includes a number of fixes - you should know
-> about these.
+> Could you mention a few Linux-enabled chips which
+> include this controller?
 >
 
-This could be a question with an obvious answer, but which tree are you 
-referring to when you say 'our tree'?
+I can.  Some members of the Octeon family:  arch/mips/cavium-octeon
+
+Although there would probably be some SOC specific glue needed for chips 
+not targeted by the initial patch set.
 
 David Daney
+
+
+>
+>>   arch/powerpc/boot/dts/kilauea.dts |   15 +
+>
+> Also, please provide a clean patch that only
+> includes the driver, and split PPC hooks into
+> a separate patch.
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
