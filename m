@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 4C57DB7145
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 07:00:10 +1000 (EST)
-Date: Wed, 30 Jun 2010 01:00:08 +0400
+	by ozlabs.org (Postfix) with ESMTP id 945B0B70AF
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 07:00:14 +1000 (EST)
+Date: Wed, 30 Jun 2010 01:00:13 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2/3] gianfar: Implement workaround for eTSEC76 erratum
-Message-ID: <20100629210008.GB10905@oksana.dev.rtsoft.ru>
+Subject: [PATCH 3/3] gianfar: Implement workaround for eTSEC-A002 erratum
+Message-ID: <20100629210013.GC10905@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
@@ -23,80 +23,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 MPC8313ECE says:
 
-"For TOE=1 huge or jumbo frames, the data required to generate the
- checksum may exceed the 2500-byte threshold beyond which the controller
- constrains itself to one memory fetch every 256 eTSEC system clocks.
+"If the controller receives a 1- or 2-byte frame (such as an illegal
+ runt packet or a packet with RX_ER asserted) before GRS is asserted
+ and does not receive any other frames, the controller may fail to set
+ GRSC even when the receive logic is completely idle. Any subsequent
+ receive frame that is larger than two bytes will reset the state so
+ the graceful stop can complete. A MAC receiver (Rx) reset will also
+ reset the state."
 
- This throttling threshold is supposed to trigger only when the
- controller has sufficient data to keep transmit active for the duration
- of the memory fetches. The state machine handling this threshold,
- however, fails to take large TOE frames into account. As a result,
- TOE=1 frames larger than 2500 bytes often see excess delays before start
- of transmission."
+This patch implements the proposed workaround:
 
-This patch implements the workaround as suggested by the errata
-document, i.e.:
-
-"Limit TOE=1 frames to less than 2500 bytes to avoid excess delays due to
- memory throttling.
- When using packets larger than 2700 bytes, it is recommended to turn TOE
- off."
-
-To be sure, we limit the TOE frames to 2500 bytes, and do software
-checksumming instead.
+"If IEVENT[GRSC] is still not set after the timeout, read the eTSEC
+ register at offset 0xD1C. If bits 7-14 are the same as bits 23-30,
+ the eTSEC Rx is assumed to be idle and the Rx can be safely reset.
+ If the register fields are not equal, wait for another timeout
+ period and check again."
 
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
- drivers/net/gianfar.c |   19 +++++++++++++++++++
+ drivers/net/gianfar.c |   40 +++++++++++++++++++++++++++++++++++++---
  drivers/net/gianfar.h |    1 +
- 2 files changed, 20 insertions(+), 0 deletions(-)
+ 2 files changed, 38 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 9c85d05..f8b9693 100644
+index f8b9693..f3da17a 100644
 --- a/drivers/net/gianfar.c
 +++ b/drivers/net/gianfar.c
-@@ -942,6 +942,11 @@ static void gfar_detect_errata(struct gfar_private *priv)
+@@ -947,6 +947,11 @@ static void gfar_detect_errata(struct gfar_private *priv)
  			(pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
- 		priv->errata |= GFAR_ERRATA_74;
+ 		priv->errata |= GFAR_ERRATA_76;
  
 +	/* MPC8313 and MPC837x all rev */
 +	if ((pvr == 0x80850010 && mod == 0x80b0) ||
 +			(pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
-+		priv->errata |= GFAR_ERRATA_76;
++		priv->errata |= GFAR_ERRATA_A002;
 +
  	if (priv->errata) {
  #ifdef CONFIG_GIANFAR_ERRATA
  		dev_info(dev, "enabled errata workarounds, flags: 0x%x\n",
-@@ -2018,6 +2023,20 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	unsigned int nr_frags, nr_txbds, length;
- 	union skb_shared_tx *shtx;
+@@ -1577,6 +1582,29 @@ static void init_registers(struct net_device *dev)
+ 	gfar_write(&regs->minflr, MINFLR_INIT_SETTINGS);
+ }
  
++static int __gfar_is_rx_idle(struct gfar_private *priv)
++{
++	u32 res;
++
 +	/*
-+	 * TOE=1 frames larger than 2500 bytes may see excess delays
-+	 * before start of transmission.
++	 * Normaly TSEC should not hang on GRS commands, so we should
++	 * actually wait for IEVENT_GRSC flag.
 +	 */
-+	if (unlikely(gfar_has_errata(priv, 76) &&
-+			skb->ip_summed == CHECKSUM_PARTIAL &&
-+			skb->len > 2500)) {
++	if (likely(!gfar_has_errata(priv, A002)))
++		return 0;
++
++	/*
++	 * Read the eTSEC register at offset 0xD1C. If bits 7-14 are
++	 * the same as bits 23-30, the eTSEC Rx is assumed to be idle
++	 * and the Rx can be safely reset.
++	 */
++	res = gfar_read((void __iomem *)priv->gfargrp[0].regs + 0xd1c);
++	res &= 0x7f807f80;
++	if ((res & 0xffff) == (res >> 16))
++		return 1;
++
++	return 0;
++}
+ 
+ /* Halt the receive and transmit queues */
+ static void gfar_halt_nodisable(struct net_device *dev)
+@@ -1600,12 +1628,18 @@ static void gfar_halt_nodisable(struct net_device *dev)
+ 	tempval = gfar_read(&regs->dmactrl);
+ 	if ((tempval & (DMACTRL_GRS | DMACTRL_GTS))
+ 	    != (DMACTRL_GRS | DMACTRL_GTS)) {
 +		int ret;
 +
-+		ret = skb_checksum_help(skb);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	rq = skb->queue_mapping;
- 	tx_queue = priv->tx_queue[rq];
- 	txq = netdev_get_tx_queue(dev, rq);
+ 		tempval |= (DMACTRL_GRS | DMACTRL_GTS);
+ 		gfar_write(&regs->dmactrl, tempval);
+ 
+-		spin_event_timeout(((gfar_read(&regs->ievent) &
+-			 (IEVENT_GRSC | IEVENT_GTSC)) ==
+-			 (IEVENT_GRSC | IEVENT_GTSC)), -1, 0);
++		do {
++			ret = spin_event_timeout(((gfar_read(&regs->ievent) &
++				 (IEVENT_GRSC | IEVENT_GTSC)) ==
++				 (IEVENT_GRSC | IEVENT_GTSC)), 1000000, 0);
++			if (!(gfar_read(&regs->ievent) & IEVENT_GRSC))
++				ret = __gfar_is_rx_idle(priv);
++		} while (!ret);
+ 	}
+ }
+ 
 diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index d1e2986..fb308c8 100644
+index fb308c8..e0907eb 100644
 --- a/drivers/net/gianfar.h
 +++ b/drivers/net/gianfar.h
-@@ -1027,6 +1027,7 @@ struct gfar_priv_grp {
- 
+@@ -1028,6 +1028,7 @@ struct gfar_priv_grp {
  enum gfar_errata {
  	GFAR_ERRATA_74		= 0x01,
-+	GFAR_ERRATA_76		= 0x02,
+ 	GFAR_ERRATA_76		= 0x02,
++	GFAR_ERRATA_A002	= 0x04,
  };
  
  #ifdef CONFIG_GIANFAR_ERRATA
