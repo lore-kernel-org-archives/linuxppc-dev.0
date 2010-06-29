@@ -1,21 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 29 Jun 2010 16:02:51 +1000
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 56544B6EEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Jun 2010 17:08:29 +1000 (EST)
+Date: Tue, 29 Jun 2010 17:08:29 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Using devices trees on X86
-Message-Id: <20100629160251.9e9fe7b1.sfr@canb.auug.org.au>
-In-Reply-To: <AANLkTikEJluwUSTmG64jgQYAt_8YI7-gVA2iqOPKrM9W@mail.gmail.com>
-References: <0bcc23b9-2cbd-4465-b17c-7b3c2dff9fd3@VA3EHSMHS007.ehs.local>
-	<20100629123843.5f94d477.sfr@canb.auug.org.au>
-	<AANLkTikEJluwUSTmG64jgQYAt_8YI7-gVA2iqOPKrM9W@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: fix feature-fixup tests for gcc 4.5
+Message-Id: <20100629170829.8ff9a7a1.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__29_Jun_2010_16_02_51_+1000_3zaId60c1ZdQbS8+"
-Cc: Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
-	David Miller <davem@davemloft.net>,
-	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +20,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__29_Jun_2010_16_02_51_+1000_3zaId60c1ZdQbS8+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The feature-fixup test declare some extern void variables and then take
+their addresses.  Fix this by declaring them as extern u8 instead.
 
-Hi Grant,
+Fixes these warnings (treated as errors):
 
-On Mon, 28 Jun 2010 22:56:14 -0700 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> I've got an Ack from David now.  I'll wait for more acks, and then
-> pull the whole series of 5 into my devicetree-next branch.  It's
-> certainly less invasive that some of the other changes arch changes
-> I've taken through my tree.
+  CC      arch/powerpc/lib/feature-fixups.o
+cc1: warnings being treated as errors
+arch/powerpc/lib/feature-fixups.c: In function 'test_cpu_macros':
+arch/powerpc/lib/feature-fixups.c:293:23: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:294:9: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:297:2: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:297:2: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c: In function 'test_fw_macros':
+arch/powerpc/lib/feature-fixups.c:306:23: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:307:9: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:310:2: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:310:2: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c: In function 'test_lwsync_macros':
+arch/powerpc/lib/feature-fixups.c:321:23: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:322:9: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:326:3: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:326:3: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:329:3: error: taking address of expression of type 'void'
+arch/powerpc/lib/feature-fixups.c:329:3: error: taking address of expression of type 'void'
 
-Yes, certainly.  However, I have a plan to write a series of patches for
-PowerPC that may clash some what, so if that is the case, I might ask Ben
-to take the one patch as well.  Especially if the conflict turns up in
-linux-next :-)
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/lib/feature-fixups.c |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-Thanks.
---=20
+I haven't actually booted this, just built it.
+
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index e640175..0d08d01 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -12,6 +12,7 @@
+  *  2 of the License, or (at your option) any later version.
+  */
+ 
++#include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+@@ -288,8 +289,8 @@ static void test_alternative_case_with_external_branch(void)
+ 
+ static void test_cpu_macros(void)
+ {
+-	extern void ftr_fixup_test_FTR_macros;
+-	extern void ftr_fixup_test_FTR_macros_expected;
++	extern u8 ftr_fixup_test_FTR_macros;
++	extern u8 ftr_fixup_test_FTR_macros_expected;
+ 	unsigned long size = &ftr_fixup_test_FTR_macros_expected -
+ 			     &ftr_fixup_test_FTR_macros;
+ 
+@@ -301,8 +302,8 @@ static void test_cpu_macros(void)
+ static void test_fw_macros(void)
+ {
+ #ifdef CONFIG_PPC64
+-	extern void ftr_fixup_test_FW_FTR_macros;
+-	extern void ftr_fixup_test_FW_FTR_macros_expected;
++	extern u8 ftr_fixup_test_FW_FTR_macros;
++	extern u8 ftr_fixup_test_FW_FTR_macros_expected;
+ 	unsigned long size = &ftr_fixup_test_FW_FTR_macros_expected -
+ 			     &ftr_fixup_test_FW_FTR_macros;
+ 
+@@ -314,10 +315,10 @@ static void test_fw_macros(void)
+ 
+ static void test_lwsync_macros(void)
+ {
+-	extern void lwsync_fixup_test;
+-	extern void end_lwsync_fixup_test;
+-	extern void lwsync_fixup_test_expected_LWSYNC;
+-	extern void lwsync_fixup_test_expected_SYNC;
++	extern u8 lwsync_fixup_test;
++	extern u8 end_lwsync_fixup_test;
++	extern u8 lwsync_fixup_test_expected_LWSYNC;
++	extern u8 lwsync_fixup_test_expected_SYNC;
+ 	unsigned long size = &end_lwsync_fixup_test -
+ 			     &lwsync_fixup_test;
+ 
+-- 
+1.7.1
+
+
+
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__29_Jun_2010_16_02_51_+1000_3zaId60c1ZdQbS8+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMKYyLAAoJEDMEi1NhKgbsrngH/0mqEE+cpwI9SPgN/f8ekHrL
-10rb3vBkMyKQngvGYKusBlKwj5mW4L7HkhvHvv9EqZGBA2jwxqtPYC09tywCe3Ie
-hgwa7UIneoIZApeibMQKWItW7b/UJWOHyRmumFa5ixJ9J/SkP6QidygkaSwZGJbF
-nwEY623fYJtyRcjQaYKiwqsbkV8olkkHNXKKK9Yx+Qu4O+Zywn1ljGaDVVgB/Y0+
-OF9Xd1FzF5m99S17qYfU0d1ggdk8ygGWYa2rB8DxkNGreUL2nkmukk6VC54mqIuc
-LYYxegVyIXfg55OEo6H7j07zrAYuAs+JzDg0rCks8g3V12duBwyyBCKe9/tgZ1s=
-=hiZm
------END PGP SIGNATURE-----
-
---Signature=_Tue__29_Jun_2010_16_02_51_+1000_3zaId60c1ZdQbS8+--
