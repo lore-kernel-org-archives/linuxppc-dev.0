@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 8192BB6EF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 07:56:24 +1000 (EST)
-Subject: Re: [linuxppc-release] [PATCH] powerpc: introduce basic support for
-	the Freescale P1022DS reference board
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1277847274-24648-1-git-send-email-timur@freescale.com>
-Date: Tue, 29 Jun 2010 16:56:17 -0500
-Message-Id: <22ED4111-892C-4715-BF70-C1E62F838DDA@kernel.crashing.org>
-References: <1277847274-24648-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A2B3FB6F01
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Jun 2010 08:02:40 +1000 (EST)
+To: Stevan Ignjatovic <stevan@iritel.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ftp login problem using wu-ftpd
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <1277820991.4257.18.camel@stevan>
+References: <1277820991.4257.18.camel@stevan>
+Date: Wed, 30 Jun 2010 00:02:37 +0200
+Message-Id: <20100629220237.30A75152442@gemini.denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dear Stevan Ignjatovic,
 
-On Jun 29, 2010, at 4:34 PM, Timur Tabi wrote:
+In message <1277820991.4257.18.camel@stevan> you wrote:
+> 
+> I ported Linux-2.6.30-rc8 on my custom mpc885 board. The filesystem I am
+> using is jffs2 which I created from
+> eldk-4.2/ppc_8xx/images/ramdisk_image.gz. Linux boots fine and I can
+> telnet to the board but I cannot ftp:
+...
+> Here ftp connection hangs. Do I have to create another user (beside
+> root) in order to make ftp connection? Earlier, when I was using 2.4
+> linux I didn't have problems with ftp connection as root.
 
-> Introduce basic support for the Freescale P1022DS reference board, =
-based on the
-> Freescale BSP for this board.
->=20
-> Details: No DIU video or SSI audio support, no MMC/SD card support, =
-36-bit and
-> SWIOTLB support enabled, 36-bit DTS only, and CONFIG_NO_HZ disabled =
-because it
-> causes performance problems on this kernel.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->=20
-> This patch is for 2.6.36.
->=20
-> arch/powerpc/boot/dts/p1022ds.dts            |  676 +++++++++++
-> arch/powerpc/configs/85xx/p1022_ds_defconfig | 1620 =
-++++++++++++++++++++++++++
-> arch/powerpc/platforms/85xx/Kconfig          |    9 +
-> arch/powerpc/platforms/85xx/Makefile         |    1 +
-> arch/powerpc/platforms/85xx/p1022_ds.c       |  148 +++
-> 5 files changed, 2454 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p1022ds.dts
-> create mode 100644 arch/powerpc/configs/85xx/p1022_ds_defconfig
-> create mode 100644 arch/powerpc/platforms/85xx/p1022_ds.c
+check your kernel configuration. You might be missing options like
+CONFIG_UNIX98_PTYS or CONFIG_LEGACY_PTYS or similar.
 
-Drop the defconfig and update mpc85xx_{smp_}defconfig to build p1022.
+Best regards,
 
-- k
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Every program has at least one bug and can be shortened by  at  least
+one instruction - from which, by induction, one can deduce that every
+program can be reduced to one instruction which doesn't work.
