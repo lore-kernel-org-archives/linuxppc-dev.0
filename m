@@ -2,13 +2,20 @@ Return-Path: <fchen@apm.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0981D1008D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 08:22:27 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 7CC64100A5D
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 08:22:30 +1000 (EST)
 From: Fushen Chen <fchen@apm.com>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 1/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-Date: Tue, 29 Jun 2010 14:26:54 -0700
-Message-Id: <12778468223309-git-send-email-fchen@apm.com>
+Subject: [PATCH 7/9] Add Synopsys DesignWare HS USB OTG Controller driver.
+Date: Tue, 29 Jun 2010 14:27:00 -0700
+Message-Id: <12778468242153-git-send-email-fchen@apm.com>
+In-Reply-To: <12778468242972-git-send-email-fchen@apm.com>
+References: <12778468223309-git-send-email-fchen@apm.com>
+	<12778468233898-git-send-email-fchen@apm.com>
+	<12778468231438-git-send-email-fchen@apm.com>
+	<1277846824673-git-send-email-fchen@apm.com>
+	<12778468242073-git-send-email-fchen@apm.com>
+	<12778468242972-git-send-email-fchen@apm.com>
 Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,226 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The DWC OTG driver module provides the initialization and cleanup
-entry points for the DWC OTG USB driver.
+The Peripheral Controller Driver (PCD) is responsible for translating
+requests from the Function Driver into the appropriate actions on the
+DWC OTG controller.
 
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- arch/powerpc/boot/dts/kilauea.dts |   15 +
- drivers/usb/gadget/Kconfig        |    8 +-
- drivers/usb/gadget/gadget_chips.h |    7 +
- drivers/usb/otg/Kconfig           |   87 +++
- drivers/usb/otg/Makefile          |   10 +
- drivers/usb/otg/dwc_otg_driver.c  | 1236 +++++++++++++++++++++++++++++++++++++
- drivers/usb/otg/dwc_otg_driver.h  |   97 +++
- 7 files changed, 1457 insertions(+), 3 deletions(-)
- create mode 100644 drivers/usb/otg/dwc_otg_driver.c
- create mode 100644 drivers/usb/otg/dwc_otg_driver.h
+ drivers/usb/otg/dwc_otg_pcd.c | 1749 +++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/otg/dwc_otg_pcd.h |  159 ++++
+ 2 files changed, 1908 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc_otg_pcd.c
+ create mode 100644 drivers/usb/otg/dwc_otg_pcd.h
 
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-index 083e68e..1a141b8 100644
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ b/arch/powerpc/boot/dts/kilauea.dts
-@@ -394,5 +394,20 @@
- 				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
- 				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
- 		};
-+
-+		USBOTG0: usbotg@ef6c0000 {
-+			compatible = "amcc,dwc-otg";
-+			reg = <0xef6c0000 0x10000>;
-+			interrupt-parent = <&USBOTG0>;
-+			interrupts = <0x0 0x1 0x2>;
-+			#interrupt-cells = <0x1>;
-+			#address-cells = <0x0>;
-+			#size-cells = <0x0>;
-+			interrupt-map = <
-+				0x0 &UIC2 0x1e 0x4 /* USB-OTG */
-+				0x1 &UIC1 0x1a 0x8 /* HIGH-POWER */
-+				0x2 &UIC0 0xc 0x4  /* DMA */ >;
-+			interrupt-map-mask = <0xffffffff>;
-+		};
- 	};
- };
-diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-index 591ae9f..130626a 100644
---- a/drivers/usb/gadget/Kconfig
-+++ b/drivers/usb/gadget/Kconfig
-@@ -109,8 +109,8 @@ config	USB_GADGET_SELECTED
- #   - discrete ones (including all PCI-only controllers)
- #   - debug/dummy gadget+hcd is last.
- #
--choice
--	prompt "USB Peripheral Controller"
-+menuconfig USB_PERIPHERAL_CONTROLLER
-+	bool "USB Peripheral Controller"
- 	depends on USB_GADGET
- 	help
- 	   A USB device uses a controller to talk to its host.
-@@ -122,6 +122,8 @@ choice
- # Integrated controllers
- #
- 
-+if USB_PERIPHERAL_CONTROLLER
-+
- config USB_GADGET_AT91
- 	boolean "Atmel AT91 USB Device Port"
- 	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9 && !ARCH_AT91SAM9G45
-@@ -542,7 +544,7 @@ config USB_DUMMY_HCD
- # NOTE:  Please keep dummy_hcd LAST so that "real hardware" appears
- # first and will be selected by default.
- 
--endchoice
-+endif # USB_PERIPHERAL_CONTROLLER
- 
- config USB_GADGET_DUALSPEED
- 	bool
-diff --git a/drivers/usb/gadget/gadget_chips.h b/drivers/usb/gadget/gadget_chips.h
-index e511fec..3d5c136 100644
---- a/drivers/usb/gadget/gadget_chips.h
-+++ b/drivers/usb/gadget/gadget_chips.h
-@@ -142,6 +142,11 @@
- #define gadget_is_s3c_hsotg(g)    0
- #endif
- 
-+#if defined(CONFIG_USB_DWC_OTG) || defined(CONFIG_DWC_DEVICE_ONLY)
-+#define	gadget_is_dwc_otg_pcd(g)	(!strcmp("dwc_otg_pcd", (g)->name))
-+#else
-+#define	gadget_is_dwc_otg_pcd(g)	0
-+#endif
- 
- /**
-  * usb_gadget_controller_number - support bcdDevice id convention
-@@ -200,6 +205,8 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
- 		return 0x25;
- 	else if (gadget_is_s3c_hsotg(gadget))
- 		return 0x26;
-+	else if (gadget_is_dwc_otg_pcd(gadget))
-+		return 0x27;
- 	return -ENOENT;
- }
- 
-diff --git a/drivers/usb/otg/Kconfig b/drivers/usb/otg/Kconfig
-index 3d2d3e5..745bac2 100644
---- a/drivers/usb/otg/Kconfig
-+++ b/drivers/usb/otg/Kconfig
-@@ -69,4 +69,91 @@ config NOP_USB_XCEIV
- 	 built-in with usb ip or which are autonomous and doesn't require any
- 	 phy programming such as ISP1x04 etc.
- 
-+config USB_DWC_OTG
-+	depends on (USB || USB_GADGET)
-+	depends on 405EZ || 405EX || 460EX
-+	select USB_OTG_UTILS
-+	tristate "Synopsys DWC OTG Controller"
-+	default USB_GADGET
-+	help
-+	  This driver provides USB Device Controller support for the
-+	  Synopsys DesignWare USB OTG Core used on the AMCC 405EZ/405EX/
-+	  460EX.
-+
-+	  Note that on the 405EZ, this Core provides USB Device Controller
-+	  function only.  It does not act as a true OTG device, and the
-+	  'OTG' is slightly misleading.
-+
-+config DWC_LEGACY_405EX
-+	bool "Enable 405EX Legacy Support (lower performance)"
-+	default n
-+	depends on USB_DWC_OTG && 405EX
-+	select DWC_SLAVE
-+	help
-+	  Enable Legacy 405EX Chip support (Rev 1.0) where DWC DMA is broken
-+	  Selecting this option will cause lower performance
-+	  Don't select this unless you want to support Rev 1.0 405EX chips (obsolete)
-+
-+config DWC_DEBUG
-+	bool "Enable DWC Debugging"
-+	depends on USB_DWC_OTG
-+	default n
-+	help
-+	 Enable DWC driver debugging
-+
-+choice
-+	prompt "DWC Mode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_OTG_MODE
-+	help
-+	  Select the DWC Core in OTG, Host only, or Device only mode
-+
-+config DWC_OTG_MODE
-+	bool "DWC OTG Mode" if 405EX || 460EX
-+	select USB_GADGET_SELECTED
-+
-+config DWC_HOST_ONLY
-+	bool "DWC Host Only Mode" if 405EX || 460EX
-+
-+config DWC_DEVICE_ONLY
-+	bool "DWC Device Only Mode"
-+	select USB_GADGET_SELECTED
-+
-+endchoice
-+
-+choice
-+	prompt "DWC DMA/SlaveMode Selection"
-+	depends on USB_DWC_OTG
-+	default DWC_DMA_MODE
-+	help
-+	  Select the DWC DMA or Slave Mode
-+	  DMA mode uses the DWC DMA engines
-+	  Slave mode uses the processor to tranfer data
-+	  In Slave mode, processor DMA channels can be used if available
-+
-+config DWC_SLAVE
-+	bool "DWC Slave Mode" if 405EX || 460EX
-+
-+config DWC_DMA_MODE
-+	bool "DWC DMA Mode" if 405EX || (460EX && (!USB_EHCI_HCD  || !USB_OHCI_HCD))
-+
-+endchoice
-+
-+config DWC_OTG_REG_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC Big Endian Register" if 405EX || 460EX
-+	default y
-+
-+config DWC_OTG_FIFO_LE
-+	depends on USB_DWC_OTG
-+	bool "DWC FIFO Little Endian" if 405EZ
-+	default n
-+
-+config DWC_LIMITED_XFER_SIZE
-+	depends on USB_DWC_OTG
-+	bool "DWC Endpoint Limited Xfer Size" if 405EZ
-+	default n
-+
-+
-+
- endif # USB || OTG
-diff --git a/drivers/usb/otg/Makefile b/drivers/usb/otg/Makefile
-index aeb49a8..d5dc51f 100644
---- a/drivers/usb/otg/Makefile
-+++ b/drivers/usb/otg/Makefile
-@@ -15,3 +15,13 @@ obj-$(CONFIG_USB_ULPI)		+= ulpi.o
- ccflags-$(CONFIG_USB_DEBUG)	+= -DDEBUG
- ccflags-$(CONFIG_USB_GADGET_DEBUG) += -DDEBUG
- 
-+obj-$(CONFIG_USB_DWC_OTG)	+= dwc_otg.o
-+
-+dwc_otg-objs := dwc_otg_driver.o dwc_otg_cil.o dwc_otg_cil_intr.o
-+ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-+dwc_otg-objs += dwc_otg_hcd.o dwc_otg_hcd_intr.o \
-+		dwc_otg_hcd_queue.o
-+endif
-+ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-+dwc_otg-objs += dwc_otg_pcd.o dwc_otg_pcd_intr.o
-+endif
-diff --git a/drivers/usb/otg/dwc_otg_driver.c b/drivers/usb/otg/dwc_otg_driver.c
+diff --git a/drivers/usb/otg/dwc_otg_pcd.c b/drivers/usb/otg/dwc_otg_pcd.c
 new file mode 100644
-index 0000000..fe022fd
+index 0000000..152c0a6
 --- /dev/null
-+++ b/drivers/usb/otg/dwc_otg_driver.c
-@@ -0,0 +1,1236 @@
++++ b/drivers/usb/otg/dwc_otg_pcd.c
+@@ -0,0 +1,1749 @@
 +/*
 + * DesignWare HS OTG controller driver
 + *
@@ -289,20 +95,25 @@ index 0000000..fe022fd
 + */
 +
 +/*
-+ * The dwc_otg_driver module provides the initialization and cleanup entry
-+ * points for the DWC_otg driver. This module will be dynamically installed
-+ * after Linux is booted using the insmod command. When the module is
-+ * installed, the dwc_otg_driver_init function is called. When the module is
-+ * removed (using rmmod), the dwc_otg_driver_cleanup function is called.
++ * This file implements the Peripheral Controller Driver.
 + *
-+ * This module also defines a data structure for the dwc_otg_driver, which is
-+ * used in conjunction with the standard device structure. These
-+ * structures allow the OTG driver to comply with the standard Linux driver
-+ * model in which devices and drivers are registered with a bus driver. This
-+ * has the benefit that Linux can expose attributes of the driver and device
-+ * in its special sysfs file system. Users can then read or write files in
-+ * this file system to perform diagnostics on the driver components or the
-+ * device.
++ * The Peripheral Controller Driver (PCD) is responsible for
++ * translating requests from the Function Driver into the appropriate
++ * actions on the DWC_otg controller. It isolates the Function Driver
++ * from the specifics of the controller by providing an API to the
++ * Function Driver.
++ *
++ * The Peripheral Controller Driver for Linux will implement the
++ * Gadget API, so that the existing Gadget drivers can be used.
++ * (Gadget Driver is the Linux terminology for a Function Driver.)
++ *
++ * The Linux Gadget API is defined in the header file linux/usb/gadget.h. The
++ * USB EP operations API is defined in the structure usb_ep_ops and the USB
++ * Controller API is defined in the structure usb_gadget_ops
++ *
++ * An important function of the PCD is managing interrupts generated
++ * by the DWC_otg controller. The implementation of the DWC_otg device
++ * mode interrupt service routines is in dwc_otg_pcd_intr.c.
 + */
 +
 +#include <linux/kernel.h>
@@ -311,1177 +122,1685 @@ index 0000000..fe022fd
 +#include <linux/init.h>
 +#include <linux/device.h>
 +#include <linux/errno.h>
-+#include <linux/types.h>
-+#include <linux/stat.h>	 /* permission constants */
-+#include <linux/of_platform.h>
-+#include <linux/irq.h>
-+#include <linux/io.h>
++#include <linux/list.h>
++#include <linux/interrupt.h>
++#include <linux/string.h>
++#include <linux/dma-mapping.h>
++#include <linux/delay.h>
++#include <linux/usb/ch9.h>
++#include <linux/usb/gadget.h>
 +
 +#include "dwc_otg_driver.h"
-+#include "dwc_otg_cil.h"
 +#include "dwc_otg_pcd.h"
-+#include "dwc_otg_hcd.h"
-+
-+#define DWC_DRIVER_VERSION		"1.0"
-+#define DWC_DRIVER_DESC			"HS OTG USB Controller driver"
-+static const char dwc_driver_name[] =	"dwc_otg";
 +
 +/*
-+ * Encapsulate the module parameter settings
++ * Static PCD pointer for use in usb_gadget_register_driver and
++ * usb_gadget_unregister_driver.  Initialized in dwc_otg_pcd_init.
 + */
-+static struct core_params dwc_otg_module_params = {
-+	.opt = -1,
-+	.otg_cap = -1,
-+	.dma_enable = -1,
-+	.dma_burst_size = -1,
-+	.speed = -1,
-+	.host_support_fs_ls_low_power = -1,
-+	.host_ls_low_power_phy_clk = -1,
-+	.enable_dynamic_fifo = -1,
-+	.data_fifo_size = -1,
-+	.dev_rx_fifo_size = -1,
-+	.dev_nperio_tx_fifo_size = -1,
-+	.dev_perio_tx_fifo_size = {
-+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-+	}, /* 15 */
-+	.host_rx_fifo_size = -1,
-+	.host_nperio_tx_fifo_size = -1,
-+	.host_perio_tx_fifo_size = -1,
-+	.max_transfer_size = -1,
-+	.max_packet_count = -1,
-+	.host_channels = -1,
-+	.dev_endpoints = -1,
-+	.phy_type = -1,
-+	.phy_utmi_width = -1,
-+	.phy_ulpi_ddr = -1,
-+	.phy_ulpi_ext_vbus = -1,
-+	.i2c_enable = -1,
-+	.ulpi_fs_ls = -1,
-+	.ts_dline = -1,
-+	.en_multiple_tx_fifo = -1,
-+	.dev_tx_fifo_size = {
-+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-+	}, /* 15 */
-+	.thr_ctl = -1,
-+	.tx_thr_length = -1,
-+	.rx_thr_length = -1,
-+};
++static struct dwc_pcd *s_pcd;
 +
-+/* Global Debug Level Mask. */
-+u32 g_dbg_lvl = 0x0;	/* OFF */
-+
-+/**
-+ * Determines if the OTG capability parameter is valid under the current
-+ * hardware configuration.
-+ */
-+static int is_valid_otg_cap(struct core_if *core_if)
++static inline int need_stop_srp_timer(struct core_if *core_if)
 +{
-+	int valid = 1;
-+
-+	switch (dwc_otg_module_params.otg_cap) {
-+	case DWC_OTG_CAP_PARAM_HNP_SRP_CAPABLE:
-+		if (core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG)
-+			valid = 0;
-+		break;
-+	case DWC_OTG_CAP_PARAM_SRP_ONLY_CAPABLE:
-+		if (core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE &&
-+				core_if->hwcfg2.b.op_mode !=
-+				DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
-+			valid = 0;
-+		break;
-+	case DWC_OTG_CAP_PARAM_NO_HNP_SRP_CAPABLE:
-+		/* always valid */
-+		break;
-+	}
-+	return valid;
++	if (core_if->core_params->phy_type != DWC_PHY_TYPE_PARAM_FS ||
++			!core_if->core_params->i2c_enable)
++		return core_if->srp_timer_started ? 1 : 0;
++	return 0;
 +}
 +
 +/**
-+ * Returns a valid OTG capability setting for the current hardware
-+ * configuration.
++ * Tests if the module is set to FS or if the PHY_TYPE is FS. If so, then the
++ * gadget should not report as dual-speed capable.
 + */
-+static int get_valid_otg_cap(struct core_if *core_if)
++static inline int check_is_dual_speed(struct core_if *core_if)
++{
++	if (core_if->core_params->speed == DWC_SPEED_PARAM_FULL ||
++			(core_if->hwcfg2.b.hs_phy_type == 2 &&
++			core_if->hwcfg2.b.fs_phy_type == 1 &&
++			core_if->core_params->ulpi_fs_ls))
++		return 0;
++	return 1;
++}
++
++/**
++ * Tests if driver is OTG capable.
++ */
++static inline int check_is_otg(struct core_if *core_if)
 +{
 +	if (core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG ||
++			DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE ||
 +			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG ||
++			DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST ||
 +			core_if->hwcfg2.b.op_mode ==
 +			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE ||
 +			core_if->hwcfg2.b.op_mode ==
 +			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
-+		return DWC_OTG_CAP_PARAM_SRP_ONLY_CAPABLE;
++		return 0;
++	return 1;
++}
++
++/**
++ * This function completes a request. It calls the request call back.
++ */
++void request_done(struct pcd_ep *ep, struct pcd_request *req, int status)
++{
++	unsigned stopped = ep->stopped;
++
++	list_del_init(&req->queue);
++	if (req->req.status == -EINPROGRESS)
++		req->req.status = status;
 +	else
-+		return DWC_OTG_CAP_PARAM_NO_HNP_SRP_CAPABLE;
-+}
++		status = req->req.status;
 +
-+/**
-+ * Checks that, if the user set a periodic Tx FIFO size parameter, the size is
-+ * within the valid range.  If not, the parameter is set to the default.
-+ */
-+static int chk_param_perio_tx_fifo_sizes(int retval)
-+{
-+	u32 *s = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
-+	u32 i;
-+
-+	for (i = 0; i < MAX_PERIO_FIFOS; i++, s++) {
-+		if (*s != -1 && (*s < 4 || *s > 768)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+				"`dev_perio_tx_fifo_size_%d'\n", *s, i);
-+
-+			*s = dwc_param_dev_perio_tx_fifo_size_default;
-+			retval++;
++	if (GET_CORE_IF(ep->pcd)->dma_enable) {
++		if (req->mapped) {
++			dma_unmap_single(ep->pcd->gadget.dev.parent,
++				req->req.dma, req->req.length,
++				ep->dwc_ep.is_in ? DMA_TO_DEVICE :
++				DMA_FROM_DEVICE);
++			req->req.dma = DMA_ADDR_INVALID;
++			req->mapped = 0;
++		} else {
++			dma_sync_single_for_cpu(ep->pcd->gadget.dev.parent,
++				req->req.dma, req->req.length,
++				ep->dwc_ep.is_in ? DMA_TO_DEVICE :
++				DMA_FROM_DEVICE);
 +		}
 +	}
-+	return retval;
++
++	/* don't modify queue heads during completion callback */
++	ep->stopped = 1;
++	spin_unlock(&ep->pcd->lock);
++	req->req.complete(&ep->ep, &req->req);
++	spin_lock(&ep->pcd->lock);
++
++	if (ep->pcd->request_pending > 0)
++		--ep->pcd->request_pending;
++	ep->stopped = stopped;
++
++	/*
++	 * Added-sr: 2007-07-26
++	 *
++	 * Finally, when the current request is done, mark this endpoint
++	 * as not active, so that new requests can be processed.
++	 */
++	if (dwc_has_feature(GET_CORE_IF(ep->pcd), DWC_LIMITED_XFER))
++		ep->dwc_ep.active = 0;
 +}
 +
 +/**
-+ * Checks that, if the user set a Tx FIFO size parameter, the size is within the
-+ * valid range.  If not, the parameter is set to the default.
++ * This function terminates all the requsts in the EP request queue.
 + */
-+static int chk_param_tx_fifo_sizes(int retval)
++void request_nuke(struct pcd_ep *ep)
 +{
-+	u32 *s = &dwc_otg_module_params.dev_tx_fifo_size[0];
-+	u32 i;
++	struct pcd_request *req;
 +
-+	for (i = 0; i < MAX_TX_FIFOS; i++, s++) {
-+		if (*s != -1 && (*s < 4 || *s > 768)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+				"`dev_perio_tx_fifo_size_%d'\n", *s, i);
++	ep->stopped = 1;
 +
-+			*s = dwc_param_dev_tx_fifo_size_default;
-+			retval++;
-+		}
++	/* called with irqs blocked?? */
++	while (!list_empty(&ep->queue)) {
++		req = list_entry(ep->queue.next, struct pcd_request, queue);
++		request_done(ep, req, -ESHUTDOWN);
 +	}
-+	return retval;
++}
++
++/*
++ * The following sections briefly describe the behavior of the Gadget
++ * API endpoint operations implemented in the DWC_otg driver
++ * software. Detailed descriptions of the generic behavior of each of
++ * these functions can be found in the Linux header file
++ * include/linux/usb_gadget.h.
++ *
++ * The Gadget API provides wrapper functions for each of the function
++ * pointers defined in usb_ep_ops. The Gadget Driver calls the wrapper
++ * function, which then calls the underlying PCD function. The
++ * following sections are named according to the wrapper
++ * functions. Within each section, the corresponding DWC_otg PCD
++ * function name is specified.
++ *
++ */
++
++/**
++ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
++ * mode
++ */
++static u32 assign_perio_tx_fifo(struct core_if *core_if)
++{
++	u32 mask = 1;
++	u32 i;
++
++	for (i = 0; i < core_if->hwcfg4.b.num_dev_perio_in_ep; ++i) {
++		if (!(mask & core_if->p_tx_msk)) {
++			core_if->p_tx_msk |= mask;
++			return i + 1;
++		}
++		mask <<= 1;
++	}
++	return 0;
 +}
 +
 +/**
-+ * Checks that parameter settings for the periodic Tx FIFO sizes are correct
-+ * according to the hardware configuration. Sets the size to the hardware
-+ * configuration if an incorrect size is detected.
++ * This function releases periodic Tx FIFO in shared Tx FIFO mode
 + */
-+static int chk_valid_perio_tx_fifo_sizes(struct core_if *core_if, int retval)
++static void release_perio_tx_fifo(struct core_if *core_if, u32 fifo_num)
 +{
-+	struct core_global_regs *regs = core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_perio_tx_fifo_size[0];
++	core_if->p_tx_msk = (core_if->p_tx_msk & (1 << (fifo_num - 1)))
++				^ core_if->p_tx_msk;
++}
++
++/**
++ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
++ * mode
++ */
++static u32 assign_tx_fifo(struct core_if *core_if)
++{
++	u32 mask = 1;
 +	u32 i;
 +
-+	for (i = 0; i < MAX_PERIO_FIFOS; i++, param_size++) {
-+		int changed = 1;
-+		int error = 0;
-+		u32 size;
-+
-+		if (*param_size == -1) {
-+			changed = 0;
-+			*param_size = dwc_param_dev_perio_tx_fifo_size_default;
++	for (i = 0; i < core_if->hwcfg4.b.num_in_eps; ++i) {
++		if (!(mask & core_if->tx_msk)) {
++			core_if->tx_msk |= mask;
++			return i + 1;
 +		}
++		mask <<= 1;
++	}
++	return 0;
++}
 +
-+		size = dwc_read_reg32(&regs->dptxfsiz_dieptxf[i]);
-+		if (*param_size > size) {
-+			if (changed) {
-+				printk(KERN_ERR "%d' invalid for parameter "
-+					"`dev_perio_tx_fifo_size_%d'. Check HW "
-+					"configuration.\n", *param_size, i);
-+				error = 1;
++/**
++ * This function releases periodic Tx FIFO in shared Tx FIFO mode
++ */
++static void release_tx_fifo(struct core_if *core_if, u32 fifo_num)
++{
++	core_if->tx_msk = (core_if->tx_msk & (1 << (fifo_num - 1)))
++				^ core_if->tx_msk;
++}
++
++/**
++ * Sets an in endpoint's tx fifo based on the hardware configuration.
++ */
++static void set_in_ep_tx_fifo(struct dwc_pcd *pcd, struct pcd_ep *ep,
++		const struct usb_endpoint_descriptor *desc)
++{
++	if (pcd->otg_dev->core_if->en_multiple_tx_fifo) {
++		ep->dwc_ep.tx_fifo_num = assign_tx_fifo(pcd->otg_dev->core_if);
++	} else {
++		ep->dwc_ep.tx_fifo_num = 0;
++
++		/* If ISOC EP then assign a Periodic Tx FIFO. */
++		if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++			USB_ENDPOINT_XFER_ISOC)
++			ep->dwc_ep.tx_fifo_num =
++				assign_perio_tx_fifo(pcd->otg_dev->core_if);
++	}
++}
++
++/**
++ * This function activates an EP.  The Device EP control register for
++ * the EP is configured as defined in the ep structure.  Note: This function is
++ * not used for EP0.
++ */
++void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep)
++{
++	struct device_if *dev_if = core_if->dev_if;
++	union depctl_data depctl;
++	u32 *addr;
++	union daint_data daintmsk = {.d32 = 0};
++
++	/* Read DEPCTLn register */
++	if (ep->is_in == 1) {
++		addr = &dev_if->in_ep_regs[ep->num]->diepctl;
++		daintmsk.ep.in = 1 << ep->num;
++	} else {
++		addr = &dev_if->out_ep_regs[ep->num]->doepctl;
++		daintmsk.ep.out = 1 << ep->num;
++	}
++
++	/* If the EP is already active don't change the EP Control register */
++	depctl.d32 = dwc_read_reg32(addr);
++	if (!depctl.b.usbactep) {
++		depctl.b.mps = ep->maxpacket;
++		depctl.b.eptype = ep->type;
++		depctl.b.txfnum = ep->tx_fifo_num;
++		depctl.b.setd0pid = 1;
++		depctl.b.usbactep = 1;
++		dwc_write_reg32(addr, depctl.d32);
++	}
++
++	/* Enable the Interrupt for this EP */
++	dwc_modify_reg32(&dev_if->dev_global_regs->daintmsk, 0, daintmsk.d32);
++
++	ep->stall_clear_flag = 0;
++}
++/**
++ * This function is called by the Gadget Driver for each EP to be
++ * configured for the current configuration (SET_CONFIGURATION).
++ *
++ * This function initializes the dwc_otg_ep_t data structure, and then
++ * calls dwc_otg_ep_activate.
++ */
++static int dwc_otg_pcd_ep_enable(struct usb_ep *_ep,
++	const struct usb_endpoint_descriptor *desc)
++{
++	struct pcd_ep *ep = NULL;
++	struct dwc_pcd *pcd = NULL;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !desc || ep->desc || desc->bDescriptorType !=
++			USB_DT_ENDPOINT) {
++		printk(KERN_WARNING "%s, bad ep or descriptor\n", __func__);
++		return -EINVAL;
++	}
++
++	if (ep == &ep->pcd->ep0) {
++		printk(KERN_WARNING "%s, bad ep(0)\n", __func__);
++		return -EINVAL;
++	}
++
++	/* Check FIFO size */
++	if (!desc->wMaxPacketSize) {
++		printk(KERN_WARNING "%s, bad %s maxpacket\n", __func__,
++				_ep->name);
++		return -ERANGE;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		printk(KERN_WARNING "%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++
++	spin_lock_irqsave(&pcd->lock, flags);
++	ep->desc = desc;
++	ep->ep.maxpacket = le16_to_cpu(desc->wMaxPacketSize);
++
++	/* Activate the EP */
++	ep->stopped = 0;
++	ep->dwc_ep.is_in = (USB_DIR_IN & desc->bEndpointAddress) != 0;
++	ep->dwc_ep.maxpacket = ep->ep.maxpacket;
++	ep->dwc_ep.type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
++
++	if (ep->dwc_ep.is_in)
++		set_in_ep_tx_fifo(pcd, ep, desc);
++
++	/* Set initial data PID. */
++	if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++			USB_ENDPOINT_XFER_BULK)
++		ep->dwc_ep.data_pid_start = 0;
++
++	dwc_otg_ep_activate(GET_CORE_IF(pcd), &ep->dwc_ep);
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
++}
++
++/**
++ * This function deactivates an EP.  This is done by clearing the USB Active EP
++ * bit in the Device EP control register.  Note: This function is not used for
++ * EP0. EP0 cannot be deactivated.
++ */
++static void dwc_otg_ep_deactivate(struct core_if *core_if, struct dwc_ep *ep)
++{
++	union depctl_data depctl = {.d32 = 0};
++	u32 *addr;
++	union daint_data daintmsk = {.d32 = 0};
++
++	/* Read DEPCTLn register */
++	if (ep->is_in == 1) {
++		addr = &core_if->dev_if->in_ep_regs[ep->num]->diepctl;
++		daintmsk.ep.in = 1 << ep->num;
++	} else {
++		addr = &core_if->dev_if->out_ep_regs[ep->num]->doepctl;
++		daintmsk.ep.out = 1 << ep->num;
++	}
++
++	depctl.b.usbactep = 0;
++	dwc_write_reg32(addr, depctl.d32);
++
++	/* Disable the Interrupt for this EP */
++	dwc_modify_reg32(&core_if->dev_if->dev_global_regs->daintmsk,
++			daintmsk.d32, 0);
++}
++/**
++ * This function is called when an EP is disabled due to disconnect or
++ * change in configuration. Any pending requests will terminate with a
++ * status of -ESHUTDOWN.
++ *
++ * This function modifies the dwc_otg_ep_t data structure for this EP,
++ * and then calls dwc_otg_ep_deactivate.
++ */
++static int dwc_otg_pcd_ep_disable(struct usb_ep *_ep)
++{
++	struct pcd_ep *ep;
++	struct core_if *core_if;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !ep->desc)
++		return -EINVAL;
++
++	core_if = ep->pcd->otg_dev->core_if;
++
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	request_nuke(ep);
++	dwc_otg_ep_deactivate(core_if, &ep->dwc_ep);
++
++	ep->desc = NULL;
++	ep->stopped = 1;
++	if (ep->dwc_ep.is_in) {
++		release_perio_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
++		release_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
++	}
++
++	spin_unlock_irqrestore(&ep->pcd->lock, flags);
++
++	return 0;
++}
++
++/**
++ * This function allocates a request object to use with the specified
++ * endpoint.
++ */
++static struct usb_request *dwc_otg_pcd_alloc_request(struct usb_ep *_ep,
++				gfp_t gfp_flags)
++{
++	struct pcd_request *req;
++
++	if (!_ep) {
++		printk(KERN_WARNING "%s() Invalid EP\n", __func__);
++		return 0;
++	}
++
++	req = kzalloc(sizeof(struct pcd_request), gfp_flags);
++	if (!req) {
++		printk(KERN_WARNING "%s() request allocation failed\n",
++				__func__);
++		return 0;
++	}
++
++	req->req.dma = DMA_ADDR_INVALID;
++	INIT_LIST_HEAD(&req->queue);
++
++	return &req->req;
++}
++
++/**
++ * This function frees a request object.
++ */
++static void dwc_otg_pcd_free_request(struct usb_ep *_ep,
++				     struct usb_request *_req)
++{
++	struct pcd_request *req;
++
++	if (!_ep || !_req) {
++		printk(KERN_WARNING "%s() nvalid ep or req argument\n",
++			__func__);
++		return;
++	}
++
++	req = container_of(_req, struct pcd_request, req);
++	kfree(req);
++}
++
++/*
++ * In dedicated Tx FIFO mode, enable the Non-Periodic Tx FIFO empty interrupt.
++ * Otherwise, enable the Tx FIFO epmty interrupt. The data will be written into
++ * the fifo by the ISR.
++ */
++static void enable_tx_fifo_empty_intr(struct core_if *c_if, struct dwc_ep *ep)
++{
++	union gintmsk_data intr_mask = {.d32 = 0};
++	struct device_if *d_if = c_if->dev_if;
++	struct core_global_regs *glbl_regs = c_if->core_global_regs;
++
++	if (!c_if->en_multiple_tx_fifo) {
++		intr_mask.b.nptxfempty = 1;
++		dwc_modify_reg32(&glbl_regs->gintsts, intr_mask.d32, 0);
++		dwc_modify_reg32(&glbl_regs->gintmsk, intr_mask.d32,
++					intr_mask.d32);
++	} else if (ep->xfer_len) {
++		/* Enable the Tx FIFO Empty Interrupt for this EP */
++		u32 fifoemptymsk = 1 << ep->num;
++		dwc_modify_reg32(&d_if->dev_global_regs->dtknqr4_fifoemptymsk,
++					0, fifoemptymsk);
++	}
++}
++
++static void set_next_ep(struct device_if *dev_if, u8 num)
++{
++	union depctl_data depctl;
++
++	depctl.d32 = dwc_read_reg32(&dev_if->in_ep_regs[0]->diepctl);
++	depctl.b.nextep = num;
++
++	dwc_write_reg32(&dev_if->in_ep_regs[0]->diepctl, depctl.d32);
++}
++
++/**
++ * This function does the setup for a data transfer for an EP and
++ * starts the transfer.  For an IN transfer, the packets will be loaded into the
++ * appropriate Tx FIFO in the ISR. For OUT transfers, the packets are unloaded
++ * from the Rx FIFO in the ISR.
++ *
++ */
++void dwc_otg_ep_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
++{
++	union depctl_data depctl;
++	union deptsiz_data deptsiz;
++	struct device_if *d_if = c_if->dev_if;
++	struct core_global_regs *glbl_regs = c_if->core_global_regs;
++
++	if (ep->is_in) {
++		struct device_in_ep_regs *in_regs = d_if->in_ep_regs[ep->num];
++		union gnptxsts_data gtxstatus;
++		gtxstatus.d32 = dwc_read_reg32(&glbl_regs->gnptxsts);
++
++		if (!c_if->en_multiple_tx_fifo && !gtxstatus.b.nptxqspcavail)
++			return;
++
++		depctl.d32 = dwc_read_reg32(&(in_regs->diepctl));
++		deptsiz.d32 = dwc_read_reg32(&(in_regs->dieptsiz));
++
++		/* Zero Length Packet? */
++		if (!ep->xfer_len) {
++			deptsiz.b.xfersize = 0;
++			deptsiz.b.pktcnt = 1;
++		} else {
++			/*
++			 * Program the transfer size and packet count as
++			 * follows:
++			 *
++			 * xfersize = N * maxpacket + short_packet
++			 * pktcnt = N + (short_packet exist ? 1 : 0)
++			 */
++
++			/*
++			 * Added-sr: 2007-07-26
++			 *
++			 * Since the 405EZ (Ultra) only support 2047 bytes as
++			 * max transfer size, we have to split up bigger
++			 * transfers into multiple transfers of 1024 bytes sized
++			 * messages. I happens often, that transfers of 4096
++			 * bytes are required (zero-gadget,
++			 * file_storage-gadget).
++			 */
++			if (dwc_has_feature(c_if, DWC_LIMITED_XFER)) {
++				if (ep->xfer_len > MAX_XFER_LEN) {
++					ep->bytes_pending = ep->xfer_len
++						- MAX_XFER_LEN;
++					ep->xfer_len = MAX_XFER_LEN;
++				}
 +			}
-+			*param_size = size;
++
++			deptsiz.b.xfersize = ep->xfer_len;
++			deptsiz.b.pktcnt = (ep->xfer_len - 1 + ep->maxpacket) /
++						ep->maxpacket;
 +		}
-+		retval += error;
++		dwc_write_reg32(&in_regs->dieptsiz, deptsiz.d32);
++
++		if (c_if->dma_enable)
++			dwc_write_reg32(&in_regs->diepdma, ep->dma_addr);
++		else if (ep->type != DWC_OTG_EP_TYPE_ISOC)
++			enable_tx_fifo_empty_intr(c_if, ep);
++
++		/* EP enable, IN data in FIFO */
++		depctl.b.cnak = 1;
++		depctl.b.epena = 1;
++		dwc_write_reg32(&in_regs->diepctl, depctl.d32);
++
++		if (c_if->dma_enable)
++			set_next_ep(d_if, ep->num);
++	} else {
++		struct device_out_ep_regs *out_regs =
++			d_if->out_ep_regs[ep->num];
++
++		depctl.d32 = dwc_read_reg32(&out_regs->doepctl);
++		deptsiz.d32 = dwc_read_reg32(&out_regs->doeptsiz);
++
++		/*
++		 * Program the transfer size and packet count as follows:
++		 *
++		 * pktcnt = N
++		 * xfersize = N * maxpacket
++		 */
++		if (!ep->xfer_len) {
++			deptsiz.b.xfersize = ep->maxpacket;
++			deptsiz.b.pktcnt = 1;
++		} else {
++			deptsiz.b.pktcnt = (ep->xfer_len + ep->maxpacket - 1) /
++					ep->maxpacket;
++			deptsiz.b.xfersize = deptsiz.b.pktcnt * ep->maxpacket;
++		}
++		dwc_write_reg32(&out_regs->doeptsiz, deptsiz.d32);
++
++		if (c_if->dma_enable)
++			dwc_write_reg32(&out_regs->doepdma, ep->dma_addr);
++
++		if (ep->type == DWC_OTG_EP_TYPE_ISOC) {
++			if (ep->even_odd_frame)
++				depctl.b.setd1pid = 1;
++			else
++				depctl.b.setd0pid = 1;
++		}
++
++		/* EP enable */
++		depctl.b.cnak = 1;
++		depctl.b.epena = 1;
++		dwc_write_reg32(&out_regs->doepctl, depctl.d32);
 +	}
-+	return retval;
 +}
 +
 +/**
-+ * Checks that parameter settings for the Tx FIFO sizes are correct according to
-+ * the hardware configuration.  Sets the size to the hardware configuration if
-+ * an incorrect size is detected.
++ * This function does the setup for a data transfer for EP0 and starts
++ * the transfer.  For an IN transfer, the packets will be loaded into
++ * the appropriate Tx FIFO in the ISR. For OUT transfers, the packets are
++ * unloaded from the Rx FIFO in the ISR.
 + */
-+static int chk_valid_tx_fifo_sizes(struct core_if *core_if, int retval)
++void dwc_otg_ep0_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
 +{
-+	struct core_global_regs *regs = core_if->core_global_regs;
-+	u32 *param_size = &dwc_otg_module_params.dev_tx_fifo_size[0];
-+	u32 i;
++	union depctl_data depctl;
++	union deptsiz0_data deptsiz;
++	struct device_if *d_if = c_if->dev_if;
++	struct core_global_regs *glbl_regs = c_if->core_global_regs;
 +
-+	for (i = 0; i < MAX_TX_FIFOS; i++, param_size) {
-+		int changed = 1;
-+		int error = 0;
-+		u32 size;
++	ep->total_len = ep->xfer_len;
 +
-+		if (*param_size == -1) {
-+			changed = 0;
-+			*param_size = dwc_param_dev_tx_fifo_size_default;
-+		}
++	if (ep->is_in) {
++		struct device_in_ep_regs *in_regs = d_if->in_ep_regs[0];
++		union gnptxsts_data gtxstatus;
 +
-+		size = dwc_read_reg32(&regs->dptxfsiz_dieptxf[i]);
-+		if (*param_size > size) {
-+			if (changed) {
-+				printk(KERN_ERR "%d' invalid for parameter "
-+					"`dev_tx_fifo_size_%d'. Check HW "
-+					"configuration.\n", *param_size, i);
-+				error = 1;
++		gtxstatus.d32 = dwc_read_reg32(&glbl_regs->gnptxsts);
++
++		if (!c_if->en_multiple_tx_fifo && !gtxstatus.b.nptxqspcavail)
++			return;
++
++		depctl.d32 = dwc_read_reg32(&in_regs->diepctl);
++		deptsiz.d32 = dwc_read_reg32(&in_regs->dieptsiz);
++
++		/* Zero Length Packet? */
++		if (!ep->xfer_len) {
++			deptsiz.b.xfersize = 0;
++			deptsiz.b.pktcnt = 1;
++		} else {
++			/*
++			 * Program the transfer size and packet count  as
++			 * follows:
++			 *
++			 *  xfersize = N * maxpacket + short_packet
++			 *  pktcnt = N + (short_packet exist ? 1 : 0)
++			 */
++			if (ep->xfer_len > ep->maxpacket) {
++				ep->xfer_len = ep->maxpacket;
++				deptsiz.b.xfersize = ep->maxpacket;
++			} else {
++				deptsiz.b.xfersize = ep->xfer_len;
 +			}
-+			*param_size = size;
++			deptsiz.b.pktcnt = 1;
 +		}
-+		retval += error;
++		dwc_write_reg32(&in_regs->dieptsiz, deptsiz.d32);
++
++		if (c_if->dma_enable)
++			dwc_write_reg32(&in_regs->diepdma, ep->dma_addr);
++
++		/* EP enable, IN data in FIFO */
++		depctl.b.cnak = 1;
++		depctl.b.epena = 1;
++		dwc_write_reg32(&in_regs->diepctl, depctl.d32);
++
++		if (!c_if->dma_enable)
++			enable_tx_fifo_empty_intr(c_if, ep);
++		} else {
++		struct device_out_ep_regs *out_regs =
++			d_if->out_ep_regs[ep->num];
++
++		depctl.d32 = dwc_read_reg32(&out_regs->doepctl);
++		deptsiz.d32 = dwc_read_reg32(&out_regs->doeptsiz);
++
++		/*
++		 * Program the transfer size and packet count as follows:
++		 *
++		 * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
++		 * pktcnt = N
++		 */
++		if (!ep->xfer_len) {
++			deptsiz.b.xfersize = ep->maxpacket;
++			deptsiz.b.pktcnt = 1;
++		} else {
++			deptsiz.b.pktcnt = (ep->xfer_len + ep->maxpacket - 1) /
++						ep->maxpacket;
++			deptsiz.b.xfersize = deptsiz.b.pktcnt * ep->maxpacket;
++		}
++		dwc_write_reg32(&out_regs->doeptsiz, deptsiz.d32);
++
++		if (c_if->dma_enable)
++			dwc_write_reg32(&out_regs->doepdma, ep->dma_addr);
++
++		/* EP enable */
++		depctl.b.cnak = 1;
++		depctl.b.epena = 1;
++		dwc_write_reg32(&out_regs->doepctl, depctl.d32);
 +	}
-+	return retval;
 +}
 +
 +/**
-+ * This function is called during module intialization to verify that
-+ * the module parameters are in a valid state.
++ * This function is used to submit an I/O Request to an EP.
++ *
++ *	- When the request completes the request's completion callback
++ *	  is called to return the request to the driver.
++ *	- An EP, except control EPs, may have multiple requests
++ *	  pending.
++ *	- Once submitted the request cannot be examined or modified.
++ *	- Each request is turned into one or more packets.
++ *	- A BULK EP can queue any amount of data; the transfer is
++ *	  packetized.
++ *	- Zero length Packets are specified with the request 'zero'
++ *	  flag.
 + */
-+static int __devinit check_parameters(struct core_if *core_if)
++static int dwc_otg_pcd_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
++				gfp_t gfp_flags)
++{
++	int prevented = 0;
++	struct pcd_request *req;
++	struct pcd_ep *ep;
++	struct dwc_pcd *pcd;
++	struct core_if *core_if;
++	unsigned long flags = 0;
++
++	req = container_of(_req, struct pcd_request, req);
++	if (!_req || !_req->complete || !_req->buf ||
++			!list_empty(&req->queue)) {
++		printk(KERN_WARNING "%s, bad params\n", __func__);
++		return -EINVAL;
++	}
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || (!ep->desc && ep->dwc_ep.num != 0)) {
++		printk(KERN_WARNING "%s, bad ep\n", __func__);
++		return -EINVAL;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		printk(KERN_WARNING "%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++	core_if = pcd->otg_dev->core_if;
++
++	if (!core_if->core_params->opt) {
++		if (ep->dwc_ep.num != 0) {
++			printk(KERN_ERR "%s queue req %p, len %d buf %p\n",
++				_ep->name, _req, _req->length, _req->buf);
++		}
++	}
++
++	if (GET_CORE_IF(pcd)->dma_enable) {
++		if (_req->dma == DMA_ADDR_INVALID) {
++			_req->dma = dma_map_single(pcd->gadget.dev.parent,
++				_req->buf, _req->length, ep->dwc_ep.is_in ?
++				DMA_TO_DEVICE : DMA_FROM_DEVICE);
++			req->mapped = 1;
++		} else {
++			dma_sync_single_for_device(pcd->gadget.dev.parent,
++				_req->dma, _req->length, ep->dwc_ep.is_in ?
++				DMA_TO_DEVICE : DMA_FROM_DEVICE);
++			req->mapped = 0;
++		}
++	}
++
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	_req->status = -EINPROGRESS;
++	_req->actual = 0;
++
++	/* Start the transfer */
++	if (list_empty(&ep->queue) && !ep->stopped) {
++		/* EP0 Transfer? */
++		if (ep->dwc_ep.num == 0) {
++			switch (pcd->ep0state) {
++			case EP0_IN_DATA_PHASE:
++				break;
++			case EP0_OUT_DATA_PHASE:
++				if (pcd->request_config) {
++					/* Complete STATUS PHASE */
++					ep->dwc_ep.is_in = 1;
++					pcd->ep0state = EP0_STATUS;
++				}
++				break;
++			default:
++				spin_unlock_irqrestore(&pcd->lock, flags);
++				return -EL2HLT;
++			}
++
++			ep->dwc_ep.dma_addr = _req->dma;
++			ep->dwc_ep.start_xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_len = _req->length;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
++
++			dwc_otg_ep0_start_transfer(core_if, &ep->dwc_ep);
++		} else {
++			/* Setup and start the Transfer */
++			ep->dwc_ep.dma_addr = _req->dma;
++			ep->dwc_ep.start_xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_buff = _req->buf;
++			ep->dwc_ep.xfer_len = _req->length;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
++
++			dwc_otg_ep_start_transfer(core_if, &ep->dwc_ep);
++		}
++	}
++
++	if (req || prevented) {
++		++pcd->request_pending;
++		list_add_tail(&req->queue, &ep->queue);
++
++		if (ep->dwc_ep.is_in && ep->stopped && !core_if->dma_enable) {
++			/*
++			 *  Device IN endpoint interrupt mask register is laid
++			 *  out exactly the same as the device IN endpoint
++			 *  interrupt register.
++			 */
++			union diepint_data diepmsk = {.d32 = 0};
++			diepmsk.b.intktxfemp = 1;
++
++			dwc_modify_reg32(
++				&core_if->dev_if->dev_global_regs->diepmsk,
++				0, diepmsk.d32);
++		}
++	}
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
++}
++
++/**
++ * This function cancels an I/O request from an EP.
++ */
++static int dwc_otg_pcd_ep_dequeue(struct usb_ep *_ep,
++				  struct usb_request *_req)
++{
++	struct pcd_request *req;
++	struct pcd_ep *ep;
++	struct dwc_pcd *pcd;
++	unsigned long flags;
++
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || !_req || (!ep->desc && ep->dwc_ep.num != 0)) {
++		printk(KERN_WARNING "%s, bad argument\n", __func__);
++		return -EINVAL;
++	}
++
++	pcd = ep->pcd;
++	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
++		printk(KERN_WARNING "%s, bogus device state\n", __func__);
++		return -ESHUTDOWN;
++	}
++
++	spin_lock_irqsave(&pcd->lock, flags);
++
++	/* make sure it's actually queued on this endpoint */
++	list_for_each_entry(req, &ep->queue, queue)
++		if (&req->req == _req)
++			break;
++
++	if (&req->req != _req) {
++		spin_unlock_irqrestore(&pcd->lock, flags);
++		return -EINVAL;
++	}
++
++	if (!list_empty(&req->queue))
++		request_done(ep, req, -ECONNRESET);
++	else
++		req = 0;
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++
++	return req ? 0 : -EOPNOTSUPP;
++}
++
++/**
++ * Set the EP STALL.
++ */
++void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep)
++{
++	union depctl_data depctl;
++	u32 *depctl_addr;
++
++	if (ep->is_in) {
++		depctl_addr = &(core_if->dev_if->in_ep_regs[ep->num]->diepctl);
++		depctl.d32 = dwc_read_reg32(depctl_addr);
++
++		/* set the disable and stall bits */
++		if (depctl.b.epena)
++			depctl.b.epdis = 1;
++		depctl.b.stall = 1;
++		dwc_write_reg32(depctl_addr, depctl.d32);
++	} else {
++		depctl_addr = &(core_if->dev_if->out_ep_regs[ep->num]->doepctl);
++		depctl.d32 = dwc_read_reg32(depctl_addr);
++
++		/* set the stall bit */
++		depctl.b.stall = 1;
++		dwc_write_reg32(depctl_addr, depctl.d32);
++	}
++}
++
++/**
++ * Clear the EP STALL.
++ */
++void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep)
++{
++	union depctl_data depctl;
++	u32 *depctl_addr;
++
++	if (ep->is_in == 1)
++		depctl_addr = &(core_if->dev_if->in_ep_regs[ep->num]->diepctl);
++	else
++		depctl_addr = &(core_if->dev_if->out_ep_regs[ep->num]->doepctl);
++
++	depctl.d32 = dwc_read_reg32(depctl_addr);
++
++	/* clear the stall bits */
++	depctl.b.stall = 0;
++
++	/*
++	 * USB Spec 9.4.5: For endpoints using data toggle, regardless
++	 * of whether an endpoint has the Halt feature set, a
++	 * ClearFeature(ENDPOINT_HALT) request always results in the
++	 * data toggle being reinitialized to DATA0.
++	 */
++	if (ep->type == DWC_OTG_EP_TYPE_INTR ||
++			ep->type == DWC_OTG_EP_TYPE_BULK)
++		depctl.b.setd0pid = 1;	/* DATA0 */
++
++	dwc_write_reg32(depctl_addr, depctl.d32);
++}
++
++/**
++ * usb_ep_set_halt stalls an endpoint.
++ *
++ * usb_ep_clear_halt clears an endpoint halt and resets its data
++ * toggle.
++ *
++ * Both of these functions are implemented with the same underlying
++ * function. The behavior depends on the val argument:
++ *	- 0 means clear_halt.
++ *	- 1 means set_halt,
++ *	- 2 means clear stall lock flag.
++ *	- 3 means set  stall lock flag.
++ */
++static int dwc_otg_pcd_ep_set_halt(struct usb_ep *_ep, int val)
 +{
 +	int retval = 0;
++	unsigned long flags;
++	struct pcd_ep *ep = NULL;
 +
-+	/* Checks if the parameter is outside of its valid range of values */
-+#define DWC_OTG_PARAM_TEST(_param_, _low_, _high_) \
-+	((dwc_otg_module_params._param_ < (_low_)) || \
-+	 (dwc_otg_module_params._param_ > (_high_)))
-+
-+	/*
-+	 * If the parameter has been set by the user, check that the parameter
-+	 * value is within the value range of values.  If not, report a module
-+	 * error.
-+	 */
-+#define DWC_OTG_PARAM_ERR(_param_, _low_, _high_, _string_) \
-+	do { \
-+		if (dwc_otg_module_params._param_ != -1) { \
-+			if (DWC_OTG_PARAM_TEST(_param_, (_low_), (_high_))) { \
-+				printk(KERN_ERR "`%d' invalid for parameter " \
-+						"`%s'\n", \
-+						dwc_otg_module_params._param_, \
-+						_string_); \
-+				dwc_otg_module_params._param_ = \
-+					dwc_param_##_param_##_default; \
-+				retval++; \
-+			} \
-+		} \
-+	} while (0)
-+
-+	DWC_OTG_PARAM_ERR(opt, 0, 1, "opt");
-+	DWC_OTG_PARAM_ERR(otg_cap, 0, 2, "otg_cap");
-+	DWC_OTG_PARAM_ERR(dma_enable, 0, 1, "dma_enable");
-+	DWC_OTG_PARAM_ERR(speed, 0, 1, "speed");
-+
-+	DWC_OTG_PARAM_ERR(host_support_fs_ls_low_power, 0, 1,
-+				"host_support_fs_ls_low_power");
-+	DWC_OTG_PARAM_ERR(host_ls_low_power_phy_clk, 0, 1,
-+				"host_ls_low_power_phy_clk");
-+
-+	DWC_OTG_PARAM_ERR(enable_dynamic_fifo, 0, 1, "enable_dynamic_fifo");
-+	DWC_OTG_PARAM_ERR(data_fifo_size, 32, 32768, "data_fifo_size");
-+	DWC_OTG_PARAM_ERR(dev_rx_fifo_size, 16, 32768, "dev_rx_fifo_size");
-+	DWC_OTG_PARAM_ERR(dev_nperio_tx_fifo_size, 16, 32768,
-+				"dev_nperio_tx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_rx_fifo_size, 16, 32768, "host_rx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_nperio_tx_fifo_size, 16, 32768,
-+				"host_nperio_tx_fifo_size");
-+	DWC_OTG_PARAM_ERR(host_perio_tx_fifo_size, 16, 32768,
-+				"host_perio_tx_fifo_size");
-+
-+	DWC_OTG_PARAM_ERR(max_transfer_size, 2047, 524288,
-+				"max_transfer_size");
-+	DWC_OTG_PARAM_ERR(max_packet_count, 15, 511, "max_packet_count");
-+
-+	DWC_OTG_PARAM_ERR(host_channels, 1, 16, "host_channels");
-+	DWC_OTG_PARAM_ERR(dev_endpoints, 1, 15, "dev_endpoints");
-+
-+	DWC_OTG_PARAM_ERR(phy_type, 0, 2, "phy_type");
-+	DWC_OTG_PARAM_ERR(phy_ulpi_ddr, 0, 1, "phy_ulpi_ddr");
-+	DWC_OTG_PARAM_ERR(phy_ulpi_ext_vbus, 0, 1, "phy_ulpi_ext_vbus");
-+	DWC_OTG_PARAM_ERR(i2c_enable, 0, 1, "i2c_enable");
-+	DWC_OTG_PARAM_ERR(ulpi_fs_ls, 0, 1, "ulpi_fs_ls");
-+	DWC_OTG_PARAM_ERR(ts_dline, 0, 1, "ts_dline");
-+
-+	if (dwc_otg_module_params.dma_burst_size != -1) {
-+		if (DWC_OTG_PARAM_TEST(dma_burst_size, 1, 1) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 4, 4) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 8, 8) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 16, 16) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 32, 32) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 64, 64) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 128, 128) &&
-+				DWC_OTG_PARAM_TEST(dma_burst_size, 256, 256)) {
-+			printk(KERN_ERR "`%d' invalid for parameter "
-+					"`dma_burst_size'\n",
-+					dwc_otg_module_params.dma_burst_size);
-+			dwc_otg_module_params.dma_burst_size = 32;
-+			retval++;
-+		}
++	ep = container_of(_ep, struct pcd_ep, ep);
++	if (!_ep || (!ep->desc && ep != &ep->pcd->ep0) ||
++			ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
++		printk(KERN_WARNING "%s, bad ep\n", __func__);
++		return -EINVAL;
 +	}
 +
-+	if (dwc_otg_module_params.phy_utmi_width != -1) {
-+		if (DWC_OTG_PARAM_TEST(phy_utmi_width, 8, 8) &&
-+				DWC_OTG_PARAM_TEST(phy_utmi_width, 16, 16)) {
-+			printk(KERN_ERR "`%d'invalid for parameter "
-+					"`phy_utmi_width'\n",
-+					dwc_otg_module_params.phy_utmi_width);
-+			dwc_otg_module_params.phy_utmi_width = 8;
-+			retval++;
-+		}
++	spin_lock_irqsave(&ep->pcd->lock, flags);
++
++	if (ep->dwc_ep.is_in && !list_empty(&ep->queue)) {
++		printk(KERN_WARNING "%s() %s XFer In process\n", __func__,
++				_ep->name);
++		retval = -EAGAIN;
++	} else if (val == 0) {
++		dwc_otg_ep_clear_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
++	} else if (val == 1) {
++		if (ep->dwc_ep.num == 0)
++			ep->pcd->ep0state = EP0_STALL;
++
++		ep->stopped = 1;
++		dwc_otg_ep_set_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
++	} else if (val == 2) {
++		ep->dwc_ep.stall_clear_flag = 0;
++	} else if (val == 3) {
++		ep->dwc_ep.stall_clear_flag = 1;
 +	}
 +
-+	DWC_OTG_PARAM_ERR(en_multiple_tx_fifo, 0, 1, "en_multiple_tx_fifo");
-+	retval += chk_param_perio_tx_fifo_sizes(retval);
-+	retval += chk_param_tx_fifo_sizes(retval);
-+
-+	DWC_OTG_PARAM_ERR(thr_ctl, 0, 7, "thr_ctl");
-+	DWC_OTG_PARAM_ERR(tx_thr_length, 8, 128, "tx_thr_length");
-+	DWC_OTG_PARAM_ERR(rx_thr_length, 8, 128, "rx_thr_length");
-+
-+	/*
-+	 * At this point, all module parameters that have been set by the user
-+	 * are valid, and those that have not are left unset.  Now set their
-+	 * default values and/or check the parameters against the hardware
-+	 * configurations of the OTG core.
-+	 */
-+
-+	/*
-+	 * This sets the parameter to the default value if it has not been set
-+	 * by the user
-+	 */
-+#define DWC_OTG_PARAM_SET_DEFAULT(_param_) ({ \
-+		int changed = 1; \
-+		if (dwc_otg_module_params._param_ == -1) { \
-+			changed = 0; \
-+			dwc_otg_module_params._param_ = \
-+				dwc_param_##_param_##_default; \
-+		} \
-+		changed; \
-+	 })
-+
-+	/*
-+	 * This checks the macro against the hardware configuration to see if it
-+	 * is valid.  It is possible that the default value could be invalid.
-+	 * In this case, it will report a module error if the user touched the
-+	 * parameter. Otherwise it will adjust the value without any error.
-+	 */
-+#define DWC_OTG_PARAM_CHECK_VALID(_param_, _str_, _is_valid_ , _set_valid_) ({ \
-+		int changed = DWC_OTG_PARAM_SET_DEFAULT(_param_); \
-+		int error = 0; \
-+		if (!(_is_valid_)) { \
-+			if (changed) { \
-+				printk(KERN_ERR "`%d' invalid for parameter " \
-+					"`%s' Check HW configuration.\n", \
-+					dwc_otg_module_params._param_, \
-+					_str_); \
-+				error = 1; \
-+			} \
-+			dwc_otg_module_params._param_ = (_set_valid_); \
-+		} \
-+		error; \
-+	})
-+
-+	/* OTG Cap */
-+	retval += DWC_OTG_PARAM_CHECK_VALID(otg_cap, "otg_cap",
-+			is_valid_otg_cap(core_if), get_valid_otg_cap(core_if));
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dma_enable, "dma_enable",
-+			((dwc_otg_module_params.dma_enable == 1) &&
-+			 (core_if->hwcfg2.b.architecture == 0)) ? 0 : 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(opt, "opt", 1, 0);
-+	DWC_OTG_PARAM_SET_DEFAULT(dma_burst_size);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_support_fs_ls_low_power,
-+			"host_support_fs_ls_low_power", 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(enable_dynamic_fifo,
-+			"enable_dynamic_fifo",
-+			((dwc_otg_module_params.enable_dynamic_fifo == 0) ||
-+			 (core_if->hwcfg2.b.dynamic_fifo == 1)), 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(data_fifo_size, "data_fifo_size",
-+			(dwc_otg_module_params.data_fifo_size <=
-+			 core_if->hwcfg3.b.dfifo_depth),
-+			core_if->hwcfg3.b.dfifo_depth);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_rx_fifo_size,
-+			"dev_rx_fifo_size",
-+			(dwc_otg_module_params.dev_rx_fifo_size <=
-+			 dwc_read_reg32(&core_if->core_global_regs->grxfsiz)),
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_nperio_tx_fifo_size,
-+			"dev_nperio_tx_fifo_size",
-+			(dwc_otg_module_params.dev_nperio_tx_fifo_size <=
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+				>> 16)),
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+				>> 16));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_rx_fifo_size,
-+			"host_rx_fifo_size",
-+			(dwc_otg_module_params.host_rx_fifo_size <=
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz)),
-+			dwc_read_reg32(&core_if->core_global_regs->grxfsiz));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_nperio_tx_fifo_size,
-+			"host_nperio_tx_fifo_size",
-+			(dwc_otg_module_params.host_nperio_tx_fifo_size <=
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+					>> 16)),
-+			(dwc_read_reg32(&core_if->core_global_regs->gnptxfsiz)
-+					>> 16));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_perio_tx_fifo_size,
-+			"host_perio_tx_fifo_size",
-+			(dwc_otg_module_params.host_perio_tx_fifo_size <=
-+			((dwc_read_reg32(&core_if->core_global_regs->hptxfsiz)
-+					>> 16))),
-+			((dwc_read_reg32(&core_if->core_global_regs->hptxfsiz)
-+					>> 16)));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(max_transfer_size,
-+			"max_transfer_size",
-+			(dwc_otg_module_params.max_transfer_size <
-+			(1 << (core_if->hwcfg3.b.xfer_size_cntr_width + 11))),
-+			((1 << (core_if->hwcfg3.b.xfer_size_cntr_width + 11))
-+					- 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(max_packet_count,
-+			"max_packet_count",
-+			(dwc_otg_module_params.max_packet_count <
-+			(1 << (core_if->hwcfg3.b.packet_size_cntr_width + 4))),
-+			((1 << (core_if->hwcfg3.b.packet_size_cntr_width + 4))
-+					- 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_channels, "host_channels",
-+			(dwc_otg_module_params.host_channels <=
-+			(core_if->hwcfg2.b.num_host_chan + 1)),
-+			(core_if->hwcfg2.b.num_host_chan + 1));
-+	retval += DWC_OTG_PARAM_CHECK_VALID(dev_endpoints, "dev_endpoints",
-+			(dwc_otg_module_params.dev_endpoints <=
-+			(core_if->hwcfg2.b.num_dev_ep)),
-+			core_if->hwcfg2.b.num_dev_ep);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(phy_type, "phy_type", 1, 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(speed, "speed",
-+			(dwc_otg_module_params.speed == 0) &&
-+			(dwc_otg_module_params.phy_type ==
-+			 DWC_PHY_TYPE_PARAM_FS) ? 0 : 1,
-+			dwc_otg_module_params.phy_type ==
-+			DWC_PHY_TYPE_PARAM_FS ? 1 : 0);
-+	retval += DWC_OTG_PARAM_CHECK_VALID(host_ls_low_power_phy_clk,
-+			"host_ls_low_power_phy_clk",
-+			((dwc_otg_module_params.host_ls_low_power_phy_clk ==
-+			DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_48MHZ) &&
-+			(dwc_otg_module_params.phy_type ==
-+				DWC_PHY_TYPE_PARAM_FS) ? 0 : 1),
-+			((dwc_otg_module_params.phy_type ==
-+				DWC_PHY_TYPE_PARAM_FS) ?
-+				DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_6MHZ :
-+				DWC_HOST_LS_LOW_POWER_PHY_CLK_PARAM_48MHZ));
-+
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_ulpi_ddr);
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_ulpi_ext_vbus);
-+	DWC_OTG_PARAM_SET_DEFAULT(phy_utmi_width);
-+	DWC_OTG_PARAM_SET_DEFAULT(ulpi_fs_ls);
-+	DWC_OTG_PARAM_SET_DEFAULT(ts_dline);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(i2c_enable, "i2c_enable", 1, 0);
-+
-+	retval += DWC_OTG_PARAM_CHECK_VALID(en_multiple_tx_fifo,
-+			"en_multiple_tx_fifo",
-+			((dwc_otg_module_params.en_multiple_tx_fifo == 1) &&
-+			(core_if->hwcfg4.b.ded_fifo_en == 0)) ? 0 : 1, 0);
-+
-+	retval += chk_valid_perio_tx_fifo_sizes(core_if, retval);
-+	retval += chk_valid_tx_fifo_sizes(core_if, retval);
-+
-+	DWC_OTG_PARAM_SET_DEFAULT(thr_ctl);
-+	DWC_OTG_PARAM_SET_DEFAULT(tx_thr_length);
-+	DWC_OTG_PARAM_SET_DEFAULT(rx_thr_length);
-+
++	spin_unlock_irqrestore(&ep->pcd->lock, flags);
 +	return retval;
 +}
 +
++static struct usb_ep_ops dwc_otg_pcd_ep_ops = {
++	.enable = dwc_otg_pcd_ep_enable,
++	.disable = dwc_otg_pcd_ep_disable,
++	.alloc_request = dwc_otg_pcd_alloc_request,
++	.free_request = dwc_otg_pcd_free_request,
++	.queue = dwc_otg_pcd_ep_queue,
++	.dequeue = dwc_otg_pcd_ep_dequeue,
++	.set_halt = dwc_otg_pcd_ep_set_halt,
++	.fifo_status = 0,
++	.fifo_flush = 0,
++};
++
 +/**
-+ * This function is the top level interrupt handler for the Common
-+ * (Device and host modes) interrupts.
++ * Gets the current USB frame number from the DTS register. This is the frame
++ * number from the last SOF packet.
 + */
-+static irqreturn_t dwc_otg_common_irq(int _irq, void *dev)
++static u32 dwc_otg_get_frame_number(struct core_if *core_if)
 +{
-+	struct dwc_otg_device *dwc_dev = dev;
++	union dsts_data dsts;
++	dsts.d32 = dwc_read_reg32(&core_if->dev_if->dev_global_regs->dsts);
++	return dsts.b.soffn;
++}
++/**
++ * The following gadget operations will be implemented in the DWC_otg
++ * PCD. Functions in the API that are not described below are not
++ * implemented.
++ *
++ * The Gadget API provides wrapper functions for each of the function
++ * pointers defined in usb_gadget_ops. The Gadget Driver calls the
++ * wrapper function, which then calls the underlying PCD function. The
++ * following sections are named according to the wrapper functions
++ * (except for ioctl, which doesn't have a wrapper function). Within
++ * each section, the corresponding DWC_otg PCD function name is
++ * specified.
++ *
++ */
++
++/**
++ *Gets the USB Frame number of the last SOF.
++ */
++static int dwc_otg_pcd_get_frame(struct usb_gadget *_gadget)
++{
++	struct dwc_pcd *pcd;
++
++	if (!_gadget) {
++		return -ENODEV;
++	} else {
++		pcd = container_of(_gadget, struct dwc_pcd, gadget);
++		dwc_otg_get_frame_number(GET_CORE_IF(pcd));
++	}
++
++	return 0;
++}
++
++/**
++ * This function is called when the SRP timer expires.  The SRP should complete
++ * within 6 seconds.
++ */
++static void srp_timeout(unsigned long data)
++{
++	union gotgctl_data gotgctl;
++	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
++	struct core_if *core_if = pcd->otg_dev->core_if;
++	u32 *addr = otg_ctl_reg(pcd);
++
++	gotgctl.d32 = dwc_read_reg32(addr);
++	core_if->srp_timer_started = 0;
++
++	if (core_if->core_params->phy_type == DWC_PHY_TYPE_PARAM_FS &&
++			core_if->core_params->i2c_enable) {
++		printk(KERN_INFO "SRP Timeout\n");
++
++		if (core_if->srp_success && gotgctl.b.bsesvld) {
++			if (core_if->pcd_cb && core_if->pcd_cb->resume_wakeup)
++				core_if->pcd_cb->resume_wakeup(
++						core_if->pcd_cb->p);
++
++			/* Clear Session Request */
++			gotgctl.d32 = 0;
++			gotgctl.b.sesreq = 1;
++			dwc_modify_reg32(addr, gotgctl.d32, 0);
++
++			core_if->srp_success = 0;
++		} else {
++			printk(KERN_ERR "Device not connected/responding\n");
++			gotgctl.b.sesreq = 0;
++			dwc_write_reg32(addr, gotgctl.d32);
++		}
++	} else if (gotgctl.b.sesreq) {
++		printk(KERN_INFO "SRP Timeout\n");
++		printk(KERN_ERR "Device not connected/responding\n");
++
++		gotgctl.b.sesreq = 0;
++		dwc_write_reg32(addr, gotgctl.d32);
++	} else {
++		printk(KERN_INFO " SRP GOTGCTL=%0x\n", gotgctl.d32);
++	}
++}
++
++
++
++/**
++ * Start the SRP timer to detect when the SRP does not complete within
++ * 6 seconds.
++ */
++static void dwc_otg_pcd_start_srp_timer(struct dwc_pcd *pcd)
++{
++	struct timer_list *srp_timer = &pcd->srp_timer;
++
++	GET_CORE_IF(pcd)->srp_timer_started = 1;
++
++	init_timer(srp_timer);
++	srp_timer->function = srp_timeout;
++	srp_timer->data = (unsigned long)pcd;
++	srp_timer->expires = jiffies + (HZ * 6);
++
++	add_timer(srp_timer);
++}
++
++static void dwc_otg_pcd_initiate_srp(struct dwc_pcd *pcd)
++{
++	union gotgctl_data mem;
++	union gotgctl_data val;
++	u32 *addr = otg_ctl_reg(pcd);
++
++	val.d32 = dwc_read_reg32(addr);
++	if (val.b.sesreq) {
++		printk(KERN_ERR "Session Request Already active!\n");
++		return;
++	}
++
++	printk(KERN_NOTICE "Session Request Initated\n");
++	mem.d32 = dwc_read_reg32(addr);
++	mem.b.sesreq = 1;
++	dwc_write_reg32(addr, mem.d32);
++
++	/* Start the SRP timer */
++	dwc_otg_pcd_start_srp_timer(pcd);
++	return;
++}
++
++static void dwc_otg_pcd_remote_wakeup(struct dwc_pcd *pcd, int set)
++{
++	union dctl_data dctl = {.d32 = 0};
++	u32 *addr = dev_ctl_reg(pcd);
++
++	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd))) {
++		if (pcd->remote_wakeup_enable) {
++			if (set) {
++				dctl.b.rmtwkupsig = 1;
++				dwc_modify_reg32(addr, 0, dctl.d32);
++				mdelay(1);
++
++				dwc_modify_reg32(addr, dctl.d32, 0);
++			}
++		}
++	}
++}
++
++/**
++ * Initiates Session Request Protocol (SRP) to wakeup the host if no
++ * session is in progress. If a session is already in progress, but
++ * the device is suspended, remote wakeup signaling is started.
++ *
++ */
++static int dwc_otg_pcd_wakeup(struct usb_gadget *_gadget)
++{
++	unsigned long flags;
++	struct dwc_pcd *pcd;
++	union dsts_data dsts;
++	union gotgctl_data gotgctl;
++
++	if (!_gadget)
++		return -ENODEV;
++	else
++		pcd = container_of(_gadget, struct dwc_pcd, gadget);
++
++	spin_lock_irqsave(&pcd->lock, flags);
++
++	/*
++	 * This function starts the Protocol if no session is in progress. If
++	 * a session is already in progress, but the device is suspended,
++	 * remote wakeup signaling is started.
++	 */
++
++	/* Check if valid session */
++	gotgctl.d32 = dwc_read_reg32(otg_ctl_reg(pcd));
++	if (gotgctl.b.bsesvld) {
++		/* Check if suspend state */
++		dsts.d32 = dwc_read_reg32(dev_sts_reg(pcd));
++		if (dsts.b.suspsts)
++			dwc_otg_pcd_remote_wakeup(pcd, 1);
++	} else {
++		dwc_otg_pcd_initiate_srp(pcd);
++	}
++
++	spin_unlock_irqrestore(&pcd->lock, flags);
++	return 0;
++}
++
++static const struct usb_gadget_ops dwc_otg_pcd_ops = {
++	.get_frame = dwc_otg_pcd_get_frame,
++	.wakeup = dwc_otg_pcd_wakeup,
++	/* not selfpowered */
++};
++
++/**
++ * This function updates the otg values in the gadget structure.
++ */
++void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset)
++{
++	if (!pcd->gadget.is_otg)
++		return;
++
++	if (reset) {
++		pcd->b_hnp_enable = 0;
++		pcd->a_hnp_support = 0;
++		pcd->a_alt_hnp_support = 0;
++	}
++
++	pcd->gadget.b_hnp_enable = pcd->b_hnp_enable;
++	pcd->gadget.a_hnp_support = pcd->a_hnp_support;
++	pcd->gadget.a_alt_hnp_support = pcd->a_alt_hnp_support;
++}
++
++/**
++ * This function is the top level PCD interrupt handler.
++ */
++static irqreturn_t dwc_otg_pcd_irq(int _irq, void *dev)
++{
++	struct dwc_pcd *pcd = dev;
 +	int retval = IRQ_NONE;
 +
-+	retval = dwc_otg_handle_common_intr(dwc_dev->core_if);
++	retval = dwc_otg_pcd_handle_intr(pcd);
 +	return IRQ_RETVAL(retval);
 +}
 +
 +/**
-+ * This function is the interrupt handler for the OverCurrent condition
-+ * from the external charge pump (if enabled)
++ * PCD Callback function for initializing the PCD when switching to
++ * device mode.
 + */
-+static irqreturn_t dwc_otg_externalchgpump_irq(int _irq, void *dev)
++static int dwc_otg_pcd_start_cb(void *_p)
 +{
-+	struct dwc_otg_device *dwc_dev = dev;
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
 +
-+	if (dwc_otg_is_host_mode(dwc_dev->core_if)) {
-+		struct dwc_hcd *dwc_hcd;
-+		union hprt0_data hprt0 = {.d32 = 0};
++	/* Initialize the Core for Device mode. */
++	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd)))
++		dwc_otg_core_dev_init(GET_CORE_IF(pcd));
 +
-+		dwc_hcd = dwc_dev->hcd;
-+		spin_lock(&dwc_hcd->lock);
-+		dwc_hcd->flags.b.port_over_current_change = 1;
-+
-+		hprt0.b.prtpwr = 0;
-+		dwc_write_reg32(dwc_dev->core_if->host_if->hprt0,
-+				hprt0.d32);
-+		spin_unlock(&dwc_hcd->lock);
-+	} else {
-+		/* Device mode - This int is n/a for device mode */
-+		printk(KERN_ERR "DeviceMode: OTG OverCurrent Detected\n");
-+	}
-+
-+	return IRQ_HANDLED;
++	return 1;
 +}
 +
++/**
++ * PCD Callback function for stopping the PCD when switching to Host
++ * mode.
++ */
++static int dwc_otg_pcd_stop_cb(void *_p)
++{
++	dwc_otg_pcd_stop((struct dwc_pcd *)_p);
++	return 1;
++}
 +
 +/**
-+ * This function is called to initialize the DWC_otg CSR data structures.
++ * PCD Callback function for notifying the PCD when resuming from
++ * suspend.
 + *
-+ * The register addresses in the device and host structures are initialized from
-+ * the base address supplied by the caller. The calling function must make the
-+ * OS calls to get the base address of the DWC_otg controller registers.
-+ *
-+ * The params argument holds the parameters that specify how the core should be
-+ * configured.
++ * @param _p void pointer to the <code>struct dwc_pcd</code>
 + */
-+static struct core_if __devinit *dwc_otg_cil_init(const u32 *base,
-+			struct core_params *params)
++static int dwc_otg_pcd_suspend_cb(void *_p)
 +{
-+	struct core_if *core_if = NULL;
-+	struct device_if *dev_if = NULL;
-+	struct dwc_host_if *host_if = NULL;
-+	u8 *reg_base = (u8 *) base;
-+	u32 offset;
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
++
++	if (pcd->driver && pcd->driver->resume) {
++		spin_unlock(&pcd->lock);
++		pcd->driver->suspend(&pcd->gadget);
++		spin_lock(&pcd->lock);
++	}
++	return 1;
++}
++
++/**
++ * PCD Callback function for notifying the PCD when resuming from
++ * suspend.
++ */
++static int dwc_otg_pcd_resume_cb(void *_p)
++{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
++	struct core_if *core_if = pcd->otg_dev->core_if;
++
++	if (pcd->driver && pcd->driver->resume) {
++		spin_unlock(&pcd->lock);
++		pcd->driver->resume(&pcd->gadget);
++		spin_lock(&pcd->lock);
++	}
++
++	/* Maybe stop the SRP timeout timer. */
++	if (need_stop_srp_timer(core_if))  {
++		core_if->srp_timer_started = 0;
++		del_timer_sync(&pcd->srp_timer);
++	}
++	return 1;
++}
++
++/**
++ * PCD Callback structure for handling mode switching.
++ */
++static struct cil_callbacks pcd_callbacks = {
++	.start = dwc_otg_pcd_start_cb,
++	.stop = dwc_otg_pcd_stop_cb,
++	.suspend = dwc_otg_pcd_suspend_cb,
++	.resume_wakeup = dwc_otg_pcd_resume_cb,
++	.p = 0, /* Set at registration */
++};
++
++/**
++ * Tasklet
++ *
++ */
++static void start_xfer_tasklet_func(unsigned long data)
++{
++	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
++	union depctl_data diepctl;
++	int num = pcd->otg_dev->core_if->dev_if->num_in_eps;
 +	u32 i;
++	unsigned long flags;
 +
-+	core_if = kzalloc(sizeof(*core_if), GFP_KERNEL);
-+	if (!core_if)
-+		return NULL;
++	spin_lock_irqsave(&pcd->lock, flags);
++	diepctl.d32 = dwc_read_reg32(in_ep_ctl_reg(pcd, 0));
 +
-+	core_if->core_params = params;
-+	core_if->core_global_regs = (struct core_global_regs *) reg_base;
-+
-+	/* Allocate the Device Mode structures. */
-+	dev_if = kmalloc(sizeof(*dev_if), GFP_KERNEL);
-+	if (!dev_if) {
-+		kfree(core_if);
-+		return NULL;
++	if (pcd->ep0.queue_sof) {
++		pcd->ep0.queue_sof = 0;
++		start_next_request(&pcd->ep0);
 +	}
 +
-+	dev_if->dev_global_regs = (struct device_global_regs *) (reg_base +
-+					DWC_DEV_GLOBAL_REG_OFFSET);
++	for (i = 0; i < num; i++) {
++		union depctl_data diepctl;
++		diepctl.d32 = dwc_read_reg32(in_ep_ctl_reg(pcd, i));
 +
-+	for (i = 0; i < MAX_EPS_CHANNELS; i++) {
-+		offset = i * DWC_EP_REG_OFFSET;
-+
-+		dev_if->in_ep_regs[i] = (struct device_in_ep_regs *)
-+			(reg_base + DWC_DEV_IN_EP_REG_OFFSET + offset);
-+
-+		dev_if->out_ep_regs[i] = (struct device_out_ep_regs *)
-+			(reg_base + DWC_DEV_OUT_EP_REG_OFFSET + offset);
++		if (pcd->in_ep[i].queue_sof) {
++			pcd->in_ep[i].queue_sof = 0;
++			start_next_request(&pcd->in_ep[i]);
++		}
 +	}
-+
-+	dev_if->speed = 0;	/* unknown */
-+	core_if->dev_if = dev_if;
-+
-+	/* Allocate the Host Mode structures. */
-+	host_if = kmalloc(sizeof(*host_if), GFP_KERNEL);
-+	if (!host_if) {
-+		kfree(dev_if);
-+		kfree(core_if);
-+		return NULL;
-+	}
-+
-+	host_if->host_global_regs = (struct host_global_regs *)
-+	    (reg_base + DWC_OTG_HOST_GLOBAL_REG_OFFSET);
-+
-+	host_if->hprt0 = (u32 *) (reg_base + DWC_OTG_HOST_PORT_REGS_OFFSET);
-+
-+	for (i = 0; i < MAX_EPS_CHANNELS; i++) {
-+		offset = i * DWC_OTG_CHAN_REGS_OFFSET;
-+
-+		host_if->hc_regs[i] = (struct dwc_hc_regs *)
-+			(reg_base + DWC_OTG_HOST_CHAN_REGS_OFFSET + offset);
-+	}
-+
-+	host_if->num_host_channels = MAX_EPS_CHANNELS;
-+	core_if->host_if = host_if;
-+	for (i = 0; i < MAX_EPS_CHANNELS; i++) {
-+		core_if->data_fifo[i] =
-+			(u32 *) (reg_base + DWC_OTG_DATA_FIFO_OFFSET +
-+				(i * DWC_OTG_DATA_FIFO_SIZE));
-+	}
-+	core_if->pcgcctl = (u32 *) (reg_base + DWC_OTG_PCGCCTL_OFFSET);
-+
-+	/*
-+	 * Store the contents of the hardware configuration registers here for
-+	 * easy access later.
-+	 */
-+	core_if->hwcfg1.d32 =
-+		dwc_read_reg32(&core_if->core_global_regs->ghwcfg1);
-+	core_if->hwcfg2.d32 =
-+		dwc_read_reg32(&core_if->core_global_regs->ghwcfg2);
-+
-+	core_if->hwcfg2.b.architecture = DWC_ARCH;
-+
-+	core_if->hwcfg3.d32 =
-+		dwc_read_reg32(&core_if->core_global_regs->ghwcfg3);
-+	core_if->hwcfg4.d32 =
-+		dwc_read_reg32(&core_if->core_global_regs->ghwcfg4);
-+
-+	/* Set the SRP sucess bit for FS-I2c */
-+	core_if->srp_success = 0;
-+	core_if->srp_timer_started = 0;
-+	return core_if;
++	spin_unlock_irqrestore(&pcd->lock, flags);
 +}
 +
-+
++static struct tasklet_struct start_xfer_tasklet = {
++	.next = NULL,
++	.state = 0,
++	.count = ATOMIC_INIT(0),
++	.func = start_xfer_tasklet_func,
++	.data = 0,
++};
 +
 +/**
-+ * This function frees the structures allocated by dwc_otg_cil_init().
++ * This function initialized the pcd Dp structures to there default
++ * state.
 + */
-+static void dwc_otg_cil_remove(struct core_if *core_if)
++void __devinit dwc_otg_pcd_reinit(struct dwc_pcd *pcd)
 +{
-+	/* Disable all interrupts */
-+	dwc_modify_reg32(&core_if->core_global_regs->gahbcfg, 1, 0);
-+	dwc_write_reg32(&core_if->core_global_regs->gintmsk, 0);
++	static const char *names[] = {
++		"ep0", "ep1in", "ep2in", "ep3in", "ep4in", "ep5in",
++		"ep6in", "ep7in", "ep8in", "ep9in", "ep10in", "ep11in",
++		"ep12in", "ep13in", "ep14in", "ep15in", "ep1out", "ep2out",
++		"ep3out", "ep4out", "ep5out", "ep6out", "ep7out", "ep8out",
++		"ep9out", "ep10out", "ep11out", "ep12out", "ep13out",
++		"ep14out", "ep15out"
++	};
 +
-+	if (core_if) {
-+		kfree(core_if->dev_if);
-+		kfree(core_if->host_if);
++	u32 i;
++	int in_ep_cntr, out_ep_cntr;
++	u32 hwcfg1;
++	u32 num_in_eps = (GET_CORE_IF(pcd))->dev_if->num_in_eps;
++	u32 num_out_eps = (GET_CORE_IF(pcd))->dev_if->num_out_eps;
++	struct pcd_ep *ep;
++
++	INIT_LIST_HEAD(&pcd->gadget.ep_list);
++
++	pcd->gadget.ep0 = &pcd->ep0.ep;
++	pcd->gadget.speed = USB_SPEED_UNKNOWN;
++	INIT_LIST_HEAD(&pcd->gadget.ep0->ep_list);
++
++	/* Initialize the EP0 structure. */
++	ep = &pcd->ep0;
++
++	/* Init EP structure */
++	ep->desc = NULL;
++	ep->pcd = pcd;
++	ep->stopped = 1;
++
++	/* Init DWC ep structure */
++	ep->dwc_ep.num = 0;
++	ep->dwc_ep.active = 0;
++	ep->dwc_ep.tx_fifo_num = 0;
++
++	/* Control until ep is actvated */
++	ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++	ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++	ep->dwc_ep.dma_addr = 0;
++	ep->dwc_ep.start_xfer_buff = 0;
++	ep->dwc_ep.xfer_buff = 0;
++	ep->dwc_ep.xfer_len = 0;
++	ep->dwc_ep.xfer_count = 0;
++	ep->dwc_ep.sent_zlp = 0;
++	ep->dwc_ep.total_len = 0;
++	ep->queue_sof = 0;
++
++	/* Init the usb_ep structure. */
++	ep->ep.name = names[0];
++	ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++	ep->ep.maxpacket = MAX_PACKET_SIZE;
++	list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++	INIT_LIST_HEAD(&ep->queue);
++
++	/* Initialize the EP structures. */
++	in_ep_cntr = 0;
++	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1.d32 >> 3;
++
++	for (i = 1; in_ep_cntr < num_in_eps; i++) {
++		if (!(hwcfg1 & 0x1)) {
++			struct pcd_ep *ep = &pcd->in_ep[in_ep_cntr];
++			in_ep_cntr++;
++
++			/* Init EP structure */
++			ep->desc = NULL;
++			ep->pcd = pcd;
++			ep->stopped = 1;
++
++			/* Init DWC ep structure */
++			ep->dwc_ep.is_in = 1;
++			ep->dwc_ep.num = i;
++			ep->dwc_ep.active = 0;
++			ep->dwc_ep.tx_fifo_num = 0;
++
++			/* Control until ep is actvated */
++			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++			ep->dwc_ep.dma_addr = 0;
++			ep->dwc_ep.start_xfer_buff = 0;
++			ep->dwc_ep.xfer_buff = 0;
++			ep->dwc_ep.xfer_len = 0;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = 0;
++			ep->queue_sof = 0;
++
++			ep->ep.name = names[i];
++			ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++			ep->ep.maxpacket = MAX_PACKET_SIZE;
++			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++			INIT_LIST_HEAD(&ep->queue);
++		}
++		hwcfg1 >>= 2;
 +	}
-+	kfree(core_if);
++
++	out_ep_cntr = 0;
++	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1.d32 >> 2;
++	for (i = 1; out_ep_cntr < num_out_eps; i++) {
++		if (!(hwcfg1 & 0x1)) {
++			struct pcd_ep *ep = &pcd->out_ep[out_ep_cntr];
++			out_ep_cntr++;
++
++			/* Init EP structure */
++			ep->desc = NULL;
++			ep->pcd = pcd;
++			ep->stopped = 1;
++
++			/* Init DWC ep structure */
++			ep->dwc_ep.is_in = 0;
++			ep->dwc_ep.num = i;
++			ep->dwc_ep.active = 0;
++			ep->dwc_ep.tx_fifo_num = 0;
++
++			/* Control until ep is actvated */
++			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
++			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
++			ep->dwc_ep.dma_addr = 0;
++			ep->dwc_ep.start_xfer_buff = 0;
++			ep->dwc_ep.xfer_buff = 0;
++			ep->dwc_ep.xfer_len = 0;
++			ep->dwc_ep.xfer_count = 0;
++			ep->dwc_ep.sent_zlp = 0;
++			ep->dwc_ep.total_len = 0;
++			ep->queue_sof = 0;
++
++			ep->ep.name = names[15 + i];
++			ep->ep.ops = &dwc_otg_pcd_ep_ops;
++
++			ep->ep.maxpacket = MAX_PACKET_SIZE;
++			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
++			INIT_LIST_HEAD(&ep->queue);
++		}
++		hwcfg1 >>= 2;
++	}
++
++	/* remove ep0 from the list.  There is a ep0 pointer. */
++	list_del_init(&pcd->ep0.ep.ep_list);
++
++	pcd->ep0state = EP0_DISCONNECT;
++	pcd->ep0.ep.maxpacket = MAX_EP0_SIZE;
++	pcd->ep0.dwc_ep.maxpacket = MAX_EP0_SIZE;
++	pcd->ep0.dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
 +}
 +
 +/**
-+ * This function is called when a device is unregistered with the
-+ * dwc_otg_driver. This happens, for example, when the rmmod command is
-+ * executed. The device may or may not be electrically present. If it is
-+ * present, the driver stops device processing. Any resources used on behalf
-+ * of this device are freed.
++ * This function releases the Gadget device.
++ * required by device_unregister().
 + */
-+static int __devexit dwc_otg_driver_remove(struct of_device *ofdev)
++static void dwc_otg_pcd_gadget_release(struct device *dev)
 +{
-+	struct device *dev = &ofdev->dev;
-+	struct dwc_otg_device *dwc_dev = dev_get_drvdata(dev);
-+
-+	/* Memory allocation for dwc_otg_device may have failed. */
-+	if (!dwc_dev)
-+		return 0;
-+
-+	/* Free the IRQ	*/
-+	if (dwc_dev->common_irq_installed)
-+		free_irq(dwc_dev->irq, dwc_dev);
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY))
-+		if (dwc_dev->hcd)
-+			dwc_otg_hcd_remove(dev);
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY))
-+		if (dwc_dev->pcd)
-+			dwc_otg_pcd_remove(dev);
-+
-+	if (dwc_dev->core_if)
-+		dwc_otg_cil_remove(dwc_dev->core_if);
-+
-+	/* Return the memory. */
-+	if (dwc_dev->base)
-+		iounmap(dwc_dev->base);
-+	if (dwc_dev->phys_addr)
-+		release_mem_region(dwc_dev->phys_addr, dwc_dev->base_len);
-+	kfree(dwc_dev);
-+
-+	/* Clear the drvdata pointer. */
-+	dev_set_drvdata(dev, 0);
-+	return 0;
++	printk(KERN_INFO "%s(%p)\n", __func__, dev);
 +}
 +
 +/**
-+ * This function disables the controller's Global Interrupt in the AHB Config
-+ * register.
++ * Allocates the buffers for the setup packets when the PCD portion of the
++ * driver is first initialized.
 + */
-+static void dwc_otg_disable_global_interrupts(struct core_if *core_if)
++static int __devinit init_pkt_buffs(struct device *dev, struct dwc_pcd *pcd)
 +{
-+	union gahbcfg_data ahbcfg = {.d32 = 0};
-+	ahbcfg.b.glblintrmsk = 1;
-+	dwc_modify_reg32(&core_if->core_global_regs->gahbcfg, ahbcfg.d32, 0);
-+}
-+
-+
-+
-+/**
-+ * This function is called when an device is bound to a
-+ * dwc_otg_driver. It creates the driver components required to
-+ * control the device (CIL, HCD, and PCD) and it initializes the
-+ * device. The driver components are stored in a dwc_otg_device
-+ * structure. A reference to the dwc_otg_device is saved in the
-+ * device. This allows the driver to access the dwc_otg_device
-+ * structure on subsequent calls to driver methods for this device.
-+ */
-+static int __devinit dwc_otg_driver_probe(struct of_device *ofdev,
-+		const struct of_device_id *match)
-+{
-+	int retval = 0;
-+	struct dwc_otg_device *dwc_dev;
-+	struct device *dev = &ofdev->dev;
-+	struct resource res;
-+	u32 *gusbcfg_addr;
-+	union gusbcfg_data usbcfg = {.d32 = 0};
-+	u32 cp_irq;
-+
-+	dev_dbg(dev, "dwc_otg_driver_probe(%p)\n", dev);
-+
-+	dwc_dev = kzalloc(sizeof(*dwc_dev), GFP_KERNEL);
-+	if (!dwc_dev) {
-+		dev_err(dev, "kmalloc of dwc_otg_device failed\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dwc_dev->reg_offset = 0xFFFFFFFF;
-+
-+	/* Retrieve the memory and IRQ resources. */
-+	dwc_dev->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
-+	if (dwc_dev->irq == NO_IRQ) {
-+		dev_err(dev, "no device irq\n");
-+		retval = -ENODEV;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "OTG - device irq: %d\n", dwc_dev->irq);
-+
-+	if (of_address_to_resource(ofdev->dev.of_node, 0, &res)) {
-+		printk(KERN_ERR "%s: Can't get USB-OTG register address\n",
-+			__func__);
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "OTG - ioresource_mem start0x%08x: end:0x%08x\n",
-+			(unsigned)res.start, (unsigned)res.end);
-+
-+	dwc_dev->phys_addr = res.start;
-+	dwc_dev->base_len = res.end - res.start + 1;
-+	if (!request_mem_region(dwc_dev->phys_addr,
-+					dwc_dev->base_len,
-+					dwc_driver_name)) {
-+		dev_err(dev, "request_mem_region failed\n");
-+		retval = -EBUSY;
-+		goto fail;
-+	}
-+
-+	/* Map the DWC_otg Core memory into virtual address space. */
-+	dwc_dev->base = ioremap(dwc_dev->phys_addr,
-+					dwc_dev->base_len);
-+	if (!dwc_dev->base) {
-+		dev_err(dev, "ioremap64() failed\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dev_dbg(dev, "mapped base=0x%08x\n", (unsigned)dwc_dev->base);
-+
-+	/*
-+	 * Initialize driver data to point to the global DWC_otg
-+	 * Device structure.
-+	 */
-+	dev_set_drvdata(dev, dwc_dev);
-+
-+	dev_dbg(dev, "dwc_dev=0x%p\n", dwc_dev);
-+	dwc_dev->core_if =
-+		dwc_otg_cil_init(dwc_dev->base, &dwc_otg_module_params);
-+	if (!dwc_dev->core_if) {
-+		dev_err(dev, "CIL initialization failed!\n");
-+		retval = -ENOMEM;
-+		goto fail;
-+	}
-+	dwc_set_feature(dwc_dev->core_if);
-+
-+	gusbcfg_addr = &dwc_dev->core_if->core_global_regs->gusbcfg;
-+
-+	/*
-+	 * Validate parameter values.
-+	 */
-+	if (check_parameters(dwc_dev->core_if)) {
-+		retval = -EINVAL;
-+		goto fail;
-+	}
-+
-+	/* Added for PLB DMA phys virt mapping */
-+	dwc_dev->core_if->phys_addr = dwc_dev->phys_addr;
-+
-+	/*
-+	 * Disable the global interrupt until all the interrupt
-+	 * handlers are installed.
-+	 */
-+	dwc_otg_disable_global_interrupts(dwc_dev->core_if);
-+
-+	/*
-+	 * Install the interrupt handler for the common interrupts before
-+	 * enabling common interrupts in core_init below.
-+	 */
-+	retval = request_irq(dwc_dev->irq, dwc_otg_common_irq,
-+			IRQF_SHARED, "dwc_otg", dwc_dev);
-+	if (retval) {
-+		printk(KERN_ERR "request of irq%d failed retval: %d\n",
-+				dwc_dev->irq, retval);
-+		retval = -EBUSY;
-+		goto fail;
++	if (pcd->otg_dev->core_if->dma_enable) {
++		pcd->dwc_pool = dma_pool_create("dwc_otg_pcd", dev,
++				sizeof(*pcd->setup_pkt) * 5, 32, 0);
++		if (!pcd->dwc_pool)
++			return -ENOMEM;
++		pcd->setup_pkt = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
++				&pcd->setup_pkt_dma_handle);
++		if (!pcd->setup_pkt)
++			goto error;
++		pcd->status_buf = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
++				&pcd->status_buf_dma_handle);
++		if (!pcd->status_buf)
++			goto error1;
 +	} else {
-+		dwc_dev->common_irq_installed = 1;
-+	}
-+
-+	/* Initialize the DWC_otg core.	*/
-+	dwc_otg_core_init(dwc_dev->core_if);
-+
-+	/* configure chargepump interrupt */
-+	cp_irq = irq_of_parse_and_map(ofdev->dev.of_node, 3);
-+	if (cp_irq) {
-+		retval = request_irq(cp_irq, dwc_otg_externalchgpump_irq,
-+				IRQF_SHARED, "dwc_otg_ext_chg_pump", dwc_dev);
-+		if (retval) {
-+			printk(KERN_ERR "request of irq failed retval: %d\n",
-+				retval);
-+			retval = -EBUSY;
-+			goto fail;
-+		} else {
-+			printk(KERN_INFO "%s: ExtChgPump Detection "
-+					"IRQ registered\n", dwc_driver_name);
++		pcd->setup_pkt =  kmalloc(sizeof(*pcd->setup_pkt) * 5,
++			GFP_KERNEL);
++		if (!pcd->setup_pkt)
++			return -ENOMEM;
++		pcd->status_buf = kmalloc(sizeof(u16), GFP_KERNEL);
++		if (!pcd->status_buf)  {
++			kfree(pcd->setup_pkt);
++			return -ENOMEM;
 +		}
 +	}
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_HOST_ONLY)) {
-+		/* Initialize the PCD */
-+		retval = dwc_otg_pcd_init(dev);
-+		if (retval) {
-+			printk(KERN_ERR "dwc_otg_pcd_init failed\n");
-+			dwc_dev->pcd = NULL;
-+			goto fail;
-+		}
-+	}
-+
-+	if (!dwc_has_feature(dwc_dev->core_if, DWC_DEVICE_ONLY)) {
-+		/* Initialize the HCD and force_host_mode */
-+		usbcfg.d32 = dwc_read_reg32(gusbcfg_addr);
-+		usbcfg.b.force_host_mode = 1;
-+		dwc_write_reg32(gusbcfg_addr, usbcfg.d32);
-+
-+		retval = dwc_otg_hcd_init(dev, dwc_dev);
-+		if (retval) {
-+			printk(KERN_ERR "dwc_otg_hcd_init failed\n");
-+			dwc_dev->hcd = NULL;
-+			goto fail;
-+		}
-+	}
-+	/*
-+	 * Enable the global interrupt after all the interrupt
-+	 * handlers are installed.
-+	 */
-+	dwc_otg_enable_global_interrupts(dwc_dev->core_if);
-+
-+	usbcfg.d32 = dwc_read_reg32(gusbcfg_addr);
-+	usbcfg.b.force_host_mode = 0;
-+	dwc_write_reg32(gusbcfg_addr, usbcfg.d32);
-+
 +	return 0;
 +
-+fail:
-+	dwc_otg_driver_remove(ofdev);
-+	return retval;
++error1:
++	dma_pool_free(pcd->dwc_pool, pcd->setup_pkt, pcd->setup_pkt_dma_handle);
++error:
++	dma_pool_destroy(pcd->dwc_pool);
++	return -ENOMEM;
 +}
 +
-+/*
-+ * This structure defines the methods to be called by a bus driver
-+ * during the lifecycle of a device on that bus. Both drivers and
-+ * devices are registered with a bus driver. The bus driver matches
-+ * devices to drivers based on information in the device and driver
-+ * structures.
-+ *
-+ * The probe function is called when the bus driver matches a device
-+ * to this driver. The remove function is called when a device is
-+ * unregistered with the bus driver.
-+ */
-+static const struct of_device_id dwc_otg_match[] = {
-+	{ .compatible = "amcc,dwc-otg", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, dwc_otg_match);
-+
-+static struct of_platform_driver dwc_otg_driver = {
-+	.probe = dwc_otg_driver_probe,
-+	.remove = __devexit_p(dwc_otg_driver_remove),
-+	.driver = {
-+		.name = "dwc_otg",
-+		.owner = THIS_MODULE,
-+		.of_match_table = dwc_otg_match,
-+	},
-+};
-+
 +/**
-+ * This function is called when the dwc_otg_driver is installed with the
-+ * insmod command. It registers the dwc_otg_driver structure with the
-+ * appropriate bus driver. This will cause the dwc_otg_driver_probe function
-+ * to be called. In addition, the bus driver will automatically expose
-+ * attributes defined for the device and driver in the special sysfs file
-+ * system.
++ * This function initializes the PCD portion of the driver.
 + */
-+static int  __init dwc_otg_driver_init(void)
++int __devinit dwc_otg_pcd_init(struct device *dev)
 +{
++	static char pcd_name[] = "dwc_otg_pcd";
++	struct dwc_pcd *pcd;
++	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
++	struct core_if *core_if = otg_dev->core_if;
 +	int retval = 0;
-+	printk(KERN_INFO "%s: version %s\n", dwc_driver_name,
-+			DWC_DRIVER_VERSION);
-+	retval = of_register_platform_driver(&dwc_otg_driver);
-+	if (retval < 0)
-+		printk(KERN_ERR "%s registration failed. retval=%d\n",
-+				dwc_driver_name, retval);
++
++	/* Allocate PCD structure */
++	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
++	if (!pcd) {
++		retval = -ENOMEM;
++		goto err;
++	}
++
++	spin_lock_init(&pcd->lock);
++
++	otg_dev->pcd = pcd;
++	s_pcd = pcd;
++	pcd->gadget.name = pcd_name;
++
++	dev_set_name(&pcd->gadget.dev, "gadget");
++	pcd->otg_dev = otg_dev;
++	pcd->gadget.dev.parent = dev;
++	pcd->gadget.dev.release = dwc_otg_pcd_gadget_release;
++	pcd->gadget.ops = &dwc_otg_pcd_ops;
++
++	if (core_if->hwcfg4.b.ded_fifo_en)
++		printk(KERN_INFO "Dedicated Tx FIFOs mode\n");
++	else
++		printk(KERN_INFO "Shared Tx FIFO mode\n");
++
++	pcd->gadget.is_dualspeed = check_is_dual_speed(core_if);
++	pcd->gadget.is_otg = check_is_otg(core_if);
++
++	/* Register the gadget device */
++	retval = device_register(&pcd->gadget.dev);
++
++	/* Initialized the Core for Device mode. */
++	if (dwc_otg_is_device_mode(core_if))
++		dwc_otg_core_dev_init(core_if);
++
++	/*  Initialize EP structures */
++	dwc_otg_pcd_reinit(pcd);
++
++	/* Register the PCD Callbacks. */
++	dwc_otg_cil_register_pcd_callbacks(core_if, &pcd_callbacks, pcd);
++
++	/* Setup interupt handler */
++	retval = request_irq(otg_dev->irq, dwc_otg_pcd_irq, IRQF_SHARED,
++				pcd->gadget.name, pcd);
++	if (retval) {
++		printk(KERN_ERR "request of irq%d failed\n", otg_dev->irq);
++		retval = -EBUSY;
++		goto err_cleanup;
++	}
++
++	/* Initialize the DMA buffer for SETUP packets */
++	retval = init_pkt_buffs(dev, pcd);
++	if (retval)
++		goto err_cleanup;
++
++	/* Initialize tasklet */
++	start_xfer_tasklet.data = (unsigned long) pcd;
++	pcd->start_xfer_tasklet = &start_xfer_tasklet;
++	return 0;
++
++err_cleanup:
++	kfree(pcd);
++	otg_dev->pcd = 0;
++	s_pcd = 0;
++
++err:
 +	return retval;
 +}
 +
-+module_init(dwc_otg_driver_init);
++/**
++ * Cleanup the PCD.
++ */
++void __devexit dwc_otg_pcd_remove(struct device *dev)
++{
++	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
++	struct dwc_pcd *pcd = otg_dev->pcd;
++
++	/* Free the IRQ */
++	free_irq(otg_dev->irq, pcd);
++
++	/* start with the driver above us */
++	if (pcd->driver) {
++		/* should have been done already by driver model core */
++		printk(KERN_WARNING "driver '%s' is still registered\n",
++				pcd->driver->driver.name);
++		usb_gadget_unregister_driver(pcd->driver);
++	}
++	if (pcd->start_xfer_tasklet)
++		tasklet_kill(pcd->start_xfer_tasklet);
++	tasklet_kill(&pcd->test_mode_tasklet);
++
++	device_unregister(&pcd->gadget.dev);
++	if (GET_CORE_IF(pcd)->dma_enable) {
++		dma_pool_free(pcd->dwc_pool, pcd->setup_pkt,
++				pcd->setup_pkt_dma_handle);
++		dma_pool_free(pcd->dwc_pool, pcd->status_buf,
++				pcd->status_buf_dma_handle);
++		dma_pool_destroy(pcd->dwc_pool);
++	} else {
++		kfree(pcd->setup_pkt);
++		kfree(pcd->status_buf);
++	}
++	kfree(pcd);
++	otg_dev->pcd = 0;
++}
 +
 +/**
-+ * This function is called when the driver is removed from the kernel
-+ * with the rmmod command. The driver unregisters itself with its bus
-+ * driver.
++ * This function registers a gadget driver with the PCD.
 + *
++ * When a driver is successfully registered, it will receive control
++ * requests including set_configuration(), which enables non-control
++ * requests.  then usb traffic follows until a disconnect is reported.
++ * then a host may connect again, or the driver might get unbound.
 + */
-+static void __exit dwc_otg_driver_cleanup(void)
++int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 +{
-+	of_unregister_platform_driver(&dwc_otg_driver);
-+	printk(KERN_INFO "%s module removed\n", dwc_driver_name);
++	int retval;
++
++	if (!driver || driver->speed == USB_SPEED_UNKNOWN || !driver->bind ||
++			!driver->unbind || !driver->disconnect ||
++			!driver->setup)
++		return -EINVAL;
++
++	if (s_pcd == 0)
++		return -ENODEV;
++
++	if (s_pcd->driver != 0)
++		return -EBUSY;
++
++	/* hook up the driver */
++	s_pcd->driver = driver;
++	s_pcd->gadget.dev.driver = &driver->driver;
++
++	retval = driver->bind(&s_pcd->gadget);
++	if (retval) {
++		printk(KERN_ERR "bind to driver %s --> error %d\n",
++			driver->driver.name, retval);
++		s_pcd->driver = 0;
++		s_pcd->gadget.dev.driver = 0;
++		return retval;
++	}
++	return 0;
 +}
-+module_exit(dwc_otg_driver_cleanup);
++EXPORT_SYMBOL(usb_gadget_register_driver);
 +
-+MODULE_DESCRIPTION(DWC_DRIVER_DESC);
-+MODULE_AUTHOR("Mark Miesfeld <mmiesfeld@apm.com");
-+MODULE_LICENSE("GPL");
++/**
++ * This function unregisters a gadget driver
++ */
++int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
++{
++	if (!s_pcd)
++		return -ENODEV;
++	if (!driver || driver != s_pcd->driver)
++		return -EINVAL;
 +
-+module_param_named(otg_cap, dwc_otg_module_params.otg_cap, int, 0444);
-+MODULE_PARM_DESC(otg_cap, "OTG Capabilities 0=HNP&SRP 1=SRP Only 2=None");
-+module_param_named(opt, dwc_otg_module_params.opt, int, 0444);
-+MODULE_PARM_DESC(opt, "OPT Mode");
-+module_param_named(dma_enable, dwc_otg_module_params.dma_enable, int, 0444);
-+MODULE_PARM_DESC(dma_enable, "DMA Mode 0=Slave 1=DMA enabled");
-+module_param_named(dma_burst_size, dwc_otg_module_params.dma_burst_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dma_burst_size, "DMA Burst Size 1, 4, 8, 16, 32, 64, "
-+				"128, 256");
-+module_param_named(speed, dwc_otg_module_params.speed, int, 0444);
-+MODULE_PARM_DESC(speed, "Speed 0=High Speed 1=Full Speed");
-+module_param_named(host_support_fs_ls_low_power,
-+			dwc_otg_module_params.host_support_fs_ls_low_power,
-+			int, 0444);
-+MODULE_PARM_DESC(host_support_fs_ls_low_power, "Support Low Power w/FS or LS "
-+				"0=Support 1=Don't Support");
-+module_param_named(host_ls_low_power_phy_clk,
-+			dwc_otg_module_params.host_ls_low_power_phy_clk,
-+			int, 0444);
-+MODULE_PARM_DESC(host_ls_low_power_phy_clk, "Low Speed Low Power Clock "
-+				"0=48Mhz 1=6Mhz");
-+module_param_named(enable_dynamic_fifo,
-+			dwc_otg_module_params.enable_dynamic_fifo, int, 0444);
-+MODULE_PARM_DESC(enable_dynamic_fifo, "0=cC Setting 1=Allow Dynamic Sizing");
-+module_param_named(data_fifo_size,
-+			dwc_otg_module_params.data_fifo_size, int, 0444);
-+MODULE_PARM_DESC(data_fifo_size, "Total number of words in the data FIFO "
-+				"memory 32-32768");
-+module_param_named(dev_rx_fifo_size, dwc_otg_module_params.dev_rx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_rx_fifo_size, "Number of words in the Rx FIFO 16-32768");
-+module_param_named(dev_nperio_tx_fifo_size,
-+			dwc_otg_module_params.dev_nperio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_nperio_tx_fifo_size, "Number of words in the non-periodic "
-+				"Tx FIFO 16-32768");
-+module_param_named(dev_perio_tx_fifo_size_1,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[0],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_1, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_2,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[1],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_2, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_3,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[2],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_3, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_4,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[3],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_4, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_5,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[4],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_5, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_6,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[5],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_6, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_7,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[6],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_7, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_8,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[7],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_8, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_9,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[8],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_9, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_10,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[9],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_10, "Number of words in the periodic "
-+				"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_11,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[10],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_11, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_12,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[11],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_12, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_13,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[12],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_13, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_14,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[13],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_14, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(dev_perio_tx_fifo_size_15,
-+			dwc_otg_module_params.dev_perio_tx_fifo_size[14],
-+			int, 0444);
-+MODULE_PARM_DESC(dev_perio_tx_fifo_size_15, "Number of words in the periodic "
-+			"Tx FIFO 4-768");
-+module_param_named(host_rx_fifo_size, dwc_otg_module_params.host_rx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_rx_fifo_size, "Number of words in the Rx FIFO 16-32768");
-+module_param_named(host_nperio_tx_fifo_size,
-+			dwc_otg_module_params.host_nperio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_nperio_tx_fifo_size, "Number of words in the "
-+			"non-periodic Tx FIFO 16-32768");
-+module_param_named(host_perio_tx_fifo_size,
-+			dwc_otg_module_params.host_perio_tx_fifo_size,
-+			int, 0444);
-+MODULE_PARM_DESC(host_perio_tx_fifo_size, "Number of words in the host "
-+			"periodic Tx FIFO 16-32768");
-+module_param_named(max_transfer_size, dwc_otg_module_params.max_transfer_size,
-+			int, 0444);
++	driver->unbind(&s_pcd->gadget);
++	s_pcd->driver = 0;
 +
-+MODULE_PARM_DESC(max_transfer_size, "The maximum transfer size supported in "
-+			"bytes 2047-65535");
-+module_param_named(max_packet_count, dwc_otg_module_params.max_packet_count,
-+			int, 0444);
-+MODULE_PARM_DESC(max_packet_count, "The maximum number of packets in a "
-+			"transfer 15-511");
-+module_param_named(host_channels, dwc_otg_module_params.host_channels,
-+			int, 0444);
-+MODULE_PARM_DESC(host_channels,	"The number of host channel registers to "
-+			"use 1-16");
-+module_param_named(dev_endpoints, dwc_otg_module_params.dev_endpoints,
-+			int, 0444);
-+MODULE_PARM_DESC(dev_endpoints,	"The number of endpoints in addition to EP0 "
-+			"available for device mode 1-15");
-+module_param_named(phy_type, dwc_otg_module_params.phy_type, int, 0444);
-+MODULE_PARM_DESC(phy_type, "0=Reserved 1=UTMI+ 2=ULPI");
-+module_param_named(phy_utmi_width, dwc_otg_module_params.phy_utmi_width,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_utmi_width, "Specifies the UTMI+ Data Width 8 or 16 bits");
-+module_param_named(phy_ulpi_ddr, dwc_otg_module_params.phy_ulpi_ddr,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_ulpi_ddr, "0");
-+module_param_named(phy_ulpi_ext_vbus, dwc_otg_module_params.phy_ulpi_ext_vbus,
-+			int, 0444);
-+MODULE_PARM_DESC(phy_ulpi_ext_vbus,
-+		  "ULPI PHY using internal or external vbus 0=Internal");
-+module_param_named(i2c_enable, dwc_otg_module_params.i2c_enable, int, 0444);
-+MODULE_PARM_DESC(i2c_enable, "FS PHY Interface");
-+module_param_named(ulpi_fs_ls, dwc_otg_module_params.ulpi_fs_ls, int, 0444);
-+MODULE_PARM_DESC(ulpi_fs_ls, "ULPI PHY FS/LS mode only");
-+module_param_named(ts_dline, dwc_otg_module_params.ts_dline, int, 0444);
-+MODULE_PARM_DESC(ts_dline, "Term select Dline pulsing for all PHYs");
-+module_param_named(debug, g_dbg_lvl, int, 0444);
-+MODULE_PARM_DESC(debug, "0");
-+module_param_named(en_multiple_tx_fifo,
-+			dwc_otg_module_params.en_multiple_tx_fifo, int, 0444);
-+MODULE_PARM_DESC(en_multiple_tx_fifo, "Dedicated Non Periodic Tx FIFOs "
-+			"0=disabled 1=enabled");
-+module_param_named(dev_tx_fifo_size_1,
-+		    dwc_otg_module_params.dev_tx_fifo_size[0], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_1, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_2,
-+			dwc_otg_module_params.dev_tx_fifo_size[1], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_2, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_3,
-+			dwc_otg_module_params.dev_tx_fifo_size[2], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_3, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_4,
-+			dwc_otg_module_params.dev_tx_fifo_size[3], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_4, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_5,
-+			dwc_otg_module_params.dev_tx_fifo_size[4], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_5, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_6,
-+			dwc_otg_module_params.dev_tx_fifo_size[5], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_6, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_7,
-+			dwc_otg_module_params.dev_tx_fifo_size[6], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_7, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_8,
-+			dwc_otg_module_params.dev_tx_fifo_size[7], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_8, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_9,
-+			dwc_otg_module_params.dev_tx_fifo_size[8], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_9, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_10,
-+			dwc_otg_module_params.dev_tx_fifo_size[9], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_10, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_11,
-+			dwc_otg_module_params.dev_tx_fifo_size[10], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_11, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_12,
-+			dwc_otg_module_params.dev_tx_fifo_size[11], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_12, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_13,
-+			dwc_otg_module_params.dev_tx_fifo_size[12], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_13, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_14,
-+			dwc_otg_module_params.dev_tx_fifo_size[13], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_14, "Number of words in the Tx FIFO 4-768");
-+module_param_named(dev_tx_fifo_size_15,
-+			dwc_otg_module_params.dev_tx_fifo_size[14], int, 0444);
-+MODULE_PARM_DESC(dev_tx_fifo_size_15, "Number of words in the Tx FIFO 4-768");
-+module_param_named(thr_ctl, dwc_otg_module_params.thr_ctl, int, 0444);
-+MODULE_PARM_DESC(thr_ctl, "Thresholding enable flag bit 0 - non ISO Tx thr., "
-+			"1 - ISO Tx thr., 2 - Rx thr.- bit "
-+			"0=disabled 1=enabled");
-+module_param_named(tx_thr_length, dwc_otg_module_params.tx_thr_length,
-+			int, 0444);
-+MODULE_PARM_DESC(tx_thr_length, "Tx Threshold length in 32 bit DWORDs");
-+module_param_named(rx_thr_length, dwc_otg_module_params.rx_thr_length,
-+			int, 0444);
-+MODULE_PARM_DESC(rx_thr_length, "Rx Threshold length in 32 bit DWORDs");
-+
-diff --git a/drivers/usb/otg/dwc_otg_driver.h b/drivers/usb/otg/dwc_otg_driver.h
++	return 0;
++}
++EXPORT_SYMBOL(usb_gadget_unregister_driver);
+diff --git a/drivers/usb/otg/dwc_otg_pcd.h b/drivers/usb/otg/dwc_otg_pcd.h
 new file mode 100644
-index 0000000..2d7d759
+index 0000000..93e2434
 --- /dev/null
-+++ b/drivers/usb/otg/dwc_otg_driver.h
-@@ -0,0 +1,97 @@
++++ b/drivers/usb/otg/dwc_otg_pcd.h
+@@ -0,0 +1,159 @@
 +/*
 + * DesignWare HS OTG controller driver
 + *
@@ -1530,53 +1849,115 @@ index 0000000..2d7d759
 + * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 + */
 +
-+#if !defined(__DWC_OTG_DRIVER_H__)
-+#define __DWC_OTG_DRIVER_H__
++#if !defined(__DWC_PCD_H__)
++#define __DWC_PCD_H__
 +
-+/*
-+ * This file contains the interface to the Linux driver.
-+ */
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/errno.h>
++#include <linux/device.h>
++#include <linux/interrupt.h>
++#include <linux/dma-mapping.h>
++
++struct lm_device;
++struct dwc_otg_device;
++
 +#include "dwc_otg_cil.h"
 +
-+/* Type declarations */
-+struct dwc_pcd;
-+struct dwc_hcd;
++/*
++ * This file contains the structures, constants, and interfaces for
++ * the Perpherial Contoller Driver (PCD).
++ *
++ * The Peripheral Controller Driver (PCD) for Linux will implement the
++ * Gadget API, so that the existing Gadget drivers can be used.	 For
++ * the Mass Storage Function driver the File-backed USB Storage Gadget
++ * (FBS) driver will be used.  The FBS driver supports the
++ * Control-Bulk (CB), Control-Bulk-Interrupt (CBI), and Bulk-Only
++ * transports.
++ *
++ */
++
++/* Invalid DMA Address */
++#define DMA_ADDR_INVALID			(~(dma_addr_t)0)
++/* Maxpacket size for EP0 */
++#define MAX_EP0_SIZE				64
++/* Maxpacket size for any EP */
++#define MAX_PACKET_SIZE				1024
 +
 +/*
-+ * This structure is a wrapper that encapsulates the driver components used to
-+ * manage a single DWC_otg controller.
++ * Get the pointer to the core_if from the pcd pointer.
 + */
-+struct dwc_otg_device {
-+	/* Base address returned from ioremap() */
-+	void *base;
++#define GET_CORE_IF(_pcd) (_pcd->otg_dev->core_if)
 +
-+	/* Pointer to the core interface structure. */
-+	struct core_if *core_if;
-+
-+	/* Register offset for Diagnostic API.*/
-+	u32 reg_offset;
-+
-+	/* Pointer to the PCD structure. */
-+	struct dwc_pcd *pcd;
-+
-+	/* Pointer to the HCD structure. */
-+	struct dwc_hcd *hcd;
-+
-+	/* Flag to indicate whether the common IRQ handler is installed. */
-+	u8 common_irq_installed;
-+
-+	/* Interrupt request number. */
-+	unsigned int irq;
-+
-+	/*
-+	 * Physical address of Control and Status registers, used by
-+	 * release_mem_region().
-+	 */
-+	resource_size_t phys_addr;
-+
-+	/* Length of memory region, used by release_mem_region(). */
-+	unsigned long base_len;
++/*
++ * DWC_otg request structure.
++ * This structure is a list of requests.
++ */
++struct pcd_request {
++	struct usb_request req;		/* USB Request. */
++	struct list_head queue;		/* queue of these requests. */
++	unsigned mapped:1;
 +};
++
++static inline u32 *in_ep_int_reg(struct dwc_pcd *pd, int i)
++{
++	return (u32 *) &GET_CORE_IF(pd)->dev_if->in_ep_regs[i]->diepint;
++}
++static inline u32 *out_ep_int_reg(struct dwc_pcd *pd, int i)
++{
++	return (u32 *) &GET_CORE_IF(pd)->dev_if->out_ep_regs[i]->doepint;
++}
++static inline u32 *in_ep_ctl_reg(struct dwc_pcd *pd, int i)
++{
++	return (u32 *) &GET_CORE_IF(pd)->dev_if->in_ep_regs[i]->diepctl;
++}
++
++static inline u32 *out_ep_ctl_reg(struct dwc_pcd *pd, int i)
++{
++	return (u32 *) &GET_CORE_IF(pd)->dev_if->out_ep_regs[i]->doepctl;
++}
++
++static inline u32 *dev_ctl_reg(struct dwc_pcd *pd)
++{
++	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->dctl);
++}
++
++static inline u32 *dev_diepmsk_reg(struct dwc_pcd *pd)
++{
++	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->diepmsk);
++}
++
++static inline u32 *dev_sts_reg(struct dwc_pcd *pd)
++{
++	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->dsts);
++}
++
++static inline u32 *otg_ctl_reg(struct dwc_pcd *pd)
++{
++	return (u32 *) &(GET_CORE_IF(pd)->core_global_regs->gotgctl);
++}
++
++extern int  __init dwc_otg_pcd_init(struct device *dev);
++
++/*
++ * The following functions support managing the DWC_otg controller in device
++ * mode.
++ */
++extern void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_start_transfer(struct core_if *_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep);
++extern void dwc_otg_pcd_remove(struct device *dev);
++extern int dwc_otg_pcd_handle_intr(struct dwc_pcd *pcd);
++extern void dwc_otg_pcd_stop(struct dwc_pcd *pcd);
++extern void request_nuke(struct pcd_ep *ep);
++extern void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset);
++extern void dwc_otg_ep0_start_transfer(struct core_if *_if, struct dwc_ep *ep);
++
++extern void request_done(struct pcd_ep *ep, struct pcd_request *req,
++				int _status);
++
++extern void start_next_request(struct pcd_ep *ep);
 +
 +#endif
 -- 
