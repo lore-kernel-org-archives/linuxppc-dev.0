@@ -2,19 +2,16 @@ Return-Path: <fchen@apm.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2403CB6F0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 08:22:20 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id AA101100885
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 08:22:23 +1000 (EST)
 From: Fushen Chen <fchen@apm.com>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 6/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-Date: Tue, 29 Jun 2010 14:26:59 -0700
-Message-Id: <12778468242972-git-send-email-fchen@apm.com>
-In-Reply-To: <12778468242073-git-send-email-fchen@apm.com>
+Subject: [PATCH 3/9] Add Synopsys DesignWare HS USB OTG Controller driver.
+Date: Tue, 29 Jun 2010 14:26:56 -0700
+Message-Id: <12778468231438-git-send-email-fchen@apm.com>
+In-Reply-To: <12778468233898-git-send-email-fchen@apm.com>
 References: <12778468223309-git-send-email-fchen@apm.com>
 	<12778468233898-git-send-email-fchen@apm.com>
-	<12778468231438-git-send-email-fchen@apm.com>
-	<1277846824673-git-send-email-fchen@apm.com>
-	<12778468242073-git-send-email-fchen@apm.com>
 Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de, Mark Miesfeld <mmiesfeld@apm.com>,
 	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,22 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implements functions to manage Queue Heads and Queue
-Transfer Descriptors of DWC USB OTG Controller.
+Core Interface Layer Common Interrupt handlers provides common interrupt
+handler for both host controller and peripheral controller.
 
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/otg/dwc_otg_hcd_queue.c |  584 +++++++++++++++++++++++++++++++++++
- 1 files changed, 584 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/otg/dwc_otg_hcd_queue.c
+ drivers/usb/otg/dwc_otg_cil_intr.c |  625 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 625 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc_otg_cil_intr.c
 
-diff --git a/drivers/usb/otg/dwc_otg_hcd_queue.c b/drivers/usb/otg/dwc_otg_hcd_queue.c
+diff --git a/drivers/usb/otg/dwc_otg_cil_intr.c b/drivers/usb/otg/dwc_otg_cil_intr.c
 new file mode 100644
-index 0000000..a33c0da
+index 0000000..2e5be88
 --- /dev/null
-+++ b/drivers/usb/otg/dwc_otg_hcd_queue.c
-@@ -0,0 +1,584 @@
++++ b/drivers/usb/otg/dwc_otg_cil_intr.c
+@@ -0,0 +1,625 @@
 +/*
 + * DesignWare HS OTG controller driver
 + *
@@ -91,540 +88,581 @@ index 0000000..a33c0da
 + */
 +
 +/*
-+ * This file contains the functions to manage Queue Heads and Queue
-+ * Transfer Descriptors.
++ * The Core Interface Layer provides basic services for accessing and
++ * managing the DWC_otg hardware. These services are used by both the
++ * Host Controller Driver and the Peripheral Controller Driver.
++ *
++ * This file contains the Common Interrupt handlers.
 + */
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/list.h>
-+#include <linux/interrupt.h>
-+#include <linux/string.h>
 +
-+#include "dwc_otg_driver.h"
-+#include "dwc_otg_hcd.h"
 +#include "dwc_otg_regs.h"
++#include "dwc_otg_cil.h"
 +
-+static inline int is_fs_ls(enum usb_device_speed speed)
++#include <linux/types.h>
++#include <linux/delay.h>
++
++inline const char *op_state_str(struct core_if *core_if)
 +{
-+	return speed == USB_SPEED_FULL || speed == USB_SPEED_LOW;
-+}
-+
-+/* Allocates memory for a QH structure. */
-+static inline struct dwc_qh *dwc_otg_hcd_qh_alloc(void)
-+{
-+	return kmalloc(sizeof(struct dwc_qh), GFP_ATOMIC);
-+}
-+
-+/**
-+ * Initializes a QH structure to initialize the QH.
-+ */
-+#define SCHEDULE_SLOP 10
-+static void dwc_otg_hcd_qh_init(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+	struct urb *urb)
-+{
-+	memset(qh, 0, sizeof(struct dwc_qh));
-+
-+	/* Initialize QH */
-+	switch (usb_pipetype(urb->pipe)) {
-+	case PIPE_CONTROL:
-+		qh->ep_type = USB_ENDPOINT_XFER_CONTROL;
-+		break;
-+	case PIPE_BULK:
-+		qh->ep_type = USB_ENDPOINT_XFER_BULK;
-+		break;
-+	case PIPE_ISOCHRONOUS:
-+		qh->ep_type = USB_ENDPOINT_XFER_ISOC;
-+		break;
-+	case PIPE_INTERRUPT:
-+		qh->ep_type = USB_ENDPOINT_XFER_INT;
-+		break;
-+	}
-+
-+	qh->ep_is_in = usb_pipein(urb->pipe) ? 1 : 0;
-+	qh->data_toggle = DWC_OTG_HC_PID_DATA0;
-+	qh->maxp = usb_maxpacket(urb->dev, urb->pipe, !(usb_pipein(urb->pipe)));
-+
-+	INIT_LIST_HEAD(&qh->qtd_list);
-+	INIT_LIST_HEAD(&qh->qh_list_entry);
-+
-+	qh->channel = NULL;
-+
-+	/*
-+	 * FS/LS Enpoint on HS Hub NOT virtual root hub
-+	 */
-+	qh->do_split = 0;
-+	if (is_fs_ls(urb->dev->speed) && urb->dev->tt && urb->dev->tt->hub &&
-+	    urb->dev->tt->hub->devnum != 1)
-+		qh->do_split = 1;
-+
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT ||
-+	    qh->ep_type == USB_ENDPOINT_XFER_ISOC) {
-+		/* Compute scheduling parameters once and save them. */
-+		union hprt0_data hprt;
-+		int bytecount = dwc_hb_mult(qh->maxp) *
-+			dwc_max_packet(qh->maxp);
-+
-+		qh->usecs = usb_calc_bus_time(urb->dev->speed,
-+				usb_pipein(urb->pipe),
-+				(qh->ep_type == USB_ENDPOINT_XFER_ISOC),
-+				bytecount);
-+
-+		/* Start in a slightly future (micro)frame. */
-+		qh->sched_frame = dwc_frame_num_inc(hcd->frame_number,
-+							SCHEDULE_SLOP);
-+		qh->interval = urb->interval;
-+
-+		hprt.d32 = dwc_read_reg32(hcd->core_if->host_if->hprt0);
-+		if (hprt.b.prtspd == DWC_HPRT0_PRTSPD_HIGH_SPEED &&
-+		    is_fs_ls(urb->dev->speed)) {
-+			qh->interval *= 8;
-+			qh->sched_frame |= 0x7;
-+			qh->start_split_frame = qh->sched_frame;
-+		}
-+	}
++	return (core_if->op_state == A_HOST ? "a_host" :
++		(core_if->op_state == A_SUSPEND ? "a_suspend" :
++		(core_if->op_state == A_PERIPHERAL ? "a_peripheral" :
++		(core_if->op_state == B_PERIPHERAL ? "b_peripheral" :
++		(core_if->op_state == B_HOST ? "b_host" : "unknown")))));
 +}
 +
 +/**
-+ * This function allocates and initializes a QH.
++ *  This function will log a debug message
 + */
-+static struct dwc_qh *dwc_otg_hcd_qh_create(struct dwc_hcd *hcd,
-+		struct urb *urb)
++static int dwc_otg_handle_mode_mismatch_intr(struct core_if *core_if)
 +{
-+	struct dwc_qh *qh;
++	union gintsts_data gintsts;
 +
-+	/* Allocate memory */
-+	qh = dwc_otg_hcd_qh_alloc();
-+	if (qh == NULL)
-+		return NULL;
++	printk(KERN_WARNING "Mode Mismatch Interrupt: currently in %s mode\n",
++		dwc_otg_mode(core_if) ? "Host" : "Device");
 +
-+	dwc_otg_hcd_qh_init(hcd, qh, urb);
-+	return qh;
++	/* Clear interrupt */
++	gintsts.d32 = 0;
++	gintsts.b.modemismatch = 1;
++	dwc_write_reg32(&core_if->core_global_regs->gintsts, gintsts.d32);
++
++	return 1;
 +}
 +
 +/**
-+ * Free each QTD in the QH's QTD-list then free the QH.  QH should already be
-+ * removed from a list.  QTD list should already be empty if called from URB
-+ * Dequeue.
++ *  Start the HCD.  Helper function for using the HCD callbacks.
 + */
-+void dwc_otg_hcd_qh_free(struct dwc_qh *qh)
++static inline void hcd_start(struct core_if *core_if)
 +{
-+	struct dwc_qtd *qtd;
-+	struct list_head *pos, *temp;
-+
-+	/* Free each QTD in the QTD list */
-+	list_for_each_safe(pos, temp, &qh->qtd_list) {
-+		list_del(pos);
-+		qtd = dwc_list_to_qtd(pos);
-+		dwc_otg_hcd_qtd_free(qtd);
-+	}
-+	kfree(qh);
-+}
-+
-+
-+
-+/**
-+ * Checks that a channel is available for a periodic transfer.
-+ *
-+ * Currently assuming that there is a dedicated host channnel for each
-+ * periodic transaction plus at least one host channel for non-periodic
-+ * transactions.
-+ */
-+static int periodic_channel_available(struct dwc_hcd *hcd)
-+{
-+	int status;
-+	int total = hcd->core_if->core_params->host_channels;
-+
-+	if (hcd->periodic_channels + hcd->non_periodic_channels < total &&
-+	    hcd->periodic_channels < total - 1) {
-+		status = 0;
-+	} else {
-+		printk(KERN_NOTICE "%s: Total channels: %d, Periodic: %d, "
-+			"Non-periodic: %d\n", __func__, total,
-+			hcd->periodic_channels,
-+			hcd->non_periodic_channels);
-+		status = -ENOSPC;
-+	}
-+
-+	return status;
++	if (core_if->hcd_cb && core_if->hcd_cb->start)
++		core_if->hcd_cb->start(core_if->hcd_cb->p);
 +}
 +
 +/**
-+ * Checks that there is sufficient bandwidth for the specified QH in the
-+ * periodic schedule. For simplicity, this calculation assumes that all the
-+ * transfers in the periodic schedule may occur in the same (micro)frame.
++ *  Stop the HCD.  Helper function for using the HCD callbacks.
 + */
-+static int check_periodic_bandwidth(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void hcd_stop(struct core_if *core_if)
 +{
-+	int status = 0;
-+	u16 max_claimed_usecs;
-+
-+	/*
-+	 * For high speed mode:
-+	 * Max periodic usecs is 80% x 125 usec = 100 usec.
-+	 *
-+	 * For full speed mode:
-+	 * Max periodic usecs is 90% x 1000 usec = 900 usec.
-+	 */
-+	if (hcd->core_if->core_params->speed == DWC_SPEED_PARAM_HIGH)
-+		max_claimed_usecs = 100 - qh->usecs;
-+	else
-+		max_claimed_usecs = 900 - qh->usecs;
-+
-+	if (hcd->periodic_usecs > max_claimed_usecs) {
-+		printk(KERN_NOTICE "%s: already claimed usecs %d, required "
-+			"usecs %d\n", __func__, hcd->periodic_usecs,
-+			qh->usecs);
-+		status = -ENOSPC;
-+	}
-+
-+	return status;
++	if (core_if->hcd_cb && core_if->hcd_cb->stop)
++		core_if->hcd_cb->stop(core_if->hcd_cb->p);
 +}
 +
 +/**
-+ * Checks that the max transfer size allowed in a host channel is large enough
-+ * to handle the maximum data transfer in a single (micro)frame for a periodic
-+ * transfer.
++ *  Disconnect the HCD.  Helper function for using the HCD callbacks.
 + */
-+static int check_max_xfer_size(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void hcd_disconnect(struct core_if *core_if)
 +{
-+	int status = 0;
-+	u32 max_xfer_size;
-+	u32 max_channel_xfer_size;
-+
-+	max_xfer_size = dwc_max_packet(qh->maxp) * dwc_hb_mult(qh->maxp);
-+	max_channel_xfer_size = hcd->core_if->core_params->max_transfer_size;
-+
-+	if (max_xfer_size > max_channel_xfer_size) {
-+		printk(KERN_NOTICE "%s: Periodic xfer length %d > max xfer "
-+			"length for channel %d\n", __func__, max_xfer_size,
-+			max_channel_xfer_size);
-+		status = -ENOSPC;
-+	}
-+
-+	return status;
++	if (core_if->hcd_cb && core_if->hcd_cb->disconnect)
++		core_if->hcd_cb->disconnect(core_if->hcd_cb->p);
 +}
 +
 +/**
-+ * Schedules an interrupt or isochronous transfer in the periodic schedule.
++ *  Inform the HCD the a New Session has begun.  Helper function for using the
++ *  HCD callbacks.
 + */
-+static int schedule_periodic(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void hcd_session_start(struct core_if *core_if)
 +{
-+	int status;
-+	struct usb_bus *bus = hcd_to_bus(dwc_otg_hcd_to_hcd(hcd));
-+
-+	status = periodic_channel_available(hcd);
-+	if (status) {
-+		printk(KERN_NOTICE "%s: No host channel available for periodic "
-+			"transfer.\n", __func__);
-+		return status;
-+	}
-+
-+	status = check_periodic_bandwidth(hcd, qh);
-+	if (status) {
-+		printk(KERN_NOTICE "%s: Insufficient periodic bandwidth for "
-+			"periodic transfer.\n", __func__);
-+		return status;
-+	}
-+
-+	status = check_max_xfer_size(hcd, qh);
-+	if (status) {
-+		printk(KERN_NOTICE "%s: Channel max transfer size too small "
-+			"for periodic transfer.\n", __func__);
-+		return status;
-+	}
-+
-+	/* Always start in the inactive schedule. */
-+	list_add_tail(&qh->qh_list_entry, &hcd->periodic_sched_inactive);
-+
-+	/* Reserve the periodic channel. */
-+	hcd->periodic_channels++;
-+
-+	/* Update claimed usecs per (micro)frame. */
-+	hcd->periodic_usecs += qh->usecs;
-+
-+	/*
-+	 * Update average periodic bandwidth claimed and # periodic reqs for
-+	 * usbfs.
-+	 */
-+	bus->bandwidth_allocated += qh->usecs / qh->interval;
-+
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT)
-+		bus->bandwidth_int_reqs++;
-+	else
-+		bus->bandwidth_isoc_reqs++;
-+
-+	return status;
++	if (core_if->hcd_cb && core_if->hcd_cb->session_start)
++		core_if->hcd_cb->session_start(core_if->hcd_cb->p);
 +}
 +
 +/**
-+ * This function adds a QH to either the non periodic or periodic schedule if
-+ * it is not already in the schedule. If the QH is already in the schedule, no
-+ * action is taken.
++ *  Start the PCD.  Helper function for using the PCD callbacks.
 + */
-+static int dwc_otg_hcd_qh_add(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void pcd_start(struct core_if *core_if)
 +{
-+	int status = 0;
-+
-+	/* QH may already be in a schedule. */
-+	if (!list_empty(&qh->qh_list_entry))
-+		goto done;
-+
-+	/*
-+	 * Add the new QH to the appropriate schedule. For non-periodic, always
-+	 * start in the inactive schedule.
-+	 */
-+	if (dwc_qh_is_non_per(qh))
-+		list_add_tail(&qh->qh_list_entry,
-+			&hcd->non_periodic_sched_inactive);
-+	else
-+		status = schedule_periodic(hcd, qh);
-+
-+done:
-+	return status;
++	if (core_if->pcd_cb && core_if->pcd_cb->start)
++		core_if->pcd_cb->start(core_if->pcd_cb->p);
 +}
 +
 +/**
-+ * Removes an interrupt or isochronous transfer from the periodic schedule.
++ *  Stop the PCD.  Helper function for using the PCD callbacks.
 + */
-+static void deschedule_periodic(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void pcd_stop(struct core_if *core_if)
 +{
-+	struct usb_bus *bus = hcd_to_bus(dwc_otg_hcd_to_hcd(hcd));
-+
-+	list_del_init(&qh->qh_list_entry);
-+
-+	/* Release the periodic channel reservation. */
-+	hcd->periodic_channels--;
-+
-+	/* Update claimed usecs per (micro)frame. */
-+	hcd->periodic_usecs -= qh->usecs;
-+
-+	/*
-+	 * Update average periodic bandwidth claimed and # periodic reqs for
-+	 * usbfs.
-+	 */
-+	bus->bandwidth_allocated -= qh->usecs / qh->interval;
-+
-+	if (qh->ep_type == USB_ENDPOINT_XFER_INT)
-+		bus->bandwidth_int_reqs--;
-+	else
-+		bus->bandwidth_isoc_reqs--;
++	if (core_if->pcd_cb && core_if->pcd_cb->stop)
++		core_if->pcd_cb->stop(core_if->pcd_cb->p);
 +}
 +
 +/**
-+ * Removes a QH from either the non-periodic or periodic schedule.  Memory is
-+ * not freed.
++ *  Suspend the PCD.  Helper function for using the PCD callbacks.
 + */
-+void dwc_otg_hcd_qh_remove(struct dwc_hcd *hcd, struct dwc_qh *qh)
++static inline void pcd_suspend(struct core_if *core_if)
 +{
-+	/* Do nothing if QG is not in a	schedule */
-+	if (list_empty(&qh->qh_list_entry))
-+		return;
-+
-+	if (dwc_qh_is_non_per(qh)) {
-+		if (hcd->non_periodic_qh_ptr == &qh->qh_list_entry)
-+			hcd->non_periodic_qh_ptr =
-+				hcd->non_periodic_qh_ptr->next;
-+
-+		list_del_init(&qh->qh_list_entry);
-+	} else
-+		deschedule_periodic(hcd, qh);
-+
++	if (core_if->pcd_cb && core_if->pcd_cb->suspend)
++		core_if->pcd_cb->suspend(core_if->pcd_cb->p);
 +}
 +
 +/**
-+ *  Schedule the next continuing periodic split transfer
++ *  Resume the PCD.  Helper function for using the PCD callbacks.
 + */
-+static void sched_next_per_split_xfr(struct dwc_qh *qh, u16 fr_num,
-+					int sched_split)
++static inline void pcd_resume(struct core_if *core_if)
 +{
-+	if (sched_split) {
-+		qh->sched_frame = fr_num;
++	if (core_if->pcd_cb && core_if->pcd_cb->resume_wakeup)
++		core_if->pcd_cb->resume_wakeup(core_if->pcd_cb->p);
++}
 +
-+		if (dwc_frame_num_le(fr_num,
-+		    dwc_frame_num_inc(qh->start_split_frame, 1))) {
++/**
++ * This function handles the OTG Interrupts. It reads the OTG
++ * Interrupt Register (GOTGINT) to determine what interrupt has
++ * occurred.
++ */
++static int dwc_otg_handle_otg_intr(struct core_if *core_if)
++{
++	struct core_global_regs *global_regs = core_if->core_global_regs;
++	union gotgint_data gotgint;
++	union gotgctl_data gotgctl;
++	union gintmsk_data gintmsk;
++
++	gotgint.d32 = dwc_read_reg32(&global_regs->gotgint);
++	gotgctl.d32 = dwc_read_reg32(&global_regs->gotgctl);
++
++	if (gotgint.b.sesenddet) {
++		gotgctl.d32 = dwc_read_reg32(&global_regs->gotgctl);
++		if (core_if->op_state == B_HOST) {
++			pcd_start(core_if);
++			core_if->op_state = B_PERIPHERAL;
++		} else {
 +			/*
-+			 * Allow one frame to elapse after start split
-+			 * microframe before scheduling complete split, but DONT
-+			 * if we are doing the next start split in the
-+			 * same frame for an ISOC out.
++			 * If not B_HOST and Device HNP still set. HNP did not
++			 * succeed
 +			 */
-+			if (qh->ep_type != USB_ENDPOINT_XFER_ISOC ||
-+			    qh->ep_is_in)
-+				qh->sched_frame = dwc_frame_num_inc(
-+					qh->sched_frame, 1);
++			if (gotgctl.b.devhnpen)
++				printk(KERN_ERR "Device Not Connected / "
++					"Responding\n");
++
++			/*
++			 * If Session End Detected the B-Cable has been
++			 * disconnected.  Reset PCD and Gadget driver to a
++			 * clean state.
++			 */
++			pcd_stop(core_if);
 +		}
++		gotgctl.d32 = 0;
++		gotgctl.b.devhnpen = 1;
++		dwc_modify_reg32(&global_regs->gotgctl, gotgctl.d32, 0);
++	}
++	if (gotgint.b.sesreqsucstschng) {
++		gotgctl.d32 = dwc_read_reg32(&global_regs->gotgctl);
++		if (gotgctl.b.sesreqscs) {
++			if (core_if->core_params->phy_type ==
++					DWC_PHY_TYPE_PARAM_FS &&
++					core_if->core_params->i2c_enable) {
++				core_if->srp_success = 1;
++			} else {
++				pcd_resume(core_if);
++
++				/* Clear Session Request */
++				gotgctl.d32 = 0;
++				gotgctl.b.sesreq = 1;
++				dwc_modify_reg32(&global_regs->gotgctl,
++							gotgctl.d32, 0);
++			}
++		}
++	}
++	if (gotgint.b.hstnegsucstschng) {
++		/*
++		 * Print statements during the HNP interrupt handling can cause
++		 * it to fail.
++		 */
++		gotgctl.d32 = dwc_read_reg32(&global_regs->gotgctl);
++		if (gotgctl.b.hstnegscs) {
++			if (dwc_otg_is_host_mode(core_if)) {
++				core_if->op_state = B_HOST;
++
++				/*
++				 * Need to disable SOF interrupt immediately.
++				 * When switching from device to host, the PCD
++				 * interrupt handler won't handle the
++				 * interrupt if host mode is already set. The
++				 * HCD interrupt handler won't get called if
++				 * the HCD state is HALT. This means that the
++				 * interrupt does not get handled and Linux
++				 * complains loudly.
++				 */
++				gintmsk.d32 = 0;
++				gintmsk.b.sofintr = 1;
++				dwc_modify_reg32(&global_regs->gintmsk,
++						gintmsk.d32, 0);
++
++				pcd_stop(core_if);
++
++				/* Initialize the Core for Host mode. */
++				hcd_start(core_if);
++				core_if->op_state = B_HOST;
++			}
++		} else {
++			gotgctl.d32 = 0;
++			gotgctl.b.hnpreq = 1;
++			gotgctl.b.devhnpen = 1;
++			dwc_modify_reg32(&global_regs->gotgctl, gotgctl.d32, 0);
++
++			printk(KERN_ERR "Device Not Connected / Responding\n");
++		}
++	}
++	if (gotgint.b.hstnegdet) {
++		/*
++		 * The disconnect interrupt is set at the same time as
++		 * Host Negotiation Detected.  During the mode
++		 * switch all interrupts are cleared so the disconnect
++		 * interrupt handler will not get executed.
++		 */
++		if (dwc_otg_is_device_mode(core_if)) {
++			hcd_disconnect(core_if);
++			pcd_start(core_if);
++			core_if->op_state = A_PERIPHERAL;
++		} else {
++
++			/*
++			 * Need to disable SOF interrupt immediately. When
++			 * switching from device to host, the PCD interrupt
++			 * handler won't handle the interrupt if host mode is
++			 * already set. The HCD interrupt handler won't get
++			 * called if the HCD state is HALT. This means that
++			 * the interrupt does not get handled and Linux
++			 * complains loudly.
++			 */
++			gintmsk.d32 = 0;
++			gintmsk.b.sofintr = 1;
++			dwc_modify_reg32(&global_regs->gintmsk, gintmsk.d32, 0);
++
++			pcd_stop(core_if);
++			hcd_start(core_if);
++			core_if->op_state = A_HOST;
++		}
++	}
++	if (gotgint.b.adevtoutchng)
++		printk(KERN_INFO  " ++OTG Interrupt: A-Device Timeout "
++				"Change++\n");
++	if (gotgint.b.debdone)
++		printk(KERN_INFO  " ++OTG Interrupt: Debounce Done++\n");
++
++	/* Clear GOTGINT */
++	dwc_write_reg32(&core_if->core_global_regs->gotgint, gotgint.d32);
++	return 1;
++}
++
++/*
++ * Wakeup Workqueue implementation
++ */
++static void port_otg_wqfunc(struct work_struct *work)
++{
++	struct core_if *core_if = container_of(work, struct core_if,
++			usb_port_otg);
++	u32 count = 0;
++	union gotgctl_data gotgctl = {.d32 = 0};
++
++	printk(KERN_INFO "%s\n", __func__);
++	gotgctl.d32 = dwc_read_reg32(&core_if->core_global_regs->gotgctl);
++	if (gotgctl.b.conidsts) {
++		/*
++		 * B-Device connector (device mode) wait for switch to device
++		 * mode.
++		 */
++		while (!dwc_otg_is_device_mode(core_if) && ++count <= 10000) {
++			printk(KERN_INFO "Waiting for Peripheral Mode, "
++				"Mode=%s\n", dwc_otg_is_host_mode(core_if) ?
++				"Host" : "Peripheral");
++			msleep(100);
++		}
++		BUG_ON(count > 10000);
++
++		core_if->op_state = B_PERIPHERAL;
++		dwc_otg_core_init(core_if);
++		dwc_otg_enable_global_interrupts(core_if);
++		pcd_start(core_if);
 +	} else {
-+		qh->sched_frame = dwc_frame_num_inc(qh->start_split_frame,
-+				      qh->interval);
-+
-+		if (dwc_frame_num_le(qh->sched_frame, fr_num))
-+			qh->sched_frame = fr_num;
-+
-+		qh->sched_frame |= 0x7;
-+		qh->start_split_frame = qh->sched_frame;
-+	}
-+}
-+
-+/**
-+ * Deactivates a periodic QH.  The QH is removed from the periodic queued
-+ * schedule. If there are any QTDs still attached to the QH, the QH is added to
-+ * either the periodic inactive schedule or the periodic ready schedule and its
-+ * next scheduled frame is calculated. The QH is placed in the ready schedule if
-+ * the scheduled frame has been reached already. Otherwise it's placed in the
-+ * inactive schedule. If there are no QTDs attached to the QH, the QH is
-+ * completely removed from the periodic schedule.
-+ */
-+static void deactivate_periodic_qh(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+			int sched_next_split)
-+{
-+	/* unsigned long flags; */
-+	u16 fr_num = dwc_otg_hcd_get_frame_number(dwc_otg_hcd_to_hcd(hcd));
-+
-+	/* local_irq_save(flags); */
-+
-+	if (qh->do_split)
-+		sched_next_per_split_xfr(qh, fr_num, sched_next_split);
-+	else {
-+		qh->sched_frame = dwc_frame_num_inc(qh->sched_frame,
-+						qh->interval);
-+		if (dwc_frame_num_le(qh->sched_frame, fr_num))
-+			qh->sched_frame = fr_num;
-+	}
-+
-+	if (list_empty(&qh->qtd_list))
-+		dwc_otg_hcd_qh_remove(hcd, qh);
-+	else {
 +		/*
-+		 * Remove from periodic_sched_queued and move to appropriate
-+		 * queue.
++		 * A-Device connector (host mode) wait for switch to host
++		 * mode.
 +		 */
-+		if (qh->sched_frame == fr_num)
-+			list_move(&qh->qh_list_entry,
-+				&hcd->periodic_sched_ready);
-+		else
-+			list_move(&qh->qh_list_entry,
-+				&hcd->periodic_sched_inactive);
++		while (!dwc_otg_is_host_mode(core_if) && ++count <= 10000) {
++			printk(KERN_INFO "Waiting for Host Mode, Mode=%s\n",
++				dwc_otg_is_host_mode(core_if) ?
++				"Host" : "Peripheral");
++			msleep(100);
++		}
++		BUG_ON(count > 10000);
++
++		core_if->op_state = A_HOST;
++		dwc_otg_core_init(core_if);
++		dwc_otg_enable_global_interrupts(core_if);
++		hcd_start(core_if);
 +	}
-+
-+	/* local_irq_restore(flags); */
 +}
 +
 +/**
-+ * Deactivates a non-periodic QH.  Removes the QH from the active non-periodic
-+ * schedule. The QH is added to the inactive non-periodic schedule if any QTDs
-+ * are still attached to the QH.
-+ */
-+static void deactivate_non_periodic_qh(struct dwc_hcd *hcd, struct dwc_qh *qh)
-+{
-+	dwc_otg_hcd_qh_remove(hcd, qh);
-+	if (!list_empty(&qh->qtd_list))
-+		dwc_otg_hcd_qh_add(hcd, qh);
-+}
-+
-+/**
-+ * Deactivates a QH.  Determines if the QH is periodic or non-periodic and takes
-+ * the appropriate action.
-+ */
-+void dwc_otg_hcd_qh_deactivate(struct dwc_hcd *hcd, struct dwc_qh *qh,
-+		int sched_next_periodic_split)
-+{
-+	if (dwc_qh_is_non_per(qh))
-+		deactivate_non_periodic_qh(hcd, qh);
-+	else
-+		deactivate_periodic_qh(hcd, qh, sched_next_periodic_split);
-+}
-+
-+/**
-+ * Initializes a QTD structure.
-+ */
-+static void dwc_otg_hcd_qtd_init(struct dwc_qtd *qtd, struct urb *urb)
-+{
-+	memset(qtd, 0, sizeof(struct dwc_qtd));
-+	qtd->urb = urb;
-+
-+	if (usb_pipecontrol(urb->pipe)) {
-+		/*
-+		 * The only time the QTD data toggle is used is on the data
-+		 * phase of control transfers. This phase always starts with
-+		 * DATA1.
-+		 */
-+		qtd->data_toggle = DWC_OTG_HC_PID_DATA1;
-+		qtd->control_phase = DWC_OTG_CONTROL_SETUP;
-+	}
-+
-+	/* start split */
-+	qtd->complete_split = 0;
-+	qtd->isoc_split_pos = DWC_HCSPLIT_XACTPOS_ALL;
-+	qtd->isoc_split_offset = 0;
-+
-+	/* Store the qtd ptr in the urb to reference what QTD. */
-+	urb->hcpriv = qtd;
-+
-+	INIT_LIST_HEAD(&qtd->qtd_list_entry);
-+	return;
-+}
-+
-+/* Allocates memory for a QTD structure. */
-+static inline struct dwc_qtd *dwc_otg_hcd_qtd_alloc(gfp_t _mem_flags)
-+{
-+	return kmalloc(sizeof(struct dwc_qtd), _mem_flags);
-+}
-+
-+/**
-+ * This function allocates and initializes a QTD.
-+ */
-+struct dwc_qtd *dwc_otg_hcd_qtd_create(struct urb *urb,  gfp_t _mem_flags)
-+{
-+	struct dwc_qtd *qtd = dwc_otg_hcd_qtd_alloc(_mem_flags);
-+
-+	if (!qtd)
-+		return NULL;
-+
-+	dwc_otg_hcd_qtd_init(qtd, urb);
-+	return qtd;
-+}
-+
-+
-+
-+/**
-+ * This function adds a QTD to the QTD-list of a QH.  It will find the correct
-+ * QH to place the QTD into.  If it does not find a QH, then it will create a
-+ * new QH. If the QH to which the QTD is added is not currently scheduled, it
-+ * is placed into the proper schedule based on its EP type.
++ * This function handles the Connector ID Status Change Interrupt.  It
++ * reads the OTG Interrupt Register (GOTCTL) to determine whether this
++ * is a Device to Host Mode transition or a Host Mode to Device
++ * Transition.
 + *
++ * This only occurs when the cable is connected/removed from the PHY
++ * connector.
 + */
-+int dwc_otg_hcd_qtd_add(struct dwc_qtd *qtd,  struct dwc_hcd *hcd)
++static int dwc_otg_handle_conn_id_status_change_intr(struct core_if *core_if)
 +{
-+	struct usb_host_endpoint *ep;
-+	struct dwc_qh *qh;
-+	int retval = 0;
-+	struct urb *urb = qtd->urb;
++	union gintsts_data gintsts = {.d32 = 0};
++	union gintmsk_data gintmsk = {.d32 = 0};
 +
 +	/*
-+	 * Get the QH which holds the QTD-list to insert to. Create QH if it
-+	 * doesn't exist.
++	 * Need to disable SOF interrupt immediately. If switching from device
++	 * to host, the PCD interrupt handler won't handle the interrupt if
++	 * host mode is already set. The HCD interrupt handler won't get
++	 * called if the HCD state is HALT. This means that the interrupt does
++	 * not get handled and Linux complains loudly.
 +	 */
-+	ep = dwc_urb_to_endpoint(urb);
++	gintmsk.b.sofintr = 1;
++	dwc_modify_reg32(&core_if->core_global_regs->gintmsk, gintmsk.d32, 0);
 +
-+	qh = (struct dwc_qh *) ep->hcpriv;
-+	if (!qh) {
-+		qh = dwc_otg_hcd_qh_create(hcd, urb);
-+		if (!qh)
-+			goto done;
++	INIT_WORK(&core_if->usb_port_otg, port_otg_wqfunc);
++	schedule_work(&core_if->usb_port_otg);
 +
-+		ep->hcpriv = qh;
++	/* Set flag and clear interrupt */
++	gintsts.b.conidstschng = 1;
++	dwc_write_reg32(&core_if->core_global_regs->gintsts, gintsts.d32);
++	return 1;
++}
++
++/**
++ * This interrupt indicates that a device is initiating the Session
++ * Request Protocol to request the host to turn on bus power so a new
++ * session can begin. The handler responds by turning on bus power. If
++ * the DWC_otg controller is in low power mode, the handler brings the
++ * controller out of low power mode before turning on bus power.
++ */
++static int dwc_otg_handle_session_req_intr(struct core_if *core_if)
++{
++	union gintsts_data gintsts;
++
++	if (!dwc_has_feature(core_if, DWC_HOST_ONLY)) {
++		union hprt0_data hprt0;
++
++		if (dwc_otg_is_device_mode(core_if)) {
++			printk(KERN_INFO "SRP: Device mode\n");
++		} else {
++			printk(KERN_INFO "SRP: Host mode\n");
++
++			/* Turn on the port power bit. */
++			hprt0.d32 = dwc_otg_read_hprt0(core_if);
++			hprt0.b.prtpwr = 1;
++			dwc_write_reg32(core_if->host_if->hprt0, hprt0.d32);
++
++			/*
++			 * Start the Connection timer.
++			 * A message can be displayed,
++			 * if connect does not occur within 10 seconds.
++			 */
++			hcd_session_start(core_if);
++		}
 +	}
 +
-+	retval = dwc_otg_hcd_qh_add(hcd, qh);
-+	if (!retval)
-+		list_add_tail(&qtd->qtd_list_entry, &qh->qtd_list);
++	/* Clear interrupt */
++	gintsts.d32 = 0;
++	gintsts.b.sessreqintr = 1;
++	dwc_write_reg32(&core_if->core_global_regs->gintsts, gintsts.d32);
++	return 1;
++}
 +
-+done:
++/**
++ * This interrupt indicates that the DWC_otg controller has detected a
++ * resume or remote wakeup sequence. If the DWC_otg controller is in
++ * low power mode, the handler must brings the controller out of low
++ * power mode. The controller automatically begins resume
++ * signaling. The handler schedules a time to stop resume signaling.
++ */
++static int dwc_otg_handle_wakeup_detected_intr(struct core_if *core_if)
++{
++	union gintsts_data gintsts;
++	struct device_if *dev_if = core_if->dev_if;
++
++	if (dwc_otg_is_device_mode(core_if)) {
++		union dctl_data dctl = {.d32 = 0};
++
++		/* Clear the Remote Wakeup Signalling */
++		dctl.b.rmtwkupsig = 1;
++		dwc_modify_reg32(&dev_if->dev_global_regs->dctl, dctl.d32, 0);
++
++		if (core_if->pcd_cb && core_if->pcd_cb->resume_wakeup)
++			core_if->pcd_cb->resume_wakeup(core_if->pcd_cb->p);
++	} else {
++		union pcgcctl_data pcgcctl = {.d32 = 0};
++
++		/* Restart the Phy Clock */
++		pcgcctl.b.stoppclk = 1;
++		dwc_modify_reg32(core_if->pcgcctl, pcgcctl.d32, 0);
++		schedule_delayed_work(&core_if->usb_port_wakeup, 10);
++	}
++
++	/* Clear interrupt */
++	gintsts.d32 = 0;
++	gintsts.b.wkupintr = 1;
++	dwc_write_reg32(&core_if->core_global_regs->gintsts, gintsts.d32);
++	return 1;
++}
++
++/**
++ * This interrupt indicates that a device has been disconnected from
++ * the root port.
++ */
++static int dwc_otg_handle_disconnect_intr(struct core_if *core_if)
++{
++	union gintsts_data gintsts;
++	struct core_global_regs *global_regs = core_if->core_global_regs;
++
++	if (!dwc_has_feature(core_if, DWC_HOST_ONLY)) {
++		if (core_if->op_state == B_HOST) {
++			hcd_disconnect(core_if);
++			pcd_start(core_if);
++			core_if->op_state = B_PERIPHERAL;
++		} else if (dwc_otg_is_device_mode(core_if)) {
++			union gotgctl_data gotgctl = {.d32 = 0};
++
++			gotgctl.d32 =
++				dwc_read_reg32(&global_regs->gotgctl);
++
++			/*
++			 * If HNP is in process, do nothing.
++			 * The OTG "Host Negotiation Detected"
++			 * interrupt will do the mode switch.
++			 * Otherwise, since we are in device mode,
++			 * disconnect and stop the HCD,
++			 * then start the PCD.
++			 */
++			if (!gotgctl.b.devhnpen) {
++				hcd_disconnect(core_if);
++				pcd_start(core_if);
++				core_if->op_state = B_PERIPHERAL;
++			}
++		} else if (core_if->op_state == A_HOST)	{
++			/* A-Cable still connected but device disconnected. */
++			hcd_disconnect(core_if);
++		}
++	}
++	gintsts.d32 = 0;
++	gintsts.b.disconnect = 1;
++	dwc_write_reg32(&global_regs->gintsts, gintsts.d32);
++	return 1;
++}
++
++/**
++ * This interrupt indicates that SUSPEND state has been detected on
++ * the USB.
++ *
++ * For HNP the USB Suspend interrupt signals the change from
++ * "a_peripheral" to "a_host".
++ *
++ * When power management is enabled the core will be put in low power
++ * mode.
++ */
++static int dwc_otg_handle_usb_suspend_intr(struct core_if *core_if)
++{
++	union dsts_data dsts;
++	union gintsts_data gintsts;
++	struct device_if *dev_if = core_if->dev_if;
++
++	if (dwc_otg_is_device_mode(core_if)) {
++		/*
++		 * Check the Device status register to determine if the Suspend
++		 * state is active.
++		 */
++		dsts.d32 = dwc_read_reg32(&dev_if->dev_global_regs->dsts);
++		/* PCD callback for suspend. */
++		pcd_suspend(core_if);
++	} else {
++		if (core_if->op_state == A_PERIPHERAL) {
++			/* Clear the a_peripheral flag, back to a_host. */
++			pcd_stop(core_if);
++			hcd_start(core_if);
++			core_if->op_state = A_HOST;
++		}
++	}
++
++	/* Clear interrupt */
++	gintsts.d32 = 0;
++	gintsts.b.usbsuspend = 1;
++	dwc_write_reg32(&core_if->core_global_regs->gintsts, gintsts.d32);
++	return 1;
++}
++
++/**
++ * This function returns the Core Interrupt register.
++ *
++ * Although the Host Port interrupt (portintr) is documented as host mode
++ * only, it appears to occur in device mode when Port Enable / Disable Changed
++ * bit in HPRT0 is set. The code in dwc_otg_handle_common_intr checks if in
++ * device mode and just clears the interrupt.
++ */
++static inline u32 dwc_otg_read_common_intr(struct core_if *core_if)
++{
++	union gintsts_data gintsts;
++	union gintmsk_data gintmsk;
++	union gintmsk_data gintmsk_common = {.d32 = 0};
++	gintmsk_common.b.wkupintr = 1;
++	gintmsk_common.b.sessreqintr = 1;
++	gintmsk_common.b.conidstschng = 1;
++	gintmsk_common.b.otgintr = 1;
++	gintmsk_common.b.modemismatch = 1;
++	gintmsk_common.b.disconnect = 1;
++	gintmsk_common.b.usbsuspend = 1;
++	gintmsk_common.b.portintr = 1;
++
++	gintsts.d32 = dwc_read_reg32(&core_if->core_global_regs->gintsts);
++	gintmsk.d32 = dwc_read_reg32(&core_if->core_global_regs->gintmsk);
++
++	return (gintsts.d32 & gintmsk.d32) & gintmsk_common.d32;
++}
++
++/**
++ * Common interrupt handler.
++ *
++ * The common interrupts are those that occur in both Host and Device mode.
++ * This handler handles the following interrupts:
++ * - Mode Mismatch Interrupt
++ * - Disconnect Interrupt
++ * - OTG Interrupt
++ * - Connector ID Status Change Interrupt
++ * - Session Request Interrupt.
++ * - Resume / Remote Wakeup Detected Interrupt.
++ *
++ * - Host Port Interrupt.  Although this interrupt is documented as only
++ *   occurring in Host mode, it also occurs in Device mode when Port Enable /
++ *   Disable Changed bit in HPRT0 is set. If it is seen here, while in Device
++ *   mode, the interrupt is just cleared.
++ *
++ */
++int dwc_otg_handle_common_intr(struct core_if *core_if)
++{
++	int retval = 0;
++	union gintsts_data gintsts;
++
++	gintsts.d32 = dwc_otg_read_common_intr(core_if);
++
++	if (gintsts.b.modemismatch)
++		retval |= dwc_otg_handle_mode_mismatch_intr(core_if);
++	if (gintsts.b.otgintr)
++		retval |= dwc_otg_handle_otg_intr(core_if);
++	if (gintsts.b.conidstschng)
++		retval |= dwc_otg_handle_conn_id_status_change_intr(core_if);
++	if (gintsts.b.disconnect)
++		retval |= dwc_otg_handle_disconnect_intr(core_if);
++	if (gintsts.b.sessreqintr)
++		retval |= dwc_otg_handle_session_req_intr(core_if);
++	if (gintsts.b.wkupintr)
++		retval |= dwc_otg_handle_wakeup_detected_intr(core_if);
++	if (gintsts.b.usbsuspend)
++		retval |= dwc_otg_handle_usb_suspend_intr(core_if);
++
++	if (gintsts.b.portintr && dwc_otg_is_device_mode(core_if)) {
++		gintsts.d32 = 0;
++		gintsts.b.portintr = 1;
++		dwc_write_reg32(&core_if->core_global_regs->gintsts,
++				gintsts.d32);
++		retval |= 1;
++		printk(KERN_INFO "RECEIVED PORTINT while in Device mode\n");
++	}
++
 +	return retval;
 +}
++
 -- 
 1.6.0.1
