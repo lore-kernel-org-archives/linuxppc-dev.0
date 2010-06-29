@@ -1,21 +1,12 @@
-Return-Path: <marek.vasut@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id D92C4B6EED
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 11:36:12 +1000 (EST)
-Received: by bwz19 with SMTP id 19so814249bwz.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Jun 2010 18:36:10 -0700 (PDT)
-From: Marek Vasut <marek.vasut@gmail.com>
-To: Rupjyoti Sarmah <rsarmah@amcc.com>
-Subject: Re: [PATCH]460EX on-chip SATA driver<kernel 2.6.33><resubmission>
-Date: Tue, 29 Jun 2010 03:33:50 +0200
-References: <201006041226.o54CQH2V017366@amcc.com>
-In-Reply-To: <201006041226.o54CQH2V017366@amcc.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201006290333.50673.marek.vasut@gmail.com>
-Cc: linux-ide@vger.kernel.org, sr@denx.de, jgarzik@pobox.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] sched: fix spelling of sibling
+Date: Tue, 29 Jun 2010 12:02:01 +1000
+Message-ID: <15249.1277776921@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +16,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dne P=C3=A1 4. =C4=8Dervna 2010 14:26:17 Rupjyoti Sarmah napsal(a):
-> This patch enables the on-chip DWC SATA controller of the AppliedMicro
-> processor 460EX.
->=20
-> Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
-> Signed-off-by: Mark Miesfeld <mmiesfeld@appliedmicro.com>
-> Signed-off-by: Prodyut Hazarika <phazarika@appliedmicro.com>
->=20
+No logic changes, only spelling.
 
-=2D-SNIP--
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/process.c |    2 +-
+ include/linux/topology.h      |    2 +-
+ kernel/sched_fair.c           |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-> +		dev_err(ap->dev, "%s: Command not pending cmd_issued=3D%d "
-> +			"(tag=3D%d) DMA NOT started\n", __func__,
-> +			hsdevp->cmd_issued[tag], tag);
-
-Just a nitpick, but don't break strings if possible.
+Index: linux-tip/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-tip.orig/arch/powerpc/kernel/process.c
++++ linux-tip/arch/powerpc/kernel/process.c
+@@ -1270,7 +1270,7 @@ unsigned long randomize_et_dyn(unsigned 
+ }
+ 
+ #ifdef CONFIG_SMP
+-int arch_sd_sibiling_asym_packing(void)
++int arch_sd_sibling_asym_packing(void)
+ {
+ 	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+ 		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+Index: linux-tip/include/linux/topology.h
+===================================================================
+--- linux-tip.orig/include/linux/topology.h
++++ linux-tip/include/linux/topology.h
+@@ -103,7 +103,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_SHARE_PKG_RESOURCES		\
+ 				| 0*SD_SERIALIZE			\
+ 				| 0*SD_PREFER_SIBLING			\
+-				| arch_sd_sibiling_asym_packing()	\
++				| arch_sd_sibling_asym_packing()	\
+ 				,					\
+ 	.last_balance		= jiffies,				\
+ 	.balance_interval	= 1,					\
+Index: linux-tip/kernel/sched_fair.c
+===================================================================
+--- linux-tip.orig/kernel/sched_fair.c
++++ linux-tip/kernel/sched_fair.c
+@@ -2567,7 +2567,7 @@ static inline void update_sd_lb_stats(st
+ 	} while (sg != sd->groups);
+ }
+ 
+-int __weak arch_sd_sibiling_asym_packing(void)
++int __weak arch_sd_sibling_asym_packing(void)
+ {
+        return 0*SD_ASYM_PACKING;
+ }
