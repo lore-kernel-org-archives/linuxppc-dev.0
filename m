@@ -1,21 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 8F18AB6EEA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Jun 2010 19:54:45 +1000 (EST)
-Message-ID: <4C29C2E1.4000706@suse.de>
-Date: Tue, 29 Jun 2010 11:54:41 +0200
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <monstr@monstr.eu>
+Message-ID: <4C29C386.7090707@monstr.eu>
+Date: Tue, 29 Jun 2010 11:57:26 +0200
+From: Michal Simek <monstr@monstr.eu>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 01/26] KVM: PPC: Introduce shared page
-References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-2-git-send-email-agraf@suse.de>
-	<4C274028.7020105@redhat.com>
-In-Reply-To: <4C274028.7020105@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/5] microblaze: turn CONFIG_OF into a select
+References: <0bcc23b9-2cbd-4465-b17c-7b3c2dff9fd3@VA3EHSMHS007.ehs.local>	<20100629123843.5f94d477.sfr@canb.auug.org.au>
+	<20100629124200.20ca24b7.sfr@canb.auug.org.au>
+In-Reply-To: <20100629124200.20ca24b7.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: microblaze-uclinux@itee.uq.edu.au, David Miller <davem@davemloft.net>,
+	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,112 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avi Kivity wrote:
-> On 06/26/2010 02:24 AM, Alexander Graf wrote:
->> For transparent variable sharing between the hypervisor and guest, I
->> introduce
->> a shared page. This shared page will contain all the registers the
->> guest can
->> read and write safely without exiting guest context.
->>
->> This patch only implements the stubs required for the basic structure
->> of the
->> shared page. The actual register moving follows.
->>
->>
->> @@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct
->> kvm *kvm, unsigned int id)
->>       if (err)
->>           goto free_vcpu;
->>
->> +    vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
->> +    if (!vcpu->arch.shared)
->> +        goto uninit_vcpu;
->> +
->>       return vcpu;
->>
->> +uninit_vcpu:
->> +    kvm_vcpu_uninit(vcpu);
->>   free_vcpu:
->>       kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
->>   out:
->> @@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->>   {
->>       struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
->>
->> +    free_page((unsigned long)vcpu->arch.shared);
->>       kvm_vcpu_uninit(vcpu);
->>       kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
->>   }
->> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
->> index 884d4a5..ba79b35 100644
->> --- a/arch/powerpc/kvm/book3s.c
->> +++ b/arch/powerpc/kvm/book3s.c
->> @@ -1247,6 +1247,10 @@ struct kvm_vcpu
->> *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
->>       if (err)
->>           goto free_shadow_vcpu;
->>
->> +    vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
->> +    if (!vcpu->arch.shared)
->> +        goto uninit_vcpu;
->> +
->>       vcpu->arch.host_retip = kvm_return_point;
->>       vcpu->arch.host_msr = mfmsr();
->>   #ifdef CONFIG_PPC_BOOK3S_64
->> @@ -1277,6 +1281,8 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct
->> kvm *kvm, unsigned int id)
->>
->>       return vcpu;
->>
->> +uninit_vcpu:
->> +    kvm_vcpu_uninit(vcpu);
->>   free_shadow_vcpu:
->>       kfree(vcpu_book3s->shadow_vcpu);
->>   free_vcpu:
->> @@ -1289,6 +1295,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->>   {
->>       struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
->>
->> +    free_page((unsigned long)vcpu->arch.shared);
->>       kvm_vcpu_uninit(vcpu);
->>       kfree(vcpu_book3s->shadow_vcpu);
->>       vfree(vcpu_book3s);
->> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
->> index e8a00b0..71750f2 100644
->> --- a/arch/powerpc/kvm/e500.c
->> +++ b/arch/powerpc/kvm/e500.c
->> @@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct
->> kvm *kvm, unsigned int id)
->>       if (err)
->>           goto uninit_vcpu;
->>
->> +    vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
->> +    if (!vcpu->arch.shared)
->> +        goto uninit_tlb;
->> +
->>       return vcpu;
->>
->> +uninit_tlb:
->> +    kvmppc_e500_tlb_uninit(vcpu_e500);
->>   uninit_vcpu:
->>       kvm_vcpu_uninit(vcpu);
->>   free_vcpu:
->> @@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->>   {
->>       struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
->>
->> +    free_page((unsigned long)vcpu->arch.shared);
->>       kvmppc_e500_tlb_uninit(vcpu_e500);
->>       kvm_vcpu_uninit(vcpu);
->>       kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
->>    
->
-> Code repeats 3x.  Share please.
+Stephen Rothwell wrote:
+> so that we can make CONFIG_OF global and remove it from
+> the architecture Kconfig files later.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Looking at this again, I could combine the 3 lines of init code into 3
-lines of code that do a generic function call and then error checking.
-And I could convert the one free_page line with one function call that
-would free the page. Is there a real gain behind this?
+Acked-by: Michal Simek <monstr@monstr.eu>
 
-Alex
+> ---
+>  arch/microblaze/Kconfig |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+> index 76818f9..2b37820 100644
+> --- a/arch/microblaze/Kconfig
+> +++ b/arch/microblaze/Kconfig
+> @@ -17,6 +17,8 @@ config MICROBLAZE
+>  	select HAVE_DMA_ATTRS
+>  	select HAVE_DMA_API_DEBUG
+>  	select TRACING_SUPPORT
+> +	select OF
+> +	select OF_FLATTREE
+>  
+>  config SWAP
+>  	def_bool n
+> @@ -125,8 +127,7 @@ config CMDLINE_FORCE
+>  	  override those passed by the boot loader.
+>  
+>  config OF
+> -	def_bool y
+> -	select OF_FLATTREE
+> +	bool
+>  
+>  config PROC_DEVICETREE
+>  	bool "Support for device tree in /proc"
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
