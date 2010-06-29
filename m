@@ -1,31 +1,31 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <B04825@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 78D60B6F19
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 10:19:10 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.14.3/de01egw01-8.14.3) with ESMTP id
-	o5TNtjCV009404
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 16:55:45 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o5U0891u017838
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 19:08:09 -0500 (CDT)
-Date: Tue, 29 Jun 2010 18:55:44 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Tabi Timur-B04825" <B04825@freescale.com>
-Subject: Re: [PATCH] powerpc: introduce basic support for the Freescale
-	P1022DS reference board
-Message-Id: <20100629185544.609a952a.kim.phillips@freescale.com>
-In-Reply-To: <5610599F537DD74A8D1F5CC946A7507303478FF9@az33exm25.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTPS id 5C67DB6F35
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 09:38:03 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o5TNc0pe000241
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 16:38:00 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o5TNmFoK028008
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 18:48:16 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CB17E4.1C1A640E"
+Subject: Re: [linuxppc-release] [PATCH] powerpc: introduce basic support for
+	the Freescale P1022DS reference board
+Date: Tue, 29 Jun 2010 16:37:59 -0700
+Message-ID: <5610599F537DD74A8D1F5CC946A7507303478FF8@az33exm25.fsl.freescale.net>
+In-Reply-To: <22ED4111-892C-4715-BF70-C1E62F838DDA@kernel.crashing.org>
 References: <1277847274-24648-1-git-send-email-timur@freescale.com>
-	<20100629171904.d6ae6233.kim.phillips@freescale.com>
-	<5610599F537DD74A8D1F5CC946A7507303478FF9@az33exm25.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<22ED4111-892C-4715-BF70-C1E62F838DDA@kernel.crashing.org>
+From: "Tabi Timur-B04825" <B04825@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,62 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 29 Jun 2010 17:39:17 -0600
-"Tabi Timur-B04825" <B04825@freescale.com> wrote:
+This is a multi-part message in MIME format.
 
-> Kim Phillips wrote:
-> > On Tue, 29 Jun 2010 16:34:34 -0500
-> > Timur Tabi<timur@freescale.com>  wrote:
-> >
-> >> Introduce basic support for the Freescale P1022DS reference board, based on the
-> >> Freescale BSP for this board.
-> >>
-> >> Details: No DIU video or SSI audio support, no MMC/SD card support, 36-bit and
-> >> SWIOTLB support enabled, 36-bit DTS only, and CONFIG_NO_HZ disabled because it
-> >> causes performance problems on this kernel.
-> >
-> > what kind of performance problems?
-> 
-> See my post on linuxppc-dev about CONFIG_NO_HZ.
+------_=_NextPart_001_01CB17E4.1C1A640E
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-looks like it should be easily bisected, esp. since
-mpc85xx_smp_defconfig has NO_HZ=y.
+Kumar Gala wrote:
 
-> >> +			queue-group@0{
-> >> +				#address-cells =<1>;
-> >> +				#size-cells =<1>;
-> >> +				reg =<0xB1000 0x1000>;
-> >> +				fsl,rx-err-int-map =<0xAA>;
-> >> +				fsl,tx-int-map =<0xAA>;
-> >> +				interrupts =<35 2 36 2 40 2>;
-> >> +			};
-> >> +			queue-group@1{
-> >> +				#address-cells =<1>;
-> >> +				#size-cells =<1>;
-> >> +				reg =<0xB5000 0x1000>;
-> >> +				fsl,rx-err-int-map =<0x55>;
-> >> +				fsl,tx-int-map =<0x55>;
-> >> +				interrupts =<51 2 52 2 67 2>;
-> >> +			};
-> >
-> > these queue-group nodes, fsl,{r,t}x-* properties...
-> 
-> I just copied this tree from the BSP.  I have no idea what they should ok 
-> like.  Can you be more specific?
+> Drop the defconfig and update mpc85xx_{smp_}defconfig to build p1022.
 
-eh?  you submitted the patch; I'm just calling out the
-foreign/undocumented matter in it.
+What about video and audio support?  I'm going to add that later?  We =
+don't=20
+want to compile the DIU and SSI drivers on all 85xx systems, do we?
 
-> >> +		crypto@30000 {
-> >
-> >> +			fsl,multi-host-mode = "dual";
-> >> +			fsl,channel-remap =<0x3>;
-> >
-> > and the above two properties aren't supported by their respective
-> > drivers, nor are they listed in the dts bindings documentation.
-> 
-> Then please tell me what these nodes should look like.
+--=20
+Timur Tabi
+Linux kernel developer
 
-delete them?
+------_=_NextPart_001_01CB17E4.1C1A640E
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Kim
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7654.12">
+<TITLE>Re: [linuxppc-release] [PATCH] powerpc: introduce basic support =
+for the Freescale P1022DS reference board</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>Kumar Gala wrote:<BR>
+<BR>
+&gt; Drop the defconfig and update mpc85xx_{smp_}defconfig to build =
+p1022.<BR>
+<BR>
+What about video and audio support?&nbsp; I'm going to add that =
+later?&nbsp; We don't<BR>
+want to compile the DIU and SSI drivers on all 85xx systems, do we?<BR>
+<BR>
+--<BR>
+Timur Tabi<BR>
+Linux kernel developer<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01CB17E4.1C1A640E--
