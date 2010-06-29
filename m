@@ -1,21 +1,21 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id EB9F3B6EE8
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Jun 2010 20:55:29 +1000 (EST)
-Message-ID: <4C29D11D.6050006@redhat.com>
-Date: Tue, 29 Jun 2010 13:55:25 +0300
-From: Avi Kivity <avi@redhat.com>
+Return-Path: <rsarmah@apm.com>
+Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
+	by ozlabs.org (Postfix) with SMTP id 4F06DB6EED
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 22:20:39 +1000 (EST)
+Received: by wwi14 with SMTP id 14so4016385wwi.21
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 05:20:35 -0700 (PDT)
+From: Rupjyoti Sarmah <rsarmah@apm.com>
+References: <201006041226.o54CQH2V017366@amcc.com>
+	<201006290333.50673.marek.vasut@gmail.com>
+In-Reply-To: <201006290333.50673.marek.vasut@gmail.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 01/26] KVM: PPC: Introduce shared page
-References: <1277508314-915-1-git-send-email-agraf@suse.de>
-	<1277508314-915-2-git-send-email-agraf@suse.de>
-	<4C274028.7020105@redhat.com> <4C29C2E1.4000706@suse.de>
-In-Reply-To: <4C29C2E1.4000706@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Date: Tue, 29 Jun 2010 17:50:32 +0530
+Message-ID: <5db514a6e3b22cd59eeaa1acc716be5a@mail.gmail.com>
+Subject: RE: [PATCH]460EX on-chip SATA driver<kernel 2.6.33><resubmission>
+To: Marek Vasut <marek.vasut@gmail.com>, Rupjyoti Sarmah <rsarmah@amcc.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-ide@vger.kernel.org, sr@denx.de, jgarzik@pobox.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2010 12:54 PM, Alexander Graf wrote:
->
->> Code repeats 3x.  Share please.
->>      
-> Looking at this again, I could combine the 3 lines of init code into 3
-> lines of code that do a generic function call and then error checking.
-> And I could convert the one free_page line with one function call that
-> would free the page. Is there a real gain behind this?
->
->    
+Hi,
 
-Looks marginal, yes.  It will help if initialization is expanded later, 
-but currently it doesn't help much.
+Thanks for your feedback. I submitted an updated version of this patch
+later.
+I tried to limit the lines within 80 characters.
 
--- 
-error compiling committee.c: too many arguments to function
+Regards,
+Rup
+
+
+-----Original Message-----
+From: Marek Vasut [mailto:marek.vasut@gmail.com]
+Sent: Tuesday, June 29, 2010 7:04 AM
+To: Rupjyoti Sarmah
+Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org;
+jgarzik@pobox.com; sr@denx.de; linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH]460EX on-chip SATA driver<kernel 2.6.33><resubmission>
+
+Dne P=C3=A1 4. =C4=8Dervna 2010 14:26:17 Rupjyoti Sarmah napsal(a):
+> This patch enables the on-chip DWC SATA controller of the AppliedMicro
+> processor 460EX.
+>
+> Signed-off-by: Rupjyoti Sarmah <rsarmah@appliedmicro.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@appliedmicro.com>
+> Signed-off-by: Prodyut Hazarika <phazarika@appliedmicro.com>
+>
+
+--SNIP--
+
+> +		dev_err(ap->dev, "%s: Command not pending cmd_issued=3D%d "
+> +			"(tag=3D%d) DMA NOT started\n", __func__,
+> +			hsdevp->cmd_issued[tag], tag);
+
+Just a nitpick, but don't break strings if possible.
