@@ -1,23 +1,18 @@
-Return-Path: <stevan@iritel.com>
-Received: from iritel.iritel.bg.ac.rs (iritel.iritel.bg.ac.rs [193.203.18.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 2A8F9B6EEB
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 24598B6EEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 00:21:56 +1000 (EST)
-Received: from iritel.iritel.bg.ac.rs (root@localhost)
-	by iritel.iritel.bg.ac.rs (8.13.1/8.13.1) with SMTP id o5TEGEJm011732
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jun 2010 16:16:19 +0200
-Received: from [193.203.19.118] (stevan [193.203.19.118])
-	by iritel.iritel.bg.ac.rs (8.13.1/8.13.1) with ESMTP id o5TEGD86011724
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jun 2010 16:16:13 +0200
-Subject: ftp login problem using wu-ftpd
-From: Stevan Ignjatovic <stevan@iritel.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain
-Date: Tue, 29 Jun 2010 16:16:31 +0200
-Message-Id: <1277820991.4257.18.camel@stevan>
-Mime-Version: 1.0
+	Wed, 30 Jun 2010 01:21:36 +1000 (EST)
+Received: by gyd10 with SMTP id 10so6713696gyd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 29 Jun 2010 08:21:34 -0700 (PDT)
+MIME-Version: 1.0
+Date: Tue, 29 Jun 2010 23:21:34 +0800
+Message-ID: <AANLkTimV1AFEUrRf-2iEizXH4HQFMrrAumsRVDKxNfAv@mail.gmail.com>
+Subject: kernel init exception
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+We are   porting linux 2.6.21.7 to a powerpc e500mc board , p4080.
 
-I ported Linux-2.6.30-rc8 on my custom mpc885 board. The filesystem I am
-using is jffs2 which I created from
-eldk-4.2/ppc_8xx/images/ramdisk_image.gz. Linux boots fine and I can
-telnet to the board but I cannot ftp:
+But something is wrong when loading init file:
 
-# ftp 10.8.1.5
-Connected to 10.8.1.5.
-220 10.8.1.5 FTP server (Version wu-2.6.2(1) Wed Apr 2 09:10:49 MEST
-2008) ready.
-530 Please login with USER and PASS.
-530 Please login with USER and PASS.
-KERBEROS_V4 rejected as an authentication type
-Name (10.8.1.5:root): root
+log:
 
-Here ftp connection hangs. Do I have to create another user (beside
-root) in order to make ftp connection? Earlier, when I was using 2.4
-linux I didn't have problems with ftp connection as root.
+free init memory...
+
+init has generated signal  4  but has no handler for it
 
 
-/etc/ftpaccess:
-class   all   real,guest,anonymous  *
+I found it print in _exception --->
 
-email root@localhost
-
-loginfails 5
-
-readme  README*    login
-readme  README*    cwd=*
-
-message /welcome.msg            login
-message .message                cwd=*
-
-compress        yes             all
-tar             yes             all
-chmod		no		guest,anonymous
-delete		no		guest,anonymous
-overwrite	no		guest,anonymous
-rename		no		guest,anonymous
-
-log transfers anonymous,real inbound,outbound
-
-shutdown /etc/shutmsg
-
-passwd-check rfc822 warn
+                                   if (is_init(current)) {
+                                         if (handler == SIG_DFL) {
+    			  printk(KERN_CRIT "init has generated signal %d "
+			        "but has no handler for it\n", signr);
+			do_exit(signr);
+		          }
+                                   }
 
 
+why there generated a signal 4  in  init  process?
 
-/etc/xinetd.d/wu-ftpd:
-# default: on
-# description: The wu-ftpd FTP server serves FTP connections. It uses \
-#	normal, unencrypted usernames and passwords for authentication.
-service ftp
-{
-	socket_type		= stream
-	wait			= no
-	user			= root
-	server			= /usr/sbin/in.ftpd
-	server_args		= -l -a
-	log_on_success		+= DURATION USERID
-	log_on_failure		+= USERID
-	nice			= 10
-	disable			= no
-}
-
-
-/etc/pam.d/ftp:
-#%PAM-1.0
-auth    include	system-auth
-auth       required	/lib/security/pam_listfile.so item=user sense=deny
-file=/etc/ftpusers onerr=succeed
-auth       required	/lib/security/pam_shells.so
-account include	system-auth
-session include	system-auth
-
-Thanks in advance.
+Thanks
