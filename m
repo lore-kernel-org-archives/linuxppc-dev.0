@@ -1,17 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 29 Jun 2010 12:43:34 +1000
+Date: Tue, 29 Jun 2010 12:44:50 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
-	<paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/5] powerpc: turn CONFIG_OF into a select
-Message-Id: <20100629124334.8f3678e5.sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
+Subject: [PATCH 3/5] sparc: turn CONFIG_OF into a select
+Message-Id: <20100629124450.5e85bafe.sfr@canb.auug.org.au>
 In-Reply-To: <20100629123843.5f94d477.sfr@canb.auug.org.au>
 References: <0bcc23b9-2cbd-4465-b17c-7b3c2dff9fd3@VA3EHSMHS007.ehs.local>
 	<20100629123843.5f94d477.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
-	David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+Cc: Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
+	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@lists.ozlabs.org,
 	devicetree-discuss@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,32 +26,30 @@ the architecture Kconfig files later.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/Kconfig |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/sparc/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 328774b..3697231 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -120,6 +120,8 @@ config ARCH_NO_VIRT_TO_BUS
- config PPC
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 6f1470b..d02e8ac 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -18,6 +18,7 @@ config 64BIT
+ config SPARC
  	bool
  	default y
 +	select OF
-+	select OF_FLATTREE
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
-@@ -173,8 +175,7 @@ config PPC_OF
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_ARCH_KGDB if !SMP || SPARC64
+@@ -149,7 +150,7 @@ config ARCH_NO_VIRT_TO_BUS
  	def_bool y
  
  config OF
 -	def_bool y
--	select OF_FLATTREE
 +	bool
  
- config PPC_UDBG_16550
- 	bool
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y if SPARC64
 -- 
 1.7.1
 
