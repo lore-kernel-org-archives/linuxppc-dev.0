@@ -1,17 +1,19 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 945B0B70AF
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 07:00:14 +1000 (EST)
-Date: Wed, 30 Jun 2010 01:00:13 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 3/3] gianfar: Implement workaround for eTSEC-A002 erratum
-Message-ID: <20100629210013.GC10905@oksana.dev.rtsoft.ru>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id BE294B6EEC
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 07:28:28 +1000 (EST)
+Received: by vws20 with SMTP id 20so86195vws.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 14:28:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, Andy Fleming <afleming@freescale.com>,
-	Sandeep Gopalpet <Sandeep.Kumar@freescale.com>,
-	Manfred Rudigier <manfred.rudigier@omicron.at>, netdev@vger.kernel.org
+In-Reply-To: <4B86E05A.1080705@freescale.com>
+References: <4B86E05A.1080705@freescale.com>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Tue, 29 Jun 2010 16:27:57 -0500
+Message-ID: <AANLkTimEt2YMXHtsHoqTCdfLW_vmTFl2PJNPV_eJy02m@mail.gmail.com>
+Subject: Re: CONFIG_ISA_DMA_API without CONFIG_GENERIC_ISA_DMA
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,109 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC8313ECE says:
+On Thu, Feb 25, 2010 at 3:40 PM, Scott Wood <scottwood@freescale.com> wrote=
+:
+> Commit fb4f0e8832e0075849b41b65f6bb9fdfa7593b99 (Enable GENERIC_ISA_DMA i=
+f
+> FSL_ULI1575 to fix compile issue) tries to deal with this, but it ties it=
+ to
+> CONFIG_FSL_ULI1575, which is not selected in a p4080ds-only config.
+>
+> It seems that ULI isn't really relevant to the actual problem, which is t=
+hat
+> we enable ISA DMA API support without selecting an implementation. =A0Whe=
+ther
+> a certain chip is on the board that has an actual ISA interface is
+> irrelevant to the build breakage.
+>
+> Where did the dependency list for GENERIC_ISA_DMA come from? =A0Are there=
+ any
+> legitimate cases on powerpc where we want to select ISA_DMA_API but not
+> GENERIC_ISA_DMA (i.e. we have an alternate implementation)?
 
-"If the controller receives a 1- or 2-byte frame (such as an illegal
- runt packet or a packet with RX_ER asserted) before GRS is asserted
- and does not receive any other frames, the controller may fail to set
- GRSC even when the receive logic is completely idle. Any subsequent
- receive frame that is larger than two bytes will reset the state so
- the graceful stop can complete. A MAC receiver (Rx) reset will also
- reset the state."
+I've been bitten by this issue as well on the P1022DS.  If I enable
+ALSA, then some ISA support also gets compile (by itself, that's
+probably a bug), and that code calls claim_dma_lock().
 
-This patch implements the proposed workaround:
+This problem's been around for a long time.  I would have encountered
+it on the MPC8610 HPCD, but that board has an ULI 1575.  The P1022Ds
+doesn't.
 
-"If IEVENT[GRSC] is still not set after the timeout, read the eTSEC
- register at offset 0xD1C. If bits 7-14 are the same as bits 23-30,
- the eTSEC Rx is assumed to be idle and the Rx can be safely reset.
- If the register fields are not equal, wait for another timeout
- period and check again."
-
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- drivers/net/gianfar.c |   40 +++++++++++++++++++++++++++++++++++++---
- drivers/net/gianfar.h |    1 +
- 2 files changed, 38 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index f8b9693..f3da17a 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -947,6 +947,11 @@ static void gfar_detect_errata(struct gfar_private *priv)
- 			(pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
- 		priv->errata |= GFAR_ERRATA_76;
- 
-+	/* MPC8313 and MPC837x all rev */
-+	if ((pvr == 0x80850010 && mod == 0x80b0) ||
-+			(pvr == 0x80861010 && (mod & 0xfff9) == 0x80c0))
-+		priv->errata |= GFAR_ERRATA_A002;
-+
- 	if (priv->errata) {
- #ifdef CONFIG_GIANFAR_ERRATA
- 		dev_info(dev, "enabled errata workarounds, flags: 0x%x\n",
-@@ -1577,6 +1582,29 @@ static void init_registers(struct net_device *dev)
- 	gfar_write(&regs->minflr, MINFLR_INIT_SETTINGS);
- }
- 
-+static int __gfar_is_rx_idle(struct gfar_private *priv)
-+{
-+	u32 res;
-+
-+	/*
-+	 * Normaly TSEC should not hang on GRS commands, so we should
-+	 * actually wait for IEVENT_GRSC flag.
-+	 */
-+	if (likely(!gfar_has_errata(priv, A002)))
-+		return 0;
-+
-+	/*
-+	 * Read the eTSEC register at offset 0xD1C. If bits 7-14 are
-+	 * the same as bits 23-30, the eTSEC Rx is assumed to be idle
-+	 * and the Rx can be safely reset.
-+	 */
-+	res = gfar_read((void __iomem *)priv->gfargrp[0].regs + 0xd1c);
-+	res &= 0x7f807f80;
-+	if ((res & 0xffff) == (res >> 16))
-+		return 1;
-+
-+	return 0;
-+}
- 
- /* Halt the receive and transmit queues */
- static void gfar_halt_nodisable(struct net_device *dev)
-@@ -1600,12 +1628,18 @@ static void gfar_halt_nodisable(struct net_device *dev)
- 	tempval = gfar_read(&regs->dmactrl);
- 	if ((tempval & (DMACTRL_GRS | DMACTRL_GTS))
- 	    != (DMACTRL_GRS | DMACTRL_GTS)) {
-+		int ret;
-+
- 		tempval |= (DMACTRL_GRS | DMACTRL_GTS);
- 		gfar_write(&regs->dmactrl, tempval);
- 
--		spin_event_timeout(((gfar_read(&regs->ievent) &
--			 (IEVENT_GRSC | IEVENT_GTSC)) ==
--			 (IEVENT_GRSC | IEVENT_GTSC)), -1, 0);
-+		do {
-+			ret = spin_event_timeout(((gfar_read(&regs->ievent) &
-+				 (IEVENT_GRSC | IEVENT_GTSC)) ==
-+				 (IEVENT_GRSC | IEVENT_GTSC)), 1000000, 0);
-+			if (!(gfar_read(&regs->ievent) & IEVENT_GRSC))
-+				ret = __gfar_is_rx_idle(priv);
-+		} while (!ret);
- 	}
- }
- 
-diff --git a/drivers/net/gianfar.h b/drivers/net/gianfar.h
-index fb308c8..e0907eb 100644
---- a/drivers/net/gianfar.h
-+++ b/drivers/net/gianfar.h
-@@ -1028,6 +1028,7 @@ struct gfar_priv_grp {
- enum gfar_errata {
- 	GFAR_ERRATA_74		= 0x01,
- 	GFAR_ERRATA_76		= 0x02,
-+	GFAR_ERRATA_A002	= 0x04,
- };
- 
- #ifdef CONFIG_GIANFAR_ERRATA
--- 
-1.7.0.5
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
