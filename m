@@ -1,20 +1,32 @@
-Return-Path: <stevedeiters@basler.com>
-Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
-	by ozlabs.org (Postfix) with ESMTP id 2E0F1B6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 02:04:29 +1000 (EST)
-Received: from exchserver.basler.com (unknown [192.168.1.5])
-	by tethra.basler.com (Postfix) with ESMTP id F19423449
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 29 Jun 2010 11:04:25 -0500 (CDT)
+Return-Path: <prasad@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 303D9B6EF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 02:51:57 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
+	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id o5TGlfoR029700
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 02:47:41 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o5TGpuB71425462
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 02:51:56 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o5TGpuW3001220
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 02:51:56 +1000
+Received: from in.ibm.com ([9.124.213.87])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
+	o5TGpqZi001145
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 02:51:55 +1000
+Date: Tue, 29 Jun 2010 22:21:52 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC Patch 0/1] hw-breakpoint interfaces for BookE - ver II
+Message-ID: <20100629165152.GA8586@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for MPC512x
-	and MPC52xx
-Date: Tue, 29 Jun 2010 11:04:22 -0500
-Message-ID: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
-From: "Steve Deiters" <SteveDeiters@BASLER.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,91 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These processors will corrupt data if accessing the local bus with
-unaligned
-addresses. This version fixes the typical case of copying from Flash on
-the
-local bus by keeping the source address always aligned.
+Hi All,
+	Please find a new version of the patch that implements generic
+hw-breakpoint interfaces for PowerPC BookIII E.
 
-Signed-off-by: Steve Deiters <SteveDeiters@basler.com>
----
- arch/powerpc/lib/copy_32.S |   56
-++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 56 insertions(+), 0 deletions(-)
+While there are several improvements over the previous version in terms
+of code placement, support for ptrace and fixes for incorrect issues, the
+patch remains compile-tested (only)(against 44x/iss476-smp_defconfig config)
+and is yet to be tested on hardware (for functionality).
+		
+Changelog Version II
+(Version I:linuxppc-dev message-id: 20100427164029.GA8303@in.ibm.com)
+-------------------------------------------------------------------------
+- ptrace requests (through PTRACE_SET_DEBUGREG and PTRACE_GET_DEBUGREG) are
+  now supported.
+- Changes in original arch/powerpc/kernel/hw_breakpoint.c have been percolated
+  down to hw_breakpoint_booke.c (such as introduction of thread_change_pc(),
+  arch_unregister_hw_breakpoint() and changes to hw_breakpoint_handler())
+  along with some code re-arrangement (for brevity/clarity).
 
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index 74a7f41..42e7df5 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -226,6 +226,60 @@ _GLOBAL(memmove)
- 	bgt	backwards_memcpy
- 	/* fall through */
-=20
-+#if defined(CONFIG_PPC_MPC512x) || defined(CONFIG_PPC_MPC52xx)
-+
-+/*
-+ * Alternate memcpy for MPC512x and MPC52xx to guarantee source
-+ * address is always aligned to prevent corruption issues when
-+ * copying unaligned from the local bus. This only fixes the usage
-+ * when copying from the local bus (e.g. Flash) and will not fix
-+ * issues copying to the local bus
-+ */
-+_GLOBAL(memcpy)
-+	srwi.	r7,r5,3
-+	addi	r6,r3,-4
-+	addi	r4,r4,-4
-+	beq	2f			/* if less than 8 bytes to do */
-+	andi.	r0,r4,3			/* get src word aligned */
-+	mtctr	r7
-+	bne	5f
-+1:	lwz	r7,4(r4)
-+	lwzu	r8,8(r4)
-+	stw	r7,4(r6)
-+	stwu	r8,8(r6)
-+	bdnz	1b
-+	andi.	r5,r5,7
-+2:	cmplwi	0,r5,4
-+	blt	3f
-+	andi.	r0,r4,3
-+	bne	3f
-+	lwzu	r0,4(r4)
-+	addi	r5,r5,-4
-+	stwu	r0,4(r6)
-+3:	cmpwi	0,r5,0
-+	beqlr
-+	mtctr	r5
-+	addi	r4,r4,3
-+	addi	r6,r6,3
-+4:	lbzu	r0,1(r4)
-+	stbu	r0,1(r6)
-+	bdnz	4b
-+	blr
-+5:	subfic	r0,r0,4
-+	mtctr	r0
-+6:	lbz	r7,4(r4)
-+	addi	r4,r4,1
-+	stb	r7,4(r6)
-+	addi	r6,r6,1
-+	bdnz	6b
-+	subf	r5,r0,r5
-+	rlwinm.	r7,r5,32-3,3,31
-+	beq	2b
-+	mtctr	r7
-+	b	1b
-+
-+#else
-+
- _GLOBAL(memcpy)
- 	srwi.	r7,r5,3
- 	addi	r6,r3,-4
-@@ -267,6 +321,8 @@ _GLOBAL(memcpy)
- 	mtctr	r7
- 	b	1b
-=20
-+#endif
-+
- _GLOBAL(backwards_memcpy)
- 	rlwinm.	r7,r5,32-3,3,31		/* r0 =3D r5 >> 3 */
- 	add	r6,r3,r5
---=20
-1.5.4.3
+The usage of CONFIG (in this patch) option doesn't largely represent a
+form that it would turn into after enabling the use of DVCs, DACs by non-ptrace
+breakpoint requests. They should turn correct as versions of this patch progress.
+
+Kindly let me know your comments.
+
+Thanks,
+K.Prasad
