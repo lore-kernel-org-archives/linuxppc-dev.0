@@ -1,20 +1,14 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 482AAB6EF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 16:14:36 +1000 (EST)
-Received: by iwn36 with SMTP id 36so256231iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 23:14:34 -0700 (PDT)
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 30 Jun 2010 16:37:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Please pull my perf.git tree support
+Message-ID: <20100630063745.GA6059@drongo>
 MIME-Version: 1.0
-In-Reply-To: <20100629185617.GA24285@schlenkerla.am.freescale.net>
-References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
-	<20100629185617.GA24285@schlenkerla.am.freescale.net>
-Date: Tue, 29 Jun 2010 23:14:34 -0700
-Message-ID: <AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
-Subject: Re: machine check in kernel for a mpc870 board
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +18,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Ben,
 
->> Bus Fault @ 0x00404c40, fixup 0x00000000
->> Machine check in kernel mode.
->> Caused by (from msr): regs 07d1cb80 Unknown values in msr
->> NIP: 00404C40 XER: 00000000 LR: 00404C24 REGS: 07d1cb80 TRAP: 0200 DAR: 00000001
->> MSR: 00001002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
->
-> Can you look up the source line/instruction corresponding to 0x404c40, in
-> the wrapper ELF file?
+When you set up your next branch for commits to go in 2.6.36-rc1,
+please do a pull from:
 
-I'm not sure how to look up it. But I used the BDI to dump the
-instructions in which you may find some clue? These should be kernel
-code, right? Maybe the gdb can help to de-assemble them?
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
 
-BDI>md 0x404c00 0x20
-00404c00 : 0x4800317d   1207972221  H.1}
-00404c04 : 0x80010014  -2147418092  ....
-00404c08 : 0xbbc10008  -1144979448  ....
-00404c0c : 0x7c0803a6   2080900006  |...
-00404c10 : 0x38210010    941686800  8!..
-00404c14 : 0x4e800020   1317011488  N..
-00404c18 : 0x9421fff0  -1809711120  .!..
-00404c1c : 0x7c0802a6   2080899750  |...
-00404c20 : 0x429f0005   1117716485  B...
-00404c24 : 0xbfc10008  -1077870584  ....
-00404c28 : 0x7fc802a6   2143814310  ....
-00404c2c : 0x90010014  -1878982636  ....
-00404c30 : 0x3fde0001   1071513601  ?...
-00404c34 : 0x3bdedd98   1004461464  ;...
-00404c38 : 0x813e8000  -2126610432  .>..
-00404c3c : 0x81490000  -2125922304  .I..
-00404c40 : 0xa00a0000  -1609957376  ....
-00404c44 : 0x0c000000    201326592  ....
-00404c48 : 0x4c00012c   1275068716  L..,
-00404c4c : 0x70090001   1879638017  p...
-00404c50 : 0x4082fff0   1082327024  @...
-00404c54 : 0x817e8000  -2122416128  .~..
-00404c58 : 0x5469402e   1416183854  Ti@.
+to get a series of commits that add support for hw_breakpoint events
+on 64-bit POWER server processors in the perf_event subsystem.  This
+consists of a commit from me that adds support for most integer
+instructions to the emulate_step() function, a series from K. Prasad
+that add the ppc64-specific hw_breakpoint code, and some small
+commits from me that fix a few bugs that I found in testing.
 
-Thanks a lot,
--Shawn.
+There is one commit in there from K. Prasad that modifies the generic
+hw_breakpoint code to add the ability to have an arch-specific
+unregister hook for hw_breakpoints.  It has been acked by Frederic
+Weisbecker.
+
+Thanks,
+Paul.
+
+The following changes since commit 7e27d6e778cd87b6f2415515d7127eba53fe5d02:
+
+  Linux 2.6.35-rc3 (2010-06-11 19:14:04 -0700)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
+
+K.Prasad (5):
+      hw_breakpoints: Allow arch-specific cleanup before breakpoint unregistration
+      powerpc, hw_breakpoints: Implement hw_breakpoints for 64-bit server processors
+      powerpc, hw_breakpoint: Handle concurrent alignment interrupts
+      powerpc, hw_breakpoint: Enable hw-breakpoints while handling intervening signals
+      powerpc, hw_breakpoint: Discard extraneous interrupt due to accesses outside symbol length
+
+Paul Mackerras (4):
+      powerpc: Emulate most Book I instructions in emulate_step()
+      powerpc, hw_breakpoint: Fix off-by-one in checking access address
+      powerpc, hw_breakpoint: Cooperate better with other single-steppers
+      powerpc, hw_breakpoint: Tell generic code we have no instruction breakpoints
+
+ arch/powerpc/Kconfig                     |    1 +
+ arch/powerpc/include/asm/asm-compat.h    |    2 +
+ arch/powerpc/include/asm/cputable.h      |    4 +
+ arch/powerpc/include/asm/hw_breakpoint.h |   74 ++
+ arch/powerpc/include/asm/ppc-opcode.h    |    7 +
+ arch/powerpc/include/asm/processor.h     |    8 +
+ arch/powerpc/kernel/Makefile             |    1 +
+ arch/powerpc/kernel/exceptions-64s.S     |    1 +
+ arch/powerpc/kernel/hw_breakpoint.c      |  364 +++++++
+ arch/powerpc/kernel/machine_kexec_64.c   |    3 +
+ arch/powerpc/kernel/process.c            |   14 +
+ arch/powerpc/kernel/ptrace.c             |   64 ++
+ arch/powerpc/kernel/signal.c             |    3 +
+ arch/powerpc/kernel/traps.c              |    8 +-
+ arch/powerpc/lib/Makefile                |    5 +-
+ arch/powerpc/lib/ldstfp.S                |  375 ++++++++
+ arch/powerpc/lib/sstep.c                 | 1514 +++++++++++++++++++++++++++++-
+ kernel/hw_breakpoint.c                   |   12 +
+ 18 files changed, 2408 insertions(+), 52 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/hw_breakpoint.h
+ create mode 100644 arch/powerpc/kernel/hw_breakpoint.c
+ create mode 100644 arch/powerpc/lib/ldstfp.S
