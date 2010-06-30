@@ -1,22 +1,17 @@
-Return-Path: <fchen@apm.com>
-Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C203BB6EDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 06:17:22 +1000 (EST)
-Subject: Re: [PATCH 1/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-From: fushen chen <fchen@apm.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <201006301127.21241.sr@denx.de>
-References: <12778468223309-git-send-email-fchen@apm.com>
-	<201006301127.21241.sr@denx.de>
-Content-Type: text/plain
-Date: Wed, 30 Jun 2010 13:16:52 -0700
-Message-Id: <1277929012.16379.61.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Wolfgang Denk <wd@denx.de>, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Mark Miesfeld <mmiesfeld@apm.com>,
-	linuxppc-dev@lists.ozlabs.org, fchen@apm.com
+	by ozlabs.org (Postfix) with ESMTPS id CF186B6EDF
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 06:23:35 +1000 (EST)
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH V2] powerpc: Fix comments in fsl_booke_mmu code that mention
+	BATS
+Date: Wed, 30 Jun 2010 15:23:31 -0500
+Message-Id: <1277929411-2307-1-git-send-email-beckyb@kernel.crashing.org>
+In-Reply-To: <1277926971-30712-1-git-send-email-beckyb@kernel.crashing.org>
+References: <1277926971-30712-1-git-send-email-beckyb@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stefan,
+There are no BATS on BookE - we have the TLBCAM instead.  Also correct
+the page size information to included extended sizes.  We don't actually allow
+a 4G page size to be used, so comment on that as well.
 
-The driver is based on Synopsys driver 2.60a.
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+Even lamer, I forgot that we don't actually allow use of a 4G page.
+Update the comment to reflect this.
 
-We started to prepare open source submission based on our internal
-version. We sync this version to linux-2.6-denx repository from time to
-time. I'll sync the driver to the latest linux-2.6-denx as Wolfgang
-pointed out, and re-submit patch to open source.
+-Becky
 
-We modified the driver mostly to follow Linux kernel coding style.  
-Both USB host and device modes are tested. 
+ arch/powerpc/mm/fsl_booke_mmu.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Thanks,
-Fushen
-     1. 
-
-On Wed, 2010-06-30 at 11:27 +0200, Stefan Roese wrote:
-> Hi Fushen, Hi Mark,
-> 
-> On Tuesday 29 June 2010 23:26:54 Fushen Chen wrote:
-> > The DWC OTG driver module provides the initialization and cleanup
-> > entry points for the DWC OTG USB driver.
-> > 
-> > Signed-off-by: Fushen Chen <fchen@apm.com>
-> > Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
-> 
-> I tried to compare this driver with the version that's currently available in 
-> the linux-2.6-denx repository. But the differences are quite big. Could you 
-> please list the history of this DWC driver? Things like:
-> 
-> - Which Synopsis version is it based upon?
-> - What changes/enhancements/fixups where made from APM?
-> - How was this driver tested (USB host and device mode)?
-> 
-> As Wolfgang already pointed out, the driver in our git repository has 
-> undergone multiple changes/fixes. Did you take a look at them and try to 
-> integrate them?
-> 
-> Thanks.
-> 
-> Cheers,
-> Stefan
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index cdc7526..4b66a1e 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -104,9 +104,10 @@ unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
+ }
+ 
+ /*
+- * Set up one of the I/D BAT (block address translation) register pairs.
+- * The parameters are not checked; in particular size must be a power
+- * of 4 between 4k and 256M.
++ * Set up a variable-size TLB entry (tlbcam). The parameters are not checked;
++ * in particular size must be a power of 4 between 4k and 256M (or 1G, for cpus
++ * that support extended page sizes).  Note that while some cpus support a
++ * page size of 4G, we don't allow its use here.
+  */
+ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+ 		unsigned long size, unsigned long flags, unsigned int pid)
+-- 
+1.6.0.6
