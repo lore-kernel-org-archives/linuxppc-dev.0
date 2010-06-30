@@ -1,34 +1,24 @@
-Return-Path: <B04825@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1C3A1B6F06
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 11:16:15 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o5U1GC0b009053
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 18:16:12 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o5U1QRMb027391
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 20:26:28 -0500 (CDT)
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id C8F54B6EED
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 15:31:55 +1000 (EST)
+To: David Daney <ddaney@caviumnetworks.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 4/9] Add Synopsys DesignWare HS USB OTG Controller driver.
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01CB17F1.D3E50F5B"
-Subject: Re: [linuxppc-release] [PATCH] powerpc: introduce basic support	for
-	the Freescale P1022DS reference board
-Date: Tue, 29 Jun 2010 18:16:08 -0700
-Message-ID: <5610599F537DD74A8D1F5CC946A7507303478FFA@az33exm25.fsl.freescale.net>
-In-Reply-To: <20100630011000.GA2684@lixom.net>
-References: <1277847274-24648-1-git-send-email-timur@freescale.com>
-	<22ED4111-892C-4715-BF70-C1E62F838DDA@kernel.crashing.org>
-	<5610599F537DD74A8D1F5CC946A7507303478FF8@az33exm25.fsl.freescale.net>
-	<20100630011000.GA2684@lixom.net>
-From: "Tabi Timur-B04825" <B04825@freescale.com>
-To: "Olof Johansson" <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <4C2A8038.50204@caviumnetworks.com>
+References: <12778468223309-git-send-email-fchen@apm.com>
+	<12778468233898-git-send-email-fchen@apm.com>
+	<12778468231438-git-send-email-fchen@apm.com>
+	<1277846824673-git-send-email-fchen@apm.com>
+	<20100629231302.7E6E314EBF8@gemini.denx.de>
+	<4C2A8038.50204@caviumnetworks.com>
+Date: Wed, 30 Jun 2010 07:31:50 +0200
+Message-Id: <20100630053150.ACD9A14EBF7@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,70 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Dear David Daney,
 
-------_=_NextPart_001_01CB17F1.D3E50F5B
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+In message <4C2A8038.50204@caviumnetworks.com> you wrote:
+>
+> > Why are you posting this old driver version without trying to sync
+> > against our tree which includes a number of fixes - you should know
+> > about these.
+> >
+> 
+> This could be a question with an obvious answer, but which tree are you 
+> referring to when you say 'our tree'?
 
-Olof Johansson wrote:
-> Sure, the family-defconfigs are supposed to be supersets that can boot
-> everywhere. If you're concerned about static kernel size you can =
-always
-> enable it as modules instead.
+git://git.denx.de/linux-2.6-denx.git
 
-It just seems wrong to add full support for audio and video in the =
-kernel,=20
-when it can be used only on one, relatively obscure chip.  Video support =
+Fushen Chen should know this, as the fixes I've mentioned were part
+of contract/support work for Applied Micro.
 
-would need to be in-kernel only in order to get the console working, and =
-I=20
-suspect that core ALSA support would need to be in-kernel as well.
+Best regards,
 
---=20
-Timur Tabi
-Linux kernel developer
+Wolfgang Denk
 
-------_=_NextPart_001_01CB17F1.D3E50F5B
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7654.12">
-<TITLE>Re: [linuxppc-release] [PATCH] powerpc: introduce basic support	=
-for the Freescale P1022DS reference board</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Olof Johansson wrote:<BR>
-&gt; Sure, the family-defconfigs are supposed to be supersets that can =
-boot<BR>
-&gt; everywhere. If you're concerned about static kernel size you can =
-always<BR>
-&gt; enable it as modules instead.<BR>
-<BR>
-It just seems wrong to add full support for audio and video in the =
-kernel,<BR>
-when it can be used only on one, relatively obscure chip.&nbsp; Video =
-support<BR>
-would need to be in-kernel only in order to get the console working, and =
-I<BR>
-suspect that core ALSA support would need to be in-kernel as well.<BR>
-<BR>
---<BR>
-Timur Tabi<BR>
-Linux kernel developer<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01CB17F1.D3E50F5B--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The Wright Bothers weren't the first to fly. They were just the first
+not to crash.
