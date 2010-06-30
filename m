@@ -1,22 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BFEBAB6EF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 19:27:31 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@lists.ozlabs.org
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
+	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id DE95BB6EFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 20:11:27 +1000 (EST)
+Received: by bwz19 with SMTP id 19so304107bwz.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 03:11:25 -0700 (PDT)
+Message-ID: <4C2B180F.9040701@ru.mvista.com>
+Date: Wed, 30 Jun 2010 14:10:23 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+MIME-Version: 1.0
+To: Fushen Chen <fchen@apm.com>
 Subject: Re: [PATCH 1/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-Date: Wed, 30 Jun 2010 11:27:20 +0200
 References: <12778468223309-git-send-email-fchen@apm.com>
 In-Reply-To: <12778468223309-git-send-email-fchen@apm.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201006301127.21241.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, Wolfgang Denk <wd@denx.de>,
-	Fushen Chen <fchen@apm.com>
+	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Fushen, Hi Mark,
+Hello.
 
-On Tuesday 29 June 2010 23:26:54 Fushen Chen wrote:
+Fushen Chen wrote:
+
 > The DWC OTG driver module provides the initialization and cleanup
 > entry points for the DWC OTG USB driver.
-> 
+
 > Signed-off-by: Fushen Chen <fchen@apm.com>
 > Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+[...]
+> diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+> index 083e68e..1a141b8 100644
+> --- a/arch/powerpc/boot/dts/kilauea.dts
+> +++ b/arch/powerpc/boot/dts/kilauea.dts
+> @@ -394,5 +394,20 @@
+>  				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
+>  				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
+>  		};
+> +
+> +		USBOTG0: usbotg@ef6c0000 {
+> +			compatible = "amcc,dwc-otg";
+> +			reg = <0xef6c0000 0x10000>;
+> +			interrupt-parent = <&USBOTG0>;
+> +			interrupts = <0x0 0x1 0x2>;
+> +			#interrupt-cells = <0x1>;
+> +			#address-cells = <0x0>;
+> +			#size-cells = <0x0>;
+> +			interrupt-map = <
+> +				0x0 &UIC2 0x1e 0x4 /* USB-OTG */
+> +				0x1 &UIC1 0x1a 0x8 /* HIGH-POWER */
+> +				0x2 &UIC0 0xc 0x4  /* DMA */ >;
+> +			interrupt-map-mask = <0xffffffff>;
+> +		};
+>  	};
+>  };
 
-I tried to compare this driver with the version that's currently available in 
-the linux-2.6-denx repository. But the differences are quite big. Could you 
-please list the history of this DWC driver? Things like:
+    Please put this file in a separate patch and push thru the PowerPC tree.
 
-- Which Synopsis version is it based upon?
-- What changes/enhancements/fixups where made from APM?
-- How was this driver tested (USB host and device mode)?
-
-As Wolfgang already pointed out, the driver in our git repository has 
-undergone multiple changes/fixes. Did you take a look at them and try to 
-integrate them?
-
-Thanks.
-
-Cheers,
-Stefan
+WBR, Sergei
