@@ -1,17 +1,18 @@
 Return-Path: <timur.tabi@gmail.com>
 Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 3A247B6EDF
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 81851B6EDF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 06:56:30 +1000 (EST)
-Received: by vws11 with SMTP id 11so1452885vws.38
+	Thu,  1 Jul 2010 07:01:28 +1000 (EST)
+Received: by vws11 with SMTP id 11so1458211vws.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 13:56:28 -0700 (PDT)
+	Wed, 30 Jun 2010 14:01:26 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20100308191005.GE4324@amak.tundra.com>
+In-Reply-To: <AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
 References: <20100308191005.GE4324@amak.tundra.com>
+	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
 From: Timur Tabi <timur.tabi@gmail.com>
-Date: Wed, 30 Jun 2010 15:55:58 -0500
-Message-ID: <AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+Date: Wed, 30 Jun 2010 16:00:56 -0500
+Message-ID: <AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
 Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
 To: Alexandre Bounine <abounine@tundra.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -26,33 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 8, 2010 at 2:10 PM, Alexandre Bounine <abounine@tundra.com> wro=
-te:
->
-> From: Alexandre Bounine <alexandre.bounine@idt.com>
->
-> Add Machine Check exception handling into RapidIO port driver
-> for Freescale SoCs (MPC85xx).
->
-> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-> Tested-by: Thomas Moll <thomas.moll@sysgo.com>
-...
+On Wed, Jun 30, 2010 at 3:55 PM, Timur Tabi <timur.tabi@gmail.com> wrote:
 
-> +static int fsl_rio_mcheck_exception(struct pt_regs *regs)
-> +{
-> + =A0 =A0 =A0 const struct exception_table_entry *entry =3D NULL;
-> + =A0 =A0 =A0 unsigned long reason =3D (mfspr(SPRN_MCSR) & MCSR_MASK);
+> MCSR_MASK is not defined anywhere, so when I compile this code, I get this:
 
-MCSR_MASK is not defined anywhere, so when I compile this code, I get this:
+Never mind.  I see that it's been fixed already, and that the patch
+that removed MCSR_MASK was posted around the same time that this patch
+was posted.
 
-  CC      arch/powerpc/sysdev/fsl_rio.o
-arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
-arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
-(first use in this function)
-arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared identifier
-is reported only once
-arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it appears in.)
 
---=20
+-- 
 Timur Tabi
 Linux kernel developer at Freescale
