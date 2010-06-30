@@ -1,19 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C73E61007F5
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 23:18:52 +1000 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/2] KVM: PPC: Add generic hpte management functions
-Date: Wed, 30 Jun 2010 15:18:45 +0200
-Message-Id: <1277903926-12786-2-git-send-email-agraf@suse.de>
-In-Reply-To: <1277903926-12786-1-git-send-email-agraf@suse.de>
-References: <1277903926-12786-1-git-send-email-agraf@suse.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0C1E2B6EED
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 23:28:09 +1000 (EST)
+Subject: Re: [PATCH] Adjust arch/powerpc inline asms for recent gcc change
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jakub Jelinek <jakub@redhat.com>
+In-Reply-To: <20100625111829.GH12443@tyan-ft48-01.lab.bos.redhat.com>
+References: <20100625095606.GG12443@tyan-ft48-01.lab.bos.redhat.com>
+	<57727.84.105.60.153.1277464103.squirrel@gate.crashing.org>
+	<20100625111829.GH12443@tyan-ft48-01.lab.bos.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Jun 2010 16:10:39 +1000
+Message-ID: <1277878239.4200.285.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,321 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the shadow paging code keeps an array of entries it knows about.
-Whenever the guest invalidates an entry, we loop through that entry,
-trying to invalidate matching parts.
+On Fri, 2010-06-25 at 13:18 +0200, Jakub Jelinek wrote:
+> On Fri, Jun 25, 2010 at 01:08:23PM +0200, Segher Boessenkool wrote:
+> > > -		stw%U0%X0 %L2,%1"
+> > > -	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
+> > > +		stw%U1%X1 %L2,%1"
+> > > +	: "=m<>" (*ptep), "=m<>" (*((unsigned char *)ptep+4))
+> > >  	: "r" (pte) : "memory");
+> > 
+> > This still isn't correct -- the constraint says that a byte
+> > is written, but the insn changes a word.  Probably should just
+> > be ptep[1] ?
 
-While this is a really simple implementation, it is probably the most
-ineffective one possible. So instead, let's keep an array of lists around
-that are indexed by a hash. This way each PTE can be added by 4 list_add,
-removed by 4 list_del invocations and the search only needs to loop through
-entries that share the same hash.
+Oops, almost forgot about this. Are you guys shooting a new patch or do
+you want me to do it ?
 
-This patch implements said lookup and exports generic functions that both
-the 32-bit and 64-bit backend can use.
-
-Signed-off-by: Alexander Graf <agraf@suse.de>
-
----
-
-v1 -> v2:
-
-  - remove hpte_all list
-  - lookup all using vpte_long lists
-  - decrease size of vpte_long hash
-  - fix missing brackets
-
-v2 -> v3:
-
-  - use hlist
-  - use global kmem cache
----
- arch/powerpc/kvm/book3s_mmu_hpte.c |  277 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 277 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_mmu_hpte.c
-
-diff --git a/arch/powerpc/kvm/book3s_mmu_hpte.c b/arch/powerpc/kvm/book3s_mmu_hpte.c
-new file mode 100644
-index 0000000..4868d4a
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_mmu_hpte.c
-@@ -0,0 +1,277 @@
-+/*
-+ * Copyright (C) 2010 SUSE Linux Products GmbH. All rights reserved.
-+ *
-+ * Authors:
-+ *     Alexander Graf <agraf@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ */
-+
-+#include <linux/kvm_host.h>
-+#include <linux/hash.h>
-+#include <linux/slab.h>
-+
-+#include <asm/kvm_ppc.h>
-+#include <asm/kvm_book3s.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu_context.h>
-+#include <asm/hw_irq.h>
-+
-+#define PTE_SIZE	12
-+
-+/* #define DEBUG_MMU */
-+
-+#ifdef DEBUG_MMU
-+#define dprintk_mmu(a, ...) printk(KERN_INFO a, __VA_ARGS__)
-+#else
-+#define dprintk_mmu(a, ...) do { } while(0)
-+#endif
-+
-+static struct kmem_cache *hpte_cache;
-+
-+static inline u64 kvmppc_mmu_hash_pte(u64 eaddr)
-+{
-+	return hash_64(eaddr >> PTE_SIZE, HPTEG_HASH_BITS_PTE);
-+}
-+
-+static inline u64 kvmppc_mmu_hash_vpte(u64 vpage)
-+{
-+	return hash_64(vpage & 0xfffffffffULL, HPTEG_HASH_BITS_VPTE);
-+}
-+
-+static inline u64 kvmppc_mmu_hash_vpte_long(u64 vpage)
-+{
-+	return hash_64((vpage & 0xffffff000ULL) >> 12,
-+		       HPTEG_HASH_BITS_VPTE_LONG);
-+}
-+
-+void kvmppc_mmu_hpte_cache_map(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
-+{
-+	u64 index;
-+
-+	/* Add to ePTE list */
-+	index = kvmppc_mmu_hash_pte(pte->pte.eaddr);
-+	hlist_add_head(&pte->list_pte, &vcpu->arch.hpte_hash_pte[index]);
-+
-+	/* Add to vPTE list */
-+	index = kvmppc_mmu_hash_vpte(pte->pte.vpage);
-+	hlist_add_head(&pte->list_vpte, &vcpu->arch.hpte_hash_vpte[index]);
-+
-+	/* Add to vPTE_long list */
-+	index = kvmppc_mmu_hash_vpte_long(pte->pte.vpage);
-+	hlist_add_head(&pte->list_vpte_long,
-+		       &vcpu->arch.hpte_hash_vpte_long[index]);
-+}
-+
-+static void invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
-+{
-+	dprintk_mmu("KVM: Flushing SPT: 0x%lx (0x%llx) -> 0x%llx\n",
-+		    pte->pte.eaddr, pte->pte.vpage, pte->host_va);
-+
-+	/* Different for 32 and 64 bit */
-+	kvmppc_mmu_invalidate_pte(vcpu, pte);
-+
-+	if (pte->pte.may_write)
-+		kvm_release_pfn_dirty(pte->pfn);
-+	else
-+		kvm_release_pfn_clean(pte->pfn);
-+
-+	hlist_del(&pte->list_pte);
-+	hlist_del(&pte->list_vpte);
-+	hlist_del(&pte->list_vpte_long);
-+
-+	vcpu->arch.hpte_cache_count--;
-+	kmem_cache_free(hpte_cache, pte);
-+}
-+
-+static void kvmppc_mmu_pte_flush_all(struct kvm_vcpu *vcpu)
-+{
-+	struct hpte_cache *pte;
-+	struct hlist_node *node, *tmp;
-+	int i;
-+
-+	for (i = 0; i < HPTEG_HASH_NUM_VPTE_LONG; i++) {
-+		struct hlist_head *list = &vcpu->arch.hpte_hash_vpte_long[i];
-+
-+		hlist_for_each_entry_safe(pte, node, tmp, list, list_vpte_long)
-+			invalidate_pte(vcpu, pte);
-+	}
-+}
-+
-+static void kvmppc_mmu_pte_flush_page(struct kvm_vcpu *vcpu, ulong guest_ea)
-+{
-+	struct hlist_head *list;
-+	struct hlist_node *node, *tmp;
-+	struct hpte_cache *pte;
-+
-+	/* Find the list of entries in the map */
-+	list = &vcpu->arch.hpte_hash_pte[kvmppc_mmu_hash_pte(guest_ea)];
-+
-+	/* Check the list for matching entries and invalidate */
-+	hlist_for_each_entry_safe(pte, node, tmp, list, list_pte)
-+		if ((pte->pte.eaddr & ~0xfffUL) == guest_ea)
-+			invalidate_pte(vcpu, pte);
-+}
-+
-+void kvmppc_mmu_pte_flush(struct kvm_vcpu *vcpu, ulong guest_ea, ulong ea_mask)
-+{
-+	u64 i;
-+
-+	dprintk_mmu("KVM: Flushing %d Shadow PTEs: 0x%lx & 0x%lx\n",
-+		    vcpu->arch.hpte_cache_count, guest_ea, ea_mask);
-+
-+	guest_ea &= ea_mask;
-+
-+	switch (ea_mask) {
-+	case ~0xfffUL:
-+		kvmppc_mmu_pte_flush_page(vcpu, guest_ea);
-+		break;
-+	case 0x0ffff000:
-+		/* 32-bit flush w/o segment, go through all possible segments */
-+		for (i = 0; i < 0x100000000ULL; i += 0x10000000ULL)
-+			kvmppc_mmu_pte_flush(vcpu, guest_ea | i, ~0xfffUL);
-+		break;
-+	case 0:
-+		/* Doing a complete flush -> start from scratch */
-+		kvmppc_mmu_pte_flush_all(vcpu);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		break;
-+	}
-+}
-+
-+/* Flush with mask 0xfffffffff */
-+static void kvmppc_mmu_pte_vflush_short(struct kvm_vcpu *vcpu, u64 guest_vp)
-+{
-+	struct hlist_head *list;
-+	struct hlist_node *node, *tmp;
-+	struct hpte_cache *pte;
-+	u64 vp_mask = 0xfffffffffULL;
-+
-+	list = &vcpu->arch.hpte_hash_vpte[kvmppc_mmu_hash_vpte(guest_vp)];
-+
-+	/* Check the list for matching entries and invalidate */
-+	hlist_for_each_entry_safe(pte, node, tmp, list, list_vpte)
-+		if ((pte->pte.vpage & vp_mask) == guest_vp)
-+			invalidate_pte(vcpu, pte);
-+}
-+
-+/* Flush with mask 0xffffff000 */
-+static void kvmppc_mmu_pte_vflush_long(struct kvm_vcpu *vcpu, u64 guest_vp)
-+{
-+	struct hlist_head *list;
-+	struct hlist_node *node, *tmp;
-+	struct hpte_cache *pte;
-+	u64 vp_mask = 0xffffff000ULL;
-+
-+	list = &vcpu->arch.hpte_hash_vpte_long[
-+		kvmppc_mmu_hash_vpte_long(guest_vp)];
-+
-+	/* Check the list for matching entries and invalidate */
-+	hlist_for_each_entry_safe(pte, node, tmp, list, list_vpte_long)
-+		if ((pte->pte.vpage & vp_mask) == guest_vp)
-+			invalidate_pte(vcpu, pte);
-+}
-+
-+void kvmppc_mmu_pte_vflush(struct kvm_vcpu *vcpu, u64 guest_vp, u64 vp_mask)
-+{
-+	dprintk_mmu("KVM: Flushing %d Shadow vPTEs: 0x%llx & 0x%llx\n",
-+		    vcpu->arch.hpte_cache_count, guest_vp, vp_mask);
-+	guest_vp &= vp_mask;
-+
-+	switch(vp_mask) {
-+	case 0xfffffffffULL:
-+		kvmppc_mmu_pte_vflush_short(vcpu, guest_vp);
-+		break;
-+	case 0xffffff000ULL:
-+		kvmppc_mmu_pte_vflush_long(vcpu, guest_vp);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		return;
-+	}
-+}
-+
-+void kvmppc_mmu_pte_pflush(struct kvm_vcpu *vcpu, ulong pa_start, ulong pa_end)
-+{
-+	struct hlist_node *node, *tmp;
-+	struct hpte_cache *pte;
-+	int i;
-+
-+	dprintk_mmu("KVM: Flushing %d Shadow pPTEs: 0x%lx - 0x%lx\n",
-+		    vcpu->arch.hpte_cache_count, pa_start, pa_end);
-+
-+	for (i = 0; i < HPTEG_HASH_NUM_VPTE_LONG; i++) {
-+		struct hlist_head *list = &vcpu->arch.hpte_hash_vpte_long[i];
-+
-+		hlist_for_each_entry_safe(pte, node, tmp, list, list_vpte_long)
-+			if ((pte->pte.raddr >= pa_start) &&
-+			    (pte->pte.raddr < pa_end))
-+				invalidate_pte(vcpu, pte);
-+	}
-+}
-+
-+struct hpte_cache *kvmppc_mmu_hpte_cache_next(struct kvm_vcpu *vcpu)
-+{
-+	struct hpte_cache *pte;
-+
-+	pte = kmem_cache_zalloc(hpte_cache, GFP_KERNEL);
-+	vcpu->arch.hpte_cache_count++;
-+
-+	if (vcpu->arch.hpte_cache_count == HPTEG_CACHE_NUM)
-+		kvmppc_mmu_pte_flush_all(vcpu);
-+
-+	return pte;
-+}
-+
-+void kvmppc_mmu_hpte_destroy(struct kvm_vcpu *vcpu)
-+{
-+	kvmppc_mmu_pte_flush(vcpu, 0, 0);
-+}
-+
-+static void kvmppc_mmu_hpte_init_hash(struct hlist_head *hash_list, int len)
-+{
-+	int i;
-+
-+	for (i = 0; i < len; i++)
-+		INIT_HLIST_HEAD(&hash_list[i]);
-+}
-+
-+int kvmppc_mmu_hpte_init(struct kvm_vcpu *vcpu)
-+{
-+	/* init hpte lookup hashes */
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_pte,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_pte));
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_vpte,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_vpte));
-+	kvmppc_mmu_hpte_init_hash(vcpu->arch.hpte_hash_vpte_long,
-+				  ARRAY_SIZE(vcpu->arch.hpte_hash_vpte_long));
-+
-+	return 0;
-+}
-+
-+int kvmppc_mmu_hpte_sysinit(void)
-+{
-+	/* init hpte slab cache */
-+	hpte_cache = kmem_cache_create("kvm-spt", sizeof(struct hpte_cache),
-+				       sizeof(struct hpte_cache), 0, NULL);
-+
-+	return 0;
-+}
-+
-+void kvmppc_mmu_hpte_sysexit(void)
-+{
-+	kmem_cache_destroy(hpte_cache);
-+}
--- 
-1.6.0.2
+Cheers,
+Ben.
