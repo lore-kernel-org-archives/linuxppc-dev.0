@@ -1,22 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 64109B6F15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 08:50:39 +1000 (EST)
-In-Reply-To: <20100701082756.7dced805.sfr@canb.auug.org.au>
-References: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
-	<B6229BDC-F290-4A71-9F61-AAA5EC87F0F6@kernel.crashing.org>
-	<20100701082756.7dced805.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4D7DE8D9-B226-4C6A-97FF-A63D272681C5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
-Date: Thu, 1 Jul 2010 00:50:36 +0200
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5D8C7B707E
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 08:55:20 +1000 (EST)
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v1]460EX on-chip SATA driver<resubmisison>
+MIME-Version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: <20100630200325.GD7756@zod.rchland.ibm.com>
+References: <201006241327.o5ODRY6m032299@amcc.com>
+	<20100630115808.2D9241524EC@gemini.denx.de>
+	<3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>
+	<20100630184728.C02D014EBF9@gemini.denx.de>
+	<4C2B9831.9020801@pobox.com>
+	<20100630200325.GD7756@zod.rchland.ibm.com>
+Date: Thu, 01 Jul 2010 00:55:16 +0200
+Message-Id: <20100630225516.8F9D3152442@gemini.denx.de>
+Cc: linux-ide@vger.kernel.org, Rupjyoti Sarmah <rsarmah@apm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	sr@denx.de, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> You probably also need something similar to http://git.infradead.org/
->> users/segher/linux.git/commitdiff/
->> 98194f54cc8e19ecd752bc10e2d19ef94074f502
->> (note: only build-tested, not run-tested).
+Dear Josh Boyer,
+
+In message <20100630200325.GD7756@zod.rchland.ibm.com> you wrote:
 >
-> See http://patchwork.ozlabs.org/patch/57379/ submitted yesterday.
+> The driver doesn't depend on CONFIG_ATA_SFF in it's Kconfig file, but seems to
+> require it at build time.  Isn't that something that needs fixing in the
+> driver?
 
-Yeah saw that right after I hit "send" :-)  Either it's way more
-complete than what I did, or way more complex because we still
-don't link with libgcc :-P
+Right.  Next question is if this is really needed for this driver. 
 
+Best regards,
 
-Segher
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Copy from one, it's plagiarism; copy from two, it's research.
