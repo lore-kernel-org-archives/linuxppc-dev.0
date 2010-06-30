@@ -1,17 +1,22 @@
-Return-Path: <beckyb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CF186B6EDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 06:23:35 +1000 (EST)
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V2] powerpc: Fix comments in fsl_booke_mmu code that mention
-	BATS
-Date: Wed, 30 Jun 2010 15:23:31 -0500
-Message-Id: <1277929411-2307-1-git-send-email-beckyb@kernel.crashing.org>
-In-Reply-To: <1277926971-30712-1-git-send-email-beckyb@kernel.crashing.org>
-References: <1277926971-30712-1-git-send-email-beckyb@kernel.crashing.org>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 3A247B6EDF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  1 Jul 2010 06:56:30 +1000 (EST)
+Received: by vws11 with SMTP id 11so1452885vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Jun 2010 13:56:28 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100308191005.GE4324@amak.tundra.com>
+References: <20100308191005.GE4324@amak.tundra.com>
+From: Timur Tabi <timur.tabi@gmail.com>
+Date: Wed, 30 Jun 2010 15:55:58 -0500
+Message-ID: <AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+To: Alexandre Bounine <abounine@tundra.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	thomas.moll@sysgo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no BATS on BookE - we have the TLBCAM instead.  Also correct
-the page size information to included extended sizes.  We don't actually allow
-a 4G page size to be used, so comment on that as well.
+On Mon, Mar 8, 2010 at 2:10 PM, Alexandre Bounine <abounine@tundra.com> wro=
+te:
+>
+> From: Alexandre Bounine <alexandre.bounine@idt.com>
+>
+> Add Machine Check exception handling into RapidIO port driver
+> for Freescale SoCs (MPC85xx).
+>
+> Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+> Tested-by: Thomas Moll <thomas.moll@sysgo.com>
+...
 
-Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
----
-Even lamer, I forgot that we don't actually allow use of a 4G page.
-Update the comment to reflect this.
+> +static int fsl_rio_mcheck_exception(struct pt_regs *regs)
+> +{
+> + =A0 =A0 =A0 const struct exception_table_entry *entry =3D NULL;
+> + =A0 =A0 =A0 unsigned long reason =3D (mfspr(SPRN_MCSR) & MCSR_MASK);
 
--Becky
+MCSR_MASK is not defined anywhere, so when I compile this code, I get this:
 
- arch/powerpc/mm/fsl_booke_mmu.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+  CC      arch/powerpc/sysdev/fsl_rio.o
+arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
+arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
+(first use in this function)
+arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared identifier
+is reported only once
+arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it appears in.)
 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index cdc7526..4b66a1e 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -104,9 +104,10 @@ unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
- }
- 
- /*
-- * Set up one of the I/D BAT (block address translation) register pairs.
-- * The parameters are not checked; in particular size must be a power
-- * of 4 between 4k and 256M.
-+ * Set up a variable-size TLB entry (tlbcam). The parameters are not checked;
-+ * in particular size must be a power of 4 between 4k and 256M (or 1G, for cpus
-+ * that support extended page sizes).  Note that while some cpus support a
-+ * page size of 4G, we don't allow its use here.
-  */
- static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
- 		unsigned long size, unsigned long flags, unsigned int pid)
--- 
-1.6.0.6
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
