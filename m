@@ -1,20 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 21FDBB6F06
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 04:23:30 +1000 (EST)
-To: Rupjyoti Sarmah <rsarmah@apm.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v1]460EX on-chip SATA driver<resubmisison>
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>
-References: <201006241327.o5ODRY6m032299@amcc.com>
-	<20100630115808.2D9241524EC@gemini.denx.de>
-	<3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>
-Date: Wed, 30 Jun 2010 20:23:26 +0200
-Message-Id: <20100630182326.3A48B1524EC@gemini.denx.de>
-Cc: linux-ide@vger.kernel.org, sr@denx.de, jgarzik@pobox.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net
+	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 43C7AB6F0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 04:36:54 +1000 (EST)
+Date: Wed, 30 Jun 2010 11:37:06 -0700 (PDT)
+Message-Id: <20100630.113706.133400770.davem@davemloft.net>
+To: avorontsov@mvista.com
+Subject: Re: [PATCH 1/3] gianfar: Implement workaround for eTSEC74 erratum
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100630163804.GA636@oksana.dev.rtsoft.ru>
+References: <20100629205959.GA10905@oksana.dev.rtsoft.ru>
+	<20100629.151626.90794001.davem@davemloft.net>
+	<20100630163804.GA636@oksana.dev.rtsoft.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, afleming@freescale.com,
+	Sandeep.Kumar@freescale.com, manfred.rudigier@omicron.at,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Rupjyoti Sarmah,
+From: Anton Vorontsov <avorontsov@mvista.com>
+Date: Wed, 30 Jun 2010 20:38:04 +0400
 
-In message <3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com> you wrote:
+> On Tue, Jun 29, 2010 at 03:16:26PM -0700, David Miller wrote:
+>> 
+>> I really don't see any value at all to this config option,
+>> the errata fixup code should be there all the time.
 > 
-> I took the mainline kernel v2.6.35-rc3 and downloaded using the git
-> download link.
-> I created the patch on 6/24/2010 after doing a git pull.
+> Well, at least for eTSEC76 erratum (patch 2/3) we have to touch
+> fast path (i.e. start_xmit), so I just wanted to make zero
+> overhead for controllers that don't need any fixups.
 > 
-> With the kernel tree on 6/24/2010 the driver compiled. I also tested the
-> functionality on the SATA drive & it worked.
+> Not that there's much of the overhead in a single additional
+> 'if' condition, no. ;-)
 
-v2.6.35-rc3 was released on June 11, 13 days before 6/24/2010.
+The register accesses will dominate the costs with this chip.
 
-Can you please give the exact git commit ID so I can try reproducing
-this?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-There comes to all races an ultimate crisis which  you  have  yet  to
-face  ....  One  day  our  minds became so powerful we dared think of
-ourselves as gods.
-	-- Sargon, "Return to Tomorrow", stardate 4768.3
+The only case where a if() test is going to potentially create
+some practical performance impact is if the TX is performed
+purely using changes to a shared memory data structure and
+absolutely no MMIO register reads or writes.
