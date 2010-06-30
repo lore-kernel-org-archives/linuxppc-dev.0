@@ -1,22 +1,23 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 88FAFB6F0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 08:25:59 +1000 (EST)
-Received: by iwn36 with SMTP id 36so1003659iwn.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 15:25:57 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4C2B6DF5.7030403@freescale.com>
-References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
-	<20100629185617.GA24285@schlenkerla.am.freescale.net>
-	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
-	<4C2B6DF5.7030403@freescale.com>
-Date: Wed, 30 Jun 2010 15:25:57 -0700
-Message-ID: <AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>
-Subject: Re: machine check in kernel for a mpc870 board
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7FC89B6F19
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 08:26:49 +1000 (EST)
+In-Reply-To: <1277878239.4200.285.camel@pasglop>
+References: <20100625095606.GG12443@tyan-ft48-01.lab.bos.redhat.com>
+	<57727.84.105.60.153.1277464103.squirrel@gate.crashing.org>
+	<20100625111829.GH12443@tyan-ft48-01.lab.bos.redhat.com>
+	<1277878239.4200.285.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B03394B1-54FD-43F1-A34A-6E485DBAEB3D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Adjust arch/powerpc inline asms for recent gcc change
+Date: Thu, 1 Jul 2010 00:26:53 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jakub Jelinek <jakub@redhat.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+>>>> -		stw%U0%X0 %L2,%1"
+>>>> -	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
+>>>> +		stw%U1%X1 %L2,%1"
+>>>> +	: "=m<>" (*ptep), "=m<>" (*((unsigned char *)ptep+4))
+>>>>  	: "r" (pte) : "memory");
+>>>
+>>> This still isn't correct -- the constraint says that a byte
+>>> is written, but the insn changes a word.  Probably should just
+>>> be ptep[1] ?
+>
+> Oops, almost forgot about this. Are you guys shooting a new patch  
+> or do
+> you want me to do it ?
 
-> Does u-boot on your board put IMMR somewhere other than 0xff000000? =A0If=
- so,
-> you'll need to update the device tree to reflect this.
+It's really an independent fix.  Just take Jakub's patch, I'll do one
+on top of it?
 
-Thanks a lot. I think you got something here. Please bear with me.
-This is the first dts file I'm creating. I have some question
-regarding to dts first. BTW, My IMMR is at 0xfa200000.
 
-How do I find the address, reg, and range for nodes like localbus,
-soc, eth0, cpm, serial etc.? Do the addresses of localbus and soc
-relate to IMMR? So my localbus and soc should be as follows?
-
-        localbus@fa200100 {
-                compatible =3D "fsl,mpc885-localbus", "fsl,pq1-localbus",
-                             "simple-bus";
-                #address-cells =3D <2>;
-                #size-cells =3D <1>;
-                reg =3D <0xfa200100 0x40>;
-
-                ranges =3D <
-                        0 0 0xfe000000 0x01000000    // I'm not sure about =
-this?
-                >;
-        };
-
-        soc@fa200000 {
-                compatible =3D "fsl,mpc875-immr", "fsl,pq1-soc", "simple-bu=
-s";
-                #address-cells =3D <1>;
-                #size-cells =3D <1>;
-                ranges =3D <0 0xfa200000 0x00004000>;
-
-                // Temporary until code stops depending on it.
-                device_type =3D "soc";
-
-                // Temporary until get_immrbase() is fixed.
-                reg =3D <0xfa200000 0x4000>;
-        };
-
-Thanks again,
--Shawn.
+Segher
