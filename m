@@ -1,20 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 59ACDB6F11
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 08:18:48 +1000 (EST)
-In-Reply-To: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
-References: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B6229BDC-F290-4A71-9F61-AAA5EC87F0F6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
-Date: Thu, 1 Jul 2010 00:16:40 +0200
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 88FAFB6F0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 08:25:59 +1000 (EST)
+Received: by iwn36 with SMTP id 36so1003659iwn.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 15:25:57 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4C2B6DF5.7030403@freescale.com>
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
+	<20100629185617.GA24285@schlenkerla.am.freescale.net>
+	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
+	<4C2B6DF5.7030403@freescale.com>
+Date: Wed, 30 Jun 2010 15:25:57 -0700
+Message-ID: <AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>
+Subject: Re: machine check in kernel for a mpc870 board
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Just whitelist these extra compiler generated symbols.
-> Fixes these errors:
+Hi Scott,
 
-[...]
+> Does u-boot on your board put IMMR somewhere other than 0xff000000? =A0If=
+ so,
+> you'll need to update the device tree to reflect this.
 
-I've used an identical patch for almost a year now, so...
+Thanks a lot. I think you got something here. Please bear with me.
+This is the first dts file I'm creating. I have some question
+regarding to dts first. BTW, My IMMR is at 0xfa200000.
 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+How do I find the address, reg, and range for nodes like localbus,
+soc, eth0, cpm, serial etc.? Do the addresses of localbus and soc
+relate to IMMR? So my localbus and soc should be as follows?
 
-You probably also need something similar to http://git.infradead.org/ 
-users/segher/linux.git/commitdiff/ 
-98194f54cc8e19ecd752bc10e2d19ef94074f502
-(note: only build-tested, not run-tested).
+        localbus@fa200100 {
+                compatible =3D "fsl,mpc885-localbus", "fsl,pq1-localbus",
+                             "simple-bus";
+                #address-cells =3D <2>;
+                #size-cells =3D <1>;
+                reg =3D <0xfa200100 0x40>;
 
+                ranges =3D <
+                        0 0 0xfe000000 0x01000000    // I'm not sure about =
+this?
+                >;
+        };
 
-Segher
+        soc@fa200000 {
+                compatible =3D "fsl,mpc875-immr", "fsl,pq1-soc", "simple-bu=
+s";
+                #address-cells =3D <1>;
+                #size-cells =3D <1>;
+                ranges =3D <0 0xfa200000 0x00004000>;
 
-> ---
->  arch/powerpc/kernel/prom_init_check.sh |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/ 
-> kernel/prom_init_check.sh
-> index 1ac136b..9f82f49 100644
-> --- a/arch/powerpc/kernel/prom_init_check.sh
-> +++ b/arch/powerpc/kernel/prom_init_check.sh
-> @@ -52,12 +52,18 @@ do
->  	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
->  		OK=1
->  	fi
-> +	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
-> +		OK=1
-> +	fi
->  	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
->  		OK=1
->  	fi
->  	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
->  		OK=1
->  	fi
-> +	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
-> +		OK=1
-> +	fi
->  	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
->  		OK=1
->  	fi
-> -- 
-> 1.7.1
->
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+                // Temporary until code stops depending on it.
+                device_type =3D "soc";
+
+                // Temporary until get_immrbase() is fixed.
+                reg =3D <0xfa200000 0x4000>;
+        };
+
+Thanks again,
+-Shawn.
