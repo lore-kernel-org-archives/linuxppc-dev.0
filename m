@@ -1,20 +1,21 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id DE95BB6EFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 20:11:27 +1000 (EST)
-Received: by bwz19 with SMTP id 19so304107bwz.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 03:11:25 -0700 (PDT)
-Message-ID: <4C2B180F.9040701@ru.mvista.com>
-Date: Wed, 30 Jun 2010 14:10:23 +0400
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <dg@emlix.com>
+Received: from mx1.emlix.com (mx1.emlix.com [193.175.82.87])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6699BB6F01
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 20:28:24 +1000 (EST)
+Message-ID: <4C2B140B.4050004@emlix.com>
+Date: Wed, 30 Jun 2010 11:53:15 +0200
+From: =?ISO-8859-1?Q?Daniel_Gl=F6ckner?= <dg@emlix.com>
 MIME-Version: 1.0
-To: Fushen Chen <fchen@apm.com>
+To: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH 1/9] Add Synopsys DesignWare HS USB OTG Controller driver.
-References: <12778468223309-git-send-email-fchen@apm.com>
-In-Reply-To: <12778468223309-git-send-email-fchen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <5569.83301.qm@web180304.mail.gq1.yahoo.com>
+In-Reply-To: <5569.83301.qm@web180304.mail.gq1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de
+	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On 06/30/2010 12:41 AM, David Brownell wrote:
+> Could you mention a few Linux-enabled chips which
+> include this controller?
 
-Fushen Chen wrote:
+Ralink APSoC chips (rt2880, rt305x) do:
+http://svn.dd-wrt.com:8000/dd-wrt/browser/src/linux/rt2880/linux-2.6.23/drivers/usb/dwc_otg/Kconfig
 
-> The DWC OTG driver module provides the initialization and cleanup
-> entry points for the DWC OTG USB driver.
+  Daniel
 
-> Signed-off-by: Fushen Chen <fchen@apm.com>
-> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
-[...]
-> diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-> index 083e68e..1a141b8 100644
-> --- a/arch/powerpc/boot/dts/kilauea.dts
-> +++ b/arch/powerpc/boot/dts/kilauea.dts
-> @@ -394,5 +394,20 @@
->  				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
->  				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
->  		};
-> +
-> +		USBOTG0: usbotg@ef6c0000 {
-> +			compatible = "amcc,dwc-otg";
-> +			reg = <0xef6c0000 0x10000>;
-> +			interrupt-parent = <&USBOTG0>;
-> +			interrupts = <0x0 0x1 0x2>;
-> +			#interrupt-cells = <0x1>;
-> +			#address-cells = <0x0>;
-> +			#size-cells = <0x0>;
-> +			interrupt-map = <
-> +				0x0 &UIC2 0x1e 0x4 /* USB-OTG */
-> +				0x1 &UIC1 0x1a 0x8 /* HIGH-POWER */
-> +				0x2 &UIC0 0xc 0x4  /* DMA */ >;
-> +			interrupt-map-mask = <0xffffffff>;
-> +		};
->  	};
->  };
+-- 
+Dipl.-Math. Daniel Glöckner, emlix GmbH, http://www.emlix.com
+Fon +49 551 30664-0, Fax -11, Bahnhofsallee 1b, 37081 Göttingen, Germany
+Sitz der Gesellschaft: Göttingen, Amtsgericht Göttingen HR B 3160
+Geschäftsführer: Dr. Uwe Kracke, Ust-IdNr.: DE 205 198 055
 
-    Please put this file in a separate patch and push thru the PowerPC tree.
-
-WBR, Sergei
+emlix - your embedded linux partner
