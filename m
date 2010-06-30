@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0C1E2B6EED
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 23:28:09 +1000 (EST)
-Subject: Re: [PATCH] Adjust arch/powerpc inline asms for recent gcc change
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jakub Jelinek <jakub@redhat.com>
-In-Reply-To: <20100625111829.GH12443@tyan-ft48-01.lab.bos.redhat.com>
-References: <20100625095606.GG12443@tyan-ft48-01.lab.bos.redhat.com>
-	<57727.84.105.60.153.1277464103.squirrel@gate.crashing.org>
-	<20100625111829.GH12443@tyan-ft48-01.lab.bos.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Jun 2010 16:10:39 +1000
-Message-ID: <1277878239.4200.285.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 19851B6EF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  1 Jul 2010 00:35:41 +1000 (EST)
+Received: by gyd10 with SMTP id 10so457315gyd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Jun 2010 07:35:39 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100630004633.GB12417@yookeroo>
+References: <AANLkTimV1AFEUrRf-2iEizXH4HQFMrrAumsRVDKxNfAv@mail.gmail.com>
+	<356261A9-B09F-4E82-A897-FD0724C503F4@kernel.crashing.org>
+	<20100630004633.GB12417@yookeroo>
+Date: Wed, 30 Jun 2010 22:35:39 +0800
+Message-ID: <AANLkTikyNZ5gCpuRPIZ-CJ6ClNZI_UDsmGF7xTzsv9vB@mail.gmail.com>
+Subject: Re: kernel init exception
+From: "wilbur.chan" <wilbur512@gmail.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-06-25 at 13:18 +0200, Jakub Jelinek wrote:
-> On Fri, Jun 25, 2010 at 01:08:23PM +0200, Segher Boessenkool wrote:
-> > > -		stw%U0%X0 %L2,%1"
-> > > -	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
-> > > +		stw%U1%X1 %L2,%1"
-> > > +	: "=m<>" (*ptep), "=m<>" (*((unsigned char *)ptep+4))
-> > >  	: "r" (pte) : "memory");
-> > 
-> > This still isn't correct -- the constraint says that a byte
-> > is written, but the insn changes a word.  Probably should just
-> > be ptep[1] ?
+Hi, David, Segher,
 
-Oops, almost forgot about this. Are you guys shooting a new patch or do
-you want me to do it ?
 
-Cheers,
-Ben.
+Maybe it was caused by floating exception.I found that,system received
+a program check exception,the reason for it was REASON_ILLEGAL.
+
+I also use show_regs to print the NIP in exception,it seemed that
+,this exception was caused by 'vmhaddshs' instruction in user mode of
+init process .
+
+Is vmhaddshs avaliable on e500mc? My cross compile tool is gcc-4.1.2-glibc-2.5.0
