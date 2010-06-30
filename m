@@ -1,18 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B751DB6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 16:08:44 +1000 (EST)
-Date: Wed, 30 Jun 2010 16:08:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix module building for gcc 4.5 and 64 bit
-Message-Id: <20100630160842.c2a69fc2.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 482AAB6EF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 16:14:36 +1000 (EST)
+Received: by iwn36 with SMTP id 36so256231iwn.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 23:14:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100629185617.GA24285@schlenkerla.am.freescale.net>
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
+	<20100629185617.GA24285@schlenkerla.am.freescale.net>
+Date: Tue, 29 Jun 2010 23:14:34 -0700
+Message-ID: <AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
+Subject: Re: machine check in kernel for a mpc870 board
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,221 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gcc 4.5 is now generating out of line register save and restore
-in the function prefix and postfix when we use -Os.
+Hi Scott,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Makefile        |    4 +-
- arch/powerpc/lib/Makefile    |    4 +-
- arch/powerpc/lib/crtsavres.S |  129 ++++++++++++++++++++++++++++++++++++++++++
- scripts/mod/modpost.c        |    5 ++
- 4 files changed, 138 insertions(+), 4 deletions(-)
+>> Bus Fault @ 0x00404c40, fixup 0x00000000
+>> Machine check in kernel mode.
+>> Caused by (from msr): regs 07d1cb80 Unknown values in msr
+>> NIP: 00404C40 XER: 00000000 LR: 00404C24 REGS: 07d1cb80 TRAP: 0200 DAR: 00000001
+>> MSR: 00001002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+>
+> Can you look up the source line/instruction corresponding to 0x404c40, in
+> the wrapper ELF file?
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 42dcd3f..77cfe7a 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -92,10 +92,10 @@ endif
- else
- 	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
- endif
--else
--LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
- endif
- 
-+LDFLAGS_MODULE	+= arch/powerpc/lib/crtsavres.o
-+
- ifeq ($(CONFIG_TUNE_CELL),y)
- 	KBUILD_CFLAGS += $(call cc-option,-mtune=cell)
- endif
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 3040dac..111da1c 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -12,8 +12,8 @@ CFLAGS_REMOVE_code-patching.o = -pg
- CFLAGS_REMOVE_feature-fixups.o = -pg
- 
- obj-y			:= string.o alloc.o \
--			   checksum_$(CONFIG_WORD_SIZE).o
--obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
-+			   checksum_$(CONFIG_WORD_SIZE).o crtsavres.o
-+obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
- obj-$(CONFIG_HAS_IOMEM)	+= devres.o
- 
- obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
-diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
-index 70a9cd8..1c893f0 100644
---- a/arch/powerpc/lib/crtsavres.S
-+++ b/arch/powerpc/lib/crtsavres.S
-@@ -6,6 +6,7 @@
-  *   Written By Michael Meissner
-  *
-  * Based on gcc/config/rs6000/crtsavres.asm from gcc
-+ * 64 bit additions from reading the PPC elf64abi document.
-  *
-  * This file is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -44,6 +45,8 @@
- 
- #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
- 
-+#ifndef CONFIG_PPC64
-+
- /* Routines for saving integer registers, called by the compiler.  */
- /* Called with r11 pointing to the stack header word of the caller of the */
- /* function, just beyond the end of the integer save area.  */
-@@ -226,4 +229,130 @@ _GLOBAL(_rest32gpr_31_x)
- 	mtlr	0
- 	mr	1,11
- 	blr
-+
-+#else /* CONFIG_PPC64 */
-+
-+.globl	_savegpr0_14
-+_savegpr0_14:
-+	std	r14,-144(r1)
-+.globl	_savegpr0_15
-+_savegpr0_15:
-+	std	r15,-136(r1)
-+.globl	_savegpr0_16
-+_savegpr0_16:
-+	std	r16,-128(r1)
-+.globl	_savegpr0_17
-+_savegpr0_17:
-+	std	r17,-120(r1)
-+.globl	_savegpr0_18
-+_savegpr0_18:
-+	std	r18,-112(r1)
-+.globl	_savegpr0_19
-+_savegpr0_19:
-+	std	r19,-104(r1)
-+.globl	_savegpr0_20
-+_savegpr0_20:
-+	std	r20,-96(r1)
-+.globl	_savegpr0_21
-+_savegpr0_21:
-+	std	r21,-88(r1)
-+.globl	_savegpr0_22
-+_savegpr0_22:
-+	std	r22,-80(r1)
-+.globl	_savegpr0_23
-+_savegpr0_23:
-+	std	r23,-72(r1)
-+.globl	_savegpr0_24
-+_savegpr0_24:
-+	std	r24,-64(r1)
-+.globl	_savegpr0_25
-+_savegpr0_25:
-+	std	r25,-56(r1)
-+.globl	_savegpr0_26
-+_savegpr0_26:
-+	std	r26,-48(r1)
-+.globl	_savegpr0_27
-+_savegpr0_27:
-+	std	r27,-40(r1)
-+.globl	_savegpr0_28
-+_savegpr0_28:
-+	std	r28,-32(r1)
-+.globl	_savegpr0_29
-+_savegpr0_29:
-+	std	r29,-24(r1)
-+.globl	_savegpr0_30
-+_savegpr0_30:
-+	std	r30,-16(r1)
-+.globl	_savegpr0_31
-+_savegpr0_31:
-+	std	r31,-8(r1)
-+	std	r0,16(r1)
-+	blr
-+
-+.globl	_restgpr0_14
-+_restgpr0_14:
-+	ld	r14,-144(r1)
-+.globl	_restgpr0_15
-+_restgpr0_15:
-+	ld	r15,-136(r1)
-+.globl	_restgpr0_16
-+_restgpr0_16:
-+	ld	r16,-128(r1)
-+.globl	_restgpr0_17
-+_restgpr0_17:
-+	ld	r17,-120(r1)
-+.globl	_restgpr0_18
-+_restgpr0_18:
-+	ld	r18,-112(r1)
-+.globl	_restgpr0_19
-+_restgpr0_19:
-+	ld	r19,-104(r1)
-+.globl	_restgpr0_20
-+_restgpr0_20:
-+	ld	r20,-96(r1)
-+.globl	_restgpr0_21
-+_restgpr0_21:
-+	ld	r21,-88(r1)
-+.globl	_restgpr0_22
-+_restgpr0_22:
-+	ld	r22,-80(r1)
-+.globl	_restgpr0_23
-+_restgpr0_23:
-+	ld	r23,-72(r1)
-+.globl	_restgpr0_24
-+_restgpr0_24:
-+	ld	r24,-64(r1)
-+.globl	_restgpr0_25
-+_restgpr0_25:
-+	ld	r25,-56(r1)
-+.globl	_restgpr0_26
-+_restgpr0_26:
-+	ld	r26,-48(r1)
-+.globl	_restgpr0_27
-+_restgpr0_27:
-+	ld	r27,-40(r1)
-+.globl	_restgpr0_28
-+_restgpr0_28:
-+	ld	r28,-32(r1)
-+.globl	_restgpr0_29
-+_restgpr0_29:
-+	ld	r0,16(r1)
-+	ld	r29,-24(r1)
-+	mtlr	r0
-+	ld	r30,-16(r1)
-+	ld	r31,-8(r1)
-+	blr
-+
-+.globl	_restgpr0_30
-+_restgpr0_30:
-+	ld	r30,-16(r1)
-+.globl	_restgpr0_31
-+_restgpr0_31:
-+	ld	r0,16(r1)
-+	ld	r31,-8(r1)
-+	mtlr	r0
-+	blr
-+
-+#endif /* CONFIG_PPC64 */
-+
- #endif
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index f877900..f6127b9 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -503,6 +503,11 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
- 		    strncmp(symname, "_rest32gpr_", sizeof("_rest32gpr_") - 1) == 0 ||
- 		    strncmp(symname, "_save32gpr_", sizeof("_save32gpr_") - 1) == 0)
- 			return 1;
-+	if (info->hdr->e_machine == EM_PPC64)
-+		/* Special register function linked on all modules during final link of .ko */
-+		if (strncmp(symname, "_restgpr0_", sizeof("_restgpr0_") - 1) == 0 ||
-+		    strncmp(symname, "_savegpr0_", sizeof("_savegpr0_") - 1) == 0)
-+			return 1;
- 	/* Do not ignore this symbol */
- 	return 0;
- }
--- 
-1.7.1
+I'm not sure how to look up it. But I used the BDI to dump the
+instructions in which you may find some clue? These should be kernel
+code, right? Maybe the gdb can help to de-assemble them?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+BDI>md 0x404c00 0x20
+00404c00 : 0x4800317d   1207972221  H.1}
+00404c04 : 0x80010014  -2147418092  ....
+00404c08 : 0xbbc10008  -1144979448  ....
+00404c0c : 0x7c0803a6   2080900006  |...
+00404c10 : 0x38210010    941686800  8!..
+00404c14 : 0x4e800020   1317011488  N..
+00404c18 : 0x9421fff0  -1809711120  .!..
+00404c1c : 0x7c0802a6   2080899750  |...
+00404c20 : 0x429f0005   1117716485  B...
+00404c24 : 0xbfc10008  -1077870584  ....
+00404c28 : 0x7fc802a6   2143814310  ....
+00404c2c : 0x90010014  -1878982636  ....
+00404c30 : 0x3fde0001   1071513601  ?...
+00404c34 : 0x3bdedd98   1004461464  ;...
+00404c38 : 0x813e8000  -2126610432  .>..
+00404c3c : 0x81490000  -2125922304  .I..
+00404c40 : 0xa00a0000  -1609957376  ....
+00404c44 : 0x0c000000    201326592  ....
+00404c48 : 0x4c00012c   1275068716  L..,
+00404c4c : 0x70090001   1879638017  p...
+00404c50 : 0x4082fff0   1082327024  @...
+00404c54 : 0x817e8000  -2122416128  .~..
+00404c58 : 0x5469402e   1416183854  Ti@.
+
+Thanks a lot,
+-Shawn.
