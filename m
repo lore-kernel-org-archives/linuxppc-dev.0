@@ -2,23 +2,21 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6EBADB707F
+	by ozlabs.org (Postfix) with ESMTPS id 64109B6F15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 08:33:15 +1000 (EST)
-In-Reply-To: <AANLkTikyNZ5gCpuRPIZ-CJ6ClNZI_UDsmGF7xTzsv9vB@mail.gmail.com>
-References: <AANLkTimV1AFEUrRf-2iEizXH4HQFMrrAumsRVDKxNfAv@mail.gmail.com>
-	<356261A9-B09F-4E82-A897-FD0724C503F4@kernel.crashing.org>
-	<20100630004633.GB12417@yookeroo>
-	<AANLkTikyNZ5gCpuRPIZ-CJ6ClNZI_UDsmGF7xTzsv9vB@mail.gmail.com>
+	Thu,  1 Jul 2010 08:50:39 +1000 (EST)
+In-Reply-To: <20100701082756.7dced805.sfr@canb.auug.org.au>
+References: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
+	<B6229BDC-F290-4A71-9F61-AAA5EC87F0F6@kernel.crashing.org>
+	<20100701082756.7dced805.sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <47F80BE0-6596-4A3D-B95F-72ABE2E0228C@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4D7DE8D9-B226-4C6A-97FF-A63D272681C5@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: kernel init exception
-Date: Thu, 1 Jul 2010 00:31:22 +0200
-To: "wilbur.chan" <wilbur512@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
+Date: Thu, 1 Jul 2010 00:50:36 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Maybe it was caused by floating exception.I found that,system received
-> a program check exception,the reason for it was REASON_ILLEGAL.
+>> You probably also need something similar to http://git.infradead.org/
+>> users/segher/linux.git/commitdiff/
+>> 98194f54cc8e19ecd752bc10e2d19ef94074f502
+>> (note: only build-tested, not run-tested).
 >
-> I also use show_regs to print the NIP in exception,it seemed that
-> ,this exception was caused by 'vmhaddshs' instruction in user mode of
-> init process .
->
-> Is vmhaddshs avaliable on e500mc? My cross compile tool is  
-> gcc-4.1.2-glibc-2.5.0
+> See http://patchwork.ozlabs.org/patch/57379/ submitted yesterday.
 
-This isn't vmhaddshs (which is an AltiVec instruction), but something  
-else
-that also uses primary opcode 4.
-
-It sounds like your toolchain isn't set up correctly for e500mc.
+Yeah saw that right after I hit "send" :-)  Either it's way more
+complete than what I did, or way more complex because we still
+don't link with libgcc :-P
 
 
 Segher
