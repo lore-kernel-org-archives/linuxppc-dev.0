@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 22548B6EFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 04:47:31 +1000 (EST)
-To: Rupjyoti Sarmah <rsarmah@apm.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v1]460EX on-chip SATA driver<resubmisison>
+Return-Path: <jgpobox@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 1AD45B6EF7
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jul 2010 05:17:10 +1000 (EST)
+Received: by gyd5 with SMTP id 5so672344gyd.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 12:17:09 -0700 (PDT)
+Sender: Jeff Garzik <jgpobox@gmail.com>
+Message-ID: <4C2B9831.9020801@pobox.com>
+Date: Wed, 30 Jun 2010 15:17:05 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v1]460EX on-chip SATA driver<resubmisison>
 References: <201006241327.o5ODRY6m032299@amcc.com>
 	<20100630115808.2D9241524EC@gemini.denx.de>
 	<3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>
-Date: Wed, 30 Jun 2010 20:47:28 +0200
-Message-Id: <20100630184728.C02D014EBF9@gemini.denx.de>
-Cc: linux-ide@vger.kernel.org, sr@denx.de, jgarzik@pobox.com,
+	<20100630184728.C02D014EBF9@gemini.denx.de>
+In-Reply-To: <20100630184728.C02D014EBF9@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, sr@denx.de, Rupjyoti Sarmah <rsarmah@apm.com>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,82 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Rupjyoti Sarmah,
+On 06/30/2010 02:47 PM, Wolfgang Denk wrote:
+> Dear Rupjyoti Sarmah,
+>
+> In message<3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com>  you wrote:
+>>
+>> I took the mainline kernel v2.6.35-rc3 and downloaded using the git
+>> download link.
+>> I created the patch on 6/24/2010 after doing a git pull.
+>
+> I don;t think that you used v2.6.35-rc3; using this version, I still
+> get this:
+>
+> drivers/ata/sata_dwc_460ex.c:43:1: warning: "DRV_NAME" redefined
+> In file included from drivers/ata/sata_dwc_460ex.c:38:
+> drivers/ata/libata.h:31:1: warning: this is the location of the previous definition
+> drivers/ata/sata_dwc_460ex.c:44:1: warning: "DRV_VERSION" redefined
+> drivers/ata/libata.h:32:1: warning: this is the location of the previous definition
+> drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_scr_read':
+> drivers/ata/sata_dwc_460ex.c:777: error: 'struct ata_port' has no member named 'ioaddr'
+> drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_scr_write':
+> drivers/ata/sata_dwc_460ex.c:793: error: 'struct ata_port' has no member named 'ioaddr'
+> drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_error_intr':
+> drivers/ata/sata_dwc_460ex.c:844: error: 'struct ata_port_operations' has no member named 'sff_check_status'
 
-In message <3b928476b2fffdcf0694e5436e8a482f@mail.gmail.com> you wrote:
-> 
-> I took the mainline kernel v2.6.35-rc3 and downloaded using the git
-> download link.
-> I created the patch on 6/24/2010 after doing a git pull.
+It looks like -your- build config is missing CONFIG_ATA_SFF or similar.
 
-I don;t think that you used v2.6.35-rc3; using this version, I still
-get this:
+If you actually look at include/linux/libata.h, you see that struct 
+ata_port_operations most definitely has a member named sff_check_status, 
+for example.  Ditto ata_port and member ioaddr, etc.
 
-drivers/ata/sata_dwc_460ex.c:43:1: warning: "DRV_NAME" redefined
-In file included from drivers/ata/sata_dwc_460ex.c:38:
-drivers/ata/libata.h:31:1: warning: this is the location of the previous definition
-drivers/ata/sata_dwc_460ex.c:44:1: warning: "DRV_VERSION" redefined
-drivers/ata/libata.h:32:1: warning: this is the location of the previous definition
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_scr_read':
-drivers/ata/sata_dwc_460ex.c:777: error: 'struct ata_port' has no member named 'ioaddr'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_scr_write':
-drivers/ata/sata_dwc_460ex.c:793: error: 'struct ata_port' has no member named 'ioaddr'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_error_intr':
-drivers/ata/sata_dwc_460ex.c:844: error: 'struct ata_port_operations' has no member named 'sff_check_status'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_isr':
-drivers/ata/sata_dwc_460ex.c:953: error: 'struct ata_port_operations' has no member named 'sff_check_status'
-drivers/ata/sata_dwc_460ex.c:957: error: 'struct ata_port_operations' has no member named 'sff_check_status'
-drivers/ata/sata_dwc_460ex.c:991: error: implicit declaration of function 'ata_sff_hsm_move'
-drivers/ata/sata_dwc_460ex.c:1030: error: 'struct ata_port_operations' has no member named 'sff_check_status'
-drivers/ata/sata_dwc_460ex.c: At top level:
-drivers/ata/sata_dwc_460ex.c:1213: warning: 'struct ata_ioports' declared inside parameter list
-drivers/ata/sata_dwc_460ex.c:1213: warning: its scope is only this definition or declaration, which is probably not what you want
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_setup_port':
-drivers/ata/sata_dwc_460ex.c:1215: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1216: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1218: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1219: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1221: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1223: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1224: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1225: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1227: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1228: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1229: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1231: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c:1232: error: dereferencing pointer to incomplete type
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_port_start':
-drivers/ata/sata_dwc_460ex.c:1273: error: 'struct ata_port' has no member named 'bmdma_prd'
-drivers/ata/sata_dwc_460ex.c:1274: error: 'struct ata_port' has no member named 'bmdma_prd_dma'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_exec_command_by_tag':
-drivers/ata/sata_dwc_460ex.c:1356: warning: passing argument 1 of 'ata_get_cmd_descript' makes integer from pointer without a cast
-drivers/ata/sata_dwc_460ex.c:1369: error: implicit declaration of function 'ata_sff_exec_command'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_qc_issue':
-drivers/ata/sata_dwc_460ex.c:1512: error: 'struct ata_port_operations' has no member named 'sff_tf_load'
-drivers/ata/sata_dwc_460ex.c:1516: error: implicit declaration of function 'ata_sff_qc_issue'
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_error_handler':
-drivers/ata/sata_dwc_460ex.c:1545: error: implicit declaration of function 'ata_sff_error_handler'
-drivers/ata/sata_dwc_460ex.c: At top level:
-drivers/ata/sata_dwc_460ex.c:1564: error: 'ata_sff_port_ops' undeclared here (not in a function)
-drivers/ata/sata_dwc_460ex.c:1577: error: unknown field 'bmdma_setup' specified in initializer
-drivers/ata/sata_dwc_460ex.c:1577: warning: initialization from incompatible pointer type
-drivers/ata/sata_dwc_460ex.c:1578: error: unknown field 'bmdma_start' specified in initializer
-drivers/ata/sata_dwc_460ex.c:1578: warning: initialization from incompatible pointer type
-drivers/ata/sata_dwc_460ex.c: In function 'sata_dwc_probe':
-drivers/ata/sata_dwc_460ex.c:1638: error: 'struct ata_port' has no member named 'ioaddr'
-drivers/ata/sata_dwc_460ex.c:1639: error: 'struct ata_port' has no member named 'ioaddr'
-drivers/ata/sata_dwc_460ex.c:1641: error: 'struct ata_port' has no member named 'ioaddr'
-make[2]: *** [drivers/ata/sata_dwc_460ex.o] Error 1
-make[1]: *** [drivers/ata] Error 2
-make: *** [drivers] Error 2
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Often it is fatal to live too long.                          - Racine
+	Jeff
