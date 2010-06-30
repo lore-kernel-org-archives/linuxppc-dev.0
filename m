@@ -1,19 +1,16 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from fg-out-1718.google.com (fg-out-1718.google.com [72.14.220.158])
-	by ozlabs.org (Postfix) with ESMTP id 8A711B6F05
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Jun 2010 15:49:25 +1000 (EST)
-Received: by fg-out-1718.google.com with SMTP id 16so13146fgg.3
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Jun 2010 22:49:22 -0700 (PDT)
-Date: Wed, 30 Jun 2010 08:49:26 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: CONFIG_NO_HZ causing poor console responsiveness
-Message-ID: <20100630064926.GA3792@riccoc20.at.omicron.at>
-References: <AANLkTilMzfwgYvoFhxhcVQVGV-EkMLVHI2TeQ29SYFCH@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTilMzfwgYvoFhxhcVQVGV-EkMLVHI2TeQ29SYFCH@mail.gmail.com>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0EEC1B6ED0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Jun 2010 16:04:23 +1000 (EST)
+Date: Wed, 30 Jun 2010 16:04:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
+Message-Id: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 29, 2010 at 02:54:17PM -0500, Timur Tabi wrote:
-> I'm adding support for a new e500-based board (the P1022DS), and in
-> the process I've discovered that enabling CONFIG_NO_HZ (Tickless
-> System / Dynamic Ticks) causes significant responsiveness problems on
-> the serial console.  When I type on the console, I see delays of up to
-> a half-second for almost every character.  It acts as if there's a
-> background process eating all the CPU.
-> 
-> I don't have time to debug this thoroughly at the moment.  The problem
-> occurs in the latest kernel, but it appears not to occur in 2.6.32.
-> 
-> Has anyone else seen anything like this?
+Just whitelist these extra compiler generated symbols.
+Fixes these errors:
 
-Yes, with a P2020RDB and kernel 2.6.35-rc1. Serial console is really
-slow on an otherwise idle machine. I assumed it was a hardware
-problem.
+Error: External symbol '_restgpr0_14' referenced from prom_init.c
+Error: External symbol '_restgpr0_20' referenced from prom_init.c
+Error: External symbol '_restgpr0_22' referenced from prom_init.c
+Error: External symbol '_restgpr0_24' referenced from prom_init.c
+Error: External symbol '_restgpr0_25' referenced from prom_init.c
+Error: External symbol '_restgpr0_26' referenced from prom_init.c
+Error: External symbol '_restgpr0_27' referenced from prom_init.c
+Error: External symbol '_restgpr0_28' referenced from prom_init.c
+Error: External symbol '_restgpr0_29' referenced from prom_init.c
+Error: External symbol '_restgpr0_31' referenced from prom_init.c
+Error: External symbol '_savegpr0_14' referenced from prom_init.c
+Error: External symbol '_savegpr0_20' referenced from prom_init.c
+Error: External symbol '_savegpr0_22' referenced from prom_init.c
+Error: External symbol '_savegpr0_24' referenced from prom_init.c
+Error: External symbol '_savegpr0_25' referenced from prom_init.c
+Error: External symbol '_savegpr0_26' referenced from prom_init.c
+Error: External symbol '_savegpr0_27' referenced from prom_init.c
+Error: External symbol '_savegpr0_28' referenced from prom_init.c
+Error: External symbol '_savegpr0_29' referenced from prom_init.c
+Error: External symbol '_savegpr0_31' referenced from prom_init.c
 
-Richard
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/prom_init_check.sh |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 1ac136b..9f82f49 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -52,12 +52,18 @@ do
+ 	if [ "${UNDEF:0:9}" = "_restgpr_" ]; then
+ 		OK=1
+ 	fi
++	if [ "${UNDEF:0:10}" = "_restgpr0_" ]; then
++		OK=1
++	fi
+ 	if [ "${UNDEF:0:11}" = "_rest32gpr_" ]; then
+ 		OK=1
+ 	fi
+ 	if [ "${UNDEF:0:9}" = "_savegpr_" ]; then
+ 		OK=1
+ 	fi
++	if [ "${UNDEF:0:10}" = "_savegpr0_" ]; then
++		OK=1
++	fi
+ 	if [ "${UNDEF:0:11}" = "_save32gpr_" ]; then
+ 		OK=1
+ 	fi
+-- 
+1.7.1
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
