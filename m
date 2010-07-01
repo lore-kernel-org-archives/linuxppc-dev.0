@@ -1,27 +1,24 @@
-Return-Path: <wilbur512@gmail.com>
-Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
-	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 24DA61007D4
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 46F15B6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 10:10:41 +1000 (EST)
-Received: by vws11 with SMTP id 11so1651946vws.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 30 Jun 2010 17:10:40 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <47F80BE0-6596-4A3D-B95F-72ABE2E0228C@kernel.crashing.org>
-References: <AANLkTimV1AFEUrRf-2iEizXH4HQFMrrAumsRVDKxNfAv@mail.gmail.com>
-	<356261A9-B09F-4E82-A897-FD0724C503F4@kernel.crashing.org>
-	<20100630004633.GB12417@yookeroo>
-	<AANLkTikyNZ5gCpuRPIZ-CJ6ClNZI_UDsmGF7xTzsv9vB@mail.gmail.com>
-	<47F80BE0-6596-4A3D-B95F-72ABE2E0228C@kernel.crashing.org>
-Date: Thu, 1 Jul 2010 08:10:39 +0800
-Message-ID: <AANLkTilNpYjhM5NRevXBcsAb-MFw55A8iSrDcRvTgoLO@mail.gmail.com>
-Subject: Re: kernel init exception
-From: "wilbur.chan" <wilbur512@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"chen.yu10" <chen.yu10@zte.com.cn>,
-	David Gibson <david@gibson.dropbear.id.au>
+	Thu,  1 Jul 2010 12:46:31 +1000 (EST)
+In-Reply-To: <20100701090546.0b7406ee.sfr@canb.auug.org.au>
+References: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
+	<B6229BDC-F290-4A71-9F61-AAA5EC87F0F6@kernel.crashing.org>
+	<20100701082756.7dced805.sfr@canb.auug.org.au>
+	<4D7DE8D9-B226-4C6A-97FF-A63D272681C5@kernel.crashing.org>
+	<20100701090546.0b7406ee.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5E01E5D4-762C-4B5C-A14C-FA45C0815180@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
+Date: Thu, 1 Jul 2010 04:46:26 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/7/1 Segher Boessenkool <segher@kernel.crashing.org>:
->> Maybe it was caused by floating exception.I found that,system received
->> a program check exception,the reason for it was REASON_ILLEGAL.
+>>> See http://patchwork.ozlabs.org/patch/57379/ submitted yesterday.
 >>
->> I also use show_regs to print the NIP in exception,it seemed that
->> ,this exception was caused by 'vmhaddshs' instruction in user mode of
->> init process .
->>
->> Is vmhaddshs avaliable on e500mc? My cross compile tool is
->> gcc-4.1.2-glibc-2.5.0
+>> Yeah saw that right after I hit "send" :-)  Either it's way more
+>> complete than what I did, or way more complex because we still
+>> don't link with libgcc :-P
 >
-> This isn't vmhaddshs (which is an AltiVec instruction), but something else
-> that also uses primary opcode 4.
->
-> It sounds like your toolchain isn't set up correctly for e500mc.
->
->
-> Segher
->
->
+> Actually, the 64bit versions of the routines are supplied by the  
+> linker,
+> so the vmlinux links fine.  But for modules, the final link is  
+> actually
+> done by the kernel module loader, thus we need to provide those  
+> routines
+> in this case.  linking against libgcc would not have helped.
 
-I 've used cross_tool (powerpc_mc)  that freescale provided,  to
-compile the kernel image, and
+Right, so "more complete" it is :-)
 
-use an ordinary powerpc cross tool to compile busybox into cpio ramdisk.
+I now checked that patch in detail, and it looks good to me.  Thank
+you for tackling this!
+
+
+Segher
