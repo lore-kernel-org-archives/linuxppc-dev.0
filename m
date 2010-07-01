@@ -1,20 +1,32 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 4E3181007D2
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 846331007DB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 21:14:56 +1000 (EST)
-Message-ID: <4C2C78AC.3070605@redhat.com>
-Date: Thu, 01 Jul 2010 14:14:52 +0300
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
+	Thu,  1 Jul 2010 21:18:31 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o61BArsS031527
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jul 2010 05:10:53 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o61BIQlb118664
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jul 2010 05:18:26 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o61BIPej019698
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Jul 2010 05:18:25 -0600
+Date: Thu, 1 Jul 2010 07:18:23 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 0/2] Faster MMU lookups for Book3s v3
-References: <1277903926-12786-1-git-send-email-agraf@suse.de>
-	<4C2C43C0.4000400@redhat.com>
-	<7F9C2F52-3E95-4A22-B973-DACEBC95E5F4@suse.de>
-	<4C2C547E.7010404@redhat.com> <4C2C6745.8040001@suse.de>
-In-Reply-To: <4C2C6745.8040001@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [PATCH 14/27] KVM: PPC: Magic Page BookE support
+Message-ID: <20100701111823.GE7756@zod.rchland.ibm.com>
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
+	<1277980982-12433-15-git-send-email-agraf@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1277980982-12433-15-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,30 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/01/2010 01:00 PM, Alexander Graf wrote:
+On Thu, Jul 01, 2010 at 12:42:49PM +0200, Alexander Graf wrote:
+>As we now have Book3s support for the magic page, we also need BookE to
+>join in on the party.
 >
-> But doesn't that mean that you still need to loop through all the hvas
-> that you want to invalidate?
+>This patch implements generic magic page logic for BookE and specific
+>TLB logic for e500. I didn't have any 440 around, so I didn't dare to
+>blindly try and write up broken code.
 
-It does.
+Is this the only patch in the series that needs 440 specific code?  Also,
+does 440 KVM still work after this series is applied even without the code
+not present in this patch?
 
->   Wouldn't it speed up dirty bitmap flushing
-> a lot if we'd just have a simple linked list of all sPTEs belonging to
-> that memslot?
->    
-
-The complexity is O(pages_in_slot) + O(sptes_for_slot).
-
-Usually, every page is mapped at least once, so sptes_for_slot 
-dominates.  Even when it isn't so, iterating the rmap base pointers is 
-very fast since they are linear in memory, while sptes are scattered 
-around, causing cache misses.
-
-Another consideration is that on x86, an spte occupies just 64 bits (for 
-the hardware pte); if there are multiple sptes per page (rare on modern 
-hardware), there is also extra memory for rmap chains; sometimes we also 
-allocate 64 bits for the gfn.  Having an extra linked list would require 
-more memory to be allocated and maintained.
-
--- 
-error compiling committee.c: too many arguments to function
+josh
