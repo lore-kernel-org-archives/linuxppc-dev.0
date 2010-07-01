@@ -1,23 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C91D1B7083
+Return-Path: <wilbur512@gmail.com>
+Received: from mail-vw0-f51.google.com (mail-vw0-f51.google.com
+	[209.85.212.51]) by ozlabs.org (Postfix) with ESMTP id 24DA61007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 09:05:51 +1000 (EST)
-Date: Thu, 1 Jul 2010 09:05:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+	Thu,  1 Jul 2010 10:10:41 +1000 (EST)
+Received: by vws11 with SMTP id 11so1651946vws.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 30 Jun 2010 17:10:40 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <47F80BE0-6596-4A3D-B95F-72ABE2E0228C@kernel.crashing.org>
+References: <AANLkTimV1AFEUrRf-2iEizXH4HQFMrrAumsRVDKxNfAv@mail.gmail.com>
+	<356261A9-B09F-4E82-A897-FD0724C503F4@kernel.crashing.org>
+	<20100630004633.GB12417@yookeroo>
+	<AANLkTikyNZ5gCpuRPIZ-CJ6ClNZI_UDsmGF7xTzsv9vB@mail.gmail.com>
+	<47F80BE0-6596-4A3D-B95F-72ABE2E0228C@kernel.crashing.org>
+Date: Thu, 1 Jul 2010 08:10:39 +0800
+Message-ID: <AANLkTilNpYjhM5NRevXBcsAb-MFw55A8iSrDcRvTgoLO@mail.gmail.com>
+Subject: Re: kernel init exception
+From: "wilbur.chan" <wilbur512@gmail.com>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix compile errors in prom_init_check for gcc 4.5
-Message-Id: <20100701090546.0b7406ee.sfr@canb.auug.org.au>
-In-Reply-To: <4D7DE8D9-B226-4C6A-97FF-A63D272681C5@kernel.crashing.org>
-References: <20100630160422.3087bdf0.sfr@canb.auug.org.au>
-	<B6229BDC-F290-4A71-9F61-AAA5EC87F0F6@kernel.crashing.org>
-	<20100701082756.7dced805.sfr@canb.auug.org.au>
-	<4D7DE8D9-B226-4C6A-97FF-A63D272681C5@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__1_Jul_2010_09_05_46_+1000_+=aCF7fA0r8I2fZX"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"chen.yu10" <chen.yu10@zte.com.cn>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__1_Jul_2010_09_05_46_+1000_+=aCF7fA0r8I2fZX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 1 Jul 2010 00:50:36 +0200 Segher Boessenkool <segher@kernel.crashin=
-g.org> wrote:
+2010/7/1 Segher Boessenkool <segher@kernel.crashing.org>:
+>> Maybe it was caused by floating exception.I found that,system received
+>> a program check exception,the reason for it was REASON_ILLEGAL.
+>>
+>> I also use show_regs to print the NIP in exception,it seemed that
+>> ,this exception was caused by 'vmhaddshs' instruction in user mode of
+>> init process .
+>>
+>> Is vmhaddshs avaliable on e500mc? My cross compile tool is
+>> gcc-4.1.2-glibc-2.5.0
 >
-> >> You probably also need something similar to http://git.infradead.org/
-> >> users/segher/linux.git/commitdiff/
-> >> 98194f54cc8e19ecd752bc10e2d19ef94074f502
-> >> (note: only build-tested, not run-tested).
-> >
-> > See http://patchwork.ozlabs.org/patch/57379/ submitted yesterday.
->=20
-> Yeah saw that right after I hit "send" :-)  Either it's way more
-> complete than what I did, or way more complex because we still
-> don't link with libgcc :-P
+> This isn't vmhaddshs (which is an AltiVec instruction), but something else
+> that also uses primary opcode 4.
+>
+> It sounds like your toolchain isn't set up correctly for e500mc.
+>
+>
+> Segher
+>
+>
 
-Actually, the 64bit versions of the routines are supplied by the linker,
-so the vmlinux links fine.  But for modules, the final link is actually
-done by the kernel module loader, thus we need to provide those routines
-in this case.  linking against libgcc would not have helped.
+I 've used cross_tool (powerpc_mc)  that freescale provided,  to
+compile the kernel image, and
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_Jul_2010_09_05_46_+1000_+=aCF7fA0r8I2fZX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMK83KAAoJEDMEi1NhKgbsmlMH/2wllNl5RtsJIn0PnLR0w2vq
-F7TB++210dG85ES5caFFNoi272Oo69q8X6VyARyRLxyk8Oi9Cxuz1wwtgsWGwgGC
-CCw2ojxHaDEa16Xz5fn6wokAo9J3y/zs1SXAsKRgknj/FjyKYbVr3TFjN5JyJtcO
-foLvE87aVbGrBhfUW5EGtQJsV0RnwdS+6Uqrj3mGxO3d6rlajYS70ieZx7hzOumJ
-T6WjnyNpUdv0JZ/oaGYWGal8To32E/us7C8rHZDGIIX8RlR4v/OpeXXGIHvxyLUs
-/J9YLucLJpdePWNVdZjozjEi17hmKx6pxohECPKzzJNmgcITapG5q2kuEF41n20=
-=exH+
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Jul_2010_09_05_46_+1000_+=aCF7fA0r8I2fZX--
+use an ordinary powerpc cross tool to compile busybox into cpio ramdisk.
