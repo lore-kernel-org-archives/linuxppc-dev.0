@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 06F25B7092
+	by ozlabs.org (Postfix) with ESMTP id 0168EB6EEF
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu,  1 Jul 2010 20:43:05 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 01/27] KVM: PPC: Introduce shared page
-Date: Thu,  1 Jul 2010 12:42:36 +0200
-Message-Id: <1277980982-12433-2-git-send-email-agraf@suse.de>
+Subject: [PATCH 06/27] KVM: PPC: Convert SPRG[0-4] to shared page
+Date: Thu,  1 Jul 2010 12:42:41 +0200
+Message-Id: <1277980982-12433-7-git-send-email-agraf@suse.de>
 In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,156 +21,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For transparent variable sharing between the hypervisor and guest, I introduce
-a shared page. This shared page will contain all the registers the guest can
-read and write safely without exiting guest context.
+When in kernel mode there are 4 additional registers available that are
+simple data storage. Instead of exiting to the hypervisor to read and
+write those, we can just share them with the guest using the page.
 
-This patch only implements the stubs required for the basic structure of the
-shared page. The actual register moving follows.
+This patch converts all users of the current field to the shared page.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_host.h |    2 ++
- arch/powerpc/include/asm/kvm_para.h |    5 +++++
- arch/powerpc/kernel/asm-offsets.c   |    1 +
- arch/powerpc/kvm/44x.c              |    7 +++++++
- arch/powerpc/kvm/book3s.c           |    7 +++++++
- arch/powerpc/kvm/e500.c             |    7 +++++++
- 6 files changed, 29 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    4 ----
+ arch/powerpc/include/asm/kvm_para.h |    4 ++++
+ arch/powerpc/kvm/book3s.c           |   16 ++++++++--------
+ arch/powerpc/kvm/booke.c            |   16 ++++++++--------
+ arch/powerpc/kvm/emulate.c          |   24 ++++++++++++++++--------
+ 5 files changed, 36 insertions(+), 28 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index e004eaf..246a3dd 100644
+index 227f770..5674300 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/types.h>
- #include <linux/kvm_types.h>
-+#include <linux/kvm_para.h>
- #include <asm/kvm_asm.h>
- 
- #define KVM_MAX_VCPUS 1
-@@ -289,6 +290,7 @@ struct kvm_vcpu_arch {
- 	struct tasklet_struct tasklet;
- 	u64 dec_jiffies;
- 	unsigned long pending_exceptions;
-+	struct kvm_vcpu_arch_shared *shared;
- 
- #ifdef CONFIG_PPC_BOOK3S
- 	struct hlist_head hpte_hash_pte[HPTEG_HASH_NUM_PTE];
+@@ -216,10 +216,6 @@ struct kvm_vcpu_arch {
+ 	ulong guest_owned_ext;
+ #endif
+ 	u32 mmucr;
+-	ulong sprg0;
+-	ulong sprg1;
+-	ulong sprg2;
+-	ulong sprg3;
+ 	ulong sprg4;
+ 	ulong sprg5;
+ 	ulong sprg6;
 diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 2d48f6a..1485ba8 100644
+index d7fc6c2..e402999 100644
 --- a/arch/powerpc/include/asm/kvm_para.h
 +++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -20,6 +20,11 @@
- #ifndef __POWERPC_KVM_PARA_H__
- #define __POWERPC_KVM_PARA_H__
+@@ -23,6 +23,10 @@
+ #include <linux/types.h>
  
-+#include <linux/types.h>
-+
-+struct kvm_vcpu_arch_shared {
-+};
-+
- #ifdef __KERNEL__
- 
- static inline int kvm_para_available(void)
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 496cc5b..944f593 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -400,6 +400,7 @@ int main(void)
- 	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
- 	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
- 	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
-+	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
- 
- 	/* book3s */
- #ifdef CONFIG_PPC_BOOK3S
-diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-index 73c0a3f..e7b1f3f 100644
---- a/arch/powerpc/kvm/44x.c
-+++ b/arch/powerpc/kvm/44x.c
-@@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto free_vcpu;
- 
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_vcpu;
-+
- 	return vcpu;
- 
-+uninit_vcpu:
-+	kvm_vcpu_uninit(vcpu);
- free_vcpu:
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
- out:
-@@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
- 
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvm_vcpu_uninit(vcpu);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
- }
+ struct kvm_vcpu_arch_shared {
++	__u64 sprg0;
++	__u64 sprg1;
++	__u64 sprg2;
++	__u64 sprg3;
+ 	__u64 srr0;
+ 	__u64 srr1;
+ 	__u64 dar;
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 30c0bd5..2c2c3ca 100644
+index 7cc3da6..0a56e8d 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -1247,6 +1247,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto free_shadow_vcpu;
+@@ -1062,10 +1062,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	regs->srr0 = vcpu->arch.shared->srr0;
+ 	regs->srr1 = vcpu->arch.shared->srr1;
+ 	regs->pid = vcpu->arch.pid;
+-	regs->sprg0 = vcpu->arch.sprg0;
+-	regs->sprg1 = vcpu->arch.sprg1;
+-	regs->sprg2 = vcpu->arch.sprg2;
+-	regs->sprg3 = vcpu->arch.sprg3;
++	regs->sprg0 = vcpu->arch.shared->sprg0;
++	regs->sprg1 = vcpu->arch.shared->sprg1;
++	regs->sprg2 = vcpu->arch.shared->sprg2;
++	regs->sprg3 = vcpu->arch.shared->sprg3;
+ 	regs->sprg5 = vcpu->arch.sprg4;
+ 	regs->sprg6 = vcpu->arch.sprg5;
+ 	regs->sprg7 = vcpu->arch.sprg6;
+@@ -1088,10 +1088,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	kvmppc_set_msr(vcpu, regs->msr);
+ 	vcpu->arch.shared->srr0 = regs->srr0;
+ 	vcpu->arch.shared->srr1 = regs->srr1;
+-	vcpu->arch.sprg0 = regs->sprg0;
+-	vcpu->arch.sprg1 = regs->sprg1;
+-	vcpu->arch.sprg2 = regs->sprg2;
+-	vcpu->arch.sprg3 = regs->sprg3;
++	vcpu->arch.shared->sprg0 = regs->sprg0;
++	vcpu->arch.shared->sprg1 = regs->sprg1;
++	vcpu->arch.shared->sprg2 = regs->sprg2;
++	vcpu->arch.shared->sprg3 = regs->sprg3;
+ 	vcpu->arch.sprg5 = regs->sprg4;
+ 	vcpu->arch.sprg6 = regs->sprg5;
+ 	vcpu->arch.sprg7 = regs->sprg6;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 8b546fe..984c461 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -495,10 +495,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	regs->srr0 = vcpu->arch.shared->srr0;
+ 	regs->srr1 = vcpu->arch.shared->srr1;
+ 	regs->pid = vcpu->arch.pid;
+-	regs->sprg0 = vcpu->arch.sprg0;
+-	regs->sprg1 = vcpu->arch.sprg1;
+-	regs->sprg2 = vcpu->arch.sprg2;
+-	regs->sprg3 = vcpu->arch.sprg3;
++	regs->sprg0 = vcpu->arch.shared->sprg0;
++	regs->sprg1 = vcpu->arch.shared->sprg1;
++	regs->sprg2 = vcpu->arch.shared->sprg2;
++	regs->sprg3 = vcpu->arch.shared->sprg3;
+ 	regs->sprg5 = vcpu->arch.sprg4;
+ 	regs->sprg6 = vcpu->arch.sprg5;
+ 	regs->sprg7 = vcpu->arch.sprg6;
+@@ -521,10 +521,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	kvmppc_set_msr(vcpu, regs->msr);
+ 	vcpu->arch.shared->srr0 = regs->srr0;
+ 	vcpu->arch.shared->srr1 = regs->srr1;
+-	vcpu->arch.sprg0 = regs->sprg0;
+-	vcpu->arch.sprg1 = regs->sprg1;
+-	vcpu->arch.sprg2 = regs->sprg2;
+-	vcpu->arch.sprg3 = regs->sprg3;
++	vcpu->arch.shared->sprg0 = regs->sprg0;
++	vcpu->arch.shared->sprg1 = regs->sprg1;
++	vcpu->arch.shared->sprg2 = regs->sprg2;
++	vcpu->arch.shared->sprg3 = regs->sprg3;
+ 	vcpu->arch.sprg5 = regs->sprg4;
+ 	vcpu->arch.sprg6 = regs->sprg5;
+ 	vcpu->arch.sprg7 = regs->sprg6;
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index ad0fa4f..454869b 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -263,13 +263,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 				kvmppc_set_gpr(vcpu, rt, get_tb()); break;
  
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_vcpu;
-+
- 	vcpu->arch.host_retip = kvm_return_point;
- 	vcpu->arch.host_msr = mfmsr();
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -1277,6 +1281,8 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 			case SPRN_SPRG0:
+-				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg0); break;
++				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg0);
++				break;
+ 			case SPRN_SPRG1:
+-				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg1); break;
++				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg1);
++				break;
+ 			case SPRN_SPRG2:
+-				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg2); break;
++				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg2);
++				break;
+ 			case SPRN_SPRG3:
+-				kvmppc_set_gpr(vcpu, rt, vcpu->arch.sprg3); break;
++				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->sprg3);
++				break;
+ 			/* Note: SPRG4-7 are user-readable, so we don't get
+ 			 * a trap. */
  
- 	return vcpu;
+@@ -341,13 +345,17 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 				break;
  
-+uninit_vcpu:
-+	kvm_vcpu_uninit(vcpu);
- free_shadow_vcpu:
- 	kfree(vcpu_book3s->shadow_vcpu);
- free_vcpu:
-@@ -1289,6 +1295,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 			case SPRN_SPRG0:
+-				vcpu->arch.sprg0 = kvmppc_get_gpr(vcpu, rs); break;
++				vcpu->arch.shared->sprg0 = kvmppc_get_gpr(vcpu, rs);
++				break;
+ 			case SPRN_SPRG1:
+-				vcpu->arch.sprg1 = kvmppc_get_gpr(vcpu, rs); break;
++				vcpu->arch.shared->sprg1 = kvmppc_get_gpr(vcpu, rs);
++				break;
+ 			case SPRN_SPRG2:
+-				vcpu->arch.sprg2 = kvmppc_get_gpr(vcpu, rs); break;
++				vcpu->arch.shared->sprg2 = kvmppc_get_gpr(vcpu, rs);
++				break;
+ 			case SPRN_SPRG3:
+-				vcpu->arch.sprg3 = kvmppc_get_gpr(vcpu, rs); break;
++				vcpu->arch.shared->sprg3 = kvmppc_get_gpr(vcpu, rs);
++				break;
  
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvm_vcpu_uninit(vcpu);
- 	kfree(vcpu_book3s->shadow_vcpu);
- 	vfree(vcpu_book3s);
-diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-index e8a00b0..71750f2 100644
---- a/arch/powerpc/kvm/e500.c
-+++ b/arch/powerpc/kvm/e500.c
-@@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
- 	if (err)
- 		goto uninit_vcpu;
- 
-+	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-+	if (!vcpu->arch.shared)
-+		goto uninit_tlb;
-+
- 	return vcpu;
- 
-+uninit_tlb:
-+	kvmppc_e500_tlb_uninit(vcpu_e500);
- uninit_vcpu:
- 	kvm_vcpu_uninit(vcpu);
- free_vcpu:
-@@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 
-+	free_page((unsigned long)vcpu->arch.shared);
- 	kvmppc_e500_tlb_uninit(vcpu_e500);
- 	kvm_vcpu_uninit(vcpu);
- 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+ 			default:
+ 				emulated = kvmppc_core_emulate_mtspr(vcpu, sprn, rs);
 -- 
 1.6.0.2
