@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3B5351008F0
+	by ozlabs.org (Postfix) with ESMTPS id 412561008F3
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu,  1 Jul 2010 20:43:12 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 21/27] KVM: PPC: Introduce kvm_tmp framework
-Date: Thu,  1 Jul 2010 12:42:56 +0200
-Message-Id: <1277980982-12433-22-git-send-email-agraf@suse.de>
+Subject: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
+Date: Thu,  1 Jul 2010 12:43:02 +0200
+Message-Id: <1277980982-12433-28-git-send-email-agraf@suse.de>
 In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,98 +23,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will soon require more sophisticated methods to replace single instructions
-with multiple instructions. We do that by branching to a memory region where we
-write replacement code for the instruction to.
-
-This region needs to be within 32 MB of the patched instruction though, because
-that's the furthest we can jump with immediate branches.
-
-So we keep 1MB of free space around in bss. After we're done initing we can just
-tell the mm system that the unused pages are free, but until then we have enough
-space to fit all our code in.
+We just introduced a new PV interface that screams for documentation. So here
+it is - a shiny new and awesome text file describing the internal works of
+the PPC KVM paravirtual interface.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/kernel/kvm.c |   41 +++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 3a49de5..75c9e0b 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -64,6 +64,8 @@
- #define KVM_INST_TLBSYNC	0x7c00046c
- 
- static bool kvm_patching_worked = true;
-+static char kvm_tmp[1024 * 1024];
-+static int kvm_tmp_index;
- 
- static inline void kvm_patch_ins(u32 *inst, u32 new_inst)
- {
-@@ -104,6 +106,23 @@ static void kvm_patch_ins_nop(u32 *inst)
- 	kvm_patch_ins(inst, KVM_INST_NOP);
- }
- 
-+static u32 *kvm_alloc(int len)
-+{
-+	u32 *p;
+---
+
+v1 -> v2:
+
+  - clarify guest implementation
+  - clarify that privileged instructions still work
+  - explain safe MSR bits
+  - Fix dsisr patch description
+  - change hypervisor calls to use new register values
+---
+ Documentation/kvm/ppc-pv.txt |  185 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 185 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/kvm/ppc-pv.txt
+
+diff --git a/Documentation/kvm/ppc-pv.txt b/Documentation/kvm/ppc-pv.txt
+new file mode 100644
+index 0000000..82de6c6
+--- /dev/null
++++ b/Documentation/kvm/ppc-pv.txt
+@@ -0,0 +1,185 @@
++The PPC KVM paravirtual interface
++=================================
 +
-+	if ((kvm_tmp_index + len) > ARRAY_SIZE(kvm_tmp)) {
-+		printk(KERN_ERR "KVM: No more space (%d + %d)\n",
-+				kvm_tmp_index, len);
-+		kvm_patching_worked = false;
-+		return NULL;
-+	}
++The basic execution principle by which KVM on PowerPC works is to run all kernel
++space code in PR=1 which is user space. This way we trap all privileged
++instructions and can emulate them accordingly.
 +
-+	p = (void*)&kvm_tmp[kvm_tmp_index];
-+	kvm_tmp_index += len;
++Unfortunately that is also the downfall. There are quite some privileged
++instructions that needlessly return us to the hypervisor even though they
++could be handled differently.
 +
-+	return p;
-+}
++This is what the PPC PV interface helps with. It takes privileged instructions
++and transforms them into unprivileged ones with some help from the hypervisor.
++This cuts down virtualization costs by about 50% on some of my benchmarks.
 +
- static void kvm_map_magic_page(void *data)
- {
- 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-@@ -201,12 +220,27 @@ static void kvm_use_magic_page(void)
- 		kvm_check_ins(p);
- }
- 
-+static void kvm_free_tmp(void)
-+{
-+	unsigned long start, end;
++The code for that interface can be found in arch/powerpc/kernel/kvm*
 +
-+	start = (ulong)&kvm_tmp[kvm_tmp_index + (PAGE_SIZE - 1)] & PAGE_MASK;
-+	end = (ulong)&kvm_tmp[ARRAY_SIZE(kvm_tmp)] & PAGE_MASK;
++Querying for existence
++======================
 +
-+	/* Free the tmp space we don't need */
-+	for (; start < end; start += PAGE_SIZE) {
-+		ClearPageReserved(virt_to_page(start));
-+		init_page_count(virt_to_page(start));
-+		free_page(start);
-+		totalram_pages++;
-+	}
-+}
++To find out if we're running on KVM or not, we overlay the PVR register. Usually
++the PVR register contains an id that identifies your CPU type. If, however, you
++pass KVM_PVR_PARA in the register that you want the PVR result in, the register
++still contains KVM_PVR_PARA after the mfpvr call.
 +
- static int __init kvm_guest_init(void)
- {
--	char *p;
- 
- 	if (!kvm_para_available())
--		return 0;
-+		goto free_tmp;
- 
- 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
- 		kvm_use_magic_page();
-@@ -214,6 +248,9 @@ static int __init kvm_guest_init(void)
- 	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
- 			 kvm_patching_worked ? "worked" : "failed");
- 
-+free_tmp:
-+	kvm_free_tmp();
++	LOAD_REG_IMM(r5, KVM_PVR_PARA)
++	mfpvr	r5
++	[r5 still contains KVM_PVR_PARA]
 +
- 	return 0;
- }
- 
++Once determined to run under a PV capable KVM, you can now use hypercalls as
++described below.
++
++PPC hypercalls
++==============
++
++The only viable ways to reliably get from guest context to host context are:
++
++	1) Call an invalid instruction
++	2) Call the "sc" instruction with a parameter to "sc"
++	3) Call the "sc" instruction with parameters in GPRs
++
++Method 1 is always a bad idea. Invalid instructions can be replaced later on
++by valid instructions, rendering the interface broken.
++
++Method 2 also has downfalls. If the parameter to "sc" is != 0 the spec is
++rather unclear if the sc is targeted directly for the hypervisor or the
++supervisor. It would also require that we read the syscall issuing instruction
++every time a syscall is issued, slowing down guest syscalls.
++
++Method 3 is what KVM uses. We pass magic constants (KVM_SC_MAGIC_R0 and
++KVM_SC_MAGIC_R3) in r0 and r3 respectively. If a syscall instruction with these
++magic values arrives from the guest's kernel mode, we take the syscall as a
++hypercall.
++
++The parameters are as follows:
++
++	r0		KVM_SC_MAGIC_R0
++	r3		KVM_SC_MAGIC_R3		Return code
++	r4		Hypercall number
++	r5		First parameter
++	r6		Second parameter
++	r7		Third parameter
++	r8		Fourth parameter
++
++Hypercall definitions are shared in generic code, so the same hypercall numbers
++apply for x86 and powerpc alike.
++
++The magic page
++==============
++
++To enable communication between the hypervisor and guest there is a new shared
++page that contains parts of supervisor visible register state. The guest can
++map this shared page using the KVM hypercall KVM_HC_PPC_MAP_MAGIC_PAGE.
++
++With this hypercall issued the guest always gets the magic page mapped at the
++desired location in effective and physical address space. For now, we always
++map the page to -4096. This way we can access it using absolute load and store
++functions. The following instruction reads the first field of the magic page:
++
++	ld	rX, -4096(0)
++
++The interface is designed to be extensible should there be need later to add
++additional registers to the magic page. If you add fields to the magic page,
++also define a new hypercall feature to indicate that the host can give you more
++registers. Only if the host supports the additional features, make use of them.
++
++The magic page has the following layout as described in
++arch/powerpc/include/asm/kvm_para.h:
++
++struct kvm_vcpu_arch_shared {
++	__u64 scratch1;
++	__u64 scratch2;
++	__u64 scratch3;
++	__u64 critical;		/* Guest may not get interrupts if == r1 */
++	__u64 sprg0;
++	__u64 sprg1;
++	__u64 sprg2;
++	__u64 sprg3;
++	__u64 srr0;
++	__u64 srr1;
++	__u64 dar;
++	__u64 msr;
++	__u32 dsisr;
++	__u32 int_pending;	/* Tells the guest if we have an interrupt */
++};
++
++Additions to the page must only occur at the end. Struct fields are always 32
++bit aligned.
++
++MSR bits
++========
++
++The MSR contains bits that require hypervisor intervention and bits that do
++not require direct hypervisor intervention because they only get interpreted
++when entering the guest or don't have any impact on the hypervisor's behavior.
++
++The following bits are safe to be set inside the guest:
++
++  MSR_EE
++  MSR_RI
++  MSR_CR
++  MSR_ME
++
++If any other bit changes in the MSR, please still use mtmsr(d).
++
++Patched instructions
++====================
++
++The "ld" and "std" instructions are transormed to "lwz" and "stw" instructions
++respectively on 32 bit systems with an added offset of 4 to accomodate for big
++endianness.
++
++The following is a list of mapping the Linux kernel performs when running as
++guest. Implementing any of those mappings is optional, as the instruction traps
++also act on the shared page. So calling privileged instructions still works as
++before.
++
++From			To
++====			==
++
++mfmsr	rX		ld	rX, magic_page->msr
++mfsprg	rX, 0		ld	rX, magic_page->sprg0
++mfsprg	rX, 1		ld	rX, magic_page->sprg1
++mfsprg	rX, 2		ld	rX, magic_page->sprg2
++mfsprg	rX, 3		ld	rX, magic_page->sprg3
++mfsrr0	rX		ld	rX, magic_page->srr0
++mfsrr1	rX		ld	rX, magic_page->srr1
++mfdar	rX		ld	rX, magic_page->dar
++mfdsisr	rX		lwz	rX, magic_page->dsisr
++
++mtmsr	rX		std	rX, magic_page->msr
++mtsprg	0, rX		std	rX, magic_page->sprg0
++mtsprg	1, rX		std	rX, magic_page->sprg1
++mtsprg	2, rX		std	rX, magic_page->sprg2
++mtsprg	3, rX		std	rX, magic_page->sprg3
++mtsrr0	rX		std	rX, magic_page->srr0
++mtsrr1	rX		std	rX, magic_page->srr1
++mtdar	rX		std	rX, magic_page->dar
++mtdsisr	rX		stw	rX, magic_page->dsisr
++
++tlbsync			nop
++
++mtmsrd	rX, 0		b	<special mtmsr section>
++mtmsr			b	<special mtmsr section>
++
++mtmsrd	rX, 1		b	<special mtmsrd section>
++
++[BookE only]
++wrteei	[0|1]		b	<special wrteei section>
++
++
++Some instructions require more logic to determine what's going on than a load
++or store instruction can deliver. To enable patching of those, we keep some
++RAM around where we can live translate instructions to. What happens is the
++following:
++
++	1) copy emulation code to memory
++	2) patch that code to fit the emulated instruction
++	3) patch that code to return to the original pc + 4
++	4) patch the original instruction to branch to the new code
++
++That way we can inject an arbitrary amount of code as replacement for a single
++instruction. This allows us to check for pending interrupts when setting EE=1
++for example.
++
 -- 
 1.6.0.2
