@@ -1,23 +1,25 @@
-Return-Path: <maciej.rutecki@gmail.com>
-Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 270751007DF
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 04:25:37 +1000 (EST)
-Received: by fxm4 with SMTP id 4so1658219fxm.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 Jul 2010 11:25:35 -0700 (PDT)
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: divya <dipraksh@linux.vnet.ibm.com>
-Subject: Re: Oops while running fs_racer test on a POWER6 box against latest
-	git
-Date: Thu, 1 Jul 2010 20:25:30 +0200
-References: <4C2B28F3.7000006@linux.vnet.ibm.com>
-In-Reply-To: <4C2B28F3.7000006@linux.vnet.ibm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id DA856B7092
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 06:17:21 +1000 (EST)
+Received: by iwn36 with SMTP id 36so1984027iwn.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 01 Jul 2010 13:17:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201007012025.30452.maciej.rutecki@gmail.com>
-Cc: Latchesar Ionkov <lucho@ionkov.net>, linuxppc-dev@ozlabs.org,
-	LKML <linux-kernel@vger.kernel.org>, Ron Minnich <rminnich@sandia.gov>
-Reply-To: maciej.rutecki@gmail.com
+In-Reply-To: <4C2CD395.90409@freescale.com>
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
+	<20100629185617.GA24285@schlenkerla.am.freescale.net>
+	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
+	<4C2B6DF5.7030403@freescale.com>
+	<AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>
+	<AANLkTilZm-TRkjgYBc0xj9iFYUJl7bb19Zvrcj2R-wJd@mail.gmail.com>
+	<4C2CD395.90409@freescale.com>
+Date: Thu, 1 Jul 2010 13:17:19 -0700
+Message-ID: <AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
+Subject: Re: machine check in kernel for a mpc870 board
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On =C5=9Broda, 30 czerwca 2010 o 13:22:27 divya wrote:
-> While running fs_racer test from LTP on a POWER6 box against latest
-> git(2.6.35-rc3-git4 - commitid 984bc9601f64fd) came across the following
-> warning followed by multiple oops.
->=20
+>>> How do I find the address, reg, and range for nodes like localbus,
+>>> soc, eth0, cpm, serial etc.?
+>
+> If your CCSRBAR is 0xfa200000, then pretty much anywhere you see 0xff0xxx=
+xx
+> change it to 0xfa2xxxxx.
 
-I created a Bugzilla entry at=20
-https://bugzilla.kernel.org/show_bug.cgi?id=3D16324
-for your bug report, please add your address to the CC list in there, thank=
-s!
+I'm not sure about the range settings of 0xfe000000. How do you get this?
+
+       localbus@fa200100 {
+               compatible =3D "fsl,mpc885-localbus", "fsl,pq1-localbus",
+                            "simple-bus";
+               #address-cells =3D <2>;
+               #size-cells =3D <1>;
+               reg =3D <0xfa200100 0x40>;
+
+               ranges =3D <
+                       0 0 0xfe000000 0x01000000    // I'm not sure about t=
+his?
+               >;
+       };
 
 
-=2D-=20
-Maciej Rutecki
-http://www.maciek.unixy.pl
+>> =A0 =A0 Linux/PowerPC load: root=3D/dev/ram
+>> =A0 =A0 Finalizing device tree... flat tree at 0x59e300
+>>
+>> The gdb showed deadbeef.
+>> =A0 =A0 (gdb) target remote ppcbdi:2001
+>> =A0 =A0 Remote debugging using ppcbdi:2001
+>> =A0 =A0 0xdeadbeef in ?? ()
+>> =A0 =A0 (gdb)
+>>
+>> The kernel doesn't seem to start. What could go wrong here?
+>
+> Pretty much anything. :-)
+
+I realized that. :-P The kernel booting was able to stop at
+start_kernel(). I'm going to trace further.
+
+> Make sure that you've got Linux platform code enabled that matches the
+> top-level compatible of your device tree. =A0Try enabling PPC_EARLY_DEBUG=
+_CPM,
+> making sure to update PPC_EARLY_DEBUG_CPM_ADDR to 0xfa202008.
+
+I enabled this early debug feature but don't know this address change.
+I'll try it later.
+
+Thanks a lot, Scott.
+
+-Shawn.
