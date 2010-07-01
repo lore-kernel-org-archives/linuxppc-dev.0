@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6E6451008FB
+	by ozlabs.org (Postfix) with ESMTPS id 2B490100907
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 20:43:12 +1000 (EST)
+	Thu,  1 Jul 2010 20:43:13 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 25/27] KVM: PPC: PV mtmsrd L=0 and mtmsr
-Date: Thu,  1 Jul 2010 12:43:00 +0200
-Message-Id: <1277980982-12433-26-git-send-email-agraf@suse.de>
+Subject: [PATCH 14/27] KVM: PPC: Magic Page BookE support
+Date: Thu,  1 Jul 2010 12:42:49 +0200
+Message-Id: <1277980982-12433-15-git-send-email-agraf@suse.de>
 In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,193 +23,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is also a form of mtmsr where all bits need to be addressed. While the
-PPC64 Linux kernel behaves resonably well here, on PPC32 we do not have an
-L=1 form. It does mtmsr even for simple things like only changing EE.
+As we now have Book3s support for the magic page, we also need BookE to
+join in on the party.
 
-So we need to hook into that one as well and check for a mask of bits that we
-deem safe to change from within guest context.
+This patch implements generic magic page logic for BookE and specific
+TLB logic for e500. I didn't have any 440 around, so I didn't dare to
+blindly try and write up broken code.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ arch/powerpc/kvm/booke.c    |   29 +++++++++++++++++++++++++++++
+ arch/powerpc/kvm/e500_tlb.c |   19 +++++++++++++++++--
+ 2 files changed, 46 insertions(+), 2 deletions(-)
 
-v1 -> v2:
-
-  - use kvm_patch_ins_b
----
- arch/powerpc/kernel/kvm.c      |   51 ++++++++++++++++++++++++
- arch/powerpc/kernel/kvm_emul.S |   84 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 135 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 1e32298..2541736 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -62,7 +62,9 @@
- #define KVM_INST_MTSPR_DSISR	0x7c1203a6
- 
- #define KVM_INST_TLBSYNC	0x7c00046c
-+#define KVM_INST_MTMSRD_L0	0x7c000164
- #define KVM_INST_MTMSRD_L1	0x7c010164
-+#define KVM_INST_MTMSR		0x7c000124
- 
- static bool kvm_patching_worked = true;
- static char kvm_tmp[1024 * 1024];
-@@ -166,6 +168,49 @@ static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
- 	kvm_patch_ins_b(inst, distance_start);
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 0f8ff9d..9609207 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -244,6 +244,31 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
+ 		vcpu->arch.shared->int_pending = 0;
  }
  
-+extern u32 kvm_emulate_mtmsr_branch_offs;
-+extern u32 kvm_emulate_mtmsr_reg1_offs;
-+extern u32 kvm_emulate_mtmsr_reg2_offs;
-+extern u32 kvm_emulate_mtmsr_reg3_offs;
-+extern u32 kvm_emulate_mtmsr_orig_ins_offs;
-+extern u32 kvm_emulate_mtmsr_len;
-+extern u32 kvm_emulate_mtmsr[];
-+
-+static void kvm_patch_ins_mtmsr(u32 *inst, u32 rt)
++/* Check if a DTLB miss was on the magic page. Returns !0 if so. */
++int kvmppc_dtlb_magic_page(struct kvm_vcpu *vcpu, ulong eaddr)
 +{
-+	u32 *p;
-+	int distance_start;
-+	int distance_end;
-+	ulong next_inst;
++	ulong mp_ea = vcpu->arch.magic_page_ea;
++	ulong gpaddr = vcpu->arch.magic_page_pa;
++	int gtlb_index = 11 | (1 << 16); /* Random number in TLB1 */
 +
-+	p = kvm_alloc(kvm_emulate_mtmsr_len * 4);
-+	if (!p)
-+		return;
++	/* Check for existence of magic page */
++	if(likely(!mp_ea))
++		return 0;
 +
-+	/* Find out where we are and put everything there */
-+	distance_start = (ulong)p - (ulong)inst;
-+	next_inst = ((ulong)inst + 4);
-+	distance_end = next_inst - (ulong)&p[kvm_emulate_mtmsr_branch_offs];
++	/* Check if we're on the magic page */
++	if(likely((eaddr >> 12) != (mp_ea >> 12)))
++		return 0;
 +
-+	/* Make sure we only write valid b instructions */
-+	if (distance_start > KVM_INST_B_MAX) {
-+		kvm_patching_worked = false;
-+		return;
-+	}
++	/* Don't map in user mode */
++	if(vcpu->arch.shared->msr & MSR_PR)
++		return 0;
 +
-+	/* Modify the chunk to fit the invocation */
-+	memcpy(p, kvm_emulate_mtmsr, kvm_emulate_mtmsr_len * 4);
-+	p[kvm_emulate_mtmsr_branch_offs] |= distance_end & KVM_INST_B_MASK;
-+	p[kvm_emulate_mtmsr_reg1_offs] |= rt;
-+	p[kvm_emulate_mtmsr_reg2_offs] |= rt;
-+	p[kvm_emulate_mtmsr_reg3_offs] |= rt;
-+	p[kvm_emulate_mtmsr_orig_ins_offs] = *inst;
-+	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsr_len * 4);
++	kvmppc_mmu_map(vcpu, vcpu->arch.magic_page_ea, gpaddr, gtlb_index);
++	kvmppc_account_exit(vcpu, DTLB_VIRT_MISS_EXITS);
 +
-+	/* Patch the invocation */
-+	kvm_patch_ins_b(inst, distance_start);
++	return 1;
 +}
 +
- static void kvm_map_magic_page(void *data)
- {
- 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-@@ -246,6 +291,12 @@ static void kvm_check_ins(u32 *inst)
- 		if (get_rt(inst_rt) < 30)
- 			kvm_patch_ins_mtmsrd(inst, inst_rt);
- 		break;
-+	case KVM_INST_MTMSR:
-+	case KVM_INST_MTMSRD_L0:
-+		/* We use r30 and r31 during the hook */
-+		if (get_rt(inst_rt) < 30)
-+			kvm_patch_ins_mtmsr(inst, inst_rt);
-+		break;
- 	}
+ /**
+  * kvmppc_handle_exit
+  *
+@@ -311,6 +336,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			r = RESUME_HOST;
+ 			break;
+ 		case EMULATE_FAIL:
++		case EMULATE_DO_MMIO:
+ 			/* XXX Deliver Program interrupt to guest. */
+ 			printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
+ 			       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
+@@ -380,6 +406,9 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		gpa_t gpaddr;
+ 		gfn_t gfn;
  
- 	switch (_inst) {
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index 25e6683..ccf5a42 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -110,3 +110,87 @@ kvm_emulate_mtmsrd_reg_offs:
- .global kvm_emulate_mtmsrd_len
- kvm_emulate_mtmsrd_len:
- 	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
++		if (kvmppc_dtlb_magic_page(vcpu, eaddr))
++			break;
 +
+ 		/* Check the guest TLB. */
+ 		gtlb_index = kvmppc_mmu_dtlb_index(vcpu, eaddr);
+ 		if (gtlb_index < 0) {
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index 66845a5..f5582ca 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -295,9 +295,22 @@ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	struct page *new_page;
+ 	struct tlbe *stlbe;
+ 	hpa_t hpaddr;
++	u32 mas2 = gtlbe->mas2;
++	u32 mas3 = gtlbe->mas3;
+ 
+ 	stlbe = &vcpu_e500->shadow_tlb[tlbsel][esel];
+ 
++	if ((vcpu_e500->vcpu.arch.magic_page_ea) &&
++	    ((vcpu_e500->vcpu.arch.magic_page_pa >> PAGE_SHIFT) == gfn) &&
++	    !(vcpu_e500->vcpu.arch.shared->msr & MSR_PR)) {
++		mas2 = 0;
++		mas3 = E500_TLB_SUPER_PERM_MASK;
++		hpaddr = virt_to_phys(vcpu_e500->vcpu.arch.shared);
++		new_page = pfn_to_page(hpaddr >> PAGE_SHIFT);
++		get_page(new_page);
++		goto mapped;
++	}
 +
-+#define MSR_SAFE_BITS (MSR_EE | MSR_CE | MSR_ME | MSR_RI)
-+#define MSR_CRITICAL_BITS ~MSR_SAFE_BITS
+ 	/* Get reference to new page. */
+ 	new_page = gfn_to_page(vcpu_e500->vcpu.kvm, gfn);
+ 	if (is_error_page(new_page)) {
+@@ -305,6 +318,8 @@ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 		kvm_release_page_clean(new_page);
+ 		return;
+ 	}
 +
-+.global kvm_emulate_mtmsr
-+kvm_emulate_mtmsr:
-+
-+	SCRATCH_SAVE
-+
-+	/* Fetch old MSR in r31 */
-+	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	/* Find the changed bits between old and new MSR */
-+kvm_emulate_mtmsr_reg1:
-+	xor	r31, r0, r31
-+
-+	/* Check if we need to really do mtmsr */
-+	LOAD_REG_IMMEDIATE(r30, MSR_CRITICAL_BITS)
-+	and.	r31, r31, r30
-+
-+	/* No critical bits changed? Maybe we can stay in the guest. */
-+	beq	maybe_stay_in_guest
-+
-+do_mtmsr:
-+
-+	SCRATCH_RESTORE
-+
-+	/* Just fire off the mtmsr if it's critical */
-+kvm_emulate_mtmsr_orig_ins:
-+	mtmsr	r0
-+
-+	b	kvm_emulate_mtmsr_branch
-+
-+maybe_stay_in_guest:
-+
-+	/* Check if we have to fetch an interrupt */
-+	lwz	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_INT)(0)
-+	cmpwi	r31, 0
-+	beq+	no_mtmsr
-+
-+	/* Check if we may trigger an interrupt */
-+kvm_emulate_mtmsr_reg2:
-+	andi.	r31, r0, MSR_EE
-+	beq	no_mtmsr
-+
-+	b	do_mtmsr
-+
-+no_mtmsr:
-+
-+	/* Put MSR into magic page because we don't call mtmsr */
-+kvm_emulate_mtmsr_reg3:
-+	STL64(r0, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	SCRATCH_RESTORE
-+
-+	/* Go back to caller */
-+kvm_emulate_mtmsr_branch:
-+	b	.
-+kvm_emulate_mtmsr_end:
-+
-+.global kvm_emulate_mtmsr_branch_offs
-+kvm_emulate_mtmsr_branch_offs:
-+	.long (kvm_emulate_mtmsr_branch - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg1_offs
-+kvm_emulate_mtmsr_reg1_offs:
-+	.long (kvm_emulate_mtmsr_reg1 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg2_offs
-+kvm_emulate_mtmsr_reg2_offs:
-+	.long (kvm_emulate_mtmsr_reg2 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg3_offs
-+kvm_emulate_mtmsr_reg3_offs:
-+	.long (kvm_emulate_mtmsr_reg3 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_orig_ins_offs
-+kvm_emulate_mtmsr_orig_ins_offs:
-+	.long (kvm_emulate_mtmsr_orig_ins - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_len
-+kvm_emulate_mtmsr_len:
-+	.long (kvm_emulate_mtmsr_end - kvm_emulate_mtmsr) / 4
++mapped:
+ 	hpaddr = page_to_phys(new_page);
+ 
+ 	/* Drop reference to old page. */
+@@ -316,10 +331,10 @@ static inline void kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	stlbe->mas1 = MAS1_TSIZE(BOOK3E_PAGESZ_4K)
+ 		| MAS1_TID(get_tlb_tid(gtlbe)) | MAS1_TS | MAS1_VALID;
+ 	stlbe->mas2 = (gvaddr & MAS2_EPN)
+-		| e500_shadow_mas2_attrib(gtlbe->mas2,
++		| e500_shadow_mas2_attrib(mas2,
+ 				vcpu_e500->vcpu.arch.shared->msr & MSR_PR);
+ 	stlbe->mas3 = (hpaddr & MAS3_RPN)
+-		| e500_shadow_mas3_attrib(gtlbe->mas3,
++		| e500_shadow_mas3_attrib(mas3,
+ 				vcpu_e500->vcpu.arch.shared->msr & MSR_PR);
+ 	stlbe->mas7 = (hpaddr >> 32) & MAS7_RPN;
+ 
 -- 
 1.6.0.2
