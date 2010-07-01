@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 88DFBB709F
+	by ozlabs.org (Postfix) with ESMTP id 769D9B709E
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu,  1 Jul 2010 20:43:07 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 15/27] KVM: PPC: Expose magic page support to guest
-Date: Thu,  1 Jul 2010 12:42:50 +0200
-Message-Id: <1277980982-12433-16-git-send-email-agraf@suse.de>
+Subject: [PATCH 16/27] KVM: Move kvm_guest_init out of generic code
+Date: Thu,  1 Jul 2010 12:42:51 +0200
+Message-Id: <1277980982-12433-17-git-send-email-agraf@suse.de>
 In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,51 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have the shared page in place and the MMU code knows about
-the magic page, we can expose that capability to the guest!
+Currently x86 is the only architecture that uses kvm_guest_init(). With
+PowerPC we're getting a second user, but the signature is different there
+and we don't need to export it, as it uses the normal kernel init framework.
+
+So let's move the x86 specific definition of that function over to the x86
+specfic header file.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_para.h |    2 ++
- arch/powerpc/kvm/powerpc.c          |   11 +++++++++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/kvm_para.h |    6 ++++++
+ include/linux/kvm_para.h        |    5 -----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 82131fc..3cae15d 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -43,6 +43,8 @@ struct kvm_vcpu_arch_shared {
- #define KVM_SC_MAGIC_R0		0x4b564d52 /* "KVMR" */
- #define KVM_SC_MAGIC_R3		0x554c455a /* "ULEZ" */
+diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
+index 05eba5e..7b562b6 100644
+--- a/arch/x86/include/asm/kvm_para.h
++++ b/arch/x86/include/asm/kvm_para.h
+@@ -158,6 +158,12 @@ static inline unsigned int kvm_arch_para_features(void)
+ 	return cpuid_eax(KVM_CPUID_FEATURES);
+ }
  
-+#define KVM_FEATURE_MAGIC_PAGE	1
++#ifdef CONFIG_KVM_GUEST
++void __init kvm_guest_init(void);
++#else
++#define kvm_guest_init() do { } while (0)
+ #endif
+ 
++#endif /* __KERNEL__ */
 +
+ #endif /* _ASM_X86_KVM_PARA_H */
+diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
+index ac2015a..47a070b 100644
+--- a/include/linux/kvm_para.h
++++ b/include/linux/kvm_para.h
+@@ -26,11 +26,6 @@
+ #include <asm/kvm_para.h>
+ 
  #ifdef __KERNEL__
+-#ifdef CONFIG_KVM_GUEST
+-void __init kvm_guest_init(void);
+-#else
+-#define kvm_guest_init() do { } while (0)
+-#endif
  
- static inline int kvm_para_available(void)
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 1ebb29e..0be119a 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -60,8 +60,19 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 	}
- 
- 	switch (nr) {
-+	case KVM_HC_PPC_MAP_MAGIC_PAGE:
-+	{
-+		vcpu->arch.magic_page_pa = param1;
-+		vcpu->arch.magic_page_ea = param2;
-+
-+		r = 0;
-+		break;
-+	}
- 	case KVM_HC_FEATURES:
- 		r = 0;
-+#if !defined(CONFIG_KVM_440) /* XXX missing bits on 440 */
-+		r |= (1 << KVM_FEATURE_MAGIC_PAGE);
-+#endif
- 		break;
- 	default:
- 		r = -KVM_ENOSYS;
+ static inline int kvm_para_has_feature(unsigned int feature)
+ {
 -- 
 1.6.0.2
