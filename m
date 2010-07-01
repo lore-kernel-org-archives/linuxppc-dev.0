@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id D556C1007D1
+	by ozlabs.org (Postfix) with ESMTP id 93D73B70A1
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu,  1 Jul 2010 20:43:07 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 23/27] KVM: PPC: PV assembler helpers
-Date: Thu,  1 Jul 2010 12:42:58 +0200
-Message-Id: <1277980982-12433-24-git-send-email-agraf@suse.de>
+Subject: [PATCH 17/27] KVM: PPC: Generic KVM PV guest support
+Date: Thu,  1 Jul 2010 12:42:52 +0200
+Message-Id: <1277980982-12433-18-git-send-email-agraf@suse.de>
 In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,56 +21,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we hook an instruction we need to make sure we don't clobber any of
-the registers at that point. So we write them out to scratch space in the
-magic page. To make sure we don't fall into a race with another piece of
-hooked code, we need to disable interrupts.
+We have all the hypervisor pieces in place now, but the guest parts are still
+missing.
 
-To make the later patches and code in general easier readable, let's introduce
-a set of defines that save and restore r30, r31 and cr. Let's also define some
-helpers to read the lower 32 bits of a 64 bit field on 32 bit systems.
+This patch implements basic awareness of KVM when running Linux as guest. It
+doesn't do anything with it yet though.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/kernel/kvm_emul.S |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/Makefile      |    2 ++
+ arch/powerpc/kernel/asm-offsets.c |   15 +++++++++++++++
+ arch/powerpc/kernel/kvm.c         |   34 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S    |   27 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig    |   10 ++++++++++
+ 5 files changed, 88 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/kernel/kvm.c
+ create mode 100644 arch/powerpc/kernel/kvm_emul.S
 
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index c7b9fc9..7da835a 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -25,3 +25,32 @@
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 58d0572..2d7eb9e 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -125,6 +125,8 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+ obj-y				+= ppc_save_regs.o
+ endif
  
- #define KVM_MAGIC_PAGE		(-4096)
- 
-+#ifdef CONFIG_64BIT
-+#define LL64(reg, offs, reg2)	ld	reg, (offs)(reg2)
-+#define STL64(reg, offs, reg2)	std	reg, (offs)(reg2)
-+#else
-+#define LL64(reg, offs, reg2)	lwz	reg, (offs + 4)(reg2)
-+#define STL64(reg, offs, reg2)	stw	reg, (offs + 4)(reg2)
++obj-$(CONFIG_KVM_GUEST) += kvm.o kvm_emul.o
++
+ # Disable GCOV in odd or sensitive code
+ GCOV_PROFILE_prom_init.o := n
+ GCOV_PROFILE_ftrace.o := n
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index a55d47e..e3e740b 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -465,6 +465,21 @@ int main(void)
+ 	DEFINE(VCPU_FAULT_ESR, offsetof(struct kvm_vcpu, arch.fault_esr));
+ #endif /* CONFIG_PPC_BOOK3S */
+ #endif
++
++#ifdef CONFIG_KVM_GUEST
++	DEFINE(KVM_MAGIC_SCRATCH1, offsetof(struct kvm_vcpu_arch_shared,
++					    scratch1));
++	DEFINE(KVM_MAGIC_SCRATCH2, offsetof(struct kvm_vcpu_arch_shared,
++					    scratch2));
++	DEFINE(KVM_MAGIC_SCRATCH3, offsetof(struct kvm_vcpu_arch_shared,
++					    scratch3));
++	DEFINE(KVM_MAGIC_INT, offsetof(struct kvm_vcpu_arch_shared,
++				       int_pending));
++	DEFINE(KVM_MAGIC_MSR, offsetof(struct kvm_vcpu_arch_shared, msr));
++	DEFINE(KVM_MAGIC_CRITICAL, offsetof(struct kvm_vcpu_arch_shared,
++					    critical));
 +#endif
 +
-+#define SCRATCH_SAVE							\
-+	/* Enable critical section. We are critical if			\
-+	   shared->critical == r1 */					\
-+	STL64(r1, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);		\
-+									\
-+	/* Save state */						\
-+	PPC_STL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
-+	PPC_STL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
-+	mfcr	r31;							\
-+	stw	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);
+ #ifdef CONFIG_44x
+ 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
+ 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+new file mode 100644
+index 0000000..2d8dd73
+--- /dev/null
++++ b/arch/powerpc/kernel/kvm.c
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (C) 2010 SUSE Linux Products GmbH. All rights reserved.
++ *
++ * Authors:
++ *     Alexander Graf <agraf@suse.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ */
 +
-+#define SCRATCH_RESTORE							\
-+	/* Restore state */						\
-+	PPC_LL	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH1)(0);		\
-+	lwz	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH3)(0);		\
-+	mtcr	r30;							\
-+	PPC_LL	r30, (KVM_MAGIC_PAGE + KVM_MAGIC_SCRATCH2)(0);		\
-+									\
-+	/* Disable critical section. We are critical if			\
-+	   shared->critical == r1 and r2 is always != r1 */		\
-+	STL64(r2, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);
++#include <linux/kvm_host.h>
++#include <linux/init.h>
++#include <linux/kvm_para.h>
++#include <linux/slab.h>
++
++#include <asm/reg.h>
++#include <asm/kvm_ppc.h>
++#include <asm/sections.h>
++#include <asm/cacheflush.h>
++#include <asm/disassemble.h>
++
++#define KVM_MAGIC_PAGE		(-4096L)
++#define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
++
+diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
+new file mode 100644
+index 0000000..c7b9fc9
+--- /dev/null
++++ b/arch/powerpc/kernel/kvm_emul.S
+@@ -0,0 +1,27 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright SUSE Linux Products GmbH 2010
++ *
++ * Authors: Alexander Graf <agraf@suse.de>
++ */
++
++#include <asm/ppc_asm.h>
++#include <asm/kvm_asm.h>
++#include <asm/reg.h>
++#include <asm/page.h>
++#include <asm/asm-offsets.h>
++
++#define KVM_MAGIC_PAGE		(-4096)
++
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index d1663db..1744349 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -21,6 +21,16 @@ source "arch/powerpc/platforms/44x/Kconfig"
+ source "arch/powerpc/platforms/40x/Kconfig"
+ source "arch/powerpc/platforms/amigaone/Kconfig"
+ 
++config KVM_GUEST
++	bool "KVM Guest support"
++	default y
++	---help---
++	  This option enables various optimizations for running under the KVM
++	  hypervisor. Overhead for the kernel when not running inside KVM should
++	  be minimal.
++
++	  In case of doubt, say Y
++
+ config PPC_NATIVE
+ 	bool
+ 	depends on 6xx || PPC64
 -- 
 1.6.0.2
