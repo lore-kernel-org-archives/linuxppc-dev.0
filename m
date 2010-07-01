@@ -1,30 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 3FE1FB70A0
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 06:25:15 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o61KPCWS006935
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jul 2010 13:25:12 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o61KZWid010785
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jul 2010 15:35:32 -0500 (CDT)
-Message-ID: <4C2CF9A7.7010801@freescale.com>
-Date: Thu, 01 Jul 2010 15:25:11 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id 3FD931007D1
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 07:55:53 +1000 (EST)
+Received: by vws20 with SMTP id 20so2755825vws.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 01 Jul 2010 14:55:52 -0700 (PDT)
 MIME-Version: 1.0
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: machine check in kernel for a mpc870 board
-References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>	<20100629185617.GA24285@schlenkerla.am.freescale.net>	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>	<4C2B6DF5.7030403@freescale.com>	<AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>	<AANLkTilZm-TRkjgYBc0xj9iFYUJl7bb19Zvrcj2R-wJd@mail.gmail.com>	<4C2CD395.90409@freescale.com>
-	<AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
-In-Reply-To: <AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <AANLkTilMzfwgYvoFhxhcVQVGV-EkMLVHI2TeQ29SYFCH@mail.gmail.com>
+References: <AANLkTilMzfwgYvoFhxhcVQVGV-EkMLVHI2TeQ29SYFCH@mail.gmail.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 1 Jul 2010 16:55:22 -0500
+Message-ID: <AANLkTikLivGEFl_DJsvWArbvE1yYUBFn9yiQxqsZgTma@mail.gmail.com>
+Subject: Re: CONFIG_NO_HZ causing poor console responsiveness
+To: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mike Galbraith <efault@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/01/2010 03:17 PM, Shawn Jin wrote:
->>>> How do I find the address, reg, and range for nodes like localbus,
->>>> soc, eth0, cpm, serial etc.?
->>
->> If your CCSRBAR is 0xfa200000, then pretty much anywhere you see 0xff0xxxxx
->> change it to 0xfa2xxxxx.
->
-> I'm not sure about the range settings of 0xfe000000. How do you get this?
->
->         localbus@fa200100 {
->                 compatible = "fsl,mpc885-localbus", "fsl,pq1-localbus",
->                              "simple-bus";
->                 #address-cells =<2>;
->                 #size-cells =<1>;
->                 reg =<0xfa200100 0x40>;
->
->                 ranges =<
->                         0 0 0xfe000000 0x01000000    // I'm not sure about this?
->                 >;
->         };
+On Tue, Jun 29, 2010 at 2:54 PM, Timur Tabi <timur@freescale.com> wrote:
+> I'm adding support for a new e500-based board (the P1022DS), and in
+> the process I've discovered that enabling CONFIG_NO_HZ (Tickless
+> System / Dynamic Ticks) causes significant responsiveness problems on
+> the serial console. =A0When I type on the console, I see delays of up to
+> a half-second for almost every character. =A0It acts as if there's a
+> background process eating all the CPU.
 
-Change 0xfe000000 to wherever u-boot maps your flash, and 0x01000000 to 
-whatever the size of the flash localbus mapping is.
+I finally finished my git-bisect, and it wasn't that helpful.  I had
+to skip several commits because the kernel just wouldn't boot:
 
-Or more generally update this section to hold whatever is connected to 
-the localbus on your board.  The first cell is the chipselect.
+There are only 'skip'ped commits left to test.
+The first bad commit could be any of:
+6bc6cf2b61336ed0c55a615eb4c0c8ed5daf3f08
+8b911acdf08477c059d1c36c21113ab1696c612b
+21406928afe43f1db6acab4931bb8c886f4d04ce
+5ca9880c6f4ba4c84b517bc2fed5366adf63d191
+a64692a3afd85fe048551ab89142fd5ca99a0dbd
+f2e74eeac03ffb779d64b66a643c5e598145a28b
+c6ee36c423c3ed1fb86bb3eabba9fc256a300d16
+e12f31d3e5d36328c7fbd0fce40a95e70b59152c
+13814d42e45dfbe845a0bbe5184565d9236896ae
+b42e0c41a422a212ddea0666d5a3a0e3c35206db
+39c0cbe2150cbd848a25ba6cdb271d1ad46818ad
+beac4c7e4a1cc6d57801f690e5e82fa2c9c245c8
+41acab8851a0408c1d5ad6c21a07456f88b54d40
+6427462bfa50f50dc6c088c07037264fcc73eca1
+c9494727cf293ae2ec66af57547a3e79c724fec2
+We cannot bisect more!
 
->> Make sure that you've got Linux platform code enabled that matches the
->> top-level compatible of your device tree.  Try enabling PPC_EARLY_DEBUG_CPM,
->> making sure to update PPC_EARLY_DEBUG_CPM_ADDR to 0xfa202008.
->
-> I enabled this early debug feature but don't know this address change.
+These correspond to a batch of scheduler patches, most from Mike Galbraith.
 
-The address change is for the different IMMR base, only this use is too 
-early/hacky to get it from the device tree.
+I don't know what to do now.  I can't test any of these commits.  Even
+if I could, they look like they're all part of one set, so I doubt I
+could narrow it down to one commit anyway.
 
--Scott
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
