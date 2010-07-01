@@ -1,13 +1,15 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 04814B7091
+	by ozlabs.org (Postfix) with ESMTP id 06F25B7092
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu,  1 Jul 2010 20:43:05 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 00/27] KVM PPC PV framework
-Date: Thu,  1 Jul 2010 12:42:35 +0200
-Message-Id: <1277980982-12433-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 01/27] KVM: PPC: Introduce shared page
+Date: Thu,  1 Jul 2010 12:42:36 +0200
+Message-Id: <1277980982-12433-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,118 +21,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC we run PR=0 (kernel mode) code in PR=1 (user mode) and don't use the
-hypervisor extensions.
+For transparent variable sharing between the hypervisor and guest, I introduce
+a shared page. This shared page will contain all the registers the guest can
+read and write safely without exiting guest context.
 
-While that is all great to show that virtualization is possible, there are
-quite some cases where the emulation overhead of privileged instructions is
-killing performance.
+This patch only implements the stubs required for the basic structure of the
+shared page. The actual register moving follows.
 
-This patchset tackles exactly that issue. It introduces a paravirtual framework
-using which KVM and Linux share a page to exchange register state with. That
-way we don't have to switch to the hypervisor just to change a value of a
-privileged register.
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/include/asm/kvm_host.h |    2 ++
+ arch/powerpc/include/asm/kvm_para.h |    5 +++++
+ arch/powerpc/kernel/asm-offsets.c   |    1 +
+ arch/powerpc/kvm/44x.c              |    7 +++++++
+ arch/powerpc/kvm/book3s.c           |    7 +++++++
+ arch/powerpc/kvm/e500.c             |    7 +++++++
+ 6 files changed, 29 insertions(+), 0 deletions(-)
 
-To prove my point, I ran the same test I did for the MMU optimizations against
-the PV framework. Here are the results:
-
-[without]
-
-debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
-
-real    0m14.659s
-user    0m8.967s
-sys     0m5.688s
-
-[with]
-
-debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
-
-real    0m7.557s
-user    0m4.121s
-sys     0m3.426s
-
-
-So this is a significant performance improvement! I'm quite happy how fast this
-whole thing becomes :)
-
-I tried to take all comments I've heard from people so far about such a PV
-framework into account. In case you told me something before that is a no-go
-and I still did it, please just tell me again.
-
-Now go and have fun with fast VMs on PPC! Get yourself a G5 on ebay and start
-experiencing the power yourself. - heh
-
-v1 -> v2:
-
-  - change hypervisor calls to use r0 and r3
-  - make crit detection only trigger in supervisor mode
-  - RMO -> PAM
-  - introduce kvm_patch_ins
-  - only flush icache when patching
-  - introduce kvm_patch_ins_b
-  - update documentation
-
-Alexander Graf (27):
-  KVM: PPC: Introduce shared page
-  KVM: PPC: Convert MSR to shared page
-  KVM: PPC: Convert DSISR to shared page
-  KVM: PPC: Convert DAR to shared page.
-  KVM: PPC: Convert SRR0 and SRR1 to shared page
-  KVM: PPC: Convert SPRG[0-4] to shared page
-  KVM: PPC: Implement hypervisor interface
-  KVM: PPC: Add PV guest critical sections
-  KVM: PPC: Add PV guest scratch registers
-  KVM: PPC: Tell guest about pending interrupts
-  KVM: PPC: Make RMO a define
-  KVM: PPC: First magic page steps
-  KVM: PPC: Magic Page Book3s support
-  KVM: PPC: Magic Page BookE support
-  KVM: PPC: Expose magic page support to guest
-  KVM: Move kvm_guest_init out of generic code
-  KVM: PPC: Generic KVM PV guest support
-  KVM: PPC: KVM PV guest stubs
-  KVM: PPC: PV instructions to loads and stores
-  KVM: PPC: PV tlbsync to nop
-  KVM: PPC: Introduce kvm_tmp framework
-  KVM: PPC: Introduce branch patching helper
-  KVM: PPC: PV assembler helpers
-  KVM: PPC: PV mtmsrd L=1
-  KVM: PPC: PV mtmsrd L=0 and mtmsr
-  KVM: PPC: PV wrteei
-  KVM: PPC: Add Documentation about PV interface
-
- Documentation/kvm/ppc-pv.txt             |  185 ++++++++++++++
- arch/powerpc/include/asm/kvm_book3s.h    |    1 -
- arch/powerpc/include/asm/kvm_host.h      |   15 +-
- arch/powerpc/include/asm/kvm_para.h      |  121 +++++++++-
- arch/powerpc/include/asm/kvm_ppc.h       |    1 +
- arch/powerpc/kernel/Makefile             |    2 +
- arch/powerpc/kernel/asm-offsets.c        |   18 ++-
- arch/powerpc/kernel/kvm.c                |  408 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/kvm_emul.S           |  237 +++++++++++++++++
- arch/powerpc/kvm/44x.c                   |    7 +
- arch/powerpc/kvm/44x_tlb.c               |    8 +-
- arch/powerpc/kvm/book3s.c                |  165 ++++++++-----
- arch/powerpc/kvm/book3s_32_mmu.c         |   28 ++-
- arch/powerpc/kvm/book3s_32_mmu_host.c    |   16 +-
- arch/powerpc/kvm/book3s_64_mmu.c         |   42 +++-
- arch/powerpc/kvm/book3s_64_mmu_host.c    |   16 +-
- arch/powerpc/kvm/book3s_emulate.c        |   25 +-
- arch/powerpc/kvm/book3s_paired_singles.c |   11 +-
- arch/powerpc/kvm/booke.c                 |  113 +++++++--
- arch/powerpc/kvm/booke.h                 |    6 +-
- arch/powerpc/kvm/booke_emulate.c         |   14 +-
- arch/powerpc/kvm/booke_interrupts.S      |    3 +-
- arch/powerpc/kvm/e500.c                  |    7 +
- arch/powerpc/kvm/e500_tlb.c              |   31 ++-
- arch/powerpc/kvm/e500_tlb.h              |    2 +-
- arch/powerpc/kvm/emulate.c               |   47 +++-
- arch/powerpc/kvm/powerpc.c               |   42 +++-
- arch/powerpc/platforms/Kconfig           |   10 +
- arch/x86/include/asm/kvm_para.h          |    6 +
- include/linux/kvm_para.h                 |    7 +-
- 30 files changed, 1420 insertions(+), 174 deletions(-)
- create mode 100644 Documentation/kvm/ppc-pv.txt
- create mode 100644 arch/powerpc/kernel/kvm.c
- create mode 100644 arch/powerpc/kernel/kvm_emul.S
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index e004eaf..246a3dd 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <linux/kvm_types.h>
++#include <linux/kvm_para.h>
+ #include <asm/kvm_asm.h>
+ 
+ #define KVM_MAX_VCPUS 1
+@@ -289,6 +290,7 @@ struct kvm_vcpu_arch {
+ 	struct tasklet_struct tasklet;
+ 	u64 dec_jiffies;
+ 	unsigned long pending_exceptions;
++	struct kvm_vcpu_arch_shared *shared;
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+ 	struct hlist_head hpte_hash_pte[HPTEG_HASH_NUM_PTE];
+diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
+index 2d48f6a..1485ba8 100644
+--- a/arch/powerpc/include/asm/kvm_para.h
++++ b/arch/powerpc/include/asm/kvm_para.h
+@@ -20,6 +20,11 @@
+ #ifndef __POWERPC_KVM_PARA_H__
+ #define __POWERPC_KVM_PARA_H__
+ 
++#include <linux/types.h>
++
++struct kvm_vcpu_arch_shared {
++};
++
+ #ifdef __KERNEL__
+ 
+ static inline int kvm_para_available(void)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 496cc5b..944f593 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -400,6 +400,7 @@ int main(void)
+ 	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
+ 	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
+ 	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
++	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
+ 
+ 	/* book3s */
+ #ifdef CONFIG_PPC_BOOK3S
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+index 73c0a3f..e7b1f3f 100644
+--- a/arch/powerpc/kvm/44x.c
++++ b/arch/powerpc/kvm/44x.c
+@@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto free_vcpu;
+ 
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_vcpu;
++
+ 	return vcpu;
+ 
++uninit_vcpu:
++	kvm_vcpu_uninit(vcpu);
+ free_vcpu:
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+ out:
+@@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+ }
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 30c0bd5..2c2c3ca 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -1247,6 +1247,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto free_shadow_vcpu;
+ 
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_vcpu;
++
+ 	vcpu->arch.host_retip = kvm_return_point;
+ 	vcpu->arch.host_msr = mfmsr();
+ #ifdef CONFIG_PPC_BOOK3S_64
+@@ -1277,6 +1281,8 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 
+ 	return vcpu;
+ 
++uninit_vcpu:
++	kvm_vcpu_uninit(vcpu);
+ free_shadow_vcpu:
+ 	kfree(vcpu_book3s->shadow_vcpu);
+ free_vcpu:
+@@ -1289,6 +1295,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kfree(vcpu_book3s->shadow_vcpu);
+ 	vfree(vcpu_book3s);
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index e8a00b0..71750f2 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto uninit_vcpu;
+ 
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_tlb;
++
+ 	return vcpu;
+ 
++uninit_tlb:
++	kvmppc_e500_tlb_uninit(vcpu_e500);
+ uninit_vcpu:
+ 	kvm_vcpu_uninit(vcpu);
+ free_vcpu:
+@@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvmppc_e500_tlb_uninit(vcpu_e500);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+-- 
+1.6.0.2
