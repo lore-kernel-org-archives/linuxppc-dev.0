@@ -1,24 +1,29 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id DA856B7092
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 06:17:21 +1000 (EST)
-Received: by iwn36 with SMTP id 36so1984027iwn.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 01 Jul 2010 13:17:20 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3FE1FB70A0
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 06:25:15 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o61KPCWS006935
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jul 2010 13:25:12 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o61KZWid010785
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jul 2010 15:35:32 -0500 (CDT)
+Message-ID: <4C2CF9A7.7010801@freescale.com>
+Date: Thu, 01 Jul 2010 15:25:11 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <4C2CD395.90409@freescale.com>
-References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
-	<20100629185617.GA24285@schlenkerla.am.freescale.net>
-	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
-	<4C2B6DF5.7030403@freescale.com>
-	<AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>
-	<AANLkTilZm-TRkjgYBc0xj9iFYUJl7bb19Zvrcj2R-wJd@mail.gmail.com>
-	<4C2CD395.90409@freescale.com>
-Date: Thu, 1 Jul 2010 13:17:19 -0700
-Message-ID: <AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
+To: Shawn Jin <shawnxjin@gmail.com>
 Subject: Re: machine check in kernel for a mpc870 board
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>	<20100629185617.GA24285@schlenkerla.am.freescale.net>	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>	<4C2B6DF5.7030403@freescale.com>	<AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>	<AANLkTilZm-TRkjgYBc0xj9iFYUJl7bb19Zvrcj2R-wJd@mail.gmail.com>	<4C2CD395.90409@freescale.com>
+	<AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
+In-Reply-To: <AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,53 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> How do I find the address, reg, and range for nodes like localbus,
->>> soc, eth0, cpm, serial etc.?
->
-> If your CCSRBAR is 0xfa200000, then pretty much anywhere you see 0xff0xxx=
-xx
-> change it to 0xfa2xxxxx.
-
-I'm not sure about the range settings of 0xfe000000. How do you get this?
-
-       localbus@fa200100 {
-               compatible =3D "fsl,mpc885-localbus", "fsl,pq1-localbus",
-                            "simple-bus";
-               #address-cells =3D <2>;
-               #size-cells =3D <1>;
-               reg =3D <0xfa200100 0x40>;
-
-               ranges =3D <
-                       0 0 0xfe000000 0x01000000    // I'm not sure about t=
-his?
-               >;
-       };
-
-
->> =A0 =A0 Linux/PowerPC load: root=3D/dev/ram
->> =A0 =A0 Finalizing device tree... flat tree at 0x59e300
+On 07/01/2010 03:17 PM, Shawn Jin wrote:
+>>>> How do I find the address, reg, and range for nodes like localbus,
+>>>> soc, eth0, cpm, serial etc.?
 >>
->> The gdb showed deadbeef.
->> =A0 =A0 (gdb) target remote ppcbdi:2001
->> =A0 =A0 Remote debugging using ppcbdi:2001
->> =A0 =A0 0xdeadbeef in ?? ()
->> =A0 =A0 (gdb)
->>
->> The kernel doesn't seem to start. What could go wrong here?
+>> If your CCSRBAR is 0xfa200000, then pretty much anywhere you see 0xff0xxxxx
+>> change it to 0xfa2xxxxx.
 >
-> Pretty much anything. :-)
+> I'm not sure about the range settings of 0xfe000000. How do you get this?
+>
+>         localbus@fa200100 {
+>                 compatible = "fsl,mpc885-localbus", "fsl,pq1-localbus",
+>                              "simple-bus";
+>                 #address-cells =<2>;
+>                 #size-cells =<1>;
+>                 reg =<0xfa200100 0x40>;
+>
+>                 ranges =<
+>                         0 0 0xfe000000 0x01000000    // I'm not sure about this?
+>                 >;
+>         };
 
-I realized that. :-P The kernel booting was able to stop at
-start_kernel(). I'm going to trace further.
+Change 0xfe000000 to wherever u-boot maps your flash, and 0x01000000 to 
+whatever the size of the flash localbus mapping is.
 
-> Make sure that you've got Linux platform code enabled that matches the
-> top-level compatible of your device tree. =A0Try enabling PPC_EARLY_DEBUG=
-_CPM,
-> making sure to update PPC_EARLY_DEBUG_CPM_ADDR to 0xfa202008.
+Or more generally update this section to hold whatever is connected to 
+the localbus on your board.  The first cell is the chipselect.
 
-I enabled this early debug feature but don't know this address change.
-I'll try it later.
+>> Make sure that you've got Linux platform code enabled that matches the
+>> top-level compatible of your device tree.  Try enabling PPC_EARLY_DEBUG_CPM,
+>> making sure to update PPC_EARLY_DEBUG_CPM_ADDR to 0xfa202008.
+>
+> I enabled this early debug feature but don't know this address change.
 
-Thanks a lot, Scott.
+The address change is for the different IMMR base, only this use is too 
+early/hacky to get it from the device tree.
 
--Shawn.
+-Scott
