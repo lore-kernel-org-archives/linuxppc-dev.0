@@ -1,24 +1,15 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 55909B6F06
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 04814B7091
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  1 Jul 2010 20:00:48 +1000 (EST)
-Message-ID: <4C2C6745.8040001@suse.de>
-Date: Thu, 01 Jul 2010 12:00:37 +0200
+	Thu,  1 Jul 2010 20:43:05 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 0/2] Faster MMU lookups for Book3s v3
-References: <1277903926-12786-1-git-send-email-agraf@suse.de>
-	<4C2C43C0.4000400@redhat.com>
-	<7F9C2F52-3E95-4A22-B973-DACEBC95E5F4@suse.de>
-	<4C2C547E.7010404@redhat.com>
-In-Reply-To: <4C2C547E.7010404@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH 00/27] KVM PPC PV framework
+Date: Thu,  1 Jul 2010 12:42:35 +0200
+Message-Id: <1277980982-12433-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +19,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avi Kivity wrote:
-> On 07/01/2010 11:18 AM, Alexander Graf wrote:
->>
->> How does dirty bitmap flushing work on x86 atm? I loop through all
->> mapped pages and flush the ones that match the range of the region I
->> need to flush. But wouldn't it be a lot more efficient to have an
->> hlist in the memslot and loop through that when I need to flush that
->> memslot?
->>    
->
-> x86 loops through the reverse-map link list rooted at the memory
-> slot.  The linked list links all sptes for a single hva.
->
-> So, it's like you describe, except it's an array of lists instead of a
-> single list.  We need per-page rmap lists to be able to remove a
-> page's sptes in response to an mmu notifier callback, and to be able
-> to write protect a guest page if it's used as a page table.
->
+On PPC we run PR=0 (kernel mode) code in PR=1 (user mode) and don't use the
+hypervisor extensions.
 
-But doesn't that mean that you still need to loop through all the hvas
-that you want to invalidate? Wouldn't it speed up dirty bitmap flushing
-a lot if we'd just have a simple linked list of all sPTEs belonging to
-that memslot?
+While that is all great to show that virtualization is possible, there are
+quite some cases where the emulation overhead of privileged instructions is
+killing performance.
 
-Alex
+This patchset tackles exactly that issue. It introduces a paravirtual framework
+using which KVM and Linux share a page to exchange register state with. That
+way we don't have to switch to the hypervisor just to change a value of a
+privileged register.
+
+To prove my point, I ran the same test I did for the MMU optimizations against
+the PV framework. Here are the results:
+
+[without]
+
+debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
+
+real    0m14.659s
+user    0m8.967s
+sys     0m5.688s
+
+[with]
+
+debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
+
+real    0m7.557s
+user    0m4.121s
+sys     0m3.426s
+
+
+So this is a significant performance improvement! I'm quite happy how fast this
+whole thing becomes :)
+
+I tried to take all comments I've heard from people so far about such a PV
+framework into account. In case you told me something before that is a no-go
+and I still did it, please just tell me again.
+
+Now go and have fun with fast VMs on PPC! Get yourself a G5 on ebay and start
+experiencing the power yourself. - heh
+
+v1 -> v2:
+
+  - change hypervisor calls to use r0 and r3
+  - make crit detection only trigger in supervisor mode
+  - RMO -> PAM
+  - introduce kvm_patch_ins
+  - only flush icache when patching
+  - introduce kvm_patch_ins_b
+  - update documentation
+
+Alexander Graf (27):
+  KVM: PPC: Introduce shared page
+  KVM: PPC: Convert MSR to shared page
+  KVM: PPC: Convert DSISR to shared page
+  KVM: PPC: Convert DAR to shared page.
+  KVM: PPC: Convert SRR0 and SRR1 to shared page
+  KVM: PPC: Convert SPRG[0-4] to shared page
+  KVM: PPC: Implement hypervisor interface
+  KVM: PPC: Add PV guest critical sections
+  KVM: PPC: Add PV guest scratch registers
+  KVM: PPC: Tell guest about pending interrupts
+  KVM: PPC: Make RMO a define
+  KVM: PPC: First magic page steps
+  KVM: PPC: Magic Page Book3s support
+  KVM: PPC: Magic Page BookE support
+  KVM: PPC: Expose magic page support to guest
+  KVM: Move kvm_guest_init out of generic code
+  KVM: PPC: Generic KVM PV guest support
+  KVM: PPC: KVM PV guest stubs
+  KVM: PPC: PV instructions to loads and stores
+  KVM: PPC: PV tlbsync to nop
+  KVM: PPC: Introduce kvm_tmp framework
+  KVM: PPC: Introduce branch patching helper
+  KVM: PPC: PV assembler helpers
+  KVM: PPC: PV mtmsrd L=1
+  KVM: PPC: PV mtmsrd L=0 and mtmsr
+  KVM: PPC: PV wrteei
+  KVM: PPC: Add Documentation about PV interface
+
+ Documentation/kvm/ppc-pv.txt             |  185 ++++++++++++++
+ arch/powerpc/include/asm/kvm_book3s.h    |    1 -
+ arch/powerpc/include/asm/kvm_host.h      |   15 +-
+ arch/powerpc/include/asm/kvm_para.h      |  121 +++++++++-
+ arch/powerpc/include/asm/kvm_ppc.h       |    1 +
+ arch/powerpc/kernel/Makefile             |    2 +
+ arch/powerpc/kernel/asm-offsets.c        |   18 ++-
+ arch/powerpc/kernel/kvm.c                |  408 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S           |  237 +++++++++++++++++
+ arch/powerpc/kvm/44x.c                   |    7 +
+ arch/powerpc/kvm/44x_tlb.c               |    8 +-
+ arch/powerpc/kvm/book3s.c                |  165 ++++++++-----
+ arch/powerpc/kvm/book3s_32_mmu.c         |   28 ++-
+ arch/powerpc/kvm/book3s_32_mmu_host.c    |   16 +-
+ arch/powerpc/kvm/book3s_64_mmu.c         |   42 +++-
+ arch/powerpc/kvm/book3s_64_mmu_host.c    |   16 +-
+ arch/powerpc/kvm/book3s_emulate.c        |   25 +-
+ arch/powerpc/kvm/book3s_paired_singles.c |   11 +-
+ arch/powerpc/kvm/booke.c                 |  113 +++++++--
+ arch/powerpc/kvm/booke.h                 |    6 +-
+ arch/powerpc/kvm/booke_emulate.c         |   14 +-
+ arch/powerpc/kvm/booke_interrupts.S      |    3 +-
+ arch/powerpc/kvm/e500.c                  |    7 +
+ arch/powerpc/kvm/e500_tlb.c              |   31 ++-
+ arch/powerpc/kvm/e500_tlb.h              |    2 +-
+ arch/powerpc/kvm/emulate.c               |   47 +++-
+ arch/powerpc/kvm/powerpc.c               |   42 +++-
+ arch/powerpc/platforms/Kconfig           |   10 +
+ arch/x86/include/asm/kvm_para.h          |    6 +
+ include/linux/kvm_para.h                 |    7 +-
+ 30 files changed, 1420 insertions(+), 174 deletions(-)
+ create mode 100644 Documentation/kvm/ppc-pv.txt
+ create mode 100644 arch/powerpc/kernel/kvm.c
+ create mode 100644 arch/powerpc/kernel/kvm_emul.S
