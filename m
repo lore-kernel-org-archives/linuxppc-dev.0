@@ -1,34 +1,21 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 7243E1007D2
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 16:47:06 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id o626l1Jo002164
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:01 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o626l1xH4124888
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:01 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o626l0gO010251
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:00 +0530
-Message-ID: <4C2D8B63.2030500@linux.vnet.ibm.com>
-Date: Fri, 02 Jul 2010 12:16:59 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: maciej.rutecki@gmail.com
-Subject: Re: Oops while running fs_racer test on a POWER6 box against latest
-	git
-References: <4C2B28F3.7000006@linux.vnet.ibm.com>
-	<201007012025.30452.maciej.rutecki@gmail.com>
-In-Reply-To: <201007012025.30452.maciej.rutecki@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Latchesar Ionkov <lucho@ionkov.net>, jaxboe@fusionio.com,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Ron Minnich <rminnich@sandia.gov>, hch@lst.de
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id B14AAB7095
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  2 Jul 2010 17:44:49 +1000 (EST)
+Subject: Re: [PATCH 16/27] KVM: Move kvm_guest_init out of generic code
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <alpine.LRH.2.00.1007020937160.17095@mink.sonytel.be>
+Date: Fri, 2 Jul 2010 09:44:45 +0200
+Message-Id: <22C0FDBA-B23D-4F7B-893A-02F6253D5F0C@suse.de>
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
+	<1277980982-12433-17-git-send-email-agraf@suse.de>
+	<alpine.LRH.2.00.1007020937160.17095@mink.sonytel.be>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,75 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 01 July 2010 11:55 PM, Maciej Rutecki wrote:
-> On środa, 30 czerwca 2010 o 13:22:27 divya wrote:
->    
->> While running fs_racer test from LTP on a POWER6 box against latest
->> git(2.6.35-rc3-git4 - commitid 984bc9601f64fd) came across the following
->> warning followed by multiple oops.
->>
->>      
-> I created a Bugzilla entry at
-> https://bugzilla.kernel.org/show_bug.cgi?id=16324
-> for your bug report, please add your address to the CC list in there, thanks!
->
->
->    
-Here I find a cleaner back trace while running fs_racer test from LTP on a POWER6
-box against the latest git(2.6.35-rc3-git5 - commitid 980019d74e4b242)
 
-Badness at kernel/mutex-debug.c:64
-BUG: key (null) not in .data!
-NIP: c0000000000be9e8 LR: c0000000000be9cc CTR: 0000000000000000
-REGS: c00000010bb176f0 TRAP: 0700   Not tainted  (2.6.35-rc3-git5-autotest)
-BUG: key 00000000000001d8 not in .data!
-BUG: key 00000000000001e0 not in .data!
-BUG: key 00000000000001e8 not in .data!
-MSR: 8000000000029032
-Unable to handle kernel paging request for data at address 0x00000028
-Faulting instruction address: 0xc0000000003ad0ec
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=1024 NUMA pSeries
-last sysfs file: /sys/devices/system/cpu/cpu19/cache/index1/shared_cpu_map
-Page fault in user mode with in_atomic() = 1 mm = c00000010943e600
-Modules linked in:
-NIP = fff9e98fc40  MSR = 800000004001d032
-  ipv6 fuse loop
-Unable to handle kernel paging request for unknown fault
-  dm_mod
-Faulting instruction address: 0xc00000000008d0f4
-  sr_mod ibmveth cdrom sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
-NIP: c0000000003ad0ec LR: c00000000064c3b0 CTR: c0000000003a6eb0
-REGS: c000000109b4f610 TRAP: 0300   Not tainted  (2.6.35-rc3-git5-autotest)
-MSR: 8000000000009032<EE,ME,IR,DR>   CR: 88004484  XER: 00000001
-DAR: 0000000000000028, DSISR: 0000000040010000
-TASK = c000000109a98600[7403] 'mkdir' THREAD: c000000109b4c000 CPU: 19
-GPR00: 0000000080000013 c000000109b4f890 c000000000d3d798 0000000000000028
-GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
-GPR08: 0000000000000000 0000000000000028 c000000000189f2c c000000109a98600
-GPR12: 0000000024004424 c00000000f602f80 00000000000041ff 0000000000000001
-GPR16: 0000000000000002 c00000010d8304c0 c000000109b4fb44 0000000000000000
-GPR20: c00000010df77908 fffffffffffff000 0000000000010000 00000000000041ff
-GPR24: c00000010df77758 c000000109fa1800 c00000010df77908 c0000000ff236600
-GPR28: 0000000000000028 0000000000000040 c000000000ca7b38 c000000000189f2c
-NIP [c0000000003ad0ec] .do_raw_spin_trylock+0x10/0x48
-LR [c00000000064c3b0] ._raw_spin_lock+0x50/0xa4
-Call Trace:
-[c000000109b4f890] [c00000000064c3a4] ._raw_spin_lock+0x44/0xa4 (unreliable)
-[c000000109b4f920] [c000000000189f2c] .new_inode+0x4c/0xe4
-[c000000109b4f9b0] [c0000000002257fc] .ext3_new_inode+0x84/0xb70
-[c000000109b4fad0] [c00000000022f1ec] .ext3_mkdir+0x130/0x438
-[c000000109b4fbe0] [c00000000017adb4] .vfs_mkdir+0xb8/0x160
-[c000000109b4fc80] [c00000000017e52c] .SyS_mkdirat+0xb0/0x114
-[c000000109b4fdc0] [c00000000017a730] .SyS_mkdir+0x1c/0x30
-[c000000109b4fe30] [c0000000000085b4] syscall_exit+0x0/0x40
-Instruction dump:
-eb41ffd0 7c0803a6 eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8 4e800020
-38000000 7c691b78 980d0214 800d0008<7d601829>  2c0b0000 40c20010 7c00192d
-Oops: Weird page fault, sig: 11 [#2]
+On 02.07.2010, at 09:41, Geert Uytterhoeven wrote:
 
-Pls let me know if this back trace would help in analyzing further.
-Meanwhile I shall do a git bisect and send the inputs.
+> On Thu, 1 Jul 2010, Alexander Graf wrote:
+>> Currently x86 is the only architecture that uses kvm_guest_init(). =
+With
+>> PowerPC we're getting a second user, but the signature is different =
+there
+>> and we don't need to export it, as it uses the normal kernel init =
+framework.
+>=20
+> Making the signatures match (i.e. always return `int') wouldn't hurt,
+> since kvm_guest_init() apparently can fail on x86, too.
 
-Thanks
-Divya
+I'm reasonably indifferent here. Fact is that the x86 hook is done =
+completely different from how we do it on ppc. So whatever we do, the =
+signature doesn't belong in generic code.
+
+If you like, feel free to send a follow-up patch making the x86 =
+signature return failures :). I personally don't think it make sense to =
+expose failures for PV speedups - they should never be mandatory and =
+thus failure is no problem for the system, so the caller doesn't need to =
+know.
+
+Alex
