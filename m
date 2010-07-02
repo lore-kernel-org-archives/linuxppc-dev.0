@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id D7F3FB6F04
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 22:41:13 +1000 (EST)
-Date: Fri, 2 Jul 2010 16:41:11 +0400
+	by ozlabs.org (Postfix) with ESMTP id B328D100929
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 22:41:18 +1000 (EST)
+Date: Fri, 2 Jul 2010 16:41:17 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] edac: mpc85xx: Fix MPC85xx dependency
-Message-ID: <20100702124111.GA23320@oksana.dev.rtsoft.ru>
+Subject: [PATCH 2/2] edac: mpc85xx: Add support for MPC8569 EDAC controllers
+Message-ID: <20100702124117.GB23320@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: Peter Tyser <ptyser@xes-inc.com>, linux-kernel@vger.kernel.org,
@@ -21,29 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 5753c082f66eca5be81f6bda85c1718c5eea6ada ("powerpc/85xx:
-Kconfig cleanup"), there is no MPC85xx Kconfig symbol anymore, so the
-driver became non-selectable.
-
-This patch fixes the issue by switching to PPC_85xx symbol.
+Simply add a proper ID into the device table.
 
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
- drivers/edac/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/edac/mpc85xx_edac.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index aedef79..0d2f9db 100644
---- a/drivers/edac/Kconfig
-+++ b/drivers/edac/Kconfig
-@@ -209,7 +209,7 @@ config EDAC_I5100
- 
- config EDAC_MPC85XX
- 	tristate "Freescale MPC83xx / MPC85xx"
--	depends on EDAC_MM_EDAC && FSL_SOC && (PPC_83xx || MPC85xx)
-+	depends on EDAC_MM_EDAC && FSL_SOC && (PPC_83xx || PPC_85xx)
- 	help
- 	  Support for error detection and correction on the Freescale
- 	  MPC8349, MPC8560, MPC8540, MPC8548
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 52ca09b..f39b00a 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -1120,6 +1120,7 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
+ 	{ .compatible = "fsl,mpc8555-memory-controller", },
+ 	{ .compatible = "fsl,mpc8560-memory-controller", },
+ 	{ .compatible = "fsl,mpc8568-memory-controller", },
++	{ .compatible = "fsl,mpc8569-memory-controller", },
+ 	{ .compatible = "fsl,mpc8572-memory-controller", },
+ 	{ .compatible = "fsl,mpc8349-memory-controller", },
+ 	{ .compatible = "fsl,p2020-memory-controller", },
 -- 
 1.7.0.5
