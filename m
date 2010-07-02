@@ -1,22 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 199FD1007D2
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 5977F1007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Jul 2010 01:37:22 +1000 (EST)
-Message-ID: <4C2E07AC.4010801@suse.de>
-Date: Fri, 02 Jul 2010 17:37:16 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 13/27] KVM: PPC: Magic Page Book3s support
+	Sat,  3 Jul 2010 02:22:32 +1000 (EST)
+In-Reply-To: <1277980982-12433-1-git-send-email-agraf@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<1277980982-12433-14-git-send-email-agraf@suse.de>
-In-Reply-To: <1277980982-12433-14-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <82C19122-91B6-4F91-9EF0-BEA2759A349D@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 00/27] KVM PPC PV framework
+Date: Fri, 2 Jul 2010 18:22:46 +0200
+To: Alexander Graf <agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf wrote:
-> We need to override EA as well as PA lookups for the magic page. When the guest
-> tells us to project it, the magic page overrides any guest mappings.
+> [without]
 >
-> In order to reflect that, we need to hook into all the MMU layers of KVM to
-> force map the magic page if necessary.
+> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > / 
+> dev/null; done
 >
-> Signed-off-by: Alexander Graf <agraf@suse.de>
+> real    0m14.659s
+> user    0m8.967s
+> sys     0m5.688s
 >
-> v1 -> v2:
+> [with]
 >
->   - RMO -> PAM
-> ---
->  arch/powerpc/kvm/book3s.c             |    7 +++++++
->  arch/powerpc/kvm/book3s_32_mmu.c      |   16 ++++++++++++++++
->  arch/powerpc/kvm/book3s_32_mmu_host.c |   12 ++++++++++++
->  arch/powerpc/kvm/book3s_64_mmu.c      |   30 +++++++++++++++++++++++++++++-
->  arch/powerpc/kvm/book3s_64_mmu_host.c |   12 ++++++++++++
->  5 files changed, 76 insertions(+), 1 deletions(-)
+> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > / 
+> dev/null; done
 >
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index 14db032..b22e608 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -554,6 +554,13 @@ mmio:
->  
->  static int kvmppc_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn)
->  {
-> +	ulong mp_pa = vcpu->arch.magic_page_pa;
-> +
-> +	if (unlikely(mp_pa) &&
-> +	    unlikely((mp_pa & KVM_RMO) >> PAGE_SHIFT == gfn)) {
->   
+> real    0m7.557s
+> user    0m4.121s
+> sys     0m3.426s
+>
+>
+> So this is a significant performance improvement! I'm quite happy  
+> how fast this
+> whole thing becomes :)
 
-This should be KVM_PAM :(. Should I respin the whole thing or could
-whoever commits this just make that trivial change?
+Yeah :-)  Do you have timings for the native system as well?
 
 
-Alex
+Segher
