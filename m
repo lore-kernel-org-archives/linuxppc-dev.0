@@ -1,17 +1,22 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id B328D100929
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 22:41:18 +1000 (EST)
-Date: Fri, 2 Jul 2010 16:41:17 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] edac: mpc85xx: Add support for MPC8569 EDAC controllers
-Message-ID: <20100702124117.GB23320@oksana.dev.rtsoft.ru>
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 199FD1007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  3 Jul 2010 01:37:22 +1000 (EST)
+Message-ID: <4C2E07AC.4010801@suse.de>
+Date: Fri, 02 Jul 2010 17:37:16 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Peter Tyser <ptyser@xes-inc.com>, linux-kernel@vger.kernel.org,
-	Dave Jiang <djiang@mvista.com>, linuxppc-dev@ozlabs.org,
-	Doug Thompson <dougthompson@xmission.com>
+To: kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 13/27] KVM: PPC: Magic Page Book3s support
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
+	<1277980982-12433-14-git-send-email-agraf@suse.de>
+In-Reply-To: <1277980982-12433-14-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simply add a proper ID into the device table.
+Alexander Graf wrote:
+> We need to override EA as well as PA lookups for the magic page. When the guest
+> tells us to project it, the magic page overrides any guest mappings.
+>
+> In order to reflect that, we need to hook into all the MMU layers of KVM to
+> force map the magic page if necessary.
+>
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+>
+> v1 -> v2:
+>
+>   - RMO -> PAM
+> ---
+>  arch/powerpc/kvm/book3s.c             |    7 +++++++
+>  arch/powerpc/kvm/book3s_32_mmu.c      |   16 ++++++++++++++++
+>  arch/powerpc/kvm/book3s_32_mmu_host.c |   12 ++++++++++++
+>  arch/powerpc/kvm/book3s_64_mmu.c      |   30 +++++++++++++++++++++++++++++-
+>  arch/powerpc/kvm/book3s_64_mmu_host.c |   12 ++++++++++++
+>  5 files changed, 76 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index 14db032..b22e608 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -554,6 +554,13 @@ mmio:
+>  
+>  static int kvmppc_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+>  {
+> +	ulong mp_pa = vcpu->arch.magic_page_pa;
+> +
+> +	if (unlikely(mp_pa) &&
+> +	    unlikely((mp_pa & KVM_RMO) >> PAGE_SHIFT == gfn)) {
+>   
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- drivers/edac/mpc85xx_edac.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+This should be KVM_PAM :(. Should I respin the whole thing or could
+whoever commits this just make that trivial change?
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 52ca09b..f39b00a 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -1120,6 +1120,7 @@ static struct of_device_id mpc85xx_mc_err_of_match[] = {
- 	{ .compatible = "fsl,mpc8555-memory-controller", },
- 	{ .compatible = "fsl,mpc8560-memory-controller", },
- 	{ .compatible = "fsl,mpc8568-memory-controller", },
-+	{ .compatible = "fsl,mpc8569-memory-controller", },
- 	{ .compatible = "fsl,mpc8572-memory-controller", },
- 	{ .compatible = "fsl,mpc8349-memory-controller", },
- 	{ .compatible = "fsl,p2020-memory-controller", },
--- 
-1.7.0.5
+
+Alex
