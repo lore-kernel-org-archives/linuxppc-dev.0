@@ -1,32 +1,34 @@
-Return-Path: <R58472@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 4B0101007D1
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 16:04:06 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o62643LI011227
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jul 2010 23:04:03 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o626ELFP007975
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 01:14:22 -0500 (CDT)
+	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7243E1007D2
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jul 2010 16:47:06 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id o626l1Jo002164
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:01 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o626l1xH4124888
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:01 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o626l0gO010251
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jul 2010 12:17:00 +0530
+Message-ID: <4C2D8B63.2030500@linux.vnet.ibm.com>
+Date: Fri, 02 Jul 2010 12:16:59 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: CONFIG_NO_HZ causing poor console responsiveness
-Date: Fri, 2 Jul 2010 14:03:53 +0800
-Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F6304C702@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1278049644.4200.377.camel@pasglop>
-References: <AANLkTilMzfwgYvoFhxhcVQVGV-EkMLVHI2TeQ29SYFCH@mail.gmail.com>
-	<1278049644.4200.377.camel@pasglop>
-From: "Li Yang-R58472" <r58472@freescale.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Tabi Timur-B04825" <B04825@freescale.com>
-Cc: Linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+To: maciej.rutecki@gmail.com
+Subject: Re: Oops while running fs_racer test on a POWER6 box against latest
+	git
+References: <4C2B28F3.7000006@linux.vnet.ibm.com>
+	<201007012025.30452.maciej.rutecki@gmail.com>
+In-Reply-To: <201007012025.30452.maciej.rutecki@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Latchesar Ionkov <lucho@ionkov.net>, jaxboe@fusionio.com,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Ron Minnich <rminnich@sandia.gov>, hch@lst.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
->-----Original Message-----
->From: linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org
->[mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@lists.ozlabs.org] On
->Behalf Of Benjamin Herrenschmidt
->Sent: Friday, July 02, 2010 1:47 PM
->To: Tabi Timur-B04825
->Cc: Linuxppc-dev Development
->Subject: Re: CONFIG_NO_HZ causing poor console responsiveness
->
->On Tue, 2010-06-29 at 14:54 -0500, Timur Tabi wrote:
->> I'm adding support for a new e500-based board (the P1022DS), and in
->> the process I've discovered that enabling CONFIG_NO_HZ (Tickless
->> System / Dynamic Ticks) causes significant responsiveness problems on
->> the serial console.  When I type on the console, I see delays of up =
-to
->> a half-second for almost every character.  It acts as if there's a
->> background process eating all the CPU.
+On Thursday 01 July 2010 11:55 PM, Maciej Rutecki wrote:
+> On środa, 30 czerwca 2010 o 13:22:27 divya wrote:
+>    
+>> While running fs_racer test from LTP on a POWER6 box against latest
+>> git(2.6.35-rc3-git4 - commitid 984bc9601f64fd) came across the following
+>> warning followed by multiple oops.
 >>
->> I don't have time to debug this thoroughly at the moment.  The =
-problem
->> occurs in the latest kernel, but it appears not to occur in 2.6.32.
->>
->> Has anyone else seen anything like this?
+>>      
+> I created a Bugzilla entry at
+> https://bugzilla.kernel.org/show_bug.cgi?id=16324
+> for your bug report, please add your address to the CC list in there, thanks!
 >
->I noticed that on the bimini with 2.6.35-rc* though I didn't get to =
-track
->it down yet.
+>
+>    
+Here I find a cleaner back trace while running fs_racer test from LTP on a POWER6
+box against the latest git(2.6.35-rc3-git5 - commitid 980019d74e4b242)
 
+Badness at kernel/mutex-debug.c:64
+BUG: key (null) not in .data!
+NIP: c0000000000be9e8 LR: c0000000000be9cc CTR: 0000000000000000
+REGS: c00000010bb176f0 TRAP: 0700   Not tainted  (2.6.35-rc3-git5-autotest)
+BUG: key 00000000000001d8 not in .data!
+BUG: key 00000000000001e0 not in .data!
+BUG: key 00000000000001e8 not in .data!
+MSR: 8000000000029032
+Unable to handle kernel paging request for data at address 0x00000028
+Faulting instruction address: 0xc0000000003ad0ec
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=1024 NUMA pSeries
+last sysfs file: /sys/devices/system/cpu/cpu19/cache/index1/shared_cpu_map
+Page fault in user mode with in_atomic() = 1 mm = c00000010943e600
+Modules linked in:
+NIP = fff9e98fc40  MSR = 800000004001d032
+  ipv6 fuse loop
+Unable to handle kernel paging request for unknown fault
+  dm_mod
+Faulting instruction address: 0xc00000000008d0f4
+  sr_mod ibmveth cdrom sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt scsi_mod
+NIP: c0000000003ad0ec LR: c00000000064c3b0 CTR: c0000000003a6eb0
+REGS: c000000109b4f610 TRAP: 0300   Not tainted  (2.6.35-rc3-git5-autotest)
+MSR: 8000000000009032<EE,ME,IR,DR>   CR: 88004484  XER: 00000001
+DAR: 0000000000000028, DSISR: 0000000040010000
+TASK = c000000109a98600[7403] 'mkdir' THREAD: c000000109b4c000 CPU: 19
+GPR00: 0000000080000013 c000000109b4f890 c000000000d3d798 0000000000000028
+GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
+GPR08: 0000000000000000 0000000000000028 c000000000189f2c c000000109a98600
+GPR12: 0000000024004424 c00000000f602f80 00000000000041ff 0000000000000001
+GPR16: 0000000000000002 c00000010d8304c0 c000000109b4fb44 0000000000000000
+GPR20: c00000010df77908 fffffffffffff000 0000000000010000 00000000000041ff
+GPR24: c00000010df77758 c000000109fa1800 c00000010df77908 c0000000ff236600
+GPR28: 0000000000000028 0000000000000040 c000000000ca7b38 c000000000189f2c
+NIP [c0000000003ad0ec] .do_raw_spin_trylock+0x10/0x48
+LR [c00000000064c3b0] ._raw_spin_lock+0x50/0xa4
+Call Trace:
+[c000000109b4f890] [c00000000064c3a4] ._raw_spin_lock+0x44/0xa4 (unreliable)
+[c000000109b4f920] [c000000000189f2c] .new_inode+0x4c/0xe4
+[c000000109b4f9b0] [c0000000002257fc] .ext3_new_inode+0x84/0xb70
+[c000000109b4fad0] [c00000000022f1ec] .ext3_mkdir+0x130/0x438
+[c000000109b4fbe0] [c00000000017adb4] .vfs_mkdir+0xb8/0x160
+[c000000109b4fc80] [c00000000017e52c] .SyS_mkdirat+0xb0/0x114
+[c000000109b4fdc0] [c00000000017a730] .SyS_mkdir+0x1c/0x30
+[c000000109b4fe30] [c0000000000085b4] syscall_exit+0x0/0x40
+Instruction dump:
+eb41ffd0 7c0803a6 eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8 4e800020
+38000000 7c691b78 980d0214 800d0008<7d601829>  2c0b0000 40c20010 7c00192d
+Oops: Weird page fault, sig: 11 [#2]
 
-Patch found at the following location fixed this problem.
+Pls let me know if this back trace would help in analyzing further.
+Meanwhile I shall do a git bisect and send the inputs.
 
-http://www.spinics.net/lists/linux-tip-commits/msg08279.html
-
-Hope it has already been merged.
-
-- Leo
+Thanks
+Divya
