@@ -1,20 +1,27 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id DC91A1007D2
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Jul 2010 02:59:15 +1000 (EST)
-Subject: Re: [PATCH 00/27] KVM PPC PV framework
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <82C19122-91B6-4F91-9EF0-BEA2759A349D@kernel.crashing.org>
-Date: Fri, 2 Jul 2010 18:59:11 +0200
-Message-Id: <5D407F89-B6B4-4890-9E7C-596354CB5BE3@suse.de>
-References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<82C19122-91B6-4F91-9EF0-BEA2759A349D@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id D84FAB6F18
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jul 2010 03:06:50 +1000 (EST)
+Received: by iwn36 with SMTP id 36so2942806iwn.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 02 Jul 2010 10:06:48 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4C2CF9A7.7010801@freescale.com>
+References: <AANLkTinA2ghLxBU41aFAsLM1oXQ8HMASx1eQMDVvi56n@mail.gmail.com>
+	<20100629185617.GA24285@schlenkerla.am.freescale.net>
+	<AANLkTik48Ht-jeq_U1yh9c9WzFYE8yYpALiz_N8SzF4N@mail.gmail.com>
+	<4C2B6DF5.7030403@freescale.com>
+	<AANLkTinYnoqfZAJWlYg633VbVyjWXhvFk2p406eP3o0c@mail.gmail.com>
+	<AANLkTilZm-TRkjgYBc0xj9iFYUJl7bb19Zvrcj2R-wJd@mail.gmail.com>
+	<4C2CD395.90409@freescale.com>
+	<AANLkTikuI49rzT6j9glIB-Vmp6kZSTVT5ri3Hb-JHgKO@mail.gmail.com>
+	<4C2CF9A7.7010801@freescale.com>
+Date: Fri, 2 Jul 2010 10:06:47 -0700
+Message-ID: <AANLkTikELusybzh2uTh3KJ6QwelgSHW6HWWPLh-4Zc0b@mail.gmail.com>
+Subject: Re: machine check in kernel for a mpc870 board
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +31,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>> =A0 =A0 =A0 =A0localbus@fa200100 {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc885-localbus", "fs=
+l,pq1-localbus",
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "simple-bus";
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D<2>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D<1>;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D<0xfa200100 0x40>;
+>>
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ranges =3D<
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00 0 0xfe000000 0x01000000=
+ =A0 =A0// I'm not sure about
+>> this?
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0>;
+>> =A0 =A0 =A0 =A0};
+>
+> Change 0xfe000000 to wherever u-boot maps your flash, and 0x01000000 to
+> whatever the size of the flash localbus mapping is.
+>
+> Or more generally update this section to hold whatever is connected to th=
+e
+> localbus on your board. =A0The first cell is the chipselect.
 
-On 02.07.2010, at 18:22, Segher Boessenkool wrote:
+The chipselect? Isn't it just the child-bus-addr? BTW, do we have to
+define the #address-cells to 2? 1 is not enough?
 
->> [without]
->>=20
->> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
-/dev/null; done
->>=20
->> real    0m14.659s
->> user    0m8.967s
->> sys     0m5.688s
->>=20
->> [with]
->>=20
->> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
-/dev/null; done
->>=20
->> real    0m7.557s
->> user    0m4.121s
->> sys     0m3.426s
->>=20
->>=20
->> So this is a significant performance improvement! I'm quite happy how =
-fast this
->> whole thing becomes :)
->=20
-> Yeah :-)  Do you have timings for the native system as well?
+SDRAM uses CS0/6, each 64MB. BDI2000 configuration is as follows.
+; init memory controller
+WM32    0xFA200104      0xfe000ff6      ;;OR0: Flash 32MB
+WM32    0xFA200100      0xfc000001      ;;BR0: Flash at 0xFC000000,
+32bit, R/W, no parity, use GPCM
+WM32    0xFA20010C      0xfc000e00      ;;OR1: SDRAM 64MB, all accesses
+WM32    0xFA200108      0x00000081      ;;BR1: SDRAM at 0x00000000,
+32bit, R/W, no parity, use UPMA
+WM32    0xFA200134      0xfc000e00      ;;OR6: SDRAM 64MB, all accesses
+WM32    0xFA200130      0x04000081      ;;BR6: SDRAM at 0x04000000, 32bit, =
+R/W,
+no parity, use UPMA
 
-Sure, same machine with openSUSE 11.1 instead of Debian that I use as =
-guest OS usually:
+When defining memory's reg property, can a single pair <0 0x08000000>
+be enough? Or must it be <0 0x04000000 0x04000000 0x04000000>?
 
-agraf@lychee:~> time for i in {1..1000}; do /bin/echo hello > /dev/null; =
-done
-
-real	0m2.088s
-user	0m0.704s
-sys	0m1.460s
-
-
-Alex
+Thanks,
+-Shawn.
