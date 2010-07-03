@@ -1,24 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C631FB6F07
+Return-Path: <lawrence@softsystem.co.uk>
+Received: from smtp21.services.sfr.fr (smtp21.services.sfr.fr [93.17.128.4])
+	by ozlabs.org (Postfix) with ESMTP id ACF00B6F1B
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  4 Jul 2010 08:42:43 +1000 (EST)
-Subject: Re: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <A98DA9FC-DC42-452E-BD44-5F86D1707BF0@suse.de>
-References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<1277980982-12433-28-git-send-email-agraf@suse.de>
-	<EB2E1C5B-118B-481B-83D6-44CFAA2E55D3@kernel.crashing.org>
-	<A98DA9FC-DC42-452E-BD44-5F86D1707BF0@suse.de>
+	Sun,  4 Jul 2010 04:22:03 +1000 (EST)
+Received: from smtp21.services.sfr.fr (msfrf2108 [10.18.25.22])
+	by msfrf2115.sfr.fr (SMTP Server) with ESMTP id AC62D70025D3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  3 Jul 2010 20:22:01 +0200 (CEST)
+Received: from filter.sfr.fr (localhost [127.0.0.1])
+	by msfrf2108.sfr.fr (SMTP Server) with ESMTP id 7FB5B7000085
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  3 Jul 2010 20:21:58 +0200 (CEST)
+Received: from smtp-in.softsystem.co.uk (164.20.102-84.rev.gaoland.net
+	[84.102.20.164])
+	by msfrf2108.sfr.fr (SMTP Server) with SMTP id 33A71700008C
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  3 Jul 2010 20:21:58 +0200 (CEST)
+Received: FROM [192.168.1.62] (gagarin [192.168.1.62])
+	BY smtp-in.softsystem.co.uk [84.102.20.164] (SoftMail 1.0.5,
+	www.softsystem.co.uk) WITH ESMTP
+	FOR <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Jul 2010 20:21:57 +0200
+Subject: [PATCH] Add cmd64x IDE driver to default pmac32 config
+From: lawrence rust <lawrence@softsystem.co.uk>
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 04 Jul 2010 08:42:36 +1000
-Message-ID: <1278196956.4200.390.camel@pasglop>
+Date: Sat, 03 Jul 2010 20:21:56 +0200
+Message-ID: <1278181316.3232.45.camel@gagarin>
 Mime-Version: 1.0
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-07-02 at 20:41 +0200, Alexander Graf wrote:
-> The u64s are 64-bit aligned, should they always be?
-> 
-> That's obvious, isn't it? And the ABI only specifies u64s to be 32 bit
-> aligned, no? At least that's what ld and std specify.
+The Blue/White Apple PowerMac G3 and early G4's use a cmd64x compatible
+IDE disk controller.  E.g. lspci shows...
 
-No, the PowerPC ABI specifies u64's to be 64-bit aligned, even for
-32-bit binaries.
+01:01.0 IDE interface: Silicon Image, Inc. PCI0646 (rev 07)
 
-Ben.
+Unfortunately the default pmac32 configuration does not include this
+driver and so PowerMac G3's can't load a root filesystem.  This is an
+issue on a least Ubuntu since version 9.04, which uses the default
+config as a starting point.
 
-> > 
-> >> +The "ld" and "std" instructions are transormed to "lwz" and "stw"
-> instructions
-> >> +respectively on 32 bit systems with an added offset of 4 to
-> accomodate for big
-> >> +endianness.
-> > 
-> > Will this add never overflow?  Is there anything that checks for it?
-> 
-> It basically means that to access dar, we either do
-> 
-> ld  rX, DAR(0)
-> 
-> or
-> 
-> lwz rX, DAR+4(0)
-> 
-> 
-> > 
-> >> +mtmsrd      rX, 0           b       <special mtmsr section>
-> >> +mtmsr                       b       <special mtmsr section>
-> > 
-> > mtmsr rX
-> 
-> Nod. 
+Signed-off-by: Lawrence Rust <lawrence at softsystem.co.uk>
+
+diff -uprN a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig 
+--- a/arch/powerpc/configs/pmac32_defconfig	2010-05-16 23:17:36.000000000 +0200
++++ b/arch/powerpc/configs/pmac32_defconfig	2010-07-03 20:11:10.000000000 +0200
+@@ -738,7 +738,7 @@ CONFIG_BLK_DEV_IDEDMA_PCI=y
+ # CONFIG_BLK_DEV_AEC62XX is not set
+ # CONFIG_BLK_DEV_ALI15X3 is not set
+ # CONFIG_BLK_DEV_AMD74XX is not set
+-# CONFIG_BLK_DEV_CMD64X is not set
++CONFIG_BLK_DEV_CMD64X=y
+ # CONFIG_BLK_DEV_TRIFLEX is not set
+ # CONFIG_BLK_DEV_CS5520 is not set
+ # CONFIG_BLK_DEV_CS5530 is not set
