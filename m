@@ -1,23 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C20261007D3
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+	by ozlabs.org (Postfix) with ESMTP id 2850AB6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  4 Jul 2010 19:04:36 +1000 (EST)
+	Sun,  4 Jul 2010 19:10:32 +1000 (EST)
+Message-ID: <4C305001.7060301@redhat.com>
+Date: Sun, 04 Jul 2010 12:10:25 +0300
+From: Avi Kivity <avi@redhat.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
 Subject: Re: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1278196956.4200.390.camel@pasglop>
-Date: Sun, 4 Jul 2010 11:04:30 +0200
-Message-Id: <A038C08C-C69F-4E34-884A-A31AD4A9D9D5@suse.de>
 References: <1277980982-12433-1-git-send-email-agraf@suse.de>
 	<1277980982-12433-28-git-send-email-agraf@suse.de>
 	<EB2E1C5B-118B-481B-83D6-44CFAA2E55D3@kernel.crashing.org>
-	<A98DA9FC-DC42-452E-BD44-5F86D1707BF0@suse.de>
-	<1278196956.4200.390.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	<1278196909.4200.389.camel@pasglop>
+	<79514591-DCC1-4D9E-AFB7-AA985ADF3C0F@suse.de>
+In-Reply-To: <79514591-DCC1-4D9E-AFB7-AA985ADF3C0F@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: kvm-ppc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,18 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/04/2010 12:04 PM, Alexander Graf wrote:
+>
+> My biggest concern about putting things in the device-tree is that I was trying to keep things as separate as possible. Why does the firmware have to know that it's running in KVM?
 
-On 04.07.2010, at 00:42, Benjamin Herrenschmidt wrote:
+It doesn't need to know about kvm, it needs to know that a particular 
+hypercall protocol is available.
 
-> On Fri, 2010-07-02 at 20:41 +0200, Alexander Graf wrote:
->> The u64s are 64-bit aligned, should they always be?
->> 
->> That's obvious, isn't it? And the ABI only specifies u64s to be 32 bit
->> aligned, no? At least that's what ld and std specify.
-> 
-> No, the PowerPC ABI specifies u64's to be 64-bit aligned, even for
-> 32-bit binaries.
+> Why do I have to patch 3 projects (Linux, OpenBIOS, Qemu) when I could go with patching a single one (Linux)?
+>    
 
-I see :).
+That's not a valid argument.  You patch as many projects as it takes to 
+get it right (not that I have an opinion in this particular discussion).
 
-Alex
+At the very least you have to patch qemu for reasons described before 
+(backwards compatible live migration).
+
+-- 
+error compiling committee.c: too many arguments to function
