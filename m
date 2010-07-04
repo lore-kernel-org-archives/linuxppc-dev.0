@@ -1,21 +1,20 @@
-Return-Path: <avi@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 83A71B6EF3
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 335B4B6F15
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  4 Jul 2010 19:42:46 +1000 (EST)
-Message-ID: <4C305793.2050206@redhat.com>
-Date: Sun, 04 Jul 2010 12:42:43 +0300
-From: Avi Kivity <avi@redhat.com>
-MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 13/27] KVM: PPC: Magic Page Book3s support
-References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<1277980982-12433-14-git-send-email-agraf@suse.de>
-	<4C2E07AC.4010801@suse.de>
-In-Reply-To: <4C2E07AC.4010801@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+	Mon,  5 Jul 2010 08:26:17 +1000 (EST)
+Date: Mon, 5 Jul 2010 08:26:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Anthony G. Basile" <blueness@gentoo.org>
+Subject: Re: Regarding the issue of compiling >=2.6.31 on ppc with >=gcc-4.4
+Message-Id: <20100705082610.6221c57c.sfr@canb.auug.org.au>
+In-Reply-To: <4C31046C.9060406@gentoo.org>
+References: <4C31046C.9060406@gentoo.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__5_Jul_2010_08_26_10_+1000_wkcAl9wEW.9P6ak8"
+Cc: linuxppc-dev@lists.ozlabs.org, cjg@cruxppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2010 06:37 PM, Alexander Graf wrote:
-> Alexander Graf wrote:
->    
->> We need to override EA as well as PA lookups for the magic page. When the guest
->> tells us to project it, the magic page overrides any guest mappings.
->>
->> In order to reflect that, we need to hook into all the MMU layers of KVM to
->> force map the magic page if necessary.
->>
->> Signed-off-by: Alexander Graf<agraf@suse.de>
->>
->> v1 ->  v2:
->>
->>    - RMO ->  PAM
->> ---
->>   arch/powerpc/kvm/book3s.c             |    7 +++++++
->>   arch/powerpc/kvm/book3s_32_mmu.c      |   16 ++++++++++++++++
->>   arch/powerpc/kvm/book3s_32_mmu_host.c |   12 ++++++++++++
->>   arch/powerpc/kvm/book3s_64_mmu.c      |   30 +++++++++++++++++++++++++++++-
->>   arch/powerpc/kvm/book3s_64_mmu_host.c |   12 ++++++++++++
->>   5 files changed, 76 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
->> index 14db032..b22e608 100644
->> --- a/arch/powerpc/kvm/book3s.c
->> +++ b/arch/powerpc/kvm/book3s.c
->> @@ -554,6 +554,13 @@ mmio:
->>
->>   static int kvmppc_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn)
->>   {
->> +	ulong mp_pa = vcpu->arch.magic_page_pa;
->> +
->> +	if (unlikely(mp_pa)&&
->> +	    unlikely((mp_pa&  KVM_RMO)>>  PAGE_SHIFT == gfn)) {
->>
->>      
-> This should be KVM_PAM :(. Should I respin the whole thing or could
-> whoever commits this just make that trivial change?
+--Signature=_Mon__5_Jul_2010_08_26_10_+1000_wkcAl9wEW.9P6ak8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Anthony,
+
+On Sun, 04 Jul 2010 18:00:12 -0400 "Anthony G. Basile" <blueness@gentoo.org=
+> wrote:
 >
->    
+> Hi guys, I just hit this in trying to stabilize some kernels on gentoo
+> - -> http://bugs.gentoo.org/show_bug.cgi?id=3D326877.  Has there been any
+> upstream discussion about this?  I haven't seen anything on lkml.  I
+> thought I'd drop you a note and see if you guys had heard anything.
 
-A respin followed by a bisectability test (compile each revision as it 
-is applied), please.  Of course we need to resolve the detection issue 
-first.
+You should really ask questions like this on the
+linuxppc-dev@lists.ozlabs.org mailing list (cc'd).
 
--- 
-error compiling committee.c: too many arguments to function
+[For others: this is the 1024 byte buffer in the stack in
+chrp_event_scan()]
+
+Having said that: yes, the problem has been noticed, but no solution has
+been included yet (as far as I know).  There are other issues with
+building 64 bit PowerPC kernels with gcc >=3D 4.5 for which I have proposed
+a couple of patches.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__5_Jul_2010_08_26_10_+1000_wkcAl9wEW.9P6ak8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMMQqCAAoJEDMEi1NhKgbsviYH/1godRjcw6NgFuMaD/QtSrP+
+fkNRHHbtw7yghoHVNv6A206gI79OQRw3ji9CvMnGZ7ykZmx9CzMznTU9/0OyI8P9
+Za4ygKawKeljOlVBv2b9/dW91QfQ3XyD3iFVm1vK98/lMxOo8ZfnPSQlHXcaMeiW
+xYvWeIXCtsT7+rqdHjLdkV3Tg9S29gXrhRmvGm8mfnBFXqjqE9BViA4H7xZDJW+s
+ed9Kqv8Kl6QbKw+VbBsCSbmsE/ub2oOW6qwX0ycVqQ3MplLKwhprR2hmYE0oljA5
+QbFVjP9h08ILPXvFUsjsaOQhNRKKa/WX17A0UGCNuwfDbCfRkoejczOfR5uHBHw=
+=Q+x0
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__5_Jul_2010_08_26_10_+1000_wkcAl9wEW.9P6ak8--
