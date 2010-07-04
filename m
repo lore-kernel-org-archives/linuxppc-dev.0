@@ -1,32 +1,24 @@
-Return-Path: <lawrence@softsystem.co.uk>
-Received: from smtp21.services.sfr.fr (smtp21.services.sfr.fr [93.17.128.4])
-	by ozlabs.org (Postfix) with ESMTP id ACF00B6F1B
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id C8872B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  4 Jul 2010 04:22:03 +1000 (EST)
-Received: from smtp21.services.sfr.fr (msfrf2108 [10.18.25.22])
-	by msfrf2115.sfr.fr (SMTP Server) with ESMTP id AC62D70025D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Jul 2010 20:22:01 +0200 (CEST)
-Received: from filter.sfr.fr (localhost [127.0.0.1])
-	by msfrf2108.sfr.fr (SMTP Server) with ESMTP id 7FB5B7000085
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Jul 2010 20:21:58 +0200 (CEST)
-Received: from smtp-in.softsystem.co.uk (164.20.102-84.rev.gaoland.net
-	[84.102.20.164])
-	by msfrf2108.sfr.fr (SMTP Server) with SMTP id 33A71700008C
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  3 Jul 2010 20:21:58 +0200 (CEST)
-Received: FROM [192.168.1.62] (gagarin [192.168.1.62])
-	BY smtp-in.softsystem.co.uk [84.102.20.164] (SoftMail 1.0.5,
-	www.softsystem.co.uk) WITH ESMTP
-	FOR <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Jul 2010 20:21:57 +0200
-Subject: [PATCH] Add cmd64x IDE driver to default pmac32 config
-From: lawrence rust <lawrence@softsystem.co.uk>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 03 Jul 2010 20:21:56 +0200
-Message-ID: <1278181316.3232.45.camel@gagarin>
-Mime-Version: 1.0
+	Sun,  4 Jul 2010 19:02:23 +1000 (EST)
+Subject: Re: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20100702141003.75302a9a@schlenkerla.am.freescale.net>
+Date: Sun, 4 Jul 2010 11:02:16 +0200
+Message-Id: <02965CC4-D0E5-4689-8F39-0F9636B88B07@suse.de>
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
+	<1277980982-12433-28-git-send-email-agraf@suse.de>
+	<AANLkTiksUkrO8ryEiX3Yv-_2KGVE6r5RIT4YDvrmoDPL@mail.gmail.com>
+	<3085B58A-01A1-4B5C-A0E7-024DCFDFD4B2@suse.de>
+	<20100702141003.75302a9a@schlenkerla.am.freescale.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org,
+	Dan Hettena <danh@ghs.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Hollis Blanchard <hollis@penguinppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,27 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Blue/White Apple PowerMac G3 and early G4's use a cmd64x compatible
-IDE disk controller.  E.g. lspci shows...
 
-01:01.0 IDE interface: Silicon Image, Inc. PCI0646 (rev 07)
+On 02.07.2010, at 21:10, Scott Wood wrote:
 
-Unfortunately the default pmac32 configuration does not include this
-driver and so PowerMac G3's can't load a root filesystem.  This is an
-issue on a least Ubuntu since version 9.04, which uses the default
-config as a starting point.
+> On Fri, 2 Jul 2010 20:47:44 +0200
+> Alexander Graf <agraf@suse.de> wrote:
+>=20
+>>=20
+>> On 02.07.2010, at 19:59, Hollis Blanchard wrote:
+>>=20
+>>> [Resending...]
+>>>=20
+>>> Please reconcile this with
+>>> http://www.linux-kvm.org/page/PowerPC_Hypercall_ABI, which has been
+>>> discussed in the (admittedly closed) Power.org embedded hypervisor
+>>> working group. Bear in mind that other hypervisors are already
+>>> implementing the documented ABI, so if you have concerns, you should
+>>> probably raise them with that audience...
+>>=20
+>> We can not use sc with LV=3D1 because that would break the KVM in
+>> something else case which is KVM's strong point on PPC.
+>=20
+> The current proposal involves the hypervisor specifying the hcall =
+opcode
+> sequence in the device tree -- to allow either "sc 1" or "sc 0 plus
+> magic GPR" depending on whether you've got the hardware hypervisor
+> feature (hereafter HHV).
 
-Signed-off-by: Lawrence Rust <lawrence at softsystem.co.uk>
+Ah right, so you can still trap a hypercall with HHV. Makes sense.
 
-diff -uprN a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig 
---- a/arch/powerpc/configs/pmac32_defconfig	2010-05-16 23:17:36.000000000 +0200
-+++ b/arch/powerpc/configs/pmac32_defconfig	2010-07-03 20:11:10.000000000 +0200
-@@ -738,7 +738,7 @@ CONFIG_BLK_DEV_IDEDMA_PCI=y
- # CONFIG_BLK_DEV_AEC62XX is not set
- # CONFIG_BLK_DEV_ALI15X3 is not set
- # CONFIG_BLK_DEV_AMD74XX is not set
--# CONFIG_BLK_DEV_CMD64X is not set
-+CONFIG_BLK_DEV_CMD64X=y
- # CONFIG_BLK_DEV_TRIFLEX is not set
- # CONFIG_BLK_DEV_CS5520 is not set
- # CONFIG_BLK_DEV_CS5530 is not set
+>=20
+> With HHV, "sc 0 plus magic GPR" just doesn't work, since it won't trap
+> to the hypervisor.  "sc 1 plus magic GPR" might be problematic on some
+> non-HHV implementations, especially if you *do* have HHV but the
+> non-HHV hypervisor is running as an HHV guest.
+
+Yes, that's why I need sc 0 plus magic GPR in r0 and r3 - to accomodate =
+for all the non-HHV cases. And it would be clever to have a way to =
+expose the same functionality when we do use the HHV features.
+
+So, is that draft available anywhere? The wiki page Hollis pointed to is =
+very vague.
+
+
+Alex
