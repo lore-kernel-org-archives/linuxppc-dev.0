@@ -4,18 +4,14 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id BD465B6EF7
+	by ozlabs.org (Postfix) with ESMTPS id 259B4B722E
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  5 Jul 2010 17:00:12 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o656xx8C002893 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 5 Jul 2010 00:00:09 -0700 (MST)
+	Mon,  5 Jul 2010 17:00:18 +1000 (EST)
 From: Roy Zang <tie-fei.zang@freescale.com>
-To: linuxppc-release@linux.freescale.net
+To: linux-i2c@vger.kernel.org
 Subject: [PATCH] rtc: add support for DS3232 RTC
-Date: Mon,  5 Jul 2010 14:45:30 +0800
-Message-Id: <1278312330-19042-1-git-send-email-tie-fei.zang@freescale.com>
+Date: Mon,  5 Jul 2010 14:45:26 +0800
+Message-Id: <1278312326-19022-1-git-send-email-tie-fei.zang@freescale.com>
 Cc: Mingkai.hu@freescale.com, linuxppc-dev@lists.ozlabs.org,
 	srikanth.srinivasan@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
