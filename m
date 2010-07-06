@@ -1,23 +1,15 @@
-Return-Path: <martyn.welch@ge.com>
-Received: from exprod5og110.obsmtp.com (exprod5og110.obsmtp.com [64.18.0.20])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 05C52B6EFF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  5 Jul 2010 18:51:43 +1000 (EST)
-Message-ID: <4C319CEC.3030709@ge.com>
-Date: Mon, 05 Jul 2010 09:50:52 +0100
-From: Martyn Welch <martyn.welch@ge.com>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Tue, 6 Jul 2010 10:03:43 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: 2.6.34: arch/powerpc/sysdev/micropatch.c not compiling
+Message-ID: <20100706000343.GE23985@ozlabs.org>
+References: <4C318D87.1010306@c-s.fr>
 MIME-Version: 1.0
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH] rtc: add support for DS3232 RTC
-References: <1278312326-19022-1-git-send-email-tie-fei.zang@freescale.com>	<20100705092231.2780a1b8@hyperion.delvare>
-	<46EA46969DA12B47932A34F1DA67A147041870@zch01exm23.fsl.freescale.net>
-In-Reply-To: <46EA46969DA12B47932A34F1DA67A147041870@zch01exm23.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@lists.ozlabs.org,
-	Hu Mingkai-B21284 <B21284@freescale.com>, linux-i2c@vger.kernel.org,
-	Srinivasan Srikanth-R9AABP <R9AABP@freescale.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4C318D87.1010306@c-s.fr>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +19,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Zang Roy-R61911 wrote:
->  
->
->   
->> -----Original Message-----
->> From: Jean Delvare [mailto:khali@linux-fr.org] 
->> Sent: Monday, July 05, 2010 15:23 PM
->> To: Zang Roy-R61911
->> Cc: linux-i2c@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; 
->> Hu Mingkai-B21284; Srinivasan Srikanth-R9AABP
->> Subject: Re: [PATCH] rtc: add support for DS3232 RTC
->>
->> Hi Roy,
->>
->> On Mon,  5 Jul 2010 14:45:26 +0800, Roy Zang wrote:
->>     
->>> This patch adds the driver for RTC chip DS3232 via I2C bus
->>>
->>> Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
->>> Signed-off-by: Jingchang Lu <b22599@freescale.com>
->>> Signed-off-by: Srikanth Srinivasan 
->>>       
->> <srikanth.srinivasan@freescale.com>
->>     
->>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
->>> ---
->>> Tested on MPC8536DS and P4080DS board
->>>
->>>  drivers/rtc/Kconfig      |   11 +
->>>  drivers/rtc/Makefile     |    1 +
->>>  drivers/rtc/rtc-ds3232.c |  466 
->>>       
->> ++++++++++++++++++++++++++++++++++++++++++++++
->>     
->>>  3 files changed, 478 insertions(+), 0 deletions(-)
->>>  create mode 100644 drivers/rtc/rtc-ds3232.c
->>>       
->> You're sending this patch to the wrong list. Please read MAINTAINERS
->> again.
->>     
-> Does linux-i2c@vger.kernel.org is the correct mail list?
-> The rtc device is on the i2c bus.
-> Roy
->   
-I think the RTC mailing list is probably a little more appropriate...
+On Mon, Jul 05, 2010 at 09:45:11AM +0200, LEROY Christophe wrote:
+> When activating micropatch option, the kernel does not compile.
 
-Martyn
+powerpc problems should alos CC linuxppc-dev.
+ 
+> It looks like a spi_t is not defined anywhere.
+> 
+> CC arch/powerpc/sysdev/micropatch.o
+> arch/powerpc/sysdev/micropatch.c: In function ‘cpm_load_patch’:
+> arch/powerpc/sysdev/micropatch.c:629: erreur: expected ‘=’, ‘,’,
+> ‘;’, ‘asm’ or ‘__attribute__’ before ‘*’ token
+> arch/powerpc/sysdev/micropatch.c:629: erreur: ‘spp’ undeclared
+> (first use in this function)
+> arch/powerpc/sysdev/micropatch.c:629: erreur: (Each undeclared
+> identifier is reported only once
+> arch/powerpc/sysdev/micropatch.c:629: erreur: for each function it
+> appears in.)
+> cc1: warnings being treated as errors
+> arch/powerpc/sysdev/micropatch.c:630: erreur: ISO C89 interdit les
+> mélanges de déclarations et de code
+> arch/powerpc/sysdev/micropatch.c:671: erreur: ‘spi_t’ undeclared
+> (first use in this function)
+> arch/powerpc/sysdev/micropatch.c:671: erreur: expected expression
+> before ‘)’ token
+> make[1]: *** [arch/powerpc/sysdev/micropatch.o] Erreur 1
+> make: *** [arch/powerpc/sysdev] Erreur 2
 
--- 
-Martyn Welch (Principal Software Engineer)   |   Registered in England and
-GE Intelligent Platforms                     |   Wales (3828642) at 100
-T +44(0)127322748                            |   Barbirolli Square, Manchester,
-E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
+spi_t was removed in commit 644b2a680ccc51a9ec4d6beb12e9d47d2dee98e2
+(powerpc/cpm: Remove SPI defines and spi structs).  Anton, Kumar it looks like
+something along the lines of:
+
+diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/sysdev/micropatch.c
+index d8d6028..aa1785e 100644
+--- a/arch/powerpc/sysdev/micropatch.c
++++ b/arch/powerpc/sysdev/micropatch.c
+@@ -626,7 +626,6 @@ cpm_load_patch(cpm8xx_t     *cp)
+        volatile uint           *dp;            /* Dual-ported RAM. */
+        volatile cpm8xx_t       *commproc;
+        volatile iic_t          *iip;
+-       volatile spi_t          *spp;
+        volatile smc_uart_t     *smp;
+        int     i;
+ 
+@@ -668,8 +667,8 @@ cpm_load_patch(cpm8xx_t     *cp)
+        /* Put SPI above the IIC, also 32-byte aligned.
+        */
+        i = (RPBASE + sizeof(iic_t) + 31) & ~31;
+-       spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
+-       spp->spi_rpbase = i;
++       smp = (smc_uart_t *)&commproc->cp_dparam[PROFF_SPI];
++       smp->smc_rpbase = i;
+ 
+ # if defined(CONFIG_I2C_SPI_UCODE_PATCH)
+        commproc->cp_cpmcr1 = 0x802a;
+
+
+Would help?
+
+Yours Tony
