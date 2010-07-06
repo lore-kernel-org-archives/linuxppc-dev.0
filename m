@@ -1,15 +1,11 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Tue, 6 Jul 2010 10:03:43 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: 2.6.34: arch/powerpc/sysdev/micropatch.c not compiling
-Message-ID: <20100706000343.GE23985@ozlabs.org>
-References: <4C318D87.1010306@c-s.fr>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C32A4C0.3000600@ozlabs.org>
+Date: Tue, 06 Jul 2010 13:36:32 +1000
+From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4C318D87.1010306@c-s.fr>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] perf_event: Fix for power_pmu_disable()
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,62 +15,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 05, 2010 at 09:45:11AM +0200, LEROY Christophe wrote:
-> When activating micropatch option, the kernel does not compile.
+When power_pmu_disable() removes the given event from a particular index into
+cpuhw->event[], it shuffles down higher event[] entries.  But, this array is
+paired with cpuhw->events[] and cpuhw->flags[] so should shuffle them
+similarly.
 
-powerpc problems should alos CC linuxppc-dev.
- 
-> It looks like a spi_t is not defined anywhere.
-> 
-> CC arch/powerpc/sysdev/micropatch.o
-> arch/powerpc/sysdev/micropatch.c: In function ‘cpm_load_patch’:
-> arch/powerpc/sysdev/micropatch.c:629: erreur: expected ‘=’, ‘,’,
-> ‘;’, ‘asm’ or ‘__attribute__’ before ‘*’ token
-> arch/powerpc/sysdev/micropatch.c:629: erreur: ‘spp’ undeclared
-> (first use in this function)
-> arch/powerpc/sysdev/micropatch.c:629: erreur: (Each undeclared
-> identifier is reported only once
-> arch/powerpc/sysdev/micropatch.c:629: erreur: for each function it
-> appears in.)
-> cc1: warnings being treated as errors
-> arch/powerpc/sysdev/micropatch.c:630: erreur: ISO C89 interdit les
-> mélanges de déclarations et de code
-> arch/powerpc/sysdev/micropatch.c:671: erreur: ‘spi_t’ undeclared
-> (first use in this function)
-> arch/powerpc/sysdev/micropatch.c:671: erreur: expected expression
-> before ‘)’ token
-> make[1]: *** [arch/powerpc/sysdev/micropatch.o] Erreur 1
-> make: *** [arch/powerpc/sysdev] Erreur 2
+If these arrays get out of sync, code such as power_check_constraints() will
+fail.  This caused a bug where events were temporarily disabled and then failed
+to be re-enabled; subsequent code tried to write_pmc() with its (disabled) idx
+of 0, causing a message "oops trying to write PMC0".  This triggers this bug on
+POWER7, running a miss-heavy test:
 
-spi_t was removed in commit 644b2a680ccc51a9ec4d6beb12e9d47d2dee98e2
-(powerpc/cpm: Remove SPI defines and spi structs).  Anton, Kumar it looks like
-something along the lines of:
+  perf record -e L1-dcache-load-misses -e L1-dcache-store-misses ./misstest
 
-diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/sysdev/micropatch.c
-index d8d6028..aa1785e 100644
---- a/arch/powerpc/sysdev/micropatch.c
-+++ b/arch/powerpc/sysdev/micropatch.c
-@@ -626,7 +626,6 @@ cpm_load_patch(cpm8xx_t     *cp)
-        volatile uint           *dp;            /* Dual-ported RAM. */
-        volatile cpm8xx_t       *commproc;
-        volatile iic_t          *iip;
--       volatile spi_t          *spp;
-        volatile smc_uart_t     *smp;
-        int     i;
- 
-@@ -668,8 +667,8 @@ cpm_load_patch(cpm8xx_t     *cp)
-        /* Put SPI above the IIC, also 32-byte aligned.
-        */
-        i = (RPBASE + sizeof(iic_t) + 31) & ~31;
--       spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
--       spp->spi_rpbase = i;
-+       smp = (smc_uart_t *)&commproc->cp_dparam[PROFF_SPI];
-+       smp->smc_rpbase = i;
- 
- # if defined(CONFIG_I2C_SPI_UCODE_PATCH)
-        commproc->cp_cpmcr1 = 0x802a;
+Signed-off-by: Matt Evans <matt@ozlabs.org>
+---
+ arch/powerpc/kernel/perf_event.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-
-Would help?
-
-Yours Tony
+diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
+index 08460a2..3766398 100644
+--- a/arch/powerpc/kernel/perf_event.c
++++ b/arch/powerpc/kernel/perf_event.c
+@@ -838,8 +838,11 @@ static void power_pmu_disable(struct perf_event *event)
+ 	cpuhw = &__get_cpu_var(cpu_hw_events);
+ 	for (i = 0; i < cpuhw->n_events; ++i) {
+ 		if (event == cpuhw->event[i]) {
+-			while (++i < cpuhw->n_events)
++			while (++i < cpuhw->n_events) {
+ 				cpuhw->event[i-1] = cpuhw->event[i];
++				cpuhw->events[i-1] = cpuhw->events[i];
++				cpuhw->flags[i-1] = cpuhw->flags[i];
++			}
+ 			--cpuhw->n_events;
+ 			ppmu->disable_pmc(event->hw.idx - 1, cpuhw->mmcr);
+ 			if (event->hw.idx) {
+-- 
+1.6.3.3
