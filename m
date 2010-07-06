@@ -1,11 +1,23 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4C32A4C0.3000600@ozlabs.org>
-Date: Tue, 06 Jul 2010 13:36:32 +1000
-From: Matt Evans <matt@ozlabs.org>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] perf_event: Fix for power_pmu_disable()
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <b10812@lc1106.zin33.ap.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D3B4DB6F01
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  6 Jul 2010 14:24:40 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o664Oask024105 for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 5 Jul 2010 21:24:36 -0700 (MST)
+From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] [NAND FSL eLBC] Modified the NAND FSL elbc driver code to
+	correctly determine which chipselect is connected to NAND flash.
+Date: Tue,  6 Jul 2010 09:54:33 +0530
+Message-Id: <1278390273-32577-1-git-send-email-poonam.aggrwal@freescale.com>
+Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,40 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When power_pmu_disable() removes the given event from a particular index into
-cpuhw->event[], it shuffles down higher event[] entries.  But, this array is
-paired with cpuhw->events[] and cpuhw->flags[] so should shuffle them
-similarly.
+    The current code that determines which bank/chipselect is used for a
+    given NAND instance only worked for 32-bit addresses and assumed
+    a 1:1 mapping.  This breaks in 36-bit physical configs.
 
-If these arrays get out of sync, code such as power_check_constraints() will
-fail.  This caused a bug where events were temporarily disabled and then failed
-to be re-enabled; subsequent code tried to write_pmc() with its (disabled) idx
-of 0, causing a message "oops trying to write PMC0".  This triggers this bug on
-POWER7, running a miss-heavy test:
-
-  perf record -e L1-dcache-load-misses -e L1-dcache-store-misses ./misstest
-
-Signed-off-by: Matt Evans <matt@ozlabs.org>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Acked-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/perf_event.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Tested on P2020RDB and P1020RDB platforms.
+ drivers/mtd/nand/fsl_elbc_nand.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/perf_event.c b/arch/powerpc/kernel/perf_event.c
-index 08460a2..3766398 100644
---- a/arch/powerpc/kernel/perf_event.c
-+++ b/arch/powerpc/kernel/perf_event.c
-@@ -838,8 +838,11 @@ static void power_pmu_disable(struct perf_event *event)
- 	cpuhw = &__get_cpu_var(cpu_hw_events);
- 	for (i = 0; i < cpuhw->n_events; ++i) {
- 		if (event == cpuhw->event[i]) {
--			while (++i < cpuhw->n_events)
-+			while (++i < cpuhw->n_events) {
- 				cpuhw->event[i-1] = cpuhw->event[i];
-+				cpuhw->events[i-1] = cpuhw->events[i];
-+				cpuhw->flags[i-1] = cpuhw->flags[i];
-+			}
- 			--cpuhw->n_events;
- 			ppmu->disable_pmc(event->hw.idx - 1, cpuhw->mmcr);
- 			if (event->hw.idx) {
+diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
+index 09228c6..a9b0cfa 100644
+--- a/drivers/mtd/nand/fsl_elbc_nand.c
++++ b/drivers/mtd/nand/fsl_elbc_nand.c
+@@ -853,7 +853,7 @@ static int __devinit fsl_elbc_nand_probe(struct of_device *dev,
+ 		    (in_be32(&lbc->bank[bank].br) & BR_MSEL) == BR_MS_FCM &&
+ 		    (in_be32(&lbc->bank[bank].br) &
+ 		     in_be32(&lbc->bank[bank].or) & BR_BA)
+-		     == res.start)
++		     == (u32)res.start)
+ 			break;
+ 
+ 	if (bank >= MAX_BANKS) {
 -- 
-1.6.3.3
+1.5.6.5
