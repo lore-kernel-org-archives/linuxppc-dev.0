@@ -1,28 +1,19 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A8AF4B6EF2
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jul 2010 06:21:15 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o66KLCNi008650
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jul 2010 13:21:13 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o66KXoMV026112
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jul 2010 15:33:50 -0500 (CDT)
-Date: Tue, 6 Jul 2010 15:21:10 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: kernel boot stuck at udbg_putc_cpm()
-Message-ID: <20100706152110.4f25e96b@schlenkerla.am.freescale.net>
-In-Reply-To: <AANLkTikzt4mVGdYzRF2pgficbeinNydkr9E0YQjgJT1I@mail.gmail.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 3ECDCB6EEF
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jul 2010 09:08:28 +1000 (EST)
+Received: by iwn36 with SMTP id 36so6362595iwn.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jul 2010 16:08:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100706152110.4f25e96b@schlenkerla.am.freescale.net>
 References: <AANLkTikzt4mVGdYzRF2pgficbeinNydkr9E0YQjgJT1I@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20100706152110.4f25e96b@schlenkerla.am.freescale.net>
+Date: Tue, 6 Jul 2010 16:08:26 -0700
+Message-ID: <AANLkTikNgYy9aAUAe9wTsNKDg3cNokSTVJ_6aA6n3SI9@mail.gmail.com>
+Subject: Re: kernel boot stuck at udbg_putc_cpm()
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,42 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 5 Jul 2010 00:23:45 -0700
-Shawn Jin <shawnxjin@gmail.com> wrote:
+On Tue, Jul 6, 2010 at 1:21 PM, Scott Wood <scottwood@freescale.com> wrote:
+> Hmm... try 0xfa203bf8 (assuming your muram/data node has reg =3D <0
+> 0x1c00>). It looks like commit c2dd3529f35de9e2f51eba9bbf9969f5dc8382d4
+> changed the bootwrapper's cpm-serial driver to allocate from the end of
+> MURAM instead of the beginning, but updated
+> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR to match only on CPM2, not CPM1.
 
-> Hi,
-> 
-> I'm debugging the kernel (2.6.33.5) ported for a MPC870 board. The
-> changes are mostly based on the board adder875. The first thing I want
-> to test is the serial port. So I enabled CONFIG_PPC_EARLY_DEBUG and
-> CONFIG_PPC_EARLY_DEBUG_CPM, and changed
-> CONFIG_PPC_EARLY_DEBUG_CPM_ADDR to 0xfa202008. My IMMR is 0xfa200000.
-> However the kernel seems to stuck at udbg_putc_cpm(). The most
-> significant bit at 0xfa202008 never changed to zero.
+That was it. The value @0xfa203bf8 is 0x20000001. The kernel certainly
+moved forward till it stuck at the new place cpm_uart_initbd() as
+shown below. I cannot get more info from gdb now since my BDI2000's fw
+is too old to get MMU translation work for 2.6.x kernel. I'm waiting
+for the new firmware upgrade.
 
-Hmm... try 0xfa203bf8 (assuming your muram/data node has reg = <0
-0x1c00>). It looks like commit c2dd3529f35de9e2f51eba9bbf9969f5dc8382d4
-changed the bootwrapper's cpm-serial driver to allocate from the end of
-MURAM instead of the beginning, but updated
-CONFIG_PPC_EARLY_DEBUG_CPM_ADDR to match only on CPM2, not CPM1.
+(gdb) target remote bdi:2001
+Remote debugging using bdi:2001
+cpm_uart_initbd (pinfo=3D0x1032)
+    at /home/rayan/wti/code/wti-linux-2.6.33.5/arch/powerpc/include/asm/io.=
+h:161
+161     DEF_MMIO_OUT_BE(out_be32, 32, stw);
 
-> 2. When the execution was interrupted, it stopped at __delay(). And
-> the kernel seems not able to get out of this __delay() function.
 
-Could the kernel have crashed, and is waiting the 180 seconds to
-reboot?  Try doing a stack trace, and/or dumping the kernel's log
-buffer.
+> Could the kernel have crashed, and is waiting the 180 seconds to
+> reboot? =A0Try doing a stack trace, and/or dumping the kernel's log
+> buffer.
 
-> There was even no symbols for local variables. Why?
+It sounds like that. gdb showed there was only one level of function
+in the stack, which was udelay(). Strange? How to dump the kernel log
+buffer?
 
-Optimized away.
-
-> Next I set the breakpoint at probe_machine(). The gdb session is shown
-> below. Again a couple of frustrating observations.
-> 1. The kernel seems not able to get into the for loop. The breakpoint
-> set inside the for loop never got hit.
-
-Check the actual assembly code, see if the breakpoint is at an address
-that makes sense.
-
--Scott
+Thanks a lot for your continuous help!
+-Shawn.
