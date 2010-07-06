@@ -1,23 +1,10 @@
-Return-Path: <b10812@lc1106.zin33.ap.freescale.net>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id D3B4DB6F01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  6 Jul 2010 14:24:40 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o664Oask024105 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 5 Jul 2010 21:24:36 -0700 (MST)
-From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] [NAND FSL eLBC] Modified the NAND FSL elbc driver code to
-	correctly determine which chipselect is connected to NAND flash.
-Date: Tue,  6 Jul 2010 09:54:33 +0530
-Message-Id: <1278390273-32577-1-git-send-email-poonam.aggrwal@freescale.com>
-Cc: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Return-Path: <tony@ozlabs.org>
+To: <linuxppc-dev@lists.ozlabs.org>, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Message-Id: <f1cea220d59687dcea67ef98b4bf5e774efcded5.1278392169.git.tony@bakeyournoodle.com>
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH] powerpc: Fix bad include of stdint.h in ptrace.h when
+	-D__ASSEMBLY__
+Date: Tue,  6 Jul 2010 14:56:19 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +14,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    The current code that determines which bank/chipselect is used for a
-    given NAND instance only worked for 32-bit addresses and assumed
-    a 1:1 mapping.  This breaks in 36-bit physical configs.
+In commit 3162d92dfb79a0b5fc03380b8819fa5f870ebf1e (powerpc: Extended
+ptrace interface) we #included stdint.h even if __ASSEMBLY__ is defined.
+This broke building of libc with modern kernel headers.
 
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-Acked-by: Scott Wood <scottwood@freescale.com>
 ---
-Tested on P2020RDB and P1020RDB platforms.
- drivers/mtd/nand/fsl_elbc_nand.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+<snip>
+../sysdeps/generic/stdint.h: Assembler messages:
+../sysdeps/generic/stdint.h:37: Error: Unrecognized opcode: `typedef'
+../sysdeps/generic/stdint.h:38: Error: Unrecognized opcode: `typedef'
+../sysdeps/generic/stdint.h:39: Error: Unrecognized opcode: `typedef'
+<snip>
+---
 
-diff --git a/drivers/mtd/nand/fsl_elbc_nand.c b/drivers/mtd/nand/fsl_elbc_nand.c
-index 09228c6..a9b0cfa 100644
---- a/drivers/mtd/nand/fsl_elbc_nand.c
-+++ b/drivers/mtd/nand/fsl_elbc_nand.c
-@@ -853,7 +853,7 @@ static int __devinit fsl_elbc_nand_probe(struct of_device *dev,
- 		    (in_be32(&lbc->bank[bank].br) & BR_MSEL) == BR_MS_FCM &&
- 		    (in_be32(&lbc->bank[bank].br) &
- 		     in_be32(&lbc->bank[bank].or) & BR_BA)
--		     == res.start)
-+		     == (u32)res.start)
- 			break;
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/include/asm/ptrace.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 9e2d84c..441179a 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -27,7 +27,9 @@
+ #ifdef __KERNEL__
+ #include <linux/types.h>
+ #else
++#ifndef __ASSEMBLY__
+ #include <stdint.h>
++#endif /* __ASSEMBLY__ */
+ #endif
  
- 	if (bank >= MAX_BANKS) {
+ #ifndef __ASSEMBLY__
 -- 
-1.5.6.5
+1.6.6.1
