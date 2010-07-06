@@ -1,22 +1,15 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id AF18EB6EF3
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jul 2010 10:17:17 +1000 (EST)
-Received: by iwn36 with SMTP id 36so6414179iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 06 Jul 2010 17:17:16 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100706181811.4542df5a@schlenkerla.am.freescale.net>
-References: <AANLkTikzt4mVGdYzRF2pgficbeinNydkr9E0YQjgJT1I@mail.gmail.com>
-	<20100706152110.4f25e96b@schlenkerla.am.freescale.net>
-	<AANLkTikNgYy9aAUAe9wTsNKDg3cNokSTVJ_6aA6n3SI9@mail.gmail.com>
-	<20100706181811.4542df5a@schlenkerla.am.freescale.net>
-Date: Tue, 6 Jul 2010 17:17:16 -0700
-Message-ID: <AANLkTimUxcsTMXNPOFfJxybp8u7Wv7Mt_nhW1EE01RqG@mail.gmail.com>
-Subject: Re: kernel boot stuck at udbg_putc_cpm()
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <cmetcalf@tilera.com>
+Received: from king.tilera.com (king.tilera.com [72.1.168.226])
+	by ozlabs.org (Postfix) with ESMTP id AFFD8B6EEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jul 2010 05:00:40 +1000 (EST)
+Message-Id: <201007061848.o66ImVPc020837@farm-0002.internal.tilera.com>
+From: Chris Metcalf <cmetcalf@tilera.com>
+Date: Tue, 6 Jul 2010 14:03:16 -0400
+Subject: [PATCH] hvc_console: use "*_console" nomenclature to avoid modpost
+	warning.
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: Anton Blanchard <anton@au.ibm.com>, Paul Mackerras <paulus@au.ibm.com>,
+	Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,85 +19,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> That was it. The value @0xfa203bf8 is 0x20000001. The kernel certainly
->> moved forward till it stuck at the new place cpm_uart_initbd() as
->> shown below.
->
-> Do you get any output from the serial port? =A0I'd have expected
-> something by the time you get to cpm_uart_initbd() -- in fact, the
-> early output will have been shut down by then to make room for the real
-> serial driver.
+The use of "hvc_con_driver" as the name for a file-static "struct
+console" with a ".setup" field pointing to an __init function causes
+a modpost warning, since a non-initdata structure points to init code.
+Using "hvc_console" as the name triggers the hacky "*_console"
+workaround in modpost to silence the warning, and is the same thing
+that most of the other console drivers already do.
 
-Nothing new on the serial port. :-( Is the interrupt enabled during
-the early debug stage? I'm not sure if the interrupt controller is set
-properly in DTS. The same MPC875 settings are copied from the
-adder875-uboot.dts.
+I made the same change in hvsi.c since I happened to notice it was
+likely to suffer from the same problem.
 
-    Memory <- <0x0 0x8000000> (128MB)
-    ENET0: local-mac-address <- 00:09:9b:01:58:64
-    CPU clock-frequency <- 0x7270e00 (120MHz)
-    CPU timebase-frequency <- 0x393870 (4MHz)
-    CPU bus-frequency <- 0x3938700 (60MHz)
+Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+---
+ drivers/char/hvc_console.c |   12 ++++++------
+ drivers/char/hvsi.c        |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-    zImage starting: loaded at 0x00400000 (sp: 0x07d1ccd0)
-    Allocating 0x186bdd bytes for kernel ...
-    gunzipping (0x00000000 <- 0x0040c000:0x00591c30)...done 0x173b18 bytes
-
-    Linux/PowerPC load: root=3D/dev/ram
-    Finalizing device tree... flat tree at 0x59e300
-
-Here is the kernel log buf dump. Anything suspicious?
-
-<6>Using My MPC870 machine description
-<5>Linux version 2.6.33.5 (shawn@ubuntu) (gcc version 4.3.3 (GCC) )
-#10 Mon Jul 5 22:58:30 PDT 2010
-<7>Top of RAM: 0x8000000, Total RAM: 0x8000000
-<7>Memory hole size: 0MB
-<4>Zone PFN ranges:
-<4>  DMA      0x00000000 -> 0x00008000
-<4>  Normal   0x00008000 -> 0x00008000
-<4>Movable zone start PFN for each node
-<4>early_node_map[1] active PFN ranges
-<4>    0: 0x00000000 -> 0x00008000
-<7>On node 0 totalpages: 32768
-<7>free_area_init_node: node 0, pgdat c016c5b0, node_mem_map c0189000
-<7>  DMA zone: 256 pages used for memmap
-<7>  DMA zone: 0 pages reserved
-<7>  DMA zone: 32512 pages, LIFO batch:7
-<6>MMU: Allocated 72 bytes of context maps for 16 contexts
-<4>Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 325=
-12
-<5>Kernel command line: root=3D/dev/ram
-<6>PID hash table entries: 512 (order: -1, 2048 bytes)
-<6>Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-<6>Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
-<6>Memory: 128096k/131072k available (1420k kernel code, 2836k
-reserved, 68k data, 74k bss, 76k init)
-<6>Kernel virtual memory layout:
-<6>  * 0xfffdf000..0xfffff000  : fixmap
-<6>  * 0xfde00000..0xfe000000  : consistent mem
-<6>  * 0xfddfa000..0xfde00000  : early ioremap
-<6>  * 0xc9000000..0xfddfa000  : vmalloc & ioremap
-<6>SLUB: Genslabs=3D12, HWalign=3D16, Order=3D0-3, MinObjects=3D0, CPUs=3D1=
-, Nodes=3D1
-<6>Hierarchical RCU implementation.
-<6>NR_IRQS:512 nr_irqs:512
-<7>  alloc irq_desc for 16 on node 0
-<7>  alloc kstat_irqs on node 0
-<7>irq: irq 5 on host /soc@fa200000/interrupt-controller@0 mapped to
-virtual irq 16
-<7>  alloc irq_desc for 17 on node 0
-<7>  alloc kstat_irqs on node 0
-<7>irq: irq 0 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
-mapped to virtual irq 17
-<7>time_init: decrementer frequency =3D 3.750000 MHz
-<7>time_init: processor frequency   =3D 120.000000 MHz
-<6>clocksource: timebase mult[42aaaaab] shift[22] registered
-<7>clockevent: decrementer mult[f5c28f] shift[32] cpu[0]
-<7>  alloc irq_desc for 18 on node 0
-<7>  alloc kstat_irqs on node 0
-<7>irq: irq 4 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
-mapped to virtual irq 18
-
-Thanks,
--Shawn.
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 35cca4c..fa27d16 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -194,7 +194,7 @@ static int __init hvc_console_setup(struct console *co, char *options)
+ 	return 0;
+ }
+ 
+-static struct console hvc_con_driver = {
++static struct console hvc_console = {
+ 	.name		= "hvc",
+ 	.write		= hvc_console_print,
+ 	.device		= hvc_console_device,
+@@ -220,7 +220,7 @@ static struct console hvc_con_driver = {
+  */
+ static int __init hvc_console_init(void)
+ {
+-	register_console(&hvc_con_driver);
++	register_console(&hvc_console);
+ 	return 0;
+ }
+ console_initcall(hvc_console_init);
+@@ -276,8 +276,8 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
+ 	 * now (setup won't fail at this point).  It's ok to just
+ 	 * call register again if previously .setup failed.
+ 	 */
+-	if (index == hvc_con_driver.index)
+-		register_console(&hvc_con_driver);
++	if (index == hvc_console.index)
++		register_console(&hvc_console);
+ 
+ 	return 0;
+ }
+@@ -641,7 +641,7 @@ int hvc_poll(struct hvc_struct *hp)
+ 		}
+ 		for (i = 0; i < n; ++i) {
+ #ifdef CONFIG_MAGIC_SYSRQ
+-			if (hp->index == hvc_con_driver.index) {
++			if (hp->index == hvc_console.index) {
+ 				/* Handle the SysRq Hack */
+ 				/* XXX should support a sequence */
+ 				if (buf[i] == '\x0f') {	/* ^O */
+@@ -909,7 +909,7 @@ static void __exit hvc_exit(void)
+ 		tty_unregister_driver(hvc_driver);
+ 		/* return tty_struct instances allocated in hvc_init(). */
+ 		put_tty_driver(hvc_driver);
+-		unregister_console(&hvc_con_driver);
++		unregister_console(&hvc_console);
+ 	}
+ }
+ module_exit(hvc_exit);
+diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
+index d4b14ff..1f4b6de 100644
+--- a/drivers/char/hvsi.c
++++ b/drivers/char/hvsi.c
+@@ -1255,7 +1255,7 @@ static int __init hvsi_console_setup(struct console *console, char *options)
+ 	return 0;
+ }
+ 
+-static struct console hvsi_con_driver = {
++static struct console hvsi_console = {
+ 	.name		= "hvsi",
+ 	.write		= hvsi_console_print,
+ 	.device		= hvsi_console_device,
+@@ -1308,7 +1308,7 @@ static int __init hvsi_console_init(void)
+ 	}
+ 
+ 	if (hvsi_count)
+-		register_console(&hvsi_con_driver);
++		register_console(&hvsi_console);
+ 	return 0;
+ }
+ console_initcall(hvsi_console_init);
+-- 
+1.6.5.2
