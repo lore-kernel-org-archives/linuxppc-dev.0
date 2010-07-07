@@ -1,15 +1,11 @@
-Return-Path: <cmetcalf@tilera.com>
-Received: from king.tilera.com (king.tilera.com [72.1.168.226])
-	by ozlabs.org (Postfix) with ESMTP id AFFD8B6EEE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jul 2010 05:00:40 +1000 (EST)
-Message-Id: <201007061848.o66ImVPc020837@farm-0002.internal.tilera.com>
-From: Chris Metcalf <cmetcalf@tilera.com>
-Date: Tue, 6 Jul 2010 14:03:16 -0400
-Subject: [PATCH] hvc_console: use "*_console" nomenclature to avoid modpost
-	warning.
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: Anton Blanchard <anton@au.ibm.com>, Paul Mackerras <paulus@au.ibm.com>,
-	Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C343D68.5090909@ozlabs.org>
+Date: Wed, 07 Jul 2010 18:40:08 +1000
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: miltonm@us.ibm.com, linuxppc-dev@ozlabs.org
+Subject: [PATCH] kexec/ppc64: Switch to a static PACA on the way out
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,94 +15,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The use of "hvc_con_driver" as the name for a file-static "struct
-console" with a ".setup" field pointing to an __init function causes
-a modpost warning, since a non-initdata structure points to init code.
-Using "hvc_console" as the name triggers the hacky "*_console"
-workaround in modpost to silence the warning, and is the same thing
-that most of the other console drivers already do.
+With dynamic PACAs, the kexecing CPU's PACA won't lie within the kernel
+static data and there is a chance that something may stomp it when preparing
+to kexec.  This patch switches this final CPU to a static PACA just before
+we pull the switch.
 
-I made the same change in hvsi.c since I happened to notice it was
-likely to suffer from the same problem.
-
-Signed-off-by: Chris Metcalf <cmetcalf@tilera.com>
+Signed-off-by: Matt Evans <matt@ozlabs.org>
 ---
- drivers/char/hvc_console.c |   12 ++++++------
- drivers/char/hvsi.c        |    4 ++--
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/machine_kexec_64.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 35cca4c..fa27d16 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -194,7 +194,7 @@ static int __init hvc_console_setup(struct console *co, char *options)
- 	return 0;
- }
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 040bd1d..1348e84 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -253,6 +253,12 @@ static void kexec_prepare_cpus(void)
+ static union thread_union kexec_stack __init_task_data =
+ 	{ };
  
--static struct console hvc_con_driver = {
-+static struct console hvc_console = {
- 	.name		= "hvc",
- 	.write		= hvc_console_print,
- 	.device		= hvc_console_device,
-@@ -220,7 +220,7 @@ static struct console hvc_con_driver = {
-  */
- static int __init hvc_console_init(void)
- {
--	register_console(&hvc_con_driver);
-+	register_console(&hvc_console);
- 	return 0;
- }
- console_initcall(hvc_console_init);
-@@ -276,8 +276,8 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
- 	 * now (setup won't fail at this point).  It's ok to just
- 	 * call register again if previously .setup failed.
++/*
++ * For similar reasons to the stack above, the kexecing CPU needs to be on a
++ * static PACA; we switch to kexec_paca.
++ */
++struct paca_struct kexec_paca;
++
+ /* Our assembly helper, in kexec_stub.S */
+ extern NORET_TYPE void kexec_sequence(void *newstack, unsigned long start,
+ 					void *image, void *control,
+@@ -280,6 +286,19 @@ void default_machine_kexec(struct kimage *image)
+ 	kexec_stack.thread_info.task = current_thread_info()->task;
+ 	kexec_stack.thread_info.flags = 0;
+ 
++	/* We need a static PACA, too; copy this CPU's PACA over and switch to
++	 * it.  Also make the SLB cache look invalid as it may have been touched
++	 * by an IRQ before we switch to it.
++	 */
++	memcpy(&kexec_paca, get_paca(), sizeof(struct paca_struct));
++	kexec_paca.slb_cache_ptr = SLB_CACHE_ENTRIES+1;
++	/* 'local_paca' boils down to GPR13 */
++	local_paca = &kexec_paca;
++
++	/* XXX: If anyone does 'dynamic lppacas' this will also need to be
++	 * switched to a static version!
++	 */
++
+ 	/* Some things are best done in assembly.  Finding globals with
+ 	 * a toc is easier in C, so pass in what we can.
  	 */
--	if (index == hvc_con_driver.index)
--		register_console(&hvc_con_driver);
-+	if (index == hvc_console.index)
-+		register_console(&hvc_console);
- 
- 	return 0;
- }
-@@ -641,7 +641,7 @@ int hvc_poll(struct hvc_struct *hp)
- 		}
- 		for (i = 0; i < n; ++i) {
- #ifdef CONFIG_MAGIC_SYSRQ
--			if (hp->index == hvc_con_driver.index) {
-+			if (hp->index == hvc_console.index) {
- 				/* Handle the SysRq Hack */
- 				/* XXX should support a sequence */
- 				if (buf[i] == '\x0f') {	/* ^O */
-@@ -909,7 +909,7 @@ static void __exit hvc_exit(void)
- 		tty_unregister_driver(hvc_driver);
- 		/* return tty_struct instances allocated in hvc_init(). */
- 		put_tty_driver(hvc_driver);
--		unregister_console(&hvc_con_driver);
-+		unregister_console(&hvc_console);
- 	}
- }
- module_exit(hvc_exit);
-diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
-index d4b14ff..1f4b6de 100644
---- a/drivers/char/hvsi.c
-+++ b/drivers/char/hvsi.c
-@@ -1255,7 +1255,7 @@ static int __init hvsi_console_setup(struct console *console, char *options)
- 	return 0;
- }
- 
--static struct console hvsi_con_driver = {
-+static struct console hvsi_console = {
- 	.name		= "hvsi",
- 	.write		= hvsi_console_print,
- 	.device		= hvsi_console_device,
-@@ -1308,7 +1308,7 @@ static int __init hvsi_console_init(void)
- 	}
- 
- 	if (hvsi_count)
--		register_console(&hvsi_con_driver);
-+		register_console(&hvsi_console);
- 	return 0;
- }
- console_initcall(hvsi_console_init);
 -- 
-1.6.5.2
+1.6.3.3
