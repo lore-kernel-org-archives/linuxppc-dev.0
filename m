@@ -1,28 +1,17 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A6C8DB6F0E
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 08:31:08 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o67MK5m5002779
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jul 2010 16:20:05 -0600
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
-	id o67MV4Mv134320
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jul 2010 16:31:04 -0600
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o67MV2Ks009285
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Jul 2010 16:31:04 -0600
-Message-Id: <201007072231.o67MV2Jl009260@d03av05.boulder.ibm.com>
-Subject: [PATCHv2 2/2] powerpc: Partition hibernation support
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Wed, 07 Jul 2010 17:31:02 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <jk@ozlabs.org>
+Subject: Re: [PATCH 06/18] spufs: use llseek in all file operations
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <1278538820-1392-7-git-send-email-arnd@arndb.de>
+References: <1278538820-1392-1-git-send-email-arnd@arndb.de>
+	<1278538820-1392-7-git-send-email-arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 08 Jul 2010 09:15:28 +0800
+Message-ID: <1278551728.28333.55.camel@pororo.lan>
+Mime-Version: 1.0
+Cc: John Kacur <jkacur@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,285 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Arnd,
 
-Enables support for HMC initiated partition hibernation. This is
-a firmware assisted hibernation, since the firmware handles writing
-the memory out to disk, along with other partition information,
-so we just mimic suspend to ram.
+> The default for llseek is changing, so we need
+> explicit operations everywhere.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+Looks good, but:
 
- arch/powerpc/Kconfig                         |    2 
- arch/powerpc/include/asm/machdep.h           |    1 
- arch/powerpc/platforms/pseries/Makefile      |    4 
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    3 
- arch/powerpc/platforms/pseries/suspend.c     |  214 +++++++++++++++++++++++++++
- 5 files changed, 223 insertions(+), 1 deletion(-)
+> @@ -2151,7 +2166,7 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+>  static const struct file_operations spufs_ibox_info_fops = {
+>  	.open = spufs_info_open,
+>  	.read = spufs_ibox_info_read,
+> -	.llseek  = generic_file_llseek,
+> +	.llseek = no_llseek,
+>  };
+> 
+>  static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+> @@ -2194,7 +2209,7 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+>  static const struct file_operations spufs_wbox_info_fops = {
+>  	.open = spufs_info_open,
+>  	.read = spufs_wbox_info_read,
+> -	.llseek  = generic_file_llseek,
+> +	.llseek = no_llseek,
+>  };
+> 
 
-diff -puN /dev/null arch/powerpc/platforms/pseries/suspend.c
---- /dev/null	2009-12-15 17:58:07.000000000 -0600
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/suspend.c	2010-06-16 13:49:30.000000000 -0500
-@@ -0,0 +1,214 @@
-+/*
-+  * Copyright (C) 2010 Brian King IBM Corporation
-+  *
-+  * This program is free software; you can redistribute it and/or modify
-+  * it under the terms of the GNU General Public License as published by
-+  * the Free Software Foundation; either version 2 of the License, or
-+  * (at your option) any later version.
-+  *
-+  * This program is distributed in the hope that it will be useful,
-+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+  * GNU General Public License for more details.
-+  *
-+  * You should have received a copy of the GNU General Public License
-+  * along with this program; if not, write to the Free Software
-+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+  */
-+
-+#include <linux/delay.h>
-+#include <linux/suspend.h>
-+#include <asm/firmware.h>
-+#include <asm/hvcall.h>
-+#include <asm/machdep.h>
-+#include <asm/mmu.h>
-+#include <asm/rtas.h>
-+
-+static u64 stream_id;
-+static struct sys_device suspend_sysdev;
-+static DECLARE_COMPLETION(suspend_work);
-+static struct rtas_suspend_me_data suspend_data;
-+static atomic_t suspending;
-+
-+/**
-+ * pseries_suspend_begin - First phase of hibernation
-+ *
-+ * Check to ensure we are in a valid state to hibernate
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_begin(suspend_state_t state)
-+{
-+	long vasi_state, rc;
-+	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+	/* Make sure the state is valid */
-+	rc = plpar_hcall(H_VASI_STATE, retbuf, stream_id);
-+
-+	vasi_state = retbuf[0];
-+
-+	if (rc) {
-+		pr_err("pseries_suspend_begin: vasi_state returned %ld\n",rc);
-+		return rc;
-+	} else if (vasi_state == H_VASI_ENABLED) {
-+		return -EAGAIN;
-+	} else if (vasi_state != H_VASI_SUSPENDING) {
-+		pr_err("pseries_suspend_begin: vasi_state returned state %ld\n",
-+		       vasi_state);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_cpu - Suspend a single CPU
-+ *
-+ * Makes the H_JOIN call to suspend the CPU
-+ *
-+ **/
-+static int pseries_suspend_cpu(void)
-+{
-+	if (atomic_read(&suspending))
-+		return rtas_suspend_cpu(&suspend_data);
-+	return 0;
-+}
-+
-+/**
-+ * pseries_suspend_enter - Final phase of hibernation
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_enter(suspend_state_t state)
-+{
-+	int rc = rtas_suspend_last_cpu(&suspend_data);
-+
-+	atomic_set(&suspending, 0);
-+	atomic_set(&suspend_data.done, 1);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_prepare_late - Prepare to suspend all other CPUs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_prepare_late(void)
-+{
-+	atomic_set(&suspending, 1);
-+	atomic_set(&suspend_data.working, 0);
-+	atomic_set(&suspend_data.done, 0);
-+	atomic_set(&suspend_data.error, 0);
-+	suspend_data.complete = &suspend_work;
-+	INIT_COMPLETION(suspend_work);
-+	return 0;
-+}
-+
-+/**
-+ * store_hibernate - Initiate partition hibernation
-+ * @classdev:	sysdev class struct
-+ * @attr:		class device attribute struct
-+ * @buf:		buffer
-+ * @count:		buffer size
-+ *
-+ * Write the stream ID received from the HMC to this file
-+ * to trigger hibernating the partition
-+ *
-+ * Return value:
-+ * 	number of bytes printed to buffer / other on failure
-+ **/
-+static ssize_t store_hibernate(struct sysdev_class *classdev,
-+			       struct sysdev_class_attribute *attr,
-+			       const char *buf, size_t count)
-+{
-+	int rc;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	stream_id = simple_strtoul(buf, NULL, 16);
-+
-+	do {
-+		rc = pseries_suspend_begin(PM_SUSPEND_MEM);
-+		if (rc == -EAGAIN)
-+			ssleep(1);
-+	} while (rc == -EAGAIN);
-+
-+	if (!rc)
-+		rc = pm_suspend(PM_SUSPEND_MEM);
-+
-+	stream_id = 0;
-+
-+	if (!rc)
-+		rc = count;
-+	return rc;
-+}
-+
-+static SYSDEV_CLASS_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
-+
-+static struct sysdev_class suspend_sysdev_class = {
-+	.name = "power",
-+};
-+
-+static struct platform_suspend_ops pseries_suspend_ops = {
-+	.valid		= suspend_valid_only_mem,
-+	.begin		= pseries_suspend_begin,
-+	.prepare_late	= pseries_prepare_late,
-+	.enter		= pseries_suspend_enter,
-+};
-+
-+/**
-+ * pseries_suspend_sysfs_register - Register with sysfs
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int pseries_suspend_sysfs_register(struct sys_device *sysdev)
-+{
-+	int rc;
-+
-+	if ((rc = sysdev_class_register(&suspend_sysdev_class)))
-+		return rc;
-+
-+	sysdev->id = 0;
-+	sysdev->cls = &suspend_sysdev_class;
-+
-+	if ((rc = sysdev_class_create_file(&suspend_sysdev_class, &attr_hibernate)))
-+		goto class_unregister;
-+
-+	return 0;
-+
-+class_unregister:
-+	sysdev_class_unregister(&suspend_sysdev_class);
-+	return rc;
-+}
-+
-+/**
-+ * pseries_suspend_init - initcall for pSeries suspend
-+ *
-+ * Return value:
-+ * 	0 on success / other on failure
-+ **/
-+static int __init pseries_suspend_init(void)
-+{
-+	int rc;
-+
-+	if (!machine_is(pseries) || !firmware_has_feature(FW_FEATURE_LPAR))
-+		return 0;
-+
-+	suspend_data.token = rtas_token("ibm,suspend-me");
-+	if (suspend_data.token == RTAS_UNKNOWN_SERVICE)
-+		return 0;
-+
-+	if ((rc = pseries_suspend_sysfs_register(&suspend_sysdev)))
-+		return rc;
-+
-+	ppc_md.suspend_disable_cpu = pseries_suspend_cpu;
-+	suspend_set_ops(&pseries_suspend_ops);
-+	return 0;
-+}
-+
-+__initcall(pseries_suspend_init);
-diff -puN arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation arch/powerpc/Kconfig
---- linux-2.6/arch/powerpc/Kconfig~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/Kconfig	2010-06-16 13:49:30.000000000 -0500
-@@ -218,7 +218,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   PPC_85xx || PPC_86xx
-+		   PPC_85xx || PPC_86xx || PPC_PSERIES
- 
- config PPC_DCR_NATIVE
- 	bool
-diff -puN arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/Makefile
---- linux-2.6/arch/powerpc/platforms/pseries/Makefile~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/Makefile	2010-06-16 13:49:30.000000000 -0500
-@@ -26,3 +26,7 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+
-+ifeq ($(CONFIG_PPC_PSERIES),y)
-+obj-$(CONFIG_SUSPEND)		+= suspend.o
-+endif
-diff -puN arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation arch/powerpc/include/asm/machdep.h
---- linux-2.6/arch/powerpc/include/asm/machdep.h~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/include/asm/machdep.h	2010-06-16 13:49:30.000000000 -0500
-@@ -266,6 +266,7 @@ struct machdep_calls {
- 	void (*suspend_disable_irqs)(void);
- 	void (*suspend_enable_irqs)(void);
- #endif
-+	int (*suspend_disable_cpu)(void);
- 
- #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
- 	ssize_t (*cpu_probe)(const char *, size_t);
-diff -puN arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation arch/powerpc/platforms/pseries/hotplug-cpu.c
---- linux-2.6/arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_allarch_pseries_hibernation	2010-06-16 13:49:30.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-06-16 13:49:30.000000000 -0500
-@@ -116,6 +116,9 @@ static void pseries_mach_cpu_die(void)
- 
- 	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
- 		set_cpu_current_state(cpu, CPU_STATE_INACTIVE);
-+		if (ppc_md.suspend_disable_cpu)
-+			ppc_md.suspend_disable_cpu();
-+
- 		cede_latency_hint = 2;
- 
- 		get_lppaca()->idle = 1;
-_
+Why the change in behaviour for the mbox info files?
+
+Cheers,
+
+
+Jeremy
