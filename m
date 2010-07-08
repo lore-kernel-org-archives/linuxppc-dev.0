@@ -1,19 +1,24 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH v2] spufs: use llseek in all file operations
-Date: Thu, 8 Jul 2010 15:29:44 +0200
-References: <1278538820-1392-1-git-send-email-arnd@arndb.de>
-	<1278551728.28333.55.camel@pororo.lan>
-	<201007081502.37133.arnd@arndb.de>
-In-Reply-To: <201007081502.37133.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201007081529.44274.arnd@arndb.de>
-Cc: John Kacur <jkacur@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Christoph Hellwig <hch@lst.de>
+Return-Path: <msm@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 19FFAB6EEA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Jul 2010 00:28:05 +1000 (EST)
+Subject: Re: [1/2] powerpc/crashdump: Fix issues with kexec and 36bit
+	physical addr
+From: Matthew McClintock <msm@freescale.com>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <20100708-mitltonm-msm-reply@mdm.bga.com>
+References: <1278535881-6463-1-git-send-email-msm@freescale.com>
+	<20100708-mitltonm-msm-reply@mdm.bga.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 08 Jul 2010 09:27:15 -0500
+Message-ID: <1278599235.9343.7.camel@localhost>
+Mime-Version: 1.0
+Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,161 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The default for llseek is changing, so we need
-explicit operations everywhere.
+On Thu, 2010-07-08 at 04:07 -0500, Milton Miller wrote:
+> On Wed, 07 Jul 2010 around 10:51:20 -0000 Matthew McClintock wrote:
+> > 
+> > Fix sizes of variables so correct values are exported via /proc.
+> > Cast variable in comparison to avoid compiler error.
+> > 
+> > Signed-off-by: Matthew McClintock <msm@freescale.com>
+> > 
+> >  
+> > -	csize = min(csize, PAGE_SIZE);
+> > +	csize = min(csize, (size_t)PAGE_SIZE);
+> 
+> no use min_t
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Jeremy Kerr <jk@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
----
-Same as previous version, but no longer breaking the existing llseek
-operation in spufs_*box_info_fops. Pushed out to my bkl/llseek branch.
+Ok
 
-diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index 1a40da9..02f7b11 100644
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -154,6 +154,7 @@ static const struct file_operations __fops = {				\
- 	.release = spufs_attr_release,					\
- 	.read	 = spufs_attr_read,					\
- 	.write	 = spufs_attr_write,					\
-+	.llseek  = generic_file_llseek,					\
- };
- 
- 
-@@ -521,6 +522,7 @@ static const struct file_operations spufs_cntl_fops = {
- 	.release = spufs_cntl_release,
- 	.read = simple_attr_read,
- 	.write = simple_attr_write,
-+	.llseek	= generic_file_llseek,
- 	.mmap = spufs_cntl_mmap,
- };
- 
-@@ -714,6 +716,7 @@ static ssize_t spufs_mbox_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_mbox_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_mbox_read,
-+	.llseek	= no_llseek,
- };
- 
- static ssize_t spufs_mbox_stat_read(struct file *file, char __user *buf,
-@@ -743,6 +746,7 @@ static ssize_t spufs_mbox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_mbox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_mbox_stat_read,
-+	.llseek = no_llseek,
- };
- 
- /* low-level ibox access function */
-@@ -863,6 +867,7 @@ static const struct file_operations spufs_ibox_fops = {
- 	.read	= spufs_ibox_read,
- 	.poll	= spufs_ibox_poll,
- 	.fasync	= spufs_ibox_fasync,
-+	.llseek = no_llseek,
- };
- 
- static ssize_t spufs_ibox_stat_read(struct file *file, char __user *buf,
-@@ -890,6 +895,7 @@ static ssize_t spufs_ibox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_ibox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_ibox_stat_read,
-+	.llseek = no_llseek,
- };
- 
- /* low-level mailbox write */
-@@ -1011,6 +1017,7 @@ static const struct file_operations spufs_wbox_fops = {
- 	.write	= spufs_wbox_write,
- 	.poll	= spufs_wbox_poll,
- 	.fasync	= spufs_wbox_fasync,
-+	.llseek = no_llseek,
- };
- 
- static ssize_t spufs_wbox_stat_read(struct file *file, char __user *buf,
-@@ -1038,6 +1045,7 @@ static ssize_t spufs_wbox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_wbox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_wbox_stat_read,
-+	.llseek = no_llseek,
- };
- 
- static int spufs_signal1_open(struct inode *inode, struct file *file)
-@@ -1166,6 +1174,7 @@ static const struct file_operations spufs_signal1_fops = {
- 	.read = spufs_signal1_read,
- 	.write = spufs_signal1_write,
- 	.mmap = spufs_signal1_mmap,
-+	.llseek = no_llseek,
- };
- 
- static const struct file_operations spufs_signal1_nosched_fops = {
-@@ -1173,6 +1182,7 @@ static const struct file_operations spufs_signal1_nosched_fops = {
- 	.release = spufs_signal1_release,
- 	.write = spufs_signal1_write,
- 	.mmap = spufs_signal1_mmap,
-+	.llseek = no_llseek,
- };
- 
- static int spufs_signal2_open(struct inode *inode, struct file *file)
-@@ -1305,6 +1315,7 @@ static const struct file_operations spufs_signal2_fops = {
- 	.read = spufs_signal2_read,
- 	.write = spufs_signal2_write,
- 	.mmap = spufs_signal2_mmap,
-+	.llseek = no_llseek,
- };
- 
- static const struct file_operations spufs_signal2_nosched_fops = {
-@@ -1312,6 +1323,7 @@ static const struct file_operations spufs_signal2_nosched_fops = {
- 	.release = spufs_signal2_release,
- 	.write = spufs_signal2_write,
- 	.mmap = spufs_signal2_mmap,
-+	.llseek = no_llseek,
- };
- 
- /*
-@@ -1451,6 +1463,7 @@ static const struct file_operations spufs_mss_fops = {
- 	.open	 = spufs_mss_open,
- 	.release = spufs_mss_release,
- 	.mmap	 = spufs_mss_mmap,
-+	.llseek  = no_llseek,
- };
- 
- static int
-@@ -1508,6 +1521,7 @@ static const struct file_operations spufs_psmap_fops = {
- 	.open	 = spufs_psmap_open,
- 	.release = spufs_psmap_release,
- 	.mmap	 = spufs_psmap_mmap,
-+	.llseek  = no_llseek,
- };
- 
- 
-@@ -1871,6 +1885,7 @@ static const struct file_operations spufs_mfc_fops = {
- 	.fsync	 = spufs_mfc_fsync,
- 	.fasync	 = spufs_mfc_fasync,
- 	.mmap	 = spufs_mfc_mmap,
-+	.llseek  = no_llseek,
- };
- 
- static int spufs_npc_set(void *data, u64 val)
-@@ -2246,6 +2261,7 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_dma_info_fops = {
- 	.open = spufs_info_open,
- 	.read = spufs_dma_info_read,
-+	.llseek = no_llseek,
- };
- 
- static ssize_t __spufs_proxydma_info_read(struct spu_context *ctx,
-@@ -2299,6 +2315,7 @@ static ssize_t spufs_proxydma_info_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_proxydma_info_fops = {
- 	.open = spufs_info_open,
- 	.read = spufs_proxydma_info_read,
-+	.llseek = no_llseek,
- };
- 
- static int spufs_show_tid(struct seq_file *s, void *private)
-@@ -2585,6 +2602,7 @@ static const struct file_operations spufs_switch_log_fops = {
- 	.read		= spufs_switch_log_read,
- 	.poll		= spufs_switch_log_poll,
- 	.release	= spufs_switch_log_release,
-+	.llseek		= no_llseek,
- };
- 
- /**
+> 
+> >  
+> > -	if (pfn < max_pfn) {
+> > +	if ((min_low_pfn < pfn) && (pfn < max_pfn)) {
+> >  		vaddr = __va(pfn << PAGE_SHIFT);
+> >  		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
+> >  	} else {
+> > diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> > index bb3d893..ec7f054 100644
+> > --- a/arch/powerpc/kernel/machine_kexec.c
+> > +++ b/arch/powerpc/kernel/machine_kexec.c
+> > @@ -145,6 +145,7 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
+> >  
+> >  /* Values we need to export to the second kernel via the device tree. */
+> >  static unsigned long kernel_end;
+> > +static unsigned long crashk_start;
+> >  static unsigned long crashk_size;
+> >  
+> >  static struct property kernel_end_prop = {
+> > @@ -156,7 +157,7 @@ static struct property kernel_end_prop = {
+> >  static struct property crashk_base_prop = {
+> >  	.name = "linux,crashkernel-base",
+> >  	.length = sizeof(unsigned long),
+> > -	.value = &crashk_res.start,
+> > +	.value = &crashk_start,
+> >  };
+> >  
+> 
+> This is wrong, its truncating the start and size.
+> 
+> Change the variables to be physaddr_t and the length to be sizeof(physaddr_t).
+> 
+> Since these properites only contain one variable, the number of cells
+> can be inferred from the property size like we do for reading the initrd-size.
+> 
+> Technically they should be an array of be32 but we can make that a comment.
+
+I don't disagree but this can break kexec if phys_addr_t != unsigned
+long. Also, doesn't the crash kernel have to live below 2GB so unsigned
+long is always fine?
+
+Will still change unless I hear otherwise.
+
+> 
+> By the way, why does 32 bit care about the running kernel's size? aka
+> linux,kernel-end?  64 bit book 3S needs it because we use mmu hooks
+> to copy the pages to their destination, but I thought ppc32 was using
+> a relocatable copy routine.  Are we missing the code to create
+> temp ref tlbs on the fly for book 3E?
+
+This is not really in this patch or did I miss something? Kexec uses
+kernel-end just to add as a invalid region. Not crucial though for 32
+bit.
+
+> 
+> >  static struct property crashk_size_prop = {
+> > @@ -180,6 +181,7 @@ static void __init export_crashk_values(struct device_node *node)
+> >  		prom_remove_property(node, prop);
+> >  
+> >  	if (crashk_res.start != 0) {
+> > +		crashk_start = crashk_res.start;
+> >  		prom_add_property(node, &crashk_base_prop);
+> >  		crashk_size = crashk_res.end - crashk_res.start + 1;
+> >  		prom_add_property(node, &crashk_size_prop);
+> 
+> I guess we use the reuse of the resources varables, but such is
+> common code vs userspace.
+> 
+> milton
