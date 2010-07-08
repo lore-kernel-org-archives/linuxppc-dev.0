@@ -1,35 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id ADA44B6F04
+Return-Path: <albrecht.dress@arcor.de>
+Received: from smtp6.netcologne.de (smtp6.netcologne.de [194.8.194.26])
+	by ozlabs.org (Postfix) with ESMTP id 6669CB6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Jul 2010 06:09:10 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o68K967N024536 for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 8 Jul 2010 13:09:06 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o68KL0P0025093
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 8 Jul 2010 15:21:00 -0500 (CDT)
-Date: Thu, 8 Jul 2010 15:09:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+	Fri,  9 Jul 2010 06:09:55 +1000 (EST)
+Date: Thu, 08 Jul 2010 22:09:51 +0200
+From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
 Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
 	MPC512x and MPC52xx
-Message-ID: <20100708150904.79feffdd@schlenkerla.am.freescale.net>
-In-Reply-To: <DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 References: <1278614421.1801.0@antares>
 	<DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Albrecht =?ISO-8859-1?B?RHJl3w==?= <albrecht.dress@arcor.de>,
-	Steve Deiters <SteveDeiters@basler.com>, linuxppc-dev@lists.ozlabs.org,
-	David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
+	(from segher@kernel.crashing.org on Thu Jul  8 21:30:33 2010)
+Message-Id: <1278619791.1801.4@antares>
+MIME-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=PGP-SHA1; boundary="=-Myj4TfWaMWBaN6i4k3Wh"
+Cc: David Woodhouse <dwmw2@infradead.org>,
+	Steve Deiters <SteveDeiters@basler.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,21 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 8 Jul 2010 21:30:33 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+--=-Myj4TfWaMWBaN6i4k3Wh
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > Actually, this is something which might need closer attention -
-> > and maybe some support in the device tree indicating which read or  
-> > write width a device can accept?
-> 
-> There already is "device-width"; the drivers never should use any
-> other access width unless they *know* that will work.
+Am 08.07.10 21:30 schrieb(en) Segher Boessenkool:
+>> Actually, this is something which might need closer attention - and mayb=
+e some support in the device tree indicating which read or write width a de=
+vice can accept?
+>=20
+> There already is "device-width"; the drivers never should use any other a=
+ccess width unless they *know* that will work.
 
-Wouldn't you want to use "bank-width" instead?  "device-width" might
-not even work if, say, you've got two 8-bit chips interleaved, feeding
-into a bus controller in 16-bit mode that only accepts 16-bit accesses.
+Hmm, unfortunately, it's usage is not clearly documented in mtd-physmap.txt=
+, so I never thought of this parameter.  And IMHO the problem goes further =
+- basically *any* chip which is attached to the LPB can be affected by this=
+ problem, so it might be better to have a more general approach like a "chi=
+p select property".
 
-It would be nice to have a device tree property that can specify that
-all access widths supported by the CPU will work, though.
+Cheers, Albrecht.
 
--Scott
+--=-Myj4TfWaMWBaN6i4k3Wh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iD8DBQBMNjCPn/9unNAn/9ERAiSAAJ9s49M0U3KsDqSySytw+xbEWTKyXACgsO+I
+l3A+LPkWZSFdHRMqK0tMdz8=
+=vX5Y
+-----END PGP SIGNATURE-----
+
+--=-Myj4TfWaMWBaN6i4k3Wh--
