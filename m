@@ -1,19 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0B474B6F06
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jul 2010 18:20:04 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <lawrence@softsystem.co.uk>
+Received: from smtp23.services.sfr.fr (smtp23.services.sfr.fr [93.17.128.20])
+	by ozlabs.org (Postfix) with ESMTP id D2788B6EE8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  8 Jul 2010 19:01:13 +1000 (EST)
+Received: from filter.sfr.fr (localhost [127.0.0.1])
+	by msfrf2308.sfr.fr (SMTP Server) with ESMTP id 55A0A700009F
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  8 Jul 2010 11:01:11 +0200 (CEST)
+Received: from smtp-in.softsystem.co.uk (118.117.200-77.rev.gaoland.net
+	[77.200.117.118])
+	by msfrf2308.sfr.fr (SMTP Server) with SMTP id 0BAF870000A6
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  8 Jul 2010 11:01:10 +0200 (CEST)
+Received: FROM [192.168.1.62] (gagarin [192.168.1.62])
+	BY smtp-in.softsystem.co.uk [77.200.117.118] (SoftMail 1.0.5,
+	www.softsystem.co.uk) WITH ESMTP
+	FOR <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jul 2010 11:01:07 +0200
+Subject: Re: [PATCH] Add cmd64x IDE driver to default pmac32 config
+From: lawrence rust <lawrence@softsystem.co.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1278570620.28659.79.camel@pasglop>
+References: <1278181316.3232.45.camel@gagarin>
+	<1278565221.28659.74.camel@pasglop> <1278569907.1411.19.camel@gagarin>
+	<1278570620.28659.79.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 18:19:44 +1000
-Message-ID: <1278577184.28659.92.camel@pasglop>
+Date: Thu, 08 Jul 2010 11:01:07 +0200
+Message-ID: <1278579667.2850.5.camel@gagarin>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Thu, 2010-07-08 at 16:30 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2010-07-08 at 08:18 +0200, lawrence rust wrote:
+> > 
+> > Sure. it would be preferable but unfortunately the PowerMac on-board IDE
+> > controller (CONFIG_BLK_DEV_IDE_PMAC), used for the DVD drive on B/W
+> > G3's, doesn't have a PATA equivalent.  So it's pragmatic (until the IDE
+> > code is removed) to use the IDE cmd64x driver to minimise kernel code
+> > size.
+> 
+> Sure it does nowadays: drivers/ata/pata_macio.c :-)
+> 
+> I merged that upstream in december last year, so it didn't make 2.6.32
+> which your distro probably uses, but it is in .33 and later.
 
-Here are a few powerpc nits and bits still for 2.6.35. Mostly simple/trivial
-stuff and some gcc-4.5 related fixes.
+OK I see that - good news.  However, for the moment I believe that it's
+safer to stay with IDE.  It's the smallest of changes but the wholesale
+move to libata could well break numerous system install scripts - e.g.
+for yaboot.
 
-Thanks !
-
-Cheers,
-Ben.
-
-The following changes since commit 2aa72f612144a0a7d4b0b22ae7c122692ac6a013:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Anton Blanchard (1):
-      powerpc: Linux cannot run with 0 cores
-
-Denis Kirjanov (1):
-      powerpc/iseries: Fix possible null pointer dereference in iSeries_pcibios_fixup_resources
-
-Johannes Berg (1):
-      powerpc: Fix logic error in fixup_irqs
-
-Matt Evans (1):
-      powerpc/perf_event: Fix for power_pmu_disable()
-
-Paul E. McKenney (1):
-      powerpc: Fix default_machine_crash_shutdown #ifdef botch
-
-Sam Ravnborg (1):
-      powerpc: Fix userspace build of ptrace.h
-
-Stephen Rothwell (3):
-      powerpc: Fix module building for gcc 4.5 and 64 bit
-      powerpc: Fix compile errors in prom_init_check for gcc 4.5
-      powerpc: Fix feature-fixup tests for gcc 4.5
-
-Yang Li (1):
-      powerpc: Disable SPARSE_IRQ by default
-
- arch/powerpc/Kconfig                   |    4 +-
- arch/powerpc/Makefile                  |    4 +-
- arch/powerpc/include/asm/ptrace.h      |   32 ++++-----
- arch/powerpc/kernel/crash.c            |    2 +-
- arch/powerpc/kernel/irq.c              |    5 +-
- arch/powerpc/kernel/perf_event.c       |    5 +-
- arch/powerpc/kernel/prom_init.c        |    2 +-
- arch/powerpc/kernel/prom_init_check.sh |    6 ++
- arch/powerpc/lib/Makefile              |    4 +-
- arch/powerpc/lib/crtsavres.S           |  129 ++++++++++++++++++++++++++++++++
- arch/powerpc/lib/feature-fixups.c      |   17 ++--
- arch/powerpc/platforms/iseries/pci.c   |    6 +-
- scripts/mod/modpost.c                  |    5 +
- 13 files changed, 184 insertions(+), 37 deletions(-)
- 
+-- Lawrence
