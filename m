@@ -1,16 +1,20 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 0A548B6EED
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 03:16:18 +1000 (EST)
-Date: Thu, 8 Jul 2010 21:16:16 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/cpm1: Mark micropatch code/data static and __init
-Message-ID: <20100708171616.GC11621@oksana.dev.rtsoft.ru>
+Return-Path: <lee.nipper@gmail.com>
+Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
+	by ozlabs.org (Postfix) with ESMTP id 1DA9BB6EF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 03:59:32 +1000 (EST)
+Received: by gwj19 with SMTP id 19so87792gwj.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 08 Jul 2010 10:59:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: LEROY Christophe <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+In-Reply-To: <AANLkTikrUvEicL1DaeLz9Vr-lE_hkKZqJi_7qzERZMu8@mail.gmail.com>
+References: <AANLkTikrUvEicL1DaeLz9Vr-lE_hkKZqJi_7qzERZMu8@mail.gmail.com>
+Date: Thu, 8 Jul 2010 12:59:29 -0500
+Message-ID: <AANLkTikCFgFZsAl0QLkZbI1Jbrh8v0d7gK9EVtqCe1QU@mail.gmail.com>
+Subject: Re: 405EX Rev D mis-identification?
+From: Lee Nipper <lee.nipper@gmail.com>
+To: Marc Chidester <marcchidester@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: lee.nipper@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,125 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This saves runtime memory and fixes lots of sparse warnings like this:
+On Thu, Jul 8, 2010 at 10:06, Marc Chidester <marcchidester@gmail.com> wrote:
+> It looks like the Rev D version of the 405EX chip without security
+> will be identified as a 405EXr, based on the values in the cpu_specs
+> table.
 
-    CHECK   arch/powerpc/sysdev/micropatch.c
-  arch/powerpc/sysdev/micropatch.c:27:6: warning: symbol 'patch_2000'
-  was not declared. Should it be static?
-  arch/powerpc/sysdev/micropatch.c:146:6: warning: symbol 'patch_2f00'
-  was not declared. Should it be static?
-  ...
+Yes, that is the case.
+The 405EX Rev D without security PVR matches an old 405EXr A/B with security,
+and hence the cpu_spec entries' pvr_mask values are no longer correct.
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
----
- arch/powerpc/include/asm/cpm1.h  |    3 ++-
- arch/powerpc/sysdev/micropatch.c |   18 +++++++++---------
- 2 files changed, 11 insertions(+), 10 deletions(-)
+> Is there an algorithm update needed or am I missing something?
 
-diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
-index 81b0119..bd07650 100644
---- a/arch/powerpc/include/asm/cpm1.h
-+++ b/arch/powerpc/include/asm/cpm1.h
-@@ -17,6 +17,7 @@
- #ifndef __CPM1__
- #define __CPM1__
- 
-+#include <linux/init.h>
- #include <asm/8xx_immap.h>
- #include <asm/ptrace.h>
- #include <asm/cpm.h>
-@@ -54,7 +55,7 @@ extern cpm8xx_t __iomem *cpmp; /* Pointer to comm processor */
- 
- extern void cpm_setbrg(uint brg, uint rate);
- 
--extern void cpm_load_patch(cpm8xx_t *cp);
-+extern void __init cpm_load_patch(cpm8xx_t *cp);
- 
- extern void cpm_reset(void);
- 
-diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/sysdev/micropatch.c
-index 6c56ae9..c0bb76e 100644
---- a/arch/powerpc/sysdev/micropatch.c
-+++ b/arch/powerpc/sysdev/micropatch.c
-@@ -4,6 +4,7 @@
-  * also relocates SMC2, but this would require additional changes
-  * to uart.c, so I am holding off on that for a moment.
-  */
-+#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
- #include <linux/kernel.h>
-@@ -25,7 +26,7 @@
- 
- #ifdef CONFIG_I2C_SPI_UCODE_PATCH
- 
--uint patch_2000[] = {
-+static uint patch_2000[] __initdata = {
- 	0x7FFFEFD9,
- 	0x3FFD0000,
- 	0x7FFB49F7,
-@@ -144,7 +145,7 @@ uint patch_2000[] = {
- 	0x5F8247F8
- };
- 
--uint patch_2f00[] = {
-+static uint patch_2f00[] __initdata = {
- 	0x3E303430,
- 	0x34343737,
- 	0xABF7BF9B,
-@@ -183,7 +184,7 @@ uint patch_2f00[] = {
- 
- #ifdef CONFIG_I2C_SPI_SMC1_UCODE_PATCH
- 
--uint patch_2000[] = {
-+static uint patch_2000[] __initdata = {
- 	0x3fff0000,
- 	0x3ffd0000,
- 	0x3ffb0000,
-@@ -506,7 +507,7 @@ uint patch_2000[] = {
- 	0x6079e2bb
- };
- 
--uint patch_2f00[] = {
-+static uint patch_2f00[] __initdata = {
- 	0x30303030,
- 	0x3e3e3434,
- 	0xabbf9b99,
-@@ -573,7 +574,7 @@ uint patch_2f00[] = {
- 	0xf22f3f23
- };
- 
--uint patch_2e00[] = {
-+static uint patch_2e00[] __initdata = {
- 	0x27eeeeee,
- 	0xeeeeeeee,
- 	0xeeeeeeee,
-@@ -599,7 +600,7 @@ uint patch_2e00[] = {
- 
- #ifdef CONFIG_USB_SOF_UCODE_PATCH
- 
--uint patch_2000[] = {
-+static uint patch_2000[] __initdata = {
- 	0x7fff0000,
- 	0x7ffd0000,
- 	0x7ffb0000,
-@@ -614,15 +615,14 @@ uint patch_2000[] = {
- 	0x60750000
- };
- 
--uint patch_2f00[] = {
-+static uint patch_2f00[] __initdata = {
- 	0x3030304c,
- 	0xcab9e441,
- 	0xa1aaf220
- };
- #endif
- 
--void
--cpm_load_patch(cpm8xx_t	*cp)
-+void __init cpm_load_patch(cpm8xx_t *cp)
- {
- 	volatile uint		*dp;		/* Dual-ported RAM. */
- 	volatile cpm8xx_t	*commproc;
--- 
-1.7.0.5
+Perhaps add more cpu_spec table entries for the 405EX & 405EXr with
+pvr_mask = 0xffff000f  ?
