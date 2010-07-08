@@ -1,21 +1,35 @@
-Return-Path: <marcchidester@gmail.com>
-Received: from mail-ww0-f52.google.com (mail-ww0-f52.google.com [74.125.82.52])
-	by ozlabs.org (Postfix) with ESMTP id 87B21B6EF7
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 05:56:32 +1000 (EST)
-Received: by wwb28 with SMTP id 28so2132901wwb.21
-	for <linuxppc-dev@ozlabs.org>; Thu, 08 Jul 2010 12:56:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100708182455.GC28969@zod.rchland.ibm.com>
-References: <AANLkTikrUvEicL1DaeLz9Vr-lE_hkKZqJi_7qzERZMu8@mail.gmail.com>
-	<AANLkTim8xuZSaDHyxRVqk63PTT66rrR8hUhEDeNzfmKD@mail.gmail.com>
-	<20100708182455.GC28969@zod.rchland.ibm.com>
-Date: Thu, 8 Jul 2010 15:56:30 -0400
-Message-ID: <AANLkTimtuOOiFh-b7Wi6RLLIV_M93Y7Fpxv8BpwXoLWw@mail.gmail.com>
-Subject: Re: 405EX Rev D mis-identification?
-From: Marc Chidester <marcchidester@gmail.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Lee Nipper <lee.nipper@gmail.com>
+Return-Path: <B07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id ADA44B6F04
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Jul 2010 06:09:10 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	o68K967N024536 for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 8 Jul 2010 13:09:06 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o68KL0P0025093
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 8 Jul 2010 15:21:00 -0500 (CDT)
+Date: Thu, 8 Jul 2010 15:09:04 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
+	MPC512x and MPC52xx
+Message-ID: <20100708150904.79feffdd@schlenkerla.am.freescale.net>
+In-Reply-To: <DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
+References: <1278614421.1801.0@antares>
+	<DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Albrecht =?ISO-8859-1?B?RHJl3w==?= <albrecht.dress@arcor.de>,
+	Steve Deiters <SteveDeiters@basler.com>, linuxppc-dev@lists.ozlabs.org,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 8, 2010 at 2:24 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wro=
-te:
-> On Thu, Jul 08, 2010 at 11:01:11AM -0500, Lee Nipper wrote:
->>On Thu, Jul 8, 2010 at 10:06, Marc Chidester <marcchidester@gmail.com> wr=
-ote:
->>> It looks like the Rev D version of the 405EX chip without security
->>> will be identified as a 405EXr, based on the values in the cpu_specs
->>> table. =A0For 405EX/405EXr the pvr_mask is =A00xffff0004 with the
->>> pvr_value's as 0x12910004 and 0x12910000 respectively. I see that the
->>> Rev D PVR value for the 405EX without security is 0x12911473, which
->>> would mask out to the EXr value.
->>>
->>> Is there an algorithm update needed or am I missing something?
->>
->>With 405EX Rev D, we have noticed that we must reset our board
->>one time after the initial powerup to make the PVR read correctly.
->>
->>See this post:
->>http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/079099.html
->
-> That is very very weird. =A0Have you seen that behavior on multiple Rev D=
- CPUs
-> or just one board or?
->
-> The PVR value should never change, so if you have odd behavior I wonder i=
-f the
-> are silicon bugs in that revision. =A0Did you happen to ask AMCC about it=
-?
->
-> josh
->
+On Thu, 8 Jul 2010 21:30:33 +0200
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-Check the recent Errata for the chip on this issue.
+> > Actually, this is something which might need closer attention -
+> > and maybe some support in the device tree indicating which read or  
+> > write width a device can accept?
+> 
+> There already is "device-width"; the drivers never should use any
+> other access width unless they *know* that will work.
+
+Wouldn't you want to use "bank-width" instead?  "device-width" might
+not even work if, say, you've got two 8-bit chips interleaved, feeding
+into a bus controller in 16-bit mode that only accepts 16-bit accesses.
+
+It would be nice to have a device tree property that can specify that
+all access widths supported by the CPU will work, though.
+
+-Scott
