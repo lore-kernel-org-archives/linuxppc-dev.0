@@ -1,24 +1,22 @@
-Return-Path: <msm@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19FFAB6EEA
+Return-Path: <stevedeiters@basler.com>
+Received: from tethra.basler.com (tethra.basler.com [206.107.254.19])
+	by ozlabs.org (Postfix) with ESMTP id 52090B6EEF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Jul 2010 00:28:05 +1000 (EST)
-Subject: Re: [1/2] powerpc/crashdump: Fix issues with kexec and 36bit
-	physical addr
-From: Matthew McClintock <msm@freescale.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <20100708-mitltonm-msm-reply@mdm.bga.com>
-References: <1278535881-6463-1-git-send-email-msm@freescale.com>
-	<20100708-mitltonm-msm-reply@mdm.bga.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 09:27:15 -0500
-Message-ID: <1278599235.9343.7.camel@localhost>
-Mime-Version: 1.0
-Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
+	Fri,  9 Jul 2010 00:38:42 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
+	MPC512x and MPC52xx
+Date: Thu, 8 Jul 2010 09:38:22 -0500
+Message-ID: <181804936ABC2349BE503168465576460F3D3E66@exchserver.basler.com>
+In-Reply-To: <AANLkTilNssNdEW3wBKfoUMbSQMFLywfFgGMb0F9XwKeG@mail.gmail.com>
+References: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
+	<1278565845.28659.75.camel@pasglop>
+	<AANLkTilNssNdEW3wBKfoUMbSQMFLywfFgGMb0F9XwKeG@mail.gmail.com>
+From: "Steve Deiters" <SteveDeiters@BASLER.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,88 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-07-08 at 04:07 -0500, Milton Miller wrote:
-> On Wed, 07 Jul 2010 around 10:51:20 -0000 Matthew McClintock wrote:
-> > 
-> > Fix sizes of variables so correct values are exported via /proc.
-> > Cast variable in comparison to avoid compiler error.
-> > 
-> > Signed-off-by: Matthew McClintock <msm@freescale.com>
-> > 
-> >  
-> > -	csize = min(csize, PAGE_SIZE);
-> > +	csize = min(csize, (size_t)PAGE_SIZE);
-> 
-> no use min_t
+> -----Original Message-----
+> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On=20
+> Behalf Of Grant Likely
+> Sent: Thursday, July 08, 2010 12:38 AM
+> To: Benjamin Herrenschmidt
+> Cc: Steve Deiters; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use=20
+> alternate memcpy for MPC512x and MPC52xx
+>=20
+> On Wed, Jul 7, 2010 at 11:10 PM, Benjamin Herrenschmidt=20
+> <benh@kernel.crashing.org> wrote:
+> > On Tue, 2010-06-29 at 11:04 -0500, Steve Deiters wrote:
+> >> These processors will corrupt data if accessing the local bus with=20
+> >> unaligned addresses. This version fixes the typical case=20
+> of copying=20
+> >> from Flash on the local bus by keeping the source address always=20
+> >> aligned.
+> >
+> > Shouldn't this be solved by using memcpy_to/fromio ?
+>=20
+> Maybe.  plain memcpy() access to anything localbus-attached=20
+> on the mpc5xxx is the wrong thing to do.  memcpy_to/fromio=20
+> might do the right thing; but the caller must understand the=20
+> limitations of the localplus bus.  The byte-wise alignment=20
+> that memcpy_to/fromio() does may not work (depending on=20
+> configuration).
+>=20
+> Steve, what code is doing a memcpy from flash?
+>=20
+> g.
 
-Ok
+This was done in the JFFS2 code, in fs/jffs2/scan.c.  At least in one
+function, in jffs2_scan_dirent_node it was using memcpy on a localbus
+mapped structure.  I was getting JFFS2 filesystem corruption because of
+this.  In fact I first tried changing this to memcpy_fromio and it fixed
+that particular problem.  I was concerned though that other places I was
+not aware of might be using memcpy from the localbus in a similar manner
+so I decided to just tweak the memcpy routine.
 
-> 
-> >  
-> > -	if (pfn < max_pfn) {
-> > +	if ((min_low_pfn < pfn) && (pfn < max_pfn)) {
-> >  		vaddr = __va(pfn << PAGE_SHIFT);
-> >  		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
-> >  	} else {
-> > diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-> > index bb3d893..ec7f054 100644
-> > --- a/arch/powerpc/kernel/machine_kexec.c
-> > +++ b/arch/powerpc/kernel/machine_kexec.c
-> > @@ -145,6 +145,7 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
-> >  
-> >  /* Values we need to export to the second kernel via the device tree. */
-> >  static unsigned long kernel_end;
-> > +static unsigned long crashk_start;
-> >  static unsigned long crashk_size;
-> >  
-> >  static struct property kernel_end_prop = {
-> > @@ -156,7 +157,7 @@ static struct property kernel_end_prop = {
-> >  static struct property crashk_base_prop = {
-> >  	.name = "linux,crashkernel-base",
-> >  	.length = sizeof(unsigned long),
-> > -	.value = &crashk_res.start,
-> > +	.value = &crashk_start,
-> >  };
-> >  
-> 
-> This is wrong, its truncating the start and size.
-> 
-> Change the variables to be physaddr_t and the length to be sizeof(physaddr_t).
-> 
-> Since these properites only contain one variable, the number of cells
-> can be inferred from the property size like we do for reading the initrd-size.
-> 
-> Technically they should be an array of be32 but we can make that a comment.
-
-I don't disagree but this can break kexec if phys_addr_t != unsigned
-long. Also, doesn't the crash kernel have to live below 2GB so unsigned
-long is always fine?
-
-Will still change unless I hear otherwise.
-
-> 
-> By the way, why does 32 bit care about the running kernel's size? aka
-> linux,kernel-end?  64 bit book 3S needs it because we use mmu hooks
-> to copy the pages to their destination, but I thought ppc32 was using
-> a relocatable copy routine.  Are we missing the code to create
-> temp ref tlbs on the fly for book 3E?
-
-This is not really in this patch or did I miss something? Kexec uses
-kernel-end just to add as a invalid region. Not crucial though for 32
-bit.
-
-> 
-> >  static struct property crashk_size_prop = {
-> > @@ -180,6 +181,7 @@ static void __init export_crashk_values(struct device_node *node)
-> >  		prom_remove_property(node, prop);
-> >  
-> >  	if (crashk_res.start != 0) {
-> > +		crashk_start = crashk_res.start;
-> >  		prom_add_property(node, &crashk_base_prop);
-> >  		crashk_size = crashk_res.end - crashk_res.start + 1;
-> >  		prom_add_property(node, &crashk_size_prop);
-> 
-> I guess we use the reuse of the resources varables, but such is
-> common code vs userspace.
-> 
-> milton
+Just out of curiousity, what configuration might cause a byte-wise
+alignment not to work?
