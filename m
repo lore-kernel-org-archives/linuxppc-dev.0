@@ -1,26 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 1AC0EB6EEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 22:40:32 +1000 (EST)
-Subject: Re: [1/2] powerpc/crashdump: Fix issues with kexec and 36bit physical
-	addr
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1278586190.28659.94.camel@pasglop>
-Date: Thu, 8 Jul 2010 07:40:12 -0500
-Message-Id: <F4BDFB0D-51C0-49C1-918F-FAC0DD565E63@freescale.com>
-References: <1278535881-6463-1-git-send-email-msm@freescale.com>
-	<20100708-mitltonm-msm-reply@mdm.bga.com>
-	<1278586190.28659.94.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH 06/18] spufs: use llseek in all file operations
+Date: Thu, 8 Jul 2010 15:02:36 +0200
+References: <1278538820-1392-1-git-send-email-arnd@arndb.de>
+	<1278538820-1392-7-git-send-email-arnd@arndb.de>
+	<1278551728.28333.55.camel@pororo.lan>
+In-Reply-To: <1278551728.28333.55.camel@pororo.lan>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201007081502.37133.arnd@arndb.de>
+Cc: John Kacur <jkacur@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jul 8, 2010, at 5:49 AM, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2010-07-08 at 04:07 -0500, Milton Miller wrote:
->> On Wed, 07 Jul 2010 around 10:51:20 -0000 Matthew McClintock wrote:
->>> 
->>> Fix sizes of variables so correct values are exported via /proc.
->>> Cast variable in comparison to avoid compiler error.
->>> 
+On Thursday 08 July 2010, Jeremy Kerr wrote:
+> > @@ -2151,7 +2166,7 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+> >  static const struct file_operations spufs_ibox_info_fops = {
+> >       .open = spufs_info_open,
+> >       .read = spufs_ibox_info_read,
+> > -     .llseek  = generic_file_llseek,
+> > +     .llseek = no_llseek,
+> >  };
+> > 
+> >  static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+> > @@ -2194,7 +2209,7 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+> >  static const struct file_operations spufs_wbox_info_fops = {
+> >       .open = spufs_info_open,
+> >       .read = spufs_wbox_info_read,
+> > -     .llseek  = generic_file_llseek,
+> > +     .llseek = no_llseek,
+> >  };
+> > 
 > 
-> I'm afraid I already pulled that in. Please send a fixup patch.
+> Why the change in behaviour for the mbox info files?
 > 
-> Cheers,
-> Ben.
 
-pulled into which tree?
+D'oh, that wasn't intentional. I guess what must have happened is that I first
+added generic_file_llseek to all file_operations in spufs and then made up my
+mind and chose what I thought was correct in each case, which broke these.
+Of course, these *_info_fops should be seekable.
 
-- k
+	Arnd
