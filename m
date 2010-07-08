@@ -1,21 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8219B6EF7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 16:30:26 +1000 (EST)
-Subject: Re: [PATCH] Add cmd64x IDE driver to default pmac32 config
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: lawrence rust <lawrence@softsystem.co.uk>
-In-Reply-To: <1278569907.1411.19.camel@gagarin>
-References: <1278181316.3232.45.camel@gagarin>
-	<1278565221.28659.74.camel@pasglop> <1278569907.1411.19.camel@gagarin>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 16:30:20 +1000
-Message-ID: <1278570620.28659.79.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C358479.1090502@ozlabs.org>
+Date: Thu, 08 Jul 2010 17:55:37 +1000
+From: Matt Evans <matt@ozlabs.org>
+MIME-Version: 1.0
+To: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc/kexec: Switch to a static PACA on the way out
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +15,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-07-08 at 08:18 +0200, lawrence rust wrote:
-> 
-> Sure. it would be preferable but unfortunately the PowerMac on-board IDE
-> controller (CONFIG_BLK_DEV_IDE_PMAC), used for the DVD drive on B/W
-> G3's, doesn't have a PATA equivalent.  So it's pragmatic (until the IDE
-> code is removed) to use the IDE cmd64x driver to minimise kernel code
-> size.
+With dynamic PACAs, the kexecing CPU's PACA won't lie within the kernel
+static data and there is a chance that something may stomp it when preparing
+to kexec.  This patch switches this final CPU to a static PACA just before
+we pull the switch.
 
-Sure it does nowadays: drivers/ata/pata_macio.c :-)
+Signed-off-by: Matt Evans <matt@ozlabs.org>
+---
+v2:	Changes from Milton's review:
+	- Use setup_paca() and move from setup_64.c,
+	- SLB cache inval. not required,
+	- Adjust 'paca' (oops..), and
+	- Poison data_offset/per_cpu_offset
 
-I merged that upstream in december last year, so it didn't make 2.6.32
-which your distro probably uses, but it is in .33 and later.
+ arch/powerpc/include/asm/paca.h        |    2 +-
+ arch/powerpc/kernel/machine_kexec_64.c |   20 ++++++++++++++++++++
+ arch/powerpc/kernel/paca.c             |   10 ++++++++++
+ arch/powerpc/kernel/setup_64.c         |   10 ----------
+ 4 files changed, 31 insertions(+), 11 deletions(-)
 
-> A minor correction to my previous post, the first version of Ubuntu to
-> suffer from this problem was 9.10. 
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 8ce7963..1ff6662 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -146,7 +146,7 @@ struct paca_struct {
+ extern struct paca_struct *paca;
+ extern __initdata struct paca_struct boot_paca;
+ extern void initialise_paca(struct paca_struct *new_paca, int cpu);
+-
++extern void setup_paca(struct paca_struct *new_paca);
+ extern void allocate_pacas(void);
+ extern void free_unused_pacas(void);
+ 
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 26f9900..c4d0123 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -273,6 +273,12 @@ static void kexec_prepare_cpus(void)
+ static union thread_union kexec_stack __init_task_data =
+ 	{ };
+ 
++/*
++ * For similar reasons to the stack above, the kexecing CPU needs to be on a
++ * static PACA; we switch to kexec_paca.
++ */
++struct paca_struct kexec_paca;
++
+ /* Our assembly helper, in kexec_stub.S */
+ extern NORET_TYPE void kexec_sequence(void *newstack, unsigned long start,
+ 					void *image, void *control,
+@@ -300,6 +306,20 @@ void default_machine_kexec(struct kimage *image)
+ 	kexec_stack.thread_info.task = current_thread_info()->task;
+ 	kexec_stack.thread_info.flags = 0;
+ 
++	/* We need a static PACA, too; copy this CPU's PACA over and switch to
++	 * it.  Also poison per_cpu_offset to catch anyone using non-static
++	 * data.
++	 */
++	memcpy(&kexec_paca, get_paca(), sizeof(struct paca_struct));
++	kexec_paca.data_offset = 0xedeaddeadeeeeeeeUL;
++	paca = (struct paca_struct *)RELOC_HIDE(&kexec_paca, 0) -
++		kexec_paca.paca_index;
++	setup_paca(&kexec_paca);
++
++	/* XXX: If anyone does 'dynamic lppacas' this will also need to be
++	 * switched to a static version!
++	 */
++
+ 	/* Some things are best done in assembly.  Finding globals with
+ 	 * a toc is easier in C, so pass in what we can.
+ 	 */
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index f88acf0..3db8d64 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -105,6 +105,16 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ }
+ 
++/* Put the paca pointer into r13 and SPRG_PACA */
++void setup_paca(struct paca_struct *new_paca)
++{
++	local_paca = new_paca;
++	mtspr(SPRN_SPRG_PACA, local_paca);
++#ifdef CONFIG_PPC_BOOK3E
++	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
++#endif
++}
++
+ static int __initdata paca_size;
+ 
+ void __init allocate_pacas(void)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index f3fb5a7..6efbed4 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -142,16 +142,6 @@ early_param("smt-enabled", early_smt_enabled);
+ #define check_smt_enabled()
+ #endif /* CONFIG_SMP */
+ 
+-/* Put the paca pointer into r13 and SPRG_PACA */
+-static void __init setup_paca(struct paca_struct *new_paca)
+-{
+-	local_paca = new_paca;
+-	mtspr(SPRN_SPRG_PACA, local_paca);
+-#ifdef CONFIG_PPC_BOOK3E
+-	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
+-#endif
+-}
+-
+ /*
+  * Early initialization entry point. This is called by head.S
+  * with MMU translation disabled. We rely on the "feature" of
+-- 
+1.6.3.3
