@@ -1,20 +1,23 @@
-Return-Path: <lee.nipper@gmail.com>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id D8FD8B6ED0
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 02:01:13 +1000 (EST)
-Received: by gxk25 with SMTP id 25so493451gxk.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 08 Jul 2010 09:01:12 -0700 (PDT)
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id B7C7FB6EF0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Jul 2010 02:55:16 +1000 (EST)
+Received: by ewy21 with SMTP id 21so236070ewy.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 08 Jul 2010 09:55:13 -0700 (PDT)
+Date: Thu, 8 Jul 2010 20:55:09 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
+	LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 2.6.34: arch/powerpc/sysdev/micropatch.c not compiling
+Message-ID: <20100708165509.GA15181@oksana.dev.rtsoft.ru>
+References: <4C318D87.1010306@c-s.fr>
+ <20100706000343.GE23985@ozlabs.org>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTikrUvEicL1DaeLz9Vr-lE_hkKZqJi_7qzERZMu8@mail.gmail.com>
-References: <AANLkTikrUvEicL1DaeLz9Vr-lE_hkKZqJi_7qzERZMu8@mail.gmail.com>
-Date: Thu, 8 Jul 2010 11:01:11 -0500
-Message-ID: <AANLkTim8xuZSaDHyxRVqk63PTT66rrR8hUhEDeNzfmKD@mail.gmail.com>
-Subject: Re: 405EX Rev D mis-identification?
-From: Lee Nipper <lee.nipper@gmail.com>
-To: Marc Chidester <marcchidester@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: lee.nipper@gmail.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20100706000343.GE23985@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 8, 2010 at 10:06, Marc Chidester <marcchidester@gmail.com> wrot=
-e:
-> It looks like the Rev D version of the 405EX chip without security
-> will be identified as a 405EXr, based on the values in the cpu_specs
-> table. =A0For 405EX/405EXr the pvr_mask is =A00xffff0004 with the
-> pvr_value's as 0x12910004 and 0x12910000 respectively. I see that the
-> Rev D PVR value for the 405EX without security is 0x12911473, which
-> would mask out to the EXr value.
->
-> Is there an algorithm update needed or am I missing something?
+On Tue, Jul 06, 2010 at 10:03:43AM +1000, Tony Breeds wrote:
+> On Mon, Jul 05, 2010 at 09:45:11AM +0200, LEROY Christophe wrote:
+> > When activating micropatch option, the kernel does not compile.
+> 
+> powerpc problems should alos CC linuxppc-dev.
+>  
+> > It looks like a spi_t is not defined anywhere.
+> > 
+> > CC arch/powerpc/sysdev/micropatch.o
+> > arch/powerpc/sysdev/micropatch.c: In function ‘cpm_load_patch’:
+> > arch/powerpc/sysdev/micropatch.c:629: erreur: expected ‘=’, ‘,’,
+> > ‘;’, ‘asm’ or ‘__attribute__’ before ‘*’ token
+[...]
+> -       spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
+> -       spp->spi_rpbase = i;
+> +       smp = (smc_uart_t *)&commproc->cp_dparam[PROFF_SPI];
+> +       smp->smc_rpbase = i;
+>  
+>  # if defined(CONFIG_I2C_SPI_UCODE_PATCH)
+>         commproc->cp_cpmcr1 = 0x802a;
+> 
+> 
+> Would help?
 
-With 405EX Rev D, we have noticed that we must reset our board
-one time after the initial powerup to make the PVR read correctly.
+While this will fix the issue, I think this is not technically
+correct (i.e. micropatching SPI controller via I2C pram struct,
+even though the structs appear to be identical).
 
-See this post:
-http://lists.ozlabs.org/pipermail/linuxppc-dev/2009-December/079099.html
+As the spi_param is needed outside of the SPI driver, we'd
+better re-introduce the struct, I think.
+
+I'll send some fixes for this and other issues in this file.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
