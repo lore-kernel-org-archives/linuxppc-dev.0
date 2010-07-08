@@ -1,33 +1,17 @@
-Return-Path: <lawrence@softsystem.co.uk>
-Received: from smtp23.services.sfr.fr (smtp23.services.sfr.fr [93.17.128.20])
-	by ozlabs.org (Postfix) with ESMTP id D2788B6EE8
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id D7C2AB6EE9
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 19:01:13 +1000 (EST)
-Received: from filter.sfr.fr (localhost [127.0.0.1])
-	by msfrf2308.sfr.fr (SMTP Server) with ESMTP id 55A0A700009F
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 11:01:11 +0200 (CEST)
-Received: from smtp-in.softsystem.co.uk (118.117.200-77.rev.gaoland.net
-	[77.200.117.118])
-	by msfrf2308.sfr.fr (SMTP Server) with SMTP id 0BAF870000A6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 11:01:10 +0200 (CEST)
-Received: FROM [192.168.1.62] (gagarin [192.168.1.62])
-	BY smtp-in.softsystem.co.uk [77.200.117.118] (SoftMail 1.0.5,
-	www.softsystem.co.uk) WITH ESMTP
-	FOR <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jul 2010 11:01:07 +0200
-Subject: Re: [PATCH] Add cmd64x IDE driver to default pmac32 config
-From: lawrence rust <lawrence@softsystem.co.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1278570620.28659.79.camel@pasglop>
-References: <1278181316.3232.45.camel@gagarin>
-	<1278565221.28659.74.camel@pasglop> <1278569907.1411.19.camel@gagarin>
-	<1278570620.28659.79.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 11:01:07 +0200
-Message-ID: <1278579667.2850.5.camel@gagarin>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+	Thu,  8 Jul 2010 19:07:30 +1000 (EST)
+From: Milton Miller <miltonm@bga.com>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [1/2] powerpc/crashdump: Fix issues with kexec and 36bit physical
+	addr
+Message-Id: <20100708-mitltonm-msm-reply@mdm.bga.com>
+In-Reply-To: <1278535881-6463-1-git-send-email-msm@freescale.com>
+References: <1278535881-6463-1-git-send-email-msm@freescale.com>
+Date: Thu, 08 Jul 2010 04:07:23 -0500
+Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-07-08 at 16:30 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2010-07-08 at 08:18 +0200, lawrence rust wrote:
-> > 
-> > Sure. it would be preferable but unfortunately the PowerMac on-board IDE
-> > controller (CONFIG_BLK_DEV_IDE_PMAC), used for the DVD drive on B/W
-> > G3's, doesn't have a PATA equivalent.  So it's pragmatic (until the IDE
-> > code is removed) to use the IDE cmd64x driver to minimise kernel code
-> > size.
+On Wed, 07 Jul 2010 around 10:51:20 -0000 Matthew McClintock wrote:
 > 
-> Sure it does nowadays: drivers/ata/pata_macio.c :-)
+> Fix sizes of variables so correct values are exported via /proc.
+> Cast variable in comparison to avoid compiler error.
 > 
-> I merged that upstream in december last year, so it didn't make 2.6.32
-> which your distro probably uses, but it is in .33 and later.
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> 
+>  
+> -	csize = min(csize, PAGE_SIZE);
+> +	csize = min(csize, (size_t)PAGE_SIZE);
 
-OK I see that - good news.  However, for the moment I believe that it's
-safer to stay with IDE.  It's the smallest of changes but the wholesale
-move to libata could well break numerous system install scripts - e.g.
-for yaboot.
+no use min_t
 
--- Lawrence
+>  
+> -	if (pfn < max_pfn) {
+> +	if ((min_low_pfn < pfn) && (pfn < max_pfn)) {
+>  		vaddr = __va(pfn << PAGE_SHIFT);
+>  		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
+>  	} else {
+> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> index bb3d893..ec7f054 100644
+> --- a/arch/powerpc/kernel/machine_kexec.c
+> +++ b/arch/powerpc/kernel/machine_kexec.c
+> @@ -145,6 +145,7 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
+>  
+>  /* Values we need to export to the second kernel via the device tree. */
+>  static unsigned long kernel_end;
+> +static unsigned long crashk_start;
+>  static unsigned long crashk_size;
+>  
+>  static struct property kernel_end_prop = {
+> @@ -156,7 +157,7 @@ static struct property kernel_end_prop = {
+>  static struct property crashk_base_prop = {
+>  	.name = "linux,crashkernel-base",
+>  	.length = sizeof(unsigned long),
+> -	.value = &crashk_res.start,
+> +	.value = &crashk_start,
+>  };
+>  
+
+This is wrong, its truncating the start and size.
+
+Change the variables to be physaddr_t and the length to be sizeof(physaddr_t).
+
+Since these properites only contain one variable, the number of cells
+can be inferred from the property size like we do for reading the initrd-size.
+
+Technically they should be an array of be32 but we can make that a comment.
+
+By the way, why does 32 bit care about the running kernel's size? aka
+linux,kernel-end?  64 bit book 3S needs it because we use mmu hooks
+to copy the pages to their destination, but I thought ppc32 was using
+a relocatable copy routine.  Are we missing the code to create
+temp ref tlbs on the fly for book 3E?
+
+>  static struct property crashk_size_prop = {
+> @@ -180,6 +181,7 @@ static void __init export_crashk_values(struct device_node *node)
+>  		prom_remove_property(node, prop);
+>  
+>  	if (crashk_res.start != 0) {
+> +		crashk_start = crashk_res.start;
+>  		prom_add_property(node, &crashk_base_prop);
+>  		crashk_size = crashk_res.end - crashk_res.start + 1;
+>  		prom_add_property(node, &crashk_size_prop);
+
+I guess we use the reuse of the resources varables, but such is
+common code vs userspace.
+
+milton
