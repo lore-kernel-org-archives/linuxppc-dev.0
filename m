@@ -1,11 +1,19 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4C358479.1090502@ozlabs.org>
-Date: Thu, 08 Jul 2010 17:55:37 +1000
-From: Matt Evans <matt@ozlabs.org>
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/kexec: Switch to a static PACA on the way out
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0B474B6F06
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jul 2010 18:20:04 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 08 Jul 2010 18:19:44 +1000
+Message-ID: <1278577184.28659.92.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,117 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With dynamic PACAs, the kexecing CPU's PACA won't lie within the kernel
-static data and there is a chance that something may stomp it when preparing
-to kexec.  This patch switches this final CPU to a static PACA just before
-we pull the switch.
+Hi Linus !
 
-Signed-off-by: Matt Evans <matt@ozlabs.org>
----
-v2:	Changes from Milton's review:
-	- Use setup_paca() and move from setup_64.c,
-	- SLB cache inval. not required,
-	- Adjust 'paca' (oops..), and
-	- Poison data_offset/per_cpu_offset
+Here are a few powerpc nits and bits still for 2.6.35. Mostly simple/trivial
+stuff and some gcc-4.5 related fixes.
 
- arch/powerpc/include/asm/paca.h        |    2 +-
- arch/powerpc/kernel/machine_kexec_64.c |   20 ++++++++++++++++++++
- arch/powerpc/kernel/paca.c             |   10 ++++++++++
- arch/powerpc/kernel/setup_64.c         |   10 ----------
- 4 files changed, 31 insertions(+), 11 deletions(-)
+Thanks !
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 8ce7963..1ff6662 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -146,7 +146,7 @@ struct paca_struct {
- extern struct paca_struct *paca;
- extern __initdata struct paca_struct boot_paca;
- extern void initialise_paca(struct paca_struct *new_paca, int cpu);
--
-+extern void setup_paca(struct paca_struct *new_paca);
- extern void allocate_pacas(void);
- extern void free_unused_pacas(void);
+Cheers,
+Ben.
+
+The following changes since commit 2aa72f612144a0a7d4b0b22ae7c122692ac6a013:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Blanchard (1):
+      powerpc: Linux cannot run with 0 cores
+
+Denis Kirjanov (1):
+      powerpc/iseries: Fix possible null pointer dereference in iSeries_pcibios_fixup_resources
+
+Johannes Berg (1):
+      powerpc: Fix logic error in fixup_irqs
+
+Matt Evans (1):
+      powerpc/perf_event: Fix for power_pmu_disable()
+
+Paul E. McKenney (1):
+      powerpc: Fix default_machine_crash_shutdown #ifdef botch
+
+Sam Ravnborg (1):
+      powerpc: Fix userspace build of ptrace.h
+
+Stephen Rothwell (3):
+      powerpc: Fix module building for gcc 4.5 and 64 bit
+      powerpc: Fix compile errors in prom_init_check for gcc 4.5
+      powerpc: Fix feature-fixup tests for gcc 4.5
+
+Yang Li (1):
+      powerpc: Disable SPARSE_IRQ by default
+
+ arch/powerpc/Kconfig                   |    4 +-
+ arch/powerpc/Makefile                  |    4 +-
+ arch/powerpc/include/asm/ptrace.h      |   32 ++++-----
+ arch/powerpc/kernel/crash.c            |    2 +-
+ arch/powerpc/kernel/irq.c              |    5 +-
+ arch/powerpc/kernel/perf_event.c       |    5 +-
+ arch/powerpc/kernel/prom_init.c        |    2 +-
+ arch/powerpc/kernel/prom_init_check.sh |    6 ++
+ arch/powerpc/lib/Makefile              |    4 +-
+ arch/powerpc/lib/crtsavres.S           |  129 ++++++++++++++++++++++++++++++++
+ arch/powerpc/lib/feature-fixups.c      |   17 ++--
+ arch/powerpc/platforms/iseries/pci.c   |    6 +-
+ scripts/mod/modpost.c                  |    5 +
+ 13 files changed, 184 insertions(+), 37 deletions(-)
  
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 26f9900..c4d0123 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -273,6 +273,12 @@ static void kexec_prepare_cpus(void)
- static union thread_union kexec_stack __init_task_data =
- 	{ };
- 
-+/*
-+ * For similar reasons to the stack above, the kexecing CPU needs to be on a
-+ * static PACA; we switch to kexec_paca.
-+ */
-+struct paca_struct kexec_paca;
-+
- /* Our assembly helper, in kexec_stub.S */
- extern NORET_TYPE void kexec_sequence(void *newstack, unsigned long start,
- 					void *image, void *control,
-@@ -300,6 +306,20 @@ void default_machine_kexec(struct kimage *image)
- 	kexec_stack.thread_info.task = current_thread_info()->task;
- 	kexec_stack.thread_info.flags = 0;
- 
-+	/* We need a static PACA, too; copy this CPU's PACA over and switch to
-+	 * it.  Also poison per_cpu_offset to catch anyone using non-static
-+	 * data.
-+	 */
-+	memcpy(&kexec_paca, get_paca(), sizeof(struct paca_struct));
-+	kexec_paca.data_offset = 0xedeaddeadeeeeeeeUL;
-+	paca = (struct paca_struct *)RELOC_HIDE(&kexec_paca, 0) -
-+		kexec_paca.paca_index;
-+	setup_paca(&kexec_paca);
-+
-+	/* XXX: If anyone does 'dynamic lppacas' this will also need to be
-+	 * switched to a static version!
-+	 */
-+
- 	/* Some things are best done in assembly.  Finding globals with
- 	 * a toc is easier in C, so pass in what we can.
- 	 */
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index f88acf0..3db8d64 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -105,6 +105,16 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
- #endif /* CONFIG_PPC_STD_MMU_64 */
- }
- 
-+/* Put the paca pointer into r13 and SPRG_PACA */
-+void setup_paca(struct paca_struct *new_paca)
-+{
-+	local_paca = new_paca;
-+	mtspr(SPRN_SPRG_PACA, local_paca);
-+#ifdef CONFIG_PPC_BOOK3E
-+	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
-+#endif
-+}
-+
- static int __initdata paca_size;
- 
- void __init allocate_pacas(void)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index f3fb5a7..6efbed4 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -142,16 +142,6 @@ early_param("smt-enabled", early_smt_enabled);
- #define check_smt_enabled()
- #endif /* CONFIG_SMP */
- 
--/* Put the paca pointer into r13 and SPRG_PACA */
--static void __init setup_paca(struct paca_struct *new_paca)
--{
--	local_paca = new_paca;
--	mtspr(SPRN_SPRG_PACA, local_paca);
--#ifdef CONFIG_PPC_BOOK3E
--	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
--#endif
--}
--
- /*
-  * Early initialization entry point. This is called by head.S
-  * with MMU translation disabled. We rely on the "feature" of
--- 
-1.6.3.3
