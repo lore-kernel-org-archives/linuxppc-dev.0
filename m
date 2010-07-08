@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 45F1CB6EF0
+	by ozlabs.org (Postfix) with ESMTPS id B5656B6EF3
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 15:00:30 +1000 (EST)
-Subject: Re: [PATCH] Add cmd64x IDE driver to default pmac32 config
+	Thu,  8 Jul 2010 15:10:52 +1000 (EST)
+Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
+	MPC512x and MPC52xx
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: lawrence rust <lawrence@softsystem.co.uk>
-In-Reply-To: <1278181316.3232.45.camel@gagarin>
-References: <1278181316.3232.45.camel@gagarin>
+To: Steve Deiters <SteveDeiters@BASLER.com>
+In-Reply-To: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
+References: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 15:00:21 +1000
-Message-ID: <1278565221.28659.74.camel@pasglop>
+Date: Thu, 08 Jul 2010 15:10:45 +1000
+Message-ID: <1278565845.28659.75.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,41 +25,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2010-07-03 at 20:21 +0200, lawrence rust wrote:
-> The Blue/White Apple PowerMac G3 and early G4's use a cmd64x compatible
-> IDE disk controller.  E.g. lspci shows...
-> 
-> 01:01.0 IDE interface: Silicon Image, Inc. PCI0646 (rev 07)
-> 
-> Unfortunately the default pmac32 configuration does not include this
-> driver and so PowerMac G3's can't load a root filesystem.  This is an
-> issue on a least Ubuntu since version 9.04, which uses the default
-> config as a starting point.
-> 
-> Signed-off-by: Lawrence Rust <lawrence at softsystem.co.uk>
+On Tue, 2010-06-29 at 11:04 -0500, Steve Deiters wrote:
+> These processors will corrupt data if accessing the local bus with
+> unaligned
+> addresses. This version fixes the typical case of copying from Flash on
+> the
+> local bus by keeping the source address always aligned.
 
-Shouldn't we just switch the whole thing to libata now anyways ?
+Shouldn't this be solved by using memcpy_to/fromio ?
 
 Cheers,
 Ben.
 
-> diff -uprN a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig 
-> --- a/arch/powerpc/configs/pmac32_defconfig	2010-05-16 23:17:36.000000000 +0200
-> +++ b/arch/powerpc/configs/pmac32_defconfig	2010-07-03 20:11:10.000000000 +0200
-> @@ -738,7 +738,7 @@ CONFIG_BLK_DEV_IDEDMA_PCI=y
->  # CONFIG_BLK_DEV_AEC62XX is not set
->  # CONFIG_BLK_DEV_ALI15X3 is not set
->  # CONFIG_BLK_DEV_AMD74XX is not set
-> -# CONFIG_BLK_DEV_CMD64X is not set
-> +CONFIG_BLK_DEV_CMD64X=y
->  # CONFIG_BLK_DEV_TRIFLEX is not set
->  # CONFIG_BLK_DEV_CS5520 is not set
->  # CONFIG_BLK_DEV_CS5530 is not set
+> Signed-off-by: Steve Deiters <SteveDeiters@basler.com>
+> ---
+>  arch/powerpc/lib/copy_32.S |   56
+> ++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 56 insertions(+), 0 deletions(-)
 > 
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+> index 74a7f41..42e7df5 100644
+> --- a/arch/powerpc/lib/copy_32.S
+> +++ b/arch/powerpc/lib/copy_32.S
+> @@ -226,6 +226,60 @@ _GLOBAL(memmove)
+>  	bgt	backwards_memcpy
+>  	/* fall through */
+>  
+> +#if defined(CONFIG_PPC_MPC512x) || defined(CONFIG_PPC_MPC52xx)
+> +
+> +/*
+> + * Alternate memcpy for MPC512x and MPC52xx to guarantee source
+> + * address is always aligned to prevent corruption issues when
+> + * copying unaligned from the local bus. This only fixes the usage
+> + * when copying from the local bus (e.g. Flash) and will not fix
+> + * issues copying to the local bus
+> + */
+> +_GLOBAL(memcpy)
+> +	srwi.	r7,r5,3
+> +	addi	r6,r3,-4
+> +	addi	r4,r4,-4
+> +	beq	2f			/* if less than 8 bytes to do */
+> +	andi.	r0,r4,3			/* get src word aligned */
+> +	mtctr	r7
+> +	bne	5f
+> +1:	lwz	r7,4(r4)
+> +	lwzu	r8,8(r4)
+> +	stw	r7,4(r6)
+> +	stwu	r8,8(r6)
+> +	bdnz	1b
+> +	andi.	r5,r5,7
+> +2:	cmplwi	0,r5,4
+> +	blt	3f
+> +	andi.	r0,r4,3
+> +	bne	3f
+> +	lwzu	r0,4(r4)
+> +	addi	r5,r5,-4
+> +	stwu	r0,4(r6)
+> +3:	cmpwi	0,r5,0
+> +	beqlr
+> +	mtctr	r5
+> +	addi	r4,r4,3
+> +	addi	r6,r6,3
+> +4:	lbzu	r0,1(r4)
+> +	stbu	r0,1(r6)
+> +	bdnz	4b
+> +	blr
+> +5:	subfic	r0,r0,4
+> +	mtctr	r0
+> +6:	lbz	r7,4(r4)
+> +	addi	r4,r4,1
+> +	stb	r7,4(r6)
+> +	addi	r6,r6,1
+> +	bdnz	6b
+> +	subf	r5,r0,r5
+> +	rlwinm.	r7,r5,32-3,3,31
+> +	beq	2b
+> +	mtctr	r7
+> +	b	1b
+> +
+> +#else
+> +
+>  _GLOBAL(memcpy)
+>  	srwi.	r7,r5,3
+>  	addi	r6,r3,-4
+> @@ -267,6 +321,8 @@ _GLOBAL(memcpy)
+>  	mtctr	r7
+>  	b	1b
+>  
+> +#endif
+> +
+>  _GLOBAL(backwards_memcpy)
+>  	rlwinm.	r7,r5,32-3,3,31		/* r0 = r5 >> 3 */
+>  	add	r6,r3,r5
