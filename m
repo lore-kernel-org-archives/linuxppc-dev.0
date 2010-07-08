@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B5656B6EF3
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 78E6BB6EEE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu,  8 Jul 2010 15:10:52 +1000 (EST)
+	Thu,  8 Jul 2010 15:38:34 +1000 (EST)
+Received: by gyd10 with SMTP id 10so226938gyd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 07 Jul 2010 22:38:32 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1278565845.28659.75.camel@pasglop>
+References: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
+	<1278565845.28659.75.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 7 Jul 2010 23:38:12 -0600
+Message-ID: <AANLkTilNssNdEW3wBKfoUMbSQMFLywfFgGMb0F9XwKeG@mail.gmail.com>
 Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
 	MPC512x and MPC52xx
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Steve Deiters <SteveDeiters@BASLER.com>
-In-Reply-To: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
-References: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 15:10:45 +1000
-Message-ID: <1278565845.28659.75.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Steve Deiters <SteveDeiters@basler.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,95 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-06-29 at 11:04 -0500, Steve Deiters wrote:
-> These processors will corrupt data if accessing the local bus with
-> unaligned
-> addresses. This version fixes the typical case of copying from Flash on
-> the
-> local bus by keeping the source address always aligned.
+On Wed, Jul 7, 2010 at 11:10 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2010-06-29 at 11:04 -0500, Steve Deiters wrote:
+>> These processors will corrupt data if accessing the local bus with
+>> unaligned
+>> addresses. This version fixes the typical case of copying from Flash on
+>> the
+>> local bus by keeping the source address always aligned.
+>
+> Shouldn't this be solved by using memcpy_to/fromio ?
 
-Shouldn't this be solved by using memcpy_to/fromio ?
+Maybe.  plain memcpy() access to anything localbus-attached on the
+mpc5xxx is the wrong thing to do.  memcpy_to/fromio might do the right
+thing; but the caller must understand the limitations of the localplus
+bus.  The byte-wise alignment that memcpy_to/fromio() does may not
+work (depending on configuration).
 
-Cheers,
-Ben.
+Steve, what code is doing a memcpy from flash?
 
-> Signed-off-by: Steve Deiters <SteveDeiters@basler.com>
-> ---
->  arch/powerpc/lib/copy_32.S |   56
-> ++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 56 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-> index 74a7f41..42e7df5 100644
-> --- a/arch/powerpc/lib/copy_32.S
-> +++ b/arch/powerpc/lib/copy_32.S
-> @@ -226,6 +226,60 @@ _GLOBAL(memmove)
->  	bgt	backwards_memcpy
->  	/* fall through */
->  
-> +#if defined(CONFIG_PPC_MPC512x) || defined(CONFIG_PPC_MPC52xx)
-> +
-> +/*
-> + * Alternate memcpy for MPC512x and MPC52xx to guarantee source
-> + * address is always aligned to prevent corruption issues when
-> + * copying unaligned from the local bus. This only fixes the usage
-> + * when copying from the local bus (e.g. Flash) and will not fix
-> + * issues copying to the local bus
-> + */
-> +_GLOBAL(memcpy)
-> +	srwi.	r7,r5,3
-> +	addi	r6,r3,-4
-> +	addi	r4,r4,-4
-> +	beq	2f			/* if less than 8 bytes to do */
-> +	andi.	r0,r4,3			/* get src word aligned */
-> +	mtctr	r7
-> +	bne	5f
-> +1:	lwz	r7,4(r4)
-> +	lwzu	r8,8(r4)
-> +	stw	r7,4(r6)
-> +	stwu	r8,8(r6)
-> +	bdnz	1b
-> +	andi.	r5,r5,7
-> +2:	cmplwi	0,r5,4
-> +	blt	3f
-> +	andi.	r0,r4,3
-> +	bne	3f
-> +	lwzu	r0,4(r4)
-> +	addi	r5,r5,-4
-> +	stwu	r0,4(r6)
-> +3:	cmpwi	0,r5,0
-> +	beqlr
-> +	mtctr	r5
-> +	addi	r4,r4,3
-> +	addi	r6,r6,3
-> +4:	lbzu	r0,1(r4)
-> +	stbu	r0,1(r6)
-> +	bdnz	4b
-> +	blr
-> +5:	subfic	r0,r0,4
-> +	mtctr	r0
-> +6:	lbz	r7,4(r4)
-> +	addi	r4,r4,1
-> +	stb	r7,4(r6)
-> +	addi	r6,r6,1
-> +	bdnz	6b
-> +	subf	r5,r0,r5
-> +	rlwinm.	r7,r5,32-3,3,31
-> +	beq	2b
-> +	mtctr	r7
-> +	b	1b
-> +
-> +#else
-> +
->  _GLOBAL(memcpy)
->  	srwi.	r7,r5,3
->  	addi	r6,r3,-4
-> @@ -267,6 +321,8 @@ _GLOBAL(memcpy)
->  	mtctr	r7
->  	b	1b
->  
-> +#endif
-> +
->  _GLOBAL(backwards_memcpy)
->  	rlwinm.	r7,r5,32-3,3,31		/* r0 = r5 >> 3 */
->  	add	r6,r3,r5
+g.
