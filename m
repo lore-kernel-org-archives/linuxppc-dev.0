@@ -1,37 +1,34 @@
-Return-Path: <B07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 6AFC6B6F01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 10 Jul 2010 02:18:17 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o69GID7O001546 for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 9 Jul 2010 09:18:13 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id o69GU9Wn016595
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 9 Jul 2010 11:30:09 -0500 (CDT)
-Date: Fri, 9 Jul 2010 11:18:11 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] arch/powerpc/lib/copy_32.S: Use alternate memcpy for
-	MPC512x and MPC52xx
-Message-ID: <20100709111811.4e239e4b@schlenkerla.am.freescale.net>
-In-Reply-To: <E0D806F7-A109-4AAF-9899-429659E2C3D9@kernel.crashing.org>
-References: <1278614421.1801.0@antares>
-	<DC489835-1F97-49DA-A00C-7D73D0EC0900@kernel.crashing.org>
-	<20100708150904.79feffdd@schlenkerla.am.freescale.net>
-	<E0D806F7-A109-4AAF-9899-429659E2C3D9@kernel.crashing.org>
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 17557B6EF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jul 2010 04:55:34 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o69ImSBY007769
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 12:48:29 -0600
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o69It5uE118310
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 12:55:07 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o69IwIvV020163
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 12:58:19 -0600
+Subject: [PATCH, RT, RFC]  Hacks allowing -rt to run on POWER7 / Powerpc.
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: rt-users <linux-rt-users@vger.kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 09 Jul 2010 13:55:01 -0500
+Message-ID: <1278701701.24737.19.camel@lexx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Albrecht =?ISO-8859-1?B?RHJl3w==?= <albrecht.dress@arcor.de>,
-	Steve Deiters <SteveDeiters@basler.com>, linuxppc-dev@lists.ozlabs.org,
-	David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Darren Hart <dvhltc@us.ibm.com>,
+	will_schmidt <will_schmidt@vnet.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,52 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 9 Jul 2010 14:59:09 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+[PATCH, RT, RFC]  Hacks allowing -rt to run on POWER7 / Powerpc.
 
-> >>> Actually, this is something which might need closer attention -
-> >>> and maybe some support in the device tree indicating which read or
-> >>> write width a device can accept?
-> >>
-> >> There already is "device-width"; the drivers never should use any
-> >> other access width unless they *know* that will work.
-> >
-> > Wouldn't you want to use "bank-width" instead?
-> 
-> We were talking about single devices.  But, sure, when you have
-> multiple devices in parallel the driver needs to know about that.
-> 
-> > It would be nice to have a device tree property that can specify
-> > that all access widths supported by the CPU will work, though.
-> 
-> Oh please no.  A device binding should not depend on what CPU there
-> is in the system.  There could be multiple CPUs of different
-> architectures, even.
+We've been seeing some issues with userspace randomly SIGSEGV'ing while
+running the -RT kernels on POWER7 based systems.   After lots of
+debugging, head scratching, and experimental changes to the code, the
+problem has been narrowed down such that we can avoid the problems by
+disabling the TLB batching.
 
-What I meant by that was that the flash interface was claiming that it
-is not the limiting factor in which access widths are useable -- it
-would be a way to claim that it is as flexible as ordinary memory in
-that regard.
+After some input from Ben and further debug, we've found that the
+restoration of the batch->active value near the end of __switch_to()
+seems to be the key.    ( The -RT related  changes within
+arch/powerpc/kernel/processor.c __switch_to()  do the equivalent of a
+arch_leave_lazy_mmu_mode() before calling _switch, use a hadbatch flag
+to indicate if batching was active, and then restore that batch->active
+value on the way out after the call to _switch_to.    That particular
+code is in the -RT branch, and not found in mainline  )
 
-If there is a transaction size that is capable of being presented to
-this component that it cannot handle, it would not present this
-property.
+Deferring to Ben (or others in the know) for whether this is the proper
+solution or if there is something deeper, but.. 
+IF the right answer is to simply disable the restoration of
+batch->active, the rest of the CONFIG_PREEMPT_RT changes in
+__switch_to() should then be replaceable with a single call to
+arch_leave_lazy_mmu_mode().
 
-> To figure out how to access a device, the driver looks at the device's
-> node, and all its parent nodes (or asks generic code to do that, or
-> platform code).
+The patch here is what I am currently running with, on both POWER6 and
+POWER7 systems, successfully.
 
-"looks" or "should look"? :-)
 
-If there are transaction sizes supported by the CPU that won't work
-with a given device through no fault of that device (or the interface
-to that device for which we don't have a separate node), then in
-theory, yes, it should be described at a higher level.
+Signed-off-by:   Will Schmidt <will_schmidt@vnet.ibm.com>
+CC:    Ben Herrenschmidt  <benh@kernel.crashing.org>
+CC:    Thomas Gleixner <tglx@linutronix.de>
 
-In reality, device tree parsing code is not AI, so rather than say "the
-driver looks at this and figures it out" it would be better to provide
-a more specific proposal of how a device tree might express this and
-what the driver would look for, if you think the simple solution is
-not expressive enough.
-
--Scott
+---
+diff -aurp linux-2.6.33.5-rt23.orig/arch/powerpc/kernel/process.c linux-2.6.33.5-rt23.exp/arch/powerpc/kernel/process.c
+--- linux-2.6.33.5-rt23.orig/arch/powerpc/kernel/process.c	2010-06-21 11:41:34.402513904 -0500
++++ linux-2.6.33.5-rt23.exp/arch/powerpc/kernel/process.c	2010-07-09 13:15:13.533269904 -0500
+@@ -304,10 +304,6 @@ struct task_struct *__switch_to(struct t
+ 	struct thread_struct *new_thread, *old_thread;
+ 	unsigned long flags;
+ 	struct task_struct *last;
+-#if defined(CONFIG_PPC64) && defined (CONFIG_PREEMPT_RT)
+-	struct ppc64_tlb_batch *batch;
+-	int hadbatch;
+-#endif
+ 
+ #ifdef CONFIG_SMP
+ 	/* avoid complexity of lazy save/restore of fpu
+@@ -401,16 +397,6 @@ struct task_struct *__switch_to(struct t
+ 		new_thread->start_tb = current_tb;
+ 	}
+ 
+-#ifdef CONFIG_PREEMPT_RT
+-	batch = &__get_cpu_var(ppc64_tlb_batch);
+-	if (batch->active) {
+-		hadbatch = 1;
+-		if (batch->index) {
+-			__flush_tlb_pending(batch);
+-		}
+-		batch->active = 0;
+-	}
+-#endif /* #ifdef CONFIG_PREEMPT_RT */
+ #endif
+ 
+ 	local_irq_save(flags);
+@@ -425,16 +411,13 @@ struct task_struct *__switch_to(struct t
+ 	 * of sync. Hard disable here.
+ 	 */
+ 	hard_irq_disable();
+-	last = _switch(old_thread, new_thread);
+-
+-	local_irq_restore(flags);
+ 
+ #if defined(CONFIG_PPC64) && defined(CONFIG_PREEMPT_RT)
+-	if (hadbatch) {
+-		batch = &__get_cpu_var(ppc64_tlb_batch);
+-		batch->active = 1;
+-	}
++	arch_leave_lazy_mmu_mode();
+ #endif
++	last = _switch(old_thread, new_thread);
++
++	local_irq_restore(flags);
+ 
+ 	return last;
+ }
