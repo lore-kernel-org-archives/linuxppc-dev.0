@@ -1,35 +1,23 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E24B0B6EEB
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 16:58:05 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o696w9NS015585
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:58:09 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o696w3gC1450104
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:58:03 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o696w2EV030149
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:58:03 +1000
-Message-ID: <4C36C876.9090404@linux.vnet.ibm.com>
-Date: Fri, 09 Jul 2010 12:27:58 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 8F364B6F05
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 17:35:45 +1000 (EST)
+Received: by iwn36 with SMTP id 36so1678933iwn.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 Jul 2010 00:35:43 -0700 (PDT)
 MIME-Version: 1.0
-To: maciej.rutecki@gmail.com
-Subject: Re: Oops while running fs_racer test on a POWER6 box against latest
-	git
-References: <4C2B28F3.7000006@linux.vnet.ibm.com>
-	<201007012025.30452.maciej.rutecki@gmail.com>
-	<4C2D8B63.2030500@linux.vnet.ibm.com>
-In-Reply-To: <4C2D8B63.2030500@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Latchesar Ionkov <lucho@ionkov.net>, jaxboe@fusionio.com,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Ron Minnich <rminnich@sandia.gov>, hch@lst.de
+In-Reply-To: <AANLkTimUxcsTMXNPOFfJxybp8u7Wv7Mt_nhW1EE01RqG@mail.gmail.com>
+References: <AANLkTikzt4mVGdYzRF2pgficbeinNydkr9E0YQjgJT1I@mail.gmail.com>
+	<20100706152110.4f25e96b@schlenkerla.am.freescale.net>
+	<AANLkTikNgYy9aAUAe9wTsNKDg3cNokSTVJ_6aA6n3SI9@mail.gmail.com>
+	<20100706181811.4542df5a@schlenkerla.am.freescale.net>
+	<AANLkTimUxcsTMXNPOFfJxybp8u7Wv7Mt_nhW1EE01RqG@mail.gmail.com>
+Date: Fri, 9 Jul 2010 00:35:43 -0700
+Message-ID: <AANLkTinNSzP-WvxC2kqZop2kvd1kSUMDuwI01GOBXApE@mail.gmail.com>
+Subject: Re: kernel boot stuck at udbg_putc_cpm()
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,98 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 02 July 2010 12:16 PM, divya wrote:
-> On Thursday 01 July 2010 11:55 PM, Maciej Rutecki wrote:
->> On środa, 30 czerwca 2010 o 13:22:27 divya wrote:
->>> While running fs_racer test from LTP on a POWER6 box against latest
->>> git(2.6.35-rc3-git4 - commitid 984bc9601f64fd) came across the 
->>> following
->>> warning followed by multiple oops.
->>>
->> I created a Bugzilla entry at
->> https://bugzilla.kernel.org/show_bug.cgi?id=16324
->> for your bug report, please add your address to the CC list in there, 
->> thanks!
->>
->>
-> Here I find a cleaner back trace while running fs_racer test from LTP 
-> on a POWER6
-> box against the latest git(2.6.35-rc3-git5 - commitid 980019d74e4b242)
->
-> Badness at kernel/mutex-debug.c:64
-> BUG: key (null) not in .data!
-> NIP: c0000000000be9e8 LR: c0000000000be9cc CTR: 0000000000000000
-> REGS: c00000010bb176f0 TRAP: 0700   Not tainted  
-> (2.6.35-rc3-git5-autotest)
-> BUG: key 00000000000001d8 not in .data!
-> BUG: key 00000000000001e0 not in .data!
-> BUG: key 00000000000001e8 not in .data!
-> MSR: 8000000000029032
-> Unable to handle kernel paging request for data at address 0x00000028
-> Faulting instruction address: 0xc0000000003ad0ec
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=1024 NUMA pSeries
-> last sysfs file: 
-> /sys/devices/system/cpu/cpu19/cache/index1/shared_cpu_map
-> Page fault in user mode with in_atomic() = 1 mm = c00000010943e600
-> Modules linked in:
-> NIP = fff9e98fc40  MSR = 800000004001d032
->  ipv6 fuse loop
-> Unable to handle kernel paging request for unknown fault
->  dm_mod
-> Faulting instruction address: 0xc00000000008d0f4
->  sr_mod ibmveth cdrom sg sd_mod crc_t10dif ibmvscsic 
-> scsi_transport_srp scsi_tgt scsi_mod
-> NIP: c0000000003ad0ec LR: c00000000064c3b0 CTR: c0000000003a6eb0
-> REGS: c000000109b4f610 TRAP: 0300   Not tainted  
-> (2.6.35-rc3-git5-autotest)
-> MSR: 8000000000009032<EE,ME,IR,DR>   CR: 88004484  XER: 00000001
-> DAR: 0000000000000028, DSISR: 0000000040010000
-> TASK = c000000109a98600[7403] 'mkdir' THREAD: c000000109b4c000 CPU: 19
-> GPR00: 0000000080000013 c000000109b4f890 c000000000d3d798 
-> 0000000000000028
-> GPR04: 0000000000000000 0000000000000000 0000000000000000 
-> 0000000000000001
-> GPR08: 0000000000000000 0000000000000028 c000000000189f2c 
-> c000000109a98600
-> GPR12: 0000000024004424 c00000000f602f80 00000000000041ff 
-> 0000000000000001
-> GPR16: 0000000000000002 c00000010d8304c0 c000000109b4fb44 
-> 0000000000000000
-> GPR20: c00000010df77908 fffffffffffff000 0000000000010000 
-> 00000000000041ff
-> GPR24: c00000010df77758 c000000109fa1800 c00000010df77908 
-> c0000000ff236600
-> GPR28: 0000000000000028 0000000000000040 c000000000ca7b38 
-> c000000000189f2c
-> NIP [c0000000003ad0ec] .do_raw_spin_trylock+0x10/0x48
-> LR [c00000000064c3b0] ._raw_spin_lock+0x50/0xa4
-> Call Trace:
-> [c000000109b4f890] [c00000000064c3a4] ._raw_spin_lock+0x44/0xa4 
-> (unreliable)
-> [c000000109b4f920] [c000000000189f2c] .new_inode+0x4c/0xe4
-> [c000000109b4f9b0] [c0000000002257fc] .ext3_new_inode+0x84/0xb70
-> [c000000109b4fad0] [c00000000022f1ec] .ext3_mkdir+0x130/0x438
-> [c000000109b4fbe0] [c00000000017adb4] .vfs_mkdir+0xb8/0x160
-> [c000000109b4fc80] [c00000000017e52c] .SyS_mkdirat+0xb0/0x114
-> [c000000109b4fdc0] [c00000000017a730] .SyS_mkdir+0x1c/0x30
-> [c000000109b4fe30] [c0000000000085b4] syscall_exit+0x0/0x40
-> Instruction dump:
-> eb41ffd0 7c0803a6 eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8 4e800020
-> 38000000 7c691b78 980d0214 800d0008<7d601829>  2c0b0000 40c20010 7c00192d
-> Oops: Weird page fault, sig: 11 [#2]
->
-> Pls let me know if this back trace would help in analyzing further.
-> Meanwhile I shall do a git bisect and send the inputs.
->
-> Thanks
-> Divya
->
->
->
-Hi All,
+I changed my toolchain and rebuilt the kernel image. This time all the
+messages below magically displayed on the serial port. :-D Are all
+these the early debugging messages?
 
- From the git bisect,seems like the commit 57439f878afafefad8836ebf5c49da2a0a746105 is the corrupt for the above issue.
+> Here is the kernel log buf dump. Anything suspicious?
+>
+> <6>Using My MPC870 machine description
+> <5>Linux version 2.6.33.5 (shawn@ubuntu) (gcc version 4.3.3 (GCC) )
+> #10 Mon Jul 5 22:58:30 PDT 2010
+> <7>Top of RAM: 0x8000000, Total RAM: 0x8000000
+> <7>Memory hole size: 0MB
+> <4>Zone PFN ranges:
+...
+<snipped>
+...
+> <7>time_init: decrementer frequency =3D 3.750000 MHz
+> <7>time_init: processor frequency =A0 =3D 120.000000 MHz
+> <6>clocksource: timebase mult[42aaaaab] shift[22] registered
+> <7>clockevent: decrementer mult[f5c28f] shift[32] cpu[0]
+> <7> =A0alloc irq_desc for 18 on node 0
+> <7> =A0alloc kstat_irqs on node 0
+> <7>irq: irq 4 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
+> mapped to virtual irq 18
 
-Thanks
-Divya
+Now the kernel stuck at the while loop that waits for transmitter fifo
+to be empty. It seems that the CPM UART stopped working in the middle
+of printing a message. I'm using minicom to connect to the serial
+port. I heard minicom is problematic. Will it be the cause here?
+
+(gdb) target remote ppcbdi:2001
+Remote debugging using ppcbdi:2001
+0xc00f348c in cpm_uart_console_write (co=3D<value optimized out>,
+    s=3D0xc0174df3 "console [ttyCPM0] enabled, bootconsole disabled\n", cou=
+nt=3D48)
+    at /home/rayan/wti/code/wti-linux-2.6.33.5/arch/powerpc/include/asm/io.=
+h:154
+154     DEF_MMIO_IN_BE(in_be16, 16, lhz);
+(gdb) next
+1161                    while ((in_be16(&bdp->cbd_sc) & BD_SC_READY) !=3D 0=
+)
+(gdb) next
+154     DEF_MMIO_IN_BE(in_be16, 16, lhz);
+(gdb) next
+1161                    while ((in_be16(&bdp->cbd_sc) & BD_SC_READY) !=3D 0=
+)
+(gdb) list
+1156            for (i =3D 0; i < count; i++, s++) {
+1157                    /* Wait for transmitter fifo to empty.
+1158                     * Ready indicates output is ready, and xmt is doin=
+g
+1159                     * that, not that it is ready for us to send.
+1160                     */
+1161                    while ((in_be16(&bdp->cbd_sc) & BD_SC_READY) !=3D 0=
+)
+1162                            ;
+1163
+1164                    /* Send the character out.
+1165                     * If the buffer address is in the CPM DPRAM, don't
+
+Thanks,
+-Shawn.
