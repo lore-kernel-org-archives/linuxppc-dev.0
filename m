@@ -1,34 +1,32 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 043F61007E8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 16:17:01 +1000 (EST)
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o696H79v019771
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:17:07 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o696H1hw1253450
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3626E1007FB
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 16:17:02 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp04.au.ibm.com (8.14.4/8.13.1) with ESMTP id o696ChbD006874
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:12:43 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o696H1CI1777776
 	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:17:01 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o696H0j1011392
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o696H1nl013198
 	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 16:17:01 +1000
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/13] powerpc/book3e: Use set_irq_regs() in the msgsnd/msgrcv
-	IPI path
-Date: Fri,  9 Jul 2010 16:16:49 +1000
-Message-Id: <1278656215-24705-7-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1278656215-24705-6-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 06/13] powerpc/book3e: Hookup doorbells exceptions on 64-bit
+	Book3E
+Date: Fri,  9 Jul 2010 16:16:48 +1000
+Message-Id: <1278656215-24705-6-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1278656215-24705-5-git-send-email-benh@kernel.crashing.org>
 References: <1278656215-24705-1-git-send-email-benh@kernel.crashing.org>
 	<1278656215-24705-2-git-send-email-benh@kernel.crashing.org>
 	<1278656215-24705-3-git-send-email-benh@kernel.crashing.org>
 	<1278656215-24705-4-git-send-email-benh@kernel.crashing.org>
 	<1278656215-24705-5-git-send-email-benh@kernel.crashing.org>
-	<1278656215-24705-6-git-send-email-benh@kernel.crashing.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,65 +36,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Gibson <david@gibson.dropbear.id.au>
+Note that critical doorbells are an unimplemented stub just like
+other critical or machine check handlers, since we haven't done
+support for "levelled" exceptions yet.
 
-include/asm-generic/irq_regs.h declares per-cpu irq_regs variables and
-get_irq_regs() and set_irq_regs() helper functions to maintain them.
-These can be used to access the proper pt_regs structure related to the
-current interrupt entry (if any).
-
-In the powerpc arch code, this is used to maintain irq regs on
-decrementer and external interrupt exceptions.  However, for the
-doorbell exceptions used by the msgsnd/msgrcv IPI mechanism of newer
-BookE CPUs, the irq_regs are not kept up to date.
-
-In particular this means that xmon will not work properly on SMP,
-because the secondary xmon instances started by IPI will blow up when
-they cannot retrieve the irq regs.
-
-This patch fixes the problem by adding calls to maintain the irq regs
-across doorbell exceptions.
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/dbell.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/Makefile         |    1 +
+ arch/powerpc/kernel/exceptions-64e.S |   21 +++++++++++++++++----
+ arch/powerpc/kernel/irq.c            |    7 +++++++
+ 3 files changed, 25 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
-index 1c7a945..f7b5188 100644
---- a/arch/powerpc/kernel/dbell.c
-+++ b/arch/powerpc/kernel/dbell.c
-@@ -16,6 +16,7 @@
- #include <linux/percpu.h>
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 0100604..8a33318 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -68,6 +68,7 @@ obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+ obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_44x)		+= cpu_setup_44x.o
+ obj-$(CONFIG_FSL_BOOKE)		+= cpu_setup_fsl_booke.o dbell.o
++obj-$(CONFIG_PPC_BOOK3E_64)	+= dbell.o
  
- #include <asm/dbell.h>
-+#include <asm/irq_regs.h>
+ extra-y				:= head_$(CONFIG_WORD_SIZE).o
+ extra-$(CONFIG_PPC_BOOK3E_32)	:= head_new_booke.o
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 24dcc0e..a42637c 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -246,11 +246,9 @@ interrupt_base_book3e:					/* fake trap */
+ 	EXCEPTION_STUB(0x1a0, watchdog)			/* 0x09f0 */
+ 	EXCEPTION_STUB(0x1c0, data_tlb_miss)
+ 	EXCEPTION_STUB(0x1e0, instruction_tlb_miss)
++	EXCEPTION_STUB(0x280, doorbell)
++	EXCEPTION_STUB(0x2a0, doorbell_crit)
  
- #ifdef CONFIG_SMP
- struct doorbell_cpu_info {
-@@ -63,17 +64,21 @@ void doorbell_message_pass(int target, int msg)
+-#if 0
+-	EXCEPTION_STUB(0x280, processor_doorbell)
+-	EXCEPTION_STUB(0x220, processor_doorbell_crit)
+-#endif
+ 	.globl interrupt_end_book3e
+ interrupt_end_book3e:
  
- void doorbell_exception(struct pt_regs *regs)
- {
-+	struct pt_regs *old_regs = set_irq_regs(regs);
- 	struct doorbell_cpu_info *info = &__get_cpu_var(doorbell_cpu_info);
- 	int msg;
+@@ -428,6 +426,19 @@ interrupt_end_book3e:
+ kernel_dbg_exc:
+ 	b	.	/* NYI */
  
- 	/* Warning: regs can be NULL when called from irq enable */
- 
- 	if (!info->messages || (num_online_cpus() < 2))
--		return;
-+		goto out;
- 
- 	for (msg = 0; msg < 4; msg++)
- 		if (test_and_clear_bit(msg, &info->messages))
- 			smp_message_recv(msg);
++/* Doorbell interrupt */
++	MASKABLE_EXCEPTION(0x2070, doorbell, .doorbell_exception, ACK_NONE)
 +
-+out:
-+	set_irq_regs(old_regs);
- }
++/* Doorbell critical Interrupt */
++	START_EXCEPTION(doorbell_crit);
++	CRIT_EXCEPTION_PROLOG(0x2080, PROLOG_ADDITION_NONE)
++//	EXCEPTION_COMMON(0x2080, PACA_EXCRIT, INTS_DISABLE_ALL)
++//	bl	special_reg_save_crit
++//	addi	r3,r1,STACK_FRAME_OVERHEAD
++//	bl	.doorbell_critical_exception
++//	b	ret_from_crit_except
++	b	.
++
  
- #else /* CONFIG_SMP */
+ /*
+  * An interrupt came in while soft-disabled; clear EE in SRR1,
+@@ -563,6 +574,8 @@ BAD_STACK_TRAMPOLINE(0xd00)
+ BAD_STACK_TRAMPOLINE(0xe00)
+ BAD_STACK_TRAMPOLINE(0xf00)
+ BAD_STACK_TRAMPOLINE(0xf20)
++BAD_STACK_TRAMPOLINE(0x2070)
++BAD_STACK_TRAMPOLINE(0x2080)
+ 
+ 	.globl	bad_stack_book3e
+ bad_stack_book3e:
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index fa6f385..2f6dc7f 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -64,6 +64,8 @@
+ #include <asm/ptrace.h>
+ #include <asm/machdep.h>
+ #include <asm/udbg.h>
++#include <asm/dbell.h>
++
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #include <asm/firmware.h>
+@@ -153,6 +155,11 @@ notrace void raw_local_irq_restore(unsigned long en)
+ 	if (get_hard_enabled())
+ 		return;
+ 
++#if defined(CONFIG_BOOKE) && defined(CONFIG_SMP)
++	/* Check for pending doorbell interrupts on SMP */
++	doorbell_exception(NULL);
++#endif
++
+ 	/*
+ 	 * Need to hard-enable interrupts here.  Since currently disabled,
+ 	 * no need to take further asm precautions against preemption; but
 -- 
 1.6.3.3
