@@ -1,23 +1,25 @@
-Return-Path: <msm@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 857E4B6F04
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8104BB6F04
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Jul 2010 08:17:41 +1000 (EST)
+	Fri,  9 Jul 2010 11:30:20 +1000 (EST)
 Subject: Re: [1/2] powerpc/crashdump: Fix issues with kexec and 36bit
 	physical addr
-From: Matthew McClintock <msm@freescale.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <11278706694663348731.1957747793.miltonm@bga.com>
-References: <11278706694663348731.1957747793.miltonm@bga.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <F4BDFB0D-51C0-49C1-918F-FAC0DD565E63@freescale.com>
+References: <1278535881-6463-1-git-send-email-msm@freescale.com>
+	<20100708-mitltonm-msm-reply@mdm.bga.com>
+	<1278586190.28659.94.camel@pasglop>
+	<F4BDFB0D-51C0-49C1-918F-FAC0DD565E63@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Jul 2010 17:17:07 -0500
-Message-ID: <1278627427.16683.21.camel@localhost>
+Date: Fri, 09 Jul 2010 11:30:07 +1000
+Message-ID: <1278639007.28659.129.camel@pasglop>
 Mime-Version: 1.0
-Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-07-09 at 15:18 -0500, Milton Miller wrote:
-> > I don't disagree but this can break kexec if phys_addr_t != unsigned
-> > long. Also, doesn't the crash kernel have to live below 2GB so
-> unsigned
-> > long is always fine?
+On Thu, 2010-07-08 at 07:40 -0500, Kumar Gala wrote:
+> On Jul 8, 2010, at 5:49 AM, Benjamin Herrenschmidt wrote:
 > 
-> 
-> Its could only break kexec for the case of phys_addr_t != unsigned
-> long
-> which you are fixing, and its the right way to fix it.  There is
-> nothing
-> inherent in linux requiring the crash kernel to be below 2G, although
-> there may be limitations of the current kernel that require such a
-> limit.
-
-Fair enough. This will be updated in the next patch.
-
-> 
+> > On Thu, 2010-07-08 at 04:07 -0500, Milton Miller wrote:
+> >> On Wed, 07 Jul 2010 around 10:51:20 -0000 Matthew McClintock wrote:
+> >>> 
+> >>> Fix sizes of variables so correct values are exported via /proc.
+> >>> Cast variable in comparison to avoid compiler error.
+> >>> 
 > > 
-> > Will still change unless I hear otherwise.
-> >
-> 
-> 
-> > > 
-> > > By the way, why does 32 bit care about the running kernel's size?
-> aka
-> > > linux,kernel-end?  64 bit book 3S needs it because we use mmu
-> hooks
-> > > to copy the pages to their destination, but I thought ppc32 was
-> using
-> > > a relocatable copy routine.  Are we missing the code to create
-> > > temp ref tlbs on the fly for book 3E?
+> > I'm afraid I already pulled that in. Please send a fixup patch.
 > > 
-> > This is not really in this patch or did I miss something? Kexec uses
-> > kernel-end just to add as a invalid region. Not crucial though for
-> 32
-> > bit.
-> 
-> No its not in this patch, hence "By the way".  I figured you might
-> have
-> some knowledge as you were working in this area.   If there is no
-> reason
-> to have the kernel region blocked for 32 bit, then it should be
-> removed.
-> Obviously from kexec-tools first, and then after some time we could
-> move
-> its export to be only for 64-bit (or only 64 bit book-3S?)
-> 
 
-As far as I can tell it's just used as an exclusion range. It's only
-applicable for a crash kernel to make sure your crashkernel=XXM@XXM does
-not overlap with the current kernel. Seems like it might not be needed.
+> pulled into which tree?
 
-> It only causes additional time for traditional, and memory
-> fragmentation
-> for book 3E, if you disallow memory below the current kernel end.
-> For
-> that matter, on 3E, does this limit creep as you repeatedly reboot?
-> 
+My confusion. It was in my to-be-posted -next but I hadn't actually
+uploaded it yet so I've dropped the patch for now. Matthew, don't send
+an incremental fixup, a whole new patch will do. I've also dropped the
+second patch that enables building of crash dump kernels for now.
 
-For a crash kernel it does not matter as you stick with the reserved
-region. For kexec proper the current kexec HEAD disallows loading from
-0x0-kernelend but I think that is wrong and needs to be modified for at
-least some platforms. So, basically you can't load too the currently
-running kernel address, and you can't even restart but I have not tried
-a different address. 
+I've left the MPIC CPU reset one though.
 
-I submitted a patch a while back to change that behavior for
-kexec-uImage targets and have more working coming soon which will need
-to be reviewed as well for kexec-elf targets.
-
--Matthew
+Cheers,
+Ben.
