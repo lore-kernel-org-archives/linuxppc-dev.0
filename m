@@ -1,33 +1,23 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp03.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 92215B7086
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jul 2010 18:52:29 +1000 (EST)
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
-	by e28smtp03.in.ibm.com (8.14.4/8.13.1) with ESMTP id o698qNtp005831
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 14:22:23 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o698qNAJ2687026
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 14:22:23 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o698qN8F014253
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Jul 2010 14:22:23 +0530
-Date: Fri, 9 Jul 2010 14:22:17 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 02/13] powerpc/book3e: Hack to get gdb moving along on
-	Book3E 64-bit
-Message-ID: <20100709085217.GA9668@in.ibm.com>
-References: <1278656215-24705-1-git-send-email-benh@kernel.crashing.org>
-	<1278656215-24705-2-git-send-email-benh@kernel.crashing.org>
+Return-Path: <mj.embd@gmail.com>
+Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
+	by ozlabs.org (Postfix) with ESMTP id 75F41B6EEE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  9 Jul 2010 19:11:05 +1000 (EST)
+Received: by wwb13 with SMTP id 13so284903wwb.14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 09 Jul 2010 02:11:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1278656215-24705-2-git-send-email-benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: prasad@linux.vnet.ibm.com
+In-Reply-To: <1277980982-12433-28-git-send-email-agraf@suse.de>
+References: <1277980982-12433-1-git-send-email-agraf@suse.de>
+	<1277980982-12433-28-git-send-email-agraf@suse.de>
+Date: Fri, 9 Jul 2010 14:41:01 +0530
+Message-ID: <AANLkTil6RekYBNnpM2MjSH7rcrHQZdHRwK5cBrvKQKhM@mail.gmail.com>
+Subject: Re: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
+From: MJ embd <mj.embd@gmail.com>
+To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,113 +27,283 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 09, 2010 at 04:16:44PM +1000, Benjamin Herrenschmidt wrote:
-
-Hi,
-   A few questions and some trivial comments below.
-
-> Our handling of debug interrupts on Book3E 64-bit is not quite
-> the way it should be just yet. This is a workaround to let gdb
-> work at least for now. We ensure that when context switching,
-> we set the appropriate DBCR0 value for the new task. We also
-> make sure that we turn off MSR[DE] within the kernel, and set
-> it as part of the bits that get set when going back to userspace.
-> 
-
-I think I'm missing the code where MSR_DE is set before returning
-to user-space? I just found one instance where MSR_USER64 (which now
-includes MSR_DE) is used (in start_thread()). If not set, we'll lose the
-interrupts caused in IDM too.
-
-> In the long run, we will probably set the userspace DBCR0 on the
-> exception exit code path and ensure we have some proper kernel
-> value to set on the way into the kernel, a bit like ppc32 does,
-> but that will take more work.
-
-The effort to port ppc32 BookIII E debug register usage to use generic
-hw-breakpoint interfaces (linuxppc-dev message-id:
-20100629165152.GA8586@in.ibm.com), in its final form, should cleanup
-most of this code. Even the hook switch_booke_debug_regs() in
-__switch_to() should be done away.
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Thu, Jul 1, 2010 at 4:13 PM, Alexander Graf <agraf@suse.de> wrote:
+> We just introduced a new PV interface that screams for documentation. So =
+here
+> it is - a shiny new and awesome text file describing the internal works o=
+f
+> the PPC KVM paravirtual interface.
+>
+> Signed-off-by: Alexander Graf <agraf@suse.de>
+>
 > ---
->  arch/powerpc/include/asm/reg_booke.h |    4 ++--
->  arch/powerpc/kernel/process.c        |   22 ++++++++++++++++++++++
->  2 files changed, 24 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-> index 2360317..66dc6f0 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -29,8 +29,8 @@
->  #if defined(CONFIG_PPC_BOOK3E_64)
->  #define MSR_		MSR_ME | MSR_CE
->  #define MSR_KERNEL      MSR_ | MSR_CM
-> -#define MSR_USER32	MSR_ | MSR_PR | MSR_EE
-> -#define MSR_USER64	MSR_USER32 | MSR_CM
-> +#define MSR_USER32	MSR_ | MSR_PR | MSR_EE | MSR_DE
-> +#define MSR_USER64	MSR_USER32 | MSR_CM | MSR_DE
-
-MSR_DE is included twice in MSR_USER64 (once through MSR_USER32).
-
->  #elif defined (CONFIG_40x)
->  #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
->  #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 1e78453..551f671 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -477,6 +477,28 @@ struct task_struct *__switch_to(struct task_struct *prev,
->  	new_thread = &new->thread;
->  	old_thread = &current->thread;
-> 
-> +#if defined(CONFIG_PPC_BOOK3E_64)
-> +	/* XXX Current Book3E code doesn't deal with kernel side DBCR0,
-
-You may want to use the style
-	/*
-	 * ......
-
-> +	 * we always hold the user values, so we set it now.
-> +	 *
-> +	 * However, we ensure the kernel MSR:DE is appropriately cleared too
-> +	 * to avoid spurrious single step exceptions in the kernel.
-                 ^^^spurious^^^
-
-> +	 *
-> +	 * This will have to change to merge with the ppc32 code at some point,
-> +	 * but I don't like much what ppc32 is doing today so there's some
-> +	 * thinking needed there
-> +	 */
-> +	if ((new_thread->dbcr0 | old_thread->dbcr0) & DBCR0_IDM) {
-> +		u32 dbcr0;
-
-thread->dbcr0 is defined as "unsigned long" in processor.h however "u32 dbcr0"
-here must be fine (given that DBCR0 uses 32-bits in ppc32 and uses only 32:63
-bits in BOOKIIIE_64). Should dbcr<0-n> be made u32, given that there
-will be no 64-bit long value to store (or am I missing something)?
-
-Thanks,
-K.Prasad
-
-
+>
+> v1 -> v2:
+>
+> =A0- clarify guest implementation
+> =A0- clarify that privileged instructions still work
+> =A0- explain safe MSR bits
+> =A0- Fix dsisr patch description
+> =A0- change hypervisor calls to use new register values
+> ---
+> =A0Documentation/kvm/ppc-pv.txt | =A0185 ++++++++++++++++++++++++++++++++=
+++++++++++
+> =A01 files changed, 185 insertions(+), 0 deletions(-)
+> =A0create mode 100644 Documentation/kvm/ppc-pv.txt
+>
+> diff --git a/Documentation/kvm/ppc-pv.txt b/Documentation/kvm/ppc-pv.txt
+> new file mode 100644
+> index 0000000..82de6c6
+> --- /dev/null
+> +++ b/Documentation/kvm/ppc-pv.txt
+> @@ -0,0 +1,185 @@
+> +The PPC KVM paravirtual interface
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
 > +
-> +		mtmsr(mfmsr() & ~MSR_DE);
-> +		isync();
-> +		dbcr0 = mfspr(SPRN_DBCR0);
-> +		dbcr0 = (dbcr0 & DBCR0_EDM) | new_thread->dbcr0;
-> +		mtspr(SPRN_DBCR0, dbcr0);
-> +	}
-> +#endif /* CONFIG_PPC64_BOOK3E */
+> +The basic execution principle by which KVM on PowerPC works is to run al=
+l kernel
+> +space code in PR=3D1 which is user space. This way we trap all privilege=
+d
+> +instructions and can emulate them accordingly.
 > +
->  #ifdef CONFIG_PPC64
->  	/*
->  	 * Collect processor utilization data per process
-> -- 
-> 1.6.3.3
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> +Unfortunately that is also the downfall. There are quite some privileged
+> +instructions that needlessly return us to the hypervisor even though the=
+y
+> +could be handled differently.
+> +
+> +This is what the PPC PV interface helps with. It takes privileged instru=
+ctions
+> +and transforms them into unprivileged ones with some help from the hyper=
+visor.
+> +This cuts down virtualization costs by about 50% on some of my benchmark=
+s.
+> +
+> +The code for that interface can be found in arch/powerpc/kernel/kvm*
+> +
+> +Querying for existence
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +To find out if we're running on KVM or not, we overlay the PVR register.=
+ Usually
+> +the PVR register contains an id that identifies your CPU type. If, howev=
+er, you
+> +pass KVM_PVR_PARA in the register that you want the PVR result in, the r=
+egister
+> +still contains KVM_PVR_PARA after the mfpvr call.
+> +
+> + =A0 =A0 =A0 LOAD_REG_IMM(r5, KVM_PVR_PARA)
+> + =A0 =A0 =A0 mfpvr =A0 r5
+> + =A0 =A0 =A0 [r5 still contains KVM_PVR_PARA]
+> +
+> +Once determined to run under a PV capable KVM, you can now use hypercall=
+s as
+> +described below.
+> +
+> +PPC hypercalls
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +The only viable ways to reliably get from guest context to host context =
+are:
+> +
+> + =A0 =A0 =A0 1) Call an invalid instruction
+> + =A0 =A0 =A0 2) Call the "sc" instruction with a parameter to "sc"
+> + =A0 =A0 =A0 3) Call the "sc" instruction with parameters in GPRs
+> +
+> +Method 1 is always a bad idea. Invalid instructions can be replaced late=
+r on
+> +by valid instructions, rendering the interface broken.
+> +
+> +Method 2 also has downfalls. If the parameter to "sc" is !=3D 0 the spec=
+ is
+> +rather unclear if the sc is targeted directly for the hypervisor or the
+> +supervisor. It would also require that we read the syscall issuing instr=
+uction
+> +every time a syscall is issued, slowing down guest syscalls.
+> +
+> +Method 3 is what KVM uses. We pass magic constants (KVM_SC_MAGIC_R0 and
+> +KVM_SC_MAGIC_R3) in r0 and r3 respectively. If a syscall instruction wit=
+h these
+> +magic values arrives from the guest's kernel mode, we take the syscall a=
+s a
+> +hypercall.
+> +
+> +The parameters are as follows:
+> +
+> + =A0 =A0 =A0 r0 =A0 =A0 =A0 =A0 =A0 =A0 =A0KVM_SC_MAGIC_R0
+> + =A0 =A0 =A0 r3 =A0 =A0 =A0 =A0 =A0 =A0 =A0KVM_SC_MAGIC_R3 =A0 =A0 =A0 =
+=A0 Return code
+> + =A0 =A0 =A0 r4 =A0 =A0 =A0 =A0 =A0 =A0 =A0Hypercall number
+> + =A0 =A0 =A0 r5 =A0 =A0 =A0 =A0 =A0 =A0 =A0First parameter
+> + =A0 =A0 =A0 r6 =A0 =A0 =A0 =A0 =A0 =A0 =A0Second parameter
+> + =A0 =A0 =A0 r7 =A0 =A0 =A0 =A0 =A0 =A0 =A0Third parameter
+> + =A0 =A0 =A0 r8 =A0 =A0 =A0 =A0 =A0 =A0 =A0Fourth parameter
+> +
+> +Hypercall definitions are shared in generic code, so the same hypercall =
+numbers
+> +apply for x86 and powerpc alike.
+> +
+> +The magic page
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +To enable communication between the hypervisor and guest there is a new =
+shared
+> +page that contains parts of supervisor visible register state. The guest=
+ can
+> +map this shared page using the KVM hypercall KVM_HC_PPC_MAP_MAGIC_PAGE.
+> +
+> +With this hypercall issued the guest always gets the magic page mapped a=
+t the
+> +desired location in effective and physical address space. For now, we al=
+ways
+> +map the page to -4096. This way we can access it using absolute load and=
+ store
+> +functions. The following instruction reads the first field of the magic =
+page:
+> +
+> + =A0 =A0 =A0 ld =A0 =A0 =A0rX, -4096(0)
+> +
+> +The interface is designed to be extensible should there be need later to=
+ add
+> +additional registers to the magic page. If you add fields to the magic p=
+age,
+> +also define a new hypercall feature to indicate that the host can give y=
+ou more
+> +registers. Only if the host supports the additional features, make use o=
+f them.
+> +
+> +The magic page has the following layout as described in
+> +arch/powerpc/include/asm/kvm_para.h:
+> +
+> +struct kvm_vcpu_arch_shared {
+> + =A0 =A0 =A0 __u64 scratch1;
+> + =A0 =A0 =A0 __u64 scratch2;
+> + =A0 =A0 =A0 __u64 scratch3;
+> + =A0 =A0 =A0 __u64 critical; =A0 =A0 =A0 =A0 /* Guest may not get interr=
+upts if =3D=3D r1 */
+> + =A0 =A0 =A0 __u64 sprg0;
+> + =A0 =A0 =A0 __u64 sprg1;
+> + =A0 =A0 =A0 __u64 sprg2;
+> + =A0 =A0 =A0 __u64 sprg3;
+> + =A0 =A0 =A0 __u64 srr0;
+> + =A0 =A0 =A0 __u64 srr1;
+> + =A0 =A0 =A0 __u64 dar;
+> + =A0 =A0 =A0 __u64 msr;
+> + =A0 =A0 =A0 __u32 dsisr;
+> + =A0 =A0 =A0 __u32 int_pending; =A0 =A0 =A0/* Tells the guest if we have=
+ an interrupt */
+> +};
+> +
+> +Additions to the page must only occur at the end. Struct fields are alwa=
+ys 32
+> +bit aligned.
+> +
+> +MSR bits
+> +=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +The MSR contains bits that require hypervisor intervention and bits that=
+ do
+> +not require direct hypervisor intervention because they only get interpr=
+eted
+> +when entering the guest or don't have any impact on the hypervisor's beh=
+avior.
+> +
+> +The following bits are safe to be set inside the guest:
+> +
+> + =A0MSR_EE
+> + =A0MSR_RI
+> + =A0MSR_CR
+> + =A0MSR_ME
+> +
+> +If any other bit changes in the MSR, please still use mtmsr(d).
+> +
+> +Patched instructions
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +The "ld" and "std" instructions are transormed to "lwz" and "stw" instru=
+ctions
+> +respectively on 32 bit systems with an added offset of 4 to accomodate f=
+or big
+> +endianness.
+> +
+> +The following is a list of mapping the Linux kernel performs when runnin=
+g as
+> +guest. Implementing any of those mappings is optional, as the instructio=
+n traps
+> +also act on the shared page. So calling privileged instructions still wo=
+rks as
+> +before.
+> +
+> +From =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 To
+> +=3D=3D=3D=3D =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D=3D
+> +
+> +mfmsr =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0ld =A0 =A0 =A0rX, magic_page->msr
+> +mfsprg rX, 0 =A0 =A0 =A0 =A0 =A0 ld =A0 =A0 =A0rX, magic_page->sprg0
+> +mfsprg rX, 1 =A0 =A0 =A0 =A0 =A0 ld =A0 =A0 =A0rX, magic_page->sprg1
+> +mfsprg rX, 2 =A0 =A0 =A0 =A0 =A0 ld =A0 =A0 =A0rX, magic_page->sprg2
+> +mfsprg rX, 3 =A0 =A0 =A0 =A0 =A0 ld =A0 =A0 =A0rX, magic_page->sprg3
+> +mfsrr0 rX =A0 =A0 =A0 =A0 =A0 =A0 =A0ld =A0 =A0 =A0rX, magic_page->srr0
+> +mfsrr1 rX =A0 =A0 =A0 =A0 =A0 =A0 =A0ld =A0 =A0 =A0rX, magic_page->srr1
+> +mfdar =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0ld =A0 =A0 =A0rX, magic_page->dar
+> +mfdsisr =A0 =A0 =A0 =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0lwz =A0 =A0 rX, mag=
+ic_page->dsisr
+> +
+> +mtmsr =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0std =A0 =A0 rX, magic_page->msr
+> +mtsprg 0, rX =A0 =A0 =A0 =A0 =A0 std =A0 =A0 rX, magic_page->sprg0
+> +mtsprg 1, rX =A0 =A0 =A0 =A0 =A0 std =A0 =A0 rX, magic_page->sprg1
+> +mtsprg 2, rX =A0 =A0 =A0 =A0 =A0 std =A0 =A0 rX, magic_page->sprg2
+> +mtsprg 3, rX =A0 =A0 =A0 =A0 =A0 std =A0 =A0 rX, magic_page->sprg3
+> +mtsrr0 rX =A0 =A0 =A0 =A0 =A0 =A0 =A0std =A0 =A0 rX, magic_page->srr0
+> +mtsrr1 rX =A0 =A0 =A0 =A0 =A0 =A0 =A0std =A0 =A0 rX, magic_page->srr1
+> +mtdar =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0std =A0 =A0 rX, magic_page->dar
+> +mtdsisr =A0 =A0 =A0 =A0rX =A0 =A0 =A0 =A0 =A0 =A0 =A0stw =A0 =A0 rX, mag=
+ic_page->dsisr
+> +
+> +tlbsync =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0nop
+> +
+> +mtmsrd rX, 0 =A0 =A0 =A0 =A0 =A0 b =A0 =A0 =A0 <special mtmsr section>
+> +mtmsr =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0b =A0 =A0 =A0 <special mtmsr se=
+ction>
+> +
+> +mtmsrd rX, 1 =A0 =A0 =A0 =A0 =A0 b =A0 =A0 =A0 <special mtmsrd section>
+> +
+> +[BookE only]
+> +wrteei [0|1] =A0 =A0 =A0 =A0 =A0 b =A0 =A0 =A0 <special wrteei section>
+> +
+> +
+> +Some instructions require more logic to determine what's going on than a=
+ load
+> +or store instruction can deliver. To enable patching of those, we keep s=
+ome
+> +RAM around where we can live translate instructions to. What happens is =
+the
+> +following:
+> +
+> + =A0 =A0 =A0 1) copy emulation code to memory
+> + =A0 =A0 =A0 2) patch that code to fit the emulated instruction
+> + =A0 =A0 =A0 3) patch that code to return to the original pc + 4
+> + =A0 =A0 =A0 4) patch the original instruction to branch to the new code
+> +
+> +That way we can inject an arbitrary amount of code as replacement for a =
+single
+> +instruction. This allows us to check for pending interrupts when setting=
+ EE=3D1
+> +for example.
+> +
+
+Which patch does this mapping ? Can you please point to that.
+
+
+> --
+> 1.6.0.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>
+
+
+
+--=20
+-mj
