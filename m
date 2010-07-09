@@ -1,23 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 63E96B6F07
+Return-Path: <lee.nipper@gmail.com>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 7C3ABB6F14
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  9 Jul 2010 19:15:34 +1000 (EST)
-Subject: Re: [PATCH 27/27] KVM: PPC: Add Documentation about PV interface
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <AANLkTil6RekYBNnpM2MjSH7rcrHQZdHRwK5cBrvKQKhM@mail.gmail.com>
-Date: Fri, 9 Jul 2010 11:15:28 +0200
-Message-Id: <B3EA423C-6CAA-430C-BC12-86153B6EC98D@suse.de>
-References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<1277980982-12433-28-git-send-email-agraf@suse.de>
-	<AANLkTil6RekYBNnpM2MjSH7rcrHQZdHRwK5cBrvKQKhM@mail.gmail.com>
-To: MJ embd <mj.embd@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+	Fri,  9 Jul 2010 21:17:22 +1000 (EST)
+Received: by gyd10 with SMTP id 10so1145778gyd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 09 Jul 2010 04:17:20 -0700 (PDT)
+From: Lee Nipper <lee.nipper@gmail.com>
+To: jwboyer@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/40x: Distinguish AMCC PowerPC 405EX and 405EXr
+	correctly
+Date: Fri,  9 Jul 2010 06:17:16 -0500
+Message-Id: <1278674236-4550-1-git-send-email-lee.nipper@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Lee Nipper <lee.nipper@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +22,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The recent AMCC 405EX Rev D without Security uses a PVR value
+that matches the old 405EXr Rev A/B with Security.
+The 405EX Rev D without Security would be shown
+incorrectly as an 405EXr. The pvr_mask of 0xffff0004
+is no longer sufficient to distinguish the 405EX from 405EXr.
 
-On 09.07.2010, at 11:11, MJ embd wrote:
+This patch replaces 2 entries in the cpu_specs table
+and adds 8 more, each using pvr_mask of 0xffff000f
+and appropriate pvr_value to distinguish the AMCC
+PowerPC 405EX and 405EXr instances.
+The cpu_name for these entries now includes the
+Rev, in similar fashion to the 440GX.
 
-> On Thu, Jul 1, 2010 at 4:13 PM, Alexander Graf <agraf@suse.de> wrote:
->> We just introduced a new PV interface that screams for documentation. =
-So here
->> it is - a shiny new and awesome text file describing the internal =
-works of
->> the PPC KVM paravirtual interface.
->>=20
->> Signed-off-by: Alexander Graf <agraf@suse.de>
->>=20
->> +
->> +
->> +Some instructions require more logic to determine what's going on =
-than a load
->> +or store instruction can deliver. To enable patching of those, we =
-keep some
->> +RAM around where we can live translate instructions to. What happens =
-is the
->> +following:
->> +
->> +       1) copy emulation code to memory
->> +       2) patch that code to fit the emulated instruction
->> +       3) patch that code to return to the original pc + 4
->> +       4) patch the original instruction to branch to the new code
->> +
->> +That way we can inject an arbitrary amount of code as replacement =
-for a single
->> +instruction. This allows us to check for pending interrupts when =
-setting EE=3D1
->> +for example.
->> +
->=20
-> Which patch does this mapping ? Can you please point to that.
+Signed-off-by: Lee Nipper <lee.nipper@gmail.com>
+---
+Patch applies against v2.6.35-rc4.
+Tested with 405EX Rev C and Rev D.
+Followed u-boot arch/powerpc/include/asm/processor.h for 405EX[r] PVR values.
 
-The branch patching is in patch 22/27. For the respective users, see =
-patch 23-26/27.
+ arch/powerpc/kernel/cputable.c |  118 +++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 111 insertions(+), 7 deletions(-)
 
-
-Alex
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 87aa0f3..65e2b4e 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1364,10 +1364,10 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_4xx,
+ 		.platform		= "ppc405",
+ 	},
+-	{	/* 405EX */
+-		.pvr_mask		= 0xffff0004,
+-		.pvr_value		= 0x12910004,
+-		.cpu_name		= "405EX",
++	{	/* 405EX Rev. A/B with Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910007,
++		.cpu_name		= "405EX Rev. A/B",
+ 		.cpu_features		= CPU_FTRS_40X,
+ 		.cpu_user_features	= PPC_FEATURE_32 |
+ 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+@@ -1377,10 +1377,114 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_4xx,
+ 		.platform		= "ppc405",
+ 	},
+-	{	/* 405EXr */
+-		.pvr_mask		= 0xffff0004,
++	{	/* 405EX Rev. C without Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x1291000d,
++		.cpu_name		= "405EX Rev. C",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EX Rev. C with Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x1291000f,
++		.cpu_name		= "405EX Rev. C",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EX Rev. D without Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910003,
++		.cpu_name		= "405EX Rev. D",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EX Rev. D with Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910005,
++		.cpu_name		= "405EX Rev. D",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EXr Rev. A/B without Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910001,
++		.cpu_name		= "405EXr Rev. A/B",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EXr Rev. C without Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910009,
++		.cpu_name		= "405EXr Rev. C",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EXr Rev. C with Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x1291000b,
++		.cpu_name		= "405EXr Rev. C",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EXr Rev. D without Security */
++		.pvr_mask		= 0xffff000f,
+ 		.pvr_value		= 0x12910000,
+-		.cpu_name		= "405EXr",
++		.cpu_name		= "405EXr Rev. D",
++		.cpu_features		= CPU_FTRS_40X,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.mmu_features		= MMU_FTR_TYPE_40x,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_4xx,
++		.platform		= "ppc405",
++	},
++	{	/* 405EXr Rev. D with Security */
++		.pvr_mask		= 0xffff000f,
++		.pvr_value		= 0x12910002,
++		.cpu_name		= "405EXr Rev. D",
+ 		.cpu_features		= CPU_FTRS_40X,
+ 		.cpu_user_features	= PPC_FEATURE_32 |
+ 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+-- 
+1.6.0.4
