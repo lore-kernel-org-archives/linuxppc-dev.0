@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 6A0F1B6F19
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 02:07:19 +1000 (EST)
-Subject: Re: [PATCH 1/3] powerpc/cpm: Reintroduce global spi_pram struct
-	(fixes build issue)
+	by ozlabs.org (Postfix) with ESMTPS id A771B1007EB
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 02:07:21 +1000 (EST)
+Subject: Re: [PATCH 2/3] powerpc/cpm1: Fix build with various
+	CONFIG_*_UCODE_PATCH combinations
 Mime-Version: 1.0 (Apple Message framework v1078)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100708171610.GA11621@oksana.dev.rtsoft.ru>
-Date: Sun, 11 Jul 2010 11:07:01 -0500
-Message-Id: <F42B140B-59CE-4851-A59C-7C0E401F9295@kernel.crashing.org>
-References: <20100708171610.GA11621@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100708171614.GB11621@oksana.dev.rtsoft.ru>
+Date: Sun, 11 Jul 2010 11:07:09 -0500
+Message-Id: <AA37EC26-C5D9-45F4-8854-D95669EA043A@kernel.crashing.org>
+References: <20100708171614.GB11621@oksana.dev.rtsoft.ru>
 To: Anton Vorontsov <avorontsov@mvista.com>
 Cc: LEROY Christophe <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org,
 	Scott Wood <scottwood@freescale.com>
@@ -28,31 +28,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jul 8, 2010, at 12:16 PM, Anton Vorontsov wrote:
 
-> spi_t was removed in commit 644b2a680ccc51a9ec4d6beb12e9d47d2dee98e2
-> ("powerpc/cpm: Remove SPI defines and spi structs"), the commit =
-assumed
-> that spi_t isn't used anywhere outside of the spi_mpc8xxx driver. But
-> it appears that the struct is needed for micropatch code. So, let's
-> reintroduce the struct.
->=20
-> Fixes the following build issue:
->=20
+> Warnings are treated as errors for arch/powerpc code, so build fails
+> with CONFIG_I2C_SPI_UCODE_PATCH=y:
+> 
 >    CC      arch/powerpc/sysdev/micropatch.o
->  micropatch.c: In function 'cpm_load_patch':
->  micropatch.c:629: error: expected '=3D', ',', ';', 'asm' or =
-'__attribute__' before '*' token
->  micropatch.c:629: error: 'spp' undeclared (first use in this =
-function)
->  micropatch.c:629: error: (Each undeclared identifier is reported only =
-once
->  micropatch.c:629: error: for each function it appears in.)
->=20
-> Reported-by: LEROY Christophe <christophe.leroy@c-s.fr>
-> Reported-by: Tony Breeds <tony@bakeyournoodle.com>
+>  cc1: warnings being treated as errors
+>  arch/powerpc/sysdev/micropatch.c: In function 'cpm_load_patch':
+>  arch/powerpc/sysdev/micropatch.c:630: warning: unused variable 'smp'
+>  make[1]: *** [arch/powerpc/sysdev/micropatch.o] Error 1
+> 
+> And with CONFIG_USB_SOF_UCODE_PATCH=y:
+> 
+>  CC      arch/powerpc/sysdev/micropatch.o
+>  cc1: warnings being treated as errors
+>  arch/powerpc/sysdev/micropatch.c: In function 'cpm_load_patch':
+>  arch/powerpc/sysdev/micropatch.c:629: warning: unused variable 'spp'
+>  arch/powerpc/sysdev/micropatch.c:628: warning: unused variable 'iip'
+>  make[1]: *** [arch/powerpc/sysdev/micropatch.o] Error 1
+> 
+> This patch fixes these issues by introducing proper #ifdefs.
+> 
 > Cc: <stable@kernel.org> [ .33, .34 ]
 > Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 > ---
+> arch/powerpc/sysdev/micropatch.c |    5 +++++
+> 1 files changed, 5 insertions(+), 0 deletions(-)
 
 applied to merge
 
-- k=
+- k
