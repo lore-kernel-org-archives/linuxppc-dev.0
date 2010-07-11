@@ -2,20 +2,16 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 27E84B728D
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 02:07:29 +1000 (EST)
-Subject: Re: [PATCH 3/3] powerpc/cpm1: Mark micropatch code/data static and
-	__init
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTPS id F2612B6F3E
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 02:18:51 +1000 (EST)
+Date: Sun, 11 Jul 2010 11:18:46 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100708171616.GC11621@oksana.dev.rtsoft.ru>
-Date: Sun, 11 Jul 2010 11:07:17 -0500
-Message-Id: <8105B407-B167-47EE-97D3-B97BDA0001AF@kernel.crashing.org>
-References: <20100708171616.GC11621@oksana.dev.rtsoft.ru>
-To: Anton Vorontsov <avorontsov@mvista.com>
-Cc: LEROY Christophe <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org,
-	Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <Pine.LNX.4.64.1007111117290.25465@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* a few build fixes and a bug fix for 2.6.35
 
-On Jul 8, 2010, at 12:16 PM, Anton Vorontsov wrote:
+The following changes since
+commit e467e104bb7482170b79f516d2025e7cfcaaa733:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
-> This saves runtime memory and fixes lots of sparse warnings like this:
-> 
->    CHECK   arch/powerpc/sysdev/micropatch.c
->  arch/powerpc/sysdev/micropatch.c:27:6: warning: symbol 'patch_2000'
->  was not declared. Should it be static?
->  arch/powerpc/sysdev/micropatch.c:146:6: warning: symbol 'patch_2f00'
->  was not declared. Should it be static?
->  ...
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
-> ---
-> arch/powerpc/include/asm/cpm1.h  |    3 ++-
-> arch/powerpc/sysdev/micropatch.c |   18 +++++++++---------
-> 2 files changed, 11 insertions(+), 10 deletions(-)
+are available in the git repository at:
 
-applied to merge
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-- k
+Anton Vorontsov (3):
+      powerpc/cpm: Reintroduce global spi_pram struct (fixes build issue)
+      powerpc/cpm1: Fix build with various CONFIG_*_UCODE_PATCH combinations
+      powerpc/cpm1: Mark micropatch code/data static and __init
+
+Matthew McClintock (1):
+      powerpc/fsl-booke: Fix address issue when using relocatable kernels
+
+ arch/powerpc/include/asm/cpm.h                |   24 ++++++++++++++++++++
+ arch/powerpc/include/asm/cpm1.h               |    3 +-
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |    4 +--
+ arch/powerpc/sysdev/micropatch.c              |   30 +++++++++++++++----------
+ drivers/spi/spi_mpc8xxx.c                     |   22 ------------------
+ 5 files changed, 45 insertions(+), 38 deletions(-)
