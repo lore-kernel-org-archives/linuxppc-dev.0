@@ -1,18 +1,21 @@
-Return-Path: <jodorowsky.a@gmail.com>
-Received: from mail-ww0-f45.google.com (mail-ww0-f45.google.com [74.125.82.45])
-	by ozlabs.org (Postfix) with ESMTP id 376C4B6F01
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 11 Jul 2010 23:26:43 +1000 (EST)
-Received: by wwb13 with SMTP id 13so1801079wwb.14
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 11 Jul 2010 06:26:40 -0700 (PDT)
-MIME-Version: 1.0
-Date: Sun, 11 Jul 2010 15:26:39 +0200
-Message-ID: <AANLkTil0oDHNQ2RwmK0eerf5c5Y1Rffkc-TtaGTrJVpt@mail.gmail.com>
-Subject: C67x00 USB Host
-From: A C <jodorowsky.a@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=0016364ef99a11ce26048b1c9653
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 6A0F1B6F19
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 02:07:19 +1000 (EST)
+Subject: Re: [PATCH 1/3] powerpc/cpm: Reintroduce global spi_pram struct
+	(fixes build issue)
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20100708171610.GA11621@oksana.dev.rtsoft.ru>
+Date: Sun, 11 Jul 2010 11:07:01 -0500
+Message-Id: <F42B140B-59CE-4851-A59C-7C0E401F9295@kernel.crashing.org>
+References: <20100708171610.GA11621@oksana.dev.rtsoft.ru>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Cc: LEROY Christophe <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org,
+	Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,37 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0016364ef99a11ce26048b1c9653
-Content-Type: text/plain; charset=ISO-8859-1
 
-Hello,
-I am currently trying to use the C67x00 driver in the vanilla branch of
-Linux. I use it in coprocessor hpi mode (GPIO30 and GPIO31 =0) There is
-something that I do not understand in the code.
-In the probe() function there is a call to the function hpi_reg_init(). In
-this function the interrupts are no more routed from HPI.
-Then, in the probe function, the ll_reset() is called, there is a send in
-the mailbox, and the response should be an interupt. But I do not receveive
-any interrupt. I think it is normal because as I said they are no more
-routed from the HPI. So I think I miss something.
-Someone could tell me where the interrupt are routed towards HPI ?
-Thanks by advance
-Adrien
+On Jul 8, 2010, at 12:16 PM, Anton Vorontsov wrote:
 
---0016364ef99a11ce26048b1c9653
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+> spi_t was removed in commit 644b2a680ccc51a9ec4d6beb12e9d47d2dee98e2
+> ("powerpc/cpm: Remove SPI defines and spi structs"), the commit =
+assumed
+> that spi_t isn't used anywhere outside of the spi_mpc8xxx driver. But
+> it appears that the struct is needed for micropatch code. So, let's
+> reintroduce the struct.
+>=20
+> Fixes the following build issue:
+>=20
+>    CC      arch/powerpc/sysdev/micropatch.o
+>  micropatch.c: In function 'cpm_load_patch':
+>  micropatch.c:629: error: expected '=3D', ',', ';', 'asm' or =
+'__attribute__' before '*' token
+>  micropatch.c:629: error: 'spp' undeclared (first use in this =
+function)
+>  micropatch.c:629: error: (Each undeclared identifier is reported only =
+once
+>  micropatch.c:629: error: for each function it appears in.)
+>=20
+> Reported-by: LEROY Christophe <christophe.leroy@c-s.fr>
+> Reported-by: Tony Breeds <tony@bakeyournoodle.com>
+> Cc: <stable@kernel.org> [ .33, .34 ]
+> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+> ---
 
-Hello,<br>I am currently trying to use the C67x00 driver in the vanilla bra=
-nch of Linux. I use it in coprocessor hpi mode (GPIO30 and GPIO31 =3D0) The=
-re is something that I do not understand in the code.<br>In the probe() fun=
-ction there is a call to the function hpi_reg_init(). In this function the =
-interrupts are no more routed from HPI. <br>
-Then, in the probe function, the ll_reset() is called, there is a send in t=
-he mailbox, and the response should be an interupt. But I do not receveive =
-any interrupt. I think it is normal because as I said they are no more rout=
-ed from the HPI. So I think I miss something.<br>
-Someone could tell me where the interrupt are routed towards HPI ?<br>Thank=
-s by advance<br>Adrien<br><pre><br></pre><br>
+applied to merge
 
---0016364ef99a11ce26048b1c9653--
+- k=
