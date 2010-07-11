@@ -1,16 +1,18 @@
 Return-Path: <miltonm@bga.com>
 Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 8BC9AB6EE9
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jul 2010 17:40:35 +1000 (EST)
-To: Steve Deiters <SteveDeiters@BASLER.com>
+	by ozlabs.org (Postfix) with ESMTP id 3D669B6EDD
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jul 2010 17:49:58 +1000 (EST)
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: arch/powerpc/lib/copy_32.S: Use alternate memcpy for MPC512x and
-	MPC52xx
-References: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
-In-Reply-To: <181804936ABC2349BE503168465576460F272CA4@exchserver.basler.com>
-Date: Sun, 11 Jul 2010 02:40:22 -0500
-Message-ID: <1278834022_17748@mail4.comsite.net>
-Cc: Albrecht Dreß <albrecht.dress@arcor.de>, linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [RT,RFC] Hacks allowing -rt to run on POWER7 / Powerpc.
+In-Reply-To: <1278701701.24737.19.camel@lexx>
+References: <1278701701.24737.19.camel@lexx>
+Date: Sun, 11 Jul 2010 02:49:54 -0500
+Message-ID: <1278834594_17749@mail4.comsite.net>
+Cc: Darren Hart <dvhltc@us.ibm.com>, rt-users <linux-rt-users@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +23,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Steve wrote:
-> These processors will corrupt data if accessing the local bus with
-> unaligned addresses. This version fixes the typical case of copying from
-> Flash on the local bus by keeping the source address always aligned.
-
-As Dave said in May of 2008[1], the map driver is advertising xip access
-to userspace so jffs2 is taking the XIP path and doing straight memcpy.
-
-My reading of the mtd code says this is because map_is_linear() is true
-a cfi cmdset 0001 nor flash will create a point function which jffs2
-calls and it finds it will map the whole fs, so it just reads at will
-from the direct mapping.
-
-If the point fails to map the whole device, then jffs2 will use the
-mtd mapping driver to copy to a buffer, and the default mapping drivers
-will use memcpy_fromio to fill this buffer.
-
-Steve, can you verify this by setting phys to NO_XIP in the mapping
-driver and setting CONFIG_MTD_COMPLEX_MAPPINGS?  This is just a test,
-as it is aparent this driver needs to have a custom mapping driver
-that handles the alignment and read/modfiy/write issues -- the existing
-memcopy_*io assumes byte writes are always ok which is not the case for
-this processor and bus.
+On Fri, 09 Jul 2010 about 08:55:01 -0000, Will Schmidt wrote:
+> We've been seeing some issues with userspace randomly SIGSEGV'ing while
+> running the -RT kernels on POWER7 based systems.   After lots of
+> debugging, head scratching, and experimental changes to the code, the
+> problem has been narrowed down such that we can avoid the problems by
+> disabling the TLB batching.
+> 
+> After some input from Ben and further debug, we've found that the
+> restoration of the batch->active value near the end of __switch_to()
+> seems to be the key.    ( The -RT related  changes within
+> arch/powerpc/kernel/processor.c __switch_to()  do the equivalent of a
+> arch_leave_lazy_mmu_mode() before calling _switch, use a hadbatch flag
+> to indicate if batching was active, and then restore that batch->active
+> value on the way out after the call to _switch_to.    That particular
+> code is in the -RT branch, and not found in mainline  )
+> 
+> Deferring to Ben (or others in the know) for whether this is the proper
+> solution or if there is something deeper, but.. 
 
 
-[1] http://thread.gmane.org/gmane.linux.drivers.mtd/21521
-(found from the link in Albrecht's reply)
+I looked at the patch and noticed 2 changes:
+	1) the batch is checked and cleared after local_irq_save
+	2) enabling the batch is skipped
+
+I talked to Will and had him try moving the local_irq_save above the
+check for the active batch.  That alone did not seem to be enough.
+However, he confirmed that we are setting batch to active when it is
+already active in lazy_mmu_enter, meaning that batching is being turned
+on recursively.  I suggested debug to check that irqs are off after the
+restore when re-enabling when our debug session timed out.
 
 milton
+
+> 
+> diff -aurp linux-2.6.33.5-rt23.orig/arch/powerpc/kernel/process.c linux-2.6.33.5-rt23.exp/arch/powerpc/kernel/process.c
+> --- linux-2.6.33.5-rt23.orig/arch/powerpc/kernel/process.c	2010-06-21 11:41:34.402513904 -0500
+> +++ linux-2.6.33.5-rt23.exp/arch/powerpc/kernel/process.c	2010-07-09 13:15:13.533269904 -0500
+> @@ -304,10 +304,6 @@ struct task_struct *__switch_to(struct t
+>  	struct thread_struct *new_thread, *old_thread;
+>  	unsigned long flags;
+>  	struct task_struct *last;
+> -#if defined(CONFIG_PPC64) && defined (CONFIG_PREEMPT_RT)
+> -	struct ppc64_tlb_batch *batch;
+> -	int hadbatch;
+> -#endif
+>  
+>  #ifdef CONFIG_SMP
+>  	/* avoid complexity of lazy save/restore of fpu
+> @@ -401,16 +397,6 @@ struct task_struct *__switch_to(struct t
+>  		new_thread->start_tb = current_tb;
+>  	}
+>  
+> -#ifdef CONFIG_PREEMPT_RT
+> -	batch = &__get_cpu_var(ppc64_tlb_batch);
+> -	if (batch->active) {
+> -		hadbatch = 1;
+> -		if (batch->index) {
+> -			__flush_tlb_pending(batch);
+> -		}
+> -		batch->active = 0;
+> -	}
+> -#endif /* #ifdef CONFIG_PREEMPT_RT */
+>  #endif
+>  
+>  	local_irq_save(flags);
+> @@ -425,16 +411,13 @@ struct task_struct *__switch_to(struct t
+>  	 * of sync. Hard disable here.
+>  	 */
+>  	hard_irq_disable();
+> -	last = _switch(old_thread, new_thread);
+> -
+> -	local_irq_restore(flags);
+>  
+>  #if defined(CONFIG_PPC64) && defined(CONFIG_PREEMPT_RT)
+> -	if (hadbatch) {
+> -		batch = &__get_cpu_var(ppc64_tlb_batch);
+> -		batch->active = 1;
+> -	}
+> +	arch_leave_lazy_mmu_mode();
+>  #endif
+> +	last = _switch(old_thread, new_thread);
+> +
+> +	local_irq_restore(flags);
+>  
+>  	return last;
+>  }
