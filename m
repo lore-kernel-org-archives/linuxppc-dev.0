@@ -1,34 +1,28 @@
-Return-Path: <B13201@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8D876B6F19
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Jul 2010 21:24:45 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
-	o6CBOQSn025594 for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Jul 2010 04:24:36 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id o6CBbFqa024509
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 12 Jul 2010 06:37:16 -0500 (CDT)
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B55F8B6F06
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 01:27:16 +1000 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6CFCsDn003123
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 11:12:54 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6CFRARQ124642
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 11:27:10 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6CFR3It014055
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 09:27:03 -0600
+Message-ID: <4C3B3446.5090302@austin.ibm.com>
+Date: Mon, 12 Jul 2010 10:27:02 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 14/27] KVM: PPC: Magic Page BookE support
-Date: Mon, 12 Jul 2010 19:24:23 +0800
-Message-ID: <A9833F0F7901024DA08417AA5A9887D9085860@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1277980982-12433-15-git-send-email-agraf@suse.de>
-References: <1277980982-12433-1-git-send-email-agraf@suse.de>
-	<1277980982-12433-15-git-send-email-agraf@suse.de>
-From: "Liu Yu-B13201" <B13201@freescale.com>
-To: "Alexander Graf" <agraf@suse.de>, <kvm-ppc@vger.kernel.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/7] De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+This set of patches de-couples the idea that there is a single
+directory in sysfs for each memory section.  The intent of the
+patches is to reduce the number of sysfs directories created to
+resolve a boot-time performance issue.  On very large systems
+boot time are getting very long (as seen on powerpc hardware)
+due to the enormous number of sysfs directories being created.
+On a system with 1 TB of memory we create ~63,000 directories.
+For even larger systems boot times are being measured in hours.
 
-> -----Original Message-----
-> From: kvm-owner@vger.kernel.org=20
-> [mailto:kvm-owner@vger.kernel.org] On Behalf Of Alexander Graf
-> Sent: Thursday, July 01, 2010 6:43 PM
-> To: kvm-ppc@vger.kernel.org
-> Cc: KVM list; linuxppc-dev
-> Subject: [PATCH 14/27] KVM: PPC: Magic Page BookE support
->=20
-> As we now have Book3s support for the magic page, we also=20
-> need BookE to
-> join in on the party.
->=20
-> This patch implements generic magic page logic for BookE and specific
-> TLB logic for e500. I didn't have any 440 around, so I didn't dare to
-> blindly try and write up broken code.
->=20
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kvm/booke.c    |   29 +++++++++++++++++++++++++++++
->  arch/powerpc/kvm/e500_tlb.c |   19 +++++++++++++++++--
->  2 files changed, 46 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index 0f8ff9d..9609207 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
+This set of patches allows for each directory created in sysfs
+to cover more than one memory section.  The default behavior for
+sysfs directory creation is the same, in that each directory
+represents a single memory section.  This update also adds to
+new files to each sysfs memory directory.  The file 'end_phys_index'
+contains the physical id of the last memory section covered by
+the directory.  The file 'split' allows for splitting the 
+directory in two, with each new directory covering half as many
+memory sections as the previous directory.
 
-> @@ -380,6 +406,9 @@ int kvmppc_handle_exit(struct kvm_run=20
-> *run, struct kvm_vcpu *vcpu,
->  		gpa_t gpaddr;
->  		gfn_t gfn;
-> =20
-> +		if (kvmppc_dtlb_magic_page(vcpu, eaddr))
-> +			break;
-> +
->  		/* Check the guest TLB. */
->  		gtlb_index =3D kvmppc_mmu_dtlb_index(vcpu, eaddr);
->  		if (gtlb_index < 0) {
+Thanks,
 
-How about moving this part into tlb search fail path?
+Nathan Fontenot
