@@ -2,21 +2,23 @@ Return-Path: <fchen@apm.com>
 Received: from denmail01.apm.COM (denmail01-v4020.amcc.com [192.195.68.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 3957CB6F16
+	by ozlabs.org (Postfix) with ESMTPS id B9FA7B6F35
 	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:16:50 +1000 (EST)
 From: Fushen Chen <fchen@apm.com>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 7/9 v1.01] Add Synopsys DesignWare HS USB OTG Controller
+Subject: [PATCH 9/9 v1.01] Add Synopsys DesignWare HS USB OTG Controller
 	driver.
-Date: Mon, 12 Jul 2010 16:16:42 -0700
-Message-Id: <12789766063456-git-send-email-fchen@apm.com>
-In-Reply-To: <12789766062832-git-send-email-fchen@apm.com>
+Date: Mon, 12 Jul 2010 16:16:44 -0700
+Message-Id: <12789766072660-git-send-email-fchen@apm.com>
+In-Reply-To: <1278976606696-git-send-email-fchen@apm.com>
 References: <12789766042434-git-send-email-fchen@apm.com>
 	<12789766051659-git-send-email-fchen@apm.com>
 	<1278976605246-git-send-email-fchen@apm.com>
 	<12789766052238-git-send-email-fchen@apm.com>
 	<1278976606926-git-send-email-fchen@apm.com>
 	<12789766062832-git-send-email-fchen@apm.com>
+	<12789766063456-git-send-email-fchen@apm.com>
+	<1278976606696-git-send-email-fchen@apm.com>
 Cc: linuxppc-dev@ozlabs.org, chuck@theptrgroup.com, gregkh@suse.de,
 	Mark Miesfeld <mmiesfeld@apm.com>, Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,25 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Peripheral Controller Driver (PCD) is responsible for translating
-requests from the Function Driver into the appropriate actions on the
-DWC OTG controller.
+Interfaces with the DWC HS OTG core by reading from and writing to
+the Control and Status Register (CSR).
+
+CSRs are classified as follows:
+ - Core Global Registers
+ - Device Mode Registers
+ - Device Global Registers
+ - Device Endpoint Specific Registers
+ - Host Mode Registers
+ - Host Global Registers
+ - Host Port CSRs
+ - Host Channel Specific Registers
 
 Signed-off-by: Fushen Chen <fchen@apm.com>
 Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
 ---
- drivers/usb/otg/dwc_otg_pcd.c | 1749 +++++++++++++++++++++++++++++++++++++++++
- drivers/usb/otg/dwc_otg_pcd.h |  160 ++++
- 2 files changed, 1909 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/otg/dwc_otg_pcd.c
- create mode 100644 drivers/usb/otg/dwc_otg_pcd.h
+ drivers/usb/otg/dwc_otg_regs.h | 3283 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 3283 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/otg/dwc_otg_regs.h
 
-diff --git a/drivers/usb/otg/dwc_otg_pcd.c b/drivers/usb/otg/dwc_otg_pcd.c
+diff --git a/drivers/usb/otg/dwc_otg_regs.h b/drivers/usb/otg/dwc_otg_regs.h
 new file mode 100644
-index 0000000..f0c3b04
+index 0000000..86c7406
 --- /dev/null
-+++ b/drivers/usb/otg/dwc_otg_pcd.c
-@@ -0,0 +1,1749 @@
++++ b/drivers/usb/otg/dwc_otg_regs.h
+@@ -0,0 +1,3283 @@
 +/*
 + * DesignWare HS OTG controller driver
 + *
@@ -54,7 +63,6 @@ index 0000000..f0c3b04
 + *
 + * Based on versions provided by AMCC and Synopsis which are:
 + *	Copyright (C) 2009-2010 AppliedMicro(www.apm.com)
-+ * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
 + *
 + * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
 + * "Software") is an Unsupported proprietary work of Synopsys, Inc. unless
@@ -96,1871 +104,3240 @@ index 0000000..f0c3b04
 + * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 + */
 +
-+/*
-+ * This file implements the Peripheral Controller Driver.
-+ *
-+ * The Peripheral Controller Driver (PCD) is responsible for
-+ * translating requests from the Function Driver into the appropriate
-+ * actions on the DWC_otg controller. It isolates the Function Driver
-+ * from the specifics of the controller by providing an API to the
-+ * Function Driver.
-+ *
-+ * The Peripheral Controller Driver for Linux will implement the
-+ * Gadget API, so that the existing Gadget drivers can be used.
-+ * (Gadget Driver is the Linux terminology for a Function Driver.)
-+ *
-+ * The Linux Gadget API is defined in the header file linux/usb/gadget.h. The
-+ * USB EP operations API is defined in the structure usb_ep_ops and the USB
-+ * Controller API is defined in the structure usb_gadget_ops
-+ *
-+ * An important function of the PCD is managing interrupts generated
-+ * by the DWC_otg controller. The implementation of the DWC_otg device
-+ * mode interrupt service routines is in dwc_otg_pcd_intr.c.
-+ */
++#ifndef __DWC_OTG_REGS_H__
++#define __DWC_OTG_REGS_H__
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/list.h>
-+#include <linux/interrupt.h>
-+#include <linux/string.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/delay.h>
-+#include <linux/usb/ch9.h>
-+#include <linux/usb/gadget.h>
-+
-+#include "dwc_otg_driver.h"
-+#include "dwc_otg_pcd.h"
++#include <linux/types.h>
 +
 +/*
-+ * Static PCD pointer for use in usb_gadget_register_driver and
-+ * usb_gadget_unregister_driver.  Initialized in dwc_otg_pcd_init.
++ * This file contains the data structures for accessing the DWC_otg core
++ * registers.
++ *
++ * The application interfaces with the HS OTG core by reading from and
++ * writing to the Control and Status Register (CSR) space through the
++ * AHB Slave interface. These registers are 32 bits wide, and the
++ * addresses are 32-bit-block aligned.
++ * CSRs are classified as follows:
++ * - Core Global Registers
++ * - Device Mode Registers
++ * - Device Global Registers
++ * - Device Endpoint Specific Registers
++ * - Host Mode Registers
++ * - Host Global Registers
++ * - Host Port CSRs
++ * - Host Channel Specific Registers
++ *
++ * Only the Core Global registers can be accessed in both Device and
++ * Host modes. When the HS OTG core is operating in one mode, either
++ * Device or Host, the application must not access registers from the
++ * other mode. When the core switches from one mode to another, the
++ * registers in the new mode of operation must be reprogrammed as they
++ * would be after a power-on reset.
 + */
-+static struct dwc_pcd *s_pcd;
 +
-+static inline int need_stop_srp_timer(struct core_if *core_if)
-+{
-+	if (core_if->core_params->phy_type != DWC_PHY_TYPE_PARAM_FS ||
-+			!core_if->core_params->i2c_enable)
-+		return core_if->srp_timer_started ? 1 : 0;
-+	return 0;
-+}
-+
-+/**
-+ * Tests if the module is set to FS or if the PHY_TYPE is FS. If so, then the
-+ * gadget should not report as dual-speed capable.
++/*
++ * DWC_otg Core registers.  The core_global_regs structure defines the
++ * size and relative field offsets for the Core Global registers.
 + */
-+static inline int check_is_dual_speed(struct core_if *core_if)
-+{
-+	if (core_if->core_params->speed == DWC_SPEED_PARAM_FULL ||
-+			(core_if->hwcfg2.b.hs_phy_type == 2 &&
-+			core_if->hwcfg2.b.fs_phy_type == 1 &&
-+			core_if->core_params->ulpi_fs_ls))
-+		return 0;
-+	return 1;
-+}
++struct core_global_regs {
++	/* OTG Control and Status Register.		Offset: 000h */
++	u32 gotgctl;
++	/* OTG Interrupt Register.			Offset: 004h */
++	u32 gotgint;
++	/* Core AHB Configuration Register.		Offset: 008h */
++	u32 gahbcfg;
 +
-+/**
-+ * Tests if driver is OTG capable.
++#define DWC_GLBINTRMASK				0x0001
++#define DWC_DMAENABLE				0x0020
++#define DWC_NPTXEMPTYLVL_EMPTY			0x0080
++#define DWC_NPTXEMPTYLVL_HALFEMPTY		0x0000
++#define DWC_PTXEMPTYLVL_EMPTY			0x0100
++#define DWC_PTXEMPTYLVL_HALFEMPTY		0x0000
++
++	/* Core USB Configuration Register.		Offset: 00Ch */
++	u32 gusbcfg;
++	/* Core Reset Register.				Offset: 010h */
++	u32 grstctl;
++	/* Core Interrupt Register.			Offset: 014h */
++	u32 gintsts;
++	/* Core Interrupt Mask Register.		Offset: 018h */
++	u32 gintmsk;
++	/*
++	 * Receive Status Queue Read Register
++	 * (Read Only)					Offset: 01Ch
++	 */
++	u32 grxstsr;
++	/*
++	 * Receive Status Queue Read & POP Register
++	 * (Read Only)					Offset: 020h
++	 */
++	u32 grxstsp;
++	/* Receive FIFO Size Register.			Offset: 024h */
++	u32 grxfsiz;
++	/* Non Periodic Transmit FIFO Size Register.	Offset: 028h */
++	u32 gnptxfsiz;
++	/*
++	 * Non Periodic Transmit FIFO/Queue Status Register
++	 * (Read Only).					Offset: 02Ch
++	 */
++	u32 gnptxsts;
++	/* I2C Access Register.				Offset: 030h */
++	u32 gi2cctl;
++	/* PHY Vendor Control Register.			Offset: 034h */
++	u32 gpvndctl;
++	/* General Purpose Input/Output Register.	Offset: 038h */
++	u32 ggpio;
++	/* User ID Register.				Offset: 03Ch */
++	u32 guid;
++	/* Synopsys ID Register (Read Only).		Offset: 040h */
++	u32 gsnpsid;
++	/* User HW Config1 Register (Read Only).	Offset: 044h */
++	u32 ghwcfg1;
++	/* User HW Config2 Register (Read Only).	Offset: 048h */
++	u32 ghwcfg2;
++#define DWC_SLAVE_ONLY_ARCH			0
++#define DWC_EXT_DMA_ARCH			1
++#define DWC_INT_DMA_ARCH			2
++
++#define DWC_MODE_HNP_SRP_CAPABLE		0
++#define DWC_MODE_SRP_ONLY_CAPABLE		1
++#define DWC_MODE_NO_HNP_SRP_CAPABLE		2
++#define DWC_MODE_SRP_CAPABLE_DEVICE		3
++#define DWC_MODE_NO_SRP_CAPABLE_DEVICE		4
++#define DWC_MODE_SRP_CAPABLE_HOST		5
++#define DWC_MODE_NO_SRP_CAPABLE_HOST		6
++
++	/* User HW Config3 Register (Read Only).	Offset: 04Ch */
++	u32 ghwcfg3;
++	/* User HW Config4 Register (Read Only).	Offset: 050h */
++	u32 ghwcfg4;
++	/*  Reserved					Offset: 054h-0FFh */
++	u32 reserved[43];
++	/*  Host Periodic Transmit FIFO Size Register.	Offset: 100h */
++	u32 hptxfsiz;
++
++	/*
++	 * Device Periodic Transmit FIFO#n Register, if dedicated fifos are
++	 * disabled.  Otherwise Device Transmit FIFO#n Register.
++	 *
++	 * Offset: 104h + (FIFO_Number-1)*04h, 1 <= FIFO Number <= 15 (1<=n<=15)
++	 */
++	u32 dptxfsiz_dieptxf[15];
++};
++
++
++#if defined(CONFIG_DWC_OTG_REG_LE)
++/*
++ * This union represents the bit fields of the Core OTG Controland Status
++ * Register (GOTGCTL).  Set the bits using the bit fields then write the d32
++ * value to the register.
 + */
-+static inline int check_is_otg(struct core_if *core_if)
-+{
-+	if (core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE ||
-+			core_if->hwcfg2.b.op_mode ==
-+			DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST)
-+		return 0;
-+	return 1;
-+}
++union gotgctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_21:11;
++		unsigned currmod:1;
++		unsigned bsesvld:1;
++		unsigned asesvld:1;
++		unsigned reserved17:1;
++		unsigned conidsts:1;
++		unsigned reserved1_12:4;
++		unsigned devhnpen:1;
++		unsigned hstsethnpen:1;
++		unsigned hnpreq:1;
++		unsigned hstnegscs:1;
++		unsigned reserved07_02:6;
++		unsigned sesreq:1;
++		unsigned sesreqscs:1;
++	} b;
++};
 +
-+/**
-+ * This function completes a request. It calls the request call back.
++/*
++ * This union represents the bit fields of the Core OTG Interrupt Register
++ * (GOTGINT).  Set/clear the bits using the bit fields then write the d32
++ * value to the register.
 + */
-+void request_done(struct pcd_ep *ep, struct pcd_request *req, int status)
-+{
-+	unsigned stopped = ep->stopped;
++union gotgint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Current Mode */
++		unsigned reserved31_20:12;
++		/* Debounce Done */
++		unsigned debdone:1;
++		/* A-Device Timeout Change */
++		unsigned adevtoutchng:1;
++		/* Host Negotiation Detected */
++		unsigned hstnegdet:1;
++		unsigned reserver16_10:7;
++		/* Host Negotiation Success Status Change */
++		unsigned hstnegsucstschng:1;
++		/* Session Request Success Status Change */
++		unsigned sesreqsucstschng:1;
++		unsigned reserved3_7:5;
++		/* Session End Detected */
++		unsigned sesenddet:1;
++		unsigned reserved01_00:2;
++	} b;
++};
 +
-+	list_del_init(&req->queue);
-+	if (req->req.status == -EINPROGRESS)
-+		req->req.status = status;
-+	else
-+		status = req->req.status;
++/*
++ * This union represents the bit fields of the Core AHB Configuration Register
++ * (GAHBCFG).  Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
++ */
++union gahbcfg_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved9_31:23;
++		unsigned ptxfemplvl:1;
++#define DWC_GAHBCFG_TXFEMPTYLVL_EMPTY		1
++#define DWC_GAHBCFG_TXFEMPTYLVL_HALFEMPTY	0
 +
-+	if (GET_CORE_IF(ep->pcd)->dma_enable) {
-+		if (req->mapped) {
-+			dma_unmap_single(ep->pcd->gadget.dev.parent,
-+				req->req.dma, req->req.length,
-+				ep->dwc_ep.is_in ? DMA_TO_DEVICE :
-+				DMA_FROM_DEVICE);
-+			req->req.dma = DMA_ADDR_INVALID;
-+			req->mapped = 0;
-+		} else {
-+			dma_sync_single_for_cpu(ep->pcd->gadget.dev.parent,
-+				req->req.dma, req->req.length,
-+				ep->dwc_ep.is_in ? DMA_TO_DEVICE :
-+				DMA_FROM_DEVICE);
-+		}
-+	}
++		unsigned nptxfemplvl_txfemplvl:1;
++		unsigned reserved:1;
++		unsigned dmaenable:1;
++#define DWC_GAHBCFG_DMAENABLE			1
 +
-+	/* don't modify queue heads during completion callback */
-+	ep->stopped = 1;
-+	spin_unlock(&ep->pcd->lock);
-+	req->req.complete(&ep->ep, &req->req);
-+	spin_lock(&ep->pcd->lock);
++		unsigned hburstlen:4;
++#define DWC_GAHBCFG_INT_DMA_BURST_SINGLE	0
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR		1
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR4	3
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR8	5
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR16	7
 +
-+	if (ep->pcd->request_pending > 0)
-+		--ep->pcd->request_pending;
-+	ep->stopped = stopped;
++		unsigned glblintrmsk:1;
++#define DWC_GAHBCFG_GLBINT_ENABLE		1
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core USB Configuration Register
++ * (GUSBCFG).  Set the bits using the bit fields then write the d32 value to the
++ * register.
++ */
++union gusbcfg_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned corrupt_tx_packet:1;
++		unsigned force_device_mode:1;
++		unsigned force_host_mode:1;
++		unsigned reserved23_28:6;
++		unsigned term_sel_dl_pulse:1;
++		unsigned ulpi_int_vbus_indicator:1;
++		unsigned ulpi_ext_vbus_drv:1;
++		unsigned ulpi_clk_sus_m:1;
++		unsigned ulpi_auto_res:1;
++		unsigned ulpi_fsls:1;
++
++		unsigned otgutmifssel:1;
++		unsigned phylpwrclksel:1;
++		unsigned nptxfrwnden:1;
++		unsigned usbtrdtim:4;
++		unsigned hnpcap:1;
++		unsigned srpcap:1;
++		unsigned ddrsel:1;
++		unsigned physel:1;
++		unsigned fsintf:1;
++		unsigned ulpi_utmi_sel:1;
++		unsigned phyif:1;
++		unsigned toutcal:3;
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core Reset Register (GRSTCTL).
++ * Set/clear the bits using the bit fields then write the d32 value to the
++ * register.
++ */
++union grstctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/*
++		 *  AHB Master Idle.  Indicates the AHB Master State Machine is
++		 *  in IDLE condition.
++		 */
++		unsigned ahbidle:1;
++
++		/*
++		 * DMA Request Signal.  Indicated DMA request is in probress.
++		   Used for debug purpose.
++		 */
++		unsigned dmareq:1;
++
++		/* Reserved */
++		unsigned reserved29_11:19;
++
++		/*
++		 * TxFIFO Number (TxFNum) (Device and Host).
++		 *
++		 * This is the FIFO number which needs to be flushed,
++		 * using the TxFIFO Flush bit. This field should not
++		 * be changed until the TxFIFO Flush bit is cleared by
++		 * the core.
++		 *   - 0x0:Non Periodic TxFIFO Flush
++		 *   - 0x1 : Periodic TxFIFO #1 Flush in device mode
++		 *     or Periodic TxFIFO in host mode
++		 *   - 0x2 : Periodic TxFIFO #2 Flush in device mode.
++		 *   - ...
++		 *   - 0xF : Periodic TxFIFO #15 Flush in device mode
++		 *   - 0x10: Flush all the Transmit NonPeriodic and
++		 *     Transmit Periodic FIFOs in the core
++		 */
++		unsigned txfnum:5;
++#define DWC_GRSTCTL_TXFNUM_ALL			0x10
++
++		/*
++		 * TxFIFO Flush (TxFFlsh) (Device and Host).
++		 *
++		 * This bit is used to selectively flush a single or all
++		 * transmit FIFOs.  The application must first ensure that the
++		 * core is not in the middle of a transaction.
++		 *
++		 * The application should write into this bit, only after
++		 * making sure that neither the DMA engine is writing into the
++		 * TxFIFO nor the MAC is reading the data out of the FIFO.
++		 *
++		 * The application should wait until the core clears this bit,
++		 * before performing any operations. This bit will takes 8
++		 * clocks (slowest of PHY or AHB clock) to clear.
++		 */
++		unsigned txfflsh:1;
++
++		/*
++		 * RxFIFO Flush (RxFFlsh) (Device and Host)
++		 *
++		 * The application can flush the entire Receive FIFO using this
++		 * bit.
++		 *
++		 * The application must first ensure that the core is not in the
++		 * middle of a transaction.
++		 *
++		 * The application should write into this bit, only after making
++		 * sure that neither the DMA engine is reading from the RxFIFO
++		 * nor the MAC is writing the data in to the FIFO.
++		 *
++		 * The application should wait until the bit is cleared before
++		 * performing any other operations. This bit will takes 8 clocks
++		 * (slowest of PHY or AHB clock) to clear.
++		 */
++		unsigned rxfflsh:1;
++
++		/*
++		 * In Token Sequence Learning Queue Flush
++		 * (INTknQFlsh) (Device Only)
++		 */
++		unsigned intknqflsh:1;
++
++		/*
++		 * Host Frame Counter Reset (Host Only)<br>
++		 *
++		 * The application can reset the (micro)frame number
++		 * counter inside the core, using this bit. When the
++		 * (micro)frame counter is reset, the subsequent SOF
++		 * sent out by the core, will have a (micro)frame
++		 * number of 0.
++		 */
++		unsigned hstfrm:1;
++
++		/*
++		 * Hclk Soft Reset
++		 *
++		 * The application uses this bit to reset the control logic in
++		 * the AHB clock domain. Only AHB clock domain pipelines are
++		 * reset.
++		 */
++		unsigned hsftrst:1;
++
++		/*
++		 * Core Soft Reset (CSftRst) (Device and Host)
++		 *
++		 * The application can flush the control logic in the
++		 * entire core using this bit. This bit resets the
++		 * pipelines in the AHB Clock domain as well as the
++		 * PHY Clock domain.
++		 *
++		 * The state machines are reset to an IDLE state, the
++		 * control bits in the CSRs are cleared, all the
++		 * transmit FIFOs and the receive FIFO are flushed.
++		 *
++		 * The status mask bits that control the generation of
++		 * the interrupt, are cleared, to clear the
++		 * interrupt. The interrupt status bits are not
++		 * cleared, so the application can get the status of
++		 * any events that occurred in the core after it has
++		 * set this bit.
++		 *
++		 * Any transactions on the AHB are terminated as soon
++		 * as possible following the protocol. Any
++		 * transactions on the USB are terminated immediately.
++		 *
++		 * The configuration settings in the CSRs are
++		 * unchanged, so the software doesn't have to
++		 * reprogram these registers (Device
++		 * Configuration/Host Configuration/Core System
++		 * Configuration/Core PHY Configuration).
++		 *
++		 * The application can write to this bit, any time it
++		 * wants to reset the core. This is a self clearing
++		 * bit and the core clears this bit after all the
++		 * necessary logic is reset in the core, which may
++		 * take several clocks, depending on the current state
++		 * of the core.
++		 */
++		unsigned csftrst:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core Interrupt Mask Register
++ * (GINTMSK).  Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
++ */
++union gintmsk_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned wkupintr:1;
++		unsigned sessreqintr:1;
++		unsigned disconnect:1;
++		unsigned conidstschng:1;
++		unsigned reserved27:1;
++		unsigned ptxfempty:1;
++		unsigned hcintr:1;
++		unsigned portintr:1;
++		unsigned reserved23_22:2;
++		unsigned incomplisoout:1;
++		unsigned incomplisoin:1;
++		unsigned outepintr:1;
++		unsigned inepintr:1;
++		unsigned epmismatch:1;
++		unsigned reserved16:1;
++		unsigned eopframe:1;
++		unsigned isooutdrop:1;
++		unsigned enumdone:1;
++		unsigned usbreset:1;
++		unsigned usbsuspend:1;
++		unsigned erlysuspend:1;
++		unsigned i2cintr:1;
++		unsigned reserved08:1;
++		unsigned goutnakeff:1;
++		unsigned ginnakeff:1;
++		unsigned nptxfempty:1;
++		unsigned rxstsqlvl:1;
++		unsigned sofintr:1;
++		unsigned otgintr:1;
++		unsigned modemismatch:1;
++		unsigned reserved00:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core Interrupt Register
++ * (GINTSTS).  Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
++ */
++union gintsts_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++#define DWC_SOF_INTR_MASK			0x0008
++	struct {
++#define DWC_HOST_MODE				1
++		unsigned wkupintr:1;
++		unsigned sessreqintr:1;
++		unsigned disconnect:1;
++		unsigned conidstschng:1;
++		unsigned reserved27:1;
++		unsigned ptxfempty:1;
++		unsigned hcintr:1;
++		unsigned portintr:1;
++		unsigned reserved22_23:2;
++		unsigned incomplisoout:1;
++		unsigned incomplisoin:1;
++		unsigned outepintr:1;
++		unsigned inepint:1;
++		unsigned epmismatch:1;
++		unsigned intokenrx:1;
++		unsigned eopframe:1;
++		unsigned isooutdrop:1;
++		unsigned enumdone:1;
++		unsigned usbreset:1;
++		unsigned usbsuspend:1;
++		unsigned erlysuspend:1;
++		unsigned i2cintr:1;
++		unsigned reserved8:1;
++		unsigned goutnakeff:1;
++		unsigned ginnakeff:1;
++		unsigned nptxfempty:1;
++		unsigned rxstsqlvl:1;
++		unsigned sofintr:1;
++		unsigned otgintr:1;
++		unsigned modemismatch:1;
++		unsigned curmode:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device Receive Status Read and
++ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the d32
++ * element then read out the bits using the bit elements.
++ */
++union device_grxsts_data {			/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:7;
++		unsigned fn:4;
++		unsigned pktsts:4;
++#define DWC_STS_DATA_UPDT		0x2  /* OUT Data Packet */
++#define DWC_STS_XFER_COMP		0x3  /* OUT Data Transfer Complete */
++#define DWC_DSTS_GOUT_NAK		0x1  /* Global OUT NAK */
++#define DWC_DSTS_SETUP_COMP		0x4  /* Setup Phase Complete */
++#define DWC_DSTS_SETUP_UPDT		0x6  /* SETUP Packet */
++
++		unsigned dpid:2;
++		unsigned bcnt:11;
++		unsigned epnum:4;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Receive Status Read and
++ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the d32
++ * element then read out the bits using the bit elements.
++ */
++union host_grxsts_data {			/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_21:11;
++		unsigned pktsts:4;
++#define DWC_GRXSTS_PKTSTS_IN			0x2
++#define DWC_GRXSTS_PKTSTS_IN_XFER_COMP		0x3
++#define DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR	0x5
++#define DWC_GRXSTS_PKTSTS_CH_HALTED		0x7
++
++		unsigned dpid:2;
++		unsigned bcnt:11;
++		unsigned chnum:4;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the FIFO Size Registers (HPTXFSIZ,
++ * GNPTXFSIZ, DPTXFSIZn). Read the register into the d32 element then
++ * read out the bits using the bit elements.
++ */
++union fifosize_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned depth:16;
++		unsigned startaddr:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Non-Periodic Transmit FIFO/Queue
++ * Status Register (GNPTXSTS). Read the register into the d32 element then read
++ * out the bits using the bit elements.
++ */
++union gnptxsts_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:1;
++		/* Top of the Non-Periodic Transmit Request Queue
++		 *  - bits 30:27 - Channel/EP Number
++		 *  - bits 26:25 - Token Type
++		 *    - 2'b00 - IN/OUT
++		 *    - 2'b01 - Zero Length OUT
++		 *    - 2'b10 - PING/Complete Split
++		 *    - 2'b11 - Channel Halt
++		 *  - bit 24 - Terminate (Last entry for the selected
++		 *    channel/EP)
++		 */
++		unsigned nptxqtop_chnep:4;
++		unsigned nptxqtop_token:2;
++		unsigned nptxqtop_terminate:1;
++		unsigned nptxqspcavail:8;
++		unsigned nptxfspcavail:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Transmit	FIFO Status Register
++ * (DTXFSTS). Read the register into the d32 element then read out the bits
++ * using the bit elements.
++ */
++union dtxfsts_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:16;
++		unsigned txfspcavail:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the I2C Control Register (I2CCTL).
++ * Read the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union gi2cctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned bsydne:1;
++		unsigned rw:1;
++		unsigned reserved:2;
++		unsigned i2cdevaddr:2;
++		unsigned i2csuspctl:1;
++		unsigned ack:1;
++		unsigned i2cen:1;
++		unsigned addr:7;
++		unsigned regaddr:8;
++		unsigned rwdata:8;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config1 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg1_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned ep_dir15:2;
++		unsigned ep_dir14:2;
++		unsigned ep_dir13:2;
++		unsigned ep_dir12:2;
++		unsigned ep_dir11:2;
++		unsigned ep_dir10:2;
++		unsigned ep_dir9:2;
++		unsigned ep_dir8:2;
++		unsigned ep_dir7:2;
++		unsigned ep_dir6:2;
++		unsigned ep_dir5:2;
++		unsigned ep_dir4:2;
++		unsigned ep_dir3:2;
++		unsigned ep_dir2:2;
++		unsigned ep_dir1:2;
++		unsigned ep_dir0:2;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config2 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg2_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* GHWCFG2 */
++		unsigned reserved31:1;
++		unsigned dev_token_q_depth:5;
++		unsigned host_perio_tx_q_depth:2;
++		unsigned nonperio_tx_q_depth:2;
++		unsigned rx_status_q_depth:2;
++		unsigned dynamic_fifo:1;
++		unsigned perio_ep_supported:1;
++		unsigned num_host_chan:4;
++		unsigned num_dev_ep:4;
++		unsigned fs_phy_type:2;
++		unsigned hs_phy_type:2;
++#define DWC_HWCFG2_HS_PHY_TYPE_NOT_SUPPORTED		0
++#define DWC_HWCFG2_HS_PHY_TYPE_UTMI			1
++#define DWC_HWCFG2_HS_PHY_TYPE_ULPI			2
++#define DWC_HWCFG2_HS_PHY_TYPE_UTMI_ULPI		3
++
++		unsigned point2point:1;
++		unsigned architecture:2;
++		unsigned op_mode:3;
++#define DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG		0
++#define DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG		1
++#define DWC_HWCFG2_OP_MODE_NO_HNP_SRP_CAPABLE_OTG	2
++#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE		3
++#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE	4
++#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST		5
++#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST		6
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config3 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg3_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* GHWCFG3 */
++		unsigned dfifo_depth:16;
++		unsigned reserved15_13:3;
++		unsigned ahb_phy_clock_synch:1;
++		unsigned synch_reset_type:1;
++		unsigned optional_features:1;
++		unsigned vendor_ctrl_if:1;
++		unsigned i2c:1;
++		unsigned otg_func:1;
++		unsigned packet_size_cntr_width:3;
++		unsigned xfer_size_cntr_width:4;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config4 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg4_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_30:2;
++		unsigned num_in_eps:4;
++		unsigned ded_fifo_en:1;
++
++		unsigned session_end_filt_en:1;
++		unsigned b_valid_filt_en:1;
++		unsigned a_valid_filt_en:1;
++		unsigned vbus_valid_filt_en:1;
++		unsigned iddig_filt_en:1;
++		unsigned num_dev_mode_ctrl_ep:4;
++		unsigned utmi_phy_data_width:2;
++		unsigned min_ahb_freq:9;
++		unsigned power_optimiz:1;
++		unsigned num_dev_perio_in_ep:4;
++	} b;
++};
++
++/*
++ * Device Global Registers. Offsets 800h-BFFh
++ *
++ * The following structures define the size and relative field offsets for the
++ * Device Mode Registers.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++struct device_global_regs {		/* CONFIG_DWC_OTG_REG_LE */
++	/* Device Configuration Register.			Offset: 800h */
++	u32 dcfg;
++	/* Device Control Register.				Offset: 804h */
++	u32 dctl;
++	/* Device Status Register (Read Only).			Offset: 808h */
++	u32 dsts;
++	/* Reserved.						Offset: 80Ch */
++	u32 unused;
++	/* Device IN Endpoint Common Interrupt Mask Register.	Offset: 810h */
++	u32 diepmsk;
++	/* Device OUT Endpoint Common Interrupt Mask Register.	Offset: 814h */
++	u32 doepmsk;
++	/* Device All Endpoints Interrupt Register.		Offset: 818h */
++	u32 daint;
++	/* Device All Endpoints Interrupt Mask Register.	Offset: 81Ch */
++	u32 daintmsk;
++	/* Device IN Token Queue Read Register-1 (Read Only).	Offset: 820h */
++	u32 dtknqr1;
++	/* Device IN Token Queue Read Register-2 (Read Only).	Offset: 824h */
++	u32 dtknqr2;
++	/* Device VBUS  discharge Register.			Offset: 828h */
++	u32 dvbusdis;
++	/* Device VBUS Pulse Register.				Offset: 82Ch */
++	u32 dvbuspulse;
++	/* Device IN Token Queue Read Register-3 (Read Only).	Offset: 830h */
++	u32 dtknqr3_dthrctl;
++	/* Device IN Token Queue Read Register-4 (Read Only).	Offset: 834h */
++	u32 dtknqr4_fifoemptymsk;
++};
++
++/*
++ * This union represents the bit fields in the Device Configuration
++ * Register.  Read the register into the d32 member then
++ * set/clear the bits using the bit elements.  Write the
++ * d32 member to the dcfg register.
++ */
++union dcfg_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved0_8:9;
++		unsigned epmscnt:5;
++		/* In Endpoint Mis-match count */
++		unsigned reserved17_13:5;
++		/* Periodic Frame Interval */
++		unsigned perfrint:2;
++#define DWC_DCFG_FRAME_INTERVAL_80		0
++#define DWC_DCFG_FRAME_INTERVAL_85		1
++#define DWC_DCFG_FRAME_INTERVAL_90		2
++#define DWC_DCFG_FRAME_INTERVAL_95		3
++
++		/* Device Addresses */
++		unsigned devaddr:7;
++		unsigned reserved3:1;
++		/* Non Zero Length Status OUT Handshake */
++		unsigned nzstsouthshk:1;
++#define DWC_DCFG_SEND_STALL			1
++
++		/* Device Speed */
++		unsigned devspd:2;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device Control Register.  Read
++ * the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union dctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_12:21;
++		/* Clear Global OUT NAK */
++		unsigned cgoutnak:1;
++		/* Set Global OUT NAK */
++		unsigned sgoutnak:1;
++		/* Clear Global Non-Periodic IN NAK */
++		unsigned cgnpinnak:1;
++		/* Set Global Non-Periodic IN NAK */
++		unsigned sgnpinnak:1;
++		/* Test Control */
++		unsigned tstctl:3;
++		/* Global OUT NAK Status */
++		unsigned goutnaksts:1;
++		/* Global Non-Periodic IN NAK Status */
++		unsigned gnpinnaksts:1;
++		/* Soft Disconnect */
++		unsigned sftdiscon:1;
++		/* Remote Wakeup */
++		unsigned rmtwkupsig:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device Status Register.  Read the
++ * register into the d32 member then set/clear the bits using the bit elements.
++ */
++union dsts_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_22:10;
++		/* Frame or Microframe Number of the received SOF */
++		unsigned soffn:14;
++		unsigned reserved07_04:4;
++		/* Erratic Error */
++		unsigned errticerr:1;
++		/* Enumerated Speed */
++		unsigned enumspd:2;
++#define DWC_DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ		0
++#define DWC_DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ		1
++#define DWC_DSTS_ENUMSPD_LS_PHY_6MHZ			2
++#define DWC_DSTS_ENUMSPD_FS_PHY_48MHZ			3
++		/* Suspend Status */
++		unsigned suspsts:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device IN EP Interrupt Register
++ * and the Device IN EP Common Mask Register.
++ *
++ * Read the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union diepint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_08:23;
++		unsigned txfifoundrn:1;
++		/* IN Endpoint HAK Effective mask */
++		unsigned emptyintr:1;
++		/* IN Endpoint NAK Effective mask */
++		unsigned inepnakeff:1;
++		/* IN Token Received with EP mismatch mask */
++		unsigned intknepmis:1;
++		/* IN Token received with TxF Empty mask */
++		unsigned intktxfemp:1;
++		/* TimeOUT Handshake mask (non-ISOC EPs) */
++		unsigned timeout:1;
++		/* AHB Error mask */
++		unsigned ahberr:1;
++		/* Endpoint disable mask */
++		unsigned epdisabled:1;
++		/* Transfer complete mask */
++		unsigned xfercompl:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device OUT EP Interrupt Register
++ * and Device OUT EP Common Interrupt Mask Register.
++ *
++ * Read the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union doepint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31_04:28; /* Docs say reserved is 27 bits */
++
++		/* There is 1 bit missing here, not used? */
++
++		/* Setup Phase Done (control EPs) */
++		unsigned setup:1;
++		/* AHB Error */
++		unsigned ahberr:1;
++		/* Endpoint disable  */
++		unsigned epdisabled:1;
++		/* Transfer complete */
++		unsigned xfercompl:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device All EP Interrupt and Mask
++ * Registers.  Read the register into the d32 member then set/clear the bits
++ * using the bit elements.
++ */
++union daint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* OUT Endpoint bits */
++		unsigned out:16;
++		/* IN Endpoint bits */
++		unsigned in:16;
++	} ep;
++	struct {
++		/* OUT Endpoint bits */
++		unsigned outep15:1;
++		unsigned outep14:1;
++		unsigned outep13:1;
++		unsigned outep12:1;
++		unsigned outep11:1;
++		unsigned outep10:1;
++		unsigned outep9:1;
++		unsigned outep8:1;
++		unsigned outep7:1;
++		unsigned outep6:1;
++		unsigned outep5:1;
++		unsigned outep4:1;
++		unsigned outep3:1;
++		unsigned outep2:1;
++		unsigned outep1:1;
++		unsigned outep0:1;
++		/* IN Endpoint bits */
++		unsigned inep15:1;
++		unsigned inep14:1;
++		unsigned inep13:1;
++		unsigned inep12:1;
++		unsigned inep11:1;
++		unsigned inep10:1;
++		unsigned inep9:1;
++		unsigned inep8:1;
++		unsigned inep7:1;
++		unsigned inep6:1;
++		unsigned inep5:1;
++		unsigned inep4:1;
++		unsigned inep3:1;
++		unsigned inep2:1;
++		unsigned inep1:1;
++		unsigned inep0:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device IN Token Queue Read
++ * Registers.  Read the register into the d32 member. READ-ONLY Register
++ */
++union dtknq1_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* EP Numbers of IN Tokens 0 ... 4 */
++		unsigned epnums0_5:24;
++		/* write pointer has wrapped. */
++		unsigned wrap_bit:1;
++		/* Reserved */
++		unsigned reserved05_06:2;
++		/* In Token Queue Write Pointer */
++		unsigned intknwptr:5;
++	} b;
++};
++
++/*
++ * This union represents Threshold control Register. Read and write the register
++ * into the d32 member.  READ-WRITABLE Register
++ */
++union dthrctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Reserved */
++		unsigned reserved26_31:6;
++		/* Rx Thr. Length */
++		unsigned rx_thr_len:9;
++		/* Rx Thr. Enable */
++		unsigned rx_thr_en:1;
++		/* Reserved */
++		unsigned reserved11_15:5;
++		/* Tx Thr. Length */
++		unsigned tx_thr_len:9;
++		/* ISO Tx Thr. Enable */
++		unsigned iso_thr_en:1;
++		/* non ISO Tx Thr. Enable */
++		unsigned non_iso_thr_en:1;
++	} b;
++};
++
++/*
++ * Device Logical IN Endpoint-Specific Registers. Offsets 900h-AFCh
++ *
++ * There will be one set of endpoint registers per logical endpoint implemented.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++ struct device_in_ep_regs {
++	/*
++	 * Device IN Endpoint Control Register.
++	 * Offset:900h + (ep_num * 20h) + 00h
++	 */
++	u32 diepctl;
++	/* Reserved. Offset:900h + (ep_num * 20h) + 04h */
++	u32 reserved04;
++	/*
++	 * Device IN Endpoint Interrupt Register.
++	 * Offset:900h + (ep_num * 20h) + 08h
++	 */
++	u32 diepint;
++	/* Reserved. Offset:900h + (ep_num * 20h) + 0Ch */
++	u32 reserved0C;
++	/* Device IN Endpoint Transfer Size Register.
++	 * Offset:900h + (ep_num * 20h) + 10h
++	 */
++	u32 dieptsiz;
++	/*
++	 * Device IN Endpoint DMA Address Register.
++	 * Offset:900h + (ep_num * 20h) + 14h
++	 */
++	u32 diepdma;
++	/* Reserved.
++	 * Offset:900h + (ep_num * 20h) + 18h - 900h + (ep_num * 20h) + 1Ch
++	 */
++	u32 dtxfsts;
++	/*
++	 * Reserved.
++	 * Offset:900h + (ep_num * 20h) + 1Ch - 900h + (ep_num * 20h) + 1Ch
++	 */
++	u32 reserved18;
++};
++
++/*
++ * Device Logical OUT Endpoint-Specific Registers. Offsets: B00h-CFCh
++ *
++ * There will be one set of endpoint registers per logical endpoint implemented.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++struct device_out_ep_regs {
++	/*
++	 * Device OUT Endpoint Control Register.
++	 * Offset:B00h + (ep_num * 20h) + 00h
++	 */
++	u32 doepctl;
++	/*
++	 * Device OUT Endpoint Frame number Register.
++	 * Offset: B00h + (ep_num * 20h) + 04h
++	 */
++	u32 doepfn;
++	/*
++	 * Device OUT Endpoint Interrupt Register.
++	 * Offset:B00h + (ep_num * 20h) + 08h
++	 */
++	u32 doepint;
++	/* Reserved. Offset:B00h + (ep_num * 20h) + 0Ch */
++	u32 reserved0C;
++	/*
++	 * Device OUT Endpoint Transfer Size Register.
++	 * Offset: B00h + (ep_num * 20h) + 10h
++	 */
++	u32 doeptsiz;
++	/*
++	 * Device OUT Endpoint DMA Address Register.
++	 * Offset:B00h + (ep_num * 20h) + 14h
++	 */
++	u32 doepdma;
++	/*
++	 * Reserved.
++	 * Offset:B00h + (ep_num * 20h) + 18h - B00h + (ep_num * 20h) + 1Ch
++	 */
++	u32 unused[2];
++};
++
++/*
++ * This union represents the bit fields in the Device EP Control Register.  Read
++ * the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union depctl_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Endpoint Enable */
++		unsigned epena:1;
++		/* Endpoint Disable */
++		unsigned epdis:1;
++
++		/*
++		 * Set DATA1 PID (INTR/Bulk IN and OUT endpoints) Writing to
++		 * this field sets the Endpoint DPID (DPID) field in this
++		 * register to DATA1 Set Odd (micro)frame (SetOddFr) (ISO IN and
++		 * OUT Endpoints) Writing to this field sets the Even/Odd
++		 * (micro)frame (EO_FrNum) field to odd (micro) frame.
++		 */
++		unsigned setd1pid:1;
++		/*
++		 * Set DATA0 PID (INTR/Bulk IN and OUT endpoints)  Writing to
++		 * this field sets the Endpoint DPID (DPID) field in this
++		 * register to DATA0. Set Even (micro)frame (SetEvenFr) (ISO IN
++		 * and OUT Endpoints) Writing to this field sets the Even/Odd
++		 * (micro)frame (EO_FrNum) field to even (micro) frame.
++		 */
++		unsigned setd0pid:1;
++
++		/* Set NAK */
++		unsigned snak:1;
++		/* Clear NAK */
++		unsigned cnak:1;
++
++		/*
++		 * Tx Fifo Number
++		 * IN EPn/IN EP0
++		 * OUT EPn/OUT EP0 - reserved
++		 */
++		unsigned txfnum:4;
++
++		/* Stall Handshake */
++		unsigned stall:1;
++
++		/* Snoop Mode
++		 * OUT EPn/OUT EP0
++		 * IN EPn/IN EP0 - reserved
++		 */
++		unsigned snp:1;
++
++		/* Endpoint Type
++		 *  2'b00: Control
++		 *  2'b01: Isochronous
++		 *  2'b10: Bulk
++		 *  2'b11: Interrupt
++		 */
++		unsigned eptype:2;
++
++		/* NAK Status */
++		unsigned naksts:1;
++
++		/*
++		 * Endpoint DPID (INTR/Bulk IN and OUT endpoints) This field
++		 * contains the PID of the packet going to be received or
++		 * transmitted on this endpoint. The application should program
++		 * the PID of the first packet going to be received or
++		 * transmitted on this endpoint, after the endpoint is
++		 * activated. Applications use the SetD1PID and SetD0PID fields
++		 * of this register to program either D0 or D1 PID.
++		 *
++		 * The encoding for this field is
++		 *   - 0: D0
++		 *   - 1: D1
++		 */
++		unsigned dpid:1;
++
++		/* USB Active Endpoint */
++		unsigned usbactep:1;
++
++		/*
++		 * Next Endpoint
++		 * IN EPn/IN EP0
++		 * OUT EPn/OUT EP0 - reserved
++		 */
++		unsigned nextep:4;
++
++		/*
++		 * Maximum Packet Size
++		 * IN/OUT EPn
++		 * IN/OUT EP0 - 2 bits
++		 *   2'b00: 64 Bytes
++		 *   2'b01: 32
++		 *   2'b10: 16
++		 *   2'b11: 8
++		 */
++		unsigned mps:11;
++#define DWC_DEP0CTL_MPS_64			0
++#define DWC_DEP0CTL_MPS_32			1
++#define DWC_DEP0CTL_MPS_16			2
++#define DWC_DEP0CTL_MPS_8			3
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device EP Transfer Size Register.
++ * Read the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union deptsiz_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
 +
 +	/*
 +	 * Added-sr: 2007-07-26
 +	 *
-+	 * Finally, when the current request is done, mark this endpoint
-+	 * as not active, so that new requests can be processed.
++	 * Correct ther register layout for the 405EZ Ultra
++	 * USB device implementation.
 +	 */
-+	if (dwc_has_feature(GET_CORE_IF(ep->pcd), DWC_LIMITED_XFER))
-+		ep->dwc_ep.active = 0;
-+}
-+
-+/**
-+ * This function terminates all the requsts in the EP request queue.
-+ */
-+void request_nuke(struct pcd_ep *ep)
-+{
-+	struct pcd_request *req;
-+
-+	ep->stopped = 1;
-+
-+	/* called with irqs blocked?? */
-+	while (!list_empty(&ep->queue)) {
-+		req = list_entry(ep->queue.next, struct pcd_request, queue);
-+		request_done(ep, req, -ESHUTDOWN);
-+	}
-+}
-+
-+/*
-+ * The following sections briefly describe the behavior of the Gadget
-+ * API endpoint operations implemented in the DWC_otg driver
-+ * software. Detailed descriptions of the generic behavior of each of
-+ * these functions can be found in the Linux header file
-+ * include/linux/usb_gadget.h.
-+ *
-+ * The Gadget API provides wrapper functions for each of the function
-+ * pointers defined in usb_ep_ops. The Gadget Driver calls the wrapper
-+ * function, which then calls the underlying PCD function. The
-+ * following sections are named according to the wrapper
-+ * functions. Within each section, the corresponding DWC_otg PCD
-+ * function name is specified.
-+ *
-+ */
-+
-+/**
-+ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
-+ * mode
-+ */
-+static u32 assign_perio_tx_fifo(struct core_if *core_if)
-+{
-+	u32 mask = 1;
-+	u32 i;
-+
-+	for (i = 0; i < core_if->hwcfg4.b.num_dev_perio_in_ep; ++i) {
-+		if (!(mask & core_if->p_tx_msk)) {
-+			core_if->p_tx_msk |= mask;
-+			return i + 1;
-+		}
-+		mask <<= 1;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * This function releases periodic Tx FIFO in shared Tx FIFO mode
-+ */
-+static void release_perio_tx_fifo(struct core_if *core_if, u32 fifo_num)
-+{
-+	core_if->p_tx_msk = (core_if->p_tx_msk & (1 << (fifo_num - 1)))
-+				^ core_if->p_tx_msk;
-+}
-+
-+/**
-+ * This function assigns periodic Tx FIFO to an periodic EP in shared Tx FIFO
-+ * mode
-+ */
-+static u32 assign_tx_fifo(struct core_if *core_if)
-+{
-+	u32 mask = 1;
-+	u32 i;
-+
-+	for (i = 0; i < core_if->hwcfg4.b.num_in_eps; ++i) {
-+		if (!(mask & core_if->tx_msk)) {
-+			core_if->tx_msk |= mask;
-+			return i + 1;
-+		}
-+		mask <<= 1;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * This function releases periodic Tx FIFO in shared Tx FIFO mode
-+ */
-+static void release_tx_fifo(struct core_if *core_if, u32 fifo_num)
-+{
-+	core_if->tx_msk = (core_if->tx_msk & (1 << (fifo_num - 1)))
-+				^ core_if->tx_msk;
-+}
-+
-+/**
-+ * Sets an in endpoint's tx fifo based on the hardware configuration.
-+ */
-+static void set_in_ep_tx_fifo(struct dwc_pcd *pcd, struct pcd_ep *ep,
-+		const struct usb_endpoint_descriptor *desc)
-+{
-+	if (pcd->otg_dev->core_if->en_multiple_tx_fifo) {
-+		ep->dwc_ep.tx_fifo_num = assign_tx_fifo(pcd->otg_dev->core_if);
-+	} else {
-+		ep->dwc_ep.tx_fifo_num = 0;
-+
-+		/* If ISOC EP then assign a Periodic Tx FIFO. */
-+		if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
-+			USB_ENDPOINT_XFER_ISOC)
-+			ep->dwc_ep.tx_fifo_num =
-+				assign_perio_tx_fifo(pcd->otg_dev->core_if);
-+	}
-+}
-+
-+/**
-+ * This function activates an EP.  The Device EP control register for
-+ * the EP is configured as defined in the ep structure.  Note: This function is
-+ * not used for EP0.
-+ */
-+void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep)
-+{
-+	struct device_if *dev_if = core_if->dev_if;
-+	union depctl_data depctl;
-+	u32 *addr;
-+	union daint_data daintmsk = {.d32 = 0};
-+
-+	/* Read DEPCTLn register */
-+	if (ep->is_in == 1) {
-+		addr = &dev_if->in_ep_regs[ep->num]->diepctl;
-+		daintmsk.ep.in = 1 << ep->num;
-+	} else {
-+		addr = &dev_if->out_ep_regs[ep->num]->doepctl;
-+		daintmsk.ep.out = 1 << ep->num;
-+	}
-+
-+	/* If the EP is already active don't change the EP Control register */
-+	depctl.d32 = dwc_read_reg32(addr);
-+	if (!depctl.b.usbactep) {
-+		depctl.b.mps = ep->maxpacket;
-+		depctl.b.eptype = ep->type;
-+		depctl.b.txfnum = ep->tx_fifo_num;
-+		depctl.b.setd0pid = 1;
-+		depctl.b.usbactep = 1;
-+		dwc_write_reg32(addr, depctl.d32);
-+	}
-+
-+	/* Enable the Interrupt for this EP */
-+	dwc_modify_reg32(&dev_if->dev_global_regs->daintmsk, 0, daintmsk.d32);
-+
-+	ep->stall_clear_flag = 0;
-+}
-+/**
-+ * This function is called by the Gadget Driver for each EP to be
-+ * configured for the current configuration (SET_CONFIGURATION).
-+ *
-+ * This function initializes the dwc_otg_ep_t data structure, and then
-+ * calls dwc_otg_ep_activate.
-+ */
-+static int dwc_otg_pcd_ep_enable(struct usb_ep *_ep,
-+	const struct usb_endpoint_descriptor *desc)
-+{
-+	struct pcd_ep *ep = NULL;
-+	struct dwc_pcd *pcd = NULL;
-+	unsigned long flags;
-+
-+	ep = container_of(_ep, struct pcd_ep, ep);
-+	if (!_ep || !desc || ep->desc || desc->bDescriptorType !=
-+			USB_DT_ENDPOINT) {
-+		printk(KERN_WARNING "%s, bad ep or descriptor\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	if (ep == &ep->pcd->ep0) {
-+		printk(KERN_WARNING "%s, bad ep(0)\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	/* Check FIFO size */
-+	if (!desc->wMaxPacketSize) {
-+		printk(KERN_WARNING "%s, bad %s maxpacket\n", __func__,
-+				_ep->name);
-+		return -ERANGE;
-+	}
-+
-+	pcd = ep->pcd;
-+	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
-+		printk(KERN_WARNING "%s, bogus device state\n", __func__);
-+		return -ESHUTDOWN;
-+	}
-+
-+	spin_lock_irqsave(&pcd->lock, flags);
-+	ep->desc = desc;
-+	ep->ep.maxpacket = le16_to_cpu(desc->wMaxPacketSize);
-+
-+	/* Activate the EP */
-+	ep->stopped = 0;
-+	ep->dwc_ep.is_in = (USB_DIR_IN & desc->bEndpointAddress) != 0;
-+	ep->dwc_ep.maxpacket = ep->ep.maxpacket;
-+	ep->dwc_ep.type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-+
-+	if (ep->dwc_ep.is_in)
-+		set_in_ep_tx_fifo(pcd, ep, desc);
-+
-+	/* Set initial data PID. */
-+	if ((desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
-+			USB_ENDPOINT_XFER_BULK)
-+		ep->dwc_ep.data_pid_start = 0;
-+
-+	dwc_otg_ep_activate(GET_CORE_IF(pcd), &ep->dwc_ep);
-+	spin_unlock_irqrestore(&pcd->lock, flags);
-+	return 0;
-+}
-+
-+/**
-+ * This function deactivates an EP.  This is done by clearing the USB Active EP
-+ * bit in the Device EP control register.  Note: This function is not used for
-+ * EP0. EP0 cannot be deactivated.
-+ */
-+static void dwc_otg_ep_deactivate(struct core_if *core_if, struct dwc_ep *ep)
-+{
-+	union depctl_data depctl = {.d32 = 0};
-+	u32 *addr;
-+	union daint_data daintmsk = {.d32 = 0};
-+
-+	/* Read DEPCTLn register */
-+	if (ep->is_in == 1) {
-+		addr = &core_if->dev_if->in_ep_regs[ep->num]->diepctl;
-+		daintmsk.ep.in = 1 << ep->num;
-+	} else {
-+		addr = &core_if->dev_if->out_ep_regs[ep->num]->doepctl;
-+		daintmsk.ep.out = 1 << ep->num;
-+	}
-+
-+	depctl.b.usbactep = 0;
-+	dwc_write_reg32(addr, depctl.d32);
-+
-+	/* Disable the Interrupt for this EP */
-+	dwc_modify_reg32(&core_if->dev_if->dev_global_regs->daintmsk,
-+			daintmsk.d32, 0);
-+}
-+/**
-+ * This function is called when an EP is disabled due to disconnect or
-+ * change in configuration. Any pending requests will terminate with a
-+ * status of -ESHUTDOWN.
-+ *
-+ * This function modifies the dwc_otg_ep_t data structure for this EP,
-+ * and then calls dwc_otg_ep_deactivate.
-+ */
-+static int dwc_otg_pcd_ep_disable(struct usb_ep *_ep)
-+{
-+	struct pcd_ep *ep;
-+	struct core_if *core_if;
-+	unsigned long flags;
-+
-+	ep = container_of(_ep, struct pcd_ep, ep);
-+	if (!_ep || !ep->desc)
-+		return -EINVAL;
-+
-+	core_if = ep->pcd->otg_dev->core_if;
-+
-+	spin_lock_irqsave(&ep->pcd->lock, flags);
-+
-+	request_nuke(ep);
-+	dwc_otg_ep_deactivate(core_if, &ep->dwc_ep);
-+
-+	ep->desc = NULL;
-+	ep->stopped = 1;
-+	if (ep->dwc_ep.is_in) {
-+		release_perio_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
-+		release_tx_fifo(core_if, ep->dwc_ep.tx_fifo_num);
-+	}
-+
-+	spin_unlock_irqrestore(&ep->pcd->lock, flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * This function allocates a request object to use with the specified
-+ * endpoint.
-+ */
-+static struct usb_request *dwc_otg_pcd_alloc_request(struct usb_ep *_ep,
-+				gfp_t gfp_flags)
-+{
-+	struct pcd_request *req;
-+
-+	if (!_ep) {
-+		printk(KERN_WARNING "%s() Invalid EP\n", __func__);
-+		return 0;
-+	}
-+
-+	req = kzalloc(sizeof(struct pcd_request), gfp_flags);
-+	if (!req) {
-+		printk(KERN_WARNING "%s() request allocation failed\n",
-+				__func__);
-+		return 0;
-+	}
-+
-+	req->req.dma = DMA_ADDR_INVALID;
-+	INIT_LIST_HEAD(&req->queue);
-+
-+	return &req->req;
-+}
-+
-+/**
-+ * This function frees a request object.
-+ */
-+static void dwc_otg_pcd_free_request(struct usb_ep *_ep,
-+				     struct usb_request *_req)
-+{
-+	struct pcd_request *req;
-+
-+	if (!_ep || !_req) {
-+		printk(KERN_WARNING "%s() nvalid ep or req argument\n",
-+			__func__);
-+		return;
-+	}
-+
-+	req = container_of(_req, struct pcd_request, req);
-+	kfree(req);
-+}
++#ifdef CONFIG_DWC_LIMITED_XFER_SIZE
++	struct {
++		unsigned reserved:1;
++		/* Multi Count - Periodic IN endpoints */
++		unsigned mc:2;
++		unsigned reserved1:5;
++		/* Packet Count */
++		unsigned pktcnt:5;
++		unsigned reserved2:8;
++		/* Transfer size */
++		unsigned xfersize:11;
++	} b;
++#else
++	struct {
++		unsigned reserved:1;
++		/* Multi Count - Periodic IN endpoints */
++		unsigned mc:2;
++		/* Packet Count */
++		unsigned pktcnt:10;
++		/* Transfer size */
++		unsigned xfersize:19;
++	} b;
++#endif
++};
 +
 +/*
-+ * In dedicated Tx FIFO mode, enable the Non-Periodic Tx FIFO empty interrupt.
-+ * Otherwise, enable the Tx FIFO epmty interrupt. The data will be written into
-+ * the fifo by the ISR.
++ * This union represents the bit fields in the Device EP 0 Transfer Size
++ * Register.  Read the register into the d32 member then set/clear the bits
++ * using the bit elements.
 + */
-+static void enable_tx_fifo_empty_intr(struct core_if *c_if, struct dwc_ep *ep)
-+{
-+	union gintmsk_data intr_mask = {.d32 = 0};
-+	struct device_if *d_if = c_if->dev_if;
-+	struct core_global_regs *glbl_regs = c_if->core_global_regs;
++union deptsiz0_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved31:1; /* device*/
++		/*Setup Packet Count (DOEPTSIZ0 Only) */
++		unsigned supcnt:2;
++		/* Reserved */
++		unsigned reserved28_20:9;
++		/* Packet Count */
++		unsigned pktcnt:1;
++		/* Reserved */
++		unsigned reserved18_7:12;
++		/* Transfer size */
++		unsigned xfersize:7;
++	} b;
++};
 +
-+	if (!c_if->en_multiple_tx_fifo) {
-+		intr_mask.b.nptxfempty = 1;
-+		dwc_modify_reg32(&glbl_regs->gintsts, intr_mask.d32, 0);
-+		dwc_modify_reg32(&glbl_regs->gintmsk, intr_mask.d32,
-+					intr_mask.d32);
-+	} else if (ep->xfer_len) {
-+		/* Enable the Tx FIFO Empty Interrupt for this EP */
-+		u32 fifoemptymsk = 1 << ep->num;
-+		dwc_modify_reg32(&d_if->dev_global_regs->dtknqr4_fifoemptymsk,
-+					0, fifoemptymsk);
-+	}
-+}
++#define MAX_PERIO_FIFOS			15	/* Max periodic FIFOs */
++#define MAX_TX_FIFOS			15	/* Max non-periodic FIFOs */
 +
-+static void set_next_ep(struct device_if *dev_if, u8 num)
-+{
-+	union depctl_data depctl;
++/* Maximum number of Endpoints/HostChannels */
++#if defined(CONFIG_460EX)
++#define MAX_EPS_CHANNELS 12
++#else
++#define MAX_EPS_CHANNELS 4
++#endif
 +
-+	depctl.d32 = dwc_read_reg32(&dev_if->in_ep_regs[0]->diepctl);
-+	depctl.b.nextep = num;
++/*
++ * The device_if structure contains information needed to manage the DWC_otg
++ * controller acting in device mode. It represents the programming view of the
++ * device-specific aspects of the controller.
++ */
++struct device_if {
++	/* Device Global Registers starting at offset 800h */
++	struct device_global_regs *dev_global_regs;
++#define DWC_DEV_GLOBAL_REG_OFFSET		0x800
 +
-+	dwc_write_reg32(&dev_if->in_ep_regs[0]->diepctl, depctl.d32);
-+}
++	/* Device Logical IN Endpoint-Specific Registers 900h-AFCh */
++	struct device_in_ep_regs *in_ep_regs[MAX_EPS_CHANNELS];
++#define DWC_DEV_IN_EP_REG_OFFSET		0x900
++#define DWC_EP_REG_OFFSET			0x20
 +
-+/**
-+ * This function does the setup for a data transfer for an EP and
-+ * starts the transfer.  For an IN transfer, the packets will be loaded into the
-+ * appropriate Tx FIFO in the ISR. For OUT transfers, the packets are unloaded
-+ * from the Rx FIFO in the ISR.
++	/* Device Logical OUT Endpoint-Specific Registers B00h-CFCh */
++	struct device_out_ep_regs *out_ep_regs[MAX_EPS_CHANNELS];
++#define DWC_DEV_OUT_EP_REG_OFFSET		0xB00
++
++	/* Device configuration information */
++	/* Device Speed  0: Unknown, 1: LS, 2:FS, 3: HS */
++	u8  speed;
++	/*  Number # of Tx EP range: 0-15 exept ep0 */
++	u8  num_in_eps;
++	/*  Number # of Rx EP range: 0-15 exept ep 0*/
++	u8  num_out_eps;
++
++	/* Size of periodic FIFOs (Bytes) */
++	u16 perio_tx_fifo_size[MAX_PERIO_FIFOS];
++
++	/* Size of Tx FIFOs (Bytes) */
++	u16 tx_fifo_size[MAX_TX_FIFOS];
++
++	/* Thresholding enable flags and length varaiables */
++	u16 rx_thr_en;
++	u16 iso_tx_thr_en;
++	u16 non_iso_tx_thr_en;
++	u16 rx_thr_length;
++	u16 tx_thr_length;
++};
++
++/*
++ * This union represents the bit fields in the Power and Clock Gating Control
++ * Register. Read the register into the d32 member then set/clear the
++ * bits using the bit elements.
++ */
++union pcgcctl_data {
++	u32 d32;
++	struct {
++		unsigned reserved31_05:27;
++		/* PHY Suspended */
++		unsigned physuspended:1;
++		/* Reset Power Down Modules */
++		unsigned rstpdwnmodule:1;
++		/* Power Clamp */
++		unsigned pwrclmp:1;
++		/* Gate Hclk */
++		unsigned gatehclk:1;
++		/* Stop Pclk */
++		unsigned stoppclk:1;
++	} b;
++};
++
++/*
++ * Host Mode Register Structures
++ */
++
++/*
++ * The Host Global Registers structure defines the size and relative field
++ * offsets for the Host Mode Global Registers.  Host Global Registers offsets
++ * 400h-7FFh.
++*/
++struct host_global_regs {
++	/* Host Configuration Register.				Offset: 400h */
++	u32 hcfg;
++	/* Host Frame Interval Register.			Offset: 404h */
++	u32 hfir;
++	/* Host Frame Number / Frame Remaining Register.	Offset: 408h */
++	u32 hfnum;
++	/* Reserved.						Offset: 40Ch */
++	u32 reserved40C;
++	/* Host Periodic Transmit FIFO/ Queue Status Register.	Offset: 410h */
++	u32 hptxsts;
++	/* Host All Channels Interrupt Register.		Offset: 414h */
++	u32 haint;
++	/* Host All Channels Interrupt Mask Register.		Offset: 418h */
++	u32 haintmsk;
++};
++
++/*
++ * This union represents the bit fields in the Host Configuration Register. Read
++ * the register into the d32 member then set/clear the bits using the bit
++ * elements. Write the d32 member to the hcfg register.
++ */
++union hcfg_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++#define DWC_HCFG_30_60_MHZ			0
++#define DWC_HCFG_48_MHZ				1
++#define DWC_HCFG_6_MHZ				2
++		/* FS/LS Only Support */
++		unsigned fslssupp:1;
++		/* FS/LS Phy Clock Select */
++		unsigned fslspclksel:2;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Frame Remaing/Number
++ * Register.
++ */
++union hfir_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:16;
++		unsigned frint:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Frame Remaing/Number
++ * Register.
++ */
++union hfnum_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++#define DWC_HFNUM_MAX_FRNUM			0x3FFF
++		unsigned frrem:16;
++		unsigned frnum:16;
++	} b;
++};
++
++union hptxsts_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned ptxqtop_odd:1;
++		unsigned ptxqtop_chnum:4;
++		unsigned ptxqtop_token:2;
++		unsigned ptxqtop_terminate:1;
++		unsigned ptxqspcavail:8;
++		unsigned ptxfspcavail:16;
++		/*
++		 * Top of the Periodic Transmit Request Queue
++		 *  - bit 24 - Terminate (last entry for the selected channel)
++		 *  - bits 26:25 - Token Type
++		 *    - 2'b00 - Zero length
++		 *    - 2'b01 - Ping
++		 *    - 2'b10 - Disable
++		 *  - bits 30:27 - Channel Number
++		 *  - bit 31 - Odd/even microframe
++		 */
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Port Control and Status
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hprt0 register.
++ */
++union hprt0_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++#define DWC_HPRT0_PRTSPD_HIGH_SPEED		0
++#define DWC_HPRT0_PRTSPD_FULL_SPEED		1
++#define DWC_HPRT0_PRTSPD_LOW_SPEED		2
++		unsigned reserved19_31:13;
++		unsigned prtspd:2;
++		unsigned prttstctl:4;
++		unsigned prtpwr:1;
++		unsigned prtlnsts:2;
++		unsigned reserved9:1;
++		unsigned prtrst:1;
++		unsigned prtsusp:1;
++		unsigned prtres:1;
++		unsigned prtovrcurrchng:1;
++		unsigned prtovrcurract:1;
++		unsigned prtenchng:1;
++		unsigned prtena:1;
++		unsigned prtconndet:1;
++		unsigned prtconnsts:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host All Interrupt Register.
++ */
++union haint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:16;
++		unsigned ch15:1;
++		unsigned ch14:1;
++		unsigned ch13:1;
++		unsigned ch12:1;
++		unsigned ch11:1;
++		unsigned ch10:1;
++		unsigned ch9:1;
++		unsigned ch8:1;
++		unsigned ch7:1;
++		unsigned ch6:1;
++		unsigned ch5:1;
++		unsigned ch4:1;
++		unsigned ch3:1;
++		unsigned ch2:1;
++		unsigned ch1:1;
++		unsigned ch0:1;
++	} b;
++	struct {
++		unsigned reserved:16;
++		unsigned chint:16;
++	} b2;
++};
++
++/*
++ * This union represents the bit fields in the Host All Interrupt Register.
++ */
++union haintmsk_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:16;
++		unsigned ch15:1;
++		unsigned ch14:1;
++		unsigned ch13:1;
++		unsigned ch12:1;
++		unsigned ch11:1;
++		unsigned ch10:1;
++		unsigned ch9:1;
++		unsigned ch8:1;
++		unsigned ch7:1;
++		unsigned ch6:1;
++		unsigned ch5:1;
++		unsigned ch4:1;
++		unsigned ch3:1;
++		unsigned ch2:1;
++		unsigned ch1:1;
++		unsigned ch0:1;
++	} b;
++	struct {
++		unsigned reserved:16;
++		unsigned chint:16;
++	} b2;
++};
++
++/*
++ * Host Channel Specific Registers. 500h-5FCh
++ */
++struct dwc_hc_regs {			/* CONFIG_DWC_OTG_REG_LE */
++	/*
++	 * Host Channel 0 Characteristic Register.
++	 * Offset: 500h + (chan_num * 20h) + 00h
++	 */
++	u32 hcchar;
++	/*
++	 * Host Channel 0 Split Control Register.
++	 * Offset: 500h + (chan_num * 20h) + 04h
++	 */
++	u32 hcsplt;
++	/*
++	 * Host Channel 0 Interrupt Register.
++	 * Offset: 500h + (chan_num * 20h) + 08h
++	 */
++	u32 hcint;
++	/*
++	 * Host Channel 0 Interrupt Mask Register.
++	 * Offset: 500h + (chan_num * 20h) + 0Ch
++	 */
++	u32 hcintmsk;
++	/*
++	 * Host Channel 0 Transfer Size Register.
++	 * Offset: 500h + (chan_num * 20h) + 10h
++	 */
++	u32 hctsiz;
++	/*
++	 * Host Channel 0 DMA Address Register.
++	 * Offset: 500h + (chan_num * 20h) + 14h
++	 */
++	u32 hcdma;
++	/*
++	 * Reserved.
++	 * Offset: 500h + (chan_num * 20h) + 18h - 500h + (chan_num * 20h) + 1Ch
++	  */
++	u32 reserved[2];
++};
++
++/*
++ * This union represents the bit fields in the Host Channel Characteristics
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcchar register.
++ */
++union hcchar_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Channel enable */
++		unsigned chen:1;
++		/* Channel disable */
++		unsigned chdis:1;
++		/*
++		 * Frame to transmit periodic transaction.
++		 * 0: even, 1: odd
++		 */
++		unsigned oddfrm:1;
++		/* Device address */
++		unsigned devaddr:7;
++		/* Packets per frame for periodic transfers. 0 is reserved. */
++		unsigned multicnt:2;
++		/* 0: Control, 1: Isoc, 2: Bulk, 3: Intr */
++		unsigned eptype:2;
++		/* 0: Full/high speed device, 1: Low speed device */
++		unsigned lspddev:1;
++		unsigned reserved:1;
++		/* 0: OUT, 1: IN */
++		unsigned epdir:1;
++		/* Endpoint number */
++		unsigned epnum:4;
++		/* Maximum packet size in bytes */
++		unsigned mps:11;
++	} b;
++};
++
++union hcsplt_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Split Enble */
++		unsigned spltena:1;
++		/* Reserved */
++		unsigned reserved:14;
++		/* Do Complete Split */
++		unsigned compsplt:1;
++		/* Transaction Position */
++		unsigned xactpos:2;
++#define DWC_HCSPLIT_XACTPOS_MID			0
++#define DWC_HCSPLIT_XACTPOS_END			1
++#define DWC_HCSPLIT_XACTPOS_BEGIN		2
++#define DWC_HCSPLIT_XACTPOS_ALL			3
++
++		/* Hub Address */
++		unsigned hubaddr:7;
++		/* Port Address */
++		unsigned prtaddr:7;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host All Interrupt
++ * Register.
++ */
++union hcint_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		/* Reserved */
++		unsigned reserved:21;
++		/* Data Toggle Error */
++		unsigned datatglerr:1;
++		/* Frame Overrun */
++		unsigned frmovrun:1;
++		/* Babble Error */
++		unsigned bblerr:1;
++		/* Transaction Err */
++		unsigned xacterr:1;
++		/* NYET Response Received */
++		unsigned nyet:1;
++		/* ACK Response Received */
++		unsigned ack:1;
++		/* NAK Response Received */
++		unsigned nak:1;
++		/* STALL Response Received */
++		unsigned stall:1;
++		/* AHB Error */
++		unsigned ahberr:1;
++		/* Channel Halted */
++		unsigned chhltd:1;
++		/* Transfer Complete */
++		unsigned xfercomp:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Channel Transfer Size
++ * Register. Read the register into the d32 member then set/clear the  bits
++ * using the bit elements. Write the d32 member to the hcchar register.
++ */
++union hctsiz_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++#define DWC_HCTSIZ_DATA0			0
++#define DWC_HCTSIZ_DATA1			2
++#define DWC_HCTSIZ_DATA2			1
++#define DWC_HCTSIZ_MDATA			3
++#define DWC_HCTSIZ_SETUP			3
++
++		/* Do PING protocol when 1 */
++		unsigned dopng:1;
++		/*
++		 * Packet ID for next data packet
++		 * 0: DATA0
++		 * 1: DATA2
++		 * 2: DATA1
++		 * 3: MDATA (non-Control), SETUP (Control)
++		 */
++		unsigned pid:2;
++		/* Data packets to transfer */
++		unsigned pktcnt:10;
++		/* Total transfer size in bytes */
++		unsigned xfersize:19;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Channel Interrupt Mask
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcintmsk register.
++ */
++union hcintmsk_data {				/* CONFIG_DWC_OTG_REG_LE */
++	u32 d32;
++	struct {
++		unsigned reserved:21;
++		unsigned datatglerr:1;
++		unsigned frmovrun:1;
++		unsigned bblerr:1;
++		unsigned xacterr:1;
++		unsigned nyet:1;
++		unsigned ack:1;
++		unsigned nak:1;
++		unsigned stall:1;
++		unsigned ahberr:1;
++		unsigned chhltd:1;
++		unsigned xfercompl:1;
++	} b;
++};
++
++/*
++ * OTG Host Interface Structure.
 + *
++ * The OTG Host Interface Structure structure contains information needed to
++ * manage the DWC_otg controller acting in host mode. It represents the
++ * programming view of the host-specific aspects of the controller.
 + */
-+void dwc_otg_ep_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
-+{
-+	union depctl_data depctl;
-+	union deptsiz_data deptsiz;
-+	struct device_if *d_if = c_if->dev_if;
-+	struct core_global_regs *glbl_regs = c_if->core_global_regs;
++struct dwc_host_if {			/* CONFIG_DWC_OTG_REG_LE */
++	/* Host Global Registers starting at offset 400h.*/
++	struct host_global_regs *host_global_regs;
++#define DWC_OTG_HOST_GLOBAL_REG_OFFSET		0x400
 +
-+	if (ep->is_in) {
-+		struct device_in_ep_regs *in_regs = d_if->in_ep_regs[ep->num];
-+		union gnptxsts_data gtxstatus;
-+		gtxstatus.d32 = dwc_read_reg32(&glbl_regs->gnptxsts);
++	/* Host Port 0 Control and Status Register */
++	u32 *hprt0;
++#define DWC_OTG_HOST_PORT_REGS_OFFSET		0x440
 +
-+		if (!c_if->en_multiple_tx_fifo && !gtxstatus.b.nptxqspcavail)
-+			return;
++	/* Host Channel Specific Registers at offsets 500h-5FCh. */
++	struct dwc_hc_regs *hc_regs[MAX_EPS_CHANNELS];
++#define DWC_OTG_HOST_CHAN_REGS_OFFSET		0x500
++#define DWC_OTG_CHAN_REGS_OFFSET		0x20
 +
-+		depctl.d32 = dwc_read_reg32(&(in_regs->diepctl));
-+		deptsiz.d32 = dwc_read_reg32(&(in_regs->dieptsiz));
++	/* Host configuration information */
++	/* Number of Host Channels (range: 1-16) */
++	u8  num_host_channels;
++	/* Periodic EPs supported (0: no, 1: yes) */
++	u8  perio_eps_supported;
++	/* Periodic Tx FIFO Size (Only 1 host periodic Tx FIFO) */
++	u16 perio_tx_fifo_size;
++};
 +
-+		/* Zero Length Packet? */
-+		if (!ep->xfer_len) {
-+			deptsiz.b.xfersize = 0;
-+			deptsiz.b.pktcnt = 1;
-+		} else {
-+			/*
-+			 * Program the transfer size and packet count as
-+			 * follows:
-+			 *
-+			 * xfersize = N * maxpacket + short_packet
-+			 * pktcnt = N + (short_packet exist ? 1 : 0)
-+			 */
++#else  /* CONFIG_DWC_OTG_REG_LE not defined */
 +
-+			/*
-+			 * Added-sr: 2007-07-26
-+			 *
-+			 * Since the 405EZ (Ultra) only support 2047 bytes as
-+			 * max transfer size, we have to split up bigger
-+			 * transfers into multiple transfers of 1024 bytes sized
-+			 * messages. I happens often, that transfers of 4096
-+			 * bytes are required (zero-gadget,
-+			 * file_storage-gadget).
-+			 */
-+			if (dwc_has_feature(c_if, DWC_LIMITED_XFER)) {
-+				if (ep->xfer_len > MAX_XFER_LEN) {
-+					ep->bytes_pending = ep->xfer_len
-+						- MAX_XFER_LEN;
-+					ep->xfer_len = MAX_XFER_LEN;
-+				}
-+			}
++/*
++ * This union represents the bit fields of the Core OTG Control
++ * and Status Register (GOTGCTL).  Set the bits using the bit
++ * fields then write the d32 value to the register.
++ */
++union gotgctl_data {
++	u32 d32;
++	struct {
++		unsigned sesreqscs:1;
++		unsigned sesreq:1;
++		unsigned reserved2_7:6;
++		unsigned hstnegscs:1;
++		unsigned hnpreq:1;
++		unsigned hstsethnpen:1;
++		unsigned devhnpen:1;
++		unsigned reserved12_15:4;
++		unsigned conidsts:1;
++		unsigned reserved17:1;
++		unsigned asesvld:1;
++		unsigned bsesvld:1;
++		unsigned currmod:1;
++		unsigned reserved21_31:11;
++	} b;
++};
 +
-+			deptsiz.b.xfersize = ep->xfer_len;
-+			deptsiz.b.pktcnt = (ep->xfer_len - 1 + ep->maxpacket) /
-+						ep->maxpacket;
-+		}
-+		dwc_write_reg32(&in_regs->dieptsiz, deptsiz.d32);
++/*
++ * This union represents the bit fields of the Core OTG Interrupt Register
++ * (GOTGINT).  Set/clear the bits using the bit fields then write the d32
++ * value to the register.
++ */
++union gotgint_data {
++	u32 d32;
++	struct {
++		/* Current Mode */
++		unsigned reserved0_1:2;
 +
-+		if (c_if->dma_enable)
-+			dwc_write_reg32(&in_regs->diepdma, ep->dma_addr);
-+		else if (ep->type != DWC_OTG_EP_TYPE_ISOC)
-+			enable_tx_fifo_empty_intr(c_if, ep);
++		/* Session End Detected */
++		unsigned sesenddet:1;
 +
-+		/* EP enable, IN data in FIFO */
-+		depctl.b.cnak = 1;
-+		depctl.b.epena = 1;
-+		dwc_write_reg32(&in_regs->diepctl, depctl.d32);
++		unsigned reserved3_7:5;
 +
-+		if (c_if->dma_enable)
-+			set_next_ep(d_if, ep->num);
-+	} else {
-+		struct device_out_ep_regs *out_regs =
-+			d_if->out_ep_regs[ep->num];
++		/* Session Request Success Status Change */
++		unsigned sesreqsucstschng:1;
++		/* Host Negotiation Success Status Change */
++		unsigned hstnegsucstschng:1;
 +
-+		depctl.d32 = dwc_read_reg32(&out_regs->doepctl);
-+		deptsiz.d32 = dwc_read_reg32(&out_regs->doeptsiz);
++		unsigned reserver10_16:7;
++
++		/* Host Negotiation Detected */
++		unsigned hstnegdet:1;
++		/* A-Device Timeout Change */
++		unsigned adevtoutchng:1;
++		/* Debounce Done */
++		unsigned debdone:1;
++
++		unsigned reserved31_20:12;
++
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core AHB Configuration Register
++ * (GAHBCFG).  Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
++ */
++union gahbcfg_data {
++	u32 d32;
++	struct {
++		unsigned glblintrmsk:1;
++#define DWC_GAHBCFG_GLBINT_ENABLE		1
++
++		unsigned hburstlen:4;
++#define DWC_GAHBCFG_INT_DMA_BURST_SINGLE	0
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR		1
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR4		3
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR8		5
++#define DWC_GAHBCFG_INT_DMA_BURST_INCR16	7
++
++		unsigned dmaenable:1;
++#define DWC_GAHBCFG_DMAENABLE			1
++		unsigned reserved:1;
++		unsigned nptxfemplvl_txfemplvl:1;
++		unsigned ptxfemplvl:1;
++#define DWC_GAHBCFG_TXFEMPTYLVL_EMPTY		1
++#define DWC_GAHBCFG_TXFEMPTYLVL_HALFEMPTY	0
++		unsigned reserved9_31:23;
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core USB Configuration Register
++ * (GUSBCFG).  Set the bits using the bit fields then write the d32 value to
++ * the register.
++ */
++union gusbcfg_data {
++	u32 d32;
++	struct {
++		unsigned toutcal:3;
++		unsigned phyif:1;
++		unsigned ulpi_utmi_sel:1;
++		unsigned fsintf:1;
++		unsigned physel:1;
++		unsigned ddrsel:1;
++		unsigned srpcap:1;
++		unsigned hnpcap:1;
++		unsigned usbtrdtim:4;
++		unsigned nptxfrwnden:1;
++		unsigned phylpwrclksel:1;
++		unsigned otgutmifssel:1;
++		unsigned ulpi_fsls:1;
++		unsigned ulpi_auto_res:1;
++		unsigned ulpi_clk_sus_m:1;
++		unsigned ulpi_ext_vbus_drv:1;
++		unsigned ulpi_int_vbus_indicator:1;
++		unsigned term_sel_dl_pulse:1;
++		unsigned reserved23_28:6;
++		unsigned force_host_mode:1;
++		unsigned force_device_mode:1;
++		unsigned corrupt_tx_packet:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields of the Core Reset Register (GRSTCTL).
++ * Set/clear the bits using the bit fields then write the d32 value to the
++ * register.
++ */
++union grstctl_data {
++	u32 d32;
++	struct {
++		/*
++		 * Core Soft Reset (CSftRst) (Device and Host)
++		 *
++		 * The application can flush the control logic in the entire
++		 * core using this bit. This bit resets the pipelines in the AHB
++		 * Clock domain as well as the PHY Clock domain.
++		 *
++		 * The state machines are reset to an IDLE state, the control
++		 * bits in the CSRs are cleared, all the transmit FIFOs and the
++		 * receive FIFO are flushed.
++		 *
++		 * The status mask bits that control the generation of the
++		 * interrupt, are cleared, to clear the interrupt. The interrupt
++		 * status bits are not cleared, so the application can get the
++		 * status of any events that occurred in the core after it has
++		 * set this bit.
++		 *
++		 * Any transactions on the AHB are terminated as soon as
++		 * possible following the protocol. Any transactions on the USB
++		 * are terminated immediately.
++		 *
++		 * The configuration settings in the CSRs are unchanged, so the
++		 * software doesn't have to reprogram these registers (Device
++		 * Configuration/Host Configuration/Core System
++		 * Configuration/Core PHY Configuration).
++		 *
++		 * The application can write to this bit, any time it wants to
++		 * reset the core. This is a self clearing bit and the core
++		 * clears this bit after all the necessary logic is reset in the
++		 * core, which may take several clocks, depending on the current
++		 * state of the core.
++		 */
++		unsigned csftrst:1;
++		/*
++		 * Hclk Soft Reset
++		 *
++		 * The application uses this bit to reset the control logic in
++		 * the AHB clock domain. Only AHB clock domain pipelines are
++		 * reset.
++		 */
++		unsigned hsftrst:1;
++		/*
++		 * Host Frame Counter Reset (Host Only)<br>
++		 *
++		 * The application can reset the (micro)frame number counter
++		 * inside the core, using this bit. When the (micro)frame
++		 * counter is reset, the subsequent SOF sent out by the core,
++		 * will have a (micro)frame number of 0.
++		 */
++		unsigned hstfrm:1;
++		/*
++		 * In Token Sequence Learning Queue Flush (INTknQFlsh) (Device
++		 * Only)
++		 */
++		unsigned intknqflsh:1;
++		/*
++		 * RxFIFO Flush (RxFFlsh) (Device and Host)
++		 *
++		 * The application can flush the entire Receive FIFO using this
++		 * bit.
++		 *
++		 * The application must first ensure that the core is not in the
++		 * middle of a transaction.
++		 *
++		 * The application should write into this bit, only after making
++		 * sure that neither the DMA engine is reading from the RxFIFO
++		 * nor the MAC is writing the data in to the FIFO.
++		 *
++		 * The application should wait until the bit is cleared before
++		 * performing any other operations. This bit will takes 8 clocks
++		 * (slowest of PHY or AHB clock) to clear.
++		 */
++		unsigned rxfflsh:1;
++		/*
++		 * TxFIFO Flush (TxFFlsh) (Device and Host).
++		 *
++		 * This bit is used to selectively flush a single or all
++		 * transmit FIFOs.  The application must first ensure that the
++		 * core is not in the middle of a transaction.
++		 *
++		 * The application should write into this bit, only after making
++		 * sure that neither the DMA engine is writing into the TxFIFO
++		 * nor the MAC is reading the data out of the FIFO.
++		 *
++		 * The application should wait until the core clears this bit,
++		 * before performing any operations. This bit will takes 8
++		 * clocks (slowest of PHY or AHB clock) to clear.
++		 */
++		unsigned txfflsh:1;
 +
 +		/*
-+		 * Program the transfer size and packet count as follows:
++		 * TxFIFO Number (TxFNum) (Device and Host).
 +		 *
-+		 * pktcnt = N
-+		 * xfersize = N * maxpacket
++		 * This is the FIFO number which needs to be flushed, using the
++		 * TxFIFO Flush bit. This field should not be changed until the
++		 * TxFIFO Flush bit is cleared by the core.
++		 *	 - 0x0 : Non Periodic TxFIFO Flush
++		 *	 - 0x1 : Periodic TxFIFO #1 Flush in device mode
++		 *	   or Periodic TxFIFO in host mode
++		 *	 - 0x2 : Periodic TxFIFO #2 Flush in device mode.
++		 *	 - ...
++		 *	 - 0xF : Periodic TxFIFO #15 Flush in device mode
++		 *	 - 0x10: Flush all the Transmit NonPeriodic and
++		 *	   Transmit Periodic FIFOs in the core
 +		 */
-+		if (!ep->xfer_len) {
-+			deptsiz.b.xfersize = ep->maxpacket;
-+			deptsiz.b.pktcnt = 1;
-+		} else {
-+			deptsiz.b.pktcnt = (ep->xfer_len + ep->maxpacket - 1) /
-+					ep->maxpacket;
-+			deptsiz.b.xfersize = deptsiz.b.pktcnt * ep->maxpacket;
-+		}
-+		dwc_write_reg32(&out_regs->doeptsiz, deptsiz.d32);
++		unsigned txfnum:5;
++#define DWC_GRSTCTL_TXFNUM_ALL			0x10
 +
-+		if (c_if->dma_enable)
-+			dwc_write_reg32(&out_regs->doepdma, ep->dma_addr);
++		/* Reserved */
++		unsigned reserved11_29:19;
++		/*
++		 * DMA Request Signal.  Indicated DMA request is in progress.
++		 * Used for debug purpose.
++		 */
++		unsigned dmareq:1;
++		/*
++		 * AHB Master Idle.  Indicates the AHB Master State Machine is
++		 * in IDLE condition.
++		 */
++		unsigned ahbidle:1;
++	} b;
++};
 +
-+		if (ep->type == DWC_OTG_EP_TYPE_ISOC) {
-+			if (ep->even_odd_frame)
-+				depctl.b.setd1pid = 1;
-+			else
-+				depctl.b.setd0pid = 1;
-+		}
 +
-+		/* EP enable */
-+		depctl.b.cnak = 1;
-+		depctl.b.epena = 1;
-+		dwc_write_reg32(&out_regs->doepctl, depctl.d32);
-+	}
-+}
-+
-+/**
-+ * This function does the setup for a data transfer for EP0 and starts
-+ * the transfer.  For an IN transfer, the packets will be loaded into
-+ * the appropriate Tx FIFO in the ISR. For OUT transfers, the packets are
-+ * unloaded from the Rx FIFO in the ISR.
++/*
++ * This union represents the bit fields of the Core Interrupt Mask Register
++ * (GINTMSK). Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
 + */
-+void dwc_otg_ep0_start_transfer(struct core_if *c_if, struct dwc_ep *ep)
-+{
-+	union depctl_data depctl;
-+	union deptsiz0_data deptsiz;
-+	struct device_if *d_if = c_if->dev_if;
-+	struct core_global_regs *glbl_regs = c_if->core_global_regs;
++union gintmsk_data {
++	u32 d32;
++	struct {
++		unsigned reserved0:1;
++		unsigned modemismatch:1;
++		unsigned otgintr:1;
++		unsigned sofintr:1;
++		unsigned rxstsqlvl:1;
++		unsigned nptxfempty:1;
++		unsigned ginnakeff:1;
++		unsigned goutnakeff:1;
++		unsigned reserved8:1;
++		unsigned i2cintr:1;
++		unsigned erlysuspend:1;
++		unsigned usbsuspend:1;
++		unsigned usbreset:1;
++		unsigned enumdone:1;
++		unsigned isooutdrop:1;
++		unsigned eopframe:1;
++		unsigned reserved16:1;
++		unsigned epmismatch:1;
++		unsigned inepintr:1;
++		unsigned outepintr:1;
++		unsigned incomplisoin:1;
++		unsigned incomplisoout:1;
++		unsigned reserved22_23:2;
++		unsigned portintr:1;
++		unsigned hcintr:1;
++		unsigned ptxfempty:1;
++		unsigned reserved27:1;
++		unsigned conidstschng:1;
++		unsigned disconnect:1;
++		unsigned sessreqintr:1;
++		unsigned wkupintr:1;
++	} b;
++};
 +
-+	ep->total_len = ep->xfer_len;
++/*
++ * This union represents the bit fields of the Core Interrupt Register
++ * (GINTSTS).  Set/clear the bits using the bit fields then write the d32 value
++ * to the register.
++ */
++union gintsts_data {
++	u32 d32;
++#define DWC_SOF_INTR_MASK			0x0008
 +
-+	if (ep->is_in) {
-+		struct device_in_ep_regs *in_regs = d_if->in_ep_regs[0];
-+		union gnptxsts_data gtxstatus;
++	struct {
++#define DWC_HOST_MODE 1
++		unsigned curmode:1;
++		unsigned modemismatch:1;
++		unsigned otgintr:1;
++		unsigned sofintr:1;
++		unsigned rxstsqlvl:1;
++		unsigned nptxfempty:1;
++		unsigned ginnakeff:1;
++		unsigned goutnakeff:1;
++		unsigned reserved8:1;
++		unsigned i2cintr:1;
++		unsigned erlysuspend:1;
++		unsigned usbsuspend:1;
++		unsigned usbreset:1;
++		unsigned enumdone:1;
++		unsigned isooutdrop:1;
++		unsigned eopframe:1;
++		unsigned intokenrx:1;
++		unsigned epmismatch:1;
++		unsigned inepint:1;
++		unsigned outepintr:1;
++		unsigned incomplisoin:1;
++		unsigned incomplisoout:1;
++		unsigned reserved22_23:2;
++		unsigned portintr:1;
++		unsigned hcintr:1;
++		unsigned ptxfempty:1;
++		unsigned reserved27:1;
++		unsigned conidstschng:1;
++		unsigned disconnect:1;
++		unsigned sessreqintr:1;
++		unsigned wkupintr:1;
++	} b;
++};
 +
-+		gtxstatus.d32 = dwc_read_reg32(&glbl_regs->gnptxsts);
++/*
++ * This union represents the bit fields in the Device Receive Status Read and
++ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the d32 element then
++ * read out the bits using the bit elements.
++ */
++union device_grxsts_data {
++	u32 d32;
++	struct {
++		unsigned epnum:4;
++		unsigned bcnt:11;
++		unsigned dpid:2;
 +
-+		if (!c_if->en_multiple_tx_fifo && !gtxstatus.b.nptxqspcavail)
-+			return;
++#define DWC_STS_DATA_UPDT		0x2	/* OUT Data Packet */
++#define DWC_STS_XFER_COMP		0x3	/* OUT Data Transfer Complete */
++#define DWC_DSTS_GOUT_NAK		0x1	/* Global OUT NAK */
++#define DWC_DSTS_SETUP_COMP		0x4	/* Setup Phase Complete */
++#define DWC_DSTS_SETUP_UPDT		0x6	/* SETUP Packet */
++		unsigned pktsts:4;
++		unsigned fn:4;
++		unsigned reserved:7;
++	} b;
++};
 +
-+		depctl.d32 = dwc_read_reg32(&in_regs->diepctl);
-+		deptsiz.d32 = dwc_read_reg32(&in_regs->dieptsiz);
++/*
++ * This union represents the bit fields in the Host Receive Status Read and
++ * Pop Registers (GRXSTSR, GRXSTSP) Read the register into the d32 element then
++ * read out the bits using the bit elements.
++ */
++union host_grxsts_data {
++	u32 d32;
++	struct {
++		unsigned chnum:4;
++		unsigned bcnt:11;
++		unsigned dpid:2;
 +
-+		/* Zero Length Packet? */
-+		if (!ep->xfer_len) {
-+			deptsiz.b.xfersize = 0;
-+			deptsiz.b.pktcnt = 1;
-+		} else {
-+			/*
-+			 * Program the transfer size and packet count  as
-+			 * follows:
-+			 *
-+			 *  xfersize = N * maxpacket + short_packet
-+			 *  pktcnt = N + (short_packet exist ? 1 : 0)
-+			 */
-+			if (ep->xfer_len > ep->maxpacket) {
-+				ep->xfer_len = ep->maxpacket;
-+				deptsiz.b.xfersize = ep->maxpacket;
-+			} else {
-+				deptsiz.b.xfersize = ep->xfer_len;
-+			}
-+			deptsiz.b.pktcnt = 1;
-+		}
-+		dwc_write_reg32(&in_regs->dieptsiz, deptsiz.d32);
++		unsigned pktsts:4;
++#define DWC_GRXSTS_PKTSTS_IN			0x2
++#define DWC_GRXSTS_PKTSTS_IN_XFER_COMP		0x3
++#define DWC_GRXSTS_PKTSTS_DATA_TOGGLE_ERR	0x5
++#define DWC_GRXSTS_PKTSTS_CH_HALTED		0x7
 +
-+		if (c_if->dma_enable)
-+			dwc_write_reg32(&in_regs->diepdma, ep->dma_addr);
++		unsigned reserved:11;
++	} b;
++};
 +
-+		/* EP enable, IN data in FIFO */
-+		depctl.b.cnak = 1;
-+		depctl.b.epena = 1;
-+		dwc_write_reg32(&in_regs->diepctl, depctl.d32);
++/*
++ * This union represents the bit fields in the FIFO Size Registers (HPTXFSIZ,
++ * GNPTXFSIZ, DPTXFSIZn, DIEPTXFn). Read the register into the d32 element then
++ * read out the bits using the bit elements.
++ */
++union fifosize_data {
++	u32 d32;
++	struct {
++		unsigned startaddr:16;
++		unsigned depth:16;
++	} b;
++};
 +
-+		if (!c_if->dma_enable)
-+			enable_tx_fifo_empty_intr(c_if, ep);
-+		} else {
-+		struct device_out_ep_regs *out_regs =
-+			d_if->out_ep_regs[ep->num];
++/*
++ * This union represents the bit fields in the Non-Periodic Transmit FIFO/Queue
++ * Status Register (GNPTXSTS). Read the register into the d32 element then read
++ * out the bits using the bit elements.
++ */
++union gnptxsts_data {
++	u32 d32;
++	struct {
++		unsigned nptxfspcavail:16;
++		unsigned nptxqspcavail:8;
++		/*
++		 * Top of the Non-Periodic Transmit Request Queue
++		 *	- bit 24 - Terminate (Last entry for the selected
++		 *	  channel/EP)
++		 *	- bits 26:25 - Token Type
++		 *	  - 2'b00 - IN/OUT
++		 *	  - 2'b01 - Zero Length OUT
++		 *	  - 2'b10 - PING/Complete Split
++		 *	  - 2'b11 - Channel Halt
++		 *	- bits 30:27 - Channel/EP Number
++		 */
++		unsigned nptxqtop_terminate:1;
++		unsigned nptxqtop_token:2;
++		unsigned nptxqtop_chnep:4;
++		unsigned reserved:1;
++	} b;
++};
 +
-+		depctl.d32 = dwc_read_reg32(&out_regs->doepctl);
-+		deptsiz.d32 = dwc_read_reg32(&out_regs->doeptsiz);
++/*
++ * This union represents the bit fields in the Transmit	FIFO Status Register
++ * (DTXFSTS). Read the register into the d32 element then read out the bits
++ * using the bit elements.
++ */
++union dtxfsts_data {
++	u32 d32;
++	struct {
++		unsigned txfspcavail:16;
++		unsigned reserved:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the I2C Control Register (I2CCTL).
++ * Read the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union gi2cctl_data {
++	u32 d32;
++	struct {
++		unsigned rwdata:8;
++		unsigned regaddr:8;
++		unsigned addr:7;
++		unsigned i2cen:1;
++		unsigned ack:1;
++		unsigned i2csuspctl:1;
++		unsigned i2cdevaddr:2;
++		unsigned reserved:2;
++		unsigned rw:1;
++		unsigned bsydne:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config1 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg1_data {
++	u32 d32;
++	struct {
++		unsigned ep_dir0:2;
++		unsigned ep_dir1:2;
++		unsigned ep_dir2:2;
++		unsigned ep_dir3:2;
++		unsigned ep_dir4:2;
++		unsigned ep_dir5:2;
++		unsigned ep_dir6:2;
++		unsigned ep_dir7:2;
++		unsigned ep_dir8:2;
++		unsigned ep_dir9:2;
++		unsigned ep_dir10:2;
++		unsigned ep_dir11:2;
++		unsigned ep_dir12:2;
++		unsigned ep_dir13:2;
++		unsigned ep_dir14:2;
++		unsigned ep_dir15:2;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config2 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg2_data {
++	u32 d32;
++	struct {
++		/* GHWCFG2 */
++		unsigned op_mode:3;
++#define DWC_HWCFG2_OP_MODE_HNP_SRP_CAPABLE_OTG		0
++#define DWC_HWCFG2_OP_MODE_SRP_ONLY_CAPABLE_OTG		1
++#define DWC_HWCFG2_OP_MODE_NO_HNP_SRP_CAPABLE_OTG	2
++#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_DEVICE		3
++#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_DEVICE	4
++#define DWC_HWCFG2_OP_MODE_SRP_CAPABLE_HOST		5
++#define DWC_HWCFG2_OP_MODE_NO_SRP_CAPABLE_HOST		6
++
++		unsigned architecture:2;
++		unsigned point2point:1;
++		unsigned hs_phy_type:2;
++#define DWC_HWCFG2_HS_PHY_TYPE_NOT_SUPPORTED		0
++#define DWC_HWCFG2_HS_PHY_TYPE_UTMI			1
++#define DWC_HWCFG2_HS_PHY_TYPE_ULPI			2
++#define DWC_HWCFG2_HS_PHY_TYPE_UTMI_ULPI		3
++
++		unsigned fs_phy_type:2;
++		unsigned num_dev_ep:4;
++		unsigned num_host_chan:4;
++		unsigned perio_ep_supported:1;
++		unsigned dynamic_fifo:1;
++		unsigned rx_status_q_depth:2;
++		unsigned nonperio_tx_q_depth:2;
++		unsigned host_perio_tx_q_depth:2;
++		unsigned dev_token_q_depth:5;
++		unsigned reserved31:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config3 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg3_data {
++	u32 d32;
++	struct {
++		/* GHWCFG3 */
++		unsigned xfer_size_cntr_width:4;
++		unsigned packet_size_cntr_width:3;
++		unsigned otg_func:1;
++		unsigned i2c:1;
++		unsigned vendor_ctrl_if:1;
++		unsigned optional_features:1;
++		unsigned synch_reset_type:1;
++		unsigned reserved15_12:4;
++		unsigned dfifo_depth:16;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the User HW Config4 Register.  Read
++ * the register into the d32 element then read out the bits using the bit
++ * elements.
++ */
++union hwcfg4_data {
++	u32 d32;
++	struct {
++		unsigned num_dev_perio_in_ep:4;
++		unsigned power_optimiz:1;
++		unsigned min_ahb_freq:9;
++		unsigned utmi_phy_data_width:2;
++		unsigned num_dev_mode_ctrl_ep:4;
++		unsigned iddig_filt_en:1;
++		unsigned vbus_valid_filt_en:1;
++		unsigned a_valid_filt_en:1;
++		unsigned b_valid_filt_en:1;
++		unsigned session_end_filt_en:1;
++		unsigned ded_fifo_en:1;
++		unsigned num_in_eps:4;
++		unsigned reserved31_30:2;
++	} b;
++};
++
++/*
++ * Device Global Registers. Offsets 800h-BFFh
++ *
++ * The following structures define the size and relative field offsets for the
++ * Device Mode Registers.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++struct device_global_regs {
++	/* Device Configuration Register.			Offset 800h */
++	u32 dcfg;
++	/* Device Control Register.				Offset: 804h */
++	u32 dctl;
++	/* Device Status Register (Read Only).			Offset: 808h */
++	u32 dsts;
++	/* Reserved.						Offset: 80Ch */
++	u32 unused;
++	/* Device IN Endpoint Common Interrupt Mask Register.	Offset: 810h */
++	u32 diepmsk;
++	/* Device OUT Endpoint Common Interrupt MaskRegister.	Offset: 814h */
++	u32 doepmsk;
++	/* Device All Endpoints Interrupt Register.		Offset: 818h */
++	u32 daint;
++	/* Device All Endpoints Interrupt Mask Register.	Offset:	81Ch */
++	u32 daintmsk;
++	/* Device IN Token Queue Read Register-1 (Read Only).	Offset: 820h */
++	u32 dtknqr1;
++	/* Device IN Token Queue Read Register-2 (Read Only).	Offset: 824h */
++	u32 dtknqr2;
++	/* Device VBUS	 discharge Register.			Offset: 828h */
++	u32 dvbusdis;
++	/* Device VBUS Pulse Register.				Offset: 82Ch */
++	u32 dvbuspulse;
++	/*
++	 * Device IN Token Queue Read Register-3 (Read Only).
++	 * Device Thresholding control register (Read/Write)
++	 *							Offset: 830h
++	 */
++	u32 dtknqr3_dthrctl;
++	/*
++	 * Device IN Token Queue Read Register-4 (Read Only).
++	 * Device IN EPs empty Inr. Mask Register (Read/Write)
++	 *							Offset: 834h
++	 */
++	u32 dtknqr4_fifoemptymsk;
++};
++
++/*
++ * This union represents the bit fields in the Device Configuration Register.
++ * Read the register into the d32 member then  set/clear the bits using the bit
++ * elements.  Write the d32 member to the dcfg register.
++ */
++union dcfg_data {
++	u32 d32;
++	struct {
++		/* Device Speed */
++		unsigned devspd:2;
++		/* Non Zero Length Status OUT Handshake */
++		unsigned nzstsouthshk:1;
++#define DWC_DCFG_SEND_STALL			1
++
++		unsigned reserved3:1;
++		/* Device Addresses */
++		unsigned devaddr:7;
++		/* Periodic Frame Interval */
++		unsigned perfrint:2;
++#define DWC_DCFG_FRAME_INTERVAL_80		0
++#define DWC_DCFG_FRAME_INTERVAL_85		1
++#define DWC_DCFG_FRAME_INTERVAL_90		2
++#define DWC_DCFG_FRAME_INTERVAL_95		3
++
++		unsigned reserved13_17:5;
++		/* In Endpoint Mis-match count */
++		unsigned epmscnt:4;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device Control Register.  Read
++ * the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union dctl_data {
++	u32 d32;
++	struct {
++		/* Remote Wakeup */
++		unsigned rmtwkupsig:1;
++		/* Soft Disconnect */
++		unsigned sftdiscon:1;
++		/* Global Non-Periodic IN NAK Status */
++		unsigned gnpinnaksts:1;
++		/* Global OUT NAK Status */
++		unsigned goutnaksts:1;
++		/* Test Control */
++		unsigned tstctl:3;
++		/* Set Global Non-Periodic IN NAK */
++		unsigned sgnpinnak:1;
++		/* Clear Global Non-Periodic IN NAK */
++		unsigned cgnpinnak:1;
++		/* Set Global OUT NAK */
++		unsigned sgoutnak:1;
++		/* Clear Global OUT NAK */
++		unsigned cgoutnak:1;
++		unsigned reserved:21;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device Status Register.  Read the
++ * register into the d32 member then set/clear the bits using the bit elements.
++ */
++union dsts_data	{
++	u32 d32;
++	struct {
++		/* Suspend Status */
++		unsigned suspsts:1;
++		/* Enumerated Speed */
++		unsigned enumspd:2;
++#define DWC_DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ		0
++#define DWC_DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ		1
++#define DWC_DSTS_ENUMSPD_LS_PHY_6MHZ			2
++#define DWC_DSTS_ENUMSPD_FS_PHY_48MHZ			3
++
++		/* Erratic Error */
++		unsigned errticerr:1;
++		unsigned reserved4_7:4;
++		/* Frame or Microframe Number of the received SOF */
++		unsigned soffn:14;
++		unsigned reserved22_31:10;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device IN EP Interrupt Register
++ * and the Device IN EP Common Mask Register. Read the register into the d32
++ * member then set/clear the bits using the bit elements.
++ */
++union diepint_data {
++	u32 d32;
++	struct {
++		/* Transfer complete mask */
++		unsigned xfercompl:1;
++		/* Endpoint disable mask */
++		unsigned epdisabled:1;
++		/* AHB Error mask */
++		unsigned ahberr:1;
++		/* TimeOUT Handshake mask (non-ISOC EPs) */
++		unsigned timeout:1;
++		/* IN Token received with TxF Empty mask */
++		unsigned intktxfemp:1;
++		/* IN Token Received with EP mismatch mask */
++		unsigned intknepmis:1;
++		/* IN Endpoint HAK Effective mask */
++		unsigned inepnakeff:1;
++		/* IN Endpoint HAK Effective mask */
++		unsigned emptyintr:1;
++		unsigned txfifoundrn:1;
++		unsigned reserved08_31:23;
++		} b;
++};
++
++/*
++ * This union represents the bit fields in the Device OUT EP Interrupt
++ * Registerand Device OUT EP Common Interrupt Mask Register.  Read the register
++ * into the d32 member then set/clear the  bits using the bit elements.
++ */
++union doepint_data {
++	u32 d32;
++	struct {
++		/* Transfer complete */
++		unsigned xfercompl:1;
++		/* Endpoint disable  */
++		unsigned epdisabled:1;
++		/* AHB Error */
++		unsigned ahberr:1;
++		/* Setup Phase Done (contorl EPs) */
++		unsigned setup:1;
++		unsigned reserved04_31:28;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device All EP Interrupt and Mask
++ * Registers.  Read the register into the d32 member then set/clear the bits
++ * using the bit elements.
++ */
++union daint_data {
++	u32 d32;
++	struct {
++		/* IN Endpoint bits */
++		unsigned in:16;
++		/* OUT Endpoint bits */
++		unsigned out:16;
++	} ep;
++	struct {
++		/* IN Endpoint bits */
++		unsigned inep0:1;
++		unsigned inep1:1;
++		unsigned inep2:1;
++		unsigned inep3:1;
++		unsigned inep4:1;
++		unsigned inep5:1;
++		unsigned inep6:1;
++		unsigned inep7:1;
++		unsigned inep8:1;
++		unsigned inep9:1;
++		unsigned inep10:1;
++		unsigned inep11:1;
++		unsigned inep12:1;
++		unsigned inep13:1;
++		unsigned inep14:1;
++		unsigned inep15:1;
++		/* OUT Endpoint bits */
++		unsigned outep0:1;
++		unsigned outep1:1;
++		unsigned outep2:1;
++		unsigned outep3:1;
++		unsigned outep4:1;
++		unsigned outep5:1;
++		unsigned outep6:1;
++		unsigned outep7:1;
++		unsigned outep8:1;
++		unsigned outep9:1;
++		unsigned outep10:1;
++		unsigned outep11:1;
++		unsigned outep12:1;
++		unsigned outep13:1;
++		unsigned outep14:1;
++		unsigned outep15:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Device IN Token Queue Read
++ * Registers.  Read the register into the d32 member.  READ-ONLY Register
++ */
++union dtknq1_data {
++	u32 d32;
++	struct {
++		/* In Token Queue Write Pointer */
++		unsigned intknwptr:5;
++		/* Reserved */
++		unsigned reserved05_06:2;
++		/* write pointer has wrapped. */
++		unsigned wrap_bit:1;
++		/* EP Numbers of IN Tokens 0 ... 4 */
++		unsigned epnums0_5:24;
++	} b;
++};
++
++/*
++ * This union represents Threshold control Register Read and write the register
++ * into the d32 member.  READ-WRITABLE Register
++ */
++union dthrctl_data {
++	u32 d32;
++	struct {
++		/* non ISO Tx Thr. Enable */
++		unsigned non_iso_thr_en:1;
++		/* ISO Tx Thr. Enable */
++		unsigned iso_thr_en:1;
++		/* Tx Thr. Length */
++		unsigned tx_thr_len:9;
++		/* Reserved */
++		unsigned reserved11_15:5;
++		/* Rx Thr. Enable */
++		unsigned rx_thr_en:1;
++		/* Rx Thr. Length */
++		unsigned rx_thr_len:9;
++		/* Reserved */
++		unsigned reserved26_31:6;
++	} b;
++};
++
++/*
++ * Device Logical IN Endpoint-Specific Registers. Offsets 900h-AFCh
++ *
++ * There will be one set of endpoint registers per logical endpoint implemented.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++struct device_in_ep_regs {
++	/*
++	 * Device IN Endpoint Control Register.
++	 * Offset: 900h + (ep_num * 20h) + 00h
++	 */
++	u32 diepctl;
++	/* Reserved. Offset:900h + (ep_num * 20h) + 04h */
++	u32 reserved04;
++	/*
++	 * Device IN Endpoint Interrupt Register.
++	 * Offset: 900h + (ep_num * 20h) + 08h
++	 */
++	u32 diepint;
++	/* Reserved. Offset:900h + (ep_num * 20h) + 0Ch */
++	u32 reserved0C;
++	/*
++	 * Device IN Endpoint Transfer Size Register.
++	 * Offset: 900h + (ep_num * 20h) + 10h
++	 */
++	u32 dieptsiz;
++	/*
++	 * Device IN Endpoint DMA Address Register.
++	 * Offset: 900h + (ep_num * 20h) + 14h
++	 */
++	u32 diepdma;
++	/*
++	 * Device IN Endpoint Transmit FIFO Status Register.
++	 * Offset: 900h + (ep_num * 20h) + 18h
++	 */
++	u32 dtxfsts;
++	/*
++	 * Reserved.
++	 * Offset: 900h + (ep_num * 20h) + 1Ch - 900h + (ep_num * 20h) + 1Ch
++	 */
++	u32 reserved18;
++};
++
++/*
++ * Device Logical OUT Endpoint-Specific Registers. Offsets: B00h-CFCh
++ *
++ * There will be one set of endpoint registers per logical endpoint implemented.
++ *
++ * These registers are visible only in Device mode and must not be accessed in
++ * Host mode, as the results are unknown.
++ */
++struct device_out_ep_regs {
++	/*
++	 * Device OUT Endpoint Control Register.
++	 * Offset: B00h + (ep_num * 20h) + 00h
++	 */
++	u32 doepctl;
++	/*
++	 * Device OUT Endpoint Frame number Register.
++	 * Offset: B00h + (ep_num * 20h) + 04h
++	 */
++	u32 doepfn;
++	/*
++	 * Device OUT Endpoint Interrupt Register.
++	 * Offset: B00h + (ep_num * 20h) + 08h
++	 */
++	u32 doepint;
++	/* Reserved. Offset:B00h + (ep_num * 20h) + 0Ch */
++	u32 reserved0C;
++	/*
++	 * Device OUT Endpoint Transfer Size Register.
++	 * Offset: B00h + (ep_num * 20h) + 10h
++	 */
++	u32 doeptsiz;
++	/*
++	 * Device OUT Endpoint DMA Address Register.
++	 * Offset: B00h + (ep_num * 20h) + 14h
++	 */
++	u32 doepdma;
++	/*
++	 * Reserved.
++	 * Offset:B00h + (ep_num * 20h) + 18h - B00h + (ep_num * 20h) + 1Ch
++	 */
++	u32 unused[2];
++};
++
++/*
++ * This union represents the bit fields in the Device EP Control Register.  Read
++ * the register into the d32 member then set/clear the bits using the bit
++ * elements.
++ */
++union depctl_data {
++	u32 d32;
++	struct {
++		/* Maximum Packet Size
++		 * IN/OUT EPn
++		 * IN/OUT EP0 - 2 bits
++		 *	 2'b00: 64 Bytes
++		 *	 2'b01: 32
++		 *	 2'b10: 16
++		 *	 2'b11: 8
++		 */
++		unsigned mps:11;
++#define DWC_DEP0CTL_MPS_64			0
++#define DWC_DEP0CTL_MPS_32			1
++#define DWC_DEP0CTL_MPS_16			2
++#define DWC_DEP0CTL_MPS_8			3
 +
 +		/*
-+		 * Program the transfer size and packet count as follows:
-+		 *
-+		 * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
-+		 * pktcnt = N
++		 * Next Endpoint
++		 * IN EPn/IN EP0
++		 * OUT EPn/OUT EP0 - reserved
 +		 */
-+		if (!ep->xfer_len) {
-+			deptsiz.b.xfersize = ep->maxpacket;
-+			deptsiz.b.pktcnt = 1;
-+		} else {
-+			deptsiz.b.pktcnt = (ep->xfer_len + ep->maxpacket - 1) /
-+						ep->maxpacket;
-+			deptsiz.b.xfersize = deptsiz.b.pktcnt * ep->maxpacket;
-+		}
-+		dwc_write_reg32(&out_regs->doeptsiz, deptsiz.d32);
++		unsigned nextep:4;
++		/* USB Active Endpoint */
++		unsigned usbactep:1;
++		/*
++		 * Endpoint DPID (INTR/Bulk IN and OUT endpoints) This field
++		 * contains the PID of the packet going to be received or
++		 * transmitted on this endpoint. The application should program
++		 * the PID of the first packet going to be received or
++		 * transmitted on this endpoint , after the endpoint is
++		 * activated. Application use the SetD1PID and SetD0PID fields
++		 * of this register to program either D0 or D1 PID.
++		 *
++		 * The encoding for this field is
++		 *	 - 0: D0
++		 *	 - 1: D1
++		 */
++		unsigned dpid:1;
++		/* NAK Status */
++		unsigned naksts:1;
++		/* Endpoint Type
++		 *	2'b00: Control
++		 *	2'b01: Isochronous
++		 *	2'b10: Bulk
++		 *	2'b11: Interrupt
++		 */
++		unsigned eptype:2;
++		/*
++		 * Snoop Mode
++		 * OUT EPn/OUT EP0
++		 * IN EPn/IN EP0 - reserved
++		 */
++		unsigned snp:1;
++		/* Stall Handshake */
++		unsigned stall:1;
++		/*
++		 * Tx Fifo Number
++		 * IN EPn/IN EP0
++		 * OUT EPn/OUT EP0 - reserved
++		 */
++		unsigned txfnum:4;
++		/* Clear NAK */
++		unsigned cnak:1;
++		/* Set NAK */
++		unsigned snak:1;
++		/*
++		 * Set DATA0 PID (INTR/Bulk IN and OUT endpoints)
++		 *
++		 * Writing to this field sets the Endpoint DPID (DPID) field in
++		 * this register to DATA0. Set Even (micro)frame (SetEvenFr)
++		 * (ISO IN and OUT Endpoints)
++		 *
++		 * Writing to this field sets the Even/Odd (micro)frame
++		 * (EO_FrNum) field to even (micro) frame.
++		 */
++		unsigned setd0pid:1;
++		/*
++		 * Set DATA1 PID (INTR/Bulk IN and OUT endpoints)
++		 *
++		 * Writing to this field sets the Endpoint DPID (DPID) field in
++		 * this register to DATA1 Set Odd (micro)frame (SetOddFr) (ISO
++		 * IN and OUT Endpoints)
++		 *
++		 * Writing to this field sets the Even/Odd (micro)frame
++		 * (EO_FrNum) field to odd (micro) frame.
++		 */
++		unsigned setd1pid:1;
++		/* Endpoint Disable */
++		unsigned epdis:1;
++		/* Endpoint Enable */
++		unsigned epena:1;
++		} b;
++};
 +
-+		if (c_if->dma_enable)
-+			dwc_write_reg32(&out_regs->doepdma, ep->dma_addr);
-+
-+		/* EP enable */
-+		depctl.b.cnak = 1;
-+		depctl.b.epena = 1;
-+		dwc_write_reg32(&out_regs->doepctl, depctl.d32);
-+	}
-+}
-+
-+/**
-+ * This function is used to submit an I/O Request to an EP.
-+ *
-+ *	- When the request completes the request's completion callback
-+ *	  is called to return the request to the driver.
-+ *	- An EP, except control EPs, may have multiple requests
-+ *	  pending.
-+ *	- Once submitted the request cannot be examined or modified.
-+ *	- Each request is turned into one or more packets.
-+ *	- A BULK EP can queue any amount of data; the transfer is
-+ *	  packetized.
-+ *	- Zero length Packets are specified with the request 'zero'
-+ *	  flag.
++/*
++ * This union represents the bit fields in the Device EP Transfer Size Register.
++ * Read the register into the d32 member then set/clear the bits using the bit
++ * elements.
 + */
-+static int dwc_otg_pcd_ep_queue(struct usb_ep *_ep, struct usb_request *_req,
-+				gfp_t gfp_flags)
-+{
-+	int prevented = 0;
-+	struct pcd_request *req;
-+	struct pcd_ep *ep;
-+	struct dwc_pcd *pcd;
-+	struct core_if *core_if;
-+	unsigned long flags = 0;
++union deptsiz_data {
++	u32 d32;
++	struct {
++		/* Transfer size */
++		unsigned xfersize:19;
++		/* Packet Count */
++		unsigned pktcnt:10;
++		/* Multi Count - Periodic IN endpoints */
++		unsigned mc:2;
++		unsigned reserved:1;
++	} b;
++};
 +
-+	req = container_of(_req, struct pcd_request, req);
-+	if (!_req || !_req->complete || !_req->buf ||
-+			!list_empty(&req->queue)) {
-+		printk(KERN_WARNING "%s, bad params\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	ep = container_of(_ep, struct pcd_ep, ep);
-+	if (!_ep || (!ep->desc && ep->dwc_ep.num != 0)) {
-+		printk(KERN_WARNING "%s, bad ep\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	pcd = ep->pcd;
-+	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
-+		printk(KERN_WARNING "%s, bogus device state\n", __func__);
-+		return -ESHUTDOWN;
-+	}
-+	core_if = pcd->otg_dev->core_if;
-+
-+	if (!core_if->core_params->opt) {
-+		if (ep->dwc_ep.num != 0) {
-+			printk(KERN_ERR "%s queue req %p, len %d buf %p\n",
-+				_ep->name, _req, _req->length, _req->buf);
-+		}
-+	}
-+
-+	if (GET_CORE_IF(pcd)->dma_enable) {
-+		if (_req->dma == DMA_ADDR_INVALID) {
-+			_req->dma = dma_map_single(pcd->gadget.dev.parent,
-+				_req->buf, _req->length, ep->dwc_ep.is_in ?
-+				DMA_TO_DEVICE : DMA_FROM_DEVICE);
-+			req->mapped = 1;
-+		} else {
-+			dma_sync_single_for_device(pcd->gadget.dev.parent,
-+				_req->dma, _req->length, ep->dwc_ep.is_in ?
-+				DMA_TO_DEVICE : DMA_FROM_DEVICE);
-+			req->mapped = 0;
-+		}
-+	}
-+
-+	spin_lock_irqsave(&ep->pcd->lock, flags);
-+
-+	_req->status = -EINPROGRESS;
-+	_req->actual = 0;
-+
-+	/* Start the transfer */
-+	if (list_empty(&ep->queue) && !ep->stopped) {
-+		/* EP0 Transfer? */
-+		if (ep->dwc_ep.num == 0) {
-+			switch (pcd->ep0state) {
-+			case EP0_IN_DATA_PHASE:
-+				break;
-+			case EP0_OUT_DATA_PHASE:
-+				if (pcd->request_config) {
-+					/* Complete STATUS PHASE */
-+					ep->dwc_ep.is_in = 1;
-+					pcd->ep0state = EP0_STATUS;
-+				}
-+				break;
-+			default:
-+				spin_unlock_irqrestore(&pcd->lock, flags);
-+				return -EL2HLT;
-+			}
-+
-+			ep->dwc_ep.dma_addr = _req->dma;
-+			ep->dwc_ep.start_xfer_buff = _req->buf;
-+			ep->dwc_ep.xfer_buff = _req->buf;
-+			ep->dwc_ep.xfer_len = _req->length;
-+			ep->dwc_ep.xfer_count = 0;
-+			ep->dwc_ep.sent_zlp = 0;
-+			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
-+
-+			dwc_otg_ep0_start_transfer(core_if, &ep->dwc_ep);
-+		} else {
-+			/* Setup and start the Transfer */
-+			ep->dwc_ep.dma_addr = _req->dma;
-+			ep->dwc_ep.start_xfer_buff = _req->buf;
-+			ep->dwc_ep.xfer_buff = _req->buf;
-+			ep->dwc_ep.xfer_len = _req->length;
-+			ep->dwc_ep.xfer_count = 0;
-+			ep->dwc_ep.sent_zlp = 0;
-+			ep->dwc_ep.total_len = ep->dwc_ep.xfer_len;
-+
-+			dwc_otg_ep_start_transfer(core_if, &ep->dwc_ep);
-+		}
-+	}
-+
-+	if (req || prevented) {
-+		++pcd->request_pending;
-+		list_add_tail(&req->queue, &ep->queue);
-+
-+		if (ep->dwc_ep.is_in && ep->stopped && !core_if->dma_enable) {
-+			/*
-+			 *  Device IN endpoint interrupt mask register is laid
-+			 *  out exactly the same as the device IN endpoint
-+			 *  interrupt register.
-+			 */
-+			union diepint_data diepmsk = {.d32 = 0};
-+			diepmsk.b.intktxfemp = 1;
-+
-+			dwc_modify_reg32(
-+				&core_if->dev_if->dev_global_regs->diepmsk,
-+				0, diepmsk.d32);
-+		}
-+	}
-+
-+	spin_unlock_irqrestore(&pcd->lock, flags);
-+	return 0;
-+}
-+
-+/**
-+ * This function cancels an I/O request from an EP.
++/*
++ * This union represents the bit fields in the Device EP 0 Transfer Size
++ * Register.  Read the register into the d32 member then set/clear the bits
++ * using the bit elements.
 + */
-+static int dwc_otg_pcd_ep_dequeue(struct usb_ep *_ep,
-+				  struct usb_request *_req)
-+{
-+	struct pcd_request *req;
-+	struct pcd_ep *ep;
-+	struct dwc_pcd *pcd;
-+	unsigned long flags;
++union deptsiz0_data {
++	u32 d32;
++	struct {
++		/* Transfer size */
++		unsigned xfersize:7;
++		/* Reserved */
++		unsigned reserved7_18:12;
++		/* Packet Count */
++		unsigned pktcnt:2;
++		/* Reserved */
++		unsigned reserved21_28:9;
++		/* Setup Packet Count (DOEPTSIZ0 Only) */
++		unsigned supcnt:2;
++		unsigned reserved31;
++	} b;
++};
 +
-+	ep = container_of(_ep, struct pcd_ep, ep);
-+	if (!_ep || !_req || (!ep->desc && ep->dwc_ep.num != 0)) {
-+		printk(KERN_WARNING "%s, bad argument\n", __func__);
-+		return -EINVAL;
-+	}
++#define MAX_PERIO_FIFOS			15	/* Max periodic FIFOs */
++#define MAX_TX_FIFOS			15	/* Max non-periodic FIFOs */
++#define MAX_EPS_CHANNELS		4	/* Max Endpoints/HostChannels */
 +
-+	pcd = ep->pcd;
-+	if (!pcd->driver || pcd->gadget.speed == USB_SPEED_UNKNOWN) {
-+		printk(KERN_WARNING "%s, bogus device state\n", __func__);
-+		return -ESHUTDOWN;
-+	}
-+
-+	spin_lock_irqsave(&pcd->lock, flags);
-+
-+	/* make sure it's actually queued on this endpoint */
-+	list_for_each_entry(req, &ep->queue, queue)
-+		if (&req->req == _req)
-+			break;
-+
-+	if (&req->req != _req) {
-+		spin_unlock_irqrestore(&pcd->lock, flags);
-+		return -EINVAL;
-+	}
-+
-+	if (!list_empty(&req->queue))
-+		request_done(ep, req, -ECONNRESET);
-+	else
-+		req = 0;
-+
-+	spin_unlock_irqrestore(&pcd->lock, flags);
-+
-+	return req ? 0 : -EOPNOTSUPP;
-+}
-+
-+/**
-+ * Set the EP STALL.
++/*
++ * The device_if structure contains information needed to manage the
++ * DWC_otg controller acting in device mode. It represents the programming view
++ * of the device-specific aspects of the controller.
 + */
-+void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep)
-+{
-+	union depctl_data depctl;
-+	u32 *depctl_addr;
++struct device_if {
++	/* Device Global Registers starting at offset 800h */
++	struct device_global_regs *dev_global_regs;
++#define DWC_DEV_GLOBAL_REG_OFFSET		0x800
 +
-+	if (ep->is_in) {
-+		depctl_addr = &(core_if->dev_if->in_ep_regs[ep->num]->diepctl);
-+		depctl.d32 = dwc_read_reg32(depctl_addr);
++	/* Device Logical IN Endpoint-Specific Registers 900h-AFCh */
++	struct device_in_ep_regs *in_ep_regs[MAX_EPS_CHANNELS/2];
++#define DWC_DEV_IN_EP_REG_OFFSET		0x900
++#define DWC_EP_REG_OFFSET			0x20
 +
-+		/* set the disable and stall bits */
-+		if (depctl.b.epena)
-+			depctl.b.epdis = 1;
-+		depctl.b.stall = 1;
-+		dwc_write_reg32(depctl_addr, depctl.d32);
-+	} else {
-+		depctl_addr = &(core_if->dev_if->out_ep_regs[ep->num]->doepctl);
-+		depctl.d32 = dwc_read_reg32(depctl_addr);
++	/* Device Logical OUT Endpoint-Specific Registers B00h-CFCh */
++	struct device_out_ep_regs *out_ep_regs[MAX_EPS_CHANNELS/2];
++#define DWC_DEV_OUT_EP_REG_OFFSET		0xB00
 +
-+		/* set the stall bit */
-+		depctl.b.stall = 1;
-+		dwc_write_reg32(depctl_addr, depctl.d32);
-+	}
-+}
++	/* Device Speed		0: Unknown, 1: LS, 2:FS, 3: HS */
++	u8 speed;
++	/* Number # of Tx EP range: 0-15 exept ep0 */
++	u8 num_in_eps;
++	/* Number # of Rx EP range: 0-15 exept ep0 */
++	u8 num_out_eps;
 +
-+/**
-+ * Clear the EP STALL.
++	/* Size of periodic FIFOs (Bytes) */
++	u16 perio_tx_fifo_size[MAX_PERIO_FIFOS];
++
++	/* Size of Tx FIFOs (Bytes) */
++	u16 tx_fifo_size[MAX_TX_FIFOS];
++
++	/* Thresholding enable flags and length varaiables */
++	u16 rx_thr_en;
++	u16 iso_tx_thr_en;
++	u16 non_iso_tx_thr_en;
++	u16 rx_thr_length;
++	u16 tx_thr_length;
++};
++
++/*
++ * The Host Global Registers structure defines the size and relative
++ * field offsets for the Host Mode Global Registers.  Host Global
++ * Registers offsets 400h-7FFh.
++*/
++struct host_global_regs {
++	/* Host Configuration Register.   Offset: 400h */
++	u32 hcfg;
++	/* Host Frame Interval Register.	Offset: 404h */
++	u32 hfir;
++	/* Host Frame Number / Frame Remaining Register. Offset: 408h */
++	u32 hfnum;
++       /* Reserved.	Offset: 40Ch */
++	u32 reserved40C;
++	/* Host Periodic Transmit FIFO/ Queue Status Register. Offset: 410h */
++	u32 hptxsts;
++	/* Host All Channels Interrupt Register. Offset: 414h */
++	u32 haint;
++	/* Host All Channels Interrupt Mask Register. Offset: 418h */
++	u32 haintmsk;
++};
++
++/*
++ * This union represents the bit fields in the Host Configuration Register.
++ * Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcfg register.
 + */
-+void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep)
-+{
-+	union depctl_data depctl;
-+	u32 *depctl_addr;
++union hcfg_data {
++	u32 d32;
++	struct {
++		/* FS/LS Phy Clock Select */
++		unsigned fslspclksel:2;
++#define DWC_HCFG_30_60_MHZ			0
++#define DWC_HCFG_48_MHZ				1
++#define DWC_HCFG_6_MHZ				2
 +
-+	if (ep->is_in == 1)
-+		depctl_addr = &(core_if->dev_if->in_ep_regs[ep->num]->diepctl);
-+	else
-+		depctl_addr = &(core_if->dev_if->out_ep_regs[ep->num]->doepctl);
++		/* FS/LS Only Support */
++		unsigned fslssupp:1;
++	} b;
++};
 +
-+	depctl.d32 = dwc_read_reg32(depctl_addr);
++/*
++ * This union represents the bit fields in the Host Frame Remaing/Number
++ * Register.
++ */
++union hfir_data {
++	u32 d32;
++	struct {
++		unsigned frint:16;
++		unsigned reserved:16;
++	} b;
++};
 +
-+	/* clear the stall bits */
-+	depctl.b.stall = 0;
++/*
++ * This union represents the bit fields in the Host Frame Remaing/Number
++ * Register.
++ */
++union hfnum_data {
++	u32 d32;
++	struct {
++		unsigned frnum:16;
++#define DWC_HFNUM_MAX_FRNUM			0x3FFF
++		unsigned frrem:16;
++	} b;
++};
 +
++union hptxsts_data {
++	u32 d32;
++	struct {
++		unsigned ptxfspcavail:16;
++		unsigned ptxqspcavail:8;
++		/*
++		 * Top of the Periodic Transmit Request Queue
++		 *	- bit 24 - Terminate (last entry of selected channel)
++		 *	- bits 26:25 - Token Type
++		 *	  - 2'b00 - Zero length
++		 *	  - 2'b01 - Ping
++		 *	  - 2'b10 - Disable
++		 *	- bits 30:27 - Channel Number
++		 *	- bit 31 - Odd/even microframe
++		 */
++		unsigned ptxqtop_terminate:1;
++		unsigned ptxqtop_token:2;
++		unsigned ptxqtop_chnum:4;
++		unsigned ptxqtop_odd:1;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host Port Control and Status
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hprt0 register.
++ */
++union hprt0_data {
++	u32 d32;
++	struct {
++		unsigned prtconnsts:1;
++		unsigned prtconndet:1;
++		unsigned prtena:1;
++		unsigned prtenchng:1;
++		unsigned prtovrcurract:1;
++		unsigned prtovrcurrchng:1;
++		unsigned prtres:1;
++		unsigned prtsusp:1;
++		unsigned prtrst:1;
++		unsigned reserved9:1;
++		unsigned prtlnsts:2;
++		unsigned prtpwr:1;
++		unsigned prttstctl:4;
++		unsigned prtspd:2;
++#define DWC_HPRT0_PRTSPD_HIGH_SPEED		0
++#define DWC_HPRT0_PRTSPD_FULL_SPEED		1
++#define DWC_HPRT0_PRTSPD_LOW_SPEED		2
++		unsigned reserved19_31:13;
++	} b;
++};
++
++/*
++ * This union represents the bit fields in the Host All Interrupt Register.
++ */
++union haint_data {
++	u32 d32;
++	struct {
++		unsigned ch0:1;
++		unsigned ch1:1;
++		unsigned ch2:1;
++		unsigned ch3:1;
++		unsigned ch4:1;
++		unsigned ch5:1;
++		unsigned ch6:1;
++		unsigned ch7:1;
++		unsigned ch8:1;
++		unsigned ch9:1;
++		unsigned ch10:1;
++		unsigned ch11:1;
++		unsigned ch12:1;
++		unsigned ch13:1;
++		unsigned ch14:1;
++		unsigned ch15:1;
++		unsigned reserved:16;
++	} b;
++
++	struct {
++		unsigned chint:16;
++		unsigned reserved:16;
++	} b2;
++};
++
++/*
++ * This union represents the bit fields in the Host All Interrupt Register.
++ */
++union haintmsk_data {
++	u32 d32;
++	struct {
++		unsigned ch0:1;
++		unsigned ch1:1;
++		unsigned ch2:1;
++		unsigned ch3:1;
++		unsigned ch4:1;
++		unsigned ch5:1;
++		unsigned ch6:1;
++		unsigned ch7:1;
++		unsigned ch8:1;
++		unsigned ch9:1;
++		unsigned ch10:1;
++		unsigned ch11:1;
++		unsigned ch12:1;
++		unsigned ch13:1;
++		unsigned ch14:1;
++		unsigned ch15:1;
++		unsigned reserved:16;
++	} b;
++
++	struct {
++		unsigned chint:16;
++		unsigned reserved:16;
++	} b2;
++};
++
++/*
++ * Host Channel Specific Registers. 500h-5FCh
++ */
++struct dwc_hc_regs {
 +	/*
-+	 * USB Spec 9.4.5: For endpoints using data toggle, regardless
-+	 * of whether an endpoint has the Halt feature set, a
-+	 * ClearFeature(ENDPOINT_HALT) request always results in the
-+	 * data toggle being reinitialized to DATA0.
++	 * Host Channel 0 Characteristic Register.
++	 * Offset: 500h + (chan_num * 20h) + 00h
 +	 */
-+	if (ep->type == DWC_OTG_EP_TYPE_INTR ||
-+			ep->type == DWC_OTG_EP_TYPE_BULK)
-+		depctl.b.setd0pid = 1;	/* DATA0 */
-+
-+	dwc_write_reg32(depctl_addr, depctl.d32);
-+}
-+
-+/**
-+ * usb_ep_set_halt stalls an endpoint.
-+ *
-+ * usb_ep_clear_halt clears an endpoint halt and resets its data
-+ * toggle.
-+ *
-+ * Both of these functions are implemented with the same underlying
-+ * function. The behavior depends on the val argument:
-+ *	- 0 means clear_halt.
-+ *	- 1 means set_halt,
-+ *	- 2 means clear stall lock flag.
-+ *	- 3 means set  stall lock flag.
-+ */
-+static int dwc_otg_pcd_ep_set_halt(struct usb_ep *_ep, int val)
-+{
-+	int retval = 0;
-+	unsigned long flags;
-+	struct pcd_ep *ep = NULL;
-+
-+	ep = container_of(_ep, struct pcd_ep, ep);
-+	if (!_ep || (!ep->desc && ep != &ep->pcd->ep0) ||
-+			ep->desc->bmAttributes == USB_ENDPOINT_XFER_ISOC) {
-+		printk(KERN_WARNING "%s, bad ep\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_irqsave(&ep->pcd->lock, flags);
-+
-+	if (ep->dwc_ep.is_in && !list_empty(&ep->queue)) {
-+		printk(KERN_WARNING "%s() %s XFer In process\n", __func__,
-+				_ep->name);
-+		retval = -EAGAIN;
-+	} else if (val == 0) {
-+		dwc_otg_ep_clear_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
-+	} else if (val == 1) {
-+		if (ep->dwc_ep.num == 0)
-+			ep->pcd->ep0state = EP0_STALL;
-+
-+		ep->stopped = 1;
-+		dwc_otg_ep_set_stall(ep->pcd->otg_dev->core_if, &ep->dwc_ep);
-+	} else if (val == 2) {
-+		ep->dwc_ep.stall_clear_flag = 0;
-+	} else if (val == 3) {
-+		ep->dwc_ep.stall_clear_flag = 1;
-+	}
-+
-+	spin_unlock_irqrestore(&ep->pcd->lock, flags);
-+	return retval;
-+}
-+
-+static struct usb_ep_ops dwc_otg_pcd_ep_ops = {
-+	.enable = dwc_otg_pcd_ep_enable,
-+	.disable = dwc_otg_pcd_ep_disable,
-+	.alloc_request = dwc_otg_pcd_alloc_request,
-+	.free_request = dwc_otg_pcd_free_request,
-+	.queue = dwc_otg_pcd_ep_queue,
-+	.dequeue = dwc_otg_pcd_ep_dequeue,
-+	.set_halt = dwc_otg_pcd_ep_set_halt,
-+	.fifo_status = 0,
-+	.fifo_flush = 0,
-+};
-+
-+/**
-+ * Gets the current USB frame number from the DTS register. This is the frame
-+ * number from the last SOF packet.
-+ */
-+static u32 dwc_otg_get_frame_number(struct core_if *core_if)
-+{
-+	union dsts_data dsts;
-+	dsts.d32 = dwc_read_reg32(&core_if->dev_if->dev_global_regs->dsts);
-+	return dsts.b.soffn;
-+}
-+/**
-+ * The following gadget operations will be implemented in the DWC_otg
-+ * PCD. Functions in the API that are not described below are not
-+ * implemented.
-+ *
-+ * The Gadget API provides wrapper functions for each of the function
-+ * pointers defined in usb_gadget_ops. The Gadget Driver calls the
-+ * wrapper function, which then calls the underlying PCD function. The
-+ * following sections are named according to the wrapper functions
-+ * (except for ioctl, which doesn't have a wrapper function). Within
-+ * each section, the corresponding DWC_otg PCD function name is
-+ * specified.
-+ *
-+ */
-+
-+/**
-+ *Gets the USB Frame number of the last SOF.
-+ */
-+static int dwc_otg_pcd_get_frame(struct usb_gadget *_gadget)
-+{
-+	struct dwc_pcd *pcd;
-+
-+	if (!_gadget) {
-+		return -ENODEV;
-+	} else {
-+		pcd = container_of(_gadget, struct dwc_pcd, gadget);
-+		dwc_otg_get_frame_number(GET_CORE_IF(pcd));
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * This function is called when the SRP timer expires.  The SRP should complete
-+ * within 6 seconds.
-+ */
-+static void srp_timeout(unsigned long data)
-+{
-+	union gotgctl_data gotgctl;
-+	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
-+	struct core_if *core_if = pcd->otg_dev->core_if;
-+	u32 *addr = otg_ctl_reg(pcd);
-+
-+	gotgctl.d32 = dwc_read_reg32(addr);
-+	core_if->srp_timer_started = 0;
-+
-+	if (core_if->core_params->phy_type == DWC_PHY_TYPE_PARAM_FS &&
-+			core_if->core_params->i2c_enable) {
-+		printk(KERN_INFO "SRP Timeout\n");
-+
-+		if (core_if->srp_success && gotgctl.b.bsesvld) {
-+			if (core_if->pcd_cb && core_if->pcd_cb->resume_wakeup)
-+				core_if->pcd_cb->resume_wakeup(
-+						core_if->pcd_cb->p);
-+
-+			/* Clear Session Request */
-+			gotgctl.d32 = 0;
-+			gotgctl.b.sesreq = 1;
-+			dwc_modify_reg32(addr, gotgctl.d32, 0);
-+
-+			core_if->srp_success = 0;
-+		} else {
-+			printk(KERN_ERR "Device not connected/responding\n");
-+			gotgctl.b.sesreq = 0;
-+			dwc_write_reg32(addr, gotgctl.d32);
-+		}
-+	} else if (gotgctl.b.sesreq) {
-+		printk(KERN_INFO "SRP Timeout\n");
-+		printk(KERN_ERR "Device not connected/responding\n");
-+
-+		gotgctl.b.sesreq = 0;
-+		dwc_write_reg32(addr, gotgctl.d32);
-+	} else {
-+		printk(KERN_INFO " SRP GOTGCTL=%0x\n", gotgctl.d32);
-+	}
-+}
-+
-+
-+
-+/**
-+ * Start the SRP timer to detect when the SRP does not complete within
-+ * 6 seconds.
-+ */
-+static void dwc_otg_pcd_start_srp_timer(struct dwc_pcd *pcd)
-+{
-+	struct timer_list *srp_timer = &pcd->srp_timer;
-+
-+	GET_CORE_IF(pcd)->srp_timer_started = 1;
-+
-+	init_timer(srp_timer);
-+	srp_timer->function = srp_timeout;
-+	srp_timer->data = (unsigned long)pcd;
-+	srp_timer->expires = jiffies + (HZ * 6);
-+
-+	add_timer(srp_timer);
-+}
-+
-+static void dwc_otg_pcd_initiate_srp(struct dwc_pcd *pcd)
-+{
-+	union gotgctl_data mem;
-+	union gotgctl_data val;
-+	u32 *addr = otg_ctl_reg(pcd);
-+
-+	val.d32 = dwc_read_reg32(addr);
-+	if (val.b.sesreq) {
-+		printk(KERN_ERR "Session Request Already active!\n");
-+		return;
-+	}
-+
-+	printk(KERN_NOTICE "Session Request Initated\n");
-+	mem.d32 = dwc_read_reg32(addr);
-+	mem.b.sesreq = 1;
-+	dwc_write_reg32(addr, mem.d32);
-+
-+	/* Start the SRP timer */
-+	dwc_otg_pcd_start_srp_timer(pcd);
-+	return;
-+}
-+
-+static void dwc_otg_pcd_remote_wakeup(struct dwc_pcd *pcd, int set)
-+{
-+	union dctl_data dctl = {.d32 = 0};
-+	u32 *addr = dev_ctl_reg(pcd);
-+
-+	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd))) {
-+		if (pcd->remote_wakeup_enable) {
-+			if (set) {
-+				dctl.b.rmtwkupsig = 1;
-+				dwc_modify_reg32(addr, 0, dctl.d32);
-+				msleep(1);
-+				dwc_modify_reg32(addr, dctl.d32, 0);
-+			}
-+		}
-+	}
-+}
-+
-+/**
-+ * Initiates Session Request Protocol (SRP) to wakeup the host if no
-+ * session is in progress. If a session is already in progress, but
-+ * the device is suspended, remote wakeup signaling is started.
-+ *
-+ */
-+static int dwc_otg_pcd_wakeup(struct usb_gadget *_gadget)
-+{
-+	unsigned long flags;
-+	struct dwc_pcd *pcd;
-+	union dsts_data dsts;
-+	union gotgctl_data gotgctl;
-+
-+	if (!_gadget)
-+		return -ENODEV;
-+	else
-+		pcd = container_of(_gadget, struct dwc_pcd, gadget);
-+
-+	spin_lock_irqsave(&pcd->lock, flags);
-+
++	u32 hcchar;
 +	/*
-+	 * This function starts the Protocol if no session is in progress. If
-+	 * a session is already in progress, but the device is suspended,
-+	 * remote wakeup signaling is started.
++	 * Host Channel 0 Split Control Register.
++	 * Offset: 500h + (chan_num * 20h) + 04h
 +	 */
-+
-+	/* Check if valid session */
-+	gotgctl.d32 = dwc_read_reg32(otg_ctl_reg(pcd));
-+	if (gotgctl.b.bsesvld) {
-+		/* Check if suspend state */
-+		dsts.d32 = dwc_read_reg32(dev_sts_reg(pcd));
-+		if (dsts.b.suspsts)
-+			dwc_otg_pcd_remote_wakeup(pcd, 1);
-+	} else {
-+		dwc_otg_pcd_initiate_srp(pcd);
-+	}
-+
-+	spin_unlock_irqrestore(&pcd->lock, flags);
-+	return 0;
-+}
-+
-+static const struct usb_gadget_ops dwc_otg_pcd_ops = {
-+	.get_frame = dwc_otg_pcd_get_frame,
-+	.wakeup = dwc_otg_pcd_wakeup,
-+	/* not selfpowered */
++	u32 hcsplt;
++	/*
++	 * Host Channel 0 Interrupt Register.
++	 * Offset: 500h + (chan_num * 20h) + 08h
++	 */
++	u32 hcint;
++	/*
++	 * Host Channel 0 Interrupt Mask Register.
++	 * Offset: 500h + (chan_num * 20h) + 0Ch
++	 */
++	u32 hcintmsk;
++	/*
++	 * Host Channel 0 Transfer Size Register.
++	 * Offset: 500h + (chan_num * 20h) + 10h
++	 */
++	u32 hctsiz;
++	/*
++	 * Host Channel 0 DMA Address Register.
++	 * Offset: 500h + (chan_num * 20h) + 14h
++	 */
++	u32 hcdma;
++	/* Reserved.
++	 * Offset: 500h + (chan_num * 20h) + 18h - 500h + (chan_num * 20h) + 1Ch
++	 */
++	u32 reserved[2];
 +};
 +
-+/**
-+ * This function updates the otg values in the gadget structure.
++/*
++ * This union represents the bit fields in the Host Channel Characteristics
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcchar register.
 + */
-+void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset)
-+{
-+	if (!pcd->gadget.is_otg)
-+		return;
-+
-+	if (reset) {
-+		pcd->b_hnp_enable = 0;
-+		pcd->a_hnp_support = 0;
-+		pcd->a_alt_hnp_support = 0;
-+	}
-+
-+	pcd->gadget.b_hnp_enable = pcd->b_hnp_enable;
-+	pcd->gadget.a_hnp_support = pcd->a_hnp_support;
-+	pcd->gadget.a_alt_hnp_support = pcd->a_alt_hnp_support;
-+}
-+
-+/**
-+ * This function is the top level PCD interrupt handler.
-+ */
-+static irqreturn_t dwc_otg_pcd_irq(int _irq, void *dev)
-+{
-+	struct dwc_pcd *pcd = dev;
-+	int retval = IRQ_NONE;
-+
-+	retval = dwc_otg_pcd_handle_intr(pcd);
-+	return IRQ_RETVAL(retval);
-+}
-+
-+/**
-+ * PCD Callback function for initializing the PCD when switching to
-+ * device mode.
-+ */
-+static int dwc_otg_pcd_start_cb(void *_p)
-+{
-+	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
-+
-+	/* Initialize the Core for Device mode. */
-+	if (dwc_otg_is_device_mode(GET_CORE_IF(pcd)))
-+		dwc_otg_core_dev_init(GET_CORE_IF(pcd));
-+
-+	return 1;
-+}
-+
-+/**
-+ * PCD Callback function for stopping the PCD when switching to Host
-+ * mode.
-+ */
-+static int dwc_otg_pcd_stop_cb(void *_p)
-+{
-+	dwc_otg_pcd_stop((struct dwc_pcd *)_p);
-+	return 1;
-+}
-+
-+/**
-+ * PCD Callback function for notifying the PCD when resuming from
-+ * suspend.
-+ *
-+ * @param _p void pointer to the <code>struct dwc_pcd</code>
-+ */
-+static int dwc_otg_pcd_suspend_cb(void *_p)
-+{
-+	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
-+
-+	if (pcd->driver && pcd->driver->resume) {
-+		spin_unlock(&pcd->lock);
-+		pcd->driver->suspend(&pcd->gadget);
-+		spin_lock(&pcd->lock);
-+	}
-+	return 1;
-+}
-+
-+/**
-+ * PCD Callback function for notifying the PCD when resuming from
-+ * suspend.
-+ */
-+static int dwc_otg_pcd_resume_cb(void *_p)
-+{
-+	struct dwc_pcd *pcd = (struct dwc_pcd *)_p;
-+	struct core_if *core_if = pcd->otg_dev->core_if;
-+
-+	if (pcd->driver && pcd->driver->resume) {
-+		spin_unlock(&pcd->lock);
-+		pcd->driver->resume(&pcd->gadget);
-+		spin_lock(&pcd->lock);
-+	}
-+
-+	/* Maybe stop the SRP timeout timer. */
-+	if (need_stop_srp_timer(core_if))  {
-+		core_if->srp_timer_started = 0;
-+		del_timer_sync(&pcd->srp_timer);
-+	}
-+	return 1;
-+}
-+
-+/**
-+ * PCD Callback structure for handling mode switching.
-+ */
-+static struct cil_callbacks pcd_callbacks = {
-+	.start = dwc_otg_pcd_start_cb,
-+	.stop = dwc_otg_pcd_stop_cb,
-+	.suspend = dwc_otg_pcd_suspend_cb,
-+	.resume_wakeup = dwc_otg_pcd_resume_cb,
-+	.p = 0, /* Set at registration */
++union hcchar_data {
++	u32 d32;
++	struct {
++		/* Maximum packet size in bytes */
++		unsigned mps:11;
++		/* Endpoint number */
++		unsigned epnum:4;
++		/* 0: OUT, 1: IN */
++		unsigned epdir:1;
++		unsigned reserved:1;
++		/* 0: Full/high speed device, 1: Low speed device */
++		unsigned lspddev:1;
++		/* 0: Control, 1: Isoc, 2: Bulk, 3: Intr */
++		unsigned eptype:2;
++		/* Packets per frame for periodic transfers. 0 is reserved. */
++		unsigned multicnt:2;
++		/* Device address */
++		unsigned devaddr:7;
++		/*
++		 * Frame to transmit periodic transaction.
++		 * 0: even, 1: odd
++		 */
++		unsigned oddfrm:1;
++		/* Channel disable */
++		unsigned chdis:1;
++		/* Channel enable */
++		unsigned chen:1;
++	} b;
 +};
 +
-+/**
-+ * Tasklet
-+ *
-+ */
-+static void start_xfer_tasklet_func(unsigned long data)
-+{
-+	struct dwc_pcd *pcd = (struct dwc_pcd *)data;
-+	union depctl_data diepctl;
-+	int num = pcd->otg_dev->core_if->dev_if->num_in_eps;
-+	u32 i;
-+	unsigned long flags;
++union hcsplt_data {
++	u32 d32;
++	struct {
++		/* Port Address */
++		unsigned prtaddr:7;
++		/* Hub Address */
++		unsigned hubaddr:7;
++		/* Transaction Position */
++		unsigned xactpos:2;
++#define DWC_HCSPLIT_XACTPOS_MID			0
++#define DWC_HCSPLIT_XACTPOS_END			1
++#define DWC_HCSPLIT_XACTPOS_BEGIN		2
++#define DWC_HCSPLIT_XACTPOS_ALL			3
 +
-+	spin_lock_irqsave(&pcd->lock, flags);
-+	diepctl.d32 = dwc_read_reg32(in_ep_ctl_reg(pcd, 0));
-+
-+	if (pcd->ep0.queue_sof) {
-+		pcd->ep0.queue_sof = 0;
-+		start_next_request(&pcd->ep0);
-+	}
-+
-+	for (i = 0; i < num; i++) {
-+		union depctl_data diepctl;
-+		diepctl.d32 = dwc_read_reg32(in_ep_ctl_reg(pcd, i));
-+
-+		if (pcd->in_ep[i].queue_sof) {
-+			pcd->in_ep[i].queue_sof = 0;
-+			start_next_request(&pcd->in_ep[i]);
-+		}
-+	}
-+	spin_unlock_irqrestore(&pcd->lock, flags);
-+}
-+
-+static struct tasklet_struct start_xfer_tasklet = {
-+	.next = NULL,
-+	.state = 0,
-+	.count = ATOMIC_INIT(0),
-+	.func = start_xfer_tasklet_func,
-+	.data = 0,
++		/* Do Complete Split */
++		unsigned compsplt:1;
++		/* Reserved */
++		unsigned reserved:14;
++		/* Split Enble */
++		unsigned spltena:1;
++	} b;
 +};
 +
-+/**
-+ * This function initialized the pcd Dp structures to there default
-+ * state.
-+ */
-+void __devinit dwc_otg_pcd_reinit(struct dwc_pcd *pcd)
-+{
-+	static const char *names[] = {
-+		"ep0", "ep1in", "ep2in", "ep3in", "ep4in", "ep5in",
-+		"ep6in", "ep7in", "ep8in", "ep9in", "ep10in", "ep11in",
-+		"ep12in", "ep13in", "ep14in", "ep15in", "ep1out", "ep2out",
-+		"ep3out", "ep4out", "ep5out", "ep6out", "ep7out", "ep8out",
-+		"ep9out", "ep10out", "ep11out", "ep12out", "ep13out",
-+		"ep14out", "ep15out"
-+	};
-+
-+	u32 i;
-+	int in_ep_cntr, out_ep_cntr;
-+	u32 hwcfg1;
-+	u32 num_in_eps = (GET_CORE_IF(pcd))->dev_if->num_in_eps;
-+	u32 num_out_eps = (GET_CORE_IF(pcd))->dev_if->num_out_eps;
-+	struct pcd_ep *ep;
-+
-+	INIT_LIST_HEAD(&pcd->gadget.ep_list);
-+
-+	pcd->gadget.ep0 = &pcd->ep0.ep;
-+	pcd->gadget.speed = USB_SPEED_UNKNOWN;
-+	INIT_LIST_HEAD(&pcd->gadget.ep0->ep_list);
-+
-+	/* Initialize the EP0 structure. */
-+	ep = &pcd->ep0;
-+
-+	/* Init EP structure */
-+	ep->desc = NULL;
-+	ep->pcd = pcd;
-+	ep->stopped = 1;
-+
-+	/* Init DWC ep structure */
-+	ep->dwc_ep.num = 0;
-+	ep->dwc_ep.active = 0;
-+	ep->dwc_ep.tx_fifo_num = 0;
-+
-+	/* Control until ep is actvated */
-+	ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
-+	ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
-+	ep->dwc_ep.dma_addr = 0;
-+	ep->dwc_ep.start_xfer_buff = 0;
-+	ep->dwc_ep.xfer_buff = 0;
-+	ep->dwc_ep.xfer_len = 0;
-+	ep->dwc_ep.xfer_count = 0;
-+	ep->dwc_ep.sent_zlp = 0;
-+	ep->dwc_ep.total_len = 0;
-+	ep->queue_sof = 0;
-+
-+	/* Init the usb_ep structure. */
-+	ep->ep.name = names[0];
-+	ep->ep.ops = &dwc_otg_pcd_ep_ops;
-+
-+	ep->ep.maxpacket = MAX_PACKET_SIZE;
-+	list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
-+	INIT_LIST_HEAD(&ep->queue);
-+
-+	/* Initialize the EP structures. */
-+	in_ep_cntr = 0;
-+	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1.d32 >> 3;
-+
-+	for (i = 1; in_ep_cntr < num_in_eps; i++) {
-+		if (!(hwcfg1 & 0x1)) {
-+			struct pcd_ep *ep = &pcd->in_ep[in_ep_cntr];
-+			in_ep_cntr++;
-+
-+			/* Init EP structure */
-+			ep->desc = NULL;
-+			ep->pcd = pcd;
-+			ep->stopped = 1;
-+
-+			/* Init DWC ep structure */
-+			ep->dwc_ep.is_in = 1;
-+			ep->dwc_ep.num = i;
-+			ep->dwc_ep.active = 0;
-+			ep->dwc_ep.tx_fifo_num = 0;
-+
-+			/* Control until ep is actvated */
-+			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
-+			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
-+			ep->dwc_ep.dma_addr = 0;
-+			ep->dwc_ep.start_xfer_buff = 0;
-+			ep->dwc_ep.xfer_buff = 0;
-+			ep->dwc_ep.xfer_len = 0;
-+			ep->dwc_ep.xfer_count = 0;
-+			ep->dwc_ep.sent_zlp = 0;
-+			ep->dwc_ep.total_len = 0;
-+			ep->queue_sof = 0;
-+
-+			ep->ep.name = names[i];
-+			ep->ep.ops = &dwc_otg_pcd_ep_ops;
-+
-+			ep->ep.maxpacket = MAX_PACKET_SIZE;
-+			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
-+			INIT_LIST_HEAD(&ep->queue);
-+		}
-+		hwcfg1 >>= 2;
-+	}
-+
-+	out_ep_cntr = 0;
-+	hwcfg1 = (GET_CORE_IF(pcd))->hwcfg1.d32 >> 2;
-+	for (i = 1; out_ep_cntr < num_out_eps; i++) {
-+		if (!(hwcfg1 & 0x1)) {
-+			struct pcd_ep *ep = &pcd->out_ep[out_ep_cntr];
-+			out_ep_cntr++;
-+
-+			/* Init EP structure */
-+			ep->desc = NULL;
-+			ep->pcd = pcd;
-+			ep->stopped = 1;
-+
-+			/* Init DWC ep structure */
-+			ep->dwc_ep.is_in = 0;
-+			ep->dwc_ep.num = i;
-+			ep->dwc_ep.active = 0;
-+			ep->dwc_ep.tx_fifo_num = 0;
-+
-+			/* Control until ep is actvated */
-+			ep->dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
-+			ep->dwc_ep.maxpacket = MAX_PACKET_SIZE;
-+			ep->dwc_ep.dma_addr = 0;
-+			ep->dwc_ep.start_xfer_buff = 0;
-+			ep->dwc_ep.xfer_buff = 0;
-+			ep->dwc_ep.xfer_len = 0;
-+			ep->dwc_ep.xfer_count = 0;
-+			ep->dwc_ep.sent_zlp = 0;
-+			ep->dwc_ep.total_len = 0;
-+			ep->queue_sof = 0;
-+
-+			ep->ep.name = names[15 + i];
-+			ep->ep.ops = &dwc_otg_pcd_ep_ops;
-+
-+			ep->ep.maxpacket = MAX_PACKET_SIZE;
-+			list_add_tail(&ep->ep.ep_list, &pcd->gadget.ep_list);
-+			INIT_LIST_HEAD(&ep->queue);
-+		}
-+		hwcfg1 >>= 2;
-+	}
-+
-+	/* remove ep0 from the list.  There is a ep0 pointer. */
-+	list_del_init(&pcd->ep0.ep.ep_list);
-+
-+	pcd->ep0state = EP0_DISCONNECT;
-+	pcd->ep0.ep.maxpacket = MAX_EP0_SIZE;
-+	pcd->ep0.dwc_ep.maxpacket = MAX_EP0_SIZE;
-+	pcd->ep0.dwc_ep.type = DWC_OTG_EP_TYPE_CONTROL;
-+}
-+
-+/**
-+ * This function releases the Gadget device.
-+ * required by device_unregister().
-+ */
-+static void dwc_otg_pcd_gadget_release(struct device *dev)
-+{
-+	printk(KERN_INFO "%s(%p)\n", __func__, dev);
-+}
-+
-+/**
-+ * Allocates the buffers for the setup packets when the PCD portion of the
-+ * driver is first initialized.
-+ */
-+static int __devinit init_pkt_buffs(struct device *dev, struct dwc_pcd *pcd)
-+{
-+	if (pcd->otg_dev->core_if->dma_enable) {
-+		pcd->dwc_pool = dma_pool_create("dwc_otg_pcd", dev,
-+				sizeof(*pcd->setup_pkt) * 5, 32, 0);
-+		if (!pcd->dwc_pool)
-+			return -ENOMEM;
-+		pcd->setup_pkt = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
-+				&pcd->setup_pkt_dma_handle);
-+		if (!pcd->setup_pkt)
-+			goto error;
-+		pcd->status_buf = dma_pool_alloc(pcd->dwc_pool, GFP_KERNEL,
-+				&pcd->status_buf_dma_handle);
-+		if (!pcd->status_buf)
-+			goto error1;
-+	} else {
-+		pcd->setup_pkt =  kmalloc(sizeof(*pcd->setup_pkt) * 5,
-+			GFP_KERNEL);
-+		if (!pcd->setup_pkt)
-+			return -ENOMEM;
-+		pcd->status_buf = kmalloc(sizeof(u16), GFP_KERNEL);
-+		if (!pcd->status_buf)  {
-+			kfree(pcd->setup_pkt);
-+			return -ENOMEM;
-+		}
-+	}
-+	return 0;
-+
-+error1:
-+	dma_pool_free(pcd->dwc_pool, pcd->setup_pkt, pcd->setup_pkt_dma_handle);
-+error:
-+	dma_pool_destroy(pcd->dwc_pool);
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * This function initializes the PCD portion of the driver.
-+ */
-+int __devinit dwc_otg_pcd_init(struct device *dev)
-+{
-+	static char pcd_name[] = "dwc_otg_pcd";
-+	struct dwc_pcd *pcd;
-+	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
-+	struct core_if *core_if = otg_dev->core_if;
-+	int retval = 0;
-+
-+	/* Allocate PCD structure */
-+	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
-+	if (!pcd) {
-+		retval = -ENOMEM;
-+		goto err;
-+	}
-+
-+	spin_lock_init(&pcd->lock);
-+
-+	otg_dev->pcd = pcd;
-+	s_pcd = pcd;
-+	pcd->gadget.name = pcd_name;
-+
-+	dev_set_name(&pcd->gadget.dev, "gadget");
-+	pcd->otg_dev = otg_dev;
-+	pcd->gadget.dev.parent = dev;
-+	pcd->gadget.dev.release = dwc_otg_pcd_gadget_release;
-+	pcd->gadget.ops = &dwc_otg_pcd_ops;
-+
-+	if (core_if->hwcfg4.b.ded_fifo_en)
-+		printk(KERN_INFO "Dedicated Tx FIFOs mode\n");
-+	else
-+		printk(KERN_INFO "Shared Tx FIFO mode\n");
-+
-+	pcd->gadget.is_dualspeed = check_is_dual_speed(core_if);
-+	pcd->gadget.is_otg = check_is_otg(core_if);
-+
-+	/* Register the gadget device */
-+	retval = device_register(&pcd->gadget.dev);
-+
-+	/* Initialized the Core for Device mode. */
-+	if (dwc_otg_is_device_mode(core_if))
-+		dwc_otg_core_dev_init(core_if);
-+
-+	/*  Initialize EP structures */
-+	dwc_otg_pcd_reinit(pcd);
-+
-+	/* Register the PCD Callbacks. */
-+	dwc_otg_cil_register_pcd_callbacks(core_if, &pcd_callbacks, pcd);
-+
-+	/* Setup interupt handler */
-+	retval = request_irq(otg_dev->irq, dwc_otg_pcd_irq, IRQF_SHARED,
-+				pcd->gadget.name, pcd);
-+	if (retval) {
-+		printk(KERN_ERR "request of irq%d failed\n", otg_dev->irq);
-+		retval = -EBUSY;
-+		goto err_cleanup;
-+	}
-+
-+	/* Initialize the DMA buffer for SETUP packets */
-+	retval = init_pkt_buffs(dev, pcd);
-+	if (retval)
-+		goto err_cleanup;
-+
-+	/* Initialize tasklet */
-+	start_xfer_tasklet.data = (unsigned long) pcd;
-+	pcd->start_xfer_tasklet = &start_xfer_tasklet;
-+	return 0;
-+
-+err_cleanup:
-+	kfree(pcd);
-+	otg_dev->pcd = 0;
-+	s_pcd = 0;
-+
-+err:
-+	return retval;
-+}
-+
-+/**
-+ * Cleanup the PCD.
-+ */
-+void __devexit dwc_otg_pcd_remove(struct device *dev)
-+{
-+	struct dwc_otg_device *otg_dev = dev_get_drvdata(dev);
-+	struct dwc_pcd *pcd = otg_dev->pcd;
-+
-+	/* Free the IRQ */
-+	free_irq(otg_dev->irq, pcd);
-+
-+	/* start with the driver above us */
-+	if (pcd->driver) {
-+		/* should have been done already by driver model core */
-+		printk(KERN_WARNING "driver '%s' is still registered\n",
-+				pcd->driver->driver.name);
-+		usb_gadget_unregister_driver(pcd->driver);
-+	}
-+	if (pcd->start_xfer_tasklet)
-+		tasklet_kill(pcd->start_xfer_tasklet);
-+	tasklet_kill(&pcd->test_mode_tasklet);
-+
-+	device_unregister(&pcd->gadget.dev);
-+	if (GET_CORE_IF(pcd)->dma_enable) {
-+		dma_pool_free(pcd->dwc_pool, pcd->setup_pkt,
-+				pcd->setup_pkt_dma_handle);
-+		dma_pool_free(pcd->dwc_pool, pcd->status_buf,
-+				pcd->status_buf_dma_handle);
-+		dma_pool_destroy(pcd->dwc_pool);
-+	} else {
-+		kfree(pcd->setup_pkt);
-+		kfree(pcd->status_buf);
-+	}
-+	kfree(pcd);
-+	otg_dev->pcd = 0;
-+}
-+
-+/**
-+ * This function registers a gadget driver with the PCD.
-+ *
-+ * When a driver is successfully registered, it will receive control
-+ * requests including set_configuration(), which enables non-control
-+ * requests.  then usb traffic follows until a disconnect is reported.
-+ * then a host may connect again, or the driver might get unbound.
-+ */
-+int usb_gadget_register_driver(struct usb_gadget_driver *driver)
-+{
-+	int retval;
-+
-+	if (!driver || driver->speed == USB_SPEED_UNKNOWN || !driver->bind ||
-+			!driver->unbind || !driver->disconnect ||
-+			!driver->setup)
-+		return -EINVAL;
-+
-+	if (s_pcd == 0)
-+		return -ENODEV;
-+
-+	if (s_pcd->driver != 0)
-+		return -EBUSY;
-+
-+	/* hook up the driver */
-+	s_pcd->driver = driver;
-+	s_pcd->gadget.dev.driver = &driver->driver;
-+
-+	retval = driver->bind(&s_pcd->gadget);
-+	if (retval) {
-+		printk(KERN_ERR "bind to driver %s --> error %d\n",
-+			driver->driver.name, retval);
-+		s_pcd->driver = 0;
-+		s_pcd->gadget.dev.driver = 0;
-+		return retval;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(usb_gadget_register_driver);
-+
-+/**
-+ * This function unregisters a gadget driver
-+ */
-+int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
-+{
-+	if (!s_pcd)
-+		return -ENODEV;
-+	if (!driver || driver != s_pcd->driver)
-+		return -EINVAL;
-+
-+	driver->unbind(&s_pcd->gadget);
-+	s_pcd->driver = 0;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(usb_gadget_unregister_driver);
-diff --git a/drivers/usb/otg/dwc_otg_pcd.h b/drivers/usb/otg/dwc_otg_pcd.h
-new file mode 100644
-index 0000000..dee651c
---- /dev/null
-+++ b/drivers/usb/otg/dwc_otg_pcd.h
-@@ -0,0 +1,160 @@
-+/*
-+ * DesignWare HS OTG controller driver
-+ *
-+ * Author: Mark Miesfeld <mmiesfeld@apm.com>
-+ *
-+ * Based on versions provided by AMCC and Synopsis which are:
-+ *	Copyright (C) 2009-2010 AppliedMicro(www.apm.com)
-+ * Modified by Stefan Roese <sr@denx.de>, DENX Software Engineering
-+ *
-+ * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
-+ * "Software") is an Unsupported proprietary work of Synopsys, Inc. unless
-+ * otherwise expressly agreed to in writing between Synopsys and you.
-+ *
-+ * The Software IS NOT an item of Licensed Software or Licensed Product under
-+ * any End User Software License Agreement or Agreement for Licensed Product
-+ * with Synopsys or any supplement thereto. You are permitted to use and
-+ * redistribute this Software in source and binary forms, with or without
-+ * modification, provided that redistributions of source code must retain this
-+ * notice. You may not view, use, disclose, copy or distribute this file or
-+ * any information contained herein except pursuant to this license grant from
-+ * Synopsys. If you do not agree with this notice, including the disclaimer
-+ * below, then you are not authorized to use the Software.
-+ *
-+ * THIS SOFTWARE IS BEING DISTRIBUTED BY SYNOPSYS SOLELY ON AN "AS IS" BASIS
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE HEREBY DISCLAIMED. IN NO EVENT SHALL SYNOPSYS BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-+ * DAMAGE.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-+ * for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#if !defined(__DWC_PCD_H__)
-+#define __DWC_PCD_H__
-+
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/errno.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/dma-mapping.h>
-+
-+struct lm_device;
-+struct dwc_otg_device;
-+
-+#include "dwc_otg_cil.h"
 +
 +/*
-+ * This file contains the structures, constants, and interfaces for
-+ * the Perpherial Contoller Driver (PCD).
-+ *
-+ * The Peripheral Controller Driver (PCD) for Linux will implement the
-+ * Gadget API, so that the existing Gadget drivers can be used.	 For
-+ * the Mass Storage Function driver the File-backed USB Storage Gadget
-+ * (FBS) driver will be used.  The FBS driver supports the
-+ * Control-Bulk (CB), Control-Bulk-Interrupt (CBI), and Bulk-Only
-+ * transports.
-+ *
++ * This union represents the bit fields in the Host All Interrupt Register.
 + */
-+
-+/* Invalid DMA Address */
-+#define DMA_ADDR_INVALID			(~(dma_addr_t)0)
-+/* Maxpacket size for EP0 */
-+#define MAX_EP0_SIZE				64
-+/* Maxpacket size for any EP */
-+#define MAX_PACKET_SIZE				1024
-+
-+/*
-+ * Get the pointer to the core_if from the pcd pointer.
-+ */
-+#define GET_CORE_IF(_pcd) (_pcd->otg_dev->core_if)
-+
-+/*
-+ * DWC_otg request structure.
-+ * This structure is a list of requests.
-+ */
-+struct pcd_request {
-+	struct usb_request req;		/* USB Request. */
-+	struct list_head queue;		/* queue of these requests. */
-+	unsigned mapped:1;
++union hcint_data {
++	u32 d32;
++	struct {
++		/* Transfer Complete */
++		unsigned xfercomp:1;
++		/* Channel Halted */
++		unsigned chhltd:1;
++		/* AHB Error */
++		unsigned ahberr:1;
++		/* STALL Response Received */
++		unsigned stall:1;
++		/* NAK Response Received */
++		unsigned nak:1;
++		/* ACK Response Received */
++		unsigned ack:1;
++		/* NYET Response Received */
++		unsigned nyet:1;
++		/* Transaction Err */
++		unsigned xacterr:1;
++		/* Babble Error */
++		unsigned bblerr:1;
++		/* Frame Overrun */
++		unsigned frmovrun:1;
++		/* Data Toggle Error */
++		unsigned datatglerr:1;
++		/* Reserved */
++		unsigned reserved:21;
++	} b;
 +};
 +
-+static inline u32 *in_ep_int_reg(struct dwc_pcd *pd, int i)
-+{
-+	return (u32 *) &GET_CORE_IF(pd)->dev_if->in_ep_regs[i]->diepint;
-+}
-+static inline u32 *out_ep_int_reg(struct dwc_pcd *pd, int i)
-+{
-+	return (u32 *) &GET_CORE_IF(pd)->dev_if->out_ep_regs[i]->doepint;
-+}
-+static inline u32 *in_ep_ctl_reg(struct dwc_pcd *pd, int i)
-+{
-+	return (u32 *) &GET_CORE_IF(pd)->dev_if->in_ep_regs[i]->diepctl;
-+}
++/*
++ * This union represents the bit fields in the Host Channel Transfer Size
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcchar register.
++ */
++union hctsiz_data {
++	u32 d32;
++	struct {
++		/* Total transfer size in bytes */
++		unsigned xfersize:19;
++		/* Data packets to transfer */
++		unsigned pktcnt:10;
++		/*
++		 * Packet ID for next data packet
++		 * 0: DATA0
++		 * 1: DATA2
++		 * 2: DATA1
++		 * 3: MDATA (non-Control), SETUP (Control)
++		 */
++		unsigned pid:2;
++#define DWC_HCTSIZ_DATA0			0
++#define DWC_HCTSIZ_DATA1			2
++#define DWC_HCTSIZ_DATA2			1
++#define DWC_HCTSIZ_MDATA			3
++#define DWC_HCTSIZ_SETUP			3
 +
-+static inline u32 *out_ep_ctl_reg(struct dwc_pcd *pd, int i)
-+{
-+	return (u32 *) &GET_CORE_IF(pd)->dev_if->out_ep_regs[i]->doepctl;
-+}
-+
-+static inline u32 *dev_ctl_reg(struct dwc_pcd *pd)
-+{
-+	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->dctl);
-+}
-+
-+static inline u32 *dev_diepmsk_reg(struct dwc_pcd *pd)
-+{
-+	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->diepmsk);
-+}
-+
-+static inline u32 *dev_sts_reg(struct dwc_pcd *pd)
-+{
-+	return (u32 *) &(GET_CORE_IF(pd)->dev_if->dev_global_regs->dsts);
-+}
-+
-+static inline u32 *otg_ctl_reg(struct dwc_pcd *pd)
-+{
-+	return (u32 *) &(GET_CORE_IF(pd)->core_global_regs->gotgctl);
-+}
-+
-+extern int  __init dwc_otg_pcd_init(struct device *dev);
++		/* Do PING protocol when 1 */
++		unsigned dopng:1;
++	} b;
++};
 +
 +/*
-+ * The following functions support managing the DWC_otg controller in device
-+ * mode.
++ * This union represents the bit fields in the Host Channel Interrupt Mask
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements. Write the d32 member to the hcintmsk register.
 + */
-+extern void dwc_otg_ep_activate(struct core_if *core_if, struct dwc_ep *ep);
-+extern void dwc_otg_ep_start_transfer(struct core_if *_if, struct dwc_ep *ep);
-+extern void dwc_otg_ep_set_stall(struct core_if *core_if, struct dwc_ep *ep);
-+extern void dwc_otg_ep_clear_stall(struct core_if *core_if, struct dwc_ep *ep);
-+extern void dwc_otg_pcd_remove(struct device *dev);
-+extern int dwc_otg_pcd_handle_intr(struct dwc_pcd *pcd);
-+extern void dwc_otg_pcd_stop(struct dwc_pcd *pcd);
-+extern void request_nuke(struct pcd_ep *ep);
-+extern void dwc_otg_pcd_update_otg(struct dwc_pcd *pcd, const unsigned reset);
-+extern void dwc_otg_ep0_start_transfer(struct core_if *_if, struct dwc_ep *ep);
++union hcintmsk_data {
++	u32 d32;
++	struct {
++		unsigned xfercompl:1;
++		unsigned chhltd:1;
++		unsigned ahberr:1;
++		unsigned stall:1;
++		unsigned nak:1;
++		unsigned ack:1;
++		unsigned nyet:1;
++		unsigned xacterr:1;
++		unsigned bblerr:1;
++		unsigned frmovrun:1;
++		unsigned datatglerr:1;
++		unsigned reserved:21;
++	} b;
++};
 +
-+extern void request_done(struct pcd_ep *ep, struct pcd_request *req,
-+				int _status);
++/* OTG Host Interface Structure.
++ *
++ * The OTG Host Interface Structure structure contains information needed to
++ * manage the DWC_otg controller acting in host mode. It represents the
++ * programming view of the host-specific aspects of the controller.
++ */
++struct dwc_host_if {
++	/* Host Global Registers starting at offset 400h.*/
++	struct host_global_regs *host_global_regs;
++#define DWC_OTG_HOST_GLOBAL_REG_OFFSET			0x400
 +
-+extern void start_next_request(struct pcd_ep *ep);
++	/* Host Port 0 Control and Status Register */
++	u32 *hprt0;
++#define DWC_OTG_HOST_PORT_REGS_OFFSET			0x440
 +
++	/* Host Channel Specific Registers at offsets 500h-5FCh. */
++	struct dwc_hc_regs *hc_regs[MAX_EPS_CHANNELS];
++#define DWC_OTG_HOST_CHAN_REGS_OFFSET			0x500
++#define DWC_OTG_CHAN_REGS_OFFSET			0x20
++
++	/* Host configuration information */
++	/* Number of Host Channels (range: 1-16) */
++	u8 num_host_channels;
++	/* Periodic EPs supported (0: no, 1: yes) */
++	u8 perio_eps_supported;
++	/* Periodic Tx FIFO Size (Only 1 host periodic Tx FIFO) */
++	u16 perio_tx_fifo_size;
++};
++
++/*
++ * This union represents the bit fields in the Power and Clock Gating Control
++ * Register. Read the register into the d32 member then set/clear the bits using
++ * the bit elements.
++ */
++union pcgcctl_data {
++	u32 d32;
++	struct {
++		/* Stop Pclk */
++		unsigned stoppclk:1;
++		/* Gate Hclk */
++		unsigned gatehclk:1;
++		/* Power Clamp */
++		unsigned pwrclmp:1;
++		/* Reset Power Down Modules */
++		unsigned rstpdwnmodule:1;
++		/* PHY Suspended */
++		unsigned physuspended:1;
++		unsigned reserved:27;
++	} b;
++};
++
++#endif /* CONFIG_DWC_OTG_REG_LE */
 +#endif
 -- 
 1.7.1
