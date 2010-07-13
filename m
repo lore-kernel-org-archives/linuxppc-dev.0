@@ -1,23 +1,23 @@
 Return-Path: <msm@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id 55024B6EF0
+Received: from AM1EHSOBE001.bigfish.com (mail-am1.bigfish.com
+	[213.199.180.138]) by ozlabs.org (Postfix) with ESMTP id 8DE70B6ED0
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 05:14:31 +1000 (EST)
-Received: from mail82-va3 (localhost.localdomain [127.0.0.1])	by
-	mail82-va3-R.bigfish.com (Postfix) with ESMTP id D22D8127005A	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2010 19:14:14 +0000 (UTC)
-Received: from VA3EHSMHS019.bigfish.com (unknown [10.7.14.237])	by
-	mail82-va3.bigfish.com (Postfix) with ESMTP id 8BD3DD68051	for
-	<linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2010 19:14:14 +0000 (UTC)
+	Wed, 14 Jul 2010 05:36:35 +1000 (EST)
+Received: from mail48-am1 (localhost.localdomain [127.0.0.1])	by
+	mail48-am1-R.bigfish.com (Postfix) with ESMTP id 4CBBB18F83FC	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2010 19:21:16 +0000 (UTC)
+Received: from am1ehsmhs011.bigfish.com (unknown [10.3.201.244])	by
+	mail48-am1.bigfish.com (Postfix) with ESMTP id D3E2CF30051	for
+	<linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jul 2010 19:21:15 +0000 (UTC)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net
 	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o6DJEDCp019114	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Jul 2010 12:14:13 -0700 (MST)
+	id o6DJLDOi021678	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 13 Jul 2010 12:21:13 -0700 (MST)
 From: Matthew McClintock <msm@freescale.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V2] powerpc:prom Export device tree physical address via proc
-Date: Tue, 13 Jul 2010 14:14:24 -0500
-Message-ID: <1279048464-30808-1-git-send-email-msm@freescale.com>
+Subject: [PATCH V3] powerpc:prom Export device tree physical address via proc
+Date: Tue, 13 Jul 2010 14:21:24 -0500
+Message-ID: <1279048884-30996-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Matthew McClintock <msm@freescale.com>,
@@ -38,13 +38,15 @@ memreserve for the kexec'ed kernel
 
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
-Removed unneeded cast, and fixed indentation screwup
+V3: Remove unneeded cast, and fixed indentation screw up
 
- arch/powerpc/kernel/prom.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 44 insertions(+), 0 deletions(-)
+V2: messed up changes
+
+ arch/powerpc/kernel/prom.c |   45 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 45 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index fd9359a..6a8400e 100644
+index fd9359a..79c1f35 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
 @@ -32,6 +32,7 @@
@@ -55,7 +57,7 @@ index fd9359a..6a8400e 100644
  
  #include <asm/prom.h>
  #include <asm/rtas.h>
-@@ -911,3 +912,46 @@ static int __init export_flat_device_tree(void)
+@@ -911,3 +912,47 @@ static int __init export_flat_device_tree(void)
  }
  __initcall(export_flat_device_tree);
  #endif
@@ -88,12 +90,13 @@ index fd9359a..6a8400e 100644
 +	prop = of_find_property(node, "linux,devicetree-start", NULL);
 +	if (prop)
 +		prom_remove_property(node, prop);
-+		prop = of_find_property(node, "linux,devietree-end", NULL);
++
++	prop = of_find_property(node, "linux,devietree-end", NULL);
 +	if (prop)
 +		prom_remove_property(node, prop);
 +
-+	flat_dt_start = (unsigned long)virt_to_phys(initial_boot_params);
-+	flat_dt_end = (unsigned long)virt_to_phys(initial_boot_params)
++	flat_dt_start = virt_to_phys(initial_boot_params);
++	flat_dt_end = virt_to_phys(initial_boot_params)
 +				+ initial_boot_params->totalsize;
 +	prom_add_property(node, &flat_dt_start_prop);
 +	prom_add_property(node, &flat_dt_end_prop);
