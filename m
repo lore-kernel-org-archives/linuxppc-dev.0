@@ -1,21 +1,24 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 8641BB6F1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 19:50:26 +1000 (EST)
-Date: Tue, 13 Jul 2010 11:50:24 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Sean MacLennan <smaclennan@pikatech.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [
-Message-ID: <20100713095024.GA10494@merkur.ravnborg.org>
-References: <20100628005900.28d4a8e0@lappy.seanm.ca>
-	<20100712203435.08a3e90f@lappy.seanm.ca>
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og105.obsmtp.com (exprod5og105.obsmtp.com [64.18.0.180])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 3979AB6F11
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 13 Jul 2010 20:36:38 +1000 (EST)
+Message-ID: <4C3C4175.40005@ge.com>
+Date: Tue, 13 Jul 2010 11:35:33 +0100
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100712203435.08a3e90f@lappy.seanm.ca>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Michal Marek <mmarek@suse.cz>, Tim Abbott <tabbott@ksplice.com>
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] powerpc: reduce the size of the defconfigs
+References: <20100713170945.26d95641.sfr@canb.auug.org.au>
+	<20100713073137.GC26442@pengutronix.de>
+In-Reply-To: <20100713073137.GC26442@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Olof Johansson <olof@lixom.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linus <torvalds@linux-foundation.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 851e645a7eee68380caaf026eb6d3be118876370 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 13 Jul 2010 11:39:42 +0200
-Subject: [PATCH] vmlinux.lds: fix .data..init_task output section (fix popwerpc boot)
+Uwe Kleine-König wrote:
+> On Tue, Jul 13, 2010 at 05:09:45PM +1000, Stephen Rothwell wrote:
+>   
+>> This uses Uwe's script (modified by Olof Johansson to speed it up
+>> somewhat) to reduce the size of all the powerpc defconfigs.  The resulting
+>>     
+> IMHO we should add the script to the source, too.  And if it's only for
+> me to see Olof's optimisation. :-)
+>
+>   
 
-The .data..init_task output section was missing
-a load offset causing a popwerpc target to fail to boot.
+As the person who introduced the gef_* PPC defconfigs to the kernel (I
+understood this to be best practice), I'm happy to go along with
+whatever - as long as I can build a bootable kernel from the mainline
+kernel. I think I understand Linus' wish not to see all the defconfig
+churn (I get fed up diffing defconfigs, just to read through loads of
+additions and removals of undef'ed entires from just the few configs I'm
+interested in).
 
-Sean MacLennan tracked it down to the definition of
-INIT_TASK_DATA_SECTION().
+I assume I'm not alone among those attempting to add board support to
+the mainline kernel in not being able to keep up with the LKML mailing
+list and therefore have missed most of this discussion (think I've
+managed to read some of it now). I would very much appreciate some
+documentation / guidance on how to use this script - preferably provided
+as a comment in the head of the script or/and some pointers in
+"Documentation/".
 
-There are only two users of INIT_TASK_DATA_SECTION()
-in the kernel today: cris and popwerpc.
-cris do not support relocatable kernels and is thus not
-impacted by this change.
+Martyn
 
-Fix INIT_TASK_DATA_SECTION() to specify load offset like
-all other output sections.
+>> files have been verified to produce the same .config files by generating
+>> them before and after this patch and comparing the results.
+>>
+>> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>> ---
+>>  100 files changed, 51 insertions(+), 133815 deletions(-)
+>>     
+> Nice.
+>
+> Best regards
+> Uwe
+>
+>   
 
-Reported-by: Sean MacLennan <smaclennan@pikatech.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
 
-On the assumption that Sean reports that it fixes
-the warnings/boot issue here is a real patch.
-
-Ben - will you take it via the popwerpc tree
-or shall I ask Michal to take it via kbuild?
-
-	Sam
-
- include/asm-generic/vmlinux.lds.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 48c5299..cdfff74 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -435,7 +435,7 @@
-  */
- #define INIT_TASK_DATA_SECTION(align)					\
- 	. = ALIGN(align);						\
--	.data..init_task : {						\
-+	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
- 		INIT_TASK_DATA(align)					\
- 	}
- 
 -- 
-1.6.0.6
+Martyn Welch (Principal Software Engineer)   |   Registered in England and
+GE Intelligent Platforms                     |   Wales (3828642) at 100
+T +44(0)127322748                            |   Barbirolli Square, Manchester,
+E martyn.welch@ge.com                        |   M2 3AB  VAT:GB 927559189
