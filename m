@@ -1,19 +1,18 @@
-Return-Path: <david-b@pacbell.net>
-Received: from n2-vm1.bullet.mail.gq1.yahoo.com
-	(n2-vm1.bullet.mail.gq1.yahoo.com [67.195.23.155])
-	by ozlabs.org (Postfix) with SMTP id 6E467B6F01
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:55:13 +1000 (EST)
-Message-ID: <582531.52335.qm@web180310.mail.gq1.yahoo.com>
-Date: Mon, 12 Jul 2010 16:55:11 -0700 (PDT)
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/9 v1.01] Add Synopsys DesignWare HS USB OTG Controller
-	driver.
-To: linux-usb@vger.kernel.org, Fushen Chen <fchen@apm.com>
-In-Reply-To: <12789766042434-git-send-email-fchen@apm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, chuck@theptrgroup.com, gregkh@suse.de,
-	Mark Miesfeld <mmiesfeld@apm.com>, Fushen Chen <fchen@apm.com>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A5BCEB6F0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 10:34:38 +1000 (EST)
+Date: Mon, 12 Jul 2010 20:34:35 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>, linuxppc-dev
+	<linuxppc-dev@ozlabs.org>, Tim Abbott <tabbott@ksplice.com>, Sam Ravnborg
+	<sam@ravnborg.org>
+Subject: Re: section .data..init_task
+Message-ID: <20100712203435.08a3e90f@lappy.seanm.ca>
+In-Reply-To: <20100628005900.28d4a8e0@lappy.seanm.ca>
+References: <20100628005900.28d4a8e0@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,6 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Please remove all the changes not related to
-this Synopsis IP ... and make the OTG functionality
-key on the generic OTG symbol, not a DW-specific one.
+On Mon, 28 Jun 2010 00:59:00 -0400
+Sean MacLennan <smaclennan@pikatech.com> wrote:
+
+> Anybody else seeing these messages?
+> 
+> ppc_4xxFP-ld: .tmp_vmlinux1: section .data..init_task lma 0xc0374000
+> overlaps previous sections ppc_4xxFP-ld: .tmp_vmlinux2:
+> section .data..init_task lma 0xc03a2000 overlaps previous sections
+> ppc_4xxFP-ld: vmlinux: section .data..init_task lma 0xc03a2000
+> overlaps previous sections
+> 
+> Or does anybody know what they mean? They started showing up in
+> 2.6.35.
+> 
+> Very easy to reproduce, so don't hesitate to ask for more info.
+
+I had a bit of time, so I tracked this down. This patch seems to be
+the culprit: http://lkml.org/lkml/2010/2/19/366
+
+Specifically, this code:
+
+ 	/* The initial task and kernel stack */
+-	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		INIT_TASK_DATA(THREAD_SIZE)
+-	}
++	INIT_TASK_DATA_SECTION(THREAD_SIZE)
+
+If I change it back to:
+
+	/* The initial task and kernel stack */
+	.data..init_task : AT(ADDR(.data..init_task) - LOAD_OFFSET) {
+		INIT_TASK_DATA(THREAD_SIZE)
+	}
+
+not only do the warnings go away, but the kernel now boots again!
+
+Cheers,
+   Sean
