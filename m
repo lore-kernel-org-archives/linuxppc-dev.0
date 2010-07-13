@@ -1,19 +1,34 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CE4EEB6F10
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Jul 2010 11:43:23 +1000 (EST)
-Date: Tue, 13 Jul 2010 11:43:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>, Michal Marek <mmarek@suse.cz>
-Subject: [PATCH] kbuild: Enable building defconfigs from Kconfig files
-Message-Id: <20100713114322.57c8b166.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 27AE11007D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 12:28:18 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6D2LHPG029941
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 20:21:18 -0600
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id o6D2SFai163286
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 20:28:15 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6D2SFPO009573
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jul 2010 20:28:15 -0600
+Message-ID: <4C3BCF3E.7060000@austin.ibm.com>
+Date: Mon, 12 Jul 2010 21:28:14 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: 7eggert@gmx.de
+Subject: Re: [PATCH 0/7] De-couple sysfs memory directories from memory
+	sections
+References: <f5t7d-2ZJ-23@gated-at.bofh.it>
+	<20100712194958.1A32B2D6595@mail-in-10.arcor-online.net>
+In-Reply-To: <20100712194958.1A32B2D6595@mail-in-10.arcor-online.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Bodo Eggert <7eggert@web.de>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After this change, doing a "make xxx_defconfig" will check first for
-a file called arch/<arch>/configs/Kconfig.xxx and use that to generate
-the .config (effectively starting from an allnoconfig).  If that file
-doesn't exist, it will use arch/<ARCH>/configs/xxx_defconfig as now.
+On 07/12/2010 02:30 PM, Bodo Eggert wrote:
+> Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> 
+>> The file 'split' allows for splitting the
+>> directory in two, with each new directory covering half as many
+>> memory sections as the previous directory.
+> 
+> Just some random thoughts:
+> 1) Why is it needed/helpful?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- scripts/kconfig/Makefile |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+This is needed if someone needed to perform an action (add/remove) a
+single memory section. The 'split' option allows users to isolate
+a memory section  so these operations could be performed.
 
-Hi Linus,
+> 2) If it is needed, why not take an int to split after n entries?
 
-Is this more the direction you want to take?
+The idea of being able to split a directory came out of a previous
+discussion on how to resolve the issue this patch set is trying to solve.
+I included the split functionality in this patch set since it
+was suggested.  I will leave the decision of whether or not this
+functionality is needed up to the community.
 
-There are still 2 main problems with is approach:
-
-	- there are some config options that are globally and
-unconditionally enabled that some platforms may not want.  The only way
-currently to turn them off is to reproduce the config entry with the
-different default.  I am not sure if we need a wa to turn them off or to
-just change them to being neede to be selected by those that do want them.
-	- we have no way to select options that are neither bool or
-tristate to suitable values.  Again the only way to do that currently is
-to reproduce the config entry with a different default value.
-
-I am currently working towards using this to recreate the PowerPC
-defconfigs, but it is a slow process as they have some much stuff enabled
-in them and some of it is probably actually not relevant.
-
-This process is made easier by the recent commit "kbuild: Warn on
-selecting symbols with unmet direct dependencies" that is in the kbuild
-tree (and linux-next).
-
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 7ea649d..1ab8f45 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -117,9 +117,21 @@ else
- 	$(Q)$< -D arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
- endif
- 
--%_defconfig: $(obj)/conf
-+configs_dir := $(srctree)/arch/$(SRCARCH)/configs
-+# We check a level of sub directories because arch/powerpc
-+# has its defconfig files arranged that way
-+old_defconfigs := $(patsubst $(configs_dir)/%,%,\
-+	$(wildcard $(configs_dir)/*_defconfig) \
-+	$(wildcard $(configs_dir)/*/*_defconfig))
-+defconfigs := $(patsubst $(configs_dir)/Kconfig.%,%_defconfig,\
-+	$(wildcard $(configs_dir)/Kconfig.*))
-+
-+$(old_defconfigs): %_defconfig: $(obj)/conf
- 	$(Q)$< -D arch/$(SRCARCH)/configs/$@ $(Kconfig)
- 
-+$(defconfigs): %_defconfig: $(obj)/conf
-+	$(Q)$< -n arch/$(SRCARCH)/configs/Kconfig.$*
-+
- # Help text used by make help
- help:
- 	@echo  '  config	  - Update current config utilising a line-oriented program'
--- 
-1.7.1
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-Nathan 
