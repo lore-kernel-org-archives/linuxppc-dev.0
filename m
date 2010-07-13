@@ -1,37 +1,22 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
-	[92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CA725B6EEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Jul 2010 18:07:48 +1000 (EST)
-Date: Tue, 13 Jul 2010 10:07:05 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: optimized script [Was: ARM defconfig files]
-Message-ID: <20100713080705.GA20978@pengutronix.de>
-References: <20100712155518.GA24144@pengutronix.de>
-	<AANLkTilhI9O6YwnuAylo_jNgwR8VXmpSVJ1kylIYPCGT@mail.gmail.com>
-	<20100712173228.GC9897@n2100.arm.linux.org.uk>
-	<AANLkTinxUqzxClVDTyruJ6kzFTganXUGJJHJ5wRi9Iak@mail.gmail.com>
-	<20100712185029.GB14425@pengutronix.de>
-	<AANLkTinOuU-VVXaMwMp69CBp2Y4wxpoWybEQ34H5j0lJ@mail.gmail.com>
-	<alpine.LFD.2.00.1007121510260.10598@xanadu.home>
-	<AANLkTim-O00n9YPv7w4VCKjN-ETLijyTHomWUn4mZtTV@mail.gmail.com>
-	<AANLkTilDoGbCx_0oKKPOeGG7TKL2VSNVII5ydmnQ77B7@mail.gmail.com>
-	<20100713070741.GB26442@pengutronix.de>
+Return-Path: <sam@ravnborg.org>
+Received: from pqueueb.post.tele.dk (pqueueb.post.tele.dk [193.162.153.10])
+	by ozlabs.org (Postfix) with ESMTP id 812ECB6F0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 19:24:40 +1000 (EST)
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by pqueueb.post.tele.dk (Postfix) with ESMTP id 93EEB814D
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 10:54:25 +0200 (CEST)
+Date: Tue, 13 Jul 2010 10:54:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: section .data..init_task
+Message-ID: <20100713085419.GA5826@merkur.ravnborg.org>
+References: <20100628005900.28d4a8e0@lappy.seanm.ca>
+	<20100712203435.08a3e90f@lappy.seanm.ca>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="qMm9M+Fa2AknHoGS"
-In-Reply-To: <20100713070741.GB26442@pengutronix.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Daniel Walker <dwalker@codeaurora.org>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	Nicolas Pitre <nico@fluxnic.net>,
-	Kevin Hilman <khilman@deeprootsystems.com>, linux-arm-msm@vger.kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Eric Miao <eric.miao@canonical.com>,
-	Olof Johansson <olof@lixom.net>, linux-omap@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100712203435.08a3e90f@lappy.seanm.ca>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Tim Abbott <tabbott@ksplice.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,124 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---qMm9M+Fa2AknHoGS
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-
-Hello,
-
-On Tue, Jul 13, 2010 at 09:07:41AM +0200, Uwe Kleine-König wrote:
-> Hi
+On Mon, Jul 12, 2010 at 08:34:35PM -0400, Sean MacLennan wrote:
+> On Mon, 28 Jun 2010 00:59:00 -0400
+> Sean MacLennan <smaclennan@pikatech.com> wrote:
 > 
-> On Mon, Jul 12, 2010 at 01:50:47PM -0600, Grant Likely wrote:
-> > On Mon, Jul 12, 2010 at 1:34 PM, Linus Torvalds
-> > <torvalds@linux-foundation.org> wrote:
-> > > On Mon, Jul 12, 2010 at 12:17 PM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> > >> I think Uwe could provide his script and add it to the kernel tree.
-> > >> Then all architectures could benefit from it.  Having the defconfig
-> > >> files contain only those options which are different from the defaults
-> > >> is certainly more readable, even on x86.
-> > >
-> > > Quite possible. But maintainers would need to be on the lookout of
-> > > people actually using the script, and refusing to apply patches that
-> > > re-introduce the whole big thing.
+> > Anybody else seeing these messages?
 > > 
-> > I can (partially) speak for powerpc.  If ARM uses this approach, then
-> > I think we can do the same.  After the defconfigs are trimmed, I
-> > certainly won't pick up any more full defconfigs.
-> I just restarted my script on the powerpc defconfigs basing on rc5, I
-> assume they complete in a few days time.
-So Stephen was faster than me.  I don't know yet how he optimised my
-script, meanwhile I put some efforts into it, too by just checking lines
-that match "^(# )?CONFIG_".
+> > ppc_4xxFP-ld: .tmp_vmlinux1: section .data..init_task lma 0xc0374000
+> > overlaps previous sections ppc_4xxFP-ld: .tmp_vmlinux2:
+> > section .data..init_task lma 0xc03a2000 overlaps previous sections
+> > ppc_4xxFP-ld: vmlinux: section .data..init_task lma 0xc03a2000
+> > overlaps previous sections
+> > 
+> > Or does anybody know what they mean? They started showing up in
+> > 2.6.35.
+> > 
+> > Very easy to reproduce, so don't hesitate to ask for more info.
+> 
+> I had a bit of time, so I tracked this down. This patch seems to be
+> the culprit: http://lkml.org/lkml/2010/2/19/366
+> 
+> Specifically, this code:
+> 
+>  	/* The initial task and kernel stack */
+> -	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+> -		INIT_TASK_DATA(THREAD_SIZE)
+> -	}
+> +	INIT_TASK_DATA_SECTION(THREAD_SIZE)
+> 
+> If I change it back to:
+> 
+> 	/* The initial task and kernel stack */
+> 	.data..init_task : AT(ADDR(.data..init_task) - LOAD_OFFSET) {
+> 		INIT_TASK_DATA(THREAD_SIZE)
+> 	}
+> 
+> not only do the warnings go away, but the kernel now boots again!
 
-Find it attached.
+It looks like a missing AT() in the output section.
+The following patch should also fix it.
 
-I will start to reduce the remaining configs (i.e. all but arm and
-powerpc).
+Please test and let us know.
 
-Best regards
-Uwe
+Thanks,
+	Sam
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
---qMm9M+Fa2AknHoGS
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: attachment; filename=reduce_defconfig
-Content-Transfer-Encoding: 8bit
-
-#! /usr/bin/env python
-# vim: set fileencoding=utf-8 :
-# Copyright (C) 2010 by Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
-
-import getopt
-import re
-import os
-import subprocess
-import sys
-
-# This prevents including a timestamp in the .config which makes comparing a
-# bit easier.
-os.environ['KCONFIG_NOTIMESTAMP'] = 'Yes, please'
-
-re_interesting = re.compile(r'^(# )?CONFIG_')
-
-opts, args = getopt.getopt(sys.argv[1:], '', ['arch=', 'src='])
-
-src = ''
-arch = 'arm'
-
-for o, a in opts:
-    if o == '--arch':
-        arch = a
-    elif o == '--src':
-        src = a
-
-configdir = os.path.join(src, 'arch', arch, 'configs')
-
-def all_defconfigs():
-    lc = len(configdir)
-    for root, dirs, files in os.walk(configdir):
-        root = root[lc + 1:]
-        for f in filter(lambda s: s.endswith('_defconfig'), files):
-            yield os.path.join(root, f)
-
-if not args:
-    args = all_defconfigs()
-
-for target in args:
-    defconfig_src = os.path.join(configdir, target)
-
-    subprocess.check_call(['make', '-s', 'ARCH=%s' % arch, target])
-    origconfig = list(open('.config'))
-    config = list(origconfig)
-    config_size = os.stat('.config').st_size
-
-    i = 0
-
-    while i < len(config):
-        mo = re_interesting.match(config[i])
-        if mo:
-            defconfig = open(defconfig_src, 'w')
-            defconfig.writelines(config[:i])
-            defconfig.writelines(config[i + 1:])
-            defconfig.close()
-            subprocess.check_call(['make', '-s', 'ARCH=%s' % arch, target])
-            if os.stat('.config').st_size == config_size and list(open('.config')) == origconfig:
-                print '-%s' % config[i][:-1]
-                del config[i]
-            else:
-                print ' %s' % config[i][:-1]
-                i += 1
-        else:
-            del config[i]
-
-    defconfig = open(defconfig_src, 'w')
-    defconfig.writelines(config)
-    defconfig.close()
-
---qMm9M+Fa2AknHoGS--
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 48c5299..3c4bf03 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -435,7 +435,7 @@
+  */
+ #define INIT_TASK_DATA_SECTION(align)					\
+ 	. = ALIGN(align);						\
+-	.data..init_task : {						\
++	.data..init_task : AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
+ 		INIT_TASK_DATA(align)					\
+ 	}
+ 
