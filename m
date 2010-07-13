@@ -1,30 +1,29 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B757B6F04
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 01:52:10 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6DFiB8p030300
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:44:11 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6DFq0d8137184
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:52:03 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6DFpxnD008198
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:51:59 -0600
-Message-ID: <4C3C8B9E.7000208@austin.ibm.com>
-Date: Tue, 13 Jul 2010 10:51:58 -0500
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C7B0BB6F06
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 01:59:53 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6DFhm1v030611
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 11:43:48 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6DFxodi091182
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 11:59:50 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6DFxnAD028973
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 11:59:49 -0400
+Message-ID: <4C3C8D75.5000409@austin.ibm.com>
+Date: Tue, 13 Jul 2010 10:59:49 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
-References: <4C3B3446.5090302@austin.ibm.com>	<4C3B3895.3040209@austin.ibm.com>
-	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/7] Split the memory_block structure
+References: <4C3B3446.5090302@austin.ibm.com> <4C3B37CE.50802@austin.ibm.com>
+	<4C3C718C.6080402@linux.vnet.ibm.com>
+In-Reply-To: <4C3C718C.6080402@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,140 +35,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2010 01:28 AM, KAMEZAWA Hiroyuki wrote:
-> On Mon, 12 Jul 2010 10:45:25 -0500
-> Nathan Fontenot <nfont@austin.ibm.com> wrote:
-> 
->> This patch introduces the new 'split' file in each memory sysfs
->> directory and the associated routines needed to handle splitting
->> a directory.
->>
->> Signed-off-by; Nathan Fontenot <nfont@austin.ibm.com>
->> ---
-> 
-> pleae check diff option...
-> 
-> 
->>  drivers/base/memory.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++-
->>  1 file changed, 98 insertions(+), 1 deletion(-)
->>
->> Index: linux-2.6/drivers/base/memory.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/base/memory.c	2010-07-09 14:23:20.000000000 -0500
->> +++ linux-2.6/drivers/base/memory.c	2010-07-09 14:38:09.000000000 -0500
->> @@ -32,6 +32,9 @@
->>  
->>  static int sections_per_block;
->>  
->> +static int register_memory(struct memory_block *, struct mem_section *,
->> +			   int, enum mem_add_context);
->> +
->>  static inline int base_memory_block_id(int section_nr)
+On 07/13/2010 09:00 AM, Brian King wrote:
+> On 07/12/2010 10:42 AM, Nathan Fontenot wrote:
+>> @@ -123,13 +130,20 @@
+>>  static ssize_t show_mem_removable(struct sys_device *dev,
+>>  			struct sysdev_attribute *attr, char *buf)
 >>  {
->>  	return (section_nr / sections_per_block) * sections_per_block;
->> @@ -309,11 +312,100 @@
->>  	return sprintf(buf, "%d\n", mem->phys_device);
->>  }
->>  
->> +static void update_memory_block_phys_indexes(struct memory_block *mem)
->> +{
->> +	struct list_head *pos;
->> +	struct memory_block_section *mbs;
->> +	unsigned long min_index = 0xffffffff;
->> +	unsigned long max_index = 0;
->> +
->> +	list_for_each(pos, &mem->sections) {
->> +		mbs = list_entry(pos, struct memory_block_section, next);
->> +
->> +		if (mbs->phys_index < min_index)
->> +			min_index = mbs->phys_index;
->> +
->> +		if (mbs->phys_index > max_index)
->> +			max_index = mbs->phys_index;
->> +	}
->> +
->> +	mem->start_phys_index = min_index;
->> +	mem->end_phys_index = max_index;
->> +}
->> +
->> +static ssize_t
->> +store_mem_split_block(struct sys_device *dev, struct sysdev_attribute *attr,
->> +		      const char *buf, size_t count)
->> +{
->> +	struct memory_block *mem, *new_mem_blk;
->> +	struct memory_block_section *mbs;
+>> -	unsigned long start_pfn;
+>> -	int ret;
+>> -	struct memory_block *mem =
+>> -		container_of(dev, struct memory_block, sysdev);
 >> +	struct list_head *pos, *tmp;
->> +	struct mem_section *section;
->> +	int min_scn_nr = 0;
->> +	int max_scn_nr = 0;
->> +	int total_scns = 0;
->> +	int new_blk_min, new_blk_total;
->> +	int ret = -EINVAL;
+>> +	struct memory_block *mem;
+>> +	int ret = 1;
 >> +
 >> +	mem = container_of(dev, struct memory_block, sysdev);
+>> +	list_for_each_safe(pos, tmp, &mem->sections) {
+>> +		struct memory_block_section *mbs;
+>> +		unsigned long start_pfn;
 >> +
->> +	if (list_is_singular(&mem->sections))
->> +		return -EINVAL;
+>> +		mbs = list_entry(pos, struct memory_block_section, next);
+>> +		start_pfn = section_nr_to_pfn(mbs->phys_index);
+>> +		ret &= is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>> +	}
 > 
-> What this means ?
+> I don't see you deleting anyting from the list in this loop. Why do you need
+> to use list_for_each_safe? That won't protect you if someone else is messing
+> with the list.
 
-list_is_singular() will return true if there is only one item
-on the list.  In this case we cannot split a memory_block with
-only one memory_block_section.
+Yes, Kame pointed this out too.  I think I'll need to update the patches to
+always take the mutex when walking the list and use list_for_each_entry
 
 > 
+>>
+>> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+>> -	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>>  	return sprintf(buf, "%d\n", ret);
+>>  }
+>>
 > 
+> 
+>> @@ -238,19 +252,40 @@
+>>  static int memory_block_change_state(struct memory_block *mem,
+>>  		unsigned long to_state, unsigned long from_state_req)
+>>  {
+>> +	struct memory_block_section *mbs;
+>> +	struct list_head *pos;
+>>  	int ret = 0;
 >> +
->> +	mutex_lock(&mem->state_mutex);
->> +
+>>  	mutex_lock(&mem->state_mutex);
+>>
+>> -	if (mem->state != from_state_req) {
+>> -		ret = -EINVAL;
+>> -		goto out;
 >> +	list_for_each(pos, &mem->sections) {
 >> +		mbs = list_entry(pos, struct memory_block_section, next);
 >> +
->> +		total_scns++;
+>> +		if (mbs->state != from_state_req)
+>> +			continue;
 >> +
->> +		if (min_scn_nr > mbs->phys_index)
->> +			min_scn_nr = mbs->phys_index;
->> +
->> +		if (max_scn_nr < mbs->phys_index)
->> +			max_scn_nr = mbs->phys_index;
+>> +		ret = memory_block_action(mbs, to_state);
+>> +		if (ret)
+>> +			break;
 >> +	}
+> 
+> Would it be better here to loop through all the sections and ensure they
+> are in the proper state first before starting to change the state of any
+> of them? Then you could easily return -EINVAL if one or more is in
+> the incorrect state and wouldn't need to the code below.
+
+The code below is needed in cases where the add/remove of one of the
+memory_block_sections fails.  The code can then return all of the
+memory_block_sections in the memory_block to the original state.
+
+> 
+>> +	if (ret) {
+>> +		list_for_each(pos, &mem->sections) {
+>> +			mbs = list_entry(pos, struct memory_block_section,
+>> +					 next);
 >> +
->> +	new_mem_blk = kzalloc(sizeof(*new_mem_blk), GFP_KERNEL);
->> +	if (!new_mem_blk)
+>> +			if (mbs->state == from_state_req)
+>> +				continue;
+>> +
+>> +			if (memory_block_action(mbs, to_state))
+>> +				printk(KERN_ERR "Could not re-enable memory "
+>> +				       "section %lx\n", mbs->phys_index);
+>> +		}
+>>  	}
+>>
+>> -	ret = memory_block_action(mem, to_state);
+>>  	if (!ret)
+>>  		mem->state = to_state;
+>>
+>> -out:
+>>  	mutex_unlock(&mem->state_mutex);
+>>  	return ret;
+>>  }
+> 
+> 
+>> @@ -498,19 +496,97 @@
+>>
+>>  	return mem;
+>>  }
+>> +static int add_mem_block_section(struct memory_block *mem,
+>> +				 int section_nr, unsigned long state)
+>> +{
+>> +	struct memory_block_section *mbs;
+>> +
+>> +	mbs = kzalloc(sizeof(*mbs), GFP_KERNEL);
+>> +	if (!mbs)
 >> +		return -ENOMEM;
 >> +
->> +	mutex_init(&new_mem_blk->state_mutex);
->> +	INIT_LIST_HEAD(&new_mem_blk->sections);
->> +	new_mem_blk->state = mem->state;
+>> +	mbs->phys_index = section_nr;
+>> +	mbs->state = state;
 >> +
->> +	mutex_lock(&new_mem_blk->state_mutex);
->> +
->> +	new_blk_total = total_scns / 2;
->> +	new_blk_min = max_scn_nr - new_blk_total + 1;
->> +
->> +	section = __nr_to_section(new_blk_min);
->> +	ret = register_memory(new_mem_blk, section, 0, HOTPLUG);
->> +
-> 'nid' is always 0 ?
+>> +	list_add(&mbs->next, &mem->sections);
+> 
+> I don't think there is sufficient protection for this list. Don't we
+> need to be holding a lock of some sort when adding/deleting/iterating
+> through this list? 
 
-Ahh.. good catch.  it may not be.  I'll look into finding the correct nid.
+You're right.  we should be holding the mutex.
+
+I think there are a couple other places that I missed with this.  I'll fix
+it for a v2 of the patches.
 
 > 
-> And for what purpose this interface is ? Does this split memory block into 2 pieces
-> of the same size ?? sounds __very__ strange interface to me.
-
-Yes, this splits the memory_block into two blocks of the same size.  This was
-suggested as something we may want to do.  From ppc perspective I am not sure we
-would use this.
-
-The split functionality is not required.  The main goal of the patch set is to
-reduce the number of memory sysfs directories created.  From a ppc perspective
-the split functionality is not really needed.
-
-> 
-> If this is necessary, I hope move the whole things to configfs rather than
-> something tricky.
-> 
-> Bye.
-> -Kame
+>> +	return 0;
+>> +}
 > 
