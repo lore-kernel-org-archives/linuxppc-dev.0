@@ -1,32 +1,23 @@
-Return-Path: <nico@fluxnic.net>
-Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
-	by ozlabs.org (Postfix) with ESMTP id 4FD62B6EF1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 10:07:02 +1000 (EST)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Received: from xanadu.home ([66.130.28.92]) by VL-MO-MR003.ip.videotron.ca
-	(Sun Java(tm) System Messaging Server 6.3-8.01 (built Dec 16 2008;
-	32bit))
-	with ESMTP id <0L5I00LW8TNOKU10@VL-MO-MR003.ip.videotron.ca> for
-	linuxppc-dev@lists.ozlabs.org; Tue, 13 Jul 2010 20:07:00 -0400 (EDT)
-Date: Tue, 13 Jul 2010 20:07:00 -0400 (EDT)
-From: Nicolas Pitre <nico@fluxnic.net>
-To: Daniel Walker <dwalker@codeaurora.org>
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-In-reply-to: <1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
-Message-id: <alpine.LFD.2.00.1007131941140.10598@xanadu.home>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279062881.4609.34.camel@c-dwalke-linux.qualcomm.com>
-	<AANLkTin69tN3NQHD2wvkA0G-lj3f9tSZEnhzdyJdTh9m@mail.gmail.com>
-	<1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
-Cc: linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>,
-	=?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <fkan@apm.com>
+Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
+	by ozlabs.org (Postfix) with SMTP id 1E61DB6F18
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:07:49 +1000 (EST)
+Received: by qwf6 with SMTP id 6so968181qwf.18
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 16:07:48 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <4C3CE5BA.5060302@ThePTRGroup.com>
+References: <12789766042434-git-send-email-fchen@apm.com>
+	<4C3CE5BA.5060302@ThePTRGroup.com>
+Date: Tue, 13 Jul 2010 16:02:28 -0700
+Message-ID: <AANLkTinivQKLbA3TBHTJbPjT-SUX2ynqBzwJzaSRZ2ve@mail.gmail.com>
+Subject: Re: [PATCH 1/9 v1.01] Add Synopsys DesignWare HS USB OTG Controller
+	driver.
+From: Feng Kan <fkan@apm.com>
+To: Chuck Meade <chuck@theptrgroup.com>
+Content-Type: multipart/alternative; boundary=00c09f83a2c605263c048b4cdd69
+Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
+	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de,
+	Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,56 +27,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Jul 2010, Daniel Walker wrote:
-> On Tue, 2010-07-13 at 17:21 -0600, Grant Likely wrote:
-> > On Tue, Jul 13, 2010 at 5:14 PM, Daniel Walker <dwalker@codeaurora.org> wrote:
-> > > It just doesn't feel like Kconfig was meant to do this, it feel like
-> > > somewhat of an abuse ..
-> > 
-> > Why?  It uses the Kconfig language itself to specify additional
-> > constraints on the final configuration.  Seems to be the essence of
-> > elegance to me.  :-)
-> 
-> To my mind the only problem with the current defconfig formatting is the
-> size of the files. If those files are 5-10 lines instead of 2000 lines,
-> then I think the readability problem isn't really an issue any more..
+--00c09f83a2c605263c048b4cdd69
+Content-Type: text/plain; charset=ISO-8859-1
 
-That's one issue indeed.
+Chuck:
 
-But there is another issue that is somewhat related, which is to be able 
-to categorize config options.
+Thanks for the information. Sorry that we missed the patch. It was not done
+out of specific reason.
+As you have commented, it is a very large patch with alot of changes. We
+wanted to submit
+the patch to make sure the fundamental structure of the driver align with
+the kernel. Once that
+is in place, additional patch will be easier. Fushen will make sure this
+change is in place on
+the next submission.
 
-Currently the defconfig files carry information about the proper driver 
-to enable in order to support devices soldered on the board and 
-therefore which are not "optional".  That might be a particular RTC 
-chip, or a particular ethernet block integrated into a SOC, etc.  Of 
-course we want to preserve the ability to disable support for those 
-things, but by default people want to have all the right drivers 
-selected for all the built-in hardware when selecting a target 
-machine/board without having to dig into a datasheet for that target.
-
-The defconfig files also carry config options that are totally 
-arbitrary.  What type of filesystem, what kind of network protocol, what 
-USB device drivers (not host controller driver), what amount of 
-debugging options, all those are unrelated to the actual hardware and 
-may vary from one user to another.
-
-Furthermore, in order to reduce the number of defconfig files, we tried 
-to combine as many targets into a single kernel image.  That increases 
-build test coverage with fewer builds which is good, but then the info 
-about specific drivers required for a specific target but not for 
-another target in the same defconfig is now lost.  It is therefore quite 
-hard to produce a highly optimized configuration for a single target 
-without doing some digging again.
-
-So it is really in the Kconfig file that all those hardware specific 
-options can be expressed in a clear and readable way.  When BOARD_XYZ is 
-selected and STD_CONFIG is selected, then automatically select RTC_FOO, 
-select ETH_BAR, select LED_BAZ, etc. Of course we would want required 
-dependencies to be automatically selected as well.
-
-But all the rest is arbitrary and could be part of common shared 
-profiles or the like in defconfig format.
+Thanks
+Feng Kan
 
 
-Nicolas
+On Tue, Jul 13, 2010 at 3:16 PM, Chuck Meade <chuck@theptrgroup.com> wrote:
+
+> On 07/12/2010 07:16 PM, Fushen Chen wrote:
+> > The DWC OTG driver module provides the initialization and cleanup
+> > entry points for the DWC OTG USB driver.
+> >
+> > Signed-off-by: Fushen Chen <fchen@apm.com>
+> > Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+> > ---
+>
+> This reply is to the patch series, not just this 1/9 patch section.
+>
+> Fushen, why did you pick and choose which fixes to incorporate from the
+> Denx
+> tree's version of the dwc_otg driver?
+>
+> I'm not taking the time here to go through this multipart patch and check
+> that
+> you incorporated every fix, but I *did* randomly pick one fix that I made
+> to that
+> driver, to see if you incorporated it, and it appears you did not.
+> I would have expected that you would have incorporated the fixes that were
+> made
+> to this driver in the Denx tree.
+>
+> The one that I checked is in the data toggle error interrupt handling, in
+> handle_hc_chhltd_intr_dma() (see your 5/9 email in this patch series).  It
+> looks
+> like you left out the fix I made to this logic that averts an interrupt
+> storm.
+>
+> I assume that since I checked one particular fix, and it was missing from
+> your
+> patch series, that there are likely more fixes you omitted.  Can you
+> explain why
+> you would leave this out, after Stefan asked you to incorporate the code
+> changes
+> made in the Denx tree's version of the driver?
+>
+> Chuck
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+
+
+
+-- 
+Feng Kan
+
+--00c09f83a2c605263c048b4cdd69
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Chuck:<div><br></div><div>Thanks for the information. Sorry that we missed =
+the patch. It was not done out of specific reason.</div><div>As you have co=
+mmented, it is a very large patch with alot of changes. We wanted to submit=
+</div>
+<div>the patch to make sure the=A0fundamental=A0structure of the driver ali=
+gn with the kernel. Once that</div><div>is in place, additional patch will =
+be easier. Fushen will make sure this change is in place on</div><div>the n=
+ext submission.</div>
+<div><br></div><div>Thanks</div><div>Feng Kan</div><div><br><br><div class=
+=3D"gmail_quote">On Tue, Jul 13, 2010 at 3:16 PM, Chuck Meade <span dir=3D"=
+ltr">&lt;<a href=3D"mailto:chuck@theptrgroup.com">chuck@theptrgroup.com</a>=
+&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex;"><div class=3D"im">On 07/12/2010 07:16 PM, F=
+ushen Chen wrote:<br>
+&gt; The DWC OTG driver module provides the initialization and cleanup<br>
+&gt; entry points for the DWC OTG USB driver.<br>
+&gt;<br>
+&gt; Signed-off-by: Fushen Chen &lt;<a href=3D"mailto:fchen@apm.com">fchen@=
+apm.com</a>&gt;<br>
+&gt; Signed-off-by: Mark Miesfeld &lt;<a href=3D"mailto:mmiesfeld@apm.com">=
+mmiesfeld@apm.com</a>&gt;<br>
+&gt; ---<br>
+<br>
+</div>This reply is to the patch series, not just this 1/9 patch section.<b=
+r>
+<br>
+Fushen, why did you pick and choose which fixes to incorporate from the Den=
+x<br>
+tree&#39;s version of the dwc_otg driver?<br>
+<br>
+I&#39;m not taking the time here to go through this multipart patch and che=
+ck that<br>
+you incorporated every fix, but I *did* randomly pick one fix that I made t=
+o that<br>
+driver, to see if you incorporated it, and it appears you did not.<br>
+I would have expected that you would have incorporated the fixes that were =
+made<br>
+to this driver in the Denx tree.<br>
+<br>
+The one that I checked is in the data toggle error interrupt handling, in<b=
+r>
+handle_hc_chhltd_intr_dma() (see your 5/9 email in this patch series). =A0I=
+t looks<br>
+like you left out the fix I made to this logic that averts an interrupt sto=
+rm.<br>
+<br>
+I assume that since I checked one particular fix, and it was missing from y=
+our<br>
+patch series, that there are likely more fixes you omitted. =A0Can you expl=
+ain why<br>
+you would leave this out, after Stefan asked you to incorporate the code ch=
+anges<br>
+made in the Denx tree&#39;s version of the driver?<br>
+<font color=3D"#888888"><br>
+Chuck<br>
+</font><div><div></div><div class=3D"h5">__________________________________=
+_____________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+</div></div></blockquote></div><br><br clear=3D"all"><br>-- <br>Feng Kan<br=
+>
+</div>
+
+--00c09f83a2c605263c048b4cdd69--
