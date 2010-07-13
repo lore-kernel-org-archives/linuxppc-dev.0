@@ -1,30 +1,30 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 79CBE1007D2
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 01:47:06 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6DFe56l031357
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:40:05 -0600
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B757B6F04
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 01:52:10 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6DFiB8p030300
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:44:11 -0600
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6DFkvVY136876
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:46:58 -0600
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6DFq0d8137184
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:52:03 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6DFkrlt009428
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:46:53 -0600
-Message-ID: <4C3C8A6B.1030604@austin.ibm.com>
-Date: Tue, 13 Jul 2010 10:46:51 -0500
+	id o6DFpxnD008198
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 09:51:59 -0600
+Message-ID: <4C3C8B9E.7000208@austin.ibm.com>
+Date: Tue, 13 Jul 2010 10:51:58 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 3/7] Update the [register,unregister]_memory routines
-References: <4C3B3446.5090302@austin.ibm.com>	<4C3B384A.4000902@austin.ibm.com>
-	<20100713152044.7ec8c9ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100713152044.7ec8c9ae.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
+References: <4C3B3446.5090302@austin.ibm.com>	<4C3B3895.3040209@austin.ibm.com>
+	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,77 +36,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2010 01:20 AM, KAMEZAWA Hiroyuki wrote:
-> On Mon, 12 Jul 2010 10:44:10 -0500
+On 07/13/2010 01:28 AM, KAMEZAWA Hiroyuki wrote:
+> On Mon, 12 Jul 2010 10:45:25 -0500
 > Nathan Fontenot <nfont@austin.ibm.com> wrote:
 > 
->> This patch moves the register/unregister_memory routines to
->> avoid a forward declaration.  It also moves the sysfs file
->> creation and deletion for each directory into the register/
->> unregister routines to avoid duplicating it with these updates.
+>> This patch introduces the new 'split' file in each memory sysfs
+>> directory and the associated routines needed to handle splitting
+>> a directory.
 >>
->> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+>> Signed-off-by; Nathan Fontenot <nfont@austin.ibm.com>
 >> ---
->>  drivers/base/memory.c |   93 +++++++++++++++++++++++++-------------------------
->>  1 file changed, 48 insertions(+), 45 deletions(-)
+> 
+> pleae check diff option...
+> 
+> 
+>>  drivers/base/memory.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++-
+>>  1 file changed, 98 insertions(+), 1 deletion(-)
 >>
 >> Index: linux-2.6/drivers/base/memory.c
 >> ===================================================================
->> --- linux-2.6.orig/drivers/base/memory.c	2010-07-09 14:23:17.000000000 -0500
->> +++ linux-2.6/drivers/base/memory.c	2010-07-09 14:23:20.000000000 -0500
->> @@ -87,31 +87,6 @@
->>  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+>> --- linux-2.6.orig/drivers/base/memory.c	2010-07-09 14:23:20.000000000 -0500
+>> +++ linux-2.6/drivers/base/memory.c	2010-07-09 14:38:09.000000000 -0500
+>> @@ -32,6 +32,9 @@
 >>  
->>  /*
->> - * register_memory - Setup a sysfs device for a memory block
->> - */
->> -static
->> -int register_memory(struct memory_block *memory, struct mem_section *section)
->> -{
->> -	int error;
->> -
->> -	memory->sysdev.cls = &memory_sysdev_class;
->> -	memory->sysdev.id = __section_nr(section);
->> -
->> -	error = sysdev_register(&memory->sysdev);
->> -	return error;
->> -}
->> -
->> -static void
->> -unregister_memory(struct memory_block *memory)
->> -{
->> -	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
->> -
->> -	/* drop the ref. we got in remove_memory_block() */
->> -	kobject_put(&memory->sysdev.kobj);
->> -	sysdev_unregister(&memory->sysdev);
->> -}
->> -
->> -/*
->>   * use this as the physical section index that this memsection
->>   * uses.
->>   */
->> @@ -346,6 +321,53 @@
->>  	sysdev_remove_file(&mem->sysdev, &attr_##attr_name)
+>>  static int sections_per_block;
 >>  
->>  /*
->> + * register_memory - Setup a sysfs device for a memory block
->> + */
->> +static
->> +int register_memory(struct memory_block *memory, struct mem_section *section,
->> +		    int nid, enum mem_add_context context)
+>> +static int register_memory(struct memory_block *, struct mem_section *,
+>> +			   int, enum mem_add_context);
+>> +
+>>  static inline int base_memory_block_id(int section_nr)
+>>  {
+>>  	return (section_nr / sections_per_block) * sections_per_block;
+>> @@ -309,11 +312,100 @@
+>>  	return sprintf(buf, "%d\n", mem->phys_device);
+>>  }
+>>  
+>> +static void update_memory_block_phys_indexes(struct memory_block *mem)
 >> +{
->> +	int ret;
+>> +	struct list_head *pos;
+>> +	struct memory_block_section *mbs;
+>> +	unsigned long min_index = 0xffffffff;
+>> +	unsigned long max_index = 0;
 >> +
->> +	memory->sysdev.cls = &memory_sysdev_class;
->> +	memory->sysdev.id = __section_nr(section);
+>> +	list_for_each(pos, &mem->sections) {
+>> +		mbs = list_entry(pos, struct memory_block_section, next);
 >> +
+>> +		if (mbs->phys_index < min_index)
+>> +			min_index = mbs->phys_index;
+>> +
+>> +		if (mbs->phys_index > max_index)
+>> +			max_index = mbs->phys_index;
+>> +	}
+>> +
+>> +	mem->start_phys_index = min_index;
+>> +	mem->end_phys_index = max_index;
+>> +}
+>> +
+>> +static ssize_t
+>> +store_mem_split_block(struct sys_device *dev, struct sysdev_attribute *attr,
+>> +		      const char *buf, size_t count)
+>> +{
+>> +	struct memory_block *mem, *new_mem_blk;
+>> +	struct memory_block_section *mbs;
+>> +	struct list_head *pos, *tmp;
+>> +	struct mem_section *section;
+>> +	int min_scn_nr = 0;
+>> +	int max_scn_nr = 0;
+>> +	int total_scns = 0;
+>> +	int new_blk_min, new_blk_total;
+>> +	int ret = -EINVAL;
+>> +
+>> +	mem = container_of(dev, struct memory_block, sysdev);
+>> +
+>> +	if (list_is_singular(&mem->sections))
+>> +		return -EINVAL;
+> 
+> What this means ?
 
-> Why not block-ID  but section-ID ?
-
-Using the beginning section id as the id here makes the splitting of
-memory_block's easier since we can assume that the id is unique.
+list_is_singular() will return true if there is only one item
+on the list.  In this case we cannot split a memory_block with
+only one memory_block_section.
 
 > 
+> 
+>> +
+>> +	mutex_lock(&mem->state_mutex);
+>> +
+>> +	list_for_each(pos, &mem->sections) {
+>> +		mbs = list_entry(pos, struct memory_block_section, next);
+>> +
+>> +		total_scns++;
+>> +
+>> +		if (min_scn_nr > mbs->phys_index)
+>> +			min_scn_nr = mbs->phys_index;
+>> +
+>> +		if (max_scn_nr < mbs->phys_index)
+>> +			max_scn_nr = mbs->phys_index;
+>> +	}
+>> +
+>> +	new_mem_blk = kzalloc(sizeof(*new_mem_blk), GFP_KERNEL);
+>> +	if (!new_mem_blk)
+>> +		return -ENOMEM;
+>> +
+>> +	mutex_init(&new_mem_blk->state_mutex);
+>> +	INIT_LIST_HEAD(&new_mem_blk->sections);
+>> +	new_mem_blk->state = mem->state;
+>> +
+>> +	mutex_lock(&new_mem_blk->state_mutex);
+>> +
+>> +	new_blk_total = total_scns / 2;
+>> +	new_blk_min = max_scn_nr - new_blk_total + 1;
+>> +
+>> +	section = __nr_to_section(new_blk_min);
+>> +	ret = register_memory(new_mem_blk, section, 0, HOTPLUG);
+>> +
+> 'nid' is always 0 ?
+
+Ahh.. good catch.  it may not be.  I'll look into finding the correct nid.
+
+> 
+> And for what purpose this interface is ? Does this split memory block into 2 pieces
+> of the same size ?? sounds __very__ strange interface to me.
+
+Yes, this splits the memory_block into two blocks of the same size.  This was
+suggested as something we may want to do.  From ppc perspective I am not sure we
+would use this.
+
+The split functionality is not required.  The main goal of the patch set is to
+reduce the number of memory sysfs directories created.  From a ppc perspective
+the split functionality is not really needed.
+
+> 
+> If this is necessary, I hope move the whole things to configfs rather than
+> something tricky.
+> 
+> Bye.
 > -Kame
 > 
