@@ -1,30 +1,30 @@
 Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
 Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id 3BCDAB6EE9
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 16:25:24 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
+	by ozlabs.org (Postfix) with ESMTP id AFC63B6F17
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 16:33:32 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp ([10.0.50.71])
 	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o6D6PMOm032723 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Tue, 13 Jul 2010 15:25:22 +0900
-Received: from smail (m4 [127.0.0.1])
-	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 33D3F45DE6F
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:25:22 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
-	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 0857345DE70
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:25:22 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id BC9001DB803B
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:25:21 +0900 (JST)
-Received: from m106.s.css.fujitsu.com (m106.s.css.fujitsu.com [10.249.87.106])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id EE529E38006
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:25:20 +0900 (JST)
-Date: Tue, 13 Jul 2010 15:20:44 +0900
+	o6D6XV2m003659 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Tue, 13 Jul 2010 15:33:31 +0900
+Received: from smail (m1 [127.0.0.1])
+	by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id B0E1945DE51
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:33:30 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+	by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 85CF845DE50
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:33:30 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 67FFF1DB8049
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:33:30 +0900 (JST)
+Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
+	by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 0E5EA1DB804E
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 15:33:30 +0900 (JST)
+Date: Tue, 13 Jul 2010 15:28:54 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 3/7] Update the [register,unregister]_memory routines
-Message-Id: <20100713152044.7ec8c9ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4C3B384A.4000902@austin.ibm.com>
-References: <4C3B3446.5090302@austin.ibm.com> <4C3B384A.4000902@austin.ibm.com>
+Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
+Message-Id: <20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C3B3895.3040209@austin.ibm.com>
+References: <4C3B3446.5090302@austin.ibm.com> <4C3B3895.3040209@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
@@ -37,70 +37,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Jul 2010 10:44:10 -0500
+On Mon, 12 Jul 2010 10:45:25 -0500
 Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-> This patch moves the register/unregister_memory routines to
-> avoid a forward declaration.  It also moves the sysfs file
-> creation and deletion for each directory into the register/
-> unregister routines to avoid duplicating it with these updates.
+> This patch introduces the new 'split' file in each memory sysfs
+> directory and the associated routines needed to handle splitting
+> a directory.
 > 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> Signed-off-by; Nathan Fontenot <nfont@austin.ibm.com>
 > ---
->  drivers/base/memory.c |   93 +++++++++++++++++++++++++-------------------------
->  1 file changed, 48 insertions(+), 45 deletions(-)
+
+pleae check diff option...
+
+
+>  drivers/base/memory.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 98 insertions(+), 1 deletion(-)
 > 
 > Index: linux-2.6/drivers/base/memory.c
 > ===================================================================
-> --- linux-2.6.orig/drivers/base/memory.c	2010-07-09 14:23:17.000000000 -0500
-> +++ linux-2.6/drivers/base/memory.c	2010-07-09 14:23:20.000000000 -0500
-> @@ -87,31 +87,6 @@
->  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> --- linux-2.6.orig/drivers/base/memory.c	2010-07-09 14:23:20.000000000 -0500
+> +++ linux-2.6/drivers/base/memory.c	2010-07-09 14:38:09.000000000 -0500
+> @@ -32,6 +32,9 @@
 >  
->  /*
-> - * register_memory - Setup a sysfs device for a memory block
-> - */
-> -static
-> -int register_memory(struct memory_block *memory, struct mem_section *section)
-> -{
-> -	int error;
-> -
-> -	memory->sysdev.cls = &memory_sysdev_class;
-> -	memory->sysdev.id = __section_nr(section);
-> -
-> -	error = sysdev_register(&memory->sysdev);
-> -	return error;
-> -}
-> -
-> -static void
-> -unregister_memory(struct memory_block *memory)
-> -{
-> -	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
-> -
-> -	/* drop the ref. we got in remove_memory_block() */
-> -	kobject_put(&memory->sysdev.kobj);
-> -	sysdev_unregister(&memory->sysdev);
-> -}
-> -
-> -/*
->   * use this as the physical section index that this memsection
->   * uses.
->   */
-> @@ -346,6 +321,53 @@
->  	sysdev_remove_file(&mem->sysdev, &attr_##attr_name)
+>  static int sections_per_block;
 >  
->  /*
-> + * register_memory - Setup a sysfs device for a memory block
-> + */
-> +static
-> +int register_memory(struct memory_block *memory, struct mem_section *section,
-> +		    int nid, enum mem_add_context context)
+> +static int register_memory(struct memory_block *, struct mem_section *,
+> +			   int, enum mem_add_context);
+> +
+>  static inline int base_memory_block_id(int section_nr)
+>  {
+>  	return (section_nr / sections_per_block) * sections_per_block;
+> @@ -309,11 +312,100 @@
+>  	return sprintf(buf, "%d\n", mem->phys_device);
+>  }
+>  
+> +static void update_memory_block_phys_indexes(struct memory_block *mem)
 > +{
-> +	int ret;
+> +	struct list_head *pos;
+> +	struct memory_block_section *mbs;
+> +	unsigned long min_index = 0xffffffff;
+> +	unsigned long max_index = 0;
 > +
-> +	memory->sysdev.cls = &memory_sysdev_class;
-> +	memory->sysdev.id = __section_nr(section);
+> +	list_for_each(pos, &mem->sections) {
+> +		mbs = list_entry(pos, struct memory_block_section, next);
 > +
-Why not block-ID  but section-ID ?
+> +		if (mbs->phys_index < min_index)
+> +			min_index = mbs->phys_index;
+> +
+> +		if (mbs->phys_index > max_index)
+> +			max_index = mbs->phys_index;
+> +	}
+> +
+> +	mem->start_phys_index = min_index;
+> +	mem->end_phys_index = max_index;
+> +}
+> +
+> +static ssize_t
+> +store_mem_split_block(struct sys_device *dev, struct sysdev_attribute *attr,
+> +		      const char *buf, size_t count)
+> +{
+> +	struct memory_block *mem, *new_mem_blk;
+> +	struct memory_block_section *mbs;
+> +	struct list_head *pos, *tmp;
+> +	struct mem_section *section;
+> +	int min_scn_nr = 0;
+> +	int max_scn_nr = 0;
+> +	int total_scns = 0;
+> +	int new_blk_min, new_blk_total;
+> +	int ret = -EINVAL;
+> +
+> +	mem = container_of(dev, struct memory_block, sysdev);
+> +
+> +	if (list_is_singular(&mem->sections))
+> +		return -EINVAL;
 
+What this means ?
+
+
+> +
+> +	mutex_lock(&mem->state_mutex);
+> +
+> +	list_for_each(pos, &mem->sections) {
+> +		mbs = list_entry(pos, struct memory_block_section, next);
+> +
+> +		total_scns++;
+> +
+> +		if (min_scn_nr > mbs->phys_index)
+> +			min_scn_nr = mbs->phys_index;
+> +
+> +		if (max_scn_nr < mbs->phys_index)
+> +			max_scn_nr = mbs->phys_index;
+> +	}
+> +
+> +	new_mem_blk = kzalloc(sizeof(*new_mem_blk), GFP_KERNEL);
+> +	if (!new_mem_blk)
+> +		return -ENOMEM;
+> +
+> +	mutex_init(&new_mem_blk->state_mutex);
+> +	INIT_LIST_HEAD(&new_mem_blk->sections);
+> +	new_mem_blk->state = mem->state;
+> +
+> +	mutex_lock(&new_mem_blk->state_mutex);
+> +
+> +	new_blk_total = total_scns / 2;
+> +	new_blk_min = max_scn_nr - new_blk_total + 1;
+> +
+> +	section = __nr_to_section(new_blk_min);
+> +	ret = register_memory(new_mem_blk, section, 0, HOTPLUG);
+> +
+'nid' is always 0 ?
+
+And for what purpose this interface is ? Does this split memory block into 2 pieces
+of the same size ?? sounds __very__ strange interface to me.
+
+If this is necessary, I hope move the whole things to configfs rather than
+something tricky.
+
+Bye.
 -Kame
