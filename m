@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id C57D8100B95
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:10 +1000 (EST)
-Date: Wed, 14 Jul 2010 17:08:09 +0400
+	by ozlabs.org (Postfix) with ESMTP id DB39A100C69
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:12 +1000 (EST)
+Date: Wed, 14 Jul 2010 17:08:11 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 7/8] sdhci: Get rid of mdelay()s where it is safe and makes
-	sense
-Message-ID: <20100714130809.GG517@oksana.dev.rtsoft.ru>
+Subject: [PATCH 8/8] sdhci: Use jiffies instead of a timeout counter
+Message-ID: <20100714130811.GH517@oksana.dev.rtsoft.ru>
 References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -26,66 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since we don't run in the atomic context any longer, we can
-turn mdelay()s into msleep()s.
-
-The only place where the driver is still using mdelay() is
-sdhci_send_command(). There it is possible to use sleepable
-delays too, but we don't actually want to force rescheduling
-in a hot path.
-
-Sure, we might end up calling msleep() there too, just not
-via this safe patch.
+Just a cosmetic change, should not affect functionality.
 
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
- drivers/mmc/host/sdhci-of-esdhc.c |    2 +-
- drivers/mmc/host/sdhci.c          |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/mmc/host/sdhci.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index c8623de..e9f99fe 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -94,7 +94,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
- 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
- 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
- 		  div << ESDHC_DIVIDER_SHIFT | pre_div << ESDHC_PREDIV_SHIFT);
--	mdelay(100);
-+	msleep(100);
- out:
- 	host->clock = clock;
- }
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 56d5c56..e6adda8 100644
+index e6adda8..c754df1 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -171,7 +171,7 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+@@ -22,6 +22,7 @@
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ #include <linux/scatterlist.h>
++#include <linux/jiffies.h>
+ 
+ #include <linux/leds.h>
+ 
+@@ -160,17 +161,16 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 		host->clock = 0;
+ 
+ 	/* Wait max 100 ms */
+-	timeout = 100;
++	timeout = jiffies + msecs_to_jiffies(100);
+ 
+ 	/* hw clears the bit when it's done */
+ 	while (sdhci_readb(host, SDHCI_SOFTWARE_RESET) & mask) {
+-		if (timeout == 0) {
++		if (time_after(jiffies, timeout)) {
+ 			printk(KERN_ERR "%s: Reset 0x%x never completed.\n",
+ 				mmc_hostname(host->mmc), (int)mask);
+ 			sdhci_dumpregs(host);
  			return;
  		}
- 		timeout--;
--		mdelay(1);
-+		msleep(1);
+-		timeout--;
+ 		msleep(1);
  	}
  
- 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
-@@ -1019,7 +1019,7 @@ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+@@ -884,7 +884,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 	WARN_ON(host->cmd);
+ 
+ 	/* Wait max 10 ms */
+-	timeout = 10;
++	timeout = jiffies + msecs_to_jiffies(10);
+ 
+ 	mask = SDHCI_CMD_INHIBIT;
+ 	if ((cmd->data != NULL) || (cmd->flags & MMC_RSP_BUSY))
+@@ -896,7 +896,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 		mask &= ~SDHCI_DATA_INHIBIT;
+ 
+ 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
+-		if (timeout == 0) {
++		if (time_after(jiffies, timeout)) {
+ 			printk(KERN_ERR "%s: Controller never released "
+ 				"inhibit bit(s).\n", mmc_hostname(host->mmc));
+ 			sdhci_dumpregs(host);
+@@ -904,7 +904,6 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 			schedule_work(&host->finish_work);
  			return;
  		}
- 		timeout--;
--		mdelay(1);
-+		msleep(1);
+-		timeout--;
+ 		mdelay(1);
  	}
  
- 	clk |= SDHCI_CLOCK_CARD_EN;
-@@ -1086,7 +1086,7 @@ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
- 	 * can apply clock after applying power
- 	 */
- 	if (host->quirks & SDHCI_QUIRK_DELAY_AFTER_POWER)
--		mdelay(10);
-+		msleep(10);
- }
- 
- /*****************************************************************************\
 -- 
 1.7.0.5
