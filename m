@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17323B6EF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 22:50:34 +1000 (EST)
-In-Reply-To: <4C3CB69D.4060400@freescale.com>
-References: <1279047011-28989-1-git-send-email-msm@freescale.com>
-	<4C3CB69D.4060400@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D187302D-1F57-443E-806D-4DED6E45FB82@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc:prom Export device tree physical	address via proc
-Date: Wed, 14 Jul 2010 14:51:55 +0200
-To: Timur Tabi <timur@freescale.com>
-Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <avorontsov@mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id A2BCCB6F05
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:07:31 +1000 (EST)
+Date: Wed, 14 Jul 2010 17:07:28 +0400
+From: Anton Vorontsov <avorontsov@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/8] sdhci: Move real work out of an atomic context
+Message-ID: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Matt Fleming <matt@console-pimps.org>,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
+	Pierre Ossman <pierre@ossman.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,13 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> +	if (prop)
->> +		prom_remove_property(node, prop);
->> +		prop = of_find_property(node, "linux,devietree-end", NULL);
->
-> Either the indentation is wrong, or you're missing some braces here
+Hi all,
 
-You're missing a "c" as well (and a dash).
+Currently the sdhci driver does everything in the atomic context.
+And what is worse, PIO transfers are made from the IRQ handler.
 
+This causes huge latencies (up to 120 ms). On some P2020 SOCs,
+DMA and card detection is broken, which means that kernel polls
+for the card via PIO transfers every second. Needless to say
+that this is quite bad.
 
-Segher
+So, this patch set reworks sdhci code to avoid atomic context,
+almost completely. We only do two device memory operations
+in the atomic context, and all the rest is threaded.
+
+I noticed no throughput drop neither with PIO transfers nor
+with DMA (tested on MPC8569E CPU), while latencies should be
+greatly improved.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
