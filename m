@@ -1,27 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 0C9F0B6F17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 12:26:38 +1000 (EST)
-Received: by gxk26 with SMTP id 26so3828330gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 13 Jul 2010 19:26:36 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2506B6F10
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 13:18:15 +1000 (EST)
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6E3HC6x001072
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 23:17:12 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6E3ICH4116396
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 23:18:12 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6E3IBwa013065
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 23:18:12 -0400
+Message-ID: <4C3D2C6B.3050203@austin.ibm.com>
+Date: Tue, 13 Jul 2010 22:18:03 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100713114322.57c8b166.sfr@canb.auug.org.au>
-References: <20100713114322.57c8b166.sfr@canb.auug.org.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 13 Jul 2010 20:26:16 -0600
-Message-ID: <AANLkTimC_vXCAOrfTSndZyk8lgkjTlILVSYVYeIg6cUt@mail.gmail.com>
-Subject: Re: [PATCH] kbuild: Enable building defconfigs from Kconfig files
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
+References: <4C3B3446.5090302@austin.ibm.com>	<4C3B3895.3040209@austin.ibm.com>	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>	<4C3C8B9E.7000208@austin.ibm.com>
+	<20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>, Linus <torvalds@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,140 +36,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[cc'ing rmk and linux-arm-kernel]
+On 07/13/2010 07:35 PM, KAMEZAWA Hiroyuki wrote:
+> On Tue, 13 Jul 2010 10:51:58 -0500
+> Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> 
+>>>
+>>> And for what purpose this interface is ? Does this split memory block into 2 pieces
+>>> of the same size ?? sounds __very__ strange interface to me.
+>>
+>> Yes, this splits the memory_block into two blocks of the same size.  This was
+>> suggested as something we may want to do.  From ppc perspective I am not sure we
+>> would use this.
+>>
+>> The split functionality is not required.  The main goal of the patch set is to
+>> reduce the number of memory sysfs directories created.  From a ppc perspective
+>> the split functionality is not really needed.
+>>
+> 
+> Okay, this is an offer from me.
+> 
+>   1. I think you can add an boot option as "don't create memory sysfs".
+>      please do.
 
-On Mon, Jul 12, 2010 at 7:43 PM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
-ote:
-> After this change, doing a "make xxx_defconfig" will check first for
-> a file called arch/<arch>/configs/Kconfig.xxx and use that to generate
-> the .config (effectively starting from an allnoconfig). =A0If that file
-> doesn't exist, it will use arch/<ARCH>/configs/xxx_defconfig as now.
+I posted a patch to do that a week or so ago, it didn't go over very well.
 
-Oops, I hadn't seen this patch when I wrote mine this afternoon[1].
-:-)  A few minor differences, but essentially the same solution.
+> 
+>   2. I'd like to write a configfs module for handling memory hotplug even when
+>      sysfs directroy is not created.
+>      Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
+>      
+>      When offlining section X.
+>      # insmod configfs_memory.ko
+>      # mount -t configfs none /configfs
+>      # mkdir /configfs/memoryX
+>      # echo offline > /configfs/memoryX/state
+>      # rmdir /configfs/memoryX
+> 
+>   And making this operation as the default bahavior for all arch's memory hotplug may
+>   be better...
+> 
+> Dave, how do you think ? Because ppc guys uses "probe" interface already,
+> this can be handled... no ?
 
-[1] http://patchwork.ozlabs.org/patch/58823/
+ppc would still require the existance of the 'probe' interface.
 
-I chose to use -D /dev/null (defconfig from an empty file) instead of
--n (allnoconfig) so that default values in Kconfig would get
-respected.  For the benefit of everyone else, here's an excerpt from
-our IRC conversation this afternoon:
+Are you objecting to the 'split' functionality?  If so I do not see any reason from ppc
+perspective that it is needed.  This was something Dave suggested, unless I am missing
+something.
 
-19:49 < gcl> sfr: [...] Your patch and my patch are
-             essentially doing exactly the same thing, except that I used '=
--d'
-             and you used '-n'.
-19:50 < gcl> s/-d/-D/
-19:55 < sfr> right
-19:55 < sfr> Linus wanted us to use -n
-19:55 < sfr> because that way you get what you asked for, not what the defa=
-ults
-             say ...
-19:58 < gcl> I suppose we don't currently have a way to say "select FOO=3Dn=
-", so
-             I suppose that makes sense
-19:58 < gcl> although I think using the defaults unless told not to is a be=
-tter
-             approach in the long run
-19:59 < gcl> most of the time I *don't want* to ask for something in the
-             defconfig.  :-)
-20:00 < gcl> I just want TheBestOrCorrectAnswer to be chosen for me
-20:04 < sfr> gcl: go read Linus' vision :-)
+Since ppc needs the 'probe' interface in sysfs, and for ppc having mutliple 
+memory_block_sections reside under a single memory_block makes memory hotplug
+simpler.  On ppc we do emory hotplug operations on an LMB size basis.  With my
+patches this now lets us set each memory_block to span an LMB's worth of
+memory.  Now we could do emory hotplug in a single operation instead of multiple
+operations to offline/online all of the memory sections in an LMB.
 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
-> =A0scripts/kconfig/Makefile | =A0 14 +++++++++++++-
-> =A01 files changed, 13 insertions(+), 1 deletions(-)
->
-> Hi Linus,
->
-> Is this more the direction you want to take?
->
-> There are still 2 main problems with is approach:
->
-> =A0 =A0 =A0 =A0- there are some config options that are globally and
-> unconditionally enabled that some platforms may not want. =A0The only way
-> currently to turn them off is to reproduce the config entry with the
-> different default. =A0I am not sure if we need a wa to turn them off or t=
-o
-> just change them to being neede to be selected by those that do want them=
-.
-> =A0 =A0 =A0 =A0- we have no way to select options that are neither bool o=
-r
-> tristate to suitable values. =A0Again the only way to do that currently i=
-s
-> to reproduce the config entry with a different default value.
+Of course the easy solution would be to increase SECTION_SIZE_BITS, but we need
+support hardware that can have LMB's from 16 MB to 256 MB in size so the
+SECTION_SIZE_BITS value has to remain small. 
 
-For both of the above problems, what if we added syntax like the
-following to Kconfig?
+> 
+> One problem is that I don't have enough knowledge about configfs..it seems complex.
 
-config FOO
-        bool
-        select BAR =3D n
-        select FOO_VALUE =3D 54
+Me neither, thoug I will take a look at it.
 
-> I am currently working towards using this to recreate the PowerPC
-> defconfigs, but it is a slow process as they have some much stuff enabled
-> in them and some of it is probably actually not relevant.
-
-If the trimmed configs are merged, then there is no rush on this.  We
-can keep them around and switch them over as people want to make
-changes.
-
-> This process is made easier by the recent commit "kbuild: Warn on
-> selecting symbols with unmet direct dependencies" that is in the kbuild
-> tree (and linux-next).
-
-Ah, I didn't know that change was being merged.  That indeed makes
-things easier, and eliminates the post-test that I do to make sure
-that the resulting config is actually valid.
-
-> diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-> index 7ea649d..1ab8f45 100644
-> --- a/scripts/kconfig/Makefile
-> +++ b/scripts/kconfig/Makefile
-> @@ -117,9 +117,21 @@ else
-> =A0 =A0 =A0 =A0$(Q)$< -D arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kc=
-onfig)
-> =A0endif
->
-> -%_defconfig: $(obj)/conf
-> +configs_dir :=3D $(srctree)/arch/$(SRCARCH)/configs
-> +# We check a level of sub directories because arch/powerpc
-> +# has its defconfig files arranged that way
-> +old_defconfigs :=3D $(patsubst $(configs_dir)/%,%,\
-> + =A0 =A0 =A0 $(wildcard $(configs_dir)/*_defconfig) \
-> + =A0 =A0 =A0 $(wildcard $(configs_dir)/*/*_defconfig))
-> +defconfigs :=3D $(patsubst $(configs_dir)/Kconfig.%,%_defconfig,\
-> + =A0 =A0 =A0 $(wildcard $(configs_dir)/Kconfig.*))
-> +
-
-Ugh.  My first impression is that all this shouldn't be necessary, and
-it should be okay to just make the two following rules include a
-pattern dependency for the source file.  However, as I play with it, I
-cannot seem to get the rules right to handle the sub directories.  The
-$(defconfigs) patsubst at least could be done solely with dependencies
-on the target rule if the files were named *.Kconfig instead of
-Kconfig.* (because subdirectories are not handled in that case).  For
-example:
-
-%_defconfig: $(obj)/conf arch/$(SRCARCH)/configs/%.Kconfig
-        $(Q)$< -n arch/$(SRCARCH)/configs/$*.Kconfig
-
-> +$(old_defconfigs): %_defconfig: $(obj)/conf
-> =A0 =A0 =A0 =A0$(Q)$< -D arch/$(SRCARCH)/configs/$@ $(Kconfig)
->
-> +$(defconfigs): %_defconfig: $(obj)/conf
-> + =A0 =A0 =A0 $(Q)$< -n arch/$(SRCARCH)/configs/Kconfig.$*
-> +
-> =A0# Help text used by make help
-> =A0help:
-> =A0 =A0 =A0 =A0@echo =A0' =A0config =A0 =A0 =A0 =A0 =A0- Update current c=
-onfig utilising a line-oriented program'
-
-Cheers,
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+-Nathan
