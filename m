@@ -1,32 +1,37 @@
-Return-Path: <dwalker@codeaurora.org>
-Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
-	[199.106.114.254])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wolverine01.qualcomm.com",
-	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 3EA67B6EEA
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Jul 2010 02:22:52 +1000 (EST)
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-From: Daniel Walker <dwalker@codeaurora.org>
-To: Nicolas Pitre <nico@fluxnic.net>
-In-Reply-To: <alpine.LFD.2.00.1007131941140.10598@xanadu.home>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279062881.4609.34.camel@c-dwalke-linux.qualcomm.com>
-	<AANLkTin69tN3NQHD2wvkA0G-lj3f9tSZEnhzdyJdTh9m@mail.gmail.com>
-	<1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
-	<alpine.LFD.2.00.1007131941140.10598@xanadu.home>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 14 Jul 2010 09:22:43 -0700
-Message-ID: <1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-Cc: linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>,
-	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id E1546B6F11
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 03:17:11 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6EH7aYl002416
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 11:07:36 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6EHGtAH079928
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 11:16:57 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6EHGs0n015867
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 11:16:55 -0600
+Message-ID: <4C3DF105.1050404@austin.ibm.com>
+Date: Wed, 14 Jul 2010 12:16:53 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
+References: <4C3B3446.5090302@austin.ibm.com>	
+	<4C3B3895.3040209@austin.ibm.com>	
+	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>	
+	<4C3C8B9E.7000208@austin.ibm.com>	
+	<20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
+	<1279078016.10995.58.camel@nimitz>
+In-Reply-To: <1279078016.10995.58.camel@nimitz>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,75 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-07-13 at 20:07 -0400, Nicolas Pitre wrote:
-
-> That's one issue indeed.
+On 07/13/2010 10:26 PM, Dave Hansen wrote:
+> On Wed, 2010-07-14 at 09:35 +0900, KAMEZAWA Hiroyuki wrote:
+>>   2. I'd like to write a configfs module for handling memory hotplug even when
+>>      sysfs directroy is not created.
+>>      Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
+>>      
+>>      When offlining section X.
+>>      # insmod configfs_memory.ko
+>>      # mount -t configfs none /configfs
+>>      # mkdir /configfs/memoryX
+>>      # echo offline > /configfs/memoryX/state
+>>      # rmdir /configfs/memoryX
+>>
+>>   And making this operation as the default bahavior for all arch's memory hotplug may
+>>   be better...
+>>
+>> Dave, how do you think ? Because ppc guys uses "probe" interface already,
+>> this can be handled... no ?
 > 
-> But there is another issue that is somewhat related, which is to be able 
-> to categorize config options.
+> I think creating a interface to duplicate the existing sysfs one is a
+> bad idea.  I also think removing the existing sysfs one isn't feasible
+> since there are users, and it's truly part of the ABI.  So, I'm not
+> really a fan on the configfs interface. :(
 > 
-> Currently the defconfig files carry information about the proper driver 
-> to enable in order to support devices soldered on the board and 
-> therefore which are not "optional".  That might be a particular RTC 
-> chip, or a particular ethernet block integrated into a SOC, etc.  Of 
-> course we want to preserve the ability to disable support for those 
-> things, but by default people want to have all the right drivers 
-> selected for all the built-in hardware when selecting a target 
-> machine/board without having to dig into a datasheet for that target.
-> 
-> The defconfig files also carry config options that are totally 
-> arbitrary.  What type of filesystem, what kind of network protocol, what 
-> USB device drivers (not host controller driver), what amount of 
-> debugging options, all those are unrelated to the actual hardware and 
-> may vary from one user to another.
+> I really do think the sysfs interface is fixable.  We should at least
+> give it a good shot before largely duplicating its functionality.
 
-Right.
+I agree with Dave, I don't think another memory hotplug interface is needed.
 
-> Furthermore, in order to reduce the number of defconfig files, we tried 
-> to combine as many targets into a single kernel image.  That increases 
-> build test coverage with fewer builds which is good, but then the info 
-> about specific drivers required for a specific target but not for 
-> another target in the same defconfig is now lost.  It is therefore quite 
-> hard to produce a highly optimized configuration for a single target 
-> without doing some digging again.
-> 
-> So it is really in the Kconfig file that all those hardware specific 
-> options can be expressed in a clear and readable way.  When BOARD_XYZ is 
-> selected and STD_CONFIG is selected, then automatically select RTC_FOO, 
-> select ETH_BAR, select LED_BAZ, etc. Of course we would want required 
-> dependencies to be automatically selected as well.
+I am working to update the patchset to remove the split functionality and
+fix other items commented on.  this new patch will just split the memory_block
+structure so that a memory_block can span multiple memory sections.
 
-I see..
+Kame, I understand that offlining 16 MB is easier than 256 MB.  From the ppc
+perspective though, we are still offlining 256 MB.  We do memory add/remove
+on LMB size chunks, so we have to add/remove all of the memory sections contained
+in an LMB.  If any one memory section covered by a LMB fails to add/remove, we
+restore the memory sections to their orignal state an fail the add/remove operation.
+NOTE: the code doing this is not in the kernel, but in the user-space drmgr
+command (from powerpc-utils package).
 
-> But all the rest is arbitrary and could be part of common shared 
-> profiles or the like in defconfig format.
-
-I'm sure most people will want to have a config isolated to their
-specific device. That to me seems reasonable because everyone wants the
-smallest possible kernel they can get for their given device.
-
-Then there would be a smaller group who wants to create multi-device
-images. I don't see this being the average users tho, or kernel hackers.
-
-To me there is little difference between doing,
-
-CONFIG_ARCH_MSM=y
-
-or
-
-select ARCH_MSM
-
-they are basically doing the same thing. So doing anything in Kconfig is
-a lateral move .. Converting over to Kconfig in this case doesn't makes
-sense to me.
-
-Could we do something more like adding an "#include" option into the
-defconfigs .. Then you could create defconfigs that hold multiple
-devices without a massive rework to what we currently have. 
-
-Daniel
-
-
--- 
-Sent by an consultant of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+-Nathan 
