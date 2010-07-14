@@ -1,42 +1,36 @@
-Return-Path: <nico@fluxnic.net>
-Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
-	by ozlabs.org (Postfix) with ESMTP id 6FEC61007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 10:39:20 +1000 (EST)
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_e+ioL9h5six4pVH4pznU9g)"
-Received: from xanadu.home ([66.130.28.92]) by VL-MH-MR003.ip.videotron.ca
-	(Sun Java(tm) System Messaging Server 6.3-8.01 (built Dec 16 2008;
-	32bit))
-	with ESMTP id <0L5I00M6MSDGF500@VL-MH-MR003.ip.videotron.ca> for
-	linuxppc-dev@lists.ozlabs.org; Tue, 13 Jul 2010 19:39:16 -0400 (EDT)
-Date: Tue, 13 Jul 2010 19:39:15 -0400 (EDT)
-From: Nicolas Pitre <nico@fluxnic.net>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: optimized script [Was: ARM defconfig files]
-In-reply-to: <20100713180402.GA1422@lixom.net>
-Message-id: <alpine.LFD.2.00.1007131925010.10598@xanadu.home>
-References: <AANLkTilhI9O6YwnuAylo_jNgwR8VXmpSVJ1kylIYPCGT@mail.gmail.com>
-	<20100712173228.GC9897@n2100.arm.linux.org.uk>
-	<AANLkTinxUqzxClVDTyruJ6kzFTganXUGJJHJ5wRi9Iak@mail.gmail.com>
-	<20100712185029.GB14425@pengutronix.de>
-	<AANLkTinOuU-VVXaMwMp69CBp2Y4wxpoWybEQ34H5j0lJ@mail.gmail.com>
-	<alpine.LFD.2.00.1007121510260.10598@xanadu.home>
-	<AANLkTim-O00n9YPv7w4VCKjN-ETLijyTHomWUn4mZtTV@mail.gmail.com>
-	<AANLkTilDoGbCx_0oKKPOeGG7TKL2VSNVII5ydmnQ77B7@mail.gmail.com>
-	<20100713070741.GB26442@pengutronix.de>
-	<20100713080705.GA20978@pengutronix.de>
-	<20100713180402.GA1422@lixom.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Daniel Walker <dwalker@codeaurora.org>,
-	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	Kevin Hilman <khilman@deeprootsystems.com>,
-	linux-arm-msm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Eric Miao <eric.miao@canonical.com>,
-	=?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-arm-kernel@lists.infradead.org
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+	by ozlabs.org (Postfix) with ESMTP id E91C0B6F15
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 10:40:30 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp ([10.0.50.73])
+	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o6E0ePAh031458 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Wed, 14 Jul 2010 09:40:26 +0900
+Received: from smail (m3 [127.0.0.1])
+	by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2CB2A45DE51
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:25 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+	by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id F2DBF45DE4D
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id DD8C61DB803E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
+Received: from ml14.s.css.fujitsu.com (ml14.s.css.fujitsu.com [10.249.87.104])
+	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 9623C1DB8037
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
+Date: Wed, 14 Jul 2010 09:35:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
+Message-Id: <20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C3C8B9E.7000208@austin.ibm.com>
+References: <4C3B3446.5090302@austin.ibm.com> <4C3B3895.3040209@austin.ibm.com>
+	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
+	<4C3C8B9E.7000208@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,63 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 13 Jul 2010 10:51:58 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
---Boundary_(ID_e+ioL9h5six4pVH4pznU9g)
-Content-type: TEXT/PLAIN; charset=iso-8859-1
-Content-transfer-encoding: 8BIT
-
-On Tue, 13 Jul 2010, Olof Johansson wrote:
-
-> On Tue, Jul 13, 2010 at 10:07:05AM +0200, Uwe Kleine-König wrote:
-> > Hello,
 > > 
-> > On Tue, Jul 13, 2010 at 09:07:41AM +0200, Uwe Kleine-König wrote:
-> > > Hi
-> > > 
-> > > On Mon, Jul 12, 2010 at 01:50:47PM -0600, Grant Likely wrote:
-> > > > On Mon, Jul 12, 2010 at 1:34 PM, Linus Torvalds
-> > > > <torvalds@linux-foundation.org> wrote:
-> > > > > On Mon, Jul 12, 2010 at 12:17 PM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> > > > >> I think Uwe could provide his script and add it to the kernel tree.
-> > > > >> Then all architectures could benefit from it.  Having the defconfig
-> > > > >> files contain only those options which are different from the defaults
-> > > > >> is certainly more readable, even on x86.
-> > > > >
-> > > > > Quite possible. But maintainers would need to be on the lookout of
-> > > > > people actually using the script, and refusing to apply patches that
-> > > > > re-introduce the whole big thing.
-> > > > 
-> > > > I can (partially) speak for powerpc.  If ARM uses this approach, then
-> > > > I think we can do the same.  After the defconfigs are trimmed, I
-> > > > certainly won't pick up any more full defconfigs.
-> > > I just restarted my script on the powerpc defconfigs basing on rc5, I
-> > > assume they complete in a few days time.
-> > So Stephen was faster than me.  I don't know yet how he optimised my
-> > script, meanwhile I put some efforts into it, too by just checking lines
-> > that match "^(# )?CONFIG_".
-> > 
-> > Find it attached.
-> > 
-> > I will start to reduce the remaining configs (i.e. all but arm and
-> > powerpc).
+> > And for what purpose this interface is ? Does this split memory block into 2 pieces
+> > of the same size ?? sounds __very__ strange interface to me.
 > 
-> I added just a simple heuristic: If I could remove a line, I attempted
-> to remove twice the amount next time around (and fall back to 1 if it failed).
+> Yes, this splits the memory_block into two blocks of the same size.  This was
+> suggested as something we may want to do.  From ppc perspective I am not sure we
+> would use this.
 > 
-[...]
+> The split functionality is not required.  The main goal of the patch set is to
+> reduce the number of memory sysfs directories created.  From a ppc perspective
+> the split functionality is not really needed.
 > 
-> While this script is great, it is somewhat painful to run given that it
-> attempts one config per line. Even on a fast machine that tends to take
-> a while.
 
-The optimal solution is to add that .config reduction ability straight 
-into the Kconfig parser (scripts/kconfig/*).  There you can find out 
-right away what are the non default state for each config option without 
-actually trying them out one by one.
+Okay, this is an offer from me.
 
+  1. I think you can add an boot option as "don't create memory sysfs".
+     please do.
 
-Nicolas
+  2. I'd like to write a configfs module for handling memory hotplug even when
+     sysfs directroy is not created.
+     Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
+     
+     When offlining section X.
+     # insmod configfs_memory.ko
+     # mount -t configfs none /configfs
+     # mkdir /configfs/memoryX
+     # echo offline > /configfs/memoryX/state
+     # rmdir /configfs/memoryX
 
---Boundary_(ID_e+ioL9h5six4pVH4pznU9g)--
+  And making this operation as the default bahavior for all arch's memory hotplug may
+  be better...
+
+Dave, how do you think ? Because ppc guys uses "probe" interface already,
+this can be handled... no ?
+
+One problem is that I don't have enough knowledge about configfs..it seems complex.
+
+Thanks,
+-Kame
+  
