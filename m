@@ -1,21 +1,33 @@
-Return-Path: <avorontsov@mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id DB39A100C69
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:12 +1000 (EST)
-Date: Wed, 14 Jul 2010 17:08:11 +0400
-From: Anton Vorontsov <avorontsov@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 8/8] sdhci: Use jiffies instead of a timeout counter
-Message-ID: <20100714130811.GH517@oksana.dev.rtsoft.ru>
-References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
+Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
+Received: from faui40.informatik.uni-erlangen.de
+	(faui40.informatik.uni-erlangen.de [131.188.34.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 17925B6F04
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 00:11:59 +1000 (EST)
+Date: Wed, 14 Jul 2010 16:05:05 +0200
+From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Solomon Peachy <solomon@linux-wlan.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Mike Frysinger <vapier@gentoo.org>, Jiri Kosina <jkosina@suse.cz>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	Alexander Kurz <linux@kbdbabel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Randy Dunlap <randy.dunlap@oracle.com>, John Linn <john.linn@xilinx.com>,
+	Florian Fainelli <florian@openwrt.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+	netdev@vger.kernel.org
+Subject: [PATCH 5/5] Remove REDWOOD_5 and REDWOOD_6 config options and
+	conditional code
+Message-ID: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+References: <c3c850bed3f5714f1efcfad24ad4f8bfcb6b5b54.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
-Cc: Matt Fleming <matt@console-pimps.org>,
-	Albert Herranz <albert_herranz@yahoo.es>,
-	linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-	Pierre Ossman <pierre@ossman.eu>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c3c850bed3f5714f1efcfad24ad4f8bfcb6b5b54.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+Cc: vamos-dev@i4.informatik.uni-erlangen.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,70 +37,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just a cosmetic change, should not affect functionality.
+The config options for REDWOOD_[56] were commented out in the powerpc
+Kconfig. The ifdefs referencing this options therefore are dead and all
+references to this can be removed (Also dependencies in other KConfig
+files).
 
-Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
 ---
- drivers/mmc/host/sdhci.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/40x/Kconfig |   16 -------------
+ drivers/mtd/maps/Kconfig           |    2 +-
+ drivers/mtd/maps/redwood.c         |   43 ------------------------------------
+ drivers/net/Kconfig                |    2 +-
+ 4 files changed, 2 insertions(+), 61 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index e6adda8..c754df1 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -22,6 +22,7 @@
- #include <linux/slab.h>
- #include <linux/mutex.h>
- #include <linux/scatterlist.h>
-+#include <linux/jiffies.h>
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index ec64264..b721764 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -71,22 +71,6 @@ config MAKALU
+ 	help
+ 	  This option enables support for the AMCC PPC405EX board.
  
- #include <linux/leds.h>
+-#config REDWOOD_5
+-#	bool "Redwood-5"
+-#	depends on 40x
+-#	default n
+-#	select STB03xxx
+-#	help
+-#	  This option enables support for the IBM STB04 evaluation board.
+-
+-#config REDWOOD_6
+-#	bool "Redwood-6"
+-#	depends on 40x
+-#	default n
+-#	select STB03xxx
+-#	help
+-#	  This option enables support for the IBM STBx25xx evaluation board.
+-
+ #config SYCAMORE
+ #	bool "Sycamore"
+ #	depends on 40x
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index f22bc9f..b5ebb72 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -321,7 +321,7 @@ config MTD_CFI_FLAGADM
  
-@@ -160,17 +161,16 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 		host->clock = 0;
+ config MTD_REDWOOD
+ 	tristate "CFI Flash devices mapped on IBM Redwood"
+-	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
++	depends on MTD_CFI && REDWOOD_4
+ 	help
+ 	  This enables access routines for the flash chips on the IBM
+ 	  Redwood board. If you have one of these boards and would like to
+diff --git a/drivers/mtd/maps/redwood.c b/drivers/mtd/maps/redwood.c
+index 933c0b6..d2c9db0 100644
+--- a/drivers/mtd/maps/redwood.c
++++ b/drivers/mtd/maps/redwood.c
+@@ -22,8 +22,6 @@
  
- 	/* Wait max 100 ms */
--	timeout = 100;
-+	timeout = jiffies + msecs_to_jiffies(100);
+ #include <asm/io.h>
  
- 	/* hw clears the bit when it's done */
- 	while (sdhci_readb(host, SDHCI_SOFTWARE_RESET) & mask) {
--		if (timeout == 0) {
-+		if (time_after(jiffies, timeout)) {
- 			printk(KERN_ERR "%s: Reset 0x%x never completed.\n",
- 				mmc_hostname(host->mmc), (int)mask);
- 			sdhci_dumpregs(host);
- 			return;
- 		}
--		timeout--;
- 		msleep(1);
+-#if !defined (CONFIG_REDWOOD_6)
+-
+ #define WINDOW_ADDR 0xffc00000
+ #define WINDOW_SIZE 0x00400000
+ 
+@@ -69,47 +67,6 @@ static struct mtd_partition redwood_flash_partitions[] = {
  	}
+ };
  
-@@ -884,7 +884,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 	WARN_ON(host->cmd);
- 
- 	/* Wait max 10 ms */
--	timeout = 10;
-+	timeout = jiffies + msecs_to_jiffies(10);
- 
- 	mask = SDHCI_CMD_INHIBIT;
- 	if ((cmd->data != NULL) || (cmd->flags & MMC_RSP_BUSY))
-@@ -896,7 +896,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 		mask &= ~SDHCI_DATA_INHIBIT;
- 
- 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
--		if (timeout == 0) {
-+		if (time_after(jiffies, timeout)) {
- 			printk(KERN_ERR "%s: Controller never released "
- 				"inhibit bit(s).\n", mmc_hostname(host->mmc));
- 			sdhci_dumpregs(host);
-@@ -904,7 +904,6 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 			schedule_work(&host->finish_work);
- 			return;
- 		}
--		timeout--;
- 		mdelay(1);
- 	}
- 
+-#else /* CONFIG_REDWOOD_6 */
+-/* FIXME: the window is bigger - armin */
+-#define WINDOW_ADDR 0xff800000
+-#define WINDOW_SIZE 0x00800000
+-
+-#define RW_PART0_OF	0
+-#define RW_PART0_SZ	0x400000	/* 4 MiB data */
+-#define RW_PART1_OF	RW_PART0_OF + RW_PART0_SZ
+-#define RW_PART1_SZ	0x10000		/* 64K VPD */
+-#define RW_PART2_OF	RW_PART1_OF + RW_PART1_SZ
+-#define RW_PART2_SZ	0x400000 - (0x10000 + 0x20000)
+-#define RW_PART3_OF	RW_PART2_OF + RW_PART2_SZ
+-#define RW_PART3_SZ	0x20000
+-
+-static struct mtd_partition redwood_flash_partitions[] = {
+-	{
+-		.name = "Redwood filesystem",
+-		.offset = RW_PART0_OF,
+-		.size = RW_PART0_SZ
+-	},
+-	{
+-		.name = "Redwood OpenBIOS Vital Product Data",
+-		.offset = RW_PART1_OF,
+-		.size = RW_PART1_SZ,
+-		.mask_flags = MTD_WRITEABLE	/* force read-only */
+-	},
+-	{
+-		.name = "Redwood kernel",
+-		.offset = RW_PART2_OF,
+-		.size = RW_PART2_SZ
+-	},
+-	{
+-		.name = "Redwood OpenBIOS",
+-		.offset = RW_PART3_OF,
+-		.size = RW_PART3_SZ,
+-		.mask_flags = MTD_WRITEABLE	/* force read-only */
+-	}
+-};
+-
+-#endif /* CONFIG_REDWOOD_6 */
+-
+ struct map_info redwood_flash_map = {
+ 	.name = "IBM Redwood",
+ 	.size = WINDOW_SIZE,
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index ce2fcdd..313d306 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -913,7 +913,7 @@ config SMC91X
+ 	tristate "SMC 91C9x/91C1xxx support"
+ 	select CRC32
+ 	select MII
+-	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || \
++	depends on ARM || M32R || SUPERH || \
+ 		MIPS || BLACKFIN || MN10300 || COLDFIRE
+ 	help
+ 	  This is a driver for SMC's 91x series of Ethernet chipsets,
 -- 
-1.7.0.5
+1.7.0.4
