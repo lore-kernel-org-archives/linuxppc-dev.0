@@ -1,33 +1,17 @@
-Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
-Received: from faui40.informatik.uni-erlangen.de
-	(faui40.informatik.uni-erlangen.de [131.188.34.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 17925B6F04
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 00:11:59 +1000 (EST)
-Date: Wed, 14 Jul 2010 16:05:05 +0200
-From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Solomon Peachy <solomon@linux-wlan.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, Jiri Kosina <jkosina@suse.cz>,
-	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-	Alexander Kurz <linux@kbdbabel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Randy Dunlap <randy.dunlap@oracle.com>, John Linn <john.linn@xilinx.com>,
-	Florian Fainelli <florian@openwrt.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-	netdev@vger.kernel.org
-Subject: [PATCH 5/5] Remove REDWOOD_5 and REDWOOD_6 config options and
-	conditional code
-Message-ID: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
-References: <c3c850bed3f5714f1efcfad24ad4f8bfcb6b5b54.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+Return-Path: <msm@freescale.com>
+Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
+	[216.32.180.13]) by ozlabs.org (Postfix) with ESMTP id C1322B6ED0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 15 Jul 2010 01:18:57 +1000 (EST)
+From: Matthew McClintock <msm@freescale.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V4] powerpc/prom: Export device tree physical address via proc
+Date: Wed, 14 Jul 2010 10:18:53 -0500
+Message-ID: <1279120733-13584-1-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3c850bed3f5714f1efcfad24ad4f8bfcb6b5b54.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
-Cc: vamos-dev@i4.informatik.uni-erlangen.de
+Content-Type: text/plain
+Cc: Matthew McClintock <msm@freescale.com>,
+	Kumar Gala <kumar.gala@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,132 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The config options for REDWOOD_[56] were commented out in the powerpc
-Kconfig. The ifdefs referencing this options therefore are dead and all
-references to this can be removed (Also dependencies in other KConfig
-files).
+To build a proper flat device tree for kexec we need to know which
+memreserve region was used for the device tree for the currently
+running kernel, so we can remove it and replace it with the new
+memreserve for the kexec'ed kernel
 
-Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- arch/powerpc/platforms/40x/Kconfig |   16 -------------
- drivers/mtd/maps/Kconfig           |    2 +-
- drivers/mtd/maps/redwood.c         |   43 ------------------------------------
- drivers/net/Kconfig                |    2 +-
- 4 files changed, 2 insertions(+), 61 deletions(-)
+V4: Fixed misspelling
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index ec64264..b721764 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -71,22 +71,6 @@ config MAKALU
- 	help
- 	  This option enables support for the AMCC PPC405EX board.
+V3: Remove unneeded cast, and fixed indentation screw up
+
+V2: messed up changes
+
+ arch/powerpc/kernel/prom.c |   45 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 45 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index fd9359a..ff3e240 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -32,6 +32,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/irq.h>
+ #include <linux/lmb.h>
++#include <linux/bootmem.h>
  
--#config REDWOOD_5
--#	bool "Redwood-5"
--#	depends on 40x
--#	default n
--#	select STB03xxx
--#	help
--#	  This option enables support for the IBM STB04 evaluation board.
--
--#config REDWOOD_6
--#	bool "Redwood-6"
--#	depends on 40x
--#	default n
--#	select STB03xxx
--#	help
--#	  This option enables support for the IBM STBx25xx evaluation board.
--
- #config SYCAMORE
- #	bool "Sycamore"
- #	depends on 40x
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index f22bc9f..b5ebb72 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -321,7 +321,7 @@ config MTD_CFI_FLAGADM
- 
- config MTD_REDWOOD
- 	tristate "CFI Flash devices mapped on IBM Redwood"
--	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
-+	depends on MTD_CFI && REDWOOD_4
- 	help
- 	  This enables access routines for the flash chips on the IBM
- 	  Redwood board. If you have one of these boards and would like to
-diff --git a/drivers/mtd/maps/redwood.c b/drivers/mtd/maps/redwood.c
-index 933c0b6..d2c9db0 100644
---- a/drivers/mtd/maps/redwood.c
-+++ b/drivers/mtd/maps/redwood.c
-@@ -22,8 +22,6 @@
- 
- #include <asm/io.h>
- 
--#if !defined (CONFIG_REDWOOD_6)
--
- #define WINDOW_ADDR 0xffc00000
- #define WINDOW_SIZE 0x00400000
- 
-@@ -69,47 +67,6 @@ static struct mtd_partition redwood_flash_partitions[] = {
- 	}
- };
- 
--#else /* CONFIG_REDWOOD_6 */
--/* FIXME: the window is bigger - armin */
--#define WINDOW_ADDR 0xff800000
--#define WINDOW_SIZE 0x00800000
--
--#define RW_PART0_OF	0
--#define RW_PART0_SZ	0x400000	/* 4 MiB data */
--#define RW_PART1_OF	RW_PART0_OF + RW_PART0_SZ
--#define RW_PART1_SZ	0x10000		/* 64K VPD */
--#define RW_PART2_OF	RW_PART1_OF + RW_PART1_SZ
--#define RW_PART2_SZ	0x400000 - (0x10000 + 0x20000)
--#define RW_PART3_OF	RW_PART2_OF + RW_PART2_SZ
--#define RW_PART3_SZ	0x20000
--
--static struct mtd_partition redwood_flash_partitions[] = {
--	{
--		.name = "Redwood filesystem",
--		.offset = RW_PART0_OF,
--		.size = RW_PART0_SZ
--	},
--	{
--		.name = "Redwood OpenBIOS Vital Product Data",
--		.offset = RW_PART1_OF,
--		.size = RW_PART1_SZ,
--		.mask_flags = MTD_WRITEABLE	/* force read-only */
--	},
--	{
--		.name = "Redwood kernel",
--		.offset = RW_PART2_OF,
--		.size = RW_PART2_SZ
--	},
--	{
--		.name = "Redwood OpenBIOS",
--		.offset = RW_PART3_OF,
--		.size = RW_PART3_SZ,
--		.mask_flags = MTD_WRITEABLE	/* force read-only */
--	}
--};
--
--#endif /* CONFIG_REDWOOD_6 */
--
- struct map_info redwood_flash_map = {
- 	.name = "IBM Redwood",
- 	.size = WINDOW_SIZE,
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index ce2fcdd..313d306 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -913,7 +913,7 @@ config SMC91X
- 	tristate "SMC 91C9x/91C1xxx support"
- 	select CRC32
- 	select MII
--	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || \
-+	depends on ARM || M32R || SUPERH || \
- 		MIPS || BLACKFIN || MN10300 || COLDFIRE
- 	help
- 	  This is a driver for SMC's 91x series of Ethernet chipsets,
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -911,3 +912,47 @@ static int __init export_flat_device_tree(void)
+ }
+ __initcall(export_flat_device_tree);
+ #endif
++
++#ifdef CONFIG_KEXEC
++static phys_addr_t flat_dt_start;
++static phys_addr_t flat_dt_end;
++
++static struct property flat_dt_start_prop = {
++	.name = "linux,devicetree-start",
++	.length = sizeof(phys_addr_t),
++	.value = &flat_dt_start,
++};
++
++static struct property flat_dt_end_prop = {
++	.name = "linux,devicetree-end",
++	.length = sizeof(phys_addr_t),
++	.value = &flat_dt_end,
++};
++
++static int __init export_flat_device_tree_phys_addr(void)
++{
++	struct property *prop;
++	struct device_node *node;
++
++	node = of_find_node_by_path("/chosen");
++	if (!node)
++		return -ENOENT;
++
++	prop = of_find_property(node, "linux,devicetree-start", NULL);
++	if (prop)
++		prom_remove_property(node, prop);
++
++	prop = of_find_property(node, "linux,devicetree-end", NULL);
++	if (prop)
++		prom_remove_property(node, prop);
++
++	flat_dt_start = virt_to_phys(initial_boot_params);
++	flat_dt_end = virt_to_phys(initial_boot_params)
++				+ initial_boot_params->totalsize;
++	prom_add_property(node, &flat_dt_start_prop);
++	prom_add_property(node, &flat_dt_end_prop);
++
++	return 0;
++}
++__initcall(export_flat_device_tree_phys_addr);
++#endif
 -- 
-1.7.0.4
+1.6.6.1
