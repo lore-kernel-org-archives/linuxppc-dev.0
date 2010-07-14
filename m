@@ -1,33 +1,38 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 5947EB6F0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 13:27:01 +1000 (EST)
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6DNEXeH015499
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 19:14:33 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6E3QwSj1589482
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 23:26:58 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6E3Qw8A004043
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jul 2010 23:26:58 -0400
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id EA65DB6F0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 13:29:46 +1000 (EST)
+Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o6E3Ti7g012132 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Wed, 14 Jul 2010 12:29:44 +0900
+Received: from smail (m6 [127.0.0.1])
+	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 3218A45DE52
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 12:29:44 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
+	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 0D68B45DE4F
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 12:29:44 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id DFACE1DB8012
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 12:29:43 +0900 (JST)
+Received: from m106.s.css.fujitsu.com (m106.s.css.fujitsu.com [10.249.87.106])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 827741DB8016
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 12:29:43 +0900 (JST)
+Date: Wed, 14 Jul 2010 12:25:03 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
 Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20100714122503.74f746a2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C3D2C6B.3050203@austin.ibm.com>
 References: <4C3B3446.5090302@austin.ibm.com> <4C3B3895.3040209@austin.ibm.com>
 	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
 	<4C3C8B9E.7000208@austin.ibm.com>
 	<20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset="ANSI_X3.4-1968"
-Date: Tue, 13 Jul 2010 20:26:56 -0700
-Message-ID: <1279078016.10995.58.camel@nimitz>
+	<4C3D2C6B.3050203@austin.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,30 +42,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-07-14 at 09:35 +0900, KAMEZAWA Hiroyuki wrote:
->   2. I'd like to write a configfs module for handling memory hotplug even when
->      sysfs directroy is not created.
->      Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
->      
->      When offlining section X.
->      # insmod configfs_memory.ko
->      # mount -t configfs none /configfs
->      # mkdir /configfs/memoryX
->      # echo offline > /configfs/memoryX/state
->      # rmdir /configfs/memoryX
+On Tue, 13 Jul 2010 22:18:03 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
+
+> On 07/13/2010 07:35 PM, KAMEZAWA Hiroyuki wrote:
+> > On Tue, 13 Jul 2010 10:51:58 -0500
+> > Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> > 
+> >>>
+> >>> And for what purpose this interface is ? Does this split memory block into 2 pieces
+> >>> of the same size ?? sounds __very__ strange interface to me.
+> >>
+> >> Yes, this splits the memory_block into two blocks of the same size.  This was
+> >> suggested as something we may want to do.  From ppc perspective I am not sure we
+> >> would use this.
+> >>
+> >> The split functionality is not required.  The main goal of the patch set is to
+> >> reduce the number of memory sysfs directories created.  From a ppc perspective
+> >> the split functionality is not really needed.
+> >>
+> > 
+> > Okay, this is an offer from me.
+> > 
+> >   1. I think you can add an boot option as "don't create memory sysfs".
+> >      please do.
 > 
->   And making this operation as the default bahavior for all arch's memory hotplug may
->   be better...
+> I posted a patch to do that a week or so ago, it didn't go over very well.
 > 
-> Dave, how do you think ? Because ppc guys uses "probe" interface already,
-> this can be handled... no ?
+> > 
+> >   2. I'd like to write a configfs module for handling memory hotplug even when
+> >      sysfs directroy is not created.
+> >      Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
+> >      
+> >      When offlining section X.
+> >      # insmod configfs_memory.ko
+> >      # mount -t configfs none /configfs
+> >      # mkdir /configfs/memoryX
+> >      # echo offline > /configfs/memoryX/state
+> >      # rmdir /configfs/memoryX
+> > 
+> >   And making this operation as the default bahavior for all arch's memory hotplug may
+> >   be better...
+> > 
+> > Dave, how do you think ? Because ppc guys uses "probe" interface already,
+> > this can be handled... no ?
+> 
+> ppc would still require the existance of the 'probe' interface.
+> 
+> Are you objecting to the 'split' functionality? 
+yes.
 
-I think creating a interface to duplicate the existing sysfs one is a
-bad idea.  I also think removing the existing sysfs one isn't feasible
-since there are users, and it's truly part of the ABI.  So, I'm not
-really a fan on the configfs interface. :(
+> If so I do not see any reason from ppc
+> perspective that it is needed.  This was something Dave suggested, unless I am missing
+> something.
+> 
+> Since ppc needs the 'probe' interface in sysfs, and for ppc having mutliple 
+> memory_block_sections reside under a single memory_block makes memory hotplug
+> simpler.  On ppc we do emory hotplug operations on an LMB size basis.  With my
+> patches this now lets us set each memory_block to span an LMB's worth of
+> memory.  Now we could do emory hotplug in a single operation instead of multiple
+> operations to offline/online all of the memory sections in an LMB.
+> 
 
-I really do think the sysfs interface is fixable.  We should at least
-give it a good shot before largely duplicating its functionality.
+Why per-section memory offlining is provided is for allowing good success-rate of
+memory offlining. Because memory-hotplug has to "migrate or free" all used page
+under a section, possibility of memory unplug depends on usage of memory.
+If a section contains unmovable page(kernel page), we can't offline sectin.
 
--- Dave
+For example, comparing
+  1. offlining 128MB of memory at once
+  2. offlining 8 chunks of 16MB memory
+"2" can get very good possibility and system-busy time can be much reduced.
+
+IIUC, ppc's 1st requirement is "resizing" not "hot-removing some memory device",
+"2" is much welcomed. So, some fine-grained interface to section_size is
+appreciated. So, "multiple operations" is much better than single operation.
+
+As I posted show/hide patch, I'm writing it in configfs. I think it meets IBM's
+requirements.
+_But_, it's IBM's issue not Fujitsu's. So, final decistion will depend on you guys.
+
+Anyway, I don't like a too fancy interface as "split".
+
+Thanks,
+-Kame
