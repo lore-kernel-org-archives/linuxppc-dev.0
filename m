@@ -1,39 +1,17 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id CC5951007D1
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 18:34:47 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
-	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o6E8YkJl010982 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Wed, 14 Jul 2010 17:34:46 +0900
-Received: from smail (m4 [127.0.0.1])
-	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6B3F845DE6E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 17:34:44 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
-	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id E65AB45DE79
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 17:34:43 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 514E7E38001
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 17:34:43 +0900 (JST)
-Received: from ml14.s.css.fujitsu.com (ml14.s.css.fujitsu.com [10.249.87.104])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id BD0151DB8040
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 17:34:42 +0900 (JST)
-Date: Wed, 14 Jul 2010 17:30:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
-Message-Id: <20100714173005.41950c92.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100714122503.74f746a2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <4C3B3446.5090302@austin.ibm.com> <4C3B3895.3040209@austin.ibm.com>
-	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
-	<4C3C8B9E.7000208@austin.ibm.com>
-	<20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
-	<4C3D2C6B.3050203@austin.ibm.com>
-	<20100714122503.74f746a2.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id A2B59B6F05
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 19:05:01 +1000 (EST)
+Received: by iwn36 with SMTP id 36so6256946iwn.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 02:05:00 -0700 (PDT)
+MIME-Version: 1.0
+Date: Wed, 14 Jul 2010 02:05:00 -0700
+Message-ID: <AANLkTik9n_UkLKdmKT7PHiOL1-EW_TlMJFOGvWCU44xb@mail.gmail.com>
+Subject: cpm_uart_console_write() stuck in waiting for transmitter fifo ready
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>, galak@kernel.crashing.org,
+	panto@intracom.gr, Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,560 +21,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 14 Jul 2010 12:25:03 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi Gurus,
 
-> On Tue, 13 Jul 2010 22:18:03 -0500
-> Nathan Fontenot <nfont@austin.ibm.com> wrote:
-> 
-> > On 07/13/2010 07:35 PM, KAMEZAWA Hiroyuki wrote:
-> > > On Tue, 13 Jul 2010 10:51:58 -0500
-> > > Nathan Fontenot <nfont@austin.ibm.com> wrote:
-> > > 
-> > >>>
-> > >>> And for what purpose this interface is ? Does this split memory block into 2 pieces
-> > >>> of the same size ?? sounds __very__ strange interface to me.
-> > >>
-> > >> Yes, this splits the memory_block into two blocks of the same size.  This was
-> > >> suggested as something we may want to do.  From ppc perspective I am not sure we
-> > >> would use this.
-> > >>
-> > >> The split functionality is not required.  The main goal of the patch set is to
-> > >> reduce the number of memory sysfs directories created.  From a ppc perspective
-> > >> the split functionality is not really needed.
-> > >>
-> > > 
-> > > Okay, this is an offer from me.
-> > > 
-> > >   1. I think you can add an boot option as "don't create memory sysfs".
-> > >      please do.
-> > 
-> > I posted a patch to do that a week or so ago, it didn't go over very well.
-> > 
-> > > 
-> > >   2. I'd like to write a configfs module for handling memory hotplug even when
-> > >      sysfs directroy is not created.
-> > >      Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
-> > >      
-> > >      When offlining section X.
-> > >      # insmod configfs_memory.ko
-> > >      # mount -t configfs none /configfs
-> > >      # mkdir /configfs/memoryX
-> > >      # echo offline > /configfs/memoryX/state
-> > >      # rmdir /configfs/memoryX
-> > > 
-> > >   And making this operation as the default bahavior for all arch's memory hotplug may
-> > >   be better...
-> > > 
-> > > Dave, how do you think ? Because ppc guys uses "probe" interface already,
-> > > this can be handled... no ?
-> > 
-> > ppc would still require the existance of the 'probe' interface.
-> > 
-> > Are you objecting to the 'split' functionality? 
-> yes.
-> 
-> > If so I do not see any reason from ppc
-> > perspective that it is needed.  This was something Dave suggested, unless I am missing
-> > something.
-> > 
-> > Since ppc needs the 'probe' interface in sysfs, and for ppc having mutliple 
-> > memory_block_sections reside under a single memory_block makes memory hotplug
-> > simpler.  On ppc we do emory hotplug operations on an LMB size basis.  With my
-> > patches this now lets us set each memory_block to span an LMB's worth of
-> > memory.  Now we could do emory hotplug in a single operation instead of multiple
-> > operations to offline/online all of the memory sections in an LMB.
-> > 
-> 
-> Why per-section memory offlining is provided is for allowing good success-rate of
-> memory offlining. Because memory-hotplug has to "migrate or free" all used page
-> under a section, possibility of memory unplug depends on usage of memory.
-> If a section contains unmovable page(kernel page), we can't offline sectin.
-> 
-> For example, comparing
->   1. offlining 128MB of memory at once
->   2. offlining 8 chunks of 16MB memory
-> "2" can get very good possibility and system-busy time can be much reduced.
-> 
-> IIUC, ppc's 1st requirement is "resizing" not "hot-removing some memory device",
-> "2" is much welcomed. So, some fine-grained interface to section_size is
-> appreciated. So, "multiple operations" is much better than single operation.
-> 
-> As I posted show/hide patch, I'm writing it in configfs. I think it meets IBM's
-> requirements.
-> _But_, it's IBM's issue not Fujitsu's. So, final decistion will depend on you guys.
-> 
-> Anyway, I don't like a too fancy interface as "split".
-> 
+Please give me some hints and directions to debug this problem. I've
+been scratching my head for quite a while.
 
-This is a sample configfs for handling memory hotplug.
-I wrote this just for my fun and study. code-duplication was not as
-big as expected...most of codes are for configfs management.
+The problem is that after/when the kernel switches to the real console
+from the boot console, printk() calls cpm_uart_console_write() to
+print the first (?) message using the cpm_uart driver. But the
+transmitter buffer never becomes ready. It's shown below with the gdb
+session.
 
-you can ignore this. but please avoid changing existing interace in fancy way.
+Program received signal SIGSTOP, Stopped (signal).
+0xc00f3510 in cpm_uart_console_write (co=3D<value optimized out>,
+s=3D0xc017703e "console [ttyCPM0] enabled, bootconsole disabled\n",
+count=3D0x30) at /home/code/linux-2.6.33.5/arch/powerpc/include/asm/io.h:15=
+4
+(gdb) next
+(gdb) x/4h bdbase
+0xfddfa020:	0xffff	0xffff	0xffff	0xffff
+(gdb)
 
-==
-[root@bluextal kamezawa]# mount -t configfs none /configfs/
-[root@bluextal kamezawa]# mkdir /configfs/memory/72
-[root@bluextal kamezawa]# cat /configfs/memory/72/phys_index
-00000048
-[root@bluextal kamezawa]# cat /sys/devices/system/memory/memory72/phys_index
-00000048
-[root@bluextal kamezawa]# echo offline > /configfs/memory/72/state
-[root@bluextal kamezawa]# cat /configfs/memory/72/state
-offline
-[root@bluextal kamezawa]# cat /sys/devices/system/memory/memory72/state
-offline
-[root@bluextal kamezawa]# echo online > /configfs/memory/72/state
-[root@bluextal kamezawa]# cat /sys/devices/system/memory/memory72/state
-online
+Why would the TxBD be filled with all 0xF? Would it be possible that
+the bdbase actually points somewhere else other than the TxBD?
 
-No sign.
+The kernel boot messages are copied below. My target is MPC870, using
+SMC1 as UART. I'm porting the kernel based on adder875 board.
 
----
- drivers/base/Makefile        |    2 
- drivers/base/memory.c        |   87 +++++++++++++++++--
- drivers/base/memory_config.c |  192 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/memory.h       |   10 ++
- mm/Kconfig                   |    1 
- 5 files changed, 280 insertions(+), 12 deletions(-)
+=3D> bootm 1000000
+## Booting image at 01000000 ...
+   Image Name:   Linux-2.6.33.5
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    706700 Bytes =3D 690.1 kB
+   Load Address: 00400000
+   Entry Point:  00400554
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory <- <0x0 0x8000000> (128MB)
+ENET0: local-mac-address <- 00:09:9b:01:58:64
+CPU clock-frequency <- 0x7270e00 (120MHz)
+CPU timebase-frequency <- 0x7270e0 (8MHz)
+CPU bus-frequency <- 0x3938700 (60MHz)
 
-Index: mmotm-2.6.35-0701/drivers/base/memory.c
-===================================================================
---- mmotm-2.6.35-0701.orig/drivers/base/memory.c
-+++ mmotm-2.6.35-0701/drivers/base/memory.c
-@@ -23,12 +23,15 @@
- #include <linux/mutex.h>
- #include <linux/stat.h>
- #include <linux/slab.h>
-+#include <linux/radix-tree.h>
- 
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
- 
- #define MEMORY_CLASS_NAME	"memory"
- 
-+
-+
- static struct sysdev_class memory_sysdev_class = {
- 	.name = MEMORY_CLASS_NAME,
- };
-@@ -104,17 +107,57 @@ unregister_memory(struct memory_block *m
- 	sysdev_unregister(&memory->sysdev);
- }
- 
-+/* routine for remember memory's status when configs is not used. */
-+
-+RADIX_TREE(hidden_mems, GFP_KERNEL);
-+DEFINE_MUTEX(hidden_mems_mutex);
-+int record_memory_state(unsigned long section_nr, int status)
-+{
-+	int ret = -ENOMEM;
-+	long lstat = status << 8; /* for avoid radix'trees special handling */
-+	mutex_lock(&hidden_mems_mutex);
-+	radix_tree_delete(&hidden_mems, section_nr);
-+	if (radix_tree_preload(GFP_KERNEL))
-+		goto out;
-+	ret = radix_tree_insert(&hidden_mems, section_nr, (void*)lstat);
-+	radix_tree_preload_end();
-+out:
-+	mutex_unlock(&hidden_mems_mutex);
-+	return ret;
-+}
-+
-+int lookup_memory_state(unsigned long section_nr)
-+{
-+	void *ptr;
-+	/* we already have big mutex */
-+	ptr= radix_tree_lookup(&hidden_mems, section_nr);
-+	/* treate not-recorded mems'state as ONLINE...? */
-+	return ((long)ptr) >> 8;
-+}
-+
-+void forget_memory_state(unsigned long section_nr)
-+{
-+	radix_tree_delete(&hidden_mems, section_nr);
-+}
-+
-+
- /*
-  * use this as the physical section index that this memsection
-  * uses.
-  */
- 
-+ssize_t show_memoryblock_phys_index(struct memory_block *mem,
-+	char *buf)
-+{
-+	return sprintf(buf, "%08lx\n", mem->phys_index);
-+}
-+
- static ssize_t show_mem_phys_index(struct sys_device *dev,
- 			struct sysdev_attribute *attr, char *buf)
- {
- 	struct memory_block *mem =
- 		container_of(dev, struct memory_block, sysdev);
--	return sprintf(buf, "%08lx\n", mem->phys_index);
-+	return show_memoryblock_phys_index(mem, buf);
- }
- 
- /*
-@@ -136,11 +179,8 @@ static ssize_t show_mem_removable(struct
- /*
-  * online, offline, going offline, etc.
-  */
--static ssize_t show_mem_state(struct sys_device *dev,
--			struct sysdev_attribute *attr, char *buf)
-+ssize_t show_memoryblock_state(struct memory_block *mem, char *buf)
- {
--	struct memory_block *mem =
--		container_of(dev, struct memory_block, sysdev);
- 	ssize_t len = 0;
- 
- 	/*
-@@ -167,6 +207,15 @@ static ssize_t show_mem_state(struct sys
- 	return len;
- }
- 
-+ssize_t show_mem_state(struct sys_device *dev,
-+		struct sysdev_attribute *attr, char *buf)
-+{
-+	struct memory_block *mem =
-+		container_of(dev, struct memory_block, sysdev);
-+	mem->state = lookup_memory_state(mem->phys_index);
-+	return show_memoryblock_state(mem, buf);
-+}
-+
- int memory_notify(unsigned long val, void *v)
- {
- 	return blocking_notifier_call_chain(&memory_chain, val, v);
-@@ -218,11 +267,14 @@ memory_block_action(struct memory_block 
- 			break;
- 		case MEM_OFFLINE:
- 			mem->state = MEM_GOING_OFFLINE;
-+			record_memory_state(mem->phys_index, mem->state);
- 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
- 			ret = remove_memory(start_paddr,
- 					    PAGES_PER_SECTION << PAGE_SHIFT);
- 			if (ret) {
- 				mem->state = old_state;
-+				record_memory_state(mem->phys_index,
-+					mem->state);
- 				break;
- 			}
- 			break;
-@@ -241,6 +293,8 @@ static int memory_block_change_state(str
- 	int ret = 0;
- 	mutex_lock(&mem->state_mutex);
- 
-+	mem->state = lookup_memory_state(mem->phys_index);
-+
- 	if (mem->state != from_state_req) {
- 		ret = -EINVAL;
- 		goto out;
-@@ -249,21 +303,18 @@ static int memory_block_change_state(str
- 	ret = memory_block_action(mem, to_state);
- 	if (!ret)
- 		mem->state = to_state;
--
-+	record_memory_state(mem->phys_index, mem->state);
- out:
- 	mutex_unlock(&mem->state_mutex);
- 	return ret;
- }
- 
--static ssize_t
--store_mem_state(struct sys_device *dev,
--		struct sysdev_attribute *attr, const char *buf, size_t count)
-+ssize_t store_memoryblock_state(struct memory_block *mem,
-+				const char *buf, size_t count)
- {
--	struct memory_block *mem;
- 	unsigned int phys_section_nr;
- 	int ret = -EINVAL;
- 
--	mem = container_of(dev, struct memory_block, sysdev);
- 	phys_section_nr = mem->phys_index;
- 
- 	if (!present_section_nr(phys_section_nr))
-@@ -279,6 +330,16 @@ out:
- 	return count;
- }
- 
-+static ssize_t
-+store_mem_state(struct sys_device *dev,
-+		struct sysdev_attribute *attr, const char *buf, size_t count)
-+{
-+	struct memory_block *mem;
-+
-+	mem = container_of(dev, struct memory_block, sysdev);
-+	return store_memoryblock_state(mem, buf, count);
-+}
-+
- /*
-  * phys_device is a bad name for this.  What I really want
-  * is a way to differentiate between memory ranges that
-@@ -451,6 +512,8 @@ static int add_memory_block(int nid, str
- 	start_pfn = section_nr_to_pfn(mem->phys_index);
- 	mem->phys_device = arch_get_memory_phys_device(start_pfn);
- 
-+	record_memory_state(mem->phys_index, state);
-+
- 	ret = register_memory(mem, section);
- 	if (!ret)
- 		ret = mem_create_simple_file(mem, phys_index);
-@@ -505,6 +568,7 @@ int remove_memory_block(unsigned long no
- 	struct memory_block *mem;
- 
- 	mem = find_memory_block(section);
-+	forget_memory_state(mem->phys_index);
- 	unregister_mem_sect_under_nodes(mem);
- 	mem_remove_simple_file(mem, phys_index);
- 	mem_remove_simple_file(mem, state);
-@@ -573,3 +637,4 @@ out:
- 		printk(KERN_ERR "%s() failed: %d\n", __func__, ret);
- 	return ret;
- }
-+
-Index: mmotm-2.6.35-0701/drivers/base/memory_config.c
-===================================================================
---- /dev/null
-+++ mmotm-2.6.35-0701/drivers/base/memory_config.c
-@@ -0,0 +1,192 @@
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/mm.h>
-+#include <linux/memory.h>
-+#include <linux/slab.h>
-+#include <linux/radix-tree.h>
-+#include <linux/configfs.h>
-+
-+
-+
-+struct memory_hp_block {
-+	struct config_group group;
-+	struct memory_block mb;
-+};
-+struct memory_hp_attribute {
-+	struct configfs_attribute attr;
-+	ssize_t (*show)(struct memory_hp_block *, char *);
-+	ssize_t (*store)(struct memory_hp_block *, const char *);
-+};
-+
-+static struct memory_hp_block *to_mhp_block(struct config_item *item)
-+{
-+	if (!item)
-+		return NULL;
-+	return container_of(to_config_group(item),
-+		struct memory_hp_block, group);
-+}
-+
-+static ssize_t
-+memory_hp_phys_index_read(struct memory_hp_block *mhb, char *page)
-+{
-+        return show_memoryblock_phys_index(&mhb->mb, page);
-+}
-+
-+static struct memory_hp_attribute memory_hp_phys_index = {
-+	.attr = { .ca_owner = THIS_MODULE,
-+		  .ca_name = "phys_index",
-+		  .ca_mode = S_IRUGO },
-+	.show = memory_hp_phys_index_read,
-+};
-+
-+static ssize_t
-+memory_hp_state_read(struct memory_hp_block *mhb, char *page)
-+{
-+	/* synchronize */
-+	printk("lookup section %ld\n", mhb->mb.phys_index);
-+	mhb->mb.state = lookup_memory_state(mhb->mb.phys_index);
-+	return show_memoryblock_state(&mhb->mb, page);
-+}
-+
-+static ssize_t
-+memory_hp_state_store(struct memory_hp_block *mhb, const char *page)
-+{
-+	int len = strnlen(page, 8);
-+	printk("length %d str %s\n", len, page);
-+	if (len > 8) /* online/offline */
-+		return -EINVAL;
-+	/* synchronize */
-+	mhb->mb.state = lookup_memory_state(mhb->mb.phys_index);
-+	return store_memoryblock_state(&mhb->mb, page, len);
-+}
-+
-+static struct memory_hp_attribute memory_hp_state = {
-+	.attr = { .ca_owner = THIS_MODULE,
-+		  .ca_name = "state",
-+		  .ca_mode = S_IRUGO|S_IWUSR },
-+	.show = memory_hp_state_read,
-+	.store = memory_hp_state_store,
-+};
-+
-+static struct configfs_attribute *memory_hp_attrs[] = {
-+	&memory_hp_phys_index.attr,
-+	&memory_hp_state.attr,
-+	NULL,
-+};
-+
-+static ssize_t memory_hp_attr_show(struct config_item *item,
-+		struct configfs_attribute *attr,
-+		char *page)
-+{
-+	struct memory_hp_block *mhb = to_mhp_block(item);
-+	struct memory_hp_attribute *memhp_attr =
-+		container_of(attr, struct memory_hp_attribute, attr);
-+	ssize_t ret = 0;
-+
-+	if (memhp_attr->show)
-+		ret = memhp_attr->show(mhb, page);
-+	return ret;
-+}
-+
-+static ssize_t memory_hp_attr_store(struct config_item *item,
-+		struct configfs_attribute *attr,
-+		const char *page, size_t count)
-+{
-+	struct memory_hp_block *mhb = to_mhp_block(item);
-+	struct memory_hp_attribute *memhp_attr =
-+		container_of(attr, struct memory_hp_attribute, attr);
-+	ssize_t ret = 0;
-+
-+	if (memhp_attr->store)
-+		ret = memhp_attr->store(mhb, page);
-+	else
-+		ret = -EINVAL;
-+	return ret;
-+}
-+
-+static struct configfs_item_operations memory_hp_item_ops = {
-+	.show_attribute = memory_hp_attr_show,
-+	.store_attribute = memory_hp_attr_store,
-+};
-+
-+static struct  config_item_type memory_hp_type = {
-+	.ct_item_ops    = &memory_hp_item_ops,
-+	.ct_attrs       = memory_hp_attrs,
-+	.ct_owner       = THIS_MODULE,
-+};
-+
-+static struct config_group *
-+memory_hp_make_group(struct config_group *group, const char *name)
-+{
-+	struct memory_hp_block *mhb;
-+	unsigned long long section_id;
-+
-+
-+	if (strict_strtoull(name, 10, &section_id))
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!valid_section_nr(section_id))
-+		return ERR_PTR(-EINVAL);
-+
-+	mhb = kzalloc(sizeof(*mhb), GFP_KERNEL);
-+	if (!mhb)
-+		return NULL;
-+
-+	config_group_init_type_name(&mhb->group, name, &memory_hp_type);
-+
-+	mhb->mb.phys_index = section_id;
-+	mutex_init(&mhb->mb.state_mutex);
-+	mhb->mb.state = lookup_memory_state(section_id);
-+
-+	return &mhb->group;
-+}
-+
-+static void memory_hp_drop_item(struct config_group *group,
-+		struct config_item *item)
-+{
-+	struct memory_hp_block *mhb;
-+
-+	mhb = container_of(group, struct memory_hp_block, group);
-+	config_item_put(item);
-+}
-+
-+static struct configfs_group_operations memory_hp_group_ops = {
-+        .make_group     = memory_hp_make_group,
-+	.drop_item	= memory_hp_drop_item,
-+};
-+
-+static struct config_item_type memory_hp_subsys_type = {
-+	.ct_group_ops = &memory_hp_group_ops,
-+	.ct_owner = THIS_MODULE,
-+};
-+
-+static struct configfs_subsystem memory_hp_subsys = {
-+	.su_group = {
-+		.cg_item = {
-+			.ci_namebuf = "memory",
-+			.ci_type = &memory_hp_subsys_type,
-+		},
-+	},
-+};
-+
-+static int __init memory_config_init(void)
-+{
-+	int ret;
-+
-+	config_group_init(&memory_hp_subsys.su_group);
-+	mutex_init(&memory_hp_subsys.su_mutex);
-+	ret =  configfs_register_subsystem(&memory_hp_subsys);
-+	if (ret) {
-+		printk(KERN_ERR "Error %d while registering memory configfs\n", ret);
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+#if 0
-+static void __exit memory_config_exit(void)
-+{
-+	configfs_unregister_subsystem(&memory_hp_subsys);
-+}
-+#endif
-+late_initcall(memory_config_init);
-Index: mmotm-2.6.35-0701/drivers/base/Makefile
-===================================================================
---- mmotm-2.6.35-0701.orig/drivers/base/Makefile
-+++ mmotm-2.6.35-0701/drivers/base/Makefile
-@@ -11,7 +11,7 @@ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) 
- obj-$(CONFIG_ISA)	+= isa.o
- obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
- obj-$(CONFIG_NUMA)	+= node.o
--obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o
-+obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o memory_config.o
- obj-$(CONFIG_SMP)	+= topology.o
- obj-$(CONFIG_IOMMU_API) += iommu.o
- ifeq ($(CONFIG_SYSFS),y)
-Index: mmotm-2.6.35-0701/mm/Kconfig
-===================================================================
---- mmotm-2.6.35-0701.orig/mm/Kconfig
-+++ mmotm-2.6.35-0701/mm/Kconfig
-@@ -138,6 +138,7 @@ config MEMORY_HOTPLUG
- config MEMORY_HOTPLUG_SPARSE
- 	def_bool y
- 	depends on SPARSEMEM && MEMORY_HOTPLUG
-+	select CONFIGFS_FS
- 
- config MEMORY_HOTREMOVE
- 	bool "Allow for memory hot remove"
-Index: mmotm-2.6.35-0701/include/linux/memory.h
-===================================================================
---- mmotm-2.6.35-0701.orig/include/linux/memory.h
-+++ mmotm-2.6.35-0701/include/linux/memory.h
-@@ -68,6 +68,16 @@ struct memory_isolate_notify {
- struct notifier_block;
- struct mem_section;
- 
-+
-+ssize_t show_memoryblock_phys_index(struct memory_block *mb, char *buf);
-+ssize_t show_memoryblock_state(struct memory_block *mb, char *buf);
-+ssize_t store_memoryblock_state(struct memory_block *mb,
-+			const char *buf, size_t count);
-+
-+int record_memory_state(unsigned long section, int state);
-+int lookup_memory_state(unsigned long section);
-+void forget_memory_state(unsigned long section);
-+
- /*
-  * Priorities for the hotplug memory callback routines (stored in decreasing
-  * order in the callback chain)
+zImage starting: loaded at 0x00400000 (sp: 0x07d1cbd0)
+Allocating 0x186be5 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0040c000:0x005c1b78)...done 0x173b10 bytes
+
+Linux/PowerPC load: root=3D/dev/ram
+Finalizing device tree... flat tree at 0x5ce300
+Probing machine type ...
+  My MPC870 ... match !
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using My MPC870 machine description
+Linux version 2.6.33.5 (shawn@ubuntu) (gcc version 4.2.2) #17 Wed Jul
+14 01:24:03 PDT 2010
+bootconsole [udbg0] enabled
+setup_arch: bootmem
+arch: exit
+Top of RAM: 0x8000000, Total RAM: 0x8000000
+Memory hole size: 0MB
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00008000
+  Normal   0x00008000 -> 0x00008000
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0: 0x00000000 -> 0x00008000
+On node 0 totalpages: 32768
+free_area_init_node: node 0, pgdat c016b5b0, node_mem_map c0189000
+  DMA zone: 256 pages used for memmap
+  DMA zone: 0 pages reserved
+  DMA zone: 32512 pages, LIFO batch:7
+MMU: Allocated 72 bytes of context maps for 16 contexts
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 32512
+Kernel command line: root=3D/dev/ram
+PID hash table entries: 512 (order: -1, 2048 bytes)
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 128096k/131072k available (1416k kernel code, 2836k reserved,
+72k data, 74k bss, 76k init)
+Kernel virtual memory layout:
+  * 0xfffdf000..0xfffff000  : fixmap
+  * 0xfde00000..0xfe000000  : consistent mem
+  * 0xfddfa000..0xfde00000  : early ioremap
+  * 0xc9000000..0xfddfa000  : vmalloc & ioremap
+SLUB: Genslabs=3D12, HWalign=3D16, Order=3D0-3, MinObjects=3D0, CPUs=3D1, N=
+odes=3D1
+Hierarchical RCU implementation.
+NR_IRQS:512 nr_irqs:512
+irq: Allocated host of type 2 @0xc7804000
+irq: irq_create_mapping(0xc7804000, 0x5)
+irq: -> using host @c7804000
+  alloc irq_desc for 16 on node 0
+  alloc kstat_irqs on node 0
+irq: irq 5 on host /soc@fa200000/interrupt-controller@0 mapped to virtual i=
+rq 16
+irq: Allocated host of type 2 @0xc7804200
+irq: irq_create_mapping(0xc7804200, 0x0)
+irq: -> using host @c7804200
+  alloc irq_desc for 17 on node 0
+  alloc kstat_irqs on node 0
+irq: irq 0 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
+mapped to virtual irq 17
+Decrementer Frequency =3D 0x7270e0
+irq: irq_create_mapping(0xc7804000, 0xf)
+irq: -> using host @c7804000
+  alloc irq_desc for 18 on node 0
+  alloc kstat_irqs on node 0
+irq: irq 15 on host /soc@fa200000/interrupt-controller@0 mapped to
+virtual irq 18
+time_init: decrementer frequency =3D 7.500000 MHz
+time_init: processor frequency   =3D 120.000000 MHz
+clocksource: timebase mult[21555555] shift[22] registered
+clockevent: decrementer mult[1eb851e] shift[32] cpu[0]
+irq: irq_create_mapping(0xc7804200, 0x4)
+irq: -> using host @c7804200
+  alloc irq_desc for 19 on node 0
+  alloc kstat_irqs on node 0
+irq: irq 4 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
+mapped to virtual irq 1=EF=BF=BD
+
+Thanks a lot,
+-Shawn.
