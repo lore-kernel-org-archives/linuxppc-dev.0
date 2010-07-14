@@ -1,36 +1,27 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id E91C0B6F15
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 10:40:30 +1000 (EST)
-Received: from m3.gw.fujitsu.co.jp ([10.0.50.73])
-	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o6E0ePAh031458 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Wed, 14 Jul 2010 09:40:26 +0900
-Received: from smail (m3 [127.0.0.1])
-	by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2CB2A45DE51
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:25 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
-	by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id F2DBF45DE4D
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id DD8C61DB803E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
-Received: from ml14.s.css.fujitsu.com (ml14.s.css.fujitsu.com [10.249.87.104])
-	by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 9623C1DB8037
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 09:40:24 +0900 (JST)
-Date: Wed, 14 Jul 2010 09:35:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 4/7] Allow sysfs memory directories to be split
-Message-Id: <20100714093550.40036034.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4C3C8B9E.7000208@austin.ibm.com>
-References: <4C3B3446.5090302@austin.ibm.com> <4C3B3895.3040209@austin.ibm.com>
-	<20100713152854.ec1f4d6a.kamezawa.hiroyu@jp.fujitsu.com>
-	<4C3C8B9E.7000208@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 0C9F0B6F17
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 14 Jul 2010 12:26:38 +1000 (EST)
+Received: by gxk26 with SMTP id 26so3828330gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 13 Jul 2010 19:26:36 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <20100713114322.57c8b166.sfr@canb.auug.org.au>
+References: <20100713114322.57c8b166.sfr@canb.auug.org.au>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 13 Jul 2010 20:26:16 -0600
+Message-ID: <AANLkTimC_vXCAOrfTSndZyk8lgkjTlILVSYVYeIg6cUt@mail.gmail.com>
+Subject: Re: [PATCH] kbuild: Enable building defconfigs from Kconfig files
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michal Marek <mmarek@suse.cz>, Linus <torvalds@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,46 +31,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 13 Jul 2010 10:51:58 -0500
-Nathan Fontenot <nfont@austin.ibm.com> wrote:
+[cc'ing rmk and linux-arm-kernel]
 
-> > 
-> > And for what purpose this interface is ? Does this split memory block into 2 pieces
-> > of the same size ?? sounds __very__ strange interface to me.
-> 
-> Yes, this splits the memory_block into two blocks of the same size.  This was
-> suggested as something we may want to do.  From ppc perspective I am not sure we
-> would use this.
-> 
-> The split functionality is not required.  The main goal of the patch set is to
-> reduce the number of memory sysfs directories created.  From a ppc perspective
-> the split functionality is not really needed.
-> 
+On Mon, Jul 12, 2010 at 7:43 PM, Stephen Rothwell <sfr@canb.auug.org.au> wr=
+ote:
+> After this change, doing a "make xxx_defconfig" will check first for
+> a file called arch/<arch>/configs/Kconfig.xxx and use that to generate
+> the .config (effectively starting from an allnoconfig). =A0If that file
+> doesn't exist, it will use arch/<ARCH>/configs/xxx_defconfig as now.
 
-Okay, this is an offer from me.
+Oops, I hadn't seen this patch when I wrote mine this afternoon[1].
+:-)  A few minor differences, but essentially the same solution.
 
-  1. I think you can add an boot option as "don't create memory sysfs".
-     please do.
+[1] http://patchwork.ozlabs.org/patch/58823/
 
-  2. I'd like to write a configfs module for handling memory hotplug even when
-     sysfs directroy is not created.
-     Because configfs support rmdir/mkdir, the user (ppc's daemon?) has to do
-     
-     When offlining section X.
-     # insmod configfs_memory.ko
-     # mount -t configfs none /configfs
-     # mkdir /configfs/memoryX
-     # echo offline > /configfs/memoryX/state
-     # rmdir /configfs/memoryX
+I chose to use -D /dev/null (defconfig from an empty file) instead of
+-n (allnoconfig) so that default values in Kconfig would get
+respected.  For the benefit of everyone else, here's an excerpt from
+our IRC conversation this afternoon:
 
-  And making this operation as the default bahavior for all arch's memory hotplug may
-  be better...
+19:49 < gcl> sfr: [...] Your patch and my patch are
+             essentially doing exactly the same thing, except that I used '=
+-d'
+             and you used '-n'.
+19:50 < gcl> s/-d/-D/
+19:55 < sfr> right
+19:55 < sfr> Linus wanted us to use -n
+19:55 < sfr> because that way you get what you asked for, not what the defa=
+ults
+             say ...
+19:58 < gcl> I suppose we don't currently have a way to say "select FOO=3Dn=
+", so
+             I suppose that makes sense
+19:58 < gcl> although I think using the defaults unless told not to is a be=
+tter
+             approach in the long run
+19:59 < gcl> most of the time I *don't want* to ask for something in the
+             defconfig.  :-)
+20:00 < gcl> I just want TheBestOrCorrectAnswer to be chosen for me
+20:04 < sfr> gcl: go read Linus' vision :-)
 
-Dave, how do you think ? Because ppc guys uses "probe" interface already,
-this can be handled... no ?
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+> =A0scripts/kconfig/Makefile | =A0 14 +++++++++++++-
+> =A01 files changed, 13 insertions(+), 1 deletions(-)
+>
+> Hi Linus,
+>
+> Is this more the direction you want to take?
+>
+> There are still 2 main problems with is approach:
+>
+> =A0 =A0 =A0 =A0- there are some config options that are globally and
+> unconditionally enabled that some platforms may not want. =A0The only way
+> currently to turn them off is to reproduce the config entry with the
+> different default. =A0I am not sure if we need a wa to turn them off or t=
+o
+> just change them to being neede to be selected by those that do want them=
+.
+> =A0 =A0 =A0 =A0- we have no way to select options that are neither bool o=
+r
+> tristate to suitable values. =A0Again the only way to do that currently i=
+s
+> to reproduce the config entry with a different default value.
 
-One problem is that I don't have enough knowledge about configfs..it seems complex.
+For both of the above problems, what if we added syntax like the
+following to Kconfig?
 
-Thanks,
--Kame
-  
+config FOO
+        bool
+        select BAR =3D n
+        select FOO_VALUE =3D 54
+
+> I am currently working towards using this to recreate the PowerPC
+> defconfigs, but it is a slow process as they have some much stuff enabled
+> in them and some of it is probably actually not relevant.
+
+If the trimmed configs are merged, then there is no rush on this.  We
+can keep them around and switch them over as people want to make
+changes.
+
+> This process is made easier by the recent commit "kbuild: Warn on
+> selecting symbols with unmet direct dependencies" that is in the kbuild
+> tree (and linux-next).
+
+Ah, I didn't know that change was being merged.  That indeed makes
+things easier, and eliminates the post-test that I do to make sure
+that the resulting config is actually valid.
+
+> diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+> index 7ea649d..1ab8f45 100644
+> --- a/scripts/kconfig/Makefile
+> +++ b/scripts/kconfig/Makefile
+> @@ -117,9 +117,21 @@ else
+> =A0 =A0 =A0 =A0$(Q)$< -D arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kc=
+onfig)
+> =A0endif
+>
+> -%_defconfig: $(obj)/conf
+> +configs_dir :=3D $(srctree)/arch/$(SRCARCH)/configs
+> +# We check a level of sub directories because arch/powerpc
+> +# has its defconfig files arranged that way
+> +old_defconfigs :=3D $(patsubst $(configs_dir)/%,%,\
+> + =A0 =A0 =A0 $(wildcard $(configs_dir)/*_defconfig) \
+> + =A0 =A0 =A0 $(wildcard $(configs_dir)/*/*_defconfig))
+> +defconfigs :=3D $(patsubst $(configs_dir)/Kconfig.%,%_defconfig,\
+> + =A0 =A0 =A0 $(wildcard $(configs_dir)/Kconfig.*))
+> +
+
+Ugh.  My first impression is that all this shouldn't be necessary, and
+it should be okay to just make the two following rules include a
+pattern dependency for the source file.  However, as I play with it, I
+cannot seem to get the rules right to handle the sub directories.  The
+$(defconfigs) patsubst at least could be done solely with dependencies
+on the target rule if the files were named *.Kconfig instead of
+Kconfig.* (because subdirectories are not handled in that case).  For
+example:
+
+%_defconfig: $(obj)/conf arch/$(SRCARCH)/configs/%.Kconfig
+        $(Q)$< -n arch/$(SRCARCH)/configs/$*.Kconfig
+
+> +$(old_defconfigs): %_defconfig: $(obj)/conf
+> =A0 =A0 =A0 =A0$(Q)$< -D arch/$(SRCARCH)/configs/$@ $(Kconfig)
+>
+> +$(defconfigs): %_defconfig: $(obj)/conf
+> + =A0 =A0 =A0 $(Q)$< -n arch/$(SRCARCH)/configs/Kconfig.$*
+> +
+> =A0# Help text used by make help
+> =A0help:
+> =A0 =A0 =A0 =A0@echo =A0' =A0config =A0 =A0 =A0 =A0 =A0- Update current c=
+onfig utilising a line-oriented program'
+
+Cheers,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
