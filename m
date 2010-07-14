@@ -1,17 +1,22 @@
-Return-Path: <msm@freescale.com>
-Received: from VA3EHSOBE003.bigfish.com (va3ehsobe003.messaging.microsoft.com
-	[216.32.180.13]) by ozlabs.org (Postfix) with ESMTP id C1322B6ED0
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8B85C1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Jul 2010 01:18:57 +1000 (EST)
-From: Matthew McClintock <msm@freescale.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V4] powerpc/prom: Export device tree physical address via proc
-Date: Wed, 14 Jul 2010 10:18:53 -0500
-Message-ID: <1279120733-13584-1-git-send-email-msm@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Matthew McClintock <msm@freescale.com>,
-	Kumar Gala <kumar.gala@freescale.com>, Timur Tabi <timur@freescale.com>
+	Thu, 15 Jul 2010 01:34:36 +1000 (EST)
+In-Reply-To: <1279120733-13584-1-git-send-email-msm@freescale.com>
+References: <1279120733-13584-1-git-send-email-msm@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <C26140FB-4F77-4D8E-B6C4-63BC9C9EDD83@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address via
+	proc
+Date: Wed, 14 Jul 2010 17:35:43 +0200
+To: Matthew McClintock <msm@freescale.com>
+Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To build a proper flat device tree for kexec we need to know which
-memreserve region was used for the device tree for the currently
-running kernel, so we can remove it and replace it with the new
-memreserve for the kexec'ed kernel
+> V4: Fixed misspelling
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
----
-V4: Fixed misspelling
+Any particular reason you fixed only one of the two
+mispelings I pointed out?  (device tree is two words,
+not one).
 
-V3: Remove unneeded cast, and fixed indentation screw up
+> +	prop = of_find_property(node, "linux,devicetree-start", NULL);
+> +	if (prop)
+> +		prom_remove_property(node, prop);
+> +
+> +	prop = of_find_property(node, "linux,devicetree-end", NULL);
+> +	if (prop)
+> +		prom_remove_property(node, prop);
+> +
+> +	flat_dt_start = virt_to_phys(initial_boot_params);
+> +	flat_dt_end = virt_to_phys(initial_boot_params)
+> +				+ initial_boot_params->totalsize;
+> +	prom_add_property(node, &flat_dt_start_prop);
+> +	prom_add_property(node, &flat_dt_end_prop);
 
-V2: messed up changes
+You could use one property instead of two; use addr+len
+like every other property does.
 
- arch/powerpc/kernel/prom.c |   45 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
+You also should use a better name for the property; is this
+the previous kernel's device tree?  Just "device-tree" makes
+no sense, it is not pointing to "the" device tree for sure!
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index fd9359a..ff3e240 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -32,6 +32,7 @@
- #include <linux/debugfs.h>
- #include <linux/irq.h>
- #include <linux/lmb.h>
-+#include <linux/bootmem.h>
- 
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -911,3 +912,47 @@ static int __init export_flat_device_tree(void)
- }
- __initcall(export_flat_device_tree);
- #endif
-+
-+#ifdef CONFIG_KEXEC
-+static phys_addr_t flat_dt_start;
-+static phys_addr_t flat_dt_end;
-+
-+static struct property flat_dt_start_prop = {
-+	.name = "linux,devicetree-start",
-+	.length = sizeof(phys_addr_t),
-+	.value = &flat_dt_start,
-+};
-+
-+static struct property flat_dt_end_prop = {
-+	.name = "linux,devicetree-end",
-+	.length = sizeof(phys_addr_t),
-+	.value = &flat_dt_end,
-+};
-+
-+static int __init export_flat_device_tree_phys_addr(void)
-+{
-+	struct property *prop;
-+	struct device_node *node;
-+
-+	node = of_find_node_by_path("/chosen");
-+	if (!node)
-+		return -ENOENT;
-+
-+	prop = of_find_property(node, "linux,devicetree-start", NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	prop = of_find_property(node, "linux,devicetree-end", NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	flat_dt_start = virt_to_phys(initial_boot_params);
-+	flat_dt_end = virt_to_phys(initial_boot_params)
-+				+ initial_boot_params->totalsize;
-+	prom_add_property(node, &flat_dt_start_prop);
-+	prom_add_property(node, &flat_dt_end_prop);
-+
-+	return 0;
-+}
-+__initcall(export_flat_device_tree_phys_addr);
-+#endif
--- 
-1.6.6.1
+
+Segher
