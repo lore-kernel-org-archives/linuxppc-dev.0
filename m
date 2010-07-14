@@ -1,12 +1,12 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 6ED3210094E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:04 +1000 (EST)
-Date: Wed, 14 Jul 2010 17:08:03 +0400
+	by ozlabs.org (Postfix) with ESMTP id 49D9D100A62
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:07 +1000 (EST)
+Date: Wed, 14 Jul 2010 17:08:04 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/8] sdhci: Use threaded IRQ handler
-Message-ID: <20100714130803.GD517@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/8] sdhci: Turn host->lock into a mutex
+Message-ID: <20100714130804.GE517@oksana.dev.rtsoft.ru>
 References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -25,113 +25,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We only need atomic context to disable SDHCI interrupts, after that
-we can run in a kernel thread.
+Finally, we can get rid of the host->lock spinlock, and turn it
+into a mutex.
 
-Note that irq handler still grabs an irqsave spinlock, we'll deal
-with it in a subsequent patch.
+This patch does just this.
 
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   47 +++++++++++++++++++++++++++------------------
- 1 files changed, 28 insertions(+), 19 deletions(-)
+ drivers/mmc/host/sdhci.c |   53 +++++++++++++++++++--------------------------
+ drivers/mmc/host/sdhci.h |    3 +-
+ 2 files changed, 24 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 9ec245c..0358b35 100644
+index 0358b35..5eddbdb 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1506,9 +1506,8 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
- 	}
+@@ -20,6 +20,7 @@
+ #include <linux/io.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/slab.h>
++#include <linux/mutex.h>
+ #include <linux/scatterlist.h>
+ 
+ #include <linux/leds.h>
+@@ -228,16 +229,15 @@ static void sdhci_led_control(struct led_classdev *led,
+ 	enum led_brightness brightness)
+ {
+ 	struct sdhci_host *host = container_of(led, struct sdhci_host, led);
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	if (brightness == LED_OFF)
+ 		sdhci_deactivate_led(host);
+ 	else
+ 		sdhci_activate_led(host);
+ 
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
+ }
+ #endif
+ 
+@@ -1099,11 +1099,10 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ {
+ 	struct sdhci_host *host;
+ 	bool present;
+-	unsigned long flags;
+ 
+ 	host = mmc_priv(mmc);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	WARN_ON(host->mrq != NULL);
+ 
+@@ -1127,18 +1126,17 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ 		sdhci_send_command(host, mrq->cmd);
+ 
+ 	mmiowb();
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
  }
  
--static irqreturn_t sdhci_irq(int irq, void *dev_id)
-+static irqreturn_t sdhci_irq_thread(int irq, void *dev_id)
+ static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
  {
--	irqreturn_t result;
- 	struct sdhci_host* host = dev_id;
- 	u32 intmask;
- 	int cardint = 0;
-@@ -1516,17 +1515,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
- 	spin_lock(&host->lock);
+ 	struct sdhci_host *host;
+-	unsigned long flags;
+ 	u8 ctrl;
  
- 	intmask = sdhci_readl(host, SDHCI_INT_STATUS);
--
--	if (!intmask || intmask == 0xffffffff) {
--		result = IRQ_NONE;
--		goto out;
--	}
--
- 	sdhci_writel(host, intmask, SDHCI_INT_STATUS);
+ 	host = mmc_priv(mmc);
  
--	DBG("*** %s got interrupt: 0x%08x\n",
--		mmc_hostname(host->mmc), intmask);
--
- 	if (intmask & (SDHCI_INT_CARD_INSERT | SDHCI_INT_CARD_REMOVE))
- 		schedule_work(&host->card_detect_work);
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
  
-@@ -1559,10 +1549,8 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
- 		sdhci_dumpregs(host);
+ 	if (host->flags & SDHCI_DEVICE_DEAD)
+ 		goto out;
+@@ -1183,25 +1181,24 @@ static void sdhci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 
+ out:
+ 	mmiowb();
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
+ }
+ 
+ static int sdhci_get_ro(struct mmc_host *mmc)
+ {
+ 	struct sdhci_host *host;
+-	unsigned long flags;
+ 	int present;
+ 
+ 	host = mmc_priv(mmc);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	if (host->flags & SDHCI_DEVICE_DEAD)
+ 		present = 0;
+ 	else
+ 		present = sdhci_readl(host, SDHCI_PRESENT_STATE);
+ 
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
+ 
+ 	if (host->quirks & SDHCI_QUIRK_INVERTED_WRITE_PROTECT)
+ 		return !!(present & SDHCI_WRITE_PROTECT);
+@@ -1211,11 +1208,10 @@ static int sdhci_get_ro(struct mmc_host *mmc)
+ static void sdhci_enable_sdio_irq(struct mmc_host *mmc, int enable)
+ {
+ 	struct sdhci_host *host;
+-	unsigned long flags;
+ 
+ 	host = mmc_priv(mmc);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	if (host->flags & SDHCI_DEVICE_DEAD)
+ 		goto out;
+@@ -1227,7 +1223,7 @@ static void sdhci_enable_sdio_irq(struct mmc_host *mmc, int enable)
+ out:
+ 	mmiowb();
+ 
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
+ }
+ 
+ static const struct mmc_host_ops sdhci_ops = {
+@@ -1246,11 +1242,10 @@ static const struct mmc_host_ops sdhci_ops = {
+ static void sdhci_card_detect_work(struct work_struct *wk)
+ {
+ 	struct sdhci_host *host;
+-	unsigned long flags;
+ 
+ 	host = container_of(wk, struct sdhci_host, card_detect_work);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)) {
+ 		if (host->mrq) {
+@@ -1267,7 +1262,7 @@ static void sdhci_card_detect_work(struct work_struct *wk)
+ 		}
  	}
  
--	result = IRQ_HANDLED;
--
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
+ 
+ 	mmc_detect_change(host->mmc, msecs_to_jiffies(200));
+ }
+@@ -1275,12 +1270,11 @@ static void sdhci_card_detect_work(struct work_struct *wk)
+ static void sdhci_finish_work(struct work_struct *wk)
+ {
+ 	struct sdhci_host *host;
+-	unsigned long flags;
+ 	struct mmc_request *mrq;
+ 
+ 	host = container_of(wk, struct sdhci_host, finish_work);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	__cancel_delayed_work(&host->timeout_work);
+ 
+@@ -1321,7 +1315,7 @@ static void sdhci_finish_work(struct work_struct *wk)
+ #endif
+ 
  	mmiowb();
--out:
-+
- 	spin_unlock(&host->lock);
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
  
- 	/*
-@@ -1571,7 +1559,28 @@ out:
- 	if (cardint)
- 		mmc_signal_sdio_irq(host->mmc);
+ 	mmc_request_done(host->mmc, mrq);
+ }
+@@ -1329,11 +1323,10 @@ static void sdhci_finish_work(struct work_struct *wk)
+ static void sdhci_timeout_work(struct work_struct *wk)
+ {
+ 	struct sdhci_host *host;
+-	unsigned long flags;
  
--	return result;
-+	/* Restore interrupts */
-+	intmask = sdhci_readl(host, SDHCI_INT_ENABLE);
-+	sdhci_writel(host, intmask, SDHCI_SIGNAL_ENABLE);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t sdhci_irq(int irq, void *dev_id)
-+{
-+	struct sdhci_host *host = dev_id;
-+	u32 intmask = sdhci_readl(host, SDHCI_INT_STATUS);
-+
-+	if (!intmask || intmask == 0xffffffff)
-+		return IRQ_NONE;
-+
-+	/* Disable interrupts */
-+	sdhci_writel(host, 0, SDHCI_SIGNAL_ENABLE);
-+
-+	DBG("*** %s got interrupt: 0x%08x\n",
-+		mmc_hostname(host->mmc), intmask);
-+
-+	return IRQ_WAKE_THREAD;
+ 	host = container_of(wk, struct sdhci_host, timeout_work.work);
+ 
+-	spin_lock_irqsave(&host->lock, flags);
++	mutex_lock(&host->lock);
+ 
+ 	if (host->mrq) {
+ 		printk(KERN_ERR "%s: Timeout waiting for hardware "
+@@ -1354,7 +1347,7 @@ static void sdhci_timeout_work(struct work_struct *wk)
+ 	}
+ 
+ 	mmiowb();
+-	spin_unlock_irqrestore(&host->lock, flags);
++	mutex_unlock(&host->lock);
  }
  
  /*****************************************************************************\
-@@ -1608,8 +1617,8 @@ int sdhci_resume_host(struct sdhci_host *host)
- 			host->ops->enable_dma(host);
+@@ -1512,7 +1505,7 @@ static irqreturn_t sdhci_irq_thread(int irq, void *dev_id)
+ 	u32 intmask;
+ 	int cardint = 0;
+ 
+-	spin_lock(&host->lock);
++	mutex_lock(&host->lock);
+ 
+ 	intmask = sdhci_readl(host, SDHCI_INT_STATUS);
+ 	sdhci_writel(host, intmask, SDHCI_INT_STATUS);
+@@ -1551,7 +1544,7 @@ static irqreturn_t sdhci_irq_thread(int irq, void *dev_id)
+ 
+ 	mmiowb();
+ 
+-	spin_unlock(&host->lock);
++	mutex_unlock(&host->lock);
+ 
+ 	/*
+ 	 * We have to delay this as it calls back into the driver.
+@@ -1816,7 +1809,7 @@ int sdhci_add_host(struct sdhci_host *host)
+ 		return -ENODEV;
  	}
  
--	ret = request_irq(host->irq, sdhci_irq, IRQF_SHARED,
--			  mmc_hostname(host->mmc), host);
-+	ret = request_threaded_irq(host->irq, sdhci_irq, sdhci_irq_thread,
-+			  IRQF_SHARED, mmc_hostname(host->mmc), host);
- 	if (ret)
- 		return ret;
+-	spin_lock_init(&host->lock);
++	mutex_init(&host->lock);
  
-@@ -1868,8 +1877,8 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	/*
+ 	 * Maximum number of segments. Depends on if the hardware
+@@ -1926,10 +1919,8 @@ EXPORT_SYMBOL_GPL(sdhci_add_host);
  
- 	INIT_DELAYED_WORK(&host->timeout_work, sdhci_timeout_work);
+ void sdhci_remove_host(struct sdhci_host *host, int dead)
+ {
+-	unsigned long flags;
+-
+ 	if (dead) {
+-		spin_lock_irqsave(&host->lock, flags);
++		mutex_lock(&host->lock);
  
--	ret = request_irq(host->irq, sdhci_irq, IRQF_SHARED,
--		mmc_hostname(mmc), host);
-+	ret = request_threaded_irq(host->irq, sdhci_irq, sdhci_irq_thread,
-+			  IRQF_SHARED, mmc_hostname(host->mmc), host);
- 	if (ret)
- 		return ret;
+ 		host->flags |= SDHCI_DEVICE_DEAD;
  
+@@ -1941,7 +1932,7 @@ void sdhci_remove_host(struct sdhci_host *host, int dead)
+ 			schedule_work(&host->finish_work);
+ 		}
+ 
+-		spin_unlock_irqrestore(&host->lock, flags);
++		mutex_unlock(&host->lock);
+ 	}
+ 
+ 	sdhci_disable_card_detection(host);
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index d96e4dd..364d4e8 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -15,6 +15,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/compiler.h>
+ #include <linux/types.h>
++#include <linux/mutex.h>
+ #include <linux/io.h>
+ 
+ /*
+@@ -256,7 +257,7 @@ struct sdhci_host {
+ 	char   led_name[32];
+ #endif
+ 
+-	spinlock_t		lock;		/* Mutex */
++	struct mutex		lock;		/* Mutex */
+ 
+ 	int			flags;		/* Host attributes */
+ #define SDHCI_USE_SDMA		(1<<0)		/* Host is SDMA capable */
 -- 
 1.7.0.5
