@@ -1,39 +1,32 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
+Return-Path: <dwalker@codeaurora.org>
+Received: from wolverine01.qualcomm.com (wolverine01.qualcomm.com
+	[199.106.114.254])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id A18F71007D6
+	(Client CN "wolverine01.qualcomm.com",
+	Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3EA67B6EEA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Jul 2010 01:45:46 +1000 (EST)
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) (authenticated bits=0)
-	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
-	ESMTP id o6EFimnH013070
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=FAIL)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jul 2010 08:44:49 -0700
-Received: by gyd10 with SMTP id 10so4146215gyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 14 Jul 2010 08:44:43 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <AANLkTimYDDviG2no6RVPZZj8rD2d2URMAPUCWuftiFiB@mail.gmail.com>
-References: <20100713114322.57c8b166.sfr@canb.auug.org.au>
-	<AANLkTimC_vXCAOrfTSndZyk8lgkjTlILVSYVYeIg6cUt@mail.gmail.com>
-	<AANLkTik-QCXFnjma3J28B9h27uajOcDhthTGz99zKgVi@mail.gmail.com>
-	<AANLkTimYDDviG2no6RVPZZj8rD2d2URMAPUCWuftiFiB@mail.gmail.com>
-Date: Wed, 14 Jul 2010 08:37:23 -0700
-Message-ID: <AANLkTinhMmYi2l29Rlb11yfRlmsv4YAC50JBlXkdjmKh@mail.gmail.com>
-Subject: Re: [PATCH] kbuild: Enable building defconfigs from Kconfig files
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	LKML <linux-kernel@vger.kernel.org>, Russell King <rmk@arm.linux.org.uk>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-arm-kernel@lists.infradead.org
+	Thu, 15 Jul 2010 02:22:52 +1000 (EST)
+Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
+	defconfig
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Nicolas Pitre <nico@fluxnic.net>
+In-Reply-To: <alpine.LFD.2.00.1007131941140.10598@xanadu.home>
+References: <20100713230352.6781.18644.stgit@angua>
+	<1279062881.4609.34.camel@c-dwalke-linux.qualcomm.com>
+	<AANLkTin69tN3NQHD2wvkA0G-lj3f9tSZEnhzdyJdTh9m@mail.gmail.com>
+	<1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
+	<alpine.LFD.2.00.1007131941140.10598@xanadu.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 14 Jul 2010 09:22:43 -0700
+Message-ID: <1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+Cc: linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+	linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Russell King <rmk@arm.linux.org.uk>,
+	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,60 +36,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 13, 2010 at 10:47 PM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
->
-> Okay, well I advocate for the -D /dev/null approach then. =A0I think
-> that validating our defaults, and looking for the subtle interactions
-> are exactly what we want to be doing when it comes to defconfigs. =A0The
-> fact that a defconfig does *not* want the default value is exactly
-> what the defconfigs should be capturing.
+On Tue, 2010-07-13 at 20:07 -0400, Nicolas Pitre wrote:
 
-Sure. That does have the downside that it absolutely _requires_
-changes to the Kconfig language. Because currently "select" can only
-set a config variable, it cannot clear it or downgrade it from the
-defaults - so if you start from anything but a noconfig, you can't
-unset anything.
+> That's one issue indeed.
+> 
+> But there is another issue that is somewhat related, which is to be able 
+> to categorize config options.
+> 
+> Currently the defconfig files carry information about the proper driver 
+> to enable in order to support devices soldered on the board and 
+> therefore which are not "optional".  That might be a particular RTC 
+> chip, or a particular ethernet block integrated into a SOC, etc.  Of 
+> course we want to preserve the ability to disable support for those 
+> things, but by default people want to have all the right drivers 
+> selected for all the built-in hardware when selecting a target 
+> machine/board without having to dig into a datasheet for that target.
+> 
+> The defconfig files also carry config options that are totally 
+> arbitrary.  What type of filesystem, what kind of network protocol, what 
+> USB device drivers (not host controller driver), what amount of 
+> debugging options, all those are unrelated to the actual hardware and 
+> may vary from one user to another.
 
-But that's not a big downside, since honestly either approach will
-want it anyway (even -n wants it for setting integer or string options
-- never mind the whole issue of making it easier/cleaner to write the
-files in the first place).
+Right.
 
->> =A0 =A0 =A0 =A0 =A0set NODES_SHIFT 10
->
-> I'm partial to extending select statements myself because it fits
-> nicely into the existing grammer; but I can see value in having a set
-> statement too.
+> Furthermore, in order to reduce the number of defconfig files, we tried 
+> to combine as many targets into a single kernel image.  That increases 
+> build test coverage with fewer builds which is good, but then the info 
+> about specific drivers required for a specific target but not for 
+> another target in the same defconfig is now lost.  It is therefore quite 
+> hard to produce a highly optimized configuration for a single target 
+> without doing some digging again.
+> 
+> So it is really in the Kconfig file that all those hardware specific 
+> options can be expressed in a clear and readable way.  When BOARD_XYZ is 
+> selected and STD_CONFIG is selected, then automatically select RTC_FOO, 
+> select ETH_BAR, select LED_BAZ, etc. Of course we would want required 
+> dependencies to be automatically selected as well.
 
-If it turns out easier to just implement the "set value" as a "select
-with a value", that's fine by me too. If the syntax for setting a
-particular value ends up being
+I see..
 
-   select NODES_SHIFT 10
+> But all the rest is arbitrary and could be part of common shared 
+> profiles or the like in defconfig format.
 
-that still works (with or without a "=3D" there). It looks a bit odd to
-me, but that's probably just because it's new. It doesn't look _wrong_
-by any stretch.
+I'm sure most people will want to have a config isolated to their
+specific device. That to me seems reasonable because everyone wants the
+smallest possible kernel they can get for their given device.
 
->=A0It would eliminate the temporary config options that
-> both my and Stephen's patch would add.
+Then there would be a smaller group who wants to create multi-device
+images. I don't see this being the average users tho, or kernel hackers.
 
-I don't think there is anything wrong with having the extra config
-option just to drive the "select" syntax. In fact, in many cases I
-think it would be "documentation", because I think the extra config
-option should generally be named by the platform that you're actually
-selecting for - even if that name may not be used for anything else.
+To me there is little difference between doing,
 
-So having the basic syntax for a Kconfig.xyz file be something like
+CONFIG_ARCH_MSM=y
 
-         config SIDEWINDER_PLATFORM
-              def_bool y
-              select ...
+or
 
-where that initial config/def_bool is strictly not needed for the
-actual end result, but is used to get to the select statements, and to
-include that "SIDEWINDER_PLATFORM=3Dy" in the resulting .config as a
-kind of top-level comment all looks fine.
+select ARCH_MSM
 
-                 Linus
+they are basically doing the same thing. So doing anything in Kconfig is
+a lateral move .. Converting over to Kconfig in this case doesn't makes
+sense to me.
+
+Could we do something more like adding an "#include" option into the
+defconfigs .. Then you could create defconfigs that hold multiple
+devices without a massive rework to what we currently have. 
+
+Daniel
+
+
+-- 
+Sent by an consultant of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
