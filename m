@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
-	by ozlabs.org (Postfix) with ESMTP id 07AE7100AF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:09 +1000 (EST)
-Date: Wed, 14 Jul 2010 17:08:07 +0400
+	by ozlabs.org (Postfix) with ESMTP id C57D8100B95
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jul 2010 23:08:10 +1000 (EST)
+Date: Wed, 14 Jul 2010 17:08:09 +0400
 From: Anton Vorontsov <avorontsov@mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/8] sdhci: Get rid of card detect work
-Message-ID: <20100714130807.GF517@oksana.dev.rtsoft.ru>
+Subject: [PATCH 7/8] sdhci: Get rid of mdelay()s where it is safe and makes
+	sense
+Message-ID: <20100714130809.GG517@oksana.dev.rtsoft.ru>
 References: <20100714130728.GA27339@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -25,83 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nowadays we can just call the card detection handler directly,
-no need for the separate work struct.
+Since we don't run in the atomic context any longer, we can
+turn mdelay()s into msleep()s.
 
-We still need host->finish_work as sdhci_finish_work() calls
-mmc_request_done(), which tries to re-enter the driver.
+The only place where the driver is still using mdelay() is
+sdhci_send_command(). There it is possible to use sleepable
+delays too, but we don't actually want to force rescheduling
+in a hot path.
+
+Sure, we might end up calling msleep() there too, just not
+via this safe patch.
 
 Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   14 ++------------
- drivers/mmc/host/sdhci.h |    1 -
- 2 files changed, 2 insertions(+), 13 deletions(-)
+ drivers/mmc/host/sdhci-of-esdhc.c |    2 +-
+ drivers/mmc/host/sdhci.c          |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index c8623de..e9f99fe 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -94,7 +94,7 @@ static void esdhc_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	setbits32(host->ioaddr + ESDHC_SYSTEM_CONTROL, ESDHC_CLOCK_IPGEN |
+ 		  ESDHC_CLOCK_HCKEN | ESDHC_CLOCK_PEREN |
+ 		  div << ESDHC_DIVIDER_SHIFT | pre_div << ESDHC_PREDIV_SHIFT);
+-	mdelay(100);
++	msleep(100);
+ out:
+ 	host->clock = clock;
+ }
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 5eddbdb..56d5c56 100644
+index 56d5c56..e6adda8 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -1239,14 +1239,8 @@ static const struct mmc_host_ops sdhci_ops = {
-  *                                                                           *
- \*****************************************************************************/
- 
--static void sdhci_card_detect_work(struct work_struct *wk)
-+static void sdhci_card_detect(struct sdhci_host *host)
- {
--	struct sdhci_host *host;
--
--	host = container_of(wk, struct sdhci_host, card_detect_work);
--
--	mutex_lock(&host->lock);
--
- 	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)) {
- 		if (host->mrq) {
- 			printk(KERN_ERR "%s: Card removed during transfer!\n",
-@@ -1262,8 +1256,6 @@ static void sdhci_card_detect_work(struct work_struct *wk)
+@@ -171,7 +171,7 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 			return;
  		}
+ 		timeout--;
+-		mdelay(1);
++		msleep(1);
  	}
  
--	mutex_unlock(&host->lock);
--
- 	mmc_detect_change(host->mmc, msecs_to_jiffies(200));
+ 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+@@ -1019,7 +1019,7 @@ static void sdhci_set_clock(struct sdhci_host *host, unsigned int clock)
+ 			return;
+ 		}
+ 		timeout--;
+-		mdelay(1);
++		msleep(1);
+ 	}
+ 
+ 	clk |= SDHCI_CLOCK_CARD_EN;
+@@ -1086,7 +1086,7 @@ static void sdhci_set_power(struct sdhci_host *host, unsigned short power)
+ 	 * can apply clock after applying power
+ 	 */
+ 	if (host->quirks & SDHCI_QUIRK_DELAY_AFTER_POWER)
+-		mdelay(10);
++		msleep(10);
  }
  
-@@ -1511,7 +1503,7 @@ static irqreturn_t sdhci_irq_thread(int irq, void *dev_id)
- 	sdhci_writel(host, intmask, SDHCI_INT_STATUS);
- 
- 	if (intmask & (SDHCI_INT_CARD_INSERT | SDHCI_INT_CARD_REMOVE))
--		schedule_work(&host->card_detect_work);
-+		sdhci_card_detect(host);
- 
- 	intmask &= ~(SDHCI_INT_CARD_INSERT | SDHCI_INT_CARD_REMOVE);
- 
-@@ -1865,7 +1857,6 @@ int sdhci_add_host(struct sdhci_host *host)
- 	/*
- 	 * Init work structs.
- 	 */
--	INIT_WORK(&host->card_detect_work, sdhci_card_detect_work);
- 	INIT_WORK(&host->finish_work, sdhci_finish_work);
- 
- 	INIT_DELAYED_WORK(&host->timeout_work, sdhci_timeout_work);
-@@ -1950,7 +1941,6 @@ void sdhci_remove_host(struct sdhci_host *host, int dead)
- 
- 	flush_delayed_work(&host->timeout_work);
- 
--	flush_work(&host->card_detect_work);
- 	flush_work(&host->finish_work);
- 
- 	kfree(host->adma_desc);
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 364d4e8..5f7d649 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -289,7 +289,6 @@ struct sdhci_host {
- 	dma_addr_t		adma_addr;	/* Mapped ADMA descr. table */
- 	dma_addr_t		align_addr;	/* Mapped bounce buffer */
- 
--	struct work_struct	card_detect_work;
- 	struct work_struct	finish_work;
- 
- 	struct delayed_work	timeout_work;	/* Work for timeouts */
+ /*****************************************************************************\
 -- 
 1.7.0.5
