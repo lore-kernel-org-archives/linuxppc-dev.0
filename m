@@ -1,23 +1,26 @@
-Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 7D7A41007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Jul 2010 16:33:08 +1000 (EST)
-Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address
-	via proc
-From: Matthew McClintock <msm@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <FFCEA7A1-6F2B-402F-A698-C882D0B4EB2E@kernel.crashing.org>
-References: <1279120733-13584-1-git-send-email-msm@freescale.com>
-	<C26140FB-4F77-4D8E-B6C4-63BC9C9EDD83@kernel.crashing.org>
-	<1279122163.13098.2.camel@localhost>
-	<FFCEA7A1-6F2B-402F-A698-C882D0B4EB2E@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 15 Jul 2010 01:17:22 -0500
-Message-ID: <1279174642.28344.6.camel@localhost>
-MIME-Version: 1.0
-Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <miltonm@bga.com>
+Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
+	by ozlabs.org (Postfix) with ESMTP id DA8FCB6F07
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 17:42:19 +1000 (EST)
+From: Milton Miller <miltonm@bga.com>
+To: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+Message-Id: <redwood56-reply-1-miltonm@bga.com>
+Subject: Re: [5/5] Remove REDWOOD_5 and REDWOOD_6 config options and
+	conditional code
+In-Reply-To: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+References: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+Date: Thu, 15 Jul 2010 02:42:07 -0500
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	Mike Frysinger <vapier@gentoo.org>,
+	"David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Florian Fainelli <florian@openwrt.org>,
+	Solomon Peachy <solomon@linux-wlan.com>,
+	vamos-dev@i4.informatik.uni-erlangen.de, linuxppc-dev@ozlabs.org,
+	Alexander Kurz <linux@kbdbabel.org>,
+	linux-mtd@lists.infradead.org, Jiri Kosina <jkosina@suse.cz>,
+	Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>,
+	John Linn <john.linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2010-07-14 at 17:46 +0200, Segher Boessenkool wrote:
-> > What about just one node called "flat-device-tree"?
+On Wed, 14 Jul 2010 about 04:05:05 -0000, Christian Dietrich wrote:
 > 
-> But *what* flat device tree?  It cannot be "the" flat device tree,
-> or it would be useless information, since we are already reading it! 
+> The config options for REDWOOD_[56] were commented out in the powerpc
+> Kconfig. The ifdefs referencing this options therefore are dead and all
+> references to this can be removed (Also dependencies in other KConfig
+> files).
+> 
+> Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+> 
+> ---
+> arch/powerpc/platforms/40x/Kconfig |   16 -------------
+>  drivers/mtd/maps/Kconfig           |    2 +-
+>  drivers/mtd/maps/redwood.c         |   43 ------------------------------------
+>  drivers/net/Kconfig                |    2 +-
+>  4 files changed, 2 insertions(+), 61 deletions(-)
 
-I thought about it all day and did not come up with anything terribly
-insightful...
+> diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+> index f22bc9f..b5ebb72 100644
+> --- a/drivers/mtd/maps/Kconfig
+> +++ b/drivers/mtd/maps/Kconfig
+> @@ -321,7 +321,7 @@ config MTD_CFI_FLAGADM
+>  
+>  config MTD_REDWOOD
+>  	tristate "CFI Flash devices mapped on IBM Redwood"
+> -	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
+> +	depends on MTD_CFI && REDWOOD_4
+>  	help
+>  	  This enables access routines for the flash chips on the IBM
+>  	  Redwood board. If you have one of these boards and would like to
 
-"boot-fdt-phys-addr" 
-"fdt-phys-addr"
-"boot-fdt-phys-reg"
-"fdt-phys-addr-reg"
+REDWOOD_4 does not appear to be in the tree either so this mapping driver
+should be deleted if the patch is otherwise acceptable.  Besides we
+would express the info contained in this simple map driver the device tree
+using physmap_of.
 
-Thoughts?
-
--M
+milton
