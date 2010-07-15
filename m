@@ -1,30 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
-	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id 4CDB6B6F15
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Jul 2010 04:37:55 +1000 (EST)
-Received: by iwn39 with SMTP id 39so1290783iwn.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 15 Jul 2010 11:37:53 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id D94EFB6F1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 04:37:56 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e4.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6FINu3t022214
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 14:23:56 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6FIbreL156940
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 14:37:53 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6FIbrOT007503
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 14:37:53 -0400
+Message-ID: <4C3F557F.3000304@austin.ibm.com>
+Date: Thu, 15 Jul 2010 13:37:51 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1279216999.31679.26.camel@localhost>
-References: <1279120733-13584-1-git-send-email-msm@freescale.com>
-	<AANLkTimiM1Ky7aIYoQ3efhivypV90LFG-BpueuaPaiPf@mail.gmail.com>
-	<1279207159.30737.11.camel@localhost>
-	<AANLkTikIGXBNU7NQEL7riZYB-BJU3jhxauzGo6XhUF3t@mail.gmail.com>
-	<1279211961.31679.11.camel@localhost>
-	<AANLkTikCDvsrWvtfhpEE0A78Nt3UUT-rzSwPk5nnN95s@mail.gmail.com>
-	<1279216999.31679.26.camel@localhost>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 15 Jul 2010 12:37:33 -0600
-Message-ID: <AANLkTinUBPRsiKMd46EK6_9BBRYwB3jsfg49W9uKEbw-@mail.gmail.com>
-Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address via
-	proc
-To: Matthew McClintock <msm@freescale.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/5] v2 Split the memory_block structure
+References: <4C3F53D1.3090001@austin.ibm.com>
+In-Reply-To: <4C3F53D1.3090001@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org,
-	Timur Tabi <timur@freescale.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,128 +34,421 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 15, 2010 at 12:03 PM, Matthew McClintock <msm@freescale.com> wr=
-ote:
-> On Thu, 2010-07-15 at 10:57 -0600, Grant Likely wrote:
->> On Thu, Jul 15, 2010 at 10:39 AM, Matthew McClintock <msm@freescale.com>=
- wrote:
->> > On Thu, 2010-07-15 at 10:22 -0600, Grant Likely wrote:
->> >> > Thanks for taking a look. My first thought was to just blow away al=
-l
->> >> the
->> >> > memreserve regions and start over. But, there are reserve regions
->> >> for
->> >> > other things that I might not want to blow away. For example, on
->> >> mpc85xx
->> >> > SMP systems we have an additional reserve region for our boot page.
->> >>
->> >> What is your starting point? =A0Where does the device tree (and
->> >> memreserve list) come from
->> >> that you're passing to kexec? =A0My first impression is that if you h=
-ave
->> >> to scrub the memreserve list, then the source being used to
->> >> obtain the memreserves is either faulty or unsuitable to the task.
->> >
->> > I'm pulling the device tree passed in via u-boot and passing it to
->> > kexec.
->>
->> How? =A0(what mechanism?) =A0I hope you're not using the debugfs
->> flat-device-tree file.
->
-> That is one way to get a good working copy. What is wrong with this
-> mechanism?
+Split the memory_block struct into a memory_block
+struct to cover each sysfs directory and a new memory_block_section
+struct for each memory section covered by the sysfs directory.
+This change allows for creation of memory sysfs directories that
+can span multiple memory sections.
 
-It's unstable.  It is in the debugfs, so there are no guarantees that
-the ABI will remain the same.  Plus it doesn't reflect any changes
-that the kernel may make to the device tree.  That interface is *debug
-only*.  Do not use it.
+This can be beneficial in that it can reduce the number of memory
+sysfs directories created at boot.  This also allows different
+architectures to define how many memory sections are covered by
+a sysfs directory.
 
-> Should we duplicate everything u-boot does in kexec to build up a flat
-> device tree? Or is there another way to get a good tree?
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
+ drivers/base/memory.c  |  222 ++++++++++++++++++++++++++++++++++---------------
+ include/linux/memory.h |   11 +-
+ 2 files changed, 167 insertions(+), 66 deletions(-)
 
-That is one option.  U-Boot really shouldn't be modifying the tree
-very much anyway (I know on some platforms U-Boot is almost creating a
-tree from scratch, but that is insane and an entirely different
-discussion).  /proc/device-tree always gives the kernel's current view
-of the tree.  You can use dtc to extract it and write it into a dtb.
-
-> Ideally, we
-> don't make the end user manually edit a device tree.
-
-Of course not, any device tree manipulation is the job of the kexec
-tools.  None of this should be manual.  However, the data source is a
-significant and important question.
-
->> > It is the most complete device tree and requires the least amount
->> > of fixup.
->> >
->> > I have to scrub two items, the ramdisk/initrd and the device tree
->> > because upon kexec'ing the kernel we have the ability to pass in new
->> > ramdisk/initrd and device tree. They can also live at different physic=
-al
->> > addresses for the second reboot.
->>
->> This sounds like the model is backwards. =A0Rather than scrubbing items,
->> the memreserve list should be built up from a known good source.
->
-> You can build one up yourself and it will still work out fine. Or you
-> can pull one from debugfs to get yourself started. Or you can pull it
-> every time.
-
-What do you mean by "pull it every time"?
-
-Out of curiosity, what is responsible for building up the memreserve
-list?  The userspace portion, or the kernel portion of kexec?  Or is
-it done by a totally separate program?
-
->> > The initrd addresses are already exposed, so we can update/remove/reus=
-e
->> > that entry, we just need a way for kexec to determine the current devi=
-ce
->> > tree address so it can replace the correct memreserve region for the
->> > kexec'ing kernels' device tree.
->> >
->> > The whole problem comes from repeatedly kexec'ing, we need to make sur=
-e
->> > we don't keep losing blobs of memory to reserve regions (so we can't
->> > just blindly add). We also need to make sure we don't lose other
->> > memreserve regions that might be important for other things (so we can=
-'t
->> > just blow them all away).
->>
->> Right, so you need to have a known-good list of reserve sections.
->> Trying to go the other way sounds very fragile.
->>
->
-> Yes. Where would we get a list of memreserve sections?
-
-I would say the list of reserves that are not under the control of
-Linux should be explicitly described in the device tree proper.  For
-instance, if you have a region that firmware depends on, then have a
-node for describing the firmware and a property stating the memory
-regions that it depends on.  The memreserve regions can be generated
-from that.
-
-> Should we export
-> the reserve sections instead of the device tree location?
-
-It shouldn't really be something that the kernel is explicitly
-exporting because it is a characteristic of the board design.  It is
-something that belongs in the tree-proper.  ie. when you extract the
-tree you have data telling what the region is, and why it is reserved.
-
-> We just need a
-> way to preserve what was there at boot to pass to the new kernel.
-
-Yet there is no differentiation between the board-dictated memory
-reserves and the things that U-Boot/Linux made an arbitrary decision
-on.  The solution should focus not on "can I throw this one away?" but
-rather "Is this one I should keep?"  :-)  A subtle difference, I know,
-but it changes the way you approach the solution.
-
-Cheers,
-g.
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Index: linux-2.6/drivers/base/memory.c
+===================================================================
+--- linux-2.6.orig/drivers/base/memory.c	2010-07-15 08:48:41.000000000 -0500
++++ linux-2.6/drivers/base/memory.c	2010-07-15 09:55:54.000000000 -0500
+@@ -28,6 +28,14 @@
+ #include <asm/uaccess.h>
+ 
+ #define MEMORY_CLASS_NAME	"memory"
++#define MIN_MEMORY_BLOCK_SIZE	(1 << SECTION_SIZE_BITS)
++
++static int sections_per_block;
++
++static inline int base_memory_block_id(int section_nr)
++{
++	return (section_nr / sections_per_block) * sections_per_block;
++}
+ 
+ static struct sysdev_class memory_sysdev_class = {
+ 	.name = MEMORY_CLASS_NAME,
+@@ -94,10 +102,9 @@
+ }
+ 
+ static void
+-unregister_memory(struct memory_block *memory, struct mem_section *section)
++unregister_memory(struct memory_block *memory)
+ {
+ 	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
+-	BUG_ON(memory->sysdev.id != __section_nr(section));
+ 
+ 	/* drop the ref. we got in remove_memory_block() */
+ 	kobject_put(&memory->sysdev.kobj);
+@@ -123,13 +130,20 @@
+ static ssize_t show_mem_removable(struct sys_device *dev,
+ 			struct sysdev_attribute *attr, char *buf)
+ {
++	struct memory_block *mem;
++	struct memory_block_section *mbs;
+ 	unsigned long start_pfn;
+-	int ret;
+-	struct memory_block *mem =
+-		container_of(dev, struct memory_block, sysdev);
++	int ret = 1;
++
++	mem = container_of(dev, struct memory_block, sysdev);
++	mutex_lock(&mem->state_mutex);
+ 
+-	start_pfn = section_nr_to_pfn(mem->phys_index);
+-	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
++	list_for_each_entry(mbs, &mem->sections, next) {
++		start_pfn = section_nr_to_pfn(mbs->phys_index);
++		ret &= is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
++	}
++
++	mutex_unlock(&mem->state_mutex);
+ 	return sprintf(buf, "%d\n", ret);
+ }
+ 
+@@ -182,16 +196,16 @@
+  * OK to have direct references to sparsemem variables in here.
+  */
+ static int
+-memory_block_action(struct memory_block *mem, unsigned long action)
++memory_block_action(struct memory_block_section *mbs, unsigned long action)
+ {
+ 	int i;
+ 	unsigned long psection;
+ 	unsigned long start_pfn, start_paddr;
+ 	struct page *first_page;
+ 	int ret;
+-	int old_state = mem->state;
++	int old_state = mbs->state;
+ 
+-	psection = mem->phys_index;
++	psection = mbs->phys_index;
+ 	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
+ 
+ 	/*
+@@ -217,18 +231,18 @@
+ 			ret = online_pages(start_pfn, PAGES_PER_SECTION);
+ 			break;
+ 		case MEM_OFFLINE:
+-			mem->state = MEM_GOING_OFFLINE;
++			mbs->state = MEM_GOING_OFFLINE;
+ 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+ 			ret = remove_memory(start_paddr,
+ 					    PAGES_PER_SECTION << PAGE_SHIFT);
+ 			if (ret) {
+-				mem->state = old_state;
++				mbs->state = old_state;
+ 				break;
+ 			}
+ 			break;
+ 		default:
+ 			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
+-					__func__, mem, action, action);
++					__func__, mbs, action, action);
+ 			ret = -EINVAL;
+ 	}
+ 
+@@ -238,19 +252,34 @@
+ static int memory_block_change_state(struct memory_block *mem,
+ 		unsigned long to_state, unsigned long from_state_req)
+ {
++	struct memory_block_section *mbs;
+ 	int ret = 0;
++
+ 	mutex_lock(&mem->state_mutex);
+ 
+-	if (mem->state != from_state_req) {
+-		ret = -EINVAL;
+-		goto out;
++	list_for_each_entry(mbs, &mem->sections, next) {
++		if (mbs->state != from_state_req)
++			continue;
++
++		ret = memory_block_action(mbs, to_state);
++		if (ret)
++			break;
++	}
++
++	if (ret) {
++		list_for_each_entry(mbs, &mem->sections, next) {
++			if (mbs->state == from_state_req)
++				continue;
++
++			if (memory_block_action(mbs, to_state))
++				printk(KERN_ERR "Could not re-enable memory "
++				       "section %lx\n", mbs->phys_index);
++		}
+ 	}
+ 
+-	ret = memory_block_action(mem, to_state);
+ 	if (!ret)
+ 		mem->state = to_state;
+ 
+-out:
+ 	mutex_unlock(&mem->state_mutex);
+ 	return ret;
+ }
+@@ -260,20 +289,15 @@
+ 		struct sysdev_attribute *attr, const char *buf, size_t count)
+ {
+ 	struct memory_block *mem;
+-	unsigned int phys_section_nr;
+ 	int ret = -EINVAL;
+ 
+ 	mem = container_of(dev, struct memory_block, sysdev);
+-	phys_section_nr = mem->phys_index;
+-
+-	if (!present_section_nr(phys_section_nr))
+-		goto out;
+ 
+ 	if (!strncmp(buf, "online", min((int)count, 6)))
+ 		ret = memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
+ 	else if(!strncmp(buf, "offline", min((int)count, 7)))
+ 		ret = memory_block_change_state(mem, MEM_OFFLINE, MEM_ONLINE);
+-out:
++
+ 	if (ret)
+ 		return ret;
+ 	return count;
+@@ -435,39 +459,6 @@
+ 	return 0;
+ }
+ 
+-static int add_memory_block(int nid, struct mem_section *section,
+-			unsigned long state, enum mem_add_context context)
+-{
+-	struct memory_block *mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+-	unsigned long start_pfn;
+-	int ret = 0;
+-
+-	if (!mem)
+-		return -ENOMEM;
+-
+-	mem->phys_index = __section_nr(section);
+-	mem->state = state;
+-	mutex_init(&mem->state_mutex);
+-	start_pfn = section_nr_to_pfn(mem->phys_index);
+-	mem->phys_device = arch_get_memory_phys_device(start_pfn);
+-
+-	ret = register_memory(mem, section);
+-	if (!ret)
+-		ret = mem_create_simple_file(mem, phys_index);
+-	if (!ret)
+-		ret = mem_create_simple_file(mem, state);
+-	if (!ret)
+-		ret = mem_create_simple_file(mem, phys_device);
+-	if (!ret)
+-		ret = mem_create_simple_file(mem, removable);
+-	if (!ret) {
+-		if (context == HOTPLUG)
+-			ret = register_mem_sect_under_node(mem, nid);
+-	}
+-
+-	return ret;
+-}
+-
+ /*
+  * For now, we have a linear search to go find the appropriate
+  * memory_block corresponding to a particular phys_index. If
+@@ -482,12 +473,13 @@
+ 	struct sys_device *sysdev;
+ 	struct memory_block *mem;
+ 	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
++	int block_id = base_memory_block_id(__section_nr(section));
+ 
+ 	/*
+ 	 * This only works because we know that section == sysdev->id
+ 	 * slightly redundant with sysdev_register()
+ 	 */
+-	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
++	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, block_id);
+ 
+ 	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
+ 	if (!kobj)
+@@ -499,18 +491,98 @@
+ 	return mem;
+ }
+ 
++static int add_mem_block_section(struct memory_block *mem,
++				 int section_nr, unsigned long state)
++{
++	struct memory_block_section *mbs;
++
++	mbs = kzalloc(sizeof(*mbs), GFP_KERNEL);
++	if (!mbs)
++		return -ENOMEM;
++
++	mbs->phys_index = section_nr;
++	mbs->state = state;
++
++	list_add(&mbs->next, &mem->sections);
++	return 0;
++}
++
++static int add_memory_block(int nid, struct mem_section *section,
++			unsigned long state, enum mem_add_context context)
++{
++	struct memory_block *mem;
++	int ret = 0;
++
++	mem = find_memory_block(section);
++	if (!mem) {
++		unsigned long start_pfn;
++
++		mem = kzalloc(sizeof(*mem), GFP_KERNEL);
++		if (!mem)
++			return -ENOMEM;
++
++		mem->state = state;
++		mutex_init(&mem->state_mutex);
++		start_pfn = section_nr_to_pfn(__section_nr(section));
++		mem->phys_device = arch_get_memory_phys_device(start_pfn);
++		INIT_LIST_HEAD(&mem->sections);
++
++		mutex_lock(&mem->state_mutex);
++
++		ret = register_memory(mem, section);
++		if (!ret)
++			ret = mem_create_simple_file(mem, phys_index);
++		if (!ret)
++			ret = mem_create_simple_file(mem, state);
++		if (!ret)
++			ret = mem_create_simple_file(mem, phys_device);
++		if (!ret)
++			ret = mem_create_simple_file(mem, removable);
++		if (!ret) {
++			if (context == HOTPLUG)
++				ret = register_mem_sect_under_node(mem, nid);
++		}
++	} else {
++		kobject_put(&mem->sysdev.kobj);
++		mutex_lock(&mem->state_mutex);
++	}
++
++	if (!ret)
++		ret = add_mem_block_section(mem, __section_nr(section), state);
++
++	mutex_unlock(&mem->state_mutex);
++	return ret;
++}
++
+ int remove_memory_block(unsigned long node_id, struct mem_section *section,
+ 		int phys_device)
+ {
+ 	struct memory_block *mem;
++	struct memory_block_section *mbs, *tmp;
++	int section_nr = __section_nr(section);
+ 
+ 	mem = find_memory_block(section);
+-	unregister_mem_sect_under_nodes(mem);
+-	mem_remove_simple_file(mem, phys_index);
+-	mem_remove_simple_file(mem, state);
+-	mem_remove_simple_file(mem, phys_device);
+-	mem_remove_simple_file(mem, removable);
+-	unregister_memory(mem, section);
++	mutex_lock(&mem->state_mutex);
++
++	/* remove the specified section */
++	list_for_each_entry_safe(mbs, tmp, &mem->sections, next) {
++		if (mbs->phys_index == section_nr) {
++			list_del(&mbs->next);
++			kfree(mbs);
++		}
++	}
++
++	mutex_unlock(&mem->state_mutex);
++
++	if (list_empty(&mem->sections)) {
++		unregister_mem_sect_under_nodes(mem);
++		mem_remove_simple_file(mem, phys_index);
++		mem_remove_simple_file(mem, state);
++		mem_remove_simple_file(mem, phys_device);
++		mem_remove_simple_file(mem, removable);
++		unregister_memory(mem);
++		kfree(mem);
++	}
+ 
+ 	return 0;
+ }
+@@ -532,6 +604,24 @@
+ 	return remove_memory_block(0, section, 0);
+ }
+ 
++u32 __weak memory_block_size(void)
++{
++	return MIN_MEMORY_BLOCK_SIZE;
++}
++
++static u32 get_memory_block_size(void)
++{
++	u32 blk_sz;
++
++	blk_sz = memory_block_size();
++
++	/* Validate blk_sz is a power of 2 and not less than section size */
++	if ((blk_sz & (blk_sz - 1)) || (blk_sz < MIN_MEMORY_BLOCK_SIZE))
++		blk_sz = MIN_MEMORY_BLOCK_SIZE;
++
++	return blk_sz;
++}
++
+ /*
+  * Initialize the sysfs support for memory devices...
+  */
+@@ -540,12 +630,16 @@
+ 	unsigned int i;
+ 	int ret;
+ 	int err;
++	int block_sz;
+ 
+ 	memory_sysdev_class.kset.uevent_ops = &memory_uevent_ops;
+ 	ret = sysdev_class_register(&memory_sysdev_class);
+ 	if (ret)
+ 		goto out;
+ 
++	block_sz = get_memory_block_size();
++	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
++
+ 	/*
+ 	 * Create entries for memory sections that were found
+ 	 * during boot and have been initialized
+Index: linux-2.6/include/linux/memory.h
+===================================================================
+--- linux-2.6.orig/include/linux/memory.h	2010-07-15 08:48:41.000000000 -0500
++++ linux-2.6/include/linux/memory.h	2010-07-15 09:54:06.000000000 -0500
+@@ -19,9 +19,15 @@
+ #include <linux/node.h>
+ #include <linux/compiler.h>
+ #include <linux/mutex.h>
++#include <linux/list.h>
+ 
+-struct memory_block {
++struct memory_block_section {
++	unsigned long state;
+ 	unsigned long phys_index;
++	struct list_head next;
++};
++
++struct memory_block {
+ 	unsigned long state;
+ 	/*
+ 	 * This serializes all state change requests.  It isn't
+@@ -34,6 +40,7 @@
+ 	void *hw;			/* optional pointer to fw/hw data */
+ 	int (*phys_callback)(struct memory_block *);
+ 	struct sys_device sysdev;
++	struct list_head sections;
+ };
+ 
+ int arch_get_memory_phys_device(unsigned long start_pfn);
+@@ -113,7 +120,7 @@
+ extern int remove_memory_block(unsigned long, struct mem_section *, int);
+ extern int memory_notify(unsigned long val, void *v);
+ extern int memory_isolate_notify(unsigned long val, void *v);
+-extern struct memory_block *find_memory_block(unsigned long);
++extern struct memory_block *find_memory_block(struct mem_section *);
+ extern int memory_is_hidden(struct mem_section *);
+ #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+ enum mem_add_context { BOOT, HOTPLUG };
