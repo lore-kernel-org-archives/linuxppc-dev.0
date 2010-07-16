@@ -1,30 +1,28 @@
-Return-Path: <Catalin.Marinas@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
-	[217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 5ED89B6F06
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 1DC191007D4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 06:10:03 +1000 (EST)
+	Sat, 17 Jul 2010 06:11:44 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
 	defconfig
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <AANLkTikqHnyFVJF0Pzwy2xtKeNSXYAPFdPkAkLiXK8Ls@mail.gmail.com>
+Date: Fri, 16 Jul 2010 22:11:31 +0200
 References: <20100713230352.6781.18644.stgit@angua>
-	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
-	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-	<alpine.LFD.2.00.1007161406120.10598@xanadu.home>
-	<20100716183028.GB26854@n2100.arm.linux.org.uk>
 	<alpine.LFD.2.00.1007161439240.10598@xanadu.home>
 	<AANLkTikqHnyFVJF0Pzwy2xtKeNSXYAPFdPkAkLiXK8Ls@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Jul 2010 21:09:36 +0100
-Message-ID: <1279310976.18579.8.camel@e102109-lin.cambridge.arm.com>
-Mime-Version: 1.0
+In-Reply-To: <AANLkTikqHnyFVJF0Pzwy2xtKeNSXYAPFdPkAkLiXK8Ls@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201007162211.31973.arnd@arndb.de>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	Daniel Walker <dwalker@codeaurora.org>,
 	Russell King - ARM Linux <linux@arm.linux.org.uk>,
-	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	Nicolas Pitre <nico@fluxnic.net>, lkml <linux-kernel@vger.kernel.org>,
-	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Nicolas Pitre <nico@fluxnic.net>, Tony Lindgren <tony@atomide.com>,
+	Catalin Marinas <catalin.marinas@arm.com>, linux-kbuild@vger.kernel.org,
+	lkml <linux-kernel@vger.kernel.org>, Uwe
+	=?iso-8859-1?q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,33 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-07-16 at 19:46 +0100, Linus Torvalds wrote:
-> On Fri, Jul 16, 2010 at 11:40 AM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> >
-> > DOH.
-> 
-> Well, it's possible that the correct approach is a mixture.
-> 
-> Automatically do the trivial cases (recursive selects, dependencies
-> that are simple or of the form "x && y" etc), and warn about the cases
-> that aren't trivial (where "not trivial" may not necessarily be about
-> fundamentally ambiguous ones, but just "complex enough that I won't
-> even try").
+On Friday 16 July 2010 20:46:17 Linus Torvalds wrote:
+> Maybe a full "solver" is unnecessary, for example, but just a simple
+> "automatically enable the direct dependencies and scream when it's not
+> simple any more" would take care of 99% of the common cases, and then
+> warn when it needs some manual help.
 
-There is still a risk with this approach when the Kconfig isn't entirely
-correct. For example, on ARM we have (I pushed a patch already):
+I think the recursion should also be limited to cases where the
+dependency is a valid selectable option, i.e. not for
 
-config CPU_32v6K
-	depends on CPU_V6
+# this architecture does not support MMIO
+config HAS_IOMEM 
+	def_bool 'n'
 
-config CPU_V7
-	select CPU_32v6K
+config PCI
+	bool "PCI Device drivers"
+	depends on HAS_IOMEM
 
-In this simple approach, we end up selecting CPU_V6 when we only need
-CPU_V7. There other places like this in the kernel.
+config FOO
+	tristate "Some device driver"
+	depends on PCI
 
-Of course, kbuild could still warn but if people rely on this feature to
-select options automatically I suspect they would ignore the warnings.
+In this case, it would be straightforward for the solver to enable PCI
+for when something selects CONFIG_FOO, but it should print a warning
+if this is attempted while HAS_IOMEM is unconditionally disabled,
+since that puts it into the "not simple" category.
 
--- 
-Catalin
+	Arnd
