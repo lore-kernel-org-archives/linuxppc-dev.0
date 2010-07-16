@@ -1,35 +1,34 @@
-Return-Path: <nico@fluxnic.net>
-Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
-	by ozlabs.org (Postfix) with ESMTP id D344FB6F05
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 04:40:40 +1000 (EST)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Received: from xanadu.home ([66.130.28.92]) by VL-MH-MR003.ip.videotron.ca
-	(Sun Java(tm) System Messaging Server 6.3-8.01 (built Dec 16 2008;
-	32bit))
-	with ESMTP id <0L5N00A46YJQ4TB0@VL-MH-MR003.ip.videotron.ca> for
-	linuxppc-dev@lists.ozlabs.org; Fri, 16 Jul 2010 14:40:39 -0400 (EDT)
-Date: Fri, 16 Jul 2010 14:40:38 -0400 (EDT)
-From: Nicolas Pitre <nico@fluxnic.net>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-In-reply-to: <20100716183028.GB26854@n2100.arm.linux.org.uk>
-Message-id: <alpine.LFD.2.00.1007161439240.10598@xanadu.home>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
-	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-	<alpine.LFD.2.00.1007161406120.10598@xanadu.home>
-	<20100716183028.GB26854@n2100.arm.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Daniel Walker <dwalker@codeaurora.org>,
-	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	=?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	lkml <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id BDD55B6EED
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 04:45:55 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6GIhwWP024433
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 12:43:58 -0600
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6GIjaHu053960
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 12:45:41 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6GIjXh5009162
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 12:45:33 -0600
+Subject: Re: [PATCH 1/5] v2 Split the memory_block structure
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <4C40A3BC.3060504@austin.ibm.com>
+References: <4C3F53D1.3090001@austin.ibm.com>
+	<4C3F557F.3000304@austin.ibm.com> <1279300521.9207.222.camel@nimitz>
+	<4C40A3BC.3060504@austin.ibm.com>
+Content-Type: text/plain; charset="ANSI_X3.4-1968"
+Date: Fri, 16 Jul 2010 11:45:31 -0700
+Message-ID: <1279305931.9207.265.camel@nimitz>
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,20 +38,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 16 Jul 2010, Russell King - ARM Linux wrote:
-
-> On Fri, Jul 16, 2010 at 02:19:31PM -0400, Nicolas Pitre wrote:
-> > For example, if I want CONFIG_MTD_CMDLINE_PARTS=y, the system may be 
-> > smart enough to notice and automatically enable CONFIG_MTD and 
-> > CONFIG_MTD_PARTITIONS without having to carry those in the defconfig.
+On Fri, 2010-07-16 at 13:23 -0500, Nathan Fontenot wrote:
+> >> -    if (mem->state != from_state_req) {
+> >> -            ret = -EINVAL;
+> >> -            goto out;
+> >> +    list_for_each_entry(mbs, &mem->sections, next) {
+> >> +            if (mbs->state != from_state_req)
+> >> +                    continue;
+> >> +
+> >> +            ret = memory_block_action(mbs, to_state);
+> >> +            if (ret)
+> >> +                    break;
+> >> +    }
+> >> +
+> >> +    if (ret) {
+> >> +            list_for_each_entry(mbs, &mem->sections, next) {
+> >> +                    if (mbs->state == from_state_req)
+> >> +                            continue;
+> >> +
+> >> +                    if (memory_block_action(mbs, to_state))
+> >> +                            printk(KERN_ERR "Could not re-enable memory "
+> >> +                                   "section %lx\n", mbs->phys_index);
+> >> +            }
+> >>      }
+> > 
+> > Please just use a goto here.  It's nicer looking, and much more in line
+> > with what's there already.
 > 
-> How do you sort out something like this:
-> 
-> config FOO
-> 	bool "Foo"
-> 	depends on (A && B) || C
+> Not sure if I follow on where you want the goto.  If you mean after the
+> if (memory_block_action())...  I purposely did not have a goto here.
+> Since this is in the recovery path I wanted to make sure we tried to return
+> every memory section to the original state. 
 
-DOH.
+Looking at it a little closer, I see what you're doing now.
 
+First of all, should memory_block_action() get a new name since it isn
+not taking 'memory_block_section's?
 
-Nicolas
+The thing I would have liked to see is to have that error handling block
+out of the way a bit.  But, the function is small, and there's not _too_
+much code in there, so what you have is probably the best way to do it.
+
+Minor nit: Please pull the memory_block_action() out of the if() and do
+the:
+
+> >> +            ret = memory_block_action(mbs, to_state);
+> >> +            if (ret)
+> >> +                    break;
+
+thing like above.  It makes it much more obvious that the loop is
+related to the top one.  I was thinking if it made sense to have a
+helper function to go through and do that list walk, so you could do:
+
+	ret = set_all_states(mem->sections, to_state);
+	if (ret)
+		set_all_states(mem->sections, old_state);
+
+But I think you'd need to pass in a bit more information, so it probably
+isn't worth doing that, either.
+
+-- Dave
