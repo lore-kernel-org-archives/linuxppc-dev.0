@@ -1,32 +1,23 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
-	[140.211.169.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 443FEB6F0C
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+	[209.85.213.51]) by ozlabs.org (Postfix) with ESMTP id 6C6BCB6F29
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 04:18:05 +1000 (EST)
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	(authenticated bits=0)
-	by smtp1.linux-foundation.org (8.14.2/8.13.5/Debian-3ubuntu1.1) with
-	ESMTP id o6GIHUKh031693
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=FAIL)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jul 2010 11:17:30 -0700
-Received: by gwaa20 with SMTP id a20so1354007gwa.38
+	Sat, 17 Jul 2010 04:18:53 +1000 (EST)
+Received: by ywa6 with SMTP id 6so256499ywa.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Jul 2010 11:17:24 -0700 (PDT)
+	Fri, 16 Jul 2010 11:18:51 -0700 (PDT)
 MIME-Version: 1.0
+Sender: glikely@secretlab.ca
 In-Reply-To: <20100716180701.GA26854@n2100.arm.linux.org.uk>
 References: <20100713230352.6781.18644.stgit@angua>
 	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
 	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
 	<20100716180701.GA26854@n2100.arm.linux.org.uk>
-Date: Fri, 16 Jul 2010 11:17:24 -0700
-Message-ID: <AANLkTik_pGP2oI0UQmjiz7BndmvFXDs1G2b9Au15y6n1@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 16 Jul 2010 12:18:29 -0600
+Message-ID: <AANLkTilfgiQyvcBhEmdc5P8HXSUHgAG7SUa0Mz4ev6ze@mail.gmail.com>
 Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
 	defconfig
-From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
@@ -34,6 +25,7 @@ Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Nicolas Pitre <nico@fluxnic.net>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
 	=?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,32 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 16, 2010 at 11:07 AM, Russell King - ARM Linux
+On Fri, Jul 16, 2010 at 12:07 PM, Russell King - ARM Linux
 <linux@arm.linux.org.uk> wrote:
+> On Fri, Jul 16, 2010 at 11:57:55AM -0600, Grant Likely wrote:
+>> Last missing piece is being able to do "select FOO =3D n", which Stephen
+>> is currently working on.
 >
 > I thought Linus' idea was to use:
 >
-> KBUILD_KCONFIG=file make allnoconfig
+> KBUILD_KCONFIG=3Dfile make allnoconfig
 
-See an earlier reply - that is indeed what I suggested, and yes, it
-avoids the need to be able to "unselect" things.
+That was more a prototype of the idea; but it's a pretty cumbersome
+user interface.  :-)  By changing the makefile to look for kconfig
+fragments in the configs directory, the user interface for choosing a
+config remains exactly the same.
 
-However, it turns out that even then you do want to extend the Kconfig
-language with the ability to select particular values. Not for boolean
-(or even tristate things), but for things that select an integer or
-string value etc.
+As for the allnoconfig bit....
 
-So the "select OPTION=xyz" syntax ends up being a good thing even for
-the "-n" (allnoconfig) case too.
+> in which case any option which would be presented to the user which hasn'=
+t
+> been selected by 'file' ends up being set to n. =A0That means there's no
+> need for a special "select FOO=3Dn" construct.
 
-And while I think the allnoconfig model has some advantages (the
-Kconfig input file ends up being independent of the default values),
-that very fact ends up being a disadvantage too (the Kconfig input
-file likely ends up being larger, since _hopefully_ the defaults are
-sane).
+...Linus chimed in on this that he doesn't actually care much.  I
+think defconfig with an empty initial config file makes a lot more
+sense than allnoconfig so that we're using the default values from the
+normal Kconfig files.
 
-So I'm not at all married to the "allnoconfig" model. It's one way of
-doing things, but I think the argument that we should start with the
-defaults and modify those instead is not an invalid one.
+> See one of Linus' replies on June 3:
+> Message-ID: <alpine.LFD.2.00.1006031317410.8175@i5.linux-foundation.org>
 
-                     Linus
+See this response:
+Message-ID: <AANLkTik-QCXFnjma3J28B9h27uajOcDhthTGz99zKgVi@mail.gmail.com>
+
+http://news.gmane.org/find-root.php?message_id=3D%3cAANLkTik%2dQCXFnjma3J28=
+B9h27uajOcDhthTGz99zKgVi%40mail.gmail.com%3e
+
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
