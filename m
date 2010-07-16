@@ -1,23 +1,30 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 9A7AEB6F15
+Return-Path: <jamie@shareable.org>
+Received: from mail2.shareable.org (mail2.shareable.org [80.68.89.115])
+	by ozlabs.org (Postfix) with ESMTP id 84ABAB6F17
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 07:47:01 +1000 (EST)
-Received: by gyd10 with SMTP id 10so1645073gyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Jul 2010 14:46:59 -0700 (PDT)
+	Sat, 17 Jul 2010 09:49:42 +1000 (EST)
+Date: Sat, 17 Jul 2010 00:49:18 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Daniel Walker <dwalker@codeaurora.org>
+Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
+	defconfig
+Message-ID: <20100716234918.GA31060@shareable.org>
+References: <20100713230352.6781.18644.stgit@angua>
+	<1279062881.4609.34.camel@c-dwalke-linux.qualcomm.com>
+	<AANLkTin69tN3NQHD2wvkA0G-lj3f9tSZEnhzdyJdTh9m@mail.gmail.com>
+	<1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
+	<alpine.LFD.2.00.1007131941140.10598@xanadu.home>
+	<1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <201007161634429622975@gmail.com>
-References: <201007161634429622975@gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 16 Jul 2010 15:46:39 -0600
-Message-ID: <AANLkTimXGTg41XHChzcnn75Px_pitC8sPKOY-OlPNIe1@mail.gmail.com>
-Subject: Re: hi, i have two flashs, but my kernel can only find one , how can
-	i write the dts?
-To: hacklu <embedway.test@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
+	Tony Lindgren <tony@atomide.com>,
+	Nicolas Pitre <nico@fluxnic.net>, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCBKdWwgMTYsIDIwMTAgYXQgMjozNCBBTSwgaGFja2x1IDxlbWJlZHdheS50ZXN0QGdt
-YWlsLmNvbT4gd3JvdGU6Cj4gdGhpcyBpcyBteSBkdHMgZmlsZToKPiBmbGFzaEAwLDCgewo+IKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoCNhZGRyZXNzLWNlbGxzoD2gPDE+Owo+IKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoCNzaXplLWNlbGxzoD2gPDE+Owo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oGNvbXBhdGlibGWgPaAiY2ZpLWZsYXNoIjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBwcm9i
-ZS10eXBloD2gIkNGSSI7Cj4goKCgoKCgoKCgoKCgoKCgoKCgIKCgoKCgcmVnoD2gPDCgMKAxMDAw
-MDAwPjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBiYW5rLXdpZHRooD2gPDI+Owo+IKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoGRldmljZS13aWR0aKA9oDwxPjsKPiCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKBocmN3QDCgewo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgbGFiZWyg
-PaAiaHJjdyI7Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKByZWegPaA8MKA0MDAw
-MD47Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgfTsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKBqZmZzQDQwMDAwoHsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGxhYmVsoD2g
-ImpmZnMiOwo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgcmVnoD2gPDQwMDAwoDIw
-MDAwMD47Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgfTsKPiCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKBqZmZzMkAyNDAwMDCgewo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgbGFi
-ZWygPaAidWltYWdlIjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHJlZ6A9oDwy
-NDAwMDCgZDgwMDAwPjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB9Owo+IKCgoKCgoKCgoKCg
-oKB9Owo+IGZsYXNoQDEsMKB7Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgI2FkZHJlc3MtY2Vs
-bHOgPaA8MT47Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgI3NpemUtY2VsbHOgPaA8MT47Cj4g
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgY29tcGF0aWJsZaA9oCJjZmktZmxhc2giOwo+IKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoHByb2JlLXR5cGWgPaAiQ0ZJIjsKPiCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKByZWegPaA8MTAwMDAwMKAwoDEwMDAwMDA+OwoKVGhpcyBsb29rcyB3cm9uZy4gIElm
-IHlvdSdyZSBzZWNvbmQgZmxhc2ggaXMgb24gY2hpcCBzZWxlY3QgMSBhcyB0aGUKbm9kZSBuYW1l
-IHN1Z2dlc3RzLCB0aGVuIHRoaXMgc2hvdWxkIGJlIChmaXJzdCBjZWxsIGlzIENTIywgc2Vjb25k
-IGlzCm9mZnNldCwgYW5kIHRoaXJkIGlzIHNpemUuICBBbG9zIHlvdSdyZSBtaXNzaW5nIHRoZSAw
-eCBwcmVmaXgpOgoKcmVnID0gPDEgMCAweDEwMDAwMDA+OwoKSWYgeW91ciBzZWNvbmQgZmxhc2gg
-aXMgb24gY2hpcCBzZWxlY3QgMCB3aXRoIHRoZSBmaXJzdCBmbGFzaCwgYnV0Cm9mZnNldCBieSAw
-eDEwMDAwMDAsIHRoZW4gcmVnIHNob3VsZCBiZToKCnJlZyA9IDwwIDB4MTAwMDAwMCAweDEwMDAw
-MDA+OwoKYW5kIHRoZSBuYW1lIHNob3VsZCBiZToKCmZsYXNoQDAsMTAwMDAwMCB7IC4uLiB9OwoK
-Zy4KCi0tIApHcmFudCBMaWtlbHksIEIuU2MuLCBQLkVuZy4KU2VjcmV0IExhYiBUZWNobm9sb2dp
-ZXMgTHRkLgo=
+Daniel Walker wrote:
+> > But all the rest is arbitrary and could be part of common shared 
+> > profiles or the like in defconfig format.
+> 
+> I'm sure most people will want to have a config isolated to their
+> specific device. That to me seems reasonable because everyone wants the
+> smallest possible kernel they can get for their given device.
+
+Indeed, but people who want the smallest possible kernel for their
+specific device _in a particular use context_ tend to want:
+
+  - To disable support for parts of the device they aren't using.
+    For example, an SoC with integrated ethernet that isn't actually
+    wired up on their board, or where they're using an external ethernet
+    chip instead for some reason.
+
+  - To choose what's modular and what isn't, even for integrated
+    parts.  For example to control the bootup sequence, they might
+    want to delay integrated USB and IDE initialisation, which is done by
+    making those modular and loading them after bringing up a splash
+    screen earlier in the boot scripts.
+
+So there is still a need to be able to override the drivers and
+settings, but it's still incredibly useful to have defaults which
+describe the SoC or board accurately.
+
+-- Jamie
