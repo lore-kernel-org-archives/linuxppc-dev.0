@@ -1,29 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 9B41BB6F14
+Return-Path: <Catalin.Marinas@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+	[217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 5ED89B6F06
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 06:08:15 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Grant Likely <grant.likely@secretlab.ca>
+	Sat, 17 Jul 2010 06:10:03 +1000 (EST)
 Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
 	defconfig
-Date: Fri, 16 Jul 2010 22:01:09 +0200
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <AANLkTikqHnyFVJF0Pzwy2xtKeNSXYAPFdPkAkLiXK8Ls@mail.gmail.com>
 References: <20100713230352.6781.18644.stgit@angua>
 	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
 	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-In-Reply-To: <AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201007162201.09629.arnd@arndb.de>
+	<alpine.LFD.2.00.1007161406120.10598@xanadu.home>
+	<20100716183028.GB26854@n2100.arm.linux.org.uk>
+	<alpine.LFD.2.00.1007161439240.10598@xanadu.home>
+	<AANLkTikqHnyFVJF0Pzwy2xtKeNSXYAPFdPkAkLiXK8Ls@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 16 Jul 2010 21:09:36 +0100
+Message-ID: <1279310976.18579.8.camel@e102109-lin.cambridge.arm.com>
+Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	Daniel Walker <dwalker@codeaurora.org>,
+	Russell King - ARM Linux <linux@arm.linux.org.uk>,
 	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Nicolas Pitre <nico@fluxnic.net>, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>, Uwe
-	=?iso-8859-1?q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	Nicolas Pitre <nico@fluxnic.net>, lkml <linux-kernel@vger.kernel.org>,
+	Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,28 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 16 July 2010 19:57:55 Grant Likely wrote:
-> On Fri, Jul 16, 2010 at 10:03 AM, Catalin Marinas
-> <catalin.marinas@arm.com> wrote:
-> > On Wed, 2010-07-14 at 00:04 +0100, Grant Likely wrote:
+On Fri, 2010-07-16 at 19:46 +0100, Linus Torvalds wrote:
+> On Fri, Jul 16, 2010 at 11:40 AM, Nicolas Pitre <nico@fluxnic.net> wrote:
+> >
+> > DOH.
 > 
-> sfr and I were talking about your patch the other day.  Just warning
-> on incomplete dependencies is enough to make it actually workable for
-> me (without my ugly post-processing step).  I was very happy to hear
-> that it is in linux-next.
+> Well, it's possible that the correct approach is a mixture.
 > 
-> Last missing piece is being able to do "select FOO = n", which Stephen
-> is currently working on.
+> Automatically do the trivial cases (recursive selects, dependencies
+> that are simple or of the form "x && y" etc), and warn about the cases
+> that aren't trivial (where "not trivial" may not necessarily be about
+> fundamentally ambiguous ones, but just "complex enough that I won't
+> even try").
 
-Are there a lot of symbols for which this is needed? If there is only
-a handful, you could work around this by selectively adding
+There is still a risk with this approach when the Kconfig isn't entirely
+correct. For example, on ARM we have (I pushed a patch already):
 
-config FOO
-	bool "foo"
-	default !FOO_DISABLE
+config CPU_32v6K
+	depends on CPU_V6
 
-config FOO_DISABLE
-	def_bool "n"
+config CPU_V7
+	select CPU_32v6K
 
+In this simple approach, we end up selecting CPU_V6 when we only need
+CPU_V7. There other places like this in the kernel.
 
-		Arnd
+Of course, kbuild could still warn but if people rely on this feature to
+select options automatically I suspect they would ignore the warnings.
+
+-- 
+Catalin
