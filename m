@@ -1,33 +1,35 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 2C0F0B709C
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 04:33:35 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6GIJBMr025308
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 14:19:11 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6GIXXJX1929348
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 14:33:33 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6GIXWqU004375
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 15:33:32 -0300
-Subject: Re: [PATCH 1/5] v2 Split the memory_block structure
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4C40A3BC.3060504@austin.ibm.com>
-References: <4C3F53D1.3090001@austin.ibm.com>
-	<4C3F557F.3000304@austin.ibm.com> <1279300521.9207.222.camel@nimitz>
-	<4C40A3BC.3060504@austin.ibm.com>
-Content-Type: text/plain; charset="ANSI_X3.4-1968"
-Date: Fri, 16 Jul 2010 11:33:30 -0700
-Message-ID: <1279305210.9207.250.camel@nimitz>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
+Return-Path: <nico@fluxnic.net>
+Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
+	by ozlabs.org (Postfix) with ESMTP id D344FB6F05
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 17 Jul 2010 04:40:40 +1000 (EST)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Received: from xanadu.home ([66.130.28.92]) by VL-MH-MR003.ip.videotron.ca
+	(Sun Java(tm) System Messaging Server 6.3-8.01 (built Dec 16 2008;
+	32bit))
+	with ESMTP id <0L5N00A46YJQ4TB0@VL-MH-MR003.ip.videotron.ca> for
+	linuxppc-dev@lists.ozlabs.org; Fri, 16 Jul 2010 14:40:39 -0400 (EDT)
+Date: Fri, 16 Jul 2010 14:40:38 -0400 (EDT)
+From: Nicolas Pitre <nico@fluxnic.net>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
+	defconfig
+In-reply-to: <20100716183028.GB26854@n2100.arm.linux.org.uk>
+Message-id: <alpine.LFD.2.00.1007161439240.10598@xanadu.home>
+References: <20100713230352.6781.18644.stgit@angua>
+	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
+	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
+	<alpine.LFD.2.00.1007161406120.10598@xanadu.home>
+	<20100716183028.GB26854@n2100.arm.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Daniel Walker <dwalker@codeaurora.org>,
+	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	=?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+	lkml <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,26 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2010-07-16 at 13:23 -0500, Nathan Fontenot wrote:
-> > If the memory_block's state was inferred to be the same as each
-> > memory_block_section, couldn't we just keep a start and end phys_index
-> > in the memory_block, and get away from having memory_block_sections at
-> > all?
+On Fri, 16 Jul 2010, Russell King - ARM Linux wrote:
+
+> On Fri, Jul 16, 2010 at 02:19:31PM -0400, Nicolas Pitre wrote:
+> > For example, if I want CONFIG_MTD_CMDLINE_PARTS=y, the system may be 
+> > smart enough to notice and automatically enable CONFIG_MTD and 
+> > CONFIG_MTD_PARTITIONS without having to carry those in the defconfig.
 > 
-> Oooohhh... I like.  Looking at the code it appears this is possible.  I'll
-> try this out and include it in the next version of the patch.
+> How do you sort out something like this:
 > 
-> Do you think we need to add an additional file to each memory block directory
-> to indicate the number of memory sections in the memory block that are actually
-> present? 
+> config FOO
+> 	bool "Foo"
+> 	depends on (A && B) || C
 
-I think it's easiest to just say that each 'memory_block' can only hold
-contiguous 'memory_block_sections', and we give either the start/end or
-start/length pairs.  It gets a lot more complicated if we have to deal
-with lots of holes.
+DOH.
 
-I can just see the hardware designers reading this thread, with their
-Dr. Evil laughs trying to come up with a reason to give us a couple of
-terabytes of RAM with only every-other 16MB area populated. :)  
 
--- Dave
+Nicolas
