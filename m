@@ -1,46 +1,32 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DE13CB6F19
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 00:21:25 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e1.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6GEFqRE029579
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 10:15:52 -0400
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 9CD5EB6F16
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 01:30:17 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6GFM82j001142
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:22:08 -0600
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6GELG5H116822
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 10:21:16 -0400
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6GFTxB0102862
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:30:03 -0600
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6GEOU8Z024149
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 08:24:32 -0600
-Date: Fri, 16 Jul 2010 10:20:55 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-Subject: Re: [PATCH 1/2] Remove REDWOOD_[456] config options and conditional
-	code
-Message-ID: <20100716142055.GA11736@zod.rchland.ibm.com>
-References: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
-	<redwood56-reply-1-miltonm@bga.com>
-	<cover.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
-	<ca1bb25d203618c3548748f5efb6f125a96c89e0.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
+	id o6GFXFk8006324
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:33:15 -0600
+Message-ID: <4C407AEC.9080504@austin.ibm.com>
+Date: Fri, 16 Jul 2010 10:29:48 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ca1bb25d203618c3548748f5efb6f125a96c89e0.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linuxppc-dev@ozlabs.org,
-	Alexander Kurz <linux@kbdbabel.org>, Paul Mackerras <paulus@samba.org>,
-	John Linn <john.linn@xilinx.com>, David Brown <davidb@quicinc.com>,
-	Ladislav Michl <ladis@linux-mips.org>,
-	Solomon Peachy <solomon@linux-wlan.com>,
-	vamos-dev@i4.informatik.uni-erlangen.de,
-	Mike Frysinger <vapier@gentoo.org>, Florian Fainelli <florian@openwrt.org>,
-	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-	Nicolas Pitre <nico@fluxnic.net>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	Jiri Kosina <jkosina@suse.cz>, Joe Perches <joe@perches.com>,
-	linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
-	"David S. Miller" <davem@davemloft.net>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/5] v2 Split the memory_block structure
+References: <4C3F53D1.3090001@austin.ibm.com>	<4C3F557F.3000304@austin.ibm.com>
+	<20100716090637.3654f91d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100716090637.3654f91d.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,195 +36,504 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 16, 2010 at 02:29:02PM +0200, Christian Dietrich wrote:
->The config options for REDWOOD_[456] were commented out in the powerpc
->Kconfig. The ifdefs referencing this options therefore are dead and all
->references to this can be removed (Also dependencies in other KConfig
->files).
->
->Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
->Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
+Thanks for taking a look a this Kame, answers below...
 
-This seems fine with me.
+-Nathan
 
-The only question is which tree it coms through.  I'm happy to take it
-in via mine if the netdev and MTD people are fine with that.  Otherwise,
-my ack is below.
+On 07/15/2010 07:06 PM, KAMEZAWA Hiroyuki wrote:
+> On Thu, 15 Jul 2010 13:37:51 -0500
+> Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> 
+>> Split the memory_block struct into a memory_block
+>> struct to cover each sysfs directory and a new memory_block_section
+>> struct for each memory section covered by the sysfs directory.
+>> This change allows for creation of memory sysfs directories that
+>> can span multiple memory sections.
+>>
+>> This can be beneficial in that it can reduce the number of memory
+>> sysfs directories created at boot.  This also allows different
+>> architectures to define how many memory sections are covered by
+>> a sysfs directory.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+>> ---
+>>  drivers/base/memory.c  |  222 ++++++++++++++++++++++++++++++++++---------------
+>>  include/linux/memory.h |   11 +-
+>>  2 files changed, 167 insertions(+), 66 deletions(-)
+>>
+>> Index: linux-2.6/drivers/base/memory.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/base/memory.c	2010-07-15 08:48:41.000000000 -0500
+>> +++ linux-2.6/drivers/base/memory.c	2010-07-15 09:55:54.000000000 -0500
+>> @@ -28,6 +28,14 @@
+>>  #include <asm/uaccess.h>
+>>  
+>>  #define MEMORY_CLASS_NAME	"memory"
+>> +#define MIN_MEMORY_BLOCK_SIZE	(1 << SECTION_SIZE_BITS)
+>> +
+>> +static int sections_per_block;
+>> +
+>> +static inline int base_memory_block_id(int section_nr)
+>> +{
+>> +	return (section_nr / sections_per_block) * sections_per_block;
+>> +}
+>>  
+>>  static struct sysdev_class memory_sysdev_class = {
+>>  	.name = MEMORY_CLASS_NAME,
+>> @@ -94,10 +102,9 @@
+>>  }
+>>  
+>>  static void
+>> -unregister_memory(struct memory_block *memory, struct mem_section *section)
+>> +unregister_memory(struct memory_block *memory)
+>>  {
+>>  	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
+>> -	BUG_ON(memory->sysdev.id != __section_nr(section));
+>>  
+>>  	/* drop the ref. we got in remove_memory_block() */
+>>  	kobject_put(&memory->sysdev.kobj);
+>> @@ -123,13 +130,20 @@
+>>  static ssize_t show_mem_removable(struct sys_device *dev,
+>>  			struct sysdev_attribute *attr, char *buf)
+>>  {
+>> +	struct memory_block *mem;
+>> +	struct memory_block_section *mbs;
+>>  	unsigned long start_pfn;
+>> -	int ret;
+>> -	struct memory_block *mem =
+>> -		container_of(dev, struct memory_block, sysdev);
+>> +	int ret = 1;
+>> +
+>> +	mem = container_of(dev, struct memory_block, sysdev);
+>> +	mutex_lock(&mem->state_mutex);
+>>  
+>> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+>> -	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>> +	list_for_each_entry(mbs, &mem->sections, next) {
+>> +		start_pfn = section_nr_to_pfn(mbs->phys_index);
+>> +		ret &= is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>> +	}
+>> +
+>> +	mutex_unlock(&mem->state_mutex);
+> 
+> Hmm, this means memory cab be offlined the while memory block section. Right ?
+> Please write this fact in patch description...
+> And Documentaion/memory_hotplug.txt as "From user's perspective, memory section
+> is not a unit of memory hotplug anymore".
+> And descirbe about a new rule.
 
-Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+You are correct.  A memory block is removable only if all of the memory
+sections contained within the memory block are removable.
 
-josh
+I will include a documentation patch with v3 of the patches to explain this
+and to explain that memory add/remove operations are done on a per memory
+block basis.
 
->---
-> arch/powerpc/platforms/40x/Kconfig |   16 -------------
-> drivers/mtd/maps/Kconfig           |    2 +-
-> drivers/mtd/maps/redwood.c         |   43 ------------------------------------
-> drivers/net/Kconfig                |    2 +-
-> drivers/net/smc91x.h               |   37 -------------------------------
-> 5 files changed, 2 insertions(+), 98 deletions(-)
->
->diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
->index ec64264..b721764 100644
->--- a/arch/powerpc/platforms/40x/Kconfig
->+++ b/arch/powerpc/platforms/40x/Kconfig
->@@ -71,22 +71,6 @@ config MAKALU
-> 	help
-> 	  This option enables support for the AMCC PPC405EX board.
->
->-#config REDWOOD_5
->-#	bool "Redwood-5"
->-#	depends on 40x
->-#	default n
->-#	select STB03xxx
->-#	help
->-#	  This option enables support for the IBM STB04 evaluation board.
->-
->-#config REDWOOD_6
->-#	bool "Redwood-6"
->-#	depends on 40x
->-#	default n
->-#	select STB03xxx
->-#	help
->-#	  This option enables support for the IBM STBx25xx evaluation board.
->-
-> #config SYCAMORE
-> #	bool "Sycamore"
-> #	depends on 40x
->diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
->index f22bc9f..6629d09 100644
->--- a/drivers/mtd/maps/Kconfig
->+++ b/drivers/mtd/maps/Kconfig
->@@ -321,7 +321,7 @@ config MTD_CFI_FLAGADM
->
-> config MTD_REDWOOD
-> 	tristate "CFI Flash devices mapped on IBM Redwood"
->-	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
->+	depends on MTD_CFI
-> 	help
-> 	  This enables access routines for the flash chips on the IBM
-> 	  Redwood board. If you have one of these boards and would like to
->diff --git a/drivers/mtd/maps/redwood.c b/drivers/mtd/maps/redwood.c
->index 933c0b6..d2c9db0 100644
->--- a/drivers/mtd/maps/redwood.c
->+++ b/drivers/mtd/maps/redwood.c
->@@ -22,8 +22,6 @@
->
-> #include <asm/io.h>
->
->-#if !defined (CONFIG_REDWOOD_6)
->-
-> #define WINDOW_ADDR 0xffc00000
-> #define WINDOW_SIZE 0x00400000
->
->@@ -69,47 +67,6 @@ static struct mtd_partition redwood_flash_partitions[] = {
-> 	}
-> };
->
->-#else /* CONFIG_REDWOOD_6 */
->-/* FIXME: the window is bigger - armin */
->-#define WINDOW_ADDR 0xff800000
->-#define WINDOW_SIZE 0x00800000
->-
->-#define RW_PART0_OF	0
->-#define RW_PART0_SZ	0x400000	/* 4 MiB data */
->-#define RW_PART1_OF	RW_PART0_OF + RW_PART0_SZ
->-#define RW_PART1_SZ	0x10000		/* 64K VPD */
->-#define RW_PART2_OF	RW_PART1_OF + RW_PART1_SZ
->-#define RW_PART2_SZ	0x400000 - (0x10000 + 0x20000)
->-#define RW_PART3_OF	RW_PART2_OF + RW_PART2_SZ
->-#define RW_PART3_SZ	0x20000
->-
->-static struct mtd_partition redwood_flash_partitions[] = {
->-	{
->-		.name = "Redwood filesystem",
->-		.offset = RW_PART0_OF,
->-		.size = RW_PART0_SZ
->-	},
->-	{
->-		.name = "Redwood OpenBIOS Vital Product Data",
->-		.offset = RW_PART1_OF,
->-		.size = RW_PART1_SZ,
->-		.mask_flags = MTD_WRITEABLE	/* force read-only */
->-	},
->-	{
->-		.name = "Redwood kernel",
->-		.offset = RW_PART2_OF,
->-		.size = RW_PART2_SZ
->-	},
->-	{
->-		.name = "Redwood OpenBIOS",
->-		.offset = RW_PART3_OF,
->-		.size = RW_PART3_SZ,
->-		.mask_flags = MTD_WRITEABLE	/* force read-only */
->-	}
->-};
->-
->-#endif /* CONFIG_REDWOOD_6 */
->-
-> struct map_info redwood_flash_map = {
-> 	.name = "IBM Redwood",
-> 	.size = WINDOW_SIZE,
->diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
->index ce2fcdd..313d306 100644
->--- a/drivers/net/Kconfig
->+++ b/drivers/net/Kconfig
->@@ -913,7 +913,7 @@ config SMC91X
-> 	tristate "SMC 91C9x/91C1xxx support"
-> 	select CRC32
-> 	select MII
->-	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || \
->+	depends on ARM || M32R || SUPERH || \
-> 		MIPS || BLACKFIN || MN10300 || COLDFIRE
-> 	help
-> 	  This is a driver for SMC's 91x series of Ethernet chipsets,
->diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
->index 8d2772c..ee74791 100644
->--- a/drivers/net/smc91x.h
->+++ b/drivers/net/smc91x.h
->@@ -83,43 +83,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
-> 	}
-> }
->
->-#elif defined(CONFIG_REDWOOD_5) || defined(CONFIG_REDWOOD_6)
->-
->-/* We can only do 16-bit reads and writes in the static memory space. */
->-#define SMC_CAN_USE_8BIT	0
->-#define SMC_CAN_USE_16BIT	1
->-#define SMC_CAN_USE_32BIT	0
->-#define SMC_NOWAIT		1
->-
->-#define SMC_IO_SHIFT		0
->-
->-#define SMC_inw(a, r)		in_be16((volatile u16 *)((a) + (r)))
->-#define SMC_outw(v, a, r)	out_be16((volatile u16 *)((a) + (r)), v)
->-#define SMC_insw(a, r, p, l) 						\
->-	do {								\
->-		unsigned long __port = (a) + (r);			\
->-		u16 *__p = (u16 *)(p);					\
->-		int __l = (l);						\
->-		insw(__port, __p, __l);					\
->-		while (__l > 0) {					\
->-			*__p = swab16(*__p);				\
->-			__p++;						\
->-			__l--;						\
->-		}							\
->-	} while (0)
->-#define SMC_outsw(a, r, p, l) 						\
->-	do {								\
->-		unsigned long __port = (a) + (r);			\
->-		u16 *__p = (u16 *)(p);					\
->-		int __l = (l);						\
->-		while (__l > 0) {					\
->-			/* Believe it or not, the swab isn't needed. */	\
->-			outw( /* swab16 */ (*__p++), __port);		\
->-			__l--;						\
->-		}							\
->-	} while (0)
->-#define SMC_IRQ_FLAGS		(0)
->-
-> #elif defined(CONFIG_SA1100_PLEB)
-> /* We can only do 16-bit reads and writes in the static memory space. */
-> #define SMC_CAN_USE_8BIT	1
->-- 
->1.7.0.4
->
+> 
+> 
+>>  	return sprintf(buf, "%d\n", ret);
+>>  }
+>>  
+>> @@ -182,16 +196,16 @@
+>>   * OK to have direct references to sparsemem variables in here.
+>>   */
+>>  static int
+>> -memory_block_action(struct memory_block *mem, unsigned long action)
+>> +memory_block_action(struct memory_block_section *mbs, unsigned long action)
+>>  {
+>>  	int i;
+>>  	unsigned long psection;
+>>  	unsigned long start_pfn, start_paddr;
+>>  	struct page *first_page;
+>>  	int ret;
+>> -	int old_state = mem->state;
+>> +	int old_state = mbs->state;
+>>  
+>> -	psection = mem->phys_index;
+>> +	psection = mbs->phys_index;
+>>  	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
+>>  
+>>  	/*
+>> @@ -217,18 +231,18 @@
+>>  			ret = online_pages(start_pfn, PAGES_PER_SECTION);
+>>  			break;
+>>  		case MEM_OFFLINE:
+>> -			mem->state = MEM_GOING_OFFLINE;
+>> +			mbs->state = MEM_GOING_OFFLINE;
+>>  			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+>>  			ret = remove_memory(start_paddr,
+>>  					    PAGES_PER_SECTION << PAGE_SHIFT);
+>>  			if (ret) {
+>> -				mem->state = old_state;
+>> +				mbs->state = old_state;
+>>  				break;
+>>  			}
+>>  			break;
+>>  		default:
+>>  			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
+>> -					__func__, mem, action, action);
+>> +					__func__, mbs, action, action);
+>>  			ret = -EINVAL;
+>>  	}
+>>  
+>> @@ -238,19 +252,34 @@
+> 
+> And please check quilt's diff option.
+> Usual patche in ML shows a function name in any changes, as
+> @@ -241,6 +293,8 @@ static int memory_block_change_state(str
+> 
+> Maybe "-p" option is lacked..
+
+sorry about that.  I'm just using the default options with quilt.  I'll
+play around with it to why this is happening.
+
+> 
+> 
+>>  static int memory_block_change_state(struct memory_block *mem,
+>>  		unsigned long to_state, unsigned long from_state_req)
+>>  {
+>> +	struct memory_block_section *mbs;
+>>  	int ret = 0;
+>> +
+>>  	mutex_lock(&mem->state_mutex);
+>>  
+>> -	if (mem->state != from_state_req) {
+>> -		ret = -EINVAL;
+>> -		goto out;
+>> +	list_for_each_entry(mbs, &mem->sections, next) {
+>> +		if (mbs->state != from_state_req)
+>> +			continue;
+>> +
+>> +		ret = memory_block_action(mbs, to_state);
+>> +		if (ret)
+>> +			break;
+>> +	}
+>> +
+>> +	if (ret) {
+>> +		list_for_each_entry(mbs, &mem->sections, next) {
+>> +			if (mbs->state == from_state_req)
+>> +				continue;
+>> +
+>> +			if (memory_block_action(mbs, to_state))
+>> +				printk(KERN_ERR "Could not re-enable memory "
+>> +				       "section %lx\n", mbs->phys_index);
+> 
+> Why re-enable only ? online->fail->offline never happens ?
+> If so, please add comment at least.
+
+This should handle both conditions.  If we fail to move all of the memory
+sections to the 'to_state', it puts all of the memory sections back to the
+'from_state_req'.
+
+> BTW, is it guaranteed that all sections under a block has same state after
+> boot ?
+
+Yes, during boot all memory sections are marked online.
+
+> 
+>> +		}
+>>  	}
+>>  
+>> -	ret = memory_block_action(mem, to_state);
+>>  	if (!ret)
+>>  		mem->state = to_state;
+>>  
+>> -out:
+>>  	mutex_unlock(&mem->state_mutex);
+>>  	return ret;
+>>  }
+>> @@ -260,20 +289,15 @@
+>>  		struct sysdev_attribute *attr, const char *buf, size_t count)
+>>  {
+>>  	struct memory_block *mem;
+>> -	unsigned int phys_section_nr;
+>>  	int ret = -EINVAL;
+>>  
+>>  	mem = container_of(dev, struct memory_block, sysdev);
+>> -	phys_section_nr = mem->phys_index;
+>> -
+>> -	if (!present_section_nr(phys_section_nr))
+>> -		goto out;
+>>
+> I'm sorry but I couldn't remember why this check was necessary...
+
+Not sure either, it appears that it is there to ensure that the memory
+section we are trying to act on is actually present.
+
+> 
+> 
+>  
+>>  	if (!strncmp(buf, "online", min((int)count, 6)))
+>>  		ret = memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
+>>  	else if(!strncmp(buf, "offline", min((int)count, 7)))
+>>  		ret = memory_block_change_state(mem, MEM_OFFLINE, MEM_ONLINE);
+>> -out:
+>> +
+>>  	if (ret)
+>>  		return ret;
+>>  	return count;
+>> @@ -435,39 +459,6 @@
+>>  	return 0;
+>>  }
+>>  
+>> -static int add_memory_block(int nid, struct mem_section *section,
+>> -			unsigned long state, enum mem_add_context context)
+>> -{
+>> -	struct memory_block *mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+>> -	unsigned long start_pfn;
+>> -	int ret = 0;
+>> -
+>> -	if (!mem)
+>> -		return -ENOMEM;
+>> -
+>> -	mem->phys_index = __section_nr(section);
+>> -	mem->state = state;
+>> -	mutex_init(&mem->state_mutex);
+>> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+>> -	mem->phys_device = arch_get_memory_phys_device(start_pfn);
+>> -
+>> -	ret = register_memory(mem, section);
+>> -	if (!ret)
+>> -		ret = mem_create_simple_file(mem, phys_index);
+>> -	if (!ret)
+>> -		ret = mem_create_simple_file(mem, state);
+>> -	if (!ret)
+>> -		ret = mem_create_simple_file(mem, phys_device);
+>> -	if (!ret)
+>> -		ret = mem_create_simple_file(mem, removable);
+>> -	if (!ret) {
+>> -		if (context == HOTPLUG)
+>> -			ret = register_mem_sect_under_node(mem, nid);
+>> -	}
+>> -
+>> -	return ret;
+>> -}
+>> -
+> 
+> I don't say strongly but this kind of move-code should be done in another patch.
+
+ok,  I will move the code move piece to a differnet patch.
+
+> 
+> 
+>>  /*
+>>   * For now, we have a linear search to go find the appropriate
+>>   * memory_block corresponding to a particular phys_index. If
+>> @@ -482,12 +473,13 @@
+>>  	struct sys_device *sysdev;
+>>  	struct memory_block *mem;
+>>  	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
+>> +	int block_id = base_memory_block_id(__section_nr(section));
+>>  
+>>  	/*
+>>  	 * This only works because we know that section == sysdev->id
+>>  	 * slightly redundant with sysdev_register()
+>>  	 */
+>> -	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
+>> +	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, block_id);
+>>  
+>>  	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
+>>  	if (!kobj)
+>> @@ -499,18 +491,98 @@
+>>  	return mem;
+>>  }
+>>  
+>> +static int add_mem_block_section(struct memory_block *mem,
+>> +				 int section_nr, unsigned long state)
+>> +{
+>> +	struct memory_block_section *mbs;
+>> +
+>> +	mbs = kzalloc(sizeof(*mbs), GFP_KERNEL);
+>> +	if (!mbs)
+>> +		return -ENOMEM;
+>> +
+>> +	mbs->phys_index = section_nr;
+>> +	mbs->state = state;
+>> +
+>> +	list_add(&mbs->next, &mem->sections);
+>> +	return 0;
+>> +}
+> 
+> Doesn't this "sections" need to be sorted ? Hmm.
+
+We could, but I cannot think of anything we gain by sorting it.
+
+> 
+> 
+>> +
+>> +static int add_memory_block(int nid, struct mem_section *section,
+>> +			unsigned long state, enum mem_add_context context)
+>> +{
+>> +	struct memory_block *mem;
+>> +	int ret = 0;
+>> +
+>> +	mem = find_memory_block(section);
+>> +	if (!mem) {
+>> +		unsigned long start_pfn;
+>> +
+>> +		mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+>> +		if (!mem)
+>> +			return -ENOMEM;
+>> +
+>> +		mem->state = state;
+>> +		mutex_init(&mem->state_mutex);
+>> +		start_pfn = section_nr_to_pfn(__section_nr(section));
+>> +		mem->phys_device = arch_get_memory_phys_device(start_pfn);
+>> +		INIT_LIST_HEAD(&mem->sections);
+>> +
+>> +		mutex_lock(&mem->state_mutex);
+>> +
+>> +		ret = register_memory(mem, section);
+>> +		if (!ret)
+>> +			ret = mem_create_simple_file(mem, phys_index);
+>> +		if (!ret)
+>> +			ret = mem_create_simple_file(mem, state);
+>> +		if (!ret)
+>> +			ret = mem_create_simple_file(mem, phys_device);
+>> +		if (!ret)
+>> +			ret = mem_create_simple_file(mem, removable);
+>> +		if (!ret) {
+>> +			if (context == HOTPLUG)
+>> +				ret = register_mem_sect_under_node(mem, nid);
+>> +		}
+>> +	} else {
+>> +		kobject_put(&mem->sysdev.kobj);
+>> +		mutex_lock(&mem->state_mutex);
+>> +	}
+>> +
+>> +	if (!ret)
+>> +		ret = add_mem_block_section(mem, __section_nr(section), state);
+>> +
+>> +	mutex_unlock(&mem->state_mutex);
+>> +	return ret;
+>> +}
+>> +
+>>  int remove_memory_block(unsigned long node_id, struct mem_section *section,
+>>  		int phys_device)
+>>  {
+>>  	struct memory_block *mem;
+>> +	struct memory_block_section *mbs, *tmp;
+>> +	int section_nr = __section_nr(section);
+>>  
+>>  	mem = find_memory_block(section);
+>> -	unregister_mem_sect_under_nodes(mem);
+>> -	mem_remove_simple_file(mem, phys_index);
+>> -	mem_remove_simple_file(mem, state);
+>> -	mem_remove_simple_file(mem, phys_device);
+>> -	mem_remove_simple_file(mem, removable);
+>> -	unregister_memory(mem, section);
+>> +	mutex_lock(&mem->state_mutex);
+>> +
+>> +	/* remove the specified section */
+>> +	list_for_each_entry_safe(mbs, tmp, &mem->sections, next) {
+>> +		if (mbs->phys_index == section_nr) {
+>> +			list_del(&mbs->next);
+>> +			kfree(mbs);
+>> +		}
+>> +	}
+>> +
+>> +	mutex_unlock(&mem->state_mutex);
+>> +
+>> +	if (list_empty(&mem->sections)) {
+>> +		unregister_mem_sect_under_nodes(mem);
+>> +		mem_remove_simple_file(mem, phys_index);
+>> +		mem_remove_simple_file(mem, state);
+>> +		mem_remove_simple_file(mem, phys_device);
+>> +		mem_remove_simple_file(mem, removable);
+>> +		unregister_memory(mem);
+>> +		kfree(mem);
+>> +	}
+>>  
+>>  	return 0;
+>>  }
+>> @@ -532,6 +604,24 @@
+>>  	return remove_memory_block(0, section, 0);
+>>  }
+>>  
+>> +u32 __weak memory_block_size(void)
+>> +{
+>> +	return MIN_MEMORY_BLOCK_SIZE;
+>> +}
+>> +
+>> +static u32 get_memory_block_size(void)
+>> +{
+>> +	u32 blk_sz;
+>> +
+>> +	blk_sz = memory_block_size();
+>> +
+>> +	/* Validate blk_sz is a power of 2 and not less than section size */
+>> +	if ((blk_sz & (blk_sz - 1)) || (blk_sz < MIN_MEMORY_BLOCK_SIZE))
+>> +		blk_sz = MIN_MEMORY_BLOCK_SIZE;
+>> +
+>> +	return blk_sz;
+>> +}
+>> +
+>>  /*
+>>   * Initialize the sysfs support for memory devices...
+>>   */
+>> @@ -540,12 +630,16 @@
+>>  	unsigned int i;
+>>  	int ret;
+>>  	int err;
+>> +	int block_sz;
+>>  
+>>  	memory_sysdev_class.kset.uevent_ops = &memory_uevent_ops;
+>>  	ret = sysdev_class_register(&memory_sysdev_class);
+>>  	if (ret)
+>>  		goto out;
+>>  
+>> +	block_sz = get_memory_block_size();
+>> +	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+>> +
+>>  	/*
+>>  	 * Create entries for memory sections that were found
+>>  	 * during boot and have been initialized
+>> Index: linux-2.6/include/linux/memory.h
+>> ===================================================================
+>> --- linux-2.6.orig/include/linux/memory.h	2010-07-15 08:48:41.000000000 -0500
+>> +++ linux-2.6/include/linux/memory.h	2010-07-15 09:54:06.000000000 -0500
+>> @@ -19,9 +19,15 @@
+>>  #include <linux/node.h>
+>>  #include <linux/compiler.h>
+>>  #include <linux/mutex.h>
+>> +#include <linux/list.h>
+>>  
+>> -struct memory_block {
+>> +struct memory_block_section {
+>> +	unsigned long state;
+>>  	unsigned long phys_index;
+>> +	struct list_head next;
+>> +};
+>> +
+>> +struct memory_block {
+>>  	unsigned long state;
+>>  	/*
+>>  	 * This serializes all state change requests.  It isn't
+>> @@ -34,6 +40,7 @@
+>>  	void *hw;			/* optional pointer to fw/hw data */
+>>  	int (*phys_callback)(struct memory_block *);
+>>  	struct sys_device sysdev;
+>> +	struct list_head sections;
+>>  };
+>>  
+>>  int arch_get_memory_phys_device(unsigned long start_pfn);
+>> @@ -113,7 +120,7 @@
+>>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>>  extern int memory_notify(unsigned long val, void *v);
+>>  extern int memory_isolate_notify(unsigned long val, void *v);
+>> -extern struct memory_block *find_memory_block(unsigned long);
+>> +extern struct memory_block *find_memory_block(struct mem_section *);
+>>  extern int memory_is_hidden(struct mem_section *);
+>>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>>  enum mem_add_context { BOOT, HOTPLUG };
+>>
+> 
+> Okay, please go ahead. But my 1st impression is that IBM should increase ppc's
+> SECTION_SIZE ;)
+> 
+> Thanks,
+> -Kame
+> 
+> 
+>  
+> 
