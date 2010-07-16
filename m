@@ -1,37 +1,20 @@
-Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
-Received: from faui40.informatik.uni-erlangen.de
-	(faui40.informatik.uni-erlangen.de [131.188.34.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 00ADCB708A
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 22:29:07 +1000 (EST)
-Date: Fri, 16 Jul 2010 14:29:02 +0200
-From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-To: Milton Miller <miltonm@bga.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Solomon Peachy <solomon@linux-wlan.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, Jiri Kosina <jkosina@suse.cz>,
-	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-	Alexander Kurz <linux@kbdbabel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Randy Dunlap <randy.dunlap@oracle.com>, John Linn <john.linn@xilinx.com>,
-	Florian Fainelli <florian@openwrt.org>,
-	Nicolas Pitre <nico@fluxnic.net>, Joe Perches <joe@perches.com>,
-	Ladislav Michl <ladis@linux-mips.org>,
-	David Brown <davidb@quicinc.com>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-	netdev@vger.kernel.org
-Subject: [PATCH 1/2] Remove REDWOOD_[456] config options and conditional code
-Message-ID: <ca1bb25d203618c3548748f5efb6f125a96c89e0.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
-References: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
-	<redwood56-reply-1-miltonm@bga.com>
-	<cover.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
-Cc: vamos-dev@i4.informatik.uni-erlangen.de
+Return-Path: <embedway.test@gmail.com>
+Received: from mail-pv0-f179.google.com (mail-pv0-f179.google.com
+	[74.125.83.179]) by ozlabs.org (Postfix) with ESMTP id F04CCB708E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Jul 2010 18:35:18 +1000 (EST)
+Received: by pvh11 with SMTP id 11so835568pvh.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 16 Jul 2010 01:35:16 -0700 (PDT)
+Date: Fri, 16 Jul 2010 16:34:51 +0800
+From: "hacklu" <embedway.test@gmail.com>
+To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
+Subject: hi, i have two flashs, but my kernel can only find one ,
+	how can i write the dts?
+Message-ID: <201007161634429622975@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon458443720373_====="
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,182 +24,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The config options for REDWOOD_[456] were commented out in the powerpc
-Kconfig. The ifdefs referencing this options therefore are dead and all
-references to this can be removed (Also dependencies in other KConfig
-files).
 
-Signed-off-by: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-Signed-off-by: Christoph Egger <siccegge@cs.fau.de>
----
- arch/powerpc/platforms/40x/Kconfig |   16 -------------
- drivers/mtd/maps/Kconfig           |    2 +-
- drivers/mtd/maps/redwood.c         |   43 ------------------------------------
- drivers/net/Kconfig                |    2 +-
- drivers/net/smc91x.h               |   37 -------------------------------
- 5 files changed, 2 insertions(+), 98 deletions(-)
+This is a multi-part message in MIME format.
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index ec64264..b721764 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -71,22 +71,6 @@ config MAKALU
- 	help
- 	  This option enables support for the AMCC PPC405EX board.
- 
--#config REDWOOD_5
--#	bool "Redwood-5"
--#	depends on 40x
--#	default n
--#	select STB03xxx
--#	help
--#	  This option enables support for the IBM STB04 evaluation board.
--
--#config REDWOOD_6
--#	bool "Redwood-6"
--#	depends on 40x
--#	default n
--#	select STB03xxx
--#	help
--#	  This option enables support for the IBM STBx25xx evaluation board.
--
- #config SYCAMORE
- #	bool "Sycamore"
- #	depends on 40x
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index f22bc9f..6629d09 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -321,7 +321,7 @@ config MTD_CFI_FLAGADM
- 
- config MTD_REDWOOD
- 	tristate "CFI Flash devices mapped on IBM Redwood"
--	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
-+	depends on MTD_CFI
- 	help
- 	  This enables access routines for the flash chips on the IBM
- 	  Redwood board. If you have one of these boards and would like to
-diff --git a/drivers/mtd/maps/redwood.c b/drivers/mtd/maps/redwood.c
-index 933c0b6..d2c9db0 100644
---- a/drivers/mtd/maps/redwood.c
-+++ b/drivers/mtd/maps/redwood.c
-@@ -22,8 +22,6 @@
- 
- #include <asm/io.h>
- 
--#if !defined (CONFIG_REDWOOD_6)
--
- #define WINDOW_ADDR 0xffc00000
- #define WINDOW_SIZE 0x00400000
- 
-@@ -69,47 +67,6 @@ static struct mtd_partition redwood_flash_partitions[] = {
- 	}
- };
- 
--#else /* CONFIG_REDWOOD_6 */
--/* FIXME: the window is bigger - armin */
--#define WINDOW_ADDR 0xff800000
--#define WINDOW_SIZE 0x00800000
--
--#define RW_PART0_OF	0
--#define RW_PART0_SZ	0x400000	/* 4 MiB data */
--#define RW_PART1_OF	RW_PART0_OF + RW_PART0_SZ
--#define RW_PART1_SZ	0x10000		/* 64K VPD */
--#define RW_PART2_OF	RW_PART1_OF + RW_PART1_SZ
--#define RW_PART2_SZ	0x400000 - (0x10000 + 0x20000)
--#define RW_PART3_OF	RW_PART2_OF + RW_PART2_SZ
--#define RW_PART3_SZ	0x20000
--
--static struct mtd_partition redwood_flash_partitions[] = {
--	{
--		.name = "Redwood filesystem",
--		.offset = RW_PART0_OF,
--		.size = RW_PART0_SZ
--	},
--	{
--		.name = "Redwood OpenBIOS Vital Product Data",
--		.offset = RW_PART1_OF,
--		.size = RW_PART1_SZ,
--		.mask_flags = MTD_WRITEABLE	/* force read-only */
--	},
--	{
--		.name = "Redwood kernel",
--		.offset = RW_PART2_OF,
--		.size = RW_PART2_SZ
--	},
--	{
--		.name = "Redwood OpenBIOS",
--		.offset = RW_PART3_OF,
--		.size = RW_PART3_SZ,
--		.mask_flags = MTD_WRITEABLE	/* force read-only */
--	}
--};
--
--#endif /* CONFIG_REDWOOD_6 */
--
- struct map_info redwood_flash_map = {
- 	.name = "IBM Redwood",
- 	.size = WINDOW_SIZE,
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index ce2fcdd..313d306 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -913,7 +913,7 @@ config SMC91X
- 	tristate "SMC 91C9x/91C1xxx support"
- 	select CRC32
- 	select MII
--	depends on ARM || REDWOOD_5 || REDWOOD_6 || M32R || SUPERH || \
-+	depends on ARM || M32R || SUPERH || \
- 		MIPS || BLACKFIN || MN10300 || COLDFIRE
- 	help
- 	  This is a driver for SMC's 91x series of Ethernet chipsets,
-diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-index 8d2772c..ee74791 100644
---- a/drivers/net/smc91x.h
-+++ b/drivers/net/smc91x.h
-@@ -83,43 +83,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- 	}
- }
- 
--#elif defined(CONFIG_REDWOOD_5) || defined(CONFIG_REDWOOD_6)
--
--/* We can only do 16-bit reads and writes in the static memory space. */
--#define SMC_CAN_USE_8BIT	0
--#define SMC_CAN_USE_16BIT	1
--#define SMC_CAN_USE_32BIT	0
--#define SMC_NOWAIT		1
--
--#define SMC_IO_SHIFT		0
--
--#define SMC_inw(a, r)		in_be16((volatile u16 *)((a) + (r)))
--#define SMC_outw(v, a, r)	out_be16((volatile u16 *)((a) + (r)), v)
--#define SMC_insw(a, r, p, l) 						\
--	do {								\
--		unsigned long __port = (a) + (r);			\
--		u16 *__p = (u16 *)(p);					\
--		int __l = (l);						\
--		insw(__port, __p, __l);					\
--		while (__l > 0) {					\
--			*__p = swab16(*__p);				\
--			__p++;						\
--			__l--;						\
--		}							\
--	} while (0)
--#define SMC_outsw(a, r, p, l) 						\
--	do {								\
--		unsigned long __port = (a) + (r);			\
--		u16 *__p = (u16 *)(p);					\
--		int __l = (l);						\
--		while (__l > 0) {					\
--			/* Believe it or not, the swab isn't needed. */	\
--			outw( /* swab16 */ (*__p++), __port);		\
--			__l--;						\
--		}							\
--	} while (0)
--#define SMC_IRQ_FLAGS		(0)
--
- #elif defined(CONFIG_SA1100_PLEB)
- /* We can only do 16-bit reads and writes in the static memory space. */
- #define SMC_CAN_USE_8BIT	1
--- 
-1.7.0.4
+--=====003_Dragon458443720373_=====
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+this is my dts file:
+flash@0,0 {
+                        #address-cells = <1>;
+                        #size-cells = <1>;
+                        compatible = "cfi-flash";
+                        probe-type = "CFI";
+                        reg = <0 0 1000000>;
+                        bank-width = <2>;
+                        device-width = <1>;
+                        hrcw@0 {
+                                label = "hrcw";
+                                reg = <0 40000>;
+                        };
+                        jffs@40000 {
+                                label = "jffs";
+                                reg = <40000 200000>;
+                        };
+                        jffs2@240000 {
+                                label = "uimage";
+                                reg = <240000 d80000>;
+                        };
+             };
+flash@1,0 {
+                        #address-cells = <1>;
+                        #size-cells = <1>;
+                        compatible = "cfi-flash";
+                        probe-type = "CFI";
+                        reg = <1000000 0 1000000>;
+                        bank-width = <2>;
+                        device-width = <1>;
+                        jffs3@240000 {
+                                label = "jffs2";
+                                reg = <0 1000000>;
+                        };
+                }; 
+2010-07-16 
+
+
+
+hacklu 
+
+--=====003_Dragon458443720373_=====
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=us-ascii">
+<META content="MSHTML 6.00.2900.5969" name=GENERATOR><LINK 
+href="BLOCKQUOTE{margin-Top: 0px; margin-Bottom: 0px; margin-Left: 2em}" 
+rel=stylesheet></HEAD>
+<BODY style="FONT-SIZE: 10pt; MARGIN: 10px; FONT-FAMILY: verdana">
+<DIV><FONT face=Verdana size=2>this is my dts file:</FONT></DIV>
+<DIV>
+<DIV>flash@0,0&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#address-cells&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#size-cells&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compatible&nbsp;=&nbsp;"cfi-flash";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probe-type&nbsp;=&nbsp;"CFI";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;0&nbsp;0&nbsp;1000000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bank-width&nbsp;=&nbsp;&lt;2&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;device-width&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hrcw@0&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;label&nbsp;=&nbsp;"hrcw";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;0&nbsp;40000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</DIV>
+<DIV></DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jffs@40000&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;label&nbsp;=&nbsp;"jffs";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;40000&nbsp;200000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jffs2@240000&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;label&nbsp;=&nbsp;"uimage";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;240000&nbsp;d80000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</DIV>
+<DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</DIV>
+<DIV>flash@1,0&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#address-cells&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#size-cells&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compatible&nbsp;=&nbsp;"cfi-flash";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;probe-type&nbsp;=&nbsp;"CFI";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;1000000&nbsp;0&nbsp;1000000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bank-width&nbsp;=&nbsp;&lt;2&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;device-width&nbsp;=&nbsp;&lt;1&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jffs3@240000&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;label&nbsp;=&nbsp;"jffs2";</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reg&nbsp;=&nbsp;&lt;0&nbsp;1000000&gt;;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};&nbsp;</DIV></DIV></DIV>
+<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2010-07-16 
+</FONT></DIV><FONT face=Verdana size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
+
+<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>hacklu</SPAN> 
+</FONT></DIV></FONT></BODY></HTML>
+
+--=====003_Dragon458443720373_=====--
