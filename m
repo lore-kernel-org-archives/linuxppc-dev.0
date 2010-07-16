@@ -1,20 +1,16 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 37596B6F04
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 17:13:02 +1000 (EST)
-Date: Fri, 16 Jul 2010 00:13:20 -0700
-From: Greg KH <greg@kroah.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 0/7] De-couple sysfs memory directories from memory
-	sections
-Message-ID: <20100716071320.GC31612@kroah.com>
-References: <4C3B3446.5090302@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4C3B3446.5090302@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	(Client CN "mail.windriver.com",
+	Issuer "Intel External Basic Issuing CA 3A" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 70468B708A
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 17:16:12 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/1] powerpc/smp: remove the incorrect decrementer initial
+	codes for AP
+Date: Fri, 16 Jul 2010 14:17:11 +0800
+Message-Id: <1279261031-26190-1-git-send-email-tiejun.chen@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,13 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 12, 2010 at 10:27:02AM -0500, Nathan Fontenot wrote:
-> This set of patches de-couples the idea that there is a single
-> directory in sysfs for each memory section.
+We already defined start_cpu_decrementer() to invoke decrementer for AP as
+the following path:
+---
+start_secondary() -> secondary_cpu_time_init() -> start_cpu_decrementer()
 
-Any reason you didn't cc: the sysfs maintainer on these patches?  If
-not, I'll gladly ignore them...
+So remove these incorrect codes introduced from commit:
+e7f75ad0 powerpc/47x: Base ppc476 support
 
-(hint, scripts/get_maintainer.pl is your friend...)
+And actually we really should not enable decrementer before calling set_dec().
 
-greg k-h
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/kernel/smp.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 5c196d1..976fc7d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -501,14 +501,6 @@ int __devinit start_secondary(void *unused)
+ 	current->active_mm = &init_mm;
+ 
+ 	smp_store_cpu_info(cpu);
+-
+-#if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
+-	/* Clear any pending timer interrupts */
+-	mtspr(SPRN_TSR, TSR_ENW | TSR_WIS | TSR_DIS | TSR_FIS);
+-
+-	/* Enable decrementer interrupt */
+-	mtspr(SPRN_TCR, TCR_DIE);
+-#endif
+ 	set_dec(tb_ticks_per_jiffy);
+ 	preempt_disable();
+ 	cpu_callin_map[cpu] = 1;
+-- 
+1.5.6
