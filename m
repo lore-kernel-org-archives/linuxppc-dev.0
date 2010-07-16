@@ -1,31 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id D24A5B6F18
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 03:58:25 +1000 (EST)
-Received: by gxk26 with SMTP id 26so1526874gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Jul 2010 10:58:23 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 4F7F1B6F18
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 04:13:43 +1000 (EST)
+Received: from mail96-va3 (localhost.localdomain [127.0.0.1])	by
+	mail96-va3-R.bigfish.com (Postfix) with ESMTP id 821DEB98563	for
+	<linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 18:13:39 +0000 (UTC)
+Received: from VA3EHSMHS010.bigfish.com (unknown [10.7.14.243])	by
+	mail96-va3.bigfish.com (Postfix) with ESMTP id 3F237196004F	for
+	<linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 18:13:38 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o6GIDZaI002028	for
+	<linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 11:13:36 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o6GIQamg005581	for <linuxppc-dev@ozlabs.org>;
+	Fri, 16 Jul 2010 13:26:36 -0500 (CDT)
+Date: Fri, 16 Jul 2010 13:13:33 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Shawn Jin <shawnxjin@gmail.com>
+Subject: Re: cpm_uart_console_write() stuck in waiting for transmitter fifo
+	ready
+Message-ID: <20100716131333.0c99a627@schlenkerla.am.freescale.net>
+In-Reply-To: <AANLkTinVSCwvz5KWbvp4UUcTsd-KZQm0pzfy-XXN_ie=@mail.gmail.com>
+References: <AANLkTik9n_UkLKdmKT7PHiOL1-EW_TlMJFOGvWCU44xb@mail.gmail.com>
+	<AANLkTin7nqaxDyXjkFhdJGEaazEL-oSMXnhkG0dblAUb@mail.gmail.com>
+	<AANLkTinVSCwvz5KWbvp4UUcTsd-KZQm0pzfy-XXN_ie=@mail.gmail.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 16 Jul 2010 11:57:55 -0600
-Message-ID: <AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-To: Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Daniel Walker <dwalker@codeaurora.org>,
-	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	Nicolas Pitre <nico@fluxnic.net>, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>,
-	=?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 16, 2010 at 10:03 AM, Catalin Marinas
-<catalin.marinas@arm.com> wrote:
-> On Wed, 2010-07-14 at 00:04 +0100, Grant Likely wrote:
->> - It still doesn't resolve dependencies. =A0A solver would help with thi=
-s.
->> =A0 For the time being I work around the problem by running the generate=
-d
->> =A0 config through 'oldconfig' and looking for differences. =A0If the fi=
-les
->> =A0 differ (ignoring comments and generateconfig_* options) after oldcon=
-fig,
->> =A0 then the <board>_defconfig target returns a failure. =A0(but leaves =
-the
->> =A0 new .config intact so the user can resolve it with menuconfig). =A0T=
-his
->> =A0 way at least the user is told when a Kconfig fragment is invalid.
->
-> It's not a solver but I'm pushing a patch to warn on selecting symbols
-> with unmet dependencies so that you can select further symbols (manual
-> solving). The patch is in linux-next but you also can grab it from:
->
-> http://git.kernel.org/?p=3Dlinux/kernel/git/cmarinas/linux-2.6-cm.git;a=
-=3Dcommitdiff_plain;h=3D5d87db2d2a332784bbf2b1ec3e141486f4d41d6f
+On Fri, 16 Jul 2010 00:12:21 -0700
+Shawn Jin <shawnxjin@gmail.com> wrote:
 
-sfr and I were talking about your patch the other day.  Just warning
-on incomplete dependencies is enough to make it actually workable for
-me (without my ugly post-processing step).  I was very happy to hear
-that it is in linux-next.
+> >> Why would the TxBD be filled with all 0xF? Would it be possible that
+> >> the bdbase actually points somewhere else other than the TxBD?
+> >
+> > The virtual address 0xfddfa000 is mapped to 0xfa202000. I suspect that
+> > the TxBD of my MPC870 may not start at 0xfa202020.
+> >
+> > I notice that for adder875, ep88xc and mpc885ads, the muram data's reg
+> > = <0 0x1c00> but for mgsuvd, its reg = <0x800 0x1800>. How does the
+> > kernel use muram for 885 family SoCs? How much muram should be
+> > reserved for data?
+> >
+> > My RCCR=0x1, meaning the first 512B is for microcode. So the data and
+> > the TxBD should really be starting at 0xfa202200? Then my muram data's
+> > reg should be <0x200 ?>? What size shall I specify?
+> 
+> After the muram data's reg is changed to <0x200 0x1a00>, the cpm_uart
+> driver works properly and the kernel messages are printed on the
+> serial port.
 
-Last missing piece is being able to do "select FOO =3D n", which Stephen
-is currently working on.
+The muram node is supposed to show the portions of DPRAM that are
+usable by the OS.  If some portion has been taken up by microcode (or
+anything else not under the OS's control) before the OS has started,
+then it must be excluded from the muram node.
 
-g.
+-Scott
