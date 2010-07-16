@@ -1,22 +1,38 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 7FD48B6EFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 22:20:48 +1000 (EST)
-Received: by ewy2 with SMTP id 2so967398ewy.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 05:20:45 -0700 (PDT)
-Subject: Re: Badness with the kernel version 2.6.35-rc1-git1 running on P6 box
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: divya <dipraksh@linux.vnet.ibm.com>
-In-Reply-To: <1279274185.2549.14.camel@edumazet-laptop>
-References: <4C401D56.3070108@linux.vnet.ibm.com>
-	<1279274185.2549.14.camel@edumazet-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 16 Jul 2010 14:20:42 +0200
-Message-ID: <1279282842.2549.16.camel@edumazet-laptop>
-Mime-Version: 1.0
-Cc: sachinp@linux.vnet.ibm.com, netdev <netdev@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	Jan-Bernd Themann <ossthema@de.ibm.com>, David Miller <davem@davemloft.net>
+Return-Path: <qy03fugy@stud.informatik.uni-erlangen.de>
+Received: from faui40.informatik.uni-erlangen.de
+	(faui40.informatik.uni-erlangen.de [131.188.34.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 60306B6F17
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 22:29:06 +1000 (EST)
+Date: Fri, 16 Jul 2010 14:28:56 +0200
+From: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
+To: Milton Miller <miltonm@bga.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Matt Porter <mporter@kernel.crashing.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>, Solomon Peachy <solomon@linux-wlan.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Mike Frysinger <vapier@gentoo.org>, Jiri Kosina <jkosina@suse.cz>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	Alexander Kurz <linux@kbdbabel.org>,
+	Russell King <rmk+kernel@arm.linux.org.uk>,
+	Ralf Baechle <ralf@linux-mips.org>, Manuel Lauss <manuel.lauss@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Randy Dunlap <randy.dunlap@oracle.com>, John Linn <john.linn@xilinx.com>,
+	Florian Fainelli <florian@openwrt.org>,
+	Nicolas Pitre <nico@fluxnic.net>, Joe Perches <joe@perches.com>,
+	Ladislav Michl <ladis@linux-mips.org>,
+	David Brown <davidb@quicinc.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+	netdev@vger.kernel.org
+Subject: [PATCH 0/2] Removing dead code
+Message-ID: <cover.1279282865.git.qy03fugy@stud.informatik.uni-erlangen.de>
+References: <4f07b3092cafbbba37d61d367cc7484e24d18d2a.1279116162.git.qy03fugy@stud.informatik.uni-erlangen.de>
+	<redwood56-reply-1-miltonm@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <redwood56-reply-1-miltonm@bga.com>
+Cc: vamos-dev@i4.informatik.uni-erlangen.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le vendredi 16 juillet 2010 à 11:56 +0200, Eric Dumazet a écrit :
+Hi all!
 
-> [PATCH] ehea: ehea_get_stats() should use GFP_KERNEL
-> 
-> ehea_get_stats() is called in process context and should use GFP_KERNEL
-> allocation instead of GFP_ATOMIC.
-> 
-> Clearing stats at beginning of ehea_get_stats() is racy in case of
-> concurrent stat readers.
-> 
-> get_stats() can also use netdev net_device_stats, instead of a private
-> copy.
-> 
-> Reported-by: divya <dipraksh@linux.vnet.ibm.com>
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> ---
->  drivers/net/ehea/ehea.h      |    1 -
->  drivers/net/ehea/ehea_main.c |    6 ++----
->  2 files changed, 2 insertions(+), 5 deletions(-)
-> 
-> 
+I merged the two patches from Christoph Egger[1] to remove the
+REDWOOD_[456] config depends. And wrote a second patch, which removes
+the redwood/mtd mapping module. I hope this is now acceptable to bring
+it into the kernel, if this options are really dead.       
 
-Hmm, net-next-2.6 contains following patch :
+Regards
 
-commit 3d8009c780ee90fccb5c171caf30aff839f13547
-Author: Brian King <brking@linux.vnet.ibm.com>
-Date:   Wed Jun 30 11:59:12 2010 +0000
+        Christian Dietrich
 
-    ehea: Allocate stats buffer with GFP_KERNEL
-    
-    Since ehea_get_stats calls ehea_h_query_ehea_port, which
-    can sleep, we can also sleep when allocating a page in
-    this function. This fixes some memory allocation failure
-    warnings seen under low memory conditions.
-    
-    Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+[0] http://vamos1.informatik.uni-erlangen.de/
+[1] Message-Id: <adba61f63f4439ac17f2e428429f01ae5e65ab15.1279110895.git.siccegge@cs.fau.de>
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 8b92acb..3beba70 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -335,7 +335,7 @@ static struct net_device_stats
-*ehea_get_stats(struct net_device *dev)
- 
-        memset(stats, 0, sizeof(*stats));
- 
--       cb2 = (void *)get_zeroed_page(GFP_ATOMIC);
-+       cb2 = (void *)get_zeroed_page(GFP_KERNEL);
-        if (!cb2) {
-                ehea_error("no mem for cb2");
-                goto out;
+Christian Dietrich (2):
+  Remove REDWOOD_[456] config options and conditional code
+  Removed redwood/mtd mapping
+
+ arch/powerpc/platforms/40x/Kconfig |   16 ----
+ drivers/mtd/maps/Kconfig           |    8 --
+ drivers/mtd/maps/Makefile          |    1 -
+ drivers/mtd/maps/redwood.c         |  174 ------------------------------------
+ drivers/net/Kconfig                |    2 +-
+ drivers/net/smc91x.h               |   37 --------
+ 6 files changed, 1 insertions(+), 237 deletions(-)
+ delete mode 100644 drivers/mtd/maps/redwood.c
