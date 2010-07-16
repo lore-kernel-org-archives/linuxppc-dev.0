@@ -1,32 +1,33 @@
-Return-Path: <R63238@freescale.com>
-Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 18C50B7083
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:30:53 +1000 (EST)
-Received: from mail145-va3 (localhost.localdomain [127.0.0.1])	by
-	mail145-va3-R.bigfish.com (Postfix) with ESMTP id 02928D20678	for
-	<linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 23:15:45 +0000 (UTC)
-Received: from VA3EHSMHS017.bigfish.com (unknown [10.7.14.243])	by
-	mail145-va3.bigfish.com (Postfix) with ESMTP id DB71A135804D	for
-	<linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 23:15:44 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o6FNFRC8021332	for
-	<linuxppc-dev@ozlabs.org>; Thu, 15 Jul 2010 16:15:37 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o6FNSOwW008464	for <linuxppc-dev@ozlabs.org>;
-	Thu, 15 Jul 2010 18:28:25 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Subject: RE: [PATCH] powerpc: Fix GENERIC_ISA_DMA dependency
-Date: Fri, 16 Jul 2010 07:15:20 +0800
-Message-ID: <50260780A060C94D9E98AC2670936D600824E0@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20100715173816.GA17810@oksana.dev.rtsoft.ru>
-References: <20100715173816.GA17810@oksana.dev.rtsoft.ru>
-From: Liu Dave-R63238 <r63238@freescale.com>
-To: "Anton Vorontsov" <avorontsov@mvista.com>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id 4EF81B707E
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 10:11:20 +1000 (EST)
+Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
+	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o6G0BIqT006061 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Fri, 16 Jul 2010 09:11:18 +0900
+Received: from smail (m6 [127.0.0.1])
+	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 5EED045DE52
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:11:18 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
+	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 18BC545DE51
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:11:18 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id CE51D1DB801F
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:11:17 +0900 (JST)
+Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 65A311DB801B
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 09:11:17 +0900 (JST)
+Date: Fri, 16 Jul 2010 09:06:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 1/5] v2 Split the memory_block structure
+Message-Id: <20100716090637.3654f91d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C3F557F.3000304@austin.ibm.com>
+References: <4C3F53D1.3090001@austin.ibm.com> <4C3F557F.3000304@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +37,468 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBPbiBQb3dlclBDIHdlIHNob3VsZCBhbHdheXMgdXNlIGdlbmVyaWMgSVNBIERNQSBBUEkgaW1w
-bGVtZW50YXRpb24NCj4gYXMgdGhlcmUgaXMgc2ltcGx5IG5vIG90aGVyIGltcGxlbWVudGF0aW9u
-IGV4aXN0Lg0KPiANCj4gV2l0aG91dCB0aGlzIHBhdGNoLCB0aGUgZm9sbG93aW5nIGJ1aWxkIGVy
-cm9yIHBvcHMgdXA6DQo+IA0KPiAgIHNvdW5kL2J1aWx0LWluLm86IEluIGZ1bmN0aW9uICdzbmRf
-ZG1hX3BvaW50ZXInOg0KPiAgICgudGV4dCsweDc0YWUpOiB1bmRlZmluZWQgcmVmZXJlbmNlIHRv
-ICdkbWFfc3Bpbl9sb2NrJw0KPiAgIC4uLg0KPiAgIG1ha2U6ICoqKiBbLnRtcF92bWxpbnV4MV0g
-RXJyb3IgMQ0KPiANCj4gVGhpcyBpcyBQUENfODV4eCwgU01QIGFuZCBzb21lIHNvdW5kIGRyaXZl
-cnMgc2V0IHRvID15Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQW50b24gVm9yb250c292IDxhdm9y
-b250c292QG12aXN0YS5jb20+DQoNCkFja2VkLWJ5OiBEYXZlIExpdSA8ZGF2ZWxpdUBmcmVlc2Nh
-bGUuY29tPg0KDQpJIGhhcHBlbmVkIHRoaXMgaXNzdWUgd2hlbiBJIGRldmVsb3BlZCBQMTAyMkRT
-IEJTUC4NCg==
+On Thu, 15 Jul 2010 13:37:51 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
+
+> Split the memory_block struct into a memory_block
+> struct to cover each sysfs directory and a new memory_block_section
+> struct for each memory section covered by the sysfs directory.
+> This change allows for creation of memory sysfs directories that
+> can span multiple memory sections.
+> 
+> This can be beneficial in that it can reduce the number of memory
+> sysfs directories created at boot.  This also allows different
+> architectures to define how many memory sections are covered by
+> a sysfs directory.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> ---
+>  drivers/base/memory.c  |  222 ++++++++++++++++++++++++++++++++++---------------
+>  include/linux/memory.h |   11 +-
+>  2 files changed, 167 insertions(+), 66 deletions(-)
+> 
+> Index: linux-2.6/drivers/base/memory.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/memory.c	2010-07-15 08:48:41.000000000 -0500
+> +++ linux-2.6/drivers/base/memory.c	2010-07-15 09:55:54.000000000 -0500
+> @@ -28,6 +28,14 @@
+>  #include <asm/uaccess.h>
+>  
+>  #define MEMORY_CLASS_NAME	"memory"
+> +#define MIN_MEMORY_BLOCK_SIZE	(1 << SECTION_SIZE_BITS)
+> +
+> +static int sections_per_block;
+> +
+> +static inline int base_memory_block_id(int section_nr)
+> +{
+> +	return (section_nr / sections_per_block) * sections_per_block;
+> +}
+>  
+>  static struct sysdev_class memory_sysdev_class = {
+>  	.name = MEMORY_CLASS_NAME,
+> @@ -94,10 +102,9 @@
+>  }
+>  
+>  static void
+> -unregister_memory(struct memory_block *memory, struct mem_section *section)
+> +unregister_memory(struct memory_block *memory)
+>  {
+>  	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
+> -	BUG_ON(memory->sysdev.id != __section_nr(section));
+>  
+>  	/* drop the ref. we got in remove_memory_block() */
+>  	kobject_put(&memory->sysdev.kobj);
+> @@ -123,13 +130,20 @@
+>  static ssize_t show_mem_removable(struct sys_device *dev,
+>  			struct sysdev_attribute *attr, char *buf)
+>  {
+> +	struct memory_block *mem;
+> +	struct memory_block_section *mbs;
+>  	unsigned long start_pfn;
+> -	int ret;
+> -	struct memory_block *mem =
+> -		container_of(dev, struct memory_block, sysdev);
+> +	int ret = 1;
+> +
+> +	mem = container_of(dev, struct memory_block, sysdev);
+> +	mutex_lock(&mem->state_mutex);
+>  
+> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+> -	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+> +	list_for_each_entry(mbs, &mem->sections, next) {
+> +		start_pfn = section_nr_to_pfn(mbs->phys_index);
+> +		ret &= is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+> +	}
+> +
+> +	mutex_unlock(&mem->state_mutex);
+
+Hmm, this means memory cab be offlined the while memory block section. Right ?
+Please write this fact in patch description...
+And Documentaion/memory_hotplug.txt as "From user's perspective, memory section
+is not a unit of memory hotplug anymore".
+And descirbe about a new rule.
+
+
+>  	return sprintf(buf, "%d\n", ret);
+>  }
+>  
+> @@ -182,16 +196,16 @@
+>   * OK to have direct references to sparsemem variables in here.
+>   */
+>  static int
+> -memory_block_action(struct memory_block *mem, unsigned long action)
+> +memory_block_action(struct memory_block_section *mbs, unsigned long action)
+>  {
+>  	int i;
+>  	unsigned long psection;
+>  	unsigned long start_pfn, start_paddr;
+>  	struct page *first_page;
+>  	int ret;
+> -	int old_state = mem->state;
+> +	int old_state = mbs->state;
+>  
+> -	psection = mem->phys_index;
+> +	psection = mbs->phys_index;
+>  	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
+>  
+>  	/*
+> @@ -217,18 +231,18 @@
+>  			ret = online_pages(start_pfn, PAGES_PER_SECTION);
+>  			break;
+>  		case MEM_OFFLINE:
+> -			mem->state = MEM_GOING_OFFLINE;
+> +			mbs->state = MEM_GOING_OFFLINE;
+>  			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+>  			ret = remove_memory(start_paddr,
+>  					    PAGES_PER_SECTION << PAGE_SHIFT);
+>  			if (ret) {
+> -				mem->state = old_state;
+> +				mbs->state = old_state;
+>  				break;
+>  			}
+>  			break;
+>  		default:
+>  			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
+> -					__func__, mem, action, action);
+> +					__func__, mbs, action, action);
+>  			ret = -EINVAL;
+>  	}
+>  
+> @@ -238,19 +252,34 @@
+
+And please check quilt's diff option.
+Usual patche in ML shows a function name in any changes, as
+@@ -241,6 +293,8 @@ static int memory_block_change_state(str
+
+Maybe "-p" option is lacked..
+
+
+>  static int memory_block_change_state(struct memory_block *mem,
+>  		unsigned long to_state, unsigned long from_state_req)
+>  {
+> +	struct memory_block_section *mbs;
+>  	int ret = 0;
+> +
+>  	mutex_lock(&mem->state_mutex);
+>  
+> -	if (mem->state != from_state_req) {
+> -		ret = -EINVAL;
+> -		goto out;
+> +	list_for_each_entry(mbs, &mem->sections, next) {
+> +		if (mbs->state != from_state_req)
+> +			continue;
+> +
+> +		ret = memory_block_action(mbs, to_state);
+> +		if (ret)
+> +			break;
+> +	}
+> +
+> +	if (ret) {
+> +		list_for_each_entry(mbs, &mem->sections, next) {
+> +			if (mbs->state == from_state_req)
+> +				continue;
+> +
+> +			if (memory_block_action(mbs, to_state))
+> +				printk(KERN_ERR "Could not re-enable memory "
+> +				       "section %lx\n", mbs->phys_index);
+
+Why re-enable only ? online->fail->offline never happens ?
+If so, please add comment at least.
+BTW, is it guaranteed that all sections under a block has same state after
+boot ?
+
+> +		}
+>  	}
+>  
+> -	ret = memory_block_action(mem, to_state);
+>  	if (!ret)
+>  		mem->state = to_state;
+>  
+> -out:
+>  	mutex_unlock(&mem->state_mutex);
+>  	return ret;
+>  }
+> @@ -260,20 +289,15 @@
+>  		struct sysdev_attribute *attr, const char *buf, size_t count)
+>  {
+>  	struct memory_block *mem;
+> -	unsigned int phys_section_nr;
+>  	int ret = -EINVAL;
+>  
+>  	mem = container_of(dev, struct memory_block, sysdev);
+> -	phys_section_nr = mem->phys_index;
+> -
+> -	if (!present_section_nr(phys_section_nr))
+> -		goto out;
+> 
+I'm sorry but I couldn't remember why this check was necessary...
+
+
+ 
+>  	if (!strncmp(buf, "online", min((int)count, 6)))
+>  		ret = memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
+>  	else if(!strncmp(buf, "offline", min((int)count, 7)))
+>  		ret = memory_block_change_state(mem, MEM_OFFLINE, MEM_ONLINE);
+> -out:
+> +
+>  	if (ret)
+>  		return ret;
+>  	return count;
+> @@ -435,39 +459,6 @@
+>  	return 0;
+>  }
+>  
+> -static int add_memory_block(int nid, struct mem_section *section,
+> -			unsigned long state, enum mem_add_context context)
+> -{
+> -	struct memory_block *mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+> -	unsigned long start_pfn;
+> -	int ret = 0;
+> -
+> -	if (!mem)
+> -		return -ENOMEM;
+> -
+> -	mem->phys_index = __section_nr(section);
+> -	mem->state = state;
+> -	mutex_init(&mem->state_mutex);
+> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+> -	mem->phys_device = arch_get_memory_phys_device(start_pfn);
+> -
+> -	ret = register_memory(mem, section);
+> -	if (!ret)
+> -		ret = mem_create_simple_file(mem, phys_index);
+> -	if (!ret)
+> -		ret = mem_create_simple_file(mem, state);
+> -	if (!ret)
+> -		ret = mem_create_simple_file(mem, phys_device);
+> -	if (!ret)
+> -		ret = mem_create_simple_file(mem, removable);
+> -	if (!ret) {
+> -		if (context == HOTPLUG)
+> -			ret = register_mem_sect_under_node(mem, nid);
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+
+I don't say strongly but this kind of move-code should be done in another patch.
+
+
+>  /*
+>   * For now, we have a linear search to go find the appropriate
+>   * memory_block corresponding to a particular phys_index. If
+> @@ -482,12 +473,13 @@
+>  	struct sys_device *sysdev;
+>  	struct memory_block *mem;
+>  	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
+> +	int block_id = base_memory_block_id(__section_nr(section));
+>  
+>  	/*
+>  	 * This only works because we know that section == sysdev->id
+>  	 * slightly redundant with sysdev_register()
+>  	 */
+> -	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
+> +	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, block_id);
+>  
+>  	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
+>  	if (!kobj)
+> @@ -499,18 +491,98 @@
+>  	return mem;
+>  }
+>  
+> +static int add_mem_block_section(struct memory_block *mem,
+> +				 int section_nr, unsigned long state)
+> +{
+> +	struct memory_block_section *mbs;
+> +
+> +	mbs = kzalloc(sizeof(*mbs), GFP_KERNEL);
+> +	if (!mbs)
+> +		return -ENOMEM;
+> +
+> +	mbs->phys_index = section_nr;
+> +	mbs->state = state;
+> +
+> +	list_add(&mbs->next, &mem->sections);
+> +	return 0;
+> +}
+
+Doesn't this "sections" need to be sorted ? Hmm.
+
+
+> +
+> +static int add_memory_block(int nid, struct mem_section *section,
+> +			unsigned long state, enum mem_add_context context)
+> +{
+> +	struct memory_block *mem;
+> +	int ret = 0;
+> +
+> +	mem = find_memory_block(section);
+> +	if (!mem) {
+> +		unsigned long start_pfn;
+> +
+> +		mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+> +		if (!mem)
+> +			return -ENOMEM;
+> +
+> +		mem->state = state;
+> +		mutex_init(&mem->state_mutex);
+> +		start_pfn = section_nr_to_pfn(__section_nr(section));
+> +		mem->phys_device = arch_get_memory_phys_device(start_pfn);
+> +		INIT_LIST_HEAD(&mem->sections);
+> +
+> +		mutex_lock(&mem->state_mutex);
+> +
+> +		ret = register_memory(mem, section);
+> +		if (!ret)
+> +			ret = mem_create_simple_file(mem, phys_index);
+> +		if (!ret)
+> +			ret = mem_create_simple_file(mem, state);
+> +		if (!ret)
+> +			ret = mem_create_simple_file(mem, phys_device);
+> +		if (!ret)
+> +			ret = mem_create_simple_file(mem, removable);
+> +		if (!ret) {
+> +			if (context == HOTPLUG)
+> +				ret = register_mem_sect_under_node(mem, nid);
+> +		}
+> +	} else {
+> +		kobject_put(&mem->sysdev.kobj);
+> +		mutex_lock(&mem->state_mutex);
+> +	}
+> +
+> +	if (!ret)
+> +		ret = add_mem_block_section(mem, __section_nr(section), state);
+> +
+> +	mutex_unlock(&mem->state_mutex);
+> +	return ret;
+> +}
+> +
+>  int remove_memory_block(unsigned long node_id, struct mem_section *section,
+>  		int phys_device)
+>  {
+>  	struct memory_block *mem;
+> +	struct memory_block_section *mbs, *tmp;
+> +	int section_nr = __section_nr(section);
+>  
+>  	mem = find_memory_block(section);
+> -	unregister_mem_sect_under_nodes(mem);
+> -	mem_remove_simple_file(mem, phys_index);
+> -	mem_remove_simple_file(mem, state);
+> -	mem_remove_simple_file(mem, phys_device);
+> -	mem_remove_simple_file(mem, removable);
+> -	unregister_memory(mem, section);
+> +	mutex_lock(&mem->state_mutex);
+> +
+> +	/* remove the specified section */
+> +	list_for_each_entry_safe(mbs, tmp, &mem->sections, next) {
+> +		if (mbs->phys_index == section_nr) {
+> +			list_del(&mbs->next);
+> +			kfree(mbs);
+> +		}
+> +	}
+> +
+> +	mutex_unlock(&mem->state_mutex);
+> +
+> +	if (list_empty(&mem->sections)) {
+> +		unregister_mem_sect_under_nodes(mem);
+> +		mem_remove_simple_file(mem, phys_index);
+> +		mem_remove_simple_file(mem, state);
+> +		mem_remove_simple_file(mem, phys_device);
+> +		mem_remove_simple_file(mem, removable);
+> +		unregister_memory(mem);
+> +		kfree(mem);
+> +	}
+>  
+>  	return 0;
+>  }
+> @@ -532,6 +604,24 @@
+>  	return remove_memory_block(0, section, 0);
+>  }
+>  
+> +u32 __weak memory_block_size(void)
+> +{
+> +	return MIN_MEMORY_BLOCK_SIZE;
+> +}
+> +
+> +static u32 get_memory_block_size(void)
+> +{
+> +	u32 blk_sz;
+> +
+> +	blk_sz = memory_block_size();
+> +
+> +	/* Validate blk_sz is a power of 2 and not less than section size */
+> +	if ((blk_sz & (blk_sz - 1)) || (blk_sz < MIN_MEMORY_BLOCK_SIZE))
+> +		blk_sz = MIN_MEMORY_BLOCK_SIZE;
+> +
+> +	return blk_sz;
+> +}
+> +
+>  /*
+>   * Initialize the sysfs support for memory devices...
+>   */
+> @@ -540,12 +630,16 @@
+>  	unsigned int i;
+>  	int ret;
+>  	int err;
+> +	int block_sz;
+>  
+>  	memory_sysdev_class.kset.uevent_ops = &memory_uevent_ops;
+>  	ret = sysdev_class_register(&memory_sysdev_class);
+>  	if (ret)
+>  		goto out;
+>  
+> +	block_sz = get_memory_block_size();
+> +	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+> +
+>  	/*
+>  	 * Create entries for memory sections that were found
+>  	 * during boot and have been initialized
+> Index: linux-2.6/include/linux/memory.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/memory.h	2010-07-15 08:48:41.000000000 -0500
+> +++ linux-2.6/include/linux/memory.h	2010-07-15 09:54:06.000000000 -0500
+> @@ -19,9 +19,15 @@
+>  #include <linux/node.h>
+>  #include <linux/compiler.h>
+>  #include <linux/mutex.h>
+> +#include <linux/list.h>
+>  
+> -struct memory_block {
+> +struct memory_block_section {
+> +	unsigned long state;
+>  	unsigned long phys_index;
+> +	struct list_head next;
+> +};
+> +
+> +struct memory_block {
+>  	unsigned long state;
+>  	/*
+>  	 * This serializes all state change requests.  It isn't
+> @@ -34,6 +40,7 @@
+>  	void *hw;			/* optional pointer to fw/hw data */
+>  	int (*phys_callback)(struct memory_block *);
+>  	struct sys_device sysdev;
+> +	struct list_head sections;
+>  };
+>  
+>  int arch_get_memory_phys_device(unsigned long start_pfn);
+> @@ -113,7 +120,7 @@
+>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+>  extern int memory_isolate_notify(unsigned long val, void *v);
+> -extern struct memory_block *find_memory_block(unsigned long);
+> +extern struct memory_block *find_memory_block(struct mem_section *);
+>  extern int memory_is_hidden(struct mem_section *);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+> 
+
+Okay, please go ahead. But my 1st impression is that IBM should increase ppc's
+SECTION_SIZE ;)
+
+Thanks,
+-Kame
+
+
+ 
