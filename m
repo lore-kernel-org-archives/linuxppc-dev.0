@@ -1,34 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id CEA3F1007D4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 04:21:49 +1000 (EST)
-Received: by gyd10 with SMTP id 10so1528587gyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 16 Jul 2010 11:21:47 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 31F29B6EED
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 04:24:04 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6GI67VP031079
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 14:06:07 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6GINvLX139322
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 14:23:57 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6GINvbv020507
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 15:23:57 -0300
+Message-ID: <4C40A3BC.3060504@austin.ibm.com>
+Date: Fri, 16 Jul 2010 13:23:56 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <alpine.LFD.2.00.1007161406120.10598@xanadu.home>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279296221.17878.66.camel@e102109-lin.cambridge.arm.com>
-	<AANLkTinyFBTKYaryFANYheTuP-biJUws2x01NRNZPb4M@mail.gmail.com>
-	<alpine.LFD.2.00.1007161406120.10598@xanadu.home>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 16 Jul 2010 12:21:27 -0600
-Message-ID: <AANLkTilY0rvbp7brGsnyuGhPjFvpVYInNWlAlf5tT4zG@mail.gmail.com>
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-To: Nicolas Pitre <nico@fluxnic.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Daniel Walker <dwalker@codeaurora.org>,
-	linux-kbuild@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	=?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/5] v2 Split the memory_block structure
+References: <4C3F53D1.3090001@austin.ibm.com>	
+	<4C3F557F.3000304@austin.ibm.com>
+	<1279300521.9207.222.camel@nimitz>
+In-Reply-To: <1279300521.9207.222.camel@nimitz>
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +37,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 16, 2010 at 12:19 PM, Nicolas Pitre <nico@fluxnic.net> wrote:
-> On Fri, 16 Jul 2010, Grant Likely wrote:
->
->> On Fri, Jul 16, 2010 at 10:03 AM, Catalin Marinas
->> <catalin.marinas@arm.com> wrote:
->> > On Wed, 2010-07-14 at 00:04 +0100, Grant Likely wrote:
->> >> - It still doesn't resolve dependencies. =A0A solver would help with =
-this.
->> >> =A0 For the time being I work around the problem by running the gener=
-ated
->> >> =A0 config through 'oldconfig' and looking for differences. =A0If the=
- files
->> >> =A0 differ (ignoring comments and generateconfig_* options) after old=
-config,
->> >> =A0 then the <board>_defconfig target returns a failure. =A0(but leav=
-es the
->> >> =A0 new .config intact so the user can resolve it with menuconfig). =
-=A0This
->> >> =A0 way at least the user is told when a Kconfig fragment is invalid.
->> >
->> > It's not a solver but I'm pushing a patch to warn on selecting symbols
->> > with unmet dependencies so that you can select further symbols (manual
->> > solving). The patch is in linux-next but you also can grab it from:
->> >
->> > http://git.kernel.org/?p=3Dlinux/kernel/git/cmarinas/linux-2.6-cm.git;=
-a=3Dcommitdiff_plain;h=3D5d87db2d2a332784bbf2b1ec3e141486f4d41d6f
+On 07/16/2010 12:15 PM, Dave Hansen wrote:
+> On Thu, 2010-07-15 at 13:37 -0500, Nathan Fontenot wrote:
+>> @@ -123,13 +130,20 @@
+>>  static ssize_t show_mem_removable(struct sys_device *dev,
+>>  			struct sysdev_attribute *attr, char *buf)
+>>  {
+>> +	struct memory_block *mem;
+>> +	struct memory_block_section *mbs;
+>>  	unsigned long start_pfn;
+>> -	int ret;
+>> -	struct memory_block *mem =
+>> -		container_of(dev, struct memory_block, sysdev);
+>> +	int ret = 1;
+>> +
+>> +	mem = container_of(dev, struct memory_block, sysdev);
+>> +	mutex_lock(&mem->state_mutex);
 >>
->> sfr and I were talking about your patch the other day. =A0Just warning
->> on incomplete dependencies is enough to make it actually workable for
->> me (without my ugly post-processing step). =A0I was very happy to hear
->> that it is in linux-next.
+>> -	start_pfn = section_nr_to_pfn(mem->phys_index);
+>> -	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>> +	list_for_each_entry(mbs, &mem->sections, next) {
+>> +		start_pfn = section_nr_to_pfn(mbs->phys_index);
+>> +		ret &= is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
+>> +	}
+>> +
+>> +	mutex_unlock(&mem->state_mutex);
+>>  	return sprintf(buf, "%d\n", ret);
+>>  }
+> 
+> Now that the "state_mutex" is getting used for other stuff, should we
+> just make it "mutex"?
+> 
+>> @@ -182,16 +196,16 @@
+>>   * OK to have direct references to sparsemem variables in here.
+>>   */
+>>  static int
+>> -memory_block_action(struct memory_block *mem, unsigned long action)
+>> +memory_block_action(struct memory_block_section *mbs, unsigned long action)
+>>  {
+>>  	int i;
+>>  	unsigned long psection;
+>>  	unsigned long start_pfn, start_paddr;
+>>  	struct page *first_page;
+>>  	int ret;
+>> -	int old_state = mem->state;
+>> +	int old_state = mbs->state;
 >>
->> Last missing piece is being able to do "select FOO =3D n", which Stephen
->> is currently working on.
->
-> Instead of (or in addition to) warning for incomplete
-> dependencies, I'd much prefer if the prerequisites were recursively
-> selected automatically. =A0This way if some options are moved inside a
-> submenu at some point with a config symbol for that subcategory
-> (e.g. CONFIG_NETDEV_1000), or if the subsystem is reorganized into
-> submodules that are required for some driver to work, then my
-> config will still be fine.
->
-> For example, if I want CONFIG_MTD_CMDLINE_PARTS=3Dy, the system may be
-> smart enough to notice and automatically enable CONFIG_MTD and
-> CONFIG_MTD_PARTITIONS without having to carry those in the defconfig.
+>> -	psection = mem->phys_index;
+>> +	psection = mbs->phys_index;
+>>  	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
+>>
+>>  	/*
+>> @@ -217,18 +231,18 @@
+>>  			ret = online_pages(start_pfn, PAGES_PER_SECTION);
+>>  			break;
+>>  		case MEM_OFFLINE:
+>> -			mem->state = MEM_GOING_OFFLINE;
+>> +			mbs->state = MEM_GOING_OFFLINE;
+>>  			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+>>  			ret = remove_memory(start_paddr,
+>>  					    PAGES_PER_SECTION << PAGE_SHIFT);
+>>  			if (ret) {
+>> -				mem->state = old_state;
+>> +				mbs->state = old_state;
+>>  				break;
+>>  			}
+>>  			break;
+>>  		default:
+>>  			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
+>> -					__func__, mem, action, action);
+>> +					__func__, mbs, action, action);
+>>  			ret = -EINVAL;
+>>  	}
+>>
+>> @@ -238,19 +252,34 @@
+>>  static int memory_block_change_state(struct memory_block *mem,
+>>  		unsigned long to_state, unsigned long from_state_req)
+>>  {
+>> +	struct memory_block_section *mbs;
+>>  	int ret = 0;
+>> +
+>>  	mutex_lock(&mem->state_mutex);
+>>
+>> -	if (mem->state != from_state_req) {
+>> -		ret = -EINVAL;
+>> -		goto out;
+>> +	list_for_each_entry(mbs, &mem->sections, next) {
+>> +		if (mbs->state != from_state_req)
+>> +			continue;
+>> +
+>> +		ret = memory_block_action(mbs, to_state);
+>> +		if (ret)
+>> +			break;
+>> +	}
+>> +
+>> +	if (ret) {
+>> +		list_for_each_entry(mbs, &mem->sections, next) {
+>> +			if (mbs->state == from_state_req)
+>> +				continue;
+>> +
+>> +			if (memory_block_action(mbs, to_state))
+>> +				printk(KERN_ERR "Could not re-enable memory "
+>> +				       "section %lx\n", mbs->phys_index);
+>> +		}
+>>  	}
+> 
+> Please just use a goto here.  It's nicer looking, and much more in line
+> with what's there already.
 
-I fully agree.  However, the warnings make the system work now while
-we wait for a full solver to be implemented.
+Not sure if I follow on where you want the goto.  If you mean after the
+if (memory_block_action())...  I purposely did not have a goto here.
+Since this is in the recovery path I wanted to make sure we tried to return
+every memory section to the original state.
 
-g.
+> 
+> ...
+>> ===================================================================
+>> --- linux-2.6.orig/include/linux/memory.h	2010-07-15 08:48:41.000000000 -0500
+>> +++ linux-2.6/include/linux/memory.h	2010-07-15 09:54:06.000000000 -0500
+>> @@ -19,9 +19,15 @@
+>>  #include <linux/node.h>
+>>  #include <linux/compiler.h>
+>>  #include <linux/mutex.h>
+>> +#include <linux/list.h>
+>>
+>> -struct memory_block {
+>> +struct memory_block_section {
+>> +	unsigned long state;
+>>  	unsigned long phys_index;
+>> +	struct list_head next;
+>> +};
+>> +
+>> +struct memory_block {
+>>  	unsigned long state;
+>>  	/*
+>>  	 * This serializes all state change requests.  It isn't
+>> @@ -34,6 +40,7 @@
+>>  	void *hw;			/* optional pointer to fw/hw data */
+>>  	int (*phys_callback)(struct memory_block *);
+>>  	struct sys_device sysdev;
+>> +	struct list_head sections;
+>>  };
+> 
+> It looks like we have state in both the memory_block and
+> memory_block_section.  That seems a bit confusing to me.  This also
+> looks like it would permit non-contiguous memory_block_sections in a
+> memory_block.  Is that what you intended?
+
+The two state fields are a bit confusing, perhaps slightly different
+names, block_state and section_state.  The reason for two state fileds
+is that memory online/offline is done on a memory block and an entire
+memory block is considered online or offline.  The state field in the
+memory_block_section is used to track the state of each of the memory
+sections as you work through onlining or offlining the entire block
+so that if an error occurs we can return each memory section to its 
+original state.
+
+You're correct that there is nothing that prevents non-contiguous memory
+sections in a memory block.  It was not my intention to have this, but
+looking at the patches there is nothing to prevent it.
+
+> 
+> If the memory_block's state was inferred to be the same as each
+> memory_block_section, couldn't we just keep a start and end phys_index
+> in the memory_block, and get away from having memory_block_sections at
+> all?
+
+Oooohhh... I like.  Looking at the code it appears this is possible.  I'll
+try this out and include it in the next version of the patch.
+
+Do you think we need to add an additional file to each memory block directory
+to indicate the number of memory sections in the memory block that are actually
+present?
+
+-Nathan
