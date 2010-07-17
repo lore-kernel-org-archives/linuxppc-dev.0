@@ -1,30 +1,23 @@
-Return-Path: <jamie@shareable.org>
-Received: from mail2.shareable.org (mail2.shareable.org [80.68.89.115])
-	by ozlabs.org (Postfix) with ESMTP id 84ABAB6F17
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 17 Jul 2010 09:49:42 +1000 (EST)
-Date: Sat, 17 Jul 2010 00:49:18 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Daniel Walker <dwalker@codeaurora.org>
-Subject: Re: [RFC PATCH] Kconfig: Enable Kconfig fragments to be used for
-	defconfig
-Message-ID: <20100716234918.GA31060@shareable.org>
-References: <20100713230352.6781.18644.stgit@angua>
-	<1279062881.4609.34.camel@c-dwalke-linux.qualcomm.com>
-	<AANLkTin69tN3NQHD2wvkA0G-lj3f9tSZEnhzdyJdTh9m@mail.gmail.com>
-	<1279064008.4609.48.camel@c-dwalke-linux.qualcomm.com>
-	<alpine.LFD.2.00.1007131941140.10598@xanadu.home>
-	<1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 2D82BB6F0C
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Jul 2010 10:30:02 +1000 (EST)
+Received: by iwn36 with SMTP id 36so2459940iwn.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jul 2010 17:30:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1279124563.21162.14.camel@c-dwalke-linux.qualcomm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org,
-	Tony Lindgren <tony@atomide.com>,
-	Nicolas Pitre <nico@fluxnic.net>, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20100716131333.0c99a627@schlenkerla.am.freescale.net>
+References: <AANLkTik9n_UkLKdmKT7PHiOL1-EW_TlMJFOGvWCU44xb@mail.gmail.com>
+	<AANLkTin7nqaxDyXjkFhdJGEaazEL-oSMXnhkG0dblAUb@mail.gmail.com>
+	<AANLkTinVSCwvz5KWbvp4UUcTsd-KZQm0pzfy-XXN_ie=@mail.gmail.com>
+	<20100716131333.0c99a627@schlenkerla.am.freescale.net>
+Date: Fri, 16 Jul 2010 17:30:01 -0700
+Message-ID: <AANLkTikyHvocHW6YzBPtxDrC9M5mih4ZpSoqo0mg6M1E@mail.gmail.com>
+Subject: Re: cpm_uart_console_write() stuck in waiting for transmitter fifo
+	ready
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Daniel Walker wrote:
-> > But all the rest is arbitrary and could be part of common shared 
-> > profiles or the like in defconfig format.
-> 
-> I'm sure most people will want to have a config isolated to their
-> specific device. That to me seems reasonable because everyone wants the
-> smallest possible kernel they can get for their given device.
+>> > My RCCR=3D0x1, meaning the first 512B is for microcode. So the data an=
+d
+>> > the TxBD should really be starting at 0xfa202200? Then my muram data's
+>> > reg should be <0x200 ?>? What size shall I specify?
+>>
+>> After the muram data's reg is changed to <0x200 0x1a00>, the cpm_uart
+>> driver works properly and the kernel messages are printed on the
+>> serial port.
+>
+> The muram node is supposed to show the portions of DPRAM that are
+> usable by the OS. =A0If some portion has been taken up by microcode (or
+> anything else not under the OS's control) before the OS has started,
+> then it must be excluded from the muram node.
 
-Indeed, but people who want the smallest possible kernel for their
-specific device _in a particular use context_ tend to want:
+It would be nicer that the initialization code could query the RCCR
+value and adjust the base address. It took me quite a while to
+understand the design. Without your help it could take much much
+longer. So thanks a lot for your help. My project hasn't been done
+yet, so I may bother you again. :)
 
-  - To disable support for parts of the device they aren't using.
-    For example, an SoC with integrated ethernet that isn't actually
-    wired up on their board, or where they're using an external ethernet
-    chip instead for some reason.
-
-  - To choose what's modular and what isn't, even for integrated
-    parts.  For example to control the bootup sequence, they might
-    want to delay integrated USB and IDE initialisation, which is done by
-    making those modular and loading them after bringing up a splash
-    screen earlier in the boot scripts.
-
-So there is still a need to be able to override the drivers and
-settings, but it's still incredibly useful to have defaults which
-describe the SoC or board accurately.
-
--- Jamie
+Thanks again,
+-Shawn.
