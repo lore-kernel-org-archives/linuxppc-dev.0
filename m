@@ -1,22 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 08BA7B6F06
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jul 2010 07:51:05 +1000 (EST)
-Date: Sun, 18 Jul 2010 14:51:20 -0700 (PDT)
-Message-Id: <20100718.145120.35845833.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Subject: Re: Badness with the kernel version 2.6.35-rc1-git1 running on P6 box
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1279282842.2549.16.camel@edumazet-laptop>
-References: <4C401D56.3070108@linux.vnet.ibm.com>
-	<1279274185.2549.14.camel@edumazet-laptop>
-	<1279282842.2549.16.camel@edumazet-laptop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E35E2B6EF7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 19 Jul 2010 09:41:41 +1000 (EST)
+Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address
+	via  proc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <AANLkTimiM1Ky7aIYoQ3efhivypV90LFG-BpueuaPaiPf@mail.gmail.com>
+References: <1279120733-13584-1-git-send-email-msm@freescale.com>
+	<AANLkTimiM1Ky7aIYoQ3efhivypV90LFG-BpueuaPaiPf@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 19 Jul 2010 09:41:31 +1000
+Message-ID: <1279496491.10390.1725.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: sachinp@linux.vnet.ibm.com, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	ossthema@de.ibm.com, dipraksh@linux.vnet.ibm.com
+Cc: Matthew McClintock <msm@freescale.com>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +28,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Fri, 16 Jul 2010 14:20:42 +0200
+On Thu, 2010-07-15 at 00:21 -0600, Grant Likely wrote:
+> On Wed, Jul 14, 2010 at 9:18 AM, Matthew McClintock <msm@freescale.com> wrote:
+> > To build a proper flat device tree for kexec we need to know which
+> > memreserve region was used for the device tree for the currently
+> > running kernel, so we can remove it and replace it with the new
+> > memreserve for the kexec'ed kernel
+> >
+> > Signed-off-by: Matthew McClintock <msm@freescale.com>
+> 
+> Hi Matthew.
+> 
+> I don't understand.  Why does userspace need to know about the old
+> memreserve sections?  Doesn't kexec tear down all of the old
+> allocations anyway?  How are they relevant for constructing the dtb
+> for the kexec kernel?  I'll need a lot more details before I consider
+> merging this.
+> 
+> Also, please cc: me and Ben Herrenschmidt on powerpc related device
+> tree changes.
 
-> Le vendredi 16 juillet 2010 =E0 11:56 +0200, Eric Dumazet a =E9crit :=
+I admit to be the victim of a similar misunderstanding...
 
-> =
+Care to explain in more details ? (with examples)
 
->> [PATCH] ehea: ehea_get_stats() should use GFP_KERNEL
->> =
+Cheers,
+Ben.
 
->> ehea_get_stats() is called in process context and should use GFP_KER=
-NEL
->> allocation instead of GFP_ATOMIC.
->> =
-
->> Clearing stats at beginning of ehea_get_stats() is racy in case of
->> concurrent stat readers.
->> =
-
->> get_stats() can also use netdev net_device_stats, instead of a priva=
-te
->> copy.
->> =
-
->> Reported-by: divya <dipraksh@linux.vnet.ibm.com>
->> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
->> ---
->>  drivers/net/ehea/ehea.h      |    1 -
->>  drivers/net/ehea/ehea_main.c |    6 ++----
->>  2 files changed, 2 insertions(+), 5 deletions(-)
->> =
-
->> =
-
-> =
-
-> Hmm, net-next-2.6 contains following patch :
-
-If people think ehea usage is ubiquitous enough to deserve a backport
-of this to net-2.6, fine.  But personally I don't think it's worth it.
-
-Can someone close the kernel bugzilla 16406 created for this bug?  This=
-
-patch we have already obviously would fix this issue.
+> Cheers,
+> g.
+> 
+> > ---
+> > V4: Fixed misspelling
+> >
+> > V3: Remove unneeded cast, and fixed indentation screw up
+> >
+> > V2: messed up changes
+> >
+> >  arch/powerpc/kernel/prom.c |   45 ++++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 45 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> > index fd9359a..ff3e240 100644
+> > --- a/arch/powerpc/kernel/prom.c
+> > +++ b/arch/powerpc/kernel/prom.c
+> > @@ -32,6 +32,7 @@
+> >  #include <linux/debugfs.h>
+> >  #include <linux/irq.h>
+> >  #include <linux/lmb.h>
+> > +#include <linux/bootmem.h>
+> >
+> >  #include <asm/prom.h>
+> >  #include <asm/rtas.h>
+> > @@ -911,3 +912,47 @@ static int __init export_flat_device_tree(void)
+> >  }
+> >  __initcall(export_flat_device_tree);
+> >  #endif
+> > +
+> > +#ifdef CONFIG_KEXEC
+> > +static phys_addr_t flat_dt_start;
+> > +static phys_addr_t flat_dt_end;
+> > +
+> > +static struct property flat_dt_start_prop = {
+> > +       .name = "linux,devicetree-start",
+> > +       .length = sizeof(phys_addr_t),
+> > +       .value = &flat_dt_start,
+> > +};
+> > +
+> > +static struct property flat_dt_end_prop = {
+> > +       .name = "linux,devicetree-end",
+> > +       .length = sizeof(phys_addr_t),
+> > +       .value = &flat_dt_end,
+> > +};
+> > +
+> > +static int __init export_flat_device_tree_phys_addr(void)
+> > +{
+> > +       struct property *prop;
+> > +       struct device_node *node;
+> > +
+> > +       node = of_find_node_by_path("/chosen");
+> > +       if (!node)
+> > +               return -ENOENT;
+> > +
+> > +       prop = of_find_property(node, "linux,devicetree-start", NULL);
+> > +       if (prop)
+> > +               prom_remove_property(node, prop);
+> > +
+> > +       prop = of_find_property(node, "linux,devicetree-end", NULL);
+> > +       if (prop)
+> > +               prom_remove_property(node, prop);
+> > +
+> > +       flat_dt_start = virt_to_phys(initial_boot_params);
+> > +       flat_dt_end = virt_to_phys(initial_boot_params)
+> > +                               + initial_boot_params->totalsize;
+> > +       prom_add_property(node, &flat_dt_start_prop);
+> > +       prom_add_property(node, &flat_dt_end_prop);
+> > +
+> > +       return 0;
+> > +}
+> > +__initcall(export_flat_device_tree_phys_addr);
+> > +#endif
+> > --
+> > 1.6.6.1
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+> 
+> 
+> 
