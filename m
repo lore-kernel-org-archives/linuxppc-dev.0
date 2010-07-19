@@ -1,21 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 7D241B7178
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 08:12:18 +1000 (EST)
-Date: Mon, 19 Jul 2010 15:12:33 -0700 (PDT)
-Message-Id: <20100719.151233.215575238.davem@davemloft.net>
-To: mikpe@it.uu.se
-Subject: Re: [PATCH] math-emu: correct test for downshifting fraction in
+Return-Path: <mikpe@it.uu.se>
+Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7204AB6F04
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 08:23:19 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19524.51858.992299.119315@pilspetsen.it.uu.se>
+Date: Mon, 19 Jul 2010 23:58:42 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] math-emu: correct test for downshifting fraction in
 	_FP_FROM_INT()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-References: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
+Cc: sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-alpha@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Mon, 19 Jul 2010 23:58:42 +0200
+The kernel's math-emu code contains a macro _FP_FROM_INT() which is
+used to convert an integer to a raw normalized floating-point value.
+It does this basically in three steps:
 
-> The kernel's math-emu code contains a macro _FP_FROM_INT() which is
-> used to convert an integer to a raw normalized floating-point value.
-> It does this basically in three steps:
-> 
-> 1. Compute the exponent from the number of leading zero bits.
-> 2. Downshift large fractions to put the MSB in the right position
->    for normalized fractions.
-> 3. Upshift small fractions to put the MSB in the right position.
-> 
-> There is an boundary error in step 2, causing a fraction with its
-> MSB exactly one bit above the normalized MSB position to not be
-> downshifted.  This results in a non-normalized raw float, which when
-> packed becomes a massively inaccurate representation for that input.
-> 
-> The impact of this depends on a number of arch-specific factors,
-> but it is known to have broken emulation of FXTOD instructions
-> on UltraSPARC III, which was originally reported as GCC bug 44631
-> <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44631>.
-> 
-> Any arch which uses math-emu to emulate conversions from integers to
-> same-size floats may be affected.
-> 
-> The fix is simple: the exponent comparison used to determine if the
-> fraction should be downshifted must be "<=" not "<".
-> 
-> I'm sending a kernel module to test this as a reply to this message.
-> There are also SPARC user-space test cases in the GCC bug entry.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+1. Compute the exponent from the number of leading zero bits.
+2. Downshift large fractions to put the MSB in the right position
+   for normalized fractions.
+3. Upshift small fractions to put the MSB in the right position.
 
-Thanks for fixing this Mikael:
+There is an boundary error in step 2, causing a fraction with its
+MSB exactly one bit above the normalized MSB position to not be
+downshifted.  This results in a non-normalized raw float, which when
+packed becomes a massively inaccurate representation for that input.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+The impact of this depends on a number of arch-specific factors,
+but it is known to have broken emulation of FXTOD instructions
+on UltraSPARC III, which was originally reported as GCC bug 44631
+<http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44631>.
 
-Has anyone done an audit to compare the copy of math-emu in glibc, gcc,
-and the linux kernel so that we don't have bugs living in some places
-but not others?
+Any arch which uses math-emu to emulate conversions from integers to
+same-size floats may be affected.
 
-These sources really need to be consolidated somehow.
+The fix is simple: the exponent comparison used to determine if the
+fraction should be downshifted must be "<=" not "<".
+
+I'm sending a kernel module to test this as a reply to this message.
+There are also SPARC user-space test cases in the GCC bug entry.
+
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+---
+ include/math-emu/op-common.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -rupN linux-2.6.35-rc5/include/math-emu/op-common.h linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h
+--- linux-2.6.35-rc5/include/math-emu/op-common.h	2010-05-17 19:51:32.000000000 +0200
++++ linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h	2010-07-18 22:33:46.000000000 +0200
+@@ -799,7 +799,7 @@ do {									\
+ 		X##_e -= (_FP_W_TYPE_SIZE - rsize);			\
+ 	X##_e = rsize - X##_e - 1;					\
+ 									\
+-	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs < X##_e)	\
++	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs <= X##_e)	\
+ 	  __FP_FRAC_SRS_1(ur_, (X##_e - _FP_WFRACBITS_##fs + 1), rsize);\
+ 	_FP_FRAC_DISASSEMBLE_##wc(X, ur_, rsize);			\
+ 	if ((_FP_WFRACBITS_##fs - X##_e - 1) > 0)			\
