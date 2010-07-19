@@ -1,23 +1,10 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EB62F1007D6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 19 Jul 2010 22:01:05 +1000 (EST)
-Message-ID: <4C443E78.6020902@suse.de>
-Date: Mon, 19 Jul 2010 14:00:56 +0200
 From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PPC64/Power7 - 2.6.35-rc5] Bad relocation warnings whileBuilding
-	a CONFIG_RELOCATABLE kernel with CONFIG_ISERIES enabled
-References: <reloc-2010-07-19@mdm.bga.com>	<8C4BCF61-7F5D-4C80-A311-93CF8521FBF5@suse.de>	<1273060251.13463.8.camel@subratamodak.linux.ibm.com>	<20100507054034.GB25173@drongo>	<1279193743.10707.5.camel@subratamodak.linux.ibm.com>	<1279501889.10390.1834.camel@pasglop>
-	<reloc-2010-07-19-2@mdm.bga.com>
-In-Reply-To: <reloc-2010-07-19-2@mdm.bga.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Subrata Modak <subrata@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Make long relocations be ulong
+Date: Mon, 19 Jul 2010 16:54:53 +0200
+Message-Id: <1279551293-32473-1-git-send-email-agraf@suse.de>
+Cc: Linuxppc-dev@ozlabs.org, subrata@linux.vnet.ibm.com, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +14,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Milton Miller wrote:
-> I wrote:
->   
->> On Mon Jul 19 2010 at about 03:36:51 EST, Alexander Graf wrote:
->>     
->>> On 19.07.2010, at 03:11, Benjamin Herrenschmidt wrote:
->>>
->>>       
->>>> On Thu, 2010-07-15 at 17:05 +0530, Subrata Modak wrote:
->>>>         
->>>>> commit e62cee42e66dcca83aae02748535f62e0f564a0c solved the problem for
->>>>> 2.6.34-rc6. However some other bad relocation warnings generated against
->>>>> 2.6.35-rc5 on Power7/ppc64 below:
->>>>>
->>>>> MODPOST 2004 modules^M
->>>>> WARNING: 2 bad relocations^M
->>>>> c000000000008590 R_PPC64_ADDR32 .text+0x4000000000008460^M
->>>>> c000000000008594 R_PPC64_ADDR32 .text+0x4000000000008598^M
->>>>>           
->>>> I think this is KVM + CONFIG_RELOCATABLE. Caused by:
->>>>
->>>> .global kvmppc_trampoline_lowmem
->>>> kvmppc_trampoline_lowmem:
->>>> .long kvmppc_handler_lowmem_trampoline - CONFIG_KERNEL_START
->>>>
->>>> .global kvmppc_trampoline_enter
->>>> kvmppc_trampoline_enter:
->>>> .long kvmppc_handler_trampoline_enter - CONFIG_KERNEL_START
->>>>
->>>> Alex, can you turn these into 64-bit on ppc64 so the relocator
->>>> can grok them ?
->>>>         
->>> If I turn them into 64-bit, will the values be > RMA? In that case
->>> things would break anyways. How does relocation work on PPC? Are the
->>> first few megs copied over to low memory? Would I have to mask anything
->>> in the above code to make sure I use the real values? 
->>>
->>> Alex
->>>
->>>       
->> You can still do the subtraction, but you have to allocate 64 bits for
->> storage.  Relocatable ppc64 kernels work by adjusting PPC64_RELOC_RELATIVE
->> entries during early boot (reloc in reloc_64.S called from head_64.S).
->>
->> The code purposely only supports 64 bit relative addressing.
->>     
->
-> Oh yea, and for book-3s, the code copies from 0x100 to __end_interrupts
-> in arch/powerpc/kernel/exceptions-64s.h down to the real 0, but the rest
-> of the kernel is at some disjointed address.  The interrupt will go to
-> the copy at the real zero.  Any references to code outside that region
-> must be done via a full indrect branch (not a relative one), simiar to
-> the secondary startup (via following the function pointer in a descriptor
-> set in very low memory), or syscall entry and exception vectors via paca.
->   
+On Book3S KVM we directly expose some asm pointers to C code as
+variables. These need to be relocated and thus break on relocatable
+kernels.
 
-That would still break on normal PPC boxes, as any address accessed in
-real mode has to be inside the RMA. And the #include for
-kvm/book3s_rmhandlers.S happens after __end_interrupts. So I'd end up
-with code that gets executed outside of the RMA after a relocation, right?
+To make sure we can at least build, let's mark them as long instead
+of u32 where 64bit relocations don't work.
 
+This fixes the following build error:
 
-Alex
+WARNING: 2 bad relocations
+> c000000000008590 R_PPC64_ADDR32    .text+0x4000000000008460
+> c000000000008594 R_PPC64_ADDR32    .text+0x4000000000008598
+
+Please keep in mind that actually using KVM on a relocated kernel
+might still break. This only fixes the compile problem.
+
+Reported-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+
+I'm not sure which tree this should go through. Avi and Ben, please
+coordinate this.
+---
+ arch/powerpc/include/asm/kvm_book3s.h |    4 ++--
+ arch/powerpc/kvm/book3s_rmhandlers.S  |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index b5b1961..b3d763d 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -131,8 +131,8 @@ extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
+ extern void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr);
+ extern int kvmppc_emulate_paired_single(struct kvm_run *run, struct kvm_vcpu *vcpu);
+ 
+-extern u32 kvmppc_trampoline_lowmem;
+-extern u32 kvmppc_trampoline_enter;
++extern ulong kvmppc_trampoline_lowmem;
++extern ulong kvmppc_trampoline_enter;
+ extern void kvmppc_rmcall(ulong srr0, ulong srr1);
+ extern void kvmppc_load_up_fpu(void);
+ extern void kvmppc_load_up_altivec(void);
+diff --git a/arch/powerpc/kvm/book3s_rmhandlers.S b/arch/powerpc/kvm/book3s_rmhandlers.S
+index 506d5c3..20eb908 100644
+--- a/arch/powerpc/kvm/book3s_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_rmhandlers.S
+@@ -242,10 +242,10 @@ define_load_up(vsx)
+ 
+ .global kvmppc_trampoline_lowmem
+ kvmppc_trampoline_lowmem:
+-	.long kvmppc_handler_lowmem_trampoline - CONFIG_KERNEL_START
++	PPC_LONG kvmppc_handler_lowmem_trampoline - CONFIG_KERNEL_START
+ 
+ .global kvmppc_trampoline_enter
+ kvmppc_trampoline_enter:
+-	.long kvmppc_handler_trampoline_enter - CONFIG_KERNEL_START
++	PPC_LONG kvmppc_handler_trampoline_enter - CONFIG_KERNEL_START
+ 
+ #include "book3s_segment.S"
+-- 
+1.6.0.2
