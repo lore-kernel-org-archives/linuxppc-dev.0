@@ -1,23 +1,23 @@
-Return-Path: <agraf@suse.de>
+Return-Path: <subrata@linux.vnet.ibm.com>
 Subject: Re: [PPC64/Power7 - 2.6.35-rc5] Bad relocation warnings while
 	Building a CONFIG_RELOCATABLE kernel with CONFIG_ISERIES enabled
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1279501889.10390.1834.camel@pasglop>
-Date: Mon, 19 Jul 2010 09:36:39 +0200
-Message-Id: <8C4BCF61-7F5D-4C80-A311-93CF8521FBF5@suse.de>
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <4635.1279245899@neuling.org>
 References: <1273060251.13463.8.camel@subratamodak.linux.ibm.com>
 	<20100507054034.GB25173@drongo>
 	<1279193743.10707.5.camel@subratamodak.linux.ibm.com>
-	<1279501889.10390.1834.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	<4635.1279245899@neuling.org>
+Content-Type: text/plain
+Date: Mon, 19 Jul 2010 14:26:17 +0530
+Message-Id: <1279529778.4985.1.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
 Cc: sachinp <sachinp@linux.vnet.ibm.com>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
 	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
 	Linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Paul Mackerras <paulus@au1.ibm.com>, subrata@linux.vnet.ibm.com,
-	divya.vikas@in.ibm.com
+	Paul Mackerras <paulus@au1.ibm.com>, divya.vikas@in.ibm.com
+Reply-To: subrata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2010-07-16 at 12:04 +1000, Michael Neuling wrote:
+> > commit e62cee42e66dcca83aae02748535f62e0f564a0c solved the problem for
+> > 2.6.34-rc6. However some other bad relocation warnings generated against
+> > 2.6.35-rc5 on Power7/ppc64 below:
+> > 
+> > MODPOST 2004 modules^M
+> > WARNING: 2 bad relocations^M
+> > c000000000008590 R_PPC64_ADDR32    .text+0x4000000000008460^M
+> > c000000000008594 R_PPC64_ADDR32    .text+0x4000000000008598^M
+> 
+> I can't replicate this with your config with gcc 4.4.4 and binutils
+> 2.20.  What are you using?
 
-On 19.07.2010, at 03:11, Benjamin Herrenschmidt wrote:
+Well, i also have the following GCC (from Fedora 13 Rawhide)
+# gcc --version
+gcc (GCC) 4.4.4 20100611 (Red Hat 4.4.4-8)
+Copyright (C) 2010 Free Software Foundation, Inc.
 
-> On Thu, 2010-07-15 at 17:05 +0530, Subrata Modak wrote:
->> commit e62cee42e66dcca83aae02748535f62e0f564a0c solved the problem =
-for
->> 2.6.34-rc6. However some other bad relocation warnings generated =
-against
->> 2.6.35-rc5 on Power7/ppc64 below:
->>=20
->> MODPOST 2004 modules^M
->> WARNING: 2 bad relocations^M
->> c000000000008590 R_PPC64_ADDR32    .text+0x4000000000008460^M
->> c000000000008594 R_PPC64_ADDR32    .text+0x4000000000008598^M
->=20
-> I think this is KVM + CONFIG_RELOCATABLE. Caused by:
->=20
-> .global kvmppc_trampoline_lowmem
-> kvmppc_trampoline_lowmem:
-> 	.long kvmppc_handler_lowmem_trampoline - CONFIG_KERNEL_START
->=20
-> .global kvmppc_trampoline_enter
-> kvmppc_trampoline_enter:
-> 	.long kvmppc_handler_trampoline_enter - CONFIG_KERNEL_START
->=20
-> Alex, can you turn these into 64-bit on ppc64 so the relocator
-> can grok them ?
+and binutils-2.20.51.0.2-22.fc13.ppc,
 
-If I turn them into 64-bit, will the values be > RMA? In that case =
-things would break anyways. How does relocation work on PPC? Are the =
-first few megs copied over to low memory? Would I have to mask anything =
-in the above code to make sure I use the real values?
+Regards--
+Subrata
 
-Alex
+> 
+> Mikey
+> 
+> > 
+> > Config file attached.
+> > 
+> > Regards--
+> > Subrata
+> > 
+> > On Fri, 2010-05-07 at 15:40 +1000, Paul Mackerras wrote:
+> > > On Wed, May 05, 2010 at 05:20:51PM +0530, Subrata Modak wrote:
+> > > 
+> > > > I built 2.6.34-rc6 with the attached Fedora Config file
+> > > > (config-2.6.33.1-19.fc13.ppc64) on my P5 Fedora Box and got the
+> > > > following warning. Is the following expected ?
+> > > > 
+> > > > CALL    arch/powerpc/relocs_check.pl
+> > > > Building modules, stage 2.
+> > > > WARNING: 4 bad relocations
+> > > > c00000000007216e R_PPC64_ADDR16_HIGHEST  __ksymtab+0x00000000009dcec8
+> > > > c000000000072172 R_PPC64_ADDR16_HIGHER  __ksymtab+0x00000000009dcec8
+> > > > c00000000007217a R_PPC64_ADDR16_HI  __ksymtab+0x00000000009dcec8
+> > > > c00000000007217e R_PPC64_ADDR16_LO  __ksymtab+0x00000000009dcec8
+> > > 
+> > > No, it's not expected.  It's in iSeries code, so you could avoid it
+> > > just by disabling CONFIG_ISERIES (I don't think any distro still
+> > > supports legacy iSeries).  I'll post a patch to fix the problem
+> > > properly.
+> > > 
+> > > Paul.
