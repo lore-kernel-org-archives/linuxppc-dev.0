@@ -1,31 +1,22 @@
 Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE001.bigfish.com (tx2ehsobe001.messaging.microsoft.com
-	[65.55.88.11]) by ozlabs.org (Postfix) with ESMTP id 83926B6EF7
+Received: from TX2EHSOBE003.bigfish.com (tx2ehsobe002.messaging.microsoft.com
+	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 310CAB6EEB
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 19 Jul 2010 14:26:30 +1000 (EST)
+	Mon, 19 Jul 2010 14:28:21 +1000 (EST)
 Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address via
 	proc
 MIME-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset="us-ascii"
 From: Matthew McClintock <msm@freescale.com>
-In-Reply-To: <1E87551E-BD4C-4B0B-A603-908C7D9C1D5F@kernel.crashing.org>
-Date: Sun, 18 Jul 2010 23:24:53 -0500
-Message-ID: <F09F2365-3071-4DA4-9164-505F8D76CAEA@freescale.com>
+In-Reply-To: <1279496491.10390.1725.camel@pasglop>
+Date: Sun, 18 Jul 2010 23:28:01 -0500
+Message-ID: <8388D248-51F3-4F36-BBE0-CDE9E278E65E@freescale.com>
 References: <1279120733-13584-1-git-send-email-msm@freescale.com>
 	<AANLkTimiM1Ky7aIYoQ3efhivypV90LFG-BpueuaPaiPf@mail.gmail.com>
-	<1279207159.30737.11.camel@localhost>
-	<AANLkTikIGXBNU7NQEL7riZYB-BJU3jhxauzGo6XhUF3t@mail.gmail.com>
-	<1279211961.31679.11.camel@localhost>
-	<AANLkTikCDvsrWvtfhpEE0A78Nt3UUT-rzSwPk5nnN95s@mail.gmail.com>
-	<1279216999.31679.26.camel@localhost>
-	<AANLkTinUBPRsiKMd46EK6_9BBRYwB3jsfg49W9uKEbw-@mail.gmail.com>
-	<1279220310.19363.19.camel@localhost>
-	<AANLkTilDcYYbsH-6f0_HlX9WwaOwG24w1CfhRLplZKS7@mail.gmail.com>
-	<1E87551E-BD4C-4B0B-A603-908C7D9C1D5F@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Kumar Gala <kumar.gala@freescale.com>, Mitch Bradley <wmb@firmworks.com>,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+	<1279496491.10390.1725.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,62 +26,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jul 17, 2010, at 11:41 AM, Segher Boessenkool wrote:
-
->>>>> Yes. Where would we get a list of memreserve sections?
->>>>=20
->>>> I would say the list of reserves that are not under the control of
->>>> Linux should be explicitly described in the device tree proper.  =
-For
->>>> instance, if you have a region that firmware depends on, then have =
-a
->>>> node for describing the firmware and a property stating the memory
->>>> regions that it depends on.  The memreserve regions can be =
-generated
->>>> from that.
+On Jul 18, 2010, at 6:41 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2010-07-15 at 00:21 -0600, Grant Likely wrote:
+>> On Wed, Jul 14, 2010 at 9:18 AM, Matthew McClintock =
+<msm@freescale.com> wrote:
+>>> To build a proper flat device tree for kexec we need to know which
+>>> memreserve region was used for the device tree for the currently
+>>> running kernel, so we can remove it and replace it with the new
+>>> memreserve for the kexec'ed kernel
 >>>=20
->>> Ok, so we could traverse the tree node-by-bode for a
->>> persistent-memreserve property and add them to the /memreserve/ list =
-in
->>> the kexec user space tools?
+>>> Signed-off-by: Matthew McClintock <msm@freescale.com>
 >>=20
->> I *think* that is okay, but I'd like to hear from Segher, Ben, Mitch,
->> David Gibson, and other device tree experts on whether or not that
->> exact property naming is a good one.
+>> Hi Matthew.
+>>=20
+>> I don't understand.  Why does userspace need to know about the old
+>> memreserve sections?  Doesn't kexec tear down all of the old
+>> allocations anyway?  How are they relevant for constructing the dtb
+>> for the kexec kernel?  I'll need a lot more details before I consider
+>> merging this.
+>>=20
+>> Also, please cc: me and Ben Herrenschmidt on powerpc related device
+>> tree changes.
 >=20
-> Let's take a step back: what exactly _are_ "memreserve sections", what
-> are they used for, who (kernel, firmware, bootloader, etc.) holds what
-> responsibility wrt them?
+> I admit to be the victim of a similar misunderstanding...
+>=20
+> Care to explain in more details ? (with examples)
 >=20
 
-On the platform I'm working on (mpc85xx) they can be the following:
+Upon first examining the details of getting kexec working on our =
+platform I noticed our device tree passed from u-boot contained an =
+additional memreserve section for the boot page. Subsequently, I've been =
+trying to preserve the ones passed in for the kexec'ed kernel thinking =
+anyone could add anything they wanted for their own particular needs and =
+would quite possibly need those regions preserved across reboots.
 
-1) Boot page (aka cpu-release-addr) - always present on MP
-2) Flat Device Tree - always present
-3) Initrd - optional
+Recently, I've discovered the boot page address is given in the device =
+tree as a property. So, for our platform (mpc85xx) in particular, I'm =
+back to not needing the read the old memreserve sections... I can =
+completely reconstruct the appropriate memreserve regions for kexec'ing =
+from the information passed in the device tree.
 
-When kexec'ing a kernel, we will provide new memory regions for the flat =
-device tree and the initrd (if present). However, all others will not be =
-replaced by kexec and should either be tossed or preserved. The question =
-is how to decide what to do... save them all by default? Save none of =
-them? If we save them all at a minimum we need to remove/replace the =
-device tree and initrd regions as well. So we need a way to identify =
-which regions correspond to these.
-
-Grant and I talked and though a property that lives in the device tree =
-describing a persistant-memreseve might work. And Mitch talked about an =
-available memory property to go along with the current one which could =
-be used to determine which ranges were invalid and need a memreserve =
-for...
+That isn't to say there might not be more memreserve regions that are =
+not there for some valid reason. I'm not sure if we need to attempt to =
+address another scenario where there are other memreserve regions. So =
+this would be a good time to address this issue if anyone believes it is =
+a worthwhile pursuit to have a mechanism to have memreserve regions =
+persistent across kexec'ing - or any other reboot.
 
 -Matthew
 
+
+> Cheers,
+> Ben.
 >=20
-> Segher
+>> Cheers,
+>> g.
+>>=20
+>>> ---
+>>> V4: Fixed misspelling
+>>>=20
+>>> V3: Remove unneeded cast, and fixed indentation screw up
+>>>=20
+>>> V2: messed up changes
+>>>=20
+>>> arch/powerpc/kernel/prom.c |   45 =
+++++++++++++++++++++++++++++++++++++++++++++
+>>> 1 files changed, 45 insertions(+), 0 deletions(-)
+>>>=20
+>>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>>> index fd9359a..ff3e240 100644
+>>> --- a/arch/powerpc/kernel/prom.c
+>>> +++ b/arch/powerpc/kernel/prom.c
+>>> @@ -32,6 +32,7 @@
+>>> #include <linux/debugfs.h>
+>>> #include <linux/irq.h>
+>>> #include <linux/lmb.h>
+>>> +#include <linux/bootmem.h>
+>>>=20
+>>> #include <asm/prom.h>
+>>> #include <asm/rtas.h>
+>>> @@ -911,3 +912,47 @@ static int __init export_flat_device_tree(void)
+>>> }
+>>> __initcall(export_flat_device_tree);
+>>> #endif
+>>> +
+>>> +#ifdef CONFIG_KEXEC
+>>> +static phys_addr_t flat_dt_start;
+>>> +static phys_addr_t flat_dt_end;
+>>> +
+>>> +static struct property flat_dt_start_prop =3D {
+>>> +       .name =3D "linux,devicetree-start",
+>>> +       .length =3D sizeof(phys_addr_t),
+>>> +       .value =3D &flat_dt_start,
+>>> +};
+>>> +
+>>> +static struct property flat_dt_end_prop =3D {
+>>> +       .name =3D "linux,devicetree-end",
+>>> +       .length =3D sizeof(phys_addr_t),
+>>> +       .value =3D &flat_dt_end,
+>>> +};
+>>> +
+>>> +static int __init export_flat_device_tree_phys_addr(void)
+>>> +{
+>>> +       struct property *prop;
+>>> +       struct device_node *node;
+>>> +
+>>> +       node =3D of_find_node_by_path("/chosen");
+>>> +       if (!node)
+>>> +               return -ENOENT;
+>>> +
+>>> +       prop =3D of_find_property(node, "linux,devicetree-start", =
+NULL);
+>>> +       if (prop)
+>>> +               prom_remove_property(node, prop);
+>>> +
+>>> +       prop =3D of_find_property(node, "linux,devicetree-end", =
+NULL);
+>>> +       if (prop)
+>>> +               prom_remove_property(node, prop);
+>>> +
+>>> +       flat_dt_start =3D virt_to_phys(initial_boot_params);
+>>> +       flat_dt_end =3D virt_to_phys(initial_boot_params)
+>>> +                               + initial_boot_params->totalsize;
+>>> +       prom_add_property(node, &flat_dt_start_prop);
+>>> +       prom_add_property(node, &flat_dt_end_prop);
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +__initcall(export_flat_device_tree_phys_addr);
+>>> +#endif
+>>> --
+>>> 1.6.6.1
+>>>=20
+>>>=20
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>>=20
+>>=20
+>>=20
+>>=20
 >=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
 >=20
