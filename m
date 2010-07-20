@@ -1,22 +1,26 @@
-Return-Path: <mikpe@it.uu.se>
-Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B5574B6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 23:35:29 +1000 (EST)
+Return-Path: <andre.prendel@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E9426B6EEA
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Jul 2010 01:09:59 +1000 (EST)
+Date: Tue, 20 Jul 2010 17:09:53 +0200
+From: Andre Prendel <andre.prendel@gmx.de>
+To: Jeff Angielski <jeff@theptrgroup.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: (tmp421) Add nfactor support (2nd
+	attempt)
+Message-ID: <20100720150953.GA9810@andre-laptop>
+References: <4BF1A760.2010707@theptrgroup.com>
+	<20100518113838.GA2052@andre-laptop>
+	<4BF2A5A9.6010907@theptrgroup.com>
+	<20100519072659.GA2069@andre-laptop>
+	<4BF41C20.60502@theptrgroup.com>
+	<20100520185035.GA2153@andre-laptop>
+	<4BF58859.3090702@theptrgroup.com>
+	<20100520193556.GB2153@andre-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <19525.42521.198122.812309@pilspetsen.it.uu.se>
-Date: Tue, 20 Jul 2010 15:35:21 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH] math-emu: correct test for downshifting fraction in
-	_FP_FROM_INT()
-In-Reply-To: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-References: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
+In-Reply-To: <20100520193556.GB2153@andre-laptop>
+Cc: linuxppc-dev@lists.ozlabs.org, lm-sensors@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +30,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mikael Pettersson writes:
- > The kernel's math-emu code contains a macro _FP_FROM_INT() which is
- > used to convert an integer to a raw normalized floating-point value.
- > It does this basically in three steps:
- > 
- > 1. Compute the exponent from the number of leading zero bits.
- > 2. Downshift large fractions to put the MSB in the right position
- >    for normalized fractions.
- > 3. Upshift small fractions to put the MSB in the right position.
- > 
- > There is an boundary error in step 2, causing a fraction with its
- > MSB exactly one bit above the normalized MSB position to not be
- > downshifted.  This results in a non-normalized raw float, which when
- > packed becomes a massively inaccurate representation for that input.
- > 
- > The impact of this depends on a number of arch-specific factors,
- > but it is known to have broken emulation of FXTOD instructions
- > on UltraSPARC III, which was originally reported as GCC bug 44631
- > <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44631>.
- > 
- > Any arch which uses math-emu to emulate conversions from integers to
- > same-size floats may be affected.
- > 
- > The fix is simple: the exponent comparison used to determine if the
- > fraction should be downshifted must be "<=" not "<".
- > 
- > I'm sending a kernel module to test this as a reply to this message.
- > There are also SPARC user-space test cases in the GCC bug entry.
- > 
- > Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+On Thu, May 20, 2010 at 09:35:56PM +0200, Andre Prendel wrote:
+> On Thu, May 20, 2010 at 03:07:05PM -0400, Jeff Angielski wrote:
+> > In any event, here it is again:
+> 
+> Acked-by: Andre Prendel <andre.prendel@gmx.de>
 
-I forgot to mention that this needs to be backported to older kernels,
-so can the maintainer who picks this up please add
+Hi Jeff,
 
-	Cc: stable@kernel.org
+I'de suggest to resend the patch with my acked-by to the lm-sensors list and
+Andrew Morton. It looks like Jean is too busy at the moment.
 
-Thanks,
-
-/Mikael
-
- > ---
- >  include/math-emu/op-common.h |    2 +-
- >  1 file changed, 1 insertion(+), 1 deletion(-)
- > 
- > diff -rupN linux-2.6.35-rc5/include/math-emu/op-common.h linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h
- > --- linux-2.6.35-rc5/include/math-emu/op-common.h	2010-05-17 19:51:32.000000000 +0200
- > +++ linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h	2010-07-18 22:33:46.000000000 +0200
- > @@ -799,7 +799,7 @@ do {									\
- >  		X##_e -= (_FP_W_TYPE_SIZE - rsize);			\
- >  	X##_e = rsize - X##_e - 1;					\
- >  									\
- > -	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs < X##_e)	\
- > +	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs <= X##_e)	\
- >  	  __FP_FRAC_SRS_1(ur_, (X##_e - _FP_WFRACBITS_##fs + 1), rsize);\
- >  	_FP_FRAC_DISASSEMBLE_##wc(X, ur_, rsize);			\
- >  	if ((_FP_WFRACBITS_##fs - X##_e - 1) > 0)			\
- > --
- > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
- > the body of a message to majordomo@vger.kernel.org
- > More majordomo info at  http://vger.kernel.org/majordomo-info.html
- > Please read the FAQ at  http://www.tux.org/lkml/
- > 
+Regards,
+Andre
+ 
+> > 
+> > >From 9acd29ff48c64e58a7f5cdb888c86e737c56281c Mon Sep 17 00:00:00 2001
+> > From: Jeff Angielski <jeff@theptrgroup.com>
+> > Date: Mon, 10 May 2010 10:26:34 -0400
+> > Subject: [PATCH] hwmon: (tmp421) Add nfactor support
+> > 
+> > Add support for reading and writing the n-factor correction
+> > registers.  This is needed to compensate for the characteristics
+> > of a particular sensor hanging off of the remote channels.
+> > 
+> > Signed-off-by: Jeff Angielski <jeff@theptrgroup.com>
+> > ---
+> >  Documentation/hwmon/tmp421 |   19 +++++++++++++++++++
+> >  drivers/hwmon/tmp421.c     |   41 +++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 60 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/Documentation/hwmon/tmp421 b/Documentation/hwmon/tmp421
+> > index 0cf07f8..668228a 100644
+> > --- a/Documentation/hwmon/tmp421
+> > +++ b/Documentation/hwmon/tmp421
+> > @@ -17,6 +17,7 @@ Supported chips:
+> >  
+> >  Authors:
+> >  	Andre Prendel <andre.prendel@gmx.de>
+> > +	Jeff Angielski <jeff@theptrgroup.com>
+> >  
+> >  Description
+> >  -----------
+> > @@ -34,3 +35,21 @@ the temperature values via the following sysfs files:
+> >  
+> >  temp[1-4]_input
+> >  temp[2-4]_fault
+> > +
+> > +The chips allow the user to adjust the n-factor value that is used
+> > +when converting the remote channel measurements to temperature. The
+> > +adjustment has a range of -128 to +127 that yields an effective
+> > +n-factor range of 0.706542 to 1.747977.  The power on reset value
+> > +for the adjustment is 0 which results in an n-factor of 1.008.
+> > +
+> > +The effective n-factor is calculated according to the following
+> > +equation:
+> > +
+> > +n_factor = (1.008 * 300) / (300 - nfactor_adjust)
+> > +
+> > +The driver exports the n-factor adjustment value via the following 
+> > +sysfs files:
+> > +
+> > +temp[2-4]_n_adjust
+> > +
+> > +
+> > diff --git a/drivers/hwmon/tmp421.c b/drivers/hwmon/tmp421.c
+> > index 738c472..dfd62be 100644
+> > --- a/drivers/hwmon/tmp421.c
+> > +++ b/drivers/hwmon/tmp421.c
+> > @@ -49,6 +49,7 @@ enum chips { tmp421, tmp422, tmp423 };
+> >  
+> >  static const u8 TMP421_TEMP_MSB[4]		= { 0x00, 0x01, 0x02, 0x03 };
+> >  static const u8 TMP421_TEMP_LSB[4]		= { 0x10, 0x11, 0x12, 0x13 };
+> > +static const u8 TMP421_N_CORRECT[3]		= { 0x21, 0x22, 0x23 };
+> >  
+> >  /* Flags */
+> >  #define TMP421_CONFIG_SHUTDOWN			0x40
+> > @@ -76,6 +77,7 @@ struct tmp421_data {
+> >  	int channels;
+> >  	u8 config;
+> >  	s16 temp[4];
+> > +	s8 n_adjust[3];
+> >  };
+> >  
+> >  static int temp_from_s16(s16 reg)
+> > @@ -115,6 +117,10 @@ static struct tmp421_data *tmp421_update_device(struct device *dev)
+> >  			data->temp[i] |= i2c_smbus_read_byte_data(client,
+> >  				TMP421_TEMP_LSB[i]);
+> >  		}
+> > +		for (i = 1; i < data->channels; i++) {
+> > +			data->n_adjust[i - 1] = i2c_smbus_read_byte_data(client,
+> > +				TMP421_N_CORRECT[i - 1]);
+> > +		}
+> >  		data->last_updated = jiffies;
+> >  		data->valid = 1;
+> >  	}
+> > @@ -157,6 +163,32 @@ static ssize_t show_fault(struct device *dev,
+> >  		return sprintf(buf, "0\n");
+> >  }
+> >  
+> > +static ssize_t show_n_adjust(struct device *dev,
+> > +			     struct device_attribute *devattr, char *buf)
+> > +{
+> > +	int index = to_sensor_dev_attr(devattr)->index;
+> > +	struct tmp421_data *data = tmp421_update_device(dev);
+> > +
+> > +	return sprintf(buf, "%d\n", data->n_adjust[index - 1]);
+> > +}
+> > +
+> > +static ssize_t set_n_adjust(struct device *dev,
+> > +			    struct device_attribute *devattr,
+> > +			    const char *buf, size_t count)
+> > +{
+> > +	struct i2c_client *client = to_i2c_client(dev);
+> > +	struct tmp421_data *data = i2c_get_clientdata(client);
+> > +	int index = to_sensor_dev_attr(devattr)->index;
+> > +	int n_adjust = simple_strtol(buf, NULL, 10);
+> > +
+> > +	mutex_lock(&data->update_lock);
+> > +	i2c_smbus_write_byte_data(client, TMP421_N_CORRECT[index - 1],
+> > +				  SENSORS_LIMIT(n_adjust, -128, 127));
+> > +	mutex_unlock(&data->update_lock);
+> > +
+> > +	return count;
+> > +}
+> > +
+> >  static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
+> >  				int n)
+> >  {
+> > @@ -177,19 +209,28 @@ static mode_t tmp421_is_visible(struct kobject *kobj, struct attribute *a,
+> >  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp_value, NULL, 0);
+> >  static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_temp_value, NULL, 1);
+> >  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_fault, NULL, 1);
+> > +static SENSOR_DEVICE_ATTR(temp2_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> > +			  show_n_adjust, set_n_adjust, 1);
+> >  static SENSOR_DEVICE_ATTR(temp3_input, S_IRUGO, show_temp_value, NULL, 2);
+> >  static SENSOR_DEVICE_ATTR(temp3_fault, S_IRUGO, show_fault, NULL, 2);
+> > +static SENSOR_DEVICE_ATTR(temp3_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> > +			  show_n_adjust, set_n_adjust, 2);
+> >  static SENSOR_DEVICE_ATTR(temp4_input, S_IRUGO, show_temp_value, NULL, 3);
+> >  static SENSOR_DEVICE_ATTR(temp4_fault, S_IRUGO, show_fault, NULL, 3);
+> > +static SENSOR_DEVICE_ATTR(temp4_n_adjust, S_IRUSR | S_IWUSR | S_IRGRP,
+> > +			  show_n_adjust, set_n_adjust, 3);
+> >  
+> >  static struct attribute *tmp421_attr[] = {
+> >  	&sensor_dev_attr_temp1_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp2_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp2_n_adjust.dev_attr.attr,
+> >  	&sensor_dev_attr_temp3_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp3_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp3_n_adjust.dev_attr.attr,
+> >  	&sensor_dev_attr_temp4_input.dev_attr.attr,
+> >  	&sensor_dev_attr_temp4_fault.dev_attr.attr,
+> > +	&sensor_dev_attr_temp4_n_adjust.dev_attr.attr,
+> >  	NULL
+> >  };
+> >  
+> > -- 
+> > 1.7.0.4
+> > 
+> > 
+> > -- 
+> > Jeff Angielski
+> > The PTR Group
+> > www.theptrgroup.com
+> > 
+> > _______________________________________________
+> > lm-sensors mailing list
+> > lm-sensors@lm-sensors.org
+> > http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+> 
+> _______________________________________________
+> lm-sensors mailing list
+> lm-sensors@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
