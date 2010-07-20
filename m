@@ -1,27 +1,34 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id D86C5B70BE
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 15:40:07 +1000 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.69)
-	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
-	id 1Ob5Yh-00029A-7K
-	for linuxppc-dev@ozlabs.org; Tue, 20 Jul 2010 07:40:03 +0200
-Received: from pool-98-108-155-204.ptldor.fios.verizon.net ([98.108.155.204])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 07:40:03 +0200
-Received: from dvhltc by pool-98-108-155-204.ptldor.fios.verizon.net with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 07:40:03 +0200
-To: linuxppc-dev@ozlabs.org
-From: Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: Badness in =?utf-8?b?eGljc19pcGlfZGlzcGF0Y2g=?=
-Date: Tue, 20 Jul 2010 05:35:07 +0000 (UTC)
-Message-ID: <loom.20100720T073225-150@post.gmane.org>
-References: <4BCE27E8.4090101@linux.vnet.ibm.com>
-	<1271814234.13262.36.camel@concordia>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by ozlabs.org (Postfix) with ESMTP id 6D9231007D1
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 17:00:18 +1000 (EST)
+Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
+	by fgwmail6.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o6K70G4K013314 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Tue, 20 Jul 2010 16:00:17 +0900
+Received: from smail (m6 [127.0.0.1])
+	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id A6D8145DE54
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 16:00:16 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
+	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 7F53A45DE52
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 16:00:16 +0900 (JST)
+Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 6401D1DB8013
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 16:00:16 +0900 (JST)
+Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
+	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 0E3251DB8015
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 16:00:16 +0900 (JST)
+Date: Tue, 20 Jul 2010 15:55:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 1/8] v3 Move the find_memory_block() routine up
+Message-Id: <20100720155502.17242173.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C451D4E.8040600@austin.ibm.com>
+References: <4C451BF5.50304@austin.ibm.com> <4C451D4E.8040600@austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, greg@kroah.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,87 +38,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael <at> ellerman.id.au> writes:
+On Mon, 19 Jul 2010 22:51:42 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
+> Move the find_me mory_block() routine up to avoid needing a forward
+> declaration in subsequent patches.
 > 
-> On Tue, 2010-04-20 at 17:17 -0500, Brian King wrote:
-> > In stress testing enabling and disabling of SMT, we are regularly
-> > seeing the badness warning below. Looking through the cpu offline
-> > path, this is what I see:
-> > 
-> > 1. stop_cpu: IRQ's get disabled
-> > 2. pseries_cpu_disable: set cpu offline (no barriers after this)
-> > 3. xics_migrate_irqs_away: Remove ourselves from the GIQ, but still allow
-> >     IPIs
-> > 4. stop_cpu: IRQ's get enabled again (local_irq_enable)
-> > 
-> > It looks to me like there is plenty of opportunity between 1 and 2 for
-> > an IPI to get queued, resulting in the badness below. Is there something
-> > in xics_migrate_irqs_away that should clear any pending IPIs?
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-Is that not what this does?
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-	/* Reject any interrupt that was queued to us... */
-	xics_set_cpu_priority(0);
-
-	/* Remove ourselves from the global interrupt queue */
-	xics_set_cpu_giq(default_distrib_server, 0);
-
-I thought the above would clear any pending (queued) interrupts and disable 
-additional interrupts from coming in. Of course the next line allows IPIs again"
-
-	/* Allow IPIs again... */
-	xics_set_cpu_priority(DEFAULT_PRIORITY);
-
-Which I confess I really don't get...
-
-
-> > If there
-> > is, maybe the solution is as simple as adding a barrier after marking
-> > the cpu offline. Or is the warning bogus and we should just remove it?
+> ---
+>  drivers/base/memory.c |   62 +++++++++++++++++++++++++-------------------------
+>  1 file changed, 31 insertions(+), 31 deletions(-)
 > 
-> It looks like xics_migrate_irqs_away() doesn't do anything about IPIs,
-> at least the comment says "Allow IPIs again". So I don't see what's to
-> stop you just taking another IPI after you reenable interrupts in
-> stop_cpu(). Maybe xics_ipi_dispatch() should just return if the cpu is
-> offline?
-
-We're seeing something possibly related in real-time. Notice how the decrementer 
-handler interrupts stop_cpu(). Is the decrementer interrupt delivered as an IPI?
-
-cpu 0x3: Vector: 700 (Program Check) at [c000000084d02d90]
-    pc: c000000000068af4: .__might_sleep+0x11c/0x148
-    lr: c000000000068af0: .__might_sleep+0x118/0x148
-    sp: c000000084d03010
-   msr: 8000000000021032
-  current = 0xc000000086658240
-  paca    = 0xc000000000bb8a80
-    pid   = 4045, comm = kstop/3
-kernel BUG at kernel/sched.c:10168!
-enter ? for help
-[c000000084d030b0] c0000000006a2798 .rt_spin_lock+0x4c/0x9c
-[c000000084d03140] c0000000000e3c98 .cpuset_cpus_allowed_locked+0x38/0x74
-[c000000084d031e0] c000000000070be0 .select_fallback_rq+0x10c/0x1a4
-[c000000084d032a0] c00000000007cda8 .try_to_wake_up+0x1b0/0x540
-[c000000084d03370] c00000000007d2e8 .wake_up_process+0x34/0x48
-[c000000084d03400] c00000000008c5f8 .wakeup_softirqd+0x78/0x9c
-[c000000084d03490] c00000000008c8e4 .raise_softirq+0x6c/0xa4
-[c000000084d03520] c000000000099c18 .run_local_timers+0x2c/0x4c
-[c000000084d035a0] c000000000099c90 .update_process_times+0x58/0x9c
-[c000000084d03640] c0000000000c2e70 .tick_sched_timer+0xd0/0x120
-[c000000084d036f0] c0000000000b4bec .__run_hrtimer+0x1a0/0x29c
-[c000000084d037a0] c0000000000b558c .hrtimer_interrupt+0x21c/0x394
-[c000000084d038d0] c0000000000307d8 .timer_interrupt+0x1dc/0x2e4
-[c000000084d03970] c000000000003700 decrementer_common+0x100/0x180
---- Exception: 901 (Decrementer) at c00000000000d144 
-.raw_local_irq_restore+0x48/0x54
-[link register   ] c0000000000e57ec .stop_cpu+0x1c0/0x1ec
-[c000000084d03c60] c00000000104a4f0 (unreliable)
-[c000000084d03ca0] c0000000000e5780 .stop_cpu+0x154/0x1ec
-[c000000084d03d40] c0000000000a8b84 .worker_thread+0x25c/0x338
-[c000000084d03e60] c0000000000af8c8 .kthread+0xb8/0xc4
-[c000000084d03f90] c000000000034408 .kernel_thread+0x54/0x70
-
-Thanks,
-
-Darren Hart
+> Index: linux-2.6/drivers/base/memory.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/memory.c	2010-07-16 12:41:30.000000000 -0500
+> +++ linux-2.6/drivers/base/memory.c	2010-07-19 20:42:11.000000000 -0500
+> @@ -435,6 +435,37 @@ int __weak arch_get_memory_phys_device(u
+>  	return 0;
+>  }
+>  
+> +/*
+> + * For now, we have a linear search to go find the appropriate
+> + * memory_block corresponding to a particular phys_index. If
+> + * this gets to be a real problem, we can always use a radix
+> + * tree or something here.
+> + *
+> + * This could be made generic for all sysdev classes.
+> + */
+> +struct memory_block *find_memory_block(struct mem_section *section)
+> +{
+> +	struct kobject *kobj;
+> +	struct sys_device *sysdev;
+> +	struct memory_block *mem;
+> +	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
+> +
+> +	/*
+> +	 * This only works because we know that section == sysdev->id
+> +	 * slightly redundant with sysdev_register()
+> +	 */
+> +	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
+> +
+> +	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
+> +	if (!kobj)
+> +		return NULL;
+> +
+> +	sysdev = container_of(kobj, struct sys_device, kobj);
+> +	mem = container_of(sysdev, struct memory_block, sysdev);
+> +
+> +	return mem;
+> +}
+> +
+>  static int add_memory_block(int nid, struct mem_section *section,
+>  			unsigned long state, enum mem_add_context context)
+>  {
+> @@ -468,37 +499,6 @@ static int add_memory_block(int nid, str
+>  	return ret;
+>  }
+>  
+> -/*
+> - * For now, we have a linear search to go find the appropriate
+> - * memory_block corresponding to a particular phys_index. If
+> - * this gets to be a real problem, we can always use a radix
+> - * tree or something here.
+> - *
+> - * This could be made generic for all sysdev classes.
+> - */
+> -struct memory_block *find_memory_block(struct mem_section *section)
+> -{
+> -	struct kobject *kobj;
+> -	struct sys_device *sysdev;
+> -	struct memory_block *mem;
+> -	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
+> -
+> -	/*
+> -	 * This only works because we know that section == sysdev->id
+> -	 * slightly redundant with sysdev_register()
+> -	 */
+> -	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
+> -
+> -	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
+> -	if (!kobj)
+> -		return NULL;
+> -
+> -	sysdev = container_of(kobj, struct sys_device, kobj);
+> -	mem = container_of(sysdev, struct memory_block, sysdev);
+> -
+> -	return mem;
+> -}
+> -
+>  int remove_memory_block(unsigned long node_id, struct mem_section *section,
+>  		int phys_device)
+>  {
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
