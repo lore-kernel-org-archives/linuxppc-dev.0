@@ -1,30 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 39DE8B6EEE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Jul 2010 17:37:38 +1000 (EST)
-Subject: Re: [PPC64/Power7 - 2.6.35-rc5] Bad relocation warnings whileBuilding
-	a CONFIG_RELOCATABLE kernel with CONFIG_ISERIES enabled
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <reloc-2010-07-19-3@mdm.bga.com>
-Date: Tue, 20 Jul 2010 09:37:27 +0200
-Message-Id: <0D8EEF0C-CC43-4E37-B184-0D3B9BC400D1@suse.de>
-References: <4C443E78.6020902@suse.de> <reloc-2010-07-19@mdm.bga.com>
-	<8C4BCF61-7F5D-4C80-A311-93CF8521FBF5@suse.de>
-	<1273060251.13463.8.camel@subratamodak.linux.ibm.com>
-	<20100507054034.GB25173@drongo>
-	<1279193743.10707.5.camel@subratamodak.linux.ibm.com>
-	<1279501889.10390.1834.camel@pasglop>
-	<reloc-2010-07-19-2@mdm.bga.com> <reloc-2010-07-19-3@mdm.bga.com>
-To: Milton Miller <miltonm@bga.com>
-Cc: KVM list <kvm@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org,
-	linux-kernel List <linux-kernel@vger.kernel.org>,
-	Subrata Modak <subrata@linux.vnet.ibm.com>
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 70C0AB6EFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 19:05:24 +1000 (EST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+	by e28smtp08.in.ibm.com (8.14.4/8.13.1) with ESMTP id o6K8xXXN020412
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 14:29:33 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6K95JP02482332
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 14:35:19 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+	by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6K95IYm001673
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 19:05:19 +1000
+Message-ID: <4C4566CE.7020103@linux.vnet.ibm.com>
+Date: Tue, 20 Jul 2010 14:35:18 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: Badness with the kernel version 2.6.35-rc1-git1 running on P6 box
+References: <4C401D56.3070108@linux.vnet.ibm.com>
+	<1279274185.2549.14.camel@edumazet-laptop>
+In-Reply-To: <1279274185.2549.14.camel@edumazet-laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: sachinp@linux.vnet.ibm.com, netdev <netdev@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Jan-Bernd Themann <ossthema@de.ibm.com>, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,95 +37,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Friday 16 July 2010 03:26 PM, Eric Dumazet wrote:
+> Le vendredi 16 juillet 2010 à 14:20 +0530, divya a écrit :
+>    
+>> Hi ,
+>>
+>> With the latest kernel version 2.6.35-rc5-git1(2f7989efd4398) running on power(p6) box came across the following
+>> call trace
+>>
+>> Call Trace:
+>> [c000000006a0e800] [c000000000011c30] .show_stack+0x6c/0x16c (unreliable)
+>> [c000000006a0e8b0] [c00000000012129c] .__alloc_pages_nodemask+0x6a0/0x75c
+>> [c000000006a0ea30] [c0000000001527cc] .alloc_pages_current+0xc4/0x104
+>> [c000000006a0ead0] [c00000000015b1a0] .new_slab+0xe0/0x314
+>> [c000000006a0eb70] [c00000000015b6fc] .__slab_alloc+0x328/0x644
+>> [c000000006a0ec50] [c00000000015cc34] .__kmalloc_node_track_caller+0x114/0x194
+>> [c000000006a0ed00] [c000000000599f6c] .__alloc_skb+0x94/0x180
+>> [c000000006a0edb0] [c00000000059af5c] .__netdev_alloc_skb+0x3c/0x74
+>> [c000000006a0ee30] [c0000000004f9480] .ehea_refill_rq_def+0xf8/0x2d0
+>> [c000000006a0ef30] [c0000000004fab8c] .ehea_up+0x5b8/0x69c
+>> [c000000006a0f040] [c0000000004facd4] .ehea_open+0x64/0x118
+>> [c000000006a0f0e0] [c0000000005a6e9c] .__dev_open+0x100/0x168
+>> [c000000006a0f170] [c0000000005a3ac0] .__dev_change_flags+0x10c/0x1ac
+>> [c000000006a0f210] [c0000000005a6d44] .dev_change_flags+0x24/0x7c
+>> [c000000006a0f2a0] [c0000000005b50b4] .do_setlink+0x31c/0x750
+>> [c000000006a0f3b0] [c0000000005b6724] .rtnl_newlink+0x388/0x618
+>> [c000000006a0f5f0] [c0000000005b6350] .rtnetlink_rcv_msg+0x268/0x2b4
+>> [c000000006a0f6a0] [c0000000005cfdc0] .netlink_rcv_skb+0x74/0x108
+>> [c000000006a0f730] [c0000000005b60c4] .rtnetlink_rcv+0x38/0x5c
+>> [c000000006a0f7c0] [c0000000005cf8c8] .netlink_unicast+0x318/0x3f4
+>> [c000000006a0f890] [c0000000005d05b4] .netlink_sendmsg+0x2d0/0x310
+>> [c000000006a0f970] [c00000000058e1e8] .sock_sendmsg+0xd4/0x110
+>> [c000000006a0fb50] [c00000000058e514] .SyS_sendmsg+0x1f4/0x288
+>> [c000000006a0fd70] [c00000000058c2b8] .SyS_socketcall+0x214/0x280
+>> [c000000006a0fe30] [c0000000000085b4] syscall_exit+0x0/0x40
+>> Mem-Info:
+>> Node 0 DMA per-cpu:
+>> CPU    0: hi:    0, btch:   1 usd:   0
+>> CPU    1: hi:    0, btch:   1 usd:   0
+>> CPU    2: hi:    0, btch:   1 usd:   0
+>> CPU    3: hi:    0, btch:   1 usd:   0
+>> active_anon:50 inactive_anon:260 isolated_anon:0
+>>    active_file:159 inactive_file:139 isolated_file:0
+>>    unevictable:0 dirty:2 writeback:1 unstable:0
+>>    free:16 slab_reclaimable:66 slab_unreclaimable:502
+>>    mapped:120 shmem:2 pagetables:37 bounce:0
+>> Node 0 DMA free:1024kB min:1408kB low:1728kB high:2112kB active_anon:3200kB inactive_anon:16640kB active_file:10176kB inactive_file:8896kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:130944kB mlocked:0kB dirty:128kB writeback:64kB mapped:7680kB shmem:128kB slab_reclaimable:4224kB slab_unreclaimable:32128kB kernel_stack:2528kB pagetables:2368kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+>> lowmem_reserve[]: 0 0 0
+>> Node 0 DMA: 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB = 0kB
+>> 496 total pagecache pages
+>> 178 pages in swap cache
+>> Swap cache stats: add 780, delete 602, find 467/551
+>> Free swap  = 1027904kB
+>> Total swap = 1044160kB
+>> 2048 pages RAM
+>> 683 pages reserved
+>> 582 pages shared
+>> 1075 pages non-shared
+>> SLUB: Unable to allocate memory on node -1 (gfp=0x20)
+>>     cache: kmalloc-16384, object size: 16384, buffer size: 16384, default order: 2, min order: 0
+>>     node 0: slabs: 28, objs: 292, free: 0
+>> ip: page allocation failure. order:0, mode:0x8020
+>> Call Trace:
+>> [c000000006a0eb40] [c000000000011c30] .show_stack+0x6c/0x16c (unreliable)
+>> [c000000006a0ebf0] [c00000000012129c] .__alloc_pages_nodemask+0x6a0/0x75c
+>> [c000000006a0ed70] [c0000000001527cc] .alloc_pages_current+0xc4/0x104
+>> [c000000006a0ee10] [c00000000011fca4] .__get_free_pages+0x18/0x90
+>> [c000000006a0ee90] [c0000000004f7058] .ehea_get_stats+0x4c/0x1bc
+>> [c000000006a0ef30] [c0000000005a0a04] .dev_get_stats+0x38/0x64
+>> [c000000006a0efc0] [c0000000005b456c] .rtnl_fill_ifinfo+0x35c/0x85c
+>> [c000000006a0f150] [c0000000005b5920] .rtmsg_ifinfo+0x164/0x204
+>> [c000000006a0f210] [c0000000005a6d6c] .dev_change_flags+0x4c/0x7c
+>> [c000000006a0f2a0] [c0000000005b50b4] .do_setlink+0x31c/0x750
+>> [c000000006a0f3b0] [c0000000005b6724] .rtnl_newlink+0x388/0x618
+>> [c000000006a0f5f0] [c0000000005b6350] .rtnetlink_rcv_msg+0x268/0x2b4
+>> [c000000006a0f6a0] [c0000000005cfdc0] .netlink_rcv_skb+0x74/0x108
+>> [c000000006a0f730] [c0000000005b60c4] .rtnetlink_rcv+0x38/0x5c
+>> [c000000006a0f7c0] [c0000000005cf8c8] .netlink_unicast+0x318/0x3f4
+>> [c000000006a0f890] [c0000000005d05b4] .netlink_sendmsg+0x2d0/0x310
+>> [c000000006a0f970] [c00000000058e1e8] .sock_sendmsg+0xd4/0x110
+>> [c000000006a0fb50] [c00000000058e514] .SyS_sendmsg+0x1f4/0x288
+>> [c000000006a0fd70] [c00000000058c2b8] .SyS_socketcall+0x214/0x280
+>> [c000000006a0fe30] [c0000000000085b4] syscall_exit+0x0/0x40
+>> Mem-Info:
+>> Node 0 DMA per-cpu:
+>> CPU    0: hi:    0, btch:   1 usd:   0
+>> CPU    1: hi:    0, btch:   1 usd:   0
+>> CPU    2: hi:    0, btch:   1 usd:   0
+>> CPU    3: hi:    0, btch:   1 usd:   0
+>>
+>> The mainline 2.6.35-rc5 worked fine.
+>>      
+> Maybe you were lucky with 2.6.35-rc5
+>
+> Anyway ehea should not use GFP_ATOMIC in its ehea_get_stats() method,
+> called in process context, but GFP_KERNEL.
+>
+> Another patch is needed for ehea_refill_rq_def() as well.
+>
+>
+>
+> [PATCH] ehea: ehea_get_stats() should use GFP_KERNEL
+>
+> ehea_get_stats() is called in process context and should use GFP_KERNEL
+> allocation instead of GFP_ATOMIC.
+>
+> Clearing stats at beginning of ehea_get_stats() is racy in case of
+> concurrent stat readers.
+>
+> get_stats() can also use netdev net_device_stats, instead of a private
+> copy.
+>
+> Reported-by: divya<dipraksh@linux.vnet.ibm.com>
+> Signed-off-by: Eric Dumazet<eric.dumazet@gmail.com>
+> ---
+>   drivers/net/ehea/ehea.h      |    1 -
+>   drivers/net/ehea/ehea_main.c |    6 ++----
+>   2 files changed, 2 insertions(+), 5 deletions(-)
+>    
+Hi,
 
-On 20.07.2010, at 09:27, Milton Miller wrote:
+The call trace mentioned above still appears on upstream kernel and linux-next tree too.
+The mentioned patch hasn't still been merged into upstream yet - hence getting call traces for both ehea_get_stats()
+and ehea_refill_rq_def() methods.
+However w.r.t to linux-next getting call trace only for ehea_refill_rq_def() method.
 
-> On Mon, 19 Jul 2010 about 14:00:56 +0200, Alexander Graf wrote:
->> Milton Miller wrote:
->>> I wrote:
->>>=20
->>> Oh yea, and for book-3s, the code copies from 0x100 to =
-__end_interrupts
->>> in arch/powerpc/kernel/exceptions-64s.h down to the real 0, but the =
-rest
->>> of the kernel is at some disjointed address.  The interrupt will go =
-to
->>> the copy at the real zero.  Any references to code outside that =
-region
->>> must be done via a full indrect branch (not a relative one), simiar =
-to
->>> the secondary startup (via following the function pointer in a =
-descriptor
->>> set in very low memory), or syscall entry and exception vectors via =
-paca.
->>>=20
->>=20
->> That would still break on normal PPC boxes, as any address accessed =
-in
->> real mode has to be inside the RMA. And the #include for
->> kvm/book3s_rmhandlers.S happens after __end_interrupts. So I'd end up
->> with code that gets executed outside of the RMA after a relocation, =
-right?
->>=20
->> Alex
->>=20
->=20
-> Weither its outside of the RMA or not, DO_KVM is creating a branch =
-outside
-> of code copied to lowmem.
->=20
-> This is BROKEN.
->=20
-> We have a hard limit that we can't extend _end_interrupts past 0x7000, =
-and
-> a soft limit that we can't exceed 0x6000.  If there is space, we could
-> move the real mode handler extensions inside end_interrupts in
-> exceptions-64s.S, and store the full address in a .quad so it gets
-> relocated properly.  Don't subtract the start, we have designed the =
-kernel
-> to run with start at a VA that can be used as a EA in real mode.
-
-Moving everything to exceptions-64s.S sounds like the best thing to do. =
-All the code in real mode really is there so it stays inside the RMA. I =
-don't think we can guarantee that for any code that is not copied, =
-right?
-
-> Otherwise we need to mark KVM_BOOK3S_64 depends on (!RELOCATABLE ||
-> BROKEN) for 2.6.35 until we get fixes.
-
-Well - it's only broken when really getting relocated. But I agree, the =
-current state doesn't cope with Linux's relocation logic.
-
-> I took a read though the book3s code as of 2.6.34.   A few things I =
-noticed:
->=20
-> (1) The code is using slb large to control the segment size.   It =
-should
-> be using SLB B field (or just impliment 256M segments only).
-
-I'm not sure I understand this part? We only use 256MB segments for now.
-
-> (2) It appears that the mtspr and mfspr code is using the same storage =
-for
-> bats 4-7 as 0-3 ... I would have expected a 4 + a few places.
-
-Yes, that one is fixed in more recent versions already.
-
-> (3) Its not clear to me that you clear RI when transitioning to the =
-guest
-> but its obviously required because you place state in srr0 & srr1.
-
-Uh - do I have to clear RI? I'm not prepared to take an interrupt =
-anyways and RI is just a soft flag for Linux's handlers, right?
-
-> (4) I don't understand why __kvmppc_vcpu_run turns on interrupts so =
-that
-> __kvmppc_vcpu_entry can turn them back off.   Something to do with
-> irq trace annotations?
-
-__kvmppc_vcpu_run turns on soft interrupts while __kvmppc_vcpu_entry =
-turns them off in MSR. This is so that when enabling interrupts again on =
-guest exit, we have the soft enable bit set.
-
-
-Alex
+Thanks
+Divya
