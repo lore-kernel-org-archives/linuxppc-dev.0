@@ -1,37 +1,29 @@
-Return-Path: <B21284@freescale.com>
-Received: from VA3EHSOBE004.bigfish.com (va3ehsobe004.messaging.microsoft.com
-	[216.32.180.14]) by ozlabs.org (Postfix) with ESMTP id EA434B7147
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 12:36:39 +1000 (EST)
-Received: from mail69-va3 (localhost.localdomain [127.0.0.1])	by
-	mail69-va3-R.bigfish.com (Postfix) with ESMTP id D6027101811D	for
-	<linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 02:21:30 +0000 (UTC)
-Received: from VA3EHSMHS025.bigfish.com (unknown [10.7.14.238])	by
-	mail69-va3.bigfish.com (Postfix) with ESMTP id 7457B7D804C	for
-	<linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 02:21:30 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o6K2LRBG006769	for
-	<linuxppc-dev@ozlabs.org>; Mon, 19 Jul 2010 19:21:27 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o6K2XWDl023963	for <linuxppc-dev@ozlabs.org>;
-	Mon, 19 Jul 2010 21:33:43 -0500 (CDT)
-From: Mingkai Hu <Mingkai.hu@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/6] DTS: add SPI flash(s25fl128p01) support on p4080ds and
-	mpc8536ds board
-Date: Tue, 20 Jul 2010 10:08:25 +0800
-Message-ID: <1279591705-7574-7-git-send-email-Mingkai.hu@freescale.com>
-In-Reply-To: <1279591705-7574-6-git-send-email-Mingkai.hu@freescale.com>
-References: <1279591705-7574-1-git-send-email-Mingkai.hu@freescale.com>
-	<1279591705-7574-2-git-send-email-Mingkai.hu@freescale.com>
-	<1279591705-7574-3-git-send-email-Mingkai.hu@freescale.com>
-	<1279591705-7574-4-git-send-email-Mingkai.hu@freescale.com>
-	<1279591705-7574-5-git-send-email-Mingkai.hu@freescale.com>
-	<1279591705-7574-6-git-send-email-Mingkai.hu@freescale.com>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e39.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37C22B70A9
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 13:46:17 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e39.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6K3aaps022463
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jul 2010 21:36:36 -0600
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+	id o6K3k1FP132416
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jul 2010 21:46:01 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6K3k0v0005685
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jul 2010 21:46:00 -0600
+Message-ID: <4C451BF5.50304@austin.ibm.com>
+Date: Mon, 19 Jul 2010 22:45:57 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mingkai Hu <Mingkai.hu@freescale.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/8] v3 De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: greg@kroah.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,104 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
----
- arch/powerpc/boot/dts/mpc8536ds.dts |   52 +++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/p4080ds.dts   |    9 ++----
- 2 files changed, 55 insertions(+), 6 deletions(-)
+This set of patches de-couples the idea that there is a single
+directory in sysfs for each memory section.  The intent of the
+patches is to reduce the number of sysfs directories created to
+resolve a boot-time performance issue.  On very large systems
+boot time are getting very long (as seen on powerpc hardware)
+due to the enormous number of sysfs directories being created.
+On a system with 1 TB of memory we create ~63,000 directories.
+For even larger systems boot times are being measured in hours.
 
-diff --git a/arch/powerpc/boot/dts/mpc8536ds.dts b/arch/powerpc/boot/dts/mpc8536ds.dts
-index 815cebb..e5d07ec 100644
---- a/arch/powerpc/boot/dts/mpc8536ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8536ds.dts
-@@ -108,6 +108,58 @@
- 			};
- 		};
- 
-+		spi@7000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,espi";
-+			reg = <0x7000 0x1000>;
-+			interrupts = <59 0x2>;
-+			interrupt-parent = <&mpic>;
-+ 			fsl,espi-num-chipselects = <4>;
-+
-+ 			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+ 				compatible = "spansion,s25sl12801";
-+				reg = <0>;
-+				spi-max-frequency = <40000000>;
-+				partition@u-boot {
-+					label = "u-boot";
-+					reg = <0x00000000 0x00100000>;
-+					read-only;
-+				};
-+				partition@kernel {
-+					label = "kernel";
-+					reg = <0x00100000 0x00500000>;
-+					read-only;
-+				};
-+				partition@dtb {
-+					label = "dtb";
-+					reg = <0x00600000 0x00100000>;
-+					read-only;
-+				};
-+				partition@fs {
-+					label = "file system";
-+					reg = <0x00700000 0x00900000>;
-+				};
-+			};
-+ 			flash@1 {
-+ 				compatible = "spansion,s25sl12801";
-+				reg = <1>;
-+				spi-max-frequency = <40000000>;
-+			};
-+ 			flash@2 {
-+ 				compatible = "spansion,s25sl12801";
-+				reg = <2>;
-+				spi-max-frequency = <40000000>;
-+			};
-+ 			flash@3 {
-+ 				compatible = "spansion,s25sl12801";
-+				reg = <3>;
-+				spi-max-frequency = <40000000>;
-+			};
-+		};
-+
- 		dma@21300 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
-index 6b29eab..ac7dd23 100644
---- a/arch/powerpc/boot/dts/p4080ds.dts
-+++ b/arch/powerpc/boot/dts/p4080ds.dts
-@@ -236,22 +236,19 @@
- 		};
- 
- 		spi@110000 {
--			cell-index = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			compatible = "fsl,espi";
- 			reg = <0x110000 0x1000>;
- 			interrupts = <53 0x2>;
- 			interrupt-parent = <&mpic>;
--			espi,num-ss-bits = <4>;
--			mode = "cpu";
-+ 			fsl,espi-num-chipselects = <4>;
- 
--			fsl_m25p80@0 {
-+ 			flash@0 {
- 				#address-cells = <1>;
- 				#size-cells = <1>;
--				compatible = "fsl,espi-flash";
-+ 				compatible = "spansion,s25sl12801";
- 				reg = <0>;
--				linux,modalias = "fsl_m25p80";
- 				spi-max-frequency = <40000000>; /* input clock */
- 				partition@u-boot {
- 					label = "u-boot";
--- 
-1.6.4
+This set of patches allows for each directory created in sysfs
+to cover more than one memory section.  The default behavior for
+sysfs directory creation is the same, in that each directory
+represents a single memory section.  A new file 'end_phys_index'
+in each directory contains the physical_id of the last memory
+section covered by the directory so that users can easily
+determine the memory section range of a directory.
+
+-Nathan Fontenot
