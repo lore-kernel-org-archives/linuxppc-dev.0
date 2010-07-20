@@ -1,16 +1,20 @@
 Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 7ED451007E2
+Received: from TX2EHSOBE010.bigfish.com (tx2ehsobe005.messaging.microsoft.com
+	[65.55.88.15]) by ozlabs.org (Postfix) with ESMTP id 8039C100942
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Jul 2010 06:15:19 +1000 (EST)
+	Wed, 21 Jul 2010 06:15:21 +1000 (EST)
 From: Matthew McClintock <msm@freescale.com>
 To: kexec@lists.infradead.org
-Subject: [PATCH v2 3/7] Update uImage to support crash kernel and misc fixes
-Date: Tue, 20 Jul 2010 15:14:56 -0500
-Message-ID: <1279656900-27458-3-git-send-email-msm@freescale.com>
-In-Reply-To: <1279656900-27458-2-git-send-email-msm@freescale.com>
+Subject: [PATCH v2 7/7] Add documentation/howto for mpc85xx systems
+Date: Tue, 20 Jul 2010 15:15:00 -0500
+Message-ID: <1279656900-27458-7-git-send-email-msm@freescale.com>
+In-Reply-To: <1279656900-27458-6-git-send-email-msm@freescale.com>
 References: <1279656900-27458-1-git-send-email-msm@freescale.com>
 	<1279656900-27458-2-git-send-email-msm@freescale.com>
+	<1279656900-27458-3-git-send-email-msm@freescale.com>
+	<1279656900-27458-4-git-send-email-msm@freescale.com>
+	<1279656900-27458-5-git-send-email-msm@freescale.com>
+	<1279656900-27458-6-git-send-email-msm@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org
@@ -23,112 +27,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use current command line if none given, specifically useful for
-when arguments are added causing the use of the current cmdline
-to not occur.
-
-We also try to load the dtb above the kernel, this is useful for
-relocatable kernels where they device tree needs to reside just
-above the kernel base address.
-
-Only allocate 1 MiB extra for bss space after kernel as it appears
-to be more than adequate.
-
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- kexec/arch/ppc/kexec-uImage-ppc.c |   32 ++++++++++++++++++++++----------
- 1 files changed, 22 insertions(+), 10 deletions(-)
+ doc/mpc85xx.txt |  190 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 190 insertions(+), 0 deletions(-)
+ create mode 100644 doc/mpc85xx.txt
 
-diff --git a/kexec/arch/ppc/kexec-uImage-ppc.c b/kexec/arch/ppc/kexec-uImage-ppc.c
-index 4a8d28d..21a7c1b 100644
---- a/kexec/arch/ppc/kexec-uImage-ppc.c
-+++ b/kexec/arch/ppc/kexec-uImage-ppc.c
-@@ -10,6 +10,7 @@
- #include <getopt.h>
- #include <arch/options.h>
- #include "../../kexec.h"
-+#include "../../kexec-syscall.h"
- #include "kexec-ppc.h"
- #include "fixup_dtb.h"
- #include <kexec-uImage.h>
-@@ -45,7 +46,7 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 		off_t len, struct kexec_info *info, unsigned int load_addr,
- 		unsigned int ep)
- {
--	char *command_line;
-+	char *command_line, *cmdline_buf;
- 	int command_line_len;
- 	char *dtb;
- 	unsigned int addr;
-@@ -56,6 +57,7 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 	int opt;
- 	int ret;
- 
-+	cmdline_buf = NULL;
- 	command_line = NULL;
- 	dtb = NULL;
- 
-@@ -89,24 +91,34 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 	}
- 
- 	command_line_len = 0;
--	if (command_line)
-+	if (command_line) {
-+		command_line_len = strlen(command_line) + 1;
-+	} else {
-+		command_line = get_command_line();
- 		command_line_len = strlen(command_line) + 1;
-+	}
- 
- 	fixup_nodes[cur_fixup] = NULL;
- 
- 	/*
- 	 * len contains the length of the whole kernel image except the bss
--	 * section. The 3 MiB should cover it. The purgatory and the dtb are
-+	 * section. The 1 MiB should cover it. The purgatory and the dtb are
- 	 * allocated from memtop down towards zero so we should never get too
- 	 * close to the bss :)
- 	 */
--	ret = valid_memory_range(info, load_addr, len + 3 * 1024 * 1024);
-+	ret = valid_memory_range(info, load_addr, load_addr + (len + (1 * 1024 * 1024)));
- 	if (!ret) {
- 		printf("Can't add kernel to addr 0x%08x len %ld\n",
--				load_addr, len + 3 * 1024 * 1024);
-+				load_addr, len + (1 * 1024 * 1024));
- 		return -1;
- 	}
--	add_segment(info, buf, len, load_addr, len + 3 * 1024 * 1024);
-+	add_segment(info, buf, len, load_addr, len + (1 * 1024 * 1024));
+diff --git a/doc/mpc85xx.txt b/doc/mpc85xx.txt
+new file mode 100644
+index 0000000..af96841
+--- /dev/null
++++ b/doc/mpc85xx.txt
+@@ -0,0 +1,190 @@
++			  mpc85xx kexec howto
++			  -------------------
 +
-+	cmdline_buf = xmalloc(COMMAND_LINE_SIZE);
-+	memset((void *)cmdline_buf, 0, COMMAND_LINE_SIZE);
-+	if (command_line)
-+		strncat(cmdline_buf, command_line, command_line_len);
++		  Matthew McClintock <msm@freescale.com>
++			Last Updated: 2010-07-20
 +
- 	if (dtb) {
- 		char *blob_buf;
- 		off_t blob_size = 0;
-@@ -115,10 +127,9 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 		blob_buf = slurp_file(dtb, &blob_size);
- 		if (!blob_buf || !blob_size)
- 			die("Device tree seems to be an empty file.\n");
--		blob_buf = fixup_dtb_nodes(blob_buf, &blob_size, fixup_nodes, command_line);
--
--		dtb_addr = add_buffer(info, blob_buf, blob_size, blob_size, 0, 0,
--				KERNEL_ACCESS_TOP, -1);
-+		blob_buf = fixup_dtb_nodes(blob_buf, &blob_size, fixup_nodes, cmdline_buf);
-+		dtb_addr = add_buffer(info, blob_buf, blob_size, blob_size, 0, load_addr,
-+				load_addr + KERNEL_ACCESS_TOP, -1);
- 	} else {
- 		dtb_addr = 0;
- 	}
-@@ -142,6 +153,7 @@ static int ppc_load_bare_bits(int argc, char **argv, const char *buf,
- 
- 	addr = elf_rel_get_addr(&info->rhdr, "purgatory_start");
- 	info->entry = (void *)addr;
++There is some terminology that will be useful which will be described here.
 +
- 	return 0;
- }
- 
++boot kernel - the first one that you start, from u-boot for instance
++kexec kernel - the kernel that you reboot into when running "kexec -e"
++kdump kernel - the kernel that you reboot into after the boot kernel crash
++relocatable kernel - kernel that can boot from a 256MB alignment of physical
++		     memory (for mpc85xx systems at least)
++
++Each of the above types of kernels have specific requirements, they can
++all be different kernels or all the same kernel depending on your
++particular requirements.
++
++1) Build kernel for kexec (i.e. running kexec -e to reboot)
++
++This case is the simplest. You need to enable CONFIG_KEXEC for kexec for the
++"boot kernel", the kexec kernel can be a any kernel that already boots on your
++platform. However, if you want to be able run kexec again after rebooting once
++you will need to have CONFIG_KEXEC enabled for the kexec kernel as well.
++	
++2) Build for kdump (i.e. for rebooting when your main kernel crashes)
++
++In this situation, you need to be aware that the kdump kernel will boot from
++a different physical address than your boot kernel (or even the kexec kernel). 
++There are two approaches to this. First, you can build a relocatable kernel
++which will boot from a different physical address with no changes. This method
++is ideal as it would even allow your boot kernel and kdump kernel to be the
++same one. Optionally, you can build a kernel with custom physical address and
++kernel base address according to where you will load the kdump kernel*, but
++it's much easier to just use a relocatable kernel and let things work
++themselves out at run time.
++
++You will need to enable CONFIG_CRASH_DUMP on the boot kernel. You can chose to
++enable CONFIG_RELOCATABLE for the kdump kernel, and you will still want to
++verify that CONFIG_KERNEL_START and CONFIG_PHYSICAL_START have sane defaults.
++Most likely, you can leave these as 0xC0000000 and 0x0000000 respectively.
++Finally, on the kdump kernel you will want to make sure CONFIG_PROC_VMCORE is
++enabled as well so the core dump is exported via /proc/vmcore. You can just 
++enable all these options on the boot and kdump and use the same kernel for both
++which is the simplest option.
++
++Summary of 1 & 2:
++
++Just enable kexec, crash support, and relocatable kernel and you should be good
++to go for all of the above scenarios using the same kernel.
++
++3) Obtaining a device tree
++
++You best bet for getting a working device tree is to pull the one the current
++kernel is using. The easiest way to do this is use the device tree compiler
++to create one from the proc file system
++
++	$ dtc -I fs -O dtb /proc/device-tree/ > flat-device-tree
++
++Kexec should be able to take this flat device tree, and modifiy it/update it
++as needed for your particular scenario. It will update memreserve regions, add
++initrd/ramdisks, fixup the command line, etc.
++
++NOTE: If no device tree is given, kexec will do the above on it's own to 
++      obtain a useable device tree. You can specify the device tree to use
++      with the --dtb=<flat_device_tree_blob> kexec argument.
++
++4) Kexec'ing a new kernel
++
++If you have followed the procedure above you need to do the following to reboot
++into a new kexec kernel.
++
++	$ kexec -l {uImage,vmlinux}
++	$ kexec -e
++
++These options will boot the new kernel, you should see some message as shown
++below.  NOTE: The old command line is used, so if you are booting from an NFS
++mount it should work fine, however it you are using an initrd/ramdisk there are
++caveats to consider (see #6 below).
++
++	sd 2:0:0:0: [sda] Synchronizing SCSI cache
++	Starting new kernel
++	Bye!
++	Reserving 256MB of memory at 512MB for crashkernel (System RAM: 4096MB)
++	Using MPC8572 DS machine description
++	[snip]
++
++5) Setting for a kdump kernel
++
++For the boot kernel, you need to reserve a region of memory for the kdump kernel
++to use when the system crashes. This region is removed for use from the boot
++kernel and when the system crashes the kdump kernel will operate out of this
++region exclusively. For mpc85xx, we need to pick a region aligned at 256MB if we
++are using a relocatable kernel, other than that the size allocated needs to leave
++enough memory for your kdump environment to function properly as well as store
++the kdump kernel and any other items added (this would most likely be a ramdisk).
++Some valid options are:
++
++	crashkernel={128M,256M,512M}@{256M,512M} and others
++
++For the example below we choose 256MB (0x10000000) of memory located at offset 
++512MB (0x20000000). The command line option would look like this.
++
++	crashkernel=256M@512M
++	
++You can see the values the kernel parsed by running looking
++at your proc entries. In this case, the physical address is a 64bit value.
++
++	$ hexdump -C /proc/device-tree/chosen/linux,crashkernel-base 
++	00000000  00 00 00 00 20 00 00 00                           |.... ...|
++	00000008
++	$ hexdump -C /proc/device-tree/chosen/linux,crashkernel-size 
++	00000000  00 00 00 00 10 00 00 00                           |........|
++	00000008
++
++Kdump kernels are only run when the current kernel crashes, there you can not
++just restart your system. However, you can still trigger a crash for testing 
++purposes by enabling CONFIG_MAGIC_SYSRQ and executing the following.
++
++	$ echo c > /proc/sysrq-trigger
++
++However, before this we need to setup our kdump kernel as shown below.
++
++	$ kexec -p {uImage.reloc, vmlinux}
++
++The kernel we pass in is a relocatable kernel, in the case of vmlinux no changes
++are required since there is no wrapper specifically assigning it to a certain
++address. However, kexec will attempt to honor the addresses given to mkimage
++when you created your uImage, therefore you need to create a uImage with the
++appropriate load and entry address
++
++	$ mkimage -A ppc -O linux -T kernel -C gzip -a 0x20000000 -e 0x20000000
++	-n Linux-2.6.35-rc3
++	Image Name:   Linux-2.6.35-rc3-00246-gd666cd8-
++	Created:      Wed Jul 14 17:34:19 2010
++	Image Type:   PowerPC Linux Kernel Image (gzip compressed)
++	Data Size:    3261979 Bytes = 3185.53 kB = 3.11 MB
++	Load Address: 0x20000000
++	Entry Point:  0x20000000
++
++You do not sctrictly need to use a RELOCATABLE kernel, you can build a kernel
++that can execute from this load address and entry point and it would your 
++kdump kernel would still function properly.
++
++The above load address aligns with the crashkernel argument we passed
++in via the command line. It is important to make sure these addresses match
++each other when using uImage. It's less important for vmlinux since kexec will
++attempt to load it at the first available region which should match correctly.
++	
++6) Misc. options to kexec
++
++There are a few options you can pass into kexec to modify it's behaviour. First,
++if you want to reuse your current initrd/ramdisk you can use the following.
++You will also need to add "retain_initrd" to the boot kernel command line for
++this option to work. So now your command line would look something like this.
++
++	crashkernel=256M@512M retain_initrd
++
++NOTE: If you are setting up a kdump kernel, you will need to make sure your 
++original initrd/ramdisk resides in the memory range reserved for the kdump
++kernel, otherwise the kdump kernel won't be able to access it. For example
++it needs to live within the 512MB-768M range in this case. A warning will
++be displayed if this is not the case.
++
++	$ kexec -p uImage.reloc --reuseinitrd
++
++It's even easier to specify a new ramdisk and you don't need to modify your
++boot kernel command line. You also might need to update your command line to
++boot with your new ramdisk, you can do it via the --command-line option as well
++as add any other changes you want to the command line as well.
++
++	$ kexec -p uImage.reloc --ramdisk=rootfs.ext2.gz
++	  --command-line="root=/dev/ram rw console=ttyS0,115200"
++
++or the following if you wanted kexec and add "retain_initrd" to the command
++line and boot with a ramdisk
++
++	$ kexec -l uImage --ramdisk=rootfs.ext2.gz 
++          --command-line="`cat /proc/cmdline` retain_initrd"
++	$ kexec -e
++
++7) After a crash
++
++If you have a kdump kernel loaded and your system crashes you can now debug
++the crash.
++
++	$ gdb vmlinux /proc/vmcore
++
++You might need to copy these files elsewhere or setup your ramdisk to do these
++things automatically.
 -- 
 1.6.0.6
