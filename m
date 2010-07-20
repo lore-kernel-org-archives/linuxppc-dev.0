@@ -1,19 +1,18 @@
-Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
-	[65.55.88.13]) by ozlabs.org (Postfix) with ESMTP id 91C231011A1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Jul 2010 06:16:23 +1000 (EST)
-From: Matthew McClintock <msm@freescale.com>
-To: kexec@lists.infradead.org
-Subject: [PATCH v2 2/7] Fix case where phys_addr_t != unsigned long when
-	reading proc entries
-Date: Tue, 20 Jul 2010 15:14:55 -0500
-Message-ID: <1279656900-27458-2-git-send-email-msm@freescale.com>
-In-Reply-To: <1279656900-27458-1-git-send-email-msm@freescale.com>
-References: <1279656900-27458-1-git-send-email-msm@freescale.com>
+Return-Path: <brad@bradleyehughes.com>
+Received: from mail-vw0-f42.google.com (mail-vw0-f42.google.com
+	[209.85.212.42]) by ozlabs.org (Postfix) with ESMTP id E5314B70AA
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 08:40:01 +1000 (EST)
+Received: by vws20 with SMTP id 20so6357259vws.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 15:40:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Sender: brad@bradleyehughes.com
+From: Bradley Hughes <bhughes@silicontkx.com>
+Date: Tue, 20 Jul 2010 18:39:38 -0400
+Message-ID: <AANLkTinQkpBTtmVZYGM71wzREHGDzG6R3k7LbR66yX5c@mail.gmail.com>
+Subject: [PATCH] DTS: Adding device tree source for the STx GP3 SSA
+	MPC8555-based board.
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,314 +22,398 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some actitectures the physical memory can be 64 bits, therefore
-the code that reads proc entries needs to take into account it could
-read either a 32 bit or 64bit value for the physical addresses.
+DTS: Adding device tree source for the STx GP3 SSA MPC8555-based board.
 
-Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- kexec/arch/ppc/kexec-elf-ppc.c |    1 -
- kexec/arch/ppc/kexec-ppc.c     |  210 ++++++++++++++++++++++++++++------------
- kexec/arch/ppc/kexec-ppc.h     |    1 +
- 3 files changed, 148 insertions(+), 64 deletions(-)
+ arch/powerpc/boot/dts/stxssa.dts |  380 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 380 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/stxssa.dts
 
-diff --git a/kexec/arch/ppc/kexec-elf-ppc.c b/kexec/arch/ppc/kexec-elf-ppc.c
-index d155bde..ab2d343 100644
---- a/kexec/arch/ppc/kexec-elf-ppc.c
-+++ b/kexec/arch/ppc/kexec-elf-ppc.c
-@@ -32,7 +32,6 @@
- 
- static const int probe_debug = 0;
- 
--unsigned long long initrd_base, initrd_size;
- unsigned char reuse_initrd;
- const char *ramdisk;
- int create_flatten_tree(struct kexec_info *, unsigned char **, unsigned long *,
-diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
-index c073f56..d7afad6 100644
---- a/kexec/arch/ppc/kexec-ppc.c
-+++ b/kexec/arch/ppc/kexec-ppc.c
-@@ -28,6 +28,8 @@
- 
- uint64_t rmo_top;
- unsigned long long crash_base, crash_size;
-+unsigned long long initrd_base, initrd_size;
-+unsigned long long devicetree_base, devicetree_size;
- unsigned int rtas_base, rtas_size;
- int max_memory_ranges;
- 
-@@ -320,9 +322,7 @@ static int get_devtree_details(unsigned long kexec_flags)
- 	DIR *dir, *cdir;
- 	FILE *file;
- 	struct dirent *dentry;
--	struct stat fstat;
- 	int n, i = 0;
--	unsigned long tmp_long;
- 
- 	if ((dir = opendir(device_tree)) == NULL) {
- 		perror(device_tree);
-@@ -352,12 +352,18 @@ static int get_devtree_details(unsigned long kexec_flags)
- 					perror(fname);
- 					goto error_opencdir;
- 				}
--				if (fread(&tmp_long, sizeof(unsigned long), 1, file)
--						!= 1) {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
- 					perror(fname);
- 					goto error_openfile;
- 				}
--				kernel_end = tmp_long;
-+				if (n == 4) {
-+					kernel_end = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					kernel_end = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
- 				fclose(file);
- 
- 				/* Add kernel memory to exclude_range */
-@@ -375,12 +381,18 @@ static int get_devtree_details(unsigned long kexec_flags)
- 					perror(fname);
- 					goto error_opencdir;
- 				}
--				if (fread(&tmp_long, sizeof(unsigned long), 1,
--						file) != 1) {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
- 					perror(fname);
- 					goto error_openfile;
- 				}
--				crash_base = tmp_long;
-+				if (n == 4) {
-+					crash_base = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					crash_base = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
- 				fclose(file);
- 
- 				memset(fname, 0, sizeof(fname));
-@@ -392,12 +404,19 @@ static int get_devtree_details(unsigned long kexec_flags)
- 					perror(fname);
- 					goto error_opencdir;
- 				}
--				if (fread(&tmp_long, sizeof(unsigned long), 1,
--						file) != 1) {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
- 					perror(fname);
- 					goto error_openfile;
- 				}
--				crash_size = tmp_long;
-+				if (n == 4) {
-+					crash_size = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					crash_size = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
-+				fclose(file);
- 
- 				if (crash_base > mem_min)
- 					mem_min = crash_base;
-@@ -408,6 +427,123 @@ static int get_devtree_details(unsigned long kexec_flags)
- 				reserve(KDUMP_BACKUP_LIMIT,
- 						crash_base-KDUMP_BACKUP_LIMIT);
- 			}
-+			/* reserve the initrd_start and end locations. */
-+			memset(fname, 0, sizeof(fname));
-+			strcpy(fname, device_tree);
-+			strcat(fname, dentry->d_name);
-+			strcat(fname, "/linux,initrd-start");
-+			file = fopen(fname, "r");
-+			if (!file) {
-+				errno = 0;
-+				initrd_start = 0;
-+			} else {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
-+					perror(fname);
-+					goto error_openfile;
-+				}
-+				if (n == 4) {
-+					initrd_start = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					initrd_start = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
-+				fclose(file);
-+			}
+diff --git a/arch/powerpc/boot/dts/stxssa.dts b/arch/powerpc/boot/dts/stxssa.dts
+new file mode 100644
+index 0000000..94d12d7
+--- /dev/null
++++ b/arch/powerpc/boot/dts/stxssa.dts
+@@ -0,0 +1,380 @@
++/*
++ * MPC8555-based STx GP3 Device Tree Source
++ *
++ * Copyright 2006, 2008 Freescale Semiconductor Inc.
++ *
++ * Copyright 2010 Silicon Turnkey Express LLC.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+			memset(fname, 0, sizeof(fname));
-+			strcpy(fname, device_tree);
-+			strcat(fname, dentry->d_name);
-+			strcat(fname, "/linux,initrd-end");
-+			file = fopen(fname, "r");
-+			if (!file) {
-+				errno = 0;
-+				initrd_end = 0;
-+			} else {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
-+					perror(fname);
-+					goto error_openfile;
-+				}
-+				if (n == 4) {
-+					initrd_end = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					initrd_end = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
-+				fclose(file);
-+			}
++/dts-v1/;
 +
-+			if ((initrd_end - initrd_start) != 0 )
-+			{
-+				initrd_base = initrd_start;
-+				initrd_size = initrd_end - initrd_start + 1;
-+			}
++/ {
++	model = "stx,gp3";
++        compatible = "stx,gp3-8560", "stx,gp3";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+			if (reuse_initrd) {
-+				/* Add initrd address to exclude_range */
-+				exclude_range[i].start = initrd_start;
-+				exclude_range[i].end = initrd_end;
-+				i++;
-+				if (i >= max_memory_ranges)
-+					realloc_memory_ranges();
-+			}
++	aliases {
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++		serial0 = &serial0;
++		serial1 = &serial1;
++		pci0 = &pci0;
++	};
 +
-+			memset(fname, 0, sizeof(fname));
-+			strcpy(fname, device_tree);
-+			strcat(fname, dentry->d_name);
-+			strcat(fname, "/linux,devicetree-start");
-+			file = fopen(fname, "r");
-+			if (!file) {
-+				errno = 0;
-+				devicetree_base = 0;
-+			} else {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
-+					perror(fname);
-+					goto error_openfile;
-+				}
-+				if (n == 4) {
-+					devicetree_base = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					devicetree_base = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
-+				fclose(file);
-+			}
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+			memset(fname, 0, sizeof(fname));
-+			strcpy(fname, device_tree);
-+			strcat(fname, dentry->d_name);
-+			strcat(fname, "/linux,devicetree-end");
-+			file = fopen(fname, "r");
-+			if (!file) {
-+				errno = 0;
-+				devicetree_size = 0;
-+			} else {
-+				if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
-+					perror(fname);
-+					goto error_openfile;
-+				}
-+				if (n == 4) {
-+					devicetree_size = ((uint32_t *)buf)[0];
-+				} else if (n == 8) {
-+					devicetree_size = ((uint64_t *)buf)[0];
-+				} else {
-+					fprintf(stderr, "%s node has invalid size: %d\n", fname, n);
-+					goto error_openfile;
-+				}
-+				fclose(file);
-+			}
++		PowerPC,8555@0 {
++			device_type = "cpu";
++			reg = <0x0>;
++			d-cache-line-size = <32>;	// 32 bytes
++			i-cache-line-size = <32>;	// 32 bytes
++			d-cache-size = <0x8000>;		// L1, 32K
++			i-cache-size = <0x8000>;		// L1, 32K
++			timebase-frequency = <0>;	//  33 MHz, from uboot
++			bus-frequency = <0>;	// 166 MHz
++			clock-frequency = <0>;	// 825 MHz, from uboot
++			next-level-cache = <&L2>;
++		};
++	};
 +
-+			/* Fixup device tree size */
-+			if (devicetree_size != 0)
-+				devicetree_size -= devicetree_base;
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;
++	};
 +
-+			/* HTAB */
- 			memset(fname, 0, sizeof(fname));
- 			strcpy(fname, device_tree);
- 			strcat(fname, dentry->d_name);
-@@ -449,59 +585,7 @@ static int get_devtree_details(unsigned long kexec_flags)
- 			if (i >= max_memory_ranges)
- 				realloc_memory_ranges();
- 
--			/* reserve the initrd_start and end locations. */
--			if (reuse_initrd) {
--				memset(fname, 0, sizeof(fname));
--				strcpy(fname, device_tree);
--				strcat(fname, dentry->d_name);
--				strcat(fname, "/linux,initrd-start");
--				file = fopen(fname, "r");
--				if (!file) {
--					perror(fname);
--					goto error_opencdir;
--				}
--				/* check for 4 and 8 byte initrd offset sizes */
--				if (stat(fname, &fstat) != 0) {
--					perror(fname);
--					goto error_openfile;
--				}
--				if (fread(&initrd_start, fstat.st_size, 1, file)
--						!= 1) {
--					perror(fname);
--					goto error_openfile;
--				}
--				fclose(file);
--
--				memset(fname, 0, sizeof(fname));
--				strcpy(fname, device_tree);
--				strcat(fname, dentry->d_name);
--				strcat(fname, "/linux,initrd-end");
--				file = fopen(fname, "r");
--				if (!file) {
--					perror(fname);
--					goto error_opencdir;
--				}
--				/* check for 4 and 8 byte initrd offset sizes */
--				if (stat(fname, &fstat) != 0) {
--					perror(fname);
--					goto error_openfile;
--				}
--				if (fread(&initrd_end, fstat.st_size, 1, file)
--						!= 1) {
--					perror(fname);
--					goto error_openfile;
--				}
--				fclose(file);
--
--				/* Add initrd address to exclude_range */
--				exclude_range[i].start = initrd_start;
--				exclude_range[i].end = initrd_end;
--				i++;
--				if (i >= max_memory_ranges)
--					realloc_memory_ranges();
--			}
- 		} /* chosen */
--
- 		if (strncmp(dentry->d_name, "rtas", 4) == 0) {
- 			strcat(fname, "/linux,rtas-base");
- 			if ((file = fopen(fname, "r")) == NULL) {
-diff --git a/kexec/arch/ppc/kexec-ppc.h b/kexec/arch/ppc/kexec-ppc.h
-index fc0471f..aefdc6f 100644
---- a/kexec/arch/ppc/kexec-ppc.h
-+++ b/kexec/arch/ppc/kexec-ppc.h
-@@ -65,6 +65,7 @@ typedef struct mem_rgns {
- extern mem_rgns_t usablemem_rgns;
- extern int max_memory_ranges;
- extern unsigned long long initrd_base, initrd_size;
-+extern unsigned long long devicetree_base, devicetree_size;
- extern unsigned char reuse_initrd;
- #define COMMAND_LINE_SIZE	512 /* from kernel */
- /*fs2dt*/
++	soc8555@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		compatible = "simple-bus";
++		ranges = <0x0 0xe0000000 0x100000>;
++		bus-frequency = <0>;
++
++		ecm-law@0 {
++			compatible = "fsl,ecm-law";
++			reg = <0x0 0x1000>;
++			fsl,num-laws = <8>;
++		};
++
++		ecm@1000 {
++			compatible = "fsl,mpc8555-ecm", "fsl,ecm";
++			reg = <0x1000 0x1000>;
++			interrupts = <17 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		memory-controller@2000 {
++			compatible = "fsl,8555-memory-controller";
++			reg = <0x2000 0x1000>;
++			interrupt-parent = <&mpic>;
++			interrupts = <18 2>;
++		};
++
++		L2: l2-cache-controller@20000 {
++			compatible = "fsl,8555-l2-cache-controller";
++			reg = <0x20000 0x1000>;
++			cache-line-size = <32>;	// 32 bytes
++			cache-size = <0x40000>;	// L2, 256K
++			interrupt-parent = <&mpic>;
++			interrupts = <16 2>;
++		};
++
++		i2c@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			cell-index = <0>;
++			compatible = "fsl-i2c";
++			reg = <0x3000 0x100>;
++			interrupts = <43 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		dma@21300 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8555-dma", "fsl,eloplus-dma";
++			reg = <0x21300 0x4>;
++			ranges = <0x0 0x21100 0x200>;
++			cell-index = <0>;
++			dma-channel@0 {
++				compatible = "fsl,mpc8555-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x0 0x80>;
++				cell-index = <0>;
++				interrupt-parent = <&mpic>;
++				interrupts = <20 2>;
++			};
++			dma-channel@80 {
++				compatible = "fsl,mpc8555-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x80 0x80>;
++				cell-index = <1>;
++				interrupt-parent = <&mpic>;
++				interrupts = <21 2>;
++			};
++			dma-channel@100 {
++				compatible = "fsl,mpc8555-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x100 0x80>;
++				cell-index = <2>;
++				interrupt-parent = <&mpic>;
++				interrupts = <22 2>;
++			};
++			dma-channel@180 {
++				compatible = "fsl,mpc8555-dma-channel",
++						"fsl,eloplus-dma-channel";
++				reg = <0x180 0x80>;
++				cell-index = <3>;
++				interrupt-parent = <&mpic>;
++				interrupts = <23 2>;
++			};
++		};
++
++		enet0: ethernet@24000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <0>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x24000 0x1000>;
++			ranges = <0x0 0x24000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <29 2 30 2 34 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi0>;
++			phy-handle = <&phy0>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-mdio";
++				reg = <0x520 0x20>;
++
++				phy0: ethernet-phy@2 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x2>;
++					device_type = "ethernet-phy";
++				};
++				phy1: ethernet-phy@4 {
++					interrupt-parent = <&mpic>;
++					interrupts = <5 1>;
++					reg = <0x4>;
++					device_type = "ethernet-phy";
++				};
++				tbi0: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		enet1: ethernet@25000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			cell-index = <1>;
++			device_type = "network";
++			model = "TSEC";
++			compatible = "gianfar";
++			reg = <0x25000 0x1000>;
++			ranges = <0x0 0x25000 0x1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <35 2 36 2 40 2>;
++			interrupt-parent = <&mpic>;
++			tbi-handle = <&tbi1>;
++			phy-handle = <&phy1>;
++
++			mdio@520 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,gianfar-tbi";
++				reg = <0x520 0x20>;
++
++				tbi1: tbi-phy@11 {
++					reg = <0x11>;
++					device_type = "tbi-phy";
++				};
++			};
++		};
++
++		serial0: serial@4500 {
++			cell-index = <0>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4500 0x100>; 	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial1: serial@4600 {
++			cell-index = <1>;
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <0x4600 0x100>;	// reg base, size
++			clock-frequency = <0>; 	// should we fill in in uboot?
++			interrupts = <42 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		crypto@30000 {
++			compatible = "fsl,sec2.0";
++			reg = <0x30000 0x10000>;
++			interrupts = <45 2>;
++			interrupt-parent = <&mpic>;
++			fsl,num-channels = <4>;
++			fsl,channel-fifo-len = <24>;
++			fsl,exec-units-mask = <0x7e>;
++			fsl,descriptor-types-mask = <0x01010ebf>;
++		};
++
++		mpic: pic@40000 {
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <0x40000 0x40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++		};
++
++		cpm@919c0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,mpc8555-cpm", "fsl,cpm2";
++			reg = <0x919c0 0x30>;
++			ranges;
++
++			muram@80000 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				ranges = <0x0 0x80000 0x10000>;
++
++				data@0 {
++					compatible = "fsl,cpm-muram-data";
++					reg = <0x0 0x2000 0x9000 0x1000>;
++				};
++			};
++
++			brg@919f0 {
++				compatible = "fsl,mpc8555-brg",
++				             "fsl,cpm2-brg",
++				             "fsl,cpm-brg";
++				reg = <0x919f0 0x10 0x915f0 0x10>;
++			};
++
++			cpmpic: pic@90c00 {
++				interrupt-controller;
++				#address-cells = <0>;
++				#interrupt-cells = <2>;
++				interrupts = <46 2>;
++				interrupt-parent = <&mpic>;
++				reg = <0x90c00 0x80>;
++				compatible = "fsl,mpc8555-cpm-pic", "fsl,cpm2-pic";
++			};
++		};
++	};
++
++	pci0: pci@e0008000 {
++		interrupt-map-mask = <0x1f800 0x0 0x0 0x7>;
++		interrupt-map = <
++
++			/* IDSEL 0x10 */
++			0x8000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0x8000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0x8000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0x8000 0x0 0x0 0x4 &mpic 0x3 0x1
++
++			/* IDSEL 0x11 */
++			0x8800 0x0 0x0 0x1 &mpic 0x0 0x1
++			0x8800 0x0 0x0 0x2 &mpic 0x1 0x1
++			0x8800 0x0 0x0 0x3 &mpic 0x2 0x1
++			0x8800 0x0 0x0 0x4 &mpic 0x3 0x1
++
++			/* IDSEL 0x12 (Slot 1) */
++			0x9000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0x9000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0x9000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0x9000 0x0 0x0 0x4 &mpic 0x3 0x1
++
++			/* IDSEL 0x13 (Slot 2) */
++			0x9800 0x0 0x0 0x1 &mpic 0x1 0x1
++			0x9800 0x0 0x0 0x2 &mpic 0x2 0x1
++			0x9800 0x0 0x0 0x3 &mpic 0x3 0x1
++			0x9800 0x0 0x0 0x4 &mpic 0x0 0x1
++
++			/* IDSEL 0x14 (Slot 3) */
++			0xa000 0x0 0x0 0x1 &mpic 0x2 0x1
++			0xa000 0x0 0x0 0x2 &mpic 0x3 0x1
++			0xa000 0x0 0x0 0x3 &mpic 0x0 0x1
++			0xa000 0x0 0x0 0x4 &mpic 0x1 0x1
++
++			/* IDSEL 0x15 (Slot 4) */
++			0xa800 0x0 0x0 0x1 &mpic 0x3 0x1
++			0xa800 0x0 0x0 0x2 &mpic 0x0 0x1
++			0xa800 0x0 0x0 0x3 &mpic 0x1 0x1
++			0xa800 0x0 0x0 0x4 &mpic 0x2 0x1
++
++			/* Bus 1 (Tundra Bridge) */
++			/* IDSEL 0x12 (ISA bridge) */
++			0x19000 0x0 0x0 0x1 &mpic 0x0 0x1
++			0x19000 0x0 0x0 0x2 &mpic 0x1 0x1
++			0x19000 0x0 0x0 0x3 &mpic 0x2 0x1
++			0x19000 0x0 0x0 0x4 &mpic 0x3 0x1>;
++		interrupt-parent = <&mpic>;
++		interrupts = <24 2>;
++		bus-range = <0 0>;
++		ranges = <0x2000000 0x0 0x80000000 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x0 0xe2000000 0x0 0x100000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe0008000 0x1000>;
++		compatible = "fsl,mpc8540-pci";
++		device_type = "pci";
++
++		i8259@19000 {
++			interrupt-controller;
++			device_type = "interrupt-controller";
++			reg = <0x19000 0x0 0x0 0x0 0x1>;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			compatible = "chrp,iic";
++			interrupts = <1>;
++			interrupt-parent = <&pci0>;
++		};
++	};
++
++	pci1: pci@e0009000 {
++		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++		interrupt-map = <
++
++			/* IDSEL 0x15 */
++			0xa800 0x0 0x0 0x1 &mpic 0xb 0x1
++			0xa800 0x0 0x0 0x2 &mpic 0xb 0x1
++			0xa800 0x0 0x0 0x3 &mpic 0xb 0x1
++			0xa800 0x0 0x0 0x4 &mpic 0xb 0x1>;
++		interrupt-parent = <&mpic>;
++		interrupts = <25 2>;
++		bus-range = <0 0>;
++		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
++			  0x1000000 0x0 0x0 0xe3000000 0x0 0x100000>;
++		clock-frequency = <66666666>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <0xe0009000 0x1000>;
++		compatible = "fsl,mpc8540-pci";
++		device_type = "pci";
++	};
++};
 -- 
-1.6.0.6
+1.7.0.4
