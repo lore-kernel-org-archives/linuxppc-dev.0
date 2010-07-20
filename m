@@ -1,30 +1,22 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <mikpe@it.uu.se>
+Received: from fanny.its.uu.se (fanny.its.uu.se [130.238.4.241])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 50219B6EF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 23:29:02 +1000 (EST)
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6KDQv63032335
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 09:26:57 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6KDSw3p098218
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 09:28:58 -0400
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6KDSvDe002335
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 07:28:58 -0600
-Message-ID: <4C45A497.6090509@austin.ibm.com>
-Date: Tue, 20 Jul 2010 08:28:55 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id B5574B6F14
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jul 2010 23:35:29 +1000 (EST)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/8] v3 Allow memory_block to span multiple memory sections
-References: <4C451BF5.50304@austin.ibm.com> <4C451E1C.8070907@austin.ibm.com>
-In-Reply-To: <4C451E1C.8070907@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: greg@kroah.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <19525.42521.198122.812309@pilspetsen.it.uu.se>
+Date: Tue, 20 Jul 2010 15:35:21 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH] math-emu: correct test for downshifting fraction in
+	_FP_FROM_INT()
+In-Reply-To: <19524.51858.992299.119315@pilspetsen.it.uu.se>
+References: <19524.51858.992299.119315@pilspetsen.it.uu.se>
+Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,343 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the memory sysfs code that each sysfs memory directory is now
-considered a memory block that can contain multiple memory sections per
-memory block.  The default size of each memory block is SECTION_SIZE_BITS
-to maintain the current behavior of having a single memory section per
-memory block (i.e. one sysfs directory per memory section).
+Mikael Pettersson writes:
+ > The kernel's math-emu code contains a macro _FP_FROM_INT() which is
+ > used to convert an integer to a raw normalized floating-point value.
+ > It does this basically in three steps:
+ > 
+ > 1. Compute the exponent from the number of leading zero bits.
+ > 2. Downshift large fractions to put the MSB in the right position
+ >    for normalized fractions.
+ > 3. Upshift small fractions to put the MSB in the right position.
+ > 
+ > There is an boundary error in step 2, causing a fraction with its
+ > MSB exactly one bit above the normalized MSB position to not be
+ > downshifted.  This results in a non-normalized raw float, which when
+ > packed becomes a massively inaccurate representation for that input.
+ > 
+ > The impact of this depends on a number of arch-specific factors,
+ > but it is known to have broken emulation of FXTOD instructions
+ > on UltraSPARC III, which was originally reported as GCC bug 44631
+ > <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44631>.
+ > 
+ > Any arch which uses math-emu to emulate conversions from integers to
+ > same-size floats may be affected.
+ > 
+ > The fix is simple: the exponent comparison used to determine if the
+ > fraction should be downshifted must be "<=" not "<".
+ > 
+ > I'm sending a kernel module to test this as a reply to this message.
+ > There are also SPARC user-space test cases in the GCC bug entry.
+ > 
+ > Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
-For architectures that want to have memory blocks span multiple
-memory sections they need only define their own memory_block_size_bytes()
-routine.
+I forgot to mention that this needs to be backported to older kernels,
+so can the maintainer who picks this up please add
 
-Patch refreshed to apply cleanly with previous two patch updates.
+	Cc: stable@kernel.org
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- drivers/base/memory.c |  141 ++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 98 insertions(+), 43 deletions(-)
+Thanks,
 
-Index: linux-2.6/drivers/base/memory.c
-===================================================================
---- linux-2.6.orig/drivers/base/memory.c	2010-07-20 06:43:29.000000000 -0500
-+++ linux-2.6/drivers/base/memory.c	2010-07-20 06:44:30.000000000 -0500
-@@ -28,6 +28,14 @@
- #include <asm/uaccess.h>
- 
- #define MEMORY_CLASS_NAME	"memory"
-+#define MIN_MEMORY_BLOCK_SIZE	(1 << SECTION_SIZE_BITS)
-+
-+static int sections_per_block;
-+
-+static inline int base_memory_block_id(int section_nr)
-+{
-+	return (section_nr / sections_per_block) * sections_per_block;
-+}
- 
- static struct sysdev_class memory_sysdev_class = {
- 	.name = MEMORY_CLASS_NAME,
-@@ -82,22 +90,21 @@ EXPORT_SYMBOL(unregister_memory_isolate_
-  * register_memory - Setup a sysfs device for a memory block
-  */
- static
--int register_memory(struct memory_block *memory, struct mem_section *section)
-+int register_memory(struct memory_block *memory)
- {
- 	int error;
- 
- 	memory->sysdev.cls = &memory_sysdev_class;
--	memory->sysdev.id = __section_nr(section);
-+	memory->sysdev.id = memory->start_phys_index;
- 
- 	error = sysdev_register(&memory->sysdev);
- 	return error;
- }
- 
- static void
--unregister_memory(struct memory_block *memory, struct mem_section *section)
-+unregister_memory(struct memory_block *memory)
- {
- 	BUG_ON(memory->sysdev.cls != &memory_sysdev_class);
--	BUG_ON(memory->sysdev.id != __section_nr(section));
- 
- 	/* drop the ref. we got in remove_memory_block() */
- 	kobject_put(&memory->sysdev.kobj);
-@@ -131,13 +138,16 @@ static ssize_t show_mem_end_phys_index(s
- static ssize_t show_mem_removable(struct sys_device *dev,
- 			struct sysdev_attribute *attr, char *buf)
- {
--	unsigned long start_pfn;
--	int ret;
-+	unsigned long i, pfn;
-+	int ret = 1;
- 	struct memory_block *mem =
- 		container_of(dev, struct memory_block, sysdev);
- 
--	start_pfn = section_nr_to_pfn(mem->start_phys_index);
--	ret = is_mem_section_removable(start_pfn, PAGES_PER_SECTION);
-+	for (i = mem->start_phys_index; i <= mem->end_phys_index; i++) {
-+		pfn = section_nr_to_pfn(i);
-+		ret &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
-+	}
-+
- 	return sprintf(buf, "%d\n", ret);
- }
- 
-@@ -190,17 +200,14 @@ int memory_isolate_notify(unsigned long
-  * OK to have direct references to sparsemem variables in here.
-  */
- static int
--memory_block_action(struct memory_block *mem, unsigned long action)
-+memory_section_action(unsigned long phys_index, unsigned long action)
- {
- 	int i;
--	unsigned long psection;
- 	unsigned long start_pfn, start_paddr;
- 	struct page *first_page;
- 	int ret;
--	int old_state = mem->state;
- 
--	psection = mem->start_phys_index;
--	first_page = pfn_to_page(psection << PFN_SECTION_SHIFT);
-+	first_page = pfn_to_page(phys_index << PFN_SECTION_SHIFT);
- 
- 	/*
- 	 * The probe routines leave the pages reserved, just
-@@ -213,8 +220,8 @@ memory_block_action(struct memory_block
- 				continue;
- 
- 			printk(KERN_WARNING "section number %ld page number %d "
--				"not reserved, was it already online? \n",
--				psection, i);
-+				"not reserved, was it already online?\n",
-+				phys_index, i);
- 			return -EBUSY;
- 		}
- 	}
-@@ -225,18 +232,13 @@ memory_block_action(struct memory_block
- 			ret = online_pages(start_pfn, PAGES_PER_SECTION);
- 			break;
- 		case MEM_OFFLINE:
--			mem->state = MEM_GOING_OFFLINE;
- 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
- 			ret = remove_memory(start_paddr,
- 					    PAGES_PER_SECTION << PAGE_SHIFT);
--			if (ret) {
--				mem->state = old_state;
--				break;
--			}
- 			break;
- 		default:
--			WARN(1, KERN_WARNING "%s(%p, %ld) unknown action: %ld\n",
--					__func__, mem, action, action);
-+			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
-+			     "%ld\n", __func__, phys_index, action, action);
- 			ret = -EINVAL;
- 	}
- 
-@@ -246,7 +248,7 @@ memory_block_action(struct memory_block
- static int memory_block_change_state(struct memory_block *mem,
- 		unsigned long to_state, unsigned long from_state_req)
- {
--	int ret = 0;
-+	int i, ret = 0;
- 	mutex_lock(&mem->state_mutex);
- 
- 	if (mem->state != from_state_req) {
-@@ -254,8 +256,21 @@ static int memory_block_change_state(str
- 		goto out;
- 	}
- 
--	ret = memory_block_action(mem, to_state);
--	if (!ret)
-+	if (to_state == MEM_OFFLINE)
-+		mem->state = MEM_GOING_OFFLINE;
-+
-+	for (i = mem->start_phys_index; i <= mem->end_phys_index; i++) {
-+		ret = memory_section_action(i, to_state);
-+		if (ret)
-+			break;
-+	}
-+
-+	if (ret) {
-+		for (i = mem->start_phys_index; i <= mem->end_phys_index; i++)
-+			memory_section_action(i, from_state_req);
-+
-+		mem->state = from_state_req;
-+	} else
- 		mem->state = to_state;
- 
- out:
-@@ -268,20 +283,15 @@ store_mem_state(struct sys_device *dev,
- 		struct sysdev_attribute *attr, const char *buf, size_t count)
- {
- 	struct memory_block *mem;
--	unsigned int phys_section_nr;
- 	int ret = -EINVAL;
- 
- 	mem = container_of(dev, struct memory_block, sysdev);
--	phys_section_nr = mem->start_phys_index;
--
--	if (!present_section_nr(phys_section_nr))
--		goto out;
- 
- 	if (!strncmp(buf, "online", min((int)count, 6)))
- 		ret = memory_block_change_state(mem, MEM_ONLINE, MEM_OFFLINE);
- 	else if(!strncmp(buf, "offline", min((int)count, 7)))
- 		ret = memory_block_change_state(mem, MEM_OFFLINE, MEM_ONLINE);
--out:
-+
- 	if (ret)
- 		return ret;
- 	return count;
-@@ -458,12 +468,13 @@ struct memory_block *find_memory_block(s
- 	struct sys_device *sysdev;
- 	struct memory_block *mem;
- 	char name[sizeof(MEMORY_CLASS_NAME) + 9 + 1];
-+	int block_id = base_memory_block_id(__section_nr(section));
- 
- 	/*
- 	 * This only works because we know that section == sysdev->id
- 	 * slightly redundant with sysdev_register()
- 	 */
--	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, __section_nr(section));
-+	sprintf(&name[0], "%s%d", MEMORY_CLASS_NAME, block_id);
- 
- 	kobj = kset_find_obj(&memory_sysdev_class.kset, name);
- 	if (!kobj)
-@@ -475,24 +486,26 @@ struct memory_block *find_memory_block(s
- 	return mem;
- }
- 
--static int add_memory_block(int nid, struct mem_section *section,
--			unsigned long state, enum mem_add_context context)
-+static int init_memory_block(struct memory_block **memory,
-+			     struct mem_section *section, unsigned long state)
- {
--	struct memory_block *mem = kzalloc(sizeof(*mem), GFP_KERNEL);
-+	struct memory_block *mem;
- 	unsigned long start_pfn;
- 	int ret = 0;
- 
-+	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
- 	if (!mem)
- 		return -ENOMEM;
- 
--	mem->start_phys_index = __section_nr(section);
-+	mem->start_phys_index = base_memory_block_id(__section_nr(section));
-+	mem->end_phys_index = mem->start_phys_index + sections_per_block - 1;
- 	mem->state = state;
- 	atomic_inc(&mem->section_count);
- 	mutex_init(&mem->state_mutex);
- 	start_pfn = section_nr_to_pfn(mem->start_phys_index);
- 	mem->phys_device = arch_get_memory_phys_device(start_pfn);
- 
--	ret = register_memory(mem, section);
-+	ret = register_memory(mem);
- 	if (!ret)
- 		ret = mem_create_simple_file(mem, phys_index);
- 	if (!ret)
-@@ -503,8 +516,27 @@ static int add_memory_block(int nid, str
- 		ret = mem_create_simple_file(mem, phys_device);
- 	if (!ret)
- 		ret = mem_create_simple_file(mem, removable);
-+
-+	*memory = mem;
-+	return ret;
-+}
-+
-+static int add_memory_section(int nid, struct mem_section *section,
-+			unsigned long state, enum mem_add_context context)
-+{
-+	struct memory_block *mem;
-+	int ret = 0;
-+
-+	mem = find_memory_block(section);
-+	if (mem) {
-+		atomic_inc(&mem->section_count);
-+		kobject_put(&mem->sysdev.kobj);
-+	} else
-+		ret = init_memory_block(&mem, section, state);
-+
- 	if (!ret) {
--		if (context == HOTPLUG)
-+		if (context == HOTPLUG &&
-+		    atomic_read(&mem->section_count) == sections_per_block)
- 			ret = register_mem_sect_under_node(mem, nid);
- 	}
- 
-@@ -525,8 +557,9 @@ int remove_memory_block(unsigned long no
- 		mem_remove_simple_file(mem, state);
- 		mem_remove_simple_file(mem, phys_device);
- 		mem_remove_simple_file(mem, removable);
--		unregister_memory(mem, section);
--	}
-+		unregister_memory(mem);
-+	} else
-+		kobject_put(&mem->sysdev.kobj);
- 
- 	return 0;
- }
-@@ -537,7 +570,7 @@ int remove_memory_block(unsigned long no
-  */
- int register_new_memory(int nid, struct mem_section *section)
- {
--	return add_memory_block(nid, section, MEM_OFFLINE, HOTPLUG);
-+	return add_memory_section(nid, section, MEM_OFFLINE, HOTPLUG);
- }
- 
- int unregister_memory_section(struct mem_section *section)
-@@ -548,6 +581,24 @@ int unregister_memory_section(struct mem
- 	return remove_memory_block(0, section, 0);
- }
- 
-+u32 __weak memory_block_size_bytes(void)
-+{
-+	return MIN_MEMORY_BLOCK_SIZE;
-+}
-+
-+static u32 get_memory_block_size(void)
-+{
-+	u32 block_sz;
-+
-+	block_sz = memory_block_size_bytes();
-+
-+	/* Validate blk_sz is a power of 2 and not less than section size */
-+	if ((block_sz & (block_sz - 1)) || (block_sz < MIN_MEMORY_BLOCK_SIZE))
-+		block_sz = MIN_MEMORY_BLOCK_SIZE;
-+
-+	return block_sz;
-+}
-+
- /*
-  * Initialize the sysfs support for memory devices...
-  */
-@@ -556,12 +607,16 @@ int __init memory_dev_init(void)
- 	unsigned int i;
- 	int ret;
- 	int err;
-+	int block_sz;
- 
- 	memory_sysdev_class.kset.uevent_ops = &memory_uevent_ops;
- 	ret = sysdev_class_register(&memory_sysdev_class);
- 	if (ret)
- 		goto out;
- 
-+	block_sz = get_memory_block_size();
-+	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
-+
- 	/*
- 	 * Create entries for memory sections that were found
- 	 * during boot and have been initialized
-@@ -569,8 +624,8 @@ int __init memory_dev_init(void)
- 	for (i = 0; i < NR_MEM_SECTIONS; i++) {
- 		if (!present_section_nr(i))
- 			continue;
--		err = add_memory_block(0, __nr_to_section(i), MEM_ONLINE,
--				       BOOT);
-+		err = add_memory_section(0, __nr_to_section(i), MEM_ONLINE,
-+					 BOOT);
- 		if (!ret)
- 			ret = err;
- 	}
+/Mikael
+
+ > ---
+ >  include/math-emu/op-common.h |    2 +-
+ >  1 file changed, 1 insertion(+), 1 deletion(-)
+ > 
+ > diff -rupN linux-2.6.35-rc5/include/math-emu/op-common.h linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h
+ > --- linux-2.6.35-rc5/include/math-emu/op-common.h	2010-05-17 19:51:32.000000000 +0200
+ > +++ linux-2.6.35-rc5.mathemu-FP_FROM_INT-fraction-downshift-condition/include/math-emu/op-common.h	2010-07-18 22:33:46.000000000 +0200
+ > @@ -799,7 +799,7 @@ do {									\
+ >  		X##_e -= (_FP_W_TYPE_SIZE - rsize);			\
+ >  	X##_e = rsize - X##_e - 1;					\
+ >  									\
+ > -	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs < X##_e)	\
+ > +	if (_FP_FRACBITS_##fs < rsize && _FP_WFRACBITS_##fs <= X##_e)	\
+ >  	  __FP_FRAC_SRS_1(ur_, (X##_e - _FP_WFRACBITS_##fs + 1), rsize);\
+ >  	_FP_FRAC_DISASSEMBLE_##wc(X, ur_, rsize);			\
+ >  	if ((_FP_WFRACBITS_##fs - X##_e - 1) > 0)			\
+ > --
+ > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+ > the body of a message to majordomo@vger.kernel.org
+ > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ > Please read the FAQ at  http://www.tux.org/lkml/
+ > 
