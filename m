@@ -1,22 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 9916EB70AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 21 Jul 2010 12:59:37 +1000 (EST)
-Received: by gxk26 with SMTP id 26so3636216gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 20 Jul 2010 19:59:36 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <201007211037566748594@gmail.com>
-References: <201007211037566748594@gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 20 Jul 2010 20:59:15 -0600
-Message-ID: <AANLkTilQ9KtfZRjIZiuZ09hq1l5WdbPC1Ux2LkG6WKGG@mail.gmail.com>
-Subject: Re: one more question about dts
-To: hacklu <embedway.test@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Justin P. Mattock" <justinmattock@gmail.com>, trivial@kernel.org,
+	linux-doc@vger.kernel.org,
+	David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 92/92]Documentation/powerpc/booting-without-of.txt update
+	web address.
+In-reply-to: <26080.1279691826@neuling.org>
+References: <1279688215-29628-1-git-send-email-justinmattock@gmail.com>
+	<1279688215-29628-2-git-send-email-justinmattock@gmail.com>
+	<26080.1279691826@neuling.org>
+Date: Wed, 21 Jul 2010 16:07:20 +1000
+Message-ID: <26726.1279692440@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVHVlLCBKdWwgMjAsIDIwMTAgYXQgODozNyBQTSwgaGFja2x1IDxlbWJlZHdheS50ZXN0QGdt
-YWlsLmNvbT4gd3JvdGU6Cj4gbXmgYm9hcmSgaXMgbXBjODI0NyxhbmSgaaB3cml0ZSBpdCdzIGR0
-cyBieSCgoGltaXRhdGluZyBtcGM4MjcyJ3MgZHRzCj4KPiBob3cgY2FuIGkgc2V0IHRoZaBsb2Nh
-bGJ1cyBhZGRyZXNzPwo+Cj4gbG9jYWxidXNAZjAwMTAxMDCgewo+IKCgoKCgoKCgoKCgoKCgoKBj
-b21wYXRpYmxloD2gImZzbCxtcGM4MjcyLWxvY2FsYnVzIiwKPiCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoCJmc2wscHEyLWxvY2FsYnVzIjsKPiCgoKCgoKCgoKCgoKCgoKCgI2FkZHJlc3Mt
-Y2VsbHOgPaA8Mj47Cj4goKCgoKCgoKCgoKCgoKCgoCNzaXplLWNlbGxzoD2gPDE+Owo+IKCgoKCg
-oKCgoKCgoKCgoKByZWegPaA8ZjAwMTAxMDCgNDA+Owo+IKCgoKCgoKCgoKCgoKCgoKByYW5nZXOg
-PaA8Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgMKAwoDcwMDAwMDAwoDEwMDAw
-MDCgICNteSBmbGFzaDEKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAxoDCgNzEw
-MDAwMDCgMTAwMDAwMKAgI215IGZsYXNoMgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoDIgP6AgPz8/Pz8/P6CgoCA/Pz8/Pz8/oKAgI2hvdyB0byBzZXQgaXQKPiBmb3IgYm9hcmQt
-Y29udHJvbD8KPiCgM6AgP6AgPz8/P6CgoKCgoKAgPz8/P6CgoKCgoKCgIyBob3cgdG8gc2V0IGl0
-IGZvcgo+IHBjaV9waWOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoD47CgpUaGVzZSB2YWx1ZXMgcmVm
-bGVjdCB0aGUgYmFzZSBhZGRyZXNzIGFuZCB0cmFuc2xhdGlvbiByYW5nZSBvZiBlYWNoCmNoaXAg
-c2VsZWN0LiAgSG93IGFyZSB5b3VyIGhhcmR3YXJlIGNoaXBzIHNlbGVjdHMgY29uZmlndXJlZC4K
-CklmIEkgYXNzdW1lIHRoYXQgY3MyIGlzIGNvbmZpZ3VyZWQgZm9yIDB4YzEwMDAwMDAgdG8gMHhj
-MTAwZmZmZiwgYW5kCmNzMyBpcyBjb25maWd1cmVkIGZvciAweGMyMDAwMDAwIHRvIDB4YzIwM2Zm
-ZmYsIHRoZW4geW91ciByYW5nZXMKcHJvcGVydHkgd291bGQgYmU6CgogICAgICAgICAgICAgICAg
-cmFuZ2VzID0gPCAwIDAgNzAwMDAwMDAgMTAwMDAwMCAgI215IGZsYXNoMQogICAgICAgICAgICAg
-ICAgICAgICAgICAgICAxIDAgNzEwMDAwMDAgMTAwMDAwMCAgI215IGZsYXNoMgogICAgICAgICAg
-ICAgICAgICAgICAgICAgICAyIDAgYzEwMDAwMDAgMTAwMDAKICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgMyAwIGMyMDAwMDAwIDQwMDAwID47CgoKPgo+IC4uLi4KPiCgYm9hcmQtY29udHJvbEAy
-LDCgewo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHJlZ6A9oDwxoDCgMjA+OwoKSWYgdGhpcyBp
-cyBhdHRhY2hlZCB0byBjaGlwc2VsZWN0ICMyLCB0aGVuIHRoaXMgc2hvdWxkIGJlICJyZWcgPSA8
-MiAwIDIwPjsiCgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGNvbXBhdGlibGWgPaAiZnNsLG1w
-YzgyNzJhZHMtYmNzciI7Cj4goKCgoKCgoKCgoKCgoKCgoH07Cj4goKCgoKCgoKCgoKCgoKCgoFBD
-SV9QSUM6oGludGVycnVwdC1jb250cm9sbGVyQDMsMKB7Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgY29tcGF0aWJsZaA9oCJmc2wsbXBjODI3MmFkcy1wY2ktcGljIiwKPiCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgImZzbCxwcTJhZHMtcGNpLXBpYyI7Cj4goKCgoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgI2ludGVycnVwdC1jZWxsc6A9oDwxPjsKPiCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKBpbnRlcnJ1cHQtY29udHJvbGxlcjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBy
-ZWegPaA8M6AwoDg+Owo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGludGVycnVwdC1wYXJlbnSg
-PaA8JlBJQz47Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgaW50ZXJydXB0c6A9oDwxNKA4PjsK
-PiCgoKCgoKCgoKCgoKCgoKCgfTsKPgo+IHRoYW5rcyBmb3IgYW5zd2VyaW5nfgo+IDIwMTAtMDct
-MjEKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IGhhY2tsdQoKCgotLSAKR3Jh
-bnQgTGlrZWx5LCBCLlNjLiwgUC5FbmcuClNlY3JldCBMYWIgVGVjaG5vbG9naWVzIEx0ZC4K
+> > The patch below fixes a broken web address.
+> > 
+> > Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+> > 
+> > ---
+> >  Documentation/powerpc/booting-without-of.txt |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/p
+ow
+> erpc/booting-without-of.txt
+> > index 46d2210..7882a10 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -1048,7 +1048,7 @@ IV - "dtc", the device tree compiler
+> >  
+> >  
+> >  dtc source code can be found at
+> > -<http://ozlabs.org/~dgibson/dtc/dtc.tar.gz>
+> > +<http://ozlabs.org/>
+> 
+> I think this link should really be:
+> git clone git://www.jdl.com/software/dtc.git/
+
+Actually, maybe this instead?
+
+http://git.jdl.com/gitweb/?p=dtc.git
+
+Mikey
