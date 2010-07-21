@@ -1,11 +1,12 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
-	[209.85.210.42]) by ozlabs.org (Postfix) with ESMTP id EAA73100AE4
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 09:40:04 +1000 (EST)
-Received: by pzk30 with SMTP id 30so2688599pzk.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 16:40:04 -0700 (PDT)
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 89F771009B9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 09:40:10 +1000 (EST)
+Received: by pwi1 with SMTP id 1so3086952pwi.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 16:40:09 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 2/5] of: Merge of_platform_bus_type with platform_bus_type
+Subject: [PATCH 3/5] of/platform: remove all of_bus_type and
+	of_platform_bus_type references
 To: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Greg Kroah-Hartman <gregkh@suse.de>,
@@ -13,8 +14,8 @@ To: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
 	microblaze-uclinux@itee.uq.edu.au, sparclinux@vger.kernel.org,
 	David Miller <davem@davemloft.net>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 21 Jul 2010 17:40:00 -0600
-Message-ID: <20100721233959.7782.17711.stgit@angua>
+Date: Wed, 21 Jul 2010 17:40:05 -0600
+Message-ID: <20100721234005.7782.52867.stgit@angua>
 In-Reply-To: <20100721232817.7782.23410.stgit@angua>
 References: <20100721232817.7782.23410.stgit@angua>
 MIME-Version: 1.0
@@ -28,504 +29,1167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_platform_bus was being used in the same manner as the platform_bus.
-The only difference being that of_platform_bus devices are generated
-from data in the device tree, and platform_bus devices are usually
-statically allocated in platform code.  Having them separate causes
-the problem of device drivers having to be registered twice if it
-was possible for the same device to appear on either bus.
+Both of_bus_type and of_platform_bus_type are just #define aliases
+for the platform bus.  This patch removes all references to them and
+switches to the of_register_platform_driver()/of_unregister_platform_driver()
+API for registering.
 
-This patch removes of_platform_bus_type and registers all of_platform
-bus devices and drivers on the platform bus instead.  A previous patch
-made the of_device structure an alias for the platform_device structure,
-and a shim is used to adapt of_platform_drivers to the platform bus.
-
-After all of of_platform_bus drivers are converted to be normal platform
-drivers, the shim code can be removed.
+Subsequent patches will convert each user of of_register_platform_driver()
+into plain platform_drivers without the of_platform_driver shim.  At which
+point the of_register_platform_driver()/of_unregister_platform_driver()
+functions can be removed.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/microblaze/kernel/of_platform.c     |   11 -----
- arch/microblaze/kernel/setup.c           |    6 ---
- arch/powerpc/kernel/dma-swiotlb.c        |    8 ----
- arch/powerpc/kernel/of_platform.c        |   12 -----
- arch/powerpc/kernel/setup-common.c       |    7 ---
- arch/powerpc/platforms/cell/beat_iommu.c |    2 -
- arch/powerpc/platforms/cell/iommu.c      |    2 -
- arch/powerpc/sysdev/mv64x60_dev.c        |    7 ---
- arch/sparc/kernel/of_device_32.c         |   21 ++-------
- arch/sparc/kernel/of_device_64.c         |   21 ++-------
- arch/sparc/kernel/of_device_common.c     |    3 -
- drivers/base/platform.c                  |    6 +++
- drivers/of/device.c                      |    5 ++
- drivers/of/platform.c                    |   67 +++++++++++++++++++++++++++++-
- include/linux/of_device.h                |    6 +++
- include/linux/of_platform.h              |   21 ++++-----
- 16 files changed, 102 insertions(+), 103 deletions(-)
+ arch/microblaze/kernel/of_platform.c |    3 +--
+ arch/powerpc/kernel/of_platform.c    |    3 +--
+ arch/sparc/include/asm/of_platform.h |    2 --
+ arch/sparc/include/asm/parport.h     |    4 +---
+ arch/sparc/kernel/apc.c              |    2 +-
+ arch/sparc/kernel/auxio_64.c         |    2 +-
+ arch/sparc/kernel/central.c          |    4 ++--
+ arch/sparc/kernel/chmc.c             |    4 ++--
+ arch/sparc/kernel/of_device_common.c |    2 +-
+ arch/sparc/kernel/pci_fire.c         |    2 +-
+ arch/sparc/kernel/pci_psycho.c       |    2 +-
+ arch/sparc/kernel/pci_sabre.c        |    2 +-
+ arch/sparc/kernel/pci_schizo.c       |    2 +-
+ arch/sparc/kernel/pci_sun4v.c        |    2 +-
+ arch/sparc/kernel/pmc.c              |    2 +-
+ arch/sparc/kernel/power.c            |    2 +-
+ arch/sparc/kernel/time_32.c          |    2 +-
+ arch/sparc/kernel/time_64.c          |    6 +++---
+ drivers/atm/fore200e.c               |    6 +++---
+ drivers/char/hw_random/n2-drv.c      |    4 ++--
+ drivers/crypto/n2_core.c             |   10 +++++-----
+ drivers/hwmon/ultra45_env.c          |    4 ++--
+ drivers/input/misc/sparcspkr.c       |   12 +++++-------
+ drivers/input/serio/i8042-sparcio.h  |    5 ++---
+ drivers/mtd/maps/sun_uflash.c        |    4 ++--
+ drivers/net/ibm_newemac/core.c       |    4 ++--
+ drivers/net/myri_sbus.c              |    4 ++--
+ drivers/net/niu.c                    |    6 +++---
+ drivers/net/sunbmac.c                |    4 ++--
+ drivers/net/sunhme.c                 |    4 ++--
+ drivers/net/sunlance.c               |    4 ++--
+ drivers/net/sunqe.c                  |    4 ++--
+ drivers/parport/parport_sunbpp.c     |    4 ++--
+ drivers/sbus/char/bbc_i2c.c          |    4 ++--
+ drivers/sbus/char/display7seg.c      |    4 ++--
+ drivers/sbus/char/envctrl.c          |    4 ++--
+ drivers/sbus/char/flash.c            |    4 ++--
+ drivers/sbus/char/uctrl.c            |    4 ++--
+ drivers/scsi/qlogicpti.c             |    4 ++--
+ drivers/scsi/sun_esp.c               |    4 ++--
+ drivers/serial/sunhv.c               |    4 ++--
+ drivers/serial/sunsab.c              |    4 ++--
+ drivers/serial/sunsu.c               |    2 +-
+ drivers/serial/sunzilog.c            |    6 +++---
+ drivers/video/bw2.c                  |    4 ++--
+ drivers/video/cg14.c                 |    4 ++--
+ drivers/video/cg3.c                  |    4 ++--
+ drivers/video/cg6.c                  |    4 ++--
+ drivers/video/ffb.c                  |    4 ++--
+ drivers/video/leo.c                  |    4 ++--
+ drivers/video/p9100.c                |    4 ++--
+ drivers/video/sunxvr1000.c           |    4 ++--
+ drivers/video/tcx.c                  |    4 ++--
+ drivers/watchdog/cpwd.c              |    4 ++--
+ drivers/watchdog/riowd.c             |    4 ++--
+ include/linux/of_platform.h          |    6 ------
+ sound/sparc/amd7930.c                |    4 ++--
+ sound/sparc/cs4231.c                 |    4 ++--
+ sound/sparc/dbri.c                   |    4 ++--
+ 59 files changed, 109 insertions(+), 124 deletions(-)
 
 diff --git a/arch/microblaze/kernel/of_platform.c b/arch/microblaze/kernel/of_platform.c
-index da79edf..fb28661 100644
+index fb28661..80c9c49 100644
 --- a/arch/microblaze/kernel/of_platform.c
 +++ b/arch/microblaze/kernel/of_platform.c
-@@ -26,17 +26,6 @@
- #include <linux/topology.h>
- #include <asm/atomic.h>
- 
--struct bus_type of_platform_bus_type = {
--       .uevent	= of_device_uevent,
--};
--EXPORT_SYMBOL(of_platform_bus_type);
--
--static int __init of_bus_driver_init(void)
--{
--	return of_bus_type_init(&of_platform_bus_type, "of_platform");
--}
--postcore_initcall(of_bus_driver_init);
--
- /*
-  * The list of OF IDs below is used for matching bus types in the
-  * system whose devices are to be exposed as of_platform_devices.
-diff --git a/arch/microblaze/kernel/setup.c b/arch/microblaze/kernel/setup.c
-index 17c98db..f5f7688 100644
---- a/arch/microblaze/kernel/setup.c
-+++ b/arch/microblaze/kernel/setup.c
-@@ -213,15 +213,9 @@ static struct notifier_block dflt_plat_bus_notifier = {
- 	.priority = INT_MAX,
- };
- 
--static struct notifier_block dflt_of_bus_notifier = {
--	.notifier_call = dflt_bus_notify,
--	.priority = INT_MAX,
--};
--
- static int __init setup_bus_notifier(void)
+@@ -57,8 +57,7 @@ struct of_device *of_find_device_by_node(struct device_node *np)
  {
- 	bus_register_notifier(&platform_bus_type, &dflt_plat_bus_notifier);
--	bus_register_notifier(&of_platform_bus_type, &dflt_of_bus_notifier);
+ 	struct device *dev;
  
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index e7fe218..c9fffd4 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -82,17 +82,9 @@ static struct notifier_block ppc_swiotlb_plat_bus_notifier = {
- 	.priority = 0,
- };
- 
--static struct notifier_block ppc_swiotlb_of_bus_notifier = {
--	.notifier_call = ppc_swiotlb_bus_notify,
--	.priority = 0,
--};
--
- int __init swiotlb_setup_bus_notifier(void)
- {
- 	bus_register_notifier(&platform_bus_type,
- 			      &ppc_swiotlb_plat_bus_notifier);
--	bus_register_notifier(&of_platform_bus_type,
--			      &ppc_swiotlb_of_bus_notifier);
--
- 	return 0;
- }
+-	dev = bus_find_device(&of_platform_bus_type,
+-			      NULL, np, of_dev_node_match);
++	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
+ 	if (dev)
+ 		return to_of_device(dev);
+ 	return NULL;
 diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 4e0a2f7..d3497cd 100644
+index d3497cd..b093d4b 100644
 --- a/arch/powerpc/kernel/of_platform.c
 +++ b/arch/powerpc/kernel/of_platform.c
-@@ -52,18 +52,6 @@ const struct of_device_id of_default_bus_ids[] = {
- 	{},
- };
- 
--struct bus_type of_platform_bus_type = {
--       .uevent	= of_device_uevent,
--};
--EXPORT_SYMBOL(of_platform_bus_type);
--
--static int __init of_bus_driver_init(void)
--{
--	return of_bus_type_init(&of_platform_bus_type, "of_platform");
--}
--
--postcore_initcall(of_bus_driver_init);
--
- static int of_dev_node_match(struct device *dev, void *data)
+@@ -61,8 +61,7 @@ struct of_device *of_find_device_by_node(struct device_node *np)
  {
- 	return to_of_device(dev)->dev.of_node == data;
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 5e4d852..ba6fc87 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -701,16 +701,9 @@ static struct notifier_block ppc_dflt_plat_bus_notifier = {
- 	.priority = INT_MAX,
- };
+ 	struct device *dev;
  
--static struct notifier_block ppc_dflt_of_bus_notifier = {
--	.notifier_call = ppc_dflt_bus_notify,
--	.priority = INT_MAX,
--};
+-	dev = bus_find_device(&of_platform_bus_type,
+-			      NULL, np, of_dev_node_match);
++	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
+ 	if (dev)
+ 		return to_of_device(dev);
+ 	return NULL;
+diff --git a/arch/sparc/include/asm/of_platform.h b/arch/sparc/include/asm/of_platform.h
+index 90da990..26540dd 100644
+--- a/arch/sparc/include/asm/of_platform.h
++++ b/arch/sparc/include/asm/of_platform.h
+@@ -13,6 +13,4 @@
+  *
+  */
+ 
+-#define of_bus_type	of_platform_bus_type	/* for compatibility */
 -
- static int __init setup_bus_notifier(void)
+ #endif
+diff --git a/arch/sparc/include/asm/parport.h b/arch/sparc/include/asm/parport.h
+index 0c34a87..4891fbc 100644
+--- a/arch/sparc/include/asm/parport.h
++++ b/arch/sparc/include/asm/parport.h
+@@ -243,9 +243,7 @@ static struct of_platform_driver ecpp_driver = {
+ 
+ static int parport_pc_find_nonpci_ports(int autoirq, int autodma)
  {
- 	bus_register_notifier(&platform_bus_type, &ppc_dflt_plat_bus_notifier);
--	bus_register_notifier(&of_platform_bus_type, &ppc_dflt_of_bus_notifier);
+-	of_register_driver(&ecpp_driver, &of_bus_type);
 -
+-	return 0;
++	return of_register_platform_driver(&ecpp_driver);
+ }
+ 
+ #endif /* !(_ASM_SPARC64_PARPORT_H */
+diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
+index b27476c..c471251 100644
+--- a/arch/sparc/kernel/apc.c
++++ b/arch/sparc/kernel/apc.c
+@@ -184,7 +184,7 @@ static struct of_platform_driver apc_driver = {
+ 
+ static int __init apc_init(void)
+ {
+-	return of_register_driver(&apc_driver, &of_bus_type);
++	return of_register_platform_driver(&apc_driver);
+ }
+ 
+ /* This driver is not critical to the boot process
+diff --git a/arch/sparc/kernel/auxio_64.c b/arch/sparc/kernel/auxio_64.c
+index ddc8412..46ba58a 100644
+--- a/arch/sparc/kernel/auxio_64.c
++++ b/arch/sparc/kernel/auxio_64.c
+@@ -142,7 +142,7 @@ static struct of_platform_driver auxio_driver = {
+ 
+ static int __init auxio_init(void)
+ {
+-	return of_register_driver(&auxio_driver, &of_platform_bus_type);
++	return of_register_platform_driver(&auxio_driver);
+ }
+ 
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
+index 434335f..b6080c3 100644
+--- a/arch/sparc/kernel/central.c
++++ b/arch/sparc/kernel/central.c
+@@ -265,8 +265,8 @@ static struct of_platform_driver fhc_driver = {
+ 
+ static int __init sunfire_init(void)
+ {
+-	(void) of_register_driver(&fhc_driver, &of_platform_bus_type);
+-	(void) of_register_driver(&clock_board_driver, &of_platform_bus_type);
++	(void) of_register_platform_driver(&fhc_driver);
++	(void) of_register_platform_driver(&clock_board_driver);
  	return 0;
  }
  
-diff --git a/arch/powerpc/platforms/cell/beat_iommu.c b/arch/powerpc/platforms/cell/beat_iommu.c
-index 39d361c..beec405 100644
---- a/arch/powerpc/platforms/cell/beat_iommu.c
-+++ b/arch/powerpc/platforms/cell/beat_iommu.c
-@@ -108,7 +108,7 @@ static int __init celleb_init_iommu(void)
- 	celleb_init_direct_mapping();
- 	set_pci_dma_ops(&dma_direct_ops);
- 	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
--	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
-+	bus_register_notifier(&platform_bus_type, &celleb_of_bus_notifier);
+diff --git a/arch/sparc/kernel/chmc.c b/arch/sparc/kernel/chmc.c
+index 870cb65..04bb7df 100644
+--- a/arch/sparc/kernel/chmc.c
++++ b/arch/sparc/kernel/chmc.c
+@@ -848,7 +848,7 @@ static int __init us3mc_init(void)
+ 	ret = register_dimm_printer(us3mc_dimm_printer);
  
- 	return 0;
- }
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 4326b73..eb474df 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -1204,7 +1204,7 @@ static int __init cell_iommu_init(void)
- 	/* Register callbacks on OF platform device addition/removal
- 	 * to handle linking them to the right DMA operations
- 	 */
--	bus_register_notifier(&of_platform_bus_type, &cell_of_bus_notifier);
-+	bus_register_notifier(&platform_bus_type, &cell_of_bus_notifier);
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 31acd3b..1398bc4 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -20,12 +20,7 @@
- 
- #include <asm/prom.h>
- 
--/*
-- * These functions provide the necessary setup for the mv64x60 drivers.
-- * These drivers are unusual in that they work on both the MIPS and PowerPC
-- * architectures.  Because of that, the drivers do not support the normal
-- * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
-- */
-+/* These functions provide the necessary setup for the mv64x60 drivers. */
- 
- static struct of_device_id __initdata of_mv64x60_devices[] = {
- 	{ .compatible = "marvell,mv64306-devctrl", },
-diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
-index 331de91..75fc9d5 100644
---- a/arch/sparc/kernel/of_device_32.c
-+++ b/arch/sparc/kernel/of_device_32.c
-@@ -424,7 +424,7 @@ build_resources:
- 	build_device_resources(op, parent);
- 
- 	op->dev.parent = parent;
--	op->dev.bus = &of_platform_bus_type;
-+	op->dev.bus = &platform_bus_type;
- 	if (!parent)
- 		dev_set_name(&op->dev, "root");
- 	else
-@@ -452,30 +452,19 @@ static void __init scan_tree(struct device_node *dp, struct device *parent)
+ 	if (!ret) {
+-		ret = of_register_driver(&us3mc_driver, &of_bus_type);
++		ret = of_register_platform_driver(&us3mc_driver);
+ 		if (ret)
+ 			unregister_dimm_printer(us3mc_dimm_printer);
+ 	}
+@@ -859,7 +859,7 @@ static void __exit us3mc_cleanup(void)
+ {
+ 	if (us3mc_platform()) {
+ 		unregister_dimm_printer(us3mc_dimm_printer);
+-		of_unregister_driver(&us3mc_driver);
++		of_unregister_platform_driver(&us3mc_driver);
  	}
  }
  
--static void __init scan_of_devices(void)
-+static int __init scan_of_devices(void)
- {
- 	struct device_node *root = of_find_node_by_path("/");
- 	struct of_device *parent;
- 
- 	parent = scan_one_device(root, NULL);
- 	if (!parent)
--		return;
-+		return 0;
- 
- 	scan_tree(root->child, &parent->dev);
-+	return 0;
- }
--
--static int __init of_bus_driver_init(void)
--{
--	int err;
--
--	err = of_bus_type_init(&of_platform_bus_type, "of");
--	if (!err)
--		scan_of_devices();
--
--	return err;
--}
--
--postcore_initcall(of_bus_driver_init);
-+postcore_initcall(scan_of_devices);
- 
- static int __init of_debug(char *str)
- {
-diff --git a/arch/sparc/kernel/of_device_64.c b/arch/sparc/kernel/of_device_64.c
-index 5e8cbb9..9743d1d 100644
---- a/arch/sparc/kernel/of_device_64.c
-+++ b/arch/sparc/kernel/of_device_64.c
-@@ -667,7 +667,7 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
- 		op->archdata.irqs[i] = build_one_device_irq(op, parent, op->archdata.irqs[i]);
- 
- 	op->dev.parent = parent;
--	op->dev.bus = &of_platform_bus_type;
-+	op->dev.bus = &platform_bus_type;
- 	if (!parent)
- 		dev_set_name(&op->dev, "root");
- 	else
-@@ -695,30 +695,19 @@ static void __init scan_tree(struct device_node *dp, struct device *parent)
- 	}
- }
- 
--static void __init scan_of_devices(void)
-+static int __init scan_of_devices(void)
- {
- 	struct device_node *root = of_find_node_by_path("/");
- 	struct of_device *parent;
- 
- 	parent = scan_one_device(root, NULL);
- 	if (!parent)
--		return;
-+		return 0;
- 
- 	scan_tree(root->child, &parent->dev);
-+	return 0;
- }
--
--static int __init of_bus_driver_init(void)
--{
--	int err;
--
--	err = of_bus_type_init(&of_platform_bus_type, "of");
--	if (!err)
--		scan_of_devices();
--
--	return err;
--}
--
--postcore_initcall(of_bus_driver_init);
-+postcore_initcall(scan_of_devices);
- 
- static int __init of_debug(char *str)
- {
 diff --git a/arch/sparc/kernel/of_device_common.c b/arch/sparc/kernel/of_device_common.c
-index 016c947..01f380c 100644
+index 01f380c..2a5c639 100644
 --- a/arch/sparc/kernel/of_device_common.c
 +++ b/arch/sparc/kernel/of_device_common.c
-@@ -64,9 +64,6 @@ void of_propagate_archdata(struct of_device *bus)
- 	}
+@@ -21,7 +21,7 @@ static int node_match(struct device *dev, void *data)
+ 
+ struct of_device *of_find_device_by_node(struct device_node *dp)
+ {
+-	struct device *dev = bus_find_device(&of_platform_bus_type, NULL,
++	struct device *dev = bus_find_device(&platform_bus_type, NULL,
+ 					     dp, node_match);
+ 
+ 	if (dev)
+diff --git a/arch/sparc/kernel/pci_fire.c b/arch/sparc/kernel/pci_fire.c
+index 51cfa09..885f10b 100644
+--- a/arch/sparc/kernel/pci_fire.c
++++ b/arch/sparc/kernel/pci_fire.c
+@@ -518,7 +518,7 @@ static struct of_platform_driver fire_driver = {
+ 
+ static int __init fire_init(void)
+ {
+-	return of_register_driver(&fire_driver, &of_bus_type);
++	return of_register_platform_driver(&fire_driver);
  }
  
--struct bus_type of_platform_bus_type;
--EXPORT_SYMBOL(of_platform_bus_type);
--
- static void get_cells(struct device_node *dp, int *addrc, int *sizec)
+ subsys_initcall(fire_init);
+diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
+index 93011e6..71550a7 100644
+--- a/arch/sparc/kernel/pci_psycho.c
++++ b/arch/sparc/kernel/pci_psycho.c
+@@ -612,7 +612,7 @@ static struct of_platform_driver psycho_driver = {
+ 
+ static int __init psycho_init(void)
  {
- 	if (addrc)
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 6a9b3dd..ec22578 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -636,6 +636,12 @@ static struct device_attribute platform_dev_attrs[] = {
- static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct platform_device	*pdev = to_platform_device(dev);
-+	int rc;
-+
-+	/* Some devices have extra OF data and an OF-style MODALIAS */
-+	rc = of_device_uevent(dev,env);
-+	if (rc != -ENODEV)
-+		return rc;
- 
- 	add_uevent_var(env, "MODALIAS=%s%s", PLATFORM_MODULE_PREFIX,
- 		(pdev->id_entry) ? pdev->id_entry->name : pdev->name);
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 5282a20..12a44b4 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -104,6 +104,11 @@ int of_device_register(struct of_device *ofdev)
- 
- 	device_initialize(&ofdev->dev);
- 
-+	/* name and id have to be set so that the platform bus doesn't get
-+	 * confused on matching */
-+	ofdev->name = dev_name(&ofdev->dev);
-+	ofdev->id = -1;
-+
- 	/* device_add will assume that this device is on the same node as
- 	 * the parent. If there is no parent defined, set the node
- 	 * explicitly */
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 9d3d932..712dfd8 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -20,6 +20,54 @@
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+
-+static int platform_driver_probe_shim(struct platform_device *pdev)
-+{
-+	struct platform_driver *pdrv;
-+	struct of_platform_driver *ofpdrv;
-+	const struct of_device_id *match;
-+
-+	pdrv = container_of(pdev->dev.driver, struct platform_driver, driver);
-+	ofpdrv = container_of(pdrv, struct of_platform_driver, platform_driver);
-+	match = of_match_device(pdev->dev.driver->of_match_table, &pdev->dev);
-+	return ofpdrv->probe(pdev, match);
-+}
-+
-+static void platform_driver_shutdown_shim(struct platform_device *pdev)
-+{
-+	struct platform_driver *pdrv;
-+	struct of_platform_driver *ofpdrv;
-+
-+	pdrv = container_of(pdev->dev.driver, struct platform_driver, driver);
-+	ofpdrv = container_of(pdrv, struct of_platform_driver, platform_driver);
-+	ofpdrv->shutdown(pdev);
-+}
-+
-+/**
-+ * of_register_platform_driver
-+ */
-+int of_register_platform_driver(struct of_platform_driver *drv)
-+{
-+	/* setup of_platform_driver to platform_driver adaptors */
-+	drv->platform_driver.driver = drv->driver;
-+	if (drv->probe)
-+		drv->platform_driver.probe = platform_driver_probe_shim;
-+	drv->platform_driver.remove = drv->remove;
-+	if (drv->shutdown)
-+		drv->platform_driver.shutdown = platform_driver_shutdown_shim;
-+	drv->platform_driver.suspend = drv->suspend;
-+	drv->platform_driver.resume = drv->resume;
-+
-+	return platform_driver_register(&drv->platform_driver);
-+}
-+EXPORT_SYMBOL(of_register_platform_driver);
-+
-+void of_unregister_platform_driver(struct of_platform_driver *drv)
-+{
-+	platform_driver_unregister(&drv->platform_driver);
-+}
-+EXPORT_SYMBOL(of_unregister_platform_driver);
- 
- #if defined(CONFIG_PPC_DCR)
- #include <asm/dcr.h>
-@@ -392,16 +440,29 @@ int of_bus_type_init(struct bus_type *bus, const char *name)
- 
- int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
- {
--	drv->driver.bus = bus;
-+	/*
-+	 * Temporary: of_platform_bus used to be distinct from the platform
-+	 * bus.  It isn't anymore, and so drivers on the platform bus need
-+	 * to be registered in a special way.
-+	 *
-+	 * After all of_platform_bus_type drivers are converted to
-+	 * platform_drivers, this exception can be removed.
-+	 */
-+	if (bus == &platform_bus_type)
-+		return of_register_platform_driver(drv);
- 
- 	/* register with core */
-+	drv->driver.bus = bus;
- 	return driver_register(&drv->driver);
+-	return of_register_driver(&psycho_driver, &of_bus_type);
++	return of_register_platform_driver(&psycho_driver);
  }
- EXPORT_SYMBOL(of_register_driver);
  
- void of_unregister_driver(struct of_platform_driver *drv)
+ subsys_initcall(psycho_init);
+diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
+index 99c6dba..2d7bf30 100644
+--- a/arch/sparc/kernel/pci_sabre.c
++++ b/arch/sparc/kernel/pci_sabre.c
+@@ -606,7 +606,7 @@ static struct of_platform_driver sabre_driver = {
+ 
+ static int __init sabre_init(void)
  {
--	driver_unregister(&drv->driver);
-+	if (drv->driver.bus == &platform_bus_type)
-+		of_unregister_platform_driver(drv);
-+	else
-+		driver_unregister(&drv->driver);
+-	return of_register_driver(&sabre_driver, &of_bus_type);
++	return of_register_platform_driver(&sabre_driver);
  }
- EXPORT_SYMBOL(of_unregister_driver);
  
-@@ -548,7 +609,7 @@ struct of_device *of_platform_device_create(struct device_node *np,
- 	dev->archdata.dma_mask = 0xffffffffUL;
- #endif
- 	dev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
--	dev->dev.bus = &of_platform_bus_type;
-+	dev->dev.bus = &platform_bus_type;
+ subsys_initcall(sabre_init);
+diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
+index 9041dae..04f29c4 100644
+--- a/arch/sparc/kernel/pci_schizo.c
++++ b/arch/sparc/kernel/pci_schizo.c
+@@ -1501,7 +1501,7 @@ static struct of_platform_driver schizo_driver = {
  
- 	/* We do not fill the DMA ops for platform devices by default.
- 	 * This is currently the responsibility of the platform code
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index 7d27f5a..8cd1fe7 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -65,6 +65,12 @@ static inline int of_driver_match_device(struct device *dev,
+ static int __init schizo_init(void)
+ {
+-	return of_register_driver(&schizo_driver, &of_bus_type);
++	return of_register_platform_driver(&schizo_driver);
+ }
+ 
+ subsys_initcall(schizo_init);
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index a24af6f..18ee8b6 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -1019,7 +1019,7 @@ static struct of_platform_driver pci_sun4v_driver = {
+ 
+ static int __init pci_sun4v_init(void)
+ {
+-	return of_register_driver(&pci_sun4v_driver, &of_bus_type);
++	return of_register_platform_driver(&pci_sun4v_driver);
+ }
+ 
+ subsys_initcall(pci_sun4v_init);
+diff --git a/arch/sparc/kernel/pmc.c b/arch/sparc/kernel/pmc.c
+index 9589d8b..a4c73ed 100644
+--- a/arch/sparc/kernel/pmc.c
++++ b/arch/sparc/kernel/pmc.c
+@@ -89,7 +89,7 @@ static struct of_platform_driver pmc_driver = {
+ 
+ static int __init pmc_init(void)
+ {
+-	return of_register_driver(&pmc_driver, &of_bus_type);
++	return of_register_platform_driver(&pmc_driver);
+ }
+ 
+ /* This driver is not critical to the boot process
+diff --git a/arch/sparc/kernel/power.c b/arch/sparc/kernel/power.c
+index 1cfee57..abc194e 100644
+--- a/arch/sparc/kernel/power.c
++++ b/arch/sparc/kernel/power.c
+@@ -70,7 +70,7 @@ static struct of_platform_driver power_driver = {
+ 
+ static int __init power_init(void)
+ {
+-	return of_register_driver(&power_driver, &of_platform_bus_type);
++	return of_register_platform_driver(&power_driver);
+ }
+ 
+ device_initcall(power_init);
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index e404b06..5dc2021 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -189,7 +189,7 @@ static struct of_platform_driver clock_driver = {
+ /* Probe for the mostek real time clock chip. */
+ static int __init clock_init(void)
+ {
+-	return of_register_driver(&clock_driver, &of_platform_bus_type);
++	return of_register_platform_driver(&clock_driver);
+ }
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+  * be before device_initcall() because things like the RTC driver
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index 21e9fca..2423b33 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -586,9 +586,9 @@ static int __init clock_init(void)
+ 	if (tlb_type == hypervisor)
+ 		return platform_device_register(&rtc_sun4v_device);
+ 
+-	(void) of_register_driver(&rtc_driver, &of_platform_bus_type);
+-	(void) of_register_driver(&mostek_driver, &of_platform_bus_type);
+-	(void) of_register_driver(&bq4802_driver, &of_platform_bus_type);
++	(void) of_register_platform_driver(&rtc_driver);
++	(void) of_register_platform_driver(&mostek_driver);
++	(void) of_register_platform_driver(&bq4802_driver);
+ 
  	return 0;
  }
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index 38df87b..b7385e0 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2795,7 +2795,7 @@ static int __init fore200e_module_init(void)
+ 	printk(FORE200E "FORE Systems 200E-series ATM driver - version " FORE200E_VERSION "\n");
  
-+static inline int of_device_uevent(struct device *dev,
-+				   struct kobj_uevent_env *env)
-+{
-+	return -ENODEV;
-+}
-+
- #endif /* CONFIG_OF_DEVICE */
+ #ifdef CONFIG_SBUS
+-	err = of_register_driver(&fore200e_sba_driver, &of_bus_type);
++	err = of_register_platform_driver(&fore200e_sba_driver);
+ 	if (err)
+ 		return err;
+ #endif
+@@ -2806,7 +2806,7 @@ static int __init fore200e_module_init(void)
  
- #endif /* _LINUX_OF_DEVICE_H */
+ #ifdef CONFIG_SBUS
+ 	if (err)
+-		of_unregister_driver(&fore200e_sba_driver);
++		of_unregister_platform_driver(&fore200e_sba_driver);
+ #endif
+ 
+ 	return err;
+@@ -2818,7 +2818,7 @@ static void __exit fore200e_module_cleanup(void)
+ 	pci_unregister_driver(&fore200e_pca_driver);
+ #endif
+ #ifdef CONFIG_SBUS
+-	of_unregister_driver(&fore200e_sba_driver);
++	of_unregister_platform_driver(&fore200e_sba_driver);
+ #endif
+ }
+ 
+diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
+index 0f9cbf1..d8a4ca8 100644
+--- a/drivers/char/hw_random/n2-drv.c
++++ b/drivers/char/hw_random/n2-drv.c
+@@ -762,12 +762,12 @@ static struct of_platform_driver n2rng_driver = {
+ 
+ static int __init n2rng_init(void)
+ {
+-	return of_register_driver(&n2rng_driver, &of_bus_type);
++	return of_register_platform_driver(&n2rng_driver);
+ }
+ 
+ static void __exit n2rng_exit(void)
+ {
+-	of_unregister_driver(&n2rng_driver);
++	of_unregister_platform_driver(&n2rng_driver);
+ }
+ 
+ module_init(n2rng_init);
+diff --git a/drivers/crypto/n2_core.c b/drivers/crypto/n2_core.c
+index 23163fd..34ac8ac 100644
+--- a/drivers/crypto/n2_core.c
++++ b/drivers/crypto/n2_core.c
+@@ -2070,20 +2070,20 @@ static struct of_platform_driver n2_mau_driver = {
+ 
+ static int __init n2_init(void)
+ {
+-	int err = of_register_driver(&n2_crypto_driver, &of_bus_type);
++	int err = of_register_platform_driver(&n2_crypto_driver);
+ 
+ 	if (!err) {
+-		err = of_register_driver(&n2_mau_driver, &of_bus_type);
++		err = of_register_platform_driver(&n2_mau_driver);
+ 		if (err)
+-			of_unregister_driver(&n2_crypto_driver);
++			of_unregister_platform_driver(&n2_crypto_driver);
+ 	}
+ 	return err;
+ }
+ 
+ static void __exit n2_exit(void)
+ {
+-	of_unregister_driver(&n2_mau_driver);
+-	of_unregister_driver(&n2_crypto_driver);
++	of_unregister_platform_driver(&n2_mau_driver);
++	of_unregister_platform_driver(&n2_crypto_driver);
+ }
+ 
+ module_init(n2_init);
+diff --git a/drivers/hwmon/ultra45_env.c b/drivers/hwmon/ultra45_env.c
+index 5da5942..8964326 100644
+--- a/drivers/hwmon/ultra45_env.c
++++ b/drivers/hwmon/ultra45_env.c
+@@ -311,12 +311,12 @@ static struct of_platform_driver env_driver = {
+ 
+ static int __init env_init(void)
+ {
+-	return of_register_driver(&env_driver, &of_bus_type);
++	return of_register_platform_driver(&env_driver);
+ }
+ 
+ static void __exit env_exit(void)
+ {
+-	of_unregister_driver(&env_driver);
++	of_unregister_platform_driver(&env_driver);
+ }
+ 
+ module_init(env_init);
+diff --git a/drivers/input/misc/sparcspkr.c b/drivers/input/misc/sparcspkr.c
+index 1dacae4..f3bb92e 100644
+--- a/drivers/input/misc/sparcspkr.c
++++ b/drivers/input/misc/sparcspkr.c
+@@ -353,14 +353,12 @@ static struct of_platform_driver grover_beep_driver = {
+ 
+ static int __init sparcspkr_init(void)
+ {
+-	int err = of_register_driver(&bbc_beep_driver,
+-				     &of_platform_bus_type);
++	int err = of_register_platform_driver(&bbc_beep_driver);
+ 
+ 	if (!err) {
+-		err = of_register_driver(&grover_beep_driver,
+-					 &of_platform_bus_type);
++		err = of_register_platform_driver(&grover_beep_driver);
+ 		if (err)
+-			of_unregister_driver(&bbc_beep_driver);
++			of_unregister_platform_driver(&bbc_beep_driver);
+ 	}
+ 
+ 	return err;
+@@ -368,8 +366,8 @@ static int __init sparcspkr_init(void)
+ 
+ static void __exit sparcspkr_exit(void)
+ {
+-	of_unregister_driver(&bbc_beep_driver);
+-	of_unregister_driver(&grover_beep_driver);
++	of_unregister_platform_driver(&bbc_beep_driver);
++	of_unregister_platform_driver(&grover_beep_driver);
+ }
+ 
+ module_init(sparcspkr_init);
+diff --git a/drivers/input/serio/i8042-sparcio.h b/drivers/input/serio/i8042-sparcio.h
+index c7d50ff..cb2a24b 100644
+--- a/drivers/input/serio/i8042-sparcio.h
++++ b/drivers/input/serio/i8042-sparcio.h
+@@ -116,8 +116,7 @@ static int __init i8042_platform_init(void)
+ 		if (!kbd_iobase)
+ 			return -ENODEV;
+ 	} else {
+-		int err = of_register_driver(&sparc_i8042_driver,
+-					     &of_bus_type);
++		int err = of_register_platform_driver(&sparc_i8042_driver);
+ 		if (err)
+ 			return err;
+ 
+@@ -141,7 +140,7 @@ static inline void i8042_platform_exit(void)
+ 	struct device_node *root = of_find_node_by_path("/");
+ 
+ 	if (strcmp(root->name, "SUNW,JavaStation-1"))
+-		of_unregister_driver(&sparc_i8042_driver);
++		of_unregister_platform_driver(&sparc_i8042_driver);
+ }
+ 
+ #else /* !CONFIG_PCI */
+diff --git a/drivers/mtd/maps/sun_uflash.c b/drivers/mtd/maps/sun_uflash.c
+index 0391c25..8984236 100644
+--- a/drivers/mtd/maps/sun_uflash.c
++++ b/drivers/mtd/maps/sun_uflash.c
+@@ -160,12 +160,12 @@ static struct of_platform_driver uflash_driver = {
+ 
+ static int __init uflash_init(void)
+ {
+-	return of_register_driver(&uflash_driver, &of_bus_type);
++	return of_register_platform_driver(&uflash_driver);
+ }
+ 
+ static void __exit uflash_exit(void)
+ {
+-	of_unregister_driver(&uflash_driver);
++	of_unregister_platform_driver(&uflash_driver);
+ }
+ 
+ module_init(uflash_init);
+diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
+index b150c10..f10476f 100644
+--- a/drivers/net/ibm_newemac/core.c
++++ b/drivers/net/ibm_newemac/core.c
+@@ -2339,11 +2339,11 @@ static int __devinit emac_wait_deps(struct emac_instance *dev)
+ 		deps[EMAC_DEP_MDIO_IDX].phandle = dev->mdio_ph;
+ 	if (dev->blist && dev->blist > emac_boot_list)
+ 		deps[EMAC_DEP_PREV_IDX].phandle = 0xffffffffu;
+-	bus_register_notifier(&of_platform_bus_type, &emac_of_bus_notifier);
++	bus_register_notifier(&platform_bus_type, &emac_of_bus_notifier);
+ 	wait_event_timeout(emac_probe_wait,
+ 			   emac_check_deps(dev, deps),
+ 			   EMAC_PROBE_DEP_TIMEOUT);
+-	bus_unregister_notifier(&of_platform_bus_type, &emac_of_bus_notifier);
++	bus_unregister_notifier(&platform_bus_type, &emac_of_bus_notifier);
+ 	err = emac_check_deps(dev, deps) ? 0 : -ENODEV;
+ 	for (i = 0; i < EMAC_DEP_COUNT; i++) {
+ 		if (deps[i].node)
+diff --git a/drivers/net/myri_sbus.c b/drivers/net/myri_sbus.c
+index 370d3c1..04e552a 100644
+--- a/drivers/net/myri_sbus.c
++++ b/drivers/net/myri_sbus.c
+@@ -1172,12 +1172,12 @@ static struct of_platform_driver myri_sbus_driver = {
+ 
+ static int __init myri_sbus_init(void)
+ {
+-	return of_register_driver(&myri_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&myri_sbus_driver);
+ }
+ 
+ static void __exit myri_sbus_exit(void)
+ {
+-	of_unregister_driver(&myri_sbus_driver);
++	of_unregister_platform_driver(&myri_sbus_driver);
+ }
+ 
+ module_init(myri_sbus_init);
+diff --git a/drivers/net/niu.c b/drivers/net/niu.c
+index f6ecf61..8cb2b30 100644
+--- a/drivers/net/niu.c
++++ b/drivers/net/niu.c
+@@ -10251,14 +10251,14 @@ static int __init niu_init(void)
+ 	niu_debug = netif_msg_init(debug, NIU_MSG_DEFAULT);
+ 
+ #ifdef CONFIG_SPARC64
+-	err = of_register_driver(&niu_of_driver, &of_bus_type);
++	err = of_register_platform_driver(&niu_of_driver);
+ #endif
+ 
+ 	if (!err) {
+ 		err = pci_register_driver(&niu_pci_driver);
+ #ifdef CONFIG_SPARC64
+ 		if (err)
+-			of_unregister_driver(&niu_of_driver);
++			of_unregister_platform_driver(&niu_of_driver);
+ #endif
+ 	}
+ 
+@@ -10269,7 +10269,7 @@ static void __exit niu_exit(void)
+ {
+ 	pci_unregister_driver(&niu_pci_driver);
+ #ifdef CONFIG_SPARC64
+-	of_unregister_driver(&niu_of_driver);
++	of_unregister_platform_driver(&niu_of_driver);
+ #endif
+ }
+ 
+diff --git a/drivers/net/sunbmac.c b/drivers/net/sunbmac.c
+index 0b10d24..09c071b 100644
+--- a/drivers/net/sunbmac.c
++++ b/drivers/net/sunbmac.c
+@@ -1301,12 +1301,12 @@ static struct of_platform_driver bigmac_sbus_driver = {
+ 
+ static int __init bigmac_init(void)
+ {
+-	return of_register_driver(&bigmac_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&bigmac_sbus_driver);
+ }
+ 
+ static void __exit bigmac_exit(void)
+ {
+-	of_unregister_driver(&bigmac_sbus_driver);
++	of_unregister_platform_driver(&bigmac_sbus_driver);
+ }
+ 
+ module_init(bigmac_init);
+diff --git a/drivers/net/sunhme.c b/drivers/net/sunhme.c
+index 0a63ebe..eec443f 100644
+--- a/drivers/net/sunhme.c
++++ b/drivers/net/sunhme.c
+@@ -3304,7 +3304,7 @@ static int __init happy_meal_sbus_init(void)
+ {
+ 	int err;
+ 
+-	err = of_register_driver(&hme_sbus_driver, &of_bus_type);
++	err = of_register_platform_driver(&hme_sbus_driver);
+ 	if (!err)
+ 		err = quattro_sbus_register_irqs();
+ 
+@@ -3313,7 +3313,7 @@ static int __init happy_meal_sbus_init(void)
+ 
+ static void happy_meal_sbus_exit(void)
+ {
+-	of_unregister_driver(&hme_sbus_driver);
++	of_unregister_platform_driver(&hme_sbus_driver);
+ 	quattro_sbus_free_irqs();
+ 
+ 	while (qfe_sbus_list) {
+diff --git a/drivers/net/sunlance.c b/drivers/net/sunlance.c
+index c6bfdad..ee364fa 100644
+--- a/drivers/net/sunlance.c
++++ b/drivers/net/sunlance.c
+@@ -1558,12 +1558,12 @@ static struct of_platform_driver sunlance_sbus_driver = {
+ /* Find all the lance cards on the system and initialize them */
+ static int __init sparc_lance_init(void)
+ {
+-	return of_register_driver(&sunlance_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&sunlance_sbus_driver);
+ }
+ 
+ static void __exit sparc_lance_exit(void)
+ {
+-	of_unregister_driver(&sunlance_sbus_driver);
++	of_unregister_platform_driver(&sunlance_sbus_driver);
+ }
+ 
+ module_init(sparc_lance_init);
+diff --git a/drivers/net/sunqe.c b/drivers/net/sunqe.c
+index 4465174..5f84a5d 100644
+--- a/drivers/net/sunqe.c
++++ b/drivers/net/sunqe.c
+@@ -988,12 +988,12 @@ static struct of_platform_driver qec_sbus_driver = {
+ 
+ static int __init qec_init(void)
+ {
+-	return of_register_driver(&qec_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&qec_sbus_driver);
+ }
+ 
+ static void __exit qec_exit(void)
+ {
+-	of_unregister_driver(&qec_sbus_driver);
++	of_unregister_platform_driver(&qec_sbus_driver);
+ 
+ 	while (root_qec_dev) {
+ 		struct sunqec *next = root_qec_dev->next_module;
+diff --git a/drivers/parport/parport_sunbpp.c b/drivers/parport/parport_sunbpp.c
+index 3cdfe96..210a644 100644
+--- a/drivers/parport/parport_sunbpp.c
++++ b/drivers/parport/parport_sunbpp.c
+@@ -393,12 +393,12 @@ static struct of_platform_driver bpp_sbus_driver = {
+ 
+ static int __init parport_sunbpp_init(void)
+ {
+-	return of_register_driver(&bpp_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&bpp_sbus_driver);
+ }
+ 
+ static void __exit parport_sunbpp_exit(void)
+ {
+-	of_unregister_driver(&bpp_sbus_driver);
++	of_unregister_platform_driver(&bpp_sbus_driver);
+ }
+ 
+ MODULE_AUTHOR("Derrick J Brashear");
+diff --git a/drivers/sbus/char/bbc_i2c.c b/drivers/sbus/char/bbc_i2c.c
+index 40d7a1f..3e89c31 100644
+--- a/drivers/sbus/char/bbc_i2c.c
++++ b/drivers/sbus/char/bbc_i2c.c
+@@ -425,12 +425,12 @@ static struct of_platform_driver bbc_i2c_driver = {
+ 
+ static int __init bbc_i2c_init(void)
+ {
+-	return of_register_driver(&bbc_i2c_driver, &of_bus_type);
++	return of_register_platform_driver(&bbc_i2c_driver);
+ }
+ 
+ static void __exit bbc_i2c_exit(void)
+ {
+-	of_unregister_driver(&bbc_i2c_driver);
++	of_unregister_platform_driver(&bbc_i2c_driver);
+ }
+ 
+ module_init(bbc_i2c_init);
+diff --git a/drivers/sbus/char/display7seg.c b/drivers/sbus/char/display7seg.c
+index 7baf1b6..8fd362e 100644
+--- a/drivers/sbus/char/display7seg.c
++++ b/drivers/sbus/char/display7seg.c
+@@ -277,12 +277,12 @@ static struct of_platform_driver d7s_driver = {
+ 
+ static int __init d7s_init(void)
+ {
+-	return of_register_driver(&d7s_driver, &of_bus_type);
++	return of_register_platform_driver(&d7s_driver);
+ }
+ 
+ static void __exit d7s_exit(void)
+ {
+-	of_unregister_driver(&d7s_driver);
++	of_unregister_platform_driver(&d7s_driver);
+ }
+ 
+ module_init(d7s_init);
+diff --git a/drivers/sbus/char/envctrl.c b/drivers/sbus/char/envctrl.c
+index c8166ec..2c76f70 100644
+--- a/drivers/sbus/char/envctrl.c
++++ b/drivers/sbus/char/envctrl.c
+@@ -1142,12 +1142,12 @@ static struct of_platform_driver envctrl_driver = {
+ 
+ static int __init envctrl_init(void)
+ {
+-	return of_register_driver(&envctrl_driver, &of_bus_type);
++	return of_register_platform_driver(&envctrl_driver);
+ }
+ 
+ static void __exit envctrl_exit(void)
+ {
+-	of_unregister_driver(&envctrl_driver);
++	of_unregister_platform_driver(&envctrl_driver);
+ }
+ 
+ module_init(envctrl_init);
+diff --git a/drivers/sbus/char/flash.c b/drivers/sbus/char/flash.c
+index 368d662..d79f386 100644
+--- a/drivers/sbus/char/flash.c
++++ b/drivers/sbus/char/flash.c
+@@ -218,12 +218,12 @@ static struct of_platform_driver flash_driver = {
+ 
+ static int __init flash_init(void)
+ {
+-	return of_register_driver(&flash_driver, &of_bus_type);
++	return of_register_platform_driver(&flash_driver);
+ }
+ 
+ static void __exit flash_cleanup(void)
+ {
+-	of_unregister_driver(&flash_driver);
++	of_unregister_platform_driver(&flash_driver);
+ }
+ 
+ module_init(flash_init);
+diff --git a/drivers/sbus/char/uctrl.c b/drivers/sbus/char/uctrl.c
+index b8b40e9..57f0612 100644
+--- a/drivers/sbus/char/uctrl.c
++++ b/drivers/sbus/char/uctrl.c
+@@ -437,12 +437,12 @@ static struct of_platform_driver uctrl_driver = {
+ 
+ static int __init uctrl_init(void)
+ {
+-	return of_register_driver(&uctrl_driver, &of_bus_type);
++	return of_register_platform_driver(&uctrl_driver);
+ }
+ 
+ static void __exit uctrl_exit(void)
+ {
+-	of_unregister_driver(&uctrl_driver);
++	of_unregister_platform_driver(&uctrl_driver);
+ }
+ 
+ module_init(uctrl_init);
+diff --git a/drivers/scsi/qlogicpti.c b/drivers/scsi/qlogicpti.c
+index 3f5b541..53d7ed0 100644
+--- a/drivers/scsi/qlogicpti.c
++++ b/drivers/scsi/qlogicpti.c
+@@ -1467,12 +1467,12 @@ static struct of_platform_driver qpti_sbus_driver = {
+ 
+ static int __init qpti_init(void)
+ {
+-	return of_register_driver(&qpti_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&qpti_sbus_driver);
+ }
+ 
+ static void __exit qpti_exit(void)
+ {
+-	of_unregister_driver(&qpti_sbus_driver);
++	of_unregister_platform_driver(&qpti_sbus_driver);
+ }
+ 
+ MODULE_DESCRIPTION("QlogicISP SBUS driver");
+diff --git a/drivers/scsi/sun_esp.c b/drivers/scsi/sun_esp.c
+index ddc221a..89ba6fe 100644
+--- a/drivers/scsi/sun_esp.c
++++ b/drivers/scsi/sun_esp.c
+@@ -644,12 +644,12 @@ static struct of_platform_driver esp_sbus_driver = {
+ 
+ static int __init sunesp_init(void)
+ {
+-	return of_register_driver(&esp_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&esp_sbus_driver);
+ }
+ 
+ static void __exit sunesp_exit(void)
+ {
+-	of_unregister_driver(&esp_sbus_driver);
++	of_unregister_platform_driver(&esp_sbus_driver);
+ }
+ 
+ MODULE_DESCRIPTION("Sun ESP SCSI driver");
+diff --git a/drivers/serial/sunhv.c b/drivers/serial/sunhv.c
+index 36e2448..a779e22 100644
+--- a/drivers/serial/sunhv.c
++++ b/drivers/serial/sunhv.c
+@@ -644,12 +644,12 @@ static int __init sunhv_init(void)
+ 	if (tlb_type != hypervisor)
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&hv_driver, &of_bus_type);
++	return of_register_platform_driver(&hv_driver);
+ }
+ 
+ static void __exit sunhv_exit(void)
+ {
+-	of_unregister_driver(&hv_driver);
++	of_unregister_platform_driver(&hv_driver);
+ }
+ 
+ module_init(sunhv_init);
+diff --git a/drivers/serial/sunsab.c b/drivers/serial/sunsab.c
+index 0a7dd68..9845fb1 100644
+--- a/drivers/serial/sunsab.c
++++ b/drivers/serial/sunsab.c
+@@ -1130,12 +1130,12 @@ static int __init sunsab_init(void)
+ 		}
+ 	}
+ 
+-	return of_register_driver(&sab_driver, &of_bus_type);
++	return of_register_platform_driver(&sab_driver);
+ }
+ 
+ static void __exit sunsab_exit(void)
+ {
+-	of_unregister_driver(&sab_driver);
++	of_unregister_platform_driver(&sab_driver);
+ 	if (sunsab_reg.nr) {
+ 		sunserial_unregister_minors(&sunsab_reg, sunsab_reg.nr);
+ 	}
+diff --git a/drivers/serial/sunsu.c b/drivers/serial/sunsu.c
+index 56d891a..c2bcd15 100644
+--- a/drivers/serial/sunsu.c
++++ b/drivers/serial/sunsu.c
+@@ -1581,7 +1581,7 @@ static int __init sunsu_init(void)
+ 			return err;
+ 	}
+ 
+-	err = of_register_driver(&su_driver, &of_bus_type);
++	err = of_register_platform_driver(&su_driver);
+ 	if (err && num_uart)
+ 		sunserial_unregister_minors(&sunsu_reg, num_uart);
+ 
+diff --git a/drivers/serial/sunzilog.c b/drivers/serial/sunzilog.c
+index fcbe20d..d1e6bcb 100644
+--- a/drivers/serial/sunzilog.c
++++ b/drivers/serial/sunzilog.c
+@@ -1576,7 +1576,7 @@ static int __init sunzilog_init(void)
+ 			goto out_free_tables;
+ 	}
+ 
+-	err = of_register_driver(&zs_driver, &of_bus_type);
++	err = of_register_platform_driver(&zs_driver);
+ 	if (err)
+ 		goto out_unregister_uart;
+ 
+@@ -1604,7 +1604,7 @@ out:
+ 	return err;
+ 
+ out_unregister_driver:
+-	of_unregister_driver(&zs_driver);
++	of_unregister_platform_driver(&zs_driver);
+ 
+ out_unregister_uart:
+ 	if (num_sunzilog) {
+@@ -1619,7 +1619,7 @@ out_free_tables:
+ 
+ static void __exit sunzilog_exit(void)
+ {
+-	of_unregister_driver(&zs_driver);
++	of_unregister_platform_driver(&zs_driver);
+ 
+ 	if (zilog_irq != -1) {
+ 		struct uart_sunzilog_port *up = sunzilog_irq_chain;
+diff --git a/drivers/video/bw2.c b/drivers/video/bw2.c
+index 09f1b9b..c779663 100644
+--- a/drivers/video/bw2.c
++++ b/drivers/video/bw2.c
+@@ -390,12 +390,12 @@ static int __init bw2_init(void)
+ 	if (fb_get_options("bw2fb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&bw2_driver, &of_bus_type);
++	return of_register_platform_driver(&bw2_driver);
+ }
+ 
+ static void __exit bw2_exit(void)
+ {
+-	of_unregister_driver(&bw2_driver);
++	of_unregister_platform_driver(&bw2_driver);
+ }
+ 
+ module_init(bw2_init);
+diff --git a/drivers/video/cg14.c b/drivers/video/cg14.c
+index e5dc224..d09fde8 100644
+--- a/drivers/video/cg14.c
++++ b/drivers/video/cg14.c
+@@ -610,12 +610,12 @@ static int __init cg14_init(void)
+ 	if (fb_get_options("cg14fb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&cg14_driver, &of_bus_type);
++	return of_register_platform_driver(&cg14_driver);
+ }
+ 
+ static void __exit cg14_exit(void)
+ {
+-	of_unregister_driver(&cg14_driver);
++	of_unregister_platform_driver(&cg14_driver);
+ }
+ 
+ module_init(cg14_init);
+diff --git a/drivers/video/cg3.c b/drivers/video/cg3.c
+index 558d73a..64aa298 100644
+--- a/drivers/video/cg3.c
++++ b/drivers/video/cg3.c
+@@ -477,12 +477,12 @@ static int __init cg3_init(void)
+ 	if (fb_get_options("cg3fb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&cg3_driver, &of_bus_type);
++	return of_register_platform_driver(&cg3_driver);
+ }
+ 
+ static void __exit cg3_exit(void)
+ {
+-	of_unregister_driver(&cg3_driver);
++	of_unregister_platform_driver(&cg3_driver);
+ }
+ 
+ module_init(cg3_init);
+diff --git a/drivers/video/cg6.c b/drivers/video/cg6.c
+index 480d761..2389a71 100644
+--- a/drivers/video/cg6.c
++++ b/drivers/video/cg6.c
+@@ -870,12 +870,12 @@ static int __init cg6_init(void)
+ 	if (fb_get_options("cg6fb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&cg6_driver, &of_bus_type);
++	return of_register_platform_driver(&cg6_driver);
+ }
+ 
+ static void __exit cg6_exit(void)
+ {
+-	of_unregister_driver(&cg6_driver);
++	of_unregister_platform_driver(&cg6_driver);
+ }
+ 
+ module_init(cg6_init);
+diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
+index 95c0227..f6ecfab 100644
+--- a/drivers/video/ffb.c
++++ b/drivers/video/ffb.c
+@@ -1067,12 +1067,12 @@ static int __init ffb_init(void)
+ 	if (fb_get_options("ffb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&ffb_driver, &of_bus_type);
++	return of_register_platform_driver(&ffb_driver);
+ }
+ 
+ static void __exit ffb_exit(void)
+ {
+-	of_unregister_driver(&ffb_driver);
++	of_unregister_platform_driver(&ffb_driver);
+ }
+ 
+ module_init(ffb_init);
+diff --git a/drivers/video/leo.c b/drivers/video/leo.c
+index 9e8bf7d..ad67763 100644
+--- a/drivers/video/leo.c
++++ b/drivers/video/leo.c
+@@ -677,12 +677,12 @@ static int __init leo_init(void)
+ 	if (fb_get_options("leofb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&leo_driver, &of_bus_type);
++	return of_register_platform_driver(&leo_driver);
+ }
+ 
+ static void __exit leo_exit(void)
+ {
+-	of_unregister_driver(&leo_driver);
++	of_unregister_platform_driver(&leo_driver);
+ }
+ 
+ module_init(leo_init);
+diff --git a/drivers/video/p9100.c b/drivers/video/p9100.c
+index 6552751..688b055 100644
+--- a/drivers/video/p9100.c
++++ b/drivers/video/p9100.c
+@@ -367,12 +367,12 @@ static int __init p9100_init(void)
+ 	if (fb_get_options("p9100fb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&p9100_driver, &of_bus_type);
++	return of_register_platform_driver(&p9100_driver);
+ }
+ 
+ static void __exit p9100_exit(void)
+ {
+-	of_unregister_driver(&p9100_driver);
++	of_unregister_platform_driver(&p9100_driver);
+ }
+ 
+ module_init(p9100_init);
+diff --git a/drivers/video/sunxvr1000.c b/drivers/video/sunxvr1000.c
+index 489b44e..7288934 100644
+--- a/drivers/video/sunxvr1000.c
++++ b/drivers/video/sunxvr1000.c
+@@ -213,12 +213,12 @@ static int __init gfb_init(void)
+ 	if (fb_get_options("gfb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&gfb_driver, &of_bus_type);
++	return of_register_platform_driver(&gfb_driver);
+ }
+ 
+ static void __exit gfb_exit(void)
+ {
+-	of_unregister_driver(&gfb_driver);
++	of_unregister_platform_driver(&gfb_driver);
+ }
+ 
+ module_init(gfb_init);
+diff --git a/drivers/video/tcx.c b/drivers/video/tcx.c
+index cc039b3..f375e0d 100644
+--- a/drivers/video/tcx.c
++++ b/drivers/video/tcx.c
+@@ -526,12 +526,12 @@ static int __init tcx_init(void)
+ 	if (fb_get_options("tcxfb", NULL))
+ 		return -ENODEV;
+ 
+-	return of_register_driver(&tcx_driver, &of_bus_type);
++	return of_register_platform_driver(&tcx_driver);
+ }
+ 
+ static void __exit tcx_exit(void)
+ {
+-	of_unregister_driver(&tcx_driver);
++	of_unregister_platform_driver(&tcx_driver);
+ }
+ 
+ module_init(tcx_init);
+diff --git a/drivers/watchdog/cpwd.c b/drivers/watchdog/cpwd.c
+index 8c03fd7..30a2512 100644
+--- a/drivers/watchdog/cpwd.c
++++ b/drivers/watchdog/cpwd.c
+@@ -688,12 +688,12 @@ static struct of_platform_driver cpwd_driver = {
+ 
+ static int __init cpwd_init(void)
+ {
+-	return of_register_driver(&cpwd_driver, &of_bus_type);
++	return of_register_platform_driver(&cpwd_driver);
+ }
+ 
+ static void __exit cpwd_exit(void)
+ {
+-	of_unregister_driver(&cpwd_driver);
++	of_unregister_platform_driver(&cpwd_driver);
+ }
+ 
+ module_init(cpwd_init);
+diff --git a/drivers/watchdog/riowd.c b/drivers/watchdog/riowd.c
+index 5dceedd..4082b4a 100644
+--- a/drivers/watchdog/riowd.c
++++ b/drivers/watchdog/riowd.c
+@@ -250,12 +250,12 @@ static struct of_platform_driver riowd_driver = {
+ 
+ static int __init riowd_init(void)
+ {
+-	return of_register_driver(&riowd_driver, &of_bus_type);
++	return of_register_platform_driver(&riowd_driver);
+ }
+ 
+ static void __exit riowd_exit(void)
+ {
+-	of_unregister_driver(&riowd_driver);
++	of_unregister_platform_driver(&riowd_driver);
+ }
+ 
+ module_init(riowd_init);
 diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index a51fd30..133ecf3 100644
+index 133ecf3..429513a 100644
 --- a/include/linux/of_platform.h
 +++ b/include/linux/of_platform.h
-@@ -17,19 +17,19 @@
- #include <linux/mod_devicetable.h>
- #include <linux/pm.h>
+@@ -19,12 +19,6 @@
  #include <linux/of_device.h>
-+#include <linux/platform_device.h>
+ #include <linux/platform_device.h>
  
- /*
-- * The of_platform_bus_type is a bus type used by drivers that do not
-- * attach to a macio or similar bus but still use OF probing
-- * mechanism
-+ * of_platform_bus_type isn't it's own bus anymore.  It's now just an alias
-+ * for the platform bus.
-  */
--extern struct bus_type of_platform_bus_type;
-+#define of_platform_bus_type platform_bus_type
- 
+-/*
+- * of_platform_bus_type isn't it's own bus anymore.  It's now just an alias
+- * for the platform bus.
+- */
+-#define of_platform_bus_type platform_bus_type
+-
  extern const struct of_device_id of_default_bus_ids[];
  
  /*
-  * An of_platform_driver driver is attached to a basic of_device on
-- * the "platform bus" (of_platform_bus_type).
-+ * the "platform bus" (platform_bus_type).
-  */
- struct of_platform_driver
+diff --git a/sound/sparc/amd7930.c b/sound/sparc/amd7930.c
+index 43c63d4..9eb1a4e 100644
+--- a/sound/sparc/amd7930.c
++++ b/sound/sparc/amd7930.c
+@@ -1075,7 +1075,7 @@ static struct of_platform_driver amd7930_sbus_driver = {
+ 
+ static int __init amd7930_init(void)
  {
-@@ -42,6 +42,7 @@ struct of_platform_driver
- 	int	(*shutdown)(struct of_device* dev);
+-	return of_register_driver(&amd7930_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&amd7930_sbus_driver);
+ }
  
- 	struct device_driver	driver;
-+	struct platform_driver	platform_driver;
- };
- #define	to_of_platform_driver(drv) \
- 	container_of(drv,struct of_platform_driver, driver)
-@@ -51,14 +52,8 @@ extern int of_register_driver(struct of_platform_driver *drv,
- extern void of_unregister_driver(struct of_platform_driver *drv);
+ static void __exit amd7930_exit(void)
+@@ -1092,7 +1092,7 @@ static void __exit amd7930_exit(void)
  
- /* Platform drivers register/unregister */
--static inline int of_register_platform_driver(struct of_platform_driver *drv)
--{
--	return of_register_driver(drv, &of_platform_bus_type);
--}
--static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
--{
--	of_unregister_driver(drv);
--}
-+extern int of_register_platform_driver(struct of_platform_driver *drv);
-+extern void of_unregister_platform_driver(struct of_platform_driver *drv);
+ 	amd7930_list = NULL;
  
- extern struct of_device *of_device_alloc(struct device_node *np,
- 					 const char *bus_id,
+-	of_unregister_driver(&amd7930_sbus_driver);
++	of_unregister_platform_driver(&amd7930_sbus_driver);
+ }
+ 
+ module_init(amd7930_init);
+diff --git a/sound/sparc/cs4231.c b/sound/sparc/cs4231.c
+index f7f05c2..68570ee 100644
+--- a/sound/sparc/cs4231.c
++++ b/sound/sparc/cs4231.c
+@@ -2120,12 +2120,12 @@ static struct of_platform_driver cs4231_driver = {
+ 
+ static int __init cs4231_init(void)
+ {
+-	return of_register_driver(&cs4231_driver, &of_bus_type);
++	return of_register_platform_driver(&cs4231_driver);
+ }
+ 
+ static void __exit cs4231_exit(void)
+ {
+-	of_unregister_driver(&cs4231_driver);
++	of_unregister_platform_driver(&cs4231_driver);
+ }
+ 
+ module_init(cs4231_init);
+diff --git a/sound/sparc/dbri.c b/sound/sparc/dbri.c
+index 491ce71..c421901 100644
+--- a/sound/sparc/dbri.c
++++ b/sound/sparc/dbri.c
+@@ -2699,12 +2699,12 @@ static struct of_platform_driver dbri_sbus_driver = {
+ /* Probe for the dbri chip and then attach the driver. */
+ static int __init dbri_init(void)
+ {
+-	return of_register_driver(&dbri_sbus_driver, &of_bus_type);
++	return of_register_platform_driver(&dbri_sbus_driver);
+ }
+ 
+ static void __exit dbri_exit(void)
+ {
+-	of_unregister_driver(&dbri_sbus_driver);
++	of_unregister_platform_driver(&dbri_sbus_driver);
+ }
+ 
+ module_init(dbri_init);
