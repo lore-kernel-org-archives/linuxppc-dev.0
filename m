@@ -1,21 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 2697EB6F01
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 11:45:33 +1000 (EST)
-Date: Tue, 20 Jul 2010 18:45:48 -0700 (PDT)
-Message-Id: <20100720.184548.250802682.davem@davemloft.net>
-To: mikpe@it.uu.se
-Subject: Re: [PATCH] math-emu: correct test for downshifting fraction in
-	_FP_FROM_INT()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-References: <19524.51858.992299.119315@pilspetsen.it.uu.se>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
+	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 9916EB70AF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 21 Jul 2010 12:59:37 +1000 (EST)
+Received: by gxk26 with SMTP id 26so3636216gxk.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue, 20 Jul 2010 19:59:36 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <201007211037566748594@gmail.com>
+References: <201007211037566748594@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 20 Jul 2010 20:59:15 -0600
+Message-ID: <AANLkTilQ9KtfZRjIZiuZ09hq1l5WdbPC1Ux2LkG6WKGG@mail.gmail.com>
+Subject: Re: one more question about dts
+To: hacklu <embedway.test@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Mon, 19 Jul 2010 23:58:42 +0200
-
-> The kernel's math-emu code contains a macro _FP_FROM_INT() which is
-> used to convert an integer to a raw normalized floating-point value.
-> It does this basically in three steps:
- ...
-> The fix is simple: the exponent comparison used to determine if the
-> fraction should be downshifted must be "<=" not "<".
-> 
-> I'm sending a kernel module to test this as a reply to this message.
-> There are also SPARC user-space test cases in the GCC bug entry.
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-
-Applied and I'll make sure this gets into -stable too.
-
-Thanks!
+T24gVHVlLCBKdWwgMjAsIDIwMTAgYXQgODozNyBQTSwgaGFja2x1IDxlbWJlZHdheS50ZXN0QGdt
+YWlsLmNvbT4gd3JvdGU6Cj4gbXmgYm9hcmSgaXMgbXBjODI0NyxhbmSgaaB3cml0ZSBpdCdzIGR0
+cyBieSCgoGltaXRhdGluZyBtcGM4MjcyJ3MgZHRzCj4KPiBob3cgY2FuIGkgc2V0IHRoZaBsb2Nh
+bGJ1cyBhZGRyZXNzPwo+Cj4gbG9jYWxidXNAZjAwMTAxMDCgewo+IKCgoKCgoKCgoKCgoKCgoKBj
+b21wYXRpYmxloD2gImZzbCxtcGM4MjcyLWxvY2FsYnVzIiwKPiCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoCJmc2wscHEyLWxvY2FsYnVzIjsKPiCgoKCgoKCgoKCgoKCgoKCgI2FkZHJlc3Mt
+Y2VsbHOgPaA8Mj47Cj4goKCgoKCgoKCgoKCgoKCgoCNzaXplLWNlbGxzoD2gPDE+Owo+IKCgoKCg
+oKCgoKCgoKCgoKByZWegPaA8ZjAwMTAxMDCgNDA+Owo+IKCgoKCgoKCgoKCgoKCgoKByYW5nZXOg
+PaA8Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgMKAwoDcwMDAwMDAwoDEwMDAw
+MDCgICNteSBmbGFzaDEKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAxoDCgNzEw
+MDAwMDCgMTAwMDAwMKAgI215IGZsYXNoMgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoDIgP6AgPz8/Pz8/P6CgoCA/Pz8/Pz8/oKAgI2hvdyB0byBzZXQgaXQKPiBmb3IgYm9hcmQt
+Y29udHJvbD8KPiCgM6AgP6AgPz8/P6CgoKCgoKAgPz8/P6CgoKCgoKCgIyBob3cgdG8gc2V0IGl0
+IGZvcgo+IHBjaV9waWOgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoD47CgpUaGVzZSB2YWx1ZXMgcmVm
+bGVjdCB0aGUgYmFzZSBhZGRyZXNzIGFuZCB0cmFuc2xhdGlvbiByYW5nZSBvZiBlYWNoCmNoaXAg
+c2VsZWN0LiAgSG93IGFyZSB5b3VyIGhhcmR3YXJlIGNoaXBzIHNlbGVjdHMgY29uZmlndXJlZC4K
+CklmIEkgYXNzdW1lIHRoYXQgY3MyIGlzIGNvbmZpZ3VyZWQgZm9yIDB4YzEwMDAwMDAgdG8gMHhj
+MTAwZmZmZiwgYW5kCmNzMyBpcyBjb25maWd1cmVkIGZvciAweGMyMDAwMDAwIHRvIDB4YzIwM2Zm
+ZmYsIHRoZW4geW91ciByYW5nZXMKcHJvcGVydHkgd291bGQgYmU6CgogICAgICAgICAgICAgICAg
+cmFuZ2VzID0gPCAwIDAgNzAwMDAwMDAgMTAwMDAwMCAgI215IGZsYXNoMQogICAgICAgICAgICAg
+ICAgICAgICAgICAgICAxIDAgNzEwMDAwMDAgMTAwMDAwMCAgI215IGZsYXNoMgogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAyIDAgYzEwMDAwMDAgMTAwMDAKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgMyAwIGMyMDAwMDAwIDQwMDAwID47CgoKPgo+IC4uLi4KPiCgYm9hcmQtY29udHJvbEAy
+LDCgewo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHJlZ6A9oDwxoDCgMjA+OwoKSWYgdGhpcyBp
+cyBhdHRhY2hlZCB0byBjaGlwc2VsZWN0ICMyLCB0aGVuIHRoaXMgc2hvdWxkIGJlICJyZWcgPSA8
+MiAwIDIwPjsiCgo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGNvbXBhdGlibGWgPaAiZnNsLG1w
+YzgyNzJhZHMtYmNzciI7Cj4goKCgoKCgoKCgoKCgoKCgoH07Cj4goKCgoKCgoKCgoKCgoKCgoFBD
+SV9QSUM6oGludGVycnVwdC1jb250cm9sbGVyQDMsMKB7Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgY29tcGF0aWJsZaA9oCJmc2wsbXBjODI3MmFkcy1wY2ktcGljIiwKPiCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgImZzbCxwcTJhZHMtcGNpLXBpYyI7Cj4goKCgoKCgoKCg
+oKCgoKCgoKCgoKCgoKCgI2ludGVycnVwdC1jZWxsc6A9oDwxPjsKPiCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKBpbnRlcnJ1cHQtY29udHJvbGxlcjsKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBy
+ZWegPaA8M6AwoDg+Owo+IKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoGludGVycnVwdC1wYXJlbnSg
+PaA8JlBJQz47Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgaW50ZXJydXB0c6A9oDwxNKA4PjsK
+PiCgoKCgoKCgoKCgoKCgoKCgfTsKPgo+IHRoYW5rcyBmb3IgYW5zd2VyaW5nfgo+IDIwMTAtMDct
+MjEKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IGhhY2tsdQoKCgotLSAKR3Jh
+bnQgTGlrZWx5LCBCLlNjLiwgUC5FbmcuClNlY3JldCBMYWIgVGVjaG5vbG9naWVzIEx0ZC4K
