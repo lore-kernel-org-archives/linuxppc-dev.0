@@ -1,15 +1,15 @@
 Return-Path: <brad@bradleyehughes.com>
-Received: from mail-qw0-f42.google.com (mail-qw0-f42.google.com
-	[209.85.216.42]) by ozlabs.org (Postfix) with ESMTP id D89371007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 08:04:25 +1000 (EST)
-Received: by qwb8 with SMTP id 8so2675638qwb.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 15:04:23 -0700 (PDT)
+Received: from mail-qy0-f177.google.com (mail-qy0-f177.google.com
+	[209.85.216.177]) by ozlabs.org (Postfix) with ESMTP id 64EDC10098A
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 08:04:32 +1000 (EST)
+Received: by qyk1 with SMTP id 1so3512140qyk.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 15:04:30 -0700 (PDT)
 MIME-Version: 1.0
 Sender: brad@bradleyehughes.com
 From: Bradley Hughes <bhughes@silicontkx.com>
-Date: Wed, 21 Jul 2010 18:04:00 -0400
-Message-ID: <AANLkTimMb_PshxAIDvbfFdbCqHrlY13Qiz9g2eZ1vw1E@mail.gmail.com>
-Subject: [PATCH v2 0/2] Adding DTS for the STx GP3-SSA MPC8555 board
+Date: Wed, 21 Jul 2010 18:04:06 -0400
+Message-ID: <AANLkTinaSEyVowG4103g5q-FmFMMMHuXJUeCV2oiSu5-@mail.gmail.com>
+Subject: [PATCH v2 1/2] DTS: Change deprecated binding for 85xx-based boards
 To: Kumar Gala <galak@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
@@ -22,405 +22,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This version uses "fsl,mpc8555..." instead of "fsl,85..." notation.
-
-There is also an 8541 version of this board so DTS for this board
-is specific to the 8555 processor.
-
-Another patch is coming to fix-up other DTS that use old notation.
+The "fsl,85..." style compatible binding was to be deprecated
+some time ago.  This patch corrects existing occurrences of
+the incorrect binding.  The memory-controller and
+l2-cache-controller are the only affected nodes.
 
 Signed-off-by: Bradley Hughes <bhughes@silicontkx.com>
 ---
- arch/powerpc/boot/dts/stxssa8555.dts |  380 ++++++++++++++++++++++++++++++++++
- 1 files changed, 380 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/stxssa8555.dts
+ arch/powerpc/boot/dts/mpc8540ads.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8541cds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8544ds.dts  |    4 ++--
+ arch/powerpc/boot/dts/mpc8548cds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8555cds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8560ads.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8568mds.dts |    4 ++--
+ 7 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/stxssa8555.dts
-b/arch/powerpc/boot/dts/stxssa8555.dts
-new file mode 100644
-index 0000000..49efd44
---- /dev/null
-+++ b/arch/powerpc/boot/dts/stxssa8555.dts
-@@ -0,0 +1,380 @@
-+/*
-+ * MPC8555-based STx GP3 Device Tree Source
-+ *
-+ * Copyright 2006, 2008 Freescale Semiconductor Inc.
-+ *
-+ * Copyright 2010 Silicon Turnkey Express LLC.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "stx,gp3";
-+        compatible = "stx,gp3-8560", "stx,gp3";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+
-+	aliases {
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		pci0 = &pci0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,8555@0 {
-+			device_type = "cpu";
-+			reg = <0x0>;
-+			d-cache-line-size = <32>;	// 32 bytes
-+			i-cache-line-size = <32>;	// 32 bytes
-+			d-cache-size = <0x8000>;		// L1, 32K
-+			i-cache-size = <0x8000>;		// L1, 32K
-+			timebase-frequency = <0>;	//  33 MHz, from uboot
-+			bus-frequency = <0>;	// 166 MHz
-+			clock-frequency = <0>;	// 825 MHz, from uboot
-+			next-level-cache = <&L2>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x10000000>;
-+	};
-+
-+	soc8555@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		device_type = "soc";
-+		compatible = "simple-bus";
-+		ranges = <0x0 0xe0000000 0x100000>;
-+		bus-frequency = <0>;
-+
-+		ecm-law@0 {
-+			compatible = "fsl,ecm-law";
-+			reg = <0x0 0x1000>;
-+			fsl,num-laws = <8>;
-+		};
-+
-+		ecm@1000 {
-+			compatible = "fsl,mpc8555-ecm", "fsl,ecm";
-+			reg = <0x1000 0x1000>;
-+			interrupts = <17 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		memory-controller@2000 {
+diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts
+b/arch/powerpc/boot/dts/mpc8540ads.dts
+index 9dc2929..8d1bf0f 100644
+--- a/arch/powerpc/boot/dts/mpc8540ads.dts
++++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -71,14 +71,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8540-memory-controller";
++			compatible = "fsl,mpc8540-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8540-l2-cache-controller";
++			compatible = "fsl,mpc8540-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>;	// L2, 256K
+diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts
+b/arch/powerpc/boot/dts/mpc8541cds.dts
+index 9a3ad31..87ff965 100644
+--- a/arch/powerpc/boot/dts/mpc8541cds.dts
++++ b/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -71,14 +71,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8541-memory-controller";
++			compatible = "fsl,mpc8541-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8541-l2-cache-controller";
++			compatible = "fsl,mpc8541-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>;	// L2, 256K
+diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts
+b/arch/powerpc/boot/dts/mpc8544ds.dts
+index 98e94b4..d793968 100644
+--- a/arch/powerpc/boot/dts/mpc8544ds.dts
++++ b/arch/powerpc/boot/dts/mpc8544ds.dts
+@@ -73,14 +73,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8544-memory-controller";
++			compatible = "fsl,mpc8544-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8544-l2-cache-controller";
++			compatible = "fsl,mpc8544-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>;	// L2, 256K
+diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts
+b/arch/powerpc/boot/dts/mpc8548cds.dts
+index 0f52624..a17a557 100644
+--- a/arch/powerpc/boot/dts/mpc8548cds.dts
++++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -74,14 +74,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8548-memory-controller";
++			compatible = "fsl,mpc8548-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8548-l2-cache-controller";
++			compatible = "fsl,mpc8548-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x80000>;	// L2, 512K
+diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts
+b/arch/powerpc/boot/dts/mpc8555cds.dts
+index 065b2f0..5c5614f 100644
+--- a/arch/powerpc/boot/dts/mpc8555cds.dts
++++ b/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -71,14 +71,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8555-memory-controller";
 +			compatible = "fsl,mpc8555-memory-controller";
-+			reg = <0x2000 0x1000>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <18 2>;
-+		};
-+
-+		L2: l2-cache-controller@20000 {
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8555-l2-cache-controller";
 +			compatible = "fsl,mpc8555-l2-cache-controller";
-+			reg = <0x20000 0x1000>;
-+			cache-line-size = <32>;	// 32 bytes
-+			cache-size = <0x40000>;	// L2, 256K
-+			interrupt-parent = <&mpic>;
-+			interrupts = <16 2>;
-+		};
-+
-+		i2c@3000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			cell-index = <0>;
-+			compatible = "fsl-i2c";
-+			reg = <0x3000 0x100>;
-+			interrupts = <43 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		dma@21300 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8555-dma", "fsl,eloplus-dma";
-+			reg = <0x21300 0x4>;
-+			ranges = <0x0 0x21100 0x200>;
-+			cell-index = <0>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8555-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0x0 0x80>;
-+				cell-index = <0>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <20 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8555-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0x80 0x80>;
-+				cell-index = <1>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <21 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8555-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0x100 0x80>;
-+				cell-index = <2>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <22 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8555-dma-channel",
-+						"fsl,eloplus-dma-channel";
-+				reg = <0x180 0x80>;
-+				cell-index = <3>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <23 2>;
-+			};
-+		};
-+
-+		enet0: ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <0x24000 0x1000>;
-+			ranges = <0x0 0x24000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <29 2 30 2 34 2>;
-+			interrupt-parent = <&mpic>;
-+			tbi-handle = <&tbi0>;
-+			phy-handle = <&phy0>;
-+
-+			mdio@520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-mdio";
-+				reg = <0x520 0x20>;
-+
-+				phy0: ethernet-phy@2 {
-+					interrupt-parent = <&mpic>;
-+					interrupts = <5 1>;
-+					reg = <0x2>;
-+					device_type = "ethernet-phy";
-+				};
-+				phy1: ethernet-phy@4 {
-+					interrupt-parent = <&mpic>;
-+					interrupts = <5 1>;
-+					reg = <0x4>;
-+					device_type = "ethernet-phy";
-+				};
-+				tbi0: tbi-phy@11 {
-+					reg = <0x11>;
-+					device_type = "tbi-phy";
-+				};
-+			};
-+		};
-+
-+		enet1: ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			cell-index = <1>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <0x25000 0x1000>;
-+			ranges = <0x0 0x25000 0x1000>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <35 2 36 2 40 2>;
-+			interrupt-parent = <&mpic>;
-+			tbi-handle = <&tbi1>;
-+			phy-handle = <&phy1>;
-+
-+			mdio@520 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				compatible = "fsl,gianfar-tbi";
-+				reg = <0x520 0x20>;
-+
-+				tbi1: tbi-phy@11 {
-+					reg = <0x11>;
-+					device_type = "tbi-phy";
-+				};
-+			};
-+		};
-+
-+		serial0: serial@4500 {
-+			cell-index = <0>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4500 0x100>; 	// reg base, size
-+			clock-frequency = <0>; 	// should we fill in in uboot?
-+			interrupts = <42 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		serial1: serial@4600 {
-+			cell-index = <1>;
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <0x4600 0x100>;	// reg base, size
-+			clock-frequency = <0>; 	// should we fill in in uboot?
-+			interrupts = <42 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		crypto@30000 {
-+			compatible = "fsl,sec2.0";
-+			reg = <0x30000 0x10000>;
-+			interrupts = <45 2>;
-+			interrupt-parent = <&mpic>;
-+			fsl,num-channels = <4>;
-+			fsl,channel-fifo-len = <24>;
-+			fsl,exec-units-mask = <0x7e>;
-+			fsl,descriptor-types-mask = <0x01010ebf>;
-+		};
-+
-+		mpic: pic@40000 {
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0x40000 0x40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+		};
-+
-+		cpm@919c0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8555-cpm", "fsl,cpm2";
-+			reg = <0x919c0 0x30>;
-+			ranges;
-+
-+			muram@80000 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0x0 0x80000 0x10000>;
-+
-+				data@0 {
-+					compatible = "fsl,cpm-muram-data";
-+					reg = <0x0 0x2000 0x9000 0x1000>;
-+				};
-+			};
-+
-+			brg@919f0 {
-+				compatible = "fsl,mpc8555-brg",
-+				             "fsl,cpm2-brg",
-+				             "fsl,cpm-brg";
-+				reg = <0x919f0 0x10 0x915f0 0x10>;
-+			};
-+
-+			cpmpic: pic@90c00 {
-+				interrupt-controller;
-+				#address-cells = <0>;
-+				#interrupt-cells = <2>;
-+				interrupts = <46 2>;
-+				interrupt-parent = <&mpic>;
-+				reg = <0x90c00 0x80>;
-+				compatible = "fsl,mpc8555-cpm-pic", "fsl,cpm2-pic";
-+			};
-+		};
-+	};
-+
-+	pci0: pci@e0008000 {
-+		interrupt-map-mask = <0x1f800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+
-+			/* IDSEL 0x10 */
-+			0x8000 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0x8000 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0x8000 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0x8000 0x0 0x0 0x4 &mpic 0x3 0x1
-+
-+			/* IDSEL 0x11 */
-+			0x8800 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0x8800 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0x8800 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0x8800 0x0 0x0 0x4 &mpic 0x3 0x1
-+
-+			/* IDSEL 0x12 (Slot 1) */
-+			0x9000 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0x9000 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0x9000 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0x9000 0x0 0x0 0x4 &mpic 0x3 0x1
-+
-+			/* IDSEL 0x13 (Slot 2) */
-+			0x9800 0x0 0x0 0x1 &mpic 0x1 0x1
-+			0x9800 0x0 0x0 0x2 &mpic 0x2 0x1
-+			0x9800 0x0 0x0 0x3 &mpic 0x3 0x1
-+			0x9800 0x0 0x0 0x4 &mpic 0x0 0x1
-+
-+			/* IDSEL 0x14 (Slot 3) */
-+			0xa000 0x0 0x0 0x1 &mpic 0x2 0x1
-+			0xa000 0x0 0x0 0x2 &mpic 0x3 0x1
-+			0xa000 0x0 0x0 0x3 &mpic 0x0 0x1
-+			0xa000 0x0 0x0 0x4 &mpic 0x1 0x1
-+
-+			/* IDSEL 0x15 (Slot 4) */
-+			0xa800 0x0 0x0 0x1 &mpic 0x3 0x1
-+			0xa800 0x0 0x0 0x2 &mpic 0x0 0x1
-+			0xa800 0x0 0x0 0x3 &mpic 0x1 0x1
-+			0xa800 0x0 0x0 0x4 &mpic 0x2 0x1
-+
-+			/* Bus 1 (Tundra Bridge) */
-+			/* IDSEL 0x12 (ISA bridge) */
-+			0x19000 0x0 0x0 0x1 &mpic 0x0 0x1
-+			0x19000 0x0 0x0 0x2 &mpic 0x1 0x1
-+			0x19000 0x0 0x0 0x3 &mpic 0x2 0x1
-+			0x19000 0x0 0x0 0x4 &mpic 0x3 0x1>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <24 2>;
-+		bus-range = <0 0>;
-+		ranges = <0x2000000 0x0 0x80000000 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x0 0xe2000000 0x0 0x100000>;
-+		clock-frequency = <66666666>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xe0008000 0x1000>;
-+		compatible = "fsl,mpc8540-pci";
-+		device_type = "pci";
-+
-+		i8259@19000 {
-+			interrupt-controller;
-+			device_type = "interrupt-controller";
-+			reg = <0x19000 0x0 0x0 0x0 0x1>;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			compatible = "chrp,iic";
-+			interrupts = <1>;
-+			interrupt-parent = <&pci0>;
-+		};
-+	};
-+
-+	pci1: pci@e0009000 {
-+		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
-+		interrupt-map = <
-+
-+			/* IDSEL 0x15 */
-+			0xa800 0x0 0x0 0x1 &mpic 0xb 0x1
-+			0xa800 0x0 0x0 0x2 &mpic 0xb 0x1
-+			0xa800 0x0 0x0 0x3 &mpic 0xb 0x1
-+			0xa800 0x0 0x0 0x4 &mpic 0xb 0x1>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <25 2>;
-+		bus-range = <0 0>;
-+		ranges = <0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x0 0xe3000000 0x0 0x100000>;
-+		clock-frequency = <66666666>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <0xe0009000 0x1000>;
-+		compatible = "fsl,mpc8540-pci";
-+		device_type = "pci";
-+	};
-+};
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>;	// L2, 256K
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts
+b/arch/powerpc/boot/dts/mpc8560ads.dts
+index a5bb1ec..6e85e1b 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -71,14 +71,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8540-memory-controller";
++			compatible = "fsl,mpc8540-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8540-l2-cache-controller";
++			compatible = "fsl,mpc8540-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x40000>;	// L2, 256K
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts
+b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 92fb178..30cf0e0 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -124,14 +124,14 @@
+ 		};
+
+ 		memory-controller@2000 {
+-			compatible = "fsl,8568-memory-controller";
++			compatible = "fsl,mpc8568-memory-controller";
+ 			reg = <0x2000 0x1000>;
+ 			interrupt-parent = <&mpic>;
+ 			interrupts = <18 2>;
+ 		};
+
+ 		L2: l2-cache-controller@20000 {
+-			compatible = "fsl,8568-l2-cache-controller";
++			compatible = "fsl,mpc8568-l2-cache-controller";
+ 			reg = <0x20000 0x1000>;
+ 			cache-line-size = <32>;	// 32 bytes
+ 			cache-size = <0x80000>;	// L2, 512K
 -- 
 1.7.0.4
