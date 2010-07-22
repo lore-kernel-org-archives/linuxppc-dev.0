@@ -1,18 +1,18 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
-	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 7D002101403
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 08:30:19 +1000 (EST)
-Received: by pwi1 with SMTP id 1so3556233pwi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 15:30:18 -0700 (PDT)
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id F3BD3100B7C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 08:30:20 +1000 (EST)
+Received: by pwi1 with SMTP id 1so3556246pwi.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 15:30:20 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
-Subject: [PATCH 2/4] powerpc: remove references to of_device and to_of_device
+Subject: [PATCH 3/4] sparc: remove references to of_device and to_of_device
 To: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
 	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	benh@kernel.crashing.org, sparclinux@vger.kernel.org, davem@davemloft.net
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 22 Jul 2010 16:30:11 -0600
-Message-ID: <20100722223011.21557.77496.stgit@angua>
+Date: Thu, 22 Jul 2010 16:30:16 -0600
+Message-ID: <20100722223016.21557.40832.stgit@angua>
 In-Reply-To: <20100722222600.21557.34167.stgit@angua>
 References: <20100722222600.21557.34167.stgit@angua>
 MIME-Version: 1.0
@@ -31,465 +31,769 @@ replaces all references to it with platform_device.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/kernel/ibmebus.c                 |    8 ++++----
- arch/powerpc/kernel/of_platform.c             |    8 ++++----
- arch/powerpc/platforms/512x/clock.c           |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_gpio.c    |    6 +++---
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    4 ++--
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |    6 +++---
- arch/powerpc/platforms/82xx/ep8248e.c         |    4 ++--
- arch/powerpc/platforms/83xx/suspend.c         |    6 +++---
- arch/powerpc/platforms/cell/axon_msi.c        |    4 ++--
- arch/powerpc/platforms/pasemi/gpio_mdio.c     |    4 ++--
- arch/powerpc/sysdev/axonram.c                 |   12 ++++++------
- arch/powerpc/sysdev/bestcomm/bestcomm.c       |    7 +++----
- arch/powerpc/sysdev/fsl_msi.c                 |    4 ++--
- arch/powerpc/sysdev/fsl_pmc.c                 |    3 ++-
- arch/powerpc/sysdev/fsl_rio.c                 |    4 ++--
- arch/powerpc/sysdev/pmi.c                     |    6 +++---
- arch/powerpc/sysdev/qe_lib/qe.c               |    5 +++--
- 17 files changed, 47 insertions(+), 46 deletions(-)
+ arch/sparc/include/asm/prom.h        |    2 +-
+ arch/sparc/kernel/apc.c              |    4 ++--
+ arch/sparc/kernel/auxio_64.c         |    3 ++-
+ arch/sparc/kernel/central.c          |    4 ++--
+ arch/sparc/kernel/chmc.c             |   12 ++++++------
+ arch/sparc/kernel/ioport.c           |    2 +-
+ arch/sparc/kernel/of_device_32.c     |   14 +++++++-------
+ arch/sparc/kernel/of_device_64.c     |   16 ++++++++--------
+ arch/sparc/kernel/of_device_common.c |   14 +++++++-------
+ arch/sparc/kernel/pci.c              |    4 ++--
+ arch/sparc/kernel/pci_fire.c         |    4 ++--
+ arch/sparc/kernel/pci_impl.h         |    2 +-
+ arch/sparc/kernel/pci_psycho.c       |    6 +++---
+ arch/sparc/kernel/pci_sabre.c        |    6 +++---
+ arch/sparc/kernel/pci_schizo.c       |   10 +++++-----
+ arch/sparc/kernel/pci_sun4v.c        |    4 ++--
+ arch/sparc/kernel/pmc.c              |    2 +-
+ arch/sparc/kernel/power.c            |    2 +-
+ arch/sparc/kernel/prom_irqtrans.c    |    2 +-
+ arch/sparc/kernel/psycho_common.c    |    2 +-
+ arch/sparc/kernel/psycho_common.h    |    2 +-
+ arch/sparc/kernel/sbus.c             |   16 ++++++++--------
+ arch/sparc/kernel/time_32.c          |    2 +-
+ arch/sparc/kernel/time_64.c          |    6 +++---
+ arch/sparc/mm/io-unit.c              |    4 ++--
+ arch/sparc/mm/iommu.c                |    4 ++--
+ 26 files changed, 75 insertions(+), 74 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 21266ab..9b626cf 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -140,19 +140,19 @@ static struct dma_map_ops ibmebus_dma_ops = {
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index d35df5a..c82a7da 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -57,7 +57,7 @@ extern void of_iounmap(struct resource *res, void __iomem *base, unsigned long s
  
- static int ibmebus_match_path(struct device *dev, void *data)
+ /* These routines are here to provide compatibility with how powerpc
+  * handles IRQ mapping for OF device nodes.  We precompute and permanently
+- * register them in the of_device objects, whereas powerpc computes them
++ * register them in the platform_device objects, whereas powerpc computes them
+  * on request.
+  */
+ static inline void irq_dispose_mapping(unsigned int virq)
+diff --git a/arch/sparc/kernel/apc.c b/arch/sparc/kernel/apc.c
+index c471251..2c0046e 100644
+--- a/arch/sparc/kernel/apc.c
++++ b/arch/sparc/kernel/apc.c
+@@ -68,7 +68,7 @@ static void apc_swift_idle(void)
+ #endif
+ } 
+ 
+-static inline void apc_free(struct of_device *op)
++static inline void apc_free(struct platform_device *op)
  {
--	struct device_node *dn = to_of_device(dev)->dev.of_node;
-+	struct device_node *dn = to_platform_device(dev)->dev.of_node;
- 	return (dn->full_name &&
- 		(strcasecmp((char *)data, dn->full_name) == 0));
+ 	of_iounmap(&op->resource[0], regs, resource_size(&op->resource[0]));
+ }
+@@ -136,7 +136,7 @@ static const struct file_operations apc_fops = {
+ 
+ static struct miscdevice apc_miscdev = { APC_MINOR, APC_DEVNAME, &apc_fops };
+ 
+-static int __devinit apc_probe(struct of_device *op,
++static int __devinit apc_probe(struct platform_device *op,
+ 			       const struct of_device_id *match)
+ {
+ 	int err;
+diff --git a/arch/sparc/kernel/auxio_64.c b/arch/sparc/kernel/auxio_64.c
+index 46ba58a..3efd3c5 100644
+--- a/arch/sparc/kernel/auxio_64.c
++++ b/arch/sparc/kernel/auxio_64.c
+@@ -102,7 +102,8 @@ static struct of_device_id __initdata auxio_match[] = {
+ 
+ MODULE_DEVICE_TABLE(of, auxio_match);
+ 
+-static int __devinit auxio_probe(struct of_device *dev, const struct of_device_id *match)
++static int __devinit auxio_probe(struct platform_device *dev,
++				 const struct of_device_id *match)
+ {
+ 	struct device_node *dp = dev->dev.of_node;
+ 	unsigned long size;
+diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
+index b6080c3..cfa2624 100644
+--- a/arch/sparc/kernel/central.c
++++ b/arch/sparc/kernel/central.c
+@@ -59,7 +59,7 @@ static int __devinit clock_board_calc_nslots(struct clock_board *p)
+ 	}
  }
  
- static int ibmebus_match_node(struct device *dev, void *data)
+-static int __devinit clock_board_probe(struct of_device *op,
++static int __devinit clock_board_probe(struct platform_device *op,
+ 				       const struct of_device_id *match)
  {
--	return to_of_device(dev)->dev.of_node == data;
-+	return to_platform_device(dev)->dev.of_node == data;
+ 	struct clock_board *p = kzalloc(sizeof(*p), GFP_KERNEL);
+@@ -157,7 +157,7 @@ static struct of_platform_driver clock_board_driver = {
+ 	},
+ };
+ 
+-static int __devinit fhc_probe(struct of_device *op,
++static int __devinit fhc_probe(struct platform_device *op,
+ 			       const struct of_device_id *match)
+ {
+ 	struct fhc *p = kzalloc(sizeof(*p), GFP_KERNEL);
+diff --git a/arch/sparc/kernel/chmc.c b/arch/sparc/kernel/chmc.c
+index 04bb7df..08c466e 100644
+--- a/arch/sparc/kernel/chmc.c
++++ b/arch/sparc/kernel/chmc.c
+@@ -392,7 +392,7 @@ static void __devinit jbusmc_construct_dimm_groups(struct jbusmc *p,
+ 	}
  }
  
- static int ibmebus_create_device(struct device_node *dn)
+-static int __devinit jbusmc_probe(struct of_device *op,
++static int __devinit jbusmc_probe(struct platform_device *op,
+ 				  const struct of_device_id *match)
  {
--	struct of_device *dev;
-+	struct platform_device *dev;
- 	int ret;
- 
- 	dev = of_device_alloc(dn, NULL, &ibmebus_bus_device);
-@@ -298,7 +298,7 @@ static ssize_t ibmebus_store_remove(struct bus_type *bus,
- 
- 	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, path,
- 				   ibmebus_match_path))) {
--		of_device_unregister(to_of_device(dev));
-+		of_device_unregister(to_platform_device(dev));
- 
- 		kfree(path);
- 		return count;
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index b093d4b..84439d1 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -54,16 +54,16 @@ const struct of_device_id of_default_bus_ids[] = {
- 
- static int of_dev_node_match(struct device *dev, void *data)
- {
--	return to_of_device(dev)->dev.of_node == data;
-+	return to_platform_device(dev)->dev.of_node == data;
+ 	const struct linux_prom64_registers *mem_regs;
+@@ -690,7 +690,7 @@ static void chmc_fetch_decode_regs(struct chmc *p)
+ 				      chmc_read_mcreg(p, CHMCTRL_DECODE4));
  }
  
--struct of_device *of_find_device_by_node(struct device_node *np)
-+struct platform_device *of_find_device_by_node(struct device_node *np)
+-static int __devinit chmc_probe(struct of_device *op,
++static int __devinit chmc_probe(struct platform_device *op,
+ 				const struct of_device_id *match)
  {
- 	struct device *dev;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -765,7 +765,7 @@ out_free:
+ 	goto out;
+ }
  
- 	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
+-static int __devinit us3mc_probe(struct of_device *op,
++static int __devinit us3mc_probe(struct platform_device *op,
+ 				const struct of_device_id *match)
+ {
+ 	if (mc_type == MC_TYPE_SAFARI)
+@@ -775,21 +775,21 @@ static int __devinit us3mc_probe(struct of_device *op,
+ 	return -ENODEV;
+ }
+ 
+-static void __devexit chmc_destroy(struct of_device *op, struct chmc *p)
++static void __devexit chmc_destroy(struct platform_device *op, struct chmc *p)
+ {
+ 	list_del(&p->list);
+ 	of_iounmap(&op->resource[0], p->regs, 0x48);
+ 	kfree(p);
+ }
+ 
+-static void __devexit jbusmc_destroy(struct of_device *op, struct jbusmc *p)
++static void __devexit jbusmc_destroy(struct platform_device *op, struct jbusmc *p)
+ {
+ 	mc_list_del(&p->list);
+ 	of_iounmap(&op->resource[0], p->regs, JBUSMC_REGS_SIZE);
+ 	kfree(p);
+ }
+ 
+-static int __devexit us3mc_remove(struct of_device *op)
++static int __devexit us3mc_remove(struct platform_device *op)
+ {
+ 	void *p = dev_get_drvdata(&op->dev);
+ 
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index 703e4aa..41f7e4e 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -253,7 +253,7 @@ EXPORT_SYMBOL(sbus_set_sbus64);
+ static void *sbus_alloc_coherent(struct device *dev, size_t len,
+ 				 dma_addr_t *dma_addrp, gfp_t gfp)
+ {
+-	struct of_device *op = to_of_device(dev);
++	struct platform_device *op = to_platform_device(dev);
+ 	unsigned long len_total = (len + PAGE_SIZE-1) & PAGE_MASK;
+ 	unsigned long va;
+ 	struct resource *res;
+diff --git a/arch/sparc/kernel/of_device_32.c b/arch/sparc/kernel/of_device_32.c
+index 75fc9d5..2d055a1 100644
+--- a/arch/sparc/kernel/of_device_32.c
++++ b/arch/sparc/kernel/of_device_32.c
+@@ -241,10 +241,10 @@ static int __init use_1to1_mapping(struct device_node *pp)
+ 
+ static int of_resource_verbose;
+ 
+-static void __init build_device_resources(struct of_device *op,
++static void __init build_device_resources(struct platform_device *op,
+ 					  struct device *parent)
+ {
+-	struct of_device *p_op;
++	struct platform_device *p_op;
+ 	struct of_bus *bus;
+ 	int na, ns;
+ 	int index, num_reg;
+@@ -253,7 +253,7 @@ static void __init build_device_resources(struct of_device *op,
+ 	if (!parent)
+ 		return;
+ 
+-	p_op = to_of_device(parent);
++	p_op = to_platform_device(parent);
+ 	bus = of_match_bus(p_op->dev.of_node);
+ 	bus->count_cells(op->dev.of_node, &na, &ns);
+ 
+@@ -335,10 +335,10 @@ static void __init build_device_resources(struct of_device *op,
+ 	}
+ }
+ 
+-static struct of_device * __init scan_one_device(struct device_node *dp,
++static struct platform_device * __init scan_one_device(struct device_node *dp,
+ 						 struct device *parent)
+ {
+-	struct of_device *op = kzalloc(sizeof(*op), GFP_KERNEL);
++	struct platform_device *op = kzalloc(sizeof(*op), GFP_KERNEL);
+ 	const struct linux_prom_irqs *intr;
+ 	struct dev_archdata *sd;
+ 	int len, i;
+@@ -443,7 +443,7 @@ build_resources:
+ static void __init scan_tree(struct device_node *dp, struct device *parent)
+ {
+ 	while (dp) {
+-		struct of_device *op = scan_one_device(dp, parent);
++		struct platform_device *op = scan_one_device(dp, parent);
+ 
+ 		if (op)
+ 			scan_tree(dp->child, &op->dev);
+@@ -455,7 +455,7 @@ static void __init scan_tree(struct device_node *dp, struct device *parent)
+ static int __init scan_of_devices(void)
+ {
+ 	struct device_node *root = of_find_node_by_path("/");
+-	struct of_device *parent;
++	struct platform_device *parent;
+ 
+ 	parent = scan_one_device(root, NULL);
+ 	if (!parent)
+diff --git a/arch/sparc/kernel/of_device_64.c b/arch/sparc/kernel/of_device_64.c
+index 9743d1d..63cd4e5 100644
+--- a/arch/sparc/kernel/of_device_64.c
++++ b/arch/sparc/kernel/of_device_64.c
+@@ -310,10 +310,10 @@ static int __init use_1to1_mapping(struct device_node *pp)
+ 
+ static int of_resource_verbose;
+ 
+-static void __init build_device_resources(struct of_device *op,
++static void __init build_device_resources(struct platform_device *op,
+ 					  struct device *parent)
+ {
+-	struct of_device *p_op;
++	struct platform_device *p_op;
+ 	struct of_bus *bus;
+ 	int na, ns;
+ 	int index, num_reg;
+@@ -322,7 +322,7 @@ static void __init build_device_resources(struct of_device *op,
+ 	if (!parent)
+ 		return;
+ 
+-	p_op = to_of_device(parent);
++	p_op = to_platform_device(parent);
+ 	bus = of_match_bus(p_op->dev.of_node);
+ 	bus->count_cells(op->dev.of_node, &na, &ns);
+ 
+@@ -528,7 +528,7 @@ static unsigned int __init pci_irq_swizzle(struct device_node *dp,
+ 
+ static int of_irq_verbose;
+ 
+-static unsigned int __init build_one_device_irq(struct of_device *op,
++static unsigned int __init build_one_device_irq(struct platform_device *op,
+ 						struct device *parent,
+ 						unsigned int irq)
+ {
+@@ -630,10 +630,10 @@ out:
+ 	return irq;
+ }
+ 
+-static struct of_device * __init scan_one_device(struct device_node *dp,
++static struct platform_device * __init scan_one_device(struct device_node *dp,
+ 						 struct device *parent)
+ {
+-	struct of_device *op = kzalloc(sizeof(*op), GFP_KERNEL);
++	struct platform_device *op = kzalloc(sizeof(*op), GFP_KERNEL);
+ 	const unsigned int *irq;
+ 	struct dev_archdata *sd;
+ 	int len, i;
+@@ -686,7 +686,7 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
+ static void __init scan_tree(struct device_node *dp, struct device *parent)
+ {
+ 	while (dp) {
+-		struct of_device *op = scan_one_device(dp, parent);
++		struct platform_device *op = scan_one_device(dp, parent);
+ 
+ 		if (op)
+ 			scan_tree(dp->child, &op->dev);
+@@ -698,7 +698,7 @@ static void __init scan_tree(struct device_node *dp, struct device *parent)
+ static int __init scan_of_devices(void)
+ {
+ 	struct device_node *root = of_find_node_by_path("/");
+-	struct of_device *parent;
++	struct platform_device *parent;
+ 
+ 	parent = scan_one_device(root, NULL);
+ 	if (!parent)
+diff --git a/arch/sparc/kernel/of_device_common.c b/arch/sparc/kernel/of_device_common.c
+index 2a5c639..e80729b 100644
+--- a/arch/sparc/kernel/of_device_common.c
++++ b/arch/sparc/kernel/of_device_common.c
+@@ -13,19 +13,19 @@
+ 
+ static int node_match(struct device *dev, void *data)
+ {
+-	struct of_device *op = to_of_device(dev);
++	struct platform_device *op = to_platform_device(dev);
+ 	struct device_node *dp = data;
+ 
+ 	return (op->dev.of_node == dp);
+ }
+ 
+-struct of_device *of_find_device_by_node(struct device_node *dp)
++struct platform_device *of_find_device_by_node(struct device_node *dp)
+ {
+ 	struct device *dev = bus_find_device(&platform_bus_type, NULL,
+ 					     dp, node_match);
+ 
  	if (dev)
 -		return to_of_device(dev);
 +		return to_platform_device(dev);
+ 
  	return NULL;
  }
- EXPORT_SYMBOL(of_find_device_by_node);
-@@ -76,7 +76,7 @@ EXPORT_SYMBOL(of_find_device_by_node);
-  * lacking some bits needed here.
-  */
+@@ -33,7 +33,7 @@ EXPORT_SYMBOL(of_find_device_by_node);
  
--static int __devinit of_pci_phb_probe(struct of_device *dev,
-+static int __devinit of_pci_phb_probe(struct platform_device *dev,
- 				      const struct of_device_id *match)
+ unsigned int irq_of_parse_and_map(struct device_node *node, int index)
  {
- 	struct pci_controller *phb;
-diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
-index 4c42246..65e2d67 100644
---- a/arch/powerpc/platforms/512x/clock.c
-+++ b/arch/powerpc/platforms/512x/clock.c
-@@ -660,7 +660,7 @@ static void psc_clks_init(void)
- {
- 	struct device_node *np;
- 	const u32 *cell_index;
--	struct of_device *ofdev;
-+	struct platform_device *ofdev;
+-	struct of_device *op = of_find_device_by_node(node);
++	struct platform_device *op = of_find_device_by_node(node);
  
- 	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
- 		cell_index = of_get_property(np, "cell-index", NULL);
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-index 0855e80..0dad9a9 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpio.c
-@@ -147,7 +147,7 @@ mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int __devinit mpc52xx_wkup_gpiochip_probe(struct of_device *ofdev,
-+static int __devinit mpc52xx_wkup_gpiochip_probe(struct platform_device *ofdev,
- 					const struct of_device_id *match)
- {
- 	struct mpc52xx_gpiochip *chip;
-@@ -179,7 +179,7 @@ static int __devinit mpc52xx_wkup_gpiochip_probe(struct of_device *ofdev,
- 	return 0;
- }
- 
--static int mpc52xx_gpiochip_remove(struct of_device *ofdev)
-+static int mpc52xx_gpiochip_remove(struct platform_device *ofdev)
- {
- 	return -EBUSY;
- }
-@@ -310,7 +310,7 @@ mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
--static int __devinit mpc52xx_simple_gpiochip_probe(struct of_device *ofdev,
-+static int __devinit mpc52xx_simple_gpiochip_probe(struct platform_device *ofdev,
- 					const struct of_device_id *match)
- {
- 	struct mpc52xx_gpiochip *chip;
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index 5d7d607..fea833e 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -720,7 +720,7 @@ static inline int mpc52xx_gpt_wdt_setup(struct mpc52xx_gpt_priv *gpt,
- /* ---------------------------------------------------------------------
-  * of_platform bus binding code
-  */
--static int __devinit mpc52xx_gpt_probe(struct of_device *ofdev,
-+static int __devinit mpc52xx_gpt_probe(struct platform_device *ofdev,
- 				       const struct of_device_id *match)
- {
- 	struct mpc52xx_gpt_priv *gpt;
-@@ -766,7 +766,7 @@ static int __devinit mpc52xx_gpt_probe(struct of_device *ofdev,
- 	return 0;
- }
- 
--static int mpc52xx_gpt_remove(struct of_device *ofdev)
-+static int mpc52xx_gpt_remove(struct platform_device *ofdev)
- {
- 	return -EBUSY;
- }
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-index e86aec6..f4ac213 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -436,8 +436,8 @@ void mpc52xx_lpbfifo_abort(struct mpc52xx_lpbfifo_request *req)
- }
- EXPORT_SYMBOL(mpc52xx_lpbfifo_abort);
- 
--static int __devinit
--mpc52xx_lpbfifo_probe(struct of_device *op, const struct of_device_id *match)
-+static int __devinit mpc52xx_lpbfifo_probe(struct platform_device *op,
-+					   const struct of_device_id *match)
- {
- 	struct resource res;
- 	int rc = -ENOMEM;
-@@ -507,7 +507,7 @@ mpc52xx_lpbfifo_probe(struct of_device *op, const struct of_device_id *match)
- }
- 
- 
--static int __devexit mpc52xx_lpbfifo_remove(struct of_device *op)
-+static int __devexit mpc52xx_lpbfifo_remove(struct platform_device *op)
- {
- 	if (lpbfifo.dev != &op->dev)
+ 	if (!op || index >= op->archdata.num_irqs)
  		return 0;
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 9f2e52b..1565e04 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -111,7 +111,7 @@ static struct mdiobb_ctrl ep8248e_mdio_ctrl = {
- 	.ops = &ep8248e_mdio_ops,
- };
+@@ -43,16 +43,16 @@ unsigned int irq_of_parse_and_map(struct device_node *node, int index)
+ EXPORT_SYMBOL(irq_of_parse_and_map);
  
--static int __devinit ep8248e_mdio_probe(struct of_device *ofdev,
-+static int __devinit ep8248e_mdio_probe(struct platform_device *ofdev,
-                                         const struct of_device_id *match)
- {
- 	struct mii_bus *bus;
-@@ -154,7 +154,7 @@ err_free_bus:
- 	return ret;
- }
- 
--static int ep8248e_mdio_remove(struct of_device *ofdev)
-+static int ep8248e_mdio_remove(struct platform_device *ofdev)
- {
- 	BUG();
- 	return 0;
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index ebe6c35..75ae77f 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -99,7 +99,7 @@ struct pmc_type {
- 	int has_deep_sleep;
- };
- 
--static struct of_device *pmc_dev;
-+static struct platform_device *pmc_dev;
- static int has_deep_sleep, deep_sleeping;
- static int pmc_irq;
- static struct mpc83xx_pmc __iomem *pmc_regs;
-@@ -318,7 +318,7 @@ static struct platform_suspend_ops mpc83xx_suspend_ops = {
- 	.end = mpc83xx_suspend_end,
- };
- 
--static int pmc_probe(struct of_device *ofdev,
-+static int pmc_probe(struct platform_device *ofdev,
-                      const struct of_device_id *match)
- {
- 	struct device_node *np = ofdev->dev.of_node;
-@@ -396,7 +396,7 @@ out:
- 	return ret;
- }
- 
--static int pmc_remove(struct of_device *ofdev)
-+static int pmc_remove(struct platform_device *ofdev)
- {
- 	return -EPERM;
- };
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 6257e53..9708553 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -328,7 +328,7 @@ static struct irq_host_ops msic_host_ops = {
- 	.map	= msic_host_map,
- };
- 
--static int axon_msi_shutdown(struct of_device *device)
-+static int axon_msi_shutdown(struct platform_device *device)
- {
- 	struct axon_msic *msic = dev_get_drvdata(&device->dev);
- 	u32 tmp;
-@@ -342,7 +342,7 @@ static int axon_msi_shutdown(struct of_device *device)
- 	return 0;
- }
- 
--static int axon_msi_probe(struct of_device *device,
-+static int axon_msi_probe(struct platform_device *device,
- 			  const struct of_device_id *device_id)
- {
- 	struct device_node *dn = device->dev.of_node;
-diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-index 627ee08..a5d907b 100644
---- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
-+++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-@@ -216,7 +216,7 @@ static int gpio_mdio_reset(struct mii_bus *bus)
- }
- 
- 
--static int __devinit gpio_mdio_probe(struct of_device *ofdev,
-+static int __devinit gpio_mdio_probe(struct platform_device *ofdev,
- 				     const struct of_device_id *match)
- {
- 	struct device *dev = &ofdev->dev;
-@@ -275,7 +275,7 @@ out:
- }
- 
- 
--static int gpio_mdio_remove(struct of_device *dev)
-+static int gpio_mdio_remove(struct platform_device *dev)
- {
- 	struct mii_bus *bus = dev_get_drvdata(&dev->dev);
- 
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 402d221..2659a60 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -60,7 +60,7 @@
- static int azfs_major, azfs_minor;
- 
- struct axon_ram_bank {
--	struct of_device	*device;
-+	struct platform_device	*device;
- 	struct gendisk		*disk;
- 	unsigned int		irq_id;
- 	unsigned long		ph_addr;
-@@ -72,7 +72,7 @@ struct axon_ram_bank {
- static ssize_t
- axon_ram_sysfs_ecc(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	struct of_device *device = to_of_device(dev);
-+	struct platform_device *device = to_platform_device(dev);
- 	struct axon_ram_bank *bank = device->dev.platform_data;
- 
- 	BUG_ON(!bank);
-@@ -90,7 +90,7 @@ static DEVICE_ATTR(ecc, S_IRUGO, axon_ram_sysfs_ecc, NULL);
- static irqreturn_t
- axon_ram_irq_handler(int irq, void *dev)
- {
--	struct of_device *device = dev;
-+	struct platform_device *device = dev;
- 	struct axon_ram_bank *bank = device->dev.platform_data;
- 
- 	BUG_ON(!bank);
-@@ -174,8 +174,8 @@ static const struct block_device_operations axon_ram_devops = {
-  * axon_ram_probe - probe() method for platform driver
-  * @device, @device_id: see of_platform_driver method
+ /* Take the archdata values for IOMMU, STC, and HOSTDATA found in
+- * BUS and propagate to all child of_device objects.
++ * BUS and propagate to all child platform_device objects.
   */
--static int
--axon_ram_probe(struct of_device *device, const struct of_device_id *device_id)
-+static int axon_ram_probe(struct platform_device *device,
-+			  const struct of_device_id *device_id)
+-void of_propagate_archdata(struct of_device *bus)
++void of_propagate_archdata(struct platform_device *bus)
  {
- 	static int axon_ram_bank_id = -1;
- 	struct axon_ram_bank *bank;
-@@ -304,7 +304,7 @@ failed:
-  * @device: see of_platform_driver method
+ 	struct dev_archdata *bus_sd = &bus->dev.archdata;
+ 	struct device_node *bus_dp = bus->dev.of_node;
+ 	struct device_node *dp;
+ 
+ 	for (dp = bus_dp->child; dp; dp = dp->sibling) {
+-		struct of_device *op = of_find_device_by_node(dp);
++		struct platform_device *op = of_find_device_by_node(dp);
+ 
+ 		op->dev.archdata.iommu = bus_sd->iommu;
+ 		op->dev.archdata.stc = bus_sd->stc;
+diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+index 1523290..4137579 100644
+--- a/arch/sparc/kernel/pci.c
++++ b/arch/sparc/kernel/pci.c
+@@ -198,7 +198,7 @@ static unsigned long pci_parse_of_flags(u32 addr0)
+  * into physical address resources, we only have to figure out the register
+  * mapping.
   */
- static int
--axon_ram_remove(struct of_device *device)
-+axon_ram_remove(struct platform_device *device)
+-static void pci_parse_of_addrs(struct of_device *op,
++static void pci_parse_of_addrs(struct platform_device *op,
+ 			       struct device_node *node,
+ 			       struct pci_dev *dev)
  {
- 	struct axon_ram_bank *bank = device->dev.platform_data;
- 
-diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-index a7c5c47..6502561 100644
---- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-+++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-@@ -365,8 +365,8 @@ bcom_engine_cleanup(void)
- /* OF platform driver                                                       */
- /* ======================================================================== */
- 
--static int __devinit
--mpc52xx_bcom_probe(struct of_device *op, const struct of_device_id *match)
-+static int __devinit mpc52xx_bcom_probe(struct platform_device *op,
-+					const struct of_device_id *match)
+@@ -248,7 +248,7 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
  {
- 	struct device_node *ofn_sram;
- 	struct resource res_bcom;
-@@ -461,8 +461,7 @@ error_ofput:
+ 	struct dev_archdata *sd;
+ 	struct pci_slot *slot;
+-	struct of_device *op;
++	struct platform_device *op;
+ 	struct pci_dev *dev;
+ 	const char *type;
+ 	u32 class;
+diff --git a/arch/sparc/kernel/pci_fire.c b/arch/sparc/kernel/pci_fire.c
+index 885f10b..efb896d 100644
+--- a/arch/sparc/kernel/pci_fire.c
++++ b/arch/sparc/kernel/pci_fire.c
+@@ -410,7 +410,7 @@ static void pci_fire_hw_init(struct pci_pbm_info *pbm)
  }
  
- 
--static int
--mpc52xx_bcom_remove(struct of_device *op)
-+static int mpc52xx_bcom_remove(struct platform_device *op)
+ static int __devinit pci_fire_pbm_init(struct pci_pbm_info *pbm,
+-				       struct of_device *op, u32 portid)
++				       struct platform_device *op, u32 portid)
  {
- 	/* Clean up the engine */
- 	bcom_engine_cleanup();
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 962c2d8..87991d3 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -250,7 +250,7 @@ unlock:
- 	raw_spin_unlock(&desc->lock);
- }
- 
--static int fsl_of_msi_remove(struct of_device *ofdev)
-+static int fsl_of_msi_remove(struct platform_device *ofdev)
- {
- 	struct fsl_msi *msi = ofdev->dev.platform_data;
- 	int virq, i;
-@@ -274,7 +274,7 @@ static int fsl_of_msi_remove(struct of_device *ofdev)
+ 	const struct linux_prom64_registers *regs;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -455,7 +455,7 @@ static int __devinit pci_fire_pbm_init(struct pci_pbm_info *pbm,
  	return 0;
  }
  
--static int __devinit fsl_of_msi_probe(struct of_device *dev,
-+static int __devinit fsl_of_msi_probe(struct platform_device *dev,
+-static int __devinit fire_probe(struct of_device *op,
++static int __devinit fire_probe(struct platform_device *op,
  				const struct of_device_id *match)
  {
- 	struct fsl_msi *msi;
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-index 9082eb9..44de855 100644
---- a/arch/powerpc/sysdev/fsl_pmc.c
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -58,7 +58,8 @@ static struct platform_suspend_ops pmc_suspend_ops = {
- 	.enter = pmc_suspend_enter,
- };
+ 	struct device_node *dp = op->dev.of_node;
+diff --git a/arch/sparc/kernel/pci_impl.h b/arch/sparc/kernel/pci_impl.h
+index 0318682..e20ed5f 100644
+--- a/arch/sparc/kernel/pci_impl.h
++++ b/arch/sparc/kernel/pci_impl.h
+@@ -91,7 +91,7 @@ struct pci_pbm_info {
+ 	char				*name;
  
--static int pmc_probe(struct of_device *ofdev, const struct of_device_id *id)
-+static int pmc_probe(struct platform_device *ofdev,
-+		     const struct of_device_id *id)
- {
- 	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
- 	if (!pmc_regs)
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 30e1626..8bd8653 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1338,7 +1338,7 @@ static inline void fsl_rio_info(struct device *dev, u32 ccsr)
-  * master port with system-specific info, and registers the
-  * master port with the RapidIO subsystem.
-  */
--int fsl_rio_setup(struct of_device *dev)
-+int fsl_rio_setup(struct platform_device *dev)
- {
- 	struct rio_ops *ops;
- 	struct rio_mport *port;
-@@ -1536,7 +1536,7 @@ err_ops:
+ 	/* OBP specific information. */
+-	struct of_device		*op;
++	struct platform_device		*op;
+ 	u64				ino_bitmap;
  
- /* The probe function for RapidIO peer-to-peer network.
+ 	/* PBM I/O and Memory space resources. */
+diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
+index 71550a7..22eab7c 100644
+--- a/arch/sparc/kernel/pci_psycho.c
++++ b/arch/sparc/kernel/pci_psycho.c
+@@ -285,7 +285,7 @@ static irqreturn_t psycho_ce_intr(int irq, void *dev_id)
+ #define  PSYCHO_ECCCTRL_CE	 0x2000000000000000UL /* Enable CE INterrupts */
+ static void psycho_register_error_handlers(struct pci_pbm_info *pbm)
+ {
+-	struct of_device *op = of_find_device_by_node(pbm->op->dev.of_node);
++	struct platform_device *op = of_find_device_by_node(pbm->op->dev.of_node);
+ 	unsigned long base = pbm->controller_regs;
+ 	u64 tmp;
+ 	int err;
+@@ -483,7 +483,7 @@ static void psycho_pbm_strbuf_init(struct pci_pbm_info *pbm,
+ #define PSYCHO_MEMSPACE_SIZE	0x07fffffffUL
+ 
+ static void __devinit psycho_pbm_init(struct pci_pbm_info *pbm,
+-				      struct of_device *op, int is_pbm_a)
++				      struct platform_device *op, int is_pbm_a)
+ {
+ 	psycho_pbm_init_common(pbm, op, "PSYCHO", PBM_CHIP_TYPE_PSYCHO);
+ 	psycho_pbm_strbuf_init(pbm, is_pbm_a);
+@@ -503,7 +503,7 @@ static struct pci_pbm_info * __devinit psycho_find_sibling(u32 upa_portid)
+ 
+ #define PSYCHO_CONFIGSPACE	0x001000000UL
+ 
+-static int __devinit psycho_probe(struct of_device *op,
++static int __devinit psycho_probe(struct platform_device *op,
+ 				  const struct of_device_id *match)
+ {
+ 	const struct linux_prom64_registers *pr_regs;
+diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
+index 2d7bf30..5c3f5ec 100644
+--- a/arch/sparc/kernel/pci_sabre.c
++++ b/arch/sparc/kernel/pci_sabre.c
+@@ -311,7 +311,7 @@ static irqreturn_t sabre_ce_intr(int irq, void *dev_id)
+ static void sabre_register_error_handlers(struct pci_pbm_info *pbm)
+ {
+ 	struct device_node *dp = pbm->op->dev.of_node;
+-	struct of_device *op;
++	struct platform_device *op;
+ 	unsigned long base = pbm->controller_regs;
+ 	u64 tmp;
+ 	int err;
+@@ -443,7 +443,7 @@ static void __devinit sabre_scan_bus(struct pci_pbm_info *pbm,
+ }
+ 
+ static void __devinit sabre_pbm_init(struct pci_pbm_info *pbm,
+-				     struct of_device *op)
++				     struct platform_device *op)
+ {
+ 	psycho_pbm_init_common(pbm, op, "SABRE", PBM_CHIP_TYPE_SABRE);
+ 	pbm->pci_afsr = pbm->controller_regs + SABRE_PIOAFSR;
+@@ -452,7 +452,7 @@ static void __devinit sabre_pbm_init(struct pci_pbm_info *pbm,
+ 	sabre_scan_bus(pbm, &op->dev);
+ }
+ 
+-static int __devinit sabre_probe(struct of_device *op,
++static int __devinit sabre_probe(struct platform_device *op,
+ 				 const struct of_device_id *match)
+ {
+ 	const struct linux_prom64_registers *pr_regs;
+diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
+index 04f29c4..445a47a 100644
+--- a/arch/sparc/kernel/pci_schizo.c
++++ b/arch/sparc/kernel/pci_schizo.c
+@@ -844,7 +844,7 @@ static int pbm_routes_this_ino(struct pci_pbm_info *pbm, u32 ino)
   */
--static int __devinit fsl_of_rio_rpn_probe(struct of_device *dev,
-+static int __devinit fsl_of_rio_rpn_probe(struct platform_device *dev,
+ static void tomatillo_register_error_handlers(struct pci_pbm_info *pbm)
+ {
+-	struct of_device *op = of_find_device_by_node(pbm->op->dev.of_node);
++	struct platform_device *op = of_find_device_by_node(pbm->op->dev.of_node);
+ 	u64 tmp, err_mask, err_no_mask;
+ 	int err;
+ 
+@@ -939,7 +939,7 @@ static void tomatillo_register_error_handlers(struct pci_pbm_info *pbm)
+ 
+ static void schizo_register_error_handlers(struct pci_pbm_info *pbm)
+ {
+-	struct of_device *op = of_find_device_by_node(pbm->op->dev.of_node);
++	struct platform_device *op = of_find_device_by_node(pbm->op->dev.of_node);
+ 	u64 tmp, err_mask, err_no_mask;
+ 	int err;
+ 
+@@ -1307,7 +1307,7 @@ static void schizo_pbm_hw_init(struct pci_pbm_info *pbm)
+ }
+ 
+ static int __devinit schizo_pbm_init(struct pci_pbm_info *pbm,
+-				     struct of_device *op, u32 portid,
++				     struct platform_device *op, u32 portid,
+ 				     int chip_type)
+ {
+ 	const struct linux_prom64_registers *regs;
+@@ -1413,7 +1413,7 @@ static struct pci_pbm_info * __devinit schizo_find_sibling(u32 portid,
+ 	return NULL;
+ }
+ 
+-static int __devinit __schizo_init(struct of_device *op, unsigned long chip_type)
++static int __devinit __schizo_init(struct platform_device *op, unsigned long chip_type)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	struct pci_pbm_info *pbm;
+@@ -1460,7 +1460,7 @@ out_err:
+ 	return err;
+ }
+ 
+-static int __devinit schizo_probe(struct of_device *op,
++static int __devinit schizo_probe(struct platform_device *op,
+ 				  const struct of_device_id *match)
+ {
+ 	return __schizo_init(op, (unsigned long) match->data);
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 18ee8b6..743344a 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -879,7 +879,7 @@ static void pci_sun4v_msi_init(struct pci_pbm_info *pbm)
+ #endif /* !(CONFIG_PCI_MSI) */
+ 
+ static int __devinit pci_sun4v_pbm_init(struct pci_pbm_info *pbm,
+-					struct of_device *op, u32 devhandle)
++					struct platform_device *op, u32 devhandle)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	int err;
+@@ -918,7 +918,7 @@ static int __devinit pci_sun4v_pbm_init(struct pci_pbm_info *pbm,
+ 	return 0;
+ }
+ 
+-static int __devinit pci_sun4v_probe(struct of_device *op,
++static int __devinit pci_sun4v_probe(struct platform_device *op,
  				     const struct of_device_id *match)
  {
- 	int rc;
-diff --git a/arch/powerpc/sysdev/pmi.c b/arch/powerpc/sysdev/pmi.c
-index d07137a..24a0bb9 100644
---- a/arch/powerpc/sysdev/pmi.c
-+++ b/arch/powerpc/sysdev/pmi.c
-@@ -43,7 +43,7 @@ struct pmi_data {
- 	struct mutex		msg_mutex;
- 	pmi_message_t		msg;
- 	struct completion	*completion;
--	struct of_device	*dev;
-+	struct platform_device	*dev;
- 	int			irq;
- 	u8 __iomem		*pmi_reg;
- 	struct work_struct	work;
-@@ -121,7 +121,7 @@ static void pmi_notify_handlers(struct work_struct *work)
- 	spin_unlock(&data->handler_spinlock);
+ 	const struct linux_prom64_registers *regs;
+diff --git a/arch/sparc/kernel/pmc.c b/arch/sparc/kernel/pmc.c
+index a4c73ed..94536a8 100644
+--- a/arch/sparc/kernel/pmc.c
++++ b/arch/sparc/kernel/pmc.c
+@@ -51,7 +51,7 @@ static void pmc_swift_idle(void)
+ #endif
  }
  
--static int pmi_of_probe(struct of_device *dev,
-+static int pmi_of_probe(struct platform_device *dev,
- 			const struct of_device_id *match)
+-static int __devinit pmc_probe(struct of_device *op,
++static int __devinit pmc_probe(struct platform_device *op,
+ 			       const struct of_device_id *match)
  {
- 	struct device_node *np = dev->dev.of_node;
-@@ -185,7 +185,7 @@ out:
- 	return rc;
+ 	regs = of_ioremap(&op->resource[0], 0,
+diff --git a/arch/sparc/kernel/power.c b/arch/sparc/kernel/power.c
+index abc194e..2c59f4d 100644
+--- a/arch/sparc/kernel/power.c
++++ b/arch/sparc/kernel/power.c
+@@ -33,7 +33,7 @@ static int __devinit has_button_interrupt(unsigned int irq, struct device_node *
+ 	return 1;
  }
  
--static int pmi_of_remove(struct of_device *dev)
-+static int pmi_of_remove(struct platform_device *dev)
+-static int __devinit power_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit power_probe(struct platform_device *op, const struct of_device_id *match)
  {
- 	struct pmi_handler *handler, *tmp;
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 093e0ae..3da8014 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -651,14 +651,15 @@ unsigned int qe_get_num_of_snums(void)
- EXPORT_SYMBOL(qe_get_num_of_snums);
- 
- #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC_85xx)
--static int qe_resume(struct of_device *ofdev)
-+static int qe_resume(struct platform_device *ofdev)
+ 	struct resource *res = &op->resource[0];
+ 	unsigned int irq = op->archdata.irqs[0];
+diff --git a/arch/sparc/kernel/prom_irqtrans.c b/arch/sparc/kernel/prom_irqtrans.c
+index 5702ad4..ce65114 100644
+--- a/arch/sparc/kernel/prom_irqtrans.c
++++ b/arch/sparc/kernel/prom_irqtrans.c
+@@ -719,7 +719,7 @@ static unsigned int central_build_irq(struct device_node *dp,
+ 				      void *_data)
  {
- 	if (!qe_alive_during_sleep())
- 		qe_reset();
- 	return 0;
+ 	struct device_node *central_dp = _data;
+-	struct of_device *central_op = of_find_device_by_node(central_dp);
++	struct platform_device *central_op = of_find_device_by_node(central_dp);
+ 	struct resource *res;
+ 	unsigned long imap, iclr;
+ 	u32 tmp;
+diff --git a/arch/sparc/kernel/psycho_common.c b/arch/sparc/kernel/psycho_common.c
+index 3f34ac8..fe2af66 100644
+--- a/arch/sparc/kernel/psycho_common.c
++++ b/arch/sparc/kernel/psycho_common.c
+@@ -447,7 +447,7 @@ int psycho_iommu_init(struct pci_pbm_info *pbm, int tsbsize,
+ 
  }
  
--static int qe_probe(struct of_device *ofdev, const struct of_device_id *id)
-+static int qe_probe(struct platform_device *ofdev,
-+		    const struct of_device_id *id)
+-void psycho_pbm_init_common(struct pci_pbm_info *pbm, struct of_device *op,
++void psycho_pbm_init_common(struct pci_pbm_info *pbm, struct platform_device *op,
+ 			    const char *chip_name, int chip_type)
  {
- 	return 0;
+ 	struct device_node *dp = op->dev.of_node;
+diff --git a/arch/sparc/kernel/psycho_common.h b/arch/sparc/kernel/psycho_common.h
+index 092c278..590b4ed 100644
+--- a/arch/sparc/kernel/psycho_common.h
++++ b/arch/sparc/kernel/psycho_common.h
+@@ -42,7 +42,7 @@ extern int psycho_iommu_init(struct pci_pbm_info *pbm, int tsbsize,
+ 			     unsigned long write_complete_offset);
+ 
+ extern void psycho_pbm_init_common(struct pci_pbm_info *pbm,
+-				   struct of_device *op,
++				   struct platform_device *op,
+ 				   const char *chip_name, int chip_type);
+ 
+ #endif /* _PSYCHO_COMMON_H */
+diff --git a/arch/sparc/kernel/sbus.c b/arch/sparc/kernel/sbus.c
+index cfeaf04..2ca32d1 100644
+--- a/arch/sparc/kernel/sbus.c
++++ b/arch/sparc/kernel/sbus.c
+@@ -57,7 +57,7 @@
+ void sbus_set_sbus64(struct device *dev, int bursts)
+ {
+ 	struct iommu *iommu = dev->archdata.iommu;
+-	struct of_device *op = to_of_device(dev);
++	struct platform_device *op = to_platform_device(dev);
+ 	const struct linux_prom_registers *regs;
+ 	unsigned long cfg_reg;
+ 	int slot;
+@@ -204,7 +204,7 @@ static unsigned long sysio_imap_to_iclr(unsigned long imap)
+ 	return imap + diff;
  }
+ 
+-static unsigned int sbus_build_irq(struct of_device *op, unsigned int ino)
++static unsigned int sbus_build_irq(struct platform_device *op, unsigned int ino)
+ {
+ 	struct iommu *iommu = op->dev.archdata.iommu;
+ 	unsigned long reg_base = iommu->write_complete_reg - 0x2000UL;
+@@ -267,7 +267,7 @@ static unsigned int sbus_build_irq(struct of_device *op, unsigned int ino)
+ #define  SYSIO_UEAFSR_RESV2 0x0000001fffffffffUL /* Reserved                  */
+ static irqreturn_t sysio_ue_handler(int irq, void *dev_id)
+ {
+-	struct of_device *op = dev_id;
++	struct platform_device *op = dev_id;
+ 	struct iommu *iommu = op->dev.archdata.iommu;
+ 	unsigned long reg_base = iommu->write_complete_reg - 0x2000UL;
+ 	unsigned long afsr_reg, afar_reg;
+@@ -341,7 +341,7 @@ static irqreturn_t sysio_ue_handler(int irq, void *dev_id)
+ #define  SYSIO_CEAFSR_RESV2 0x0000001fffffffffUL /* Reserved                  */
+ static irqreturn_t sysio_ce_handler(int irq, void *dev_id)
+ {
+-	struct of_device *op = dev_id;
++	struct platform_device *op = dev_id;
+ 	struct iommu *iommu = op->dev.archdata.iommu;
+ 	unsigned long reg_base = iommu->write_complete_reg - 0x2000UL;
+ 	unsigned long afsr_reg, afar_reg;
+@@ -420,7 +420,7 @@ static irqreturn_t sysio_ce_handler(int irq, void *dev_id)
+ #define  SYSIO_SBAFSR_RESV3 0x0000001fffffffffUL /* Reserved                  */
+ static irqreturn_t sysio_sbus_error_handler(int irq, void *dev_id)
+ {
+-	struct of_device *op = dev_id;
++	struct platform_device *op = dev_id;
+ 	struct iommu *iommu = op->dev.archdata.iommu;
+ 	unsigned long afsr_reg, afar_reg, reg_base;
+ 	unsigned long afsr, afar, error_bits;
+@@ -488,7 +488,7 @@ static irqreturn_t sysio_sbus_error_handler(int irq, void *dev_id)
+ #define SYSIO_CE_INO		0x35
+ #define SYSIO_SBUSERR_INO	0x36
+ 
+-static void __init sysio_register_error_handlers(struct of_device *op)
++static void __init sysio_register_error_handlers(struct platform_device *op)
+ {
+ 	struct iommu *iommu = op->dev.archdata.iommu;
+ 	unsigned long reg_base = iommu->write_complete_reg - 0x2000UL;
+@@ -534,7 +534,7 @@ static void __init sysio_register_error_handlers(struct of_device *op)
+ }
+ 
+ /* Boot time initialization. */
+-static void __init sbus_iommu_init(struct of_device *op)
++static void __init sbus_iommu_init(struct platform_device *op)
+ {
+ 	const struct linux_prom64_registers *pr;
+ 	struct device_node *dp = op->dev.of_node;
+@@ -663,7 +663,7 @@ static int __init sbus_init(void)
+ 	struct device_node *dp;
+ 
+ 	for_each_node_by_name(dp, "sbus") {
+-		struct of_device *op = of_find_device_by_node(dp);
++		struct platform_device *op = of_find_device_by_node(dp);
+ 
+ 		sbus_iommu_init(op);
+ 		of_propagate_archdata(op);
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index 5dc2021..9c743b1 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -142,7 +142,7 @@ static struct platform_device m48t59_rtc = {
+ 	},
+ };
+ 
+-static int __devinit clock_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit clock_probe(struct platform_device *op, const struct of_device_id *match)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 	const char *model = of_get_property(dp, "model", NULL);
+diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+index 2423b33..3bc9c99 100644
+--- a/arch/sparc/kernel/time_64.c
++++ b/arch/sparc/kernel/time_64.c
+@@ -419,7 +419,7 @@ static struct platform_device rtc_cmos_device = {
+ 	.num_resources	= 1,
+ };
+ 
+-static int __devinit rtc_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit rtc_probe(struct platform_device *op, const struct of_device_id *match)
+ {
+ 	struct resource *r;
+ 
+@@ -477,7 +477,7 @@ static struct platform_device rtc_bq4802_device = {
+ 	.num_resources	= 1,
+ };
+ 
+-static int __devinit bq4802_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit bq4802_probe(struct platform_device *op, const struct of_device_id *match)
+ {
+ 
+ 	printk(KERN_INFO "%s: BQ4802 regs at 0x%llx\n",
+@@ -534,7 +534,7 @@ static struct platform_device m48t59_rtc = {
+ 	},
+ };
+ 
+-static int __devinit mostek_probe(struct of_device *op, const struct of_device_id *match)
++static int __devinit mostek_probe(struct platform_device *op, const struct of_device_id *match)
+ {
+ 	struct device_node *dp = op->dev.of_node;
+ 
+diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
+index 005e758..fc58c3e 100644
+--- a/arch/sparc/mm/io-unit.c
++++ b/arch/sparc/mm/io-unit.c
+@@ -35,7 +35,7 @@
+ #define IOPERM        (IOUPTE_CACHE | IOUPTE_WRITE | IOUPTE_VALID)
+ #define MKIOPTE(phys) __iopte((((phys)>>4) & IOUPTE_PAGE) | IOPERM)
+ 
+-static void __init iounit_iommu_init(struct of_device *op)
++static void __init iounit_iommu_init(struct platform_device *op)
+ {
+ 	struct iounit_struct *iounit;
+ 	iopte_t *xpt, *xptend;
+@@ -74,7 +74,7 @@ static int __init iounit_init(void)
+ 	struct device_node *dp;
+ 
+ 	for_each_node_by_name(dp, "sbi") {
+-		struct of_device *op = of_find_device_by_node(dp);
++		struct platform_device *op = of_find_device_by_node(dp);
+ 
+ 		iounit_iommu_init(op);
+ 		of_propagate_archdata(op);
+diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
+index b2e6e73..7385806 100644
+--- a/arch/sparc/mm/iommu.c
++++ b/arch/sparc/mm/iommu.c
+@@ -56,7 +56,7 @@ static pgprot_t dvma_prot;		/* Consistent mapping pte flags */
+ #define IOPERM        (IOPTE_CACHE | IOPTE_WRITE | IOPTE_VALID)
+ #define MKIOPTE(pfn, perm) (((((pfn)<<8) & IOPTE_PAGE) | (perm)) & ~IOPTE_WAZ)
+ 
+-static void __init sbus_iommu_init(struct of_device *op)
++static void __init sbus_iommu_init(struct platform_device *op)
+ {
+ 	struct iommu_struct *iommu;
+ 	unsigned int impl, vers;
+@@ -132,7 +132,7 @@ static int __init iommu_init(void)
+ 	struct device_node *dp;
+ 
+ 	for_each_node_by_name(dp, "iommu") {
+-		struct of_device *op = of_find_device_by_node(dp);
++		struct platform_device *op = of_find_device_by_node(dp);
+ 
+ 		sbus_iommu_init(op);
+ 		of_propagate_archdata(op);
