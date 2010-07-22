@@ -1,21 +1,21 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 428851007E1
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 10:18:00 +1000 (EST)
-Date: Wed, 21 Jul 2010 17:07:37 -0700
-From: Greg KH <gregkh@suse.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/5] drivercore/of: Add OF style matching to platform bus
-Message-ID: <20100722000737.GA14249@suse.de>
-References: <20100721232817.7782.23410.stgit@angua>
-	<20100721233954.7782.81154.stgit@angua>
+Return-Path: <timur.tabi@gmail.com>
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id 6D67E1007D1
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 10:28:39 +1000 (EST)
+Received: by gyh4 with SMTP id 4so186164gyh.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 17:28:37 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100721233954.7782.81154.stgit@angua>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
-	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	David Miller <davem@davemloft.net>
+Sender: timur.tabi@gmail.com
+In-Reply-To: <1279749902-13459-1-git-send-email-timur@freescale.com>
+References: <1279749902-13459-1-git-send-email-timur@freescale.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 21 Jul 2010 19:28:07 -0500
+Message-ID: <AANLkTimqWvRIlCT6ba_za_sYXIMKrend0m5_ysuvXAG1@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH] powerpc: rename immap_86xx.h to fsl_guts.h,
+	and add 85xx support
+To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org, lrg@slimlogic.co.uk,
+	broonie@opensource.wolfsonmicro.com, kumar.gala@freescale.com
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 21, 2010 at 05:39:54PM -0600, Grant Likely wrote:
-> As part of the merge between platform bus and of_platform bus, add the
-> ability to do of-style matching to the platform bus.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: Greg Kroah-Hartman <gregkh@suse.de>
-> CC: Michal Simek <monstr@monstr.eu>
-> CC: Grant Likely <grant.likely@secretlab.ca>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Stephen Rothwell <sfr@canb.auug.org.au>
-> CC: linux-kernel@vger.kernel.org
-> CC: microblaze-uclinux@itee.uq.edu.au
-> CC: linuxppc-dev@ozlabs.org
-> CC: devicetree-discuss@lists.ozlabs.org
-> ---
->  drivers/base/platform.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index 4d99c8b..6a9b3dd 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -12,6 +12,7 @@
->  
->  #include <linux/string.h>
->  #include <linux/platform_device.h>
-> +#include <linux/of_device.h>
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/dma-mapping.h>
-> @@ -673,6 +674,10 @@ static int platform_match(struct device *dev, struct device_driver *drv)
->  	struct platform_device *pdev = to_platform_device(dev);
->  	struct platform_driver *pdrv = to_platform_driver(drv);
->  
-> +	/* Attempt an OF style match first */
-> +	if (of_driver_match_device(dev, drv))
-> +		return 1;
-> +
->  	/* match against the id table first */
+On Wed, Jul 21, 2010 at 5:05 PM, Timur Tabi <timur@freescale.com> wrote:
+> The immap_86xx.h header file only defines one data structure: the "global
+> utilities" register set found on Freescale PowerPC SOCs. =A0Rename this f=
+ile
+> to fsl_guts.h to reflect its true purpose, and extend it to cover the "GU=
+TS"
+> register set on 85xx chips.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-I think you need to also change this comment, you can't have two
-"firsts" :)
+Argh, I forgot to add the text to explain e500 vs. e600.
 
-If you do that, feel free to add an:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-to the patch.
+V2 coming.
 
-thanks,
 
-greg k-h
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale
