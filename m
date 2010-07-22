@@ -1,31 +1,36 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id DEE3EB70D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 04:24:28 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6MI7vVZ027968
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 14:07:57 -0400
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6MIONrh392008
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 14:24:23 -0400
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6MIOIo1030802
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 12:24:19 -0600
-Message-ID: <4C488CCD.60004@us.ibm.com>
-Date: Thu, 22 Jul 2010 11:24:13 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE006.bigfish.com (db3ehsobe006.messaging.microsoft.com
+	[213.199.154.144]) by ozlabs.org (Postfix) with ESMTP id 778E4B70E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 04:26:01 +1000 (EST)
+Received: from mail28-db3 (localhost.localdomain [127.0.0.1])	by
+	mail28-db3-R.bigfish.com (Postfix) with ESMTP id 19B125B83CE	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 18:25:57 +0000 (UTC)
+Received: from DB3EHSMHS002.bigfish.com (unknown [10.3.81.249])	by
+	mail28-db3.bigfish.com (Postfix) with ESMTP id C3E40D2804F	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 18:25:56 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o6MIPoJ5023991	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 11:25:50 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o6MId3N4018804	for <linuxppc-dev@ozlabs.org>;
+	Thu, 22 Jul 2010 13:39:03 -0500 (CDT)
+Date: Thu, 22 Jul 2010 13:25:48 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
+	EDAC regspace
+Message-ID: <20100722132548.6eef941b@schlenkerla.am.freescale.net>
+In-Reply-To: <AANLkTim7kbHsouc==7gRAuRO6AYMNVdA4yyPFpRBC+QR@mail.gmail.com>
+References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
+	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
+	<566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
+	<AANLkTim7kbHsouc==7gRAuRO6AYMNVdA4yyPFpRBC+QR@mail.gmail.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Will Schmidt <willschm@us.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Doug Thompson <dougthompson@xmission.com>,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,60 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While testing CPU offline/online, we hit various preempt_count related
-bugs. Various hacks have been employed for several theoretical corner
-cases. One situation however is perfectly repeatable on 2.6.33.6 with
-CONFIG_PREEMPT=y.
+On Thu, 22 Jul 2010 20:48:15 +0400
+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
 
-BUG: scheduling while atomic: swapper/0/0x00000065
-Modules linked in: autofs4 sunrpc ipv6 dm_mirror dm_region_hash dm_log
-dm_mod ehea sg ext4 jbd2 mbcache sd_mod crc_t10dif ibmvscsic
-scsi_transport_srp scsi_tgt [last unloaded: scsi_wait_scan]
-Call Trace:
-[c00000010e9e39f0] [c0000000000144d4] .show_stack+0x74/0x1c0 (unreliable)
-[c00000010e9e3aa0] [c00000000007a680] .__schedule_bug+0xa0/0xb0
-[c00000010e9e3b30] [c00000000056dea4] .schedule+0x7a4/0xd60
-[c00000010e9e3cd0] [c000000000016be8] .cpu_idle+0x1f8/0x220
-[c00000010e9e3d80] [c00000000057d858] .start_secondary+0x388/0x3c0
-[c00000010e9e3e30] [c000000000008278] .start_secondary_resume+0x10/0x14
+> Hello,
+>=20
+> On Thu, Jul 22, 2010 at 7:38 PM, Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+> >
+> > On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
+> >
+> >> Currently (as mpc8540-pci) devices are not created on of_platform bus,
+> >> mpc85xx_edac can't probe to them. Follow the change to dts trees to bi=
+nd
+> >> not to the main mpc8540-pci node but to special mpc85xx-pci-error node=
+s,
+> >> present on soc bus.
+> >>
+> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> >> ---
+> >> drivers/edac/mpc85xx_edac.c | =A0 18 +++++++++---------
+> >> 1 files changed, 9 insertions(+), 9 deletions(-)
+> >
+> > Nak.
+> >
+> > We already have a node in the dts for the PCI controller. =A0Lets updat=
+e the platform code to add the pci controller to the of_platform_bus_probe =
+list.
+>=20
+> I've had that idea. However it's really look strange to me to call
+> of_platform_bus_probe() on the bus node, for which we (IMO) explicitly
+> won't like for
+> child devices (PCI devices) to be added to of_platform bus.
 
-With some instrumentation we were able to determine that the
-preempt_count() appears to change across the extended_cede_processor()
-call.  Specifically across the plpar_hcall_norets(H_CEDE) call. On
-PREEMPT_RT we call this with preempt_count=1 and return with
-preempt_count=0xffffffff. On mainline with CONFIG_PREEMPT=y, the value
-is different (0x65) but is still incorrect.
+Right, and it's also not great for a driver for one aspect of PCI to
+claim to be the driver for the whole thing.
 
-Also of interest is that this path
-cpu_idle()->cpu_die()->pseries_mach_cpu_die() to start_secondary()
-enters with a preempt_count=1 if it wasn't corrupted across the hcall.
-The early boot path from _start however appears to call
-start_secondary() with a preempt_count of 0.
+But changing the device tree because of this Linux-internal concern is
+also not good.
 
-The following patch is most certainly not correct, but it does eliminate
-the situation on mainline 100% of the time (there is still a 25%
-reproduction rate on PREEMPT_RT). Can someone comment on:
+How about keeping the error stuff as a separate device from Linux's
+perspective, but have the main Freescale PCI code create it as a
+platform device instead of putting it in the device tree?
 
-1) How can the preempt_count() get mangled across the H_CEDE hcall?
-2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
-
-Hacked-up-by: Darren Hart <dvhltc@us.ibm.com>
-
-Index: linux-2.6.33.6/arch/powerpc/platforms/pseries/hotplug-cpu.c
-===================================================================
---- linux-2.6.33.6.orig/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ linux-2.6.33.6/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -138,6 +138,7 @@ static void pseries_mach_cpu_die(void)
- 			 * Kernel stack will be reset and start_secondary()
- 			 * will be called to continue the online operation.
- 			 */
-+			preempt_count() = 0;
- 			start_secondary_resume();
- 		}
- 	}
-
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+-Scott
