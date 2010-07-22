@@ -1,16 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net
 	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B63C2100EC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 15:28:26 +1000 (EST)
-Date: Wed, 21 Jul 2010 22:28:42 -0700 (PDT)
-Message-Id: <20100721.222842.155365075.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 6178E100BE2
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 15:28:36 +1000 (EST)
+Date: Wed, 21 Jul 2010 22:28:52 -0700 (PDT)
+Message-Id: <20100721.222852.08977036.davem@davemloft.net>
 To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 4/5] of: remove asm/of_platform.h
+Subject: Re: [PATCH 5/5] of: remove asm/of_device.h
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100721234010.7782.3073.stgit@angua>
+In-Reply-To: <20100721234015.7782.98378.stgit@angua>
 References: <20100721232817.7782.23410.stgit@angua>
-	<20100721234010.7782.3073.stgit@angua>
+	<20100721234015.7782.98378.stgit@angua>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, gregkh@suse.de,
@@ -26,10 +26,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 21 Jul 2010 17:40:10 -0600
+Date: Wed, 21 Jul 2010 17:40:15 -0600
 
-> Only thing left in it is of_instantiate_rtc() which can be moved to
-> asm/prom.h on PowerPC and is unused in microblaze.
+> It is mostly unused now.  Sparc has a few defines left in it, but they
+> can be moved to other headers.  Removing this header means that new
+> architectures adding CONFIG_OF support don't need to also add this
+> header file.
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
