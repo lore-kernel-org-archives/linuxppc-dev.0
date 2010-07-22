@@ -1,19 +1,21 @@
-Return-Path: <dbaryshkov@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 9C25DB70DD
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 10:03:23 +1000 (EST)
-Received: by eyh6 with SMTP id 6so4105404eyh.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jul 2010 17:03:21 -0700 (PDT)
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI EDAC
-	regspace
-Date: Thu, 22 Jul 2010 04:03:12 +0400
-Message-Id: <1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
-References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
-Cc: Doug Thompson <dougthompson@xmission.com>, Dave Jiang <djiang@mvista.com>,
-	bluesmoke-devel@lists.sourceforge.net
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 428851007E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 10:18:00 +1000 (EST)
+Date: Wed, 21 Jul 2010 17:07:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/5] drivercore/of: Add OF style matching to platform bus
+Message-ID: <20100722000737.GA14249@suse.de>
+References: <20100721232817.7782.23410.stgit@angua>
+	<20100721233954.7782.81154.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100721233954.7782.81154.stgit@angua>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Simek <monstr@monstr.eu>,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,51 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently (as mpc8540-pci) devices are not created on of_platform bus,
-mpc85xx_edac can't probe to them. Follow the change to dts trees to bind
-not to the main mpc8540-pci node but to special mpc85xx-pci-error nodes,
-present on soc bus.
+On Wed, Jul 21, 2010 at 05:39:54PM -0600, Grant Likely wrote:
+> As part of the merge between platform bus and of_platform bus, add the
+> ability to do of-style matching to the platform bus.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> CC: Greg Kroah-Hartman <gregkh@suse.de>
+> CC: Michal Simek <monstr@monstr.eu>
+> CC: Grant Likely <grant.likely@secretlab.ca>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+> CC: linux-kernel@vger.kernel.org
+> CC: microblaze-uclinux@itee.uq.edu.au
+> CC: linuxppc-dev@ozlabs.org
+> CC: devicetree-discuss@lists.ozlabs.org
+> ---
+>  drivers/base/platform.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 4d99c8b..6a9b3dd 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -12,6 +12,7 @@
+>  
+>  #include <linux/string.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/of_device.h>
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/dma-mapping.h>
+> @@ -673,6 +674,10 @@ static int platform_match(struct device *dev, struct device_driver *drv)
+>  	struct platform_device *pdev = to_platform_device(dev);
+>  	struct platform_driver *pdrv = to_platform_driver(drv);
+>  
+> +	/* Attempt an OF style match first */
+> +	if (of_driver_match_device(dev, drv))
+> +		return 1;
+> +
+>  	/* match against the id table first */
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/edac/mpc85xx_edac.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+I think you need to also change this comment, you can't have two
+"firsts" :)
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 52ca09b..d5a61b8 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -236,9 +236,6 @@ static int __devinit mpc85xx_pci_err_probe(struct of_device *op,
- 		goto err;
- 	}
- 
--	/* we only need the error registers */
--	r.start += 0xe00;
--
- 	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
- 					pdata->name)) {
- 		printk(KERN_ERR "%s: Error while requesting mem region\n",
-@@ -328,12 +325,15 @@ static int mpc85xx_pci_err_remove(struct of_device *op)
- }
- 
- static struct of_device_id mpc85xx_pci_err_of_match[] = {
--	{
--	 .compatible = "fsl,mpc8540-pcix",
--	 },
--	{
--	 .compatible = "fsl,mpc8540-pci",
--	},
-+	{ .compatible = "fsl,mpc8536-pci-error", },
-+	{ .compatible = "fsl,mpc8540-pci-error", },
-+	{ .compatible = "fsl,mpc8541-pci-error", },
-+	{ .compatible = "fsl,mpc8544-pci-error", },
-+	{ .compatible = "fsl,mpc8548-pci-error", },
-+	{ .compatible = "fsl,mpc8555-pci-error", },
-+	{ .compatible = "fsl,mpc8560-pci-error", },
-+	{ .compatible = "fsl,mpc8568-pci-error", },
-+	{ .compatible = "fsl,mpc8572-pci-error", },
- 	{},
- };
- 
--- 
-1.7.1
+If you do that, feel free to add an:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+to the patch.
+
+thanks,
+
+greg k-h
