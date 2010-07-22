@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id A24C81007D7
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 08:27:42 +1000 (EST)
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <4C488CCD.60004@us.ibm.com>
-References: <4C488CCD.60004@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 23 Jul 2010 08:25:09 +1000
-Message-ID: <1279837509.1970.24.camel@pasglop>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 293E91007DB
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 08:28:00 +1000 (EST)
+Date: Thu, 22 Jul 2010 18:27:57 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [
+Message-ID: <20100722182757.74b37783@lappy.seanm.ca>
+In-Reply-To: <20100713095024.GA10494@merkur.ravnborg.org>
+References: <20100628005900.28d4a8e0@lappy.seanm.ca>
+	<20100712203435.08a3e90f@lappy.seanm.ca>
+	<20100713095024.GA10494@merkur.ravnborg.org>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, Tim Abbott <tabbott@ksplice.com>,
+	Michal Marek <mmarek@suse.cz>, linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-07-22 at 11:24 -0700, Darren Hart wrote:
-> 
-> 1) How can the preempt_count() get mangled across the H_CEDE hcall?
-> 2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
+On Tue, 13 Jul 2010 11:50:24 +0200
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-The preempt count is on the thread info at the bottom of the stack.
+> Ben - will you take it via the popwerpc tree
+> or shall I ask Michal to take it via kbuild?
 
-Can you check the stack pointers ?
+Anything happening with this patch?
 
 Cheers,
-Ben.
+   Sean
