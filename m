@@ -1,11 +1,27 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
-	[209.85.213.42]) by ozlabs.org (Postfix) with ESMTP id 235C71007D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 05:16:00 +1000 (EST)
-Received: by ywi6 with SMTP id 6so1184407ywi.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 12:15:59 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
+Return-Path: <B07421@freescale.com>
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 2116E1007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 05:26:10 +1000 (EST)
+Received: from mail50-db3 (localhost.localdomain [127.0.0.1])	by
+	mail50-db3-R.bigfish.com (Postfix) with ESMTP id 4CB00970304	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 19:26:06 +0000 (UTC)
+Received: from DB3EHSMHS001.bigfish.com (unknown [10.3.81.245])	by
+	mail50-db3.bigfish.com (Postfix) with ESMTP id D459F18D0050	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 19:26:05 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o6MJPtf6001916	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 12:25:55 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o6MJd75N026606	for <linuxppc-dev@ozlabs.org>;
+	Thu, 22 Jul 2010 14:39:07 -0500 (CDT)
+Date: Thu, 22 Jul 2010 14:25:52 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
+	EDAC regspace
+Message-ID: <20100722142552.1e01dba8@schlenkerla.am.freescale.net>
 In-Reply-To: <AANLkTikX8An80SMZiypoO63Be8MKyCsmNzviwqR6syQd@mail.gmail.com>
 References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
 	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
@@ -14,15 +30,9 @@ References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
 	<20100722132548.6eef941b@schlenkerla.am.freescale.net>
 	<95F6CFEA-DC74-4CF6-A195-4CBFABAAB7F0@kernel.crashing.org>
 	<AANLkTikX8An80SMZiypoO63Be8MKyCsmNzviwqR6syQd@mail.gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 22 Jul 2010 13:15:39 -0600
-Message-ID: <AANLkTimeHlrB_Q5pHGzamxtyDNq6O1yZzAKfbrND4A5m@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
-	EDAC regspace
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Doug Thompson <dougthompson@xmission.com>,
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Doug Thompson <dougthompson@xmission.com>,
 	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,79 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 22, 2010 at 1:03 PM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
+On Thu, 22 Jul 2010 23:03:03 +0400
+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+
 > Hello,
->
-> On Thu, Jul 22, 2010 at 10:40 PM, Kumar Gala <galak@kernel.crashing.org> =
-wrote:
->>
->> On Jul 22, 2010, at 1:25 PM, Scott Wood wrote:
->>
->>> On Thu, 22 Jul 2010 20:48:15 +0400
->>> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->>>
->>>> Hello,
->>>>
->>>> On Thu, Jul 22, 2010 at 7:38 PM, Kumar Gala <galak@kernel.crashing.org=
-> wrote:
->>>>>
->>>>> On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
->>>>>
->>>>>> Currently (as mpc8540-pci) devices are not created on of_platform bu=
-s,
->>>>>> mpc85xx_edac can't probe to them. Follow the change to dts trees to =
-bind
->>>>>> not to the main mpc8540-pci node but to special mpc85xx-pci-error no=
-des,
->>>>>> present on soc bus.
->>>>>>
->>>>>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->>>>>> ---
->>>>>> drivers/edac/mpc85xx_edac.c | =A0 18 +++++++++---------
->>>>>> 1 files changed, 9 insertions(+), 9 deletions(-)
->>>>>
->>>>> Nak.
->>>>>
->>>>> We already have a node in the dts for the PCI controller. =A0Lets upd=
-ate the platform code to add the pci controller to the of_platform_bus_prob=
-e list.
->>>>
->>>> I've had that idea. However it's really look strange to me to call
->>>> of_platform_bus_probe() on the bus node, for which we (IMO) explicitly
->>>> won't like for
->>>> child devices (PCI devices) to be added to of_platform bus.
->>>
->>> Right, and it's also not great for a driver for one aspect of PCI to
->>> claim to be the driver for the whole thing.
->>>
->>> But changing the device tree because of this Linux-internal concern is
->>> also not good.
->>>
->>> How about keeping the error stuff as a separate device from Linux's
->>> perspective, but have the main Freescale PCI code create it as a
->>> platform device instead of putting it in the device tree?
->>
->> I'd be good with that solution.
->
+> 
+> On Thu, Jul 22, 2010 at 10:40 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> > On Jul 22, 2010, at 1:25 PM, Scott Wood wrote:
+> >> How about keeping the error stuff as a separate device from Linux's
+> >> perspective, but have the main Freescale PCI code create it as a
+> >> platform device instead of putting it in the device tree?
+> >
+> > I'd be good with that solution.
+> 
 > Then we come back to the question that was raised before (during initial
 > review of edac driver): as PCI code is probbed long before other parts
 > of the kernel and mpc85xx_edac code can be compiled as module,
 > it's not possible to directly call mpc85xx_edac code from fsl_pci.c
 
-Not sure what you mean here.  If the driver is compiled as a module,
-then it must be handled the same way all other drivers are handled.
-The platform code registers an of_platform_device at boot time, and
-the driver gets bound to it whenever it happens to show up.  None of
-the children of that bus can be available until after the driver is
-probed.
+Right, that's why I suggested creating a platform device rather than
+just a function call.
 
 > Two initial suggestions were:
 > 1) creating special platform device
 > 2) creating special of_platform device from dts
+> 
+> Which approach should I choose? Did i miss any other opportunities?
 
-g.
+#1, as it keeps the split out of the device tree.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Besides the theoretical/aesthetic issues of putting Linux
+implementation concerns into the device tree, #2 would mean that the
+edac driver wouldn't work when Linux is booted with an old device tree.
+
+-Scott
