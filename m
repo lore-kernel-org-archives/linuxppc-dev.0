@@ -1,35 +1,28 @@
-Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 05612B70F2
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id C43681007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 07:09:30 +1000 (EST)
+	Fri, 23 Jul 2010 07:23:56 +1000 (EST)
 Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
 	[9.17.195.228])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6ML2LaF011468
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:02:21 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6MLKIQW026687
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:20:18 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6ML9DaH063690
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:09:14 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6ML93ZD004665
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:09:03 -0600
-Received: from manic8ball.ltc.austin.ibm.com ([9.12.226.27])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o6ML93Zp004566
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:09:03 -0600
-Message-ID: <4C48B36E.6040505@linux.vnet.ibm.com>
-Date: Thu, 22 Jul 2010 16:09:02 -0500
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: print cores passed to firmware in decimal
-References: <4553.1279775749@neuling.org>
-In-Reply-To: <4553.1279775749@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	o6MLNg8w118804
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:23:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6MLNc15008112
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:23:39 -0600
+Message-Id: <201007222123.o6MLNYGb007400@d03av02.boulder.ibm.com>
+Subject: [PATCH 1/1] powerpc: Increase pseries_cpu_die delay
+To: benh@kernel.crashing.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 22 Jul 2010 16:23:35 -0500
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,24 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2010 12:15 AM, Michael Neuling wrote:
-> @@ -869,12 +895,12 @@ static void __init prom_send_capabilities(void)
->   		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
->   		if (*cores != NR_CPUS) {
->   			prom_printf("WARNING ! "
-> -				    "ibm_architecture_vec structure inconsistent: 0x%x !\n",
-> +				    "ibm_architecture_vec structure inconsistent: 0x%i !\n",
->   				    *cores);
->    
 
-Since we're changing from hex to decimal, we shouldn't print the "0x".
+In testing SMT disable, we have been regularly seeing the following message:
 
-Sincerely,
+Querying DEAD? cpu %i (%i) shows %i
 
--- 
+This indicates the current delay in pseries_cpu_die where we wait
+for the specified CPU to die, is insufficient. Usually, this does
+not cause a problem, but we've seen this result in BUG_ON's going
+off in the timer code when we try to migrate the timers off the
+dead cpu while a timer is still running. Increasing this delay,
+as is done in this patch, seems to resolve this issue.
 
-Jesse Larrew
-Software Engineer, Linux on Power Kernel Team
-IBM Linux Technology Center
-Phone: (512) 973-2052 (T/L: 363-2052)
-jlarrew@linux.vnet.ibm.com
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_cpu_die_delay arch/powerpc/platforms/pseries/hotplug-cpu.c
+--- linux-2.6/arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_cpu_die_delay	2010-07-20 09:24:01.000000000 -0500
++++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-07-20 09:24:20.000000000 -0500
+@@ -193,12 +193,12 @@ static void pseries_cpu_die(unsigned int
+ 
+ 	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
+ 		cpu_status = 1;
+-		for (tries = 0; tries < 1000; tries++) {
++		for (tries = 0; tries < 5000; tries++) {
+ 			if (get_cpu_current_state(cpu) == CPU_STATE_INACTIVE) {
+ 				cpu_status = 0;
+ 				break;
+ 			}
+-			cpu_relax();
++			msleep(1);
+ 		}
+ 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
+ 
+_
