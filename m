@@ -1,22 +1,22 @@
-Return-Path: <ptyser@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.218])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B7149B70F9
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 01:30:28 +1000 (EST)
-Subject: Re: [PATCH] powerpc: rename immap_86xx.h to fsl_guts.h, and add
-	85xx support
-From: Peter Tyser <ptyser@xes-inc.com>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <1279749902-13459-1-git-send-email-timur@freescale.com>
-References: <1279749902-13459-1-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 22 Jul 2010 10:30:17 -0500
-Message-ID: <1279812617.7232.8703.camel@petert>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	broonie@opensource.wolfsonmicro.com, kumar.gala@freescale.com,
-	lrg@slimlogic.co.uk
+	by ozlabs.org (Postfix) with ESMTPS id 16A53B70B5
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 01:39:12 +1000 (EST)
+Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
+	EDAC regspace
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
+Date: Thu, 22 Jul 2010 10:38:56 -0500
+Message-Id: <566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
+References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
+	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Doug Thompson <dougthompson@xmission.com>,
+	bluesmoke-devel@lists.sourceforge.net, Dave Jiang <djiang@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Timur,
 
-> +/**
-> + * Global Utility Registers.
-> + *
-> + * Not all registers defined in this structure are available on all chips, so
-> + * you are expected to know whether a given register actually exists on your
-> + * chip before you access it.
-> + *
-> + * Also, some registers are similar on different chips but have slightly
-> + * different names.  In these cases, one name is chosen to avoid extraneous
-> + * #ifdefs.
-> + */
-> +#ifdef CONFIG_PPC_85xx
-> +struct ccsr_guts_85xx {
-> +#else
-> +struct ccsr_guts_86xx {
-> +#endif
+On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
 
-Is there a good reason to have 2 different names for the same structure
-depending on the architecture?  I'd think keeping a common "ccsr_guts"
-name would get rid of the ifdefs above as well as in code that can be
-used on both 85xx and 86xx processors down the road.
+> Currently (as mpc8540-pci) devices are not created on of_platform bus,
+> mpc85xx_edac can't probe to them. Follow the change to dts trees to =
+bind
+> not to the main mpc8540-pci node but to special mpc85xx-pci-error =
+nodes,
+> present on soc bus.
+>=20
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> ---
+> drivers/edac/mpc85xx_edac.c |   18 +++++++++---------
+> 1 files changed, 9 insertions(+), 9 deletions(-)
 
-Best,
-Peter
+Nak.
+
+We already have a node in the dts for the PCI controller.  Lets update =
+the platform code to add the pci controller to the of_platform_bus_probe =
+list.
+
+- k=
