@@ -1,33 +1,26 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id E661CB70E5
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 04:36:53 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6MIYiY7026921
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 14:34:44 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6MIaPYv1581128
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 14:36:25 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6MIaNjG028081
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 15:36:25 -0300
-Message-ID: <4C488FA4.6050009@us.ibm.com>
-Date: Thu, 22 Jul 2010 11:36:20 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-References: <4C488CCD.60004@us.ibm.com>
-In-Reply-To: <4C488CCD.60004@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Will Schmidt <willschm@us.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 407CDB70D2
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 04:40:34 +1000 (EST)
+Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
+	EDAC regspace
+Mime-Version: 1.0 (Apple Message framework v1078)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20100722132548.6eef941b@schlenkerla.am.freescale.net>
+Date: Thu, 22 Jul 2010 13:40:19 -0500
+Message-Id: <95F6CFEA-DC74-4CF6-A195-4CBFABAAB7F0@kernel.crashing.org>
+References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
+	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
+	<566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
+	<AANLkTim7kbHsouc==7gRAuRO6AYMNVdA4yyPFpRBC+QR@mail.gmail.com>
+	<20100722132548.6eef941b@schlenkerla.am.freescale.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linuxppc-dev@ozlabs.org,
+	bluesmoke-devel@lists.sourceforge.net,
+	Doug Thompson <dougthompson@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,17 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2010 11:24 AM, Darren Hart wrote:
 
-> The following patch is most certainly not correct, but it does eliminate
-> the situation on mainline 100% of the time (there is still a 25%
-> reproduction rate on PREEMPT_RT). Can someone comment on:
+On Jul 22, 2010, at 1:25 PM, Scott Wood wrote:
 
-Apologies. This particular issue is also 100% eliminated on PREEMPT_RT. 
-We hit another issue possibly unrelated to this 25% of time. Please 
-disregard the comment regarding 25% failure on PREEMPT_RT.
+> On Thu, 22 Jul 2010 20:48:15 +0400
+> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+>=20
+>> Hello,
+>>=20
+>> On Thu, Jul 22, 2010 at 7:38 PM, Kumar Gala =
+<galak@kernel.crashing.org> wrote:
+>>>=20
+>>> On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
+>>>=20
+>>>> Currently (as mpc8540-pci) devices are not created on of_platform =
+bus,
+>>>> mpc85xx_edac can't probe to them. Follow the change to dts trees to =
+bind
+>>>> not to the main mpc8540-pci node but to special mpc85xx-pci-error =
+nodes,
+>>>> present on soc bus.
+>>>>=20
+>>>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>>>> ---
+>>>> drivers/edac/mpc85xx_edac.c |   18 +++++++++---------
+>>>> 1 files changed, 9 insertions(+), 9 deletions(-)
+>>>=20
+>>> Nak.
+>>>=20
+>>> We already have a node in the dts for the PCI controller.  Lets =
+update the platform code to add the pci controller to the =
+of_platform_bus_probe list.
+>>=20
+>> I've had that idea. However it's really look strange to me to call
+>> of_platform_bus_probe() on the bus node, for which we (IMO) =
+explicitly
+>> won't like for
+>> child devices (PCI devices) to be added to of_platform bus.
+>=20
+> Right, and it's also not great for a driver for one aspect of PCI to
+> claim to be the driver for the whole thing.
+>=20
+> But changing the device tree because of this Linux-internal concern is
+> also not good.
+>=20
+> How about keeping the error stuff as a separate device from Linux's
+> perspective, but have the main Freescale PCI code create it as a
+> platform device instead of putting it in the device tree?
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+I'd be good with that solution.
+
+- k=
