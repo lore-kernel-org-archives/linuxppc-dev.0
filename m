@@ -1,28 +1,19 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C43681007D2
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id E2E0C1007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 07:23:56 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6MLKIQW026687
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:20:18 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6MLNg8w118804
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:23:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6MLNc15008112
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 15:23:39 -0600
-Message-Id: <201007222123.o6MLNYGb007400@d03av02.boulder.ibm.com>
-Subject: [PATCH 1/1] powerpc: Increase pseries_cpu_die delay
-To: benh@kernel.crashing.org
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Thu, 22 Jul 2010 16:23:35 -0500
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+	Fri, 23 Jul 2010 07:27:43 +1000 (EST)
+Message-ID: <4C48B384.1020006@emcraft.com>
+Date: Fri, 23 Jul 2010 01:09:24 +0400
+From: Ilya Yanok <yanok@emcraft.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Commit 3da34aa brakes MSI support on MPC8308 (possibly all MPC83xx)
+	[REPOST]
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+  Hi Kumar, Kim, Josh, everybody,
 
-In testing SMT disable, we have been regularly seeing the following message:
+I hope to disturb you but I haven't got any reply for my first posting...
 
-Querying DEAD? cpu %i (%i) shows %i
+I've found that MSI work correctly with older kernels on my MPC8308RDB 
+board and don't work with newer ones. After bisecting I've found that 
+the source of the problem is commit 3da34aa:
 
-This indicates the current delay in pseries_cpu_die where we wait
-for the specified CPU to die, is insufficient. Usually, this does
-not cause a problem, but we've seen this result in BUG_ON's going
-off in the timer code when we try to migrate the timers off the
-dead cpu while a timer is still running. Increasing this delay,
-as is done in this patch, seems to resolve this issue.
+commit 3da34aae03d498ee62f75aa7467de93cce3030fd
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Tue May 12 15:51:56 2009 -0500
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+     powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
 
- arch/powerpc/platforms/pseries/hotplug-cpu.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+     Its feasible based on how the PCI address map is setup that the region
+     of PCI address space used for MSIs differs for each PHB on the same 
+SoC.
 
-diff -puN arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_cpu_die_delay arch/powerpc/platforms/pseries/hotplug-cpu.c
---- linux-2.6/arch/powerpc/platforms/pseries/hotplug-cpu.c~powerpc_cpu_die_delay	2010-07-20 09:24:01.000000000 -0500
-+++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/hotplug-cpu.c	2010-07-20 09:24:20.000000000 -0500
-@@ -193,12 +193,12 @@ static void pseries_cpu_die(unsigned int
- 
- 	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
- 		cpu_status = 1;
--		for (tries = 0; tries < 1000; tries++) {
-+		for (tries = 0; tries < 5000; tries++) {
- 			if (get_cpu_current_state(cpu) == CPU_STATE_INACTIVE) {
- 				cpu_status = 0;
- 				break;
- 			}
--			cpu_relax();
-+			msleep(1);
- 		}
- 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
- 
-_
+     Instead of assuming that the address mappes to CCSRBAR 1:1 we read
+     PEXCSRBAR (BAR0) for the PHB that the given pci_dev is on.
+
+     Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+I can see BAR0 initialization for 85xx/86xx hardware but not for 83xx 
+neigher in the kernel nor in U-Boot (that makes me think that all 83xx 
+can be affected).
+I'm not actually an PCI expert so I've just tried to write IMMR base 
+address to the BAR0 register from the U-Boot to get the correct address 
+but this doesn't help.
+Please direct me how to init 83xx PCIE controller to make it compatible 
+with this patch.
+
+Kim, I think MPC8315E is affected too, could you please test it?
+
+Thanks in advance.
+
+Regards, Ilya.
