@@ -1,12 +1,14 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A8CEDB6F06
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:28 +1000 (EST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 600EF10091D
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:39 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 0/3] Add USB Host support for MPC5121 SoC
-Date: Thu, 22 Jul 2010 18:25:19 +0200
-Message-Id: <1279815922-27198-1-git-send-email-agust@denx.de>
+Subject: [PATCH 1/3] powerpc/fsl_soc.c: remove FSL USB platform code
+Date: Thu, 22 Jul 2010 18:25:20 +0200
+Message-Id: <1279815922-27198-2-git-send-email-agust@denx.de>
+In-Reply-To: <1279815922-27198-1-git-send-email-agust@denx.de>
+References: <1279815922-27198-1-git-send-email-agust@denx.de>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
 	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
 	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
@@ -20,25 +22,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is new attempt to add MPC512x USB support in mainline kernel.
-USB OTG support is not included in this patch series, it will be
-submitted later.
+This removed code will be replaced by simple of_platform
+driver for creation of FSL USB platform devices which is
+added by next patch of the series.
 
-Anatolij Gustschin (3):
-  powerpc/fsl_soc.c: remove FSL USB platform code
-  USB: add of_platform glue driver for FSL USB DR controller
-  USB: add USB EHCI support for MPC5121 SoC
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/sysdev/fsl_soc.c |  163 -----------------------------------------
+ 1 files changed, 0 insertions(+), 163 deletions(-)
 
- Documentation/powerpc/dts-bindings/fsl/usb.txt |   22 ++
- arch/powerpc/sysdev/fsl_soc.c                  |  163 --------------
- drivers/usb/Kconfig                            |    1 +
- drivers/usb/gadget/Kconfig                     |    1 +
- drivers/usb/host/Kconfig                       |   11 +-
- drivers/usb/host/Makefile                      |    1 +
- drivers/usb/host/ehci-fsl.c                    |  107 +++++++---
- drivers/usb/host/ehci-fsl.h                    |   19 ++-
- drivers/usb/host/ehci-mem.c                    |    2 +-
- drivers/usb/host/fsl-mph-dr-of.c               |  278 ++++++++++++++++++++++++
- include/linux/fsl_devices.h                    |   15 ++
- 11 files changed, 425 insertions(+), 195 deletions(-)
- create mode 100644 drivers/usb/host/fsl-mph-dr-of.c
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index b91f7ac..49a51f1 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -209,169 +209,6 @@ static int __init of_add_fixed_phys(void)
+ arch_initcall(of_add_fixed_phys);
+ #endif /* CONFIG_FIXED_PHY */
+ 
+-static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
+-{
+-	if (!phy_type)
+-		return FSL_USB2_PHY_NONE;
+-	if (!strcasecmp(phy_type, "ulpi"))
+-		return FSL_USB2_PHY_ULPI;
+-	if (!strcasecmp(phy_type, "utmi"))
+-		return FSL_USB2_PHY_UTMI;
+-	if (!strcasecmp(phy_type, "utmi_wide"))
+-		return FSL_USB2_PHY_UTMI_WIDE;
+-	if (!strcasecmp(phy_type, "serial"))
+-		return FSL_USB2_PHY_SERIAL;
+-
+-	return FSL_USB2_PHY_NONE;
+-}
+-
+-static int __init fsl_usb_of_init(void)
+-{
+-	struct device_node *np;
+-	unsigned int i = 0;
+-	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
+-		*usb_dev_dr_client = NULL;
+-	int ret;
+-
+-	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto err;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		usb_dev_mph =
+-		    platform_device_register_simple("fsl-ehci", i, r, 2);
+-		if (IS_ERR(usb_dev_mph)) {
+-			ret = PTR_ERR(usb_dev_mph);
+-			goto err;
+-		}
+-
+-		usb_dev_mph->dev.coherent_dma_mask = 0xffffffffUL;
+-		usb_dev_mph->dev.dma_mask = &usb_dev_mph->dev.coherent_dma_mask;
+-
+-		usb_data.operating_mode = FSL_USB2_MPH_HOST;
+-
+-		prop = of_get_property(np, "port0", NULL);
+-		if (prop)
+-			usb_data.port_enables |= FSL_USB2_PORT0_ENABLED;
+-
+-		prop = of_get_property(np, "port1", NULL);
+-		if (prop)
+-			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
+-
+-		prop = of_get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
+-
+-		ret =
+-		    platform_device_add_data(usb_dev_mph, &usb_data,
+-					     sizeof(struct
+-						    fsl_usb2_platform_data));
+-		if (ret)
+-			goto unreg_mph;
+-		i++;
+-	}
+-
+-	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
+-		struct resource r[2];
+-		struct fsl_usb2_platform_data usb_data;
+-		const unsigned char *prop = NULL;
+-
+-		if (!of_device_is_available(np))
+-			continue;
+-
+-		memset(&r, 0, sizeof(r));
+-		memset(&usb_data, 0, sizeof(usb_data));
+-
+-		ret = of_address_to_resource(np, 0, &r[0]);
+-		if (ret)
+-			goto unreg_mph;
+-
+-		of_irq_to_resource(np, 0, &r[1]);
+-
+-		prop = of_get_property(np, "dr_mode", NULL);
+-
+-		if (!prop || !strcmp(prop, "host")) {
+-			usb_data.operating_mode = FSL_USB2_DR_HOST;
+-			usb_dev_dr_host = platform_device_register_simple(
+-					"fsl-ehci", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_host)) {
+-				ret = PTR_ERR(usb_dev_dr_host);
+-				goto err;
+-			}
+-		} else if (prop && !strcmp(prop, "peripheral")) {
+-			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
+-			usb_dev_dr_client = platform_device_register_simple(
+-					"fsl-usb2-udc", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_client)) {
+-				ret = PTR_ERR(usb_dev_dr_client);
+-				goto err;
+-			}
+-		} else if (prop && !strcmp(prop, "otg")) {
+-			usb_data.operating_mode = FSL_USB2_DR_OTG;
+-			usb_dev_dr_host = platform_device_register_simple(
+-					"fsl-ehci", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_host)) {
+-				ret = PTR_ERR(usb_dev_dr_host);
+-				goto err;
+-			}
+-			usb_dev_dr_client = platform_device_register_simple(
+-					"fsl-usb2-udc", i, r, 2);
+-			if (IS_ERR(usb_dev_dr_client)) {
+-				ret = PTR_ERR(usb_dev_dr_client);
+-				goto err;
+-			}
+-		} else {
+-			ret = -EINVAL;
+-			goto err;
+-		}
+-
+-		prop = of_get_property(np, "phy_type", NULL);
+-		usb_data.phy_mode = determine_usb_phy(prop);
+-
+-		if (usb_dev_dr_host) {
+-			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
+-			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
+-				dev.coherent_dma_mask;
+-			if ((ret = platform_device_add_data(usb_dev_dr_host,
+-						&usb_data, sizeof(struct
+-						fsl_usb2_platform_data))))
+-				goto unreg_dr;
+-		}
+-		if (usb_dev_dr_client) {
+-			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
+-			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
+-				dev.coherent_dma_mask;
+-			if ((ret = platform_device_add_data(usb_dev_dr_client,
+-						&usb_data, sizeof(struct
+-						fsl_usb2_platform_data))))
+-				goto unreg_dr;
+-		}
+-		i++;
+-	}
+-	return 0;
+-
+-unreg_dr:
+-	if (usb_dev_dr_host)
+-		platform_device_unregister(usb_dev_dr_host);
+-	if (usb_dev_dr_client)
+-		platform_device_unregister(usb_dev_dr_client);
+-unreg_mph:
+-	if (usb_dev_mph)
+-		platform_device_unregister(usb_dev_mph);
+-err:
+-	return ret;
+-}
+-
+-arch_initcall(fsl_usb_of_init);
+-
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ static __be32 __iomem *rstcr;
+ 
+-- 
+1.7.0.4
