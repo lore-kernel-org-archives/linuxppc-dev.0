@@ -1,13 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: print cores passed to firmware in decimal
-In-reply-to: <F9116E5B-643A-490D-A080-FC9FF85C9CD7@kernel.crashing.org>
-References: <4553.1279775749@neuling.org>
-	<F9116E5B-643A-490D-A080-FC9FF85C9CD7@kernel.crashing.org>
-Date: Fri, 23 Jul 2010 09:15:50 +1000
-Message-ID: <31471.1279840550@neuling.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id A11041007D9
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 09:50:10 +1000 (EST)
+Date: Thu, 22 Jul 2010 19:50:08 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] powerpc:  fix .data..init_task output section
+Message-ID: <20100722195008.72fe2e71@lappy.seanm.ca>
+In-Reply-To: <20100713095024.GA10494@merkur.ravnborg.org>
+References: <20100628005900.28d4a8e0@lappy.seanm.ca>
+	<20100712203435.08a3e90f@lappy.seanm.ca>
+	<20100713095024.GA10494@merkur.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,86 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we look pretty stupid when printing out the number of cores
-passed to FW
+On Tue, 13 Jul 2010 11:50:24 +0200
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-  Max number of cores passed to firmware: 0x0000000000000080
-
-So I've change this to print in decimal:
-
-  Max number of cores passed to firmware: 128 (NR_CPUS = 256)
-
-This required adding a prom_print_dec() function. 
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
---
-> Unsigned long should be "%lu".
-
-Changed %i to %lu as per Segher request
-
- arch/powerpc/kernel/prom_init.c |   35 ++++++++++++++++++++++++++++++++---
- 1 files changed, 32 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 3b6f8ae..e8b68ff 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -311,6 +311,27 @@ static void __init prom_print_hex(unsigned long val)
- 	call_prom("write", 3, 1, _prom->stdout, buf, nibbles);
- }
- 
-+/* max number of decimal digits in an unsigned long */
-+#define UL_DIGITS 21
-+static void __init prom_print_dec(unsigned long val)
-+{
-+	int i, size;
-+	char buf[UL_DIGITS+1];
-+	struct prom_t *_prom = &RELOC(prom);
-+
-+	for (i = UL_DIGITS-1; i >= 0;  i--) {
-+		buf[i] = (val % 10) + '0';
-+		val = val/10;
-+		if (val == 0)
-+			break;
-+	}
-+	/* shift stuff down */
-+	size = UL_DIGITS - i;
-+	for (i = 0 ; i < size ; i++)
-+		buf[i] = buf[i + UL_DIGITS - size];
-+	buf[size+1] = '\0';
-+	call_prom("write", 3, 1, _prom->stdout, buf, size);
-+}
- 
- static void __init prom_printf(const char *format, ...)
- {
-@@ -350,6 +371,14 @@ static void __init prom_printf(const char *format, ...)
- 			v = va_arg(args, unsigned long);
- 			prom_print_hex(v);
- 			break;
-+		case 'l':
-+			++q;
-+			if (*q == 'u') { /* '%lx' */
-+				++q;
-+				v = va_arg(args, unsigned long);
-+				prom_print_dec(v);
-+			}
-+			break;
- 		}
- 	}
- }
-@@ -869,12 +898,12 @@ static void __init prom_send_capabilities(void)
- 		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
- 		if (*cores != NR_CPUS) {
- 			prom_printf("WARNING ! "
--				    "ibm_architecture_vec structure inconsistent: 0x%x !\n",
-+				    "ibm_architecture_vec structure inconsistent: 0x%lu !\n",
- 				    *cores);
- 		} else {
- 			*cores = DIV_ROUND_UP(NR_CPUS, prom_count_smt_threads());
--			prom_printf("Max number of cores passed to firmware: 0x%x\n",
--				    (unsigned long)*cores);
-+			prom_printf("Max number of cores passed to firmware: %lu (NR_CPUS = %lu)\n",
-+				    *cores, NR_CPUS);
- 		}
- 
- 		/* try calling the ibm,client-architecture-support method */
+> From 851e645a7eee68380caaf026eb6d3be118876370 Mon Sep 17 00:00:00 2001
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 13 Jul 2010 11:39:42 +0200
+> Subject: [PATCH] vmlinux.lds: fix .data..init_task output section
+> (fix popwerpc boot)
+> 
+> The .data..init_task output section was missing
+> a load offset causing a popwerpc target to fail to boot.
+> 
+> Sean MacLennan tracked it down to the definition of
+> INIT_TASK_DATA_SECTION().
+> 
+> There are only two users of INIT_TASK_DATA_SECTION()
+> in the kernel today: cris and popwerpc.
+> cris do not support relocatable kernels and is thus not
+> impacted by this change.
+> 
+> Fix INIT_TASK_DATA_SECTION() to specify load offset like
+> all other output sections.
+> 
+> Reported-by: Sean MacLennan <smaclennan@pikatech.com>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+> 
+> On the assumption that Sean reports that it fixes
+> the warnings/boot issue here is a real patch.
+> 
+> Ben - will you take it via the popwerpc tree
+> or shall I ask Michal to take it via kbuild?
+> 
+> 	Sam
+> 
+>  include/asm-generic/vmlinux.lds.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/asm-generic/vmlinux.lds.h
+> b/include/asm-generic/vmlinux.lds.h index 48c5299..cdfff74 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -435,7 +435,7 @@
+>   */
+>  #define
+> INIT_TASK_DATA_SECTION(align)
+> \ . = ALIGN(align);						\
+> -	.data..init_task :
+> {						\
+> +	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET)
+> {	\
+> INIT_TASK_DATA(align)					\ }
+>  
