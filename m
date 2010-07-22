@@ -1,12 +1,12 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 600EF10091D
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:39 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 14212B7125
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:46 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 1/3] powerpc/fsl_soc.c: remove FSL USB platform code
-Date: Thu, 22 Jul 2010 18:25:20 +0200
-Message-Id: <1279815922-27198-2-git-send-email-agust@denx.de>
+Subject: [PATCH 2/3] USB: add of_platform glue driver for FSL USB DR controller
+Date: Thu, 22 Jul 2010 18:25:21 +0200
+Message-Id: <1279815922-27198-3-git-send-email-agust@denx.de>
 In-Reply-To: <1279815922-27198-1-git-send-email-agust@denx.de>
 References: <1279815922-27198-1-git-send-email-agust@denx.de>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -22,190 +22,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This removed code will be replaced by simple of_platform
-driver for creation of FSL USB platform devices which is
-added by next patch of the series.
+The driver creates platform devices based on the information
+from USB nodes in the flat device tree. This is the replacement
+for old arch fsl_soc usb code removed by the previous patch.
+It uses usual of-style binding, available EHCI-HCD and UDC
+drivers can be bound to the created devices. The new of-style
+driver additionaly instantiates USB OTG platform device, as the
+appropriate USB OTG driver will be added soon.
 
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
- arch/powerpc/sysdev/fsl_soc.c |  163 -----------------------------------------
- 1 files changed, 0 insertions(+), 163 deletions(-)
+ drivers/usb/gadget/Kconfig       |    1 +
+ drivers/usb/host/Kconfig         |    5 +
+ drivers/usb/host/Makefile        |    1 +
+ drivers/usb/host/fsl-mph-dr-of.c |  189 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 196 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/usb/host/fsl-mph-dr-of.c
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index b91f7ac..49a51f1 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -209,169 +209,6 @@ static int __init of_add_fixed_phys(void)
- arch_initcall(of_add_fixed_phys);
- #endif /* CONFIG_FIXED_PHY */
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index cd27f9b..e15e314 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -158,6 +158,7 @@ config USB_GADGET_FSL_USB2
+ 	boolean "Freescale Highspeed USB DR Peripheral Controller"
+ 	depends on FSL_SOC || ARCH_MXC
+ 	select USB_GADGET_DUALSPEED
++	select USB_FSL_MPH_DR_OF
+ 	help
+ 	   Some of Freescale PowerPC processors have a High Speed
+ 	   Dual-Role(DR) USB controller, which supports device mode.
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 2d926ce..6687523 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -112,10 +112,15 @@ config XPS_USB_HCD_XILINX
+ 		support both high speed and full speed devices, or high speed
+ 		devices only.
  
--static enum fsl_usb2_phy_modes determine_usb_phy(const char *phy_type)
--{
--	if (!phy_type)
--		return FSL_USB2_PHY_NONE;
--	if (!strcasecmp(phy_type, "ulpi"))
--		return FSL_USB2_PHY_ULPI;
--	if (!strcasecmp(phy_type, "utmi"))
--		return FSL_USB2_PHY_UTMI;
--	if (!strcasecmp(phy_type, "utmi_wide"))
--		return FSL_USB2_PHY_UTMI_WIDE;
--	if (!strcasecmp(phy_type, "serial"))
--		return FSL_USB2_PHY_SERIAL;
--
--	return FSL_USB2_PHY_NONE;
--}
--
--static int __init fsl_usb_of_init(void)
--{
--	struct device_node *np;
--	unsigned int i = 0;
--	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
--		*usb_dev_dr_client = NULL;
--	int ret;
--
--	for_each_compatible_node(np, NULL, "fsl-usb2-mph") {
--		struct resource r[2];
--		struct fsl_usb2_platform_data usb_data;
--		const unsigned char *prop = NULL;
--
--		memset(&r, 0, sizeof(r));
--		memset(&usb_data, 0, sizeof(usb_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
--		if (ret)
--			goto err;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		usb_dev_mph =
--		    platform_device_register_simple("fsl-ehci", i, r, 2);
--		if (IS_ERR(usb_dev_mph)) {
--			ret = PTR_ERR(usb_dev_mph);
--			goto err;
--		}
--
--		usb_dev_mph->dev.coherent_dma_mask = 0xffffffffUL;
--		usb_dev_mph->dev.dma_mask = &usb_dev_mph->dev.coherent_dma_mask;
--
--		usb_data.operating_mode = FSL_USB2_MPH_HOST;
--
--		prop = of_get_property(np, "port0", NULL);
--		if (prop)
--			usb_data.port_enables |= FSL_USB2_PORT0_ENABLED;
--
--		prop = of_get_property(np, "port1", NULL);
--		if (prop)
--			usb_data.port_enables |= FSL_USB2_PORT1_ENABLED;
--
--		prop = of_get_property(np, "phy_type", NULL);
--		usb_data.phy_mode = determine_usb_phy(prop);
--
--		ret =
--		    platform_device_add_data(usb_dev_mph, &usb_data,
--					     sizeof(struct
--						    fsl_usb2_platform_data));
--		if (ret)
--			goto unreg_mph;
--		i++;
--	}
--
--	for_each_compatible_node(np, NULL, "fsl-usb2-dr") {
--		struct resource r[2];
--		struct fsl_usb2_platform_data usb_data;
--		const unsigned char *prop = NULL;
--
--		if (!of_device_is_available(np))
--			continue;
--
--		memset(&r, 0, sizeof(r));
--		memset(&usb_data, 0, sizeof(usb_data));
--
--		ret = of_address_to_resource(np, 0, &r[0]);
--		if (ret)
--			goto unreg_mph;
--
--		of_irq_to_resource(np, 0, &r[1]);
--
--		prop = of_get_property(np, "dr_mode", NULL);
--
--		if (!prop || !strcmp(prop, "host")) {
--			usb_data.operating_mode = FSL_USB2_DR_HOST;
--			usb_dev_dr_host = platform_device_register_simple(
--					"fsl-ehci", i, r, 2);
--			if (IS_ERR(usb_dev_dr_host)) {
--				ret = PTR_ERR(usb_dev_dr_host);
--				goto err;
--			}
--		} else if (prop && !strcmp(prop, "peripheral")) {
--			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
--			usb_dev_dr_client = platform_device_register_simple(
--					"fsl-usb2-udc", i, r, 2);
--			if (IS_ERR(usb_dev_dr_client)) {
--				ret = PTR_ERR(usb_dev_dr_client);
--				goto err;
--			}
--		} else if (prop && !strcmp(prop, "otg")) {
--			usb_data.operating_mode = FSL_USB2_DR_OTG;
--			usb_dev_dr_host = platform_device_register_simple(
--					"fsl-ehci", i, r, 2);
--			if (IS_ERR(usb_dev_dr_host)) {
--				ret = PTR_ERR(usb_dev_dr_host);
--				goto err;
--			}
--			usb_dev_dr_client = platform_device_register_simple(
--					"fsl-usb2-udc", i, r, 2);
--			if (IS_ERR(usb_dev_dr_client)) {
--				ret = PTR_ERR(usb_dev_dr_client);
--				goto err;
--			}
--		} else {
--			ret = -EINVAL;
--			goto err;
--		}
--
--		prop = of_get_property(np, "phy_type", NULL);
--		usb_data.phy_mode = determine_usb_phy(prop);
--
--		if (usb_dev_dr_host) {
--			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
--			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
--				dev.coherent_dma_mask;
--			if ((ret = platform_device_add_data(usb_dev_dr_host,
--						&usb_data, sizeof(struct
--						fsl_usb2_platform_data))))
--				goto unreg_dr;
--		}
--		if (usb_dev_dr_client) {
--			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
--			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
--				dev.coherent_dma_mask;
--			if ((ret = platform_device_add_data(usb_dev_dr_client,
--						&usb_data, sizeof(struct
--						fsl_usb2_platform_data))))
--				goto unreg_dr;
--		}
--		i++;
--	}
--	return 0;
--
--unreg_dr:
--	if (usb_dev_dr_host)
--		platform_device_unregister(usb_dev_dr_host);
--	if (usb_dev_dr_client)
--		platform_device_unregister(usb_dev_dr_client);
--unreg_mph:
--	if (usb_dev_mph)
--		platform_device_unregister(usb_dev_mph);
--err:
--	return ret;
--}
--
--arch_initcall(fsl_usb_of_init);
--
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
- static __be32 __iomem *rstcr;
++config USB_FSL_MPH_DR_OF
++	bool
++	depends on PPC_OF
++
+ config USB_EHCI_FSL
+ 	bool "Support for Freescale on-chip EHCI USB controller"
+ 	depends on USB_EHCI_HCD && FSL_SOC
+ 	select USB_EHCI_ROOT_HUB_TT
++	select USB_FSL_MPH_DR_OF
+ 	---help---
+ 	  Variation of ARC USB block used in some Freescale chips.
  
+diff --git a/drivers/usb/host/Makefile b/drivers/usb/host/Makefile
+index b6315aa..aacbe82 100644
+--- a/drivers/usb/host/Makefile
++++ b/drivers/usb/host/Makefile
+@@ -33,4 +33,5 @@ obj-$(CONFIG_USB_R8A66597_HCD)	+= r8a66597-hcd.o
+ obj-$(CONFIG_USB_ISP1760_HCD)	+= isp1760.o
+ obj-$(CONFIG_USB_HWA_HCD)	+= hwa-hc.o
+ obj-$(CONFIG_USB_IMX21_HCD)	+= imx21-hcd.o
++obj-$(CONFIG_USB_FSL_MPH_DR_OF)	+= fsl-mph-dr-of.o
+ 
+diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
+new file mode 100644
+index 0000000..020a939
+--- /dev/null
++++ b/drivers/usb/host/fsl-mph-dr-of.c
+@@ -0,0 +1,189 @@
++/*
++ * Setup platform devices needed by the Freescale multi-port host
++ * and/or dual-role USB controller modules based on the description
++ * in flat device tree.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/fsl_devices.h>
++#include <linux/io.h>
++#include <linux/of_platform.h>
++
++struct fsl_usb2_dev_data {
++	char *dr_mode;		/* controller mode */
++	char *drivers[3];	/* drivers to instantiate for this mode */
++	enum fsl_usb2_operating_modes op_mode;	/* operating mode */
++};
++
++struct fsl_usb2_dev_data dr_mode_data[] __devinitdata = {
++	{
++		"host",
++		{ "fsl-ehci", NULL, NULL, },
++		FSL_USB2_DR_HOST,
++	},
++	{
++		"otg",
++		{ "fsl-ehci", "fsl-usb2-udc", "fsl-usb2-otg", },
++		FSL_USB2_DR_OTG,
++	},
++	{
++		"periferal",
++		{ "fsl-usb2-udc", NULL, NULL, },
++		FSL_USB2_DR_DEVICE,
++	},
++};
++
++struct fsl_usb2_dev_data * __devinit get_dr_mode_data(struct device_node *np)
++{
++	const unsigned char *prop;
++	int i;
++
++	prop = of_get_property(np, "dr_mode", NULL);
++	if (prop) {
++		for (i = 0; i < ARRAY_SIZE(dr_mode_data); i++) {
++			if (!strcmp(prop, dr_mode_data[i].dr_mode))
++				return &dr_mode_data[i];
++		}
++	}
++	return &dr_mode_data[0]; /* mode not specified, use host */
++}
++
++static enum fsl_usb2_phy_modes __devinit determine_usb_phy(const char *phy_type)
++{
++	if (!phy_type)
++		return FSL_USB2_PHY_NONE;
++	if (!strcasecmp(phy_type, "ulpi"))
++		return FSL_USB2_PHY_ULPI;
++	if (!strcasecmp(phy_type, "utmi"))
++		return FSL_USB2_PHY_UTMI;
++	if (!strcasecmp(phy_type, "utmi_wide"))
++		return FSL_USB2_PHY_UTMI_WIDE;
++	if (!strcasecmp(phy_type, "serial"))
++		return FSL_USB2_PHY_SERIAL;
++
++	return FSL_USB2_PHY_NONE;
++}
++
++struct platform_device * __devinit
++fsl_usb2_device_register(struct of_device *ofdev,
++			 struct fsl_usb2_platform_data *pdata,
++			 const char *name, int id)
++{
++	struct platform_device *pdev;
++	const struct resource *res = ofdev->resource;
++	unsigned int num = ofdev->num_resources;
++	int retval;
++
++	pdev = platform_device_alloc(name, id);
++	if (!pdev) {
++		retval = -ENOMEM;
++		goto error;
++	}
++
++	pdev->dev.parent = &ofdev->dev;
++
++	pdev->dev.coherent_dma_mask = ofdev->dev.coherent_dma_mask;
++	pdev->dev.dma_mask = &pdev->archdata.dma_mask;
++	*pdev->dev.dma_mask = *ofdev->dev.dma_mask;
++
++	retval = platform_device_add_data(pdev, pdata, sizeof(*pdata));
++	if (retval)
++		goto error;
++
++	if (num) {
++		retval = platform_device_add_resources(pdev, res, num);
++		if (retval)
++			goto error;
++	}
++
++	retval = platform_device_add(pdev);
++	if (retval)
++		goto error;
++
++	return pdev;
++
++error:
++	platform_device_put(pdev);
++	return ERR_PTR(retval);
++}
++
++static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
++					   const struct of_device_id *match)
++{
++	struct device_node *np = ofdev->dev.of_node;
++	struct platform_device *usb_dev;
++	struct fsl_usb2_platform_data data, *pdata;
++	struct fsl_usb2_dev_data *dev_data;
++	const unsigned char *prop;
++	static unsigned int idx;
++	int i;
++
++	if (!of_device_is_available(np))
++		return -ENODEV;
++
++	pdata = match->data;
++	if (!pdata) {
++		memset(&data, 0, sizeof(data));
++		pdata = &data;
++	}
++
++	dev_data = get_dr_mode_data(np);
++
++	if (of_device_is_compatible(np, "fsl-usb2-mph")) {
++		prop = of_get_property(np, "port0", NULL);
++		if (prop)
++			pdata->port_enables |= FSL_USB2_PORT0_ENABLED;
++
++		prop = of_get_property(np, "port1", NULL);
++		if (prop)
++			pdata->port_enables |= FSL_USB2_PORT1_ENABLED;
++
++		pdata->operating_mode = FSL_USB2_MPH_HOST;
++	} else {
++		/* setup mode selected in the device tree */
++		pdata->operating_mode = dev_data->op_mode;
++	}
++
++	prop = of_get_property(np, "phy_type", NULL);
++	pdata->phy_mode = determine_usb_phy(prop);
++
++	for (i = 0; i < ARRAY_SIZE(dev_data->drivers); i++) {
++		if (!dev_data->drivers[i])
++			continue;
++		usb_dev = fsl_usb2_device_register(ofdev, pdata,
++					dev_data->drivers[i], idx);
++		if (IS_ERR(usb_dev)) {
++			dev_err(&ofdev->dev, "Can't register usb device\n");
++			return PTR_ERR(usb_dev);
++		}
++	}
++	idx++;
++	return 0;
++}
++
++static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
++	{ .compatible = "fsl-usb2-mph", },
++	{ .compatible = "fsl-usb2-dr", },
++	{},
++};
++
++static struct of_platform_driver fsl_usb2_mph_dr_driver = {
++	.driver = {
++		.name = "fsl-usb2-mph-dr",
++		.owner = THIS_MODULE,
++		.of_match_table = fsl_usb2_mph_dr_of_match,
++	},
++	.probe	= fsl_usb2_mph_dr_of_probe,
++};
++
++static int __init fsl_usb2_mph_dr_init(void)
++{
++	return of_register_platform_driver(&fsl_usb2_mph_dr_driver);
++}
++fs_initcall(fsl_usb2_mph_dr_init);
 -- 
 1.7.0.4
