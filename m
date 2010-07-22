@@ -1,12 +1,12 @@
 Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 14212B7125
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:46 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 30C08B725A
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:50 +1000 (EST)
 From: Anatolij Gustschin <agust@denx.de>
 To: linux-usb@vger.kernel.org
-Subject: [PATCH 2/3] USB: add of_platform glue driver for FSL USB DR controller
-Date: Thu, 22 Jul 2010 18:25:21 +0200
-Message-Id: <1279815922-27198-3-git-send-email-agust@denx.de>
+Subject: [PATCH 3/3] USB: add USB EHCI support for MPC5121 SoC
+Date: Thu, 22 Jul 2010 18:25:22 +0200
+Message-Id: <1279815922-27198-4-git-send-email-agust@denx.de>
 In-Reply-To: <1279815922-27198-1-git-send-email-agust@denx.de>
 References: <1279815922-27198-1-git-send-email-agust@denx.de>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -22,261 +22,510 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver creates platform devices based on the information
-from USB nodes in the flat device tree. This is the replacement
-for old arch fsl_soc usb code removed by the previous patch.
-It uses usual of-style binding, available EHCI-HCD and UDC
-drivers can be bound to the created devices. The new of-style
-driver additionaly instantiates USB OTG platform device, as the
-appropriate USB OTG driver will be added soon.
+Extends FSL EHCI platform driver glue layer to support
+MPC5121 USB controllers. MPC5121 Rev 2.0 silicon EHCI
+registers are in big endian format. The appropriate flags
+are set using the information in the platform data structure.
+MPC83xx system interface registers are not available on
+MPC512x, so the access to these registers is isolated in
+MPC512x case. Furthermore the USB controller clocks
+must be enabled before 512x register accesses which is
+done by providing platform specific init callback.
+
+The MPC512x internal USB PHY doesn't provide supply voltage.
+For boards using different power switches allow specifying
+DRVVBUS and PWR_FAULT signal polarity of the MPC5121 internal
+PHY using "fsl,invert-drvvbus" and "fsl,invert-pwr-fault"
+properties in the device tree USB nodes. Adds documentation
+for this new device tree bindings.
 
 Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/usb/gadget/Kconfig       |    1 +
- drivers/usb/host/Kconfig         |    5 +
- drivers/usb/host/Makefile        |    1 +
- drivers/usb/host/fsl-mph-dr-of.c |  189 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 196 insertions(+), 0 deletions(-)
- create mode 100644 drivers/usb/host/fsl-mph-dr-of.c
+ Documentation/powerpc/dts-bindings/fsl/usb.txt |   22 +++++
+ drivers/usb/Kconfig                            |    1 +
+ drivers/usb/host/Kconfig                       |    6 +-
+ drivers/usb/host/ehci-fsl.c                    |  107 +++++++++++++++++------
+ drivers/usb/host/ehci-fsl.h                    |   19 ++++-
+ drivers/usb/host/ehci-mem.c                    |    2 +-
+ drivers/usb/host/fsl-mph-dr-of.c               |   89 ++++++++++++++++++++
+ include/linux/fsl_devices.h                    |   15 ++++
+ 8 files changed, 229 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-index cd27f9b..e15e314 100644
---- a/drivers/usb/gadget/Kconfig
-+++ b/drivers/usb/gadget/Kconfig
-@@ -158,6 +158,7 @@ config USB_GADGET_FSL_USB2
- 	boolean "Freescale Highspeed USB DR Peripheral Controller"
- 	depends on FSL_SOC || ARCH_MXC
- 	select USB_GADGET_DUALSPEED
-+	select USB_FSL_MPH_DR_OF
- 	help
- 	   Some of Freescale PowerPC processors have a High Speed
- 	   Dual-Role(DR) USB controller, which supports device mode.
+diff --git a/Documentation/powerpc/dts-bindings/fsl/usb.txt b/Documentation/powerpc/dts-bindings/fsl/usb.txt
+index b001524..bd5723f 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/usb.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/usb.txt
+@@ -8,6 +8,7 @@ and additions :
+ Required properties :
+  - compatible : Should be "fsl-usb2-mph" for multi port host USB
+    controllers, or "fsl-usb2-dr" for dual role USB controllers
++   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
+  - phy_type : For multi port host USB controllers, should be one of
+    "ulpi", or "serial". For dual role USB controllers, should be
+    one of "ulpi", "utmi", "utmi_wide", or "serial".
+@@ -33,6 +34,12 @@ Recommended properties :
+  - interrupt-parent : the phandle for the interrupt controller that
+    services interrupts for this device.
+ 
++Optional properties :
++ - fsl,invert-drvvbus : boolean; for MPC5121 USB0 only. Indicates the
++   port power polarity of internal PHY signal DRVVBUS is inverted.
++ - fsl,invert-pwr-fault : boolean; for MPC5121 USB0 only. Indicates
++   the PWR_FAULT signal polarity is inverted.
++
+ Example multi port host USB controller device node :
+ 	usb@22000 {
+ 		compatible = "fsl-usb2-mph";
+@@ -57,3 +64,18 @@ Example dual role USB controller device node :
+ 		dr_mode = "otg";
+ 		phy = "ulpi";
+ 	};
++
++Example dual role USB controller device node for MPC5121ADS:
++
++	usb@4000 {
++		compatible = "fsl,mpc5121-usb2-dr";
++		reg = <0x4000 0x1000>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-parent = < &ipic >;
++		interrupts = <44 0x8>;
++		dr_mode = "otg";
++		phy_type = "utmi_wide";
++		fsl,invert-drvvbus;
++		fsl,invert-pwr-fault;
++	};
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index 6a58cb1..6e547b5 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -58,6 +58,7 @@ config USB_ARCH_HAS_OHCI
+ config USB_ARCH_HAS_EHCI
+ 	boolean
+ 	default y if PPC_83xx
++	default y if PPC_MPC512x
+ 	default y if SOC_AU1200
+ 	default y if ARCH_IXP4XX
+ 	default y if ARCH_W90X900
 diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 2d926ce..6687523 100644
+index 6687523..90e50f0 100644
 --- a/drivers/usb/host/Kconfig
 +++ b/drivers/usb/host/Kconfig
-@@ -112,10 +112,15 @@ config XPS_USB_HCD_XILINX
- 		support both high speed and full speed devices, or high speed
- 		devices only.
+@@ -93,12 +93,14 @@ config USB_EHCI_TT_NEWSCHED
  
-+config USB_FSL_MPH_DR_OF
-+	bool
-+	depends on PPC_OF
+ config USB_EHCI_BIG_ENDIAN_MMIO
+ 	bool
+-	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
++	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || \
++				    XPS_USB_HCD_XILINX || PPC_MPC512x)
+ 	default y
+ 
+ config USB_EHCI_BIG_ENDIAN_DESC
+ 	bool
+-	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
++	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX || \
++				    PPC_MPC512x)
+ 	default y
+ 
+ config XPS_USB_HCD_XILINX
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index a416421..ff50f5c 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -116,13 +116,39 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 		goto err3;
+ 	}
+ 
+-	/* Enable USB controller */
+-	temp = in_be32(hcd->regs + 0x500);
+-	out_be32(hcd->regs + 0x500, temp | 0x4);
++	pdata->regs = hcd->regs;
 +
- config USB_EHCI_FSL
- 	bool "Support for Freescale on-chip EHCI USB controller"
- 	depends on USB_EHCI_HCD && FSL_SOC
- 	select USB_EHCI_ROOT_HUB_TT
-+	select USB_FSL_MPH_DR_OF
- 	---help---
- 	  Variation of ARC USB block used in some Freescale chips.
++	/*
++	 * do platform specific init: check the clock, grab/config pins, etc.
++	 */
++	if (pdata->init && pdata->init(pdev)) {
++		retval = -ENODEV;
++		goto err3;
++	}
++
++	/*
++	 * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
++	 * flag for 83xx or 8536 system interface registers.
++	 */
++	if (pdata->big_endian_mmio)
++		temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
++	else
++		temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
++
++	if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
++		pdata->have_sysif_regs = 1;
++
++	/* Enable USB controller, 83xx or 8536 */
++	if (pdata->have_sysif_regs)
++		setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
  
-diff --git a/drivers/usb/host/Makefile b/drivers/usb/host/Makefile
-index b6315aa..aacbe82 100644
---- a/drivers/usb/host/Makefile
-+++ b/drivers/usb/host/Makefile
-@@ -33,4 +33,5 @@ obj-$(CONFIG_USB_R8A66597_HCD)	+= r8a66597-hcd.o
- obj-$(CONFIG_USB_ISP1760_HCD)	+= isp1760.o
- obj-$(CONFIG_USB_HWA_HCD)	+= hwa-hc.o
- obj-$(CONFIG_USB_IMX21_HCD)	+= imx21-hcd.o
-+obj-$(CONFIG_USB_FSL_MPH_DR_OF)	+= fsl-mph-dr-of.o
+ 	/* Set to Host mode */
+-	temp = in_le32(hcd->regs + 0x1a8);
+-	out_le32(hcd->regs + 0x1a8, temp | 0x3);
++	if (pdata->big_endian_mmio) {
++		setbits32(hcd->regs + FSL_SOC_USB_USBMODE, USBMODE_CM_HOST);
++	} else {
++		clrsetbits_le32(hcd->regs + FSL_SOC_USB_USBMODE,
++				USBMODE_CM_MASK, USBMODE_CM_HOST);
++	}
  
+ 	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
+ 	if (retval != 0)
+@@ -137,6 +163,8 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ 	usb_put_hcd(hcd);
+       err1:
+ 	dev_err(&pdev->dev, "init %s fail, %d\n", dev_name(&pdev->dev), retval);
++	if (pdata->exit)
++		pdata->exit(pdev);
+ 	return retval;
+ }
+ 
+@@ -154,17 +182,30 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
+ static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
+ 			       struct platform_device *pdev)
+ {
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++
+ 	usb_remove_hcd(hcd);
++
++	/*
++	 * do platform specific un-initialization:
++	 * release iomux pins, disable clock, etc.
++	 */
++	if (pdata->exit)
++		pdata->exit(pdev);
+ 	iounmap(hcd->regs);
+ 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
+ 	usb_put_hcd(hcd);
+ }
+ 
+-static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
+-			      enum fsl_usb2_phy_modes phy_mode,
+-			      unsigned int port_offset)
++static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
++			       enum fsl_usb2_phy_modes phy_mode,
++			       unsigned int port_offset)
+ {
+-	u32 portsc = 0;
++	u32 portsc;
++
++	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
++	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
++
+ 	switch (phy_mode) {
+ 	case FSL_USB2_PHY_ULPI:
+ 		portsc |= PORT_PTS_ULPI;
+@@ -184,20 +225,21 @@ static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
+ 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
+ }
+ 
+-static void mpc83xx_usb_setup(struct usb_hcd *hcd)
++static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
+ {
+-	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
++	struct usb_hcd *hcd = ehci_to_hcd(ehci);
+ 	struct fsl_usb2_platform_data *pdata;
+ 	void __iomem *non_ehci = hcd->regs;
+ 	u32 temp;
+ 
+-	pdata =
+-	    (struct fsl_usb2_platform_data *)hcd->self.controller->
+-	    platform_data;
++	pdata = hcd->self.controller->platform_data;
++
+ 	/* Enable PHY interface in the control reg. */
+-	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
+-	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
+-	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
++	if (pdata->have_sysif_regs) {
++		temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
++		out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
++		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
++	}
+ 
+ #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
+ 	/*
+@@ -214,7 +256,7 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
+ 
+ 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
+ 			(pdata->operating_mode == FSL_USB2_DR_OTG))
+-		mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
++		ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
+ 
+ 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
+ 		unsigned int chip, rev, svr;
+@@ -228,27 +270,31 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
+ 			ehci->has_fsl_port_bug = 1;
+ 
+ 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
+-			mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
++			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
+ 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
+-			mpc83xx_setup_phy(ehci, pdata->phy_mode, 1);
++			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 1);
+ 	}
+ 
+ 	/* put controller in host mode. */
+-	ehci_writel(ehci, 0x00000003, non_ehci + FSL_SOC_USB_USBMODE);
++	temp = USBMODE_CM_HOST | (pdata->es ? USBMODE_ES : 0);
++	ehci_writel(ehci, temp, non_ehci + FSL_SOC_USB_USBMODE);
++
++	if (pdata->have_sysif_regs) {
+ #ifdef CONFIG_PPC_85xx
+-	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
+-	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
++		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
++		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
+ #else
+-	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
+-	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
++		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
++		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
+ #endif
+-	out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
++		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
++	}
+ }
+ 
+ /* called after powerup, by probe or system-pm "wakeup" */
+ static int ehci_fsl_reinit(struct ehci_hcd *ehci)
+ {
+-	mpc83xx_usb_setup(ehci_to_hcd(ehci));
++	ehci_fsl_usb_setup(ehci);
+ 	ehci_port_power(ehci, 0);
+ 
+ 	return 0;
+@@ -259,6 +305,11 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
+ {
+ 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+ 	int retval;
++	struct fsl_usb2_platform_data *pdata;
++
++	pdata = hcd->self.controller->platform_data;
++	ehci->big_endian_desc = pdata->big_endian_desc;
++	ehci->big_endian_mmio = pdata->big_endian_mmio;
+ 
+ 	/* EHCI registers start at offset 0x100 */
+ 	ehci->caps = hcd->regs + 0x100;
+@@ -372,7 +423,7 @@ static const struct hc_driver ehci_fsl_hc_driver = {
+ 	 * generic hardware linkage
+ 	 */
+ 	.irq = ehci_irq,
+-	.flags = HCD_USB2,
++	.flags = HCD_USB2 | HCD_MEMORY,
+ 
+ 	/*
+ 	 * basic lifecycle operations
+diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
+index b5e59db..e56be7b 100644
+--- a/drivers/usb/host/ehci-fsl.h
++++ b/drivers/usb/host/ehci-fsl.h
+@@ -1,4 +1,4 @@
+-/* Copyright (c) 2005 freescale semiconductor
++/* Copyright (C) 2005-2010 Freescale Semiconductor, Inc.
+  * Copyright (c) 2005 MontaVista Software
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+@@ -19,6 +19,11 @@
+ #define _EHCI_FSL_H
+ 
+ /* offsets for the non-ehci registers in the FSL SOC USB controller */
++#define FSL_SOC_USB_ID		0x0
++#define ID_MSK			0x3f
++#define NID_MSK			0x3f00
++#define FSL_SOC_USB_SBUSCFG	0x90
++#define FSL_SOC_USB_BURSTSIZE	0x160
+ #define FSL_SOC_USB_ULPIVP	0x170
+ #define FSL_SOC_USB_PORTSC1	0x184
+ #define PORT_PTS_MSK		(3<<30)
+@@ -26,8 +31,20 @@
+ #define PORT_PTS_ULPI		(2<<30)
+ #define	PORT_PTS_SERIAL		(3<<30)
+ #define PORT_PTS_PTW		(1<<28)
++#define PORT_PTS_PHCD		(1<<23)
+ #define FSL_SOC_USB_PORTSC2	0x188
+ #define FSL_SOC_USB_USBMODE	0x1a8
++#define USBMODE_CM_MASK		(3 << 0)	/* controller mode mask */
++#define USBMODE_CM_HOST		(3 << 0)	/* controller mode: host */
++#define USBMODE_ES		(1 << 2)	/* (Big) Endian Select */
++
++#define FSL_SOC_USB_USBGENCTRL	0x200
++#define USBGENCTRL_PPP		(1 << 3)
++#define USBGENCTRL_PFP		(1 << 2)
++#define FSL_SOC_USB_ISIPHYCTRL	0x204
++#define ISIPHYCTRL_PXE		(1)
++#define ISIPHYCTRL_PHYE		(1 << 4)
++
+ #define FSL_SOC_USB_SNOOP1	0x400	/* NOTE: big-endian */
+ #define FSL_SOC_USB_SNOOP2	0x404	/* NOTE: big-endian */
+ #define FSL_SOC_USB_AGECNTTHRSH	0x408	/* NOTE: big-endian */
+diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
+index 1f3f01e..d36e4e7 100644
+--- a/drivers/usb/host/ehci-mem.c
++++ b/drivers/usb/host/ehci-mem.c
+@@ -40,7 +40,7 @@ static inline void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd *qtd,
+ {
+ 	memset (qtd, 0, sizeof *qtd);
+ 	qtd->qtd_dma = dma;
+-	qtd->hw_token = cpu_to_le32 (QTD_STS_HALT);
++	qtd->hw_token = cpu_to_hc32(ehci, QTD_STS_HALT);
+ 	qtd->hw_next = EHCI_LIST_END(ehci);
+ 	qtd->hw_alt_next = EHCI_LIST_END(ehci);
+ 	INIT_LIST_HEAD (&qtd->qtd_list);
 diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-new file mode 100644
-index 0000000..020a939
---- /dev/null
+index 020a939..0ced9fc 100644
+--- a/drivers/usb/host/fsl-mph-dr-of.c
 +++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -0,0 +1,189 @@
-+/*
-+ * Setup platform devices needed by the Freescale multi-port host
-+ * and/or dual-role USB controller modules based on the description
-+ * in flat device tree.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+@@ -14,6 +14,7 @@
+ #include <linux/fsl_devices.h>
+ #include <linux/io.h>
+ #include <linux/of_platform.h>
++#include <linux/clk.h>
+ 
+ struct fsl_usb2_dev_data {
+ 	char *dr_mode;		/* controller mode */
+@@ -146,6 +147,12 @@ static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
+ 
+ 		pdata->operating_mode = FSL_USB2_MPH_HOST;
+ 	} else {
++		if (of_get_property(np, "fsl,invert-drvvbus", NULL))
++			pdata->invert_drvvbus = 1;
 +
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/io.h>
-+#include <linux/of_platform.h>
++		if (of_get_property(np, "fsl,invert-pwr-fault", NULL))
++			pdata->invert_pwr_fault = 1;
 +
-+struct fsl_usb2_dev_data {
-+	char *dr_mode;		/* controller mode */
-+	char *drivers[3];	/* drivers to instantiate for this mode */
-+	enum fsl_usb2_operating_modes op_mode;	/* operating mode */
-+};
+ 		/* setup mode selected in the device tree */
+ 		pdata->operating_mode = dev_data->op_mode;
+ 	}
+@@ -167,9 +174,91 @@ static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC_MPC512x
 +
-+struct fsl_usb2_dev_data dr_mode_data[] __devinitdata = {
-+	{
-+		"host",
-+		{ "fsl-ehci", NULL, NULL, },
-+		FSL_USB2_DR_HOST,
-+	},
-+	{
-+		"otg",
-+		{ "fsl-ehci", "fsl-usb2-udc", "fsl-usb2-otg", },
-+		FSL_USB2_DR_OTG,
-+	},
-+	{
-+		"periferal",
-+		{ "fsl-usb2-udc", NULL, NULL, },
-+		FSL_USB2_DR_DEVICE,
-+	},
-+};
++#define USBGENCTRL		0x200		/* NOTE: big endian */
++#define GC_WU_INT_CLR		(1 << 5)	/* Wakeup int clear */
++#define GC_ULPI_SEL		(1 << 4)	/* ULPI i/f select (usb0 only)*/
++#define GC_PPP			(1 << 3)	/* Inv. Port Power Polarity */
++#define GC_PFP			(1 << 2)	/* Inv. Power Fault Polarity */
++#define GC_WU_ULPI_EN		(1 << 1)	/* Wakeup on ULPI event */
++#define GC_WU_IE		(1 << 1)	/* Wakeup interrupt enable */
 +
-+struct fsl_usb2_dev_data * __devinit get_dr_mode_data(struct device_node *np)
++#define ISIPHYCTRL		0x204		/* NOTE: big endian */
++#define PHYCTRL_PHYE		(1 << 4)	/* On-chip UTMI PHY enable */
++#define PHYCTRL_BSENH		(1 << 3)	/* Bit Stuff Enable High */
++#define PHYCTRL_BSEN		(1 << 2)	/* Bit Stuff Enable */
++#define PHYCTRL_LSFE		(1 << 1)	/* Line State Filter Enable */
++#define PHYCTRL_PXE		(1 << 0)	/* PHY oscillator enable */
++
++int fsl_usb2_mpc5121_init(struct platform_device *pdev)
 +{
-+	const unsigned char *prop;
-+	int i;
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++	struct clk *clk;
++	char clk_name[10];
++	int base, clk_num;
 +
-+	prop = of_get_property(np, "dr_mode", NULL);
-+	if (prop) {
-+		for (i = 0; i < ARRAY_SIZE(dr_mode_data); i++) {
-+			if (!strcmp(prop, dr_mode_data[i].dr_mode))
-+				return &dr_mode_data[i];
-+		}
-+	}
-+	return &dr_mode_data[0]; /* mode not specified, use host */
-+}
-+
-+static enum fsl_usb2_phy_modes __devinit determine_usb_phy(const char *phy_type)
-+{
-+	if (!phy_type)
-+		return FSL_USB2_PHY_NONE;
-+	if (!strcasecmp(phy_type, "ulpi"))
-+		return FSL_USB2_PHY_ULPI;
-+	if (!strcasecmp(phy_type, "utmi"))
-+		return FSL_USB2_PHY_UTMI;
-+	if (!strcasecmp(phy_type, "utmi_wide"))
-+		return FSL_USB2_PHY_UTMI_WIDE;
-+	if (!strcasecmp(phy_type, "serial"))
-+		return FSL_USB2_PHY_SERIAL;
-+
-+	return FSL_USB2_PHY_NONE;
-+}
-+
-+struct platform_device * __devinit
-+fsl_usb2_device_register(struct of_device *ofdev,
-+			 struct fsl_usb2_platform_data *pdata,
-+			 const char *name, int id)
-+{
-+	struct platform_device *pdev;
-+	const struct resource *res = ofdev->resource;
-+	unsigned int num = ofdev->num_resources;
-+	int retval;
-+
-+	pdev = platform_device_alloc(name, id);
-+	if (!pdev) {
-+		retval = -ENOMEM;
-+		goto error;
-+	}
-+
-+	pdev->dev.parent = &ofdev->dev;
-+
-+	pdev->dev.coherent_dma_mask = ofdev->dev.coherent_dma_mask;
-+	pdev->dev.dma_mask = &pdev->archdata.dma_mask;
-+	*pdev->dev.dma_mask = *ofdev->dev.dma_mask;
-+
-+	retval = platform_device_add_data(pdev, pdata, sizeof(*pdata));
-+	if (retval)
-+		goto error;
-+
-+	if (num) {
-+		retval = platform_device_add_resources(pdev, res, num);
-+		if (retval)
-+			goto error;
-+	}
-+
-+	retval = platform_device_add(pdev);
-+	if (retval)
-+		goto error;
-+
-+	return pdev;
-+
-+error:
-+	platform_device_put(pdev);
-+	return ERR_PTR(retval);
-+}
-+
-+static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
-+					   const struct of_device_id *match)
-+{
-+	struct device_node *np = ofdev->dev.of_node;
-+	struct platform_device *usb_dev;
-+	struct fsl_usb2_platform_data data, *pdata;
-+	struct fsl_usb2_dev_data *dev_data;
-+	const unsigned char *prop;
-+	static unsigned int idx;
-+	int i;
-+
-+	if (!of_device_is_available(np))
++	base = pdev->resource->start & 0xf000;
++	if (base == 0x3000)
++		clk_num = 1;
++	else if (base == 0x4000)
++		clk_num = 2;
++	else
 +		return -ENODEV;
 +
-+	pdata = match->data;
-+	if (!pdata) {
-+		memset(&data, 0, sizeof(data));
-+		pdata = &data;
++	snprintf(clk_name, sizeof(clk_name), "usb%d_clk", clk_num);
++	clk = clk_get(&pdev->dev, clk_name);
++	if (IS_ERR(clk)) {
++		dev_err(&pdev->dev, "failed to get clk\n");
++		return PTR_ERR(clk);
 +	}
 +
-+	dev_data = get_dr_mode_data(np);
++	clk_enable(clk);
++	pdata->clk = clk;
 +
-+	if (of_device_is_compatible(np, "fsl-usb2-mph")) {
-+		prop = of_get_property(np, "port0", NULL);
-+		if (prop)
-+			pdata->port_enables |= FSL_USB2_PORT0_ENABLED;
++	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
++		u32 reg = 0;
 +
-+		prop = of_get_property(np, "port1", NULL);
-+		if (prop)
-+			pdata->port_enables |= FSL_USB2_PORT1_ENABLED;
++		if (pdata->invert_drvvbus)
++			reg |= GC_PPP;
 +
-+		pdata->operating_mode = FSL_USB2_MPH_HOST;
-+	} else {
-+		/* setup mode selected in the device tree */
-+		pdata->operating_mode = dev_data->op_mode;
++		if (pdata->invert_pwr_fault)
++			reg |= GC_PFP;
++
++		out_be32(pdata->regs + ISIPHYCTRL, PHYCTRL_PHYE | PHYCTRL_PXE);
++		out_be32(pdata->regs + USBGENCTRL, reg);
 +	}
-+
-+	prop = of_get_property(np, "phy_type", NULL);
-+	pdata->phy_mode = determine_usb_phy(prop);
-+
-+	for (i = 0; i < ARRAY_SIZE(dev_data->drivers); i++) {
-+		if (!dev_data->drivers[i])
-+			continue;
-+		usb_dev = fsl_usb2_device_register(ofdev, pdata,
-+					dev_data->drivers[i], idx);
-+		if (IS_ERR(usb_dev)) {
-+			dev_err(&ofdev->dev, "Can't register usb device\n");
-+			return PTR_ERR(usb_dev);
-+		}
-+	}
-+	idx++;
 +	return 0;
 +}
 +
-+static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
-+	{ .compatible = "fsl-usb2-mph", },
-+	{ .compatible = "fsl-usb2-dr", },
-+	{},
-+};
-+
-+static struct of_platform_driver fsl_usb2_mph_dr_driver = {
-+	.driver = {
-+		.name = "fsl-usb2-mph-dr",
-+		.owner = THIS_MODULE,
-+		.of_match_table = fsl_usb2_mph_dr_of_match,
-+	},
-+	.probe	= fsl_usb2_mph_dr_of_probe,
-+};
-+
-+static int __init fsl_usb2_mph_dr_init(void)
++static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
 +{
-+	return of_register_platform_driver(&fsl_usb2_mph_dr_driver);
++	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
++
++	pdata->regs = NULL;
++
++	if (pdata->clk) {
++		clk_disable(pdata->clk);
++		clk_put(pdata->clk);
++	}
 +}
-+fs_initcall(fsl_usb2_mph_dr_init);
++
++struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
++	.big_endian_desc = 1,
++	.big_endian_mmio = 1,
++	.es = 1,
++	.le_setup_buf = 1,
++	.init = fsl_usb2_mpc5121_init,
++	.exit = fsl_usb2_mpc5121_exit,
++};
++#endif /* CONFIG_PPC_MPC512x */
++
+ static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
+ 	{ .compatible = "fsl-usb2-mph", },
+ 	{ .compatible = "fsl-usb2-dr", },
++#ifdef CONFIG_PPC_MPC512x
++	{ .compatible = "fsl,mpc5121-usb2-dr", .data = &fsl_usb2_mpc5121_pd, },
++#endif
+ 	{},
+ };
+ 
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index 28e33fe..d5f9a74 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -58,11 +58,26 @@ enum fsl_usb2_phy_modes {
+ 	FSL_USB2_PHY_SERIAL,
+ };
+ 
++struct clk;
++struct platform_device;
++
+ struct fsl_usb2_platform_data {
+ 	/* board specific information */
+ 	enum fsl_usb2_operating_modes	operating_mode;
+ 	enum fsl_usb2_phy_modes		phy_mode;
+ 	unsigned int			port_enables;
++
++	int		(*init)(struct platform_device *);
++	void		(*exit)(struct platform_device *);
++	void __iomem	*regs;		/* ioremap'd register base */
++	struct clk	*clk;
++	unsigned	big_endian_mmio:1;
++	unsigned	big_endian_desc:1;
++	unsigned	es:1;		/* need USBMODE:ES */
++	unsigned	le_setup_buf:1;
++	unsigned	have_sysif_regs:1;
++	unsigned	invert_drvvbus:1;
++	unsigned	invert_pwr_fault:1;
+ };
+ 
+ /* Flags in fsl_usb2_mph_platform_data */
 -- 
 1.7.0.4
