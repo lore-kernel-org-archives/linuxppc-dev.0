@@ -1,18 +1,16 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 30C08B725A
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:25:50 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linux-usb@vger.kernel.org
-Subject: [PATCH 3/3] USB: add USB EHCI support for MPC5121 SoC
-Date: Thu, 22 Jul 2010 18:25:22 +0200
-Message-Id: <1279815922-27198-4-git-send-email-agust@denx.de>
-In-Reply-To: <1279815922-27198-1-git-send-email-agust@denx.de>
-References: <1279815922-27198-1-git-send-email-agust@denx.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linuxppc-dev@ozlabs.org,
-	Anatolij Gustschin <agust@denx.de>
+Return-Path: <timur@freescale.com>
+Received: from VA3EHSOBE001.bigfish.com (va3ehsobe001.messaging.microsoft.com
+	[216.32.180.11]) by ozlabs.org (Postfix) with ESMTP id 0065D1007D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:33:50 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org, lrg@slimlogic.co.uk,
+	broonie@opensource.wolfsonmicro.com, kumar.gala@freescale.com
+Subject: [PATCH][v2] powerpc: rename immap_86xx.h to fsl_guts.h,
+	and add 85xx support
+Date: Thu, 22 Jul 2010 11:33:30 -0500
+Message-ID: <1279816410-19079-1-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,510 +20,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Extends FSL EHCI platform driver glue layer to support
-MPC5121 USB controllers. MPC5121 Rev 2.0 silicon EHCI
-registers are in big endian format. The appropriate flags
-are set using the information in the platform data structure.
-MPC83xx system interface registers are not available on
-MPC512x, so the access to these registers is isolated in
-MPC512x case. Furthermore the USB controller clocks
-must be enabled before 512x register accesses which is
-done by providing platform specific init callback.
+The immap_86xx.h header file only defines one data structure: the "global
+utilities" register set found on Freescale PowerPC SOCs.  Rename this file
+to fsl_guts.h to reflect its true purpose, and extend it to cover the "GUTS"
+register set on 85xx chips.
 
-The MPC512x internal USB PHY doesn't provide supply voltage.
-For boards using different power switches allow specifying
-DRVVBUS and PWR_FAULT signal polarity of the MPC5121 internal
-PHY using "fsl,invert-drvvbus" and "fsl,invert-pwr-fault"
-properties in the device tree USB nodes. Adds documentation
-for this new device tree bindings.
-
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- Documentation/powerpc/dts-bindings/fsl/usb.txt |   22 +++++
- drivers/usb/Kconfig                            |    1 +
- drivers/usb/host/Kconfig                       |    6 +-
- drivers/usb/host/ehci-fsl.c                    |  107 +++++++++++++++++------
- drivers/usb/host/ehci-fsl.h                    |   19 ++++-
- drivers/usb/host/ehci-mem.c                    |    2 +-
- drivers/usb/host/fsl-mph-dr-of.c               |   89 ++++++++++++++++++++
- include/linux/fsl_devices.h                    |   15 ++++
- 8 files changed, 229 insertions(+), 32 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/usb.txt b/Documentation/powerpc/dts-bindings/fsl/usb.txt
-index b001524..bd5723f 100644
---- a/Documentation/powerpc/dts-bindings/fsl/usb.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/usb.txt
-@@ -8,6 +8,7 @@ and additions :
- Required properties :
-  - compatible : Should be "fsl-usb2-mph" for multi port host USB
-    controllers, or "fsl-usb2-dr" for dual role USB controllers
-+   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
-  - phy_type : For multi port host USB controllers, should be one of
-    "ulpi", or "serial". For dual role USB controllers, should be
-    one of "ulpi", "utmi", "utmi_wide", or "serial".
-@@ -33,6 +34,12 @@ Recommended properties :
-  - interrupt-parent : the phandle for the interrupt controller that
-    services interrupts for this device.
- 
-+Optional properties :
-+ - fsl,invert-drvvbus : boolean; for MPC5121 USB0 only. Indicates the
-+   port power polarity of internal PHY signal DRVVBUS is inverted.
-+ - fsl,invert-pwr-fault : boolean; for MPC5121 USB0 only. Indicates
-+   the PWR_FAULT signal polarity is inverted.
-+
- Example multi port host USB controller device node :
- 	usb@22000 {
- 		compatible = "fsl-usb2-mph";
-@@ -57,3 +64,18 @@ Example dual role USB controller device node :
- 		dr_mode = "otg";
- 		phy = "ulpi";
- 	};
-+
-+Example dual role USB controller device node for MPC5121ADS:
-+
-+	usb@4000 {
-+		compatible = "fsl,mpc5121-usb2-dr";
-+		reg = <0x4000 0x1000>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <44 0x8>;
-+		dr_mode = "otg";
-+		phy_type = "utmi_wide";
-+		fsl,invert-drvvbus;
-+		fsl,invert-pwr-fault;
-+	};
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index 6a58cb1..6e547b5 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -58,6 +58,7 @@ config USB_ARCH_HAS_OHCI
- config USB_ARCH_HAS_EHCI
- 	boolean
- 	default y if PPC_83xx
-+	default y if PPC_MPC512x
- 	default y if SOC_AU1200
- 	default y if ARCH_IXP4XX
- 	default y if ARCH_W90X900
-diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
-index 6687523..90e50f0 100644
---- a/drivers/usb/host/Kconfig
-+++ b/drivers/usb/host/Kconfig
-@@ -93,12 +93,14 @@ config USB_EHCI_TT_NEWSCHED
- 
- config USB_EHCI_BIG_ENDIAN_MMIO
- 	bool
--	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
-+	depends on USB_EHCI_HCD && (PPC_CELLEB || PPC_PS3 || 440EPX || ARCH_IXP4XX || \
-+				    XPS_USB_HCD_XILINX || PPC_MPC512x)
- 	default y
- 
- config USB_EHCI_BIG_ENDIAN_DESC
- 	bool
--	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX)
-+	depends on USB_EHCI_HCD && (440EPX || ARCH_IXP4XX || XPS_USB_HCD_XILINX || \
-+				    PPC_MPC512x)
- 	default y
- 
- config XPS_USB_HCD_XILINX
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index a416421..ff50f5c 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -116,13 +116,39 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 		goto err3;
- 	}
- 
--	/* Enable USB controller */
--	temp = in_be32(hcd->regs + 0x500);
--	out_be32(hcd->regs + 0x500, temp | 0x4);
-+	pdata->regs = hcd->regs;
-+
-+	/*
-+	 * do platform specific init: check the clock, grab/config pins, etc.
-+	 */
-+	if (pdata->init && pdata->init(pdev)) {
-+		retval = -ENODEV;
-+		goto err3;
-+	}
-+
-+	/*
-+	 * Check if it is MPC5121 SoC, otherwise set pdata->have_sysif_regs
-+	 * flag for 83xx or 8536 system interface registers.
-+	 */
-+	if (pdata->big_endian_mmio)
-+		temp = in_be32(hcd->regs + FSL_SOC_USB_ID);
-+	else
-+		temp = in_le32(hcd->regs + FSL_SOC_USB_ID);
-+
-+	if ((temp & ID_MSK) != (~((temp & NID_MSK) >> 8) & ID_MSK))
-+		pdata->have_sysif_regs = 1;
-+
-+	/* Enable USB controller, 83xx or 8536 */
-+	if (pdata->have_sysif_regs)
-+		setbits32(hcd->regs + FSL_SOC_USB_CTRL, 0x4);
- 
- 	/* Set to Host mode */
--	temp = in_le32(hcd->regs + 0x1a8);
--	out_le32(hcd->regs + 0x1a8, temp | 0x3);
-+	if (pdata->big_endian_mmio) {
-+		setbits32(hcd->regs + FSL_SOC_USB_USBMODE, USBMODE_CM_HOST);
-+	} else {
-+		clrsetbits_le32(hcd->regs + FSL_SOC_USB_USBMODE,
-+				USBMODE_CM_MASK, USBMODE_CM_HOST);
-+	}
- 
- 	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
- 	if (retval != 0)
-@@ -137,6 +163,8 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- 	usb_put_hcd(hcd);
-       err1:
- 	dev_err(&pdev->dev, "init %s fail, %d\n", dev_name(&pdev->dev), retval);
-+	if (pdata->exit)
-+		pdata->exit(pdev);
- 	return retval;
- }
- 
-@@ -154,17 +182,30 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
- static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
- 			       struct platform_device *pdev)
- {
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+
- 	usb_remove_hcd(hcd);
-+
-+	/*
-+	 * do platform specific un-initialization:
-+	 * release iomux pins, disable clock, etc.
-+	 */
-+	if (pdata->exit)
-+		pdata->exit(pdev);
- 	iounmap(hcd->regs);
- 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
- 	usb_put_hcd(hcd);
- }
- 
--static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
--			      enum fsl_usb2_phy_modes phy_mode,
--			      unsigned int port_offset)
-+static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
-+			       enum fsl_usb2_phy_modes phy_mode,
-+			       unsigned int port_offset)
- {
--	u32 portsc = 0;
-+	u32 portsc;
-+
-+	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
-+	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
-+
- 	switch (phy_mode) {
- 	case FSL_USB2_PHY_ULPI:
- 		portsc |= PORT_PTS_ULPI;
-@@ -184,20 +225,21 @@ static void mpc83xx_setup_phy(struct ehci_hcd *ehci,
- 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
- }
- 
--static void mpc83xx_usb_setup(struct usb_hcd *hcd)
-+static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- {
--	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+	struct usb_hcd *hcd = ehci_to_hcd(ehci);
- 	struct fsl_usb2_platform_data *pdata;
- 	void __iomem *non_ehci = hcd->regs;
- 	u32 temp;
- 
--	pdata =
--	    (struct fsl_usb2_platform_data *)hcd->self.controller->
--	    platform_data;
-+	pdata = hcd->self.controller->platform_data;
-+
- 	/* Enable PHY interface in the control reg. */
--	temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--	out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--	out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-+	if (pdata->have_sysif_regs) {
-+		temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
-+		out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
-+		out_be32(non_ehci + FSL_SOC_USB_SNOOP1, 0x0000001b);
-+	}
- 
- #if defined(CONFIG_PPC32) && !defined(CONFIG_NOT_COHERENT_CACHE)
- 	/*
-@@ -214,7 +256,7 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
- 
- 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
- 			(pdata->operating_mode == FSL_USB2_DR_OTG))
--		mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
-+		ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
- 
- 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
- 		unsigned int chip, rev, svr;
-@@ -228,27 +270,31 @@ static void mpc83xx_usb_setup(struct usb_hcd *hcd)
- 			ehci->has_fsl_port_bug = 1;
- 
- 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
--			mpc83xx_setup_phy(ehci, pdata->phy_mode, 0);
-+			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 0);
- 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
--			mpc83xx_setup_phy(ehci, pdata->phy_mode, 1);
-+			ehci_fsl_setup_phy(ehci, pdata->phy_mode, 1);
- 	}
- 
- 	/* put controller in host mode. */
--	ehci_writel(ehci, 0x00000003, non_ehci + FSL_SOC_USB_USBMODE);
-+	temp = USBMODE_CM_HOST | (pdata->es ? USBMODE_ES : 0);
-+	ehci_writel(ehci, temp, non_ehci + FSL_SOC_USB_USBMODE);
-+
-+	if (pdata->have_sysif_regs) {
- #ifdef CONFIG_PPC_85xx
--	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
--	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
-+		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x00000008);
-+		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000080);
- #else
--	out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
--	out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
-+		out_be32(non_ehci + FSL_SOC_USB_PRICTRL, 0x0000000c);
-+		out_be32(non_ehci + FSL_SOC_USB_AGECNTTHRSH, 0x00000040);
- #endif
--	out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
-+		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
-+	}
- }
- 
- /* called after powerup, by probe or system-pm "wakeup" */
- static int ehci_fsl_reinit(struct ehci_hcd *ehci)
- {
--	mpc83xx_usb_setup(ehci_to_hcd(ehci));
-+	ehci_fsl_usb_setup(ehci);
- 	ehci_port_power(ehci, 0);
- 
- 	return 0;
-@@ -259,6 +305,11 @@ static int ehci_fsl_setup(struct usb_hcd *hcd)
- {
- 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
- 	int retval;
-+	struct fsl_usb2_platform_data *pdata;
-+
-+	pdata = hcd->self.controller->platform_data;
-+	ehci->big_endian_desc = pdata->big_endian_desc;
-+	ehci->big_endian_mmio = pdata->big_endian_mmio;
- 
- 	/* EHCI registers start at offset 0x100 */
- 	ehci->caps = hcd->regs + 0x100;
-@@ -372,7 +423,7 @@ static const struct hc_driver ehci_fsl_hc_driver = {
- 	 * generic hardware linkage
- 	 */
- 	.irq = ehci_irq,
--	.flags = HCD_USB2,
-+	.flags = HCD_USB2 | HCD_MEMORY,
- 
- 	/*
- 	 * basic lifecycle operations
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index b5e59db..e56be7b 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -1,4 +1,4 @@
--/* Copyright (c) 2005 freescale semiconductor
-+/* Copyright (C) 2005-2010 Freescale Semiconductor, Inc.
-  * Copyright (c) 2005 MontaVista Software
+Liam,
+
+This patch is a powerpc-patch, but it's much simpler if you apply it to
+multi-component, since only the SSI audio drivers are affected.
+
+ .../include/asm/{immap_86xx.h => fsl_guts.h}       |  111 +++++++++++++------
+ sound/soc/fsl/fsl_ssi.c                            |    2 -
+ sound/soc/fsl/mpc8610_hpcd.c                       |   10 +-
+ 3 files changed, 81 insertions(+), 42 deletions(-)
+ rename arch/powerpc/include/asm/{immap_86xx.h => fsl_guts.h} (66%)
+
+diff --git a/arch/powerpc/include/asm/immap_86xx.h b/arch/powerpc/include/asm/fsl_guts.h
+similarity index 66%
+rename from arch/powerpc/include/asm/immap_86xx.h
+rename to arch/powerpc/include/asm/fsl_guts.h
+index 0f165e5..bebd124 100644
+--- a/arch/powerpc/include/asm/immap_86xx.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -1,5 +1,5 @@
+ /**
+- * MPC86xx Internal Memory Map
++ * Freecale 85xx and 86xx Global Utilties register set
   *
-  * This program is free software; you can redistribute  it and/or modify it
-@@ -19,6 +19,11 @@
- #define _EHCI_FSL_H
- 
- /* offsets for the non-ehci registers in the FSL SOC USB controller */
-+#define FSL_SOC_USB_ID		0x0
-+#define ID_MSK			0x3f
-+#define NID_MSK			0x3f00
-+#define FSL_SOC_USB_SBUSCFG	0x90
-+#define FSL_SOC_USB_BURSTSIZE	0x160
- #define FSL_SOC_USB_ULPIVP	0x170
- #define FSL_SOC_USB_PORTSC1	0x184
- #define PORT_PTS_MSK		(3<<30)
-@@ -26,8 +31,20 @@
- #define PORT_PTS_ULPI		(2<<30)
- #define	PORT_PTS_SERIAL		(3<<30)
- #define PORT_PTS_PTW		(1<<28)
-+#define PORT_PTS_PHCD		(1<<23)
- #define FSL_SOC_USB_PORTSC2	0x188
- #define FSL_SOC_USB_USBMODE	0x1a8
-+#define USBMODE_CM_MASK		(3 << 0)	/* controller mode mask */
-+#define USBMODE_CM_HOST		(3 << 0)	/* controller mode: host */
-+#define USBMODE_ES		(1 << 2)	/* (Big) Endian Select */
+  * Authors: Jeff Brown
+  *          Timur Tabi <timur@freescale.com>
+@@ -10,73 +10,112 @@
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+  * option) any later version.
+- *
+- * This header file defines structures for various 86xx SOC devices that are
+- * used by multiple source files.
+  */
+
+-#ifndef __ASM_POWERPC_IMMAP_86XX_H__
+-#define __ASM_POWERPC_IMMAP_86XX_H__
++#ifndef __ASM_POWERPC_FSL_GUTS_H__
++#define __ASM_POWERPC_FSL_GUTS_H__
+ #ifdef __KERNEL__
+
+-/* Global Utility Registers */
+-struct ccsr_guts {
++/*
++ * These #ifdefs are safe because it's not possible to build a kernel that
++ * runs on e500 and e600 cores.
++ */
 +
-+#define FSL_SOC_USB_USBGENCTRL	0x200
-+#define USBGENCTRL_PPP		(1 << 3)
-+#define USBGENCTRL_PFP		(1 << 2)
-+#define FSL_SOC_USB_ISIPHYCTRL	0x204
-+#define ISIPHYCTRL_PXE		(1)
-+#define ISIPHYCTRL_PHYE		(1 << 4)
-+
- #define FSL_SOC_USB_SNOOP1	0x400	/* NOTE: big-endian */
- #define FSL_SOC_USB_SNOOP2	0x404	/* NOTE: big-endian */
- #define FSL_SOC_USB_AGECNTTHRSH	0x408	/* NOTE: big-endian */
-diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
-index 1f3f01e..d36e4e7 100644
---- a/drivers/usb/host/ehci-mem.c
-+++ b/drivers/usb/host/ehci-mem.c
-@@ -40,7 +40,7 @@ static inline void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd *qtd,
- {
- 	memset (qtd, 0, sizeof *qtd);
- 	qtd->qtd_dma = dma;
--	qtd->hw_token = cpu_to_le32 (QTD_STS_HALT);
-+	qtd->hw_token = cpu_to_hc32(ehci, QTD_STS_HALT);
- 	qtd->hw_next = EHCI_LIST_END(ehci);
- 	qtd->hw_alt_next = EHCI_LIST_END(ehci);
- 	INIT_LIST_HEAD (&qtd->qtd_list);
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 020a939..0ced9fc 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -14,6 +14,7 @@
- #include <linux/fsl_devices.h>
- #include <linux/io.h>
- #include <linux/of_platform.h>
-+#include <linux/clk.h>
- 
- struct fsl_usb2_dev_data {
- 	char *dr_mode;		/* controller mode */
-@@ -146,6 +147,12 @@ static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
- 
- 		pdata->operating_mode = FSL_USB2_MPH_HOST;
- 	} else {
-+		if (of_get_property(np, "fsl,invert-drvvbus", NULL))
-+			pdata->invert_drvvbus = 1;
-+
-+		if (of_get_property(np, "fsl,invert-pwr-fault", NULL))
-+			pdata->invert_pwr_fault = 1;
-+
- 		/* setup mode selected in the device tree */
- 		pdata->operating_mode = dev_data->op_mode;
- 	}
-@@ -167,9 +174,91 @@ static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
- 	return 0;
- }
- 
-+#ifdef CONFIG_PPC_MPC512x
-+
-+#define USBGENCTRL		0x200		/* NOTE: big endian */
-+#define GC_WU_INT_CLR		(1 << 5)	/* Wakeup int clear */
-+#define GC_ULPI_SEL		(1 << 4)	/* ULPI i/f select (usb0 only)*/
-+#define GC_PPP			(1 << 3)	/* Inv. Port Power Polarity */
-+#define GC_PFP			(1 << 2)	/* Inv. Power Fault Polarity */
-+#define GC_WU_ULPI_EN		(1 << 1)	/* Wakeup on ULPI event */
-+#define GC_WU_IE		(1 << 1)	/* Wakeup interrupt enable */
-+
-+#define ISIPHYCTRL		0x204		/* NOTE: big endian */
-+#define PHYCTRL_PHYE		(1 << 4)	/* On-chip UTMI PHY enable */
-+#define PHYCTRL_BSENH		(1 << 3)	/* Bit Stuff Enable High */
-+#define PHYCTRL_BSEN		(1 << 2)	/* Bit Stuff Enable */
-+#define PHYCTRL_LSFE		(1 << 1)	/* Line State Filter Enable */
-+#define PHYCTRL_PXE		(1 << 0)	/* PHY oscillator enable */
-+
-+int fsl_usb2_mpc5121_init(struct platform_device *pdev)
-+{
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+	struct clk *clk;
-+	char clk_name[10];
-+	int base, clk_num;
-+
-+	base = pdev->resource->start & 0xf000;
-+	if (base == 0x3000)
-+		clk_num = 1;
-+	else if (base == 0x4000)
-+		clk_num = 2;
-+	else
-+		return -ENODEV;
-+
-+	snprintf(clk_name, sizeof(clk_name), "usb%d_clk", clk_num);
-+	clk = clk_get(&pdev->dev, clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "failed to get clk\n");
-+		return PTR_ERR(clk);
-+	}
-+
-+	clk_enable(clk);
-+	pdata->clk = clk;
-+
-+	if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
-+		u32 reg = 0;
-+
-+		if (pdata->invert_drvvbus)
-+			reg |= GC_PPP;
-+
-+		if (pdata->invert_pwr_fault)
-+			reg |= GC_PFP;
-+
-+		out_be32(pdata->regs + ISIPHYCTRL, PHYCTRL_PHYE | PHYCTRL_PXE);
-+		out_be32(pdata->regs + USBGENCTRL, reg);
-+	}
-+	return 0;
-+}
-+
-+static void fsl_usb2_mpc5121_exit(struct platform_device *pdev)
-+{
-+	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+
-+	pdata->regs = NULL;
-+
-+	if (pdata->clk) {
-+		clk_disable(pdata->clk);
-+		clk_put(pdata->clk);
-+	}
-+}
-+
-+struct fsl_usb2_platform_data fsl_usb2_mpc5121_pd = {
-+	.big_endian_desc = 1,
-+	.big_endian_mmio = 1,
-+	.es = 1,
-+	.le_setup_buf = 1,
-+	.init = fsl_usb2_mpc5121_init,
-+	.exit = fsl_usb2_mpc5121_exit,
-+};
-+#endif /* CONFIG_PPC_MPC512x */
-+
- static const struct of_device_id fsl_usb2_mph_dr_of_match[] = {
- 	{ .compatible = "fsl-usb2-mph", },
- 	{ .compatible = "fsl-usb2-dr", },
-+#ifdef CONFIG_PPC_MPC512x
-+	{ .compatible = "fsl,mpc5121-usb2-dr", .data = &fsl_usb2_mpc5121_pd, },
++#if !defined(CONFIG_PPC_85xx) && !defined(CONFIG_PPC_86xx)
++#error Only 85xx and 86xx SOCs are supported
 +#endif
- 	{},
- };
- 
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 28e33fe..d5f9a74 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -58,11 +58,26 @@ enum fsl_usb2_phy_modes {
- 	FSL_USB2_PHY_SERIAL,
- };
- 
-+struct clk;
-+struct platform_device;
 +
- struct fsl_usb2_platform_data {
- 	/* board specific information */
- 	enum fsl_usb2_operating_modes	operating_mode;
- 	enum fsl_usb2_phy_modes		phy_mode;
- 	unsigned int			port_enables;
++/**
++ * Global Utility Registers.
++ *
++ * Not all registers defined in this structure are available on all chips, so
++ * you are expected to know whether a given register actually exists on your
++ * chip before you access it.
++ *
++ * Also, some registers are similar on different chips but have slightly
++ * different names.  In these cases, one name is chosen to avoid extraneous
++ * #ifdefs.
++ */
++#ifdef CONFIG_PPC_85xx
++struct ccsr_guts_85xx {
++#else
++struct ccsr_guts_86xx {
++#endif
+ 	__be32	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
+ 	__be32	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
+ 	__be32	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
+ 	__be32	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
+ 	__be32	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
+-	u8	res1[0x20 - 0x14];
++	__be32	pordevsr2;	/* 0x.0014 - POR device status register 2 */
++	u8	res018[0x20 - 0x18];
+ 	__be32	porcir;		/* 0x.0020 - POR Configuration Information Register */
+-	u8	res2[0x30 - 0x24];
++	u8	res024[0x30 - 0x24];
+ 	__be32	gpiocr;		/* 0x.0030 - GPIO Control Register */
+-	u8	res3[0x40 - 0x34];
++	u8	res034[0x40 - 0x34];
+ 	__be32	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
+-	u8	res4[0x50 - 0x44];
++	u8	res044[0x50 - 0x44];
+ 	__be32	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
+-	u8	res5[0x60 - 0x54];
++	u8	res054[0x60 - 0x54];
+ 	__be32	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
+-	u8	res6[0x70 - 0x64];
++        __be32  pmuxcr2;	/* 0x.0064 - Alternate function signal multiplex control 2 */
++        __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
++        u8	res06c[0x70 - 0x6c];
+ 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
+ 	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
+-	u8	res7[0x80 - 0x78];
++	u8	res078[0x7c - 0x78];
++	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
+ 	__be32	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
+-	u8	res8[0x90 - 0x84];
++	__be32  pmrccr;		/* 0x.0084 - Power Management Reset Counter Configuration Register */
++	__be32  pmpdccr;	/* 0x.0088 - Power Management Power Down Counter Configuration Register */
++	__be32  pmcdr;		/* 0x.008c - 4Power management clock disable register */
+ 	__be32	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
+ 	__be32	rstrscr;	/* 0x.0094 - Reset Request Status and Control Register */
+-	u8	res9[0xA0 - 0x98];
++	__be32  ectrstcr;	/* 0x.0098 - Exception reset control register */
++	__be32  autorstsr;	/* 0x.009c - Automatic reset status register */
+ 	__be32	pvr;		/* 0x.00a0 - Processor Version Register */
+ 	__be32	svr;		/* 0x.00a4 - System Version Register */
+-	u8	res10[0xB0 - 0xA8];
++	u8	res0a8[0xb0 - 0xa8];
+ 	__be32	rstcr;		/* 0x.00b0 - Reset Control Register */
+-	u8	res11[0xC0 - 0xB4];
++	u8	res0b4[0xc0 - 0xb4];
++#ifdef CONFIG_PPC_85xx
++	__be32  iovselsr;	/* 0x.00c0 - I/O voltage select status register */
++#else
+ 	__be32	elbcvselcr;	/* 0x.00c0 - eLBC Voltage Select Ctrl Reg */
+-	u8	res12[0x800 - 0xC4];
++#endif
++	u8	res0c4[0x224 - 0xc4];
++	__be32  iodelay1;	/* 0x.0224 - IO delay control register 1 */
++	__be32  iodelay2;	/* 0x.0228 - IO delay control register 2 */
++	u8	res22c[0x800 - 0x22c];
+ 	__be32	clkdvdr;	/* 0x.0800 - Clock Divide Register */
+-	u8	res13[0x900 - 0x804];
++	u8	res804[0x900 - 0x804];
+ 	__be32	ircr;		/* 0x.0900 - Infrared Control Register */
+-	u8	res14[0x908 - 0x904];
++	u8	res904[0x908 - 0x904];
+ 	__be32	dmacr;		/* 0x.0908 - DMA Control Register */
+-	u8	res15[0x914 - 0x90C];
++	u8	res90c[0x914 - 0x90c];
+ 	__be32	elbccr;		/* 0x.0914 - eLBC Control Register */
+-	u8	res16[0xB20 - 0x918];
++	u8	res918[0xb20 - 0x918];
+ 	__be32	ddr1clkdr;	/* 0x.0b20 - DDR1 Clock Disable Register */
+ 	__be32	ddr2clkdr;	/* 0x.0b24 - DDR2 Clock Disable Register */
+ 	__be32	ddrclkdr;	/* 0x.0b28 - DDR Clock Disable Register */
+-	u8	res17[0xE00 - 0xB2C];
++	u8	resb2c[0xe00 - 0xb2c];
+ 	__be32	clkocr;		/* 0x.0e00 - Clock Out Select Register */
+-	u8	res18[0xE10 - 0xE04];
++	u8	rese04[0xe10 - 0xe04];
+ 	__be32	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
+-	u8	res19[0xE20 - 0xE14];
++	u8	rese14[0xe20 - 0xe14];
+ 	__be32	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
+-	u8	res20[0xF04 - 0xE24];
++	__be32  cpfor;		/* 0x.0e24 - L2 charge pump fuse override register */
++	u8	rese28[0xf04 - 0xe28];
+ 	__be32	srds1cr0;	/* 0x.0f04 - SerDes1 Control Register 0 */
+ 	__be32	srds1cr1;	/* 0x.0f08 - SerDes1 Control Register 0 */
+-	u8	res21[0xF40 - 0xF0C];
+-	__be32	srds2cr0;	/* 0x.0f40 - SerDes1 Control Register 0 */
+-	__be32	srds2cr1;	/* 0x.0f44 - SerDes1 Control Register 0 */
++	u8	resf0c[0xf2c - 0xf0c];
++	__be32  itcr;		/* 0x.0f2c - Internal transaction control register */
++	u8	resf30[0xf40 - 0xf30];
++	__be32	srds2cr0;	/* 0x.0f40 - SerDes2 Control Register 0 */
++	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
+ } __attribute__ ((packed));
+
++#ifdef CONFIG_PPC_86xx
 +
-+	int		(*init)(struct platform_device *);
-+	void		(*exit)(struct platform_device *);
-+	void __iomem	*regs;		/* ioremap'd register base */
-+	struct clk	*clk;
-+	unsigned	big_endian_mmio:1;
-+	unsigned	big_endian_desc:1;
-+	unsigned	es:1;		/* need USBMODE:ES */
-+	unsigned	le_setup_buf:1;
-+	unsigned	have_sysif_regs:1;
-+	unsigned	invert_drvvbus:1;
-+	unsigned	invert_pwr_fault:1;
- };
- 
- /* Flags in fsl_usb2_mph_platform_data */
--- 
-1.7.0.4
+ #define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
+ #define CCSR_GUTS_DMACR_DEV_IR	1	/* DMA controller/channel set to IR */
+
+@@ -93,7 +132,7 @@ struct ccsr_guts {
+  * ch: The channel on the DMA controller (0, 1, 2, or 3)
+  * device: The device to set as the source (CCSR_GUTS_DMACR_DEV_xx)
+  */
+-static inline void guts_set_dmacr(struct ccsr_guts __iomem *guts,
++static inline void guts_set_dmacr(struct ccsr_guts_86xx __iomem *guts,
+ 	unsigned int co, unsigned int ch, unsigned int device)
+ {
+ 	unsigned int shift = 16 + (8 * (1 - co) + 2 * (3 - ch));
+@@ -129,7 +168,7 @@ static inline void guts_set_dmacr(struct ccsr_guts __iomem *guts,
+  * ch: The channel on the DMA controller (0, 1, 2, or 3)
+  * value: the new value for the bit (0 or 1)
+  */
+-static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
++static inline void guts_set_pmuxcr_dma(struct ccsr_guts_86xx __iomem *guts,
+ 	unsigned int co, unsigned int ch, unsigned int value)
+ {
+ 	if ((ch == 0) || (ch == 3)) {
+@@ -152,5 +191,7 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
+ #define CCSR_GUTS_CLKDVDR_SSICLK_MASK	0x000000FF
+ #define CCSR_GUTS_CLKDVDR_SSICLK(x) ((x) & CCSR_GUTS_CLKDVDR_SSICLK_MASK)
+
+-#endif /* __ASM_POWERPC_IMMAP_86XX_H__ */
+-#endif /* __KERNEL__ */
++#endif
++
++#endif
++#endif
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 31e8e5c..48fc0bd 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -24,8 +24,6 @@
+ #include <sound/initval.h>
+ #include <sound/soc.h>
+
+-#include <asm/immap_86xx.h>
+-
+ #include "fsl_ssi.h"
+
+ /**
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index 81ab639..69aeaeb 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -14,7 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/of_device.h>
+ #include <sound/soc.h>
+-#include <asm/immap_86xx.h>
++#include <asm/fsl_guts.h>
+
+ #include "../codecs/cs4270.h"
+ #include "fsl_dma.h"
+@@ -54,9 +54,9 @@ static int mpc8610_hpcd_machine_probe(struct platform_device *sound_device)
+ 	struct snd_soc_card *card = platform_get_drvdata(sound_device);
+ 	struct mpc8610_hpcd_data *machine_data =
+ 		container_of(card, struct mpc8610_hpcd_data, card);
+-	struct ccsr_guts __iomem *guts;
++	struct ccsr_guts_86xx __iomem *guts;
+
+-	guts = ioremap(guts_phys, sizeof(struct ccsr_guts));
++	guts = ioremap(guts_phys, sizeof(struct ccsr_guts_86xx));
+ 	if (!guts) {
+ 		dev_err(card->dev, "could not map global utilities\n");
+ 		return -ENOMEM;
+@@ -139,9 +139,9 @@ static int mpc8610_hpcd_machine_remove(struct platform_device *sound_device)
+ 	struct snd_soc_card *card = platform_get_drvdata(sound_device);
+ 	struct mpc8610_hpcd_data *machine_data =
+ 		container_of(card, struct mpc8610_hpcd_data, card);
+-	struct ccsr_guts __iomem *guts;
++	struct ccsr_guts_86xx __iomem *guts;
+
+-	guts = ioremap(guts_phys, sizeof(struct ccsr_guts));
++	guts = ioremap(guts_phys, sizeof(struct ccsr_guts_86xx));
+ 	if (!guts) {
+ 		dev_err(card->dev, "could not map global utilities\n");
+ 		return -ENOMEM;
+--
+1.7.0.1
