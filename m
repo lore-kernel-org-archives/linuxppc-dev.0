@@ -1,22 +1,22 @@
 Return-Path: <dbaryshkov@gmail.com>
 Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
-	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id 53920B70CE
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:48:17 +1000 (EST)
-Received: by fxm17 with SMTP id 17so4814796fxm.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 09:48:15 -0700 (PDT)
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id CC813B70E9
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 02:56:12 +1000 (EST)
+Received: by fxm17 with SMTP id 17so4823397fxm.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 09:56:10 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
+In-Reply-To: <1279811975.7232.8696.camel@petert>
 References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
-	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
-	<566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
-Date: Thu, 22 Jul 2010 20:48:15 +0400
-Message-ID: <AANLkTim7kbHsouc==7gRAuRO6AYMNVdA4yyPFpRBC+QR@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
-	EDAC regspace
+	<1279811975.7232.8696.camel@petert>
+Date: Thu, 22 Jul 2010 20:56:10 +0400
+Message-ID: <AANLkTikd3pyVa3=V0pqA5uOto+RYWY_0kF_SL0d0B=BD@mail.gmail.com>
+Subject: Re: [PATCH 1/2] MPC85xx: add definitions for PCI error detection soc
+	part
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+To: Peter Tyser <ptyser@xes-inc.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+Cc: linuxppc-dev@ozlabs.org, Dave Jiang <djiang@mvista.com>,
+	bluesmoke-devel@lists.sourceforge.net,
 	Doug Thompson <dougthompson@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,36 +29,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hello,
 
-On Thu, Jul 22, 2010 at 7:38 PM, Kumar Gala <galak@kernel.crashing.org> wro=
-te:
+On Thu, Jul 22, 2010 at 7:19 PM, Peter Tyser <ptyser@xes-inc.com> wrote:
+> Hi Dmitry,
 >
-> On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
->
->> Currently (as mpc8540-pci) devices are not created on of_platform bus,
->> mpc85xx_edac can't probe to them. Follow the change to dts trees to bind
->> not to the main mpc8540-pci node but to special mpc85xx-pci-error nodes,
->> present on soc bus.
+> On Thu, 2010-07-22 at 04:03 +0400, Dmitry Eremin-Solenikov wrote:
+>> Add definitions for PCI error detection device to be handled by (already
+>> existing) mpc85xx_edac.c driver.
 >>
 >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 >> ---
->> drivers/edac/mpc85xx_edac.c | =A0 18 +++++++++---------
->> 1 files changed, 9 insertions(+), 9 deletions(-)
+>> =A0arch/powerpc/boot/dts/mpc8536ds.dts =A0 =A0 =A0 =A0| =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/mpc8536ds_36b.dts =A0 =A0| =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/mpc8540ads.dts =A0 =A0 =A0 | =A0 =A08 ++++++++
+>> =A0arch/powerpc/boot/dts/mpc8541cds.dts =A0 =A0 =A0 | =A0 14 +++++++++++=
++++
+>> =A0arch/powerpc/boot/dts/mpc8544ds.dts =A0 =A0 =A0 =A0| =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/mpc8548cds.dts =A0 =A0 =A0 | =A0 14 +++++++++++=
++++
+>> =A0arch/powerpc/boot/dts/mpc8555cds.dts =A0 =A0 =A0 | =A0 14 +++++++++++=
++++
+>> =A0arch/powerpc/boot/dts/mpc8560ads.dts =A0 =A0 =A0 | =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/mpc8568mds.dts =A0 =A0 =A0 | =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/sbc8548.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/sbc8560.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/socrates.dts =A0 =A0 =A0 =A0 | =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/stx_gp3_8560.dts =A0 =A0 | =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/tqm8540.dts =A0 =A0 =A0 =A0 =A0| =A0 10 +++++++=
++++
+>> =A0arch/powerpc/boot/dts/tqm8541.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/tqm8548-bigflash.dts | =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/tqm8548.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/tqm8555.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/tqm8560.dts =A0 =A0 =A0 =A0 =A0| =A0 =A07 +++++=
+++
+>> =A0arch/powerpc/boot/dts/xpedite5200.dts =A0 =A0 =A0| =A0 =A07 +++++++
+>> =A0arch/powerpc/boot/dts/xpedite5200_xmon.dts | =A0 =A07 +++++++
+>> =A021 files changed, 172 insertions(+), 0 deletions(-)
 >
-> Nak.
->
-> We already have a node in the dts for the PCI controller. =A0Lets update =
-the platform code to add the pci controller to the of_platform_bus_probe li=
-st.
+> It looks like the dts files for the MPC8572-based boards weren't
+> included in this change despite patch 2/2 adding support for them. =A0I'd
+> guess some other Freescale CPUs (eg P1020, P2020, etc) could be
+> supported by the same driver if you are inclined to add them to this
+> patch series.
 
-I've had that idea. However it's really look strange to me to call
-of_platform_bus_probe() on the bus node, for which we (IMO) explicitly
-won't like for
-child devices (PCI devices) to be added to of_platform bus. Would it
-be suitable to just call of_platform_device_create for it (Or do i
-miss someth<ing)?
-
-BTW: While I'm at it, should I change all mpc8540-pci/-pcix device
-names to include respective SoC name?
+I just did a quick search for all dts including mpc8540-pci node and added
+respective mpc85xx-pci-error node. Current MPC85xx EDAC driver doesn't
+support error handling on PCI-E busses (which MPC8572 and other CPUs
+you mentioned have). I'll maybe look into PCI-E EDAC later. Also I don't ha=
+ve
+access to P10xx/P20xx manuals, so support for them may require some
+more time.
 
 --=20
 With best wishes
