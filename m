@@ -1,33 +1,36 @@
-Return-Path: <R58472@freescale.com>
-Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
-	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id B83FF100895
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 14:14:53 +1000 (EST)
-Received: from mail148-va3 (localhost.localdomain [127.0.0.1])	by
-	mail148-va3-R.bigfish.com (Postfix) with ESMTP id 346FC14481F6	for
-	<linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 03:59:46 +0000 (UTC)
-Received: from VA3EHSMHS014.bigfish.com (unknown [10.7.14.252])	by
-	mail148-va3.bigfish.com (Postfix) with ESMTP id AB2C1F2004C	for
-	<linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 03:59:45 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o6N3xhpL003421	for
-	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 20:59:43 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o6N4Ct9M026050	for <linuxppc-dev@ozlabs.org>;
-	Thu, 22 Jul 2010 23:12:56 -0500 (CDT)
+Return-Path: <dvhltc@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 8C4A51007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 14:44:14 +1000 (EST)
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+	[9.17.195.226])
+	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6N4Zj8m025616
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 22:35:45 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6N4iBUw162026
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 22:44:11 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o6N4iAda019788
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 22:44:11 -0600
+Message-ID: <4C491E14.9010100@us.ibm.com>
+Date: Thu, 22 Jul 2010 21:44:04 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Subject: RE: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
-Date: Fri, 23 Jul 2010 11:59:39 +0800
-Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F630BCA95@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1279730810-24926-1-git-send-email-alexandre.bounine@idt.com>
-References: <1279730810-24926-1-git-send-email-alexandre.bounine@idt.com>
-From: Li Yang-R58472 <r58472@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Alexandre Bounine" <alexandre.bounine@idt.com>,
-	<akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
+	CONFIG_PREEMPT on pseries
+References: <4C488CCD.60004@us.ibm.com> <1279837509.1970.24.camel@pasglop>
+	<4C48DADE.1050409@us.ibm.com>
+In-Reply-To: <4C48DADE.1050409@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +40,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->Subject: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
->
->Fixes compile problem caused by MCSR_MASK removal from book-E =
-definitions.
+On 07/22/2010 04:57 PM, Darren Hart wrote:
+> On 07/22/2010 03:25 PM, Benjamin Herrenschmidt wrote:
+>> On Thu, 2010-07-22 at 11:24 -0700, Darren Hart wrote:
+>>>
+>>> 1) How can the preempt_count() get mangled across the H_CEDE hcall?
+>>> 2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
+>>
+>> The preempt count is on the thread info at the bottom of the stack.
+>>
+>> Can you check the stack pointers ?
+> 
+> Hi Ben, thanks for looking.
+> 
+> I instrumented the area around extended_cede_processor() as follows
+> (please confirm I'm getting the stack pointer correctly).
+> 
+> while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
+> 	asm("mr %0,1" : "=r" (sp));
+> 	printk("before H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());
+> 	extended_cede_processor(cede_latency_hint);
+> 	asm("mr %0,1" : "=r" (sp));
+> 	printk("after H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());
+>   }
+> 
+> 
+> On Mainline (2.6.33.6, CONFIG_PREEMPT=y) I see this:
+> Jul 22 18:37:08 igoort1 kernel: before H_CEDE current->stack: c00000010e9e3ce0, pcnt: 1
+> Jul 22 18:37:08 igoort1 kernel: after H_CEDE current->stack:  c00000010e9e3ce0, pcnt: 1
+> 
+> This surprised me as preempt_count is 1 before and after, so no
+> corruption appears to occur on mainline. This makes the pcnt of 65 I see
+> without the preempt_count()=0 hack very strange. I ran several hundred
+> off/on cycles. The issue of preempt_count being 1 is still addressed by
+> this patch however.
+> 
+> On PREEMPT_RT (2.6.33.5-rt23 - tglx, sorry, rt/2.6.33 next time, promise):
+> Jul 22 18:51:11 igoort1 kernel: before H_CEDE current->stack: c000000089bcfcf0, pcnt: 1
+> Jul 22 18:51:11 igoort1 kernel: after H_CEDE current->stack:  c000000089bcfcf0, pcnt: ffffffff
+> 
+> In both cases the stack pointer appears unchanged.
+> 
+> Note: there is a BUG triggered in between these statements as the
+> preempt_count causes the printk to trigger:
+> Badness at kernel/sched.c:5572
 
-Hi Alex,
+At Steven's suggestion I updated the instrumentation to display the
+local_save_flags and irqs_disabled_flags:
 
-Only with your patch, there will still be problem on SRIO platforms =
-other than MPC85xx.
+while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
+        local_save_flags(flags);
+        printk("local flags: %lx, irqs disabled: %d\n", flags, irqs_disabled_flags(flags));
+        asm("mr %0,1" : "=r" (sp));
+        printk("before H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());
+        extended_cede_processor(cede_latency_hint);
+        asm("mr %0,1" : "=r" (sp));
+        printk("after H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());
+}
 
-I have posted a patch series to fix this together with several =
-compatibility issues a month before.
 
-http://patchwork.ozlabs.org/patch/56135/
-http://patchwork.ozlabs.org/patch/56136/
-http://patchwork.ozlabs.org/patch/56138/
-http://patchwork.ozlabs.org/patch/56137/
+Jul 22 23:36:58 igoort1 kernel: local flags: 0, irqs disabled: 1
+Jul 22 23:36:58 igoort1 kernel: before H_CEDE current->stack: c00000010e9e3ce0, pcnt: 1
+Jul 22 23:36:58 igoort1 kernel: after H_CEDE current->stack: c00000010e9e3ce0, pcnt: 1
 
+I'm not sure if I'm reading that right, but I believe interrupts are
+intended to be disabled here. If accomplished via the
+spin_lock_irqsave() this would behave differently on RT. However, this
+path disables the interrupts handled by xics, all but the IPIs anyway.
+On RT I disabled the decrementer as well.
 
-Can anyone pick the patch series quickly as currently there is a compile =
-error when SRIO is enabled.
+Is it possible for RT to be receiving other interrupts here?
 
-- Leo
-
->
->Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
->Cc: Kumar Gala <galak@kernel.crashing.org>
->Cc: Grant Likely <grant.likely@secretlab.ca>
->Cc: Matt Porter <mporter@kernel.crashing.org>
->---
-> arch/powerpc/sysdev/fsl_rio.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
->diff --git a/arch/powerpc/sysdev/fsl_rio.c =
-b/arch/powerpc/sysdev/fsl_rio.c
->index 30e1626..c58df58 100644
->--- a/arch/powerpc/sysdev/fsl_rio.c
->+++ b/arch/powerpc/sysdev/fsl_rio.c
->@@ -245,7 +245,7 @@ static int (*saved_mcheck_exception)(struct pt_regs
->*regs);  static int fsl_rio_mcheck_exception(struct pt_regs *regs)  {
-> 	const struct exception_table_entry *entry =3D NULL;
->-	unsigned long reason =3D (mfspr(SPRN_MCSR) & MCSR_MASK);
->+	unsigned long reason =3D mfspr(SPRN_MCSR);
->
-> 	if (reason & MCSR_BUS_RBERR) {
-> 		reason =3D in_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR));
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
