@@ -1,17 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net
 	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id C2C1E1007D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 15:50:42 +1000 (EST)
-Date: Thu, 22 Jul 2010 22:50:58 -0700 (PDT)
-Message-Id: <20100722.225058.178805105.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 3F7BE100808
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 15:50:59 +1000 (EST)
+Date: Thu, 22 Jul 2010 22:51:15 -0700 (PDT)
+Message-Id: <20100722.225115.160202643.davem@davemloft.net>
 To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 1/4] of/device: Replace of_device with platform_device
-	in includes and core code
+Subject: Re: [PATCH 3/4] sparc: remove references to of_device and to_of_device
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100722223006.21557.84275.stgit@angua>
+In-Reply-To: <20100722223016.21557.40832.stgit@angua>
 References: <20100722222600.21557.34167.stgit@angua>
-	<20100722223006.21557.84275.stgit@angua>
+	<20100722223016.21557.40832.stgit@angua>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
@@ -28,11 +27,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 22 Jul 2010 16:30:06 -0600
+Date: Thu, 22 Jul 2010 16:30:16 -0600
 
-> of_device is currently just an #define alias to platform_device until it
-> gets removed entirely.  This patch removes references to it from the
-> include directories and the core drivers/of code.
+> of_device is just a #define alias to platform_device.  This patch
+> replaces all references to it with platform_device.
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
