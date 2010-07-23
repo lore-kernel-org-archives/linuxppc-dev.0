@@ -1,36 +1,20 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp06.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B83391007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 14:13:23 +1000 (EST)
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
-	by e28smtp06.in.ibm.com (8.14.4/8.13.1) with ESMTP id o6N4DJdG027850
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2010 09:43:19 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
-	by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6N4DIJU3498000
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2010 09:43:18 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
-	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6N4DH8V026485
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jul 2010 09:43:18 +0530
-Date: Fri, 23 Jul 2010 09:43:09 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>,
-	Nathan Fontenot <nfont@austin.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Gautham R Shenoy <ego@in.ibm.com>,
-	Julia Lawall <julia@diku.dk>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: ONLINE to OFFLINE CPU state transition during
-	removal
-Message-ID: <20100723041309.GB4728@dirshya.in.ibm.com>
-References: <20100723024343.GC32534@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20100723024343.GC32534@linux.vnet.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0554B1007D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 14:14:45 +1000 (EST)
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 23 Jul 2010 14:14:28 +1000
+Message-ID: <1279858468.1970.64.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Russell King <linux@arm.linux.org.uk>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Robert Jennings <rcj@linux.vnet.ibm.com> [2010-07-22 21:43:44]:
+Hi Linus !
 
-> If a CPU remove is attempted using the 'release' interface on hardware
-> which supports extended cede, the CPU will be put in the INACTIVE state
-> rather than the OFFLINE state due to the default preferred_offline_state
-> in that situation.  In the INACTIVE state it will fail to be removed.
-> 
-> This patch changes the preferred offline state to OFFLINE when an CPU is
-> in the ONLINE state.  After cpu_down() is called in dlpar_offline_cpu()
-> the CPU will be OFFLINE and CPU removal can continue.
+Here's a few things for 2.6.35.
 
-Hi Robert,
+One's a fallover from the lmb->memblock rename that I missed, which causes
+a bunch of pseries machine to boot with 128M of memory and that's it :-)
 
-Thanks for the patch.  In dlpar operation, we would offline the CPU
-first using the sysfs online file and then write to the sysfs release
-file to complete the sequence right?  The current code in
-dlpar_offline_cpu() would work as long as the cpu is in either
-inactive state or offline state (in case of unsupported platform).
+There's a few patches fixing a nasty race we found in our hugepage code,
+a kexec fix from Kumar, and an .lds fix from Sam for a bug that as far
+as we know only affects powerpc.
 
-Is the dlpar tools being changed to complete the operation with one
-sysfs write to release file?
+Cheers,
+Ben.
 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> 
-> ---
-> 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index d71e585..227c1c3 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -463,6 +463,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  				break;
-> 
->  			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
-> +				set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
->  				cpu_maps_update_done();
->  				rc = cpu_down(cpu);
->  				if (rc)
+The following changes since commit b37fa16e78d6f9790462b3181602a26b5af36260:
+  Linus Torvalds (1):
+        Linux 2.6.35-rc6
 
-The patch looks good.  Will need to test out the various scenarios so
-that the preferred_offline_state do not get flipped before cpu_down()
-is called.  This is unlikely, but still we need to validate
-a concurrent sysfs online file write and sysfs release file write.
+are available in the git repository at:
 
---Vaidy
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+Anton Blanchard (1):
+      powerpc/mm: Handle hypervisor pte insert failure in __hash_page_huge
+
+Benjamin Herrenschmidt (5):
+      powerpc/mm: Move around testing of _PAGE_PRESENT in hash code
+      powerpc/mm: Fix bugs in huge page hashing
+      powerpc/mm: Add some debug output when hash insertion fails
+      powerpc: Fix erroneous lmb->memblock conversions
+      Merge commit 'kumar/merge' into merge
+
+Kumar Gala (1):
+      powerpc/kexec: Fix boundary case for book-e kexec memory limits
+
+Sam Ravnborg (1):
+      vmlinux.lds: fix .data..init_task output section (fix popwerpc boot)
+
+ arch/powerpc/include/asm/kexec.h                |    6 +-
+ arch/powerpc/include/asm/mmu-hash64.h           |    4 +-
+ arch/powerpc/kernel/prom.c                      |    2 +-
+ arch/powerpc/mm/hash_low_64.S                   |    9 ----
+ arch/powerpc/mm/hash_utils_64.c                 |   53 +++++++++++++++++------
+ arch/powerpc/mm/hugetlbpage-hash64.c            |   40 +++++++++--------
+ arch/powerpc/mm/numa.c                          |   24 +++++-----
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   22 +++++-----
+ include/asm-generic/vmlinux.lds.h               |    2 +-
+ 9 files changed, 93 insertions(+), 69 deletions(-)
