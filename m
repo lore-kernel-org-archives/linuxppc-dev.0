@@ -1,24 +1,19 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-gx0-f179.google.com (mail-gx0-f179.google.com
-	[209.85.161.179]) by ozlabs.org (Postfix) with ESMTP id 2B24FB6EF0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 24 Jul 2010 05:21:10 +1000 (EST)
-Received: by gxk26 with SMTP id 26so299837gxk.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 12:21:08 -0700 (PDT)
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id B5471B6F07
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 06:02:21 +1000 (EST)
+Received: by pxi6 with SMTP id 6so4214193pxi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 13:02:20 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH] of: make of_find_device_by_node generic
+To: jonas@southpole.se, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	benh@kernel.crashing.org, sparclinux@vger.kernel.org, davem@davemloft.net
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 23 Jul 2010 14:02:17 -0600
+Message-ID: <20100723200217.18363.48627.stgit@angua>
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <201007230815.14464.sr@denx.de>
-References: <1279846638-22323-1-git-send-email-tmarri@amcc.com>
-	<201007230815.14464.sr@denx.de>
-Date: Fri, 23 Jul 2010 12:21:08 -0700
-Message-ID: <AANLkTi=M1L3xPiA1zyvDkA3403B=OpXdWfhMEP7mahrW@mail.gmail.com>
-Subject: Re: [PATCH] Adding ADMA support for PPC460EX DMA engine.
-From: Dan Williams <dan.j.williams@intel.com>
-To: Stefan Roese <sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org, tmarri@amcc.com
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 22, 2010 at 11:15 PM, Stefan Roese <sr@denx.de> wrote:
-> Hi Marri,
->
-> On Friday 23 July 2010 02:57:18 tmarri@amcc.com wrote:
->> From: Tirumala Marri <tmarri@amcc.com>
->>
->> =A0 This patch will add ADMA support for DMA engine and HW offload for
->> =A0 XOR/ADG (RAID-5/6) functionalities.
->> =A0 1. It supports memcpy, xor, GF(2) based RAID-6.
->> =A0 2. It supports interrupt based DMA completions.
->> =A0 3. Also supports memcpy in RAID-1 case.
->>
->> =A0 Kernel version: 2.6.35-rc5
->>
->> =A0 Testing:
->> =A0 =A0 Created RAID-5/6 arrays usign mdadm.
->> =A0 =A0 And ran raw IO and filesystem IO to the RAID array.
->> =A0 =A0 Chunk size 4k,64k was tested.
->> =A0 =A0 RAID rebuild , disk fail, resync tested.
->>
->> =A0 File names:
->> =A0 =A0 This code is similar to ppc440spe . So I named the files as
->> =A0 =A0 drivers/dma/ppc4xx/adma1.c and drivers/dma/ppc4xx/adma1.h
->
-> As you describe above, a lot of the code seems to be copied from
-> drivers/dma/ppc4xx/adma.c/h. Wouldn't it make more sense to factor out th=
-e
-> common code instead of duplicating it?
->
+From: Jonas Bonn <jonas@southpole.se>
 
-Yes, and you might look to drivers/dma/iop-adma.c as an example of a
-way to support similar hardware with a single code base.
+There's no need for this function to be architecture specific and all four
+architectures defining it had the same definition.  The function has been
+moved to drivers/of/platform.c.
 
---
-Dan
+Signed-off-by: Jonas Bonn <jonas@southpole.se>
+[grant.likely@secretlab.ca: moved to drivers/of/platform.c, simplified code, and added kerneldoc comment]
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/microblaze/kernel/of_platform.c |   16 ----------------
+ arch/powerpc/kernel/of_platform.c    |   16 ----------------
+ arch/sparc/kernel/of_device_common.c |   20 --------------------
+ drivers/of/platform.c                |   20 ++++++++++++++++++++
+ 4 files changed, 20 insertions(+), 52 deletions(-)
+
+diff --git a/arch/microblaze/kernel/of_platform.c b/arch/microblaze/kernel/of_platform.c
+index c664b27..6cffadb 100644
+--- a/arch/microblaze/kernel/of_platform.c
++++ b/arch/microblaze/kernel/of_platform.c
+@@ -47,19 +47,3 @@ const struct of_device_id of_default_bus_ids[] = {
+ 	{ .type = "simple", },
+ 	{},
+ };
+-
+-static int of_dev_node_match(struct device *dev, void *data)
+-{
+-	return to_platform_device(dev)->dev.of_node == data;
+-}
+-
+-struct platform_device *of_find_device_by_node(struct device_node *np)
+-{
+-	struct device *dev;
+-
+-	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
+-	if (dev)
+-		return to_platform_device(dev);
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_find_device_by_node);
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index 84439d1..760a7af 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -52,22 +52,6 @@ const struct of_device_id of_default_bus_ids[] = {
+ 	{},
+ };
+ 
+-static int of_dev_node_match(struct device *dev, void *data)
+-{
+-	return to_platform_device(dev)->dev.of_node == data;
+-}
+-
+-struct platform_device *of_find_device_by_node(struct device_node *np)
+-{
+-	struct device *dev;
+-
+-	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
+-	if (dev)
+-		return to_platform_device(dev);
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_find_device_by_node);
+-
+ #ifdef CONFIG_PPC_OF_PLATFORM_PCI
+ 
+ /* The probing of PCI controllers from of_platform is currently
+diff --git a/arch/sparc/kernel/of_device_common.c b/arch/sparc/kernel/of_device_common.c
+index e80729b..49ddff5 100644
+--- a/arch/sparc/kernel/of_device_common.c
++++ b/arch/sparc/kernel/of_device_common.c
+@@ -11,26 +11,6 @@
+ 
+ #include "of_device_common.h"
+ 
+-static int node_match(struct device *dev, void *data)
+-{
+-	struct platform_device *op = to_platform_device(dev);
+-	struct device_node *dp = data;
+-
+-	return (op->dev.of_node == dp);
+-}
+-
+-struct platform_device *of_find_device_by_node(struct device_node *dp)
+-{
+-	struct device *dev = bus_find_device(&platform_bus_type, NULL,
+-					     dp, node_match);
+-
+-	if (dev)
+-		return to_platform_device(dev);
+-
+-	return NULL;
+-}
+-EXPORT_SYMBOL(of_find_device_by_node);
+-
+ unsigned int irq_of_parse_and_map(struct device_node *node, int index)
+ {
+ 	struct platform_device *op = of_find_device_by_node(node);
+diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+index 9b2d5b1..9126064 100644
+--- a/drivers/of/platform.c
++++ b/drivers/of/platform.c
+@@ -22,6 +22,26 @@
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+ 
++static int of_dev_node_match(struct device *dev, void *data)
++{
++	return dev->of_node == data;
++}
++
++/**
++ * of_find_device_by_node - Find the platform_device associated with a node
++ * @np: Pointer to device tree node
++ *
++ * Returns platform_device pointer, or NULL if not found
++ */
++struct platform_device *of_find_device_by_node(struct device_node *np)
++{
++	struct device *dev;
++
++	dev = bus_find_device(&platform_bus_type, NULL, np, of_dev_node_match);
++	return dev ? to_platform_device(dev) : NULL;
++}
++EXPORT_SYMBOL(of_find_device_by_node);
++
+ static int platform_driver_probe_shim(struct platform_device *pdev)
+ {
+ 	struct platform_driver *pdrv;
