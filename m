@@ -1,20 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 15301B70AA
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 06:03:46 +1000 (EST)
-Date: Fri, 23 Jul 2010 13:04:02 -0700 (PDT)
-Message-Id: <20100723.130402.232759717.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH] of: make of_find_device_by_node generic
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100723200217.18363.48627.stgit@angua>
-References: <20100723200217.18363.48627.stgit@angua>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: jonas@southpole.se, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pw0-f42.google.com (mail-pw0-f42.google.com
+	[209.85.160.42]) by ozlabs.org (Postfix) with ESMTP id 282ADB6EDF
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 06:09:06 +1000 (EST)
+Received: by pwi1 with SMTP id 1so4069309pwi.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 13:09:05 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH] of: Fix phandle endian issues
+To: jonas@southpole.se, sfr@canb.auug.org.au, monstr@monstr.eu,
+	microblaze-uclinux@itee.uq.edu.au, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	sparclinux@vger.kernel.org, davem@davemloft.net
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 23 Jul 2010 14:09:01 -0600
+Message-ID: <20100723200901.19485.35303.stgit@angua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +24,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 23 Jul 2010 14:02:17 -0600
+The flat tree code wasn't fixing the endianness on phandle values when
+unflattening the tree, and the code in drivers/of wasn't always doing a
+be32_to_cpu before trying to dereference the phandle values.  This patch
+fixes them.
 
-> From: Jonas Bonn <jonas@southpole.se>
-> 
-> There's no need for this function to be architecture specific and all four
-> architectures defining it had the same definition.  The function has been
-> moved to drivers/of/platform.c.
-> 
-> Signed-off-by: Jonas Bonn <jonas@southpole.se>
-> [grant.likely@secretlab.ca: moved to drivers/of/platform.c, simplified code, and added kerneldoc comment]
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ drivers/of/base.c |   12 ++++++------
+ drivers/of/fdt.c  |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Acked-by: David S. Miller <davem@davemloft.net>
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index e3f7af8..aa80525 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -605,14 +605,14 @@ EXPORT_SYMBOL(of_find_node_by_phandle);
+ struct device_node *
+ of_parse_phandle(struct device_node *np, const char *phandle_name, int index)
+ {
+-	const phandle *phandle;
++	const __be32 *phandle;
+ 	int size;
+ 
+ 	phandle = of_get_property(np, phandle_name, &size);
+ 	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
+ 		return NULL;
+ 
+-	return of_find_node_by_phandle(phandle[index]);
++	return of_find_node_by_phandle(be32_to_cpup(phandle + index));
+ }
+ EXPORT_SYMBOL(of_parse_phandle);
+ 
+@@ -668,16 +668,16 @@ int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
+ 
+ 	while (list < list_end) {
+ 		const __be32 *cells;
+-		const phandle *phandle;
++		phandle phandle;
+ 
+-		phandle = list++;
++		phandle = be32_to_cpup(list++);
+ 		args = list;
+ 
+ 		/* one cell hole in the list = <>; */
+-		if (!*phandle)
++		if (!phandle)
+ 			goto next;
+ 
+-		node = of_find_node_by_phandle(*phandle);
++		node = of_find_node_by_phandle(phandle);
+ 		if (!node) {
+ 			pr_debug("%s: could not find phandle\n",
+ 				 np->full_name);
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index d61fda8..f3a7b4f 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -320,13 +320,13 @@ unsigned long __init unflatten_dt_node(unsigned long mem,
+ 			if ((strcmp(pname, "phandle") == 0) ||
+ 			    (strcmp(pname, "linux,phandle") == 0)) {
+ 				if (np->phandle == 0)
+-					np->phandle = *((u32 *)*p);
++					np->phandle = be32_to_cpup((__be32*)*p);
+ 			}
+ 			/* And we process the "ibm,phandle" property
+ 			 * used in pSeries dynamic device tree
+ 			 * stuff */
+ 			if (strcmp(pname, "ibm,phandle") == 0)
+-				np->phandle = *((u32 *)*p);
++				np->phandle = be32_to_cpup((__be32 *)*p);
+ 			pp->name = pname;
+ 			pp->length = sz;
+ 			pp->value = (void *)*p;
