@@ -1,20 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 0554B1007D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 14:14:45 +1000 (EST)
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 23 Jul 2010 14:14:28 +1000
-Message-ID: <1279858468.1970.64.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Russell King <linux@arm.linux.org.uk>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <R58472@freescale.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id B83FF100895
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 14:14:53 +1000 (EST)
+Received: from mail148-va3 (localhost.localdomain [127.0.0.1])	by
+	mail148-va3-R.bigfish.com (Postfix) with ESMTP id 346FC14481F6	for
+	<linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 03:59:46 +0000 (UTC)
+Received: from VA3EHSMHS014.bigfish.com (unknown [10.7.14.252])	by
+	mail148-va3.bigfish.com (Postfix) with ESMTP id AB2C1F2004C	for
+	<linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 03:59:45 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o6N3xhpL003421	for
+	<linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 20:59:43 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o6N4Ct9M026050	for <linuxppc-dev@ozlabs.org>;
+	Thu, 22 Jul 2010 23:12:56 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain; charset="Windows-1252"
+Subject: RE: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
+Date: Fri, 23 Jul 2010 11:59:39 +0800
+Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F630BCA95@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1279730810-24926-1-git-send-email-alexandre.bounine@idt.com>
+References: <1279730810-24926-1-git-send-email-alexandre.bounine@idt.com>
+From: Li Yang-R58472 <r58472@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Alexandre Bounine" <alexandre.bounine@idt.com>,
+	<akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +37,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+>Subject: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
+>
+>Fixes compile problem caused by MCSR_MASK removal from book-E =
+definitions.
 
-Here's a few things for 2.6.35.
+Hi Alex,
 
-One's a fallover from the lmb->memblock rename that I missed, which causes
-a bunch of pseries machine to boot with 128M of memory and that's it :-)
+Only with your patch, there will still be problem on SRIO platforms =
+other than MPC85xx.
 
-There's a few patches fixing a nasty race we found in our hugepage code,
-a kexec fix from Kumar, and an .lds fix from Sam for a bug that as far
-as we know only affects powerpc.
+I have posted a patch series to fix this together with several =
+compatibility issues a month before.
 
-Cheers,
-Ben.
+http://patchwork.ozlabs.org/patch/56135/
+http://patchwork.ozlabs.org/patch/56136/
+http://patchwork.ozlabs.org/patch/56138/
+http://patchwork.ozlabs.org/patch/56137/
 
-The following changes since commit b37fa16e78d6f9790462b3181602a26b5af36260:
-  Linus Torvalds (1):
-        Linux 2.6.35-rc6
 
-are available in the git repository at:
+Can anyone pick the patch series quickly as currently there is a compile =
+error when SRIO is enabled.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+- Leo
 
-Anton Blanchard (1):
-      powerpc/mm: Handle hypervisor pte insert failure in __hash_page_huge
-
-Benjamin Herrenschmidt (5):
-      powerpc/mm: Move around testing of _PAGE_PRESENT in hash code
-      powerpc/mm: Fix bugs in huge page hashing
-      powerpc/mm: Add some debug output when hash insertion fails
-      powerpc: Fix erroneous lmb->memblock conversions
-      Merge commit 'kumar/merge' into merge
-
-Kumar Gala (1):
-      powerpc/kexec: Fix boundary case for book-e kexec memory limits
-
-Sam Ravnborg (1):
-      vmlinux.lds: fix .data..init_task output section (fix popwerpc boot)
-
- arch/powerpc/include/asm/kexec.h                |    6 +-
- arch/powerpc/include/asm/mmu-hash64.h           |    4 +-
- arch/powerpc/kernel/prom.c                      |    2 +-
- arch/powerpc/mm/hash_low_64.S                   |    9 ----
- arch/powerpc/mm/hash_utils_64.c                 |   53 +++++++++++++++++------
- arch/powerpc/mm/hugetlbpage-hash64.c            |   40 +++++++++--------
- arch/powerpc/mm/numa.c                          |   24 +++++-----
- arch/powerpc/platforms/pseries/hotplug-memory.c |   22 +++++-----
- include/asm-generic/vmlinux.lds.h               |    2 +-
- 9 files changed, 93 insertions(+), 69 deletions(-)
+>
+>Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+>Cc: Kumar Gala <galak@kernel.crashing.org>
+>Cc: Grant Likely <grant.likely@secretlab.ca>
+>Cc: Matt Porter <mporter@kernel.crashing.org>
+>---
+> arch/powerpc/sysdev/fsl_rio.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+>diff --git a/arch/powerpc/sysdev/fsl_rio.c =
+b/arch/powerpc/sysdev/fsl_rio.c
+>index 30e1626..c58df58 100644
+>--- a/arch/powerpc/sysdev/fsl_rio.c
+>+++ b/arch/powerpc/sysdev/fsl_rio.c
+>@@ -245,7 +245,7 @@ static int (*saved_mcheck_exception)(struct pt_regs
+>*regs);  static int fsl_rio_mcheck_exception(struct pt_regs *regs)  {
+> 	const struct exception_table_entry *entry =3D NULL;
+>-	unsigned long reason =3D (mfspr(SPRN_MCSR) & MCSR_MASK);
+>+	unsigned long reason =3D mfspr(SPRN_MCSR);
+>
+> 	if (reason & MCSR_BUS_RBERR) {
+> 		reason =3D in_be32((u32 *)(rio_regs_win + RIO_LTLEDCSR));
