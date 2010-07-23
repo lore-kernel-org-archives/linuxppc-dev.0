@@ -1,34 +1,18 @@
-Return-Path: <willschm@us.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 826EFB7115
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 00:39:53 +1000 (EST)
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6NENLJv000822
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:23:21 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6NEdos6283810
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:39:50 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6NEdmPr001128
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:39:50 -0400
-In-Reply-To: <4C48DADE.1050409@us.ibm.com>
-References: <4C488CCD.60004@us.ibm.com> <1279837509.1970.24.camel@pasglop>
-	<4C48DADE.1050409@us.ibm.com>
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-To: dvhltc@linux.vnet.ibm.com
-Message-ID: <OF05098931.134CCA5B-ON86257769.004FED9E-86257769.00508C16@us.ibm.com>
-From: Will Schmidt <willschm@us.ibm.com>
-Date: Fri, 23 Jul 2010 09:39:47 -0500
+Return-Path: <moisesdm82@gmail.com>
+Received: from mail-ew0-f51.google.com (mail-ew0-f51.google.com
+	[209.85.215.51]) by ozlabs.org (Postfix) with ESMTP id CD1981007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 24 Jul 2010 01:43:04 +1000 (EST)
+Received: by ewy21 with SMTP id 21so141411ewy.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 23 Jul 2010 08:43:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>
+Date: Fri, 23 Jul 2010 17:43:01 +0200
+Message-ID: <AANLkTi=nzrL8jori7ju67Pp9ehp6if=H76i0o0X9MNsw@mail.gmail.com>
+Subject: problems flashing custom board
+From: moises dominguez <moisesdm82@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=0015174bde1ccecc4e048c0fe391
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,95 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-dvhltc@linux.vnet.ibm.com wrote on 07/22/2010 06:57:18 PM:
-> Subject
->
-> Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-> CONFIG_PREEMPT on pseries
->
-> On 07/22/2010 03:25 PM, Benjamin Herrenschmidt wrote:
-> > On Thu, 2010-07-22 at 11:24 -0700, Darren Hart wrote:
-> >>
-> >> 1) How can the preempt_count() get mangled across the H_CEDE hcall?
-> >> 2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
-> >
-> > The preempt count is on the thread info at the bottom of the stack.
-> >
-> > Can you check the stack pointers ?
->
-> Hi Ben, thanks for looking.
->
-> I instrumented the area around extended_cede_processor() as follows
-> (please confirm I'm getting the stack pointer correctly).
->
-> while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
->    asm("mr %0,1" : "=r" (sp));
->    printk("before H_CEDE current->stack: %lx, pcnt: %x\n", sp,
-> preempt_count());
->    extended_cede_processor(cede_latency_hint);
->    asm("mr %0,1" : "=r" (sp));
->    printk("after H_CEDE current->stack: %lx, pcnt: %x\n", sp,
-> preempt_count());
->  }
->
->
-> On Mainline (2.6.33.6, CONFIG_PREEMPT=y) I see this:
-> Jul 22 18:37:08 igoort1 kernel: before H_CEDE current->stack:
-> c00000010e9e3ce0, pcnt: 1
-> Jul 22 18:37:08 igoort1 kernel: after H_CEDE current->stack:
-> c00000010e9e3ce0, pcnt: 1
->
-> This surprised me as preempt_count is 1 before and after, so no
-> corruption appears to occur on mainline. This makes the pcnt of 65 I see
-> without the preempt_count()=0 hack very strange. I ran several hundred
-> off/on cycles. The issue of preempt_count being 1 is still addressed by
-> this patch however.
->
-> On PREEMPT_RT (2.6.33.5-rt23 - tglx, sorry, rt/2.6.33 next time,
-promise):
-> Jul 22 18:51:11 igoort1 kernel: before H_CEDE current->stack:
-> c000000089bcfcf0, pcnt: 1
-> Jul 22 18:51:11 igoort1 kernel: after H_CEDE current->stack:
-> c000000089bcfcf0, pcnt: ffffffff
+--0015174bde1ccecc4e048c0fe391
+Content-Type: text/plain; charset=ISO-8859-1
 
-I'm not seeing the preempt_count value corrupted with my current set of
-debug, however, I have added buffers to the thread_info struct, so
-wonder if I've moved the preempt_count variable out of the way of
-the corruption.  (Still investigating that point..)
+Hi,
 
-<Why..   because I had been trying to set a DABR on the preempt_count
-value to catch the corrupter, and due to hits on the nearby _flags fields,
-getting
-false positives..>
+I am having problems programming u-boot(from ltib) in ads5121 based custom
+board with CodeWarrior USB TAP(sector not erased). I hope you could help me.
 
+Instead of 64 MB NOR flash(2xS29-GL256P) I am using a 16 MB (S29-GL128P) in
+muxed-mode. I have choosen 5121ADS_init_sram_flash.cfg as base file, and
+modified flash size and configuration on this way:
+..
+- writemem.l 0x80000020 0xfc00fcff     // CS0 from 0xfc00_0000 to
+0xfcff_ffff, 16 MB flash
+- writemem.l 0x80010000 0x05059110 //16 bit data, muxed mode
+...
 
-struct thread_info {
-|-------struct task_struct *task;|------|-------/* main task structure */
-|-------struct exec_domain *exec_domain;|-------/* execution domain */
-|-------int|----|-------cpu;|---|-------|-------/* cpu we're on */
-|-------int|----|-------pad_buffer[64];
-|-------int|----|-------preempt_count;|-|-------/* 0 => preemptable,
-|-------|-------|-------|-------|-------|-------   <0 => BUG */
-|-------int|----|-------pad_buffer2[256];
-|-------struct restart_block restart_block;
-|-------unsigned long|--local_flags;|---|-------/* private flags for thread
-*/
+I have doubts about RST_CONF_LOC and RST_CONF_BMS; afaik, this two bits
+select where u-boot should be programed, am I wrong? but, according
+RST_CONF_BMS description there are only two boot start possible address for
+CS0:
+- 0x0000_0000 if BMS=0
+- 0XFFF0_0000 if BMS=1 (as in eval. board).
 
-|-------/* low level flags - has atomic operations done on it */
-|-------unsigned long|--flags ____cacheline_aligned_in_smp;
-};
+But, if I map my flash to 0xfc00_0000.. it does not reach oxfff0_0000.. I
+tried to map it to 0x0000_0000 (where SRAM is according cfg) and SRAM to
+0xfc00_0000 but  I got : flash ID error (as if flash driver could not be
+loaded?) Can u-boot be programed to any flash position? and .. can SRAM not
+be mapped to any position different to cero?
 
+I read too that we should change TEXT_BASE u-boot macro. I changed it to
+0xFC00_0000 that is where I want to have u-boot.. but no success.
 
->
-> In both cases the stack pointer appears unchanged.
->
-> Note: there is a BUG triggered in between these statements as the
-> preempt_count causes the printk to trigger:
-> Badness at kernel/sched.c:5572
->
-> Thanks,
->
-> --
-> Darren Hart
-> IBM Linux Technology Center
-> Real-Time Linux Team
+Regards,
+
+Moises.
+
+--0015174bde1ccecc4e048c0fe391
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br><br>I am having problems programming u-boot(from ltib) in ads5121 ba=
+sed custom board with CodeWarrior USB TAP(sector not erased). I hope you co=
+uld help me.<br><br>Instead of 64 MB NOR flash(2xS29-GL256P) I am using a 1=
+6 MB (S29-GL128P) in muxed-mode. I have choosen 5121ADS_init_sram_flash.cfg=
+ as base file, and modified flash size and configuration on this way:<br>
+..<br>
+- writemem.l 0x80000020 0xfc00fcff=A0=A0=A0=A0 // CS0 from 0xfc00_0000 to 0=
+xfcff_ffff, 16 MB flash<br>- writemem.l 0x80010000 0x05059110 //16 bit data=
+, muxed mode<br>...<br><br>I have doubts about RST_CONF_LOC and RST_CONF_BM=
+S; afaik, this two bits select where u-boot should be programed, am I wrong=
+? but, according RST_CONF_BMS description there are only two boot start pos=
+sible address for CS0:<br>
+- 0x0000_0000 if BMS=3D0<br>- 0XFFF0_0000 if BMS=3D1 (as in eval. board).<b=
+r><br>But, if I map my flash to 0xfc00_0000.. it does not reach oxfff0_0000=
+.. I tried to map it to 0x0000_0000 (where SRAM is according cfg) and SRAM =
+to 0xfc00_0000 but=A0 I got : flash ID error (as if flash driver could not =
+be loaded?) Can u-boot be programed to any flash position? and .. can SRAM =
+not be mapped to any position different to cero?<br>
+<br>I read too that we should change TEXT_BASE u-boot macro. I changed it t=
+o 0xFC00_0000 that is where I want to have u-boot.. but no success.<br><br>=
+Regards,<br><br>Moises.<br><br><br>
+
+--0015174bde1ccecc4e048c0fe391--
