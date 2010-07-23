@@ -1,35 +1,17 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 95532100815
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 09:57:29 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6MNn03o006124
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 17:49:00 -0600
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6MNvNKI163810
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 17:57:23 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6N00e4Z016084
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jul 2010 18:00:41 -0600
-Message-ID: <4C48DADE.1050409@us.ibm.com>
-Date: Thu, 22 Jul 2010 16:57:18 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-References: <4C488CCD.60004@us.ibm.com> <1279837509.1970.24.camel@pasglop>
-In-Reply-To: <1279837509.1970.24.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <smaclennan@pikatech.com>
+Received: from yow.seanm.ca (toronto-hs-216-138-233-67.s-ip.magma.ca
+	[216.138.233.67]) by ozlabs.org (Postfix) with SMTP id 03A87B70F2
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:04:42 +1000 (EST)
+Date: Thu, 22 Jul 2010 20:04:40 -0400
+From: Sean MacLennan <smaclennan@pikatech.com>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc:  fix .data..init_task output section
+Message-ID: <20100722200440.580a0251@lappy.seanm.ca>
+In-Reply-To: <20100722195550.6ace2b29@lappy.seanm.ca>
+References: <20100722195550.6ace2b29@lappy.seanm.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,53 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2010 03:25 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2010-07-22 at 11:24 -0700, Darren Hart wrote:
->>
->> 1) How can the preempt_count() get mangled across the H_CEDE hcall?
->> 2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
-> 
-> The preempt count is on the thread info at the bottom of the stack.
-> 
-> Can you check the stack pointers ?
+=46rom 851e645a7eee68380caaf026eb6d3be118876370 Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 13 Jul 2010 11:39:42 +0200
+Subject: [PATCH] vmlinux.lds: fix .data..init_task output section (fix popw=
+erpc boot)
 
-Hi Ben, thanks for looking.
+The .data..init_task output section was missing
+a load offset causing a popwerpc target to fail to boot.
 
-I instrumented the area around extended_cede_processor() as follows
-(please confirm I'm getting the stack pointer correctly).
+Sean MacLennan tracked it down to the definition of
+INIT_TASK_DATA_SECTION().
 
-while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-	asm("mr %0,1" : "=r" (sp));
-	printk("before H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());  
-	extended_cede_processor(cede_latency_hint);
-	asm("mr %0,1" : "=r" (sp));
-	printk("after H_CEDE current->stack: %lx, pcnt: %x\n", sp, preempt_count());
- }
+There are only two users of INIT_TASK_DATA_SECTION()
+in the kernel today: cris and popwerpc.
+cris do not support relocatable kernels and is thus not
+impacted by this change.
 
+Fix INIT_TASK_DATA_SECTION() to specify load offset like
+all other output sections.
 
-On Mainline (2.6.33.6, CONFIG_PREEMPT=y) I see this:
-Jul 22 18:37:08 igoort1 kernel: before H_CEDE current->stack: c00000010e9e3ce0, pcnt: 1
-Jul 22 18:37:08 igoort1 kernel: after H_CEDE current->stack:  c00000010e9e3ce0, pcnt: 1
+Reported-by: Sean MacLennan <smaclennan@pikatech.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ include/asm-generic/vmlinux.lds.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-This surprised me as preempt_count is 1 before and after, so no
-corruption appears to occur on mainline. This makes the pcnt of 65 I see
-without the preempt_count()=0 hack very strange. I ran several hundred
-off/on cycles. The issue of preempt_count being 1 is still addressed by
-this patch however.
-
-On PREEMPT_RT (2.6.33.5-rt23 - tglx, sorry, rt/2.6.33 next time, promise):
-Jul 22 18:51:11 igoort1 kernel: before H_CEDE current->stack: c000000089bcfcf0, pcnt: 1
-Jul 22 18:51:11 igoort1 kernel: after H_CEDE current->stack:  c000000089bcfcf0, pcnt: ffffffff
-
-In both cases the stack pointer appears unchanged.
-
-Note: there is a BUG triggered in between these statements as the
-preempt_count causes the printk to trigger:
-Badness at kernel/sched.c:5572
-
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinu=
+x.lds.h
+index 48c5299..cdfff74 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -435,7 +435,7 @@
+  */
+ #define INIT_TASK_DATA_SECTION(align)					\
+ 	. =3D ALIGN(align);						\
+-	.data..init_task : {						\
++	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
+ 		INIT_TASK_DATA(align)					\
+ 	}
+=20
+--=20
+1.6.0.6
