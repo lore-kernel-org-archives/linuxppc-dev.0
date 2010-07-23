@@ -1,19 +1,20 @@
-Return-Path: <David.Daney@caviumnetworks.com>
-Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
-	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id C55261007D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:11:11 +1000 (EST)
-Message-ID: <4C48DE1C.4040008@caviumnetworks.com>
-Date: Thu, 22 Jul 2010 17:11:08 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-MIME-Version: 1.0
-To: Fushen Chen <fchen@apm.com>
-Subject: Re: [PATCH 1/9 v1.02] Add Synopsys DesignWare HS USB OTG Controller
-	driver.
-References: <12798369431775-git-send-email-fchen@apm.com>
-In-Reply-To: <12798369431775-git-send-email-fchen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, gregkh@suse.de
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 35F851007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 23 Jul 2010 10:22:08 +1000 (EST)
+Date: Fri, 23 Jul 2010 10:22:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: OOPS at bot time
+Message-Id: <20100723102202.871a3131.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__23_Jul_2010_10_22_02_+1000_Ng6==zwgoL4i4RRU"
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,117 +24,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2010 03:15 PM, Fushen Chen wrote:
-> The DWC OTG driver module provides the initialization and cleanup
-> entry points for the DWC OTG USB driver.
->
-> Signed-off-by: Fushen Chen<fchen@apm.com>
-> Signed-off-by: Mark Miesfeld<mmiesfeld@apm.com>
-> ---
->   drivers/Makefile                     |    1 +
->   drivers/usb/Kconfig                  |    2 +
->   drivers/usb/dwc_otg/Kconfig          |   96 +++
->   drivers/usb/dwc_otg/Makefile         |   13 +
->   drivers/usb/dwc_otg/dwc_otg_driver.c | 1246 ++++++++++++++++++++++++++++++++++
->   drivers/usb/dwc_otg/dwc_otg_driver.h |   97 +++
->   drivers/usb/gadget/Kconfig           |   21 +
->   drivers/usb/gadget/gadget_chips.h    |    7 +
->   8 files changed, 1483 insertions(+), 0 deletions(-)
->   create mode 100644 drivers/usb/dwc_otg/Kconfig
->   create mode 100644 drivers/usb/dwc_otg/Makefile
->   create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.c
->   create mode 100644 drivers/usb/dwc_otg/dwc_otg_driver.h
->
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index 20dcced..f3fc7c7 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -67,6 +67,7 @@ obj-$(CONFIG_UWB)		+= uwb/
->   obj-$(CONFIG_USB_OTG_UTILS)	+= usb/otg/
->   obj-$(CONFIG_USB)		+= usb/
->   obj-$(CONFIG_USB_MUSB_HDRC)	+= usb/musb/
-> +obj-$(CONFIG_USB_DWC_OTG)	+= usb/dwc_otg/
->   obj-$(CONFIG_PCI)		+= usb/
->   obj-$(CONFIG_USB_GADGET)	+= usb/gadget/
->   obj-$(CONFIG_SERIO)		+= input/serio/
-> diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-> index 6a58cb1..f48920b 100644
-> --- a/drivers/usb/Kconfig
-> +++ b/drivers/usb/Kconfig
-> @@ -113,6 +113,8 @@ source "drivers/usb/host/Kconfig"
->
->   source "drivers/usb/musb/Kconfig"
->
-> +source "drivers/usb/dwc_otg/Kconfig"
-> +
->   source "drivers/usb/class/Kconfig"
->
->   source "drivers/usb/storage/Kconfig"
-> diff --git a/drivers/usb/dwc_otg/Kconfig b/drivers/usb/dwc_otg/Kconfig
-> new file mode 100644
-> index 0000000..27ae0d5
-> --- /dev/null
-> +++ b/drivers/usb/dwc_otg/Kconfig
-> @@ -0,0 +1,96 @@
-> +#
-> +# USB Dual Role (OTG-ready) Controller Drivers
-> +# for silicon based on Synopsys DesignWare IP
-> +#
-[...]
-> diff --git a/drivers/usb/dwc_otg/Makefile b/drivers/usb/dwc_otg/Makefile
-> new file mode 100644
-> index 0000000..337ff81
-> --- /dev/null
-> +++ b/drivers/usb/dwc_otg/Makefile
-> @@ -0,0 +1,13 @@
-> +#
-> +# OTG infrastructure and transceiver drivers
-> +#
-> +obj-$(CONFIG_USB_DWC_OTG)	+= dwc_otg.o
-> +
-> +dwc_otg-objs := dwc_otg_driver.o dwc_otg_cil.o dwc_otg_cil_intr.o
-> +ifneq ($(CONFIG_DWC_DEVICE_ONLY),y)
-> +dwc_otg-objs += dwc_otg_hcd.o dwc_otg_hcd_intr.o \
-> +		dwc_otg_hcd_queue.o
-> +endif
-> +ifneq ($(CONFIG_DWC_HOST_ONLY),y)
-> +dwc_otg-objs += dwc_otg_pcd.o dwc_otg_pcd_intr.o
-> +endif
-> diff --git a/drivers/usb/dwc_otg/dwc_otg_driver.c b/drivers/usb/dwc_otg/dwc_otg_driver.c
-> new file mode 100644
-> index 0000000..3aae30e
+--Signature=_Fri__23_Jul_2010_10_22_02_+1000_Ng6==zwgoL4i4RRU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Look at all those files you reference in your Makefile.  Most of them 
-don't exist.  This will cause the kernel to be unbuildable and break the 
-ability to use git bisect.
+Hi all,
 
-One way to remedy this situation would be to make your Kconfig changes 
-the last patch in the series.
+My Power7 boot test paniced like this: (next-20100722)
 
-Also the subject line for all nine patches seems to be identical, yet 
-the patches are distinct.  Perhaps you could find better subject lines.
+%GQLogic Fibre Channel HBA Driver: 8.03.03-k0
+qla2xxx 0002:01:00.2: enabling device (0144 -> 0146)
+qla2xxx 0002:01:00.2: Found an ISP8001, irq 35, iobase 0xd000080080014000
+------------[ cut here ]------------
+kernel BUG at drivers/pci/msi.c:205!
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=3D128 NUMA pSeries
+last sysfs file: /sys/devices/virtual/tty/ptyz8/uevent
+Modules linked in: qla2xxx(+)
+NIP: c0000000002fcd54 LR: c000000000048d9c CTR: 0000000000000001
+REGS: c00000000278aff0 TRAP: 0700   Not tainted  (2.6.35-rc5-autokern1-next=
+-20100721)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 28422488  XER: 20000008
+TASK =3D c000000002008000[2226] 'modprobe' THREAD: c000000002788000 CPU: 12
+GPR00: 0000000000000001 c00000000278b270 c0000000009a36d0 c0000000009b8900=
+=20
+GPR04: c00000000278b2e8 ffffffffffffffff 0000000000000000 0000000000020000=
+=20
+GPR08: 00000000000033e7 c00000000a38b280 0000000000000000 0000000000000000=
+=20
+GPR12: 0000000088422488 c00000000f331800 00000fff921750a0 0000000000000000=
+=20
+GPR16: 0000000010033110 00000000100334b8 0000000000000000 0000000000000000=
+=20
+GPR20: d000080080018000 0000000000022225 c0000000009f7bb4 0000000000010200=
+=20
+GPR24: 000000002000020d 0000000000000025 c00000000278b2e0 c00000000278b2e8=
+=20
+GPR28: 0000000000000001 c00000000d0ac5f8 c000000000af8f00 c00000000a38b280=
+=20
+NIP [c0000000002fcd54] .read_msi_msg_desc+0x24/0x3c
+LR [c000000000048d9c] .rtas_setup_msi_irqs+0x1d8/0x254
+Call Trace:
+[c00000000278b270] [c000000000048d9c] .rtas_setup_msi_irqs+0x1d8/0x254 (unr=
+eliable)
+[c00000000278b360] [c00000000002a9cc] .arch_setup_msi_irqs+0x34/0x4c
+[c00000000278b3e0] [c0000000002fd3fc] .pci_enable_msix+0x49c/0x4ac
+[c00000000278b4c0] [d0000000001a5e30] .qla2x00_request_irqs+0x158/0x5b4 [ql=
+a2xxx]
+[c00000000278b580] [d0000000001cb41c] .qla2x00_probe_one+0xeac/0x63b0 [qla2=
+xxx]
+[c00000000278b6f0] [c0000000002f5c4c] .local_pci_probe+0x34/0x48
+[c00000000278b760] [c0000000002f6078] .pci_device_probe+0xe8/0x130
+[c00000000278b810] [c00000000036e648] .driver_probe_device+0xdc/0x1a4
+[c00000000278b8a0] [c00000000036e7a4] .__driver_attach+0x94/0xd8
+[c00000000278b930] [c00000000036dabc] .bus_for_each_dev+0x7c/0xe0
+[c00000000278b9e0] [c00000000036e410] .driver_attach+0x28/0x40
+[c00000000278ba60] [c00000000036d134] .bus_add_driver+0x144/0x310
+[c00000000278bb10] [c00000000036ec28] .driver_register+0xd8/0x198
+[c00000000278bbb0] [c0000000002f63d0] .__pci_register_driver+0x60/0x10c
+[c00000000278bc50] [d0000000001ca520] .qla2x00_module_init+0x150/0x1a0 [qla=
+2xxx]
+[c00000000278bce0] [c00000000000947c] .do_one_initcall+0x80/0x1a8
+[c00000000278bd90] [c0000000000a4364] .SyS_init_module+0xd8/0x244
+[c00000000278be30] [c00000000000852c] syscall_exit+0x0/0x40
+Instruction dump:
+ebe1fff8 7c0803a6 4e800020 e9230028 81490030 80090034 81690038 7d400378=20
+7c005b78 7c000034 5400d97e 78000020 <0b000000> 81690038 e8090030 91640008=20
+---[ end trace f67a78811ed47c60 ]---
+%Gudevd-work[1379]: '/sbin/modprobe -b pci:v00001077d00008001sv00001077sd00=
+00017Fbc0Csc04i00' unexpected exit with status 0x0005
 
-The very last patch contains exactly one file (dwc_otg_regs.h), but this 
-file is required by most of the preceding patches.  This indicates that 
-the ordering of the patches and the way that the files were distributed 
-among the patches could improve.  Could you just fold most of the file 
-addition patches into a single patch?
+That line number is this:
 
-Or if that is untenable, put the core files in one patch, and then maybe 
-hcd and pcd seperatly.
+	BUG_ON(!(entry->msg.address_hi | entry->msg.address_lo |
+		 entry->msg.data));
 
-This patch contains many lines that are indented with spaces instead of 
-tabs.  How did it manage to pass checkpatch.pl formatted like that?
+in read_msi_msg_desc().  That BUG_ON was added by commit
+2ca1af9aa3285c6a5f103ed31ad09f7399fc65d7 ("PCI: MSI: Remove unsafe and
+unnecessary hardware access") from the pci tree.
 
-And finally I would like to suggest taking all the glue-logic functions 
-in dwc_otg_driver.c and putting them in a separate file (perhaps 
-something like dwc_otg_amppc.c or something like that).  It could be 
-that initially you just rename dwc_otg_driver.c to dwc_otg_amppc.c. 
-That would make it easy for me to then add my dwc_otg_octeon.c and use 
-the driver with OCTEON (in arch/mips/cavium-octeon).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-See: http://marc.info/?l=linux-mips&m=125502126531841&w=2
+--Signature=_Fri__23_Jul_2010_10_22_02_+1000_Ng6==zwgoL4i4RRU
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Thanks,
-David Daney
+iQEcBAEBAgAGBQJMSOCqAAoJEDMEi1NhKgbskVkH/2d5cz/G+OoYpHB2zL2wdma5
+1lZeCKVukrHBt5Sf03bSNBa374GI6GtwW2kArMUfHO1msPHrH0mPuo8I368+Ra6J
+XZ8YvpVWQf/PNyknvLeimPiQRARBM24mMY0/Gip7ak6PdQ7gRd1FNXSnkmPfs2gv
+63g5RRswmn09MRl/0e/NTjI2WZuwso3xLeGXlurORGKdl1FS5fCzX9vS6fk9JFL9
+Rb51YKenB8aZ8bWrsDWtZNROPycwzrbbe5adifxCmqn1kNnWdJPe/jwte+huuWb7
+wjs/npsAnUd4N8oLZZS3E+DV7RG5FOH17zXL9Iyf/JXW53wFDQZxi7XT2dPXGCQ=
+=GbAz
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__23_Jul_2010_10_22_02_+1000_Ng6==zwgoL4i4RRU--
