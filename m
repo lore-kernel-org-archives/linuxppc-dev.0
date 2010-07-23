@@ -1,14 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 53ED91007D2
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 23:50:24 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/mpc512x: add clock structure for Video-IN (VIU) unit
-Date: Fri, 23 Jul 2010 15:50:18 +0200
-Message-Id: <1279893018-24155-1-git-send-email-agust@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>,
-	Hongjun Chen <hong-jun.chen@freescale.com>
+Return-Path: <sam@ravnborg.org>
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by ozlabs.org (Postfix) with ESMTP id E924DB7109
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 23:59:03 +1000 (EST)
+Date: Fri, 23 Jul 2010 15:58:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Sean MacLennan <smaclennan@pikatech.com>
+Subject: Re: [PATCH] powerpc:  fix .data..init_task output section
+Message-ID: <20100723135859.GA26879@merkur.ravnborg.org>
+References: <20100628005900.28d4a8e0@lappy.seanm.ca>
+	<20100712203435.08a3e90f@lappy.seanm.ca>
+	<20100713095024.GA10494@merkur.ravnborg.org>
+	<20100722195008.72fe2e71@lappy.seanm.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100722195008.72fe2e71@lappy.seanm.ca>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,57 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allows using clk_get()/clk_enable()/clk_disable() for VIU
-clock in the v4l2 video driver.
+On Thu, Jul 22, 2010 at 07:50:08PM -0400, Sean MacLennan wrote:
+> On Tue, 13 Jul 2010 11:50:24 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > From 851e645a7eee68380caaf026eb6d3be118876370 Mon Sep 17 00:00:00 2001
+> > From: Sam Ravnborg <sam@ravnborg.org>
+> > Date: Tue, 13 Jul 2010 11:39:42 +0200
+> > Subject: [PATCH] vmlinux.lds: fix .data..init_task output section
+> > (fix popwerpc boot)
+> > 
+> > The .data..init_task output section was missing
+> > a load offset causing a popwerpc target to fail to boot.
+> > 
+> > Sean MacLennan tracked it down to the definition of
+> > INIT_TASK_DATA_SECTION().
+> > 
+> > There are only two users of INIT_TASK_DATA_SECTION()
+> > in the kernel today: cris and popwerpc.
+> > cris do not support relocatable kernels and is thus not
+> > impacted by this change.
+> > 
+> > Fix INIT_TASK_DATA_SECTION() to specify load offset like
+> > all other output sections.
+> > 
+> > Reported-by: Sean MacLennan <smaclennan@pikatech.com>
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > ---
+> > 
+> > On the assumption that Sean reports that it fixes
+> > the warnings/boot issue here is a real patch.
+> > 
+> > Ben - will you take it via the popwerpc tree
+> > or shall I ask Michal to take it via kbuild?
+> > 
+> > 	Sam
 
-Signed-off-by: Hongjun Chen <hong-jun.chen@freescale.com>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/platforms/512x/clock.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+Sorry for the bad initial subject line!
+As Sean reported that the patch fixes his isuse it
+deserves a:
 
-diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
-index 4c42246..e1c5cd6 100644
---- a/arch/powerpc/platforms/512x/clock.c
-+++ b/arch/powerpc/platforms/512x/clock.c
-@@ -292,6 +292,15 @@ static void diu_clk_calc(struct clk *clk)
- 	clk->rate = rate;
- }
- 
-+static void viu_clk_calc(struct clk *clk)
-+{
-+	unsigned long rate;
-+
-+	rate = sys_clk.rate;
-+	rate /= 2;
-+	clk->rate = rate;
-+}
-+
- static void half_clk_calc(struct clk *clk)
- {
- 	clk->rate = clk->parent->rate / 2;
-@@ -412,6 +421,14 @@ static struct clk diu_clk = {
- 	.calc = diu_clk_calc,
- };
- 
-+static struct clk viu_clk = {
-+	.name = "viu_clk",
-+	.flags = CLK_HAS_CTRL,
-+	.reg = 1,
-+	.bit = 18,
-+	.calc = viu_clk_calc,
-+};
-+
- static struct clk axe_clk = {
- 	.name = "axe_clk",
- 	.flags = CLK_HAS_CTRL,
-@@ -535,6 +552,7 @@ struct clk *rate_clks[] = {
- 	&ref_clk,
- 	&sys_clk,
- 	&diu_clk,
-+	&viu_clk,
- 	&csb_clk,
- 	&e300_clk,
- 	&ips_clk,
--- 
-1.7.0.4
+Tested-by: Sean MacLennan <smaclennan@pikatech.com>
+
+	Sam
