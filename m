@@ -1,34 +1,21 @@
-Return-Path: <rcjenn@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e37.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id C3F731007D3
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 267C31007D2
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 12:43:52 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e37.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6N2fsCZ025041
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 20:41:54 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6N2hjvB158600
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 20:43:45 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6N2hi7k019208
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jul 2010 20:43:45 -0600
-Date: Thu, 22 Jul 2010 21:43:44 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>, Gautham R Shenoy <ego@in.ibm.com>,
-	Julia Lawall <julia@diku.dk>,
-	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: ONLINE to OFFLINE CPU state transition during removal
-Message-ID: <20100723024343.GC32534@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Jul 2010 12:45:57 +1000 (EST)
+Subject: Re: [PATCH] fix of_flat_dt_is_compatible to match the full
+	compatible string
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stuart Yoder <stuart.yoder@freescale.com>
+In-Reply-To: <1279841330-28695-1-git-send-email-stuart.yoder@freescale.com>
+References: <1279841330-28695-1-git-send-email-stuart.yoder@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 23 Jul 2010 12:45:50 +1000
+Message-ID: <1279853150.1970.58.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,28 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a CPU remove is attempted using the 'release' interface on hardware
-which supports extended cede, the CPU will be put in the INACTIVE state
-rather than the OFFLINE state due to the default preferred_offline_state
-in that situation.  In the INACTIVE state it will fail to be removed.
+On Thu, 2010-07-22 at 18:28 -0500, Stuart Yoder wrote:
+> From: Stuart Yoder <stuart.yoder@freescale.com>
+> 
+> With the previous string comparison, a device tree
+> compatible of "foo-bar" would match as compatible
+> with a driver looking for "foo".
+> 
+> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 
-This patch changes the preferred offline state to OFFLINE when an CPU is
-in the ONLINE state.  After cpu_down() is called in dlpar_offline_cpu()
-the CPU will be OFFLINE and CPU removal can continue.
+Beware you are doing two changes in one here and only documenting one...
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+You also removed the case insenstivity.
 
----
+Now, those things are supposed to be case sensitive afaik, but we have
+enough legacy HW with more/less crap DTs and I'd be careful with
+changing that without a good reason (ie, it breaks not to do it ?).
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index d71e585..227c1c3 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -463,6 +463,7 @@ static int dlpar_offline_cpu(struct device_node *dn)
- 				break;
- 
- 			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
-+				set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
- 				cpu_maps_update_done();
- 				rc = cpu_down(cpu);
- 				if (rc)
+No objection with fixing the partial match tho.
+
+Cheers,
+Ben.
+
+> ---
+>  drivers/of/fdt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index dee4fb5..f5239c0 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -169,7 +169,7 @@ int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
+>  	if (cp == NULL)
+>  		return 0;
+>  	while (cplen > 0) {
+> -		if (strncasecmp(cp, compat, strlen(compat)) == 0)
+> +		if (!strcmp(cp, compat))
+>  			return 1;
+>  		l = strlen(cp) + 1;
+>  		cp += l;
