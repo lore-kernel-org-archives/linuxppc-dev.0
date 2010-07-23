@@ -1,22 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net
-	(74-93-104-97-Washington.hfc.comcastbusiness.net [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 3F7BE100808
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 15:50:59 +1000 (EST)
-Date: Thu, 22 Jul 2010 22:51:15 -0700 (PDT)
-Message-Id: <20100722.225115.160202643.davem@davemloft.net>
-To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 3/4] sparc: remove references to of_device and to_of_device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100722223016.21557.40832.stgit@angua>
-References: <20100722222600.21557.34167.stgit@angua>
-	<20100722223016.21557.40832.stgit@angua>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org
+Return-Path: <sr@denx.de>
+Received: from mo-p05-ob.rzone.de (mo-p05-ob.rzone.de [81.169.146.180])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 8C6201007D7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 23 Jul 2010 16:15:32 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] Adding ADMA support for PPC460EX DMA engine.
+Date: Fri, 23 Jul 2010 08:15:14 +0200
+References: <1279846638-22323-1-git-send-email-tmarri@amcc.com>
+In-Reply-To: <1279846638-22323-1-git-send-email-tmarri@amcc.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201007230815.14464.sr@denx.de>
+Cc: linux-raid@vger.kernel.org, dan.j.williams@intel.com,
+	linux-crypto@vger.kernel.org, tmarri@amcc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,12 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 22 Jul 2010 16:30:16 -0600
+Hi Marri,
 
-> of_device is just a #define alias to platform_device.  This patch
-> replaces all references to it with platform_device.
+On Friday 23 July 2010 02:57:18 tmarri@amcc.com wrote:
+> From: Tirumala Marri <tmarri@amcc.com>
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>   This patch will add ADMA support for DMA engine and HW offload for
+>   XOR/ADG (RAID-5/6) functionalities.
+>   1. It supports memcpy, xor, GF(2) based RAID-6.
+>   2. It supports interrupt based DMA completions.
+>   3. Also supports memcpy in RAID-1 case.
+> 
+>   Kernel version: 2.6.35-rc5
+> 
+>   Testing:
+>     Created RAID-5/6 arrays usign mdadm.
+>     And ran raw IO and filesystem IO to the RAID array.
+>     Chunk size 4k,64k was tested.
+>     RAID rebuild , disk fail, resync tested.
+> 
+>   File names:
+>     This code is similar to ppc440spe . So I named the files as
+>     drivers/dma/ppc4xx/adma1.c and drivers/dma/ppc4xx/adma1.h
 
-Acked-by: David S. Miller <davem@davemloft.net>
+As you describe above, a lot of the code seems to be copied from 
+drivers/dma/ppc4xx/adma.c/h. Wouldn't it make more sense to factor out the 
+common code instead of duplicating it?
+ 
+Thanks.
+
+Cheers,
+Stefan
+
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-0 Fax: (+49)-8142-66989-80 Email: office@denx.de
