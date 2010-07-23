@@ -1,23 +1,34 @@
-Return-Path: <bhutchings@solarflare.com>
-Received: from exchange.solarflare.com (mail.solarflare.com [216.237.3.220])
-	by ozlabs.org (Postfix) with ESMTP id 721D7B710A
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 23 Jul 2010 23:56:34 +1000 (EST)
-Subject: [PATCH] PCI: MSI: Restore read_msi_msg_desc(); add
-	get_cached_msi_msg_desc()
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1279850740.6381.19.camel@concordia>
-References: <20100723102202.871a3131.sfr@canb.auug.org.au>
-	<1279847985.4883.391.camel@localhost>
-	<1279850740.6381.19.camel@concordia>
-Content-Type: text/plain
-Date: Fri, 23 Jul 2010 14:56:28 +0100
-Message-Id: <1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, linux-pci <linux-pci@vger.kernel.org>
+Return-Path: <willschm@us.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 826EFB7115
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 00:39:53 +1000 (EST)
+Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6NENLJv000822
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:23:21 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6NEdos6283810
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:39:50 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6NEdmPr001128
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 10:39:50 -0400
+In-Reply-To: <4C48DADE.1050409@us.ibm.com>
+References: <4C488CCD.60004@us.ibm.com> <1279837509.1970.24.camel@pasglop>
+	<4C48DADE.1050409@us.ibm.com>
+Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
+	CONFIG_PREEMPT on pseries
+To: dvhltc@linux.vnet.ibm.com
+Message-ID: <OF05098931.134CCA5B-ON86257769.004FED9E-86257769.00508C16@us.ibm.com>
+From: Will Schmidt <willschm@us.ibm.com>
+Date: Fri, 23 Jul 2010 09:39:47 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,159 +38,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 2ca1af9aa3285c6a5f103ed31ad09f7399fc65d7 "PCI: MSI: Remove
-unsafe and unnecessary hardware access" changed read_msi_msg_desc() to
-return the last MSI message written instead of reading it from the
-device, since it may be called while the device is in a reduced
-power state.
+dvhltc@linux.vnet.ibm.com wrote on 07/22/2010 06:57:18 PM:
+> Subject
+>
+> Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
+> CONFIG_PREEMPT on pseries
+>
+> On 07/22/2010 03:25 PM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2010-07-22 at 11:24 -0700, Darren Hart wrote:
+> >>
+> >> 1) How can the preempt_count() get mangled across the H_CEDE hcall?
+> >> 2) Should we call preempt_enable() in cpu_idle() prior to cpu_die() ?
+> >
+> > The preempt count is on the thread info at the bottom of the stack.
+> >
+> > Can you check the stack pointers ?
+>
+> Hi Ben, thanks for looking.
+>
+> I instrumented the area around extended_cede_processor() as follows
+> (please confirm I'm getting the stack pointer correctly).
+>
+> while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
+>    asm("mr %0,1" : "=r" (sp));
+>    printk("before H_CEDE current->stack: %lx, pcnt: %x\n", sp,
+> preempt_count());
+>    extended_cede_processor(cede_latency_hint);
+>    asm("mr %0,1" : "=r" (sp));
+>    printk("after H_CEDE current->stack: %lx, pcnt: %x\n", sp,
+> preempt_count());
+>  }
+>
+>
+> On Mainline (2.6.33.6, CONFIG_PREEMPT=y) I see this:
+> Jul 22 18:37:08 igoort1 kernel: before H_CEDE current->stack:
+> c00000010e9e3ce0, pcnt: 1
+> Jul 22 18:37:08 igoort1 kernel: after H_CEDE current->stack:
+> c00000010e9e3ce0, pcnt: 1
+>
+> This surprised me as preempt_count is 1 before and after, so no
+> corruption appears to occur on mainline. This makes the pcnt of 65 I see
+> without the preempt_count()=0 hack very strange. I ran several hundred
+> off/on cycles. The issue of preempt_count being 1 is still addressed by
+> this patch however.
+>
+> On PREEMPT_RT (2.6.33.5-rt23 - tglx, sorry, rt/2.6.33 next time,
+promise):
+> Jul 22 18:51:11 igoort1 kernel: before H_CEDE current->stack:
+> c000000089bcfcf0, pcnt: 1
+> Jul 22 18:51:11 igoort1 kernel: after H_CEDE current->stack:
+> c000000089bcfcf0, pcnt: ffffffff
 
-However, the pSeries platform code really does need to read messages
-from the device, since they are initially written by firmware.
-Therefore:
-- Restore the previous behaviour of read_msi_msg_desc()
-- Add new functions get_cached_msi_msg{,_desc}() which return the
-  last MSI message written
-- Use the new functions where appropriate
+I'm not seeing the preempt_count value corrupted with my current set of
+debug, however, I have added buffers to the thread_info struct, so
+wonder if I've moved the preempt_count variable out of the way of
+the corruption.  (Still investigating that point..)
 
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
----
-Compile-tested only.
+<Why..   because I had been trying to set a DABR on the preempt_count
+value to catch the corrupter, and due to hits on the nearby _flags fields,
+getting
+false positives..>
 
-Ben.
 
- arch/ia64/kernel/msi_ia64.c    |    2 +-
- arch/ia64/sn/kernel/msi_sn.c   |    2 +-
- arch/x86/kernel/apic/io_apic.c |    2 +-
- drivers/pci/msi.c              |   47 +++++++++++++++++++++++++++++++++++----
- include/linux/msi.h            |    2 +
- 5 files changed, 47 insertions(+), 8 deletions(-)
+struct thread_info {
+|-------struct task_struct *task;|------|-------/* main task structure */
+|-------struct exec_domain *exec_domain;|-------/* execution domain */
+|-------int|----|-------cpu;|---|-------|-------/* cpu we're on */
+|-------int|----|-------pad_buffer[64];
+|-------int|----|-------preempt_count;|-|-------/* 0 => preemptable,
+|-------|-------|-------|-------|-------|-------   <0 => BUG */
+|-------int|----|-------pad_buffer2[256];
+|-------struct restart_block restart_block;
+|-------unsigned long|--local_flags;|---|-------/* private flags for thread
+*/
 
-diff --git a/arch/ia64/kernel/msi_ia64.c b/arch/ia64/kernel/msi_ia64.c
-index 6c89228..4a746ea 100644
---- a/arch/ia64/kernel/msi_ia64.c
-+++ b/arch/ia64/kernel/msi_ia64.c
-@@ -25,7 +25,7 @@ static int ia64_set_msi_irq_affinity(unsigned int irq,
- 	if (irq_prepare_move(irq, cpu))
- 		return -1;
- 
--	read_msi_msg(irq, &msg);
-+	get_cached_msi_msg(irq, &msg);
- 
- 	addr = msg.address_lo;
- 	addr &= MSI_ADDR_DEST_ID_MASK;
-diff --git a/arch/ia64/sn/kernel/msi_sn.c b/arch/ia64/sn/kernel/msi_sn.c
-index ebfdd6a..0c72dd4 100644
---- a/arch/ia64/sn/kernel/msi_sn.c
-+++ b/arch/ia64/sn/kernel/msi_sn.c
-@@ -175,7 +175,7 @@ static int sn_set_msi_irq_affinity(unsigned int irq,
- 	 * Release XIO resources for the old MSI PCI address
- 	 */
- 
--	read_msi_msg(irq, &msg);
-+	get_cached_msi_msg(irq, &msg);
-         sn_pdev = (struct pcidev_info *)sn_irq_info->irq_pciioinfo;
- 	pdev = sn_pdev->pdi_linux_pcidev;
- 	provider = SN_PCIDEV_BUSPROVIDER(pdev);
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index e41ed24..4dc0084 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3397,7 +3397,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
- 
- 	cfg = desc->chip_data;
- 
--	read_msi_msg_desc(desc, &msg);
-+	get_cached_msi_msg_desc(desc, &msg);
- 
- 	msg.data &= ~MSI_DATA_VECTOR_MASK;
- 	msg.data |= MSI_DATA_VECTOR(cfg->vector);
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 4c14f31..69b7be3 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -197,9 +197,46 @@ void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
- {
- 	struct msi_desc *entry = get_irq_desc_msi(desc);
- 
--	/* We do not touch the hardware (which may not even be
--	 * accessible at the moment) but return the last message
--	 * written.  Assert that this is valid, assuming that
-+	BUG_ON(entry->dev->current_state != PCI_D0);
-+
-+	if (entry->msi_attrib.is_msix) {
-+		void __iomem *base = entry->mask_base +
-+			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
-+
-+		msg->address_lo = readl(base + PCI_MSIX_ENTRY_LOWER_ADDR);
-+		msg->address_hi = readl(base + PCI_MSIX_ENTRY_UPPER_ADDR);
-+		msg->data = readl(base + PCI_MSIX_ENTRY_DATA);
-+	} else {
-+		struct pci_dev *dev = entry->dev;
-+		int pos = entry->msi_attrib.pos;
-+		u16 data;
-+
-+		pci_read_config_dword(dev, msi_lower_address_reg(pos),
-+					&msg->address_lo);
-+		if (entry->msi_attrib.is_64) {
-+			pci_read_config_dword(dev, msi_upper_address_reg(pos),
-+						&msg->address_hi);
-+			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
-+		} else {
-+			msg->address_hi = 0;
-+			pci_read_config_word(dev, msi_data_reg(pos, 0), &data);
-+		}
-+		msg->data = data;
-+	}
-+}
-+
-+void read_msi_msg(unsigned int irq, struct msi_msg *msg)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	read_msi_msg_desc(desc, msg);
-+}
-+
-+void get_cached_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
-+{
-+	struct msi_desc *entry = get_irq_desc_msi(desc);
-+
-+	/* Assert that the cache is valid, assuming that
- 	 * valid messages are not all-zeroes. */
- 	BUG_ON(!(entry->msg.address_hi | entry->msg.address_lo |
- 		 entry->msg.data));
-@@ -207,11 +244,11 @@ void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
- 	*msg = entry->msg;
- }
- 
--void read_msi_msg(unsigned int irq, struct msi_msg *msg)
-+void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 
--	read_msi_msg_desc(desc, msg);
-+	get_cached_msi_msg_desc(desc, msg);
- }
- 
- void write_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 6991ab5..91b05c1 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -14,8 +14,10 @@ struct irq_desc;
- extern void mask_msi_irq(unsigned int irq);
- extern void unmask_msi_irq(unsigned int irq);
- extern void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
-+extern void get_cached_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
- extern void write_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
- extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
-+extern void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg);
- extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
- 
- struct msi_desc {
--- 
-1.6.2.5
+|-------/* low level flags - has atomic operations done on it */
+|-------unsigned long|--flags ____cacheline_aligned_in_smp;
+};
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+
+>
+> In both cases the stack pointer appears unchanged.
+>
+> Note: there is a BUG triggered in between these statements as the
+> preempt_count causes the printk to trigger:
+> Badness at kernel/sched.c:5572
+>
+> Thanks,
+>
+> --
+> Darren Hart
+> IBM Linux Technology Center
+> Real-Time Linux Team
