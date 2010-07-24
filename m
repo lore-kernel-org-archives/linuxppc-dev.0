@@ -1,33 +1,29 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 09AAEB6EEB
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 13:10:04 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6O2wgnF028229
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 20:58:42 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6O39xBG131534
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 21:10:00 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o6O39x8f015102
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jul 2010 21:09:59 -0600
-Message-ID: <4C4A5985.6000206@austin.ibm.com>
-Date: Fri, 23 Jul 2010 22:09:57 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <dbaryshkov@gmail.com>
+Received: from mail-fx0-f42.google.com (mail-fx0-f42.google.com
+	[209.85.161.42]) by ozlabs.org (Postfix) with ESMTP id F0DE3B6F11
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 20:09:16 +1000 (EST)
+Received: by fxm17 with SMTP id 17so6112645fxm.15
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jul 2010 03:09:14 -0700 (PDT)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/8] v3 Allow memory_block to span multiple memory sections
-References: <4C451BF5.50304@austin.ibm.com>	 <4C451E1C.8070907@austin.ibm.com>
-	<1279653481.9785.4.camel@nimitz>
-In-Reply-To: <1279653481.9785.4.camel@nimitz>
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-mm@kvack.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <AANLkTinKVet56HEnirf_Q5bbjT1a-D+mb6XoPNW3ZMTp@mail.gmail.com>
+References: <1279756992-29543-1-git-send-email-dbaryshkov@gmail.com>
+	<1279756992-29543-2-git-send-email-dbaryshkov@gmail.com>
+	<566EC982-1CDA-4806-8EC0-8C9F36448F83@kernel.crashing.org>
+	<AANLkTim7kbHsouc==7gRAuRO6AYMNVdA4yyPFpRBC+QR@mail.gmail.com>
+	<AANLkTimsKcn3n90cyqQTQ4Ycy2dlsHdi7afeiNX4M0v5@mail.gmail.com>
+	<AANLkTik-3cujkh774H6WQB8sHD+gkKLT2FQp=8HYaWBt@mail.gmail.com>
+	<AANLkTinKVet56HEnirf_Q5bbjT1a-D+mb6XoPNW3ZMTp@mail.gmail.com>
+Date: Sat, 24 Jul 2010 14:09:14 +0400
+Message-ID: <AANLkTimeVfGYxKid8kQ6pkUh2viGgyo2NN90uPM6h69B@mail.gmail.com>
+Subject: Re: [PATCH 2/2] mpc85xx_edac: change to use new definitions for PCI
+	EDAC regspace
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	Doug Thompson <dougthompson@xmission.com>,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,63 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/20/2010 02:18 PM, Dave Hansen wrote:
-> On Mon, 2010-07-19 at 22:55 -0500, Nathan Fontenot wrote:
->> +static int add_memory_section(int nid, struct mem_section *section,
->> +                       unsigned long state, enum mem_add_context context)
->> +{
->> +       struct memory_block *mem;
->> +       int ret = 0;
->> +
->> +       mem = find_memory_block(section);
->> +       if (mem) {
->> +               atomic_inc(&mem->section_count);
->> +               kobject_put(&mem->sysdev.kobj);
->> +       } else
->> +               ret = init_memory_block(&mem, section, state);
->> +
->>         if (!ret) {
->> -               if (context == HOTPLUG)
->> +               if (context == HOTPLUG &&
->> +                   atomic_read(&mem->section_count) == sections_per_block)
->>                         ret = register_mem_sect_under_node(mem, nid);
->>         } 
-> 
-> I think the atomic_inc() can race with the atomic_dec_and_test() in
-> remove_memory_block().
-> 
-> Thread 1 does:
-> 
-> 	mem = find_memory_block(section);
-> 
-> Thread 2 does 
-> 
-> 	atomic_dec_and_test(&mem->section_count);
-> 
-> and destroys the memory block,  Thread 1 runs again:
-> 	
->        if (mem) {
->                atomic_inc(&mem->section_count);
->                kobject_put(&mem->sysdev.kobj);
->        } else
-> 
-> but now mem got destroyed by Thread 2.  You probably need to change
-> find_memory_block() to itself take a reference, and to use
-> atomic_inc_unless().
-> 
+On 7/24/10, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Fri, Jul 23, 2010 at 6:20 PM, Dmitry Eremin-Solenikov
+> <dbaryshkov@gmail.com> wrote:
+>> Hello,
+>>
+>> On 7/22/10, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>> On Thu, Jul 22, 2010 at 10:48 AM, Dmitry Eremin-Solenikov
+>>> <dbaryshkov@gmail.com> wrote:
+>>>> Hello,
+>>>>
+>>>> On Thu, Jul 22, 2010 at 7:38 PM, Kumar Gala <galak@kernel.crashing.org>
+>>>> wrote:
+>>>>>
+>>>>> On Jul 21, 2010, at 7:03 PM, Dmitry Eremin-Solenikov wrote:
+>>>>>
+>>>>>> Currently (as mpc8540-pci) devices are not created on of_platform bus,
+>>>>>> mpc85xx_edac can't probe to them. Follow the change to dts trees to
+>>>>>> bind
+>>>>>> not to the main mpc8540-pci node but to special mpc85xx-pci-error
+>>>>>> nodes,
+>>>>>> present on soc bus.
+>>>>>>
+>>>>>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>>>>>> ---
+>>>>>> drivers/edac/mpc85xx_edac.c |   18 +++++++++---------
+>>>>>> 1 files changed, 9 insertions(+), 9 deletions(-)
+>>>>>
+>>>>> Nak.
+>>>>>
+>>>>> We already have a node in the dts for the PCI controller.  Lets update
+>>>>> the platform code to add the pci controller to the
+>>>>> of_platform_bus_probe
+>>>>> list.
+>>>>
+>>>> I've had that idea. However it's really look strange to me to call
+>>>> of_platform_bus_probe() on the bus node, for which we (IMO) explicitly
+>>>> won't like for
+>>>> child devices (PCI devices) to be added to of_platform bus. Would it
+>>>> be suitable to just call of_platform_device_create for it (Or do i
+>>>> miss someth<ing)?
+>>>
+>>> Try the attached patch (lightly tested).  If it works for you then
+>>> I'll post it for wider review.
+>>
+>> Yes, this patch worked for me. However it looks a bit like a hack for me.
+>
+> I'll probably refine it a bit before merging, but I don't think it is
+> a hack.  It reflects the behaviour that makes sense when registering
+> devices hanging off the root node.  If a device node is a child of the
+> root, then we know it isn't hanging off an i2c or pci bus, or anything
+> else.  It is essentially a system device.
+>
+> The troublesome bit is that the root node also has memory, cpus,
+> chosen and aliases nodes which are not devices.  In the vast majority
+> of cases, we want all the device nodes that are children of the root
+> to be registered, but we don't want to register the special nodes.
+> Checking for the presence of a compatible property is a pretty good
+> test for determining whether or not a node actually represents a
+> device, especially because all users of of_platform_bus_probe() seem
+> to be FDT users where we've been very strict about enforcing that
+> drivers must use the compatible property for matching to device nodes.
 
-You're right but I think the fix you suggested will narrow the window for the
-race condition, not eliminate it.  We could still take a time splice in
-find_memory_block prior to the container_of() calls to get the memory
-block pointer and end up de-referencing a invalid kobject o sysdev pointer.
 
-I think if we want to eliminate this we may need to have lock that protects
-access to any of the memory_block structures.  This would need to be taken
-any time find_memory_block is called and released when use of the memory_block
-returned is finished.  If we're going to fix this we should eliminate the
-window completely instead of just closing it further.
+Now it's clear to me, thanks for the explanation.
 
-If we add a lock should I submit it as part of this patchset? or submit it
-as a follow-on?
+BTW: On 2.6.35-rc6 I had to make 'compat' and 'match' variables const.
 
--Nathan 
+-- 
+With best wishes
+Dmitry
