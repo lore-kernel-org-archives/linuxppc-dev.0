@@ -1,23 +1,24 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
-	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id B2158B6EE9
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
+	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 7FAF7B6EFE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 25 Jul 2010 05:34:05 +1000 (EST)
-Received: by pwi6 with SMTP id 6so5095526pwi.38
+	Sun, 25 Jul 2010 08:00:45 +1000 (EST)
+Received: by gya1 with SMTP id 1so581432gya.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 24 Jul 2010 12:34:03 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-References: <1279910564-17887-1-git-send-email-stuart.yoder@freescale.com>
-In-Reply-To: <1279910564-17887-1-git-send-email-stuart.yoder@freescale.com>
+	Sat, 24 Jul 2010 15:00:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH=5D=5Bv2=5D_fix_of=5Fflat=5Fdt=5Fis=5Fcompa?=
-	=?US-ASCII?Q?tible_to_match_the_full_compatible=09string?=
+Sender: glikely@secretlab.ca
+In-Reply-To: <1279853150.1970.58.camel@pasglop>
+References: <1279841330-28695-1-git-send-email-stuart.yoder@freescale.com>
+	<1279853150.1970.58.camel@pasglop>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 24 Jul 2010 13:34:29 -0600
-To: Stuart Yoder <stuart.yoder@freescale.com>,linuxppc-dev@lists.ozlabs.org
-Message-ID: <c1d83b47-1185-4b51-b35f-10b914e1515e@email.android.com>
+Date: Sat, 24 Jul 2010 16:00:21 -0600
+Message-ID: <AANLkTikD5n8Vo7BAE29qQBJpJi0qBMnSVUaWKVA9uK-3@mail.gmail.com>
+Subject: Re: [PATCH] fix of_flat_dt_is_compatible to match the full compatible
+	string
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +28,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-"Stuart Yoder" <stuart.yoder@freescale.com> wrote:
-
->From: Stuart Yoder <stuart.yoder@freescale.com>
+On Thu, Jul 22, 2010 at 8:45 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2010-07-22 at 18:28 -0500, Stuart Yoder wrote:
+>> From: Stuart Yoder <stuart.yoder@freescale.com>
+>>
+>> With the previous string comparison, a device tree
+>> compatible of "foo-bar" would match as compatible
+>> with a driver looking for "foo".
+>>
+>> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 >
->With the previous string comparison, a device tree
->compatible of "foo-bar" would match as compatible
->with a driver looking for "foo".
+> Beware you are doing two changes in one here and only documenting one...
 >
->Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+> You also removed the case insenstivity.
+>
+> Now, those things are supposed to be case sensitive afaik, but we have
+> enough legacy HW with more/less crap DTs and I'd be careful with
+> changing that without a good reason (ie, it breaks not to do it ?).
+>
+> No objection with fixing the partial match tho.
 
-Hi Stewart. 
-
-Patch looks good.  I'll test it this afternoon.
-
-However, please remember to cc: me and devicetree-discuss if you want patches picked up remotely quickly (I know, I'm slow anyway, but I'm even slower when I don't see something.  I only came across this one by chance.)
+On that note, for completeness, this code should be using the
+of_compat_cmp() to match up with other code.  If SPARC ever uses this
+code, which davem said he might tp support kexec, then this macro will
+be important.  I'll change it when I pick up the patch.
 
 g.
 
->---
-> drivers/of/fdt.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
 >
->diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->index dee4fb5..28c0c2b 100644
->--- a/drivers/of/fdt.c
->+++ b/drivers/of/fdt.c
->@@ -169,7 +169,7 @@ int __init of_flat_dt_is_compatible(unsigned long node, const char *compat)
-> 	if (cp == NULL)
-> 		return 0;
-> 	while (cplen > 0) {
->-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
->+		if (!strcasecmp(cp, compat))
-> 			return 1;
-> 		l = strlen(cp) + 1;
-> 		cp += l;
->-- 
->1.6.2.5
+> Cheers,
+> Ben.
+>
+>> ---
+>> =A0drivers/of/fdt.c | =A0 =A02 +-
+>> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+>> index dee4fb5..f5239c0 100644
+>> --- a/drivers/of/fdt.c
+>> +++ b/drivers/of/fdt.c
+>> @@ -169,7 +169,7 @@ int __init of_flat_dt_is_compatible(unsigned long no=
+de, const char *compat)
+>> =A0 =A0 =A0 if (cp =3D=3D NULL)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> =A0 =A0 =A0 while (cplen > 0) {
+>> - =A0 =A0 =A0 =A0 =A0 =A0 if (strncasecmp(cp, compat, strlen(compat)) =
+=3D=3D 0)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (!strcmp(cp, compat))
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 1;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 l =3D strlen(cp) + 1;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 cp +=3D l;
 >
 >
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
--- 
-Sent from my Android phone with K-9 Mail. Please excuse my brevity.
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
