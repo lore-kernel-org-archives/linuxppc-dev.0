@@ -1,24 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 7FAF7B6EFE
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun, 25 Jul 2010 08:00:45 +1000 (EST)
-Received: by gya1 with SMTP id 1so581432gya.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 24 Jul 2010 15:00:43 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1279853150.1970.58.camel@pasglop>
-References: <1279841330-28695-1-git-send-email-stuart.yoder@freescale.com>
-	<1279853150.1970.58.camel@pasglop>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 24 Jul 2010 16:00:21 -0600
-Message-ID: <AANLkTikD5n8Vo7BAE29qQBJpJi0qBMnSVUaWKVA9uK-3@mail.gmail.com>
-Subject: Re: [PATCH] fix of_flat_dt_is_compatible to match the full compatible
-	string
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Stuart Yoder <stuart.yoder@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 295F3B6EFE
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jul 2010 13:07:31 +1000 (EST)
+Date: Sun, 25 Jul 2010 13:07:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] of: Provide default of_node_to_nid() when CONFIG_NUMA
+	is not set
+Message-Id: <20100725130723.a5192793.sfr@canb.auug.org.au>
+In-Reply-To: <20100724154331.22701.3409.stgit@angua>
+References: <20100724154331.22701.3409.stgit@angua>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__25_Jul_2010_13_07_23_+1000_RD.pz8Eexz.QQVh="
+Cc: monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	sparclinux@vger.kernel.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 22, 2010 at 8:45 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Thu, 2010-07-22 at 18:28 -0500, Stuart Yoder wrote:
->> From: Stuart Yoder <stuart.yoder@freescale.com>
->>
->> With the previous string comparison, a device tree
->> compatible of "foo-bar" would match as compatible
->> with a driver looking for "foo".
->>
->> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
->
-> Beware you are doing two changes in one here and only documenting one...
->
-> You also removed the case insenstivity.
->
-> Now, those things are supposed to be case sensitive afaik, but we have
-> enough legacy HW with more/less crap DTs and I'd be careful with
-> changing that without a good reason (ie, it breaks not to do it ?).
->
-> No objection with fixing the partial match tho.
+--Signature=_Sun__25_Jul_2010_13_07_23_+1000_RD.pz8Eexz.QQVh=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On that note, for completeness, this code should be using the
-of_compat_cmp() to match up with other code.  If SPARC ever uses this
-code, which davem said he might tp support kexec, then this macro will
-be important.  I'll change it when I pick up the patch.
+Hi Grant,
 
-g.
+On Sat, 24 Jul 2010 09:43:31 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> of_node_to_nid() is only relevant for NUMA.  Don't force architectures to
+> implement it if CONFIG_NUMA is not set.
 
->
-> Cheers,
-> Ben.
->
->> ---
->> =A0drivers/of/fdt.c | =A0 =A02 +-
->> =A01 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> index dee4fb5..f5239c0 100644
->> --- a/drivers/of/fdt.c
->> +++ b/drivers/of/fdt.c
->> @@ -169,7 +169,7 @@ int __init of_flat_dt_is_compatible(unsigned long no=
-de, const char *compat)
->> =A0 =A0 =A0 if (cp =3D=3D NULL)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->> =A0 =A0 =A0 while (cplen > 0) {
->> - =A0 =A0 =A0 =A0 =A0 =A0 if (strncasecmp(cp, compat, strlen(compat)) =
-=3D=3D 0)
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!strcmp(cp, compat))
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 1;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 l =3D strlen(cp) + 1;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 cp +=3D l;
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Why not just do:
 
+#ifndef of_node_to_nid
+static inline int of_node_to_nid(struct device_node *device) { return 0; }
+#define of_node_to_nid	of_node_to_nid
+#endif
 
+in include/linux/of.h
 
+and then add:
+
+#define of_node_to_nid	of_node_to_nid
+
+Where it is declared/defined for each arch ...
+(it would be nice if all the archs were consistent in where it was
+declared).
 --=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__25_Jul_2010_13_07_23_+1000_RD.pz8Eexz.QQVh=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMS6prAAoJEDMEi1NhKgbshFMH/i8Aj76EKx/9C5bPwVVHExHD
+pYd2B3ivu0HASm+xvMsZE+8AAsRmRrfHczhyLgQDw0SbxsvWmZKAP6bJg8KscMSF
+s73yV3tvEzCZpgTtCks/PxjVjkt/MHdSgyzaD+vcW62ZKyuNFXnGOEBbnC8d/v5G
+G7aQ5gFrLMLUbdoGL+C1aSRr283ur2Wdukfe5ooVgoao3EayDvZOhlxr5aF2r4nq
+WsZf5is1JQqwzcDiM2PykD8ReTtE+ZG/IUBzaOUi1OsxYhOMCEJsOm+egr93++lW
+HKqd/qgvyKwL2tlTAnYttTsgtQCWtA2zX16ef/Ea9kLgVeOd935Plk2pcfG6XXA=
+=FG69
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__25_Jul_2010_13_07_23_+1000_RD.pz8Eexz.QQVh=--
