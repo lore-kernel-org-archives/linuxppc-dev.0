@@ -1,20 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
-	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id 97EF0B6EDD
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 10:36:21 +1000 (EST)
-Received: by pvg16 with SMTP id 16so5053745pvg.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jul 2010 17:36:20 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-Date: Sun, 25 Jul 2010 18:36:18 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Mingkai Hu <Mingkai.hu@freescale.com>
-Subject: Re: [PATCH 0/6] refactor spi_mpc8xxx.c and add eSPI controller support
-Message-ID: <20100726003618.GF25419@angua.secretlab.ca>
-References: <1279591705-7574-1-git-send-email-Mingkai.hu@freescale.com>
+Return-Path: <kpada84@hotmail.com>
+Received: from bay0-omc3-s9.bay0.hotmail.com (bay0-omc3-s9.bay0.hotmail.com
+	[65.54.190.147]) by ozlabs.org (Postfix) with ESMTP id 76FACB6F10
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 26 Jul 2010 12:19:57 +1000 (EST)
+Message-ID: <BAY152-w35F374705FF06792DCEED3BCA60@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_dd74561a-f473-4b97-af2f-ba7e50e2d208_"
+From: kostas padarnitsas <kpada84@hotmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Timestamp in PowerPC 440
+Date: Mon, 26 Jul 2010 05:14:46 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1279591705-7574-1-git-send-email-Mingkai.hu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 20, 2010 at 10:08:19AM +0800, Mingkai Hu wrote:
-> This patchset refactor the file spi_mpc8xxx.c to abstract some common code
-> as a lib used by the SPI/eSPI controller driver, move the SPI controller
-> driver code to fsl_spi.c, and add the eSPI controller support with fsl_espi.c.
-> 
-> Tested on P4080DS and MPC8536DS board based on latest Linux tree.
-> 
-> [PATCH 1/6] spi/mpc8xxx: refactor the common code for SPI/eSPI controller
-> [PATCH 2/6] eSPI: add eSPI controller support
-> [PATCH 3/6] of/spi: add support to parse the SPI flash's partitions
-> [PATCH 4/6] mtd: m25p80: change the read function to read page by page
-> [PATCH 5/6] powerpc/of: add eSPI controller dts bindings
-> [PATCH 6/6] DTS: add SPI flash(s25fl128p01) support on p4080ds and mpc8536ds board
+--_dd74561a-f473-4b97-af2f-ba7e50e2d208_
+Content-Type: text/plain; charset="iso-8859-7"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Mingkai,
 
-Thanks for the patches, I've just sent my review.  Make sure you cc: spi-devel-general@lists.sourceforge.net when you post v2
+Hello=2C
+I have ported Linux 2.6 to PowerPC 440. Could you tell me how it is possibl=
+e to access the timebase register (TBU=2C TBL) from user space (in Linux) b=
+ecause I want to measure the time of an application that runs in Linux?  Th=
+ank you in advance=2C
+Kostas 		 	   		 =20
+_________________________________________________________________
+Your E-mail and More On-the-Go. Get Windows Live Hotmail Free.
+https://signup.live.com/signup.aspx?id=3D60969=
 
-g.
+--_dd74561a-f473-4b97-af2f-ba7e50e2d208_
+Content-Type: text/html; charset="iso-8859-7"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Verdana
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+Hello=2C<div><br></div><div>I have ported Linux 2.6 to PowerPC 440. Could y=
+ou tell me how it is possible to access the timebase register (TBU=2C TBL) =
+from user space (in Linux) because I want to measure the time of an applica=
+tion that runs in Linux?&nbsp=3B</div><div>&nbsp=3B</div><div>Thank you in =
+advance=2C</div><div><br></div><div>Kostas</div> 		 	   		  <br /><hr />You=
+r E-mail and More On-the-Go. Get Windows Live Hotmail Free. <a href=3D'http=
+s://signup.live.com/signup.aspx?id=3D60969' target=3D'_new'>Sign up now.</a=
+></body>
+</html>=
+
+--_dd74561a-f473-4b97-af2f-ba7e50e2d208_--
