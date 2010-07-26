@@ -1,25 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] PCI: MSI: Restore read_msi_msg_desc(); add
-	get_cached_msi_msg_desc()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Ben Hutchings <bhutchings@solarflare.com>
-In-Reply-To: <1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
-References: <20100723102202.871a3131.sfr@canb.auug.org.au>
-	<1279847985.4883.391.camel@localhost>
-	<1279850740.6381.19.camel@concordia>
-	<1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-VcV+sHjbjlRrKfOs1AzT"
-Date: Mon, 26 Jul 2010 21:20:27 +1000
-Message-ID: <1280143227.7337.0.camel@concordia>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	linux-pci <linux-pci@vger.kernel.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <nhorman@tuxdriver.com>
+Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0E803B70AB
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 01:26:55 +1000 (EST)
+Date: Mon, 26 Jul 2010 11:23:15 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+	vgoyal@redhat.com, hbabu@us.ibm.com, benh@kernel.crashing.org,
+	paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add vmcoreinfo symbols to allow makdumpfile to
+	filter core files properly
+Message-ID: <20100726152315.GA18789@hmsreliant.think-freely.org>
+References: <20100713134609.GA14514@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100713134609.GA14514@hmsreliant.think-freely.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jul 13, 2010 at 09:46:09AM -0400, Neil Horman wrote:
+> Hey all-
+> 	About 2 years ago now, I sent this patch upstream to allow makedumpfile
+> to properly filter cores on ppc64:
+> http://www.mail-archive.com/kexec@lists.infradead.org/msg02426.html
+> It got acks from the kexec folks so I pulled it into RHEL, but I never checked
+> back here to make sure it ever made it in, which apparently it didn't.  It still
+> needs to be included, so I'm reposting it here, making sure to copy all the ppc
+> folks this time.  I've retested it on the latest linus kernel and it works fine,
+> allowing makedumpfile to find all the symbols it needs to properly strip a
+> vmcore on ppc64.
+> 
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+Ping, anyone want to chime in on this, its needed for dump filtering to work
+properly on ppc64
+Neil
 
---=-VcV+sHjbjlRrKfOs1AzT
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2010-07-23 at 14:56 +0100, Ben Hutchings wrote:
-> commit 2ca1af9aa3285c6a5f103ed31ad09f7399fc65d7 "PCI: MSI: Remove
-> unsafe and unnecessary hardware access" changed read_msi_msg_desc() to
-> return the last MSI message written instead of reading it from the
-> device, since it may be called while the device is in a reduced
-> power state.
->=20
-> However, the pSeries platform code really does need to read messages
-> from the device, since they are initially written by firmware.
-> Therefore:
-> - Restore the previous behaviour of read_msi_msg_desc()
-> - Add new functions get_cached_msi_msg{,_desc}() which return the
->   last MSI message written
-> - Use the new functions where appropriate
->=20
-> Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
-
-Looks good to me.
-
-cheers
-
-
---=-VcV+sHjbjlRrKfOs1AzT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkxNb3gACgkQdSjSd0sB4dJ6PQCfXdGGM61GX12Yldd3DHo2286j
-40gAnjwA/7odh+QQK5AXbiA/ncIey8Or
-=+yMh
------END PGP SIGNATURE-----
-
---=-VcV+sHjbjlRrKfOs1AzT--
+> 
+>  machine_kexec.c |   12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+> 
+> 
+> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+> index bb3d893..0df7031 100644
+> --- a/arch/powerpc/kernel/machine_kexec.c
+> +++ b/arch/powerpc/kernel/machine_kexec.c
+> @@ -45,6 +45,18 @@ void machine_kexec_cleanup(struct kimage *image)
+>  		ppc_md.machine_kexec_cleanup(image);
+>  }
+>  
+> +void arch_crash_save_vmcoreinfo(void)
+> +{
+> +
+> +#ifdef CONFIG_NEED_MULTIPLE_NODES
+> +	VMCOREINFO_SYMBOL(node_data);
+> +	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
+> +#endif
+> +#ifndef CONFIG_NEED_MULTIPLE_NODES
+> +	VMCOREINFO_SYMBOL(contig_page_data);
+> +#endif
+> +}
+> +
+>  /*
+>   * Do not allocate memory (or fail in any way) in machine_kexec().
+>   * We are past the point of no return, committed to rebooting now.
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+> 
