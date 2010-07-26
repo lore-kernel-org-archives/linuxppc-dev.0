@@ -1,21 +1,25 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler2.mail.xerox.com",
-	Issuer "AAA Certificate Services" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 36A8CB70A4
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon, 26 Jul 2010 21:14:04 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Timestamp in PowerPC 440
-Date: Mon, 26 Jul 2010 12:02:59 +0100
-Message-ID: <929D3CED81F34E43887A393170D66FB90301BAC1@GBRSUN01MS002.eu.xerox.net>
-In-Reply-To: <BAY152-w35F374705FF06792DCEED3BCA60@phx.gbl>
-References: <BAY152-w35F374705FF06792DCEED3BCA60@phx.gbl>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "kostas padarnitsas" <kpada84@hotmail.com>, <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] PCI: MSI: Restore read_msi_msg_desc(); add
+	get_cached_msi_msg_desc()
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Ben Hutchings <bhutchings@solarflare.com>
+In-Reply-To: <1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
+References: <20100723102202.871a3131.sfr@canb.auug.org.au>
+	<1279847985.4883.391.camel@localhost>
+	<1279850740.6381.19.camel@concordia>
+	<1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-VcV+sHjbjlRrKfOs1AzT"
+Date: Mon, 26 Jul 2010 21:20:27 +1000
+Message-ID: <1280143227.7337.0.camel@concordia>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	linux-pci <linux-pci@vger.kernel.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I have ported Linux 2.6 to PowerPC 440. Could you tell me
-> how it is possible to access the timebase register (TBU, TBL)
-> from user space (in Linux) because I want to measure the time
-> of an application that runs in Linux?
 
-I just grabbed this code from the kernel (you can put the macro
-expansions into the function if you like):
+--=-VcV+sHjbjlRrKfOs1AzT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-typedef unsigned long long u64;
+On Fri, 2010-07-23 at 14:56 +0100, Ben Hutchings wrote:
+> commit 2ca1af9aa3285c6a5f103ed31ad09f7399fc65d7 "PCI: MSI: Remove
+> unsafe and unnecessary hardware access" changed read_msi_msg_desc() to
+> return the last MSI message written instead of reading it from the
+> device, since it may be called while the device is in a reduced
+> power state.
+>=20
+> However, the pSeries platform code really does need to read messages
+> from the device, since they are initially written by firmware.
+> Therefore:
+> - Restore the previous behaviour of read_msi_msg_desc()
+> - Add new functions get_cached_msi_msg{,_desc}() which return the
+>   last MSI message written
+> - Use the new functions where appropriate
+>=20
+> Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
 
-#define mftbl() ({unsigned long rval; \
- asm volatile("mftbl %0" : "=3Dr" (rval)); rval;})
-#define mftbu() ({unsigned long rval; \
- asm volatile("mftbu %0" : "=3Dr" (rval)); rval;})
+Looks good to me.
 
-static inline u64 get_tb(void)
-{
-	unsigned int tbhi, tblo, tbhi2;
-	do {
-		tbhi =3D get_tbu();
-		tblo =3D get_tbl();
-		tbhi2 =3D get_tbu();
-	} while (tbhi !=3D tbhi2);
-	return ((u64)tbhi << 32) | tblo;
-}
+cheers
 
-The timebase frequency is available in text form from
-/proc/cpuinfo and in binary (as a 4-byte bigendian
-integer)from /proc/device-tree/...
 
-grep timebase /proc/cpuinfo
+--=-VcV+sHjbjlRrKfOs1AzT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-find /proc/device-tree -name timebase-frequency -print \
- -exec od -td -An '{}' \;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Clive
+iEYEABECAAYFAkxNb3gACgkQdSjSd0sB4dJ6PQCfXdGGM61GX12Yldd3DHo2286j
+40gAnjwA/7odh+QQK5AXbiA/ncIey8Or
+=+yMh
+-----END PGP SIGNATURE-----
+
+--=-VcV+sHjbjlRrKfOs1AzT--
