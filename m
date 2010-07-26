@@ -1,19 +1,21 @@
-Return-Path: <David.Daney@caviumnetworks.com>
-Received: from mail3.caviumnetworks.com (mail3.caviumnetworks.com
-	[12.108.191.235]) by ozlabs.org (Postfix) with ESMTP id 4014EB6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 07:55:28 +1000 (EST)
-Message-ID: <4C4E0449.2070108@caviumnetworks.com>
-Date: Mon, 26 Jul 2010 14:55:21 -0700
-From: David Daney <ddaney@caviumnetworks.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pv0-f170.google.com (mail-pv0-f170.google.com
+	[74.125.83.170]) by ozlabs.org (Postfix) with ESMTP id D902DB70A6
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 08:04:59 +1000 (EST)
+Received: by pvg16 with SMTP id 16so367282pvg.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 15:04:58 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH v3] of: Create asm-generic/of.h and provide default
+	of_node_to_nid()
+To: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	benh@kernel.crashing.org, sparclinux@vger.kernel.org, davem@davemloft.net
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 26 Jul 2010 16:04:55 -0600
+Message-ID: <20100726220405.1550.63442.stgit@angua>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
-References: <12801701823001-git-send-email-fchen@apm.com>
-	<20100726213704.GA16268@suse.de>
-In-Reply-To: <20100726213704.GA16268@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org,
-	Mark Miesfeld <mmiesfeld@apm.com>, Fushen Chen <fchen@apm.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/26/2010 02:37 PM, Greg KH wrote:
-[...]
->> +/*
->> + * DesignWare HS OTG controller driver
->> + *
->> + * Author: Mark Miesfeld<mmiesfeld@apm.com>
->> + *
->> + * Based on versions provided by APM and Synopsis which are:
->> + *	Copyright (C) 2009-2010 AppliedMicro(www.apm.com)
->> + * Modified by Stefan Roese<sr@denx.de>, DENX Software Engineering
->> + *
->> + * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
->> + * "Software") is an Unsupported proprietary work of Synopsys, Inc. unless
->> + * otherwise expressly agreed to in writing between Synopsys and you.
->
-> WTF?
->
+of_node_to_nid() is only relevant in a few architectures.  Don't force
+everyone to implement it anyway.  This patch also adds asm-generic/of.h
+which will be used to contain other overrideable symbols.
 
-I was not involved with this version of the patch, but is it really that 
-bad?
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
+Changes in v3: don't use asm-generic, just keep macros in of.h
+Changes in v2: address comments from sfr, add asm-generic/of.h
 
-> Um, I think someone needs to rethink this submission, as this really
-> doesn't look like GPL code...
->
-> Oh, and where do I go get that "writing" between me and Synopsys to fix
-> this up?  :)
->
->> + * The Software IS NOT an item of Licensed Software or Licensed Product under
->> + * any End User Software License Agreement or Agreement for Licensed Product
->> + * with Synopsys or any supplement thereto. You are permitted to use and
->> + * redistribute this Software in source and binary forms, with or without
->> + * modification, provided that redistributions of source code must retain this
->> + * notice. You may not view, use, disclose, copy or distribute this file or
->> + * any information contained herein except pursuant to this license grant from
->> + * Synopsys. If you do not agree with this notice, including the disclaimer
->> + * below, then you are not authorized to use the Software.
->
-> Same here, what is going on?
+ arch/microblaze/include/asm/topology.h |   10 ----------
+ arch/powerpc/include/asm/prom.h        |    5 +++++
+ arch/powerpc/include/asm/topology.h    |    7 -------
+ arch/sparc/include/asm/prom.h          |    1 +
+ include/linux/of.h                     |    5 +++++
+ 5 files changed, 11 insertions(+), 17 deletions(-)
 
-First of all, I am not a Lawyer, so take this with a grain of salt if 
-you wish.
-
-How is this different than a 3-clause BSD License?  There are other 
-instances of BSD Licensed code in the kernel (see include/linux/quota.h 
-for example).
-
->
-> Has someone run this through the proper legal approval to make public?
-> If so, someone needs to go kick a lawyer.  If not, they just got in big
-> trouble...
->
->> + * THIS SOFTWARE IS BEING DISTRIBUTED BY SYNOPSYS SOLELY ON AN "AS IS" BASIS
->> + * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
->> + * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
->> + * ARE HEREBY DISCLAIMED. IN NO EVENT SHALL SYNOPSYS BE LIABLE FOR ANY DIRECT,
->> + * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
->> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
->> + * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
->> + * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
->> + * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
->> + * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
->> + * DAMAGE.
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope that it will be useful, but
->> + * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
->> + * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
->> + * for more details.
->> + *
->> + * You should have received a copy of the GNU General Public License
->> + * along with this program; if not, write to the Free Software Foundation,
->> + * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
->
->
-> It's fun to just tack on the GPL boilerplate on a file, but when it
-> conflicts with other stuff in the same file, it kind of just makes us
-> all go crazy.
->
-
-Indeed that part does seem questionable.  Could it be used with the 
-original Synopsys license, without tacking on this GPL bit?
-
-
-David Daney
+diff --git a/arch/microblaze/include/asm/topology.h b/arch/microblaze/include/asm/topology.h
+index 96bcea5..5428f33 100644
+--- a/arch/microblaze/include/asm/topology.h
++++ b/arch/microblaze/include/asm/topology.h
+@@ -1,11 +1 @@
+ #include <asm-generic/topology.h>
+-
+-#ifndef _ASM_MICROBLAZE_TOPOLOGY_H
+-#define _ASM_MICROBLAZE_TOPOLOGY_H
+-
+-struct device_node;
+-static inline int of_node_to_nid(struct device_node *device)
+-{
+-	return 0;
+-}
+-#endif /* _ASM_MICROBLAZE_TOPOLOGY_H */
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index da7dd63..dca25a5 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -103,6 +103,11 @@ struct device_node *of_find_next_cache_node(struct device_node *np);
+ /* Get the MAC address */
+ extern const void *of_get_mac_address(struct device_node *np);
+ 
++#ifdef CONFIG_NUMA
++extern int of_node_to_nid(struct device_node *device);
++#define of_node_to_nid of_node_to_nid
++#endif
++
+ /**
+  * of_irq_map_pci - Resolve the interrupt for a PCI device
+  * @pdev:	the device whose interrupt is to be resolved
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 32adf72..09dd38c 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -41,8 +41,6 @@ static inline int cpu_to_node(int cpu)
+ 			       cpu_all_mask :				\
+ 			       node_to_cpumask_map[node])
+ 
+-int of_node_to_nid(struct device_node *device);
+-
+ struct pci_bus;
+ #ifdef CONFIG_PCI
+ extern int pcibus_to_node(struct pci_bus *bus);
+@@ -94,11 +92,6 @@ extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
+ 
+ #else
+ 
+-static inline int of_node_to_nid(struct device_node *device)
+-{
+-	return 0;
+-}
+-
+ static inline void dump_numa_cpu_topology(void) {}
+ 
+ static inline int sysfs_add_device_to_node(struct sys_device *dev, int nid)
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index c82a7da..73befa5 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -43,6 +43,7 @@ extern int of_getintprop_default(struct device_node *np,
+ extern int of_find_in_proplist(const char *list, const char *match, int len);
+ #ifdef CONFIG_NUMA
+ extern int of_node_to_nid(struct device_node *dp);
++#define of_node_to_nid of_node_to_nid
+ #else
+ #define of_node_to_nid(dp)	(-1)
+ #endif
+diff --git a/include/linux/of.h b/include/linux/of.h
+index b0756f3..cc936ca 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -146,6 +146,11 @@ static inline unsigned long of_read_ulong(const __be32 *cell, int size)
+ 
+ #define OF_BAD_ADDR	((u64)-1)
+ 
++#ifndef of_node_to_nid
++static inline int of_node_to_nid(struct device_node *np) { return 0; }
++#define of_node_to_nid of_node_to_nid
++#endif
++
+ extern struct device_node *of_find_node_by_name(struct device_node *from,
+ 	const char *name);
+ #define for_each_node_by_name(dn, name) \
