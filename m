@@ -1,17 +1,18 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 15D0CB6F11
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 07:26:38 +1000 (EST)
-From: Anatolij Gustschin <agust@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 2/2] powerpc/mpc5121: add initial support for PDM360NG board
-Date: Tue, 27 Jul 2010 23:26:02 +0200
-Message-Id: <1280265962-22616-1-git-send-email-agust@denx.de>
-In-Reply-To: <1279892973-24110-1-git-send-email-agust@denx.de>
-References: <1279892973-24110-1-git-send-email-agust@denx.de>
-Cc: Detlev Zundel <dzu@denx.de>, Markus Fischer <markus.fischer.ec@ifm.com>,
-	devicetree-discuss@lists.ozlabs.org, Michael Weiss <michael.weiss@ifm.com>,
-	Anatolij Gustschin <agust@denx.de>, Wolfgang Grandegger <wg@denx.de>
+Return-Path: <yanok@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 739DAB70B4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Jul 2010 09:01:19 +1000 (EST)
+Message-ID: <4C4F6539.4000706@emcraft.com>
+Date: Wed, 28 Jul 2010 03:01:13 +0400
+From: Ilya Yanok <yanok@emcraft.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: mpc512x_dma hangs when used from multiple threads
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Piotr Ziecik <kosmo@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,645 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds IFM PDM360NG device tree and platform code.
+Hello Piotr, everybody,
 
-Currently following is supported:
- - Spansion S29GL512P 256 MB NOR flash
- - ST Micro NAND 1 GiB flash
- - DIU, please use "fbcon=map:5 video=fslfb:800x480-32@60"
-   at the kernel command line to enable PrimeView PM070WL3
-   Display support.
- - FEC
- - I2C
- - RTC, EEPROM
- - MSCAN
- - PSC UART, please pass "console=tty0 console=ttyPSC5,115200"
-   on the kernel command line.
- - SPI, ADS7845 Touchscreen
- - USB0/1 Host
- - USB0 OTG Host/Device
- - VIU, Overlay/Capture support
+I've found that mpc512x_dma channels hang sometimes while accessed from 
+more than one thread simultaneously.
+The easiest way to reproduce this error I've managed to found is using 
+dmatest module with rather high threads_per_chan value (20 should be 
+enough):
 
-Signed-off-by: Markus Fischer <markus.fischer.ec@ifm.com>
-Signed-off-by: Wolfgang Grandegger <wg@denx.de>
-Signed-off-by: Michael Weiss <michael.weiss@ifm.com>
-Signed-off-by: Detlev Zundel <dzu@denx.de>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: devicetree-discuss@lists.ozlabs.org
-Cc: Grant Likely <grant.likely@secretlab.ca>
----
-v4:
- - set interrupt-parent in root node only, less verbose DT
- - add compatible property to phy node
- - update touch screen controller node (add reg and
-   spi-max-frequency properties)
- - drop unnecessary (u32 *) casts
- - change return statement in pdm360ng_get_pendown_state()
-   as suggested
- - use correct error codes (-ENODEV) when returning on errors
- - use of_iomap() to eliminate some code
- - rework pdm360ng_touchscreen_init() to only use bus notifier
-   for addition of platform data for touch screen driver
- - eliminate machine_device_initcall(), code moved to init
-   callback
+-bash-3.2# insmod dmatest.ko max_channels=1 iterations=1 threads_per_chan=20
+[   32.559568] dma0chan0-copy0: terminating after 1 tests, 0 failures 
+(status 0)
+-bash-3.2# [   35.553688] dma0chan0-copy1: #0: test timed out
+[   35.558207] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.565458] dma0chan0-copy1: #0: test timed out
+[   35.569968] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.577219] dma0chan0-copy1: #0: test timed out
+[   35.581735] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.588953] dma0chan0-copy2: #0: test timed out
+[   35.593502] dma0chan0-copy2: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.600720] dma0chan0-copy3: #0: test timed out
+[   35.605284] dma0chan0-copy3: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.612472] dma0chan0-copy4: #0: test timed out
+[   35.617052] dma0chan0-copy4: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.624381] dma0chan0-copy5: #0: test timed out
+[   35.628895] dma0chan0-copy5: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.636126] dma0chan0-copy6: #0: test timed out
+[   35.640657] dma0chan0-copy6: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.647876] dma0chan0-copy7: #0: test timed out
+[   35.652425] dma0chan0-copy7: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.659643] dma0chan0-copy8: #0: test timed out
+[   35.664209] dma0chan0-copy8: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.671395] dma0chan0-copy9: #0: test timed out
+[   35.675976] dma0chan0-copy9: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.683164] dma0chan0-copy1: #0: test timed out
+[   35.687743] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.694942] dma0chan0-copy1: #0: test timed out
+[   35.699495] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.706714] dma0chan0-copy1: #0: test timed out
+[   35.711264] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.719826] dma0chan0-copy1: #0: test timed out
+[   35.724404] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.731549] dma0chan0-copy1: #0: test timed out
+[   35.736131] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.744247] dma0chan0-copy1: #0: test timed out
+[   35.748778] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.756768] dma0chan0-copy1: #0: test timed out
+[   35.761301] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
+[   35.769306] dma0chan0-copy1: #0: test timed out
+[   35.773883] dma0chan0-copy1: terminating after 1 tests, 1 failures 
+(status 0)
 
-v3:
- - uncomment and correct .irq_flags field of touchscreen
-   platform data struct as proposed extension to this
-   data struct has been accepted and merged via input tree
-   a short while ago
+Also, this can be reproduced using more than one channel at once (in 
+this case some of channels eventually hang). With max_channels=1 and 
+threads_per_chan=1 dmatest works fine so I think this should be a 
+synchronization issue.
+After the hang, channel becomes unusable and cannot be even freed...
 
-v1 -> v2:
- - fix interrupt-parent property in nfc node
- - drop #address-cells in ipic node
- - remove device_type from ethernet-phy sub-node
- - remove device_type from ethernet node
- - add aliases node for eth0, needed for MAC address
-   update by U-Boot
- - removed spaces around &ipic
+Is it a known problem? Maybe there exists some fix or workaround for it?
 
- arch/powerpc/boot/dts/pdm360ng.dts     |  410 ++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/512x/Kconfig    |    7 +
- arch/powerpc/platforms/512x/Makefile   |    1 +
- arch/powerpc/platforms/512x/pdm360ng.c |  129 ++++++++++
- 4 files changed, 547 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/pdm360ng.dts
- create mode 100644 arch/powerpc/platforms/512x/pdm360ng.c
-
-diff --git a/arch/powerpc/boot/dts/pdm360ng.dts b/arch/powerpc/boot/dts/pdm360ng.dts
-new file mode 100644
-index 0000000..94dfa5c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/pdm360ng.dts
-@@ -0,0 +1,410 @@
-+/*
-+ * Device Tree Source for IFM PDM360NG.
-+ *
-+ * Copyright 2009 - 2010 DENX Software Engineering.
-+ * Anatolij Gustschin <agust@denx.de>
-+ *
-+ * Based on MPC5121E ADS dts.
-+ * Copyright 2008 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+/dts-v1/;
-+
-+/ {
-+	model = "pdm360ng";
-+	compatible = "ifm,pdm360ng";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	interrupt-parent = <&ipic>;
-+
-+	aliases {
-+		ethernet0 = &eth0;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,5121@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <0x20>;	// 32 bytes
-+			i-cache-line-size = <0x20>;	// 32 bytes
-+			d-cache-size = <0x8000>;	// L1, 32K
-+			i-cache-size = <0x8000>;	// L1, 32K
-+			timebase-frequency = <49500000>;// 49.5 MHz (csb/4)
-+			bus-frequency = <198000000>;	// 198 MHz csb bus
-+			clock-frequency = <396000000>;	// 396 MHz ppc core
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0x00000000 0x20000000>;	// 512MB at 0
-+	};
-+
-+	nfc@40000000 {
-+		compatible = "fsl,mpc5121-nfc";
-+		reg = <0x40000000 0x100000>;
-+		interrupts = <0x6 0x8>;
-+		#address-cells = <0x1>;
-+		#size-cells = <0x1>;
-+		bank-width = <0x1>;
-+		chips = <0x1>;
-+
-+		partition@0 {
-+			label = "nand0";
-+			reg = <0x0 0x40000000>;
-+		};
-+	};
-+
-+	sram@50000000 {
-+		compatible = "fsl,mpc5121-sram";
-+		reg = <0x50000000 0x20000>;	// 128K at 0x50000000
-+	};
-+
-+	localbus@80000020 {
-+		compatible = "fsl,mpc5121-localbus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <0x80000020 0x40>;
-+
-+		ranges = <0x0 0x0 0xf0000000 0x10000000   /* Flash */
-+			  0x2 0x0 0x50040000 0x00020000>; /* CS2: MRAM */
-+
-+		flash@0,0 {
-+			compatible = "amd,s29gl01gp", "cfi-flash";
-+			reg = <0 0x00000000 0x08000000
-+			       0 0x08000000 0x08000000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			bank-width = <4>;
-+			device-width = <2>;
-+
-+			partition@0 {
-+				label = "u-boot";
-+				reg = <0x00000000 0x00080000>;
-+				read-only;
-+			};
-+			partition@80000 {
-+				label = "environment";
-+				reg = <0x00080000 0x00080000>;
-+				read-only;
-+			};
-+			partition@100000 {
-+				label = "splash-image";
-+				reg = <0x00100000 0x00080000>;
-+				read-only;
-+			};
-+			partition@180000 {
-+				label = "device-tree";
-+				reg = <0x00180000 0x00040000>;
-+			};
-+			partition@1c0000 {
-+				label = "kernel";
-+				reg = <0x001c0000 0x00500000>;
-+			};
-+			partition@6c0000 {
-+				label = "filesystem";
-+				reg = <0x006c0000 0x07940000>;
-+			};
-+		};
-+
-+		mram0@2,0 {
-+			compatible = "mtd-ram";
-+			reg = <2 0x00000 0x10000>;
-+			bank-width = <2>;
-+		};
-+
-+		mram1@2,10000 {
-+			compatible = "mtd-ram";
-+			reg = <2 0x010000 0x10000>;
-+			bank-width = <2>;
-+		};
-+	};
-+
-+	soc@80000000 {
-+		compatible = "fsl,mpc5121-immr";
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		ranges = <0x0 0x80000000 0x400000>;
-+		reg = <0x80000000 0x400000>;
-+		bus-frequency = <66000000>;	// 66 MHz ips bus
-+
-+		// IPIC
-+		// interrupts cell = <intr #, sense>
-+		// sense values match linux IORESOURCE_IRQ_* defines:
-+		// sense == 8: Level, low assertion
-+		// sense == 2: Edge, high-to-low change
-+		//
-+		ipic: interrupt-controller@c00 {
-+			compatible = "fsl,mpc5121-ipic", "fsl,ipic";
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <0xc00 0x100>;
-+		};
-+
-+		rtc@a00 {	// Real time clock
-+			compatible = "fsl,mpc5121-rtc";
-+			reg = <0xa00 0x100>;
-+			interrupts = <79 0x8 80 0x8>;
-+		};
-+
-+		reset@e00 {	// Reset module
-+			compatible = "fsl,mpc5121-reset";
-+			reg = <0xe00 0x100>;
-+		};
-+
-+		clock@f00 {	// Clock control
-+			compatible = "fsl,mpc5121-clock";
-+			reg = <0xf00 0x100>;
-+		};
-+
-+		pmc@1000{	//Power Management Controller
-+			compatible = "fsl,mpc5121-pmc";
-+			reg = <0x1000 0x100>;
-+			interrupts = <83 0x2>;
-+		};
-+
-+		gpio@1100 {
-+			compatible = "fsl,mpc5121-gpio";
-+			reg = <0x1100 0x100>;
-+			interrupts = <78 0x8>;
-+		};
-+
-+		can@1300 {
-+			compatible = "fsl,mpc5121-mscan";
-+			interrupts = <12 0x8>;
-+			reg = <0x1300 0x80>;
-+		};
-+
-+		can@1380 {
-+			compatible = "fsl,mpc5121-mscan";
-+			interrupts = <13 0x8>;
-+			reg = <0x1380 0x80>;
-+		};
-+
-+		i2c@1700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5121-i2c";
-+			reg = <0x1700 0x20>;
-+			interrupts = <0x9 0x8>;
-+			fsl,preserve-clocking;
-+
-+			eeprom@50 {
-+				compatible = "at,24c01";
-+				reg = <0x50>;
-+			};
-+
-+			rtc@68 {
-+				compatible = "stm,m41t00";
-+				reg = <0x68>;
-+			};
-+		};
-+
-+		i2c@1740 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc5121-i2c";
-+			reg = <0x1740 0x20>;
-+			interrupts = <0xb 0x8>;
-+			fsl,preserve-clocking;
-+		};
-+
-+		i2ccontrol@1760 {
-+			compatible = "fsl,mpc5121-i2c-ctrl";
-+			reg = <0x1760 0x8>;
-+		};
-+
-+		axe@2000 {
-+			compatible = "fsl,mpc5121-axe";
-+			reg = <0x2000 0x100>;
-+			interrupts = <42 0x8>;
-+		};
-+
-+		display@2100 {
-+			compatible = "fsl,mpc5121-diu";
-+			reg = <0x2100 0x100>;
-+			interrupts = <64 0x8>;
-+		};
-+
-+		can@2300 {
-+			compatible = "fsl,mpc5121-mscan";
-+			interrupts = <90 0x8>;
-+			reg = <0x2300 0x80>;
-+		};
-+
-+		can@2380 {
-+			compatible = "fsl,mpc5121-mscan";
-+			interrupts = <91 0x8>;
-+			reg = <0x2380 0x80>;
-+		};
-+
-+		viu@2400 {
-+			compatible = "fsl,mpc5121-viu";
-+			reg = <0x2400 0x400>;
-+			interrupts = <67 0x8>;
-+		};
-+
-+		mdio@2800 {
-+			compatible = "fsl,mpc5121-fec-mdio";
-+			reg = <0x2800 0x200>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			phy: ethernet-phy@0 {
-+				compatible = "smsc,lan8700";
-+				reg = <0x1f>;
-+			};
-+		};
-+
-+		eth0: ethernet@2800 {
-+			compatible = "fsl,mpc5121-fec";
-+			reg = <0x2800 0x200>;
-+			local-mac-address = [ 00 00 00 00 00 00 ];
-+			interrupts = <4 0x8>;
-+			phy-handle = < &phy >;
-+		};
-+
-+		// USB1 using external ULPI PHY
-+		usb@3000 {
-+			compatible = "fsl,mpc5121-usb2-dr";
-+			reg = <0x3000 0x600>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <43 0x8>;
-+			dr_mode = "host";
-+			phy_type = "ulpi";
-+		};
-+
-+		// USB0 using internal UTMI PHY
-+		usb@4000 {
-+			compatible = "fsl,mpc5121-usb2-dr";
-+			reg = <0x4000 0x600>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			interrupts = <44 0x8>;
-+			dr_mode = "otg";
-+			phy_type = "utmi_wide";
-+			fsl,invert-pwr-fault;
-+		};
-+
-+		// IO control
-+		ioctl@a000 {
-+			compatible = "fsl,mpc5121-ioctl";
-+			reg = <0xA000 0x1000>;
-+		};
-+
-+		// 512x PSCs are not 52xx PSCs compatible
-+		serial@11000 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <0>;
-+			reg = <0x11000 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11100 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <1>;
-+			reg = <0x11100 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11200 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <2>;
-+			reg = <0x11200 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11300 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <3>;
-+			reg = <0x11300 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11400 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <4>;
-+			reg = <0x11400 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11600 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <6>;
-+			reg = <0x11600 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11800 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <8>;
-+			reg = <0x11800 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		serial@11B00 {
-+			compatible = "fsl,mpc5121-psc-uart", "fsl,mpc5121-psc";
-+			cell-index = <11>;
-+			reg = <0x11B00 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+		};
-+
-+		pscfifo@11f00 {
-+			compatible = "fsl,mpc5121-psc-fifo";
-+			reg = <0x11f00 0x100>;
-+			interrupts = <40 0x8>;
-+		};
-+
-+		spi@11900 {
-+			compatible = "fsl,mpc5121-psc-spi", "fsl,mpc5121-psc";
-+			cell-index = <9>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x11900 0x100>;
-+			interrupts = <40 0x8>;
-+			fsl,rx-fifo-size = <16>;
-+			fsl,tx-fifo-size = <16>;
-+
-+			// 7845 touch screen controller
-+			ts@0 {
-+				compatible = "ti,ads7846";
-+				reg = <0x0>;
-+				spi-max-frequency = <3000000>;
-+				// pen irq is GPIO25
-+				interrupts = <78 0x8>;
-+			};
-+		};
-+
-+		dma@14000 {
-+			compatible = "fsl,mpc5121-dma";
-+			reg = <0x14000 0x1800>;
-+			interrupts = <65 0x8>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/512x/Kconfig b/arch/powerpc/platforms/512x/Kconfig
-index e9dca28..27b0651 100644
---- a/arch/powerpc/platforms/512x/Kconfig
-+++ b/arch/powerpc/platforms/512x/Kconfig
-@@ -25,3 +25,10 @@ config MPC5121_GENERIC
- 
- 	  Compatible boards include:  Protonic LVT base boards (ZANMCU
- 	  and VICVT2).
-+
-+config PDM360NG
-+	bool "ifm PDM360NG board"
-+	depends on PPC_MPC512x
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the PDM360NG board.
-diff --git a/arch/powerpc/platforms/512x/Makefile b/arch/powerpc/platforms/512x/Makefile
-index 90be2f5..4efc1c4 100644
---- a/arch/powerpc/platforms/512x/Makefile
-+++ b/arch/powerpc/platforms/512x/Makefile
-@@ -4,3 +4,4 @@
- obj-y				+= clock.o mpc512x_shared.o
- obj-$(CONFIG_MPC5121_ADS)	+= mpc5121_ads.o mpc5121_ads_cpld.o
- obj-$(CONFIG_MPC5121_GENERIC)	+= mpc5121_generic.o
-+obj-$(CONFIG_PDM360NG)		+= pdm360ng.o
-diff --git a/arch/powerpc/platforms/512x/pdm360ng.c b/arch/powerpc/platforms/512x/pdm360ng.c
-new file mode 100644
-index 0000000..1eb8b0f
---- /dev/null
-+++ b/arch/powerpc/platforms/512x/pdm360ng.c
-@@ -0,0 +1,129 @@
-+/*
-+ * Copyright (C) 2010 DENX Software Engineering
-+ *
-+ * Anatolij Gustschin, <agust@denx.de>
-+ *
-+ * PDM360NG board setup
-+ *
-+ * This is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+
-+#include "mpc512x.h"
-+
-+#if defined(CONFIG_TOUCHSCREEN_ADS7846) || \
-+    defined(CONFIG_TOUCHSCREEN_ADS7846_MODULE)
-+#include <linux/interrupt.h>
-+#include <linux/spi/ads7846.h>
-+#include <linux/spi/spi.h>
-+#include <linux/notifier.h>
-+
-+static void *pdm360ng_gpio_base;
-+
-+static int pdm360ng_get_pendown_state(void)
-+{
-+	u32 reg;
-+
-+	reg = in_be32(pdm360ng_gpio_base + 0xc);
-+	if (reg & 0x40)
-+		setbits32(pdm360ng_gpio_base + 0xc, 0x40);
-+
-+	reg = in_be32(pdm360ng_gpio_base + 0x8);
-+
-+	/* return 1 if pen is down */
-+	return (reg & 0x40) == 0;
-+}
-+
-+static struct ads7846_platform_data pdm360ng_ads7846_pdata = {
-+	.model			= 7845,
-+	.get_pendown_state	= pdm360ng_get_pendown_state,
-+	.irq_flags		= IRQF_TRIGGER_LOW,
-+};
-+
-+static int __init pdm360ng_penirq_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-gpio");
-+	if (!np) {
-+		pr_err("%s: Can't find 'mpc5121-gpio' node\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	pdm360ng_gpio_base = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!pdm360ng_gpio_base) {
-+		pr_err("%s: Can't map gpio regs.\n", __func__);
-+		return -ENODEV;
-+	}
-+	out_be32(pdm360ng_gpio_base + 0xc, 0xffffffff);
-+	setbits32(pdm360ng_gpio_base + 0x18, 0x2000);
-+	setbits32(pdm360ng_gpio_base + 0x10, 0x40);
-+
-+	return 0;
-+}
-+
-+static int pdm360ng_touchscreen_notifier_call(struct notifier_block *nb,
-+					unsigned long event, void *__dev)
-+{
-+	struct device *dev = __dev;
-+
-+	if ((event == BUS_NOTIFY_ADD_DEVICE) &&
-+	    of_device_is_compatible(dev->of_node, "ti,ads7846")) {
-+		dev->platform_data = &pdm360ng_ads7846_pdata;
-+		return NOTIFY_OK;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block pdm360ng_touchscreen_nb = {
-+	.notifier_call = pdm360ng_touchscreen_notifier_call,
-+};
-+
-+static void __init pdm360ng_touchscreen_init(void)
-+{
-+	if (pdm360ng_penirq_init())
-+		return;
-+
-+	bus_register_notifier(&spi_bus_type, &pdm360ng_touchscreen_nb);
-+}
-+#else
-+static inline void __init pdm360ng_touchscreen_init(void)
-+{
-+}
-+#endif /* CONFIG_TOUCHSCREEN_ADS7846 */
-+
-+void __init pdm360ng_init(void)
-+{
-+	mpc512x_init();
-+	pdm360ng_touchscreen_init();
-+}
-+
-+static int __init pdm360ng_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return of_flat_dt_is_compatible(root, "ifm,pdm360ng");
-+}
-+
-+define_machine(pdm360ng) {
-+	.name			= "PDM360NG",
-+	.probe			= pdm360ng_probe,
-+	.setup_arch		= mpc512x_setup_diu,
-+	.init			= pdm360ng_init,
-+	.init_early		= mpc512x_init_diu,
-+	.init_IRQ		= mpc512x_init_IRQ,
-+	.get_irq		= ipic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.restart		= mpc512x_restart,
-+};
--- 
-1.7.0.4
+Regards, Ilya.
