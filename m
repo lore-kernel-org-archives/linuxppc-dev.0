@@ -1,27 +1,33 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id B6EB5B70B5
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 11:57:39 +1000 (EST)
-Received: by gxk25 with SMTP id 25so1726373gxk.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 18:57:37 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100726.183808.15223674.davem@davemloft.net>
-References: <AANLkTikcV3jJUm_My-oK-drudSDz3M2iH1cWhxdt+W1s@mail.gmail.com>
-	<20100726.154854.35052662.davem@davemloft.net>
-	<AANLkTikpON7WUkTLrnW4y2kghM=H8cLCAFst08S3cL_Z@mail.gmail.com>
-	<20100726.183808.15223674.davem@davemloft.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 26 Jul 2010 19:57:17 -0600
-Message-ID: <AANLkTi=Kw78W0zuuQ0vzO7rXXVkTDf0D5w8n44hV_FWt@mail.gmail.com>
-Subject: Re: [PATCH v3] of: Create asm-generic/of.h and provide default
-	of_node_to_nid()
-To: David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sparclinux@vger.kernel.org, sam@ravnborg.org
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 820D1B70B5
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 12:36:59 +1000 (EST)
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6R2O1oZ011509
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 22:24:01 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o6R2at7R1269896
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 22:36:55 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o6R2as4Y013907
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Jul 2010 22:36:55 -0400
+Subject: Re: [PATCH 4/8] v3 Allow memory_block to span multiple memory sections
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <4C4A5985.6000206@austin.ibm.com>
+References: <4C451BF5.50304@austin.ibm.com>
+	<4C451E1C.8070907@austin.ibm.com> <1279653481.9785.4.camel@nimitz>
+	<4C4A5985.6000206@austin.ibm.com>
+Content-Type: text/plain; charset="ANSI_X3.4-1968"
+Date: Mon, 26 Jul 2010 19:36:52 -0700
+Message-ID: <1280198212.16922.422.camel@nimitz>
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, greg@kroah.com, linux-kernel@vger.kernel.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,21 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 26, 2010 at 7:38 PM, David Miller <davem@davemloft.net> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
-> Date: Mon, 26 Jul 2010 16:51:01 -0600
->
->> Indeed. =A0I looked at it briefly, but it wasn't immediately clear what
->> the impact would be to switch powerpc over to -1, and it looked to me
->> like sparc depends on -1 to signify no node association.
->
-> Kernel wide, NUMA interfaces tend to take "-1" to mean "any node."
->
-> I had looked over the powerpc cases, and besides 1 or 2 strange
-> locations the powerpc call sites were ready to handle -1.
+On Fri, 2010-07-23 at 22:09 -0500, Nathan Fontenot wrote:
+> If we add a lock should I submit it as part of this patchset? or
+> submit it
+> as a follow-on?
 
-Okay, well let me rework the patch to make -1 the default and let
-powerpc override it.  A follow-on patch can fix up the powerpc usage
-of 0.
+It should probably be at the beginning of the patch set.  We don't want
+to have a case where your set introduces races that we _need_ a later
+patch to fix.
 
-g.
+-- Dave
