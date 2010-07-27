@@ -1,21 +1,30 @@
-Return-Path: <msm@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id 4E0341007D3
+Return-Path: <sam@ravnborg.org>
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by ozlabs.org (Postfix) with ESMTP id 7DA3BB6EE8
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Jul 2010 14:23:19 +1000 (EST)
-Subject: Re: [PATCH v3 0/7] Fixup booting with device trees and uImage/elf on
-	ppc32
-MIME-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset="us-ascii"
-From: Matthew McClintock <msm@freescale.com>
-In-Reply-To: <20100727025506.GA1944@verge.net.au>
-Date: Mon, 26 Jul 2010 23:22:58 -0500
-Message-ID: <14FA0578-0D5B-48D1-BF5D-EB39DF1432D1@freescale.com>
-References: <1279687384-9770-1-git-send-email-msm@freescale.com>
-	<20100727025506.GA1944@verge.net.au>
-To: Simon Horman <horms@verge.net.au>
-Cc: muvarov@gmail.com, linuxppc-dev@lists.ozlabs.org, sebastian@breakpoint.cc,
-	kexec@lists.infradead.org
+	Tue, 27 Jul 2010 16:45:30 +1000 (EST)
+Date: Tue, 27 Jul 2010 08:45:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC][PATCH] kconfig: implement select with values
+Message-ID: <20100727064523.GA25872@merkur.ravnborg.org>
+References: <20100720043706.3813715a.sfr@canb.auug.org.au>
+	<20100726221717.GA22439@merkur.ravnborg.org>
+	<AANLkTikP3nZd-LionO27vsinjXz=upKbDZeErSD4CAfz@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <AANLkTikP3nZd-LionO27vsinjXz=upKbDZeErSD4CAfz@mail.gmail.com>
+Cc: Michal Marek <mmarek@suse.cz>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andi Kleen <ak@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
+	linux-kbuild@vger.kernel.org, Linus <torvalds@linux-foundation.org>,
+	Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Josh Triplett <josh@joshtriplett.org>,
+	Vadim Bendebury <vbendeb@google.com>, Nir Tzachar <nir.tzachar@gmail.com>,
+	Francis Galiegue <fgaliegue@gmail.com>,
+	Trevor Keith <tsrk@tsrk.net>, Jiri Kosina <jkosina@suse.cz>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	ppc-dev <linuxppc-dev@lists.ozlabs.org>, Cheng Renquan <crquan@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +34,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> 
+> Cute.  I didn't know this was possible.  I'll give it a try and see
+> how it works for me.  Do override config options also pickup
+> select/depends constraints applied by later definitions?  I think that
+> would be necessary to kick out warnings when a defconfig selection
+> isn't actually achievable.
 
-On Jul 26, 2010, at 9:55 PM, Simon Horman wrote:
+kconfig allows one to add more properties to a config
+symbol by defining the symbol again.
 
-> [Cced linuxppc-dev]
->=20
-> On Tue, Jul 20, 2010 at 11:42:57PM -0500, Matthew McClintock wrote:
->> This patch series adds full support for booting with a flat device =
-tree
->> with either uImage or elf file formats. Kexec and Kdump should work, =
-and
->> you should also be able to use ramdisks or reuse your current ramdisk =
-as well
->>=20
->> This patch series was tested on an mpc85xx system with a kernel =
-version
->> 2.6.35-rc3
->>=20
->> v1: Initial version
->>=20
->> v2: Added support for fs2dt (file system to device tree)
->>=20
->> v3: Fix some misc. git problems I had and other code cleanups
->=20
-> Hi Matthew,
->=20
-> I'm a little concerned that these changes are non trivial and haven't =
-had
-> much review. But I am prepared to put them into my tree once 2.0.2 is
-> released - perhaps that way they will get some test coverage. Does
-> that work for you?
+So:
+config FOO
+	bool
+	prompt "foo prompt"
+	default y
+	help
+	  Help text
 
-Either way works for me. I know they could use more review, however as =
-Maxim said the current tree does not work AFAIK. Either way, I'm willing =
-to keeping addressing everyones concerns and wait or move forward and =
-make some quick fixes as well.
+Is the same as:
+config FOO
+	bool
 
--M
+config FOO
+	prompt "foo prompt"
 
->=20
->>=20
->> Matthew McClintock (7):
->>  Restore kexec uImage-ppc to working state
->>  Fix case where phys_addr_t !=3D unsigned long when reading proc =
-entries
->>  Update uImage to support crash kernel and misc fixes
->>  Update Elf-ppc to support crash kernel and misc fixes
->>  Add support for ramdisk on ppc32 for uImage-ppc and Elf-ppc
->>  Add support for reworking flat device tree support
->>  Add documentation/howto for mpc85xx systems
->>=20
->> doc/mpc85xx.txt                       |  190 +++++++++++++++++++++
->> kexec/arch/ppc/Makefile               |    1 +
->> kexec/arch/ppc/fixup_dtb.c            |  298 =
-++++++++++++++++++++++++++++++++-
->> kexec/arch/ppc/fixup_dtb.h            |    6 +-
->> kexec/arch/ppc/include/arch/options.h |    3 +
->> kexec/arch/ppc/kexec-elf-ppc.c        |  186 +++++++++------------
->> kexec/arch/ppc/kexec-ppc.c            |  262 =
-+++++++++++++++++------------
->> kexec/arch/ppc/kexec-ppc.h            |    3 +
->> kexec/arch/ppc/kexec-uImage-ppc.c     |  136 ++++++++++++---
->> kexec/arch/ppc/ops.h                  |    1 -
->> purgatory/arch/ppc/purgatory-ppc.c    |    5 +
->> 11 files changed, 852 insertions(+), 239 deletions(-)
->> create mode 100644 doc/mpc85xx.txt
->>=20
->>=20
->>=20
->> _______________________________________________
->> kexec mailing list
->> kexec@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/kexec
->=20
+config FOO
+	default y
+
+config FOO
+	help
+	  help text
+
+The abvoe four lines can be located in different files.
+
+And likewise kconfig allows the same property to be
+specified twice or more.
+
+So it is OK to say:
+
+config BAR
+	tristate "bar prompt"
+	default m
+	default y
+
+Here kconfig just picks the first default is see.
+
+And the example in my original mail uses the feature
+that we can specify several defaults - and kconfig uses the first.
+
+
+For choices the same is possible but then you need to use
+a named choice - something that no one does today in the kernel.
+
+choice CHOICE_X86_CPU
+	default M386
+
+endchoice
+
+Here we change the default to M386 which becomes the
+selected if we use "alldefconfig".
+
+[Note: It does not work until we use named choices in arch/x86/Kconfig.cpu]
+
+> 
+> > Now in the original suggestion of Linus he used:
+> >
+> >    KBUILD_KCONFIG=Mykconfig make allnoconfig
+> >
+> > And "allnoconfig" would make the modified defaults useless.
+> >
+> > But the soon-to-be-introduced alldefconfig is more sensible.
+> >
+> > alldefconfig uses default values for everything.
+> 
+> I basically used defconfig in the prototype that I posted.  I think it
+> works well for me, and I've got it integrated into the build targets
+> (just like Stephen's earlier patch) without having to do a
+> KBUILD_KCONFIG trick.
+
+"defconfig" with an empty file gives same config as "alldefconfig" so
+it makes sense. But we wanted to drop the use of defconfig files
+in favour of files with Kconfig syntax.
+So alldefconfig is just a better fit here.
+
+[The above btw. also makes "savedefconfig" less usefull].
+
+	Sam
