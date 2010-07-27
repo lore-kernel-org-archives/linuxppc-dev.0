@@ -1,19 +1,23 @@
-Return-Path: <miltonm@bga.com>
-Received: from mail4.comsite.net (mail4.comsite.net [205.238.176.238])
-	by ozlabs.org (Postfix) with ESMTP id 9536FB6F07
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue, 27 Jul 2010 20:00:35 +1000 (EST)
-From: Milton Miller <miltonm@bga.com>
-To: WANG Cong <amwang@redhat.com>
-Subject: Re: [Patch v2] kexec: increase max of kexec segments and use dynamic
-	allocation
-In-Reply-To: <20100727082321.5813.84456.sendpatchset@localhost.localdomain>
-Message-Id: <kexec-nrseg-reply1@mdm.bga.com>
-Date: Tue, 27 Jul 2010 05:00:32 -0500
-Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-	huang ying <huang.ying.caritas@gmail.com>,
-	linux-kernel@vger.kernel.org, kexec@lists.infadead.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6541BB6EEF
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jul 2010 20:36:55 +1000 (EST)
+Date: Tue, 27 Jul 2010 12:36:47 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 2/2] powerpc/mpc5121: add initial support for
+	PDM360NG  board
+Message-ID: <20100727123647.0a3b8832@wker>
+In-Reply-To: <AANLkTi=Ee6HR+Ux0g4V1+81DXUmsO=UDhi6jWsDgGchv@mail.gmail.com>
+References: <1272882222-12253-1-git-send-email-agust@denx.de>
+	<1279892973-24110-1-git-send-email-agust@denx.de>
+	<AANLkTi=Ee6HR+Ux0g4V1+81DXUmsO=UDhi6jWsDgGchv@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Detlev Zundel <dzu@denx.de>, Markus Fischer <markus.fischer.ec@ifm.com>,
+	devicetree-discuss@lists.ozlabs.org,
+	Michael Weiss <michael.weiss@ifm.com>, linuxppc-dev@ozlabs.org,
+	Wolfgang Grandegger <wg@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,154 +27,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ Added kexec at lists.infradead.org and linuxppc-dev@lists.ozlabs.org ]
+Hi Grant,
 
-> 
-> Currently KEXEC_SEGMENT_MAX is only 16 which is too small for machine with
-> many memory ranges.  When hibernate on a machine with disjoint memory we do
-> need one segment for each memory region. Increase this hard limit to 16K
-> which is reasonably large.
-> 
-> And change ->segment from a static array to a dynamically allocated memory.
-> 
-> Cc: Neil Horman <nhorman@redhat.com>
-> Cc: huang ying <huang.ying.caritas@gmail.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> 
-> ---
-> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-> index ed31a29..f115585 100644
-> --- a/arch/powerpc/kernel/machine_kexec_64.c
-> +++ b/arch/powerpc/kernel/machine_kexec_64.c
-> @@ -131,10 +131,7 @@ static void copy_segments(unsigned long ind)
->  void kexec_copy_flush(struct kimage *image)
->  {
->  	long i, nr_segments = image->nr_segments;
-> -	struct  kexec_segment ranges[KEXEC_SEGMENT_MAX];
-> -
-> -	/* save the ranges on the stack to efficiently flush the icache */
-> -	memcpy(ranges, image->segment, sizeof(ranges));
-> +	struct  kexec_segment range;
+On Sun, 25 Jul 2010 01:42:23 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
+...
+> Hi Anatolij,
+>=20
+> Finally got some time tonight to properly dig into this patch.  Comments =
+below.
 
-I'm glad you found our copy on the stack and removed the stack overflow
-that comes with this bump, but ...
+Thanks for review and comments! My reply below.
 
->  
->  	/*
->  	 * After this call we may not use anything allocated in dynamic
-> @@ -148,9 +145,11 @@ void kexec_copy_flush(struct kimage *image)
->  	 * we need to clear the icache for all dest pages sometime,
->  	 * including ones that were in place on the original copy
->  	 */
-> -	for (i = 0; i < nr_segments; i++)
-> -		flush_icache_range((unsigned long)__va(ranges[i].mem),
-> -			(unsigned long)__va(ranges[i].mem + ranges[i].memsz));
-> +	for (i = 0; i < nr_segments; i++) {
-> +		memcpy(&range, &image->segment[i], sizeof(range));
-> +		flush_icache_range((unsigned long)__va(range.mem),
-> +			(unsigned long)__va(range.mem + range.memsz));
-> +	}
->  }
+...
+> > + =A0 =A0 =A0 nfc@40000000 {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc5121-nfc";
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x40000000 0x100000>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupts =3D <0x6 0x8>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 interrupt-parent =3D <&ipic>;
+>=20
+> This device tree can be less verbose if you remove the
+> interrupt-parent property from all the nodes, and have a single
+> interrupt-parent =3D <&ipic>; in the root node.  Nodes inherit the
+> interrupt-parent from their (grand-)parents.
 
-This is executed after the copy, so as it says,
-"we may not use anything allocated in dynamic memory".
+Fixed in next patch version to use interrupt-parent in root node only.
 
-We could allocate control pages to copy the segment list into.
-Actually ppc64 doesn't use the existing control page, but that
-is only 4kB today.
+...
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdio@2800 {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc51=
+21-fec-mdio";
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <0x2800 0x200>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #address-cells =3D <1>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 #size-cells =3D <0>;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phy: ethernet-phy@0 {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <=
+0x1f>;
+>=20
+> For completeness, phy should have a compatible property.
 
-We need the list to icache flush all the pages in all the segments.
-The as the indirect list doesn't have pages that were allocated at
-their destination.
+Added in next patch version.
 
-Or maybe the icache flush should be done in the generic code
-like it does for crash load segments?
+...
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 spi@11900 {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "fsl,mpc51=
+21-psc-spi", "fsl,mpc5121-psc";
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <9>;
+>=20
+> Try to drop the cell-index properties.  They are almost always misused.
 
+Removing cell-index would require changing the spi driver's probe.
+Currently cell-index is used to set spi bus number. What could be used
+for bus enumeration instead? Is it okay to use part of the spi node
+address? e.g. obtaining the offset 0x11900, masking out the unrelated
+bits and shifting by 8 would deliver unique index 9 for PSC9 in SPI
+mode. This would work for all 12 PSC SPI controllers of mpc5121.
 
->  
->  #ifdef CONFIG_SMP
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index 03e8e8d..26b70ff 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -57,7 +57,7 @@ typedef unsigned long kimage_entry_t;
->  #define IND_DONE         0x4
->  #define IND_SOURCE       0x8
->  
-> -#define KEXEC_SEGMENT_MAX 16
-> +#define KEXEC_SEGMENT_MAX (1024*16)
->  struct kexec_segment {
->  	void __user *buf;
->  	size_t bufsz;
-> @@ -86,7 +86,7 @@ struct kimage {
->  	struct page *swap_page;
->  
->  	unsigned long nr_segments;
-> -	struct kexec_segment segment[KEXEC_SEGMENT_MAX];
-> +	struct kexec_segment *segment;
->  
->  	struct list_head control_pages;
->  	struct list_head dest_pages;
-> diff --git a/kernel/kexec.c b/kernel/kexec.c
-> index 131b170..3f97309 100644
-> --- a/kernel/kexec.c
-> +++ b/kernel/kexec.c
-> @@ -131,6 +131,11 @@ static int do_kimage_alloc(struct kimage **rimage, unsigned long entry,
->  	if (!image)
->  		goto out;
->  
-> +	image->segment = kzalloc(nr_segments * sizeof(struct kexec_segment),
-> +				 GFP_KERNEL);
-> +	if (!image->segment)
-> +		goto out;
-> +
->  	image->head = 0;
->  	image->entry = &image->head;
->  	image->last_entry = &image->head;
-> @@ -216,8 +221,10 @@ static int do_kimage_alloc(struct kimage **rimage, unsigned long entry,
->  out:
->  	if (result == 0)
->  		*rimage = image;
-> -	else
-> +	else if (image) {
-> +		kfree(image->segment);
->  		kfree(image);
-> +	}
->  
->  	return result;
->  
-> @@ -261,8 +268,10 @@ static int kimage_normal_alloc(struct kimage **rimage, unsigned long entry,
->   out:
->  	if (result == 0)
->  		*rimage = image;
-> -	else
-> +	else if (image) {
-> +		kfree(image->segment);
->  		kfree(image);
-> +	}
->  
->  	return result;
->  }
-> @@ -330,8 +339,10 @@ static int kimage_crash_alloc(struct kimage **rimage, unsigned long entry,
->  out:
->  	if (result == 0)
->  		*rimage = image;
-> -	else
-> +	else if (image) {
-> +		kfree(image->segment);
->  		kfree(image);
-> +	}
->  
->  	return result;
->  }
-> @@ -656,6 +667,7 @@ static void kimage_free(struct kimage *image)
->  
->  	/* Free the kexec control pages... */
->  	kimage_free_page_list(&image->control_pages);
-> +	kfree(image->segment);
->  	kfree(image);
->  }
->  
+...
+> > +static int pdm360ng_get_pendown_state(void)
+> > +{
+> > + =A0 =A0 =A0 u32 reg;
+> > +
+> > + =A0 =A0 =A0 reg =3D in_be32((u32 *)(pdm360ng_gpio_base + 0xc));
+> > + =A0 =A0 =A0 if (reg & 0x40)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 setbits32((u32 *)(pdm360ng_gpio_base + 0x=
+c), 0x40);
+> > +
+> > + =A0 =A0 =A0 reg =3D in_be32((u32 *)(pdm360ng_gpio_base + 0x8));
+>=20
+> (u32*) casts are unnecessary and can be removed.
 
-milton
+Fixed.
+
+> > +
+> > + =A0 =A0 =A0 /* return 1 if pen is down */
+> > + =A0 =A0 =A0 return reg & 0x40 ? 0 : 1;
+>=20
+> return reg & 0x40 =3D=3D 0;
+
+Fixed.
+
+...
+> > +static int __init pdm360ng_penirq_init(void)
+> > +{
+> > + =A0 =A0 =A0 struct device_node *np;
+> > + =A0 =A0 =A0 struct resource r;
+> > +
+> > + =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, "fsl,mpc5121-g=
+pio");
+> > + =A0 =A0 =A0 if (!np) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: Can't find 'mpc5121-gpio' nod=
+e\n", __func__);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
+> > + =A0 =A0 =A0 }
+>=20
+> return -ENODEV;
+
+Ok, fixed also.
+
+...
+> > + =A0 =A0 =A0 pdm360ng_gpio_base =3D ioremap(r.start, resource_size(&r)=
+);
+>=20
+> Or you could have simply used of_iomap() to eliminate some code.
+
+of_iomap() is used in next patch version.
+
+...
+> > +static int __init pdm360ng_touchscreen_init(void)
+> > +{
+> > + =A0 =A0 =A0 struct device_node *np;
+> > + =A0 =A0 =A0 struct of_device *of_dev;
+> > + =A0 =A0 =A0 struct spi_board_info info;
+> > + =A0 =A0 =A0 const u32 *prop;
+> > + =A0 =A0 =A0 int bus_num =3D -1;
+> > + =A0 =A0 =A0 int len;
+> > +
+> > + =A0 =A0 =A0 np =3D of_find_compatible_node(NULL, NULL, "ti,ads7845");
+> > + =A0 =A0 =A0 if (!np)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > +
+> > + =A0 =A0 =A0 memset(&info, 0, sizeof(info));
+> > + =A0 =A0 =A0 info.irq =3D irq_of_parse_and_map(np, 0);
+> > + =A0 =A0 =A0 if (info.irq =3D=3D NO_IRQ)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > +
+> > + =A0 =A0 =A0 info.platform_data =3D &pdm360ng_ads7846_pdata;
+> > + =A0 =A0 =A0 if (strlcpy(info.modalias, "ads7846",
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 SPI_NAME_SIZE) >=3D SPI_NAME_SIZE)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+> > +
+> > + =A0 =A0 =A0 np =3D of_get_next_parent(np);
+> > + =A0 =A0 =A0 if (!np)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > +
+> > + =A0 =A0 =A0 prop =3D of_get_property(np, "cell-index", &len);
+> > + =A0 =A0 =A0 if (prop && len =3D=3D 4)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 bus_num =3D *prop;
+>=20
+> Blech.  Don't use cell-index for bus enumeration.  In fact, none of
+> this should be necessary at all (see below).
+
+I dropped this code entirely in the next patch version.
+
+> > +
+> > + =A0 =A0 =A0 if (bus_num < 0 || bus_num > 11)
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > +
+> > + =A0 =A0 =A0 info.bus_num =3D bus_num;
+> > +
+> > + =A0 =A0 =A0 of_dev =3D of_find_device_by_node(np);
+> > + =A0 =A0 =A0 of_node_put(np);
+> > + =A0 =A0 =A0 if (of_dev) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct fsl_spi_platform_data *pdata;
+> > +
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata =3D kzalloc(sizeof(*pdata), GFP_KER=
+NEL);
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pdata) {
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata->bus_num =3D bus_nu=
+m;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata->max_chipselect =3D=
+ 1;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_dev->dev.platform_data=
+ =3D pdata;
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> > + =A0 =A0 =A0 }
+> > +
+> > + =A0 =A0 =A0 if (pdm360ng_penirq_init())
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> > +
+> > + =A0 =A0 =A0 return spi_register_board_info(&info, 1);
+>=20
+> This ends up being a lot of code simply to attach a pdata structure to
+> an spi device.  I've been thinking about this problem, and I think
+> there is a better way.  Instead, use a bus notifier attached to the
+> SPI bus to wait for the spi_device to get registered, but before it
+> gets bound to a driver.  Then you can attach the pdata structure very
+> simply.  Something like this I think (completely untested, or even
+> compiled.  Details are left as an exercise to the developer):
+>=20
+> static int pdm360ng_touchscreen_notifier_call(struct notifier_block *nb,
+> 					unsigned long event, void *__dev)
+> {
+> 	struct device *dev =3D __dev;
+>=20
+> 	if ((event =3D=3D BUS_NOTIFIY_ADD_DEVICE) && (dev->of_node =3D=3D [FOO]))
+> 		dev->platform_data =3D [BAR];
+> }
+>=20
+> static struct notifier_block pdm360ng_touchscreen_nb =3D {
+> 	notifier_call =3D pdm360ng_touchscreen_notifier_call;
+> };
+>=20
+> static int __init pdm360ng_touchscreen_init(void)
+> {
+> 	bus_register_notifier(&spi_bus_type, pdm360ng_touchscreen_nb);
+> }
+
+Thanks! Bus notifier is now used for setting platform data in v4.
+This requires fixing the mpc5121 psc spi driver to create spi child
+nodes of the spi master node. I have already send the appropriate
+patch to spi-devel list, but it is not the right approach to call
+of_register_spi_devices() in each driver. Do you plan to fix it in
+core spi code in v2.6.36?
+
+...
+> > +}
+> > +machine_device_initcall(pdm360ng, pdm360ng_touchscreen_init);
+>=20
+> This code is *in the same file* as the board setup file.  Don't use an
+> initcall.  Call it from the init callback instead.
+
+OK, initcall dropped.
+
+Thanks,
+Anatolij
