@@ -1,31 +1,18 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id CFAB6B6F01
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 23:50:18 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e6.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o6SDnSST015108
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 09:49:28 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o6SDoEtr381182
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 09:50:14 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o6SDoEQw008323
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 10:50:14 -0300
-Message-ID: <4C503594.7040602@linux.vnet.ibm.com>
-Date: Wed, 28 Jul 2010 08:50:12 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <Simon.Richter@kleinhenz.com>
+Received: from kleinhenz.com (static.88-198-202-190.clients.your-server.de
+	[88.198.202.190]) by ozlabs.org (Postfix) with ESMTP id DEB4BB6F06
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 00:49:18 +1000 (EST)
+Date: Wed, 28 Jul 2010 16:21:40 +0200
+From: Simon Richter <Simon.Richter@hogyros.de>
+To: Ravi Gupta <dceravigupta@gmail.com>
+Subject: Re: Memory Mapping Buffers smaller than page size?
+Message-ID: <20100728142140.GA9494@richter>
+References: <AANLkTikVrftUUC2W+NgWyZi6cc4H4c+mPza9MfsDKuxF@mail.gmail.com>
 MIME-Version: 1.0
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 6/8] v3 Update the node sysfs code
-References: <4C451BF5.50304@austin.ibm.com> <4C451EAF.1080505@austin.ibm.com>
-In-Reply-To: <4C451EAF.1080505@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mm@kvack.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTikVrftUUC2W+NgWyZi6cc4H4c+mPza9MfsDKuxF@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,25 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/19/2010 10:57 PM, Nathan Fontenot wrote:
-> Index: linux-2.6/include/linux/node.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/node.h	2010-07-19 21:10:25.000000000 -0500
-> +++ linux-2.6/include/linux/node.h	2010-07-19 21:13:11.000000000 -0500
-> @@ -44,7 +44,8 @@ extern int register_cpu_under_node(unsig
->  extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
->  extern int register_mem_sect_under_node(struct memory_block *mem_blk,
->  						int nid);
-> -extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk);
-> +extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
-> +					   unsigned long phys_index);
+Hi,
 
-You also need to update the inline definition of unregister_mem_sect_under_nodes
-for the !CONFIG_NUMA case.
+On Wed, Jul 28, 2010 at 06:44:10PM +0530, Ravi Gupta wrote:
 
--Brian
+> I am new to linux device drivers development. I have created 16 buffers of
+> size 256 bytes each(using kmalloc()) in my device driver code. I want to
+> memory map these buffers to user space. Now is it possible to memory map
+> these buffer(16*256 = 4096 = 1 page on 32 bit linux) into a single page in
+> user space OR i have to map them in individual pages in user space? Note,
+> all the buffers may not be stored in continuous memory location.
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Pages are the smallest unit for mappings, so each buffer would end up in
+its own mapping. If you want the buffers to be accessible without an
+offset, then you cannot have them in continuous locations, as you cannot
+map memory from the middle of a page to the beginning either.
+
+So your options are: one page per buffer (wasteful, but gives you
+granular access control), or allocating all the buffers as a single
+block.
+
+   Simon
