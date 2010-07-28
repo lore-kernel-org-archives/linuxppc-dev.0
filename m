@@ -1,15 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc: print decimal values in prom_init.c
-In-reply-to: <3394.1280280241@neuling.org>
-References: <4553.1279775749@neuling.org> <4C48B36E.6040505@linux.vnet.ibm.com>
-	<10860.1279849480@neuling.org> <3394.1280280241@neuling.org>
-Date: Wed, 28 Jul 2010 14:26:21 +1000
-Message-ID: <8837.1280291181@neuling.org>
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	Jesse Larrew <jlarrew@linux.vnet.ibm.com>, anton@samba.org
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 28 Jul 2010 14:47:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Please pull my perf.git urgent branch
+Message-ID: <20100728044731.GA2408@brick.ozlabs.ibm.com>
+References: <20100727124019.GB14947@brick.ozlabs.ibm.com>
+	<20100727112854.7bf97d48@schlenkerla.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100727112854.7bf97d48@schlenkerla.am.freescale.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,134 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we look pretty stupid when printing out a bunch of things in
-prom_init.c.  eg.
+On Tue, Jul 27, 2010 at 11:28:54AM -0500, Scott Wood wrote:
 
-  Max number of cores passed to firmware: 0x0000000000000080
+> Doesn't the setting of .period need to be maintained (it is in the other
+> powerpc perf_event implementation that this is derived from)?
 
-So I've change this to print in decimal:
+Gah, yes it does.
 
-  Max number of cores passed to firmware: 128 (NR_CPUS = 256)
+> I don't see how this is a security fix -- the existing initializer above
+> should zero-fill the fields that are not explicitly initialized.  In fact,
+> it's taking other fields that were previously initialized to zero and is
+> making them uninitialized, since perf_sample_data_init only sets addr and
+> raw.
 
-This required adding a prom_print_dec() function and changing some
-prom_printk() calls from %x to %lu.
+So I misunderstood how an initializer for an automatic struct works.
+Brown paper bag time for me... :(
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Bike shed colour status: Mauve.
+Regarding the other fields, I assume Peter et al. have checked that
+they don't need to be cleared, so it's a microoptimization to not
+clear them.
 
-Thanks to a suggestion from paulus, we are now 3 lines shorter.
+> CCing linuxppc-dev on the original patch would have been nice...
 
- arch/powerpc/kernel/prom_init.c |   44 +++++++++++++++++++++++++++++++--------
- 1 files changed, 35 insertions(+), 9 deletions(-)
+True, but at least I can blame Peter Z. for that. :)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 3b6f8ae..941ff4d 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -311,6 +311,24 @@ static void __init prom_print_hex(unsigned long val)
- 	call_prom("write", 3, 1, _prom->stdout, buf, nibbles);
- }
- 
-+/* max number of decimal digits in an unsigned long */
-+#define UL_DIGITS 21
-+static void __init prom_print_dec(unsigned long val)
-+{
-+	int i, size;
-+	char buf[UL_DIGITS+1];
-+	struct prom_t *_prom = &RELOC(prom);
-+
-+	for (i = UL_DIGITS-1; i >= 0;  i--) {
-+		buf[i] = (val % 10) + '0';
-+		val = val/10;
-+		if (val == 0)
-+			break;
-+	}
-+	/* shift stuff down */
-+	size = UL_DIGITS - i;
-+	call_prom("write", 3, 1, _prom->stdout, buf+i, size);
-+}
- 
- static void __init prom_printf(const char *format, ...)
- {
-@@ -350,6 +368,14 @@ static void __init prom_printf(const char *format, ...)
- 			v = va_arg(args, unsigned long);
- 			prom_print_hex(v);
- 			break;
-+		case 'l':
-+			++q;
-+			if (*q == 'u') { /* '%lu' */
-+				++q;
-+				v = va_arg(args, unsigned long);
-+				prom_print_dec(v);
-+			}
-+			break;
- 		}
- 	}
- }
-@@ -835,11 +861,11 @@ static int __init prom_count_smt_threads(void)
- 		if (plen == PROM_ERROR)
- 			break;
- 		plen >>= 2;
--		prom_debug("Found 0x%x smt threads per core\n", (unsigned long)plen);
-+		prom_debug("Found %lu smt threads per core\n", (unsigned long)plen);
- 
- 		/* Sanity check */
- 		if (plen < 1 || plen > 64) {
--			prom_printf("Threads per core 0x%x out of bounds, assuming 1\n",
-+			prom_printf("Threads per core %lu out of bounds, assuming 1\n",
- 				    (unsigned long)plen);
- 			return 1;
- 		}
-@@ -869,12 +895,12 @@ static void __init prom_send_capabilities(void)
- 		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
- 		if (*cores != NR_CPUS) {
- 			prom_printf("WARNING ! "
--				    "ibm_architecture_vec structure inconsistent: 0x%x !\n",
-+				    "ibm_architecture_vec structure inconsistent: %lu!\n",
- 				    *cores);
- 		} else {
- 			*cores = DIV_ROUND_UP(NR_CPUS, prom_count_smt_threads());
--			prom_printf("Max number of cores passed to firmware: 0x%x\n",
--				    (unsigned long)*cores);
-+			prom_printf("Max number of cores passed to firmware: %lu (NR_CPUS = %lu)\n",
-+				    *cores, NR_CPUS);
- 		}
- 
- 		/* try calling the ibm,client-architecture-support method */
-@@ -1482,7 +1508,7 @@ static void __init prom_hold_cpus(void)
- 		reg = -1;
- 		prom_getprop(node, "reg", &reg, sizeof(reg));
- 
--		prom_debug("cpu hw idx   = 0x%x\n", reg);
-+		prom_debug("cpu hw idx   = %lu\n", reg);
- 
- 		/* Init the acknowledge var which will be reset by
- 		 * the secondary cpu when it awakens from its OF
-@@ -1492,7 +1518,7 @@ static void __init prom_hold_cpus(void)
- 
- 		if (reg != _prom->cpu) {
- 			/* Primary Thread of non-boot cpu */
--			prom_printf("starting cpu hw idx %x... ", reg);
-+			prom_printf("starting cpu hw idx %lu... ", reg);
- 			call_prom("start-cpu", 3, 0, node,
- 				  secondary_hold, reg);
- 
-@@ -1507,7 +1533,7 @@ static void __init prom_hold_cpus(void)
- 		}
- #ifdef CONFIG_SMP
- 		else
--			prom_printf("boot cpu hw idx %x\n", reg);
-+			prom_printf("boot cpu hw idx %lu\n", reg);
- #endif /* CONFIG_SMP */
- 	}
- 
-@@ -2420,7 +2446,7 @@ static void __init prom_find_boot_cpu(void)
- 	prom_getprop(cpu_pkg, "reg", &getprop_rval, sizeof(getprop_rval));
- 	_prom->cpu = getprop_rval;
- 
--	prom_debug("Booting CPU hw index = 0x%x\n", _prom->cpu);
-+	prom_debug("Booting CPU hw index = %lu\n", _prom->cpu);
- }
- 
- static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
+Kumar and Ben, how do you want to proceed on this one?
+
+Paul.
