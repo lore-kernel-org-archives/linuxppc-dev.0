@@ -1,20 +1,20 @@
-Return-Path: <jason.wessel@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.windriver.com",
-	Issuer "Intel External Basic Issuing CA 3A" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id A21E8B6EF7
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 01:41:03 +1000 (EST)
-Message-ID: <4C5011A3.3020501@windriver.com>
-Date: Wed, 28 Jul 2010 06:16:51 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-MIME-Version: 1.0
-To: Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH] powerpc: Replace hardcoded offset by BREAK_INSTR_SIZE
-References: <1280308724-8402-1-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1280308724-8402-1-git-send-email-monstr@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>,
+Return-Path: <kumar.gala@freescale.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id AFB89B6EED
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 02:16:48 +1000 (EST)
+Subject: Re: Please pull my perf.git urgent branch
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <20100728044731.GA2408@brick.ozlabs.ibm.com>
+Date: Wed, 28 Jul 2010 11:15:38 -0500
+Message-ID: <10DB64E9-7D7E-497C-9044-C2649D22981D@freescale.com>
+References: <20100727124019.GB14947@brick.ozlabs.ibm.com>
+	<20100727112854.7bf97d48@schlenkerla.am.freescale.net>
+	<20100728044731.GA2408@brick.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Scott Wood <scottwood@freescale.com>, Peter Zijlstra <peterz@infradead.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,37 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2010 04:18 AM, Michal Simek wrote:
-> kgdb_handle_breakpoint checks the first arch_kgdb_breakpoint
-> which is not known by gdb that's why is necessary jump over
-> it. The jump lenght is equal to BREAK_INSTR_SIZE that's
-> why is cleaner to use defined macro instead of hardcoded
-> non-described offset.
->
->   
-Seems fine to me.  I'll add this to the kgdb merge queue for 2.6.36.
 
-Jason.
+On Jul 27, 2010, at 11:47 PM, Paul Mackerras wrote:
 
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> CC: Jason Wessel <jason.wessel@windriver.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/kernel/kgdb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index 82a7b22..7f61a3a 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -129,7 +129,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
->  		return 0;
->  
->  	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
-> -		regs->nip += 4;
-> +		regs->nip += BREAK_INSTR_SIZE;
->  
->  	return 1;
->  }
->   
+> On Tue, Jul 27, 2010 at 11:28:54AM -0500, Scott Wood wrote:
+>=20
+>> Doesn't the setting of .period need to be maintained (it is in the =
+other
+>> powerpc perf_event implementation that this is derived from)?
+>=20
+> Gah, yes it does.
+>=20
+>> I don't see how this is a security fix -- the existing initializer =
+above
+>> should zero-fill the fields that are not explicitly initialized.  In =
+fact,
+>> it's taking other fields that were previously initialized to zero and =
+is
+>> making them uninitialized, since perf_sample_data_init only sets addr =
+and
+>> raw.
+>=20
+> So I misunderstood how an initializer for an automatic struct works.
+> Brown paper bag time for me... :(
+>=20
+> Regarding the other fields, I assume Peter et al. have checked that
+> they don't need to be cleared, so it's a microoptimization to not
+> clear them.
+>=20
+>> CCing linuxppc-dev on the original patch would have been nice...
+>=20
+> True, but at least I can blame Peter Z. for that. :)
+>=20
+> Kumar and Ben, how do you want to proceed on this one?
+
+If we aren't concerned about an oops being generated lets just submit a =
+patch for 2.6.36.
+
+- k=
