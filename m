@@ -1,15 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1280265853-21245-1-git-send-email-aalonso00@gmail.com>
-References: <1280265853-21245-1-git-send-email-aalonso00@gmail.com>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 28 Jul 2010 01:52:28 -0600
-Message-ID: <AANLkTikHyoBtEzcPmsck9X_Xkg4iy7y+uU-59qm86-G+@mail.gmail.com>
-Subject: Re: [PATCH] xilinxfb: update tft comp versions
-To: Adrian Alonso <aalonso00@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7838F1007D2
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 17:57:05 +1000 (EST)
+Date: Wed, 28 Jul 2010 09:56:55 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v4 1/5] fsl-diu-fb: fix issue with re-enabling DIU area
+	descriptor
+Message-ID: <20100728095655.0e1c81eb@wker>
+In-Reply-To: <AANLkTikkLVCxU4ZC_nmUhKTQogUNeQzxOX6KqgZcxiYr@mail.gmail.com>
+References: <1279893639-24333-1-git-send-email-agust@denx.de>
+	<1279893639-24333-2-git-send-email-agust@denx.de>
+	<AANLkTikkLVCxU4ZC_nmUhKTQogUNeQzxOX6KqgZcxiYr@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org, Detlev Zundel <dzu@denx.de>,
+	Wolfgang Denk <wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,37 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 27, 2010 at 3:24 PM, Adrian Alonso <aalonso00@gmail.com> wrote:
-> * Add tft display module compatibility for new
-> =A0hardware modules
->
-> Signed-off-by: Adrian Alonso <aalonso00@gmail.com>
-> ---
-> =A0drivers/video/xilinxfb.c | =A0 =A02 ++
-> =A01 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 574dc54..29b5daa 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-> @@ -485,6 +485,8 @@ static int __devexit xilinxfb_of_remove(struct of_dev=
-ice *op)
-> =A0/* Match table for of_platform binding */
-> =A0static struct of_device_id xilinxfb_of_match[] __devinitdata =3D {
-> =A0 =A0 =A0 =A0{ .compatible =3D "xlnx,xps-tft-1.00.a", },
-> + =A0 =A0 =A0 { .compatible =3D "xlnx,xps-tft-2.00.a", },
-> + =A0 =A0 =A0 { .compatible =3D "xlnx,xps-tft-2.01.a", },
-> =A0 =A0 =A0 =A0{ .compatible =3D "xlnx,plb-tft-cntlr-ref-1.00.a", },
-> =A0 =A0 =A0 =A0{ .compatible =3D "xlnx,plb-dvi-cntlr-ref-1.00.c", },
-> =A0 =A0 =A0 =A0{},
+On Wed, 28 Jul 2010 01:02:59 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
+...
+> > =C2=A0drivers/video/fsl-diu-fb.c | =C2=A0 38 +++++++++++++++++++++++---=
+------------
+> > =C2=A01 files changed, 23 insertions(+), 15 deletions(-)
+> >
+> > diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> > index 27455ce..9b8c991 100644
+> > --- a/drivers/video/fsl-diu-fb.c
+> > +++ b/drivers/video/fsl-diu-fb.c
+> > @@ -317,6 +317,17 @@ static void fsl_diu_free(void *virt, size_t size)
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0free_pages_exact=
+(virt, size);
+> > =C2=A0}
+> >
+> > +/*
+> > + * Workaround for failed writing desc register of planes.
+> > + * Needed with MPC5121 DIU rev 2.0 silicon.
+> > + */
+> > +void wr_reg_wa(u32 *reg, u32 val)
+> > +{
+> > + =C2=A0 =C2=A0 =C2=A0 do {
+> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 out_be32(reg, val);
+> > + =C2=A0 =C2=A0 =C2=A0 } while (in_be32(reg) !=3D val);
+> > +}
+>=20
+> I'll apply this one, but it looks like a potential problem.  What
+> happens if the write never succeeds?  The kernel then gets stuck in a
+> forever busy loop.  You should look at reworking it.
 
-I'll merged this, but it isn't exactly the best fix (not your fault; a
-deficiency in the xilinx device tree generator).  I still need to get
-around to fixing the generator to claim compatibility with the .00.a
-ip core versions by default for newer parts with the same major
-revision number.  Once it is fixed, then only the -2.00.a compatible
-value would need to be added to the table.
+I'll submit an incremental patch that prevents looping forever in
+the case if the write never succeeds. Thanks!
 
-Thanks Adrian.
-
-g.
+Anatolij
