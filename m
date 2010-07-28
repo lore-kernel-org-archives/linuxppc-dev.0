@@ -1,15 +1,15 @@
 Return-Path: <tie-fei.zang@freescale.com>
-Received: from VA3EHSOBE009.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 95251B70A5
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 16:08:38 +1000 (EST)
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id 059DAB6EEE
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 16:11:56 +1000 (EST)
 From: Roy Zang <tie-fei.zang@freescale.com>
 To: linux-mmc-approval@vger.kernel.org
-Subject: [PATCH 3/3] mmc: Add ESDHC weird register workaround
-Date: Wed, 28 Jul 2010 13:54:21 +0800
-Message-ID: <1280296461-17077-1-git-send-email-tie-fei.zang@freescale.com>
+Subject: [PATCH 1/3] mmc: Auto CMD12 support for eSDHC driver
+Date: Wed, 28 Jul 2010 13:42:33 +0800
+Message-ID: <1280295753-12331-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Chang-Ming.Huang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,73 +19,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-P4080 ESDHC controller induces weird register setting.
-This patch adds the workaround to correct the weird register setting.
+From: Jerry Huang <Chang-Ming.Huang@freescale.com>
 
+Add auto CMD12 command support for eSDHC driver.
+This is needed by P4080 and P1022 for block read/write.
+Manual asynchronous CMD12 abort operation causes protocol violations on
+these silicons.
+
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
 Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 ---
- drivers/mmc/host/sdhci-of-core.c |    5 +++++
- drivers/mmc/host/sdhci.c         |   13 +++++++++++++
- drivers/mmc/host/sdhci.h         |    2 ++
- 3 files changed, 20 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci-of-core.c |    4 ++++
+ drivers/mmc/host/sdhci.c         |   14 ++++++++++++--
+ drivers/mmc/host/sdhci.h         |    3 +++
+ 3 files changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
-index 0c30242..1b6945a 100644
+index a2e9820..0c30242 100644
 --- a/drivers/mmc/host/sdhci-of-core.c
 +++ b/drivers/mmc/host/sdhci-of-core.c
-@@ -164,6 +164,11 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
- 	if (sdhci_of_wp_inverted(np))
- 		host->quirks |= SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
- 
-+	if (of_device_is_compatible(np, "fsl,p4080-esdhc")) {
-+		host->quirks |= SDHCI_QUIRK_QORIQ_REG_WEIRD;
-+		host->quirks &= ~SDHCI_QUIRK_INVERTED_WRITE_PROTECT;
-+	}
-+
- 	clk = of_get_property(np, "clock-frequency", &size);
- 	if (clk && size == sizeof(*clk) && *clk)
- 		of_host->clock = *clk;
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 1424d08..b5b3627 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -788,6 +788,15 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 		sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+@@ -154,6 +154,10 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 		host->ops = &sdhci_of_data->ops;
  	}
  
-+	/* The default value of DMAS bits of Protocol Control Register is not
-+	 * correct. clear these two bits to use simple DMA */
-+#define  ESDHCI_CTRL_DMAS_MASK		0xFFFFFCFF
-+	if (host->quirks & SDHCI_QUIRK_QORIQ_REG_WEIRD) {
-+		ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL);
-+		ctrl = ctrl & ESDHCI_CTRL_DMAS_MASK;
-+		sdhci_writel(host, ctrl, SDHCI_HOST_CONTROL);
++	if (of_get_property(np, "fsl,sdhci-auto-cmd12", NULL))
++		host->quirks |= SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12;
++
++
+ 	if (of_get_property(np, "sdhci,1-bit-only", NULL))
+ 		host->quirks |= SDHCI_QUIRK_FORCE_1_BIT_DATA;
+ 
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index c6d1bd8..1424d08 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -2,6 +2,7 @@
+  *  linux/drivers/mmc/host/sdhci.c - Secure Digital Host Controller Interface driver
+  *
+  *  Copyright (C) 2005-2008 Pierre Ossman, All Rights Reserved.
++ * Copyright 2010 Freescale Semiconductor, Inc.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -817,8 +818,12 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
+ 	WARN_ON(!host->data);
+ 
+ 	mode = SDHCI_TRNS_BLK_CNT_EN;
+-	if (data->blocks > 1)
+-		mode |= SDHCI_TRNS_MULTI;
++	if (data->blocks > 1) {
++		if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
++			mode |= SDHCI_TRNS_MULTI | SDHCI_TRNS_ACMD12;
++		else
++			mode |= SDHCI_TRNS_MULTI;
 +	}
-+
- 	if (!(host->flags & SDHCI_REQ_USE_DMA)) {
- 		int flags;
+ 	if (data->flags & MMC_DATA_READ)
+ 		mode |= SDHCI_TRNS_READ;
+ 	if (host->flags & SDHCI_REQ_USE_DMA)
+@@ -1108,6 +1113,11 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ #ifndef SDHCI_USE_LEDS_CLASS
+ 	sdhci_activate_led(host);
+ #endif
++	if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
++		if (mrq->stop) {
++			mrq->data->stop = NULL;
++			mrq->stop = NULL;
++		}
  
-@@ -1699,6 +1708,10 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	host->mrq = mrq;
  
- 	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
- 
-+	 /* Workaround for P4080 host controller capabilities */
-+	if (host->quirks & SDHCI_QUIRK_QORIQ_REG_WEIRD)
-+		caps &= ~(SDHCI_CAN_VDD_180 | SDHCI_CAN_VDD_330);
-+
- 	if (host->quirks & SDHCI_QUIRK_FORCE_DMA)
- 		host->flags |= SDHCI_USE_SDMA;
- 	else if (!(caps & SDHCI_CAN_DO_SDMA))
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index aa112aa..33d5613 100644
+index c846813..aa112aa 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -243,6 +243,8 @@ struct sdhci_host {
+@@ -2,6 +2,7 @@
+  *  linux/drivers/mmc/host/sdhci.h - Secure Digital Host Controller Interface driver
+  *
+  *  Copyright (C) 2005-2008 Pierre Ossman, All Rights Reserved.
++ * Copyright 2010 Freescale Semiconductor, Inc.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -240,6 +241,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN		(1<<25)
+ /* Controller cannot support End Attribute in NOP ADMA descriptor */
  #define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC		(1<<26)
- /* Controller uses Auto CMD12 command to stop the transfer */
- #define SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12		(1<<27)
-+/* Controller has weird bit setting for some registers due to errata */
-+#define SDHCI_QUIRK_QORIQ_REG_WEIRD			(1<<28)
++/* Controller uses Auto CMD12 command to stop the transfer */
++#define SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12		(1<<27)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
