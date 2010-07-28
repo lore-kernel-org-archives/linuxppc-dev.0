@@ -1,25 +1,16 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 2590BB6F0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 18:28:37 +1000 (EST)
-Received: by eyh6 with SMTP id 6so6231531eyh.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 01:28:36 -0700 (PDT)
-Date: Wed, 28 Jul 2010 12:28:34 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/3] USB: add of_platform glue driver for FSL USB DR
-	controller
-Message-ID: <20100728082834.GA21186@oksana.dev.rtsoft.ru>
-References: <1279815922-27198-1-git-send-email-agust@denx.de>
-	<1279815922-27198-3-git-send-email-agust@denx.de>
-	<AANLkTinSeFWM4bQK+o8nwStd6C-OcxMagC7TjwCBNn1v@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AANLkTinSeFWM4bQK+o8nwStd6C-OcxMagC7TjwCBNn1v@mail.gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linux-usb@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-	Anatolij Gustschin <agust@denx.de>
+Return-Path: <monstr@monstr.eu>
+Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
+	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id F31EAB6F06
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 19:22:14 +1000 (EST)
+Received: by bwz11 with SMTP id 11so5038755bwz.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 02:22:12 -0700 (PDT)
+From: Michal Simek <monstr@monstr.eu>
+To: 
+Subject: [PATCH] powerpc: Replace hardcoded offset by BREAK_INSTR_SIZE
+Date: Wed, 28 Jul 2010 11:18:44 +0200
+Message-Id: <1280308724-8402-1-git-send-email-monstr@monstr.eu>
+Cc: linuxppc-dev@ozlabs.org, Michal Simek <monstr@monstr.eu>,
+	Jason Wessel <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 28, 2010 at 02:16:08AM -0600, Grant Likely wrote:
-[...]
-> > +static int __devinit fsl_usb2_mph_dr_of_probe(struct of_device *ofdev,
-> > +                                          const struct of_device_id *match)
-> > +{
-> > +       struct device_node *np = ofdev->dev.of_node;
-> > +       struct platform_device *usb_dev;
-> > +       struct fsl_usb2_platform_data data, *pdata;
-> > +       struct fsl_usb2_dev_data *dev_data;
-> > +       const unsigned char *prop;
-> > +       static unsigned int idx;
-> > +       int i;
-> > +
-> > +       if (!of_device_is_available(np))
-> > +               return -ENODEV;
-> 
-> What is this for?
+kgdb_handle_breakpoint checks the first arch_kgdb_breakpoint
+which is not known by gdb that's why is necessary jump over
+it. The jump lenght is equal to BREAK_INSTR_SIZE that's
+why is cleaner to use defined macro instead of hardcoded
+non-described offset.
 
-USB pins/clocks might be muxed away to other peripherals, like
-eSDHC. In such cases firmware marks USB as unavailable (status
-= "disabled").
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+CC: Jason Wessel <jason.wessel@windriver.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org
+---
+ arch/powerpc/kernel/kgdb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If you try to access USB while it is disabled the SOC will hang.
-
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 82a7b22..7f61a3a 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -129,7 +129,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 		return 0;
+ 
+ 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
+-		regs->nip += 4;
++		regs->nip += BREAK_INSTR_SIZE;
+ 
+ 	return 1;
+ }
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.6
