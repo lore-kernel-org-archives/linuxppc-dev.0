@@ -2,15 +2,15 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 389C1B70B9
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 10:34:21 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 6D682B70C3
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 10:34:41 +1000 (EST)
 Subject: Patch "genirq: Deal with desc->set_type() changing desc->chip" has
-	been added to the 2.6.33-stable tree
+	been added to the 2.6.32-stable tree
 To: tglx@linutronix.de, benh@kernel.crashing.org, eha@doredevelopment.dk,
 	gregkh@suse.de, linuxppc-dev@ozlabs.org
 From: <gregkh@suse.de>
-Date: Tue, 27 Jul 2010 17:26:55 -0700
-Message-ID: <12802768153307@site>
+Date: Tue, 27 Jul 2010 17:33:06 -0700
+Message-ID: <12802771863933@site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 Cc: stable@kernel.org, stable-commits@vger.kernel.org
@@ -28,12 +28,12 @@ This is a note to let you know that I've just added the patch titled
 
     genirq: Deal with desc->set_type() changing desc->chip
 
-to the 2.6.33-stable tree which can be found at:
+to the 2.6.32-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
     genirq-deal-with-desc-set_type-changing-desc-chip.patch
-and it can be found in the queue-2.6.33 subdirectory.
+and it can be found in the queue-2.6.32 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@kernel.org> know about it.
@@ -97,5 +97,4 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 Patches currently in stable-queue which might be from tglx@linutronix.de are
 
-queue-2.6.33/genirq-deal-with-desc-set_type-changing-desc-chip.patch
-queue-2.6.33/x86-send-a-sigtrap-for-user-icebp-traps.patch
+queue-2.6.32/genirq-deal-with-desc-set_type-changing-desc-chip.patch
