@@ -1,20 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 28 Jul 2010 09:41:52 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 04/11] powerpc: Simplify update_vsyscall
-Message-ID: <20100727234152.GC14947@brick.ozlabs.ibm.com>
-References: <1279068988-21864-1-git-send-email-johnstul@us.ibm.com>
-	<1279068988-21864-2-git-send-email-johnstul@us.ibm.com>
-	<1279068988-21864-3-git-send-email-johnstul@us.ibm.com>
-	<1279068988-21864-4-git-send-email-johnstul@us.ibm.com>
-	<1279068988-21864-5-git-send-email-johnstul@us.ibm.com>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 3C551B6EF2
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 10:33:49 +1000 (EST)
+Subject: Patch "genirq: Deal with desc->set_type() changing desc->chip" has
+	been added to the 2.6.34-stable tree
+To: tglx@linutronix.de, benh@kernel.crashing.org, eha@doredevelopment.dk,
+	gregkh@suse.de, linuxppc-dev@ozlabs.org
+From: <gregkh@suse.de>
+Date: Tue, 27 Jul 2010 17:24:51 -0700
+Message-ID: <12802766911316@site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1279068988-21864-5-git-send-email-johnstul@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-	Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Cc: stable@kernel.org, stable-commits@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 13, 2010 at 05:56:21PM -0700, John Stultz wrote:
 
-> Currently powerpc's update_vsyscall calls an inline update_gtod.
-> However, both are straightforward, and there are no other users,
-> so this patch merges update_gtod into update_vsyscall.
-> 
-> Compiles, but otherwise untested.
+This is a note to let you know that I've just added the patch titled
 
-This and the following two patches will cause interesting conflicts
-with two commits in Ben Herrenschmidt's powerpc.git next branch,
-specifically 8fd63a9e ("powerpc: Rework VDSO gettimeofday to prevent
-time going backwards") and c1aa687d ("powerpc: Clean up obsolete code
-relating to decrementer and timebase") from me.  In fact the first of
-those two commits includes changes equivalent to those in your 5/11
-patch ("powerpc: Cleanup xtime usage"), as far as I can see.
+    genirq: Deal with desc->set_type() changing desc->chip
 
-BTW, BenH's tree is at:
+to the 2.6.34-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
-git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+The filename of the patch is:
+    genirq-deal-with-desc-set_type-changing-desc-chip.patch
+and it can be found in the queue-2.6.34 subdirectory.
 
-Paul.
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@kernel.org> know about it.
+
+
+>From 4673247562e39a17e09440fa1400819522ccd446 Mon Sep 17 00:00:00 2001
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Mon, 7 Jun 2010 17:53:51 +0200
+Subject: genirq: Deal with desc->set_type() changing desc->chip
+
+From: Thomas Gleixner <tglx@linutronix.de>
+
+commit 4673247562e39a17e09440fa1400819522ccd446 upstream.
+
+The set_type() function can change the chip implementation when the
+trigger mode changes. That might result in using an non-initialized
+irq chip when called from __setup_irq() or when called via
+set_irq_type() on an already enabled irq.
+
+The set_irq_type() function should not be called on an enabled irq,
+but because we forgot to put a check into it, we have a bunch of users
+which grew the habit of doing that and it never blew up as the
+function is serialized via desc->lock against all users of desc->chip
+and they never hit the non-initialized irq chip issue.
+
+The easy fix for the __setup_irq() issue would be to move the
+irq_chip_set_defaults(desc->chip) call after the trigger setting to
+make sure that a chip change is covered.
+
+But as we have already users, which do the type setting after
+request_irq(), the safe fix for now is to call irq_chip_set_defaults()
+from __irq_set_trigger() when desc->set_type() changed the irq chip.
+
+It needs a deeper analysis whether we should refuse to change the chip
+on an already enabled irq, but that'd be a large scale change to fix
+all the existing users. So that's neither stable nor 2.6.35 material.
+
+Reported-by: Esben Haabendal <eha@doredevelopment.dk>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/irq/manage.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -440,6 +440,9 @@ int __irq_set_trigger(struct irq_desc *d
+ 		/* note that IRQF_TRIGGER_MASK == IRQ_TYPE_SENSE_MASK */
+ 		desc->status &= ~(IRQ_LEVEL | IRQ_TYPE_SENSE_MASK);
+ 		desc->status |= flags;
++
++		if (chip != desc->chip)
++			irq_chip_set_defaults(desc->chip);
+ 	}
+ 
+ 	return ret;
+
+
+Patches currently in stable-queue which might be from tglx@linutronix.de are
+
+queue-2.6.34/genirq-deal-with-desc-set_type-changing-desc-chip.patch
+queue-2.6.34/x86-send-a-sigtrap-for-user-icebp-traps.patch
