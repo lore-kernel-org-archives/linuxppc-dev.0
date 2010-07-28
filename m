@@ -1,16 +1,18 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id F31EAB6F06
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 19:22:14 +1000 (EST)
-Received: by bwz11 with SMTP id 11so5038755bwz.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jul 2010 02:22:12 -0700 (PDT)
-From: Michal Simek <monstr@monstr.eu>
-To: 
-Subject: [PATCH] powerpc: Replace hardcoded offset by BREAK_INSTR_SIZE
-Date: Wed, 28 Jul 2010 11:18:44 +0200
-Message-Id: <1280308724-8402-1-git-send-email-monstr@monstr.eu>
-Cc: linuxppc-dev@ozlabs.org, Michal Simek <monstr@monstr.eu>,
-	Jason Wessel <jason.wessel@windriver.com>
+Return-Path: <sven@batzer.biz>
+Received: from shadow.prohost.de (mx3s.prohost.de [216.71.45.135])
+	by ozlabs.org (Postfix) with ESMTP id 20431B6F04
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Jul 2010 19:31:54 +1000 (EST)
+Received: from batzer-biz.prossl.de (localhost [127.0.0.1])
+	by shadow.prohost.de (8.13.8/8.13.8) with ESMTP id o6S9QA6J028243
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jul 2010 11:26:10 +0200
+Message-ID: <59976.84.175.96.30.1280309170.squirrel@batzer-biz.prossl.de>
+Date: Wed, 28 Jul 2010 11:26:10 +0200 (CEST)
+Subject: Problems using UART on MPC5200
+From: "Sven Batzer" <sven@batzer.biz>
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kgdb_handle_breakpoint checks the first arch_kgdb_breakpoint
-which is not known by gdb that's why is necessary jump over
-it. The jump lenght is equal to BREAK_INSTR_SIZE that's
-why is cleaner to use defined macro instead of hardcoded
-non-described offset.
+Hello,
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
-CC: Jason Wessel <jason.wessel@windriver.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@ozlabs.org
----
- arch/powerpc/kernel/kgdb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I am using a PowerPC MPC5200 from Freescale (with STK5200-Board), ELDK 4.2
+from DENX and the Kernel 2.6.34-rc5.
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 82a7b22..7f61a3a 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -129,7 +129,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 		return 0;
- 
- 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
--		regs->nip += 4;
-+		regs->nip += BREAK_INSTR_SIZE;
- 
- 	return 1;
- }
--- 
-1.5.5.6
+My Kernel is running fine. The console output is coming over the device
+ttyPSC0.
+
+In future I want to login over telnet. So I deactivated the Kerneloption
+to output the console over the UART device.
+
+Now I want to read and write to the RS232 interface from a program.
+But when I try to open the device ttyPSC* I get the following error:
+"unable to read portsettings : Inappropriate ioctl for device"
+
+What does this mean ? How can I send and receive Data from/to the UART ?
+
+Thanks for your help.
+
+Sven
