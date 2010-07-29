@@ -1,13 +1,14 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 7B15CB713D
+	by ozlabs.org (Postfix) with ESMTP id BE036B718F
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Jul 2010 22:48:14 +1000 (EST)
+	Thu, 29 Jul 2010 22:48:15 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 24/27] KVM: PPC: PV mtmsrd L=0 and mtmsr
-Date: Thu, 29 Jul 2010 14:48:05 +0200
-Message-Id: <1280407688-9815-25-git-send-email-agraf@suse.de>
+Subject: [PATCH 27/27] KVM: PPC: Add get_pvinfo interface to query hypercall
+	instructions
+Date: Thu, 29 Jul 2010 14:48:08 +0200
+Message-Id: <1280407688-9815-28-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,193 +22,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is also a form of mtmsr where all bits need to be addressed. While the
-PPC64 Linux kernel behaves resonably well here, on PPC32 we do not have an
-L=1 form. It does mtmsr even for simple things like only changing EE.
+We need to tell the guest the opcodes that make up a hypercall through
+interfaces that are controlled by userspace. So we need to add a call
+for userspace to allow it to query those opcodes so it can pass them
+on.
 
-So we need to hook into that one as well and check for a mask of bits that we
-deem safe to change from within guest context.
+This is required because the hypercall opcodes can change based on
+the hypervisor conditions. If we're running in hardware accelerated
+hypervisor mode, a hypercall looks different from when we're running
+without hardware acceleration.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ Documentation/kvm/api.txt  |   23 +++++++++++++++++++++++
+ arch/powerpc/kvm/powerpc.c |   38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/kvm.h        |   11 +++++++++++
+ 3 files changed, 72 insertions(+), 0 deletions(-)
 
-v1 -> v2:
-
-  - use kvm_patch_ins_b
----
- arch/powerpc/kernel/kvm.c      |   51 ++++++++++++++++++++++++
- arch/powerpc/kernel/kvm_emul.S |   84 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 135 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 717ab0d..8ac57e2 100644
---- a/arch/powerpc/kernel/kvm.c
-+++ b/arch/powerpc/kernel/kvm.c
-@@ -63,7 +63,9 @@
- #define KVM_INST_MTSPR_DSISR	0x7c1203a6
+diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
+index 5f5b649..44d9893 100644
+--- a/Documentation/kvm/api.txt
++++ b/Documentation/kvm/api.txt
+@@ -1032,6 +1032,29 @@ are defined as follows:
+    eax, ebx, ecx, edx: the values returned by the cpuid instruction for
+          this function/index combination
  
- #define KVM_INST_TLBSYNC	0x7c00046c
-+#define KVM_INST_MTMSRD_L0	0x7c000164
- #define KVM_INST_MTMSRD_L1	0x7c010164
-+#define KVM_INST_MTMSR		0x7c000124
++4.46 KVM_PPC_GET_PVINFO
++
++Capability: KVM_CAP_PPC_GET_PVINFO
++Architectures: ppc
++Type: vm ioctl
++Parameters: struct kvm_ppc_pvinfo (out)
++Returns: 0 on success, !0 on error
++
++struct kvm_ppc_pvinfo {
++	__u32 flags;
++	__u32 hcall[4];
++	__u8  pad[108];
++};
++
++This ioctl fetches PV specific information that need to be passed to the guest
++using the device tree or other means from vm context.
++
++For now the only implemented piece of information distributed here is an array
++of 4 instructions that make up a hypercall.
++
++If any additional field gets added to this structure later on, a bit for that
++additional piece of information will be set in the flags bitmap.
++
+ 5. The kvm_run structure
  
- static bool kvm_patching_worked = true;
- static char kvm_tmp[1024 * 1024];
-@@ -176,6 +178,49 @@ static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
- 	kvm_patch_ins_b(inst, distance_start);
+ Application code obtains a pointer to the kvm_run structure by
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index fecfe04..6a53a3f 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -191,6 +191,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_PPC_UNSET_IRQ:
+ 	case KVM_CAP_ENABLE_CAP:
+ 	case KVM_CAP_PPC_OSI:
++	case KVM_CAP_PPC_GET_PVINFO:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -578,16 +579,53 @@ out:
+ 	return r;
  }
  
-+extern u32 kvm_emulate_mtmsr_branch_offs;
-+extern u32 kvm_emulate_mtmsr_reg1_offs;
-+extern u32 kvm_emulate_mtmsr_reg2_offs;
-+extern u32 kvm_emulate_mtmsr_reg3_offs;
-+extern u32 kvm_emulate_mtmsr_orig_ins_offs;
-+extern u32 kvm_emulate_mtmsr_len;
-+extern u32 kvm_emulate_mtmsr[];
-+
-+static void kvm_patch_ins_mtmsr(u32 *inst, u32 rt)
++static int kvm_vm_ioctl_get_pvinfo(struct kvm_ppc_pvinfo *pvinfo)
 +{
-+	u32 *p;
-+	int distance_start;
-+	int distance_end;
-+	ulong next_inst;
++	u32 inst_lis = 0x3c000000;
++	u32 inst_ori = 0x60000000;
++	u32 inst_nop = 0x60000000;
++	u32 inst_sc = 0x44000002;
++	u32 inst_imm_mask = 0xffff;
 +
-+	p = kvm_alloc(kvm_emulate_mtmsr_len * 4);
-+	if (!p)
-+		return;
++	/*
++	 * The hypercall to get into KVM from within guest context is as
++	 * follows:
++	 *
++	 *    lis r0, r0, KVM_SC_MAGIC_R0@h
++	 *    ori r0, KVM_SC_MAGIC_R0@l
++	 *    sc
++	 *    nop
++	 */
++	pvinfo->hcall[0] = inst_lis | ((KVM_SC_MAGIC_R0 >> 16) & inst_imm_mask);
++	pvinfo->hcall[1] = inst_ori | (KVM_SC_MAGIC_R0 & inst_imm_mask);
++	pvinfo->hcall[2] = inst_sc;
++	pvinfo->hcall[3] = inst_nop;
 +
-+	/* Find out where we are and put everything there */
-+	distance_start = (ulong)p - (ulong)inst;
-+	next_inst = ((ulong)inst + 4);
-+	distance_end = next_inst - (ulong)&p[kvm_emulate_mtmsr_branch_offs];
-+
-+	/* Make sure we only write valid b instructions */
-+	if (distance_start > KVM_INST_B_MAX) {
-+		kvm_patching_worked = false;
-+		return;
-+	}
-+
-+	/* Modify the chunk to fit the invocation */
-+	memcpy(p, kvm_emulate_mtmsr, kvm_emulate_mtmsr_len * 4);
-+	p[kvm_emulate_mtmsr_branch_offs] |= distance_end & KVM_INST_B_MASK;
-+	p[kvm_emulate_mtmsr_reg1_offs] |= rt;
-+	p[kvm_emulate_mtmsr_reg2_offs] |= rt;
-+	p[kvm_emulate_mtmsr_reg3_offs] |= rt;
-+	p[kvm_emulate_mtmsr_orig_ins_offs] = *inst;
-+	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsr_len * 4);
-+
-+	/* Patch the invocation */
-+	kvm_patch_ins_b(inst, distance_start);
++	return 0;
 +}
 +
- static void kvm_map_magic_page(void *data)
+ long kvm_arch_vm_ioctl(struct file *filp,
+                        unsigned int ioctl, unsigned long arg)
  {
- 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-@@ -256,6 +301,12 @@ static void kvm_check_ins(u32 *inst)
- 		if (get_rt(inst_rt) < 30)
- 			kvm_patch_ins_mtmsrd(inst, inst_rt);
- 		break;
-+	case KVM_INST_MTMSR:
-+	case KVM_INST_MTMSRD_L0:
-+		/* We use r30 and r31 during the hook */
-+		if (get_rt(inst_rt) < 30)
-+			kvm_patch_ins_mtmsr(inst, inst_rt);
++	void __user *argp = (void __user *)arg;
+ 	long r;
+ 
+ 	switch (ioctl) {
++	case KVM_PPC_GET_PVINFO: {
++		struct kvm_ppc_pvinfo pvinfo;
++		r = kvm_vm_ioctl_get_pvinfo(&pvinfo);
++		if (copy_to_user(argp, &pvinfo, sizeof(pvinfo))) {
++			r = -EFAULT;
++			goto out;
++		}
++
 +		break;
++	}
+ 	default:
+ 		r = -ENOTTY;
  	}
  
- 	switch (_inst) {
-diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-index 10dc4a6..8cd22f4 100644
---- a/arch/powerpc/kernel/kvm_emul.S
-+++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -120,3 +120,87 @@ kvm_emulate_mtmsrd_reg_offs:
- .global kvm_emulate_mtmsrd_len
- kvm_emulate_mtmsrd_len:
- 	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
++out:
+ 	return r;
+ }
+ 
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 636fc38..3707704 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -414,6 +414,14 @@ struct kvm_enable_cap {
+ 	__u8  pad[64];
+ };
+ 
++/* for KVM_PPC_GET_PVINFO */
++struct kvm_ppc_pvinfo {
++	/* out */
++	__u32 flags;
++	__u32 hcall[4];
++	__u8  pad[108];
++};
 +
-+
-+#define MSR_SAFE_BITS (MSR_EE | MSR_CE | MSR_ME | MSR_RI)
-+#define MSR_CRITICAL_BITS ~MSR_SAFE_BITS
-+
-+.global kvm_emulate_mtmsr
-+kvm_emulate_mtmsr:
-+
-+	SCRATCH_SAVE
-+
-+	/* Fetch old MSR in r31 */
-+	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	/* Find the changed bits between old and new MSR */
-+kvm_emulate_mtmsr_reg1:
-+	xor	r31, r0, r31
-+
-+	/* Check if we need to really do mtmsr */
-+	LOAD_REG_IMMEDIATE(r30, MSR_CRITICAL_BITS)
-+	and.	r31, r31, r30
-+
-+	/* No critical bits changed? Maybe we can stay in the guest. */
-+	beq	maybe_stay_in_guest
-+
-+do_mtmsr:
-+
-+	SCRATCH_RESTORE
-+
-+	/* Just fire off the mtmsr if it's critical */
-+kvm_emulate_mtmsr_orig_ins:
-+	mtmsr	r0
-+
-+	b	kvm_emulate_mtmsr_branch
-+
-+maybe_stay_in_guest:
-+
-+	/* Check if we have to fetch an interrupt */
-+	lwz	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_INT)(0)
-+	cmpwi	r31, 0
-+	beq+	no_mtmsr
-+
-+	/* Check if we may trigger an interrupt */
-+kvm_emulate_mtmsr_reg2:
-+	andi.	r31, r0, MSR_EE
-+	beq	no_mtmsr
-+
-+	b	do_mtmsr
-+
-+no_mtmsr:
-+
-+	/* Put MSR into magic page because we don't call mtmsr */
-+kvm_emulate_mtmsr_reg3:
-+	STL64(r0, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
-+
-+	SCRATCH_RESTORE
-+
-+	/* Go back to caller */
-+kvm_emulate_mtmsr_branch:
-+	b	.
-+kvm_emulate_mtmsr_end:
-+
-+.global kvm_emulate_mtmsr_branch_offs
-+kvm_emulate_mtmsr_branch_offs:
-+	.long (kvm_emulate_mtmsr_branch - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg1_offs
-+kvm_emulate_mtmsr_reg1_offs:
-+	.long (kvm_emulate_mtmsr_reg1 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg2_offs
-+kvm_emulate_mtmsr_reg2_offs:
-+	.long (kvm_emulate_mtmsr_reg2 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_reg3_offs
-+kvm_emulate_mtmsr_reg3_offs:
-+	.long (kvm_emulate_mtmsr_reg3 - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_orig_ins_offs
-+kvm_emulate_mtmsr_orig_ins_offs:
-+	.long (kvm_emulate_mtmsr_orig_ins - kvm_emulate_mtmsr) / 4
-+
-+.global kvm_emulate_mtmsr_len
-+kvm_emulate_mtmsr_len:
-+	.long (kvm_emulate_mtmsr_end - kvm_emulate_mtmsr) / 4
+ #define KVMIO 0xAE
+ 
+ /*
+@@ -530,6 +538,7 @@ struct kvm_enable_cap {
+ #ifdef __KVM_HAVE_XCRS
+ #define KVM_CAP_XCRS 56
+ #endif
++#define KVM_CAP_PPC_GET_PVINFO 57
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -664,6 +673,8 @@ struct kvm_clock_data {
+ /* Available with KVM_CAP_PIT_STATE2 */
+ #define KVM_GET_PIT2              _IOR(KVMIO,  0x9f, struct kvm_pit_state2)
+ #define KVM_SET_PIT2              _IOW(KVMIO,  0xa0, struct kvm_pit_state2)
++/* Available with KVM_CAP_PPC_GET_PVINFO */
++#define KVM_PPC_GET_PVINFO	  _IOW(KVMIO,  0xa1, struct kvm_ppc_pvinfo)
+ 
+ /*
+  * ioctls for vcpu fds
 -- 
 1.6.0.2
