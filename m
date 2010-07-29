@@ -2,17 +2,17 @@ Return-Path: <groeck@redback.com>
 Received: from imr3.ericy.com (imr3.ericy.com [198.24.6.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 1D2701007D2
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 15:42:08 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 82B4E1007D2
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 15:42:14 +1000 (EST)
 From: Guenter Roeck <guenter.roeck@ericsson.com>
 To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
 	Richard Purdie <rpurdie@rpsys.net>, Greg Kroah-Hartman <gregkh@suse.de>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/6] scsi: Remove owner field from attribute initialization in
-	ARCMSR driver
-Date: Wed, 28 Jul 2010 22:09:22 -0700
-Message-ID: <1280380166-29196-3-git-send-email-guenter.roeck@ericsson.com>
+Subject: [PATCH 3/6] leds: Remove owner field from attribute initialization in
+	bd2802 driver
+Date: Wed, 28 Jul 2010 22:09:23 -0700
+Message-ID: <1280380166-29196-4-git-send-email-guenter.roeck@ericsson.com>
 In-Reply-To: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
 References: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
 MIME-Version: 1.0
@@ -41,36 +41,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Guenter Roeck <guenter.roeck@ericsson.com>
 ---
- drivers/scsi/arcmsr/arcmsr_attr.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/leds/leds-bd2802.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/arcmsr/arcmsr_attr.c b/drivers/scsi/arcmsr/arcmsr_attr.c
-index 07fdfe5..a4e04c5 100644
---- a/drivers/scsi/arcmsr/arcmsr_attr.c
-+++ b/drivers/scsi/arcmsr/arcmsr_attr.c
-@@ -192,7 +192,6 @@ static struct bin_attribute arcmsr_sysfs_message_read_attr = {
+diff --git a/drivers/leds/leds-bd2802.c b/drivers/leds/leds-bd2802.c
+index 5dcdf9d..19dc4b6 100644
+--- a/drivers/leds/leds-bd2802.c
++++ b/drivers/leds/leds-bd2802.c
+@@ -351,7 +351,7 @@ static ssize_t bd2802_store_reg##reg_addr(struct device *dev,		\
+ 	return count;							\
+ }									\
+ static struct device_attribute bd2802_reg##reg_addr##_attr = {		\
+-	.attr = {.name = reg_name, .mode = 0644, .owner = THIS_MODULE},	\
++	.attr = {.name = reg_name, .mode = 0644},			\
+ 	.store = bd2802_store_reg##reg_addr,				\
+ };
+ 
+@@ -482,7 +482,6 @@ static struct device_attribute bd2802_adv_conf_attr = {
  	.attr = {
- 		.name = "mu_read",
- 		.mode = S_IRUSR ,
--		.owner = THIS_MODULE,
+ 		.name = "advanced_configuration",
+ 		.mode = 0644,
+-		.owner = THIS_MODULE
  	},
- 	.size = 1032,
- 	.read = arcmsr_sysfs_iop_message_read,
-@@ -202,7 +201,6 @@ static struct bin_attribute arcmsr_sysfs_message_write_attr = {
- 	.attr = {
- 		.name = "mu_write",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1032,
- 	.write = arcmsr_sysfs_iop_message_write,
-@@ -212,7 +210,6 @@ static struct bin_attribute arcmsr_sysfs_message_clear_attr = {
- 	.attr = {
- 		.name = "mu_clear",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1,
- 	.write = arcmsr_sysfs_iop_message_clear,
+ 	.show = bd2802_show_adv_conf,
+ 	.store = bd2802_store_adv_conf,
+@@ -519,7 +518,6 @@ static struct device_attribute bd2802_##attr_name##_attr = {		\
+ 	.attr = {							\
+ 		.name = name_str,					\
+ 		.mode = 0644,						\
+-		.owner = THIS_MODULE					\
+ 	},								\
+ 	.show = bd2802_show_##attr_name,				\
+ 	.store = bd2802_store_##attr_name,				\
 -- 
 1.7.0.87.g0901d
