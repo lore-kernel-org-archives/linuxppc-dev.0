@@ -1,18 +1,29 @@
-Return-Path: <Ian.Campbell@eu.citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
-	by ozlabs.org (Postfix) with ESMTP id F1AFB100B4C
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 20:16:47 +1000 (EST)
-From: Ian Campbell <ian.campbell@citrix.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] powerpc: Use IRQF_NO_SUSPEND not IRQF_TIMER for non-timer
-	interrupts
-Date: Thu, 29 Jul 2010 11:16:34 +0100
-Message-Id: <1280398595-29708-3-git-send-email-ian.campbell@citrix.com>
-In-Reply-To: <1280398573.24292.1684.camel@zakaz.uk.xensource.com>
-References: <1280398573.24292.1684.camel@zakaz.uk.xensource.com>
-Cc: Ian Campbell <ian.campbell@citrix.com>, devicetree-discuss@lists.ozlabs.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
+	by ozlabs.org (Postfix) with ESMTP id 2C352B70B6
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 21:48:15 +1000 (EST)
+Received: from list by lo.gmane.org with local (Exim 4.69)
+	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
+	id 1OeRas-0006LW-DK
+	for linuxppc-dev@ozlabs.org; Thu, 29 Jul 2010 13:48:10 +0200
+Received: from p4ff06573.dip.t-dialin.net ([79.240.101.115])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 13:48:10 +0200
+Received: from dzu by p4ff06573.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 13:48:10 +0200
+To: linuxppc-dev@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: [PATCH v4 1/5] fsl-diu-fb: fix issue with re-enabling DIU area
+	descriptor
+Date: Thu, 29 Jul 2010 13:48:02 +0200
+Message-ID: <m2fwz2fr0t.fsf@ohwell.denx.de>
+References: <1279893639-24333-1-git-send-email-agust@denx.de>
+	<1279893639-24333-2-git-send-email-agust@denx.de>
+	<AANLkTikkLVCxU4ZC_nmUhKTQogUNeQzxOX6KqgZcxiYr__2540.83384429595$1280300644$gmane$org@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +33,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kw_i2c_irq and via_pmu_interrupt are not timer interrupts and
-therefore should not use IRQF_TIMER. Use the recently introduced
-IRQF_NO_SUSPEND instead since that is the actual desired behaviour.
+Hi Grant,
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
-Cc: devicetree-discuss@lists.ozlabs.org
----
- arch/powerpc/platforms/powermac/low_i2c.c |    5 +++--
- drivers/macintosh/via-pmu.c               |    9 +++++----
- 2 files changed, 8 insertions(+), 6 deletions(-)
+> On Fri, Jul 23, 2010 at 8:00 AM, Anatolij Gustschin <agust@denx.de> wrote:
+>> On MPC5121e Rev 2.0 re-configuring the DIU area descriptor
+>> by writing new descriptor address doesn't always work.
+>> As a result, DIU continues to display using old area descriptor
+>> even if the new one has been written to the descriptor register of
+>> the plane.
+>>
+>> Add the code from Freescale MPC5121EADS BSP for writing descriptor
+>> addresses properly. This fixes the problem for Rev 2.0 silicon.
+>>
+>> Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>> ---
+>> v4:
+>>  - use workaround code as suggested by FSL technical support.
+>>
+>> v3:
+>>  - no changes since v1
+>>
+>>  drivers/video/fsl-diu-fb.c |   38 +++++++++++++++++++++++---------------
+>>  1 files changed, 23 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+>> index 27455ce..9b8c991 100644
+>> --- a/drivers/video/fsl-diu-fb.c
+>> +++ b/drivers/video/fsl-diu-fb.c
+>> @@ -317,6 +317,17 @@ static void fsl_diu_free(void *virt, size_t size)
+>>                free_pages_exact(virt, size);
+>>  }
+>>
+>> +/*
+>> + * Workaround for failed writing desc register of planes.
+>> + * Needed with MPC5121 DIU rev 2.0 silicon.
+>> + */
+>> +void wr_reg_wa(u32 *reg, u32 val)
+>> +{
+>> +       do {
+>> +               out_be32(reg, val);
+>> +       } while (in_be32(reg) != val);
+>> +}
+>
+> I'll apply this one, but it looks like a potential problem.  What
+> happens if the write never succeeds?  The kernel then gets stuck in a
+> forever busy loop.  You should look at reworking it.
 
-diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
-index 06a137c..480567e 100644
---- a/arch/powerpc/platforms/powermac/low_i2c.c
-+++ b/arch/powerpc/platforms/powermac/low_i2c.c
-@@ -542,11 +542,12 @@ static struct pmac_i2c_host_kw *__init kw_i2c_host_init(struct device_node *np)
- 	/* Make sure IRQ is disabled */
- 	kw_write_reg(reg_ier, 0);
- 
--	/* Request chip interrupt. We set IRQF_TIMER because we don't
-+	/* Request chip interrupt. We set IRQF_NO_SUSPEND because we don't
- 	 * want that interrupt disabled between the 2 passes of driver
- 	 * suspend or we'll have issues running the pfuncs
- 	 */
--	if (request_irq(host->irq, kw_i2c_irq, IRQF_TIMER, "keywest i2c", host))
-+	if (request_irq(host->irq, kw_i2c_irq, IRQF_NO_SUSPEND,
-+			"keywest i2c", host))
- 		host->irq = NO_IRQ;
- 
- 	printk(KERN_INFO "KeyWest i2c @0x%08x irq %d %s\n",
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 3d4fc0f..35bc273 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -400,11 +400,12 @@ static int __init via_pmu_start(void)
- 		printk(KERN_ERR "via-pmu: can't map interrupt\n");
- 		return -ENODEV;
- 	}
--	/* We set IRQF_TIMER because we don't want the interrupt to be disabled
--	 * between the 2 passes of driver suspend, we control our own disabling
--	 * for that one
-+	/* We set IRQF_NO_SUSPEND because we don't want the interrupt
-+	 * to be disabled between the 2 passes of driver suspend, we
-+	 * control our own disabling for that one
- 	 */
--	if (request_irq(irq, via_pmu_interrupt, IRQF_TIMER, "VIA-PMU", (void *)0)) {
-+	if (request_irq(irq, via_pmu_interrupt, IRQF_NO_SUSPEND,
-+			"VIA-PMU", (void *)0)) {
- 		printk(KERN_ERR "via-pmu: can't request irq %d\n", irq);
- 		return -ENODEV;
- 	}
--- 
-1.5.6.5
+We would surely like to do this "the correct way(tm)".  Unfortunately
+this commit reflects what we have been told by Freescale support and it
+fixes a real observed problem.  We fail to find a better solution
+without any insight into the internal workings of the functional block.
+
+Cheers
+  Detlev
+
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
