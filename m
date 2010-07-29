@@ -1,20 +1,20 @@
-Return-Path: <fchen@apm.com>
-Received: from exprod5og112.obsmtp.com (exprod5og112.obsmtp.com [64.18.0.24])
-	by ozlabs.org (Postfix) with SMTP id 1E1881007DB
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 02:32:18 +1000 (EST)
-Received: by gwj15 with SMTP id 15so219415gwj.29
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 09:32:16 -0700 (PDT)
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+	[209.85.210.42]) by ozlabs.org (Postfix) with ESMTP id 99B94B70E9
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 05:04:28 +1000 (EST)
+Received: by pzk30 with SMTP id 30so349163pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 12:04:27 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Subject: [PATCH] of: Provide default of_node_to_nid() implementation.
+To: sfr@canb.auug.org.au, monstr@monstr.eu, microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	benh@kernel.crashing.org, sparclinux@vger.kernel.org, davem@davemloft.net
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 29 Jul 2010 13:04:23 -0600
+Message-ID: <20100729190324.28739.1749.stgit@angua>
 MIME-Version: 1.0
-In-Reply-To: <20100729030559.GA16667@suse.de>
-References: <12803633233020-git-send-email-fchen@apm.com>
-	<20100729030559.GA16667@suse.de>
-Date: Thu, 29 Jul 2010 09:26:12 -0700
-Message-ID: <AANLkTik35G2Th-1jN3jtx3Mn-rPNNfe3CDQgCdijHG8z@mail.gmail.com>
-Subject: Re: [PATCH 0/2 v1.04] Add support for DWC OTG driver.
-From: Fushen Chen <fchen@apm.com>
-To: Greg KH <gregkh@suse.de>
-Content-Type: multipart/alternative; boundary=000e0cd5928e4d201a048c8931ab
-Cc: linuxppc-dev@ozlabs.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +24,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---000e0cd5928e4d201a048c8931ab
-Content-Type: text/plain; charset=ISO-8859-1
+of_node_to_nid() is only relevant in a few architectures.  Don't force
+everyone to implement it anyway.
 
-> [PATCH 1/2 v1.04]
-> 1. License information is under clarification.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-I meant that APM is still working with Synopys to resolve the GPL License.
-There is no result yet.
-I'll change this line to "License issue is resolved." if that happens.
-I modified other part of the patch according to other reviewer's comment.
+v3: make -1 the default return value and let powerpc override it to 0 when
+CONFIG_NUMA not set.
 
-Thanks,
-Fushen
+ arch/microblaze/include/asm/topology.h |   10 ----------
+ arch/powerpc/include/asm/prom.h        |    7 +++++++
+ arch/powerpc/include/asm/topology.h    |    7 -------
+ arch/sparc/include/asm/prom.h          |    3 +--
+ include/linux/of.h                     |    5 +++++
+ 5 files changed, 13 insertions(+), 19 deletions(-)
 
-On Wed, Jul 28, 2010 at 8:05 PM, Greg KH <gregkh@suse.de> wrote:
-
-> On Wed, Jul 28, 2010 at 05:28:41PM -0700, Fushen Chen wrote:
-> > [PATCH 1/2 v1.04]
-> > 1. License information is under clarification.
->
-> What do you mean by this?  I fail to see a change here, why just repost
-> the same code again?
->
-> What is being done to resolve the issues I outlined previously?
->
-> greg k-h
->
-
---000e0cd5928e4d201a048c8931ab
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-&gt; [PATCH 1/2 v1.04]<br>
-&gt; 1. License information is under clarification.<br><br>I meant that APM=
- is still working with Synopys to resolve the GPL License. There is no resu=
-lt yet.<br>I&#39;ll change this line to &quot;License issue is resolved.&qu=
-ot; if that happens.<br>
-I modified other part of the patch according to other reviewer&#39;s commen=
-t.<br><br>Thanks,<br>Fushen=A0 =A0 <br><br><div class=3D"gmail_quote">On We=
-d, Jul 28, 2010 at 8:05 PM, Greg KH <span dir=3D"ltr">&lt;<a href=3D"mailto=
-:gregkh@suse.de">gregkh@suse.de</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; borde=
-r-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;"><div class=3D"im"=
->On Wed, Jul 28, 2010 at 05:28:41PM -0700, Fushen Chen wrote:<br>
-&gt; [PATCH 1/2 v1.04]<br>
-&gt; 1. License information is under clarification.<br>
-<br>
-</div>What do you mean by this? =A0I fail to see a change here, why just re=
-post<br>
-the same code again?<br>
-<br>
-What is being done to resolve the issues I outlined previously?<br>
-<br>
-greg k-h<br>
-</blockquote></div><br>
-
---000e0cd5928e4d201a048c8931ab--
+diff --git a/arch/microblaze/include/asm/topology.h b/arch/microblaze/include/asm/topology.h
+index 96bcea5..5428f33 100644
+--- a/arch/microblaze/include/asm/topology.h
++++ b/arch/microblaze/include/asm/topology.h
+@@ -1,11 +1 @@
+ #include <asm-generic/topology.h>
+-
+-#ifndef _ASM_MICROBLAZE_TOPOLOGY_H
+-#define _ASM_MICROBLAZE_TOPOLOGY_H
+-
+-struct device_node;
+-static inline int of_node_to_nid(struct device_node *device)
+-{
+-	return 0;
+-}
+-#endif /* _ASM_MICROBLAZE_TOPOLOGY_H */
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index da7dd63..55bccc0 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -103,6 +103,13 @@ struct device_node *of_find_next_cache_node(struct device_node *np);
+ /* Get the MAC address */
+ extern const void *of_get_mac_address(struct device_node *np);
+ 
++#ifdef CONFIG_NUMA
++extern int of_node_to_nid(struct device_node *device);
++#else
++static inline int of_node_to_nid(struct device_node *device) { return 0; }
++#endif
++#define of_node_to_nid of_node_to_nid
++
+ /**
+  * of_irq_map_pci - Resolve the interrupt for a PCI device
+  * @pdev:	the device whose interrupt is to be resolved
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 32adf72..09dd38c 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -41,8 +41,6 @@ static inline int cpu_to_node(int cpu)
+ 			       cpu_all_mask :				\
+ 			       node_to_cpumask_map[node])
+ 
+-int of_node_to_nid(struct device_node *device);
+-
+ struct pci_bus;
+ #ifdef CONFIG_PCI
+ extern int pcibus_to_node(struct pci_bus *bus);
+@@ -94,11 +92,6 @@ extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
+ 
+ #else
+ 
+-static inline int of_node_to_nid(struct device_node *device)
+-{
+-	return 0;
+-}
+-
+ static inline void dump_numa_cpu_topology(void) {}
+ 
+ static inline int sysfs_add_device_to_node(struct sys_device *dev, int nid)
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index c82a7da..291f125 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -43,8 +43,7 @@ extern int of_getintprop_default(struct device_node *np,
+ extern int of_find_in_proplist(const char *list, const char *match, int len);
+ #ifdef CONFIG_NUMA
+ extern int of_node_to_nid(struct device_node *dp);
+-#else
+-#define of_node_to_nid(dp)	(-1)
++#define of_node_to_nid of_node_to_nid
+ #endif
+ 
+ extern void prom_build_devicetree(void);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index b0756f3..cad7cf0 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -146,6 +146,11 @@ static inline unsigned long of_read_ulong(const __be32 *cell, int size)
+ 
+ #define OF_BAD_ADDR	((u64)-1)
+ 
++#ifndef of_node_to_nid
++static inline int of_node_to_nid(struct device_node *np) { return -1; }
++#define of_node_to_nid of_node_to_nid
++#endif
++
+ extern struct device_node *of_find_node_by_name(struct device_node *from,
+ 	const char *name);
+ #define for_each_node_by_name(dn, name) \
