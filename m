@@ -1,14 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id BE036B718F
+	by ozlabs.org (Postfix) with ESMTP id BE06DB7191
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:15 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 27/27] KVM: PPC: Add get_pvinfo interface to query hypercall
-	instructions
-Date: Thu, 29 Jul 2010 14:48:08 +0200
-Message-Id: <1280407688-9815-28-git-send-email-agraf@suse.de>
+Subject: [PATCH 26/27] KVM: PPC: Add Documentation about PV interface
+Date: Thu, 29 Jul 2010 14:48:07 +0200
+Message-Id: <1280407688-9815-27-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -22,158 +21,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to tell the guest the opcodes that make up a hypercall through
-interfaces that are controlled by userspace. So we need to add a call
-for userspace to allow it to query those opcodes so it can pass them
-on.
-
-This is required because the hypercall opcodes can change based on
-the hypervisor conditions. If we're running in hardware accelerated
-hypervisor mode, a hypercall looks different from when we're running
-without hardware acceleration.
+We just introduced a new PV interface that screams for documentation. So here
+it is - a shiny new and awesome text file describing the internal works of
+the PPC KVM paravirtual interface.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
----
- Documentation/kvm/api.txt  |   23 +++++++++++++++++++++++
- arch/powerpc/kvm/powerpc.c |   38 ++++++++++++++++++++++++++++++++++++++
- include/linux/kvm.h        |   11 +++++++++++
- 3 files changed, 72 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
-index 5f5b649..44d9893 100644
---- a/Documentation/kvm/api.txt
-+++ b/Documentation/kvm/api.txt
-@@ -1032,6 +1032,29 @@ are defined as follows:
-    eax, ebx, ecx, edx: the values returned by the cpuid instruction for
-          this function/index combination
- 
-+4.46 KVM_PPC_GET_PVINFO
+---
+
+v1 -> v2:
+
+  - clarify guest implementation
+  - clarify that privileged instructions still work
+  - explain safe MSR bits
+  - Fix dsisr patch description
+  - change hypervisor calls to use new register values
+
+v2 -> v3:
+
+  - update documentation to new hypercall interface
+  - change detection to be device tree based
+---
+ Documentation/kvm/ppc-pv.txt |  180 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 180 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/kvm/ppc-pv.txt
+
+diff --git a/Documentation/kvm/ppc-pv.txt b/Documentation/kvm/ppc-pv.txt
+new file mode 100644
+index 0000000..960cd51
+--- /dev/null
++++ b/Documentation/kvm/ppc-pv.txt
+@@ -0,0 +1,180 @@
++The PPC KVM paravirtual interface
++=================================
 +
-+Capability: KVM_CAP_PPC_GET_PVINFO
-+Architectures: ppc
-+Type: vm ioctl
-+Parameters: struct kvm_ppc_pvinfo (out)
-+Returns: 0 on success, !0 on error
++The basic execution principle by which KVM on PowerPC works is to run all kernel
++space code in PR=1 which is user space. This way we trap all privileged
++instructions and can emulate them accordingly.
 +
-+struct kvm_ppc_pvinfo {
-+	__u32 flags;
-+	__u32 hcall[4];
-+	__u8  pad[108];
++Unfortunately that is also the downfall. There are quite some privileged
++instructions that needlessly return us to the hypervisor even though they
++could be handled differently.
++
++This is what the PPC PV interface helps with. It takes privileged instructions
++and transforms them into unprivileged ones with some help from the hypervisor.
++This cuts down virtualization costs by about 50% on some of my benchmarks.
++
++The code for that interface can be found in arch/powerpc/kernel/kvm*
++
++Querying for existence
++======================
++
++To find out if we're running on KVM or not, we leverage the device tree. When
++Linux is running on KVM, a node /hypervisor exists. That node contains a
++compatible property with the value "linux,kvm".
++
++Once you determined you're running under a PV capable KVM, you can now use
++hypercalls as described below.
++
++KVM hypercalls
++==============
++
++Inside the device tree's /hypervisor node there's a property called
++'hypercall-instructions'. This property contains at most 4 opcodes that make
++up the hypercall. To call a hypercall, just call these instructions.
++
++The parameters are as follows:
++
++	Register	IN			OUT
++
++	r0		-			volatile
++	r3		1st parameter		Return code
++	r4		2nd parameter		1st output value
++	r5		3rd parameter		2nd output value
++	r6		4th parameter		3rd output value
++	r7		5th parameter		4th output value
++	r8		6th parameter		5th output value
++	r9		7th parameter		6th output value
++	r10		8th parameter		7th output value
++	r11		hypercall number	8th output value
++	r12		-			volatile
++
++Hypercall definitions are shared in generic code, so the same hypercall numbers
++apply for x86 and powerpc alike with the exception that each KVM hypercall
++also needs to be ORed with the KVM vendor code which is (42 << 16).
++
++Return codes can be as follows:
++
++	Code		Meaning
++
++	0		Success
++	12		Hypercall not implemented
++	<0		Error
++
++The magic page
++==============
++
++To enable communication between the hypervisor and guest there is a new shared
++page that contains parts of supervisor visible register state. The guest can
++map this shared page using the KVM hypercall KVM_HC_PPC_MAP_MAGIC_PAGE.
++
++With this hypercall issued the guest always gets the magic page mapped at the
++desired location in effective and physical address space. For now, we always
++map the page to -4096. This way we can access it using absolute load and store
++functions. The following instruction reads the first field of the magic page:
++
++	ld	rX, -4096(0)
++
++The interface is designed to be extensible should there be need later to add
++additional registers to the magic page. If you add fields to the magic page,
++also define a new hypercall feature to indicate that the host can give you more
++registers. Only if the host supports the additional features, make use of them.
++
++The magic page has the following layout as described in
++arch/powerpc/include/asm/kvm_para.h:
++
++struct kvm_vcpu_arch_shared {
++	__u64 scratch1;
++	__u64 scratch2;
++	__u64 scratch3;
++	__u64 critical;		/* Guest may not get interrupts if == r1 */
++	__u64 sprg0;
++	__u64 sprg1;
++	__u64 sprg2;
++	__u64 sprg3;
++	__u64 srr0;
++	__u64 srr1;
++	__u64 dar;
++	__u64 msr;
++	__u32 dsisr;
++	__u32 int_pending;	/* Tells the guest if we have an interrupt */
 +};
 +
-+This ioctl fetches PV specific information that need to be passed to the guest
-+using the device tree or other means from vm context.
++Additions to the page must only occur at the end. Struct fields are always 32
++or 64 bit aligned, depending on them being 32 or 64 bit wide respectively.
 +
-+For now the only implemented piece of information distributed here is an array
-+of 4 instructions that make up a hypercall.
++MSR bits
++========
 +
-+If any additional field gets added to this structure later on, a bit for that
-+additional piece of information will be set in the flags bitmap.
++The MSR contains bits that require hypervisor intervention and bits that do
++not require direct hypervisor intervention because they only get interpreted
++when entering the guest or don't have any impact on the hypervisor's behavior.
 +
- 5. The kvm_run structure
- 
- Application code obtains a pointer to the kvm_run structure by
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index fecfe04..6a53a3f 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -191,6 +191,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_PPC_UNSET_IRQ:
- 	case KVM_CAP_ENABLE_CAP:
- 	case KVM_CAP_PPC_OSI:
-+	case KVM_CAP_PPC_GET_PVINFO:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-@@ -578,16 +579,53 @@ out:
- 	return r;
- }
- 
-+static int kvm_vm_ioctl_get_pvinfo(struct kvm_ppc_pvinfo *pvinfo)
-+{
-+	u32 inst_lis = 0x3c000000;
-+	u32 inst_ori = 0x60000000;
-+	u32 inst_nop = 0x60000000;
-+	u32 inst_sc = 0x44000002;
-+	u32 inst_imm_mask = 0xffff;
++The following bits are safe to be set inside the guest:
 +
-+	/*
-+	 * The hypercall to get into KVM from within guest context is as
-+	 * follows:
-+	 *
-+	 *    lis r0, r0, KVM_SC_MAGIC_R0@h
-+	 *    ori r0, KVM_SC_MAGIC_R0@l
-+	 *    sc
-+	 *    nop
-+	 */
-+	pvinfo->hcall[0] = inst_lis | ((KVM_SC_MAGIC_R0 >> 16) & inst_imm_mask);
-+	pvinfo->hcall[1] = inst_ori | (KVM_SC_MAGIC_R0 & inst_imm_mask);
-+	pvinfo->hcall[2] = inst_sc;
-+	pvinfo->hcall[3] = inst_nop;
++  MSR_EE
++  MSR_RI
++  MSR_CR
++  MSR_ME
 +
-+	return 0;
-+}
++If any other bit changes in the MSR, please still use mtmsr(d).
 +
- long kvm_arch_vm_ioctl(struct file *filp,
-                        unsigned int ioctl, unsigned long arg)
- {
-+	void __user *argp = (void __user *)arg;
- 	long r;
- 
- 	switch (ioctl) {
-+	case KVM_PPC_GET_PVINFO: {
-+		struct kvm_ppc_pvinfo pvinfo;
-+		r = kvm_vm_ioctl_get_pvinfo(&pvinfo);
-+		if (copy_to_user(argp, &pvinfo, sizeof(pvinfo))) {
-+			r = -EFAULT;
-+			goto out;
-+		}
++Patched instructions
++====================
 +
-+		break;
-+	}
- 	default:
- 		r = -ENOTTY;
- 	}
- 
-+out:
- 	return r;
- }
- 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 636fc38..3707704 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -414,6 +414,14 @@ struct kvm_enable_cap {
- 	__u8  pad[64];
- };
- 
-+/* for KVM_PPC_GET_PVINFO */
-+struct kvm_ppc_pvinfo {
-+	/* out */
-+	__u32 flags;
-+	__u32 hcall[4];
-+	__u8  pad[108];
-+};
++The "ld" and "std" instructions are transormed to "lwz" and "stw" instructions
++respectively on 32 bit systems with an added offset of 4 to accomodate for big
++endianness.
 +
- #define KVMIO 0xAE
- 
- /*
-@@ -530,6 +538,7 @@ struct kvm_enable_cap {
- #ifdef __KVM_HAVE_XCRS
- #define KVM_CAP_XCRS 56
- #endif
-+#define KVM_CAP_PPC_GET_PVINFO 57
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -664,6 +673,8 @@ struct kvm_clock_data {
- /* Available with KVM_CAP_PIT_STATE2 */
- #define KVM_GET_PIT2              _IOR(KVMIO,  0x9f, struct kvm_pit_state2)
- #define KVM_SET_PIT2              _IOW(KVMIO,  0xa0, struct kvm_pit_state2)
-+/* Available with KVM_CAP_PPC_GET_PVINFO */
-+#define KVM_PPC_GET_PVINFO	  _IOW(KVMIO,  0xa1, struct kvm_ppc_pvinfo)
- 
- /*
-  * ioctls for vcpu fds
++The following is a list of mapping the Linux kernel performs when running as
++guest. Implementing any of those mappings is optional, as the instruction traps
++also act on the shared page. So calling privileged instructions still works as
++before.
++
++From			To
++====			==
++
++mfmsr	rX		ld	rX, magic_page->msr
++mfsprg	rX, 0		ld	rX, magic_page->sprg0
++mfsprg	rX, 1		ld	rX, magic_page->sprg1
++mfsprg	rX, 2		ld	rX, magic_page->sprg2
++mfsprg	rX, 3		ld	rX, magic_page->sprg3
++mfsrr0	rX		ld	rX, magic_page->srr0
++mfsrr1	rX		ld	rX, magic_page->srr1
++mfdar	rX		ld	rX, magic_page->dar
++mfdsisr	rX		lwz	rX, magic_page->dsisr
++
++mtmsr	rX		std	rX, magic_page->msr
++mtsprg	0, rX		std	rX, magic_page->sprg0
++mtsprg	1, rX		std	rX, magic_page->sprg1
++mtsprg	2, rX		std	rX, magic_page->sprg2
++mtsprg	3, rX		std	rX, magic_page->sprg3
++mtsrr0	rX		std	rX, magic_page->srr0
++mtsrr1	rX		std	rX, magic_page->srr1
++mtdar	rX		std	rX, magic_page->dar
++mtdsisr	rX		stw	rX, magic_page->dsisr
++
++tlbsync			nop
++
++mtmsrd	rX, 0		b	<special mtmsr section>
++mtmsr	rX		b	<special mtmsr section>
++
++mtmsrd	rX, 1		b	<special mtmsrd section>
++
++[BookE only]
++wrteei	[0|1]		b	<special wrteei section>
++
++
++Some instructions require more logic to determine what's going on than a load
++or store instruction can deliver. To enable patching of those, we keep some
++RAM around where we can live translate instructions to. What happens is the
++following:
++
++	1) copy emulation code to memory
++	2) patch that code to fit the emulated instruction
++	3) patch that code to return to the original pc + 4
++	4) patch the original instruction to branch to the new code
++
++That way we can inject an arbitrary amount of code as replacement for a single
++instruction. This allows us to check for pending interrupts when setting EE=1
++for example.
++
 -- 
 1.6.0.2
