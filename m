@@ -1,20 +1,22 @@
-Return-Path: <embedway.test@gmail.com>
-Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
-	by ozlabs.org (Postfix) with ESMTP id E492FB6EF7
+Return-Path: <dceravigupta@gmail.com>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+	[209.85.210.51]) by ozlabs.org (Postfix) with ESMTP id BA9D6B6EFE
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Jul 2010 16:08:57 +1000 (EST)
-Received: by gwj22 with SMTP id 22so93706gwj.38
+	Thu, 29 Jul 2010 16:16:01 +1000 (EST)
+Received: by pzk5 with SMTP id 5so88646pzk.38
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed, 28 Jul 2010 23:08:55 -0700 (PDT)
-Date: Thu, 29 Jul 2010 14:08:53 +0800
-From: "hacklu" <embedway.test@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: i meet some surprising things,when i modify the dts file
-Message-ID: <201007291408499573189@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon673063736764_====="
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+	Wed, 28 Jul 2010 23:15:59 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100728142140.GA9494@richter>
+References: <AANLkTikVrftUUC2W+NgWyZi6cc4H4c+mPza9MfsDKuxF@mail.gmail.com>
+	<20100728142140.GA9494@richter>
+Date: Thu, 29 Jul 2010 11:45:59 +0530
+Message-ID: <AANLkTikErKYOEvs-mUQeiMTKTR3GyGK4dEsEGHj2mUdp@mail.gmail.com>
+Subject: Re: Memory Mapping Buffers smaller than page size?
+From: Ravi Gupta <dceravigupta@gmail.com>
+To: Simon Richter <Simon.Richter@hogyros.de>
+Content-Type: multipart/alternative; boundary=0016364c654ffff7ad048c80aa7d
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,144 +26,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--0016364c654ffff7ad048c80aa7d
+Content-Type: text/plain; charset=ISO-8859-1
 
-This is a multi-part message in MIME format.
+Hi Simon,
 
---=====003_Dragon673063736764_=====
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Thanks for the quick reply. One more thing I want to ask is what if I create
+a dma pool (using pci_pool_create()), allocate dma buffers from that pool
+and then try to memory map them? will the buffers in that case will be
+continuous and is it possible to memory map them in a single user space
+page?
 
- localbus@f0010100 {
-                ....
-                ranges = <
-                                 0 0 FC000000 1000000   
-                                 2 0 FA000000 1000000   
-                                 1 0 70000000 1000000
-                               >;
-                flash@0,0{
+Thanks in advance
+Ravi Gupta
 
-.....
-}
+On Wed, Jul 28, 2010 at 7:51 PM, Simon Richter <Simon.Richter@hogyros.de>wrote:
 
-flash@2,0{
+> Hi,
+>
+> On Wed, Jul 28, 2010 at 06:44:10PM +0530, Ravi Gupta wrote:
+>
+> > I am new to linux device drivers development. I have created 16 buffers
+> of
+> > size 256 bytes each(using kmalloc()) in my device driver code. I want to
+> > memory map these buffers to user space. Now is it possible to memory map
+> > these buffer(16*256 = 4096 = 1 page on 32 bit linux) into a single page
+> in
+> > user space OR i have to map them in individual pages in user space? Note,
+> > all the buffers may not be stored in continuous memory location.
+>
+> Pages are the smallest unit for mappings, so each buffer would end up in
+> its own mapping. If you want the buffers to be accessible without an
+> offset, then you cannot have them in continuous locations, as you cannot
+> map memory from the middle of a page to the beginning either.
+>
+> So your options are: one page per buffer (wasteful, but gives you
+> granular access control), or allocating all the buffers as a single
+> block.
+>
+>   Simon
+>
 
-....
-}
+--0016364c654ffff7ad048c80aa7d
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-         board-control@1,0{
-                .....
-}
+Hi Simon,<br><br>Thanks for the quick reply. One more thing I want to ask i=
+s what if I create a dma pool (using pci_pool_create()), allocate dma=20
+buffers from that pool and then try to memory map them? will the buffers=20
+in that case will be continuous and is it possible to memory map them in
+ a single user space page?<br><br>Thanks in advance<br>Ravi Gupta<br><br><d=
+iv class=3D"gmail_quote">On Wed, Jul 28, 2010 at 7:51 PM, Simon Richter <sp=
+an dir=3D"ltr">&lt;<a href=3D"mailto:Simon.Richter@hogyros.de">Simon.Richte=
+r@hogyros.de</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; borde=
+r-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">Hi,<br>
+<div><div></div><div class=3D"h5"><br>
+On Wed, Jul 28, 2010 at 06:44:10PM +0530, Ravi Gupta wrote:<br>
+<br>
+&gt; I am new to linux device drivers development. I have created 16 buffer=
+s of<br>
+&gt; size 256 bytes each(using kmalloc()) in my device driver code. I want =
+to<br>
+&gt; memory map these buffers to user space. Now is it possible to memory m=
+ap<br>
+&gt; these buffer(16*256 =3D 4096 =3D 1 page on 32 bit linux) into a single=
+ page in<br>
+&gt; user space OR i have to map them in individual pages in user space? No=
+te,<br>
+&gt; all the buffers may not be stored in continuous memory location.<br>
+<br>
+</div></div>Pages are the smallest unit for mappings, so each buffer would =
+end up in<br>
+its own mapping. If you want the buffers to be accessible without an<br>
+offset, then you cannot have them in continuous locations, as you cannot<br=
+>
+map memory from the middle of a page to the beginning either.<br>
+<br>
+So your options are: one page per buffer (wasteful, but gives you<br>
+granular access control), or allocating all the buffers as a single<br>
+block.<br>
+<font color=3D"#888888"><br>
+ =A0 Simon<br>
+</font></blockquote></div><br>
 
-}
-
-this is part of my dts files. I don't kown what each field means in the config rangs.
-for instance, 2 0 FA000000 1000000 .
-I only konw this:
-"2" is means chip selects.
-"0" is what?
-"Fa00000" means the start address.
-"1000000" means the range of the device
-
-but ,I got some puzzled.
-when I set the two flash in the 0,1 chips select or 0,2 chips select my linux works well.
-and, the board-control only can be set at 1 chis select,otherwise the pci doesn't be detected.
-
-so , what is the chips select? is it based on hardware? but my flash can use 0,1,2 chips select.
-or it is just set by software? but my pci devece can only work in 1 chips select.
-
-
-BTW:
-I also want to know how to write the dts file. I want to understand each node in the dts files.
-but I can't get enough documents. I have readed the linux/document/...
-could you privode me some useful information?
-
-thank you ver much~
-
-2010-07-29 
-
-
-
-hacklu 
-
---=====003_Dragon673063736764_=====
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=us-ascii">
-<META content="MSHTML 6.00.2900.5969" name=GENERATOR><LINK 
-href="BLOCKQUOTE{margin-Top: 0px; margin-Bottom: 0px; margin-Left: 2em}" 
-rel=stylesheet></HEAD>
-<BODY style="FONT-SIZE: 10pt; MARGIN: 10px; FONT-FAMILY: verdana">
-<DIV><FONT face=Verdana size=2>
-<DIV>&nbsp;localbus@f0010100&nbsp;{</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;....</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ranges&nbsp;=&nbsp;&lt;</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;0&nbsp;FC000000&nbsp;1000000&nbsp;&nbsp; 
-</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;0&nbsp;FA000000&nbsp;1000000&nbsp;&nbsp; 
-</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;0&nbsp;70000000&nbsp;1000000</DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;;</DIV>
-<DIV></DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flash@0,0{</DIV>
-<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 10em">.....</DIV>
-<DIV style="TEXT-INDENT: 10em">}</DIV>
-<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 6em">flash@2,0{</DIV>
-<DIV style="TEXT-INDENT: 6em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 8em">....</DIV>
-<DIV style="TEXT-INDENT: 10em">}</DIV>
-<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV></FONT></DIV>
-<DIV><FONT face=Verdana 
-size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;board-control@1,0{</FONT></DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-.....</DIV>
-<DIV style="TEXT-INDENT: 8em">}</DIV>
-<DIV style="TEXT-INDENT: 8em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">}</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">this is part of my dts files. I don't kown what 
-each field means in the config rangs.</DIV>
-<DIV style="TEXT-INDENT: 2em">for instance, 
-2&nbsp;0&nbsp;FA000000&nbsp;1000000&nbsp;.</DIV>
-<DIV style="TEXT-INDENT: 2em">I only konw this:</DIV>
-<DIV style="TEXT-INDENT: 4em">"2" is means chip selects.</DIV>
-<DIV style="TEXT-INDENT: 4em">"0" is what?</DIV>
-<DIV style="TEXT-INDENT: 4em">"Fa00000" means the start address.</DIV>
-<DIV style="TEXT-INDENT: 4em">"1000000" means the range of the device</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">but ,I got some puzzled.</DIV>
-<DIV style="TEXT-INDENT: 4em">when I set the two flash in the 0,1 chips select 
-or 0,2 chips select my linux works well.</DIV>
-<DIV style="TEXT-INDENT: 4em">and, the board-control only can be set at 1 chis 
-select,otherwise the pci doesn't be detected.</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">so , what is the chips select? is it based on 
-hardware? but my flash can use 0,1,2 chips select.</DIV>
-<DIV style="TEXT-INDENT: 4em">or it is just set by software? but my pci devece 
-can only work in 1 chips select.</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">BTW:</DIV>
-<DIV style="TEXT-INDENT: 4em">I also want to know how to write the dts file. I 
-want to understand each node in the dts files.</DIV>
-<DIV style="TEXT-INDENT: 4em">but I can't get enough documents. I have readed 
-the linux/document/...</DIV>
-<DIV style="TEXT-INDENT: 4em">could you privode me some useful 
-information?</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV style="TEXT-INDENT: 4em">thank you ver much~</DIV>
-<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
-<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2010-07-29 
-</FONT></DIV><FONT face=Verdana size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
-
-<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>hacklu</SPAN> 
-</FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon673063736764_=====--
+--0016364c654ffff7ad048c80aa7d--
