@@ -1,26 +1,15 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from lo.gmane.org (lo.gmane.org [80.91.229.12])
-	by ozlabs.org (Postfix) with ESMTP id B1439B70C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 21:55:30 +1000 (EST)
-Received: from list by lo.gmane.org with local (Exim 4.69)
-	(envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
-	id 1OeRhv-0000oV-89
-	for linuxppc-dev@ozlabs.org; Thu, 29 Jul 2010 13:55:27 +0200
-Received: from p4ff06573.dip.t-dialin.net ([79.240.101.115])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 13:55:27 +0200
-Received: from dzu by p4ff06573.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 13:55:27 +0200
-To: linuxppc-dev@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: Problems using UART on MPC5200
-Date: Thu, 29 Jul 2010 13:55:18 +0200
-Message-ID: <m2bp9qfqop.fsf@ohwell.denx.de>
-References: <59976.84.175.96.30.1280309170.squirrel__2764.8760042668$1280309549$gmane$org@batzer-biz.prossl.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id 63B50B70C3
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 22:48:11 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH 00/27] KVM PPC PV framework v3
+Date: Thu, 29 Jul 2010 14:47:41 +0200
+Message-Id: <1280407688-9815-1-git-send-email-agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +19,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Sven,
+On PPC we run PR=0 (kernel mode) code in PR=1 (user mode) and don't use the
+hypervisor extensions.
 
-> I am using a PowerPC MPC5200 from Freescale (with STK5200-Board), ELDK 4.2
-> from DENX and the Kernel 2.6.34-rc5.
->
-> My Kernel is running fine. The console output is coming over the device
-> ttyPSC0.
->
-> In future I want to login over telnet. So I deactivated the Kerneloption
-> to output the console over the UART device.
+While that is all great to show that virtualization is possible, there are
+quite some cases where the emulation overhead of privileged instructions is
+killing performance.
 
-It would help if you were more precise in describing what you did and
-what you try to achieve.  What exact option did you change?
+This patchset tackles exactly that issue. It introduces a paravirtual framework
+using which KVM and Linux share a page to exchange register state with. That
+way we don't have to switch to the hypervisor just to change a value of a
+privileged register.
 
-> Now I want to read and write to the RS232 interface from a program.
-> But when I try to open the device ttyPSC* I get the following error:
-> "unable to read portsettings : Inappropriate ioctl for device"
+To prove my point, I ran the same test I did for the MMU optimizations against
+the PV framework. Here are the results:
 
-The message means what it says - whatever device driver is connected to
-the device file you open does not support the ioctl you call on it.
-Now to better understand this, it would help if you tell us what device
-file you open, what major and minor number this has, what /proc/devices
-shows this hooks to and what ioctl you do in your application.
+[without]
 
-> What does this mean ? How can I send and receive Data from/to the UART ?
+debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
 
-This should all work with standard procedures.
+real    0m14.659s
+user    0m8.967s
+sys     0m5.688s
 
-Cheers
-  Detlev
+[with]
 
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
+
+real    0m7.557s
+user    0m4.121s
+sys     0m3.426s
+
+
+So this is a significant performance improvement! I'm quite happy how fast this
+whole thing becomes :)
+
+I tried to take all comments I've heard from people so far about such a PV
+framework into account. In case you told me something before that is a no-go
+and I still did it, please just tell me again.
+
+To make use of this whole thing you also need patches to qemu and openbios. I
+have them in my queue, but want to see this set upstream first before I start
+sending patches to the other projects.
+
+Now go and have fun with fast VMs on PPC! Get yourself a G5 on ebay and start
+experiencing the power yourself. - heh
+
+v1 -> v2:
+
+  - change hypervisor calls to use r0 and r3
+  - make crit detection only trigger in supervisor mode
+  - RMO -> PAM
+  - introduce kvm_patch_ins
+  - only flush icache when patching
+  - introduce kvm_patch_ins_b
+  - update documentation
+
+v2 -> v3:
+
+  - use pPAPR conventions for hypercall interface
+  - only use r0 as magic sc number
+  - remove PVR detection
+  - remove BookE shared page mapping support
+  - combine book3s-64 and -32 magic page ra override
+  - add self-test check if the mapping works to guest code
+  - add safety check for relocatable kernels
+
+Alexander Graf (27):
+  KVM: PPC: Introduce shared page
+  KVM: PPC: Convert MSR to shared page
+  KVM: PPC: Convert DSISR to shared page
+  KVM: PPC: Convert DAR to shared page.
+  KVM: PPC: Convert SRR0 and SRR1 to shared page
+  KVM: PPC: Convert SPRG[0-4] to shared page
+  KVM: PPC: Implement hypervisor interface
+  KVM: PPC: Add PV guest critical sections
+  KVM: PPC: Add PV guest scratch registers
+  KVM: PPC: Tell guest about pending interrupts
+  KVM: PPC: Make PAM a define
+  KVM: PPC: First magic page steps
+  KVM: PPC: Magic Page Book3s support
+  KVM: PPC: Expose magic page support to guest
+  KVM: Move kvm_guest_init out of generic code
+  KVM: PPC: Generic KVM PV guest support
+  KVM: PPC: KVM PV guest stubs
+  KVM: PPC: PV instructions to loads and stores
+  KVM: PPC: PV tlbsync to nop
+  KVM: PPC: Introduce kvm_tmp framework
+  KVM: PPC: Introduce branch patching helper
+  KVM: PPC: PV assembler helpers
+  KVM: PPC: PV mtmsrd L=1
+  KVM: PPC: PV mtmsrd L=0 and mtmsr
+  KVM: PPC: PV wrteei
+  KVM: PPC: Add Documentation about PV interface
+  KVM: PPC: Add get_pvinfo interface to query hypercall instructions
+
+ Documentation/kvm/api.txt                |   23 ++
+ Documentation/kvm/ppc-pv.txt             |  180 +++++++++++
+ arch/powerpc/include/asm/kvm_book3s.h    |    2 +-
+ arch/powerpc/include/asm/kvm_host.h      |   15 +-
+ arch/powerpc/include/asm/kvm_para.h      |  135 ++++++++-
+ arch/powerpc/include/asm/kvm_ppc.h       |    1 +
+ arch/powerpc/kernel/Makefile             |    2 +
+ arch/powerpc/kernel/asm-offsets.c        |   18 +-
+ arch/powerpc/kernel/kvm.c                |  485 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S           |  247 +++++++++++++++
+ arch/powerpc/kvm/44x.c                   |    7 +
+ arch/powerpc/kvm/44x_tlb.c               |    8 +-
+ arch/powerpc/kvm/book3s.c                |  188 ++++++++----
+ arch/powerpc/kvm/book3s_32_mmu.c         |   28 ++-
+ arch/powerpc/kvm/book3s_32_mmu_host.c    |    6 +-
+ arch/powerpc/kvm/book3s_64_mmu.c         |   42 +++-
+ arch/powerpc/kvm/book3s_64_mmu_host.c    |   13 +-
+ arch/powerpc/kvm/book3s_emulate.c        |   25 +-
+ arch/powerpc/kvm/book3s_paired_singles.c |   11 +-
+ arch/powerpc/kvm/booke.c                 |   83 ++++--
+ arch/powerpc/kvm/booke.h                 |    6 +-
+ arch/powerpc/kvm/booke_emulate.c         |   14 +-
+ arch/powerpc/kvm/booke_interrupts.S      |    3 +-
+ arch/powerpc/kvm/e500.c                  |    7 +
+ arch/powerpc/kvm/e500_tlb.c              |   12 +-
+ arch/powerpc/kvm/e500_tlb.h              |    2 +-
+ arch/powerpc/kvm/emulate.c               |   36 ++-
+ arch/powerpc/kvm/powerpc.c               |   84 +++++-
+ arch/powerpc/platforms/Kconfig           |   10 +
+ arch/x86/include/asm/kvm_para.h          |    6 +
+ include/linux/kvm.h                      |   11 +
+ include/linux/kvm_para.h                 |    7 +-
+ 32 files changed, 1538 insertions(+), 179 deletions(-)
+ create mode 100644 Documentation/kvm/ppc-pv.txt
+ create mode 100644 arch/powerpc/kernel/kvm.c
+ create mode 100644 arch/powerpc/kernel/kvm_emul.S
