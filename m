@@ -2,14 +2,14 @@ Return-Path: <agraf@suse.de>
 Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8590FB722B
+	by ozlabs.org (Postfix) with ESMTPS id 8600CB722C
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:18 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 16/27] KVM: PPC: Generic KVM PV guest support
-Date: Thu, 29 Jul 2010 14:47:57 +0200
-Message-Id: <1280407688-9815-17-git-send-email-agraf@suse.de>
+Subject: [PATCH 23/27] KVM: PPC: PV mtmsrd L=1
+Date: Thu, 29 Jul 2010 14:48:04 +0200
+Message-Id: <1280407688-9815-24-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,144 +23,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have all the hypervisor pieces in place now, but the guest parts are still
-missing.
+The PowerPC ISA has a special instruction for mtmsr that only changes the EE
+and RI bits, namely the L=1 form.
 
-This patch implements basic awareness of KVM when running Linux as guest. It
-doesn't do anything with it yet though.
+Since that one is reasonably often occuring and simple to implement, let's
+go with this first. Writing EE=0 is always just a store. Doing EE=1 also
+requires us to check for pending interrupts and if necessary exit back to the
+hypervisor.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
 ---
 
-v2 -> v3:
+v1 -> v2:
 
-  - Add hypercall stub
+  - use kvm_patch_ins_b
 ---
- arch/powerpc/kernel/Makefile      |    2 +-
- arch/powerpc/kernel/asm-offsets.c |   15 +++++++++++++++
- arch/powerpc/kernel/kvm.c         |    3 +++
- arch/powerpc/kernel/kvm_emul.S    |   37 +++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig    |   10 ++++++++++
- 5 files changed, 66 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/kernel/kvm_emul.S
+ arch/powerpc/kernel/kvm.c      |   45 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S |   56 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 5ea853d..d8e29b4 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -125,7 +125,7 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
- obj-y				+= ppc_save_regs.o
- endif
- 
--obj-$(CONFIG_KVM_GUEST)		+= kvm.o
-+obj-$(CONFIG_KVM_GUEST)		+= kvm.o kvm_emul.o
- 
- # Disable GCOV in odd or sensitive code
- GCOV_PROFILE_prom_init.o := n
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index a55d47e..e3e740b 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -465,6 +465,21 @@ int main(void)
- 	DEFINE(VCPU_FAULT_ESR, offsetof(struct kvm_vcpu, arch.fault_esr));
- #endif /* CONFIG_PPC_BOOK3S */
- #endif
-+
-+#ifdef CONFIG_KVM_GUEST
-+	DEFINE(KVM_MAGIC_SCRATCH1, offsetof(struct kvm_vcpu_arch_shared,
-+					    scratch1));
-+	DEFINE(KVM_MAGIC_SCRATCH2, offsetof(struct kvm_vcpu_arch_shared,
-+					    scratch2));
-+	DEFINE(KVM_MAGIC_SCRATCH3, offsetof(struct kvm_vcpu_arch_shared,
-+					    scratch3));
-+	DEFINE(KVM_MAGIC_INT, offsetof(struct kvm_vcpu_arch_shared,
-+				       int_pending));
-+	DEFINE(KVM_MAGIC_MSR, offsetof(struct kvm_vcpu_arch_shared, msr));
-+	DEFINE(KVM_MAGIC_CRITICAL, offsetof(struct kvm_vcpu_arch_shared,
-+					    critical));
-+#endif
-+
- #ifdef CONFIG_44x
- 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
- 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
 diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 4f85505..a5ece71 100644
+index 239a70d..717ab0d 100644
 --- a/arch/powerpc/kernel/kvm.c
 +++ b/arch/powerpc/kernel/kvm.c
-@@ -30,6 +30,9 @@
- #include <asm/cacheflush.h>
- #include <asm/disassemble.h>
+@@ -63,6 +63,7 @@
+ #define KVM_INST_MTSPR_DSISR	0x7c1203a6
  
-+#define KVM_MAGIC_PAGE		(-4096L)
-+#define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
+ #define KVM_INST_TLBSYNC	0x7c00046c
++#define KVM_INST_MTMSRD_L1	0x7c010164
+ 
+ static bool kvm_patching_worked = true;
+ static char kvm_tmp[1024 * 1024];
+@@ -138,6 +139,43 @@ static u32 *kvm_alloc(int len)
+ 	return p;
+ }
+ 
++extern u32 kvm_emulate_mtmsrd_branch_offs;
++extern u32 kvm_emulate_mtmsrd_reg_offs;
++extern u32 kvm_emulate_mtmsrd_len;
++extern u32 kvm_emulate_mtmsrd[];
 +
- unsigned long kvm_hypercall(unsigned long *in,
- 			    unsigned long *out,
- 			    unsigned long nr)
++static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
++{
++	u32 *p;
++	int distance_start;
++	int distance_end;
++	ulong next_inst;
++
++	p = kvm_alloc(kvm_emulate_mtmsrd_len * 4);
++	if (!p)
++		return;
++
++	/* Find out where we are and put everything there */
++	distance_start = (ulong)p - (ulong)inst;
++	next_inst = ((ulong)inst + 4);
++	distance_end = next_inst - (ulong)&p[kvm_emulate_mtmsrd_branch_offs];
++
++	/* Make sure we only write valid b instructions */
++	if (distance_start > KVM_INST_B_MAX) {
++		kvm_patching_worked = false;
++		return;
++	}
++
++	/* Modify the chunk to fit the invocation */
++	memcpy(p, kvm_emulate_mtmsrd, kvm_emulate_mtmsrd_len * 4);
++	p[kvm_emulate_mtmsrd_branch_offs] |= distance_end & KVM_INST_B_MASK;
++	p[kvm_emulate_mtmsrd_reg_offs] |= rt;
++	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsrd_len * 4);
++
++	/* Patch the invocation */
++	kvm_patch_ins_b(inst, distance_start);
++}
++
+ static void kvm_map_magic_page(void *data)
+ {
+ 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+@@ -211,6 +249,13 @@ static void kvm_check_ins(u32 *inst)
+ 	case KVM_INST_TLBSYNC:
+ 		kvm_patch_ins_nop(inst);
+ 		break;
++
++	/* Rewrites */
++	case KVM_INST_MTMSRD_L1:
++		/* We use r30 and r31 during the hook */
++		if (get_rt(inst_rt) < 30)
++			kvm_patch_ins_mtmsrd(inst, inst_rt);
++		break;
+ 	}
+ 
+ 	switch (_inst) {
 diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
-new file mode 100644
-index 0000000..e0d4183
---- /dev/null
+index 1dac72d..10dc4a6 100644
+--- a/arch/powerpc/kernel/kvm_emul.S
 +++ b/arch/powerpc/kernel/kvm_emul.S
-@@ -0,0 +1,37 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright SUSE Linux Products GmbH 2010
-+ *
-+ * Authors: Alexander Graf <agraf@suse.de>
-+ */
+@@ -64,3 +64,59 @@ kvm_hypercall_start:
+ 	/* Disable critical section. We are critical if			\
+ 	   shared->critical == r1 and r2 is always != r1 */		\
+ 	STL64(r2, KVM_MAGIC_PAGE + KVM_MAGIC_CRITICAL, 0);
 +
-+#include <asm/ppc_asm.h>
-+#include <asm/kvm_asm.h>
-+#include <asm/reg.h>
-+#include <asm/page.h>
-+#include <asm/asm-offsets.h>
++.global kvm_emulate_mtmsrd
++kvm_emulate_mtmsrd:
 +
-+/* Hypercall entry point. Will be patched with device tree instructions. */
++	SCRATCH_SAVE
 +
-+.global kvm_hypercall_start
-+kvm_hypercall_start:
-+	li	r3, -1
-+	nop
-+	nop
-+	nop
-+	blr
++	/* Put MSR & ~(MSR_EE|MSR_RI) in r31 */
++	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
++	lis	r30, (~(MSR_EE | MSR_RI))@h
++	ori	r30, r30, (~(MSR_EE | MSR_RI))@l
++	and	r31, r31, r30
 +
-+#define KVM_MAGIC_PAGE		(-4096)
++	/* OR the register's (MSR_EE|MSR_RI) on MSR */
++kvm_emulate_mtmsrd_reg:
++	andi.	r30, r0, (MSR_EE|MSR_RI)
++	or	r31, r31, r30
 +
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index d1663db..1744349 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -21,6 +21,16 @@ source "arch/powerpc/platforms/44x/Kconfig"
- source "arch/powerpc/platforms/40x/Kconfig"
- source "arch/powerpc/platforms/amigaone/Kconfig"
- 
-+config KVM_GUEST
-+	bool "KVM Guest support"
-+	default y
-+	---help---
-+	  This option enables various optimizations for running under the KVM
-+	  hypervisor. Overhead for the kernel when not running inside KVM should
-+	  be minimal.
++	/* Put MSR back into magic page */
++	STL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
 +
-+	  In case of doubt, say Y
++	/* Check if we have to fetch an interrupt */
++	lwz	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_INT)(0)
++	cmpwi	r31, 0
++	beq+	no_check
 +
- config PPC_NATIVE
- 	bool
- 	depends on 6xx || PPC64
++	/* Check if we may trigger an interrupt */
++	andi.	r30, r30, MSR_EE
++	beq	no_check
++
++	SCRATCH_RESTORE
++
++	/* Nag hypervisor */
++	tlbsync
++
++	b	kvm_emulate_mtmsrd_branch
++
++no_check:
++
++	SCRATCH_RESTORE
++
++	/* Go back to caller */
++kvm_emulate_mtmsrd_branch:
++	b	.
++kvm_emulate_mtmsrd_end:
++
++.global kvm_emulate_mtmsrd_branch_offs
++kvm_emulate_mtmsrd_branch_offs:
++	.long (kvm_emulate_mtmsrd_branch - kvm_emulate_mtmsrd) / 4
++
++.global kvm_emulate_mtmsrd_reg_offs
++kvm_emulate_mtmsrd_reg_offs:
++	.long (kvm_emulate_mtmsrd_reg - kvm_emulate_mtmsrd) / 4
++
++.global kvm_emulate_mtmsrd_len
++kvm_emulate_mtmsrd_len:
++	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
 -- 
 1.6.0.2
