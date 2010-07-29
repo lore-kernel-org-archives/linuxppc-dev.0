@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 60F0AB70BC
+	by ozlabs.org (Postfix) with ESMTP id 6888FB70C6
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:11 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 08/27] KVM: PPC: Add PV guest critical sections
-Date: Thu, 29 Jul 2010 14:47:49 +0200
-Message-Id: <1280407688-9815-9-git-send-email-agraf@suse.de>
+Subject: [PATCH 01/27] KVM: PPC: Introduce shared page
+Date: Thu, 29 Jul 2010 14:47:42 +0200
+Message-Id: <1280407688-9815-2-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,105 +21,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When running in hooked code we need a way to disable interrupts without
-clobbering any interrupts or exiting out to the hypervisor.
+For transparent variable sharing between the hypervisor and guest, I introduce
+a shared page. This shared page will contain all the registers the guest can
+read and write safely without exiting guest context.
 
-To achieve this, we have an additional critical field in the shared page. If
-that field is equal to the r1 register of the guest, it tells the hypervisor
-that we're in such a critical section and thus may not receive any interrupts.
+This patch only implements the stubs required for the basic structure of the
+shared page. The actual register moving follows.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
-
 ---
+ arch/powerpc/include/asm/kvm_host.h |    2 ++
+ arch/powerpc/include/asm/kvm_para.h |    5 +++++
+ arch/powerpc/kernel/asm-offsets.c   |    1 +
+ arch/powerpc/kvm/44x.c              |    7 +++++++
+ arch/powerpc/kvm/book3s.c           |    9 ++++++++-
+ arch/powerpc/kvm/e500.c             |    7 +++++++
+ 6 files changed, 30 insertions(+), 1 deletions(-)
 
-v1 -> v2:
-
-  - make crit detection only trigger in supervisor mode
----
- arch/powerpc/include/asm/kvm_para.h |    1 +
- arch/powerpc/kvm/book3s.c           |   18 ++++++++++++++++--
- arch/powerpc/kvm/booke.c            |   15 +++++++++++++++
- 3 files changed, 32 insertions(+), 2 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index b0b23c0..53edacd 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <linux/kvm_types.h>
++#include <linux/kvm_para.h>
+ #include <asm/kvm_asm.h>
+ 
+ #define KVM_MAX_VCPUS 1
+@@ -290,6 +291,7 @@ struct kvm_vcpu_arch {
+ 	struct tasklet_struct tasklet;
+ 	u64 dec_jiffies;
+ 	unsigned long pending_exceptions;
++	struct kvm_vcpu_arch_shared *shared;
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+ 	struct hlist_head hpte_hash_pte[HPTEG_HASH_NUM_PTE];
 diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 556fd59..4577e7b 100644
+index 2d48f6a..1485ba8 100644
 --- a/arch/powerpc/include/asm/kvm_para.h
 +++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -24,6 +24,7 @@
- #include <linux/of.h>
+@@ -20,6 +20,11 @@
+ #ifndef __POWERPC_KVM_PARA_H__
+ #define __POWERPC_KVM_PARA_H__
  
- struct kvm_vcpu_arch_shared {
-+	__u64 critical;		/* Guest may not get interrupts if == r1 */
- 	__u64 sprg0;
- 	__u64 sprg1;
- 	__u64 sprg2;
++#include <linux/types.h>
++
++struct kvm_vcpu_arch_shared {
++};
++
+ #ifdef __KERNEL__
+ 
+ static inline int kvm_para_available(void)
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 496cc5b..944f593 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -400,6 +400,7 @@ int main(void)
+ 	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
+ 	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
+ 	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
++	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
+ 
+ 	/* book3s */
+ #ifdef CONFIG_PPC_BOOK3S
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+index 73c0a3f..e7b1f3f 100644
+--- a/arch/powerpc/kvm/44x.c
++++ b/arch/powerpc/kvm/44x.c
+@@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto free_vcpu;
+ 
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_vcpu;
++
+ 	return vcpu;
+ 
++uninit_vcpu:
++	kvm_vcpu_uninit(vcpu);
+ free_vcpu:
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+ out:
+@@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+ }
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 5cb5f0d..d6227ff 100644
+index a3cef30..b3385dd 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -251,14 +251,28 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
- 	int deliver = 1;
- 	int vec = 0;
- 	ulong flags = 0ULL;
-+	ulong crit_raw = vcpu->arch.shared->critical;
-+	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
-+	bool crit;
-+
-+	/* Truncate crit indicators in 32 bit mode */
-+	if (!(vcpu->arch.shared->msr & MSR_SF)) {
-+		crit_raw &= 0xffffffff;
-+		crit_r1 &= 0xffffffff;
-+	}
-+
-+	/* Critical section when crit == r1 */
-+	crit = (crit_raw == crit_r1);
-+	/* ... and we're in supervisor mode */
-+	crit = crit && !(vcpu->arch.shared->msr & MSR_PR);
+@@ -1242,6 +1242,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto free_shadow_vcpu;
  
- 	switch (priority) {
- 	case BOOK3S_IRQPRIO_DECREMENTER:
--		deliver = vcpu->arch.shared->msr & MSR_EE;
-+		deliver = (vcpu->arch.shared->msr & MSR_EE) && !crit;
- 		vec = BOOK3S_INTERRUPT_DECREMENTER;
- 		break;
- 	case BOOK3S_IRQPRIO_EXTERNAL:
--		deliver = vcpu->arch.shared->msr & MSR_EE;
-+		deliver = (vcpu->arch.shared->msr & MSR_EE) && !crit;
- 		vec = BOOK3S_INTERRUPT_EXTERNAL;
- 		break;
- 	case BOOK3S_IRQPRIO_SYSTEM_RESET:
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 13e0747..104d0ee 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -147,6 +147,20 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	int allowed = 0;
- 	ulong uninitialized_var(msr_mask);
- 	bool update_esr = false, update_dear = false;
-+	ulong crit_raw = vcpu->arch.shared->critical;
-+	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
-+	bool crit;
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_vcpu;
 +
-+	/* Truncate crit indicators in 32 bit mode */
-+	if (!(vcpu->arch.shared->msr & MSR_SF)) {
-+		crit_raw &= 0xffffffff;
-+		crit_r1 &= 0xffffffff;
-+	}
-+
-+	/* Critical section when crit == r1 */
-+	crit = (crit_raw == crit_r1);
-+	/* ... and we're in supervisor mode */
-+	crit = crit && !(vcpu->arch.shared->msr & MSR_PR);
+ 	vcpu->arch.host_retip = kvm_return_point;
+ 	vcpu->arch.host_msr = mfmsr();
+ #ifdef CONFIG_PPC_BOOK3S_64
+@@ -1268,10 +1272,12 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
  
- 	switch (priority) {
- 	case BOOKE_IRQPRIO_DTLB_MISS:
-@@ -181,6 +195,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	case BOOKE_IRQPRIO_DECREMENTER:
- 	case BOOKE_IRQPRIO_FIT:
- 		allowed = vcpu->arch.shared->msr & MSR_EE;
-+		allowed = allowed && !crit;
- 		msr_mask = MSR_CE|MSR_ME|MSR_DE;
- 		break;
- 	case BOOKE_IRQPRIO_DEBUG:
+ 	err = kvmppc_mmu_init(vcpu);
+ 	if (err < 0)
+-		goto free_shadow_vcpu;
++		goto uninit_vcpu;
+ 
+ 	return vcpu;
+ 
++uninit_vcpu:
++	kvm_vcpu_uninit(vcpu);
+ free_shadow_vcpu:
+ 	kfree(vcpu_book3s->shadow_vcpu);
+ free_vcpu:
+@@ -1284,6 +1290,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kfree(vcpu_book3s->shadow_vcpu);
+ 	vfree(vcpu_book3s);
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index e8a00b0..71750f2 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+ 	if (err)
+ 		goto uninit_vcpu;
+ 
++	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
++	if (!vcpu->arch.shared)
++		goto uninit_tlb;
++
+ 	return vcpu;
+ 
++uninit_tlb:
++	kvmppc_e500_tlb_uninit(vcpu_e500);
+ uninit_vcpu:
+ 	kvm_vcpu_uninit(vcpu);
+ free_vcpu:
+@@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+ 
++	free_page((unsigned long)vcpu->arch.shared);
+ 	kvmppc_e500_tlb_uninit(vcpu_e500);
+ 	kvm_vcpu_uninit(vcpu);
+ 	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
 -- 
 1.6.0.2
