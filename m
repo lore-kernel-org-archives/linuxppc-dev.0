@@ -1,13 +1,15 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 63B50B70C3
+	by ozlabs.org (Postfix) with ESMTP id 60F0AB70BC
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:11 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 00/27] KVM PPC PV framework v3
-Date: Thu, 29 Jul 2010 14:47:41 +0200
-Message-Id: <1280407688-9815-1-git-send-email-agraf@suse.de>
+Subject: [PATCH 08/27] KVM: PPC: Add PV guest critical sections
+Date: Thu, 29 Jul 2010 14:47:49 +0200
+Message-Id: <1280407688-9815-9-git-send-email-agraf@suse.de>
+In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
+References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,134 +21,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC we run PR=0 (kernel mode) code in PR=1 (user mode) and don't use the
-hypervisor extensions.
+When running in hooked code we need a way to disable interrupts without
+clobbering any interrupts or exiting out to the hypervisor.
 
-While that is all great to show that virtualization is possible, there are
-quite some cases where the emulation overhead of privileged instructions is
-killing performance.
+To achieve this, we have an additional critical field in the shared page. If
+that field is equal to the r1 register of the guest, it tells the hypervisor
+that we're in such a critical section and thus may not receive any interrupts.
 
-This patchset tackles exactly that issue. It introduces a paravirtual framework
-using which KVM and Linux share a page to exchange register state with. That
-way we don't have to switch to the hypervisor just to change a value of a
-privileged register.
+Signed-off-by: Alexander Graf <agraf@suse.de>
 
-To prove my point, I ran the same test I did for the MMU optimizations against
-the PV framework. Here are the results:
-
-[without]
-
-debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
-
-real    0m14.659s
-user    0m8.967s
-sys     0m5.688s
-
-[with]
-
-debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > /dev/null; done
-
-real    0m7.557s
-user    0m4.121s
-sys     0m3.426s
-
-
-So this is a significant performance improvement! I'm quite happy how fast this
-whole thing becomes :)
-
-I tried to take all comments I've heard from people so far about such a PV
-framework into account. In case you told me something before that is a no-go
-and I still did it, please just tell me again.
-
-To make use of this whole thing you also need patches to qemu and openbios. I
-have them in my queue, but want to see this set upstream first before I start
-sending patches to the other projects.
-
-Now go and have fun with fast VMs on PPC! Get yourself a G5 on ebay and start
-experiencing the power yourself. - heh
+---
 
 v1 -> v2:
 
-  - change hypervisor calls to use r0 and r3
   - make crit detection only trigger in supervisor mode
-  - RMO -> PAM
-  - introduce kvm_patch_ins
-  - only flush icache when patching
-  - introduce kvm_patch_ins_b
-  - update documentation
+---
+ arch/powerpc/include/asm/kvm_para.h |    1 +
+ arch/powerpc/kvm/book3s.c           |   18 ++++++++++++++++--
+ arch/powerpc/kvm/booke.c            |   15 +++++++++++++++
+ 3 files changed, 32 insertions(+), 2 deletions(-)
 
-v2 -> v3:
-
-  - use pPAPR conventions for hypercall interface
-  - only use r0 as magic sc number
-  - remove PVR detection
-  - remove BookE shared page mapping support
-  - combine book3s-64 and -32 magic page ra override
-  - add self-test check if the mapping works to guest code
-  - add safety check for relocatable kernels
-
-Alexander Graf (27):
-  KVM: PPC: Introduce shared page
-  KVM: PPC: Convert MSR to shared page
-  KVM: PPC: Convert DSISR to shared page
-  KVM: PPC: Convert DAR to shared page.
-  KVM: PPC: Convert SRR0 and SRR1 to shared page
-  KVM: PPC: Convert SPRG[0-4] to shared page
-  KVM: PPC: Implement hypervisor interface
-  KVM: PPC: Add PV guest critical sections
-  KVM: PPC: Add PV guest scratch registers
-  KVM: PPC: Tell guest about pending interrupts
-  KVM: PPC: Make PAM a define
-  KVM: PPC: First magic page steps
-  KVM: PPC: Magic Page Book3s support
-  KVM: PPC: Expose magic page support to guest
-  KVM: Move kvm_guest_init out of generic code
-  KVM: PPC: Generic KVM PV guest support
-  KVM: PPC: KVM PV guest stubs
-  KVM: PPC: PV instructions to loads and stores
-  KVM: PPC: PV tlbsync to nop
-  KVM: PPC: Introduce kvm_tmp framework
-  KVM: PPC: Introduce branch patching helper
-  KVM: PPC: PV assembler helpers
-  KVM: PPC: PV mtmsrd L=1
-  KVM: PPC: PV mtmsrd L=0 and mtmsr
-  KVM: PPC: PV wrteei
-  KVM: PPC: Add Documentation about PV interface
-  KVM: PPC: Add get_pvinfo interface to query hypercall instructions
-
- Documentation/kvm/api.txt                |   23 ++
- Documentation/kvm/ppc-pv.txt             |  180 +++++++++++
- arch/powerpc/include/asm/kvm_book3s.h    |    2 +-
- arch/powerpc/include/asm/kvm_host.h      |   15 +-
- arch/powerpc/include/asm/kvm_para.h      |  135 ++++++++-
- arch/powerpc/include/asm/kvm_ppc.h       |    1 +
- arch/powerpc/kernel/Makefile             |    2 +
- arch/powerpc/kernel/asm-offsets.c        |   18 +-
- arch/powerpc/kernel/kvm.c                |  485 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/kvm_emul.S           |  247 +++++++++++++++
- arch/powerpc/kvm/44x.c                   |    7 +
- arch/powerpc/kvm/44x_tlb.c               |    8 +-
- arch/powerpc/kvm/book3s.c                |  188 ++++++++----
- arch/powerpc/kvm/book3s_32_mmu.c         |   28 ++-
- arch/powerpc/kvm/book3s_32_mmu_host.c    |    6 +-
- arch/powerpc/kvm/book3s_64_mmu.c         |   42 +++-
- arch/powerpc/kvm/book3s_64_mmu_host.c    |   13 +-
- arch/powerpc/kvm/book3s_emulate.c        |   25 +-
- arch/powerpc/kvm/book3s_paired_singles.c |   11 +-
- arch/powerpc/kvm/booke.c                 |   83 ++++--
- arch/powerpc/kvm/booke.h                 |    6 +-
- arch/powerpc/kvm/booke_emulate.c         |   14 +-
- arch/powerpc/kvm/booke_interrupts.S      |    3 +-
- arch/powerpc/kvm/e500.c                  |    7 +
- arch/powerpc/kvm/e500_tlb.c              |   12 +-
- arch/powerpc/kvm/e500_tlb.h              |    2 +-
- arch/powerpc/kvm/emulate.c               |   36 ++-
- arch/powerpc/kvm/powerpc.c               |   84 +++++-
- arch/powerpc/platforms/Kconfig           |   10 +
- arch/x86/include/asm/kvm_para.h          |    6 +
- include/linux/kvm.h                      |   11 +
- include/linux/kvm_para.h                 |    7 +-
- 32 files changed, 1538 insertions(+), 179 deletions(-)
- create mode 100644 Documentation/kvm/ppc-pv.txt
- create mode 100644 arch/powerpc/kernel/kvm.c
- create mode 100644 arch/powerpc/kernel/kvm_emul.S
+diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
+index 556fd59..4577e7b 100644
+--- a/arch/powerpc/include/asm/kvm_para.h
++++ b/arch/powerpc/include/asm/kvm_para.h
+@@ -24,6 +24,7 @@
+ #include <linux/of.h>
+ 
+ struct kvm_vcpu_arch_shared {
++	__u64 critical;		/* Guest may not get interrupts if == r1 */
+ 	__u64 sprg0;
+ 	__u64 sprg1;
+ 	__u64 sprg2;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 5cb5f0d..d6227ff 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -251,14 +251,28 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
+ 	int deliver = 1;
+ 	int vec = 0;
+ 	ulong flags = 0ULL;
++	ulong crit_raw = vcpu->arch.shared->critical;
++	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
++	bool crit;
++
++	/* Truncate crit indicators in 32 bit mode */
++	if (!(vcpu->arch.shared->msr & MSR_SF)) {
++		crit_raw &= 0xffffffff;
++		crit_r1 &= 0xffffffff;
++	}
++
++	/* Critical section when crit == r1 */
++	crit = (crit_raw == crit_r1);
++	/* ... and we're in supervisor mode */
++	crit = crit && !(vcpu->arch.shared->msr & MSR_PR);
+ 
+ 	switch (priority) {
+ 	case BOOK3S_IRQPRIO_DECREMENTER:
+-		deliver = vcpu->arch.shared->msr & MSR_EE;
++		deliver = (vcpu->arch.shared->msr & MSR_EE) && !crit;
+ 		vec = BOOK3S_INTERRUPT_DECREMENTER;
+ 		break;
+ 	case BOOK3S_IRQPRIO_EXTERNAL:
+-		deliver = vcpu->arch.shared->msr & MSR_EE;
++		deliver = (vcpu->arch.shared->msr & MSR_EE) && !crit;
+ 		vec = BOOK3S_INTERRUPT_EXTERNAL;
+ 		break;
+ 	case BOOK3S_IRQPRIO_SYSTEM_RESET:
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 13e0747..104d0ee 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -147,6 +147,20 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 	int allowed = 0;
+ 	ulong uninitialized_var(msr_mask);
+ 	bool update_esr = false, update_dear = false;
++	ulong crit_raw = vcpu->arch.shared->critical;
++	ulong crit_r1 = kvmppc_get_gpr(vcpu, 1);
++	bool crit;
++
++	/* Truncate crit indicators in 32 bit mode */
++	if (!(vcpu->arch.shared->msr & MSR_SF)) {
++		crit_raw &= 0xffffffff;
++		crit_r1 &= 0xffffffff;
++	}
++
++	/* Critical section when crit == r1 */
++	crit = (crit_raw == crit_r1);
++	/* ... and we're in supervisor mode */
++	crit = crit && !(vcpu->arch.shared->msr & MSR_PR);
+ 
+ 	switch (priority) {
+ 	case BOOKE_IRQPRIO_DTLB_MISS:
+@@ -181,6 +195,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 	case BOOKE_IRQPRIO_DECREMENTER:
+ 	case BOOKE_IRQPRIO_FIT:
+ 		allowed = vcpu->arch.shared->msr & MSR_EE;
++		allowed = allowed && !crit;
+ 		msr_mask = MSR_CE|MSR_ME|MSR_DE;
+ 		break;
+ 	case BOOKE_IRQPRIO_DEBUG:
+-- 
+1.6.0.2
