@@ -1,24 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 74549B6EF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 17:19:44 +1000 (EST)
-Received: by iwn36 with SMTP id 36so44277iwn.15
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 00:19:43 -0700 (PDT)
+Received: from mail-iw0-f179.google.com (mail-iw0-f179.google.com
+	[209.85.214.179]) by ozlabs.org (Postfix) with ESMTP id B80461007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 17:28:35 +1000 (EST)
+Received: by iwn39 with SMTP id 39so48765iwn.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 00:28:34 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <87iq4r5y4q.fsf@macbook.be.48ers.dk>
-References: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
-	<1276245337-22897-1-git-send-email-agust@denx.de>
-	<87iq4r5y4q.fsf@macbook.be.48ers.dk>
+In-Reply-To: <201007291408499573189@gmail.com>
+References: <201007291408499573189@gmail.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 29 Jul 2010 01:19:23 -0600
-Message-ID: <AANLkTi=drdEQG7n8c2-UniYtY0g64kzkY-Oy_uD7iCBG@mail.gmail.com>
-Subject: Re: [PATCH V5] powerpc/mpc512x: Add gpio driver
-To: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 29 Jul 2010 01:28:14 -0600
+Message-ID: <AANLkTindWKCyFzm2hwR+2K6KihkvWqXjPjsyD2M6ukwq@mail.gmail.com>
+Subject: Re: i meet some surprising things,when i modify the dts file
+To: hacklu <embedway.test@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
-	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	Matthias Fuchs <matthias.fuchs@esd.eu>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 7, 2010 at 5:28 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>>>> "Anatolij" =3D=3D Anatolij Gustschin <agust@denx.de> writes:
+On Thu, Jul 29, 2010 at 12:08 AM, hacklu <embedway.test@gmail.com> wrote:
+> =A0localbus@f0010100=A0{
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0....
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0ranges=A0=3D=A0<
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A00=A00=A0FC000000=A01000000
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A02=A00=A0FA000000=A01000000
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A01=A00=A070000000=A01000000
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0>;
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0flash@0,0{
 >
-> Hi,
+> .....
+> }
 >
-> Old mail, I know ..
+> flash@2,0{
 >
-> =A0Anatolij> From: Matthias Fuchs <matthias.fuchs@esd.eu>
-> =A0Anatolij> This patch adds a gpio driver for MPC512X PowerPCs.
+> ....
+> }
 >
-> =A0Anatolij> It has been tested on our CAN-CBX-CPU5201 module that
-> =A0Anatolij> uses a MPC5121 CPU. This platform comes with a couple of
-> =A0Anatolij> LEDs and configuration switches that have been used for test=
-ing.
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0board-control@1,0{
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 .....
+> }
 >
-> =A0Anatolij> After change to the of-gpio api the reworked driver has been
-> =A0Anatolij> tested on pdm360ng board with some configuration switches.
+> }
 >
-> This looks very similar to the existing
-> arch/powerpc/sysdev/mpc8xxx_gpio.c - Couldn't we just add 5121 support
-> there instead?
->
-> =A0Anatolij> +struct mpc512x_gpio_regs {
-> =A0Anatolij> + =A0 =A0u32 gpdir;
-> =A0Anatolij> + =A0 =A0u32 gpodr;
-> =A0Anatolij> + =A0 =A0u32 gpdat;
-> =A0Anatolij> + =A0 =A0u32 gpier;
-> =A0Anatolij> + =A0 =A0u32 gpimr;
-> =A0Anatolij> + =A0 =A0u32 gpicr1;
-> =A0Anatolij> + =A0 =A0u32 gpicr2;
-> =A0Anatolij> +};
+> this is part of my dts files. I don't kown what each field means in the
+> config rangs.
+> for instance, 2=A00=A0FA000000=A01000000=A0.
+> I only konw this:
+> "2" is means chip selects.
+> "0" is what?
+> "Fa00000" means the start address.
+> "1000000" means the range of the device
 
-Hi Anatolij,
+Ranges translates from the child address domain to the parent address
+domain.  It consists of 3 fields; The child base address, the parent
+base address, and the size.  In this case:
 
-Peter's right, the register map looks the same, except for the
-additional gpicr1 & 2 registers in the 512x version.  Can the 512x
-gpios be supported by the 8xxx gpio driver?
+child base address :=3D 2 0  (#address-cells =3D <2> in this node)
+parent base address :=3D 0xfa000000 (#address-cells =3D <1> in parent node)
+and length =3D 0x1000000 (16MB)
+
+For the child address, #address-cells is set to 2, meaning 1 cell for
+the chip select #, and 1 cell for an offset into the chip select
+range.  In most cases the offset will be zero in a ranges property.
+
+So in this case, the ranges property states that chip select 2 is a
+16MB region mapped to base address 0xfa000000.
+
+>
+> but ,I got some puzzled.
+> when I set the two flash in the 0,1 chips select or 0,2 chips select my
+> linux works well.
+> and, the board-control only can be set at 1 chis select,otherwise the pci
+> doesn't be detected.
+
+Unless the bus controller hardware needs to know the chip select
+number for another purpose (ie. setting up a local bus DMA transfer),
+you could really use any number for the chip select as long as it is
+consistent between the child node and the ranges property.
+
+>
+> so , what is the chips select? is it based on hardware?
+
+Yes, it is based on hardware.  The .dts file is describing which CS
+line each external device is attached to.
+
+ but my flash can use
+> 0,1,2 chips select.
+> or it is just set by software? but my pci devece can only work in 1 chips
+> select.
+>
+>
+> BTW:
+> I also want to know how to write the dts file. I want to understand each
+> node in the dts files.
+> but I can't get enough documents. I have readed the linux/document/...
+> could you privode me some useful information?
+
+See here:
+
+http://www.devicetree.org/Device_Tree_Usage
 
 g.
