@@ -1,30 +1,22 @@
-Return-Path: <Ian.Campbell@eu.citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "*.citrix.com",
-	Issuer "VeriSign Class 3 Secure Server CA - G2" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E6AC0B70C6
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 19:03:41 +1000 (EST)
-Subject: Re: [PATCH 1/4] irq: rename IRQF_TIMER to IRQF_NO_SUSPEND
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <alpine.LFD.2.00.1007291045060.2471@localhost.localdomain>
-References: <1280314445.24292.90.camel@zakaz.uk.xensource.com>
-	<1280314467-5637-1-git-send-email-ian.campbell@citrix.com>
-	<alpine.LFD.2.00.1007291045060.2471@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Jul 2010 10:03:34 +0100
-Message-ID: <1280394214.24292.1594.camel@zakaz.uk.xensource.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 5CED41007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 19:18:29 +1000 (EST)
+Date: Thu, 29 Jul 2010 18:18:26 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Matthew McClintock <msm@freescale.com>
+Subject: Re: [PATCH v3 0/7] Fixup booting with device trees and uImage/elf
+	on ppc32
+Message-ID: <20100729091825.GE10021@verge.net.au>
+References: <1279687384-9770-1-git-send-email-msm@freescale.com>
+	<20100727025506.GA1944@verge.net.au>
+	<14FA0578-0D5B-48D1-BF5D-EB39DF1432D1@freescale.com>
 MIME-Version: 1.0
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-	"xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-	"devicetree-discuss@lists.ozlabs.org"
-	<devicetree-discuss@lists.ozlabs.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	"linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <14FA0578-0D5B-48D1-BF5D-EB39DF1432D1@freescale.com>
+Cc: muvarov@gmail.com, linuxppc-dev@lists.ozlabs.org, sebastian@breakpoint.cc,
+	kexec@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-07-29 at 09:49 +0100, Thomas Gleixner wrote:
-> On Wed, 28 Jul 2010, Ian Campbell wrote:
+On Mon, Jul 26, 2010 at 11:22:58PM -0500, Matthew McClintock wrote:
 > 
-> > Continue to provide IRQF_TIMER as an alias to IRQF_NO_SUSPEND since I
-> > think it is worth preserving the nice self-documenting name (where it
-> > is used appropriately). It also avoid needing to patch all the many
-> > users who are using the flag for an actual timer interrupt.
+> On Jul 26, 2010, at 9:55 PM, Simon Horman wrote:
 > 
-> I'm not happy about the alias. What about:
+> > [Cced linuxppc-dev]
+> > 
+> > On Tue, Jul 20, 2010 at 11:42:57PM -0500, Matthew McClintock wrote:
+> >> This patch series adds full support for booting with a flat device tree
+> >> with either uImage or elf file formats. Kexec and Kdump should work, and
+> >> you should also be able to use ramdisks or reuse your current ramdisk as well
+> >> 
+> >> This patch series was tested on an mpc85xx system with a kernel version
+> >> 2.6.35-rc3
+> >> 
+> >> v1: Initial version
+> >> 
+> >> v2: Added support for fs2dt (file system to device tree)
+> >> 
+> >> v3: Fix some misc. git problems I had and other code cleanups
+> > 
+> > Hi Matthew,
+> > 
+> > I'm a little concerned that these changes are non trivial and haven't had
+> > much review. But I am prepared to put them into my tree once 2.0.2 is
+> > released - perhaps that way they will get some test coverage. Does
+> > that work for you?
 > 
-> #define __IRQF_TIMER		0x00000200
-> #define IRQF_NO_SUSPEND		0x00000400
-> 
-> #define IRQF_TIMER    (__IRQF_TIMER | IRQF_NO_SUSPEND)
+> Either way works for me. I know they could use more review, however as Maxim said the current tree does not work AFAIK. Either way, I'm willing to keeping addressing everyones concerns and wait or move forward and make some quick fixes as well.
 
-Sure, I'll rework along those lines.
+All applied.
 
-Ian.
+I made some minor changes to three of the patches.
+I have noted each change in separate emails.
