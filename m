@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 6FCA8B713A
+	by ozlabs.org (Postfix) with ESMTP id 7B15CB713D
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:14 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 21/27] KVM: PPC: Introduce branch patching helper
-Date: Thu, 29 Jul 2010 14:48:02 +0200
-Message-Id: <1280407688-9815-22-git-send-email-agraf@suse.de>
+Subject: [PATCH 24/27] KVM: PPC: PV mtmsrd L=0 and mtmsr
+Date: Thu, 29 Jul 2010 14:48:05 +0200
+Message-Id: <1280407688-9815-25-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,47 +21,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will need to patch several instruction streams over to a different
-code path, so we need a way to patch a single instruction with a branch
-somewhere else.
+There is also a form of mtmsr where all bits need to be addressed. While the
+PPC64 Linux kernel behaves resonably well here, on PPC32 we do not have an
+L=1 form. It does mtmsr even for simple things like only changing EE.
 
-This patch adds a helper to facilitate this patching.
+So we need to hook into that one as well and check for a mask of bits that we
+deem safe to change from within guest context.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 
 ---
 
-v2 -> v3:
+v1 -> v2:
 
-  - add safety check for relocatable kernels
+  - use kvm_patch_ins_b
 ---
- arch/powerpc/kernel/kvm.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kvm.c      |   51 ++++++++++++++++++++++++
+ arch/powerpc/kernel/kvm_emul.S |   84 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 135 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-index 926f93f..239a70d 100644
+index 717ab0d..8ac57e2 100644
 --- a/arch/powerpc/kernel/kvm.c
 +++ b/arch/powerpc/kernel/kvm.c
-@@ -107,6 +107,20 @@ static void kvm_patch_ins_nop(u32 *inst)
- 	kvm_patch_ins(inst, KVM_INST_NOP);
+@@ -63,7 +63,9 @@
+ #define KVM_INST_MTSPR_DSISR	0x7c1203a6
+ 
+ #define KVM_INST_TLBSYNC	0x7c00046c
++#define KVM_INST_MTMSRD_L0	0x7c000164
+ #define KVM_INST_MTMSRD_L1	0x7c010164
++#define KVM_INST_MTMSR		0x7c000124
+ 
+ static bool kvm_patching_worked = true;
+ static char kvm_tmp[1024 * 1024];
+@@ -176,6 +178,49 @@ static void kvm_patch_ins_mtmsrd(u32 *inst, u32 rt)
+ 	kvm_patch_ins_b(inst, distance_start);
  }
  
-+static void kvm_patch_ins_b(u32 *inst, int addr)
++extern u32 kvm_emulate_mtmsr_branch_offs;
++extern u32 kvm_emulate_mtmsr_reg1_offs;
++extern u32 kvm_emulate_mtmsr_reg2_offs;
++extern u32 kvm_emulate_mtmsr_reg3_offs;
++extern u32 kvm_emulate_mtmsr_orig_ins_offs;
++extern u32 kvm_emulate_mtmsr_len;
++extern u32 kvm_emulate_mtmsr[];
++
++static void kvm_patch_ins_mtmsr(u32 *inst, u32 rt)
 +{
-+#ifdef CONFIG_RELOCATABLE
-+	/* On relocatable kernels interrupts handlers and our code
-+	   can be in different regions, so we don't patch them */
++	u32 *p;
++	int distance_start;
++	int distance_end;
++	ulong next_inst;
 +
-+	extern u32 __end_interrupts;
-+	if ((ulong)inst < (ulong)&__end_interrupts)
++	p = kvm_alloc(kvm_emulate_mtmsr_len * 4);
++	if (!p)
 +		return;
-+#endif
 +
-+	kvm_patch_ins(inst, KVM_INST_B | (addr & KVM_INST_B_MASK));
++	/* Find out where we are and put everything there */
++	distance_start = (ulong)p - (ulong)inst;
++	next_inst = ((ulong)inst + 4);
++	distance_end = next_inst - (ulong)&p[kvm_emulate_mtmsr_branch_offs];
++
++	/* Make sure we only write valid b instructions */
++	if (distance_start > KVM_INST_B_MAX) {
++		kvm_patching_worked = false;
++		return;
++	}
++
++	/* Modify the chunk to fit the invocation */
++	memcpy(p, kvm_emulate_mtmsr, kvm_emulate_mtmsr_len * 4);
++	p[kvm_emulate_mtmsr_branch_offs] |= distance_end & KVM_INST_B_MASK;
++	p[kvm_emulate_mtmsr_reg1_offs] |= rt;
++	p[kvm_emulate_mtmsr_reg2_offs] |= rt;
++	p[kvm_emulate_mtmsr_reg3_offs] |= rt;
++	p[kvm_emulate_mtmsr_orig_ins_offs] = *inst;
++	flush_icache_range((ulong)p, (ulong)p + kvm_emulate_mtmsr_len * 4);
++
++	/* Patch the invocation */
++	kvm_patch_ins_b(inst, distance_start);
 +}
 +
- static u32 *kvm_alloc(int len)
+ static void kvm_map_magic_page(void *data)
  {
- 	u32 *p;
+ 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+@@ -256,6 +301,12 @@ static void kvm_check_ins(u32 *inst)
+ 		if (get_rt(inst_rt) < 30)
+ 			kvm_patch_ins_mtmsrd(inst, inst_rt);
+ 		break;
++	case KVM_INST_MTMSR:
++	case KVM_INST_MTMSRD_L0:
++		/* We use r30 and r31 during the hook */
++		if (get_rt(inst_rt) < 30)
++			kvm_patch_ins_mtmsr(inst, inst_rt);
++		break;
+ 	}
+ 
+ 	switch (_inst) {
+diff --git a/arch/powerpc/kernel/kvm_emul.S b/arch/powerpc/kernel/kvm_emul.S
+index 10dc4a6..8cd22f4 100644
+--- a/arch/powerpc/kernel/kvm_emul.S
++++ b/arch/powerpc/kernel/kvm_emul.S
+@@ -120,3 +120,87 @@ kvm_emulate_mtmsrd_reg_offs:
+ .global kvm_emulate_mtmsrd_len
+ kvm_emulate_mtmsrd_len:
+ 	.long (kvm_emulate_mtmsrd_end - kvm_emulate_mtmsrd) / 4
++
++
++#define MSR_SAFE_BITS (MSR_EE | MSR_CE | MSR_ME | MSR_RI)
++#define MSR_CRITICAL_BITS ~MSR_SAFE_BITS
++
++.global kvm_emulate_mtmsr
++kvm_emulate_mtmsr:
++
++	SCRATCH_SAVE
++
++	/* Fetch old MSR in r31 */
++	LL64(r31, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
++
++	/* Find the changed bits between old and new MSR */
++kvm_emulate_mtmsr_reg1:
++	xor	r31, r0, r31
++
++	/* Check if we need to really do mtmsr */
++	LOAD_REG_IMMEDIATE(r30, MSR_CRITICAL_BITS)
++	and.	r31, r31, r30
++
++	/* No critical bits changed? Maybe we can stay in the guest. */
++	beq	maybe_stay_in_guest
++
++do_mtmsr:
++
++	SCRATCH_RESTORE
++
++	/* Just fire off the mtmsr if it's critical */
++kvm_emulate_mtmsr_orig_ins:
++	mtmsr	r0
++
++	b	kvm_emulate_mtmsr_branch
++
++maybe_stay_in_guest:
++
++	/* Check if we have to fetch an interrupt */
++	lwz	r31, (KVM_MAGIC_PAGE + KVM_MAGIC_INT)(0)
++	cmpwi	r31, 0
++	beq+	no_mtmsr
++
++	/* Check if we may trigger an interrupt */
++kvm_emulate_mtmsr_reg2:
++	andi.	r31, r0, MSR_EE
++	beq	no_mtmsr
++
++	b	do_mtmsr
++
++no_mtmsr:
++
++	/* Put MSR into magic page because we don't call mtmsr */
++kvm_emulate_mtmsr_reg3:
++	STL64(r0, KVM_MAGIC_PAGE + KVM_MAGIC_MSR, 0)
++
++	SCRATCH_RESTORE
++
++	/* Go back to caller */
++kvm_emulate_mtmsr_branch:
++	b	.
++kvm_emulate_mtmsr_end:
++
++.global kvm_emulate_mtmsr_branch_offs
++kvm_emulate_mtmsr_branch_offs:
++	.long (kvm_emulate_mtmsr_branch - kvm_emulate_mtmsr) / 4
++
++.global kvm_emulate_mtmsr_reg1_offs
++kvm_emulate_mtmsr_reg1_offs:
++	.long (kvm_emulate_mtmsr_reg1 - kvm_emulate_mtmsr) / 4
++
++.global kvm_emulate_mtmsr_reg2_offs
++kvm_emulate_mtmsr_reg2_offs:
++	.long (kvm_emulate_mtmsr_reg2 - kvm_emulate_mtmsr) / 4
++
++.global kvm_emulate_mtmsr_reg3_offs
++kvm_emulate_mtmsr_reg3_offs:
++	.long (kvm_emulate_mtmsr_reg3 - kvm_emulate_mtmsr) / 4
++
++.global kvm_emulate_mtmsr_orig_ins_offs
++kvm_emulate_mtmsr_orig_ins_offs:
++	.long (kvm_emulate_mtmsr_orig_ins - kvm_emulate_mtmsr) / 4
++
++.global kvm_emulate_mtmsr_len
++kvm_emulate_mtmsr_len:
++	.long (kvm_emulate_mtmsr_end - kvm_emulate_mtmsr) / 4
 -- 
 1.6.0.2
