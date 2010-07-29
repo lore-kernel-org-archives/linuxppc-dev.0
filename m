@@ -1,22 +1,27 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
-	by ozlabs.org (Postfix) with ESMTP id 5CED41007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Jul 2010 19:18:29 +1000 (EST)
-Date: Thu, 29 Jul 2010 18:18:26 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Matthew McClintock <msm@freescale.com>
-Subject: Re: [PATCH v3 0/7] Fixup booting with device trees and uImage/elf
-	on ppc32
-Message-ID: <20100729091825.GE10021@verge.net.au>
-References: <1279687384-9770-1-git-send-email-msm@freescale.com>
-	<20100727025506.GA1944@verge.net.au>
-	<14FA0578-0D5B-48D1-BF5D-EB39DF1432D1@freescale.com>
+Return-Path: <Ian.Campbell@eu.citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+	by ozlabs.org (Postfix) with ESMTP id D43B3B70A9
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 20:16:36 +1000 (EST)
+Subject: [GIT/PATCH 0/4] Do not use IRQF_TIMER for non timer interrupts
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.1007291045060.2471@localhost.localdomain>
+References: <1280314445.24292.90.camel@zakaz.uk.xensource.com>
+	<1280314467-5637-1-git-send-email-ian.campbell@citrix.com>
+	<alpine.LFD.2.00.1007291045060.2471@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 29 Jul 2010 11:16:13 +0100
+Message-ID: <1280398573.24292.1684.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <14FA0578-0D5B-48D1-BF5D-EB39DF1432D1@freescale.com>
-Cc: muvarov@gmail.com, linuxppc-dev@lists.ozlabs.org, sebastian@breakpoint.cc,
-	kexec@lists.infradead.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	"xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+	"devicetree-discuss@lists.ozlabs.org"
+	<devicetree-discuss@lists.ozlabs.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	"linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 26, 2010 at 11:22:58PM -0500, Matthew McClintock wrote:
+On Thu, 2010-07-29 at 09:49 +0100, Thomas Gleixner wrote:
+> On Wed, 28 Jul 2010, Ian Campbell wrote:
 > 
-> On Jul 26, 2010, at 9:55 PM, Simon Horman wrote:
+> > Continue to provide IRQF_TIMER as an alias to IRQF_NO_SUSPEND since I
+> > think it is worth preserving the nice self-documenting name (where it
+> > is used appropriately). It also avoid needing to patch all the many
+> > users who are using the flag for an actual timer interrupt.
 > 
-> > [Cced linuxppc-dev]
-> > 
-> > On Tue, Jul 20, 2010 at 11:42:57PM -0500, Matthew McClintock wrote:
-> >> This patch series adds full support for booting with a flat device tree
-> >> with either uImage or elf file formats. Kexec and Kdump should work, and
-> >> you should also be able to use ramdisks or reuse your current ramdisk as well
-> >> 
-> >> This patch series was tested on an mpc85xx system with a kernel version
-> >> 2.6.35-rc3
-> >> 
-> >> v1: Initial version
-> >> 
-> >> v2: Added support for fs2dt (file system to device tree)
-> >> 
-> >> v3: Fix some misc. git problems I had and other code cleanups
-> > 
-> > Hi Matthew,
-> > 
-> > I'm a little concerned that these changes are non trivial and haven't had
-> > much review. But I am prepared to put them into my tree once 2.0.2 is
-> > released - perhaps that way they will get some test coverage. Does
-> > that work for you?
+> I'm not happy about the alias. What about:
 > 
-> Either way works for me. I know they could use more review, however as Maxim said the current tree does not work AFAIK. Either way, I'm willing to keeping addressing everyones concerns and wait or move forward and make some quick fixes as well.
+> #define __IRQF_TIMER		0x00000200
+> #define IRQF_NO_SUSPEND		0x00000400
+> 
+> #define IRQF_TIMER    (__IRQF_TIMER | IRQF_NO_SUSPEND)
 
-All applied.
+Resending with this change. Plus I ran checkpatch on the whole lot (I
+previously managed to run it only on the first patch) and fixed the
+complaints.
 
-I made some minor changes to three of the patches.
-I have noted each change in separate emails.
+Ian.
+
+The following changes since commit fc0f5ac8fe693d1b05f5a928cc48135d1c8b7f2e:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../ericvh/v9fs
+
+are available in the git repository at:
+
+  git://xenbits.xensource.com/people/ianc/linux-2.6.git for-irq/irqf-no-suspend
+
+Ian Campbell (4):
+      irq: Add new IRQ flag IRQF_NO_SUSPEND
+      ixp4xx-beeper: Use IRQF_NO_SUSPEND not IRQF_TIMER for non-timer interrupt
+      powerpc: Use IRQF_NO_SUSPEND not IRQF_TIMER for non-timer interrupts
+      xen: do not suspend IPI IRQs.
+
+ arch/powerpc/platforms/powermac/low_i2c.c |    5 +++--
+ drivers/input/misc/ixp4xx-beeper.c        |    3 ++-
+ drivers/macintosh/via-pmu.c               |    9 +++++----
+ drivers/xen/events.c                      |    1 +
+ include/linux/interrupt.h                 |    7 ++++++-
+ kernel/irq/manage.c                       |    2 +-
+ 6 files changed, 18 insertions(+), 9 deletions(-)
