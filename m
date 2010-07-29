@@ -1,22 +1,24 @@
-Return-Path: <amwang@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id 3007BB70A7
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Jul 2010 16:38:18 +1000 (EST)
-Message-ID: <4C5122D1.8080203@redhat.com>
-Date: Thu, 29 Jul 2010 14:42:25 +0800
-From: Cong Wang <amwang@redhat.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 74549B6EF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 17:19:44 +1000 (EST)
+Received: by iwn36 with SMTP id 36so44277iwn.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 00:19:43 -0700 (PDT)
 MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [Patch v2] kexec: increase max of kexec segments and use dynamic
-	allocation
-References: <kexec-nrseg-reply1@mdm.bga.com>
-In-Reply-To: <kexec-nrseg-reply1@mdm.bga.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Neil Horman <nhorman@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-	huang ying <huang.ying.caritas@gmail.com>,
-	linux-kernel@vger.kernel.org, kexec@lists.infadead.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <87iq4r5y4q.fsf@macbook.be.48ers.dk>
+References: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
+	<1276245337-22897-1-git-send-email-agust@denx.de>
+	<87iq4r5y4q.fsf@macbook.be.48ers.dk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 29 Jul 2010 01:19:23 -0600
+Message-ID: <AANLkTi=drdEQG7n8c2-UniYtY0g64kzkY-Oy_uD7iCBG@mail.gmail.com>
+Subject: Re: [PATCH V5] powerpc/mpc512x: Add gpio driver
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	Matthias Fuchs <matthias.fuchs@esd.eu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,75 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/27/10 18:00, Milton Miller wrote:
-> [ Added kexec at lists.infradead.org and linuxppc-dev@lists.ozlabs.org ]
+On Wed, Jul 7, 2010 at 5:28 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+>>>>>> "Anatolij" =3D=3D Anatolij Gustschin <agust@denx.de> writes:
 >
->>
->> Currently KEXEC_SEGMENT_MAX is only 16 which is too small for machine with
->> many memory ranges.  When hibernate on a machine with disjoint memory we do
->> need one segment for each memory region. Increase this hard limit to 16K
->> which is reasonably large.
->>
->> And change ->segment from a static array to a dynamically allocated memory.
->>
->> Cc: Neil Horman<nhorman@redhat.com>
->> Cc: huang ying<huang.ying.caritas@gmail.com>
->> Cc: Eric W. Biederman<ebiederm@xmission.com>
->> Signed-off-by: WANG Cong<amwang@redhat.com>
->>
->> ---
->> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
->> index ed31a29..f115585 100644
->> --- a/arch/powerpc/kernel/machine_kexec_64.c
->> +++ b/arch/powerpc/kernel/machine_kexec_64.c
->> @@ -131,10 +131,7 @@ static void copy_segments(unsigned long ind)
->>   void kexec_copy_flush(struct kimage *image)
->>   {
->>   	long i, nr_segments = image->nr_segments;
->> -	struct  kexec_segment ranges[KEXEC_SEGMENT_MAX];
->> -
->> -	/* save the ranges on the stack to efficiently flush the icache */
->> -	memcpy(ranges, image->segment, sizeof(ranges));
->> +	struct  kexec_segment range;
+> Hi,
 >
-> I'm glad you found our copy on the stack and removed the stack overflow
-> that comes with this bump, but ...
+> Old mail, I know ..
 >
->>
->>   	/*
->>   	 * After this call we may not use anything allocated in dynamic
->> @@ -148,9 +145,11 @@ void kexec_copy_flush(struct kimage *image)
->>   	 * we need to clear the icache for all dest pages sometime,
->>   	 * including ones that were in place on the original copy
->>   	 */
->> -	for (i = 0; i<  nr_segments; i++)
->> -		flush_icache_range((unsigned long)__va(ranges[i].mem),
->> -			(unsigned long)__va(ranges[i].mem + ranges[i].memsz));
->> +	for (i = 0; i<  nr_segments; i++) {
->> +		memcpy(&range,&image->segment[i], sizeof(range));
->> +		flush_icache_range((unsigned long)__va(range.mem),
->> +			(unsigned long)__va(range.mem + range.memsz));
->> +	}
->>   }
+> =A0Anatolij> From: Matthias Fuchs <matthias.fuchs@esd.eu>
+> =A0Anatolij> This patch adds a gpio driver for MPC512X PowerPCs.
 >
-> This is executed after the copy, so as it says,
-> "we may not use anything allocated in dynamic memory".
+> =A0Anatolij> It has been tested on our CAN-CBX-CPU5201 module that
+> =A0Anatolij> uses a MPC5121 CPU. This platform comes with a couple of
+> =A0Anatolij> LEDs and configuration switches that have been used for test=
+ing.
 >
-> We could allocate control pages to copy the segment list into.
-> Actually ppc64 doesn't use the existing control page, but that
-> is only 4kB today.
+> =A0Anatolij> After change to the of-gpio api the reworked driver has been
+> =A0Anatolij> tested on pdm360ng board with some configuration switches.
 >
-> We need the list to icache flush all the pages in all the segments.
-> The as the indirect list doesn't have pages that were allocated at
-> their destination.
+> This looks very similar to the existing
+> arch/powerpc/sysdev/mpc8xxx_gpio.c - Couldn't we just add 5121 support
+> there instead?
 >
-> Or maybe the icache flush should be done in the generic code
-> like it does for crash load segments?
->
+> =A0Anatolij> +struct mpc512x_gpio_regs {
+> =A0Anatolij> + =A0 =A0u32 gpdir;
+> =A0Anatolij> + =A0 =A0u32 gpodr;
+> =A0Anatolij> + =A0 =A0u32 gpdat;
+> =A0Anatolij> + =A0 =A0u32 gpier;
+> =A0Anatolij> + =A0 =A0u32 gpimr;
+> =A0Anatolij> + =A0 =A0u32 gpicr1;
+> =A0Anatolij> + =A0 =A0u32 gpicr2;
+> =A0Anatolij> +};
 
-I don't get the point here, according to the comments,
-it is copied into stack because of efficiency.
+Hi Anatolij,
 
--- 
-The opposite of love is not hate, it's indifference.
-  - Elie Wiesel
+Peter's right, the register map looks the same, except for the
+additional gpicr1 & 2 registers in the 512x version.  Can the 512x
+gpios be supported by the 8xxx gpio driver?
+
+g.
