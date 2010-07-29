@@ -1,15 +1,13 @@
 Return-Path: <agraf@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 103EAB7124
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id B4A20B70F4
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 29 Jul 2010 22:48:14 +1000 (EST)
+	Thu, 29 Jul 2010 22:48:13 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 05/27] KVM: PPC: Convert SRR0 and SRR1 to shared page
-Date: Thu, 29 Jul 2010 14:47:46 +0200
-Message-Id: <1280407688-9815-6-git-send-email-agraf@suse.de>
+Subject: [PATCH 07/27] KVM: PPC: Implement hypervisor interface
+Date: Thu, 29 Jul 2010 14:47:48 +0200
+Message-Id: <1280407688-9815-8-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -23,198 +21,388 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SRR0 and SRR1 registers contain cached values of the PC and MSR
-respectively. They get written to by the hypervisor when an interrupt
-occurs or directly by the kernel. They are also used to tell the rfi(d)
-instruction where to jump to.
+To communicate with KVM directly we need to plumb some sort of interface
+between the guest and KVM. Usually those interfaces use hypercalls.
 
-Because it only gets touched on defined events that, it's very simple to
-share with the guest. Hypervisor and guest both have full r/w access.
+This hypercall implementation is described in the last patch of the series
+in a special documentation file. Please read that for further information.
 
-This patch converts all users of the current field to the shared page.
+This patch implements stubs to handle KVM PPC hypercalls on the host and
+guest side alike.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/include/asm/kvm_host.h |    2 --
- arch/powerpc/include/asm/kvm_para.h |    2 ++
- arch/powerpc/kvm/book3s.c           |   12 ++++++------
- arch/powerpc/kvm/book3s_emulate.c   |    4 ++--
- arch/powerpc/kvm/booke.c            |   15 ++++++++-------
- arch/powerpc/kvm/booke_emulate.c    |    4 ++--
- arch/powerpc/kvm/emulate.c          |   12 ++++++++----
- 7 files changed, 28 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index c852408..5255d75 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -225,8 +225,6 @@ struct kvm_vcpu_arch {
- 	ulong sprg5;
- 	ulong sprg6;
- 	ulong sprg7;
--	ulong srr0;
--	ulong srr1;
- 	ulong csrr0;
- 	ulong csrr1;
- 	ulong dsrr0;
+---
+
+v1 -> v2:
+
+  - change hypervisor calls to use new register values
+
+v2 -> v3:
+
+  - move PV interface to ePAPR
+  - only check R0 on hypercall
+  - remove PVR hack
+  - align hypercalls to in/out of ePAPR
+  - add kvm.c with hypercall function
+---
+ arch/powerpc/include/asm/kvm_para.h |  114 ++++++++++++++++++++++++++++++++++-
+ arch/powerpc/include/asm/kvm_ppc.h  |    1 +
+ arch/powerpc/kernel/Makefile        |    2 +
+ arch/powerpc/kernel/kvm.c           |   68 +++++++++++++++++++++
+ arch/powerpc/kvm/book3s.c           |    9 ++-
+ arch/powerpc/kvm/booke.c            |   10 +++-
+ arch/powerpc/kvm/powerpc.c          |   32 ++++++++++
+ include/linux/kvm_para.h            |    1 +
+ 8 files changed, 233 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/kernel/kvm.c
+
 diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index ec72a1c..d7fc6c2 100644
+index e402999..556fd59 100644
 --- a/arch/powerpc/include/asm/kvm_para.h
 +++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -23,6 +23,8 @@
+@@ -21,6 +21,7 @@
+ #define __POWERPC_KVM_PARA_H__
+ 
  #include <linux/types.h>
++#include <linux/of.h>
  
  struct kvm_vcpu_arch_shared {
-+	__u64 srr0;
-+	__u64 srr1;
- 	__u64 dar;
- 	__u64 msr;
+ 	__u64 sprg0;
+@@ -34,16 +35,127 @@ struct kvm_vcpu_arch_shared {
  	__u32 dsisr;
+ };
+ 
++#define KVM_SC_MAGIC_R0		0x4b564d21 /* "KVM!" */
++#define HC_VENDOR_KVM		(42 << 16)
++#define HC_EV_SUCCESS		0
++#define HC_EV_UNIMPLEMENTED	12
++
+ #ifdef __KERNEL__
+ 
++#ifdef CONFIG_KVM_GUEST
++
++static inline int kvm_para_available(void)
++{
++	struct device_node *hyper_node;
++
++	hyper_node = of_find_node_by_path("/hypervisor");
++	if (!hyper_node)
++		return 0;
++
++	if (!of_device_is_compatible(hyper_node, "linux,kvm"))
++		return 0;
++
++	return 1;
++}
++
++extern unsigned long kvm_hypercall(unsigned long *in,
++				   unsigned long *out,
++				   unsigned long nr);
++
++#else
++
+ static inline int kvm_para_available(void)
+ {
+ 	return 0;
+ }
+ 
++static unsigned long kvm_hypercall(unsigned long *in,
++				   unsigned long *out,
++				   unsigned long nr)
++{
++	return HC_EV_UNIMPLEMENTED;
++}
++
++#endif
++
++static inline long kvm_hypercall0_1(unsigned int nr, unsigned long *r2)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++	unsigned long r;
++
++	r = kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++	*r2 = out[0];
++
++	return r;
++}
++
++static inline long kvm_hypercall0(unsigned int nr)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++
++	return kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++}
++
++static inline long kvm_hypercall1(unsigned int nr, unsigned long p1)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++
++	in[0] = p1;
++	return kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++}
++
++static inline long kvm_hypercall2(unsigned int nr, unsigned long p1,
++				  unsigned long p2)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++
++	in[0] = p1;
++	in[1] = p2;
++	return kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++}
++
++static inline long kvm_hypercall3(unsigned int nr, unsigned long p1,
++				  unsigned long p2, unsigned long p3)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++
++	in[0] = p1;
++	in[1] = p2;
++	in[2] = p3;
++	return kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++}
++
++static inline long kvm_hypercall4(unsigned int nr, unsigned long p1,
++				  unsigned long p2, unsigned long p3,
++				  unsigned long p4)
++{
++	unsigned long in[8];
++	unsigned long out[8];
++
++	in[0] = p1;
++	in[1] = p2;
++	in[2] = p3;
++	in[3] = p4;
++	return kvm_hypercall(in, out, nr | HC_VENDOR_KVM);
++}
++
++
+ static inline unsigned int kvm_arch_para_features(void)
+ {
+-	return 0;
++	unsigned long r;
++
++	if (!kvm_para_available())
++		return 0;
++
++	if(kvm_hypercall0_1(KVM_HC_FEATURES, &r))
++		return 0;
++
++	return r;
+ }
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 18d139e..ecb3bc7 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -107,6 +107,7 @@ extern int kvmppc_booke_init(void);
+ extern void kvmppc_booke_exit(void);
+ 
+ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
++extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
+ 
+ /*
+  * Cuts out inst bits with ordering according to spec.
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 58d0572..5ea853d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -125,6 +125,8 @@ ifneq ($(CONFIG_XMON)$(CONFIG_KEXEC),)
+ obj-y				+= ppc_save_regs.o
+ endif
+ 
++obj-$(CONFIG_KVM_GUEST)		+= kvm.o
++
+ # Disable GCOV in odd or sensitive code
+ GCOV_PROFILE_prom_init.o := n
+ GCOV_PROFILE_ftrace.o := n
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+new file mode 100644
+index 0000000..4f85505
+--- /dev/null
++++ b/arch/powerpc/kernel/kvm.c
+@@ -0,0 +1,68 @@
++/*
++ * Copyright (C) 2010 SUSE Linux Products GmbH. All rights reserved.
++ *
++ * Authors:
++ *     Alexander Graf <agraf@suse.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ */
++
++#include <linux/kvm_host.h>
++#include <linux/init.h>
++#include <linux/kvm_para.h>
++#include <linux/slab.h>
++#include <linux/of.h>
++
++#include <asm/reg.h>
++#include <asm/kvm_ppc.h>
++#include <asm/sections.h>
++#include <asm/cacheflush.h>
++#include <asm/disassemble.h>
++
++unsigned long kvm_hypercall(unsigned long *in,
++			    unsigned long *out,
++			    unsigned long nr)
++{
++	unsigned long register r0 asm("r0");
++	unsigned long register r3 asm("r3") = in[0];
++	unsigned long register r4 asm("r4") = in[1];
++	unsigned long register r5 asm("r5") = in[2];
++	unsigned long register r6 asm("r6") = in[3];
++	unsigned long register r7 asm("r7") = in[4];
++	unsigned long register r8 asm("r8") = in[5];
++	unsigned long register r9 asm("r9") = in[6];
++	unsigned long register r10 asm("r10") = in[7];
++	unsigned long register r11 asm("r11") = nr;
++	unsigned long register r12 asm("r12");
++
++	asm volatile("bl	kvm_hypercall_start"
++		     : "=r"(r0), "=r"(r3), "=r"(r4), "=r"(r5), "=r"(r6),
++		       "=r"(r7), "=r"(r8), "=r"(r9), "=r"(r10), "=r"(r11),
++		       "=r"(r12)
++		     : "r"(r3), "r"(r4), "r"(r5), "r"(r6), "r"(r7), "r"(r8),
++		       "r"(r9), "r"(r10), "r"(r11)
++		     : "memory", "cc", "xer", "ctr", "lr");
++
++	out[0] = r4;
++	out[1] = r5;
++	out[2] = r6;
++	out[3] = r7;
++	out[4] = r8;
++	out[5] = r9;
++	out[6] = r10;
++	out[7] = r11;
++
++	return r3;
++}
++EXPORT_SYMBOL_GPL(kvm_hypercall);
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 4d46f8b..afa0dd4 100644
+index cfd7fe5..5cb5f0d 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -162,8 +162,8 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
+@@ -947,10 +947,10 @@ program_interrupt:
+ 		break;
+ 	}
+ 	case BOOK3S_INTERRUPT_SYSCALL:
+-		// XXX make user settable
+ 		if (vcpu->arch.osi_enabled &&
+ 		    (((u32)kvmppc_get_gpr(vcpu, 3)) == OSI_SC_MAGIC_R3) &&
+ 		    (((u32)kvmppc_get_gpr(vcpu, 4)) == OSI_SC_MAGIC_R4)) {
++			/* MOL hypercalls */
+ 			u64 *gprs = run->osi.gprs;
+ 			int i;
  
- void kvmppc_inject_interrupt(struct kvm_vcpu *vcpu, int vec, u64 flags)
- {
--	vcpu->arch.srr0 = kvmppc_get_pc(vcpu);
--	vcpu->arch.srr1 = vcpu->arch.shared->msr | flags;
-+	vcpu->arch.shared->srr0 = kvmppc_get_pc(vcpu);
-+	vcpu->arch.shared->srr1 = vcpu->arch.shared->msr | flags;
- 	kvmppc_set_pc(vcpu, to_book3s(vcpu)->hior + vec);
- 	vcpu->arch.mmu.reset_msr(vcpu);
- }
-@@ -1059,8 +1059,8 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->lr = kvmppc_get_lr(vcpu);
- 	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.shared->msr;
--	regs->srr0 = vcpu->arch.srr0;
--	regs->srr1 = vcpu->arch.srr1;
-+	regs->srr0 = vcpu->arch.shared->srr0;
-+	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
- 	regs->sprg0 = vcpu->arch.sprg0;
- 	regs->sprg1 = vcpu->arch.sprg1;
-@@ -1086,8 +1086,8 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	kvmppc_set_lr(vcpu, regs->lr);
- 	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
--	vcpu->arch.srr0 = regs->srr0;
--	vcpu->arch.srr1 = regs->srr1;
-+	vcpu->arch.shared->srr0 = regs->srr0;
-+	vcpu->arch.shared->srr1 = regs->srr1;
- 	vcpu->arch.sprg0 = regs->sprg0;
- 	vcpu->arch.sprg1 = regs->sprg1;
- 	vcpu->arch.sprg2 = regs->sprg2;
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index c147864..f333cb4 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -73,8 +73,8 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		switch (get_xop(inst)) {
- 		case OP_19_XOP_RFID:
- 		case OP_19_XOP_RFI:
--			kvmppc_set_pc(vcpu, vcpu->arch.srr0);
--			kvmppc_set_msr(vcpu, vcpu->arch.srr1);
-+			kvmppc_set_pc(vcpu, vcpu->arch.shared->srr0);
-+			kvmppc_set_msr(vcpu, vcpu->arch.shared->srr1);
- 			*advance = 0;
- 			break;
- 
+@@ -959,8 +959,13 @@ program_interrupt:
+ 				gprs[i] = kvmppc_get_gpr(vcpu, i);
+ 			vcpu->arch.osi_needed = 1;
+ 			r = RESUME_HOST_NV;
+-
++		} else if (!(vcpu->arch.shared->msr & MSR_PR) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 0)) == KVM_SC_MAGIC_R0)) {
++			/* KVM PV hypercalls */
++			kvmppc_set_gpr(vcpu, 3, kvmppc_kvm_pv(vcpu));
++			r = RESUME_GUEST;
+ 		} else {
++			/* Guest syscalls */
+ 			vcpu->stat.syscall_exits++;
+ 			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+ 			r = RESUME_GUEST;
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 4aab6d2..793df28 100644
+index b2c8c42..13e0747 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -64,7 +64,8 @@ void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu)
+@@ -338,7 +338,15 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
  
- 	printk("pc:   %08lx msr:  %08llx\n", vcpu->arch.pc, vcpu->arch.shared->msr);
- 	printk("lr:   %08lx ctr:  %08lx\n", vcpu->arch.lr, vcpu->arch.ctr);
--	printk("srr0: %08lx srr1: %08lx\n", vcpu->arch.srr0, vcpu->arch.srr1);
-+	printk("srr0: %08llx srr1: %08llx\n", vcpu->arch.shared->srr0,
-+					    vcpu->arch.shared->srr1);
- 
- 	printk("exceptions: %08lx\n", vcpu->arch.pending_exceptions);
- 
-@@ -189,8 +190,8 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	}
- 
- 	if (allowed) {
--		vcpu->arch.srr0 = vcpu->arch.pc;
--		vcpu->arch.srr1 = vcpu->arch.shared->msr;
-+		vcpu->arch.shared->srr0 = vcpu->arch.pc;
-+		vcpu->arch.shared->srr1 = vcpu->arch.shared->msr;
- 		vcpu->arch.pc = vcpu->arch.ivpr | vcpu->arch.ivor[priority];
- 		if (update_esr == true)
- 			vcpu->arch.esr = vcpu->arch.queued_esr;
-@@ -491,8 +492,8 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	regs->lr = vcpu->arch.lr;
- 	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.shared->msr;
--	regs->srr0 = vcpu->arch.srr0;
--	regs->srr1 = vcpu->arch.srr1;
-+	regs->srr0 = vcpu->arch.shared->srr0;
-+	regs->srr1 = vcpu->arch.shared->srr1;
- 	regs->pid = vcpu->arch.pid;
- 	regs->sprg0 = vcpu->arch.sprg0;
- 	regs->sprg1 = vcpu->arch.sprg1;
-@@ -518,8 +519,8 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	vcpu->arch.lr = regs->lr;
- 	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
--	vcpu->arch.srr0 = regs->srr0;
--	vcpu->arch.srr1 = regs->srr1;
-+	vcpu->arch.shared->srr0 = regs->srr0;
-+	vcpu->arch.shared->srr1 = regs->srr1;
- 	vcpu->arch.sprg0 = regs->sprg0;
- 	vcpu->arch.sprg1 = regs->sprg1;
- 	vcpu->arch.sprg2 = regs->sprg2;
-diff --git a/arch/powerpc/kvm/booke_emulate.c b/arch/powerpc/kvm/booke_emulate.c
-index 51ef453..1260f5f 100644
---- a/arch/powerpc/kvm/booke_emulate.c
-+++ b/arch/powerpc/kvm/booke_emulate.c
-@@ -31,8 +31,8 @@
- 
- static void kvmppc_emul_rfi(struct kvm_vcpu *vcpu)
- {
--	vcpu->arch.pc = vcpu->arch.srr0;
--	kvmppc_set_msr(vcpu, vcpu->arch.srr1);
-+	vcpu->arch.pc = vcpu->arch.shared->srr0;
-+	kvmppc_set_msr(vcpu, vcpu->arch.shared->srr1);
+ 	case BOOKE_INTERRUPT_SYSCALL:
+-		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SYSCALL);
++		if (!(vcpu->arch.shared->msr & MSR_PR) &&
++		    (((u32)kvmppc_get_gpr(vcpu, 0)) == KVM_SC_MAGIC_R0)) {
++			/* KVM PV hypercalls */
++			kvmppc_set_gpr(vcpu, 3, kvmppc_kvm_pv(vcpu));
++			r = RESUME_GUEST;
++		} else {
++			/* Guest syscalls */
++			kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_SYSCALL);
++		}
+ 		kvmppc_account_exit(vcpu, SYSCALL_EXITS);
+ 		r = RESUME_GUEST;
+ 		break;
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 22f6fa2..a4cf4b4 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -42,6 +42,38 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *v)
+ 	       !!(v->arch.pending_exceptions);
  }
  
- int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index 4568ec3..ad0fa4f 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -242,9 +242,11 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
++int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
++{
++	int nr = kvmppc_get_gpr(vcpu, 11);
++	int r;
++	unsigned long __maybe_unused param1 = kvmppc_get_gpr(vcpu, 3);
++	unsigned long __maybe_unused param2 = kvmppc_get_gpr(vcpu, 4);
++	unsigned long __maybe_unused param3 = kvmppc_get_gpr(vcpu, 5);
++	unsigned long __maybe_unused param4 = kvmppc_get_gpr(vcpu, 6);
++	unsigned long r2 = 0;
++
++	if (!(vcpu->arch.shared->msr & MSR_SF)) {
++		/* 32 bit mode */
++		param1 &= 0xffffffff;
++		param2 &= 0xffffffff;
++		param3 &= 0xffffffff;
++		param4 &= 0xffffffff;
++	}
++
++	switch (nr) {
++	case HC_VENDOR_KVM | KVM_HC_FEATURES:
++		r = HC_EV_SUCCESS;
++
++		/* Second return value is in r4 */
++		kvmppc_set_gpr(vcpu, 4, r2);
++		break;
++	default:
++		r = HC_EV_UNIMPLEMENTED;
++		break;
++	}
++
++	return r;
++}
  
- 			switch (sprn) {
- 			case SPRN_SRR0:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.srr0); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->srr0);
-+				break;
- 			case SPRN_SRR1:
--				kvmppc_set_gpr(vcpu, rt, vcpu->arch.srr1); break;
-+				kvmppc_set_gpr(vcpu, rt, vcpu->arch.shared->srr1);
-+				break;
- 			case SPRN_PVR:
- 				kvmppc_set_gpr(vcpu, rt, vcpu->arch.pvr); break;
- 			case SPRN_PIR:
-@@ -320,9 +322,11 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 			rs = get_rs(inst);
- 			switch (sprn) {
- 			case SPRN_SRR0:
--				vcpu->arch.srr0 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->srr0 = kvmppc_get_gpr(vcpu, rs);
-+				break;
- 			case SPRN_SRR1:
--				vcpu->arch.srr1 = kvmppc_get_gpr(vcpu, rs); break;
-+				vcpu->arch.shared->srr1 = kvmppc_get_gpr(vcpu, rs);
-+				break;
+ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ {
+diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
+index d731092..3b8080e 100644
+--- a/include/linux/kvm_para.h
++++ b/include/linux/kvm_para.h
+@@ -17,6 +17,7 @@
  
- 			/* XXX We need to context-switch the timebase for
- 			 * watchdog and FIT. */
+ #define KVM_HC_VAPIC_POLL_IRQ		1
+ #define KVM_HC_MMU_OP			2
++#define KVM_HC_FEATURES			3
+ 
+ /*
+  * hypercalls use architecture specific
 -- 
 1.6.0.2
