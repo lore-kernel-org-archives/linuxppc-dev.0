@@ -1,13 +1,13 @@
 Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id B78D7B70F8
+	by ozlabs.org (Postfix) with ESMTP id D04FEB7102
 	for <linuxppc-dev@lists.ozlabs.org>;
 	Thu, 29 Jul 2010 22:48:13 +1000 (EST)
 From: Alexander Graf <agraf@suse.de>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 10/27] KVM: PPC: Tell guest about pending interrupts
-Date: Thu, 29 Jul 2010 14:47:51 +0200
-Message-Id: <1280407688-9815-11-git-send-email-agraf@suse.de>
+Subject: [PATCH 20/27] KVM: PPC: Introduce kvm_tmp framework
+Date: Thu, 29 Jul 2010 14:48:01 +0200
+Message-Id: <1280407688-9815-21-git-send-email-agraf@suse.de>
 In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
 References: <1280407688-9815-1-git-send-email-agraf@suse.de>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
@@ -21,81 +21,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the guest turns on interrupts again, it needs to know if we have an
-interrupt pending for it. Because if so, it should rather get out of guest
-context and get the interrupt.
+We will soon require more sophisticated methods to replace single instructions
+with multiple instructions. We do that by branching to a memory region where we
+write replacement code for the instruction to.
 
-So we introduce a new field in the shared page that we use to tell the guest
-that there's a pending interrupt lying around.
+This region needs to be within 32 MB of the patched instruction though, because
+that's the furthest we can jump with immediate branches.
+
+So we keep 1MB of free space around in bss. After we're done initing we can just
+tell the mm system that the unused pages are free, but until then we have enough
+space to fit all our code in.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
 ---
- arch/powerpc/include/asm/kvm_para.h |    1 +
- arch/powerpc/kvm/book3s.c           |    7 +++++++
- arch/powerpc/kvm/booke.c            |    7 +++++++
- 3 files changed, 15 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kvm.c |   42 ++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 40 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index 5be00c9..0653b0d 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -37,6 +37,7 @@ struct kvm_vcpu_arch_shared {
- 	__u64 dar;
- 	__u64 msr;
- 	__u32 dsisr;
-+	__u32 int_pending;	/* Tells the guest if we have an interrupt */
- };
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 3258922..926f93f 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -65,6 +65,8 @@
+ #define KVM_INST_TLBSYNC	0x7c00046c
  
- #define KVM_SC_MAGIC_R0		0x4b564d21 /* "KVM!" */
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index d6227ff..06229fe 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -337,6 +337,7 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
- void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
+ static bool kvm_patching_worked = true;
++static char kvm_tmp[1024 * 1024];
++static int kvm_tmp_index;
+ 
+ static inline void kvm_patch_ins(u32 *inst, u32 new_inst)
  {
- 	unsigned long *pending = &vcpu->arch.pending_exceptions;
-+	unsigned long old_pending = vcpu->arch.pending_exceptions;
- 	unsigned int priority;
- 
- #ifdef EXIT_DEBUG
-@@ -356,6 +357,12 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- 					 BITS_PER_BYTE * sizeof(*pending),
- 					 priority + 1);
- 	}
-+
-+	/* Tell the guest about our interrupt status */
-+	if (*pending)
-+		vcpu->arch.shared->int_pending = 1;
-+	else if (old_pending)
-+		vcpu->arch.shared->int_pending = 0;
+@@ -105,6 +107,23 @@ static void kvm_patch_ins_nop(u32 *inst)
+ 	kvm_patch_ins(inst, KVM_INST_NOP);
  }
  
- void kvmppc_set_pvr(struct kvm_vcpu *vcpu, u32 pvr)
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 104d0ee..c604277 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -224,6 +224,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- {
- 	unsigned long *pending = &vcpu->arch.pending_exceptions;
-+	unsigned long old_pending = vcpu->arch.pending_exceptions;
- 	unsigned int priority;
- 
- 	priority = __ffs(*pending);
-@@ -235,6 +236,12 @@ void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
- 		                         BITS_PER_BYTE * sizeof(*pending),
- 		                         priority + 1);
- 	}
++static u32 *kvm_alloc(int len)
++{
++	u32 *p;
 +
-+	/* Tell the guest about our interrupt status */
-+	if (*pending)
-+		vcpu->arch.shared->int_pending = 1;
-+	else if (old_pending)
-+		vcpu->arch.shared->int_pending = 0;
++	if ((kvm_tmp_index + len) > ARRAY_SIZE(kvm_tmp)) {
++		printk(KERN_ERR "KVM: No more space (%d + %d)\n",
++				kvm_tmp_index, len);
++		kvm_patching_worked = false;
++		return NULL;
++	}
++
++	p = (void*)&kvm_tmp[kvm_tmp_index];
++	kvm_tmp_index += len;
++
++	return p;
++}
++
+ static void kvm_map_magic_page(void *data)
+ {
+ 	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
+@@ -270,17 +289,36 @@ static int kvm_para_setup(void)
+ 	return 0;
  }
  
- /**
++static __init void kvm_free_tmp(void)
++{
++	unsigned long start, end;
++
++	start = (ulong)&kvm_tmp[kvm_tmp_index + (PAGE_SIZE - 1)] & PAGE_MASK;
++	end = (ulong)&kvm_tmp[ARRAY_SIZE(kvm_tmp)] & PAGE_MASK;
++
++	/* Free the tmp space we don't need */
++	for (; start < end; start += PAGE_SIZE) {
++		ClearPageReserved(virt_to_page(start));
++		init_page_count(virt_to_page(start));
++		free_page(start);
++		totalram_pages++;
++	}
++}
++
+ static int __init kvm_guest_init(void)
+ {
+ 	if (!kvm_para_available())
+-		return 0;
++		goto free_tmp;
+ 
+ 	if (kvm_para_setup())
+-		return 0;
++		goto free_tmp;
+ 
+ 	if (kvm_para_has_feature(KVM_FEATURE_MAGIC_PAGE))
+ 		kvm_use_magic_page();
+ 
++free_tmp:
++	kvm_free_tmp();
++
+ 	return 0;
+ }
+ 
 -- 
 1.6.0.2
