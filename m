@@ -1,21 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id C87A41007D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 17:40:03 +1000 (EST)
-Date: Thu, 29 Jul 2010 09:39:54 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH V5] powerpc/mpc512x: Add gpio driver
-Message-ID: <20100729093954.22e88136@wker>
-In-Reply-To: <AANLkTi=drdEQG7n8c2-UniYtY0g64kzkY-Oy_uD7iCBG@mail.gmail.com>
-References: <AANLkTik7pTXHdY9_sjL9Lyz68gk2qRUs0NaGpj_7nL7K@mail.gmail.com>
-	<1276245337-22897-1-git-send-email-agust@denx.de>
-	<87iq4r5y4q.fsf@macbook.be.48ers.dk>
-	<AANLkTi=drdEQG7n8c2-UniYtY0g64kzkY-Oy_uD7iCBG@mail.gmail.com>
+Return-Path: <embedway.test@gmail.com>
+Received: from mail-gw0-f51.google.com (mail-gw0-f51.google.com [74.125.83.51])
+	by ozlabs.org (Postfix) with ESMTP id E492FB6EF7
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 29 Jul 2010 16:08:57 +1000 (EST)
+Received: by gwj22 with SMTP id 22so93706gwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed, 28 Jul 2010 23:08:55 -0700 (PDT)
+Date: Thu, 29 Jul 2010 14:08:53 +0800
+From: "hacklu" <embedway.test@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: i meet some surprising things,when i modify the dts file
+Message-ID: <201007291408499573189@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Matthias Fuchs <matthias.fuchs@esd.eu>, Wolfgang Denk <wd@denx.de>,
-	Detlev Zundel <dzu@denx.de>, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon673063736764_====="
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jul 2010 01:19:23 -0600
-Grant Likely <grant.likely@secretlab.ca> wrote:
 
-> On Wed, Jul 7, 2010 at 5:28 AM, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> >>>>>> "Anatolij" =3D=3D Anatolij Gustschin <agust@denx.de> writes:
-> >
-> > Hi,
-> >
-> > Old mail, I know ..
-> >
-> > =A0Anatolij> From: Matthias Fuchs <matthias.fuchs@esd.eu>
-> > =A0Anatolij> This patch adds a gpio driver for MPC512X PowerPCs.
-> >
-> > =A0Anatolij> It has been tested on our CAN-CBX-CPU5201 module that
-> > =A0Anatolij> uses a MPC5121 CPU. This platform comes with a couple of
-> > =A0Anatolij> LEDs and configuration switches that have been used for te=
-sting.
-> >
-> > =A0Anatolij> After change to the of-gpio api the reworked driver has be=
-en
-> > =A0Anatolij> tested on pdm360ng board with some configuration switches.
-> >
-> > This looks very similar to the existing
-> > arch/powerpc/sysdev/mpc8xxx_gpio.c - Couldn't we just add 5121 support
-> > there instead?
-> >
-> > =A0Anatolij> +struct mpc512x_gpio_regs {
-> > =A0Anatolij> + =A0 =A0u32 gpdir;
-> > =A0Anatolij> + =A0 =A0u32 gpodr;
-> > =A0Anatolij> + =A0 =A0u32 gpdat;
-> > =A0Anatolij> + =A0 =A0u32 gpier;
-> > =A0Anatolij> + =A0 =A0u32 gpimr;
-> > =A0Anatolij> + =A0 =A0u32 gpicr1;
-> > =A0Anatolij> + =A0 =A0u32 gpicr2;
-> > =A0Anatolij> +};
->=20
-> Hi Anatolij,
->=20
-> Peter's right, the register map looks the same, except for the
-> additional gpicr1 & 2 registers in the 512x version.  Can the 512x
-> gpios be supported by the 8xxx gpio driver?
+This is a multi-part message in MIME format.
 
-Hi Grant,
+--=====003_Dragon673063736764_=====
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-I wanted to extend/test this driver but didn't have time so far. I'll
-look at 8xxx gpio driver this weekend to see if it can be used for
-512x gpios.
+ localbus@f0010100 {
+                ....
+                ranges = <
+                                 0 0 FC000000 1000000   
+                                 2 0 FA000000 1000000   
+                                 1 0 70000000 1000000
+                               >;
+                flash@0,0{
 
-Anatolij
+.....
+}
+
+flash@2,0{
+
+....
+}
+
+         board-control@1,0{
+                .....
+}
+
+}
+
+this is part of my dts files. I don't kown what each field means in the config rangs.
+for instance, 2 0 FA000000 1000000 .
+I only konw this:
+"2" is means chip selects.
+"0" is what?
+"Fa00000" means the start address.
+"1000000" means the range of the device
+
+but ,I got some puzzled.
+when I set the two flash in the 0,1 chips select or 0,2 chips select my linux works well.
+and, the board-control only can be set at 1 chis select,otherwise the pci doesn't be detected.
+
+so , what is the chips select? is it based on hardware? but my flash can use 0,1,2 chips select.
+or it is just set by software? but my pci devece can only work in 1 chips select.
+
+
+BTW:
+I also want to know how to write the dts file. I want to understand each node in the dts files.
+but I can't get enough documents. I have readed the linux/document/...
+could you privode me some useful information?
+
+thank you ver much~
+
+2010-07-29 
+
+
+
+hacklu 
+
+--=====003_Dragon673063736764_=====
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=us-ascii">
+<META content="MSHTML 6.00.2900.5969" name=GENERATOR><LINK 
+href="BLOCKQUOTE{margin-Top: 0px; margin-Bottom: 0px; margin-Left: 2em}" 
+rel=stylesheet></HEAD>
+<BODY style="FONT-SIZE: 10pt; MARGIN: 10px; FONT-FAMILY: verdana">
+<DIV><FONT face=Verdana size=2>
+<DIV>&nbsp;localbus@f0010100&nbsp;{</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;....</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ranges&nbsp;=&nbsp;&lt;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;0&nbsp;FC000000&nbsp;1000000&nbsp;&nbsp; 
+</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;0&nbsp;FA000000&nbsp;1000000&nbsp;&nbsp; 
+</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;0&nbsp;70000000&nbsp;1000000</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;;</DIV>
+<DIV></DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flash@0,0{</DIV>
+<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 10em">.....</DIV>
+<DIV style="TEXT-INDENT: 10em">}</DIV>
+<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 6em">flash@2,0{</DIV>
+<DIV style="TEXT-INDENT: 6em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 8em">....</DIV>
+<DIV style="TEXT-INDENT: 10em">}</DIV>
+<DIV style="TEXT-INDENT: 10em">&nbsp;</DIV></FONT></DIV>
+<DIV><FONT face=Verdana 
+size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;board-control@1,0{</FONT></DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+.....</DIV>
+<DIV style="TEXT-INDENT: 8em">}</DIV>
+<DIV style="TEXT-INDENT: 8em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">}</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">this is part of my dts files. I don't kown what 
+each field means in the config rangs.</DIV>
+<DIV style="TEXT-INDENT: 2em">for instance, 
+2&nbsp;0&nbsp;FA000000&nbsp;1000000&nbsp;.</DIV>
+<DIV style="TEXT-INDENT: 2em">I only konw this:</DIV>
+<DIV style="TEXT-INDENT: 4em">"2" is means chip selects.</DIV>
+<DIV style="TEXT-INDENT: 4em">"0" is what?</DIV>
+<DIV style="TEXT-INDENT: 4em">"Fa00000" means the start address.</DIV>
+<DIV style="TEXT-INDENT: 4em">"1000000" means the range of the device</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">but ,I got some puzzled.</DIV>
+<DIV style="TEXT-INDENT: 4em">when I set the two flash in the 0,1 chips select 
+or 0,2 chips select my linux works well.</DIV>
+<DIV style="TEXT-INDENT: 4em">and, the board-control only can be set at 1 chis 
+select,otherwise the pci doesn't be detected.</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">so , what is the chips select? is it based on 
+hardware? but my flash can use 0,1,2 chips select.</DIV>
+<DIV style="TEXT-INDENT: 4em">or it is just set by software? but my pci devece 
+can only work in 1 chips select.</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">BTW:</DIV>
+<DIV style="TEXT-INDENT: 4em">I also want to know how to write the dts file. I 
+want to understand each node in the dts files.</DIV>
+<DIV style="TEXT-INDENT: 4em">but I can't get enough documents. I have readed 
+the linux/document/...</DIV>
+<DIV style="TEXT-INDENT: 4em">could you privode me some useful 
+information?</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV style="TEXT-INDENT: 4em">thank you ver much~</DIV>
+<DIV style="TEXT-INDENT: 4em">&nbsp;</DIV>
+<DIV align=left><FONT face=Verdana color=#c0c0c0 size=2>2010-07-29 
+</FONT></DIV><FONT face=Verdana size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" align=left SIZE=2>
+
+<DIV><FONT face=Verdana color=#c0c0c0 size=2><SPAN>hacklu</SPAN> 
+</FONT></DIV></FONT></BODY></HTML>
+
+--=====003_Dragon673063736764_=====--
