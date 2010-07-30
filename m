@@ -1,30 +1,14 @@
-Return-Path: <fkan@apm.com>
-Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
-	by ozlabs.org (Postfix) with SMTP id 0BF35B70D5
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 12:02:46 +1000 (EST)
-Received: by gwj16 with SMTP id 16so523619gwj.14
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 19:02:44 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100730012650.GB24931@suse.de>
-References: <12801701823001-git-send-email-fchen@apm.com>
-	<20100726213704.GA16268@suse.de>
-	<4C4E0449.2070108@caviumnetworks.com>
-	<20100726220513.GA9671@suse.de> <20100726220809.GA9784@suse.de>
-	<AANLkTinbTnrr9DCiSgKngAjaak=U0qDYcCxbNZR4Nm3D@mail.gmail.com>
-	<20100726231616.GA25342@suse.de>
-	<AANLkTikDpxcOj=TgD5697HOzPOanECGd4G6QaXZmoS98@mail.gmail.com>
-	<20100730005045.GB22683@suse.de>
-	<AANLkTikSH8_QXV2qsBR+vxsjvQwNdx2st3vfbRpfsMff@mail.gmail.com>
-	<20100730012650.GB24931@suse.de>
-Date: Thu, 29 Jul 2010 19:02:44 -0700
-Message-ID: <AANLkTimiox6UbUnhSRLgC06S2kfcDOANA08gm3m++TXd@mail.gmail.com>
-Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
-From: Feng Kan <fkan@apm.com>
-To: Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-usb@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
-	linuxppc-dev@ozlabs.org, Mark Miesfeld <mmiesfeld@apm.com>,
-	Ted Chan <tchan@apm.com>, Fushen Chen <fchen@apm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Matt Evans <matt@ozlabs.org>
+Subject: Re: [PATCH v2] powerpc/kexec: Fix orphaned offline CPUs across kexec
+In-reply-to: <4C521FD2.4050301@ozlabs.org>
+References: <4C511216.30109@ozlabs.org> <3296.1280448512@neuling.org>
+	<4C521FD2.4050301@ozlabs.org>
+Date: Fri, 30 Jul 2010 13:15:14 +1000
+Message-ID: <20694.1280459714@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,98 +18,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 29, 2010 at 6:26 PM, Greg KH <gregkh@suse.de> wrote:
-> On Thu, Jul 29, 2010 at 06:19:25PM -0700, Feng Kan wrote:
->> Hi Greg:
->>
->> On Thu, Jul 29, 2010 at 5:50 PM, Greg KH <gregkh@suse.de> wrote:
->> > On Thu, Jul 29, 2010 at 05:14:59PM -0700, Feng Kan wrote:
->> >> Hi Greg:
->> >>
->> >> We will change to a BSD 3 clause license header. Our legal counsel is
->> >> talking to Synopsis to make this change.
->> >
->> > Why BSD? =C2=A0You do realize what that means when combined within the=
- body
->> > of the kernel, right?
->> >
->>
->> FKAN: We will shoot for a dual BSD/GPL license such as the one in the HP
->> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Hil driver.
->
-> What specific driver is this?
+(adding kexec list to CC)
 
-FKAN: this is driver/input/serio/hil_mlc.c and quite a number of others.
+In message <4C521FD2.4050301@ozlabs.org> you wrote:
+> Michael Neuling wrote:
+> > In message <4C511216.30109@ozlabs.org> you wrote:
+> >> When CPU hotplug is used, some CPUs may be offline at the time a kexec is
+> >> performed.  The subsequent kernel may expect these CPUs to be already runn
+ing
+> > ,
+> >> and will declare them stuck.  On pseries, there's also a soft-offline (ced
+e)
+> >> state that CPUs may be in; this can also cause problems as the kexeced ker
+nel
+> >> may ask RTAS if they're online -- and RTAS would say they are.  Again, stu
+ck.
+> >>
+> >> This patch kicks each present offline CPU awake before the kexec, so that
+> >> none are lost to these assumptions in the subsequent kernel.
+> > 
+> > There are a lot of cleanups in this patch.  The change you are making
+> > would be a lot clearer without all the additional cleanups in there.  I
+> > think I'd like to see this as two patches.  One for cleanups and one for
+> > the addition of wake_offline_cpus().
+> 
+> Okay, I can split this.  Typofixy-add-debug in one, wake_offline_cpus
+> in another. 
 
->
-> And are you sure that all of the contributors to the code agree with
-> this licensing change? =C2=A0Are you going to require contributors to
-> dual-license their changes?
->
-> If so, why keep it BSD, what does that get you?
+Thanks.
 
-FKAN: for one thing, to make it future proof on other submissions.
+> 
+> > Other than that, I'm not completely convinced this is the functionality
+> > we want.  Do we really want to online these cpus?  Why where they
+> > offlined in the first place?  I understand the stuck problem, but is the
+> > solution to online them, or to change the device tree so that the second
+> > kernel doesn't detect them as stuck?
+> 
+> Well... There are two cases.  If a CPU is soft-offlined on pseries, it
+> must b e woken from that cede loop (in
+> platforms/pseries/hotplug-cpu.c) as we're repla cing code under its
+> feet.  We could either special-case the wakeup from this ce de loop to
+> get that CPU to RTAS "stop-self" itself properly.  (Kind of like a "
+> wake to die".)
 
->
->> > Are you going to be expecting others to contribute back to the code
->> > under this license, or will you accept the fact that future
->> > contributions from the community will cause the license to change?
->
->
-> You didn't answer this question, which is a very important one before I
-> can accept this driver.
+Makes sense.  
 
-FKAN: Yes, all of the above. Our legal is working on that. I thought by def=
-ault
-           GPL defines the above statement.
+> So that leaves hard-offline CPUs (perhaps including the above): I
+> don't know why they might have been offlined.  If it's something
+> serious, like fire, they'd be removed from the present set too (and
+> thus not be considered in this restarting case).  We could add a mask
+> to the CPU node to show which of the threads (if any) are running, and
+> alter the startup code to start everything if this mask doesn't exist
+> (non-kexec) or only online currently-running threads if the mask is
+> present.  That feels a little weird.
+> 
+> My reasoning for restarting everything was: The first time you boot,
+> all of your present CPUs are started up.  When you reboot, any CPUs
+> you offlined for fun are restarted.  Kexec is (in this non-crash
+> sense) a user-initiated 'quick reboot', so I reasoned that it should
+> look the same as a 'hard reboot' and your new invocation would have
+> all available CPUs running as is usual.
 
->
->> >> We will resubmit once this is in place. Please let me know if you hav=
-e
->> >> any additional concerns.
->> >
->> > My main concern is that you, and everyone else involved in the driver,
->> > never considered the license of the code in the first place and expect=
-ed
->> > the kernel community to accept it as-is, placing the problem on us.
->>
->> FKAN: Please don't think this is the case, we gone through this exercise
->> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 with Denx.
->
-> What is "Denx"?
+OK, I like this justification.  Would be good to include it in the
+checkin comment since we're changing functionality somewhat.
 
-FKAN: U-Boot Denx.de
-
->
->> We had legal looking into the header before submission
->> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 to them and the kernel.
->
-> Then what happened here? =C2=A0Just curious as to how the driver was publ=
-ic
-> for so long before someone realized this.
->
-
-FKAN:  this was few years back. At the time we had the header changed
-           so it was BSD like to be accepted by Denx.
-
->> > What will be done in the future to prevent this from happening again?
->>
->> FKAN: agreed, once bitten .... :)
->
-> That didn't answer the question :)
-
-FKAN: we have a system of checks for every patch that goes out. I will send
-           out a guideline to all reviewer to make sure the header
-follow kernel precedence.
-           Legal is quite aware of the issue now too.
-
->
-> thanks,
->
-> greg k-h
->
-
-
-
---=20
-Feng Kan
+Mikey
