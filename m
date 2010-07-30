@@ -1,32 +1,25 @@
-Return-Path: <tj@kernel.org>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 93F38B70D4
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 18:46:21 +1000 (EST)
-Message-ID: <4C52913C.9020204@kernel.org>
-Date: Fri, 30 Jul 2010 10:45:48 +0200
-From: Tejun Heo <tj@kernel.org>
-MIME-Version: 1.0
-To: Guenter Roeck <guenter.roeck@ericsson.com>
-Subject: Re: [PATCH 0/6] Remove owner field from sysfs attribute structure
-References: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
-In-Reply-To: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Jani Nikula <ext-jani.1.nikula@nokia.com>,
-	Linus Walleij <linus.walleij@stericsson.com>,
-	James Smart <james.smart@emulex.com>,
-	"Eric W. Biederman" <ebiederm@aristanetworks.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
-	linuxppc-dev@ozlabs.org, "James E.J. Bottomley" <James.Bottomley@suse.de>,
-	Richard Purdie <rpurdie@rpsys.net>, Nick Cheng <nick.cheng@areca.com.tw>,
-	Dmitry Torokhov <dtor@mail.ru>, Jean Delvare <khali@linux-fr.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Benjamin Thery <benjamin.thery@bull.net>, linux-scsi@vger.kernel.org,
-	Alex Iannicelli <alex.iannicelli@emulex.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>
+	by ozlabs.org (Postfix) with ESMTPS id F3CEE10080F
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 20:30:03 +1000 (EST)
+Subject: Re: [PATCH 1/4] irq: Add new IRQ flag IRQF_NO_SUSPEND
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ian Campbell <ian.campbell@citrix.com>
+In-Reply-To: <1280398595-29708-1-git-send-email-ian.campbell@citrix.com>
+References: <1280398573.24292.1684.camel@zakaz.uk.xensource.com>
+	<1280398595-29708-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 30 Jul 2010 20:29:38 +1000
+Message-ID: <1280485778.1902.9.camel@pasglop>
+Mime-Version: 1.0
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
+	devicetree-discuss@lists.ozlabs.org,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-input@vger.kernel.org,
+	Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2010 07:09 AM, Guenter Roeck wrote:
-> The following comment is found in include/linux/sysfs.h:
+On Thu, 2010-07-29 at 11:16 +0100, Ian Campbell wrote:
+> A small number of users of IRQF_TIMER are using it for the implied no
+> suspend behaviour on interrupts which are not timer interrupts.
 > 
->    /* FIXME
->     * The *owner field is no longer used.
->     * x86 tree has been cleaned up. The owner
->     * attribute is still left for other arches.
->     */
+> Therefore add a new IRQF_NO_SUSPEND flag, rename IRQF_TIMER to
+> __IRQF_TIMER and redefine IRQF_TIMER in terms of these new flags.
 > 
-> As it turns out, the *owner field is (again?) initialized in several modules,
-> suggesting that such initialization may be creeping back into the code.
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: xen-devel@lists.xensource.com
+> Cc: linux-input@vger.kernel.org
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> ---
+>  include/linux/interrupt.h |    7 ++++++-
+>  kernel/irq/manage.c       |    2 +-
+>  2 files changed, 7 insertions(+), 2 deletions(-)
 > 
-> This patch set removes the above comment, the *owner field, and each instance
-> in the code where it was found to be initialized.
-> 
-> Compiled with x86 allmodconfig as well as with all alpha, arm, mips, powerpc,
-> and sparc defconfig builds.
-
-Yeah, the change is way overdue.  Maybe we should have just removed
-them back then.
-
- Acked-by: Tejun Heo <tj@kernel.org>
-
-Thanks.
-
--- 
-tejun
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index c233113..a0384a4 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -53,16 +53,21 @@
+>   * IRQF_ONESHOT - Interrupt is not reenabled after the hardirq handler finished.
+>   *                Used by threaded interrupts which need to keep the
+>   *                irq line disabled until the threaded handler has been run.
+> + * IRQF_NO_SUSPEND - Do not disable this IRQ during suspend
+> + *
+>   */
+>  #define IRQF_DISABLED		0x00000020
+>  #define IRQF_SAMPLE_RANDOM	0x00000040
+>  #define IRQF_SHARED		0x00000080
+>  #define IRQF_PROBE_SHARED	0x00000100
+> -#define IRQF_TIMER		0x00000200
+> +#define __IRQF_TIMER		0x00000200
+>  #define IRQF_PERCPU		0x00000400
+>  #define IRQF_NOBALANCING	0x00000800
+>  #define IRQF_IRQPOLL		0x00001000
+>  #define IRQF_ONESHOT		0x00002000
+> +#define IRQF_NO_SUSPEND		0x00004000
+> +
+> +#define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND)
+>  
+>  /*
+>   * Bits used by threaded handlers:
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index e149748..c3003e9 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -216,7 +216,7 @@ static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
+>  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+>  {
+>  	if (suspend) {
+> -		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+> +		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
+>  			return;
+>  		desc->status |= IRQ_SUSPENDED;
+>  	}
