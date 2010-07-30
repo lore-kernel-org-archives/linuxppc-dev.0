@@ -1,31 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from TX2EHSOBE007.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 1905FB70A4
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 03:04:30 +1000 (EST)
-Received: from mail176-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail176-tx2-R.bigfish.com (Postfix) with ESMTP id 9070BA4008A	for
-	<linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:04:27 +0000 (UTC)
-Received: from TX2EHSMHS014.bigfish.com (unknown [10.9.14.245])	by
-	mail176-tx2.bigfish.com (Postfix) with ESMTP id 504D462004C	for
-	<linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:04:27 +0000 (UTC)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net
-	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o6UH4PPl016112	for <linuxppc-dev@ozlabs.org>;
-	Fri, 30 Jul 2010 10:04:25 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
-	o6UHFb1J014268	for <linuxppc-dev@ozlabs.org>;
-	Fri, 30 Jul 2010 12:15:37 -0500 (CDT)
-Date: Fri, 30 Jul 2010 12:04:24 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Shawn Jin <shawnxjin@gmail.com>
-Subject: Re: ramdisk size is larger than 4MB
-Message-ID: <20100730120424.6db4139f@schlenkerla.am.freescale.net>
-In-Reply-To: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
-References: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 7A2DFB6EFE
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 03:18:31 +1000 (EST)
+Message-Id: <20100730171504.200218674@clark.site>
+Date: Fri, 30 Jul 2010 10:14:38 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org,
+ stable@kernel.org
+Subject: [050/165] genirq: Deal with desc->set_type() changing desc->chip
+In-Reply-To: <20100730171550.GA1299@kroah.com
+Cc: stable-review@kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 30 Jul 2010 00:00:52 -0700
-Shawn Jin <shawnxjin@gmail.com> wrote:
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-> Hi,
-> 
-> I have a ramdisk as RFS much larger than 4MB in a 2.4 kernel. In
-> recent 2.6 kernels ramdisk is no longer supported so I decided to go
-> with initramfs. However I found the initial RFS for initramfs is
-> limited to 4MB since the bootwrapper locates at 0x400000.
+------------------
 
-The uncompressed image, including both ramfs and kernel must fit below
-4MB.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-> One way to lift this limitation is to relocate the bootwrapper to
-> somewhere else, say for example, 0x1000000 so that a 16MB initramfs
-> can be loaded. If the bootwrapper is relocated, what else would be
-> affected by this relocation?
+commit 4673247562e39a17e09440fa1400819522ccd446 upstream.
 
-It should be fine to just change it locally.  It would be a problem to
-change it upstream for all boards, since some supported boards have
-only 16MB (or even 8MB) of RAM.
+The set_type() function can change the chip implementation when the
+trigger mode changes. That might result in using an non-initialized
+irq chip when called from __setup_irq() or when called via
+set_irq_type() on an already enabled irq.
 
-Another option is to provide a vmlinux_alloc callback to stick the
-kernel somewhere other than zero, at the cost of an extra image copy
-once the kernel runs to get itself back down to zero.  This wasn't done
-in cuboot because it was considered better to adjust the bootwrapper
-link address at build time based on the kernel+ramfs image size, but
-that never got implemented.
+The set_irq_type() function should not be called on an enabled irq,
+but because we forgot to put a check into it, we have a bunch of users
+which grew the habit of doing that and it never blew up as the
+function is serialized via desc->lock against all users of desc->chip
+and they never hit the non-initialized irq chip issue.
 
-Perhaps a reasonable compromise is a vmlinux_alloc that returns zero if
-the image fits there, and calls malloc otherwise?
+The easy fix for the __setup_irq() issue would be to move the
+irq_chip_set_defaults(desc->chip) call after the trigger setting to
+make sure that a chip change is covered.
 
--Scott
+But as we have already users, which do the type setting after
+request_irq(), the safe fix for now is to call irq_chip_set_defaults()
+from __irq_set_trigger() when desc->set_type() changed the irq chip.
+
+It needs a deeper analysis whether we should refuse to change the chip
+on an already enabled irq, but that'd be a large scale change to fix
+all the existing users. So that's neither stable nor 2.6.35 material.
+
+Reported-by: Esben Haabendal <eha@doredevelopment.dk>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ kernel/irq/manage.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -436,6 +436,9 @@ int __irq_set_trigger(struct irq_desc *d
+ 		/* note that IRQF_TRIGGER_MASK == IRQ_TYPE_SENSE_MASK */
+ 		desc->status &= ~(IRQ_LEVEL | IRQ_TYPE_SENSE_MASK);
+ 		desc->status |= flags;
++
++		if (chip != desc->chip)
++			irq_chip_set_defaults(desc->chip);
+ 	}
+ 
+ 	return ret;
