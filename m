@@ -2,15 +2,15 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 7A2DFB6EFE
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 03:18:31 +1000 (EST)
-Message-Id: <20100730171504.200218674@clark.site>
-Date: Fri, 30 Jul 2010 10:14:38 -0700
+	by ozlabs.org (Postfix) with ESMTPS id D9C05B6F14
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 03:35:08 +1000 (EST)
+Message-Id: <20100730173109.573358136@clark.site>
+Date: Fri, 30 Jul 2010 10:30:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org,
  stable@kernel.org
-Subject: [050/165] genirq: Deal with desc->set_type() changing desc->chip
-In-Reply-To: <20100730171550.GA1299@kroah.com
+Subject: [076/140] genirq: Deal with desc->set_type() changing desc->chip
+In-Reply-To: <20100730173205.GA22581@kroah.com>
 Cc: stable-review@kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	torvalds@linux-foundation.org, akpm@linux-foundation.org,
@@ -24,7 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+2.6.33-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
