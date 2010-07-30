@@ -1,26 +1,14 @@
-Return-Path: <fkan@apm.com>
-Received: from exprod5og108.obsmtp.com (exprod5og108.obsmtp.com [64.18.0.186])
-	by ozlabs.org (Postfix) with SMTP id 598DB1007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 10:15:01 +1000 (EST)
-Received: by yxe42 with SMTP id 42so535450yxe.41
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 17:15:00 -0700 (PDT)
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C521FD2.4050301@ozlabs.org>
+Date: Fri, 30 Jul 2010 10:41:54 +1000
+From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
-In-Reply-To: <20100726231616.GA25342@suse.de>
-References: <12801701823001-git-send-email-fchen@apm.com>
-	<20100726213704.GA16268@suse.de>
-	<4C4E0449.2070108@caviumnetworks.com>
-	<20100726220513.GA9671@suse.de> <20100726220809.GA9784@suse.de>
-	<AANLkTinbTnrr9DCiSgKngAjaak=U0qDYcCxbNZR4Nm3D@mail.gmail.com>
-	<20100726231616.GA25342@suse.de>
-Date: Thu, 29 Jul 2010 17:14:59 -0700
-Message-ID: <AANLkTikDpxcOj=TgD5697HOzPOanECGd4G6QaXZmoS98@mail.gmail.com>
-Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
-From: Feng Kan <fkan@apm.com>
-To: Greg KH <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-usb@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
-	linuxppc-dev@ozlabs.org, Mark Miesfeld <mmiesfeld@apm.com>,
-	Ted Chan <tchan@apm.com>, Fushen Chen <fchen@apm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] powerpc/kexec: Fix orphaned offline CPUs across kexec
+References: <4C511216.30109@ozlabs.org> <3296.1280448512@neuling.org>
+In-Reply-To: <3296.1280448512@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +18,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Greg:
-
-We will change to a BSD 3 clause license header. Our legal counsel is
-talking to Synopsis to make this change. We will resubmit once this
-is in place. Please let me know if you have any additional concerns.
-
-Feng Kan
-Applied Micro
-
-On Mon, Jul 26, 2010 at 4:16 PM, Greg KH <gregkh@suse.de> wrote:
-> On Mon, Jul 26, 2010 at 04:05:49PM -0700, Feng Kan wrote:
->> Hi Greg:
+Michael Neuling wrote:
+> In message <4C511216.30109@ozlabs.org> you wrote:
+>> When CPU hotplug is used, some CPUs may be offline at the time a kexec is
+>> performed.  The subsequent kernel may expect these CPUs to be already running
+> ,
+>> and will declare them stuck.  On pseries, there's also a soft-offline (cede)
+>> state that CPUs may be in; this can also cause problems as the kexeced kernel
+>> may ask RTAS if they're online -- and RTAS would say they are.  Again, stuck.
 >>
->> We are having our legal revisit this again. What would you advise us
->> to do at this point?
->
-> I thought I was very clear below as to what is needed.
->
->> Disclose the agreement or have someone with legal authority reply this
->> thread.
->
-> Neither will resolve the end issue, right?
->
->> Perhaps something in the header that states Applied Micro verified
->> with Synopsys to use this code for GPL purpose.
->
-> No, that will just make it messier. =C2=A0Someone needs to delete all of =
-the
-> mess in the file, put the proper license information for what the code
-> is being licensed under (whatever it is), and provide a signed-off-by
-> from a person from Synopsys and APM that can speak for the company that
-> they agree that the code can properly be placed into the Linux kernel.
->
-> thanks,
->
-> greg k-h
->
+>> This patch kicks each present offline CPU awake before the kexec, so that
+>> none are lost to these assumptions in the subsequent kernel.
+> 
+> There are a lot of cleanups in this patch.  The change you are making
+> would be a lot clearer without all the additional cleanups in there.  I
+> think I'd like to see this as two patches.  One for cleanups and one for
+> the addition of wake_offline_cpus().
+
+Okay, I can split this.  Typofixy-add-debug in one, wake_offline_cpus in another.
+
+> Other than that, I'm not completely convinced this is the functionality
+> we want.  Do we really want to online these cpus?  Why where they
+> offlined in the first place?  I understand the stuck problem, but is the
+> solution to online them, or to change the device tree so that the second
+> kernel doesn't detect them as stuck?
+
+Well... There are two cases.  If a CPU is soft-offlined on pseries, it must be woken from that cede loop (in platforms/pseries/hotplug-cpu.c) as we're replacing code under its feet.  We could either special-case the wakeup from this cede loop to get that CPU to RTAS "stop-self" itself properly.  (Kind of like a "wake to die".)
+
+So that leaves hard-offline CPUs (perhaps including the above): I don't know why they might have been offlined.  If it's something serious, like fire, they'd be removed from the present set too (and thus not be considered in this restarting case).  We could add a mask to the CPU node to show which of the threads (if any) are running, and alter the startup code to start everything if this mask doesn't exist (non-kexec) or only online currently-running threads if the mask is present.  That feels a little weird.
+
+My reasoning for restarting everything was:  The first time you boot, all of your present CPUs are started up.  When you reboot, any CPUs you offlined for fun are restarted.  Kexec is (in this non-crash sense) a user-initiated 'quick reboot', so I reasoned that it should look the same as a 'hard reboot' and your new invocation would have all available CPUs running as is usual.
 
 
+Cheers,
 
---=20
-Feng Kan
+
+Matt
