@@ -1,29 +1,19 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 8B6871007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 13:38:08 +1000 (EST)
-Date: Thu, 29 Jul 2010 20:36:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: Feng Kan <fkan@apm.com>
-Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
-Message-ID: <20100730033632.GB27275@suse.de>
-References: <4C4E0449.2070108@caviumnetworks.com>
-	<20100726220513.GA9671@suse.de> <20100726220809.GA9784@suse.de>
-	<AANLkTinbTnrr9DCiSgKngAjaak=U0qDYcCxbNZR4Nm3D@mail.gmail.com>
-	<20100726231616.GA25342@suse.de>
-	<AANLkTikDpxcOj=TgD5697HOzPOanECGd4G6QaXZmoS98@mail.gmail.com>
-	<20100730005045.GB22683@suse.de>
-	<AANLkTikSH8_QXV2qsBR+vxsjvQwNdx2st3vfbRpfsMff@mail.gmail.com>
-	<20100730012650.GB24931@suse.de>
-	<AANLkTimiox6UbUnhSRLgC06S2kfcDOANA08gm3m++TXd@mail.gmail.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+	by ozlabs.org (Postfix) with ESMTP id 32615B70B6
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 13:53:34 +1000 (EST)
+Date: Fri, 30 Jul 2010 12:25:38 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2] powerpc/kexec: Fix orphaned offline CPUs across kexec
+Message-ID: <20100730032538.GA3120@verge.net.au>
+References: <4C511216.30109@ozlabs.org> <3296.1280448512@neuling.org>
+	<4C521FD2.4050301@ozlabs.org> <20694.1280459714@neuling.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTimiox6UbUnhSRLgC06S2kfcDOANA08gm3m++TXd@mail.gmail.com>
-Cc: linux-usb@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
-	linuxppc-dev@ozlabs.org, Mark Miesfeld <mmiesfeld@apm.com>,
-	Ted Chan <tchan@apm.com>, Fushen Chen <fchen@apm.com>
+In-Reply-To: <20694.1280459714@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org,
+	Milton Miller <miltonm@bga.com>, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,110 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 29, 2010 at 07:02:44PM -0700, Feng Kan wrote:
-> On Thu, Jul 29, 2010 at 6:26 PM, Greg KH <gregkh@suse.de> wrote:
-> > On Thu, Jul 29, 2010 at 06:19:25PM -0700, Feng Kan wrote:
-> >> Hi Greg:
-> >>
-> >> On Thu, Jul 29, 2010 at 5:50 PM, Greg KH <gregkh@suse.de> wrote:
-> >> > On Thu, Jul 29, 2010 at 05:14:59PM -0700, Feng Kan wrote:
-> >> >> Hi Greg:
-> >> >>
-> >> >> We will change to a BSD 3 clause license header. Our legal counsel is
-> >> >> talking to Synopsis to make this change.
-> >> >
-> >> > Why BSD? ??You do realize what that means when combined within the body
-> >> > of the kernel, right?
-> >> >
-> >>
-> >> FKAN: We will shoot for a dual BSD/GPL license such as the one in the HP
-> >> ?? ?? ?? ?? ?? ??Hil driver.
-> >
-> > What specific driver is this?
+On Fri, Jul 30, 2010 at 01:15:14PM +1000, Michael Neuling wrote:
+> (adding kexec list to CC)
 > 
-> FKAN: this is driver/input/serio/hil_mlc.c and quite a number of others.
-
-Ok, thanks.
-
-Are you _sure_ that you didn't take any existing GPL code and put it
-into this driver when making it?  Did all contributors to the code
-release their contributions under both licenses?
-
-> > And are you sure that all of the contributors to the code agree with
-> > this licensing change? ??Are you going to require contributors to
-> > dual-license their changes?
-> >
-> > If so, why keep it BSD, what does that get you?
+> In message <4C521FD2.4050301@ozlabs.org> you wrote:
+> > Michael Neuling wrote:
+> > > In message <4C511216.30109@ozlabs.org> you wrote:
+> > >> When CPU hotplug is used, some CPUs may be offline at the time a kexec is
+> > >> performed.  The subsequent kernel may expect these CPUs to be already runn
+> ing
+> > > ,
+> > >> and will declare them stuck.  On pseries, there's also a soft-offline (ced
+> e)
+> > >> state that CPUs may be in; this can also cause problems as the kexeced ker
+> nel
+> > >> may ask RTAS if they're online -- and RTAS would say they are.  Again, stu
+> ck.
+> > >>
+> > >> This patch kicks each present offline CPU awake before the kexec, so that
+> > >> none are lost to these assumptions in the subsequent kernel.
+> > > 
+> > > There are a lot of cleanups in this patch.  The change you are making
+> > > would be a lot clearer without all the additional cleanups in there.  I
+> > > think I'd like to see this as two patches.  One for cleanups and one for
+> > > the addition of wake_offline_cpus().
+> > 
+> > Okay, I can split this.  Typofixy-add-debug in one, wake_offline_cpus
+> > in another. 
 > 
-> FKAN: for one thing, to make it future proof on other submissions.
-
-What do you mean by this?  What can you do with this code other than use
-it on a Linux system?  You can't put it into any other operating system
-with a different license, can you?
-
-> >> > Are you going to be expecting others to contribute back to the code
-> >> > under this license, or will you accept the fact that future
-> >> > contributions from the community will cause the license to change?
-> >
-> >
-> > You didn't answer this question, which is a very important one before I
-> > can accept this driver.
+> Thanks.
 > 
-> FKAN: Yes, all of the above. Our legal is working on that. I thought by default
->            GPL defines the above statement.
-
-The GPL does, but as you are trying to dual-license the code, you have
-to be careful about how you accept changes, and under what license.
-It's a lot more work than I think you realize.  What process do you have
-in place to handle this?
-
-> >> >> We will resubmit once this is in place. Please let me know if you have
-> >> >> any additional concerns.
-> >> >
-> >> > My main concern is that you, and everyone else involved in the driver,
-> >> > never considered the license of the code in the first place and expected
-> >> > the kernel community to accept it as-is, placing the problem on us.
-> >>
-> >> FKAN: Please don't think this is the case, we gone through this exercise
-> >> ?? ?? ?? ?? ?? with Denx.
-> >
-> > What is "Denx"?
+> > 
+> > > Other than that, I'm not completely convinced this is the functionality
+> > > we want.  Do we really want to online these cpus?  Why where they
+> > > offlined in the first place?  I understand the stuck problem, but is the
+> > > solution to online them, or to change the device tree so that the second
+> > > kernel doesn't detect them as stuck?
+> > 
+> > Well... There are two cases.  If a CPU is soft-offlined on pseries, it
+> > must b e woken from that cede loop (in
+> > platforms/pseries/hotplug-cpu.c) as we're repla cing code under its
+> > feet.  We could either special-case the wakeup from this ce de loop to
+> > get that CPU to RTAS "stop-self" itself properly.  (Kind of like a "
+> > wake to die".)
 > 
-> FKAN: U-Boot Denx.de
-
-Ah, thanks.
-
-> >> We had legal looking into the header before submission
-> >> ?? ?? ?? ?? ?? to them and the kernel.
-> >
-> > Then what happened here? ??Just curious as to how the driver was public
-> > for so long before someone realized this.
-> >
+> Makes sense.  
 > 
-> FKAN:  this was few years back. At the time we had the header changed
->            so it was BSD like to be accepted by Denx.
+> > So that leaves hard-offline CPUs (perhaps including the above): I
+> > don't know why they might have been offlined.  If it's something
+> > serious, like fire, they'd be removed from the present set too (and
+> > thus not be considered in this restarting case).  We could add a mask
+> > to the CPU node to show which of the threads (if any) are running, and
+> > alter the startup code to start everything if this mask doesn't exist
+> > (non-kexec) or only online currently-running threads if the mask is
+> > present.  That feels a little weird.
+> > 
+> > My reasoning for restarting everything was: The first time you boot,
+> > all of your present CPUs are started up.  When you reboot, any CPUs
+> > you offlined for fun are restarted.  Kexec is (in this non-crash
+> > sense) a user-initiated 'quick reboot', so I reasoned that it should
+> > look the same as a 'hard reboot' and your new invocation would have
+> > all available CPUs running as is usual.
 > 
-> >> > What will be done in the future to prevent this from happening again?
-> >>
-> >> FKAN: agreed, once bitten .... :)
-> >
-> > That didn't answer the question :)
-> 
-> FKAN: we have a system of checks for every patch that goes out. I will send
->            out a guideline to all reviewer to make sure the header
-> follow kernel precedence.
+> OK, I like this justification.  Would be good to include it in the
+> checkin comment since we're changing functionality somewhat.
 
-But you took this code from a different vendor, are you able to properly
-identify the code contributions to this base and what license it is
-under and where they got it from?
-
->            Legal is quite aware of the issue now too.
-
-As they should be :)
-
-Please reconsider the dual licensing unless you really are ready to
-handle the implications of it.
-
-thanks,
-
-greg k-h
+FWIW, I do too. Personally I like to think of kexec as soft-reboot.
+Where soft means, in software, not soft-touch.
