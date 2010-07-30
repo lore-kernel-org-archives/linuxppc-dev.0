@@ -1,19 +1,12 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 318771007D3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 30 Jul 2010 07:20:47 +1000 (EST)
-To: galak@kernel.crashing.org, Kim Phillips <kim.phillips@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Commit 3da34aa brakes MSI support on MPC8308 (possibly all
-	MPC83xx) [REPOST]
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: <4C48B384.1020006@emcraft.com>
-References: <4C48B384.1020006@emcraft.com>
-Date: Thu, 29 Jul 2010 23:20:43 +0200
-Message-Id: <20100729212043.4258C152397@gemini.denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Ilya Yanok <yanok@emcraft.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Matt Evans <matt@ozlabs.org>
+Subject: Re: [PATCH v2] powerpc/kexec: Fix orphaned offline CPUs across kexec
+In-reply-to: <4C511216.30109@ozlabs.org>
+References: <4C511216.30109@ozlabs.org>
+Date: Fri, 30 Jul 2010 10:08:32 +1000
+Message-ID: <3296.1280448512@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,60 +16,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Kumar & Kim,
 
-any comments on this issue?
 
-Thanks.
+In message <4C511216.30109@ozlabs.org> you wrote:
+> When CPU hotplug is used, some CPUs may be offline at the time a kexec is
+> performed.  The subsequent kernel may expect these CPUs to be already running
+,
+> and will declare them stuck.  On pseries, there's also a soft-offline (cede)
+> state that CPUs may be in; this can also cause problems as the kexeced kernel
+> may ask RTAS if they're online -- and RTAS would say they are.  Again, stuck.
+> 
+> This patch kicks each present offline CPU awake before the kexec, so that
+> none are lost to these assumptions in the subsequent kernel.
 
-In message <4C48B384.1020006@emcraft.com> Ilya Yanok wrote:
->   Hi Kumar, Kim, Josh, everybody,
-> 
-> I hope to disturb you but I haven't got any reply for my first posting...
-> 
-> I've found that MSI work correctly with older kernels on my MPC8308RDB 
-> board and don't work with newer ones. After bisecting I've found that 
-> the source of the problem is commit 3da34aa:
-> 
-> commit 3da34aae03d498ee62f75aa7467de93cce3030fd
-> Author: Kumar Gala <galak@kernel.crashing.org>
-> Date:   Tue May 12 15:51:56 2009 -0500
-> 
->      powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
-> 
->      Its feasible based on how the PCI address map is setup that the region
->      of PCI address space used for MSIs differs for each PHB on the same 
-> SoC.
-> 
->      Instead of assuming that the address mappes to CCSRBAR 1:1 we read
->      PEXCSRBAR (BAR0) for the PHB that the given pci_dev is on.
-> 
->      Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> 
-> I can see BAR0 initialization for 85xx/86xx hardware but not for 83xx 
-> neigher in the kernel nor in U-Boot (that makes me think that all 83xx 
-> can be affected).
-> I'm not actually an PCI expert so I've just tried to write IMMR base 
-> address to the BAR0 register from the U-Boot to get the correct address 
-> but this doesn't help.
-> Please direct me how to init 83xx PCIE controller to make it compatible 
-> with this patch.
-> 
-> Kim, I think MPC8315E is affected too, could you please test it?
-> 
-> Thanks in advance.
-> 
-> Regards, Ilya.
+There are a lot of cleanups in this patch.  The change you are making
+would be a lot clearer without all the additional cleanups in there.  I
+think I'd like to see this as two patches.  One for cleanups and one for
+the addition of wake_offline_cpus().
 
-Best regards,
+Other than that, I'm not completely convinced this is the functionality
+we want.  Do we really want to online these cpus?  Why where they
+offlined in the first place?  I understand the stuck problem, but is the
+solution to online them, or to change the device tree so that the second
+kernel doesn't detect them as stuck?  
 
-Wolfgang Denk
+Mikey
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A good aphorism is too hard for the tooth of time, and  is  not  worn
-away  by  all  the  centuries,  although  it serves as food for every
-epoch.                                  - Friedrich Wilhelm Nietzsche
-                          _Miscellaneous Maxims and Opinions_ no. 168
+> 
+> Signed-off-by: Matt Evans <matt@ozlabs.org>
+> ---
+> v2:	Added FIXME comment noting a possible problem with incorrectly
+> 	started secondary CPUs, following feedback from Milton.
+> 
+>  arch/powerpc/kernel/machine_kexec_64.c |   55 ++++++++++++++++++++++++++++--
+-
+>  1 files changed, 49 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/mac
+hine_kexec_64.c
+> index 4fbb3be..37f805e 100644
+> --- a/arch/powerpc/kernel/machine_kexec_64.c
+> +++ b/arch/powerpc/kernel/machine_kexec_64.c
+> @@ -15,6 +15,8 @@
+>  #include <linux/thread_info.h>
+>  #include <linux/init_task.h>
+>  #include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/cpu.h>
+>  
+>  #include <asm/page.h>
+>  #include <asm/current.h>
+> @@ -181,7 +183,20 @@ static void kexec_prepare_cpus_wait(int wait_state)
+>  	int my_cpu, i, notified=-1;
+>  
+>  	my_cpu = get_cpu();
+> -	/* Make sure each CPU has atleast made it to the state we need */
+> +	/* Make sure each CPU has at least made it to the state we need.
+> +	 *
+> +	 * FIXME: There is a (slim) chance of a problem if not all of the CPUs
+> +	 * are correctly onlined.  If somehow we start a CPU on boot with RTAS
+> +	 * start-cpu, but somehow that CPU doesn't write callin_cpu_map[] in
+> +	 * time, the boot CPU will timeout.  If it does eventually execute
+> +	 * stuff, the secondary will start up (paca[].cpu_start was written) an
+d
+> +	 * get into a peculiar state.  If the platform supports
+> +	 * smp_ops->take_timebase(), the secondary CPU will probably be spinnin
+g
+> +	 * in there.  If not (i.e. pseries), the secondary will continue on and
+> +	 * try to online itself/idle/etc. If it survives that, we need to find
+> +	 * these possible-but-not-online-but-should-be CPUs and chaperone them
+> +	 * into kexec_smp_wait().
+> +	 */
+>  	for_each_online_cpu(i) {
+>  		if (i == my_cpu)
+>  			continue;
+> @@ -189,9 +204,9 @@ static void kexec_prepare_cpus_wait(int wait_state)
+>  		while (paca[i].kexec_state < wait_state) {
+>  			barrier();
+>  			if (i != notified) {
+> -				printk( "kexec: waiting for cpu %d (physical"
+> -						" %d) to enter %i state\n",
+> -					i, paca[i].hw_cpu_id, wait_state);
+> +				printk(KERN_INFO "kexec: waiting for cpu %d "
+> +				       "(physical %d) to enter %i state\n",
+> +				       i, paca[i].hw_cpu_id, wait_state);
+>  				notified = i;
+>  			}
+>  		}
+> @@ -199,9 +214,32 @@ static void kexec_prepare_cpus_wait(int wait_state)
+>  	mb();
+>  }
+>  
+> -static void kexec_prepare_cpus(void)
+> +/*
+> + * We need to make sure each present CPU is online.  The next kernel will sc
+an
+> + * the device tree and assume primary threads are online and query secondary
+> + * threads via RTAS to online them if required.  If we don't online primary
+> + * threads, they will be stuck.  However, we also online secondary threads a
+s we
+> + * may be using 'cede offline'.  In this case RTAS doesn't see the secondary
+> + * threads as offline -- and again, these CPUs will be stuck.
+> + *
+> + * So, we online all CPUs that should be running, including secondary thread
+s.
+> + */
+> +static void wake_offline_cpus(void)
+>  {
+> +	int cpu = 0;
+>  
+> +	for_each_present_cpu(cpu) {
+> +		if (!cpu_online(cpu)) {
+> +			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+> +			       cpu);
+> +			cpu_up(cpu);
+> +		}
+> +	}
+> +}
+> +
+> +static void kexec_prepare_cpus(void)
+> +{
+> +	wake_offline_cpus();
+>  	smp_call_function(kexec_smp_down, NULL, /* wait */0);
+>  	local_irq_disable();
+>  	mb(); /* make sure IRQs are disabled before we say they are */
+> @@ -215,7 +253,10 @@ static void kexec_prepare_cpus(void)
+>  	if (ppc_md.kexec_cpu_down)
+>  		ppc_md.kexec_cpu_down(0, 0);
+>  
+> -	/* Before removing MMU mapings make sure all CPUs have entered real mod
+e */
+> +	/*
+> +	 * Before removing MMU mappings make sure all CPUs have entered real
+> +	 * mode:
+> +	 */
+>  	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
+>  
+>  	put_cpu();
+> @@ -284,6 +325,8 @@ void default_machine_kexec(struct kimage *image)
+>  	if (crashing_cpu == -1)
+>  		kexec_prepare_cpus();
+>  
+> +	pr_debug("kexec: Starting switchover sequence.\n");
+> +
+>  	/* switch to a staticly allocated stack.  Based on irq stack code.
+>  	 * XXX: the task struct will likely be invalid once we do the copy!
+>  	 */
+> -- 
+> 1.6.3.3
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
