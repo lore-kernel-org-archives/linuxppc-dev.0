@@ -1,16 +1,20 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id ABE8EB70B2
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:00:53 +1000 (EST)
-Received: by iwn36 with SMTP id 36so1150681iwn.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 00:00:52 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 30 Jul 2010 00:00:52 -0700
-Message-ID: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
-Subject: ramdisk size is larger than 4MB
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 1E0ECB70AB
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:04:52 +1000 (EST)
+Subject: Re: [PATCH] Adjust arch/powerpc inline asms for recent gcc change
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jakub Jelinek <jakub@redhat.com>
+In-Reply-To: <1278569285.28659.76.camel@pasglop>
+References: <20100625095606.GG12443@tyan-ft48-01.lab.bos.redhat.com>
+	<1278569285.28659.76.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 30 Jul 2010 17:04:46 +1000
+Message-ID: <1280473486.2169.2.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2010-07-08 at 16:08 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2010-06-25 at 11:56 +0200, Jakub Jelinek wrote:
+> 
+> >  static inline void sync(void)
+> > diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+> > index b8f152e..288d8b2 100644
+> > --- a/arch/powerpc/include/asm/atomic.h
+> > +++ b/arch/powerpc/include/asm/atomic.h
+> > @@ -19,14 +19,14 @@ static __inline__ int atomic_read(const atomic_t *v)
+> >  {
+> >  	int t;
+> >  
+> > -	__asm__ __volatile__("lwz%U1%X1 %0,%1" : "=r"(t) : "m"(v->counter));
+> > +	__asm__ __volatile__("lwz%U1%X1 %0,%1" : "=r"(t) : "m<>"(v->counter));
+> >  
+> >  	return t;
+> >  }
+> >  
+> 
+> This gives me:
+> 
+> /home/benh/linux-powerpc-test/arch/powerpc/kernel/time.c: In function ‘timer_interrupt’:
+> /home/benh/linux-powerpc-test/arch/powerpc/include/asm/atomic.h:22: error: ‘asm’ operand has impossible constraints
+> make[2]: *** [arch/powerpc/kernel/time.o] Error 1
+> 
+> $ gcc --version
+> gcc (Debian 4.4.4-1) 4.4.4
 
-I have a ramdisk as RFS much larger than 4MB in a 2.4 kernel. In
-recent 2.6 kernels ramdisk is no longer supported so I decided to go
-with initramfs. However I found the initial RFS for initramfs is
-limited to 4MB since the bootwrapper locates at 0x400000.
+Ping :-)
 
-One way to lift this limitation is to relocate the bootwrapper to
-somewhere else, say for example, 0x1000000 so that a 16MB initramfs
-can be loaded. If the bootwrapper is relocated, what else would be
-affected by this relocation?
+Do that mean that 4.4.4 doesn't understand your new constraints or are
+we doing something incorrect ?
 
-Another (better?) way may be to find a right file system for RFS such
-as JFFS2. My board has limited NOR flash (32MB) but larger RAM
-(128MB). There is not much space left in flash for RFS.
-
-Would you like to share some thoughts?
-
-Thanks a lot,
--Shawn.
+Cheers,
+Ben.
