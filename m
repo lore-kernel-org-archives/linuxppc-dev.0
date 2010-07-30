@@ -1,17 +1,32 @@
-Return-Path: <dkirjanov@hera.kernel.org>
+Return-Path: <tj@kernel.org>
 Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 423EDB70BC
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 18:04:46 +1000 (EST)
-Date: Fri, 30 Jul 2010 08:04:39 +0000
-From: Denis Kirjanov <dkirjanov@kernel.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] Use is_32bit_task() helper to test 32 bit binary
-Message-ID: <20100730080439.GA31219@hera.kernel.org>
+	by ozlabs.org (Postfix) with ESMTPS id 93F38B70D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 18:46:21 +1000 (EST)
+Message-ID: <4C52913C.9020204@kernel.org>
+Date: Fri, 30 Jul 2010 10:45:48 +0200
+From: Tejun Heo <tj@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: shaggy@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@ozlabs.org
+To: Guenter Roeck <guenter.roeck@ericsson.com>
+Subject: Re: [PATCH 0/6] Remove owner field from sysfs attribute structure
+References: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
+In-Reply-To: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Jani Nikula <ext-jani.1.nikula@nokia.com>,
+	Linus Walleij <linus.walleij@stericsson.com>,
+	James Smart <james.smart@emulex.com>,
+	"Eric W. Biederman" <ebiederm@aristanetworks.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+	linuxppc-dev@ozlabs.org, "James E.J. Bottomley" <James.Bottomley@suse.de>,
+	Richard Purdie <rpurdie@rpsys.net>, Nick Cheng <nick.cheng@areca.com.tw>,
+	Dmitry Torokhov <dtor@mail.ru>, Jean Delvare <khali@linux-fr.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Thery <benjamin.thery@bull.net>, linux-scsi@vger.kernel.org,
+	Alex Iannicelli <alex.iannicelli@emulex.com>,
+	Liam Girdwood <lrg@slimlogic.co.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use is_32bit_task() helper to test 32 bit binary.
+On 07/29/2010 07:09 AM, Guenter Roeck wrote:
+> The following comment is found in include/linux/sysfs.h:
+> 
+>    /* FIXME
+>     * The *owner field is no longer used.
+>     * x86 tree has been cleaned up. The owner
+>     * attribute is still left for other arches.
+>     */
+> 
+> As it turns out, the *owner field is (again?) initialized in several modules,
+> suggesting that such initialization may be creeping back into the code.
+> 
+> This patch set removes the above comment, the *owner field, and each instance
+> in the code where it was found to be initialized.
+> 
+> Compiled with x86 allmodconfig as well as with all alpha, arm, mips, powerpc,
+> and sparc defconfig builds.
 
-Signed-off-by: Denis Kirjanov <dkirjanov@kernel.org>
----
- arch/powerpc/kernel/process.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Yeah, the change is way overdue.  Maybe we should have just removed
+them back then.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 43855c9..e7dffbf 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -692,7 +692,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 		p->thread.regs = childregs;
- 		if (clone_flags & CLONE_SETTLS) {
- #ifdef CONFIG_PPC64
--			if (!test_thread_flag(TIF_32BIT))
-+			if (!is_32bit_task())
- 				childregs->gpr[13] = childregs->gpr[6];
- 			else
- #endif
-@@ -787,7 +787,7 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	regs->nip = start;
- 	regs->msr = MSR_USER;
- #else
--	if (!test_thread_flag(TIF_32BIT)) {
-+	if (!is_32bit_task()) {
- 		unsigned long entry, toc;
- 
- 		/* start is a relocated pointer to the function descriptor for
-@@ -959,7 +959,7 @@ int sys_clone(unsigned long clone_flags, unsigned long usp,
- 	if (usp == 0)
- 		usp = regs->gpr[1];	/* stack pointer for child */
- #ifdef CONFIG_PPC64
--	if (test_thread_flag(TIF_32BIT)) {
-+	if (is_32bit_task()) {
- 		parent_tidp = TRUNC_PTR(parent_tidp);
- 		child_tidp = TRUNC_PTR(child_tidp);
- 	}
+ Acked-by: Tejun Heo <tj@kernel.org>
+
+Thanks.
+
 -- 
-1.6.4.4
+tejun
