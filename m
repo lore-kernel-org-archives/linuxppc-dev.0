@@ -1,19 +1,21 @@
 Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id F11C5B70B1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:30:35 +1000 (EST)
-Received: by eyh6 with SMTP id 6so2160683eyh.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 00:30:34 -0700 (PDT)
-Date: Fri, 30 Jul 2010 11:30:30 +0400
+Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
+	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 47F881007D1
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:37:36 +1000 (EST)
+Received: by ewy2 with SMTP id 2so2295392ewy.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 00:37:35 -0700 (PDT)
+Date: Fri, 30 Jul 2010 11:37:31 +0400
 From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: Re: [PATCH 2/3] dts: Add sdhci-auto-cmd12 field for p4080 device tree
-Message-ID: <20100730073030.GD20351@oksana.dev.rtsoft.ru>
-References: <1280295887-14251-1-git-send-email-tie-fei.zang@freescale.com>
+To: Zang Roy-R61911 <r61911@freescale.com>
+Subject: Re: [PATCH 3/3] mmc: Add ESDHC weird register workaround
+Message-ID: <20100730073731.GA26137@oksana.dev.rtsoft.ru>
+References: <1280296461-17077-1-git-send-email-tie-fei.zang@freescale.com>
+	<20100728080312.GA16994@oksana.dev.rtsoft.ru>
+	<83024545B35D6445A690EFD603E7869A0512E0@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1280295887-14251-1-git-send-email-tie-fei.zang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mmc-approval@vger.kernel.org
+In-Reply-To: <83024545B35D6445A690EFD603E7869A0512E0@zch01exm23.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 28, 2010 at 01:44:47PM +0800, Roy Zang wrote:
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> ---
->  arch/powerpc/boot/dts/p4080ds.dts |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
-> index 6b29eab..11c8884 100644
-> --- a/arch/powerpc/boot/dts/p4080ds.dts
-> +++ b/arch/powerpc/boot/dts/p4080ds.dts
-> @@ -280,6 +280,7 @@
->  			reg = <0x114000 0x1000>;
->  			interrupts = <48 2>;
->  			interrupt-parent = <&mpic>;
-> +			fsl,sdhci-auto-cmd12;
+On Wed, Jul 28, 2010 at 05:43:00PM +0800, Zang Roy-R61911 wrote:
+[...]
+> > > +	/* The default value of DMAS bits of Protocol Control 
+> > Register is not
+> > > +	 * correct. clear these two bits to use simple DMA */
+> > > +#define  ESDHCI_CTRL_DMAS_MASK		0xFFFFFCFF
+> > > +	if (host->quirks & SDHCI_QUIRK_QORIQ_REG_WEIRD) {
+> > > +		ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL);
+> > > +		ctrl = ctrl & ESDHCI_CTRL_DMAS_MASK;
+> > > +		sdhci_writel(host, ctrl, SDHCI_HOST_CONTROL);
+> > > +	}
+> > 
+> > You should implement register quirks via SDHCI IO accessors.
+> What does you mean "SDHCI IO accessors?
 
-This should be sdhci,auto-cmd12 or something like that,
-not fsl-specific.
+See drivers/mmc/host/sdhci-of-esdhc.c
 
-Also please document this property in
-Documentation/powerpc/dts-bindings/fsl/esdhc.txt.
+struct sdhci_of_data sdhci_esdhc = {
+...
+        .ops = {
+...
+                .write_l = sdhci_be32bs_writel,
+...
+        },
+};
+
+You can implement your own write_l and put the quirk in
+there, as we do for esdhc_readw, esdhc_writew, etc.
+
+OTOH, as you say it has wrong default value, not behaviour,
+so I think you can just initialize the HOST_CONTROL register
+just once somewhere in sdhci-of-esdhc, e.g. ->enable_dma
+callback?
+
+> It makes more sense to define something like:
+> SDHCI_QUIRK_QORIQ_PROCTL_WEIRD.
+
+I don't think so.
+
+Thanks,
 
 -- 
 Anton Vorontsov
