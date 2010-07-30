@@ -1,26 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 30 Jul 2010 11:38:17 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH V4] powerpc/prom: Export device tree physical address
-	via proc
-Message-ID: <20100730013817.GB24624@yookeroo>
-References: <1279120733-13584-1-git-send-email-msm@freescale.com>
-	<AANLkTimiM1Ky7aIYoQ3efhivypV90LFG-BpueuaPaiPf@mail.gmail.com>
-	<1279207159.30737.11.camel@localhost>
-	<AANLkTikIGXBNU7NQEL7riZYB-BJU3jhxauzGo6XhUF3t@mail.gmail.com>
-	<1279211961.31679.11.camel@localhost>
-	<AANLkTikCDvsrWvtfhpEE0A78Nt3UUT-rzSwPk5nnN95s@mail.gmail.com>
-	<1279216999.31679.26.camel@localhost>
-	<AANLkTinUBPRsiKMd46EK6_9BBRYwB3jsfg49W9uKEbw-@mail.gmail.com>
-	<1279220310.19363.19.camel@localhost>
-	<AANLkTilDcYYbsH-6f0_HlX9WwaOwG24w1CfhRLplZKS7@mail.gmail.com>
+Return-Path: <fkan@apm.com>
+Received: from exprod5og113.obsmtp.com (exprod5og113.obsmtp.com [64.18.0.26])
+	by ozlabs.org (Postfix) with SMTP id 0BF35B70D5
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 12:02:46 +1000 (EST)
+Received: by gwj16 with SMTP id 16so523619gwj.14
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jul 2010 19:02:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <AANLkTilDcYYbsH-6f0_HlX9WwaOwG24w1CfhRLplZKS7@mail.gmail.com>
-Cc: Mitch Bradley <wmb@firmworks.com>, Matthew McClintock <msm@freescale.com>,
-	Kumar Gala <kumar.gala@freescale.com>,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <20100730012650.GB24931@suse.de>
+References: <12801701823001-git-send-email-fchen@apm.com>
+	<20100726213704.GA16268@suse.de>
+	<4C4E0449.2070108@caviumnetworks.com>
+	<20100726220513.GA9671@suse.de> <20100726220809.GA9784@suse.de>
+	<AANLkTinbTnrr9DCiSgKngAjaak=U0qDYcCxbNZR4Nm3D@mail.gmail.com>
+	<20100726231616.GA25342@suse.de>
+	<AANLkTikDpxcOj=TgD5697HOzPOanECGd4G6QaXZmoS98@mail.gmail.com>
+	<20100730005045.GB22683@suse.de>
+	<AANLkTikSH8_QXV2qsBR+vxsjvQwNdx2st3vfbRpfsMff@mail.gmail.com>
+	<20100730012650.GB24931@suse.de>
+Date: Thu, 29 Jul 2010 19:02:44 -0700
+Message-ID: <AANLkTimiox6UbUnhSRLgC06S2kfcDOANA08gm3m++TXd@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v1.03] Add support for DWC OTG HCD function.
+From: Feng Kan <fkan@apm.com>
+To: Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-usb@vger.kernel.org, David Daney <ddaney@caviumnetworks.com>,
+	linuxppc-dev@ozlabs.org, Mark Miesfeld <mmiesfeld@apm.com>,
+	Ted Chan <tchan@apm.com>, Fushen Chen <fchen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,105 +34,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 15, 2010 at 01:18:21PM -0600, Grant Likely wrote:
-> On Thu, Jul 15, 2010 at 12:58 PM, Matthew McClintock <msm@freescale.com> wrote:
-> > On Thu, 2010-07-15 at 12:37 -0600, Grant Likely wrote:
-> >> On Thu, Jul 15, 2010 at 12:03 PM, Matthew McClintock <msm@freescale.com> wrote:
-> >> > Yes. Where would we get a list of memreserve sections?
-> >>
-> >> I would say the list of reserves that are not under the control of
-> >> Linux should be explicitly described in the device tree proper.  For
-> >> instance, if you have a region that firmware depends on, then have a
-> >> node for describing the firmware and a property stating the memory
-> >> regions that it depends on.  The memreserve regions can be generated
-> >> from that.
-> >
-> > Ok, so we could traverse the tree node-by-bode for a
-> > persistent-memreserve property and add them to the /memreserve/ list in
-> > the kexec user space tools?
+On Thu, Jul 29, 2010 at 6:26 PM, Greg KH <gregkh@suse.de> wrote:
+> On Thu, Jul 29, 2010 at 06:19:25PM -0700, Feng Kan wrote:
+>> Hi Greg:
+>>
+>> On Thu, Jul 29, 2010 at 5:50 PM, Greg KH <gregkh@suse.de> wrote:
+>> > On Thu, Jul 29, 2010 at 05:14:59PM -0700, Feng Kan wrote:
+>> >> Hi Greg:
+>> >>
+>> >> We will change to a BSD 3 clause license header. Our legal counsel is
+>> >> talking to Synopsis to make this change.
+>> >
+>> > Why BSD? =C2=A0You do realize what that means when combined within the=
+ body
+>> > of the kernel, right?
+>> >
+>>
+>> FKAN: We will shoot for a dual BSD/GPL license such as the one in the HP
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Hil driver.
+>
+> What specific driver is this?
 
-Well.. I don't think it should be this way as a matter of spec.  But
-you could use a property as an interim stash for memreserve
-information.
+FKAN: this is driver/input/serio/hil_mlc.c and quite a number of others.
 
-I agree that the precise defined semantics of the memreserve regions
-is kind of fuzzy and non-obvious.  Here's how I believe they need to
-work:
+>
+> And are you sure that all of the contributors to the code agree with
+> this licensing change? =C2=A0Are you going to require contributors to
+> dual-license their changes?
+>
+> If so, why keep it BSD, what does that get you?
 
-	memory in a reserved region must *never* be touched by the OS
-(or subsequent kexec-invoked OSes) unless something else in the device
-tree explicitly instructs it how
+FKAN: for one thing, to make it future proof on other submissions.
 
-There already exist several mechanisms for instructing the OS to use
-particular reserved regions for particular purposes: e.g. the initrd
-properties, and the spin-table properties.  More such mechanisms might
-be added in future ePAPR (or whatever) revisions.  But if the OS
-version doesn't understand such a future mechanism, it must fall back
-to assuming that the memory is reserved in perpetuity.
+>
+>> > Are you going to be expecting others to contribute back to the code
+>> > under this license, or will you accept the fact that future
+>> > contributions from the community will cause the license to change?
+>
+>
+> You didn't answer this question, which is a very important one before I
+> can accept this driver.
 
-Now, some of these mechanisms (implicitly) permit the OS to re-use the
-reserved memory after it's done using them as instructed (initrd is
-the most obvious one).  In that case the OS can re-add the reserved
-space to it's general pools, and excise it from the reserved space for
-subsequent kexec()-style boots.  However that's (potentially) a more
-complex process than just removing an entry - the initial firmware is
-free to combine adjacent reserved regions into one reserve entry, or
-even to cover a single reserved region with multiple entries.  So in
-order to do this manipulation you will need an allocator of sorts that
-does the region reservation/dereservation correctly handling the
-semantics on a byte-by-byte basis.
+FKAN: Yes, all of the above. Our legal is working on that. I thought by def=
+ault
+           GPL defines the above statement.
 
-You should also be careful that the regions you're handling do
-actually lie in memory space.  Linux doesn't support this right now,
-but I do have an experimental patch that allows the initrd properties
-to point to (e.g.) flash instead of RAM.  In that case the initrd
-wouldn't have to lie in an explicitly reserved region, and obviously
-could not be returned to the general pool after use.
+>
+>> >> We will resubmit once this is in place. Please let me know if you hav=
+e
+>> >> any additional concerns.
+>> >
+>> > My main concern is that you, and everyone else involved in the driver,
+>> > never considered the license of the code in the first place and expect=
+ed
+>> > the kernel community to accept it as-is, placing the problem on us.
+>>
+>> FKAN: Please don't think this is the case, we gone through this exercise
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 with Denx.
+>
+> What is "Denx"?
 
-> I *think* that is okay, but I'd like to hear from Segher, Ben, Mitch,
-> David Gibson, and other device tree experts on whether or not that
-> exact property naming is a good one.
-> 
-> Write up a proposed binding (you can use devicetree.org).  Post it for
-> review (make sure you cc: both devicetree-discuss and linuxppc-dev, as
-> well as cc'ing the people listed above.)
-> 
-> >> > Should we export
-> >> > the reserve sections instead of the device tree location?
-> >>
-> >> It shouldn't really be something that the kernel is explicitly
-> >> exporting because it is a characteristic of the board design.  It is
-> >> something that belongs in the tree-proper.  ie. when you extract the
-> >> tree you have data telling what the region is, and why it is reserved.
-> >
-> > Agreed.
-> >
-> >>
-> >> > We just need a
-> >> > way to preserve what was there at boot to pass to the new kernel.
-> >>
-> >> Yet there is no differentiation between the board-dictated memory
-> >> reserves and the things that U-Boot/Linux made an arbitrary decision
-> >> on.  The solution should focus not on "can I throw this one away?" but
-> >> rather "Is this one I should keep?"  :-)  A subtle difference, I know,
-> >> but it changes the way you approach the solution.
-> >
-> > Fair enough. I think the above solution will work nicely, and I can
-> > start implementing something if you agree - if I interpreted your idea
-> > correctly. Although it should not require any changes to the kernel
-> > proper.
-> 
-> Correct.
-> 
-> g.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+FKAN: U-Boot Denx.de
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>
+>> We had legal looking into the header before submission
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 to them and the kernel.
+>
+> Then what happened here? =C2=A0Just curious as to how the driver was publ=
+ic
+> for so long before someone realized this.
+>
+
+FKAN:  this was few years back. At the time we had the header changed
+           so it was BSD like to be accepted by Denx.
+
+>> > What will be done in the future to prevent this from happening again?
+>>
+>> FKAN: agreed, once bitten .... :)
+>
+> That didn't answer the question :)
+
+FKAN: we have a system of checks for every patch that goes out. I will send
+           out a guideline to all reviewer to make sure the header
+follow kernel precedence.
+           Legal is quite aware of the issue now too.
+
+>
+> thanks,
+>
+> greg k-h
+>
+
+
+
+--=20
+Feng Kan
