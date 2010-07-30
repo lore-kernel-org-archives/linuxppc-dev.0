@@ -1,21 +1,21 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 47F881007D1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:37:36 +1000 (EST)
-Received: by ewy2 with SMTP id 2so2295392ewy.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 00:37:35 -0700 (PDT)
-Date: Fri, 30 Jul 2010 11:37:31 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH 3/3] mmc: Add ESDHC weird register workaround
-Message-ID: <20100730073731.GA26137@oksana.dev.rtsoft.ru>
-References: <1280296461-17077-1-git-send-email-tie-fei.zang@freescale.com>
-	<20100728080312.GA16994@oksana.dev.rtsoft.ru>
-	<83024545B35D6445A690EFD603E7869A0512E0@zch01exm23.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <83024545B35D6445A690EFD603E7869A0512E0@zch01exm23.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, linux-mmc@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 0836EB70CD
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 17:52:18 +1000 (EST)
+Subject: Re: [PATCH] Adjust arch/powerpc inline asms for recent gcc change
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jakub Jelinek <jakub@redhat.com>
+In-Reply-To: <20100730071922.GQ18378@tyan-ft48-01.lab.bos.redhat.com>
+References: <20100625095606.GG12443@tyan-ft48-01.lab.bos.redhat.com>
+	<1278569285.28659.76.camel@pasglop> <1280473486.2169.2.camel@pasglop>
+	<20100730071922.GQ18378@tyan-ft48-01.lab.bos.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 30 Jul 2010 17:52:12 +1000
+Message-ID: <1280476332.2169.4.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 28, 2010 at 05:43:00PM +0800, Zang Roy-R61911 wrote:
-[...]
-> > > +	/* The default value of DMAS bits of Protocol Control 
-> > Register is not
-> > > +	 * correct. clear these two bits to use simple DMA */
-> > > +#define  ESDHCI_CTRL_DMAS_MASK		0xFFFFFCFF
-> > > +	if (host->quirks & SDHCI_QUIRK_QORIQ_REG_WEIRD) {
-> > > +		ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL);
-> > > +		ctrl = ctrl & ESDHCI_CTRL_DMAS_MASK;
-> > > +		sdhci_writel(host, ctrl, SDHCI_HOST_CONTROL);
-> > > +	}
-> > 
-> > You should implement register quirks via SDHCI IO accessors.
-> What does you mean "SDHCI IO accessors?
+On Fri, 2010-07-30 at 09:19 +0200, Jakub Jelinek wrote:
+> So, in short, I'm afraid "m<>" needs to be used only for GCC 4.6+
+> (and, vendors which backported the inline-asm handling changes
+> to their older gcc would need to adjust for their gccs too).
+> When "m<>" isn't used, it just leads to potential code pessimization
+> in inline-asms that are prepared for handling side-effects. 
 
-See drivers/mmc/host/sdhci-of-esdhc.c
+Ok, so we'll need some kind of macro to "fixup" those constraints ...
 
-struct sdhci_of_data sdhci_esdhc = {
-...
-        .ops = {
-...
-                .write_l = sdhci_be32bs_writel,
-...
-        },
-};
+Just to make sure I understand things properly, if we don't change them,
+the code will still be correct with 4.6 but sub-optimal, right ?
 
-You can implement your own write_l and put the quirk in
-there, as we do for esdhc_readw, esdhc_writew, etc.
-
-OTOH, as you say it has wrong default value, not behaviour,
-so I think you can just initialize the HOST_CONTROL register
-just once somewhere in sdhci-of-esdhc, e.g. ->enable_dma
-callback?
-
-> It makes more sense to define something like:
-> SDHCI_QUIRK_QORIQ_PROCTL_WEIRD.
-
-I don't think so.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Cheers,
+Ben.
