@@ -1,18 +1,18 @@
 Return-Path: <shawnxjin@gmail.com>
 Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 624E0B70A9
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 16:30:33 +1000 (EST)
-Received: by iwn36 with SMTP id 36so2181560iwn.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 23:30:31 -0700 (PDT)
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 8A5ADB70AE
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 16:32:48 +1000 (EST)
+Received: by iwn36 with SMTP id 36so2183153iwn.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 23:32:47 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20100730064521.GA20351@oksana.dev.rtsoft.ru>
-References: <AANLkTimBP98EwRuvU_dj-RM2kaXZ-FSZ=GQxdod9VQeU@mail.gmail.com>
-	<20100730064521.GA20351@oksana.dev.rtsoft.ru>
-Date: Fri, 30 Jul 2010 23:30:31 -0700
-Message-ID: <AANLkTim5haWhjzDKz9e=EBzZhVZAamZr937CrP6rU_jR@mail.gmail.com>
-Subject: Re: Which microcode patch for MPC870?
+In-Reply-To: <20100730120424.6db4139f@schlenkerla.am.freescale.net>
+References: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
+	<20100730120424.6db4139f@schlenkerla.am.freescale.net>
+Date: Fri, 30 Jul 2010 23:32:45 -0700
+Message-ID: <AANLkTim0pD9LWEgWjX4QvqUkZkYO3YOeELz_XjNJPDft@mail.gmail.com>
+Subject: Re: ramdisk size is larger than 4MB
 From: Shawn Jin <shawnxjin@gmail.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,28 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Which microcode patch should be selected for MPC870? In the old 2.4
->> kernel, the CONFIG_UCODE_PATCH was selected. What's the corresponding
->> config: CONFIG_USB_SOF_UCODE_PATCH or CONFIG_I2C_SPI_UCODE_PATCH or
->> CONFIG_I2C_SPI_SMC1_UCODE_PATCH? Since my board doesn't have USB, I
->> believe USB microcode is irrelevant here. So it comes down the other
->> two choices. Of course do I really need the patch? My board has I2C
->> and SMC1, but no SPI.
->>
->> I chose CONFIG_I2C_SPI_UCODE_PATCH as an experiment but got the
->> following compilation error:
+>> One way to lift this limitation is to relocate the bootwrapper to
+>> somewhere else, say for example, 0x1000000 so that a 16MB initramfs
+>> can be loaded. If the bootwrapper is relocated, what else would be
+>> affected by this relocation?
 >
-> These errors were fixed by
+> It should be fine to just change it locally. =A0It would be a problem to
+> change it upstream for all boards, since some supported boards have
+> only 16MB (or even 8MB) of RAM.
+
+I'll definitely try to change it locally first. Would a configurable
+base address for the bootwrapper an acceptable solution?
+
+> Another option is to provide a vmlinux_alloc callback to stick the
+> kernel somewhere other than zero, at the cost of an extra image copy
+> once the kernel runs to get itself back down to zero. =A0This wasn't done
+> in cuboot because it was considered better to adjust the bootwrapper
+> link address at build time based on the kernel+ramfs image size, but
+> that never got implemented.
 >
-> http://patchwork.ozlabs.org/patch/58262/
-> and
-> http://patchwork.ozlabs.org/patch/58263/
+> Perhaps a reasonable compromise is a vmlinux_alloc that returns zero if
+> the image fits there, and calls malloc otherwise?
 
-Thanks a lot for the info, Anton.
-
-Then the question is which patch should be selected. I don't enable
-any patch and the SMC UART works properly. Next I'm going to enable
-I2C but I don't know whether a microcode patch is required or not.
+I'll look into this too.
 
 Thanks,
 -Shawn.
