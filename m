@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 44109B70A4
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 15:38:46 +1000 (EST)
-Subject: Re: [PATCH 0/8] v3 De-couple sysfs memory directories from memory
-	sections
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <4C451BF5.50304@austin.ibm.com>
-References: <4C451BF5.50304@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 31 Jul 2010 15:36:24 +1000
-Message-ID: <1280554584.1902.31.camel@pasglop>
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linuxppc-dev@ozlabs.org
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 624E0B70A9
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Jul 2010 16:30:33 +1000 (EST)
+Received: by iwn36 with SMTP id 36so2181560iwn.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jul 2010 23:30:31 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20100730064521.GA20351@oksana.dev.rtsoft.ru>
+References: <AANLkTimBP98EwRuvU_dj-RM2kaXZ-FSZ=GQxdod9VQeU@mail.gmail.com>
+	<20100730064521.GA20351@oksana.dev.rtsoft.ru>
+Date: Fri, 30 Jul 2010 23:30:31 -0700
+Message-ID: <AANLkTim5haWhjzDKz9e=EBzZhVZAamZr937CrP6rU_jR@mail.gmail.com>
+Subject: Re: Which microcode patch for MPC870?
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-07-19 at 22:45 -0500, Nathan Fontenot wrote:
-> This set of patches de-couples the idea that there is a single
-> directory in sysfs for each memory section.  The intent of the
-> patches is to reduce the number of sysfs directories created to
-> resolve a boot-time performance issue.  On very large systems
-> boot time are getting very long (as seen on powerpc hardware)
-> due to the enormous number of sysfs directories being created.
-> On a system with 1 TB of memory we create ~63,000 directories.
-> For even larger systems boot times are being measured in hours.
+>> Which microcode patch should be selected for MPC870? In the old 2.4
+>> kernel, the CONFIG_UCODE_PATCH was selected. What's the corresponding
+>> config: CONFIG_USB_SOF_UCODE_PATCH or CONFIG_I2C_SPI_UCODE_PATCH or
+>> CONFIG_I2C_SPI_SMC1_UCODE_PATCH? Since my board doesn't have USB, I
+>> believe USB microcode is irrelevant here. So it comes down the other
+>> two choices. Of course do I really need the patch? My board has I2C
+>> and SMC1, but no SPI.
+>>
+>> I chose CONFIG_I2C_SPI_UCODE_PATCH as an experiment but got the
+>> following compilation error:
+>
+> These errors were fixed by
+>
+> http://patchwork.ozlabs.org/patch/58262/
+> and
+> http://patchwork.ozlabs.org/patch/58263/
 
-Greg, Kame, how do we proceed with these ? I'm happy to put them in
-powerpc.git with appropriate acks or will you take them ?
+Thanks a lot for the info, Anton.
 
-Cheers,
-Ben.
+Then the question is which patch should be selected. I don't enable
+any patch and the SMC UART works properly. Next I'm going to enable
+I2C but I don't know whether a microcode patch is required or not.
+
+Thanks,
+-Shawn.
