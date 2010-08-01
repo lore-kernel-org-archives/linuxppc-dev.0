@@ -1,16 +1,17 @@
 Return-Path: <avi@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
-	by ozlabs.org (Postfix) with ESMTP id BF14BB70D1
+	by ozlabs.org (Postfix) with ESMTP id 22663B6F10
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  2 Aug 2010 00:02:42 +1000 (EST)
-Message-ID: <4C557E7A.3010606@redhat.com>
-Date: Sun, 01 Aug 2010 17:02:34 +0300
+	Mon,  2 Aug 2010 00:08:51 +1000 (EST)
+Message-ID: <4C557FF1.4000400@redhat.com>
+Date: Sun, 01 Aug 2010 17:08:49 +0300
 From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 00/27] KVM PPC PV framework v3
-References: <1280407688-9815-1-git-send-email-agraf@suse.de>
-In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
+Subject: Re: [PATCH 4/7] KVM: PPC: Add book3s_32 tlbie flush acceleration
+References: <1280408662-10328-1-git-send-email-agraf@suse.de>
+	<1280408662-10328-5-git-send-email-agraf@suse.de>
+In-Reply-To: <1280408662-10328-5-git-send-email-agraf@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
 	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
@@ -23,77 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  On 07/29/2010 03:47 PM, Alexander Graf wrote:
-> On PPC we run PR=0 (kernel mode) code in PR=1 (user mode) and don't use the
-> hypervisor extensions.
->
-> While that is all great to show that virtualization is possible, there are
-> quite some cases where the emulation overhead of privileged instructions is
-> killing performance.
->
-> This patchset tackles exactly that issue. It introduces a paravirtual framework
-> using which KVM and Linux share a page to exchange register state with. That
-> way we don't have to switch to the hypervisor just to change a value of a
-> privileged register.
->
-> To prove my point, I ran the same test I did for the MMU optimizations against
-> the PV framework. Here are the results:
->
-> [without]
->
-> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello>  /dev/null; done
->
-> real    0m14.659s
-> user    0m8.967s
-> sys     0m5.688s
->
-> [with]
->
-> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello>  /dev/null; done
->
-> real    0m7.557s
-> user    0m4.121s
-> sys     0m3.426s
+  On 07/29/2010 04:04 PM, Alexander Graf wrote:
+> On Book3s_32 the tlbie instruction flushed effective addresses by the mask
+> 0x0ffff000. This is pretty hard to reflect with a hash that hashes ~0xfff, so
+> to speed up that target we should also keep a special hash around for it.
 >
 >
-> So this is a significant performance improvement! I'm quite happy how fast this
-> whole thing becomes :)
+>   static inline u64 kvmppc_mmu_hash_vpte(u64 vpage)
+>   {
+>   	return hash_64(vpage&  0xfffffffffULL, HPTEG_HASH_BITS_VPTE);
+> @@ -66,6 +72,11 @@ void kvmppc_mmu_hpte_cache_map(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
+>   	index = kvmppc_mmu_hash_pte(pte->pte.eaddr);
+>   	hlist_add_head_rcu(&pte->list_pte,&vcpu->arch.hpte_hash_pte[index]);
 >
-> I tried to take all comments I've heard from people so far about such a PV
-> framework into account. In case you told me something before that is a no-go
-> and I still did it, please just tell me again.
->
-> To make use of this whole thing you also need patches to qemu and openbios. I
-> have them in my queue, but want to see this set upstream first before I start
-> sending patches to the other projects.
->
-> Now go and have fun with fast VMs on PPC! Get yourself a G5 on ebay and start
-> experiencing the power yourself. - heh
->
-> v1 ->  v2:
->
->    - change hypervisor calls to use r0 and r3
->    - make crit detection only trigger in supervisor mode
->    - RMO ->  PAM
->    - introduce kvm_patch_ins
->    - only flush icache when patching
->    - introduce kvm_patch_ins_b
->    - update documentation
->
-> v2 ->  v3:
->
->    - use pPAPR conventions for hypercall interface
->    - only use r0 as magic sc number
->    - remove PVR detection
->    - remove BookE shared page mapping support
->    - combine book3s-64 and -32 magic page ra override
->    - add self-test check if the mapping works to guest code
->    - add safety check for relocatable kernels
->
+> +	/* Add to ePTE_long list */
+> +	index = kvmppc_mmu_hash_pte_long(pte->pte.eaddr);
+> +	hlist_add_head_rcu(&pte->list_pte_long,
+> +			&vcpu->arch.hpte_hash_pte_long[index]);
+> +
 
-Looks reasonable.  Since it's fair to say I understand nothing about 
-powerpc, I'd like someone who does to review it and ack, please, with an 
-emphasis on the interfaces.
+Isn't it better to make operations on this list conditional on 
+Book3s_32?  Hashes are expensive since they usually cost cache misses.
+
+Can of course be done later as an optimization.
 
 -- 
 error compiling committee.c: too many arguments to function
