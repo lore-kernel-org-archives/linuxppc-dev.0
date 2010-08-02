@@ -1,62 +1,19 @@
-Return-Path: <m.nazarewicz@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
-	[210.118.77.12]) by ozlabs.org (Postfix) with ESMTP id 86E3B1007D1
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 19:38:18 +1000 (EST)
-Received: from eu_spt2 (mailout2.w1.samsung.com [210.118.77.12])
-	by mailout2.w1.samsung.com
-	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
-	with ESMTP id <0L6I00H0IQRMJ3@mailout2.w1.samsung.com> for
-	linuxppc-dev@ozlabs.org; Mon, 02 Aug 2010 10:38:10 +0100 (BST)
-Received: from linux.samsung.com ([106.116.38.10])
-	by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul
-	14 2004)) with ESMTPA id <0L6I001PIQRJGK@spt2.w1.samsung.com> for
-	linuxppc-dev@ozlabs.org; Mon, 02 Aug 2010 10:38:09 +0100 (BST)
-Date: Mon, 02 Aug 2010 11:39:39 +0200
-From: =?utf-8?B?TWljaGHFgiBOYXphcmV3aWN6?= <m.nazarewicz@samsung.com>
-Subject: Re: [PATCH RFC] usb gadget: introduce usb_gadget_probe_driver
-In-reply-to: <1280501361-13410-1-git-send-email-u.kleine-koenig@pengutronix.de>
-To: linux-usb@vger.kernel.org,
-	=?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Message-id: <op.vgs04dub7p4s8u@pikus>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8; format=flowed; delsp=yes
-References: <1280501361-13410-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Cc: Cliff Cai <cliff.cai@analog.com>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Dan Carpenter <error27@gmail.com>, Tony Lindgren <tony@atomide.com>,
-	Nicolas Ferre <nicolas.ferre@atmel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Julia Lawall <julia@diku.dk>, Philipp Zabel <philipp.zabel@gmail.com>,
-	Felipe Balbi <felipe.balbi@nokia.com>,
-	Andrea Gelmini <andrea.gelmini@gelma.net>,
-	Robert Jarzmik <robert.jarzmik@free.fr>,
-	Fabien Chouteau <fabien.chouteau@barco.com>,
-	Dinh Nguyen <Dinh.Nguyen@freescale.com>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Vladimir Zapolskiy <vzapolskiy@gmail.com>,
-	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-	Vincent Sanders <support@simtec.co.uk>, Marc Singer <elf@buici.com>,
-	=?utf-8?Q?Andr=C3=A9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Tobias Klauser <tklauser@distanz.ch>, Anatolij Gustschin <agust@denx.de>,
-	Marc Kleine-Budde <m.kleine-budde@pengutronix.de>,
-	Eirik Aanonsen <eaa@wprmedical.com>, Mike Frysinger <vapier@gentoo.org>,
-	Thomas Dahlmann <dahlmann.thomas@arcor.de>,
-	linux-geode@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-	Magnus Damm <damm@igel.co.jp>, Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Andrew Victor <linux@maxim.org.za>, linux-arm-kernel@lists.infradead.org,
-	Eric Miao <eric.y.miao@gmail.com>,
-	=?utf-8?Q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>,
-	Jiri Kosina <jkosina@suse.cz>,
-	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>, Harro Haan <hrhaan@gmail.com>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	H Hartley Sweeten <hsweeten@visionengravers.com>,
-	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Cory Maccarrone <darkstar6262@gmail.com>
+Return-Path: <fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 2 Aug 2010 20:55:03 +0900
+To: subrata@linux.vnet.ibm.com
+Subject: Re: 2.6.35-stable/ppc64/p7: Badness at lib/dma-debug.c:902, Call
+	Trace	& Instruction Dump during boot
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1280746270.15317.16.camel@subratamodak.linux.ibm.com>
+References: <1280746270.15317.16.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20100802205404C.fujita.tomonori@lab.ntt.co.jp>
+Cc: sachinp@linux.vnet.ibm.com, fujita.tomonori@lab.ntt.co.jp,
+	joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+	santil@us.ibm.com, Linuxppc-dev@ozlabs.org, devilbis@us.ibm.com,
+	James.Bottomley@suse.de, sleddog@us.ibm.com,
+	brking@linux.vnet.ibm.com, tj@kernel.org, dipraksh@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,30 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 30 Jul 2010 16:49:14 +0200, Uwe Kleine-K=C3=B6nig <u.kleine-koen=
-ig@pengutronix.de> wrote:
-> by using usb_gadget_probe_driver with driver->bind =3D NULL.  When all=
+CC'ed to dma-debug maintainer.
 
-> drivers are fixed to use the new function the bind member of struct
-> usb_gadget_driver can go away.
+On Mon, 02 Aug 2010 16:21:09 +0530
+Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
 
-On second thought, would it be hard to just fix all the gadgets?  It's n=
-ot like there
-are thousands of them so it shouldn't take that long.  Moreover, since y=
-ou'd remove
-the bind field and change the prototype of the usb_gadget_register() all=
- instances
-would be found at compile time.
+> Hi,
+> 
+> On boot, Badness at lib/dma-debug.c:902, Call Trace & Instruction Dump
+> are recorded at /var/log/messages:
+> 
+> ================================================================
+> udev: starting version 151
+> ses 0:8:0:0: Attached Enclosure device
+> IBM eHEA ethernet device driver (Release EHEA_0105)
+> mlx4_core: Mellanox ConnectX core driver v0.01 (May 1, 2007)
+> mlx4_core: Initializing 0002:01:00.0
+> mlx4_core 0002:01:00.0: enabling device (0140 -> 0142)
+> ehea: eth0: Jumbo frames are enabled
+> ehea: eth0 -> logical port id #1
+> ehea: eth1: Jumbo frames are enabled
+> ehea: eth1 -> logical port id #2
+> mlx4_core 0002:01:00.0: Requested 17 vectors, but only 8 MSI-X vectors
+> available, trying again
+> mlx4_core 0002:01:00.0: DMA-API: device driver tries to sync DMA memory it has
+> not allocated [device address=0x0000000060f22000] [size=4096 bytes]
+> ------------[ cut here ]------------
+> Badness at lib/dma-debug.c:902
+> NIP: c0000000003fdfa0 LR: c0000000003fdf9c CTR: 0000000000000001
+> REGS: c000000f35bfad00 TRAP: 0700   Not tainted  (2.6.35)
+> MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 48002482  XER: 20000010
+> TASK = c000000f35c08000[502] 'modprobe' THREAD: c000000f35bf8000 CPU: 8
+> GPR00: c0000000003fdf9c c000000f35bfaf80 c000000001464c48 0000000000000096
+> GPR04: 0000000000000001 c0000000000c19b0 0000000000000000 0000000000000002
+> GPR08: 0000000000000000 c000000f35c08000 00000000000043b3 0000000000000001
+> GPR12: 7669636520616464 c000000003fa5800 0000000000000000 0000000010016628
+> GPR16: c000000f32a02000 c000000f32402000 c000000f33604648 c000000f35bfb1c0
+> GPR20: c000000f38002120 0000000060f22000 0000000000000200 c000000001f4b000
+> GPR24: 0000000000000001 0000000000000001 c000000001f47900 c000000f35bfb0b0
+> GPR28: 0000000000000000 c000000f38002120 c0000000013eaea8 c000000f35bfaf80
+> NIP [c0000000003fdfa0] .check_sync+0x108/0x52c
+> LR [c0000000003fdf9c] .check_sync+0x104/0x52c
+> Call Trace:
+> [c000000f35bfaf80] [c0000000003fdf9c] .check_sync+0x104/0x52c (unreliable)
+> [c000000f35bfb040] [c0000000003fe8d4] .debug_dma_sync_single_for_cpu+0x58/0x70
 
-With that and the other functions which use bind callbacks (usb_add_conf=
-iguration(),
-usb_composite_register()) the patch would be much better in my opinion a=
-nd also
-much better then my approach with __ref.
-
--- =
-
-Best regards,                                        _     _
-| Humble Liege of Serenely Enlightened Majesty of  o' \,=3D./ `o
-| Computer Science,  Micha=C5=82 "mina86" Nazarewicz       (o o)
-+----[mina86*mina86.com]---[mina86*jabber.org]----ooO--(_)--Ooo--
+I guess that this driver does a partial sync with
+dma_sync_single_for_* API. dma-debug can't handle it properly. It's
+likely that this is a false warning.
