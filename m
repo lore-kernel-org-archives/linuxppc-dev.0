@@ -1,22 +1,24 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 15EB01007D4
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 16:52:55 +1000 (EST)
-Received: by bwz11 with SMTP id 11so2101656bwz.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 01 Aug 2010 23:52:53 -0700 (PDT)
-Date: Mon, 2 Aug 2010 10:52:51 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Zang Roy-R61911 <r61911@freescale.com>
-Subject: Re: [PATCH 3/3 v2] mmc: Add ESDHC weird voltage bits workaround
-Message-ID: <20100802065251.GA25697@oksana.dev.rtsoft.ru>
-References: <1280461977-2023-1-git-send-email-tie-fei.zang@freescale.com>
-	<20100730070624.GB20351@oksana.dev.rtsoft.ru>
-	<83024545B35D6445A690EFD603E7869A07ED05@zch01exm23.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <83024545B35D6445A690EFD603E7869A07ED05@zch01exm23.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 81F8DB6F06
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 17:02:53 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o7272lKk023538
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 02:02:49 -0500
+Subject: Re: [PATCH 02/11] powerpc/nvram: More flexible
+	nvram_create_partition()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
+References: <1280710522-6362-1-git-send-email-benh@kernel.crashing.org>
+	<1280710522-6362-2-git-send-email-benh@kernel.crashing.org>
+	<1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 02 Aug 2010 17:02:46 +1000
+Message-ID: <1280732566.1902.54.camel@pasglop>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 02, 2010 at 02:19:58PM +0800, Zang Roy-R61911 wrote:
-[...]
-> > For p4080 it will be 'voltage-ranges = <3200 3400>;'. So, with
-> > voltage-ranges we can do fine grained VDD control without
-> > introducing anything new.
-> why not
->                voltage-ranges = <3300 3300>;
+On Mon, 2010-08-02 at 10:55 +1000, Benjamin Herrenschmidt wrote:
+> Replace nvram_create_os_partition() with a variant that takes
+> the partition name, signature and size as arguments.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/nvram_64.c         |   46 +++++++++++++++++++------------
+>  arch/powerpc/platforms/pseries/nvram.c |    6 ++--
+>  2 files changed, 31 insertions(+), 21 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+> index a8154f1..974b3ec 100644
+> --- a/arch/powerpc/kernel/nvram_64.c
+> +++ b/arch/powerpc/kernel/nvram_64.c
+> @@ -307,13 +307,15 @@ static int __init nvram_remove_os_partition(void)
+>  	return 0;
+>  }
+>  
+> -/* nvram_create_os_partition
+> - *
+> - * Create a OS linux partition to buffer error logs.
+> - * Will create a partition starting at the first free
+> - * space found if space has enough room.
+> +/**
+> + * nvram_create_partition - Create a partition in nvram
+> + * @name: name of the partition to create
+> + * @sig: signature of the partition to create
+> + * @req_size: size to allocate preferrably
+> + * @min_size: minimum acceptable size (0 means req_size)
+>   */
+> -static int __init nvram_create_os_partition(void)
+> +static int __init nvram_create_partition(const char *name, int sig,
+> +					 int req_size, int min_size)
+>  {
 
-Right you are, both will be 3300.
+Order of args is req , min but...
 
-Thanks,
+> +	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
+> +				       NVRAM_MIN_REQ, NVRAM_MAX_REQ);
+>  	if (rc) {
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I call it the other way around :-)
+
+I should have tested this more before sending for RFC :-) Anyways, I
+found more crap, like the way the list head is allocated etc...
+
+I'll do another pass this week after I've dealt with the merge window.
+
+Cheers,
+Ben.
