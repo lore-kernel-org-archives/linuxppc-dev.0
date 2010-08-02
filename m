@@ -1,27 +1,36 @@
-Return-Path: <tmb@mandriva.org>
-Received: from mbox2.netikka.net (mbox2.netikka.net [213.250.81.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9F3F6B6EEE
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 07:03:40 +1000 (EST)
-Message-ID: <4C5732A7.2050003@mandriva.org>
-Date: Tue, 03 Aug 2010 00:03:35 +0300
-From: Thomas Backlund <tmb@mandriva.org>
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id 342DE1007D1
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 08:17:12 +1000 (EST)
+Received: from mail171-va3 (localhost.localdomain [127.0.0.1])	by
+	mail171-va3-R.bigfish.com (Postfix) with ESMTP id C68F5728117	for
+	<linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 22:17:08 +0000 (UTC)
+Received: from VA3EHSMHS024.bigfish.com (unknown [10.7.14.245])	by
+	mail171-va3.bigfish.com (Postfix) with ESMTP id AC7561B38046	for
+	<linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 22:17:08 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o72MGvCR023426	for
+	<linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 15:16:58 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o72MTg8E007440	for <linuxppc-dev@ozlabs.org>;
+	Mon, 2 Aug 2010 17:29:42 -0500 (CDT)
+Date: Mon, 2 Aug 2010 17:16:54 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull my perf.git urgent branch
+Message-ID: <20100802171654.1776759c@schlenkerla.am.freescale.net>
+In-Reply-To: <20100728044731.GA2408@brick.ozlabs.ibm.com>
+References: <20100727124019.GB14947@brick.ozlabs.ibm.com>
+	<20100727112854.7bf97d48@schlenkerla.am.freescale.net>
+	<20100728044731.GA2408@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: make 3.82 fails on powerpc defconfig update [was: Linux 2.6.35]
-References: <AANLkTim8FALeVG+NPLNLEQChu=dPD=GHSpnxmZHYgsNx@mail.gmail.com>
-	<4C5686FF.9010803@mandriva.org>
-	<20100802182848.GA16394@merkur.ravnborg.org>
-	<4C572EB0.7060706@mandriva.org>
-	<20100802205121.GA16520@merkur.ravnborg.org>
-In-Reply-To: <20100802205121.GA16520@merkur.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"bug-make@gnu.org" <bug-make@gnu.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Thomas Backlund <tmb@mandriva.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,74 +40,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-02.08.2010 23:51, Sam Ravnborg skrev:
->>
->> Thanks, this seems to fix the first issue, but then I get the same erro on the following line 190:
->>
->> 190: bootwrapper_install %.dtb:
->> 191:        $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
->>
+On Wed, 28 Jul 2010 14:47:31 +1000
+Paul Mackerras <paulus@samba.org> wrote:
+
+> On Tue, Jul 27, 2010 at 11:28:54AM -0500, Scott Wood wrote:
 > 
-> Obviously - dunno how I missed that.
-> Updated patch below.
+> > Doesn't the setting of .period need to be maintained (it is in the other
+> > powerpc perf_event implementation that this is derived from)?
 > 
-> I will do a proper submission after you
-> confirm that powerpc build is working with make 3.82.
-> 
+> Gah, yes it does.
 
-Yeah, that was an obvious fix, thanks!
+Well, looks like Linus pulled anyway...  I'll send a patch to
+add .period.
 
-One small typo fix below...
-(a missing ':')
-
-Otherwise it works here, so:
-
-Tested-by: Thomas Backlund <tmb@mandriva.org>
-
-> 	Sam
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 77cfe7a..ace7a3e 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -163,9 +163,11 @@ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
->  # Default to zImage, override when needed
->  all: zImage
->  
-> -BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
-> +# With make 3.82 we cannot mix normal and wildcard targets
-> +BOOT_TARGETS1 := zImage zImage.initrd uImaged
-> +BOOT_TARGETS2 := zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
->  
-> -PHONY += $(BOOT_TARGETS)
-> +PHONY += $(BOOT_TARGETS1) $(BOOT_TARGETS2)
->  
->  boot := arch/$(ARCH)/boot
->  
-> @@ -180,10 +182,16 @@ relocs_check: arch/powerpc/relocs_check.pl vmlinux
->  zImage: relocs_check
->  endif
->  
-> -$(BOOT_TARGETS): vmlinux
-> +$(BOOT_TARGETS1): vmlinux
-> +	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-> +$(BOOT_TARGETS2): vmlinux
-> +	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-> +
-> +
-> +bootwrapper_install
-
-bootwrapper_install:
-
->  	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
->  
-> -bootwrapper_install %.dtb:
-> +%.dtb:
->  	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
->  
->  define archhelp
-> .
-> 
-
---
-Thomas
+-Scott
