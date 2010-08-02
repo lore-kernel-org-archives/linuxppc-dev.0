@@ -1,22 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 05/11] powerpc/nvram: Completely clear a new partition
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1280710522-6362-6-git-send-email-benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 4F172B70CC
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 13:54:53 +1000 (EST)
+Subject: Re: [PATCH 02/11] powerpc/nvram: More flexible
+	nvram_create_partition()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1280720607.2491.175.camel@concordia>
 References: <1280710522-6362-1-git-send-email-benh@kernel.crashing.org>
 	<1280710522-6362-2-git-send-email-benh@kernel.crashing.org>
 	<1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-4-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-5-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-6-git-send-email-benh@kernel.crashing.org>
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-uUZLRpHPIjd4HjZ6h7Yj"
-Date: Mon, 02 Aug 2010 13:50:37 +1000
-Message-ID: <1280721037.2491.179.camel@concordia>
+	<1280720607.2491.175.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 02 Aug 2010 13:54:44 +1000
+Message-ID: <1280721284.1902.52.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2010-08-02 at 13:43 +1000, Michael Ellerman wrote:
 
---=-uUZLRpHPIjd4HjZ6h7Yj
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> >  	
+> >  	/* try creating a partition with the free space we have */
+> > -	rc = nvram_create_partition("ppc64,linux", );
+> 
+> That looks odd? Trailing comma.
 
-On Mon, 2010-08-02 at 10:55 +1000, Benjamin Herrenschmidt wrote:
-> When creating a partition, we clear it entirely rather than
-> just the first two words since the previous code was rather
-> specific to the pseries log partition format.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/nvram_64.c |   19 ++++++++++---------
->  1 files changed, 10 insertions(+), 9 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_6=
-4.c
-> index dd18a5a..7ddeaa6 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -320,7 +320,7 @@ static int __init nvram_create_partition(const char *=
-name, int sig,
->  	struct nvram_partition *part;
->  	struct nvram_partition *new_part;
->  	struct nvram_partition *free_part =3D NULL;
-> -	int seq_init[2] =3D { 0, 0 };
-> +	static char nv_init_vals[16];
+Yeah, that and...
 
-Or should we just grab a zeroed page?
+> > diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+> > index f4e4c06..2a1ef5c 100644
+> > --- a/arch/powerpc/platforms/pseries/nvram.c
+> > +++ b/arch/powerpc/platforms/pseries/nvram.c
+> > @@ -22,14 +22,14 @@
+> >  #include <asm/prom.h>
+> >  #include <asm/machdep.h>
+> >  
+> > +/* Max bytes to read/write in one go */
+> > +#define NVRW_CNT 0x20
+> > +
+> >  static unsigned int nvram_size;
+> >  static int nvram_fetch, nvram_store;
+> >  static char nvram_buf[NVRW_CNT];	/* assume this is in the first 4GB */
+> >  static DEFINE_SPINLOCK(nvram_lock);
+> >  
+> > -/* Max bytes to read/write in one go */
+> > -#define NVRW_CNT 0x20
+> > -
+> 
+> Churn alert, you just moved that hunk there in the previous patch.
 
->  	loff_t tmp_index;
->  	long size =3D 0;
->  	int rc;
-> @@ -379,14 +379,15 @@ static int __init nvram_create_partition(const char=
- *name, int sig,
->  		return rc;
->  	}
-> =20
-> -	/* make sure and initialize to zero the sequence number and the error
-> -	   type logged */
-> -	tmp_index =3D new_part->index + NVRAM_HEADER_LEN;
-> -	rc =3D ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_ind=
-ex);
-> -	if (rc <=3D 0) {
-> -		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
-> -		       "failed (%d)\n", rc);
-> -		return rc;
-> +	/* Clear the partition */
-> +	for (tmp_index =3D new_part->index + NVRAM_HEADER_LEN;
-> +	     tmp_index <  ((size - 1) * NVRAM_BLOCK_LEN);
-                          ^
-Extra whitespace          |
+ ... that are local rebasing fu*kage.
 
-cheers
+I'll sort all that out in the next version.
 
-
---=-uUZLRpHPIjd4HjZ6h7Yj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkxWQI0ACgkQdSjSd0sB4dKt1wCgrbasRI0Rs8aRm79NqWYbsOYx
-TecAmQHVLSjPPm03TAhwN6DPUyk2TD74
-=mCNg
------END PGP SIGNATURE-----
-
---=-uUZLRpHPIjd4HjZ6h7Yj--
+Thanks,
+Ben.
