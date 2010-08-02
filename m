@@ -1,19 +1,29 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 1FB1CB70A7
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 04:28:51 +1000 (EST)
-Date: Mon, 2 Aug 2010 20:28:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Backlund <tmb@mandriva.org>
-Subject: Re: make 3.82 fails on powerpc defconfig update [was: Linux 2.6.35]
-Message-ID: <20100802182848.GA16394@merkur.ravnborg.org>
-References: <AANLkTim8FALeVG+NPLNLEQChu=dPD=GHSpnxmZHYgsNx@mail.gmail.com>
-	<4C5686FF.9010803@mandriva.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4C5686FF.9010803@mandriva.org>
-Cc: Michal Marek <mmarek@suse.cz>, linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, bug-make@gnu.org
+Return-Path: <kumar.gala@freescale.com>
+Received: from DB3EHSOBE005.bigfish.com (db3ehsobe005.messaging.microsoft.com
+	[213.199.154.143]) by ozlabs.org (Postfix) with ESMTP id C7E9DB70AE
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Aug 2010 05:52:57 +1000 (EST)
+Received: from mail2-db3 (localhost.localdomain [127.0.0.1])	by
+	mail2-db3-R.bigfish.com (Postfix) with ESMTP id C9284470810	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2010 19:37:36 +0000 (UTC)
+Received: from DB3EHSMHS006.bigfish.com (unknown [10.3.81.242])	by
+	mail2-db3.bigfish.com (Postfix) with ESMTP id 9A5261718050	for
+	<linuxppc-dev@lists.ozlabs.org>; Mon,  2 Aug 2010 19:37:36 +0000 (UTC)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net
+	[10.64.34.199])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o72JbNZQ027673	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 2 Aug 2010 12:37:33 -0700 (MST)
+Subject: Re: [PATCH v2 1/2] powerpc/85xx: kexec for SMP 85xx BookE systems
+MIME-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset="us-ascii"
+From: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <1279746894-29529-2-git-send-email-msm@freescale.com>
+Date: Mon, 2 Aug 2010 14:37:22 -0500
+Message-ID: <F79AF69B-D763-4A4F-9294-4758DB1AC0A7@freescale.com>
+References: <1279746894-29529-1-git-send-email-msm@freescale.com>
+	<1279746894-29529-2-git-send-email-msm@freescale.com>
+To: Matthew McClintock <msm@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 02, 2010 at 11:51:11AM +0300, Thomas Backlund wrote:
-> Hi,
-> (please cc me as I'm not subscribed)
->
-> updating from make 3.81 to 3.82 gets me this:
->
-> [thomas@tmb linux-2.6.35]$ cp arch/powerpc/configs/ppc64_defconfig .config
-> [thomas@tmb linux-2.6.35]$ LC_ALL=C make oldconfig ARCH=powerpc
-> /mnt/work/2.6.35/linux-2.6.35/arch/powerpc/Makefile:183: *** mixed  
-> implicit and normal rules.  Stop.
->
-> The lines are:
->
-> 182:
-> 183: $(BOOT_TARGETS): vmlinux
-> 184:         $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst  
-> %,$(boot)/%,$@)
-> 185:
->
-> BOOT_TARGETS are defined on line 166 as:
-> BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.%  
-> cuImage.% simpleImage.%
->
->
-> Now it's not a regression in the kernel as the same happends with the  
-> 2.6.34 tree too.
->
-> (btw, the host I'm syncing the defconfig with is a x86_64 machine)
->
->
-> Now, I dont know if this is "intended breakage" by the make update, or  
-> if the Makefile needs to be updated....
->
-> Any ideas how to fix ?
 
-This is in the category "intended breakage".
-We had a similar issue in the top-level Makefile which Paul (IIRC)
-helped me to fix long time ago.
+On Jul 21, 2010, at 4:14 PM, Matthew McClintock wrote:
 
-To fix popwerpc I suggest something along these lines.
-[Note: I did not test it - please do so.
+> Adds support for kexec on 85xx machines for the BookE platform.
+> Including support for SMP machines
+>=20
+> Based off work from Maxim Uvarov <muvarov@mvista.com>
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> ---
+> arch/powerpc/Kconfig              |   10 +++---
+> arch/powerpc/platforms/85xx/smp.c |   63 =
++++++++++++++++++++++++++++++++++++++
+> 2 files changed, 68 insertions(+), 5 deletions(-)
 
-	Sam
+applied to next
 
-[PATCH] powerpc: fix build with make 3.82
-
-Thomas Backlund reported that the powerpc build broke with make 3.82.
-It failed with the following message:
-
-    arch/powerpc/Makefile:183: *** mixed implicit and normal rules.  Stop.
-
-The fix is to avoid mixing non-wildcard and wildcard targets.
-
-Reported-by: Thomas Backlund <tmb@mandriva.org>
-Cc: Michal Marek <mmarek@suse.cz>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 77cfe7a..ad88b21 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -163,9 +163,11 @@ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
- # Default to zImage, override when needed
- all: zImage
- 
--BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
-+# With make 3.82 we cannot mix normal and wildcard targets
-+BOOT_TARGETS1 := zImage zImage.initrd uImaged
-+BOOT_TARGETS2 := zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
- 
--PHONY += $(BOOT_TARGETS)
-+PHONY += $(BOOT_TARGETS1) $(BOOT_TARGETS2)
- 
- boot := arch/$(ARCH)/boot
- 
-@@ -180,7 +182,9 @@ relocs_check: arch/powerpc/relocs_check.pl vmlinux
- zImage: relocs_check
- endif
- 
--$(BOOT_TARGETS): vmlinux
-+$(BOOT_TARGETS1): vmlinux
-+	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-+$(BOOT_TARGETS2): vmlinux
- 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
- bootwrapper_install %.dtb:
+- k=
