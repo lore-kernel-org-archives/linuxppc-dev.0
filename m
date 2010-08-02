@@ -1,23 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 4F172B70CC
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 13:54:53 +1000 (EST)
-Subject: Re: [PATCH 02/11] powerpc/nvram: More flexible
-	nvram_create_partition()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1280720607.2491.175.camel@concordia>
-References: <1280710522-6362-1-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-2-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
-	<1280720607.2491.175.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 02 Aug 2010 13:54:44 +1000
-Message-ID: <1280721284.1902.52.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+Date: Mon, 2 Aug 2010 16:18:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] perf, powerpc: Convert the FSL driver to use local64_t
+Message-ID: <20100802061851.GA898@brick.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +16,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-08-02 at 13:43 +1000, Michael Ellerman wrote:
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-> >  	
-> >  	/* try creating a partition with the free space we have */
-> > -	rc = nvram_create_partition("ppc64,linux", );
-> 
-> That looks odd? Trailing comma.
+For some reason the FSL driver got left out when we converted perf
+to use local64_t instead of atomic64_t.
 
-Yeah, that and...
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+This is against the perf/core branch in the tip tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+Posting here for comment.
 
-> > diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-> > index f4e4c06..2a1ef5c 100644
-> > --- a/arch/powerpc/platforms/pseries/nvram.c
-> > +++ b/arch/powerpc/platforms/pseries/nvram.c
-> > @@ -22,14 +22,14 @@
-> >  #include <asm/prom.h>
-> >  #include <asm/machdep.h>
-> >  
-> > +/* Max bytes to read/write in one go */
-> > +#define NVRW_CNT 0x20
-> > +
-> >  static unsigned int nvram_size;
-> >  static int nvram_fetch, nvram_store;
-> >  static char nvram_buf[NVRW_CNT];	/* assume this is in the first 4GB */
-> >  static DEFINE_SPINLOCK(nvram_lock);
-> >  
-> > -/* Max bytes to read/write in one go */
-> > -#define NVRW_CNT 0x20
-> > -
-> 
-> Churn alert, you just moved that hunk there in the previous patch.
+ arch/powerpc/kernel/perf_event_fsl_emb.c |   28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
- ... that are local rebasing fu*kage.
-
-I'll sort all that out in the next version.
-
-Thanks,
-Ben.
+Index: linux-2.6/arch/powerpc/kernel/perf_event_fsl_emb.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/perf_event_fsl_emb.c
++++ linux-2.6/arch/powerpc/kernel/perf_event_fsl_emb.c
+@@ -162,15 +162,15 @@ static void fsl_emb_pmu_read(struct perf
+ 	 * Therefore we treat them like NMIs.
+ 	 */
+ 	do {
+-		prev = atomic64_read(&event->hw.prev_count);
++		prev = local64_read(&event->hw.prev_count);
+ 		barrier();
+ 		val = read_pmc(event->hw.idx);
+-	} while (atomic64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
++	} while (local64_cmpxchg(&event->hw.prev_count, prev, val) != prev);
+ 
+ 	/* The counters are only 32 bits wide */
+ 	delta = (val - prev) & 0xfffffffful;
+-	atomic64_add(delta, &event->count);
+-	atomic64_sub(delta, &event->hw.period_left);
++	local64_add(delta, &event->count);
++	local64_sub(delta, &event->hw.period_left);
+ }
+ 
+ /*
+@@ -296,11 +296,11 @@ static int fsl_emb_pmu_enable(struct per
+ 
+ 	val = 0;
+ 	if (event->hw.sample_period) {
+-		s64 left = atomic64_read(&event->hw.period_left);
++		s64 left = local64_read(&event->hw.period_left);
+ 		if (left < 0x80000000L)
+ 			val = 0x80000000L - left;
+ 	}
+-	atomic64_set(&event->hw.prev_count, val);
++	local64_set(&event->hw.prev_count, val);
+ 	write_pmc(i, val);
+ 	perf_event_update_userpage(event);
+ 
+@@ -371,8 +371,8 @@ static void fsl_emb_pmu_unthrottle(struc
+ 	if (left < 0x80000000L)
+ 		val = 0x80000000L - left;
+ 	write_pmc(event->hw.idx, val);
+-	atomic64_set(&event->hw.prev_count, val);
+-	atomic64_set(&event->hw.period_left, left);
++	local64_set(&event->hw.prev_count, val);
++	local64_set(&event->hw.period_left, left);
+ 	perf_event_update_userpage(event);
+ 	perf_enable();
+ 	local_irq_restore(flags);
+@@ -500,7 +500,7 @@ const struct pmu *hw_perf_event_init(str
+ 		return ERR_PTR(-ENOTSUPP);
+ 
+ 	event->hw.last_period = event->hw.sample_period;
+-	atomic64_set(&event->hw.period_left, event->hw.last_period);
++	local64_set(&event->hw.period_left, event->hw.last_period);
+ 
+ 	/*
+ 	 * See if we need to reserve the PMU.
+@@ -541,16 +541,16 @@ static void record_and_restart(struct pe
+ 	int record = 0;
+ 
+ 	/* we don't have to worry about interrupts here */
+-	prev = atomic64_read(&event->hw.prev_count);
++	prev = local64_read(&event->hw.prev_count);
+ 	delta = (val - prev) & 0xfffffffful;
+-	atomic64_add(delta, &event->count);
++	local64_add(delta, &event->count);
+ 
+ 	/*
+ 	 * See if the total period for this event has expired,
+ 	 * and update for the next period.
+ 	 */
+ 	val = 0;
+-	left = atomic64_read(&event->hw.period_left) - delta;
++	left = local64_read(&event->hw.period_left) - delta;
+ 	if (period) {
+ 		if (left <= 0) {
+ 			left += period;
+@@ -584,8 +584,8 @@ static void record_and_restart(struct pe
+ 	}
+ 
+ 	write_pmc(event->hw.idx, val);
+-	atomic64_set(&event->hw.prev_count, val);
+-	atomic64_set(&event->hw.period_left, left);
++	local64_set(&event->hw.prev_count, val);
++	local64_set(&event->hw.period_left, left);
+ 	perf_event_update_userpage(event);
+ }
+ 
