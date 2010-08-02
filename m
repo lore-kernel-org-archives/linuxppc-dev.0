@@ -2,27 +2,33 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 31D1DB70B4
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 09:14:32 +1000 (EST)
-Date: Mon, 2 Aug 2010 16:01:34 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 5B6A4B70D0
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 09:32:12 +1000 (EST)
+Date: Mon, 2 Aug 2010 16:31:28 -0700
 From: Greg KH <greg@kroah.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 2/3] USB: add of_platform glue driver for FSL USB DR
-	controller
-Message-ID: <20100802230134.GB28463@kroah.com>
-References: <1279815922-27198-1-git-send-email-agust@denx.de>
-	<1279815922-27198-3-git-send-email-agust@denx.de>
-	<AANLkTinSeFWM4bQK+o8nwStd6C-OcxMagC7TjwCBNn1v@mail.gmail.com>
-	<20100728135858.5dc14484@wker>
-	<AANLkTimrtR4yi0czotS_6K_njxiA4orj6SznpqWDGBpy@mail.gmail.com>
-	<20100728184647.GA7128@suse.de>
+To: Eric Biederman <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 0/6] Remove owner field from sysfs attribute structure
+Message-ID: <20100802233128.GA21286@kroah.com>
+References: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
+	<AANLkTinM+m15QbAg+J3YyHWnObsxtHYYU6p6C89p8wjp@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100728184647.GA7128@suse.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <AANLkTinM+m15QbAg+J3YyHWnObsxtHYYU6p6C89p8wjp@mail.gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+	Jani Nikula <ext-jani.1.nikula@nokia.com>,
+	Linus Walleij <linus.walleij@stericsson.com>,
+	James Smart <james.smart@emulex.com>, linuxppc-dev@ozlabs.org,
+	Benjamin Thery <benjamin.thery@bull.net>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+	Tejun Heo <tj@kernel.org>,
+	"James E.J. Bottomley" <James.Bottomley@suse.de>,
+	Richard Purdie <rpurdie@rpsys.net>, Nick Cheng <nick.cheng@areca.com.tw>,
+	Dmitry Torokhov <dtor@mail.ru>, Jean Delvare <khali@linux-fr.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Liam Girdwood <lrg@slimlogic.co.uk>, linux-scsi@vger.kernel.org,
+	Alex Iannicelli <alex.iannicelli@emulex.com>,
+	Guenter Roeck <guenter.roeck@ericsson.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 28, 2010 at 11:46:47AM -0700, Greg KH wrote:
-> On Wed, Jul 28, 2010 at 12:14:14PM -0600, Grant Likely wrote:
-> > On Wed, Jul 28, 2010 at 5:58 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> > > Hi Grant,
-> > >
-> > > On Wed, 28 Jul 2010 02:16:08 -0600
-> > > Grant Likely <grant.likely@secretlab.ca> wrote:
-> > >
-> > >> On Thu, Jul 22, 2010 at 10:25 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> > >> > The driver creates platform devices based on the information
-> > >> > from USB nodes in the flat device tree. This is the replacement
-> > >> > for old arch fsl_soc usb code removed by the previous patch.
-> > >> > It uses usual of-style binding, available EHCI-HCD and UDC
-> > >> > drivers can be bound to the created devices. The new of-style
-> > >> > driver additionaly instantiates USB OTG platform device, as the
-> > >> > appropriate USB OTG driver will be added soon.
-> > >> >
-> > >> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
-> > >> > Cc: Kumar Gala <galak@kernel.crashing.org>
-> > >> > Cc: Grant Likely <grant.likely@secretlab.ca>
-> > >>
-> > >> Hi Anatolij,
-> > >>
-> > >> Looks pretty good, but some comments below.
-> > >
-> > > Thanks for review and comments! Greg already merged this series and
-> > > therefore I'll submit an incremental cleanup patch to address
-> > > outstanding issues. My reply is below.
-> > 
-> > Greg maintains a patchwork tree IIRC.  I believe he drops patches from
-> > his linux-next branch if they need to be reworked.  Greg, do I have
-> > this right?
+On Wed, Jul 28, 2010 at 11:16:35PM -0700, Eric Biederman wrote:
+> On Wed, Jul 28, 2010 at 10:09 PM, Guenter Roeck
+> <guenter.roeck@ericsson.com> wrote:
+> > The following comment is found in include/linux/sysfs.h:
+> >
+> >   /* FIXME
+> >    * The *owner field is no longer used.
+> >    * x86 tree has been cleaned up. The owner
+> >    * attribute is still left for other arches.
+> >    */
+> >
+> > As it turns out, the *owner field is (again?) initialized in several modules,
+> > suggesting that such initialization may be creeping back into the code.
+> >
+> > This patch set removes the above comment, the *owner field, and each instance
+> > in the code where it was found to be initialized.
+> >
+> > Compiled with x86 allmodconfig as well as with all alpha, arm, mips, powerpc,
+> > and sparc defconfig builds.
 > 
-> Yup.  I can easily drop all of these patches.
-> 
-> > Also, my preference would be to see some 3rd party testing before
-> > committing to having this merged.
-> 
-> Ok, I will go drop them all now, and wait for some that pass your
-> review.
+> This seems reasonable to me.  Can we get this in linux-next?
 
-All 3 now dropped.
+It will show up in linux-next tomorrow.
 
 thanks,
 
