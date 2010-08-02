@@ -1,32 +1,29 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com",
-	Issuer "GeoTrust SSL CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0E48B70DF
+	(Client CN "e23smtp07.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B0BD2B70DD
 	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 10:55:38 +1000 (EST)
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [202.81.31.246])
-	by e23smtp06.au.ibm.com (8.14.4/8.13.1) with ESMTP id o720tWXE026377
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 10:55:32 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o720tcc11745092
+	by e23smtp07.au.ibm.com (8.14.4/8.13.1) with ESMTP id o720tctf020466
 	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 10:55:38 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o720tboN001078
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o720tcxo1720556
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 10:55:38 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o720tbbN019646
 	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 10:55:38 +1000
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/11] powerpc/nvram: Completely clear a new partition
-Date: Mon,  2 Aug 2010 10:55:16 +1000
-Message-Id: <1280710522-6362-6-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1280710522-6362-5-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 03/11] powerpc/nvram: nvram_create_partitions() now uses bytes
+Date: Mon,  2 Aug 2010 10:55:14 +1000
+Message-Id: <1280710522-6362-4-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
 References: <1280710522-6362-1-git-send-email-benh@kernel.crashing.org>
 	<1280710522-6362-2-git-send-email-benh@kernel.crashing.org>
 	<1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-4-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-5-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When creating a partition, we clear it entirely rather than
-just the first two words since the previous code was rather
-specific to the pseries log partition format.
+This converts nvram_create_partition() to use a size in bytes
+rather than blocks. It does the appropriate alignment internally
+
+The size passed is also the data size (ie. doesn't include the
+header anymore).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/nvram_64.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/nvram_64.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index dd18a5a..7ddeaa6 100644
+index 974b3ec..b0f2114 100644
 --- a/arch/powerpc/kernel/nvram_64.c
 +++ b/arch/powerpc/kernel/nvram_64.c
-@@ -320,7 +320,7 @@ static int __init nvram_create_partition(const char *name, int sig,
- 	struct nvram_partition *part;
- 	struct nvram_partition *new_part;
- 	struct nvram_partition *free_part = NULL;
--	int seq_init[2] = { 0, 0 };
-+	static char nv_init_vals[16];
- 	loff_t tmp_index;
+@@ -34,10 +34,10 @@
+ 
+ #undef DEBUG_NVRAM
+ 
+-#define NVRAM_HEADER_LEN 16 /* sizeof(struct nvram_header) */
+-#define NVRAM_BLOCK_LEN 16
+-#define NVRAM_MAX_REQ (2080/NVRAM_BLOCK_LEN)
+-#define NVRAM_MIN_REQ (1056/NVRAM_BLOCK_LEN)
++#define NVRAM_HEADER_LEN	sizeof(struct nvram_header)
++#define NVRAM_BLOCK_LEN		NVRAM_HEADER_LEN
++#define NVRAM_MAX_REQ		2079
++#define NVRAM_MIN_REQ		1055
+ 
+ /* If change this size, then change the size of NVNAME_LEN */
+ struct nvram_header {
+@@ -311,7 +311,7 @@ static int __init nvram_remove_os_partition(void)
+  * nvram_create_partition - Create a partition in nvram
+  * @name: name of the partition to create
+  * @sig: signature of the partition to create
+- * @req_size: size to allocate preferrably
++ * @req_size: size of data to allocate in bytes
+  * @min_size: minimum acceptable size (0 means req_size)
+  */
+ static int __init nvram_create_partition(const char *name, int sig,
+@@ -325,12 +325,20 @@ static int __init nvram_create_partition(const char *name, int sig,
  	long size = 0;
  	int rc;
-@@ -379,14 +379,15 @@ static int __init nvram_create_partition(const char *name, int sig,
- 		return rc;
- 	}
  
--	/* make sure and initialize to zero the sequence number and the error
--	   type logged */
--	tmp_index = new_part->index + NVRAM_HEADER_LEN;
--	rc = ppc_md.nvram_write((char *)&seq_init, sizeof(seq_init), &tmp_index);
--	if (rc <= 0) {
--		printk(KERN_ERR "nvram_create_os_partition: nvram_write "
--		       "failed (%d)\n", rc);
--		return rc;
-+	/* Clear the partition */
-+	for (tmp_index = new_part->index + NVRAM_HEADER_LEN;
-+	     tmp_index <  ((size - 1) * NVRAM_BLOCK_LEN);
-+	     tmp_index += NVRAM_BLOCK_LEN) {
-+		rc = ppc_md.nvram_write(nv_init_vals, NVRAM_BLOCK_LEN, &tmp_index);
-+		if (rc <= 0) {
-+			pr_err("nvram_create_partition: nvram_write failed (%d)\n", rc);
-+			return rc;
-+		}
- 	}
- 	
- 	nvram_error_log_index = new_part->index + NVRAM_HEADER_LEN;
++	/* Convert sizes from bytes to blocks */
++	req_size = _ALIGN_UP(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
++	min_size = _ALIGN_UP(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
++
+ 	/* If no minimum size specified, make it the same as the
+ 	 * requested size
+ 	 */
+ 	if (min_size == 0)
+ 		min_size = req_size;
+ 
++	/* Now add one block to each for the header */
++	req_size += 1;
++	min_size += 1;
++
+ 	/* Find a free partition that will give us the maximum needed size 
+ 	   If can't find one that will give us the minimum size needed */
+ 	list_for_each_entry(part, &nvram_part->partition, partition) {
+@@ -450,7 +458,7 @@ static int __init nvram_setup_partition(void)
+ 		if (strcmp(part->header.name, "ppc64,linux"))
+ 			continue;
+ 
+-		if (part->header.length >= NVRAM_MIN_REQ) {
++		if ((part->header.length - 1) * NVRAM_BLOCK_LEN >= NVRAM_MIN_REQ) {
+ 			/* found our partition */
+ 			nvram_error_log_index = part->index + NVRAM_HEADER_LEN;
+ 			nvram_error_log_size = ((part->header.length - 1) *
 -- 
 1.6.3.3
