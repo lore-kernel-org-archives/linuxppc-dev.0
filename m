@@ -1,63 +1,28 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	by ozlabs.org (Postfix) with ESMTP id 7D9ADB70A4
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 08:56:37 +1000 (EST)
-Date: Mon, 2 Aug 2010 15:54:40 -0700
-From: Greg KH <gregkh@suse.de>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] usb gadget: don't save bind callback in struct
-	usb_gadget_driver
-Message-ID: <20100802225440.GA9190@suse.de>
-References: <op.vgs04dub7p4s8u@pikus>
-	<1280752803-11441-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<Pine.LNX.4.64.1008021446470.10662@ask.diku.dk>
-	<20100802131248.GD13900@pengutronix.de>
+Return-Path: <greg@kroah.com>
+Received: from coco.kroah.org (kroah.org [198.145.64.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 31D1DB70B4
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 09:14:32 +1000 (EST)
+Date: Mon, 2 Aug 2010 16:01:34 -0700
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 2/3] USB: add of_platform glue driver for FSL USB DR
+	controller
+Message-ID: <20100802230134.GB28463@kroah.com>
+References: <1279815922-27198-1-git-send-email-agust@denx.de>
+	<1279815922-27198-3-git-send-email-agust@denx.de>
+	<AANLkTinSeFWM4bQK+o8nwStd6C-OcxMagC7TjwCBNn1v@mail.gmail.com>
+	<20100728135858.5dc14484@wker>
+	<AANLkTimrtR4yi0czotS_6K_njxiA4orj6SznpqWDGBpy@mail.gmail.com>
+	<20100728184647.GA7128@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20100802131248.GD13900@pengutronix.de>
-Cc: Cliff Cai <cliff.cai@analog.com>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Dinh Nguyen <Dinh.Nguyen@freescale.com>, Takashi Iwai <tiwai@suse.de>,
-	Nicolas Ferre <nicolas.ferre@atmel.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Julia Lawall <julia@diku.dk>,
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-	Philipp Zabel <philipp.zabel@gmail.com>,
-	Felipe Balbi <felipe.balbi@nokia.com>,
-	Andrea Gelmini <andrea.gelmini@gelma.net>,
-	Robert Jarzmik <robert.jarzmik@free.fr>,
-	Fabien Chouteau <fabien.chouteau@barco.com>,
-	Dan Carpenter <error27@gmail.com>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	David Brownell <dbrownell@users.sourceforge.net>,
-	Vladimir Zapolskiy <vzapolskiy@gmail.com>,
-	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-	Vincent Sanders <support@simtec.co.uk>, Marc Singer <elf@buici.com>,
-	David Brownell <david-b@pacbell.net>, Tony Lindgren <tony@atomide.com>,
-	=?iso-8859-1?Q?Andr=E9?= Goddard Rosa <andre.goddard@gmail.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Sean MacLennan <smaclennan@pikatech.com>,
-	Russell King <rmk+kernel@arm.linux.org.uk>,
-	Tobias Klauser <tklauser@distanz.ch>, Anatolij Gustschin <agust@denx.de>,
-	Alexey Dobriyan <adobriyan@gmail.com>, Eirik Aanonsen <eaa@wprmedical.com>,
-	Mike Frysinger <vapier@gentoo.org>,
-	Thomas Dahlmann <dahlmann.thomas@arcor.de>,
-	linux-geode@lists.infradead.org, Ben Dooks <ben-linux@fluff.org>,
-	Magnus Damm <damm@igel.co.jp>, Thomas Gleixner <tglx@linutronix.de>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>,
-	Andrew Victor <linux@maxim.org.za>, linux-arm-kernel@lists.infradead.org,
-	Robert Lukassen <robert.lukassen@tomtom.com>,
-	Eric Miao <eric.y.miao@gmail.com>,
-	=?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-	Jiri Kosina <jkosina@suse.cz>,
-	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-	linux-usb@vger.kernel.org,
-	=?utf-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>,
-	Harro Haan <hrhaan@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>,
-	H Hartley Sweeten <hsweeten@visionengravers.com>,
-	Paul Mundt <lethal@linux-sh.org>, Tejun Heo <tj@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Cory Maccarrone <darkstar6262@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100728184647.GA7128@suse.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+	linux-usb@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,33 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 02, 2010 at 03:12:48PM +0200, Uwe Kleine-König wrote:
-> On Mon, Aug 02, 2010 at 02:51:36PM +0200, Julia Lawall wrote:
-> > > diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-> > > index 731150d..c266c1e 100644
-> > > --- a/drivers/usb/gadget/amd5536udc.c
-> > > +++ b/drivers/usb/gadget/amd5536udc.c
-> > > @@ -1954,13 +1954,14 @@ static int setup_ep0(struct udc *dev)
-> > >  }
-> > >  
-> > >  /* Called by gadget driver to register itself */
-> > > -int usb_gadget_register_driver(struct usb_gadget_driver *driver)
-> > > +int usb_gadget_probe_driver(struct usb_gadget_driver *driver,
-> > > +		int (*bind)(struct usb_gadget *))
-> > >  {
-> > >  	struct udc		*dev = udc;
-> > >  	int			retval;
-> > >  	u32 tmp;
-> > >  
-> > > -	if (!driver || !driver->bind || !driver->setup
-> > > +	if (!driver || bind || !driver->setup
+On Wed, Jul 28, 2010 at 11:46:47AM -0700, Greg KH wrote:
+> On Wed, Jul 28, 2010 at 12:14:14PM -0600, Grant Likely wrote:
+> > On Wed, Jul 28, 2010 at 5:58 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> > > Hi Grant,
+> > >
+> > > On Wed, 28 Jul 2010 02:16:08 -0600
+> > > Grant Likely <grant.likely@secretlab.ca> wrote:
+> > >
+> > >> On Thu, Jul 22, 2010 at 10:25 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> > >> > The driver creates platform devices based on the information
+> > >> > from USB nodes in the flat device tree. This is the replacement
+> > >> > for old arch fsl_soc usb code removed by the previous patch.
+> > >> > It uses usual of-style binding, available EHCI-HCD and UDC
+> > >> > drivers can be bound to the created devices. The new of-style
+> > >> > driver additionaly instantiates USB OTG platform device, as the
+> > >> > appropriate USB OTG driver will be added soon.
+> > >> >
+> > >> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+> > >> > Cc: Kumar Gala <galak@kernel.crashing.org>
+> > >> > Cc: Grant Likely <grant.likely@secretlab.ca>
+> > >>
+> > >> Hi Anatolij,
+> > >>
+> > >> Looks pretty good, but some comments below.
+> > >
+> > > Thanks for review and comments! Greg already merged this series and
+> > > therefore I'll submit an incremental cleanup patch to address
+> > > outstanding issues. My reply is below.
 > > 
-> > I have the impression that this should be !bind rather than bind.  
-> ah, now I see what you meant.  Obviously you're right.  I fixed it up
-> locally here for now.  Greg, just tell me when/if you need a fixed
-> patch.
+> > Greg maintains a patchwork tree IIRC.  I believe he drops patches from
+> > his linux-next branch if they need to be reworked.  Greg, do I have
+> > this right?
+> 
+> Yup.  I can easily drop all of these patches.
+> 
+> > Also, my preference would be to see some 3rd party testing before
+> > committing to having this merged.
+> 
+> Ok, I will go drop them all now, and wait for some that pass your
+> review.
 
-Didn't you already post a "fixed" patch?
+All 3 now dropped.
 
 thanks,
 
