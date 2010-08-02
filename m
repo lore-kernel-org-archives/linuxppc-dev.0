@@ -1,24 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 81F8DB6F06
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 17:02:53 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o7272lKk023538
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Aug 2010 02:02:49 -0500
-Subject: Re: [PATCH 02/11] powerpc/nvram: More flexible
-	nvram_create_partition()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
-References: <1280710522-6362-1-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-2-git-send-email-benh@kernel.crashing.org>
-	<1280710522-6362-3-git-send-email-benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 02 Aug 2010 17:02:46 +1000
-Message-ID: <1280732566.1902.54.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <B21284@freescale.com>
+Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
+	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id A93311007D2
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 18:22:33 +1000 (EST)
+Received: from mail25-db3 (localhost.localdomain [127.0.0.1])	by
+	mail25-db3-R.bigfish.com (Postfix) with ESMTP id 0C5055B810E	for
+	<linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 08:07:21 +0000 (UTC)
+Received: from DB3EHSMHS005.bigfish.com (unknown [10.3.81.251])	by
+	mail25-db3.bigfish.com (Postfix) with ESMTP id C93DBB7804F	for
+	<linuxppc-dev@ozlabs.org>; Mon,  2 Aug 2010 08:07:20 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o72876CK012325	for <linuxppc-dev@ozlabs.org>;
+	Mon, 2 Aug 2010 01:07:16 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o7287BLu014167	for <linuxppc-dev@ozlabs.org>;
+	Mon, 2 Aug 2010 03:07:12 -0500 (CDT)
+From: Mingkai Hu <Mingkai.hu@freescale.com>
+To: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+Subject: [PATCH v2 0/6] refactor spi_mpc8xxx.c and add eSPI controller support
+Date: Mon, 2 Aug 2010 15:51:58 +0800
+Message-ID: <1280735524-17547-1-git-send-email-Mingkai.hu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-08-02 at 10:55 +1000, Benjamin Herrenschmidt wrote:
-> Replace nvram_create_os_partition() with a variant that takes
-> the partition name, signature and size as arguments.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/nvram_64.c         |   46 +++++++++++++++++++------------
->  arch/powerpc/platforms/pseries/nvram.c |    6 ++--
->  2 files changed, 31 insertions(+), 21 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-> index a8154f1..974b3ec 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -307,13 +307,15 @@ static int __init nvram_remove_os_partition(void)
->  	return 0;
->  }
->  
-> -/* nvram_create_os_partition
-> - *
-> - * Create a OS linux partition to buffer error logs.
-> - * Will create a partition starting at the first free
-> - * space found if space has enough room.
-> +/**
-> + * nvram_create_partition - Create a partition in nvram
-> + * @name: name of the partition to create
-> + * @sig: signature of the partition to create
-> + * @req_size: size to allocate preferrably
-> + * @min_size: minimum acceptable size (0 means req_size)
->   */
-> -static int __init nvram_create_os_partition(void)
-> +static int __init nvram_create_partition(const char *name, int sig,
-> +					 int req_size, int min_size)
->  {
+In-Reply-To: 
 
-Order of args is req , min but...
+This patchset refactor the file spi_mpc8xxx.c to abstract some common
+code as a lib used by the SPI/eSPI controller driver, move the SPI 
+controller driver code to spi_fsl_spi.c, and add the eSPI controller
+support with spi_fsl_espi.c.
 
-> +	rc = 	nvram_create_partition("ppc64,linux", NVRAM_SIG_OS,
-> +				       NVRAM_MIN_REQ, NVRAM_MAX_REQ);
->  	if (rc) {
+Tested on P4080DS and MPC8536DS board based on latest Linux tree.
 
-I call it the other way around :-)
+[PATCH v2 1/6] spi/mpc8xxx: refactor the common code for SPI/eSPI controller
+[PATCH v2 2/6] eSPI: add eSPI controller support
+[PATCH v2 3/6] mtd: m25p80: add support to parse the SPI flash's partitions
+[PATCH v2 4/6] mtd: m25p80: add a read function to read page by page
+[PATCH v2 5/6] powerpc/of: add eSPI controller dts bindings
+[PATCH v2 6/6] DTS: add SPI flash(s25fl128p01) support on p4080ds and mpc8536ds board
 
-I should have tested this more before sending for RFC :-) Anyways, I
-found more crap, like the way the list head is allocated etc...
-
-I'll do another pass this week after I've dealt with the merge window.
-
-Cheers,
-Ben.
+Thanks,
+Mingkai
