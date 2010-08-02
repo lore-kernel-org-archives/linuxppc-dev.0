@@ -1,19 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD767B6F0E
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 03:22:04 +1000 (EST)
-Subject: Re: [PATCH] perf, powerpc: Convert the FSL driver to use local64_t
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100802061851.GA898@brick.ozlabs.ibm.com>
-Date: Mon, 2 Aug 2010 12:21:54 -0500
-Message-Id: <64B97380-B92E-4B00-B36A-FDAC80643746@kernel.crashing.org>
-References: <20100802061851.GA898@brick.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-bw0-f51.google.com (mail-bw0-f51.google.com
+	[209.85.214.51]) by ozlabs.org (Postfix) with ESMTP id CDF78B6EFF
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Aug 2010 03:59:56 +1000 (EST)
+Received: by bwz4 with SMTP id 4so2006390bwz.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 02 Aug 2010 10:59:54 -0700 (PDT)
+Date: Mon, 2 Aug 2010 21:59:52 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Atul Deshmukh <atulsdeshmukh@gmail.com>
+Subject: Re: Issues to access Compact Flash Card on MPC8360E
+Message-ID: <20100802175952.GA27967@oksana.dev.rtsoft.ru>
+References: <AANLkTi=ke8Yiy39dONFkMPpm5H8vhRy1jVyaKLuG8r4e@mail.gmail.com>
+	<AANLkTikGL6LKJyWjK946enVwkUzviOsHasYbzV1Wj2LR@mail.gmail.com>
+	<20100802134857.GA8689@oksana.dev.rtsoft.ru>
+	<AANLkTikRq95=4Pbhne9CikR-gEHOOp7tETdV0Lnr0Chh@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AANLkTikRq95=4Pbhne9CikR-gEHOOp7tETdV0Lnr0Chh@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Aug 02, 2010 at 07:44:22PM +0530, Atul Deshmukh wrote:
+> Thanks a lot Anton,
+> From the dts entry given below,
+> 
+> localbus@e0005000 {
+>          #address-cells = <2>;
+>                #size-cells = <1>;
+>                compatible = "fsl,mpc8349e-localbus",
+>                             "fsl,pq2pro-localbus";
+>                reg = <0xe0005000 0xd8>;
+>                ranges = <0x3 0x0 0xf0000000 0x210>;
+>                pata@3,0 {
+>                        compatible = "fsl,mpc8349emitx-pata",
+> "ata-generic";
+>                        reg = <0x3 0x0 0x10 0x3 0x20c 0x4>;
+>                        reg-shift = <1>;
+>                        pio-mode = <6>;
+>                        interrupts = <23 0x8>;
+>                       interrupt-parent = <&ipic>;
+>                };
+>        };
+> 
+> 
+> we can conclude that it uses ata-generic SATA/PATA controlelr driver which
 
-On Aug 2, 2010, at 1:18 AM, Paul Mackerras wrote:
+How did you come to this conclusion? From the node above it's IMHO
+pretty clear that IDE (PATA) is on the localbus.
 
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
->=20
-> For some reason the FSL driver got left out when we converted perf
-> to use local64_t instead of atomic64_t.
->=20
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-> This is against the perf/core branch in the tip tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> Posting here for comment.
->=20
-> arch/powerpc/kernel/perf_event_fsl_emb.c |   28 =
-++++++++++++++--------------
-> 1 file changed, 14 insertions(+), 14 deletions(-)
+The driver is drivers/ata/pata_of_platform.c.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> controls PCI-based IDE-controller where we can plug in our CF card...Am I
+> right???
 
-- k=
+Nope, no PCI involved. CF is almost* directly connected to
+the localbus.
+
+> But in our design we don't use any controller we directly connects CF card
+> to local bus where UPM controls it..
+
+Yes, that's exactly how CF is done on MPC8349EmITX boards.
+
+> Can you please explain how the interface is implemented in MPC8349..
+
+Via localbus + UPM.
+
+* 'almost' is because there are some buffers and inverters, see
+  schematics:
+  http://www.freescale.com/files/32bit/hardware_tools/schematics/MPC8349EMITXESCH.pdf
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
