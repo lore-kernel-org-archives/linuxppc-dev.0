@@ -1,25 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 070AFB6F11
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 08:00:46 +1000 (EST)
-Received: by gwj15 with SMTP id 15so3034821gwj.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 15:00:45 -0700 (PDT)
+Return-Path: <matt@ozlabs.org>
+Message-ID: <4C58A26E.7030109@ozlabs.org>
+Date: Wed, 04 Aug 2010 09:12:46 +1000
+From: Matt Evans <matt@ozlabs.org>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100803215137.GU26313@bicker>
-References: <Pine.LNX.4.64.1008032334420.20393@ask.diku.dk>
-	<20100803215137.GU26313@bicker>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 3 Aug 2010 16:00:25 -0600
-Message-ID: <AANLkTi=yOJ0Zfsn_h_xWai5O=OPkccMb-hDwKK+dWZwf@mail.gmail.com>
-Subject: Re: [PATCH 8/9] arch/powerpc/kernel: Drop unnecessary null test
-To: Dan Carpenter <error27@gmail.com>, Julia Lawall <julia@diku.dk>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/kdump: Stop all other CPUs before running crash
+	handlers
+References: <20100803063941.GM29316@kryten>
+In-Reply-To: <20100803063941.GM29316@kryten>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +19,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 3, 2010 at 3:51 PM, Dan Carpenter <error27@gmail.com> wrote:
-> On Tue, Aug 03, 2010 at 11:35:17PM +0200, Julia Lawall wrote:
->> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci=
-_of_scan.c
->> index 6ddb795..62dd363 100644
->> --- a/arch/powerpc/kernel/pci_of_scan.c
->> +++ b/arch/powerpc/kernel/pci_of_scan.c
->> @@ -336,8 +336,7 @@ static void __devinit __of_scan_bus(struct device_no=
-de *node,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRI=
-DGE ||
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev->hdr_type =3D=3D PCI_HEADER_TYPE=
-_CARDBUS) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct device_node *child =
-=3D pci_device_to_OF_node(dev);
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (dev)
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_scan_pci_br=
-idge(child, dev);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_scan_pci_bridge(child, dev)=
-;
->
-> The intention was probably to check "child" instead of "dev".
-> pci_device_to_OF_node() can return NULL. =A0On the other hand the code
-> has been this way for a year and no one has complained...
+Anton Blanchard wrote:
+> During kdump we run the crash handlers first then stop all other CPUs.
+> We really want to stop all CPUs as close to the fail as possible and also
+> have a very controlled environment for running the crash handlers, so it
+> makes sense to reverse the order.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Still, it should be fixed.  It is likely that I'll be generalizing
-this code for other architectures in the near future.  I'll spin a
-patch.
+Looks like a sensible idea!
 
-g.
+Acked-by: Matt Evans <matt@ozlabs.org>
+
+> ---
+> 
+> Index: powerpc.git/arch/powerpc/kernel/crash.c
+> ===================================================================
+> --- powerpc.git.orig/arch/powerpc/kernel/crash.c	2010-07-15 20:49:39.941991306 +1000
+> +++ powerpc.git/arch/powerpc/kernel/crash.c	2010-08-03 16:36:08.451991018 +1000
+> @@ -402,6 +402,18 @@ void default_machine_crash_shutdown(stru
+>  	 */
+>  	hard_irq_disable();
+>  
+> +	/*
+> +	 * Make a note of crashing cpu. Will be used in machine_kexec
+> +	 * such that another IPI will not be sent.
+> +	 */
+> +	crashing_cpu = smp_processor_id();
+> +	crash_save_cpu(regs, crashing_cpu);
+> +	crash_kexec_prepare_cpus(crashing_cpu);
+> +	cpu_set(crashing_cpu, cpus_in_crash);
+> +#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
+> +	crash_kexec_wait_realmode(crashing_cpu);
+> +#endif
+> +
+>  	for_each_irq(i) {
+>  		struct irq_desc *desc = irq_to_desc(i);
+>  
+> @@ -438,18 +450,8 @@ void default_machine_crash_shutdown(stru
+>  	crash_shutdown_cpu = -1;
+>  	__debugger_fault_handler = old_handler;
+>  
+> -	/*
+> -	 * Make a note of crashing cpu. Will be used in machine_kexec
+> -	 * such that another IPI will not be sent.
+> -	 */
+> -	crashing_cpu = smp_processor_id();
+> -	crash_save_cpu(regs, crashing_cpu);
+> -	crash_kexec_prepare_cpus(crashing_cpu);
+> -	cpu_set(crashing_cpu, cpus_in_crash);
+>  	crash_kexec_stop_spus();
+> -#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
+> -	crash_kexec_wait_realmode(crashing_cpu);
+> -#endif
+> +
+>  	if (ppc_md.kexec_cpu_down)
+>  		ppc_md.kexec_cpu_down(1, 0);
+>  }
