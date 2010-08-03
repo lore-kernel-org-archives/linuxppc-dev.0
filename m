@@ -1,21 +1,21 @@
-Return-Path: <julia@diku.dk>
-Received: from mgw2.diku.dk (mgw2.diku.dk [130.225.96.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mgw2.diku.dk",
-	Issuer "KU Security Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id AD079B6EFF
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 07:35:20 +1000 (EST)
-Date: Tue, 3 Aug 2010 23:35:17 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/9] arch/powerpc/kernel: Drop unnecessary null test
-Message-ID: <Pine.LNX.4.64.1008032334420.20393@ask.diku.dk>
+Return-Path: <error27@gmail.com>
+Received: from mail-wy0-f170.google.com (mail-wy0-f170.google.com
+	[74.125.82.170]) by ozlabs.org (Postfix) with ESMTP id 588EDB6EFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 07:52:05 +1000 (EST)
+Received: by wye20 with SMTP id 20so5803511wye.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 14:52:02 -0700 (PDT)
+Date: Tue, 3 Aug 2010 23:51:38 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 8/9] arch/powerpc/kernel: Drop unnecessary null test
+Message-ID: <20100803215137.GU26313@bicker>
+References: <Pine.LNX.4.64.1008032334420.20393@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.1008032334420.20393@ask.diku.dk>
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
+On Tue, Aug 03, 2010 at 11:35:17PM +0200, Julia Lawall wrote:
+> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+> index 6ddb795..62dd363 100644
+> --- a/arch/powerpc/kernel/pci_of_scan.c
+> +++ b/arch/powerpc/kernel/pci_of_scan.c
+> @@ -336,8 +336,7 @@ static void __devinit __of_scan_bus(struct device_node *node,
+>  		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+>  		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
+>  			struct device_node *child = pci_device_to_OF_node(dev);
+> -			if (dev)
+> -				of_scan_pci_bridge(child, dev);
+> +			of_scan_pci_bridge(child, dev);
 
-list_for_each_entry binds its first argument to a non-null value, and thus
-any null test on the value of that argument is superfluous.
+The intention was probably to check "child" instead of "dev".
+pci_device_to_OF_node() can return NULL.  On the other hand the code
+has been this way for a year and no one has complained...
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+regards,
+dan carpenter
 
-// <smpl>
-@@
-iterator I;
-expression x,E,E1,E2;
-statement S,S1,S2;
-@@
-
-I(x,...) { <...
-- if (x != NULL || ...)
-  S
-  ...> }
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/kernel/pci_of_scan.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 6ddb795..62dd363 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -336,8 +336,7 @@ static void __devinit __of_scan_bus(struct device_node *node,
- 		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
- 		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
- 			struct device_node *child = pci_device_to_OF_node(dev);
--			if (dev)
--				of_scan_pci_bridge(child, dev);
-+			of_scan_pci_bridge(child, dev);
- 		}
- 	}
- }
+>  		}
+>  	}
+>  }
