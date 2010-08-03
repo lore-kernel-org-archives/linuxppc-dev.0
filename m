@@ -1,13 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 3 Aug 2010 11:04:12 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Please pull my perf.git master branch
-Message-ID: <20100803010412.GA28995@brick.ozlabs.ibm.com>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from DB3EHSOBE002.bigfish.com (db3ehsobe002.messaging.microsoft.com
+	[213.199.154.140]) by ozlabs.org (Postfix) with ESMTP id AEBEA1007D4
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 13:41:48 +1000 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: linux-mmc@vger.kernel.org
+Subject: [PATCH 2/3 v2] dts: Add sdhci,auto-cmd12 field for p4080 device tree
+Date: Tue, 3 Aug 2010 11:11:11 +0800
+Message-ID: <1280805072-26112-2-git-send-email-tie-fei.zang@freescale.com>
+In-Reply-To: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
+References: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Peter Zijlstra <peterz@infradead.org>, Scott Wood <scottwood@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,25 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ingo,
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ Documentation/powerpc/dts-bindings/fsl/esdhc.txt |    2 ++
+ arch/powerpc/boot/dts/p4080ds.dts                |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-Please do a pull from my perf.git tree at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
-
-to get two commits.  They only affect the driver for the PMU on the
-Freescale embedded PowerPC processors.  One is from Peter Z. and has
-been around for some time.  The other fixes a bug introduced by a
-patch from Peter Z. that I sent upstream recently.
-
-Thanks,
-Paul.
-
-Peter Zijlstra (1):
-      perf, powerpc: Convert the FSL driver to use local64_t
-
-Scott Wood (1):
-      perf, powerpc: fsl_emb: Restore setting perf_sample_data.period
-
- arch/powerpc/kernel/perf_event_fsl_emb.c |   29 +++++++++++++++--------------
- 1 files changed, 15 insertions(+), 14 deletions(-)
+diff --git a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+index 8a00407..64bcb8b 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+@@ -14,6 +14,8 @@ Required properties:
+     reports inverted write-protect state;
+   - sdhci,1-bit-only : (optional) specifies that a controller can
+     only handle 1-bit data transfers.
++  - sdhci,auto-cmd12: (optional) specifies that a controller can
++    only handle auto CMD12.
+ 
+ Example:
+ 
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 6b29eab..efa0091 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -280,6 +280,7 @@
+ 			reg = <0x114000 0x1000>;
+ 			interrupts = <48 2>;
+ 			interrupt-parent = <&mpic>;
++			sdhci,auto-cmd12;
+ 		};
+ 
+ 		i2c@118000 {
+-- 
+1.5.6.5
