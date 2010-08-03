@@ -1,13 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 3 Aug 2010 16:39:41 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, mikey@neuling.org, matt@ozlabs.org
-Subject: [PATCH] powerpc/kdump: Stop all other CPUs before running crash
-	handlers
-Message-ID: <20100803063941.GM29316@kryten>
+Return-Path: <sam@ravnborg.org>
+Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
+	by ozlabs.org (Postfix) with ESMTP id 4D323B6EED
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 16:47:51 +1000 (EST)
+Date: Tue, 3 Aug 2010 08:47:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: fix build with make 3.82
+Message-ID: <20100803064748.GA19193@merkur.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: Michal Marek <mmarek@suse.cz>, linuxppc-dev@ozlabs.org,
+	Thomas Backlund <tmb@mandriva.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,55 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thomas Backlund reported that the powerpc build broke with make 3.82.
+It failed with the following message:
 
-During kdump we run the crash handlers first then stop all other CPUs.
-We really want to stop all CPUs as close to the fail as possible and also
-have a very controlled environment for running the crash handlers, so it
-makes sense to reverse the order.
+    arch/powerpc/Makefile:183: *** mixed implicit and normal rules.  Stop.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+The fix is to avoid mixing non-wildcard and wildcard targets.
+
+Reported-by: Thomas Backlund <tmb@mandriva.org>
+Tested-by: Thomas Backlund <tmb@mandriva.org>
+Cc: Michal Marek <mmarek@suse.cz>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
 
-Index: powerpc.git/arch/powerpc/kernel/crash.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/crash.c	2010-07-15 20:49:39.941991306 +1000
-+++ powerpc.git/arch/powerpc/kernel/crash.c	2010-08-03 16:36:08.451991018 +1000
-@@ -402,6 +402,18 @@ void default_machine_crash_shutdown(stru
- 	 */
- 	hard_irq_disable();
+Hi Ben / Paul.
+
+This fixes powerc build with latest make version.
+The patch is on top of 2.6.35.
+But it is more of a coincidence that we see a make release
+right now and this issue is also present in older kernels.
+So I have added a "Cc: stable <stable@kernel.org>" because
+I consider this relevant for the stable kernel releases too.
+
+@Michal - you got a copy as information only.
+I fear we may see this bug for other parts of the kernel too.
+
+	Sam
+
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 77cfe7a..5d2f17d 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -163,9 +163,11 @@ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
+ # Default to zImage, override when needed
+ all: zImage
  
-+	/*
-+	 * Make a note of crashing cpu. Will be used in machine_kexec
-+	 * such that another IPI will not be sent.
-+	 */
-+	crashing_cpu = smp_processor_id();
-+	crash_save_cpu(regs, crashing_cpu);
-+	crash_kexec_prepare_cpus(crashing_cpu);
-+	cpu_set(crashing_cpu, cpus_in_crash);
-+#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
-+	crash_kexec_wait_realmode(crashing_cpu);
-+#endif
+-BOOT_TARGETS = zImage zImage.initrd uImage zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
++# With make 3.82 we cannot mix normal and wildcard targets
++BOOT_TARGETS1 := zImage zImage.initrd uImaged
++BOOT_TARGETS2 := zImage% dtbImage% treeImage.% cuImage.% simpleImage.%
+ 
+-PHONY += $(BOOT_TARGETS)
++PHONY += $(BOOT_TARGETS1) $(BOOT_TARGETS2)
+ 
+ boot := arch/$(ARCH)/boot
+ 
+@@ -180,10 +182,16 @@ relocs_check: arch/powerpc/relocs_check.pl vmlinux
+ zImage: relocs_check
+ endif
+ 
+-$(BOOT_TARGETS): vmlinux
++$(BOOT_TARGETS1): vmlinux
++	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
++$(BOOT_TARGETS2): vmlinux
++	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
 +
- 	for_each_irq(i) {
- 		struct irq_desc *desc = irq_to_desc(i);
- 
-@@ -438,18 +450,8 @@ void default_machine_crash_shutdown(stru
- 	crash_shutdown_cpu = -1;
- 	__debugger_fault_handler = old_handler;
- 
--	/*
--	 * Make a note of crashing cpu. Will be used in machine_kexec
--	 * such that another IPI will not be sent.
--	 */
--	crashing_cpu = smp_processor_id();
--	crash_save_cpu(regs, crashing_cpu);
--	crash_kexec_prepare_cpus(crashing_cpu);
--	cpu_set(crashing_cpu, cpus_in_crash);
- 	crash_kexec_stop_spus();
--#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
--	crash_kexec_wait_realmode(crashing_cpu);
--#endif
 +
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(1, 0);
- }
++bootwrapper_install:
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+-bootwrapper_install %.dtb:
++%.dtb:
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+ define archhelp
