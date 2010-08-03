@@ -1,14 +1,15 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 3 Aug 2010 16:11:36 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/3] powerpc: Add 64bit csum_and_copy_to_user
-Message-ID: <20100803061135.GB31448@kryten>
-References: <20100803060834.GK29316@kryten>
- <20100803060952.GA31448@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100803060952.GA31448@kryten>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Tue, 3 Aug 2010 16:17:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Dont require a dma_ops struct to set dma mask
+Message-Id: <20100803161743.aae24903.sfr@canb.auug.org.au>
+In-Reply-To: <1280769682-2839-1-git-send-email-galak@kernel.crashing.org>
+References: <1280769682-2839-1-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,70 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This adds the equivalent of csum_and_copy_from_user for the receive side so we
-can copy and checksum in one pass. It is modelled on the generic checksum
-routine.
+Hi Kumar,
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+On Mon,  2 Aug 2010 12:21:22 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -131,9 +131,7 @@ static inline int dma_set_mask(struct device *dev, u6=
+4 dma_mask)
+>  {
+>  	struct dma_map_ops *dma_ops =3D get_dma_ops(dev);
+> =20
+> -	if (unlikely(dma_ops =3D=3D NULL))
+> -		return -EIO;
+> -	if (dma_ops->set_dma_mask !=3D NULL)
+> +	if (unlikely(dma_ops =3D=3D NULL) && (dma_ops->set_dma_mask !=3D NULL))
 
-Index: powerpc.git/arch/powerpc/include/asm/checksum.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/checksum.h	2010-08-03 16:02:02.234491674 +1000
-+++ powerpc.git/arch/powerpc/include/asm/checksum.h	2010-08-03 16:04:10.733241094 +1000
-@@ -57,6 +57,9 @@ extern __wsum csum_partial_copy_generic(
- #define _HAVE_ARCH_COPY_AND_CSUM_FROM_USER
- extern __wsum csum_and_copy_from_user(const void __user *src, void *dst,
- 				      int len, __wsum sum, int *err_ptr);
-+#define HAVE_CSUM_COPY_USER
-+extern __wsum csum_and_copy_to_user(const void *src, void __user *dst,
-+				    int len, __wsum sum, int *err_ptr);
- #else
- /*
-  * the same as csum_partial, but copies from src to dst while it
-Index: powerpc.git/arch/powerpc/lib/checksum_wrappers_64.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/lib/checksum_wrappers_64.c	2010-08-03 16:02:02.234491674 +1000
-+++ powerpc.git/arch/powerpc/lib/checksum_wrappers_64.c	2010-08-03 16:02:03.063242741 +1000
-@@ -63,3 +63,40 @@ out:
- 	return (__force __wsum)csum;
- }
- EXPORT_SYMBOL(csum_and_copy_from_user);
-+
-+__wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
-+			     __wsum sum, int *err_ptr)
-+{
-+	unsigned int csum;
-+
-+	might_sleep();
-+
-+	*err_ptr = 0;
-+
-+	if (!len) {
-+		csum = 0;
-+		goto out;
-+	}
-+
-+	if (unlikely((len < 0) || !access_ok(VERIFY_WRITE, dst, len))) {
-+		*err_ptr = -EFAULT;
-+		csum = -1; /* invalid checksum */
-+		goto out;
-+	}
-+
-+	csum = csum_partial_copy_generic(src, (void __force *)dst,
-+					 len, sum, NULL, err_ptr);
-+
-+	if (unlikely(*err_ptr)) {
-+		csum = csum_partial(src, len, sum);
-+
-+		if (copy_to_user(dst, src, len)) {
-+			*err_ptr = -EFAULT;
-+			csum = -1; /* invalid checksum */
-+		}
-+	}
-+
-+out:
-+	return (__force __wsum)csum;
-+}
-+EXPORT_SYMBOL(csum_and_copy_to_user);
+The first part of this condition is backward (should be !=3D (or just
+"dma_ops") (and "likely"?)).
+
+--=20
+Stephen Rothwell <sfr@canb.auug.org.au>
+
+--Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMV7SHAAoJEDMEi1NhKgbs2eIIAJpuv+ol0ZybIWnwY5dtFo2Y
+vagofn+4eMYBRw/vCHjcQoigDfX6/CeoSivlsKFCQD96OdaIPrr9tuNwE5aIhAQ1
+Y8Hqhx5jJj569ft33JrZHxCuUlPsRjkAxW7gIpv4qaPJM2gkreyBYcSaNRjvH+xj
+3uBfM8YaslGYxVCRif0f8vFuvQzTD1gyhpJ9qWsSatJJFhaqJyPTLWc+a+Cv5EJt
+5DbswFtTrGSerfbxRrxdixQQ4Lk8JwbIr0006RzNj7Fy0+BYIWnNHNkUHeB1JwmJ
+a9VMePOD5WSwZnNFBuMwO0FTOpCDQlvJvyHWCsnee3GucGtPyxrOwHrrRVNa7iY=
+=WYPl
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl--
