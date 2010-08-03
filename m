@@ -1,16 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 3 Aug 2010 16:17:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Dont require a dma_ops struct to set dma mask
-Message-Id: <20100803161743.aae24903.sfr@canb.auug.org.au>
-In-Reply-To: <1280769682-2839-1-git-send-email-galak@kernel.crashing.org>
-References: <1280769682-2839-1-git-send-email-galak@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <yosefe@voltaire.com>
+Received: from exil.voltaire.com (fwil.voltaire.com [193.47.165.2])
+	by ozlabs.org (Postfix) with ESMTP id C044B1007D8
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Aug 2010 16:21:18 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: possible bug in ppc_vm_region_alloc()
+Date: Tue, 3 Aug 2010 09:21:12 +0300
+Message-ID: <7E95F01E94AB484F83061FCFA35B39F889F230@exil.voltaire.com>
+In-Reply-To: <7E95F01E94AB484F83061FCFA35B39F801322D@exil.voltaire.com>
+References: <7E95F01E94AB484F83061FCFA35B39F801322D@exil.voltaire.com>
+From: "Yossi Etigin" <yosefe@voltaire.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Cc: Alex Netes <alexne@voltaire.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,47 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Kumar,
+Hello,
 
-On Mon,  2 Aug 2010 12:21:22 -0500 Kumar Gala <galak@kernel.crashing.org> w=
-rote:
->
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -131,9 +131,7 @@ static inline int dma_set_mask(struct device *dev, u6=
-4 dma_mask)
->  {
->  	struct dma_map_ops *dma_ops =3D get_dma_ops(dev);
-> =20
-> -	if (unlikely(dma_ops =3D=3D NULL))
-> -		return -EIO;
-> -	if (dma_ops->set_dma_mask !=3D NULL)
-> +	if (unlikely(dma_ops =3D=3D NULL) && (dma_ops->set_dma_mask !=3D NULL))
+(I repost this because looks like the previous was filtered because I
+was not subscribed to the list)
 
-The first part of this condition is backward (should be !=3D (or just
-"dma_ops") (and "likely"?)).
+We are looking at dma_alloc_coherent(), which uses ppc_vm_region_alloc()
+on the coherent region "consistent_head".
+It seems to us there is a bug in the function ppc_vm_region_alloc().
+The check "if (addr > end)" should be "if (addr >=3D end)"
 
---=20
-Stephen Rothwell <sfr@canb.auug.org.au>
+If for example it is called once when the size is the entire coherent
+region, the second time it will allocate a region outside the valid
+memory.
+It will happen because the list will contain one element (besides the
+head) which is equal to the head, and neither condition will cause a
+"goto nospc". Then the list iteration will end and the new region will
+be allocated right after the valid region.
 
---Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl
-Content-Type: application/pgp-signature
+	list_for_each_entry(c, &head->vm_list, vm_list) {
+		if ((addr + size) < addr)
+			goto nospc;
+		if ((addr + size) <=3D c->vm_start)
+			goto found;
+		addr =3D c->vm_end;
+		if (addr > end)                    <=3D=3D=3D here
+			goto nospc;
+	}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMV7SHAAoJEDMEi1NhKgbs2eIIAJpuv+ol0ZybIWnwY5dtFo2Y
-vagofn+4eMYBRw/vCHjcQoigDfX6/CeoSivlsKFCQD96OdaIPrr9tuNwE5aIhAQ1
-Y8Hqhx5jJj569ft33JrZHxCuUlPsRjkAxW7gIpv4qaPJM2gkreyBYcSaNRjvH+xj
-3uBfM8YaslGYxVCRif0f8vFuvQzTD1gyhpJ9qWsSatJJFhaqJyPTLWc+a+Cv5EJt
-5DbswFtTrGSerfbxRrxdixQQ4Lk8JwbIr0006RzNj7Fy0+BYIWnNHNkUHeB1JwmJ
-a9VMePOD5WSwZnNFBuMwO0FTOpCDQlvJvyHWCsnee3GucGtPyxrOwHrrRVNa7iY=
-=WYPl
------END PGP SIGNATURE-----
-
---Signature=_Tue__3_Aug_2010_16_17_43_+1000_RSMBAn/H0w6znSzl--
+--Yossi
