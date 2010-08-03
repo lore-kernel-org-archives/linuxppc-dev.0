@@ -1,25 +1,22 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepb.post.tele.dk (pfepb.post.tele.dk [195.41.46.236])
-	by ozlabs.org (Postfix) with ESMTP id 56E79B6F06
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 16:48:50 +1000 (EST)
-Date: Tue, 3 Aug 2010 08:48:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Backlund <tmb@mandriva.org>
-Subject: Re: make 3.82 fails on powerpc defconfig update [was: Linux 2.6.35]
-Message-ID: <20100803064848.GB19193@merkur.ravnborg.org>
-References: <AANLkTim8FALeVG+NPLNLEQChu=dPD=GHSpnxmZHYgsNx@mail.gmail.com>
-	<4C5686FF.9010803@mandriva.org>
-	<20100802182848.GA16394@merkur.ravnborg.org>
-	<4C572EB0.7060706@mandriva.org>
-	<20100802205121.GA16520@merkur.ravnborg.org>
-	<4C5732A7.2050003@mandriva.org>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 66FB21007D1
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 17:16:12 +1000 (EST)
+Received: by iwn33 with SMTP id 33so890211iwn.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 00:16:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4C5732A7.2050003@mandriva.org>
-Cc: Michal Marek <mmarek@suse.cz>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"bug-make@gnu.org" <bug-make@gnu.org>
+In-Reply-To: <AANLkTi=mq_vnUkrdmTeKjtfO3DQLKRESxzEBiK3jeTpV@mail.gmail.com>
+References: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
+	<20100730120424.6db4139f@schlenkerla.am.freescale.net>
+	<AANLkTim0pD9LWEgWjX4QvqUkZkYO3YOeELz_XjNJPDft@mail.gmail.com>
+	<AANLkTi=mq_vnUkrdmTeKjtfO3DQLKRESxzEBiK3jeTpV@mail.gmail.com>
+Date: Tue, 3 Aug 2010 00:16:10 -0700
+Message-ID: <AANLkTimWYeRtN+Bcw-vG2G1j-D3FFmaUW7cnpvL+e=yN@mail.gmail.com>
+Subject: Re: ramdisk size is larger than 4MB
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 03, 2010 at 12:03:35AM +0300, Thomas Backlund wrote:
-> 02.08.2010 23:51, Sam Ravnborg skrev:
-> >>
-> >> Thanks, this seems to fix the first issue, but then I get the same erro on the following line 190:
-> >>
-> >> 190: bootwrapper_install %.dtb:
-> >> 191:        $(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-> >>
-> > 
-> > Obviously - dunno how I missed that.
-> > Updated patch below.
-> > 
-> > I will do a proper submission after you
-> > confirm that powerpc build is working with make 3.82.
-> > 
-> 
-> Yeah, that was an obvious fix, thanks!
-> 
-> One small typo fix below...
-> (a missing ':')
-> 
-> Otherwise it works here, so:
-> 
-> Tested-by: Thomas Backlund <tmb@mandriva.org>
+> I found the link_address in the wrapper shell script sets the _start
+> address. But after changing it to 0x800000, the kernel failed to boot,
+> shown below. There must be something also needs proper adjustment.
+> What would that be?
 
-Thanks.
-I have sent a proper patch to Ben/Paul (powerpc maintainers).
+I did more debugging and something is really weird though. When the
+link address is changed to 0x800000, when stepping through the kernel,
+I actually got the kernel boot successfully. However I let the kernel
+run through it would just crash. After crash the BDI2000 shows it
+stopped at __delay().
 
-	Sam
+I also changed the link address to 0x4000000. During the function
+of_scan_flat_dt(early_init_dt_scan_chosen, NULL) called in
+early_init_devtree(), gdb shows the program (i.e. kernel) received a
+signal SIGSTOP.
+
+Why would the kernel crash during that time? of_scan_flat_dt() doesn't
+seem to be the cause of SIGSTOP. What would that be then?
+
+Thanks,
+-Shawn.
