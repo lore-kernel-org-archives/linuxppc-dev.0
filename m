@@ -1,22 +1,25 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 66FB21007D1
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 17:16:12 +1000 (EST)
-Received: by iwn33 with SMTP id 33so890211iwn.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 00:16:10 -0700 (PDT)
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 2DF311007D2
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Tue,  3 Aug 2010 22:26:51 +1000 (EST)
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=mq_vnUkrdmTeKjtfO3DQLKRESxzEBiK3jeTpV@mail.gmail.com>
-References: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
-	<20100730120424.6db4139f@schlenkerla.am.freescale.net>
-	<AANLkTim0pD9LWEgWjX4QvqUkZkYO3YOeELz_XjNJPDft@mail.gmail.com>
-	<AANLkTi=mq_vnUkrdmTeKjtfO3DQLKRESxzEBiK3jeTpV@mail.gmail.com>
-Date: Tue, 3 Aug 2010 00:16:10 -0700
-Message-ID: <AANLkTimWYeRtN+Bcw-vG2G1j-D3FFmaUW7cnpvL+e=yN@mail.gmail.com>
-Subject: Re: ramdisk size is larger than 4MB
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Date: Tue, 3 Aug 2010 05:17:54 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <4381.1280815590@neuling.org>
+References: <20100308191005.GE4324@amak.tundra.com>
+	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
+	<4381.1280815590@neuling.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Michael Neuling" <mikey@neuling.org>, "Timur Tabi" <timur.tabi@gmail.com>
+Cc: Alexandre Bounine <abounine@tundra.com>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, thomas.moll@sysgo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I found the link_address in the wrapper shell script sets the _start
-> address. But after changing it to 0x800000, the kernel failed to boot,
-> shown below. There must be something also needs proper adjustment.
-> What would that be?
+This happened after change to book-e definitions.
+There are patches that address this issue.
 
-I did more debugging and something is really weird though. When the
-link address is changed to 0x800000, when stepping through the kernel,
-I actually got the kernel boot successfully. However I let the kernel
-run through it would just crash. After crash the BDI2000 shows it
-stopped at __delay().
-
-I also changed the link address to 0x4000000. During the function
-of_scan_flat_dt(early_init_dt_scan_chosen, NULL) called in
-early_init_devtree(), gdb shows the program (i.e. kernel) received a
-signal SIGSTOP.
-
-Why would the kernel crash during that time? of_scan_flat_dt() doesn't
-seem to be the cause of SIGSTOP. What would that be then?
-
-Thanks,
--Shawn.
+> -----Original Message-----
+> From: Michael Neuling [mailto:mikey@neuling.org]
+> Sent: Tuesday, August 03, 2010 2:07 AM
+> To: Timur Tabi
+> Cc: Alexandre Bounine; linuxppc-dev@lists.ozlabs.org;
+linux-kernel@vger.kernel.org;
+> thomas.moll@sysgo.com
+> Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO
+port
+>=20
+> > > MCSR_MASK is not defined anywhere, so when I compile this code, I
+get this:
+> >
+> > Never mind.  I see that it's been fixed already, and that the patch
+> > that removed MCSR_MASK was posted around the same time that this
+patch
+> > was posted.
+>=20
+> I don't know what happened here but 2.6.35 is broken because of this
+> problem:
+>=20
+> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
+(first use in this function)
+> arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared identifier
+is reported only once
+> arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it appears
+in.)
+> arch/powerpc/sysdev/fsl_rio.c:250: error: 'MCSR_BUS_RBERR' undeclared
+(first use in this function)
+>=20
+> Mikey
