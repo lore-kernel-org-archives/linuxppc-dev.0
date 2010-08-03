@@ -1,28 +1,30 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 5C917B70A6
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Tue,  3 Aug 2010 23:25:00 +1000 (EST)
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 2F85DB70A6
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 23:32:45 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o73DHgDn026972
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Aug 2010 09:17:42 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o73DWWsg105578
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Aug 2010 09:32:32 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o73DWVq0010580
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Aug 2010 10:32:31 -0300
+Message-ID: <4C581A6D.9030908@austin.ibm.com>
+Date: Tue, 03 Aug 2010 08:32:29 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
-Date: Tue, 3 Aug 2010 06:24:47 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
-References: <20100308191005.GE4324@amak.tundra.com>
-	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
-	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
-	<4381.1280815590@neuling.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
-	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Timur Tabi" <timur@freescale.com>
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
-	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
-	linuxppc-dev@lists.ozlabs.org
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/9] v4 De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yang Li pointed to these patches in his post from July 23, 2010.
-It would be nice to have these patches in mainline code.=20
+This set of patches de-couples the idea that there is a single
+directory in sysfs for each memory section.  The intent of the
+patches is to reduce the number of sysfs directories created to
+resolve a boot-time performance issue.  On very large systems
+boot time are getting very long (as seen on powerpc hardware)
+due to the enormous number of sysfs directories being created.
+On a system with 1 TB of memory we create ~63,000 directories.
+For even larger systems boot times are being measured in hours.
 
-> -----Original Message-----
-> From: timur.tabi@gmail.com [mailto:timur.tabi@gmail.com] On Behalf Of
-Timur Tabi
-> Sent: Tuesday, August 03, 2010 9:02 AM
-> To: Bounine, Alexandre
-> Cc: Michael Neuling; Alexandre Bounine; linuxppc-dev@lists.ozlabs.org;
-linux-kernel@vger.kernel.org;
-> thomas.moll@sysgo.com; Kumar Gala
-> Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO
-port
->=20
-> On Tue, Aug 3, 2010 at 7:17 AM, Bounine, Alexandre
-> <Alexandre.Bounine@idt.com> wrote:
-> > This happened after change to book-e definitions.
-> > There are patches that address this issue.
->=20
-> And those patches should have been applied before 2.6.35 was released.
->  Someone dropped the ball.  2.6.35 is broken for a number of PowerPC
-> boards:
->=20
-> $ make mpc85xx_defconfig
-> ....
-> $ make
-> ....
->   CC      arch/powerpc/sysdev/fsl_rio.o
-> arch/powerpc/sysdev/fsl_rio.c: In function 'fsl_rio_mcheck_exception':
-> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
-> (first use in this function)
-> arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared identifier
-> is reported only once
-> arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it appears
-in.)
-> make[1]: *** [arch/powerpc/sysdev/fsl_rio.o] Error 1
->=20
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
+This set of patches allows for each directory created in sysfs
+to cover more than one memory section.  The default behavior for
+sysfs directory creation is the same, in that each directory
+represents a single memory section.  A new file 'end_phys_index'
+in each directory contains the physical_id of the last memory
+section covered by the directory so that users can easily
+determine the memory section range of a directory.
+
+Updates for version 4 of the patchset includes an additional
+patch [4/9] that introduces a new mutex to be taken for any
+add or remove (not hotplug) of memory.  The following updates
+are also included.
+ 
+Patch 2/9 Add new phys_index properties
+- The start_phys_index property was reverted to the original
+  phys_index name.
+
+Patch 3/9 Add section count to memory_block
+- Use atomic_dec_and_test()
+
+Patch 7/9 Update the node sysfs code
+- Update the inline definition of unregister_mem_sects_under_nodes
+  for !CONFIG_NUMA builds.
+
+Patch 8/9 Define memory_block_size_bytes() for ppc/pseries
+- Use an unsigned long for getting property value.
+
+Patch 9/9 Update memory-hotplug documentation
+- Minor updates for reversion of phys_index property name.
+
+Thanks,
+
+Nathan Fontenot
