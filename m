@@ -1,15 +1,15 @@
-Return-Path: <matt@ozlabs.org>
-Message-ID: <4C58A26E.7030109@ozlabs.org>
-Date: Wed, 04 Aug 2010 09:12:46 +1000
-From: Matt Evans <matt@ozlabs.org>
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 4 Aug 2010 09:11:14 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc: Optimise 64bit csum_partial
+Message-ID: <20100803231114.GP29316@kryten>
+References: <20100803060834.GK29316@kryten>
+	<1C2B156C-E6C9-47CC-B5BF-6AA603581EC3@kernel.crashing.org>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc/kdump: Stop all other CPUs before running crash
-	handlers
-References: <20100803063941.GM29316@kryten>
-In-Reply-To: <20100803063941.GM29316@kryten>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1C2B156C-E6C9-47CC-B5BF-6AA603581EC3@kernel.crashing.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,60 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
-> During kdump we run the crash handlers first then stop all other CPUs.
-> We really want to stop all CPUs as close to the fail as possible and also
-> have a very controlled environment for running the crash handlers, so it
-> makes sense to reverse the order.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Looks like a sensible idea!
+Hi Segher,
 
-Acked-by: Matt Evans <matt@ozlabs.org>
+> Not really.  Do you know how many 16/32-bit words you can add before a
+> 64-bit register can overflow? :-)
 
-> ---
-> 
-> Index: powerpc.git/arch/powerpc/kernel/crash.c
-> ===================================================================
-> --- powerpc.git.orig/arch/powerpc/kernel/crash.c	2010-07-15 20:49:39.941991306 +1000
-> +++ powerpc.git/arch/powerpc/kernel/crash.c	2010-08-03 16:36:08.451991018 +1000
-> @@ -402,6 +402,18 @@ void default_machine_crash_shutdown(stru
->  	 */
->  	hard_irq_disable();
->  
-> +	/*
-> +	 * Make a note of crashing cpu. Will be used in machine_kexec
-> +	 * such that another IPI will not be sent.
-> +	 */
-> +	crashing_cpu = smp_processor_id();
-> +	crash_save_cpu(regs, crashing_cpu);
-> +	crash_kexec_prepare_cpus(crashing_cpu);
-> +	cpu_set(crashing_cpu, cpus_in_crash);
-> +#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
-> +	crash_kexec_wait_realmode(crashing_cpu);
-> +#endif
-> +
->  	for_each_irq(i) {
->  		struct irq_desc *desc = irq_to_desc(i);
->  
-> @@ -438,18 +450,8 @@ void default_machine_crash_shutdown(stru
->  	crash_shutdown_cpu = -1;
->  	__debugger_fault_handler = old_handler;
->  
-> -	/*
-> -	 * Make a note of crashing cpu. Will be used in machine_kexec
-> -	 * such that another IPI will not be sent.
-> -	 */
-> -	crashing_cpu = smp_processor_id();
-> -	crash_save_cpu(regs, crashing_cpu);
-> -	crash_kexec_prepare_cpus(crashing_cpu);
-> -	cpu_set(crashing_cpu, cpus_in_crash);
->  	crash_kexec_stop_spus();
-> -#if defined(CONFIG_PPC_STD_MMU_64) && defined(CONFIG_SMP)
-> -	crash_kexec_wait_realmode(crashing_cpu);
-> -#endif
-> +
->  	if (ppc_md.kexec_cpu_down)
->  		ppc_md.kexec_cpu_down(1, 0);
->  }
+Thats a very good point. I thought about using 32bit adds when writing
+the copy and checksum routine, but came to the conclusion that it wouldn't go
+any faster than one using addes. The checksum only routine was the same loop
+without the stores.
+
+We rarely use csum_partial now we have copy and checksum to and from user
+now, but I'll take a look at speeding it up in a follow on patch. Thanks!
+
+Anton
