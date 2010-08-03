@@ -1,24 +1,25 @@
 Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 73E3E1007D2
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 15:43:56 +1000 (EST)
-Received: from mx3.mail.elte.hu ([157.181.1.138])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1OgAI3-000328-Bo
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 07:43:51 +0200
-Date: Tue, 3 Aug 2010 07:43:38 +0200
+	by ozlabs.org (Postfix) with ESMTPS id 657101007D2
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Aug 2010 15:51:11 +1000 (EST)
+Date: Tue, 3 Aug 2010 07:51:01 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull my perf.git master branch
-Message-ID: <20100803054337.GA1130@elte.hu>
-References: <20100803010412.GA28995@brick.ozlabs.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Please pull my perf.git urgent branch
+Message-ID: <20100803055101.GC1130@elte.hu>
+References: <20100727124019.GB14947@brick.ozlabs.ibm.com>
+	<20100727112854.7bf97d48@schlenkerla.am.freescale.net>
+	<20100728044731.GA2408@brick.ozlabs.ibm.com>
+	<20100802171654.1776759c@schlenkerla.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100803010412.GA28995@brick.ozlabs.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Scott Wood <scottwood@freescale.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <20100802171654.1776759c@schlenkerla.am.freescale.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +30,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+* Scott Wood <scottwood@freescale.com> wrote:
 
-> Ingo,
+> On Wed, 28 Jul 2010 14:47:31 +1000
+> Paul Mackerras <paulus@samba.org> wrote:
 > 
-> Please do a pull from my perf.git tree at:
+> > On Tue, Jul 27, 2010 at 11:28:54AM -0500, Scott Wood wrote:
+> > 
+> > > Doesn't the setting of .period need to be maintained (it is in the other
+> > > powerpc perf_event implementation that this is derived from)?
+> > 
+> > Gah, yes it does.
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perf.git master
-> 
-> to get two commits.  They only affect the driver for the PMU on the
-> Freescale embedded PowerPC processors.  One is from Peter Z. and has
-> been around for some time.  The other fixes a bug introduced by a
-> patch from Peter Z. that I sent upstream recently.
-> 
-> Thanks,
-> Paul.
-> 
-> Peter Zijlstra (1):
->       perf, powerpc: Convert the FSL driver to use local64_t
-> 
-> Scott Wood (1):
->       perf, powerpc: fsl_emb: Restore setting perf_sample_data.period
-> 
->  arch/powerpc/kernel/perf_event_fsl_emb.c |   29 +++++++++++++++--------------
->  1 files changed, 15 insertions(+), 14 deletions(-)
+> Well, looks like Linus pulled anyway...  I'll send a patch to
+> add .period.
 
-Pulled, thanks a lot Paul!
+Yes, the original commit was already upstream when you reported this bug.
+
+Paul added a -stable tag to the fix so it will get into the .35.1 pipeline 
+this week.
+
+Thanks,
 
 	Ingo
