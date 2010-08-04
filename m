@@ -1,32 +1,23 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE008.bigfish.com (tx2ehsobe004.messaging.microsoft.com
-	[65.55.88.14]) by ozlabs.org (Postfix) with ESMTP id 20830B6F06
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 13:31:02 +1000 (EST)
-Received: from mail147-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail147-tx2-R.bigfish.com (Postfix) with ESMTP id 5013119202C5	for
-	<linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 03:30:58 +0000 (UTC)
-Received: from TX2EHSMHS038.bigfish.com (unknown [10.9.14.250])	by
-	mail147-tx2.bigfish.com (Postfix) with ESMTP id 22707F700F2	for
-	<linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 03:30:19 +0000 (UTC)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net
-	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
-	id o743UGct014904	for <linuxppc-dev@ozlabs.org>;
-	Tue, 3 Aug 2010 20:30:16 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o743ULFN002086	for <linuxppc-dev@ozlabs.org>;
-	Tue, 3 Aug 2010 22:30:22 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 2/3] P4080/mtd: Only make elbc nand driver detect nand
-	flash partitions
-Date: Wed, 4 Aug 2010 11:30:13 +0800
-Message-ID: <83024545B35D6445A690EFD603E7869A07EFF7@zch01exm23.fsl.freescale.net>
-In-Reply-To: <CB6DDAC6-620C-4FF1-B006-3E4F3E7A4E17@kernel.crashing.org>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
-	Gala Kumar-B11780 <B11780@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 7B0CB1007D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Wed,  4 Aug 2010 14:19:49 +1000 (EST)
+Subject: [PATCH] memblock: Fix memblock_is_region_reserved() to return a
+	boolean
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 04 Aug 2010 14:19:31 +1000
+Message-ID: <1280895571.1902.140.camel@pasglop>
+Mime-Version: 1.0
+Cc: Russell King <linux@arm.linux.org.uk>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+All callers expect a boolean result which is true if the region
+overlaps a reserved region. However, the implementation actually
+returns -1 if there is no overlap, and a region index (0 based)
+if there is.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Tuesday, August 03, 2010 20:58 PM
-> To: Zang Roy-R61911
-> Cc: linuxppc-dev@ozlabs.org list; Lan Chunhe-B25806; Gala Kumar-B11780
-> Subject: Re: [PATCH 2/3] P4080/mtd: Only make elbc nand=20
-> driver detect nand flash partitions
->=20
->=20
-> On Aug 2, 2010, at 11:45 PM, Roy Zang wrote:
->=20
-> > From: Lan Chunhe-B25806 <b25806@freescale.com>
-> >=20
-> > The former driver had the two functions:
-> >=20
-> > 1. detecting nand flash partitions;
-> > 2. registering elbc interrupt.
-> >=20
-> > Now, second function is removed to fsl_lbc.c.
-> >=20
-> > Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
-> > Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> > ---
-> > drivers/mtd/nand/Kconfig         |    1 +
-> > drivers/mtd/nand/fsl_elbc_nand.c |  464=20
-> ++++++++++++++------------------------
-> > 2 files changed, 170 insertions(+), 295 deletions(-)
->=20
-> mtd list and maintainer should be CC'd on these.
-Make sense.
-I will forward these patch to mtd list.
-Thanks.
-Roy
+Make it behave as callers (and common sense) expect.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Taking that out of my memblock rework branch as it should go in
+now regardless of whether my stuff goes or not (which is still
+under discussion, I'm fixing ARM up now).
+
+I'll send this fix to Linus tomorrow along with powerpc.git if there
+is no adverse comment.
+
+diff --git a/mm/memblock.c b/mm/memblock.c
+index 3024eb3..43840b3 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -504,7 +504,7 @@ int __init memblock_is_reserved(u64 addr)
+ 
+ int memblock_is_region_reserved(u64 base, u64 size)
+ {
+-	return memblock_overlaps_region(&memblock.reserved, base, size);
++	return memblock_overlaps_region(&memblock.reserved, base, size) >= 0;
+ }
+ 
+ /*
