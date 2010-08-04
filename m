@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 430A8100983
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 05:18:29 +1000 (EST)
-Subject: Re: [PATCH 2/2] mpc8308rdb: support for MPC8308RDB board from
-	Freescale
+	by ozlabs.org (Postfix) with ESMTPS id A301CB6F14
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 05:21:39 +1000 (EST)
+Subject: Re: [PATCH 1/2] tqm85xx: update PCI interrupt-map attribute
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1278619839-23998-3-git-send-email-yanok@emcraft.com>
-Date: Wed, 4 Aug 2010 14:18:17 -0500
-Message-Id: <81B61C8C-A5B2-4A77-92E2-B0EE75BA709E@kernel.crashing.org>
-References: <1278619839-23998-1-git-send-email-yanok@emcraft.com>
-	<1278619839-23998-3-git-send-email-yanok@emcraft.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, dzu@denx.de
+In-Reply-To: <1279744404-10171-2-git-send-email-dbaryshkov@gmail.com>
+Date: Wed, 4 Aug 2010 14:21:30 -0500
+Message-Id: <F92B6946-150A-432E-A9F5-2DB6C35F073F@kernel.crashing.org>
+References: <1279744404-10171-1-git-send-email-dbaryshkov@gmail.com>
+	<1279744404-10171-2-git-send-email-dbaryshkov@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +25,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 8, 2010, at 3:10 PM, Ilya Yanok wrote:
+On Jul 21, 2010, at 3:33 PM, Dmitry Eremin-Solenikov wrote:
 
-> This patch adds support for MPC8308RDB development board from
-> Freescale.
-> Supported devices:
-> DUART
-> Dual Ethernet
-> NOR and NAND flashes
-> I2C
-> USB in peripheral mode
->=20
-> PCIE support is broken by the commit 3da34aa ("powerpc/fsl: Support
-> unique MSI addresses per PCIe Root Complex"). Works after revert.
->=20
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+> Update PCI IRQ mapping on TQM85xx platforms: include INTC and INTD on PCI-X
+> slot and add INTA/INTB mapping for PCMCIA bridge.
+> 
+> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 > ---
-> arch/powerpc/boot/dts/mpc8308rdb.dts      |  303 =
-+++++++++++++++++++++++++++++
-> arch/powerpc/platforms/83xx/Kconfig       |    8 +
-> arch/powerpc/platforms/83xx/Makefile      |    1 +
-> arch/powerpc/platforms/83xx/mpc830x_rdb.c |   94 +++++++++
-> 4 files changed, 406 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/mpc8308rdb.dts
-> create mode 100644 arch/powerpc/platforms/83xx/mpc830x_rdb.c
+> arch/powerpc/boot/dts/tqm8540.dts          |    9 ++++++++-
+> arch/powerpc/boot/dts/tqm8541.dts          |    9 ++++++++-
+> arch/powerpc/boot/dts/tqm8548-bigflash.dts |    9 ++++++++-
+> arch/powerpc/boot/dts/tqm8548.dts          |    9 ++++++++-
+> arch/powerpc/boot/dts/tqm8555.dts          |    9 ++++++++-
+> arch/powerpc/boot/dts/tqm8560.dts          |    9 ++++++++-
+> 6 files changed, 48 insertions(+), 6 deletions(-)
 
 applied to next
 
-- k=
+- k
