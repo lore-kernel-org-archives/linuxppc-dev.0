@@ -2,16 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 5559A100A3D
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 05:16:05 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc/85xx: Fix booting for P1021MDS boards
+	by ozlabs.org (Postfix) with ESMTPS id 34FE6B70A6
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 05:16:23 +1000 (EST)
+Subject: Re: [PATCH 3/3] powerpc/85xx: Cleanup QE initialization for
+	MPC85xxMDS boards
 Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100608195550.GB11446@oksana.dev.rtsoft.ru>
-Date: Wed, 4 Aug 2010 14:15:52 -0500
-Message-Id: <7A23589D-05C4-486E-83F2-7A4EF0F48B81@kernel.crashing.org>
-References: <20100608195550.GB11446@oksana.dev.rtsoft.ru>
+In-Reply-To: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
+Date: Wed, 4 Aug 2010 14:15:57 -0500
+Message-Id: <4391A09A-CB22-4C40-A965-6140060F530B@kernel.crashing.org>
+References: <20100608195557.GC11446@oksana.dev.rtsoft.ru>
 To: Anton Vorontsov <avorontsov@mvista.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,22 +27,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jun 8, 2010, at 2:55 PM, Anton Vorontsov wrote:
 
-> P1021 processors have no dedicated ROM to store the QE microcode,
-> so the fimrware is stored externally, and it is U-Boot responsibility
-> to load it. It might be that the board is booting without QE, e.g.
-> currently U-Boot doesn't support QE for P1021MDS boards, which means
-> that QE isn't initialized, and so the board hangs early at boot.
+> The mpc85xx_mds_setup_arch() function is incomprehensible
+> and unmaintainable. Factor out all QE specific stuff into
+> mpc85xx_mds_qe_init() and mpc85xx_mds_reset_ucc_phys().
 >=20
-> This patch fixes the issue by marking QE as disabled and checking the
-> state in the probing code. U-Boot should fixup the state if it
-> initialized the QE.
+> Also move QE stuff out of mpc85xx_mds_pic_init().
+>=20
+> The diff is unreadable, but only because the code was so. ;-)
+> It should be better now, and less indented.
 >=20
 > Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
 > ---
-> arch/powerpc/boot/dts/p1021mds.dts        |    1 +
-> arch/powerpc/platforms/85xx/mpc85xx_mds.c |   43 =
-+++++++++++++++++++++++++----
-> 2 files changed, 38 insertions(+), 6 deletions(-)
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c |  272 =
++++++++++++++++--------------
+> 1 files changed, 143 insertions(+), 129 deletions(-)
 
 applied to next
 
