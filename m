@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 7B0CB1007D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Wed,  4 Aug 2010 14:19:49 +1000 (EST)
-Subject: [PATCH] memblock: Fix memblock_is_region_reserved() to return a
-	boolean
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Aug 2010 14:19:31 +1000
-Message-ID: <1280895571.1902.140.camel@pasglop>
-Mime-Version: 1.0
-Cc: Russell King <linux@arm.linux.org.uk>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 9C1DCB70B4
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Aug 2010 16:00:36 +1000 (EST)
+Received: by iwn33 with SMTP id 33so1884102iwn.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 03 Aug 2010 23:00:35 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTimWYeRtN+Bcw-vG2G1j-D3FFmaUW7cnpvL+e=yN@mail.gmail.com>
+References: <AANLkTinKb8E_McVAv5epg+4acb8H1+8HNsKHJYDr9B10@mail.gmail.com>
+	<20100730120424.6db4139f@schlenkerla.am.freescale.net>
+	<AANLkTim0pD9LWEgWjX4QvqUkZkYO3YOeELz_XjNJPDft@mail.gmail.com>
+	<AANLkTi=mq_vnUkrdmTeKjtfO3DQLKRESxzEBiK3jeTpV@mail.gmail.com>
+	<AANLkTimWYeRtN+Bcw-vG2G1j-D3FFmaUW7cnpvL+e=yN@mail.gmail.com>
+Date: Tue, 3 Aug 2010 23:00:34 -0700
+Message-ID: <AANLkTinhxPfhLheg25JhDsVYYk9j0OgTbCN-3KPT61P-@mail.gmail.com>
+Subject: Re: ramdisk size is larger than 4MB
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All callers expect a boolean result which is true if the region
-overlaps a reserved region. However, the implementation actually
-returns -1 if there is no overlap, and a region index (0 based)
-if there is.
+> I did more debugging and something is really weird though. When the
+> link address is changed to 0x800000, when stepping through the kernel,
+> I actually got the kernel boot successfully. However I let the kernel
+> run through it would just crash. After crash the BDI2000 shows it
+> stopped at __delay().
 
-Make it behave as callers (and common sense) expect.
+Well, actually it's nothing to do with gdb.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+When the link address is changed to 0x800000, if the PPC_EARLY_DEBUG
+and PPC_EARLY_DEBUG_CPM are on, the built kernel can boot
+successfully. But without these EARLY_DEBUG, the kernel fails to boot.
 
-Taking that out of my memblock rework branch as it should go in
-now regardless of whether my stuff goes or not (which is still
-under discussion, I'm fixing ARM up now).
+=> bootm 5000000
+## Booting image at 05000000 ...
+   Image Name:   Linux-2.6.33.5
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1757354 Bytes =  1.7 MB
+   Load Address: 00800000
+   Entry Point:  00800554
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory <- <0x0 0x8000000> (128MB)
+ENET0: local-mac-address <- 00:09:9b:01:58:64
+CPU clock-frequency <- 0x7270e00 (120MHz)
+CPU timebase-frequency <- 0x7270e0 (8MHz)
+CPU bus-frequency <- 0x3938700 (60MHz)
 
-I'll send this fix to Linus tomorrow along with powerpc.git if there
-is no adverse comment.
+zImage starting: loaded at 0x00800000 (sp: 0x07d1cbd0)
+Allocating 0x3a15a4 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0080c000:0x00bd702c)...done 0x3886ec bytes
 
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 3024eb3..43840b3 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -504,7 +504,7 @@ int __init memblock_is_reserved(u64 addr)
- 
- int memblock_is_region_reserved(u64 base, u64 size)
- {
--	return memblock_overlaps_region(&memblock.reserved, base, size);
-+	return memblock_overlaps_region(&memblock.reserved, base, size) >= 0;
- }
- 
- /*
+Linux/PowerPC load: root=/dev/ram
+Finalizing device tree... flat tree at 0xbe4300
+^^^^^^^^^^^^^^^^^^The kernel stopped here.
+
+=> bootm 5000000
+## Booting image at 05000000 ...
+   Image Name:   Linux-2.6.33.5
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1757742 Bytes =  1.7 MB
+   Load Address: 00800000
+   Entry Point:  00800554
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory <- <0x0 0x8000000> (128MB)
+ENET0: local-mac-address <- 00:09:9b:01:58:64
+CPU clock-frequency <- 0x7270e00 (120MHz)
+CPU timebase-frequency <- 0x7270e0 (8MHz)
+CPU bus-frequency <- 0x3938700 (60MHz)
+
+zImage starting: loaded at 0x00800000 (sp: 0x07d1cbd0)
+Allocating 0x3a15a4 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0080c000:0x00bd702c)...done 0x3886ec bytes
+
+Linux/PowerPC load: root=/dev/ram
+Finalizing device tree... flat tree at 0xbe4300
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using My MPC870 machine description
+Linux version 2.6.33.5 (shanw@ubuntu) (gcc version 4.2.2) #5 Tue Aug 3
+21:24:40 PDT 2010
+bootconsole [udbg0] enabled
+^^^^^^^^^The kernel continued booting.
+
+With the EARLY_DEBUG turned on, the link address is changed to
+0x1000000, the built kernel can also boot successfully.
+
+However if the link address is changed to 0x2000000 or 0x4000000, the
+built kernel fails to boot.
+
+I think the kernel failure may be caused by some memory corruption.
+But will the bootwrapper relocation corrupt the kernel code?
+
+Thanks,
+-Shawn.
