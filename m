@@ -1,21 +1,20 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com (charlotte.tuxdriver.com [70.61.120.58])
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wbmler4.mail.xerox.com (wbmler4.mail.xerox.com [13.13.138.219])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id CD7301007D4
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 00:52:43 +1000 (EST)
-Date: Wed, 4 Aug 2010 10:49:29 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
-	vgoyal@redhat.com, hbabu@us.ibm.com, benh@kernel.crashing.org,
-	paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Add vmcoreinfo symbols to allow makdumpfile to
-	filter core files properly
-Message-ID: <20100804144929.GA13970@hmsreliant.think-freely.org>
-References: <20100713134609.GA14514@hmsreliant.think-freely.org>
+	(Client CN "wbmler4.mail.xerox.com",
+	Issuer "AAA Certificate Services" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0DCBEB6F10
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 00:54:04 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100713134609.GA14514@hmsreliant.think-freely.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Booting MPC8377ERBD from NAND flash
+Date: Wed, 4 Aug 2010 15:34:59 +0100
+Message-ID: <929D3CED81F34E43887A393170D66FB9030B2DBA@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <AANLkTinfQz3PuZK6urnYyh03JuuSt5mFrv8ykNQmg9nD@mail.gmail.com>
+References: <AANLkTinfQz3PuZK6urnYyh03JuuSt5mFrv8ykNQmg9nD@mail.gmail.com>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Ravi Gupta" <dceravigupta@gmail.com>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 13, 2010 at 09:46:09AM -0400, Neil Horman wrote:
-> Hey all-
-> 	About 2 years ago now, I sent this patch upstream to allow makedumpfile
-> to properly filter cores on ppc64:
-> http://www.mail-archive.com/kexec@lists.infradead.org/msg02426.html
-> It got acks from the kexec folks so I pulled it into RHEL, but I never checked
-> back here to make sure it ever made it in, which apparently it didn't.  It still
-> needs to be included, so I'm reposting it here, making sure to copy all the ppc
-> folks this time.  I've retested it on the latest linus kernel and it works fine,
-> allowing makedumpfile to find all the symbols it needs to properly strip a
-> vmcore on ppc64.
-> 
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  machine_kexec.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> 
-> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-> index bb3d893..0df7031 100644
-> --- a/arch/powerpc/kernel/machine_kexec.c
-> +++ b/arch/powerpc/kernel/machine_kexec.c
-> @@ -45,6 +45,18 @@ void machine_kexec_cleanup(struct kimage *image)
->  		ppc_md.machine_kexec_cleanup(image);
->  }
->  
-> +void arch_crash_save_vmcoreinfo(void)
-> +{
-> +
-> +#ifdef CONFIG_NEED_MULTIPLE_NODES
-> +	VMCOREINFO_SYMBOL(node_data);
-> +	VMCOREINFO_LENGTH(node_data, MAX_NUMNODES);
-> +#endif
-> +#ifndef CONFIG_NEED_MULTIPLE_NODES
-> +	VMCOREINFO_SYMBOL(contig_page_data);
-> +#endif
-> +}
-> +
->  /*
->   * Do not allocate memory (or fail in any way) in machine_kexec().
->   * We are past the point of no return, committed to rebooting now.
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
-> 
+> I am trying to boot MPC8377ERBD freescale board from NAND flash.
+> As per its specifications, it supports NAND boot but it there is
+> no support for NAND boot in the BSP(confirmed with freescale also).
+> Now I decided to modify BSP myself to support NAND boot and I am
+> confused that from where should I start. Please suggest.
 
-Ping yet again. Ben, This needs review/acceptance from you or Paul
-Neil
+Read this
+http://www.freescale.com/files/32bit/doc/app_note/AN3201.pdf
+and other documentation on the Freescale site
+=20
+Clive=20
