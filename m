@@ -1,39 +1,35 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 126B91007D1
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:46:15 +1000 (EST)
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
-	[9.17.195.226])
-	by e36.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o754gYRm014863
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:42:34 -0600
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o754jtEO054850
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:45:55 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o754js9A020914
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:45:55 -0600
-Message-ID: <4C5A41FF.3000605@us.ibm.com>
-Date: Wed, 04 Aug 2010 21:45:51 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-MIME-Version: 1.0
-To: svaidy@linux.vnet.ibm.com
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-References: <4C488CCD.60004@us.ibm.com> <1279837509.1970.24.camel@pasglop>
-	<4C48DADE.1050409@us.ibm.com> <4C491E14.9010100@us.ibm.com>
-	<20100723050814.GA26162@dirshya.in.ibm.com>
-	<1279861860.1970.74.camel@pasglop>
-	<20100723070701.GC26162@dirshya.in.ibm.com>
-In-Reply-To: <20100723070701.GC26162@dirshya.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Thomas Gleixner <tglx@linutronix.de>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+	by ozlabs.org (Postfix) with ESMTP id 39B97B6EEF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:51:03 +1000 (EST)
+Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
+	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o754p2iw032485 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 13:51:02 +0900
+Received: from smail (m4 [127.0.0.1])
+	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6A8C945DE70
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:51:02 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 39BE145DE6E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:51:02 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 115B61DB8042
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:51:02 +0900 (JST)
+Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
+	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id B85FE1DB803F
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:51:01 +0900 (JST)
+Date: Thu, 5 Aug 2010 13:45:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 1/9] v4  Move the find_memory_block() routine up
+Message-Id: <20100805134546.fa8f2f96.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C581B67.1010202@austin.ibm.com>
+References: <4C581A6D.9030908@austin.ibm.com> <4C581B67.1010202@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +39,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2010 12:07 AM, Vaidyanathan Srinivasan wrote:
-> * Benjamin Herrenschmidt<benh@kernel.crashing.org>  [2010-07-23 15:11:00]:
->
->> On Fri, 2010-07-23 at 10:38 +0530, Vaidyanathan Srinivasan wrote:
->>> Yes.  extended_cede_processor() will return with interrupts enabled in
->>> the cpu. (This is done by the hypervisor).  Under normal cases we
->>> cannot be interrupted because no IO interrupts are routed to us after
->>> xics_teardown_cpu() and since the CPU is out of the map, nobody will
->>> send us IPIs.
->>
->> What about decrementer ?
->
-> Decrementer expiry event handling is bit complex.  The event as such
-> may not bring back the extended_cede_processor() cpu, but may be
-> marked pending when we get out of this state eventually.  I will find
-> more information on this event and update.
+On Tue, 03 Aug 2010 08:36:39 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-Hi Vaidy, have you been able to dig anything up about the decrementer 
-expiry?
+> Move the find_memory_block() routine up to avoid needing a forward
+> declaration in subsequent patches.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
-
-
->
->>> Though H_CEDE will return with interrupts enabled, it is unlikely that
->>> an interrupt can be delivered in this context.
->>
->> Well, if interrupts are soft-disabled, even if one occurs, we will just
->> mask and return, so that at least should be ok.
->
-> Yes.  We will immediately return to the extended_cede_processor() in
-> the while loop until the preferred_offline_state is changed.
->
-> --Vaidy
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
