@@ -1,16 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 76FB31007DB
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 01:16:42 +1000 (EST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: gregkh@suse.de
-Subject: [PATCH 0/3] driver core: Add ability for arch code to setup
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 03E47B70B4
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 01:43:58 +1000 (EST)
+Date: Fri, 6 Aug 2010 01:43:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] driver core: Add ability for arch code to setup
 	pdev_archdata
-Date: Thu,  5 Aug 2010 10:15:44 -0500
-Message-Id: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+Message-Id: <20100806014351.a3bddf08.sfr@canb.auug.org.au>
+In-Reply-To: <1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
+References: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
+	<1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__6_Aug_2010_01_43_51_+1000_Y=T8TFo=AAd+3kG2"
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,12 +26,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC we need to set the dma_mask pointer for platform_devices to point to
-the pdev_archdata.  We can't wait for a bus_notifier as we need the dma_mask
-setup before the platform_device_add happens so that the bus_notifiers can
-check the dma_mask to determine if we need things like the SWIOTLB dma_ops.
+--Signature=_Fri__6_Aug_2010_01_43_51_+1000_Y=T8TFo=AAd+3kG2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The patch series introduces an arch specific call out (arch_setup_pdev_archdata)
-and provide an implementation on PPC to handle our specific issue.
+Hi Kumar,
 
-- k
+On Thu,  5 Aug 2010 10:15:45 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/err.h>
+>  #include <linux/slab.h>
+>  #include <linux/pm_runtime.h>
+> +#include <asm/platform_device.h>
+> =20
+>  #include "base.h"
+> =20
+> @@ -170,6 +171,9 @@ struct platform_device *platform_device_alloc(const c=
+har *name, int id)
+>  		pa->pdev.id =3D id;
+>  		device_initialize(&pa->pdev.dev);
+>  		pa->pdev.dev.release =3D platform_device_release;
+> +#ifdef ARCH_HAS_PDEV_ARCHDATA_SETUP
+> +		arch_setup_pdev_archdata(&pa->pdev);
+> +#endif
+>  	}
+> =20
+>  	return pa ? &pa->pdev : NULL;
+> diff --git a/include/asm-generic/platform_device.h b/include/asm-generic/=
+platform_device.h
+> new file mode 100644
+> index 0000000..64806dc
+> --- /dev/null
+> +++ b/include/asm-generic/platform_device.h
+> @@ -0,0 +1,7 @@
+> +#ifndef __ASM_GENERIC_PLATFORM_DEVICE_H_
+> +#define __ASM_GENERIC_PLATFORM_DEVICE_H_
+> +/*
+> + * an architecture can override to define arch_setup_pdev_archdata
+> + */
+> +
+> +#endif /* __ASM_GENERIC_PLATFORM_DEVICE_H_ */
+
+Why not do:
+
+#include <linux/platform_device.h>
+
+#ifndef arch_setup_pdev_archdata
+static inline void arch_setup_pdev_archdata(struct platform_device *pdev) {=
+ }
+#endif
+
+in asm-generic/platform-device.h
+
+and the the call in platform_device_alloc() can be unconditional.  If the a=
+rch wants to override arch_setup_pdev_archdata, it defines the function and=
+ then does
+
+#define arch_setup_pdev_archdata arch_setup_pdev_archdata
+
+before still including asm-generic/platform_device.h
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__6_Aug_2010_01_43_51_+1000_Y=T8TFo=AAd+3kG2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMWtw3AAoJEDMEi1NhKgbsjS4H/j+eNtfSG4/GTchZ2DCqdebQ
+sM0U2lHijJXRaz1RPkZxDnb0/DmZDP+GqubAUILbbdZy57OceCEz/YHIqGqsKsAN
+noIWtk2AYdC/u37iGmxSn8deHyNIhagZ2Ybf2dewaiumB9ednwoPq/sDDqKOEW9E
+AZPeukKS9np3IMhfpZAsDOb0VY1uTm09d5Wwj3VVx6a2vm7T05DmZccD2cNkzjsf
+COAt42ExNCaQaBDM9Rlm/QkZgLgPIGHp5NBbAcSZ/xY/YkEDfzoOGDXlSBXXhPtW
+grzUOxEbIb5plcVjYb7m+lghZxjiNwDuUQ0lIA2VLHJRnnNQA9fcYuoArfKuxhQ=
+=WSMj
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Aug_2010_01_43_51_+1000_Y=T8TFo=AAd+3kG2--
