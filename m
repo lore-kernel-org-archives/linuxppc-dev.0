@@ -1,18 +1,30 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
-	[209.85.210.42]) by ozlabs.org (Postfix) with ESMTP id BE7E1B70A6
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 15:13:40 +1000 (EST)
-Received: by pzk30 with SMTP id 30so3392803pzk.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Aug 2010 22:13:39 -0700 (PDT)
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com",
+	Issuer "GeoTrust SSL CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 74852B70DB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 15:32:41 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.31.245])
+	by e23smtp05.au.ibm.com (8.14.4/8.13.1) with ESMTP id o755SJMp025867
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 15:28:19 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o755WePx1618024
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 15:32:40 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o755WepH011302
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 15:32:40 +1000
+Message-ID: <4C5A4CF4.4070203@linux.vnet.ibm.com>
+Date: Thu, 05 Aug 2010 11:02:36 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
-References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
-Date: Wed, 4 Aug 2010 22:13:39 -0700
-Message-ID: <AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
-Subject: Re: Relocating bootwrapper causes kernel panic
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>,
+	jeffrey.t.kirsher@intel.com
+Subject: [linux-next] build failure
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I'm trying to relocate the bootwrapper from the default address
-> (0x400000) to a higher address (e.g. 0x800000) in order to support a
-> larger than 4MB initramfs. However the kernel panic when trying to
-> access the device tree blob which was relocated accordingly to a
-> higher address. The kernel message from __log_buf is shown below.
->
-> The flat tree located at 0xbe4300 as the kerne message showed. Why
-> cannot the kernel access this area? No TLB set for this area?
->
-> <1>Unable to handle kernel paging request for data at address 0xc0be4308
-> <1>Faulting instruction address: 0xc01fdabc
-> <4>Oops: Kernel access of bad area, sig: 11 [#1]
+Yestersday's linux-next(2.6.35_next_20100802) build fails with the following error on both system p and x.
 
-Before the flat tree was accessed, I checked the DTLB and didn't find
-any entry related to 0xc0be4300. After the exception, I found the
-following DTLBs.
 
-30 : 02  c0be4000   4KB ------ -> 00000000
-31 : 00  fa000000   8MB VI-S-M -> fa000000
+   drivers/net/ixgbe/ixgbe_main.c: In function 'ixgbe_select_queue':
+   drivers/net/ixgbe/ixgbe_main.c:6159: error: 'struct ixgbe_fcoe' has no member named 'up'
+   drivers/net/ixgbe/ixgbe_main.c: In function 'ixgbe_xmit_frame':
+   drivers/net/ixgbe/ixgbe_main.c:6221: error: 'struct ixgbe_fcoe' has no member named 'up'
+   make[3]: *** [drivers/net/ixgbe/ixgbe_main.o] Error 1
+   make[2]: *** [drivers/net/ixgbe] Error 2
+   make[2]: *** Waiting for unfinished jobs....
+   make[1]: *** [drivers/net] Error 2
+   make: *** [drivers] Error 2
 
-The DTLB#30 doesn't seem right. Why would it map to 0x0? I think this
-should be something like 00be4000?
-
-Thanks,
--Shawn.
+Thanks
+Divya
