@@ -1,17 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id BD1C21007D6
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 18:01:40 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o7581YK3028115
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 03:01:34 -0500
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/85xx: Fix compile error in mpc85xx_mds.c
-Date: Thu,  5 Aug 2010 03:01:33 -0500
-Message-Id: <1280995293-6445-1-git-send-email-galak@kernel.crashing.org>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	by ozlabs.org (Postfix) with ESMTP id E2BE31007E5
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu,  5 Aug 2010 18:01:54 +1000 (EST)
+Subject: Re: [PATCH 00/27] KVM PPC PV framework v3
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <4C5A6F01.6050705@redhat.com>
+Date: Thu, 5 Aug 2010 10:01:50 +0200
+Message-Id: <55AD06CD-842E-49DC-97CD-AEE401F5B8C5@suse.de>
+References: <1280407688-9815-1-git-send-email-agraf@suse.de>	<4C557E7A.3010606@redhat.com>	<C27A7E71-2F93-45D2-989D-0AB80D9C2C0B@suse.de>
+	<20100803111611.38ca87e6@schlenkerla.am.freescale.net>
+	<4C5A6F01.6050705@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	kvm-ppc@vger.kernel.org, KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/85xx/mpc85xx_mds.c: In function 'mpc85xx_mds_setup_arch':
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: 'np' undeclared (first use in this function)
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: (Each undeclared identifier is reported only once
-arch/powerpc/platforms/85xx/mpc85xx_mds.c:367: error: for each function it appears in.)
 
-Some code cleaned dropped need decleration of 'np'.
+On 05.08.2010, at 09:57, Avi Kivity wrote:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> On 08/03/2010 07:16 PM, Scott Wood wrote:
+>> On Sun, 1 Aug 2010 22:21:37 +0200
+>> Alexander Graf<agraf@suse.de>  wrote:
+>>=20
+>>> On 01.08.2010, at 16:02, Avi Kivity wrote:
+>>>=20
+>>>> Looks reasonable.  Since it's fair to say I understand nothing =
+about powerpc, I'd like someone who does to review it and ack, please, =
+with an emphasis on the interfaces.
+>>> Sounds good. Preferably someone with access to the ePAPR spec :).
+>> The ePAPR-relevant stuff in patches 7, 16, and 17 looks reasonable.
+>> Did I miss any ePAPR-relevant stuff in the other patches?
+>=20
+> Shall I take this as an ACK?
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index c8be7b5..ebd2b2f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -357,6 +357,7 @@ static void __init mpc85xx_mds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct pci_controller *hose;
-+	struct device_node *np = NULL;
- #endif
- 	dma_addr_t max = 0xffffffff;
- 
--- 
-1.6.0.6
+Hollis wanted to take a look at it too. But given the fact that I have =
+another ~10 patches lying here I'd appreciate if things could get =
+committed. If changes are so dramatic that they'd render things =
+incompatible, we can always just release both patches for an actual =
+kernel release, right?
+
+
+Alex
