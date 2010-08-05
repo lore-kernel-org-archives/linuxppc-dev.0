@@ -1,30 +1,30 @@
 Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 8F4241007D1
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:55:25 +1000 (EST)
-Received: from m6.gw.fujitsu.co.jp ([10.0.50.76])
+	by ozlabs.org (Postfix) with ESMTP id 610711007D3
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:58:09 +1000 (EST)
+Received: from m5.gw.fujitsu.co.jp ([10.0.50.75])
 	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o754tOLs002183 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 13:55:24 +0900
-Received: from smail (m6 [127.0.0.1])
-	by outgoing.m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 621C345DE51
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:55:24 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (s6.gw.fujitsu.co.jp [10.0.50.96])
-	by m6.gw.fujitsu.co.jp (Postfix) with ESMTP id 4359545DE4E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:55:24 +0900 (JST)
-Received: from s6.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id 258DC1DB8016
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:55:24 +0900 (JST)
-Received: from m105.s.css.fujitsu.com (m105.s.css.fujitsu.com [10.249.87.105])
-	by s6.gw.fujitsu.co.jp (Postfix) with ESMTP id D97C71DB8014
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:55:23 +0900 (JST)
-Date: Thu, 5 Aug 2010 13:50:31 +0900
+	o754w8bj003373 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 13:58:08 +0900
+Received: from smail (m5 [127.0.0.1])
+	by outgoing.m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 07E8345DE56
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:08 +0900 (JST)
+Received: from s5.gw.fujitsu.co.jp (s5.gw.fujitsu.co.jp [10.0.50.95])
+	by m5.gw.fujitsu.co.jp (Postfix) with ESMTP id DB9F145DE52
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
+Received: from s5.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id BF0DA1DB805F
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
+Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
+	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id 75F8D1DB805E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
+Date: Thu, 5 Aug 2010 13:53:14 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 3/9] v4  Add section count to memory_block
-Message-Id: <20100805135031.bbcfd741.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4C581BDD.1040601@austin.ibm.com>
-References: <4C581A6D.9030908@austin.ibm.com> <4C581BDD.1040601@austin.ibm.com>
+Subject: Re: [PATCH 4/9] v4  Add mutex for add/remove of memory blocks
+Message-Id: <20100805135314.7229d07c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C581C26.5080007@austin.ibm.com>
+References: <4C581A6D.9030908@austin.ibm.com> <4C581C26.5080007@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
@@ -39,13 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 03 Aug 2010 08:38:37 -0500
+On Tue, 03 Aug 2010 08:39:50 -0500
 Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-> Add a section count property to the memory_block struct to track the number
-> of memory sections that have been added/removed from a memory block. This
-> allows us to know when the last memory section of a memory block has been
-> removed so we can remove the memory block.
+> Add a new mutex for use in adding and removing of memory blocks.  This
+> is needed to avoid any race conditions in which the same memory block could
+> be added and removed at the same time.
 > 
 > Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+
 Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+But a nitpick (see below)
+
+> ---
+>  drivers/base/memory.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> Index: linux-2.6/drivers/base/memory.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/memory.c	2010-08-02 13:35:00.000000000 -0500
+> +++ linux-2.6/drivers/base/memory.c	2010-08-02 13:45:34.000000000 -0500
+> @@ -27,6 +27,8 @@
+>  #include <asm/atomic.h>
+>  #include <asm/uaccess.h>
+>  
+> +static struct mutex mem_sysfs_mutex;
+> +
+
+For static symbol of mutex, we usually do
+	static DEFINE_MUTEX(mem_sysfs_mutex);
+
+Then, extra calls of mutex_init() is not required.
