@@ -1,30 +1,23 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <Hollis_Blanchard@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 43F72B6EEA
+	(Client CN "relay1.mentorg.com",
+	Issuer "Entrust Certification Authority - L1B" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id DDE56B70AF
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Aug 2010 03:25:34 +1000 (EST)
+	Fri,  6 Aug 2010 03:26:56 +1000 (EST)
+Message-ID: <4C5AEF4F.4010604@mentor.com>
+Date: Thu, 05 Aug 2010 10:05:19 -0700
+From: Hollis Blanchard <hollis_blanchard@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
-Date: Thu, 5 Aug 2010 10:25:18 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <26581.1280979260@neuling.org>
-References: <20100308191005.GE4324@amak.tundra.com>
-	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
-	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
-	<4381.1280815590@neuling.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
-	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
-	<26581.1280979260@neuling.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Michael Neuling" <mikey@neuling.org>
-Cc: Li Yang-R58472 <r58472@freescale.com>, linux-kernel@vger.kernel.org,
-	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 01/27] KVM: PPC: Introduce shared page
+References: <1280407688-9815-1-git-send-email-agraf@suse.de>
+	<1280407688-9815-2-git-send-email-agraf@suse.de>
+In-Reply-To: <1280407688-9815-2-git-send-email-agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,102 +27,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Below is a copy of Leo's message with pointers to the patches.
-
-Alex.
-=20
->Subject: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
+On 07/29/2010 05:47 AM, Alexander Graf wrote:
+> For transparent variable sharing between the hypervisor and guest, I introduce
+> a shared page. This shared page will contain all the registers the guest can
+> read and write safely without exiting guest context.
 >
->Fixes compile problem caused by MCSR_MASK removal from book-E
-definitions.
+> This patch only implements the stubs required for the basic structure of the
+> shared page. The actual register moving follows.
+>
+> Signed-off-by: Alexander Graf<agraf@suse.de>
+> ---
+>   arch/powerpc/include/asm/kvm_host.h |    2 ++
+>   arch/powerpc/include/asm/kvm_para.h |    5 +++++
+>   arch/powerpc/kernel/asm-offsets.c   |    1 +
+>   arch/powerpc/kvm/44x.c              |    7 +++++++
+>   arch/powerpc/kvm/book3s.c           |    9 ++++++++-
+>   arch/powerpc/kvm/e500.c             |    7 +++++++
+>   6 files changed, 30 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index b0b23c0..53edacd 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -25,6 +25,7 @@
+>   #include<linux/interrupt.h>
+>   #include<linux/types.h>
+>   #include<linux/kvm_types.h>
+> +#include<linux/kvm_para.h>
+>   #include<asm/kvm_asm.h>
+>
+>   #define KVM_MAX_VCPUS 1
+> @@ -290,6 +291,7 @@ struct kvm_vcpu_arch {
+>   	struct tasklet_struct tasklet;
+>   	u64 dec_jiffies;
+>   	unsigned long pending_exceptions;
+> +	struct kvm_vcpu_arch_shared *shared;
+>
+>   #ifdef CONFIG_PPC_BOOK3S
+>   	struct hlist_head hpte_hash_pte[HPTEG_HASH_NUM_PTE];
+> diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
+> index 2d48f6a..1485ba8 100644
+> --- a/arch/powerpc/include/asm/kvm_para.h
+> +++ b/arch/powerpc/include/asm/kvm_para.h
+> @@ -20,6 +20,11 @@
+>   #ifndef __POWERPC_KVM_PARA_H__
+>   #define __POWERPC_KVM_PARA_H__
+>
+> +#include<linux/types.h>
+> +
+> +struct kvm_vcpu_arch_shared {
+> +};
+> +
+>   #ifdef __KERNEL__
+>
+>   static inline int kvm_para_available(void)
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 496cc5b..944f593 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -400,6 +400,7 @@ int main(void)
+>   	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
+>   	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
+>   	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
+> +	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
+>
+>   	/* book3s */
+>   #ifdef CONFIG_PPC_BOOK3S
+> diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+> index 73c0a3f..e7b1f3f 100644
+> --- a/arch/powerpc/kvm/44x.c
+> +++ b/arch/powerpc/kvm/44x.c
+> @@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+>   	if (err)
+>   		goto free_vcpu;
+>
+> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+> +	if (!vcpu->arch.shared)
+> +		goto uninit_vcpu;
+> +
+>   	return vcpu;
+>
+> +uninit_vcpu:
+> +	kvm_vcpu_uninit(vcpu);
+>   free_vcpu:
+>   	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+>   out:
+> @@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+>   {
+>   	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
+>
+> +	free_page((unsigned long)vcpu->arch.shared);
+>   	kvm_vcpu_uninit(vcpu);
+>   	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
+>   }
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index a3cef30..b3385dd 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -1242,6 +1242,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+>   	if (err)
+>   		goto free_shadow_vcpu;
+>
+> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+> +	if (!vcpu->arch.shared)
+> +		goto uninit_vcpu;
+> +
+>   	vcpu->arch.host_retip = kvm_return_point;
+>   	vcpu->arch.host_msr = mfmsr();
+>   #ifdef CONFIG_PPC_BOOK3S_64
+> @@ -1268,10 +1272,12 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+>
+>   	err = kvmppc_mmu_init(vcpu);
+>   	if (err<  0)
+> -		goto free_shadow_vcpu;
+> +		goto uninit_vcpu;
+>
+>   	return vcpu;
+>
+> +uninit_vcpu:
+> +	kvm_vcpu_uninit(vcpu);
+>   free_shadow_vcpu:
+>   	kfree(vcpu_book3s->shadow_vcpu);
+>   free_vcpu:
+> @@ -1284,6 +1290,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+>   {
+>   	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
+>
+> +	free_page((unsigned long)vcpu->arch.shared);
+>   	kvm_vcpu_uninit(vcpu);
+>   	kfree(vcpu_book3s->shadow_vcpu);
+>   	vfree(vcpu_book3s);
+> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+> index e8a00b0..71750f2 100644
+> --- a/arch/powerpc/kvm/e500.c
+> +++ b/arch/powerpc/kvm/e500.c
+> @@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
+>   	if (err)
+>   		goto uninit_vcpu;
+>
+> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+> +	if (!vcpu->arch.shared)
+> +		goto uninit_tlb;
+> +
+>   	return vcpu;
+>
+> +uninit_tlb:
+> +	kvmppc_e500_tlb_uninit(vcpu_e500);
+>   uninit_vcpu:
+>   	kvm_vcpu_uninit(vcpu);
+>   free_vcpu:
+> @@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
+>   {
+>   	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
+>
+> +	free_page((unsigned long)vcpu->arch.shared);
+>   	kvmppc_e500_tlb_uninit(vcpu_e500);
+>   	kvm_vcpu_uninit(vcpu);
+>   	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
+>    
+Why not put all this in a common function like kvm_arch_vcpu_init()? 
+There are layers of shared code inside arch/powerpc/kvm: e.g. powerpc.c 
+-> booke.c -> 44x.c...
 
-Hi Alex,
-
-Only with your patch, there will still be problem on SRIO platforms
-other than MPC85xx.
-
-I have posted a patch series to fix this together with several
-compatibility issues a month before.
-
-http://patchwork.ozlabs.org/patch/56135/
-http://patchwork.ozlabs.org/patch/56136/
-http://patchwork.ozlabs.org/patch/56138/
-http://patchwork.ozlabs.org/patch/56137/
-
-
-Can anyone pick the patch series quickly as currently there is a compile
-error when SRIO is enabled.
-
-- Leo
-
-
-> -----Original Message-----
-> From: Michael Neuling [mailto:mikey@neuling.org]
-> Sent: Wednesday, August 04, 2010 11:34 PM
-> To: Bounine, Alexandre
-> Cc: Timur Tabi; Alexandre Bounine; linuxppc-dev@lists.ozlabs.org;
-linux-kernel@vger.kernel.org;
-> thomas.moll@sysgo.com; Kumar Gala
-> Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO
-port
->=20
->=20
->=20
-> In message
-<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com> you
-wrote:
-> > Yang Li pointed to these patches in his post from July 23, 2010.
-> > It would be nice to have these patches in mainline code.=3D20
->=20
-> This is still broken in Kumar's latest tree.  Do you guys wanna repost
-> them so Kumar can pick them up easily?
->=20
-> Mikey
->=20
-> >
-> > > -----Original Message-----
-> > > From: timur.tabi@gmail.com [mailto:timur.tabi@gmail.com] On Behalf
-Of
-> > Timur Tabi
-> > > Sent: Tuesday, August 03, 2010 9:02 AM
-> > > To: Bounine, Alexandre
-> > > Cc: Michael Neuling; Alexandre Bounine;
-linuxppc-dev@lists.ozlabs.org;
-> > linux-kernel@vger.kernel.org;
-> > > thomas.moll@sysgo.com; Kumar Gala
-> > > Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for
-SRIO
-> > port
-> > >=3D20
-> > > On Tue, Aug 3, 2010 at 7:17 AM, Bounine, Alexandre
-> > > <Alexandre.Bounine@idt.com> wrote:
-> > > > This happened after change to book-e definitions.
-> > > > There are patches that address this issue.
-> > >=3D20
-> > > And those patches should have been applied before 2.6.35 was
-released.
-> > >  Someone dropped the ball.  2.6.35 is broken for a number of
-PowerPC
-> > > boards:
-> > >=3D20
-> > > $ make mpc85xx_defconfig
-> > > ....
-> > > $ make
-> > > ....
-> > >   CC      arch/powerpc/sysdev/fsl_rio.o
-> > > arch/powerpc/sysdev/fsl_rio.c: In function
-'fsl_rio_mcheck_exception':
-> > > arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
-> > > (first use in this function)
-> > > arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared
-identifier
-> > > is reported only once
-> > > arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it
-appears
-> > in.)
-> > > make[1]: *** [arch/powerpc/sysdev/fsl_rio.o] Error 1
-> > >=3D20
-> > > --
-> > > Timur Tabi
-> > > Linux kernel developer at Freescale
-> >
+Hollis Blanchard
+Mentor Graphics, Embedded Systems Division
