@@ -1,35 +1,18 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by ozlabs.org (Postfix) with ESMTP id D5B16B70D3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 15:09:05 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp ([10.0.50.74])
-	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o75594vV015466 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 14:09:05 +0900
-Received: from smail (m4 [127.0.0.1])
-	by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 81BA845DE6F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:09:04 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
-	by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6061F45DE60
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:09:04 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 4381B1DB8037
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:09:04 +0900 (JST)
-Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
-	by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id EA2E41DB803B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:09:03 +0900 (JST)
-Date: Thu, 5 Aug 2010 14:04:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 9/9] v4  Update memory-hotplug documentation
-Message-Id: <20100805140412.ade72a01.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4C581D30.60300@austin.ibm.com>
-References: <4C581A6D.9030908@austin.ibm.com> <4C581D30.60300@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+	[209.85.210.42]) by ozlabs.org (Postfix) with ESMTP id BE7E1B70A6
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 15:13:40 +1000 (EST)
+Received: by pzk30 with SMTP id 30so3392803pzk.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Aug 2010 22:13:39 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+Date: Wed, 4 Aug 2010 22:13:39 -0700
+Message-ID: <AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
+Subject: Re: Relocating bootwrapper causes kernel panic
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,99 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 03 Aug 2010 08:44:16 -0500
-Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> I'm trying to relocate the bootwrapper from the default address
+> (0x400000) to a higher address (e.g. 0x800000) in order to support a
+> larger than 4MB initramfs. However the kernel panic when trying to
+> access the device tree blob which was relocated accordingly to a
+> higher address. The kernel message from __log_buf is shown below.
+>
+> The flat tree located at 0xbe4300 as the kerne message showed. Why
+> cannot the kernel access this area? No TLB set for this area?
+>
+> <1>Unable to handle kernel paging request for data at address 0xc0be4308
+> <1>Faulting instruction address: 0xc01fdabc
+> <4>Oops: Kernel access of bad area, sig: 11 [#1]
 
-> Update the memory hotplug documentation to reflect the new behaviors of
-> memory blocks reflected in sysfs.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+Before the flat tree was accessed, I checked the DTLB and didn't find
+any entry related to 0xc0be4300. After the exception, I found the
+following DTLBs.
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+30 : 02  c0be4000   4KB ------ -> 00000000
+31 : 00  fa000000   8MB VI-S-M -> fa000000
 
-A request from me:
-
- Could you clarify what happens if there are memory hole in [start end)_phys_index.
- in Documentation ? (Or add TODO list.)
+The DTLB#30 doesn't seem right. Why would it map to 0x0? I think this
+should be something like 00be4000?
 
 Thanks,
--Kame
-
-
-> ---
->  Documentation/memory-hotplug.txt |   40 +++++++++++++++++++++++----------------
->  1 file changed, 24 insertions(+), 16 deletions(-)
-> 
-> Index: linux-2.6/Documentation/memory-hotplug.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/memory-hotplug.txt	2010-08-02 14:09:28.000000000 -0500
-> +++ linux-2.6/Documentation/memory-hotplug.txt	2010-08-02 14:10:36.000000000 -0500
-> @@ -126,36 +126,44 @@ config options.
->  --------------------------------
->  4 sysfs files for memory hotplug
->  --------------------------------
-> -All sections have their device information under /sys/devices/system/memory as
-> +All sections have their device information in sysfs.  Each section is part of
-> +a memory block under /sys/devices/system/memory as
->  
->  /sys/devices/system/memory/memoryXXX
-> -(XXX is section id.)
-> +(XXX is the section id.)
->  
-> -Now, XXX is defined as start_address_of_section / section_size.
-> +Now, XXX is defined as (start_address_of_section / section_size) of the first
-> +section contained in the memory block.
->  
->  For example, assume 1GiB section size. A device for a memory starting at
->  0x100000000 is /sys/device/system/memory/memory4
->  (0x100000000 / 1Gib = 4)
->  This device covers address range [0x100000000 ... 0x140000000)
->  
-> -Under each section, you can see 4 files.
-> +Under each section, you can see 5 files.
->  
-> -/sys/devices/system/memory/memoryXXX/phys_index
-> +/sys/devices/system/memory/memoryXXX/start_phys_index
-> +/sys/devices/system/memory/memoryXXX/end_phys_index
->  /sys/devices/system/memory/memoryXXX/phys_device
->  /sys/devices/system/memory/memoryXXX/state
->  /sys/devices/system/memory/memoryXXX/removable
->  
-> -'phys_index' : read-only and contains section id, same as XXX.
-> -'state'      : read-write
-> -               at read:  contains online/offline state of memory.
-> -               at write: user can specify "online", "offline" command
-> -'phys_device': read-only: designed to show the name of physical memory device.
-> -               This is not well implemented now.
-> -'removable'  : read-only: contains an integer value indicating
-> -               whether the memory section is removable or not
-> -               removable.  A value of 1 indicates that the memory
-> -               section is removable and a value of 0 indicates that
-> -               it is not removable.
-> +'phys_index'      : read-only and contains section id of the first section
-> +		    in the memory block, same as XXX.
-> +'end_phys_index'  : read-only and contains section id of the last section
-> +		    in the memory block.
-> +'state'           : read-write
-> +                    at read:  contains online/offline state of memory.
-> +                    at write: user can specify "online", "offline" command
-> +                    which will be performed on al sections in the block.
-> +'phys_device'     : read-only: designed to show the name of physical memory
-> +                    device.  This is not well implemented now.
-> +'removable'       : read-only: contains an integer value indicating
-> +                    whether the memory block is removable or not
-> +                    removable.  A value of 1 indicates that the memory
-> +                    block is removable and a value of 0 indicates that
-> +                    it is not removable. A memory block is removable only if
-> +                    every section in the block is removable.
->  
->  NOTE:
->    These directories/files appear after physical memory hotplug phase.
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-Shawn.
