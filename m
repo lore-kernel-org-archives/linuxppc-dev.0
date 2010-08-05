@@ -1,26 +1,26 @@
 Return-Path: <dvhltc@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0E3CD1007EB
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:29:22 +1000 (EST)
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B0A15B742C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:29:36 +1000 (EST)
 Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
 	[9.17.195.107])
-	by e34.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o754KgtN001522
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:20:42 -0600
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o754KvTF003225
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:20:57 -0600
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o754TK1n135056
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:20 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o754TJll005604
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:20 -0600
+	o754TXsP134298
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:33 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o754TWkK002127
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:33 -0600
 From: Darren Hart <dvhltc@us.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] powerpc-silence-__cpu_up-under-normal-operation
-Date: Wed,  4 Aug 2010 21:28:34 -0700
-Message-Id: <1280982515-18231-3-git-send-email-dvhltc@us.ibm.com>
+Subject: [PATCH 3/3] powerpc-silence-xics_migrate_irqs_away-during-cpu-offline
+Date: Wed,  4 Aug 2010 21:28:35 -0700
+Message-Id: <1280982515-18231-4-git-send-email-dvhltc@us.ibm.com>
 In-Reply-To: <1280982515-18231-1-git-send-email-dvhltc@us.ibm.com>
 References: <1280982515-18231-1-git-send-email-dvhltc@us.ibm.com>
 Cc: dvhltc@us.ibm.com, brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
@@ -36,18 +36,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 
-During CPU offline/online tests __cpu_up would flood the logs with
-the following message:
+All IRQs are migrated away from a CPU that is being offlined so the
+following messages suggest a problem when the system is behaving as
+designed:
 
-Processor 0 found.
+IRQ 262 affinity broken off cpu 1
+IRQ 17 affinity broken off cpu 0
+IRQ 18 affinity broken off cpu 0
+IRQ 19 affinity broken off cpu 0
+IRQ 256 affinity broken off cpu 0
+IRQ 261 affinity broken off cpu 0
+IRQ 262 affinity broken off cpu 0
 
-This provides no useful information to the user as there is no context
-provided, and since the operation was a success (to this point) it is expected
-that the CPU will come back online, providing all the feedback necessary.
-
-Change the "Processor found" message to DBG() similar to other such messages in
-the same function. Also, add an appropriate log level for the "Processor is
-stuck" message.
+Don't print these messages when the CPU is not online.
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 Acked-by: Will Schmidt <will_schmidt@vnet.ibm.com>
@@ -56,26 +57,25 @@ Cc: Nathan Fontenot <nfont@austin.ibm.com>
 Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
 Cc: Brian King <brking@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/smp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/xics.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 5c196d1..cc05792 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -429,11 +429,11 @@ int __cpuinit __cpu_up(unsigned int cpu)
- #endif
+diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+index f19d194..8d0b0b1 100644
+--- a/arch/powerpc/platforms/pseries/xics.c
++++ b/arch/powerpc/platforms/pseries/xics.c
+@@ -930,8 +930,10 @@ void xics_migrate_irqs_away(void)
+ 		if (xics_status[0] != hw_cpu)
+ 			goto unlock;
  
- 	if (!cpu_callin_map[cpu]) {
--		printk("Processor %u is stuck.\n", cpu);
-+		printk(KERN_ERR "Processor %u is stuck.\n", cpu);
- 		return -ENOENT;
- 	}
+-		printk(KERN_WARNING "IRQ %u affinity broken off cpu %u\n",
+-		       virq, cpu);
++		/* This is expected during cpu offline. */
++		if (cpu_online(cpu))
++			printk(KERN_WARNING "IRQ %u affinity broken off cpu %u\n",
++			       virq, cpu);
  
--	printk("Processor %u found.\n", cpu);
-+	DBG("Processor %u found.\n", cpu);
- 
- 	if (smp_ops->give_timebase)
- 		smp_ops->give_timebase();
+ 		/* Reset affinity to all cpus */
+ 		cpumask_setall(irq_to_desc(virq)->affinity);
 -- 
 1.7.0.4
