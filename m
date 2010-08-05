@@ -2,16 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 9D67DB6F10
+	by ozlabs.org (Postfix) with ESMTPS id BCCD0B70A4
 	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 01:16:00 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: gregkh@suse.de
-Subject: [PATCH 2/3] powerpc: implement arch_setup_pdev_archdata
-Date: Thu,  5 Aug 2010 10:15:46 -0500
-Message-Id: <1281021347-1278-3-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 3/3] powerpc: Dont require a dma_ops struct to set dma mask
+Date: Thu,  5 Aug 2010 10:15:47 -0500
+Message-Id: <1281021347-1278-4-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1281021347-1278-3-git-send-email-galak@kernel.crashing.org>
 References: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
 	<1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
+	<1281021347-1278-3-git-send-email-galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,35 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a long standing issues with platform devices not have a valid
-dma_mask pointer.  This hasn't been an issue to date as no platform
-device has tried to set its dma_mask value to a non-default value.
+The only reason to require a dma_ops struct is to see if it has
+implemented set_dma_mask.  If not we can fall back to setting the mask
+directly.
+
+This resolves an issue with how to sequence the setting of a DMA mask
+for platform devices.  Before we had an issue in that we have no way of
+setting the DMA mask before the various low level bus notifiers get
+called that might check it (swiotlb).
+
+So now we can do:
+
+	pdev = platform_device_alloc("foobar", 0);
+	dma_set_mask(&pdev->dev, DMA_BIT_MASK(37));
+	platform_device_register(pdev);
+
+And expect the right thing to happen with the bus notifiers get called
+via platform_device_register.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/platform_device.h |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/dma-mapping.h |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/platform_device.h b/arch/powerpc/include/asm/platform_device.h
-index 01452c3..a379500 100644
---- a/arch/powerpc/include/asm/platform_device.h
-+++ b/arch/powerpc/include/asm/platform_device.h
-@@ -1 +1,15 @@
--#include <asm-generic/platform_device.h>
-+#ifndef __ASM_PLATFORM_DEVICE_H_
-+#define __ASM_PLATFORM_DEVICE_H_
-+
-+#include <linux/platform_device.h>
-+
-+#define ARCH_HAS_PDEV_ARCHDATA_SETUP
-+
-+static inline void arch_setup_pdev_archdata(struct platform_device *pdev)
-+{
-+	pdev->dev.dma_mask = &pdev->archdata.dma_mask;
-+
-+	return;
-+}
-+
-+#endif /* __ASM_GENERIC_PLATFORM_DEVICE_H_ */
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index c85ef23..952208a 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -131,12 +131,10 @@ static inline int dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (unlikely(dma_ops == NULL))
+-		return -EIO;
+-	if (dma_ops->set_dma_mask != NULL)
+-		return dma_ops->set_dma_mask(dev, dma_mask);
+ 	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+ 		return -EIO;
++	if (dma_ops && (dma_ops->set_dma_mask != NULL))
++		return dma_ops->set_dma_mask(dev, dma_mask);
+ 	*dev->dma_mask = dma_mask;
+ 	return 0;
+ }
 -- 
 1.6.0.6
