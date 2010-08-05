@@ -1,32 +1,31 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 028791007D2
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 03:42:27 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o75HUtcC007636
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 11:30:55 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
-	o75HgKxi076450
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 11:42:21 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o75HgBZu028294
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 11:42:11 -0600
-Received: from [9.53.40.150] (mudbug-009053040150.austin.ibm.com [9.53.40.150])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
-	o75HgBsv028221
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 11:42:11 -0600
-Message-ID: <4C5AF7F3.3080901@austin.ibm.com>
-Date: Thu, 05 Aug 2010 12:42:11 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Correct smt_enabled=X boot option for > 2 threads per core
-Content-Type: text/plain; charset=ISO-8859-1
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id 707ADB6EF1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  6 Aug 2010 03:53:31 +1000 (EST)
+Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
+Date: Thu, 5 Aug 2010 12:53:03 -0500
+Message-Id: <C9528078-D64C-4944-B960-0E985B3EE0BA@kernel.crashing.org>
+References: <20100308191005.GE4324@amak.tundra.com>
+	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
+	<4381.1280815590@neuling.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
+	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
+	<26581.1280979260@neuling.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
+To: "Bounine, Alexandre" <Alexandre.Bounine@IDT.COM>
+Cc: Michael Neuling <mikey@neuling.org>, Li Yang-R58472 <r58472@freescale.com>,
+	linux-kernel@vger.kernel.org,
+	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
+	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,132 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 'smt_enabled=X' boot option does not handle values of X > 2.
-For Power 7 processors with smt modes of 0,1,2,3, and 4 this does
-not work.  This patch allows the smt_enabled option to be set to
-any value limited to a max equal to the number of threads per
-core.
 
-Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
----
- arch/powerpc/kernel/setup_64.c       |   61 ++++++++++++++++++++---------------
- arch/powerpc/platforms/pseries/smp.c |   11 ++++--
- 2 files changed, 42 insertions(+), 30 deletions(-)
+On Aug 5, 2010, at 12:25 PM, Bounine, Alexandre wrote:
 
-Index: powerpc/arch/powerpc/kernel/setup_64.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/setup_64.c	2010-08-05 10:57:04.000000000 -0500
-+++ powerpc/arch/powerpc/kernel/setup_64.c	2010-08-05 11:20:49.000000000 -0500
-@@ -95,7 +95,7 @@ int ucache_bsize;
- 
- #ifdef CONFIG_SMP
- 
--static int smt_enabled_cmdline;
-+static char *smt_enabled_cmdline;
- 
- /* Look for ibm,smt-enabled OF option */
- static void check_smt_enabled(void)
-@@ -103,37 +103,46 @@ static void check_smt_enabled(void)
- 	struct device_node *dn;
- 	const char *smt_option;
- 
--	/* Allow the command line to overrule the OF option */
--	if (smt_enabled_cmdline)
--		return;
--
--	dn = of_find_node_by_path("/options");
-+	/* Default to enabling all threads */
-+	smt_enabled_at_boot = threads_per_core;
- 
--	if (dn) {
--		smt_option = of_get_property(dn, "ibm,smt-enabled", NULL);
-+	/* Allow the command line to overrule the OF option */
-+	if (smt_enabled_cmdline) {
-+		if (!strcmp(smt_enabled_cmdline, "on"))
-+			smt_enabled_at_boot = threads_per_core;
-+		else if (!strcmp(smt_enabled_cmdline, "off"))
-+			smt_enabled_at_boot = 0;
-+		else {
-+			long smt;
-+			int rc;
-+
-+			rc = strict_strtol(smt_enabled_cmdline, 10, &smt);
-+			if (!rc)
-+				smt_enabled_at_boot =
-+					min(threads_per_core, (int)smt);
-+		}
-+	} else {
-+		dn = of_find_node_by_path("/options");
-+		if (dn) {
-+			smt_option = of_get_property(dn, "ibm,smt-enabled",
-+						     NULL);
-+
-+			if (smt_option) {
-+				if (!strcmp(smt_option, "on"))
-+					smt_enabled_at_boot = threads_per_core;
-+				else if (!strcmp(smt_option, "off"))
-+					smt_enabled_at_boot = 0;
-+			}
- 
--                if (smt_option) {
--			if (!strcmp(smt_option, "on"))
--				smt_enabled_at_boot = 1;
--			else if (!strcmp(smt_option, "off"))
--				smt_enabled_at_boot = 0;
--                }
--        }
-+			of_node_put(dn);
-+		}
-+	}
- }
- 
- /* Look for smt-enabled= cmdline option */
- static int __init early_smt_enabled(char *p)
- {
--	smt_enabled_cmdline = 1;
--
--	if (!p)
--		return 0;
--
--	if (!strcmp(p, "on") || !strcmp(p, "1"))
--		smt_enabled_at_boot = 1;
--	else if (!strcmp(p, "off") || !strcmp(p, "0"))
--		smt_enabled_at_boot = 0;
--
-+	smt_enabled_cmdline = p;
- 	return 0;
- }
- early_param("smt-enabled", early_smt_enabled);
-@@ -390,8 +399,8 @@ void __init setup_system(void)
- 	 */
- 	xmon_setup();
- 
--	check_smt_enabled();
- 	smp_setup_cpu_maps();
-+	check_smt_enabled();
- 
- #ifdef CONFIG_SMP
- 	/* Release secondary cpus out of their spinloops at 0x60 now that
-Index: powerpc/arch/powerpc/platforms/pseries/smp.c
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pseries/smp.c	2010-06-14 08:36:05.000000000 -0500
-+++ powerpc/arch/powerpc/platforms/pseries/smp.c	2010-08-05 11:20:49.000000000 -0500
-@@ -182,10 +182,13 @@ static int smp_pSeries_cpu_bootable(unsi
- 	/* Special case - we inhibit secondary thread startup
- 	 * during boot if the user requests it.
- 	 */
--	if (system_state < SYSTEM_RUNNING &&
--	    cpu_has_feature(CPU_FTR_SMT) &&
--	    !smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
--		return 0;
-+	if (system_state < SYSTEM_RUNNING && cpu_has_feature(CPU_FTR_SMT)) {
-+		if (!smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
-+			return 0;
-+		if (smt_enabled_at_boot
-+		    && cpu_thread_in_core(nr) >= smt_enabled_at_boot)
-+			return 0;
-+	}
- 
- 	return 1;
- }
- 
+> Below is a copy of Leo's message with pointers to the patches.
+>=20
+> Alex.
+>=20
+>> Subject: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
+>>=20
+>> Fixes compile problem caused by MCSR_MASK removal from book-E
+> definitions.
+>=20
+> Hi Alex,
+>=20
+> Only with your patch, there will still be problem on SRIO platforms
+> other than MPC85xx.
+>=20
+> I have posted a patch series to fix this together with several
+> compatibility issues a month before.
+>=20
+> http://patchwork.ozlabs.org/patch/56135/
+> http://patchwork.ozlabs.org/patch/56136/
+> http://patchwork.ozlabs.org/patch/56138/
+> http://patchwork.ozlabs.org/patch/56137/
+>=20
+>=20
+> Can anyone pick the patch series quickly as currently there is a =
+compile
+> error when SRIO is enabled.
+>=20
+> - Leo
+
+I'm looking at this now and wondering what we added the mcheck handler =
+for in the first place and what its trying to accomplish.
+
+- k
