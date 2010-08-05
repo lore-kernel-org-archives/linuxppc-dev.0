@@ -1,23 +1,33 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id DDE56B70AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Aug 2010 03:26:56 +1000 (EST)
-Message-ID: <4C5AEF4F.4010604@mentor.com>
-Date: Thu, 05 Aug 2010 10:05:19 -0700
-From: Hollis Blanchard <hollis_blanchard@mentor.com>
+Return-Path: <B07421@freescale.com>
+Received: from VA3EHSOBE005.bigfish.com (va3ehsobe005.messaging.microsoft.com
+	[216.32.180.31]) by ozlabs.org (Postfix) with ESMTP id D80F9B6F0E
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 03:37:32 +1000 (EST)
+Received: from mail121-va3 (localhost.localdomain [127.0.0.1])	by
+	mail121-va3-R.bigfish.com (Postfix) with ESMTP id 10ADAF68244	for
+	<linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 17:37:29 +0000 (UTC)
+Received: from VA3EHSMHS010.bigfish.com (unknown [10.7.14.249])	by
+	mail121-va3.bigfish.com (Postfix) with ESMTP id B6D4C11D8046	for
+	<linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 17:37:28 +0000 (UTC)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net
+	[10.64.34.200])	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP
+	id o75HbRLx000964	for <linuxppc-dev@ozlabs.org>;
+	Thu, 5 Aug 2010 10:37:27 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id
+	o75HbXi1023871	for <linuxppc-dev@ozlabs.org>;
+	Thu, 5 Aug 2010 12:37:33 -0500 (CDT)
+Date: Thu, 5 Aug 2010 12:37:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Shawn Jin <shawnxjin@gmail.com>
+Subject: Re: Relocating bootwrapper causes kernel panic
+Message-ID: <20100805123725.63d009b1@schlenkerla.am.freescale.net>
+In-Reply-To: <AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
+References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+	<AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
+	<AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 01/27] KVM: PPC: Introduce shared page
-References: <1280407688-9815-1-git-send-email-agraf@suse.de>
-	<1280407688-9815-2-git-send-email-agraf@suse.de>
-In-Reply-To: <1280407688-9815-2-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,167 +37,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2010 05:47 AM, Alexander Graf wrote:
-> For transparent variable sharing between the hypervisor and guest, I introduce
-> a shared page. This shared page will contain all the registers the guest can
-> read and write safely without exiting guest context.
->
-> This patch only implements the stubs required for the basic structure of the
-> shared page. The actual register moving follows.
->
-> Signed-off-by: Alexander Graf<agraf@suse.de>
-> ---
->   arch/powerpc/include/asm/kvm_host.h |    2 ++
->   arch/powerpc/include/asm/kvm_para.h |    5 +++++
->   arch/powerpc/kernel/asm-offsets.c   |    1 +
->   arch/powerpc/kvm/44x.c              |    7 +++++++
->   arch/powerpc/kvm/book3s.c           |    9 ++++++++-
->   arch/powerpc/kvm/e500.c             |    7 +++++++
->   6 files changed, 30 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index b0b23c0..53edacd 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -25,6 +25,7 @@
->   #include<linux/interrupt.h>
->   #include<linux/types.h>
->   #include<linux/kvm_types.h>
-> +#include<linux/kvm_para.h>
->   #include<asm/kvm_asm.h>
->
->   #define KVM_MAX_VCPUS 1
-> @@ -290,6 +291,7 @@ struct kvm_vcpu_arch {
->   	struct tasklet_struct tasklet;
->   	u64 dec_jiffies;
->   	unsigned long pending_exceptions;
-> +	struct kvm_vcpu_arch_shared *shared;
->
->   #ifdef CONFIG_PPC_BOOK3S
->   	struct hlist_head hpte_hash_pte[HPTEG_HASH_NUM_PTE];
-> diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-> index 2d48f6a..1485ba8 100644
-> --- a/arch/powerpc/include/asm/kvm_para.h
-> +++ b/arch/powerpc/include/asm/kvm_para.h
-> @@ -20,6 +20,11 @@
->   #ifndef __POWERPC_KVM_PARA_H__
->   #define __POWERPC_KVM_PARA_H__
->
-> +#include<linux/types.h>
-> +
-> +struct kvm_vcpu_arch_shared {
-> +};
-> +
->   #ifdef __KERNEL__
->
->   static inline int kvm_para_available(void)
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 496cc5b..944f593 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -400,6 +400,7 @@ int main(void)
->   	DEFINE(VCPU_SPRG6, offsetof(struct kvm_vcpu, arch.sprg6));
->   	DEFINE(VCPU_SPRG7, offsetof(struct kvm_vcpu, arch.sprg7));
->   	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
-> +	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
->
->   	/* book3s */
->   #ifdef CONFIG_PPC_BOOK3S
-> diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
-> index 73c0a3f..e7b1f3f 100644
-> --- a/arch/powerpc/kvm/44x.c
-> +++ b/arch/powerpc/kvm/44x.c
-> @@ -123,8 +123,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
->   	if (err)
->   		goto free_vcpu;
->
-> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-> +	if (!vcpu->arch.shared)
-> +		goto uninit_vcpu;
-> +
->   	return vcpu;
->
-> +uninit_vcpu:
-> +	kvm_vcpu_uninit(vcpu);
->   free_vcpu:
->   	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
->   out:
-> @@ -135,6 +141,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->   {
->   	struct kvmppc_vcpu_44x *vcpu_44x = to_44x(vcpu);
->
-> +	free_page((unsigned long)vcpu->arch.shared);
->   	kvm_vcpu_uninit(vcpu);
->   	kmem_cache_free(kvm_vcpu_cache, vcpu_44x);
->   }
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index a3cef30..b3385dd 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -1242,6 +1242,10 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
->   	if (err)
->   		goto free_shadow_vcpu;
->
-> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-> +	if (!vcpu->arch.shared)
-> +		goto uninit_vcpu;
-> +
->   	vcpu->arch.host_retip = kvm_return_point;
->   	vcpu->arch.host_msr = mfmsr();
->   #ifdef CONFIG_PPC_BOOK3S_64
-> @@ -1268,10 +1272,12 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
->
->   	err = kvmppc_mmu_init(vcpu);
->   	if (err<  0)
-> -		goto free_shadow_vcpu;
-> +		goto uninit_vcpu;
->
->   	return vcpu;
->
-> +uninit_vcpu:
-> +	kvm_vcpu_uninit(vcpu);
->   free_shadow_vcpu:
->   	kfree(vcpu_book3s->shadow_vcpu);
->   free_vcpu:
-> @@ -1284,6 +1290,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->   {
->   	struct kvmppc_vcpu_book3s *vcpu_book3s = to_book3s(vcpu);
->
-> +	free_page((unsigned long)vcpu->arch.shared);
->   	kvm_vcpu_uninit(vcpu);
->   	kfree(vcpu_book3s->shadow_vcpu);
->   	vfree(vcpu_book3s);
-> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
-> index e8a00b0..71750f2 100644
-> --- a/arch/powerpc/kvm/e500.c
-> +++ b/arch/powerpc/kvm/e500.c
-> @@ -117,8 +117,14 @@ struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm, unsigned int id)
->   	if (err)
->   		goto uninit_vcpu;
->
-> +	vcpu->arch.shared = (void*)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-> +	if (!vcpu->arch.shared)
-> +		goto uninit_tlb;
-> +
->   	return vcpu;
->
-> +uninit_tlb:
-> +	kvmppc_e500_tlb_uninit(vcpu_e500);
->   uninit_vcpu:
->   	kvm_vcpu_uninit(vcpu);
->   free_vcpu:
-> @@ -131,6 +137,7 @@ void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu)
->   {
->   	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
->
-> +	free_page((unsigned long)vcpu->arch.shared);
->   	kvmppc_e500_tlb_uninit(vcpu_e500);
->   	kvm_vcpu_uninit(vcpu);
->   	kmem_cache_free(kvm_vcpu_cache, vcpu_e500);
->    
-Why not put all this in a common function like kvm_arch_vcpu_init()? 
-There are layers of shared code inside arch/powerpc/kvm: e.g. powerpc.c 
--> booke.c -> 44x.c...
+On Thu, 5 Aug 2010 00:23:17 -0700
+Shawn Jin <shawnxjin@gmail.com> wrote:
 
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+> >> The flat tree located at 0xbe4300 as the kerne message showed. Why
+> >> cannot the kernel access this area? No TLB set for this area?
+> >>
+> >> <1>Unable to handle kernel paging request for data at address 0xc0be43=
+08
+> >> <1>Faulting instruction address: 0xc01fdabc
+> >> <4>Oops: Kernel access of bad area, sig: 11 [#1]
+> >
+> > Before the flat tree was accessed, I checked the DTLB and didn't find
+> > any entry related to 0xc0be4300. After the exception, I found the
+> > following DTLBs.
+> >
+> > 30 : 02 =A0c0be4000 =A0 4KB ------ -> 00000000
+> > 31 : 00 =A0fa000000 =A0 8MB VI-S-M -> fa000000
+> >
+> > The DTLB#30 doesn't seem right. Why would it map to 0x0? I think this
+> > should be something like 00be4000?
+
+Note that the valid bit is clear -- it's not mapping to anything.
+
+> When the early_debug is enabled, the kernel can boot successfully. I
+> checked the TLB settings and found the following.
+>=20
+> 28 : 00  c0000000   8MB V--S-M -> 00000000
+> 29 : 00  fa000000   8MB VI-S-M -> fa000000
+> 30 : 00  c0800000   8MB V--S-M -> 00800000
+> 31 : 14  04919000   ?KB V---WM -> 00e45000
+
+That last entry looks weird... might want to look into that.
+
+> So the kernel can access the dtb at 0xbe4300 because of the pinned down D=
+TLB#30.
+>=20
+> I think the cause is clear now. But how to fix it? Two questions:
+> 1. Should this DTLB miss exception properly set a new TLB entry for
+> the new dtb address 0xbe4300?
+
+Not if it doesn't find an entry in the page tables.
+
+> 2. If the DTLB miss exception handler is not the right guy to load a
+> proper TLB entry, how can I set one entry based on the link_address
+> and the address of the flat dt blob?
+
+Given how early in the boot process it is, it's probably going to need
+to be handled specially.
+
+-Scott
