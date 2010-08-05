@@ -1,23 +1,30 @@
-Return-Path: <Hollis_Blanchard@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "relay1.mentorg.com",
-	Issuer "Entrust Certification Authority - L1B" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0D0E4B6EEA
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 43F72B6EEA
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Aug 2010 03:16:54 +1000 (EST)
-Message-ID: <4C5AF202.1000702@mentor.com>
-Date: Thu, 05 Aug 2010 10:16:50 -0700
-From: Hollis Blanchard <hollis_blanchard@mentor.com>
+	Fri,  6 Aug 2010 03:25:34 +1000 (EST)
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 17/27] KVM: PPC: KVM PV guest stubs
-References: <1280407688-9815-1-git-send-email-agraf@suse.de>
-	<1280407688-9815-18-git-send-email-agraf@suse.de>
-In-Reply-To: <1280407688-9815-18-git-send-email-agraf@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Date: Thu, 5 Aug 2010 10:25:18 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <26581.1280979260@neuling.org>
+References: <20100308191005.GE4324@amak.tundra.com>
+	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
+	<4381.1280815590@neuling.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
+	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
+	<26581.1280979260@neuling.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Michael Neuling" <mikey@neuling.org>
+Cc: Li Yang-R58472 <r58472@freescale.com>, linux-kernel@vger.kernel.org,
+	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
+	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,103 +34,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2010 05:47 AM, Alexander Graf wrote:
-> We will soon start and replace instructions from the text section with
-> other, paravirtualized versions. To ease the readability of those patches
-> I split out the generic looping and magic page mapping code out.
->
-> This patch still only contains stubs. But at least it loops through the
-> text section :).
->
-> Signed-off-by: Alexander Graf<agraf@suse.de>
->
-> ---
->
-> v1 ->  v2:
->
->    - kvm guest patch framework: introduce patch_ins
->
-> v2 ->  v3:
->
->    - add self-test in guest code
->    - remove superfluous new lines in generic guest code
-> ---
->   arch/powerpc/kernel/kvm.c |   95 +++++++++++++++++++++++++++++++++++++++++++++
->   1 files changed, 95 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-> index a5ece71..e93366f 100644
-> --- a/arch/powerpc/kernel/kvm.c
-> +++ b/arch/powerpc/kernel/kvm.c
-> @@ -33,6 +33,62 @@
->   #define KVM_MAGIC_PAGE		(-4096L)
->   #define magic_var(x) KVM_MAGIC_PAGE + offsetof(struct kvm_vcpu_arch_shared, x)
->
-> +#define KVM_MASK_RT		0x03e00000
-> +
-> +static bool kvm_patching_worked = true;
-> +
-> +static inline void kvm_patch_ins(u32 *inst, u32 new_inst)
-> +{
-> +	*inst = new_inst;
-> +	flush_icache_range((ulong)inst, (ulong)inst + 4);
-> +}
-> +
-> +static void kvm_map_magic_page(void *data)
-> +{
-> +	kvm_hypercall2(KVM_HC_PPC_MAP_MAGIC_PAGE,
-> +		       KVM_MAGIC_PAGE,  /* Physical Address */
-> +		       KVM_MAGIC_PAGE); /* Effective Address */
-> +}
-> +
-> +static void kvm_check_ins(u32 *inst)
-> +{
-> +	u32 _inst = *inst;
-> +	u32 inst_no_rt = _inst&  ~KVM_MASK_RT;
-> +	u32 inst_rt = _inst&  KVM_MASK_RT;
-> +
-> +	switch (inst_no_rt) {
-> +	}
-> +
-> +	switch (_inst) {
-> +	}
-> +}
-> +
-> +static void kvm_use_magic_page(void)
-> +{
-> +	u32 *p;
-> +	u32 *start, *end;
-> +	u32 tmp;
-> +
-> +	/* Tell the host to map the magic page to -4096 on all CPUs */
-> +	on_each_cpu(kvm_map_magic_page, NULL, 1);
-> +
-> +	/* Quick self-test to see if the mapping works */
-> +	if (__get_user(tmp, (u32*)KVM_MAGIC_PAGE)) {
-> +		kvm_patching_worked = false;
-> +		return;
-> +	}
-> +
-> +	/* Now loop through all code and find instructions */
-> +	start = (void*)_stext;
-> +	end = (void*)_etext;
-> +
-> +	for (p = start; p<  end; p++)
-> +		kvm_check_ins(p);
-> +
-> +	printk(KERN_INFO "KVM: Live patching for a fast VM %s\n",
-> +			 kvm_patching_worked ? "worked" : "failed");
-> +}
->    
-Rather than have the guest loop through every instruction in its text, 
-why can't you use the existing cputable self-patching mechanism? The 
-kernel already uses that in a number of places to patch itself at 
-runtime in fast paths... see Documentation/powerpc/cpu_features.txt for 
-some background.
+Below is a copy of Leo's message with pointers to the patches.
 
-Since we already know (at build time) the location of code that needs 
-patching, we don't need to scan at all. (I also shudder to think of the 
-number of page faults this scan will incur.)
+Alex.
+=20
+>Subject: [PATCH] RapidIO,powerpc/85xx: remove MCSR_MASK in fsl_rio
+>
+>Fixes compile problem caused by MCSR_MASK removal from book-E
+definitions.
 
-Hollis Blanchard
-Mentor Graphics, Embedded Systems Division
+Hi Alex,
+
+Only with your patch, there will still be problem on SRIO platforms
+other than MPC85xx.
+
+I have posted a patch series to fix this together with several
+compatibility issues a month before.
+
+http://patchwork.ozlabs.org/patch/56135/
+http://patchwork.ozlabs.org/patch/56136/
+http://patchwork.ozlabs.org/patch/56138/
+http://patchwork.ozlabs.org/patch/56137/
+
+
+Can anyone pick the patch series quickly as currently there is a compile
+error when SRIO is enabled.
+
+- Leo
+
+
+> -----Original Message-----
+> From: Michael Neuling [mailto:mikey@neuling.org]
+> Sent: Wednesday, August 04, 2010 11:34 PM
+> To: Bounine, Alexandre
+> Cc: Timur Tabi; Alexandre Bounine; linuxppc-dev@lists.ozlabs.org;
+linux-kernel@vger.kernel.org;
+> thomas.moll@sysgo.com; Kumar Gala
+> Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO
+port
+>=20
+>=20
+>=20
+> In message
+<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com> you
+wrote:
+> > Yang Li pointed to these patches in his post from July 23, 2010.
+> > It would be nice to have these patches in mainline code.=3D20
+>=20
+> This is still broken in Kumar's latest tree.  Do you guys wanna repost
+> them so Kumar can pick them up easily?
+>=20
+> Mikey
+>=20
+> >
+> > > -----Original Message-----
+> > > From: timur.tabi@gmail.com [mailto:timur.tabi@gmail.com] On Behalf
+Of
+> > Timur Tabi
+> > > Sent: Tuesday, August 03, 2010 9:02 AM
+> > > To: Bounine, Alexandre
+> > > Cc: Michael Neuling; Alexandre Bounine;
+linuxppc-dev@lists.ozlabs.org;
+> > linux-kernel@vger.kernel.org;
+> > > thomas.moll@sysgo.com; Kumar Gala
+> > > Subject: Re: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for
+SRIO
+> > port
+> > >=3D20
+> > > On Tue, Aug 3, 2010 at 7:17 AM, Bounine, Alexandre
+> > > <Alexandre.Bounine@idt.com> wrote:
+> > > > This happened after change to book-e definitions.
+> > > > There are patches that address this issue.
+> > >=3D20
+> > > And those patches should have been applied before 2.6.35 was
+released.
+> > >  Someone dropped the ball.  2.6.35 is broken for a number of
+PowerPC
+> > > boards:
+> > >=3D20
+> > > $ make mpc85xx_defconfig
+> > > ....
+> > > $ make
+> > > ....
+> > >   CC      arch/powerpc/sysdev/fsl_rio.o
+> > > arch/powerpc/sysdev/fsl_rio.c: In function
+'fsl_rio_mcheck_exception':
+> > > arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared
+> > > (first use in this function)
+> > > arch/powerpc/sysdev/fsl_rio.c:248: error: (Each undeclared
+identifier
+> > > is reported only once
+> > > arch/powerpc/sysdev/fsl_rio.c:248: error: for each function it
+appears
+> > in.)
+> > > make[1]: *** [arch/powerpc/sysdev/fsl_rio.o] Error 1
+> > >=3D20
+> > > --
+> > > Timur Tabi
+> > > Linux kernel developer at Freescale
+> >
