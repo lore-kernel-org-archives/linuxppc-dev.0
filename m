@@ -1,24 +1,36 @@
-Return-Path: <ayman@elkhashab.com>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
-	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 96E4FB6EF3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:59:23 +1000 (EST)
-Received: from hrndva-omtalb.mail.rr.com ([10.128.143.52])
-	by hrndva-qmta03.mail.rr.com with ESMTP
-	id <20100805045147125.IFTY24222@hrndva-qmta03.mail.rr.com>
-	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 04:51:47 +0000
-Received: from [192.168.1.20] (millhouse.elkhashab.com [192.168.1.20])
-	(authenticated bits=0)
-	by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id
-	o754oLKv009367
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 23:50:22 -0500
-Message-ID: <4C5A4307.2020400@elkhashab.com>
-Date: Wed, 04 Aug 2010 23:50:15 -0500
-From: Ayman El-Khashab <ayman@elkhashab.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Help with an odd problem sharing memory on the ppc460ex
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id 2A9D4B70AF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 15:00:24 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp ([10.0.50.72])
+	by fgwmail7.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
+	o7550Nua011811 for <linuxppc-dev@ozlabs.org> (envelope-from
+	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 14:00:23 +0900
+Received: from smail (m2 [127.0.0.1])
+	by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 613D645DE51
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:00:23 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+	by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 40FA645DE4E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:00:23 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+	by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 2BD571DB803C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:00:23 +0900 (JST)
+Received: from ml14.s.css.fujitsu.com (ml14.s.css.fujitsu.com [10.249.87.104])
+	by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id DEA281DB803A
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:00:22 +0900 (JST)
+Date: Thu, 5 Aug 2010 13:55:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 5/9] v4  Allow memory_block to span multiple memory
+	sections
+Message-Id: <20100805135531.498625ab.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4C581C61.1050408@austin.ibm.com>
+References: <4C581A6D.9030908@austin.ibm.com> <4C581C61.1050408@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +40,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  I've got custom boards that have been running for a while on rev A 
-460ex parts but when the rev B parts became available some problems 
-surfaced.  We are trying to work around the issues in software.  To make 
-this simple, I've got 2 460exs connected together via PCI and PCIe so i 
-can switch the transport.  For now, I am using PCI.  I've setup the PIMs 
-and POMs to map one CPUs DRAM across the bus to the other CPU.  So they 
-have a sort of shared memory scheme.  This works fine in many cases.
+On Tue, 03 Aug 2010 08:40:49 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-I think I have a caching problem though even though I think the cache is 
-disabled via u-boot.  What happens is that CPU0 will write into CPU1's 
-memory.  CPU1 will still see a stale value though ... I can't figure out 
-how this happens.  If CPU0 comes back and reads from CPU1's memory 
-though, it gets the correct value.   Now if I reduce the frequency of 
-the reads/writes to something low (maybe 1 or 2 per second), then very 
-often CPU1 will see the change.  I continue to think it is a cache 
-issue, but I am not sure.  Also not sure how to work around that.  Is 
-that something I need to do via the TLBs?  Is the cache really disabled 
-or does Linux mess with the TLB/cache settings?  When I boot Linux I 
-reserve the upper 16Mb of memory (from 112-128Mb space) and then mmap 
-that entire region into CPU1's space.  Not sure if when it is reserved 
-if it is treated differently by Linux or not.
+> Update the memory sysfs code that each sysfs memory directory is now
+> considered a memory block that can contain multiple memory sections per
+> memory block.  The default size of each memory block is SECTION_SIZE_BITS
+> to maintain the current behavior of having a single memory section per
+> memory block (i.e. one sysfs directory per memory section).
+> 
+> For architectures that want to have memory blocks span multiple
+> memory sections they need only define their own memory_block_size_bytes()
+> routine.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-Any help is greatly appreciated.
-
-Thanks
-Ayman
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+(But maybe it's better to get ppc guy's Ack.)
