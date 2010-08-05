@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id B74D9B6F10
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 02:15:52 +1000 (EST)
-Subject: Re: [PATCH 1/3] driver core: Add ability for arch code to setup
-	pdev_archdata
-Mime-Version: 1.0 (Apple Message framework v1081)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100806014351.a3bddf08.sfr@canb.auug.org.au>
-Date: Thu, 5 Aug 2010 11:14:48 -0500
-Message-Id: <2F334348-411C-450A-AEC9-5DF3916E9BBC@kernel.crashing.org>
-References: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
-	<1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
-	<20100806014351.a3bddf08.sfr@canb.auug.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, gregkh@suse.de,
-	linux-kernel@vger.kernel.org
+Return-Path: <john.r.fastabend@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id BE3E4B6EE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 02:48:03 +1000 (EST)
+Message-ID: <4C5AEB41.9050903@intel.com>
+Date: Thu, 05 Aug 2010 09:48:01 -0700
+From: John Fastabend <john.r.fastabend@intel.com>
+MIME-Version: 1.0
+To: divya <dipraksh@linux.vnet.ibm.com>
+Subject: Re: [linux-next] build failure
+References: <4C5A4CF4.4070203@linux.vnet.ibm.com>
+In-Reply-To: <4C5A4CF4.4070203@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	"linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>, "Kirsher,
+	Jeffrey T" <jeffrey.t.kirsher@intel.com>, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+divya wrote:
+> Yestersday's linux-next(2.6.35_next_20100802) build fails with the following error on both system p and x.
+> 
+> 
+>    drivers/net/ixgbe/ixgbe_main.c: In function 'ixgbe_select_queue':
+>    drivers/net/ixgbe/ixgbe_main.c:6159: error: 'struct ixgbe_fcoe' has no member named 'up'
+>    drivers/net/ixgbe/ixgbe_main.c: In function 'ixgbe_xmit_frame':
+>    drivers/net/ixgbe/ixgbe_main.c:6221: error: 'struct ixgbe_fcoe' has no member named 'up'
+>    make[3]: *** [drivers/net/ixgbe/ixgbe_main.o] Error 1
+>    make[2]: *** [drivers/net/ixgbe] Error 2
+>    make[2]: *** Waiting for unfinished jobs....
+>    make[1]: *** [drivers/net] Error 2
+>    make: *** [drivers] Error 2
+> 
+> Thanks
+> Divya
+> 
+> 
 
-On Aug 5, 2010, at 10:43 AM, Stephen Rothwell wrote:
+Hi Divya,
 
-> Hi Kumar,
->=20
-> On Thu,  5 Aug 2010 10:15:45 -0500 Kumar Gala =
-<galak@kernel.crashing.org> wrote:
->>=20
->> --- a/drivers/base/platform.c
->> +++ b/drivers/base/platform.c
->> @@ -19,6 +19,7 @@
->> #include <linux/err.h>
->> #include <linux/slab.h>
->> #include <linux/pm_runtime.h>
->> +#include <asm/platform_device.h>
->>=20
->> #include "base.h"
->>=20
->> @@ -170,6 +171,9 @@ struct platform_device =
-*platform_device_alloc(const char *name, int id)
->> 		pa->pdev.id =3D id;
->> 		device_initialize(&pa->pdev.dev);
->> 		pa->pdev.dev.release =3D platform_device_release;
->> +#ifdef ARCH_HAS_PDEV_ARCHDATA_SETUP
->> +		arch_setup_pdev_archdata(&pa->pdev);
->> +#endif
->> 	}
->>=20
->> 	return pa ? &pa->pdev : NULL;
->> diff --git a/include/asm-generic/platform_device.h =
-b/include/asm-generic/platform_device.h
->> new file mode 100644
->> index 0000000..64806dc
->> --- /dev/null
->> +++ b/include/asm-generic/platform_device.h
->> @@ -0,0 +1,7 @@
->> +#ifndef __ASM_GENERIC_PLATFORM_DEVICE_H_
->> +#define __ASM_GENERIC_PLATFORM_DEVICE_H_
->> +/*
->> + * an architecture can override to define arch_setup_pdev_archdata
->> + */
->> +
->> +#endif /* __ASM_GENERIC_PLATFORM_DEVICE_H_ */
->=20
-> Why not do:
->=20
-> #include <linux/platform_device.h>
->=20
-> #ifndef arch_setup_pdev_archdata
-> static inline void arch_setup_pdev_archdata(struct platform_device =
-*pdev) { }
-> #endif
->=20
-> in asm-generic/platform-device.h
->=20
-> and the the call in platform_device_alloc() can be unconditional.  If =
-the arch wants to override arch_setup_pdev_archdata, it defines the =
-function and then does
->=20
-> #define arch_setup_pdev_archdata arch_setup_pdev_archdata
->=20
-> before still including asm-generic/platform_device.h
+Jeff should have a fix for this in his queue already.  This is caused by 
+building with CONFIG_FCOE and without CONFIG_IXGBE_DCB.
 
-I've got no issues with the style change.
-
-- k=
+Thanks,
+John.
