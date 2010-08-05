@@ -1,15 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id 4B72F1007D1
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 09:06:45 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org, lrg@slimlogic.co.uk,
-	broonie@opensource.wolfsonmicro.com, kumar.gala@freescale.com
-Subject: [PATCH] asoc/multi-component: fsl: add support for disabled SSI nodes
-Date: Wed, 4 Aug 2010 17:51:08 -0500
-Message-ID: <1280962268-31407-1-git-send-email-timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
+	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id 43BD1B6F0E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 10:01:31 +1000 (EST)
+Received: by gxk25 with SMTP id 25so3795055gxk.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Aug 2010 17:01:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: glikely@secretlab.ca
+In-Reply-To: <Pine.LNX.4.64.1008032149410.20393@ask.diku.dk>
+References: <Pine.LNX.4.64.1008032149410.20393@ask.diku.dk>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 4 Aug 2010 18:01:08 -0600
+Message-ID: <AANLkTi=4WimRKyPWv=ZckXBC4vsgnUPFgWu6EkfZN_zO@mail.gmail.com>
+Subject: Re: [PATCH] arch/powerpc: Drop unnecessary of_node_put
+To: Julia Lawall <julia@diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,58 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for adding "status = disabled" to an SSI node to incidate that it
-is not wired on the board.  This replaces the not-so-intuitive previous method
-of omitting a codec-handle property.
+On Tue, Aug 3, 2010 at 1:50 PM, Julia Lawall <julia@diku.dk> wrote:
+> From: Julia Lawall <julia@diku.dk>
+>
+> for_each_node_by_name only exits when its first argument is NULL, and a
+> subsequent call to of_node_put on that argument is unnecessary.
+>
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+>
+> // <smpl>
+> @@
+> iterator name for_each_node_by_name;
+> expression np,E;
+> identifier l;
+> @@
+>
+> for_each_node_by_name(np,...) {
+> =A0... when !=3D break;
+> =A0 =A0 =A0when !=3D goto l;
+> }
+> ... when !=3D np =3D E
+> - of_node_put(np);
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+Looks correct to me:
 
-Kumar, would you please ACK the device-tree portion of this patch?  I want
-it to go through the ALSA tree.
+Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
 
- arch/powerpc/boot/dts/mpc8610_hpcd.dts |    1 +
- sound/soc/fsl/fsl_ssi.c                |   13 ++++++++++---
- 2 files changed, 11 insertions(+), 3 deletions(-)
+>
+> ---
+> =A0arch/powerpc/platforms/powermac/feature.c | =A0 =A01 -
+> =A0arch/powerpc/platforms/powermac/pci.c =A0 =A0 | =A0 =A02 --
+> =A02 files changed, 3 deletions(-)
+>
+> diff -u -p a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/pla=
+tforms/powermac/feature.c
+> --- a/arch/powerpc/platforms/powermac/feature.c
+> +++ b/arch/powerpc/platforms/powermac/feature.c
+> @@ -2872,7 +2872,6 @@ set_initial_features(void)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0core99_air=
+port_enable(np, 0, 0);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_node_put(np);
+> =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0/* On all machines that support sound PM, switch sound off=
+ */
+> diff -u -p a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platfor=
+ms/powermac/pci.c
+> --- a/arch/powerpc/platforms/powermac/pci.c
+> +++ b/arch/powerpc/platforms/powermac/pci.c
+> @@ -1155,13 +1155,11 @@ void __init pmac_pcibios_after_init(void
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmac_call_feature(PMAC_FTR=
+_1394_CABLE_POWER, nd, 0, 0);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 of_node_put(nd);
+> =A0 =A0 =A0 =A0for_each_node_by_name(nd, "ethernet") {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (nd->parent && of_device_is_compatible(=
+nd, "gmac")
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&& of_device_is_compatible(nd->par=
+ent, "uni-north"))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmac_call_feature(PMAC_FTR=
+_GMAC_ENABLE, nd, 0, 0);
+> =A0 =A0 =A0 =A0}
+> - =A0 =A0 =A0 of_node_put(nd);
+> =A0}
+>
+> =A0void pmac_pci_fixup_cardbus(struct pci_dev* dev)
+>
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-index 9535ce6..83c3218 100644
---- a/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -286,6 +286,7 @@
- 
- 		ssi@16100 {
- 			compatible = "fsl,mpc8610-ssi";
-+			status = "disabled";
- 			cell-index = <1>;
- 			reg = <0x16100 0x100>;
- 			interrupt-parent = <&mpic>;
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index a0e18b8..45d27b1 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -636,12 +636,19 @@ static int __devinit fsl_ssi_probe(struct of_device *of_dev,
- 	struct resource res;
- 	char name[64];
- 
--	/* We are only interested in SSIs with a codec phandle in them, so let's
--	 * make sure this SSI has one.
-+	/* SSIs that are not connected on the board should have a
-+	 *      status = "disabled"
-+	 * property in their device tree nodes.
- 	 */
--	if (!of_get_property(np, "codec-handle", NULL))
-+	if (!of_device_is_available(np))
- 		return -ENODEV;
- 
-+	/* Check for a codec-handle property. */
-+	if (!of_get_property(np, "codec-handle", NULL)) {
-+		dev_err(&of_dev->dev, "missing codec-handle property\n");
-+		return -ENODEV;
-+	}
-+
- 	/* We only support the SSI in "I2S Slave" mode */
- 	sprop = of_get_property(np, "fsl,mode", NULL);
- 	if (!sprop || strcmp(sprop, "i2s-slave")) {
--- 
-1.7.0.1
+
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
