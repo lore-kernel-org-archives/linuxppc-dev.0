@@ -1,30 +1,17 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B0A15B742C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:29:36 +1000 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e35.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o754KvTF003225
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:20:57 -0600
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o754TXsP134298
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:33 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o754TWkK002127
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 22:29:33 -0600
-From: Darren Hart <dvhltc@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] powerpc-silence-xics_migrate_irqs_away-during-cpu-offline
-Date: Wed,  4 Aug 2010 21:28:35 -0700
-Message-Id: <1280982515-18231-4-git-send-email-dvhltc@us.ibm.com>
-In-Reply-To: <1280982515-18231-1-git-send-email-dvhltc@us.ibm.com>
-References: <1280982515-18231-1-git-send-email-dvhltc@us.ibm.com>
-Cc: dvhltc@us.ibm.com, brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	will_schmidt@vnet.ibm.com, tglx@linutronix.de
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 5 Aug 2010 14:43:25 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Request review of device tree documentation
+Message-ID: <20100805044325.GC25458@yookeroo>
+References: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AANLkTilK4YkRMJqlcRDOAlGBzpdlZuSo9NF5NrRNocHT@mail.gmail.com>
+Cc: microblaze-uclinux@itee.uq.edu.au,
+	devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Olof Johansson <olof@lixom.net>,
+	Jeremy Kerr <jeremy.kerr@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,48 +21,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+On Fri, Jun 11, 2010 at 04:59:46PM -0600, Grant Likely wrote:
+> I've been doing a bit of work on some introductory level documentation
+> of the flattened device tree.  I've got a rough copy up on the
+> devicetree.org wiki, and I could use some feedback.  If anyone has
+> some time to look at it, you can find it here:
+> 
+> http://devicetree.org/Device_Tree_Usage
 
-All IRQs are migrated away from a CPU that is being offlined so the
-following messages suggest a problem when the system is behaving as
-designed:
+Sorry I haven't replied sooner, I've been away, then sick and
+generally preoccupied.  Still here are some comments now.
 
-IRQ 262 affinity broken off cpu 1
-IRQ 17 affinity broken off cpu 0
-IRQ 18 affinity broken off cpu 0
-IRQ 19 affinity broken off cpu 0
-IRQ 256 affinity broken off cpu 0
-IRQ 261 affinity broken off cpu 0
-IRQ 262 affinity broken off cpu 0
+How Addressing Works:
 
-Don't print these messages when the CPU is not online.
+ * Small inconsistency you use "address1", "address2" then "unit-address3".
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Acked-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Nathan Fontenot <nfont@austin.ibm.com>
-Cc: Robert Jennings <rcj@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/xics.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ * Perhaps re-emphasise that a parent's #*-cells properties govern the
+   children's reg properties, not its own, since this is a common
+   misunderstanding..
 
-diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
-index f19d194..8d0b0b1 100644
---- a/arch/powerpc/platforms/pseries/xics.c
-+++ b/arch/powerpc/platforms/pseries/xics.c
-@@ -930,8 +930,10 @@ void xics_migrate_irqs_away(void)
- 		if (xics_status[0] != hw_cpu)
- 			goto unlock;
- 
--		printk(KERN_WARNING "IRQ %u affinity broken off cpu %u\n",
--		       virq, cpu);
-+		/* This is expected during cpu offline. */
-+		if (cpu_online(cpu))
-+			printk(KERN_WARNING "IRQ %u affinity broken off cpu %u\n",
-+			       virq, cpu);
- 
- 		/* Reset affinity to all cpus */
- 		cpumask_setall(irq_to_desc(virq)->affinity);
+Non Memory Mapped Devices:
+
+ * Your phrasing here suggests that non-memory-maped == zero
+   size-cells, which is not always true.
+
+Ranges (Address Translation):
+
+ * Third paragraph, first sentence is a grammatical dogs' breakfast,
+
+How Interrupts Work:
+
+ * Bogus paragraph break partway through first sentence.
+
+ * At the end you say the second cell indicates the interrupt's
+   polarity, but you don't specify how this is encoded.  It might be
+   worth emphasising that while most interrupt specifiers do include
+   trigger and polarity type information, the encoding of it can and
+   does vary between interrupt controllers.
+
+Advanced Sample Machine:
+
+ * The unit address in the name shouldn't have a "0x" prefix
+
+Advanced Interrupt Mapping:
+
+ * Perhaps worth noting that while a PCI *card* will use INTA..INTD,
+   on-board PCI devices can, and frequently do, have interrupts wired
+   side-band to the PCI bus, directly to the main interrupt
+   controller.
+
+ * In your example, you're muddying the waters of your previous usage
+   of interrupt-parent.  The PCI child nodes have the PCI top-level
+   node as their implicit interrupt parent, because its their first
+   ancestor with an interrupt-map, and we hit that before the
+   interrupt-parent property specified at the very top level.  This
+   means amongst other things that if there are PCI devices with
+   seperately wired interrupts, they must explicitly set
+   interrupt-parent to bypass the normal PCI interrupt mapping.
+
+
 -- 
-1.7.0.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
