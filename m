@@ -1,33 +1,22 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B188EB6EF1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Aug 2010 04:18:12 +1000 (EST)
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+	[209.85.210.42]) by ozlabs.org (Postfix) with ESMTP id B09F9B6EED
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 04:33:45 +1000 (EST)
+Received: by pzk30 with SMTP id 30so3761927pzk.15
+	for <linuxppc-dev@ozlabs.org>; Thu, 05 Aug 2010 11:33:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
-Date: Thu, 5 Aug 2010 11:17:58 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201193609@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <C9528078-D64C-4944-B960-0E985B3EE0BA@kernel.crashing.org>
-References: <20100308191005.GE4324@amak.tundra.com>
-	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
-	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
-	<4381.1280815590@neuling.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
-	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
-	<26581.1280979260@neuling.org>
-	<0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
-	<C9528078-D64C-4944-B960-0E985B3EE0BA@kernel.crashing.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: Michael Neuling <mikey@neuling.org>, Li Yang-R58472 <r58472@freescale.com>,
-	linux-kernel@vger.kernel.org,
-	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
-	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <20100805123725.63d009b1@schlenkerla.am.freescale.net>
+References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+	<AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
+	<AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
+	<20100805123725.63d009b1@schlenkerla.am.freescale.net>
+Date: Thu, 5 Aug 2010 11:33:44 -0700
+Message-ID: <AANLkTinqLCvRii4zCArHG=whHa0H6bparf=5sUkGDUTw@mail.gmail.com>
+Subject: Re: Relocating bootwrapper causes kernel panic
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,21 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I'm looking at this now and wondering what we added the mcheck handler
-for in the first place and what
-> its trying to accomplish.
->=20
-> - k
+>> > Before the flat tree was accessed, I checked the DTLB and didn't find
+>> > any entry related to 0xc0be4300. After the exception, I found the
+>> > following DTLBs.
+>> >
+>> > 30 : 02 =A0c0be4000 =A0 4KB ------ -> 00000000
+>> > 31 : 00 =A0fa000000 =A0 8MB VI-S-M -> fa000000
+>> >
+>> > The DTLB#30 doesn't seem right. Why would it map to 0x0? I think this
+>> > should be something like 00be4000?
+>
+> Note that the valid bit is clear -- it's not mapping to anything.
 
-This protects system from hanging if RIO link fails or enters error
-state. In some situations following maintenance read may initiate link
-recovery from error state.
+Did the exception handler try to set a TLB here but the setting was
+not completed?
 
-As it is now, MCheck mostly prevents system from hanging, but it also
-adds sense to return status of maintenance read routine. I am using
-return status in my new set of patches to check if RIO link is valid
-during error recovery.
+>> I think the cause is clear now. But how to fix it? Two questions:
+>> 2. If the DTLB miss exception handler is not the right guy to load a
+>> proper TLB entry, how can I set one entry based on the link_address
+>> and the address of the flat dt blob?
+>
+> Given how early in the boot process it is, it's probably going to need
+> to be handled specially.
 
-Alex.
+What APIs can I use to set up DTLBs?
 
-=20
+Thanks,
+-Shawn.
