@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 77F87B70CC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri,  6 Aug 2010 04:01:01 +1000 (EST)
-Subject: Re: [PATCH v2 1/4] fsl_rio: fix compile errors
-Mime-Version: 1.0 (Apple Message framework v1081)
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id B28C7B6EED
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 04:05:09 +1000 (EST)
+Date: Thu, 5 Aug 2010 11:02:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/3] driver core: Add ability for arch code to setup
+	pdev_archdata
+Message-ID: <20100805180211.GA12687@suse.de>
+References: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
+	<1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
+	<20100806014351.a3bddf08.sfr@canb.auug.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20100805125415.3a939502@schlenkerla.am.freescale.net>
-Date: Thu, 5 Aug 2010 13:00:53 -0500
-Message-Id: <EAC48836-5544-41DB-BBCA-E3DF27DAB572@kernel.crashing.org>
-References: <1276842263-4186-1-git-send-email-leoli@freescale.com>
-	<F653C93C-5650-4D7B-99F7-090436CFC533@kernel.crashing.org>
-	<20100805125415.3a939502@schlenkerla.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20100806014351.a3bddf08.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Aug 06, 2010 at 01:43:51AM +1000, Stephen Rothwell wrote:
+> Hi Kumar,
+> 
+> On Thu,  5 Aug 2010 10:15:45 -0500 Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> > --- a/drivers/base/platform.c
+> > +++ b/drivers/base/platform.c
+> > @@ -19,6 +19,7 @@
+> >  #include <linux/err.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/pm_runtime.h>
+> > +#include <asm/platform_device.h>
+> >  
+> >  #include "base.h"
+> >  
+> > @@ -170,6 +171,9 @@ struct platform_device *platform_device_alloc(const char *name, int id)
+> >  		pa->pdev.id = id;
+> >  		device_initialize(&pa->pdev.dev);
+> >  		pa->pdev.dev.release = platform_device_release;
+> > +#ifdef ARCH_HAS_PDEV_ARCHDATA_SETUP
+> > +		arch_setup_pdev_archdata(&pa->pdev);
+> > +#endif
+> >  	}
+> >  
+> >  	return pa ? &pa->pdev : NULL;
+> > diff --git a/include/asm-generic/platform_device.h b/include/asm-generic/platform_device.h
+> > new file mode 100644
+> > index 0000000..64806dc
+> > --- /dev/null
+> > +++ b/include/asm-generic/platform_device.h
+> > @@ -0,0 +1,7 @@
+> > +#ifndef __ASM_GENERIC_PLATFORM_DEVICE_H_
+> > +#define __ASM_GENERIC_PLATFORM_DEVICE_H_
+> > +/*
+> > + * an architecture can override to define arch_setup_pdev_archdata
+> > + */
+> > +
+> > +#endif /* __ASM_GENERIC_PLATFORM_DEVICE_H_ */
+> 
+> Why not do:
+> 
+> #include <linux/platform_device.h>
+> 
+> #ifndef arch_setup_pdev_archdata
+> static inline void arch_setup_pdev_archdata(struct platform_device *pdev) { }
+> #endif
+> 
+> in asm-generic/platform-device.h
+> 
+> and the the call in platform_device_alloc() can be unconditional.  If the arch wants to override arch_setup_pdev_archdata, it defines the function and then does
+> 
+> #define arch_setup_pdev_archdata arch_setup_pdev_archdata
+> 
+> before still including asm-generic/platform_device.h
 
-On Aug 5, 2010, at 12:54 PM, Scott Wood wrote:
+Yes, I'd prefer that method as well.
 
-> On Thu, 5 Aug 2010 12:39:48 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->=20
->>=20
->> On Jun 18, 2010, at 1:24 AM, Li Yang wrote:
->>=20
->>> Fixes the following compile problem on E500 platforms:
->>> arch/powerpc/sysdev/fsl_rio.c: In function =
-'fsl_rio_mcheck_exception':
->>> arch/powerpc/sysdev/fsl_rio.c:248: error: 'MCSR_MASK' undeclared =
-(first use in this function)
->>>=20
->>> Also fixes the compile problem on non-E500 platforms.
->>>=20
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> arch/powerpc/sysdev/fsl_rio.c |    6 +++++-
->>> 1 files changed, 5 insertions(+), 1 deletions(-)
->>=20
->> I'm confused is this handler not relevant for e500MC?  The 2nd patch =
-makes me thing it is.
->=20
-> It is, though it needs to use a different MCSR bit on e500mc.
->=20
-> Are you referring to the #ifdef CONFIG_E500?  CONFIG_PPC_E500MC =
-depends
-> on CONFIG_E500...
+thanks,
 
-Ah, that makes a bit more sense now.
-
-- k=
+greg k-h
