@@ -1,23 +1,33 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id B28C7B6EED
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Aug 2010 04:05:09 +1000 (EST)
-Date: Thu, 5 Aug 2010 11:02:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] driver core: Add ability for arch code to setup
-	pdev_archdata
-Message-ID: <20100805180211.GA12687@suse.de>
-References: <1281021347-1278-1-git-send-email-galak@kernel.crashing.org>
-	<1281021347-1278-2-git-send-email-galak@kernel.crashing.org>
-	<20100806014351.a3bddf08.sfr@canb.auug.org.au>
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id B188EB6EF1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri,  6 Aug 2010 04:18:12 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100806014351.a3bddf08.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2 5/7] powerpc/85xx: Add MChk handler for SRIO port
+Date: Thu, 5 Aug 2010 11:17:58 -0700
+Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E55201193609@CORPEXCH1.na.ads.idt.com>
+In-Reply-To: <C9528078-D64C-4944-B960-0E985B3EE0BA@kernel.crashing.org>
+References: <20100308191005.GE4324@amak.tundra.com>
+	<AANLkTine3pc2Ai2Woj81Y9fS_KgGs1sIMb2NMR6G74ww@mail.gmail.com>
+	<AANLkTinKbimKyLpvFD7KOvavshu_n8gRcp2BvEJj0XZQ@mail.gmail.com>
+	<4381.1280815590@neuling.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E5520114309D@CORPEXCH1.na.ads.idt.com>
+	<AANLkTinpwYnyc1oN1VbtBgUF6bk6E5q_Gq1Dj3WXV3wc@mail.gmail.com>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011430BC@CORPEXCH1.na.ads.idt.com>
+	<26581.1280979260@neuling.org>
+	<0CE8B6BE3C4AD74AB97D9D29BD24E552011935BD@CORPEXCH1.na.ads.idt.com>
+	<C9528078-D64C-4944-B960-0E985B3EE0BA@kernel.crashing.org>
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: Michael Neuling <mikey@neuling.org>, Li Yang-R58472 <r58472@freescale.com>,
+	linux-kernel@vger.kernel.org,
+	Alexandre Bounine <abounine@tundra.com>, thomas.moll@sysgo.com,
+	linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 06, 2010 at 01:43:51AM +1000, Stephen Rothwell wrote:
-> Hi Kumar,
-> 
-> On Thu,  5 Aug 2010 10:15:45 -0500 Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> > --- a/drivers/base/platform.c
-> > +++ b/drivers/base/platform.c
-> > @@ -19,6 +19,7 @@
-> >  #include <linux/err.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/pm_runtime.h>
-> > +#include <asm/platform_device.h>
-> >  
-> >  #include "base.h"
-> >  
-> > @@ -170,6 +171,9 @@ struct platform_device *platform_device_alloc(const char *name, int id)
-> >  		pa->pdev.id = id;
-> >  		device_initialize(&pa->pdev.dev);
-> >  		pa->pdev.dev.release = platform_device_release;
-> > +#ifdef ARCH_HAS_PDEV_ARCHDATA_SETUP
-> > +		arch_setup_pdev_archdata(&pa->pdev);
-> > +#endif
-> >  	}
-> >  
-> >  	return pa ? &pa->pdev : NULL;
-> > diff --git a/include/asm-generic/platform_device.h b/include/asm-generic/platform_device.h
-> > new file mode 100644
-> > index 0000000..64806dc
-> > --- /dev/null
-> > +++ b/include/asm-generic/platform_device.h
-> > @@ -0,0 +1,7 @@
-> > +#ifndef __ASM_GENERIC_PLATFORM_DEVICE_H_
-> > +#define __ASM_GENERIC_PLATFORM_DEVICE_H_
-> > +/*
-> > + * an architecture can override to define arch_setup_pdev_archdata
-> > + */
-> > +
-> > +#endif /* __ASM_GENERIC_PLATFORM_DEVICE_H_ */
-> 
-> Why not do:
-> 
-> #include <linux/platform_device.h>
-> 
-> #ifndef arch_setup_pdev_archdata
-> static inline void arch_setup_pdev_archdata(struct platform_device *pdev) { }
-> #endif
-> 
-> in asm-generic/platform-device.h
-> 
-> and the the call in platform_device_alloc() can be unconditional.  If the arch wants to override arch_setup_pdev_archdata, it defines the function and then does
-> 
-> #define arch_setup_pdev_archdata arch_setup_pdev_archdata
-> 
-> before still including asm-generic/platform_device.h
+> I'm looking at this now and wondering what we added the mcheck handler
+for in the first place and what
+> its trying to accomplish.
+>=20
+> - k
 
-Yes, I'd prefer that method as well.
+This protects system from hanging if RIO link fails or enters error
+state. In some situations following maintenance read may initiate link
+recovery from error state.
 
-thanks,
+As it is now, MCheck mostly prevents system from hanging, but it also
+adds sense to return status of maintenance read routine. I am using
+return status in my new set of patches to check if RIO link is valid
+during error recovery.
 
-greg k-h
+Alex.
+
+=20
