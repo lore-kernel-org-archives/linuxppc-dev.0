@@ -1,35 +1,24 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 610711007D3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:58:09 +1000 (EST)
-Received: from m5.gw.fujitsu.co.jp ([10.0.50.75])
-	by fgwmail5.fujitsu.co.jp (Fujitsu Gateway) with ESMTP id
-	o754w8bj003373 for <linuxppc-dev@ozlabs.org> (envelope-from
-	kamezawa.hiroyu@jp.fujitsu.com); Thu, 5 Aug 2010 13:58:08 +0900
-Received: from smail (m5 [127.0.0.1])
-	by outgoing.m5.gw.fujitsu.co.jp (Postfix) with ESMTP id 07E8345DE56
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:08 +0900 (JST)
-Received: from s5.gw.fujitsu.co.jp (s5.gw.fujitsu.co.jp [10.0.50.95])
-	by m5.gw.fujitsu.co.jp (Postfix) with ESMTP id DB9F145DE52
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
-Received: from s5.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
-	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id BF0DA1DB805F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
-Received: from m107.s.css.fujitsu.com (m107.s.css.fujitsu.com [10.249.87.107])
-	by s5.gw.fujitsu.co.jp (Postfix) with ESMTP id 75F8D1DB805E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 13:58:07 +0900 (JST)
-Date: Thu, 5 Aug 2010 13:53:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nathan Fontenot <nfont@austin.ibm.com>
-Subject: Re: [PATCH 4/9] v4  Add mutex for add/remove of memory blocks
-Message-Id: <20100805135314.7229d07c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4C581C26.5080007@austin.ibm.com>
-References: <4C581A6D.9030908@austin.ibm.com> <4C581C26.5080007@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <ayman@elkhashab.com>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+	[71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 96E4FB6EF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 14:59:23 +1000 (EST)
+Received: from hrndva-omtalb.mail.rr.com ([10.128.143.52])
+	by hrndva-qmta03.mail.rr.com with ESMTP
+	id <20100805045147125.IFTY24222@hrndva-qmta03.mail.rr.com>
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Aug 2010 04:51:47 +0000
+Received: from [192.168.1.20] (millhouse.elkhashab.com [192.168.1.20])
+	(authenticated bits=0)
+	by crust.elkhashab.com (8.14.3/8.14.3/Debian-5) with ESMTP id
+	o754oLKv009367
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Aug 2010 23:50:22 -0500
+Message-ID: <4C5A4307.2020400@elkhashab.com>
+Date: Wed, 04 Aug 2010 23:50:15 -0500
+From: Ayman El-Khashab <ayman@elkhashab.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Help with an odd problem sharing memory on the ppc460ex
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 03 Aug 2010 08:39:50 -0500
-Nathan Fontenot <nfont@austin.ibm.com> wrote:
+  I've got custom boards that have been running for a while on rev A 
+460ex parts but when the rev B parts became available some problems 
+surfaced.  We are trying to work around the issues in software.  To make 
+this simple, I've got 2 460exs connected together via PCI and PCIe so i 
+can switch the transport.  For now, I am using PCI.  I've setup the PIMs 
+and POMs to map one CPUs DRAM across the bus to the other CPU.  So they 
+have a sort of shared memory scheme.  This works fine in many cases.
 
-> Add a new mutex for use in adding and removing of memory blocks.  This
-> is needed to avoid any race conditions in which the same memory block could
-> be added and removed at the same time.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+I think I have a caching problem though even though I think the cache is 
+disabled via u-boot.  What happens is that CPU0 will write into CPU1's 
+memory.  CPU1 will still see a stale value though ... I can't figure out 
+how this happens.  If CPU0 comes back and reads from CPU1's memory 
+though, it gets the correct value.   Now if I reduce the frequency of 
+the reads/writes to something low (maybe 1 or 2 per second), then very 
+often CPU1 will see the change.  I continue to think it is a cache 
+issue, but I am not sure.  Also not sure how to work around that.  Is 
+that something I need to do via the TLBs?  Is the cache really disabled 
+or does Linux mess with the TLB/cache settings?  When I boot Linux I 
+reserve the upper 16Mb of memory (from 112-128Mb space) and then mmap 
+that entire region into CPU1's space.  Not sure if when it is reserved 
+if it is treated differently by Linux or not.
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Any help is greatly appreciated.
 
-But a nitpick (see below)
-
-> ---
->  drivers/base/memory.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux-2.6/drivers/base/memory.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/memory.c	2010-08-02 13:35:00.000000000 -0500
-> +++ linux-2.6/drivers/base/memory.c	2010-08-02 13:45:34.000000000 -0500
-> @@ -27,6 +27,8 @@
->  #include <asm/atomic.h>
->  #include <asm/uaccess.h>
->  
-> +static struct mutex mem_sysfs_mutex;
-> +
-
-For static symbol of mutex, we usually do
-	static DEFINE_MUTEX(mem_sysfs_mutex);
-
-Then, extra calls of mutex_init() is not required.
+Thanks
+Ayman
