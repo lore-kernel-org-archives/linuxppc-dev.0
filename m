@@ -1,22 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gx0-f170.google.com (mail-gx0-f170.google.com
-	[209.85.161.170]) by ozlabs.org (Postfix) with ESMTP id 43BD1B6F0E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 10:01:31 +1000 (EST)
-Received: by gxk25 with SMTP id 25so3795055gxk.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Aug 2010 17:01:29 -0700 (PDT)
+Received: from mail-yx0-f170.google.com (mail-yx0-f170.google.com
+	[209.85.213.170]) by ozlabs.org (Postfix) with ESMTP id 2C2C4B70AB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Aug 2010 10:08:35 +1000 (EST)
+Received: by yxi11 with SMTP id 11so3798231yxi.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Aug 2010 17:08:33 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <Pine.LNX.4.64.1008032149410.20393@ask.diku.dk>
-References: <Pine.LNX.4.64.1008032149410.20393@ask.diku.dk>
+In-Reply-To: <1280805072-26112-2-git-send-email-tie-fei.zang@freescale.com>
+References: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
+	<1280805072-26112-2-git-send-email-tie-fei.zang@freescale.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 4 Aug 2010 18:01:08 -0600
-Message-ID: <AANLkTi=4WimRKyPWv=ZckXBC4vsgnUPFgWu6EkfZN_zO@mail.gmail.com>
-Subject: Re: [PATCH] arch/powerpc: Drop unnecessary of_node_put
-To: Julia Lawall <julia@diku.dk>
+Date: Wed, 4 Aug 2010 18:08:13 -0600
+Message-ID: <AANLkTinUj=wUhk9qns8X2aUHHv3UpYhoE1yMMr2eMLD+@mail.gmail.com>
+Subject: Re: [PATCH 2/3 v2] dts: Add sdhci, auto-cmd12 field for p4080 device
+	tree
+To: Roy Zang <tie-fei.zang@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 3, 2010 at 1:50 PM, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> for_each_node_by_name only exits when its first argument is NULL, and a
-> subsequent call to of_node_put on that argument is unnecessary.
->
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
->
-> // <smpl>
-> @@
-> iterator name for_each_node_by_name;
-> expression np,E;
-> identifier l;
-> @@
->
-> for_each_node_by_name(np,...) {
-> =A0... when !=3D break;
-> =A0 =A0 =A0when !=3D goto l;
-> }
-> ... when !=3D np =3D E
-> - of_node_put(np);
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-
-Looks correct to me:
-
-Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
-
->
+On Mon, Aug 2, 2010 at 9:11 PM, Roy Zang <tie-fei.zang@freescale.com> wrote=
+:
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 > ---
-> =A0arch/powerpc/platforms/powermac/feature.c | =A0 =A01 -
-> =A0arch/powerpc/platforms/powermac/pci.c =A0 =A0 | =A0 =A02 --
-> =A02 files changed, 3 deletions(-)
+> =A0Documentation/powerpc/dts-bindings/fsl/esdhc.txt | =A0 =A02 ++
+> =A0arch/powerpc/boot/dts/p4080ds.dts =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0=
+ =A01 +
+> =A02 files changed, 3 insertions(+), 0 deletions(-)
 >
-> diff -u -p a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/pla=
-tforms/powermac/feature.c
-> --- a/arch/powerpc/platforms/powermac/feature.c
-> +++ b/arch/powerpc/platforms/powermac/feature.c
-> @@ -2872,7 +2872,6 @@ set_initial_features(void)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0core99_air=
-port_enable(np, 0, 0);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 of_node_put(np);
-> =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0/* On all machines that support sound PM, switch sound off=
- */
-> diff -u -p a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platfor=
-ms/powermac/pci.c
-> --- a/arch/powerpc/platforms/powermac/pci.c
-> +++ b/arch/powerpc/platforms/powermac/pci.c
-> @@ -1155,13 +1155,11 @@ void __init pmac_pcibios_after_init(void
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmac_call_feature(PMAC_FTR=
-_1394_CABLE_POWER, nd, 0, 0);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 of_node_put(nd);
-> =A0 =A0 =A0 =A0for_each_node_by_name(nd, "ethernet") {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (nd->parent && of_device_is_compatible(=
-nd, "gmac")
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&& of_device_is_compatible(nd->par=
-ent, "uni-north"))
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pmac_call_feature(PMAC_FTR=
-_GMAC_ENABLE, nd, 0, 0);
-> =A0 =A0 =A0 =A0}
-> - =A0 =A0 =A0 of_node_put(nd);
-> =A0}
->
-> =A0void pmac_pci_fixup_cardbus(struct pci_dev* dev)
->
+> diff --git a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt b/Documenta=
+tion/powerpc/dts-bindings/fsl/esdhc.txt
+> index 8a00407..64bcb8b 100644
+> --- a/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+> +++ b/Documentation/powerpc/dts-bindings/fsl/esdhc.txt
+> @@ -14,6 +14,8 @@ Required properties:
+> =A0 =A0 reports inverted write-protect state;
+> =A0 - sdhci,1-bit-only : (optional) specifies that a controller can
+> =A0 =A0 only handle 1-bit data transfers.
+> + =A0- sdhci,auto-cmd12: (optional) specifies that a controller can
+> + =A0 =A0only handle auto CMD12.
 
+I read this, but I still don't understand what it means.  What does
+"auto CMD12" mean?  Are there other kinds of CMD12?  Part of this
+might be my ignorance about how eSDHC works, but it could be clearer.
 
+Also, you can feel free to merge this patch with patch 1 in your
+series.  I makes sense to update the documentation and the driver at
+the same time.
+
+g.
 
 --=20
 Grant Likely, B.Sc., P.Eng.
