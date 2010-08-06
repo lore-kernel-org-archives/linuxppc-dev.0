@@ -1,14 +1,21 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 6 Aug 2010 23:28:19 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: inline ppc64_runlatch_off
-Message-ID: <20100806132819.GU29316@kryten>
-References: <20100806045315.GR29316@kryten> <20100806080227.GA17423@lixom.net>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id A78B1B6F14
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  7 Aug 2010 02:28:28 +1000 (EST)
+Subject: Re: [PATCH 00/27] KVM PPC PV framework v3
+Mime-Version: 1.0 (Apple Message framework v1081)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100806080227.GA17423@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1280407688-9815-1-git-send-email-agraf@suse.de>
+Date: Fri, 6 Aug 2010 11:28:21 -0500
+Message-Id: <17DF4824-9EC7-44F4-9408-EA6241C33E70@kernel.crashing.org>
+References: <1280407688-9815-1-git-send-email-agraf@suse.de>
+To: Alexander Graf <agraf@suse.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,69 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- 
-Hi Olof,
 
-> No semicolon here.
+On Jul 29, 2010, at 7:47 AM, Alexander Graf wrote:
 
-Nice catch!
+> [without]
+>=20
+> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
+/dev/null; done
+>=20
+> real    0m14.659s
+> user    0m8.967s
+> sys     0m5.688s
+>=20
+> [with]
+>=20
+> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
+/dev/null; done
+>=20
+> real    0m7.557s
+> user    0m4.121s
+> sys     0m3.426s
 
-Anton
+Do you have #'s for w/o HV to compare to.
 
-I'm sick of seeing ppc64_runlatch_off in our profiles, so inline it
-into the callers. To avoid a mess of circular includes I didn't add
-it as an inline function.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: powerpc.git/arch/powerpc/include/asm/reg.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/reg.h	2010-08-04 19:55:38.910793475 +1000
-+++ powerpc.git/arch/powerpc/include/asm/reg.h	2010-08-04 20:20:19.490751850 +1000
-@@ -951,7 +951,14 @@
- #ifdef CONFIG_PPC64
- 
- extern void ppc64_runlatch_on(void);
--extern void ppc64_runlatch_off(void);
-+extern void __ppc64_runlatch_off(void);
-+
-+#define ppc64_runlatch_off()					\
-+	do {							\
-+		if (cpu_has_feature(CPU_FTR_CTRL) &&		\
-+		    test_thread_flag(TIF_RUNLATCH))		\
-+			__ppc64_runlatch_off();			\
-+	} while (0)
- 
- extern unsigned long scom970_read(unsigned int address);
- extern void scom970_write(unsigned int address, unsigned long value);
-Index: powerpc.git/arch/powerpc/kernel/process.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/process.c	2010-08-04 19:55:38.890747120 +1000
-+++ powerpc.git/arch/powerpc/kernel/process.c	2010-08-04 20:15:27.573241044 +1000
-@@ -1198,19 +1198,17 @@ void ppc64_runlatch_on(void)
- 	}
- }
- 
--void ppc64_runlatch_off(void)
-+void __ppc64_runlatch_off(void)
- {
- 	unsigned long ctrl;
- 
--	if (cpu_has_feature(CPU_FTR_CTRL) && test_thread_flag(TIF_RUNLATCH)) {
--		HMT_medium();
-+	HMT_medium();
- 
--		clear_thread_flag(TIF_RUNLATCH);
-+	clear_thread_flag(TIF_RUNLATCH);
- 
--		ctrl = mfspr(SPRN_CTRLF);
--		ctrl &= ~CTRL_RUNLATCH;
--		mtspr(SPRN_CTRLT, ctrl);
--	}
-+	ctrl = mfspr(SPRN_CTRLF);
-+	ctrl &= ~CTRL_RUNLATCH;
-+	mtspr(SPRN_CTRLT, ctrl);
- }
- #endif
- 
+- k=
