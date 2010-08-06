@@ -1,29 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f179.google.com (mail-gy0-f179.google.com
-	[209.85.160.179]) by ozlabs.org (Postfix) with ESMTP id 08C78B6EFF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat,  7 Aug 2010 04:52:14 +1000 (EST)
-Received: by gya1 with SMTP id 1so3255406gya.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 06 Aug 2010 11:52:12 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <0A40042D85E7C84DB443060EC44B3FD325420B9123@dekaexchange07.deka.local>
-References: <1276617907-10862-1-git-send-email-emillbrandt@dekaresearch.com>
-	<20100622230026.GA2453@opensource.wolfsonmicro.com>
-	<AANLkTiluyeGSwVSXgTeRxS3hVWTe3Gkn8qHrqbHJFMun@mail.gmail.com>
-	<D37786F8-EBA7-4E55-AE83-5D0ABF1E17BF@opensource.wolfsonmicro.com>
-	<AANLkTikbHp18uc-idFtEqakoo_0Vdg_rU44xv9uHwkvG@mail.gmail.com>
-	<20100803055216.GA25306@rakim.wolfsonmicro.main>
-	<0A40042D85E7C84DB443060EC44B3FD325420B9123@dekaexchange07.deka.local>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 6 Aug 2010 12:44:59 -0600
-Message-ID: <AANLkTimuW+02aJuK+YcRFTiYdB0=CnLGJs5jfV2=RRfL@mail.gmail.com>
-Subject: Re: [PATCH 0/2 v3] mpc5200 ac97 gpio reset
-To: Eric Millbrandt <emillbrandt@dekaresearch.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id DCE27B6EED
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 Aug 2010 08:49:27 +1000 (EST)
+Subject: Re: Relocating bootwrapper causes kernel panic
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20100805134654.70f8f787@schlenkerla.am.freescale.net>
+References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+	<AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
+	<AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
+	<20100805123725.63d009b1@schlenkerla.am.freescale.net>
+	<AANLkTinqLCvRii4zCArHG=whHa0H6bparf=5sUkGDUTw@mail.gmail.com>
+	<20100805134654.70f8f787@schlenkerla.am.freescale.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 07 Aug 2010 08:49:18 +1000
+Message-ID: <1281134958.2168.39.camel@pasglop>
+Mime-Version: 1.0
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 5, 2010 at 6:59 AM, Eric Millbrandt
-<emillbrandt@dekaresearch.com> wrote:
->> -----Original Message-----
->> From: linuxppc-dev-bounces+emillbrandt=3Ddekaresearch.com@lists.ozlabs.o=
-rg
->> [mailto:linuxppc-dev-
->> bounces+emillbrandt=3Ddekaresearch.com@lists.ozlabs.org] On Behalf Of Ma=
-rk
->> Brown
->> Sent: Tuesday, August 03, 2010 01:52
->> To: Grant Likely
->> Cc: linuxppc-dev@lists.ozlabs.org; Eric Millbrandt
->> Subject: Re: [PATCH 0/2 v3] mpc5200 ac97 gpio reset
->>
->> On Sat, Jul 31, 2010 at 10:42:15PM -0600, Grant Likely wrote:
->> > On Sun, Jun 27, 2010 at 4:01 PM, Mark Brown
->>
->> > > I'm a little concerned with a collision with multi codec here. It'd
->> > > be handy if you could keep it separate in case it needs merging
->> > > into both trees (or we could merge via ASoC only).
->>
->> > Hmmm. =A0Yeah, probably better to take it via your tree then. =A0I've
->> > currently got patch 1 in linux-next, but I'll drop it before asking
->> > benh to pull. =A0Go ahead and add my acked-by.
->>
->> Looks like multi-component is slightly too late for .36 and I don't have
->> the original patch any more since it looked like you were going to be
->> carrying it... =A0could you restore the patch to your tree please?
->
-> <ping> Grant, are you going to pick up this series for .36?
+\
+> Probably.  You won't have any page tables yet, much less an entry for
+> the device tree.
+> 
+> > >> I think the cause is clear now. But how to fix it? Two questions:
+> > >> 2. If the DTLB miss exception handler is not the right guy to load a
+> > >> proper TLB entry, how can I set one entry based on the link_address
+> > >> and the address of the flat dt blob?
+> > >
+> > > Given how early in the boot process it is, it's probably going to need
+> > > to be handled specially.
+> > 
+> > What APIs can I use to set up DTLBs?
+> 
+> I don't think there is one that works on 8xx.  You'll could hack up
+> initial_mmu, or else write some C code to insert an 8xx TLB entry.
 
-Yes, working on it...  :-)
+Yup, I think he just ends up getting out of the initial mapping which is
+smallish on 8xx, no ? Might be worth sticking in one more entry during
+boot...
 
-g.
+Ben.
