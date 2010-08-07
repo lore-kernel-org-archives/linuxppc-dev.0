@@ -1,15 +1,21 @@
-Return-Path: <vivek_av@yahoo.com>
-Received: from web55505.mail.re4.yahoo.com (web55505.mail.re4.yahoo.com
-	[206.190.58.214]) by ozlabs.org (Postfix) with SMTP id CD7D6B6EF3
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sun,  8 Aug 2010 02:06:36 +1000 (EST)
-Message-ID: <307394.74573.qm@web55505.mail.re4.yahoo.com>
-Date: Sat, 7 Aug 2010 09:06:34 -0700 (PDT)
-From: vivek <vivek_av@yahoo.com>
-Subject: PLX9030 port
-To: linuxppc-dev@lists.ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-687035471-1281197194=:74573"
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id BD1C1B6EDF
+	for <linuxppc-dev@ozlabs.org>; Sun,  8 Aug 2010 02:39:43 +1000 (EST)
+Date: Sat, 7 Aug 2010 18:39:32 +0200
+From: Anatolij Gustschin <agust@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc/mpc8xxx_gpio.c: extend the driver to support
+	mpc512x gpios
+Message-ID: <20100807183932.4ee10757@wker>
+In-Reply-To: <AANLkTimopiF3MZfaAXOO1rJVTptP0HFWSTtmSviAcfT3@mail.gmail.com>
+References: <87iq4r5y4q.fsf@macbook.be.48ers.dk>
+	<1281187711-10215-1-git-send-email-agust@denx.de>
+	<AANLkTimopiF3MZfaAXOO1rJVTptP0HFWSTtmSviAcfT3@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
+	Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,63 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0-687035471-1281197194=:74573
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Grant,
 
-Hello all
-I am new to the mail list
+On Sat, 7 Aug 2010 09:12:50 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-I am trying to port the driver for PLX9030 PCI host chip based add-on card =
-from=A0 x86=A0 to PPC7410 arch
+> Hi Anatolij,
+>=20
+> Looks pretty good, but some comments below...
+>=20
+> On Sat, Aug 7, 2010 at 7:28 AM, Anatolij Gustschin <agust@denx.de> wrote:
+> > Signed-off-by: Anatolij Gustschin <agust@denx.de>
+>=20
+> You haven't written a patch description.  Give some details about how
+> the 512x gpio controller is different from the 8xxx one.
 
-the following function function returns NULL
-pci_get_device(0x10b5, 0x9030, NULL)
+Ok, will fix.
 
-vendor ID given for PLX is 0x10b5
-device ID is 0x9030
+...
+> > @@ -226,6 +272,9 @@ static struct irq_chip mpc8xxx_irq_chip =3D {
+> > =A0static int mpc8xxx_gpio_irq_map(struct irq_host *h, unsigned int vir=
+q,
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0irq_hw_n=
+umber_t hw)
+> > =A0{
+> > + =A0 =A0 =A0 if (of_device_is_compatible(h->of_node, "fsl,mpc5121-gpio=
+"))
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc8xxx_irq_chip.set_type =3D mpc512x_irq=
+_set_type;
+> > +
+>=20
+> You can put the set type hook into the of_match_table data which you
+> will need for of_find_matching_node() (see below).
 
-These values worked=A0 and the module found the device in x86 platform,
+How can I get this match table data reference in mpc8xxx_gpio_irq_map() ?
+Is it okay to set data field of struct device_node to the set type
+hook? I could do it in mpc8xxx_add_gpiochips() but I'm not sure whether
+the data field will be used for other purposes somewhere else.
 
-But the same code is complied and inserted on PPC7410 platform, the modules=
- failed to detect the device
+...
+> > @@ -330,6 +379,9 @@ static int __init mpc8xxx_add_gpiochips(void)
+> > =A0 =A0 =A0 =A0for_each_compatible_node(np, NULL, "fsl,mpc8610-gpio")
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mpc8xxx_add_controller(np);
+> >
+> > + =A0 =A0 =A0 for_each_compatible_node(np, NULL, "fsl,mpc5121-gpio")
+> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mpc8xxx_add_controller(np);
+> > +
+>=20
+> This list is getting too long.  Refactor this function to use
+> for_each_matching_node().  Also doing it this way is dangerous because
+> if say a 5121 gpio node claims compatibility with a 8610 gpio node,
+> then the gpio controller will get registered twice.
 
-Is there any Endianness conversion to be performed before passing the value=
-s to pci_get_device()=A0 in hex format ?
-=A0
-I am using linux 2.6.24 kernel and=20
-while make-ing=A0 the module ,ko file for PPC7410 using cross_complier gcc_=
-74xx-
-there was a WARNING message "struct_module undefined "
-But it is possible to insert the module in the=A0 kernel running on PPC7410=
-, which then printk 's the message when pci_get_device() returns NULL
+Fixed.
 
-can anyone help?
-thnaks --vivek
-=0A=0A=0A      
---0-687035471-1281197194=:74573
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
-top" style=3D"font: inherit;">Hello all<br>I am new to the mail list<br><br=
->I am trying to port the driver for PLX9030 PCI host chip based add-on card=
- from&nbsp; x86&nbsp; to PPC7410 arch<br><br>the following function functio=
-n returns NULL<br><a href=3D"http://tomoyo.sourceforge.jp/cgi-bin/lxr/ident=
-?a=3Dppc;i=3Dpci_get_device">pci_get_device</a>(<span style=3D"text-decorat=
-ion: underline;">0x10b5</span><a href=3D"http://tomoyo.sourceforge.jp/cgi-b=
-in/lxr/ident?a=3Dppc;i=3Dvendor"></a>, <span style=3D"text-decoration: unde=
-rline;">0x9030</span><a href=3D"http://tomoyo.sourceforge.jp/cgi-bin/lxr/id=
-ent?a=3Dppc;i=3Ddevice"></a>, NULL)<br><br>vendor ID given for PLX is 0x10b=
-5<br>device ID is 0x9030<br><br>These values worked&nbsp; and the module fo=
-und the device in x86 platform,<br><br>But the same code is complied and in=
-serted on PPC7410 platform, the modules failed to detect the device<br><br>=
-Is there any Endianness
- conversion to be performed before passing the values to pci_get_device()&n=
-bsp; in hex format ?<br>&nbsp;<br>I am using linux 2.6.24 kernel and <br>wh=
-ile make-ing&nbsp; the module ,ko file for PPC7410 using cross_complier gcc=
-_74xx-<br>there was a WARNING message "struct_module undefined "<br>But it =
-is possible to insert the module in the&nbsp; kernel running on PPC7410, wh=
-ich then printk 's the message when pci_get_device() returns NULL<br><br>ca=
-n anyone help?<br>thnaks --vivek<br></td></tr></table><br>=0A=0A      
---0-687035471-1281197194=:74573--
+Thanks,
+Anatolij
