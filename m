@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id DCE27B6EED
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 Aug 2010 08:49:27 +1000 (EST)
-Subject: Re: Relocating bootwrapper causes kernel panic
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20100805134654.70f8f787@schlenkerla.am.freescale.net>
-References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
-	<AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
-	<AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
-	<20100805123725.63d009b1@schlenkerla.am.freescale.net>
-	<AANLkTinqLCvRii4zCArHG=whHa0H6bparf=5sUkGDUTw@mail.gmail.com>
-	<20100805134654.70f8f787@schlenkerla.am.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 07 Aug 2010 08:49:18 +1000
-Message-ID: <1281134958.2168.39.camel@pasglop>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id CC693B70A4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat,  7 Aug 2010 10:01:29 +1000 (EST)
+Date: Sat, 7 Aug 2010 10:01:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] powerpc: fix i8042 module build error
+Message-Id: <20100807100123.886d3a1e.sfr@canb.auug.org.au>
+In-Reply-To: <20100806183839.32149.6238.stgit@angua>
+References: <20100806183839.32149.6238.stgit@angua>
 Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__7_Aug_2010_10_01_23_+1000_h7yU75tYK415Jix7"
+Cc: martyn.welch@ge.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-\
-> Probably.  You won't have any page tables yet, much less an entry for
-> the device tree.
-> 
-> > >> I think the cause is clear now. But how to fix it? Two questions:
-> > >> 2. If the DTLB miss exception handler is not the right guy to load a
-> > >> proper TLB entry, how can I set one entry based on the link_address
-> > >> and the address of the flat dt blob?
-> > >
-> > > Given how early in the boot process it is, it's probably going to need
-> > > to be handled specially.
-> > 
-> > What APIs can I use to set up DTLBs?
-> 
-> I don't think there is one that works on 8xx.  You'll could hack up
-> initial_mmu, or else write some C code to insert an 8xx TLB entry.
+--Signature=_Sat__7_Aug_2010_10_01_23_+1000_h7yU75tYK415Jix7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yup, I think he just ends up getting out of the initial mapping which is
-smallish on 8xx, no ? Might be worth sticking in one more entry during
-boot...
+Hi Grant,
 
-Ben.
+On Fri, 06 Aug 2010 12:42:12 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> of_i8042_{kbd,aux}_irq needs to be exported
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>=20
+> Stephen and Ben, this fixes up the build error in linux-next.  If you pre=
+fer,
+> I can stuff this patch into my next-powerpc branch.  Ben, I've got other
+> commits in that branch that I'll be sending to you early next week anyway.
+
+This failure also exists in Linus' tree, so the earlier this goes to
+Linus the better.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__7_Aug_2010_10_01_23_+1000_h7yU75tYK415Jix7
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMXKJTAAoJEDMEi1NhKgbsrzwH/1ZVxTjt9f3v9ETaRAEmLDro
+fw0rdgvEOmJvEhteuNiSugY4zZddc45uy9yssPOV8sZHmzOiGFzoyFOaGPzE7jZU
+c+o917LCUysUaGNuLk9j1tX4lY2jjMMGUpHbivAvUdaZEdZ8YKVzx5w4o7r/tP1K
+7Ate55zuCY+4NS39knWWkblgtn500jIFC1GDXiMO0YcCRUkTGmiVFowJ7hm49771
+aYmDzjaOO9HQUM/l6G4HKvnwjxaC8sCL+xOE59aDh9a1bDuTV365kn67ZutREUGi
+hO5MY9WK1esh30xO/30wUVcX7xo9PHZo/RJHULRKF1hOtpP/Ps6ZTjqQfAgXObE=
+=5LVf
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__7_Aug_2010_10_01_23_+1000_h7yU75tYK415Jix7--
