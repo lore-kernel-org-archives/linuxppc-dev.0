@@ -1,16 +1,19 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 954DAB70CE
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 16:37:02 +1000 (EST)
-Received: by eyh6 with SMTP id 6so11395003eyh.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 08 Aug 2010 23:37:01 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
 MIME-Version: 1.0
-Date: Sun, 8 Aug 2010 23:37:00 -0700
-Message-ID: <AANLkTinjLBPG9YfpoDnSoKeGvUO2OEjdTXrYLTZ9c8LB@mail.gmail.com>
-Subject: mpc870: hctosys.c unable to open rtc device rtc0
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <F9BD3E0A8083BE4ABAA94D7EDD7E3F6310925F@zch01exm26.fsl.freescale.net>
+References: <AANLkTimm7G--LQHYBqPB1YCXQb7fSXPDaYsLq0p30DG1@mail.gmail.com>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F63109216@zch01exm26.fsl.freescale.net>
+	<AANLkTi=3MQBSd_phbSZnRA-wFB7cfa4U_PKND+BgZVhd@mail.gmail.com>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F6310925F@zch01exm26.fsl.freescale.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 9 Aug 2010 01:12:04 -0600
+Message-ID: <AANLkTinQnFBcLiDyQtRRwzdAg_M48BnNsa2OyKWCiSUh@mail.gmail.com>
+Subject: Re: Review Request: New proposal for device tree clock binding.
+To: Li Yang-R58472 <r58472@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,70 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A DS1339 RTC is connected to the I2C bus (i2c-cpm in mpc870). The
-dmesg below shows that the ds1037 driver was registered. But the
-hctosys.c was not able to open the rtc device rtc0. The rtc doesn't
-seem to be connected with I2C driver properly.
+On Mon, Aug 9, 2010 at 1:05 AM, Li Yang-R58472 <r58472@freescale.com> wrote=
+:
+>>>><tt>*-clock</tt> is named for the signal name for the ''clock input''
+>>>>of the device. it should describe the function of the signal for that
+>>>>device, rather than the name of the system-wide clock line. For
+>>>>example, a UART with two clocks - one for baud-rate clocking, and the
+>>>>other for register clocking - may have clock input properties named
+>>>>"baud-clock" and "register-clock". =A0The property value is a tuple
+>>>>containing the phandle to the clock provider and the name of the clock
+>>output signal.
+>>>>
+>>>>For example:
+>>>>
+>>>> =A0 =A0uart {
+>>>> =A0 =A0 =A0 =A0baud-clock =3D <&osc>, "ckil";
+>>>> =A0 =A0 =A0 =A0register-clock =3D <&ref>, "bus";
+>>>> =A0 =A0};
+>>>>
+>>>>
+>>>>This represents a device with two clock inputs, named "baud" and
+>>>>"register". The baud clock is connected to the "ckil" output of the
+>>"osc"
+>>>>device, and the register clock is connected to the "bus" output of the
+>>>>"ref" device.
+>>>
+>>>
+>>> Instead of having two items to identify a clock, I would suggest to hav=
+e
+>>a node for each clock. =A0So that clock can be referenced by one
+>>handle. =A0Also we can have clock specific information defined in the clo=
+ck
+>>node. =A0Here is the example I am planning to use on 85xx PMC.
+>>>
+>>>
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0power@e0070{
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc8=
+548-pmc",
+>>> "fsl,p2020-pmc";
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0xe0070 0x20>;
+>>>
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec1_clk: soc-clk@24{
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,pmcd=
+r-mask =3D <0x00000080>;
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec2_clk: soc-clk@25{
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,pmcd=
+r-mask =3D <0x00000040>;
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec3_clk: soc-clk@26{
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,pmcd=
+r-mask =3D <0x00000020>;
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>>>
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0enet0: ethernet@24000 {
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0......
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0master-clock =3D <&etsec=
+1_clk>;
+>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0......
+>>>
+>>>
+>>> What do you think?
+>
+> Quoting your reply:
+>
+>> I've avoided requiring clock nodes to have a separate sub node for
+>> each output because it is more verbose and it prevents clock providers
+>> from having child nodes for other purposes. =A0Are you concerned that
+>
+> I don't see why there should be child nodes for other purposes under cloc=
+k node.
+>
+>> having the <phandle>+output name pair will be difficult to manage?
+>
+> That's part of my concern.
 
-i2c-core: driver [rtc-ds1307] registered
-i2c /dev entries driver
-i2c-core: driver [dev_driver] registered
-fsl-i2c-cpm fa200860.i2c: cpm_i2c_setup()
-  alloc irq_desc for 21 on node 0
-  alloc kstat_irqs on node 0
-irq: irq 16 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
-mapped to virtual irq 21
-fsl-i2c-cpm fa200860.i2c: i2c_ram 0xfddfbc80, i2c_addr 0x1c80, freq 60000
-fsl-i2c-cpm fa200860.i2c: tbase 0x0340, rbase 0x0360
-i2c i2c-0: adapter [i2c-cpm] registered
-i2c-dev: adapter [i2c-cpm] registered as minor 0
-fsl-i2c-cpm fa200860.i2c: hw routines for i2c-cpm registered.
-i2c-core: driver [lm75] registered
-TCP cubic registered
-NET: Registered protocol family 17
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+I was concerned about this too until I found precedence for doing the
+exact same thing in the pci binding (and ePAPR).  Mixing phandle and a
+string in this way doesn't bother me anymore.
 
-My I2C settings in the dts is as follows, same as the mpc885ads.
+> =A0But my main concern is the inability of describing the properties of e=
+ach clock in the device tree. =A0The clock stuff is much SoC related, which=
+ means it could be variable among chips even in a same family. =A0Having cl=
+ock properties defined in device tree will make it easier to have an abstra=
+cted driver to handle clock operations. =A0That's why device trees are used=
+ in the first place, right?
 
-                        i2c@860 {
-                                compatible = "fsl,mpc885-i2c",
-                                             "fsl,cpm1-i2c";
-                                reg = <0x860 0x20 0x3c80 0x30>;
-                                interrupts = <16>;
-                                interrupt-parent = <&CPM_PIC>;
-                                fsl,cpm-command = <0x10>;
-                                #address-cells = <1>;
-                                #size-cells = <0>;
-                        };
+You can do whatever you like for your specific clock source driver.
+All the clock binding provides is a connection from a clock consumer
+node to a specific named output from a clock provider node.  You can
+add whatever properties (or subnodes) you need for the hardware you
+are writing a binding for.  This binding doesn't prevent you from
+doing anything.
 
-Reading the fsl i2c bindings in the documentation, I found an example
-as follows.
-  27      i2c@860 {
-  28                compatible = "fsl,mpc823-i2c",
-  29                             "fsl,cpm1-i2c";
-  30                reg = <0x860 0x20 0x3c80 0x30>;
-  31                interrupts = <16>;
-  32                interrupt-parent = <&CPM_PIC>;
-  33                fsl,cpm-command = <0x10>;
-  34                #address-cells = <1>;
-  35                #size-cells = <0>;
-  36
-  37                rtc@68 {
-  38                        compatible = "dallas,ds1307";
-  39                        reg = <0x68>;
-  40                };
-  41        };
-  42
+g.
 
-In the above example the rtc was explicitly declared as a subnode of
-the i2c node. Is this the way to connect (or bind) a RTC to the I2C
-driver? If not how is an RTC driver (or hwmon driver) bound to the I2C
-driver? What is the reg (0x68) under rtc node?
-
-I set breakpoint at ds1037_probe() and was hoping that it might be hit
-during the driver registration. But it didn't. Would the
-ds1037_probe() be called during when the ds1037_driver was registered
-as an I2C driver?
-
-Thanks,
--Shawn.
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
