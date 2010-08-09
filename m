@@ -1,21 +1,30 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-bw0-f42.google.com (mail-bw0-f42.google.com
-	[209.85.214.42]) by ozlabs.org (Postfix) with ESMTP id 7D7C8B70A6
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 03:43:40 +1000 (EST)
-Received: by bwz17 with SMTP id 17so2421842bwz.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 10:43:38 -0700 (PDT)
-Date: Mon, 9 Aug 2010 21:43:33 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for eSDHC driver
-Message-ID: <20100809174333.GC7665@oksana.dev.rtsoft.ru>
-References: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
-	<AANLkTinJKO3-iXOXuL7CMWCj5qMMHyMrtnadwPpqTeBu@mail.gmail.com>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 3808BB70A8
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 03:53:33 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e3.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79Hc5bh001655
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 13:38:05 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o79Hr4KS125526
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 13:53:04 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o79Hr2ku030947
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:53:04 -0300
+Message-ID: <4C60407C.2080608@austin.ibm.com>
+Date: Mon, 09 Aug 2010 12:53:00 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AANLkTinJKO3-iXOXuL7CMWCj5qMMHyMrtnadwPpqTeBu@mail.gmail.com>
-Cc: linux-mmc@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	akpm@linux-foundation.org
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/8] v5 De-couple sysfs memory directories from memory sections
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +34,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 04, 2010 at 07:02:56PM -0600, Grant Likely wrote:
-> On Mon, Aug 2, 2010 at 9:11 PM, Roy Zang <tie-fei.zang@freescale.com> wrote:
-> > From: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> >
-> > Add auto CMD12 command support for eSDHC driver.
-> > This is needed by P4080 and P1022 for block read/write.
-> > Manual asynchronous CMD12 abort operation causes protocol violations on
-> > these silicons.
-> >
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> > ---
-> >  drivers/mmc/host/sdhci-of-core.c |    4 ++++
-> >  drivers/mmc/host/sdhci.c         |   14 ++++++++++++--
-> >  drivers/mmc/host/sdhci.h         |    2 ++
-> >  3 files changed, 18 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> > index c6d1bd8..a92566e 100644
-> > --- a/drivers/mmc/host/sdhci.c
-> > +++ b/drivers/mmc/host/sdhci.c
-> > @@ -817,8 +817,12 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
-> >        WARN_ON(!host->data);
-> >
-> >        mode = SDHCI_TRNS_BLK_CNT_EN;
-> > -       if (data->blocks > 1)
-> > -               mode |= SDHCI_TRNS_MULTI;
-> > +       if (data->blocks > 1) {
-> > +               if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
-> > +                       mode |= SDHCI_TRNS_MULTI | SDHCI_TRNS_ACMD12;
-> > +               else
-> > +                       mode |= SDHCI_TRNS_MULTI;
-> 
-> nit:
-> +               mode |= SDHCI_TRNS_MULTI;
-> +               if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
-> +                       mode |= SDHCI_TRNS_ACMD12;
-> 
-> Clearer, no?
+This set of patches de-couples the idea that there is a single
+directory in sysfs for each memory section.  The intent of the
+patches is to reduce the number of sysfs directories created to
+resolve a boot-time performance issue.  On very large systems
+boot time are getting very long (as seen on powerpc hardware)
+due to the enormous number of sysfs directories being created.
+On a system with 1 TB of memory we create ~63,000 directories.
+For even larger systems boot times are being measured in hours.
 
-Much clearer. I would prefer the nit incorporated.
+This set of patches allows for each directory created in sysfs
+to cover more than one memory section.  The default behavior for
+sysfs directory creation is the same, in that each directory
+represents a single memory section.  A new file 'end_phys_index'
+in each directory contains the physical_id of the last memory
+section covered by the directory so that users can easily
+determine the memory section range of a directory.
 
-Another nit:
+Updates for version 5 of the patchset include the following:
 
-> @@ -154,6 +154,10 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
->                 host->ops = &sdhci_of_data->ops;
->         }
-> 
-> +       if (of_get_property(np, "sdhci,auto-cmd12", NULL))
-> +               host->quirks |= SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12;
-> +
-> +      
+Patch 4/8 Add mutex for add/remove of memory blocks
+- Define the mutex using DEFINE_MUTEX macro.
 
-^^ No need for the two empty lines.
+Patch 8/8 Update memory-hotplug documentation
+- Add information concerning memory holes in phys_index..end_phys_index.
+ 
+Thanks,
 
->        if (of_get_property(np, "sdhci,1-bit-only", NULL))
-
-Though, technically the patch looks OK, feel free to add my
-
-  Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
-
-on the next resend (if any).
-
-Thanks Roy!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Nathan Fontenot
