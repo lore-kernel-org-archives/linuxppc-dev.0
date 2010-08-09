@@ -1,22 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
-	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id C3E97B6EF7
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 15:50:45 +1000 (EST)
-Received: by gyh4 with SMTP id 4so5896915gyh.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 08 Aug 2010 22:50:44 -0700 (PDT)
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 27AF9B6EDD
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 15:55:42 +1000 (EST)
+Received: by eyh6 with SMTP id 6so11383535eyh.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 08 Aug 2010 22:55:40 -0700 (PDT)
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60AEA19@zch01exm23.fsl.freescale.net>
-References: <AANLkTinJKO3-iXOXuL7CMWCj5qMMHyMrtnadwPpqTeBu@mail.gmail.com>
-	<3850A844E6A3854C827AC5C0BEC7B60AEA19@zch01exm23.fsl.freescale.net>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 8 Aug 2010 23:50:24 -0600
-Message-ID: <AANLkTimOtWeDNewWfoCteJW7UN2cCrY-SPv7h6qsTL_-@mail.gmail.com>
-Subject: Re: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for eSDHC driver
-To: Zang Roy-R61911 <r61911@freescale.com>
+In-Reply-To: <1281134958.2168.39.camel@pasglop>
+References: <AANLkTi=x-EA59xfn_r5xMuJL6mufObSvSSEOeY9KTjQS@mail.gmail.com>
+	<AANLkTin3u=U-L2grncS_UtWqkGnb9bNUy4a4nqkRhQQ9@mail.gmail.com>
+	<AANLkTikS3f8q+Kuq8aYX1vhRotfSMHN_S+qKPwrfDn2j@mail.gmail.com>
+	<20100805123725.63d009b1@schlenkerla.am.freescale.net>
+	<AANLkTinqLCvRii4zCArHG=whHa0H6bparf=5sUkGDUTw@mail.gmail.com>
+	<20100805134654.70f8f787@schlenkerla.am.freescale.net>
+	<1281134958.2168.39.camel@pasglop>
+Date: Sun, 8 Aug 2010 22:55:40 -0700
+Message-ID: <AANLkTikkRTNU=HWdpvTH-PryeL1mfA12HHFjkXUO8zaU@mail.gmail.com>
+Subject: Re: Relocating bootwrapper causes kernel panic
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org
+Cc: Scott Wood <scottwood@freescale.com>, ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 4, 2010 at 8:14 PM, Zang Roy-R61911 <r61911@freescale.com> wrot=
-e:
->> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
->> > index c6d1bd8..a92566e 100644
->> > --- a/drivers/mmc/host/sdhci.c
->> > +++ b/drivers/mmc/host/sdhci.c
->> > @@ -817,8 +817,12 @@ static void
->> sdhci_set_transfer_mode(struct sdhci_host *host,
->> > =A0 =A0 =A0 =A0WARN_ON(!host->data);
+>> > >> I think the cause is clear now. But how to fix it? Two questions:
+>> > >> 2. If the DTLB miss exception handler is not the right guy to load =
+a
+>> > >> proper TLB entry, how can I set one entry based on the link_address
+>> > >> and the address of the flat dt blob?
+>> > >
+>> > > Given how early in the boot process it is, it's probably going to ne=
+ed
+>> > > to be handled specially.
 >> >
->> > =A0 =A0 =A0 =A0mode =3D SDHCI_TRNS_BLK_CNT_EN;
->> > - =A0 =A0 =A0 if (data->blocks > 1)
->> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MULTI;
->> > + =A0 =A0 =A0 if (data->blocks > 1) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->quirks &
->> SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MUL=
-TI |
->> SDHCI_TRNS_ACMD12;
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MUL=
-TI;
+>> > What APIs can I use to set up DTLBs?
 >>
->> nit:
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MULTI;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_=
-READ_ACMD12)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_ACMD1=
-2;
->>
->> Clearer, no?
-> why?
+>> I don't think there is one that works on 8xx. =A0You'll could hack up
+>> initial_mmu, or else write some C code to insert an 8xx TLB entry.
+>
+> Yup, I think he just ends up getting out of the initial mapping which is
+> smallish on 8xx, no ? Might be worth sticking in one more entry during
+> boot...
 
-Shorter lines, fewer lines, and the SDHCI_TRNS_MULTI is more obviously
-unconditional.  But as I said, it is a nitpick.
+If CONFIG_PIN_TLB is on, two more entries are pinned down, which gives
+16MB mappings. Just curious. Why is there only one entry by default?
+what's the trade-off to pin down all 4 entries?
 
-g.
+THanks,
+-Shawn.
