@@ -1,21 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 36804B6EEE
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 14:39:32 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1281327087.2168.67.camel@pasglop>
-References: <1281327087.2168.67.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 09 Aug 2010 14:39:23 +1000
-Message-ID: <1281328763.2168.72.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <R58472@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="Windows-1252"
+Subject: RE: Review Request: New proposal for device tree clock binding.
+Date: Mon, 9 Aug 2010 12:50:05 +0800
+Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F63109216@zch01exm26.fsl.freescale.net>
+References: <AANLkTimm7G--LQHYBqPB1YCXQb7fSXPDaYsLq0p30DG1@mail.gmail.com> 
+From: Li Yang-R58472 <r58472@freescale.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"devicetree-discuss" <devicetree-discuss@ozlabs.org>,
+	"Jeremy Kerr" <jk@ozlabs.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,168 +20,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2010-08-09 at 14:11 +1000, Benjamin Herrenschmidt wrote:
-> Hi Linus !
-> 
-> Here's a few misc things for .36. The big bit is that I trimmed all the
-> defconfigs using make savedefconfig.
-> 
-> Then there's a revert for a change to the appletouch driver that went
-> in .34 but broke quite a few powerbooks around. Since the original
-> problem this was trying to address is fairly minor and the "fix" 
-> completely breaks a number of devices, I decided to send you a revert
-> for now until we sort it out.
-> 
-> Finally, a couple of 52xx embedded bits from Grant that he forgot
-> last time around and a build fix.
+It looks like the previous sending didn't hit the mailing list.  Resend.
 
-Just added one more commit:
+Hi Grant,
 
-Sam Ravnborg (1):
-      powerpc: fix build with make 3.82
+I have some comment on this proposal.
 
-Which adds:
+>Subject: Review Request: New proposal for device tree clock binding.
+>
+>Hi Ben (well, hello to everyone, but I'm particularly interested in=20
+>Ben's feedback),
+>
+>Jeremy and I have been kicking around the clock binding, and we've come =
 
- arch/powerpc/Makefile                             |   16 +-
+>up with a new proposal that doesn't feel quite as forced to me.
+>Please take a look and let me know what you think.  The link to the=20
+>binding is below[1], but I've also copied the full text so that you can =
 
-And changes:
+>reply and comment.  The rational for the new binding can be found in=20
+>talk page[2].
+>
+>[1] http://www.devicetree.org/ClockBindings
+>[2] http://www.devicetree.org/Talk:ClockBindings
+>
+>---
+>
+>This page descibes the proposed OF clock bindings. These are a work-in- =
 
- 109 files changed, 282 insertions(+), 134613 deletions(-)
+>progress, and are based on some=20
+>[http://patchwork.ozlabs.org/patch/31551/
+>experimental work by benh].
+>
+>=3D=3DClock providers=3D=3D
+>
+>Sources of clock signal can be represented by any node in the device =
+tree.
+>A mandatory "<tt>clock-outputs</tt>" property describes the clock=20
+>outputs from this device.
+>
+>{|border=3D1
+>!property
+>!format
+>!notes
+>|-
+>|<tt>clock-outputs</tt>
+>|list of strings
+>|specifies output clock signal names.
+>|}
+>
+>For example:
+>
+>    oscillator {
+>        clock-outputs =3D "ckil", "ckih";
+>    };
+>
+>- this node defines a device with two clock outputs, the first named=20
+>"ckil" and the second named "ckih".  Consumer nodes always reference=20
+>clocks by name.  The names should reflect the clock output signal names =
 
-Cheers,
-Ben.
+>for the device.
+>
+>=3D=3DClock consumers=3D=3D
+>
+>A device connected to a clock signal needs a *-clock property for each=20
+>clock that it is connected to.
+>
+>{|border=3D1
+>!property
+>!format
+>!notes
+>|-
+>|<tt>*-clock</tt>
+>|1 cell phandle to the clock provider, followed by a string containing
+>the clock output name.
+>|The name of this property should be the name of the clock input
+>signal with a "-clock" suffix.
+>|}
+>
+><tt>*-clock</tt> is named for the signal name for the ''clock input''
+>of the device. it should describe the function of the signal for that=20
+>device, rather than the name of the system-wide clock line. For=20
+>example, a UART with two clocks - one for baud-rate clocking, and the=20
+>other for register clocking - may have clock input properties named=20
+>"baud-clock" and "register-clock".  The property value is a tuple=20
+>containing the phandle to the clock provider and the name of the clock =
+output signal.
+>
+>For example:
+>
+>    uart {
+>        baud-clock =3D <&osc>, "ckil";
+>        register-clock =3D <&ref>, "bus";
+>    };
+>
+>
+>This represents a device with two clock inputs, named "baud" and=20
+>"register". The baud clock is connected to the "ckil" output of the =
+"osc"
+>device, and the register clock is connected to the "bus" output of the=20
+>"ref" device.
 
-> Cheers,
-> Ben.
-> 
-> The following changes since commit 45d7f32c7a43cbb9592886d38190e379e2eb2226:
->   Linus Torvalds (1):
->         Merge git://git.kernel.org/.../cmetcalf/linux-tile
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-> 
-> Benjamin Herrenschmidt (4):
->       powerpc: Trim defconfigs
->       memblock: Fix memblock_is_region_reserved() to return a boolean
->       Merge remote branch 'gcl/next' into next
->       Revert "Input: appletouch - fix integer overflow issue"
-> 
-> Eric Millbrandt (2):
->       powerpc/5200: add mpc5200_psc_ac97_gpio_reset
->       sound/soc: mpc5200_psc_ac97: Use gpio pins for cold reset
-> 
-> Grant Likely (1):
->       powerpc: fix i8042 module build error
-> 
->  arch/powerpc/configs/40x/acadia_defconfig         | 1003 +----------
->  arch/powerpc/configs/40x/ep405_defconfig          | 1212 +------------
->  arch/powerpc/configs/40x/hcu4_defconfig           | 1065 +----------
->  arch/powerpc/configs/40x/kilauea_defconfig        | 1198 +-----------
->  arch/powerpc/configs/40x/makalu_defconfig         | 1006 +----------
->  arch/powerpc/configs/40x/virtex_defconfig         | 1107 +-----------
->  arch/powerpc/configs/40x/walnut_defconfig         | 1090 +----------
->  arch/powerpc/configs/44x/arches_defconfig         | 1060 +----------
->  arch/powerpc/configs/44x/bamboo_defconfig         | 1021 +----------
->  arch/powerpc/configs/44x/canyonlands_defconfig    | 1264 +------------
->  arch/powerpc/configs/44x/ebony_defconfig          | 1104 +-----------
->  arch/powerpc/configs/44x/eiger_defconfig          | 1176 +-----------
->  arch/powerpc/configs/44x/icon_defconfig           | 1334 +-------------
->  arch/powerpc/configs/44x/iss476-smp_defconfig     |  938 +---------
->  arch/powerpc/configs/44x/katmai_defconfig         | 1089 +----------
->  arch/powerpc/configs/44x/rainier_defconfig        | 1091 +----------
->  arch/powerpc/configs/44x/redwood_defconfig        | 1167 +-----------
->  arch/powerpc/configs/44x/sam440ep_defconfig       | 1320 +-------------
->  arch/powerpc/configs/44x/sequoia_defconfig        | 1112 +-----------
->  arch/powerpc/configs/44x/taishan_defconfig        | 1098 +-----------
->  arch/powerpc/configs/44x/virtex5_defconfig        | 1113 +-----------
->  arch/powerpc/configs/44x/warp_defconfig           | 1389 +-------------
->  arch/powerpc/configs/52xx/cm5200_defconfig        | 1232 +------------
->  arch/powerpc/configs/52xx/lite5200b_defconfig     | 1257 +------------
->  arch/powerpc/configs/52xx/motionpro_defconfig     | 1265 +------------
->  arch/powerpc/configs/52xx/pcm030_defconfig        | 1220 +------------
->  arch/powerpc/configs/52xx/tqm5200_defconfig       | 1367 +-------------
->  arch/powerpc/configs/83xx/asp8347_defconfig       | 1433 +--------------
->  arch/powerpc/configs/83xx/kmeter1_defconfig       |  929 +---------
->  arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   | 1729 +----------------
->  arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   | 1798 +-----------------
->  arch/powerpc/configs/83xx/mpc832x_mds_defconfig   | 1329 +-------------
->  arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   | 1476 +--------------
->  arch/powerpc/configs/83xx/mpc834x_itx_defconfig   | 1568 +---------------
->  arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig | 1454 +--------------
->  arch/powerpc/configs/83xx/mpc834x_mds_defconfig   | 1263 +------------
->  arch/powerpc/configs/83xx/mpc836x_mds_defconfig   | 1404 +-------------
->  arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   | 1305 +------------
->  arch/powerpc/configs/83xx/mpc837x_mds_defconfig   | 1334 +-------------
->  arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   | 1472 +--------------
->  arch/powerpc/configs/83xx/sbc834x_defconfig       | 1398 +-------------
->  arch/powerpc/configs/85xx/ksi8560_defconfig       | 1117 -----------
->  arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |  992 +----------
->  arch/powerpc/configs/85xx/mpc8560_ads_defconfig   | 1137 -----------
->  arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   | 1155 +-----------
->  arch/powerpc/configs/85xx/sbc8548_defconfig       | 1003 +----------
->  arch/powerpc/configs/85xx/sbc8560_defconfig       | 1029 +----------
->  arch/powerpc/configs/85xx/socrates_defconfig      | 1643 ----------------
->  arch/powerpc/configs/85xx/stx_gp3_defconfig       | 1528 +--------------
->  arch/powerpc/configs/85xx/tqm8540_defconfig       | 1317 -------------
->  arch/powerpc/configs/85xx/tqm8541_defconfig       | 1363 -------------
->  arch/powerpc/configs/85xx/tqm8548_defconfig       | 1355 +-------------
->  arch/powerpc/configs/85xx/tqm8555_defconfig       | 1363 -------------
->  arch/powerpc/configs/85xx/tqm8560_defconfig       | 1363 -------------
->  arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   | 1784 +-----------------
->  arch/powerpc/configs/86xx/gef_ppc9a_defconfig     | 1733 ----------------
->  arch/powerpc/configs/86xx/gef_sbc310_defconfig    | 1622 ---------------
->  arch/powerpc/configs/86xx/gef_sbc610_defconfig    | 1815 -----------------
->  arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  | 1632 +---------------
->  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  | 1639 +---------------
->  arch/powerpc/configs/86xx/sbc8641d_defconfig      | 1428 --------------
->  arch/powerpc/configs/adder875_defconfig           |  912 ---------
->  arch/powerpc/configs/amigaone_defconfig           | 1492 +--------------
->  arch/powerpc/configs/c2k_defconfig                | 1622 ---------------
->  arch/powerpc/configs/cell_defconfig               | 1317 +------------
->  arch/powerpc/configs/celleb_defconfig             | 1197 +-----------
->  arch/powerpc/configs/chrp32_defconfig             | 1471 +--------------
->  arch/powerpc/configs/ep8248e_defconfig            | 1120 +-----------
->  arch/powerpc/configs/ep88xc_defconfig             |  859 +--------
->  arch/powerpc/configs/g5_defconfig                 | 1551 +---------------
->  arch/powerpc/configs/gamecube_defconfig           |  948 +---------
->  arch/powerpc/configs/holly_defconfig              |  881 +---------
->  arch/powerpc/configs/iseries_defconfig            | 1058 +----------
->  arch/powerpc/configs/linkstation_defconfig        | 1782 +-----------------
->  arch/powerpc/configs/maple_defconfig              | 1373 +-------------
->  arch/powerpc/configs/mgcoge_defconfig             | 1160 +-----------
->  arch/powerpc/configs/mgsuvd_defconfig             |  936 ---------
->  arch/powerpc/configs/mpc512x_defconfig            | 1559 +---------------
->  arch/powerpc/configs/mpc5200_defconfig            | 1849 +-----------------
->  arch/powerpc/configs/mpc7448_hpc2_defconfig       | 1195 +-----------
->  arch/powerpc/configs/mpc8272_ads_defconfig        | 1185 +-----------
->  arch/powerpc/configs/mpc83xx_defconfig            | 1663 +----------------
->  arch/powerpc/configs/mpc85xx_defconfig            | 1689 +----------------
->  arch/powerpc/configs/mpc85xx_smp_defconfig        | 1693 +----------------
->  arch/powerpc/configs/mpc866_ads_defconfig         |  949 ---------
->  arch/powerpc/configs/mpc86xx_defconfig            | 1679 +----------------
->  arch/powerpc/configs/mpc885_ads_defconfig         |  864 +--------
->  arch/powerpc/configs/pasemi_defconfig             | 1931 +------------------
->  arch/powerpc/configs/pmac32_defconfig             | 1886 +------------------
->  arch/powerpc/configs/ppc40x_defconfig             | 1332 +-------------
->  arch/powerpc/configs/ppc44x_defconfig             | 1471 +--------------
->  arch/powerpc/configs/ppc64_defconfig              | 1726 +----------------
->  arch/powerpc/configs/ppc64e_defconfig             | 1803 +-----------------
->  arch/powerpc/configs/ppc6xx_defconfig             | 2189 +--------------------
->  arch/powerpc/configs/pq2fads_defconfig            | 1304 +------------
->  arch/powerpc/configs/prpmc2800_defconfig          | 1675 +----------------
->  arch/powerpc/configs/ps3_defconfig                | 1334 +-------------
->  arch/powerpc/configs/pseries_defconfig            | 1456 +--------------
->  arch/powerpc/configs/storcenter_defconfig         | 1305 +------------
->  arch/powerpc/configs/tqm8xx_defconfig             |  850 +--------
->  arch/powerpc/configs/wii_defconfig                | 1265 +------------
->  arch/powerpc/include/asm/mpc52xx.h                |    1 +
->  arch/powerpc/include/asm/mpc52xx_psc.h            |    1 +
->  arch/powerpc/kernel/setup-common.c                |    2 +
->  arch/powerpc/platforms/52xx/mpc52xx_common.c      |  106 +
->  drivers/input/mouse/appletouch.c                  |    6 +-
->  mm/memblock.c                                     |    2 +-
->  sound/soc/fsl/mpc5200_psc_ac97.c                  |   22 +-
->  108 files changed, 270 insertions(+), 134609 deletions(-)
-> 
+
+Instead of having two items to identify a clock, I would suggest to have =
+a node for each clock.  So that clock can be referenced by one handle.  =
+Also we can have clock specific information defined in the clock node.  =
+Here is the example I am planning to use on 85xx PMC.
+
+
+                power@e0070{
+                        compatible =3D "fsl,mpc8548-pmc", =
+"fsl,p2020-pmc";
+                        reg =3D <0xe0070 0x20>;
+
+                        etsec1_clk: soc-clk@24{
+                                fsl,pmcdr-mask =3D <0x00000080>;
+                        };
+                        etsec2_clk: soc-clk@25{
+                                fsl,pmcdr-mask =3D <0x00000040>;
+                        };
+                        etsec3_clk: soc-clk@26{
+                                fsl,pmcdr-mask =3D <0x00000020>;
+                        };
+                };
+
+                enet0: ethernet@24000 {
+                  ......
+                        master-clock =3D <&etsec1_clk>;
+			......
+
+
+What do you think?
+
+- Leo
