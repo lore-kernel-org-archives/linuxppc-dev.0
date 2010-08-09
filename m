@@ -1,26 +1,26 @@
 Return-Path: <nfont@austin.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e7.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 19194B70D5
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 04:41:33 +1000 (EST)
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 37EDBB70DC
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 04:42:57 +1000 (EST)
 Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
-	by e7.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79IS8YX002634
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:28:08 -0400
+	by e5.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79IOKJT001614
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:24:20 -0400
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
 	by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o79IfV0W336186
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:41:31 -0400
+	o79IgpSM225828
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:42:51 -0400
 Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
 	by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o79IfUPC003370
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 15:41:30 -0300
-Message-ID: <4C604BD7.8020202@austin.ibm.com>
-Date: Mon, 09 Aug 2010 13:41:27 -0500
+	o79IglEb006841
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 15:42:48 -0300
+Message-ID: <4C604C25.4040607@austin.ibm.com>
+Date: Mon, 09 Aug 2010 13:42:45 -0500
 From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/8] v5  Update the node sysfs code
+Subject: [PATCH 7/8] v5  Define memory_block_size_bytes() for ppc/pseries
 References: <4C60407C.2080608@austin.ibm.com>
 In-Reply-To: <4C60407C.2080608@austin.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -36,92 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the node sysfs code to be aware of the new capability for a memory
-block to contain multiple memory sections.  This requires an additional
-parameter to unregister_mem_sect_under_nodes so that we know which memory
-section of the memory block to unregister.
+Define a version of memory_block_size_bytes() for powerpc/pseries such that
+a memory block spans an entire lmb.
 
 Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
 ---
- drivers/base/memory.c |    2 +-
- drivers/base/node.c   |   12 ++++++++----
- include/linux/node.h  |    6 ++++--
- 3 files changed, 13 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   66 +++++++++++++++++++-----
+ 1 file changed, 53 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/drivers/base/node.c
+Index: linux-2.6/arch/powerpc/platforms/pseries/hotplug-memory.c
 ===================================================================
---- linux-2.6.orig/drivers/base/node.c	2010-08-09 07:36:50.000000000 -0500
-+++ linux-2.6/drivers/base/node.c	2010-08-09 07:53:30.000000000 -0500
-@@ -346,8 +346,10 @@ int register_mem_sect_under_node(struct
- 		return -EFAULT;
- 	if (!node_online(nid))
- 		return 0;
--	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
--	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2010-08-09 07:36:49.000000000 -0500
++++ linux-2.6/arch/powerpc/platforms/pseries/hotplug-memory.c	2010-08-09 07:54:00.000000000 -0500
+@@ -17,6 +17,54 @@
+ #include <asm/pSeries_reconfig.h>
+ #include <asm/sparsemem.h>
+ 
++static u32 get_memblock_size(void)
++{
++	struct device_node *np;
++	unsigned int memblock_size = 0;
 +
-+	sect_start_pfn = section_nr_to_pfn(mem_blk->start_phys_index);
-+	sect_end_pfn = section_nr_to_pfn(mem_blk->end_phys_index);
-+	sect_end_pfn += PAGES_PER_SECTION - 1;
- 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
- 		int page_nid;
- 
-@@ -371,7 +373,8 @@ int register_mem_sect_under_node(struct
- }
- 
- /* unregister memory section under all nodes that it spans */
--int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
-+int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
-+				    unsigned long phys_index)
- {
- 	NODEMASK_ALLOC(nodemask_t, unlinked_nodes, GFP_KERNEL);
- 	unsigned long pfn, sect_start_pfn, sect_end_pfn;
-@@ -383,7 +386,8 @@ int unregister_mem_sect_under_nodes(stru
- 	if (!unlinked_nodes)
- 		return -ENOMEM;
- 	nodes_clear(*unlinked_nodes);
--	sect_start_pfn = section_nr_to_pfn(mem_blk->phys_index);
++	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (np) {
++		const unsigned long *size;
 +
-+	sect_start_pfn = section_nr_to_pfn(phys_index);
- 	sect_end_pfn = sect_start_pfn + PAGES_PER_SECTION - 1;
- 	for (pfn = sect_start_pfn; pfn <= sect_end_pfn; pfn++) {
- 		int nid;
-Index: linux-2.6/drivers/base/memory.c
-===================================================================
---- linux-2.6.orig/drivers/base/memory.c	2010-08-09 07:50:28.000000000 -0500
-+++ linux-2.6/drivers/base/memory.c	2010-08-09 07:53:30.000000000 -0500
-@@ -555,9 +555,9 @@ int remove_memory_block(unsigned long no
- 
- 	mutex_lock(&mem_sysfs_mutex);
- 	mem = find_memory_block(section);
-+	unregister_mem_sect_under_nodes(mem, __section_nr(section));
- 
- 	if (atomic_dec_and_test(&mem->section_count)) {
--		unregister_mem_sect_under_nodes(mem);
- 		mem_remove_simple_file(mem, phys_index);
- 		mem_remove_simple_file(mem, end_phys_index);
- 		mem_remove_simple_file(mem, state);
-Index: linux-2.6/include/linux/node.h
-===================================================================
---- linux-2.6.orig/include/linux/node.h	2010-08-09 07:36:50.000000000 -0500
-+++ linux-2.6/include/linux/node.h	2010-08-09 07:53:30.000000000 -0500
-@@ -44,7 +44,8 @@ extern int register_cpu_under_node(unsig
- extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
- extern int register_mem_sect_under_node(struct memory_block *mem_blk,
- 						int nid);
--extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk);
-+extern int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
-+					   unsigned long phys_index);
- 
- #ifdef CONFIG_HUGETLBFS
- extern void register_hugetlbfs_with_node(node_registration_func_t doregister,
-@@ -72,7 +73,8 @@ static inline int register_mem_sect_unde
++		size = of_get_property(np, "ibm,lmb-size", NULL);
++		memblock_size = size ? *size : 0;
++
++		of_node_put(np);
++	} else {
++		unsigned int memzero_size = 0;
++		const unsigned int *regs;
++
++		np = of_find_node_by_path("/memory@0");
++		if (np) {
++			regs = of_get_property(np, "reg", NULL);
++			memzero_size = regs ? regs[3] : 0;
++			of_node_put(np);
++		}
++
++		if (memzero_size) {
++			/* We now know the size of memory@0, use this to find
++			 * the first memoryblock and get its size.
++			 */
++			char buf[64];
++
++			sprintf(buf, "/memory@%x", memzero_size);
++			np = of_find_node_by_path(buf);
++			if (np) {
++				regs = of_get_property(np, "reg", NULL);
++				memblock_size = regs ? regs[3] : 0;
++				of_node_put(np);
++			}
++		}
++	}
++
++	return memblock_size;
++}
++
++u32 memory_block_size_bytes(void)
++{
++	return get_memblock_size();
++}
++
+ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
  {
- 	return 0;
- }
--static inline int unregister_mem_sect_under_nodes(struct memory_block *mem_blk)
-+static inline int unregister_mem_sect_under_nodes(struct memory_block *mem_blk,
-+						  unsigned long phys_index)
+ 	unsigned long start, start_pfn;
+@@ -127,30 +175,22 @@ static int pseries_add_memory(struct dev
+ 
+ static int pseries_drconf_memory(unsigned long *base, unsigned int action)
  {
- 	return 0;
+-	struct device_node *np;
+-	const unsigned long *lmb_size;
++	unsigned long memblock_size;
+ 	int rc;
+ 
+-	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+-	if (!np)
++	memblock_size = get_memblock_size();
++	if (!memblock_size)
+ 		return -EINVAL;
+ 
+-	lmb_size = of_get_property(np, "ibm,lmb-size", NULL);
+-	if (!lmb_size) {
+-		of_node_put(np);
+-		return -EINVAL;
+-	}
+-
+ 	if (action == PSERIES_DRCONF_MEM_ADD) {
+-		rc = memblock_add(*base, *lmb_size);
++		rc = memblock_add(*base, memblock_size);
+ 		rc = (rc < 0) ? -EINVAL : 0;
+ 	} else if (action == PSERIES_DRCONF_MEM_REMOVE) {
+-		rc = pseries_remove_memblock(*base, *lmb_size);
++		rc = pseries_remove_memblock(*base, memblock_size);
+ 	} else {
+ 		rc = -EINVAL;
+ 	}
+ 
+-	of_node_put(np);
+ 	return rc;
  }
+ 
