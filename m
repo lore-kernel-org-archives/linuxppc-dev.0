@@ -1,19 +1,34 @@
-Return-Path: <yanok@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C69EEB711C
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 22:58:53 +1000 (EST)
-Message-ID: <4C5FFB8A.20804@emcraft.com>
-Date: Mon, 09 Aug 2010 16:58:50 +0400
-From: Ilya Yanok <yanok@emcraft.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 7C805B6F14
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 23:56:47 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79Dibwu023901
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 07:44:37 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v9.1) with ESMTP id
+	o79Du44o099818
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 07:56:06 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o79DttSp026410
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 07:55:57 -0600
+Message-ID: <4C6008EA.8040601@austin.ibm.com>
+Date: Mon, 09 Aug 2010 08:55:54 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/fsl-pci: Fix MSI support on 83xx platforms
-References: <1280995347-6550-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1280995347-6550-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=windows-1251; format=flowed
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 4/9] v4  Add mutex for add/remove of memory blocks
+References: <4C581A6D.9030908@austin.ibm.com>	<4C581C26.5080007@austin.ibm.com>
+	<20100805135314.7229d07c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100805135314.7229d07c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  Hi Kumar,
+On 08/04/2010 11:53 PM, KAMEZAWA Hiroyuki wrote:
+> On Tue, 03 Aug 2010 08:39:50 -0500
+> Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> 
+>> Add a new mutex for use in adding and removing of memory blocks.  This
+>> is needed to avoid any race conditions in which the same memory block could
+>> be added and removed at the same time.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> 
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> But a nitpick (see below)
+> 
+>> ---
+>>  drivers/base/memory.c |    9 +++++++++
+>>  1 file changed, 9 insertions(+)
+>>
+>> Index: linux-2.6/drivers/base/memory.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/base/memory.c	2010-08-02 13:35:00.000000000 -0500
+>> +++ linux-2.6/drivers/base/memory.c	2010-08-02 13:45:34.000000000 -0500
+>> @@ -27,6 +27,8 @@
+>>  #include <asm/atomic.h>
+>>  #include <asm/uaccess.h>
+>>  
+>> +static struct mutex mem_sysfs_mutex;
+>> +
+> 
+> For static symbol of mutex, we usually do
+> 	static DEFINE_MUTEX(mem_sysfs_mutex);
+> 
+> Then, extra calls of mutex_init() is not required.
+> 
 
-05.08.2010 12:02, Kumar Gala wrote:
-> The following commit broke 83xx because it assumed the 83xx platforms
-> exposed the "IMMR" address in BAR0 like the 85xx/86xx/QoriQ devices do:
->
-> commit 3da34aae03d498ee62f75aa7467de93cce3030fd
-> Author: Kumar Gala<galak@kernel.crashing.org>
-> Date:   Tue May 12 15:51:56 2009 -0500
->
->      powerpc/fsl: Support unique MSI addresses per PCIe Root Complex
->
-> However that is not true, so we have to search through the inbound
-> window settings on 83xx to find which one matches the IMMR address to
-> determine its PCI address.
+ok,  fixed in the next version of the patches.
 
-As I've already told you my testing on the MPC8308RDB board was 
-successful. As for 85xx boards, Wolfgang told me that DENX doesn't have 
-any 85xx boards that support MSI at the moment, so I can't do complete 
-testing. I'm sorry. I've tested that TQM8560 board is able to boot and 
-PCI is working as expected though (with your patch applied). I fear I 
-can't do anything else here.
-
-Thanks.
-
-Regards, Ilya.
+-Nathan
