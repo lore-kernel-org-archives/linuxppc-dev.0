@@ -1,25 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from mail-gw0-f42.google.com (mail-gw0-f42.google.com [74.125.83.42])
-	by ozlabs.org (Postfix) with ESMTP id 01605B6EF1
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 15:31:53 +1000 (EST)
-Received: by gwj15 with SMTP id 15so5838374gwj.15
-	for <linuxppc-dev@ozlabs.org>; Sun, 08 Aug 2010 22:31:52 -0700 (PDT)
+Received: from mail-gy0-f170.google.com (mail-gy0-f170.google.com
+	[209.85.160.170]) by ozlabs.org (Postfix) with ESMTP id C3E97B6EF7
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 15:50:45 +1000 (EST)
+Received: by gyh4 with SMTP id 4so5896915gyh.15
+	for <linuxppc-dev@ozlabs.org>; Sun, 08 Aug 2010 22:50:44 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <20100808074035.GA26199@oksana.dev.rtsoft.ru>
-References: <1281187711-10215-1-git-send-email-agust@denx.de>
-	<1281207816-31807-1-git-send-email-agust@denx.de>
-	<AANLkTim7uCTYLTwj0Gqen3dAi9iNO7te8NCs6wWj7nSi@mail.gmail.com>
-	<20100808074035.GA26199@oksana.dev.rtsoft.ru>
+In-Reply-To: <3850A844E6A3854C827AC5C0BEC7B60AEA19@zch01exm23.fsl.freescale.net>
+References: <AANLkTinJKO3-iXOXuL7CMWCj5qMMHyMrtnadwPpqTeBu@mail.gmail.com>
+	<3850A844E6A3854C827AC5C0BEC7B60AEA19@zch01exm23.fsl.freescale.net>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sun, 8 Aug 2010 23:31:32 -0600
-Message-ID: <AANLkTi=uLtpodbwbBXCriOSX2Y1x1wFPffRRazVwPG8w@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/mpc8xxx_gpio.c: extend the driver to support
-	mpc512x gpios
-To: Anton Vorontsov <cbouatmailru@gmail.com>
+Date: Sun, 8 Aug 2010 23:50:24 -0600
+Message-ID: <AANLkTimOtWeDNewWfoCteJW7UN2cCrY-SPv7h6qsTL_-@mail.gmail.com>
+Subject: Re: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for eSDHC driver
+To: Zang Roy-R61911 <r61911@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>,
-	Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 8, 2010 at 1:40 AM, Anton Vorontsov <cbouatmailru@gmail.com> wr=
-ote:
-> On Sat, Aug 07, 2010 at 06:40:22PM -0600, Grant Likely wrote:
-> [...]
->> > static int __init mpc8xxx_add_gpiochips(void)
->> > {
->> >+ =A0 =A0const struct of_device_id *id;
->> > =A0 =A0 struct device_node *np;
+On Wed, Aug 4, 2010 at 8:14 PM, Zang Roy-R61911 <r61911@freescale.com> wrot=
+e:
+>> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+>> > index c6d1bd8..a92566e 100644
+>> > --- a/drivers/mmc/host/sdhci.c
+>> > +++ b/drivers/mmc/host/sdhci.c
+>> > @@ -817,8 +817,12 @@ static void
+>> sdhci_set_transfer_mode(struct sdhci_host *host,
+>> > =A0 =A0 =A0 =A0WARN_ON(!host->data);
 >> >
->> >- =A0 =A0for_each_compatible_node(np, NULL, "fsl,mpc8349-gpio")
->> >- =A0 =A0 =A0 =A0 =A0 =A0mpc8xxx_add_controller(np);
->> >-
->> >- =A0 =A0for_each_compatible_node(np, NULL, "fsl,mpc8572-gpio")
->> >- =A0 =A0 =A0 =A0 =A0 =A0mpc8xxx_add_controller(np);
->> >-
->> >- =A0 =A0for_each_compatible_node(np, NULL, "fsl,mpc8610-gpio")
->> >+ =A0 =A0for_each_matching_node(np, mpc8xxx_gpio_ids) {
->> >+ =A0 =A0 =A0 =A0 =A0 =A0id =3D of_match_node(mpc8xxx_gpio_ids, np);
->> >+ =A0 =A0 =A0 =A0 =A0 =A0if (id)
->> >+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0np->data =3D id->data;
->> > =A0 =A0 =A0 =A0 =A0 =A0 mpc8xxx_add_controller(np);
->> >+ =A0 =A0}
-> [...]
->> Actually, there is absolutely no reason to keep mpc8xxx_add_gpiochip()
->> as a separate function with the simplification of
->> mpc8xxx_add_gpiochips(). =A0I'd simplify the whole thing by merging the
->> two functions together.
->
-> You mean mpc8xxx_add_controller()? Putting 65-line function
-> on a second indentation level, inside the for loop... sounds
-> like a bad idea.
+>> > =A0 =A0 =A0 =A0mode =3D SDHCI_TRNS_BLK_CNT_EN;
+>> > - =A0 =A0 =A0 if (data->blocks > 1)
+>> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MULTI;
+>> > + =A0 =A0 =A0 if (data->blocks > 1) {
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->quirks &
+>> SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MUL=
+TI |
+>> SDHCI_TRNS_ACMD12;
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MUL=
+TI;
+>>
+>> nit:
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MULTI;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_=
+READ_ACMD12)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_ACMD1=
+2;
+>>
+>> Clearer, no?
+> why?
 
-That's a good point.  I was thinking about it from the wrong way
-around (that the function could bail at the top on a non-match; which
-obviously isn't the case).  Anatolij, I was wrong on this point.
-Sorry I didn't reply sooner before you respun the patch.  :-(
+Shorter lines, fewer lines, and the SDHCI_TRNS_MULTI is more obviously
+unconditional.  But as I said, it is a nitpick.
 
 g.
