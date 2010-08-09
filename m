@@ -1,20 +1,32 @@
-Return-Path: <mirqus@gmail.com>
-Received: from mail-qy0-f170.google.com (mail-qy0-f170.google.com
-	[209.85.216.170]) by ozlabs.org (Postfix) with ESMTP id 9CC0EB6F14
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 04:24:51 +1000 (EST)
-Received: by qyk36 with SMTP id 36so2674104qyk.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 11:24:49 -0700 (PDT)
+Return-Path: <nfont@austin.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A10C9B75C0
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 04:38:52 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79ILZFM017186
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:21:35 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o79IcnEq137330
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:38:49 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o79IcmaN020411
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:38:49 -0400
+Message-ID: <4C604B36.4070603@austin.ibm.com>
+Date: Mon, 09 Aug 2010 13:38:46 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
-References: <1280805072-26112-1-git-send-email-tie-fei.zang@freescale.com>
-Date: Mon, 9 Aug 2010 18:24:49 +0000
-Message-ID: <AANLkTikUypKobPAHsE+tz-Py-XvvJhbcj7Syj3rX_ej0@mail.gmail.com>
-Subject: Re: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for eSDHC driver
-From: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 4/8] v5 Add mutex for add/remove of memory blocks
+References: <4C60407C.2080608@austin.ibm.com>
+In-Reply-To: <4C60407C.2080608@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Dave Hansen <dave@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +36,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2010/8/3 Roy Zang <tie-fei.zang@freescale.com>:
-[...]
-> @@ -240,6 +240,8 @@ struct sdhci_host {
-> =A0#define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN =A0 =A0 =A0 =A0 =A0 =A0 =A0(=
-1<<25)
-> =A0/* Controller cannot support End Attribute in NOP ADMA descriptor */
-> =A0#define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC =A0 =A0 =A0 =A0 =A0 =A0 =A0(=
-1<<26)
-> +/* Controller uses Auto CMD12 command to stop the transfer */
-> +#define SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12 =A0 =A0 =A0 =A0 =A0 =A0 (1<<2=
-7)
->
-> =A0 =A0 =A0 =A0int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 irq; =A0 =A0 =
-=A0 =A0 =A0 =A0/* Device IRQ */
-> =A0 =A0 =A0 =A0void __iomem * =A0 =A0 =A0 =A0 =A0ioaddr; =A0 =A0 =A0 =A0 =
-/* Mapped address */
+Add a new mutex for use in adding and removing of memory blocks.  This
+is needed to avoid any race conditions in which the same memory block could
+be added and removed at the same time.
 
-Just a cosmetic hint: I suggest SDHCI_QUIRK_MULTIBLOCK_READ_AUTO_CMD12
-or something for the quirk name, because ACMD12 part might be confused
-with MMC/SD App CMD 12 (CMD55+CMD12 combo) if/whenever that gets used.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-Best Regards,
-Micha=B3 Miros=B3aw
+---
+ drivers/base/memory.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-2.6/drivers/base/memory.c
+===================================================================
+--- linux-2.6.orig/drivers/base/memory.c	2010-08-09 07:49:04.000000000 -0500
++++ linux-2.6/drivers/base/memory.c	2010-08-09 07:50:20.000000000 -0500
+@@ -27,6 +27,8 @@
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
+ 
++static DEFINE_MUTEX(mem_sysfs_mutex);
++
+ #define MEMORY_CLASS_NAME	"memory"
+ 
+ static struct sysdev_class memory_sysdev_class = {
+@@ -485,6 +487,8 @@ static int add_memory_block(int nid, str
+ 	if (!mem)
+ 		return -ENOMEM;
+ 
++	mutex_lock(&mem_sysfs_mutex);
++
+ 	mem->start_phys_index = __section_nr(section);
+ 	mem->state = state;
+ 	atomic_inc(&mem->section_count);
+@@ -508,6 +512,7 @@ static int add_memory_block(int nid, str
+ 			ret = register_mem_sect_under_node(mem, nid);
+ 	}
+ 
++	mutex_unlock(&mem_sysfs_mutex);
+ 	return ret;
+ }
+ 
+@@ -516,6 +521,7 @@ int remove_memory_block(unsigned long no
+ {
+ 	struct memory_block *mem;
+ 
++	mutex_lock(&mem_sysfs_mutex);
+ 	mem = find_memory_block(section);
+ 
+ 	if (atomic_dec_and_test(&mem->section_count)) {
+@@ -528,6 +534,7 @@ int remove_memory_block(unsigned long no
+ 		unregister_memory(mem, section);
+ 	}
+ 
++	mutex_unlock(&mem_sysfs_mutex);
+ 	return 0;
+ }
+ 
