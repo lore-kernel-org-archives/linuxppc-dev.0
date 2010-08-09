@@ -2,10 +2,10 @@ Return-Path: <yanok@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id 609C9B70AB
-	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 22:58:46 +1000 (EST)
-Message-ID: <4C5FFB7F.2090709@emcraft.com>
-Date: Mon, 09 Aug 2010 16:58:39 +0400
+	by ozlabs.org (Postfix) with ESMTPS id C69EEB711C
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 22:58:53 +1000 (EST)
+Message-ID: <4C5FFB8A.20804@emcraft.com>
+Date: Mon, 09 Aug 2010 16:58:50 +0400
 From: Ilya Yanok <yanok@emcraft.com>
 MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
@@ -42,7 +42,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 As I've already told you my testing on the MPC8308RDB board was 
 successful. As for 85xx boards, Wolfgang told me that DENX doesn't have 
 any 85xx boards that support MSI at the moment, so I can't do complete 
-testing. I'm sorry. I've tested that TQM8560 boards is able to boot and 
+testing. I'm sorry. I've tested that TQM8560 board is able to boot and 
 PCI is working as expected though (with your patch applied). I fear I 
 can't do anything else here.
 
