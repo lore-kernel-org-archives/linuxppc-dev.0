@@ -1,36 +1,20 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e38.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 9BAAFB70CD
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 06:48:58 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e38.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o79KfZrt021490
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:41:35 -0600
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o79Kmibn109932
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:48:45 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o79Kq97A011191
-	for <linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 14:52:10 -0600
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 8/8] v5  Update memory-hotplug documentation
-Date: Mon, 9 Aug 2010 13:48:41 -0700
-References: <4C60407C.2080608@austin.ibm.com> <4C604C62.7060509@austin.ibm.com>
-	<201008091344.37878.nacc@us.ibm.com>
-In-Reply-To: <201008091344.37878.nacc@us.ibm.com>
+Return-Path: <shawnxjin@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id B0E4EB70AA
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 07:05:27 +1000 (EST)
+Received: by eyh6 with SMTP id 6so11810090eyh.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 14:05:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008091348.42256.nacc@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100809122933.5a314af3@schlenkerla.am.freescale.net>
+References: <AANLkTinjLBPG9YfpoDnSoKeGvUO2OEjdTXrYLTZ9c8LB@mail.gmail.com>
+	<20100809122933.5a314af3@schlenkerla.am.freescale.net>
+Date: Mon, 9 Aug 2010 14:05:25 -0700
+Message-ID: <AANLkTim4tGYAyCMxHG8nPLKL4dHepB2Pp4Kxq4bNcsJE@mail.gmail.com>
+Subject: Re: mpc870: hctosys.c unable to open rtc device rtc0
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, August 09, 2010 01:44:37 pm Nishanth Aravamudan wrote:
-> On Monday, August 09, 2010 11:43:46 am Nathan Fontenot wrote:
-> > Update the memory hotplug documentation to reflect the new behaviors of
-> > memory blocks reflected in sysfs.
-> 
-> <snip>
-> 
-> > Index: linux-2.6/Documentation/memory-hotplug.txt
-> > ===================================================================
-> > --- linux-2.6.orig/Documentation/memory-hotplug.txt	2010-08-09 07:36:48.000000000 -0500
-> > +++ linux-2.6/Documentation/memory-hotplug.txt	2010-08-09 07:59:54.000000000 -0500
-> 
-> <snip>
-> 
-> > -/sys/devices/system/memory/memoryXXX/phys_index
-> > +/sys/devices/system/memory/memoryXXX/start_phys_index
-> > +/sys/devices/system/memory/memoryXXX/end_phys_index
-> >  /sys/devices/system/memory/memoryXXX/phys_device
-> >  /sys/devices/system/memory/memoryXXX/state
-> >  /sys/devices/system/memory/memoryXXX/removable
-> > 
-> > -'phys_index' : read-only and contains section id, same as XXX.
-> 
-> <snip>
-> 
-> > +'phys_index'      : read-only and contains section id of the first section
-> 
-> Shouldn't this be "start_phys_index"?
+>> Reading the fsl i2c bindings in the documentation, I found an example
+>> as follows.
+>> =A0 27 =A0 =A0 =A0i2c@860 {
+>> =A0 28 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "fsl,mpc823-i2c",
+>> =A0 29 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "fsl,cpm1=
+-i2c";
+>> =A0 30 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x860 0x20 0x3c80 0x30>;
+>> =A0 31 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupts =3D <16>;
+>> =A0 32 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&CPM_PIC>;
+>> =A0 33 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0fsl,cpm-command =3D <0x10>;
+>> =A0 34 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#address-cells =3D <1>;
+>> =A0 35 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0#size-cells =3D <0>;
+>> =A0 36
+>> =A0 37 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0rtc@68 {
+>> =A0 38 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "da=
+llas,ds1307";
+>> =A0 39 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0x68>;
+>> =A0 40 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
+>> =A0 41 =A0 =A0 =A0 =A0};
+>> =A0 42
+>>
+>> In the above example the rtc was explicitly declared as a subnode of
+>> the i2c node. Is this the way to connect (or bind) a RTC to the I2C
+>> driver?
+>
+> Yes.
 
-Ah, actually it's that the Documentation change doesn't seem to agree with
-patch 2/8 ? That is, 2/8 leaves phys_index in place, but changes several
-variables, while this patch indicates its removal?
+Thanks Scott for the confirmation. I added that to my dts file and the
+driver did try to probe the device. But accessing the device timed
+out. There are some microcode patches related to I2C that I've not
+applied. I'll try the patch(es) later. But how can I find out which
+patch should be applied to my MPC870?
 
 Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-Linux Technology Center
+-Shawn.
