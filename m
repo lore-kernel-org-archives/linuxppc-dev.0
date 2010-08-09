@@ -1,21 +1,32 @@
-Return-Path: <R58472@freescale.com>
-Received: from DB3EHSOBE003.bigfish.com (db3ehsobe003.messaging.microsoft.com
-	[213.199.154.141]) by ozlabs.org (Postfix) with ESMTP id 1B398B70AF
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Mon,  9 Aug 2010 17:21:12 +1000 (EST)
+Return-Path: <R61911@freescale.com>
+Received: from DB3EHSOBE004.bigfish.com (db3ehsobe004.messaging.microsoft.com
+	[213.199.154.142]) by ozlabs.org (Postfix) with ESMTP id 3E04BB70A9
+	for <linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 17:33:42 +1000 (EST)
+Received: from mail68-db3 (localhost.localdomain [127.0.0.1])	by
+	mail68-db3-R.bigfish.com (Postfix) with ESMTP id AFE3B16D0337	for
+	<linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 07:33:37 +0000 (UTC)
+Received: from DB3EHSMHS003.bigfish.com (unknown [10.3.81.247])	by
+	mail68-db3.bigfish.com (Postfix) with ESMTP id 3B00E6A004B	for
+	<linuxppc-dev@ozlabs.org>; Mon,  9 Aug 2010 07:33:37 +0000 (UTC)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o797XSVb029699	for
+	<linuxppc-dev@ozlabs.org>; Mon, 9 Aug 2010 00:33:33 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
+	o797lIna025276	for <linuxppc-dev@ozlabs.org>;
+	Mon, 9 Aug 2010 02:47:19 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Subject: RE: Review Request: New proposal for device tree clock binding.
-Date: Mon, 9 Aug 2010 15:05:49 +0800
-Message-ID: <F9BD3E0A8083BE4ABAA94D7EDD7E3F6310925F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <AANLkTi=3MQBSd_phbSZnRA-wFB7cfa4U_PKND+BgZVhd@mail.gmail.com>
-References: <AANLkTimm7G--LQHYBqPB1YCXQb7fSXPDaYsLq0p30DG1@mail.gmail.com>
-	<F9BD3E0A8083BE4ABAA94D7EDD7E3F63109216@zch01exm26.fsl.freescale.net>
-	<AANLkTi=3MQBSd_phbSZnRA-wFB7cfa4U_PKND+BgZVhd@mail.gmail.com>
-From: Li Yang-R58472 <r58472@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
-	linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt common
+	to elbc devices
+Date: Mon, 9 Aug 2010 15:33:22 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A03E044@zch01exm23.fsl.freescale.net>
+In-Reply-To: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: "Zang Roy-R61911" <R61911@freescale.com>, <linux-mtd@lists.infradead.org>
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>><tt>*-clock</tt> is named for the signal name for the ''clock input''
->>>of the device. it should describe the function of the signal for that
->>>device, rather than the name of the system-wide clock line. For
->>>example, a UART with two clocks - one for baud-rate clocking, and the
->>>other for register clocking - may have clock input properties named
->>>"baud-clock" and "register-clock". =A0The property value is a tuple
->>>containing the phandle to the clock provider and the name of the =
-clock
->output signal.
->>>
->>>For example:
->>>
->>> =A0 =A0uart {
->>> =A0 =A0 =A0 =A0baud-clock =3D <&osc>, "ckil";
->>> =A0 =A0 =A0 =A0register-clock =3D <&ref>, "bus";
->>> =A0 =A0};
->>>
->>>
->>>This represents a device with two clock inputs, named "baud" and
->>>"register". The baud clock is connected to the "ckil" output of the
->"osc"
->>>device, and the register clock is connected to the "bus" output of =
-the
->>>"ref" device.
->>
->>
->> Instead of having two items to identify a clock, I would suggest to =
-have
->a node for each clock. =A0So that clock can be referenced by one
->handle. =A0Also we can have clock specific information defined in the =
-clock
->node. =A0Here is the example I am planning to use on 85xx PMC.
->>
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0power@e0070{
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D =
-"fsl,mpc8548-pmc",
->> "fsl,p2020-pmc";
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0reg =3D <0xe0070 =
-0x20>;
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec1_clk: =
-soc-clk@24{
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0fsl,pmcdr-mask =3D <0x00000080>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec2_clk: =
-soc-clk@25{
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0fsl,pmcdr-mask =3D <0x00000040>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0etsec3_clk: =
-soc-clk@26{
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0fsl,pmcdr-mask =3D <0x00000020>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0};
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0enet0: ethernet@24000 {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0......
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0master-clock =3D =
-<&etsec1_clk>;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0......
->>
->>
->> What do you think?
+=20
 
-Quoting your reply:
-
-> I've avoided requiring clock nodes to have a separate sub node for
-> each output because it is more verbose and it prevents clock providers
-> from having child nodes for other purposes.  Are you concerned that
-
-I don't see why there should be child nodes for other purposes under =
-clock node.
-
-> having the <phandle>+output name pair will be difficult to manage?
-
-That's part of my concern.  But my main concern is the inability of =
-describing the properties of each clock in the device tree.  The clock =
-stuff is much SoC related, which means it could be variable among chips =
-even in a same family.  Having clock properties defined in device tree =
-will make it easier to have an abstracted driver to handle clock =
-operations.  That's why device trees are used in the first place, right?
-
-- Leo
+> -----Original Message-----
+> From: Zang Roy-R61911=20
+> Sent: Friday, August 06, 2010 10:52 AM
+> To: linux-mtd@lists.infradead.org
+> Cc: linuxppc-dev@ozlabs.org; akpm@linux-foundation.org; Gala=20
+> Kumar-B11780; Lan Chunhe-B25806
+> Subject: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc=20
+> interrupt common to elbc devices
+>=20
+> From: Lan Chunhe-B25806 <b25806@freescale.com>
+>=20
+> Move Freescale elbc interrupt from nand dirver to elbc driver.
+> Then all elbc devices can use the interrupt instead of ONLY nand.
+>=20
+> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+> send the patch to linux-mtd@lists.infradead.org
+> it has been posted to linuxppc-dev@ozlabs.org and do not get=20
+> any comment.
+Any comment about this serial patches?
+If none, I'd ask Andrew to merge to his mm tree.
+Thanks.
+Roy
