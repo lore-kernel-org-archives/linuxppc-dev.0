@@ -1,35 +1,21 @@
-Return-Path: <nfont@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 115E3B6EEA
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 22:17:38 +1000 (EST)
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
-	by e2.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7AC3N2O028806
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 08:03:23 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7ACHLt32371606
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 08:17:21 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o7ACHKFP010675
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 08:17:21 -0400
-Message-ID: <4C61434F.7060808@austin.ibm.com>
-Date: Tue, 10 Aug 2010 07:17:19 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
+Return-Path: <david-b@pacbell.net>
+Received: from n5-vm0.bullet.mail.gq1.yahoo.com
+	(n5-vm0.bullet.mail.gq1.yahoo.com [67.195.8.62])
+	by ozlabs.org (Postfix) with SMTP id EC437B6F0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 23:44:04 +1000 (EST)
+Message-ID: <220473.37389.qm@web180310.mail.gq1.yahoo.com>
+Date: Tue, 10 Aug 2010 06:44:03 -0700 (PDT)
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [spi-devel-general] [PATCH v2 4/6] mtd: m25p80: add a read
+	function to read page by page
+To: Mingkai Hu <Mingkai.hu@freescale.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <AANLkTikM5je7Ckt=7bP6fj7OKCaroSn_AqgcS4T+Bv5d@mail.gmail.com>
 MIME-Version: 1.0
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: [PATCH 8/8] v5  Update memory-hotplug documentation
-References: <4C60407C.2080608@austin.ibm.com> <4C604C62.7060509@austin.ibm.com>
-	<201008091344.37878.nacc@us.ibm.com>
-In-Reply-To: <201008091344.37878.nacc@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org,
-	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,44 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2010 03:44 PM, Nishanth Aravamudan wrote:
-> On Monday, August 09, 2010 11:43:46 am Nathan Fontenot wrote:
->> Update the memory hotplug documentation to reflect the new behaviors of
->> memory blocks reflected in sysfs.
-> 
-> <snip>
-> 
->> Index: linux-2.6/Documentation/memory-hotplug.txt
->> ===================================================================
->> --- linux-2.6.orig/Documentation/memory-hotplug.txt	2010-08-09 07:36:48.000000000 -0500
->> +++ linux-2.6/Documentation/memory-hotplug.txt	2010-08-09 07:59:54.000000000 -0500
-> 
-> <snip>
-> 
->> -/sys/devices/system/memory/memoryXXX/phys_index
->> +/sys/devices/system/memory/memoryXXX/start_phys_index
->> +/sys/devices/system/memory/memoryXXX/end_phys_index
->>  /sys/devices/system/memory/memoryXXX/phys_device
->>  /sys/devices/system/memory/memoryXXX/state
->>  /sys/devices/system/memory/memoryXXX/removable
->>
->> -'phys_index' : read-only and contains section id, same as XXX.
-> 
-> <snip>
-> 
->> +'phys_index'      : read-only and contains section id of the first section
-> 
-> Shouldn't this be "start_phys_index"?
-
-Hmmm... looks like  I missed something in the documentation.
-
-The property should be 'phys_index'.  I thought about changing it to
-'start_phys_index' but that was rejected.  The listing of the files
-above is wrong in this patch, it should be 
-
- +/sys/devices/system/memory/memoryXXX/phys_index
- +/sys/devices/system/memory/memoryXXX/end_phys_index
-
-Thanks, 
-
-Nathan
+=0A=0A--- On Tue, 8/10/10, Grant Likely <grant.likely@secretlab.ca> wrote:=
+=0A=0A> This one bothers me, but I can't put my=0A> finger on it.=A0The fla=
+g feels=0A> like a controller specific hack.=0A=0AThat's because it *IS* ..=
+.=0A=0ANot clear what a good fix would look like.=0ABut in general, SPI mas=
+ter controllers are=0Aresponsible for returning all bytes requested,=0Ainst=
+ead of (as with this one) a subset.=0A=0ASuggesting the real issue is a bug=
+gy SPI=0Amaster controller and/or driver.  Can't it=0Aissue multiple reads =
+to collect all the data=0Arequested?? =0A=0A- Dave=0A=0A=0A
