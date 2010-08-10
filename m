@@ -1,16 +1,18 @@
-Return-Path: <terren.chow@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 88A24B70DC
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 12:39:53 +1000 (EST)
-Received: by ewy2 with SMTP id 2so12051649ewy.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 19:39:51 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 10 Aug 2010 10:39:51 +0800
-Message-ID: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
-Subject: Questions about powerpc kernel tree
-From: Terren Chow <terren.chow@gmail.com>
-To: benh@kernel.crashing.org
-Content-Type: multipart/alternative; boundary=0015174c45ee21ffb4048d6f0c26
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTPS id C1907B70CC
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 14:19:25 +1000 (EST)
+Subject: Re: Questions about powerpc kernel tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Terren Chow <terren.chow@gmail.com>
+In-Reply-To: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
+References: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 10 Aug 2010 14:19:18 +1000
+Message-ID: <1281413958.28245.17.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,31 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0015174c45ee21ffb4048d6f0c26
-Content-Type: text/plain; charset=ISO-8859-1
+On Tue, 2010-08-10 at 10:39 +0800, Terren Chow wrote:
+> Hi Ben:
+>     I'm not quite clearly know about the powerpc kernel tree histroy.
+> why the tags in the powerpc kernel tree are only update to 2.6.26-rc9
+> at about 2 years ago?  
 
-Hi Ben:
-    I'm not quite clearly know about the powerpc kernel tree histroy. why
-the tags in the powerpc kernel tree are only update to 2.6.26-rc9 at about 2
-years ago?
+Not sure what you're looking at but your shouldn't need to use the
+"powerpc kernel tree" whatever tree this is :-) All our work goes into
+Linus tree on a regular basis, so unless you are specifically looking at
+the powerpc "next" git branch aimed at the next merge window, there
+should be nothing of interest to you there.
 
--- 
-Terren Chow
-College of informatics, SCAU
-Graduate student
-Lab of Embedded System and Wireless Sensor Network
-MSN: terren.chow@hotmail.com
-
---0015174c45ee21ffb4048d6f0c26
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ben:<br>=A0=A0=A0 I&#39;m not quite clearly know about the powerpc kerne=
-l tree histroy. why the tags in the powerpc kernel tree are only update to =
-2.6.26-rc9 at about 2 years ago?=A0 <br clear=3D"all"><br>-- <br>Terren Cho=
-w<br>College of informatics, SCAU<br>
-Graduate student <br>Lab of Embedded System and Wireless Sensor Network<br>=
-MSN: <a href=3D"mailto:terren.chow@hotmail.com">terren.chow@hotmail.com</a>=
-<br><br>
-
---0015174c45ee21ffb4048d6f0c26--
+Ben.
