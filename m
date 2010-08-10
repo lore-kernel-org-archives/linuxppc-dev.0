@@ -1,42 +1,35 @@
-Return-Path: <guenter.roeck@ericsson.com>
-Received: from imr3.ericy.com (imr3.ericy.com [198.24.6.13])
+Return-Path: <dvhltc@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id E8E24B6EFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 02:46:47 +1000 (EST)
-Subject: Re: [PATCH 0/6] Remove owner field from sysfs attribute structure
-From: Guenter Roeck <guenter.roeck@ericsson.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20100811012001.6fb50655.sfr@canb.auug.org.au>
-References: <1280380166-29196-1-git-send-email-guenter.roeck@ericsson.com>
-	<AANLkTinM+m15QbAg+J3YyHWnObsxtHYYU6p6C89p8wjp@mail.gmail.com>
-	<20100802233128.GA21286@kroah.com>
-	<20100810154337.006a0df9@hyperion.delvare>
-	<20100811011733.16243ddb.sfr@canb.auug.org.au>
-	<20100811012001.6fb50655.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Aug 2010 09:43:17 -0700
-Message-ID: <1281458597.5745.255.camel@groeck-laptop>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id 0B307B6F06
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 08:36:50 +1000 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7AMVrkL011963
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:31:53 -0600
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7AMaOKm021042
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:36:27 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o7AMaMb3013502
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:36:23 -0600
+Message-ID: <4C61D464.5090307@us.ibm.com>
+Date: Tue, 10 Aug 2010 15:36:20 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
 MIME-Version: 1.0
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	David Woodhouse <David.Woodhouse@intel.com>,
-	James Smart <james.smart@emulex.com>, Greg KH <greg@kroah.com>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"James E.J. Bottomley" <James.Bottomley@suse.de>,
-	Paul Mackerras <paulus@samba.org>, Nick Cheng <nick.cheng@areca.com.tw>,
-	"linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-	Eric Biederman <ebiederm@aristanetworks.com>,
-	Alex Iannicelli <alex.iannicelli@emulex.com>,
-	Benjamin Thery <benjamin.thery@bull.net>,
-	Chris Wright <chrisw@sous-sol.org>, Tejun Heo <tj@kernel.org>,
-	Liam Girdwood <lrg@slimlogic.co.uk>,
-	Linus Walleij <linus.walleij@stericsson.com>,
-	Dmitry Torokhov <dtor@mail.ru>, Greg Kroah-Hartman <gregkh@suse.de>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Richard Purdie <rpurdie@rpsys.net>,
-	Jani Nikula <ext-jani.1.nikula@nokia.com>,
-	Jean Delvare <khali@linux-fr.org>
-Reply-To: guenter.roeck@ericsson.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
+	CONFIG_PREEMPT on pseries
+References: <4C488CCD.60004@us.ibm.com>
+	<alpine.LFD.2.00.1007222028420.2616@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1007222028420.2616@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
+	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,25 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-08-10 at 11:20 -0400, Stephen Rothwell wrote:
-> Hi Jean,
-> 
-> On Wed, 11 Aug 2010 01:17:33 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Tue, 10 Aug 2010 15:43:37 +0200 Jean Delvare <khali@linux-fr.org> wrote:
-> > >
-> > > Related bug?
-> > > 
-> > > https://bugzilla.kernel.org/show_bug.cgi?id=16544
-> > 
-> > Yep, fixed in linux-next today - hopefully the fix is on its way to Linus.
-> 
-> Sorry, more info:
-> 
-> Fixed by commit 690e85a3957291f4cfe0cac22d97994ec7e5ee45 ("olpc_battery:
-> Fix build failure caused by sysfs changes") from the battery tree.
+On 07/22/2010 11:38 AM, Thomas Gleixner wrote:
+> On Thu, 22 Jul 2010, Darren Hart wrote:
+>
+>> Also of interest is that this path
+>> cpu_idle()->cpu_die()->pseries_mach_cpu_die() to start_secondary()
+>> enters with a preempt_count=1 if it wasn't corrupted across the hcall.
+>
+> That triggers the problem as well. preempt_count needs to be 0 when
+> entering start_secondary(). So I really wonder how that ever worked.
+>
+>> The early boot path from _start however appears to call
+>> start_secondary() with a preempt_count of 0.
+>
+> Which is correct.
+>
+>> The following patch is most certainly not correct, but it does eliminate
+>
+> It is correct, but i think it is incomplete as other portions of the
+> thread_info on the stack might be in some weird state as well.
 
-Excellent. Guess the patch I sent out earlier today to fix the problem
-wasn't needed then.
+Just FYI, I took a look at the stack pointers as well as all the fields 
+in the thread_info struct. The only one that changes is preempt_count. 
+The previous value of preempt_count doesn't impact the value after cede. 
+An initial value of 0, 1, or 4 all result in an after-cede value of 
+0xffffffff. I also added 32 bits of padding on either side of the 
+preempt_count in case the change was accidental - it wasnt', the padded 
+values remained unchanged across the cede call while the preempt_count 
+still changed to 0xffffffff.
 
-Guenter
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
