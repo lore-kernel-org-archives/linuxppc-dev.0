@@ -1,19 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from mail-iw0-f170.google.com (mail-iw0-f170.google.com
-	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 91A8FB70A7
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:40:43 +1000 (EST)
-Received: by iwn41 with SMTP id 41so4335039iwn.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 23:40:42 -0700 (PDT)
+	[209.85.214.170]) by ozlabs.org (Postfix) with ESMTP id 82A68B70A7
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:45:09 +1000 (EST)
+Received: by iwn41 with SMTP id 41so4338006iwn.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 09 Aug 2010 23:45:08 -0700 (PDT)
 MIME-Version: 1.0
 Sender: glikely@secretlab.ca
-In-Reply-To: <1280735524-17547-2-git-send-email-Mingkai.hu@freescale.com>
+In-Reply-To: <1280735524-17547-3-git-send-email-Mingkai.hu@freescale.com>
 References: <1280735524-17547-1-git-send-email-Mingkai.hu@freescale.com>
 	<1280735524-17547-2-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-3-git-send-email-Mingkai.hu@freescale.com>
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 10 Aug 2010 00:40:21 -0600
-Message-ID: <AANLkTim=Qc-zA=9E0SfOB+8V48Y957MXkefD324xoq0w@mail.gmail.com>
-Subject: Re: [PATCH v2 1/6] spi/mpc8xxx: refactor the common code for SPI/eSPI
-	controller
+Date: Tue, 10 Aug 2010 00:44:48 -0600
+Message-ID: <AANLkTin3W4++cAFcksVBX3QxeV8QF3d5T2tGy_KbEkRs@mail.gmail.com>
+Subject: Re: [PATCH v2 2/6] eSPI: add eSPI controller support
 To: Mingkai Hu <Mingkai.hu@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
@@ -27,43 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 2, 2010 at 1:51 AM, Mingkai Hu <Mingkai.hu@freescale.com> wrote=
+On Mon, Aug 2, 2010 at 1:52 AM, Mingkai Hu <Mingkai.hu@freescale.com> wrote=
 :
-> Refactor the common code in file spi_mpc8xxx.c to spi_fsl_lib.c
-> used by SPI/eSPI controller driver as a library, move the SPI
-> controller driver to a new file spi_fsl_spi.c, and leave the
-> QE/CPM SPI controller code in this file.
+> Add eSPI controller support based on the library code spi_fsl_lib.c.
 >
-> Because the register map of the SPI controller and eSPI controller
-> is so different, also leave the code operated the register to the
-> driver code, not the common code.
+> The eSPI controller is newer controller 85xx/Pxxx devices supported.
+> There're some differences comparing to the SPI controller:
+>
+> 1. Has different register map and different bit definition
+> =A0 So leave the code operated the register to the driver code, not
+> =A0 the common code.
+>
+> 2. Support 4 dedicated chip selects
+> =A0 The software can't controll the chip selects directly, The SPCOM[CS]
+> =A0 field is used to select which chip selects is used, and the
+> =A0 SPCOM[TRANLEN] field is set to tell the controller how long the CS
+> =A0 signal need to be asserted. So the driver doesn't need the chipselect
+> =A0 related function when transfering data, just set corresponding regist=
+er
+> =A0 fields to controll the chipseclect.
+>
+> 3. Different Transmit/Receive FIFO access register behavior
+> =A0 For SPI controller, the Tx/Rx FIFO access register can hold only
+> =A0 one character regardless of the character length, but for eSPI
+> =A0 controller, the register can hold 4 or 2 characters according to
+> =A0 the character lengths. Access the Tx/Rx FIFO access register of the
+> =A0 eSPI controller will shift out/in 4/2 characters one time. For SPI
+> =A0 subsystem, the command and data are put into different transfers, so
+> =A0 we need to combine all the transfers to one transfer in order to pass
+> =A0 the transfer to eSPI controller.
 >
 > Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
-> ---
-> v2:
-> =A0- Rename spi_mpc8xxx.c to spi_fsl_lib.c, also the config name
-> =A0- Rename fsl_spi.c to spi_fsl_spi.c, also the config name
-> =A0- Move register map definiton from spi_fsl_lib.c to spi_fsl_spi.c
-> =A0- Break some funcions line in the arguments instead of the declaration
-> =A0- Init bits_per_word to 0 to eliminate the else clause
-> =A0- Add brace for the else clause to match if clause
-> =A0- Drop the last entry's comma in the match table
-> =A0- move module_init() immediately after the init fsl_spi_init() functio=
-n
->
-> =A0drivers/spi/Kconfig =A0 =A0 =A0 | =A0 20 +-
-> =A0drivers/spi/Makefile =A0 =A0 =A0| =A0 =A03 +-
-> =A0drivers/spi/spi_fsl_lib.c | =A0237 ++++++++
-> =A0drivers/spi/spi_fsl_lib.h | =A0119 ++++
-> =A0drivers/spi/spi_fsl_spi.c | 1173 +++++++++++++++++++++++++++++++++++++
-> =A0drivers/spi/spi_mpc8xxx.c | 1421 -------------------------------------=
---------
 
-This patch seems pretty good now.  However, the rename from
-spi_mpc8xxx.c to spi_fsl_lib.c should be done in a separate patch.  It
-is too difficult to track what has changed, when the file gets moved
-at the same time.  Move the file in one patch verbatim (with the
-required Makefile change), and then move out the fsl_spi specific bits
-in a second patch.
+I've not dug deep into this patch, but it seems pretty good.  I did
+notice one thing below...
+[...]
 
+> diff --git a/drivers/spi/spi_fsl_lib.h b/drivers/spi/spi_fsl_lib.h
+> index 774e1c8..0772c98 100644
+> --- a/drivers/spi/spi_fsl_lib.h
+> +++ b/drivers/spi/spi_fsl_lib.h
+> @@ -22,10 +22,12 @@
+> =A0struct mpc8xxx_spi {
+> =A0 =A0 =A0 =A0struct device *dev;
+> =A0 =A0 =A0 =A0struct fsl_spi_reg __iomem *base;
+> + =A0 =A0 =A0 struct fsl_espi_reg __iomem *espi_base;
+
+There's got to be a cleaner way to do this.  Rather than putting both
+pointers into mpc8xxx_spi, I suggest each driver use its own
+fsl_spi_priv and fsl_espi_priv wrapper structures that contain the
+controller specific properties.
+
+cheers,
 g.
