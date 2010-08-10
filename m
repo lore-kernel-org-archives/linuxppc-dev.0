@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTPS id C1907B70CC
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 14:19:25 +1000 (EST)
-Subject: Re: Questions about powerpc kernel tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Terren Chow <terren.chow@gmail.com>
-In-Reply-To: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
-References: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Aug 2010 14:19:18 +1000
-Message-ID: <1281413958.28245.17.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <F9BD3E0A8083BE4ABAA94D7EDD7E3F631093B6@zch01exm26.fsl.freescale.net>
+References: <AANLkTimm7G--LQHYBqPB1YCXQb7fSXPDaYsLq0p30DG1@mail.gmail.com>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F63109216@zch01exm26.fsl.freescale.net>
+	<AANLkTi=3MQBSd_phbSZnRA-wFB7cfa4U_PKND+BgZVhd@mail.gmail.com>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F6310925F@zch01exm26.fsl.freescale.net>
+	<AANLkTinQnFBcLiDyQtRRwzdAg_M48BnNsa2OyKWCiSUh@mail.gmail.com>
+	<F9BD3E0A8083BE4ABAA94D7EDD7E3F631093B6@zch01exm26.fsl.freescale.net>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 9 Aug 2010 23:04:16 -0600
+Message-ID: <AANLkTin2C2B61WDU-c+rcdsfCKE4MKAwnaVeDCCx5CYK@mail.gmail.com>
+Subject: Re: Review Request: New proposal for device tree clock binding.
+To: Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+	linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2010-08-10 at 10:39 +0800, Terren Chow wrote:
-> Hi Ben:
->     I'm not quite clearly know about the powerpc kernel tree histroy.
-> why the tags in the powerpc kernel tree are only update to 2.6.26-rc9
-> at about 2 years ago?  
+On Mon, Aug 9, 2010 at 10:56 PM, Li Yang-R58472 <r58472@freescale.com> wrot=
+e:
+>>>> I've avoided requiring clock nodes to have a separate sub node for
+>>>> each output because it is more verbose and it prevents clock
+>>>> providers from having child nodes for other purposes. =A0Are you
+>>>> concerned that
+>>>
+>>> I don't see why there should be child nodes for other purposes under
+>>clock node.
+>>>
+>>>> having the <phandle>+output name pair will be difficult to manage?
+>>>
+>>> That's part of my concern.
+>>
+>>I was concerned about this too until I found precedence for doing the
+>>exact same thing in the pci binding (and ePAPR). =A0Mixing phandle and a
+>>string in this way doesn't bother me anymore.
+>
+> Where exactly can I get the sample code for handling this binding?
 
-Not sure what you're looking at but your shouldn't need to use the
-"powerpc kernel tree" whatever tree this is :-) All our work goes into
-Linus tree on a regular basis, so unless you are specifically looking at
-the powerpc "next" git branch aimed at the next merge window, there
-should be nothing of interest to you there.
+In my test-devicetree branch.  See the file drivers/of/clock.c[1] from
+commit [2]:
 
-Ben.
+[1] http://git.secretlab.ca/?p=3Dlinux-2.6.git;a=3Dblob;f=3Ddrivers/of/cloc=
+k.c;h=3D26bd70c293d3ec23cbef3f67e0853069b6c24dc0;hb=3Dfadbfb859485148756533=
+b28203b7b0188a17250
+[2] http://git.secretlab.ca/?p=3Dlinux-2.6.git;a=3Dcommit;h=3Dfadbfb8594851=
+48756533b28203b7b0188a17250
+
+g.
