@@ -1,21 +1,28 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ew0-f42.google.com (mail-ew0-f42.google.com
-	[209.85.215.42]) by ozlabs.org (Postfix) with ESMTP id 2A9DEB70ED
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 17:07:27 +1000 (EST)
-Received: by ewy2 with SMTP id 2so12125105ewy.15
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 00:07:25 -0700 (PDT)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
+	[209.85.213.42]) by ozlabs.org (Postfix) with ESMTP id 4010EB70AF
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 17:11:08 +1000 (EST)
+Received: by ywi6 with SMTP id 6so6457754ywi.15
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 00:11:07 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <AANLkTim4tGYAyCMxHG8nPLKL4dHepB2Pp4Kxq4bNcsJE@mail.gmail.com>
-References: <AANLkTinjLBPG9YfpoDnSoKeGvUO2OEjdTXrYLTZ9c8LB@mail.gmail.com>
-	<20100809122933.5a314af3@schlenkerla.am.freescale.net>
-	<AANLkTim4tGYAyCMxHG8nPLKL4dHepB2Pp4Kxq4bNcsJE@mail.gmail.com>
-Date: Tue, 10 Aug 2010 00:07:25 -0700
-Message-ID: <AANLkTimWHbRO=pZeWEkJdqhuWxecJWVNtytUy0rVwMjx@mail.gmail.com>
-Subject: Re: mpc870: hctosys.c unable to open rtc device rtc0
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1280735524-17547-7-git-send-email-Mingkai.hu@freescale.com>
+References: <1280735524-17547-1-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-2-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-3-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-4-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-5-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-6-git-send-email-Mingkai.hu@freescale.com>
+	<1280735524-17547-7-git-send-email-Mingkai.hu@freescale.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 10 Aug 2010 01:10:47 -0600
+Message-ID: <AANLkTinzea7-k3Wd6EsAy+ipThHMhkpMF3pCP7g_6O6J@mail.gmail.com>
+Subject: Re: [PATCH v2 6/6] DTS: add SPI flash(s25fl128p01) support on p4080ds
+	and mpc8536ds board
+To: Mingkai Hu <Mingkai.hu@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+	spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +32,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Thanks Scott for the confirmation. I added that to my dts file and the
-> driver did try to probe the device. But accessing the device timed
-> out. There are some microcode patches related to I2C that I've not
-> applied. I'll try the patch(es) later. But how can I find out which
-> patch should be applied to my MPC870?
-
-:(, the I2C_SPI patch doesn't do any help. It still gets timeout when
-probing the device. The slave address of DS1339 is 0x68. Here are the
-debug messages. Before hooking up the oscilloscope, any quick hints
-for me to try? The 2.4 kernel worked OK, BTW.
-
-i2c-core: driver [rtc-ds1307] registered
-i2c /dev entries driver
-i2c-core: driver [dev_driver] registered
-fsl-i2c-cpm fa200860.i2c: cpm_i2c_setup()
-  alloc irq_desc for 21 on node 0
-  alloc kstat_irqs on node 0
-irq: irq 16 on host /soc@fa200000/cpm@9c0/interrupt-controller@930
-mapped to virtual irq 21
-fsl-i2c-cpm fa200860.i2c: i2c_ram 0xfddfa500, i2c_addr 0x0500, freq 60000
-fsl-i2c-cpm fa200860.i2c: tbase 0x0340, rbase 0x0360
-i2c i2c-0: adapter [i2c-cpm] registered
-i2c-dev: adapter [i2c-cpm] registered as minor 0
-fsl-i2c-cpm fa200860.i2c: hw routines for i2c-cpm registered.
-i2c 0-0068: uevent
-rtc-ds1307 0-0068: probe
-i2c i2c-0: master_xfer[0] W, addr=0x68, len=1
-i2c i2c-0: master_xfer[1] R, addr=0x68, len=2
-i2c i2c-0: R: 0 T: 0
-i2c i2c-0: cpm_i2c_write(abyte=0xd0)
-i2c i2c-0: R: 0 T: 1
-i2c i2c-0: cpm_i2c_read(abyte=0xd1)
-i2c i2c-0: test ready.
-i2c i2c-0: Interrupt: 2
-i2c i2c-0: ready.
-i2c i2c-0: tx sc 0 0x1400
-i2c i2c-0: test ready.
-i2c i2c-0: I2C transfer: timeout
-i2c i2c-0: cpm_i2c_force_close()
-rtc-ds1307: probe of 0-0068 failed with error -5
-i2c i2c-0: client [ds1339] registered with bus id 0-0068
-i2c-core: driver [lm75] registered
-TCP cubic registered
-NET: Registered protocol family 17
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-Freeing unused kernel memory: 1512k init
-
-Thanks,
--Shawn.
+SGkgTWluZ2thaSwKCm9uZSBjb21tZW50IGJlbG93LiAgT3RoZXJ3aXNlIHRoaXMgcGF0Y2ggbG9v
+a3MgZ29vZCwgYW5kIHNvIGRvZXMgcGF0Y2ggNS4KCmcuCgpPbiBNb24sIEF1ZyAyLCAyMDEwIGF0
+IDE6NTIgQU0sIE1pbmdrYWkgSHUgPE1pbmdrYWkuaHVAZnJlZXNjYWxlLmNvbT4gd3JvdGU6Cj4g
+U2lnbmVkLW9mZi1ieTogTWluZ2thaSBIdSA8TWluZ2thaS5odUBmcmVlc2NhbGUuY29tPgo+IC0t
+LQo+Cj4gdjI6Cj4goC0gUmVtb3ZlIHRoZSB3aGl0ZXNwYWNlIGluY29uc2l0ZW5jaWVzCj4KPiCg
+YXJjaC9wb3dlcnBjL2Jvb3QvZHRzL21wYzg1MzZkcy5kdHMgfCCgIDUyICsrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrCj4goGFyY2gvcG93ZXJwYy9ib290L2R0cy9wNDA4MGRzLmR0
+cyCgIHwgoCAxMSArKystLS0tLQo+IKAyIGZpbGVzIGNoYW5nZWQsIDU2IGluc2VydGlvbnMoKyks
+IDcgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL21w
+Yzg1MzZkcy5kdHMgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvbXBjODUzNmRzLmR0cwo+IGluZGV4
+IDgxNWNlYmIuLmE3NWMxMGUgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL21w
+Yzg1MzZkcy5kdHMKPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvbXBjODUzNmRzLmR0cwo+
+IEBAIC0xMDgsNiArMTA4LDU4IEBACj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKB9Owo+IKAgoCCg
+IKAgoCCgIKAgoH07Cj4KPiArIKAgoCCgIKAgoCCgIKAgc3BpQDcwMDAgewo+ICsgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgICNhZGRyZXNzLWNlbGxzID0gPDE+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgICNzaXplLWNlbGxzID0gPDA+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGNvbXBhdGli
+bGUgPSAiZnNsLG1wYzg1MzYtZXNwaSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0g
+PDB4NzAwMCAweDEwMDA+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGludGVycnVwdHMgPSA8
+NTkgMHgyPjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpbnRlcnJ1cHQtcGFyZW50ID0gPCZt
+cGljPjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBmc2wsZXNwaS1udW0tY2hpcHNlbGVjdHMg
+PSA8ND47Cj4gKwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGZsYXNoQDAgewo+ICsgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4gKyCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCAjc2l6ZS1jZWxscyA9IDwxPjsKPiArIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIGNvbXBhdGlibGUgPSAic3BhbnNpb24sczI1c2wxMjgwMSI7Cj4g
+KyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCByZWcgPSA8MD47Cj4gKyCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCBzcGktbWF4LWZyZXF1ZW5jeSA9IDw0MDAwMDAwMD47Cj4gKyCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBwYXJ0aXRpb25AdS1ib290IHsKPiArIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgbGFiZWwgPSAidS1ib290IjsKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDAwMDAwMDAgMHgw
+MDEwMDAwMD47Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlYWQt
+b25seTsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIH07Cj4gKyCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCBwYXJ0aXRpb25Aa2VybmVsIHsKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgbGFiZWwgPSAia2VybmVsIjsKPiArIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVnID0gPDB4MDAxMDAwMDAgMHgwMDUwMDAwMD47
+Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlYWQtb25seTsKPiAr
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIH07Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCBwYXJ0aXRpb25AZHRiIHsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgbGFiZWwgPSAiZHRiIjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgcmVnID0gPDB4MDA2MDAwMDAgMHgwMDEwMDAwMD47Cj4gKyCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlYWQtb25seTsKPiArIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIH07Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBwYXJ0
+aXRpb25AZnMgewo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBsYWJl
+bCA9ICJmaWxlIHN5c3RlbSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIHJlZyA9IDwweDAwNzAwMDAwIDB4MDA5MDAwMDA+Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgfTsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCB9Owo+ICsgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIGZsYXNoQDEgewo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+Y29tcGF0aWJsZSA9ICJzcGFuc2lvbixzMjVzbDEyODAxIjsKPiArIKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIHJlZyA9IDwxPjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IHNwaS1tYXgtZnJlcXVlbmN5ID0gPDQwMDAwMDAwPjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAg
+oCB9Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGZsYXNoQDIgewo+ICsgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJzcGFuc2lvbixzMjVzbDEyODAxIjsKPiAr
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwyPjsKPiArIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIHNwaS1tYXgtZnJlcXVlbmN5ID0gPDQwMDAwMDAwPjsKPiArIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCB9Owo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGZsYXNoQDMg
+ewo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJzcGFuc2lv
+bixzMjVzbDEyODAxIjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlZyA9IDwz
+PjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHNwaS1tYXgtZnJlcXVlbmN5ID0g
+PDQwMDAwMDAwPjsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCB9Owo+ICsgoCCgIKAgoCCgIKAg
+oCB9Owo+ICsKPiCgIKAgoCCgIKAgoCCgIKBkbWFAMjEzMDAgewo+IKAgoCCgIKAgoCCgIKAgoCCg
+IKAgoCCgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAjc2l6
+ZS1jZWxscyA9IDwxPjsKPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3A0MDgw
+ZHMuZHRzIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3A0MDgwZHMuZHRzCj4gaW5kZXggNmIyOWVh
+Yi4uNDg0MzdhZCAxMDA2NDQKPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDQwODBkcy5k
+dHMKPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDQwODBkcy5kdHMKPiBAQCAtMjM2LDIy
+ICsyMzYsMTkgQEAKPiCgIKAgoCCgIKAgoCCgIKB9Owo+Cj4goCCgIKAgoCCgIKAgoCCgc3BpQDEx
+MDAwMCB7Cj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY2VsbC1pbmRleCA9IDwwPjsKPiCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCNhZGRyZXNzLWNlbGxzID0gPDE+Owo+IKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCCgI3NpemUtY2VsbHMgPSA8MD47Cj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29t
+cGF0aWJsZSA9ICJmc2wsZXNwaSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgY29tcGF0aWJs
+ZSA9ICJmc2wsbXBjODUzNi1lc3BpIjsKClNob3VsZCBiZSBtb3JlIHNwZWNpZmljIGhlcmUgYnkg
+c3BlY2lmeWluZyB0aGUgZXhhY3QgZGV2aWNlOyBwbHVzIGEKbGlzdCBvZiB3aGF0IGl0IGlzIGNv
+bXBhdGlibGUgd2l0aC4gIEZvciBleGFtcGxlOgoKY29tcGF0aWJsZSA9ICJmc2wscDQwODAtZXNw
+aSIsICJmc2wsbXBjNTgzNi1lc3BpIjsKCnRoZSByZWFzb24gZm9yIHRoaXMgaXMgdGhhdCB0aGUg
+ZHJpdmVyIGZvciB0aGUgZXhpc3RpbmcgcGFydCBpcyBzdGlsbAphYmxlIHRvIGJpbmQgYWdhaW5z
+dCB0aGUgbm9kZSwgYnV0IGlmIGl0IGV2ZXIgbmVlZHMgaXQsIHRoZW4KaW5mb3JtYXRpb24gYWJv
+dXQgdGhlIHNwZWNpZmljIGRldmljZSBpcyBhdmFpbGFibGUgd2hpY2ggY2FuIGJlIHVzZWQKdG8g
+KGZvciBleGFtcGxlKSBmaWd1cmUgb3V0IHdoZW4gdG8gZW5hYmxlIHNpbGljb24gYnVnIHdvcmth
+cm91bmRzLgoKPiCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoHJlZyA9IDwweDExMDAwMCAweDEwMDA+
+Owo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgaW50ZXJydXB0cyA9IDw1MyAweDI+Owo+IKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgaW50ZXJydXB0LXBhcmVudCA9IDwmbXBpYz47Cj4gLSCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgZXNwaSxudW0tc3MtYml0cyA9IDw0PjsKPiAtIKAgoCCgIKAgoCCgIKAg
+oCCgIKAgoCBtb2RlID0gImNwdSI7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZnNsLGVzcGkt
+bnVtLWNoaXBzZWxlY3RzID0gPDQ+Owo+Cj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgZnNsX20y
+NXA4MEAwIHsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBmbGFzaEAwIHsKPiCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCCgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4goCCgIKAgoCCgIKAg
+oCCgIKAgoCCgIKAgoCCgIKAgoCNzaXplLWNlbGxzID0gPDE+Owo+IC0goCCgIKAgoCCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgY29tcGF0aWJsZSA9ICJmc2wsZXNwaS1mbGFzaCI7Cj4gKyCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBjb21wYXRpYmxlID0gInNwYW5zaW9uLHMyNXNsMTI4MDEi
+Owo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKByZWcgPSA8MD47Cj4gLSCgIKAgoCCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBsaW51eCxtb2RhbGlhcyA9ICJmc2xfbTI1cDgwIjsKPiCg
+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgc3BpLW1heC1mcmVxdWVuY3kgPSA8NDAwMDAw
+MDA+OyAvKiBpbnB1dCBjbG9jayAqLwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBw
+YXJ0aXRpb25AdS1ib290IHsKPiCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
+IKBsYWJlbCA9ICJ1LWJvb3QiOwo+IC0tCj4gMS42LjQKPgo+Cj4KCgoKLS0gCkdyYW50IExpa2Vs
+eSwgQi5TYy4sIFAuRW5nLgpTZWNyZXQgTGFiIFRlY2hub2xvZ2llcyBMdGQuCg==
