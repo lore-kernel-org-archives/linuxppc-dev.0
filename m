@@ -1,31 +1,15 @@
-Return-Path: <R61911@freescale.com>
-Received: from VA3EHSOBE006.bigfish.com (va3ehsobe006.messaging.microsoft.com
-	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id C3995B70ED
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 19:48:42 +1000 (EST)
-Received: from mail128-va3 (localhost.localdomain [127.0.0.1])	by
-	mail128-va3-R.bigfish.com (Postfix) with ESMTP id 80B161468114	for
-	<linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 09:48:37 +0000 (UTC)
-Received: from VA3EHSMHS025.bigfish.com (unknown [10.7.14.246])	by
-	mail128-va3.bigfish.com (Postfix) with ESMTP id 1ACFB11C0082	for
-	<linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 09:47:55 +0000 (UTC)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o7A9lZta008010	for
-	<linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 02:47:46 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
-	id o7AA0XYZ000571	for <linuxppc-dev@ozlabs.org>;
-	Tue, 10 Aug 2010 05:00:34 -0500 (CDT)
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from VA3EHSOBE008.bigfish.com (va3ehsobe006.messaging.microsoft.com
+	[216.32.180.16]) by ozlabs.org (Postfix) with ESMTP id D8100B70E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 20:03:45 +1000 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: akpm@linux-foundation.org, linux-mmc@vger.kernel.org
+Subject: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for more clear
+Date: Tue, 10 Aug 2010 17:47:11 +0800
+Message-ID: <1281433632-18758-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Subject: RE: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for eSDHC driver
-Date: Tue, 10 Aug 2010 17:47:30 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A0562AA@zch01exm23.fsl.freescale.net>
-In-Reply-To: <AANLkTinJKO3-iXOXuL7CMWCj5qMMHyMrtnadwPpqTeBu@mail.gmail.com>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-mmc@vger.kernel.org
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, mirqus@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,63 +19,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+Change ACMD12 to AUTO_CMD12 to reduce the confusion.
+ACMD12 might be confused with MMC/SD App CMD 12 (CMD55+CMD12 combo).
 
-> -----Original Message-----
-> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On=20
-> Behalf Of Grant Likely
-> Sent: Thursday, August 05, 2010 9:03 AM
-> To: Zang Roy-R61911
-> Cc: linux-mmc@vger.kernel.org; linuxppc-dev@ozlabs.org;=20
-> akpm@linux-foundation.org
-> Subject: Re: [PATCH 1/3 v2] sdhci: Add auto CMD12 support for=20
-> eSDHC driver
->=20
-> On Mon, Aug 2, 2010 at 9:11 PM, Roy Zang=20
-> <tie-fei.zang@freescale.com> wrote:
-> > From: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> >
-> > Add auto CMD12 command support for eSDHC driver.
-> > This is needed by P4080 and P1022 for block read/write.
-> > Manual asynchronous CMD12 abort operation causes protocol=20
-> violations on
-> > these silicons.
-> >
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> > ---
-> > =A0drivers/mmc/host/sdhci-of-core.c | =A0 =A04 ++++
-> > =A0drivers/mmc/host/sdhci.c =A0 =A0 =A0 =A0 | =A0 14 ++++++++++++--
-> > =A0drivers/mmc/host/sdhci.h =A0 =A0 =A0 =A0 | =A0 =A02 ++
-> > =A03 files changed, 18 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> > index c6d1bd8..a92566e 100644
-> > --- a/drivers/mmc/host/sdhci.c
-> > +++ b/drivers/mmc/host/sdhci.c
-> > @@ -817,8 +817,12 @@ static void=20
-> sdhci_set_transfer_mode(struct sdhci_host *host,
-> > =A0 =A0 =A0 =A0WARN_ON(!host->data);
-> >
-> > =A0 =A0 =A0 =A0mode =3D SDHCI_TRNS_BLK_CNT_EN;
-> > - =A0 =A0 =A0 if (data->blocks > 1)
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D SDHCI_TRNS_MULTI;
-> > + =A0 =A0 =A0 if (data->blocks > 1) {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->quirks &=20
-> SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D =
-SDHCI_TRNS_MULTI |=20
-> SDHCI_TRNS_ACMD12;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mode |=3D =
-SDHCI_TRNS_MULTI;
->=20
-> nit:
-> +               mode |=3D SDHCI_TRNS_MULTI;
-> +               if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
-> +                       mode |=3D SDHCI_TRNS_ACMD12;
->=20
-> Clearer, no?
-It is clear.
-Thanks.
-Roy
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ drivers/mmc/host/sdhci-of-core.c |    2 +-
+ drivers/mmc/host/sdhci.c         |    8 ++++----
+ drivers/mmc/host/sdhci.h         |   10 +++++-----
+ 3 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci-of-core.c b/drivers/mmc/host/sdhci-of-core.c
+index dd1bdd1..d059805 100644
+--- a/drivers/mmc/host/sdhci-of-core.c
++++ b/drivers/mmc/host/sdhci-of-core.c
+@@ -155,7 +155,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
+ 	}
+ 
+ 	if (of_get_property(np, "sdhci,auto-cmd12", NULL))
+-		host->quirks |= SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12;
++		host->quirks |= SDHCI_QUIRK_MULTIBLOCK_READ_AUTO_CMD12;
+ 
+ 
+ 	if (of_get_property(np, "sdhci,1-bit-only", NULL))
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index a92566e..4b7b2d5 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -73,7 +73,7 @@ static void sdhci_dumpregs(struct sdhci_host *host)
+ 		sdhci_readl(host, SDHCI_INT_ENABLE),
+ 		sdhci_readl(host, SDHCI_SIGNAL_ENABLE));
+ 	printk(KERN_DEBUG DRIVER_NAME ": AC12 err: 0x%08x | Slot int: 0x%08x\n",
+-		sdhci_readw(host, SDHCI_ACMD12_ERR),
++		sdhci_readw(host, SDHCI_AUTO_CMD12_ERR),
+ 		sdhci_readw(host, SDHCI_SLOT_INT_STATUS));
+ 	printk(KERN_DEBUG DRIVER_NAME ": Caps:     0x%08x | Max curr: 0x%08x\n",
+ 		sdhci_readl(host, SDHCI_CAPABILITIES),
+@@ -818,8 +818,8 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
+ 
+ 	mode = SDHCI_TRNS_BLK_CNT_EN;
+ 	if (data->blocks > 1) {
+-		if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
+-			mode |= SDHCI_TRNS_MULTI | SDHCI_TRNS_ACMD12;
++		if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_AUTO_CMD12)
++			mode |= SDHCI_TRNS_MULTI | SDHCI_TRNS_AUTO_CMD12;
+ 		else
+ 			mode |= SDHCI_TRNS_MULTI;
+ 	}
+@@ -1112,7 +1112,7 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ #ifndef SDHCI_USE_LEDS_CLASS
+ 	sdhci_activate_led(host);
+ #endif
+-	if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12) {
++	if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_AUTO_CMD12) {
+ 		if (mrq->stop) {
+ 			mrq->data->stop = NULL;
+ 			mrq->stop = NULL;
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 8fb088c..dfe1c4a 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -32,7 +32,7 @@
+ #define SDHCI_TRANSFER_MODE	0x0C
+ #define  SDHCI_TRNS_DMA		0x01
+ #define  SDHCI_TRNS_BLK_CNT_EN	0x02
+-#define  SDHCI_TRNS_ACMD12	0x04
++#define  SDHCI_TRNS_AUTO_CMD12	0x04
+ #define  SDHCI_TRNS_READ	0x10
+ #define  SDHCI_TRNS_MULTI	0x20
+ 
+@@ -116,7 +116,7 @@
+ #define  SDHCI_INT_DATA_CRC	0x00200000
+ #define  SDHCI_INT_DATA_END_BIT	0x00400000
+ #define  SDHCI_INT_BUS_POWER	0x00800000
+-#define  SDHCI_INT_ACMD12ERR	0x01000000
++#define  SDHCI_INT_AUTO_CMD12_ERR	0x01000000
+ #define  SDHCI_INT_ADMA_ERROR	0x02000000
+ 
+ #define  SDHCI_INT_NORMAL_MASK	0x00007FFF
+@@ -130,7 +130,7 @@
+ 		SDHCI_INT_DATA_END_BIT | SDHCI_INT_ADMA_ERROR)
+ #define SDHCI_INT_ALL_MASK	((unsigned int)-1)
+ 
+-#define SDHCI_ACMD12_ERR	0x3C
++#define SDHCI_AUTO_CMD12_ERR	0x3C
+ 
+ /* 3E-3F reserved */
+ 
+@@ -157,7 +157,7 @@
+ 
+ /* 4C-4F reserved for more max current */
+ 
+-#define SDHCI_SET_ACMD12_ERROR	0x50
++#define SDHCI_SET_AUTO_CMD12_ERROR	0x50
+ #define SDHCI_SET_INT_ERROR	0x52
+ 
+ #define SDHCI_ADMA_ERROR	0x54
+@@ -241,7 +241,7 @@ struct sdhci_host {
+ /* Controller cannot support End Attribute in NOP ADMA descriptor */
+ #define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC		(1<<26)
+ /* Controller uses Auto CMD12 command to stop the transfer */
+-#define SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12		(1<<27)
++#define SDHCI_QUIRK_MULTIBLOCK_READ_AUTO_CMD12		(1<<27)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
+-- 
+1.5.6.5
