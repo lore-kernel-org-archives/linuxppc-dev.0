@@ -1,31 +1,13 @@
-Return-Path: <R61911@freescale.com>
-Received: from TX2EHSOBE004.bigfish.com (tx2ehsobe002.messaging.microsoft.com
-	[65.55.88.12]) by ozlabs.org (Postfix) with ESMTP id E2C2BB6F14
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 14:47:23 +1000 (EST)
-Received: from mail57-tx2 (localhost.localdomain [127.0.0.1])	by
-	mail57-tx2-R.bigfish.com (Postfix) with ESMTP id 15D56166809F	for
-	<linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 04:47:20 +0000 (UTC)
-Received: from TX2EHSMHS009.bigfish.com (unknown [10.9.14.237])	by
-	mail57-tx2.bigfish.com (Postfix) with ESMTP id DCC5F758046	for
-	<linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 04:47:19 +0000 (UTC)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
-	o7B4lGUH015192	for
-	<linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 21:47:18 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id
-	o7B51AkJ019153	for <linuxppc-dev@ozlabs.org>;
-	Wed, 11 Aug 2010 00:01:11 -0500 (CDT)
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 11 Aug 2010 15:20:05 +1000
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org, benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Feature nop out reservation clear when stcx
+	checks address
+Message-ID: <20100811052005.GV29316@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Subject: RE: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for more clear
-Date: Wed, 11 Aug 2010 12:47:10 +0800
-Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A056400@zch01exm23.fsl.freescale.net>
-In-Reply-To: <1281433632-18758-1-git-send-email-tie-fei.zang@freescale.com>
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: "Zang Roy-R61911" <R61911@freescale.com>, <akpm@linux-foundation.org>,
-	<linux-mmc@vger.kernel.org>
-Cc: linuxppc-dev@ozlabs.org, mirqus@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +17,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
 
-> -----Original Message-----
-> From: Zang Roy-R61911=20
-> Sent: Tuesday, August 10, 2010 17:47 PM
-> To: akpm@linux-foundation.org; linux-mmc@vger.kernel.org
-> Cc: linuxppc-dev@ozlabs.org; mirqus@gmail.com;=20
-> cbouatmailru@gmail.com; grant.likely@secretlab.ca
-> Subject: [PATCH 1/2] mmc: change ACMD12 to AUTO_CMD12 for more clear
->=20
-> Change ACMD12 to AUTO_CMD12 to reduce the confusion.
-> ACMD12 might be confused with MMC/SD App CMD 12 (CMD55+CMD12 combo).
->=20
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-> ---
->  drivers/mmc/host/sdhci-of-core.c |    2 +-
->  drivers/mmc/host/sdhci.c         |    8 ++++----
->  drivers/mmc/host/sdhci.h         |   10 +++++-----
->  3 files changed, 10 insertions(+), 10 deletions(-)
-Andrew,=20
-Could you help to pick up this minor fix?
-Thanks.
-Roy
+The POWER architecture does not require stcx to check that it is operating
+on the same address as the larx. This means it is possible for an
+an exception handler to execute a larx, get a reservation, decide
+not to do the stcx and then return back with an active reservation. If the
+interrupted code was in the middle of a larx/stcx sequence the stcx could
+incorrectly succeed.
+
+All recent POWER CPUs check the address before letting the stcx succeed
+so we can create a CPU feature and nop it out. As Ben suggested, we can
+only do this in our syscall path because there is a remote possibility
+some kernel code gets interrupted by an exception that ends up operating
+on the same cacheline.
+
+Thanks to Paul Mackerras and Derek Williams for the idea.
+
+To test this I used a very simple null syscall (actually getppid) testcase
+at http://ozlabs.org/~anton/junkcode/null_syscall.c
+
+I tested against 2.6.35-git10 with the following changes against the
+pseries_defconfig:
+
+CONFIG_VIRT_CPU_ACCOUNTING=n
+CONFIG_AUDIT=n
+CONFIG_PPC_4K_PAGES=n
+CONFIG_PPC_64K_PAGES=y
+CONFIG_FORCE_MAX_ZONEORDER=9
+CONFIG_PPC_SUBPAGE_PROT=n
+CONFIG_FUNCTION_TRACER=n
+CONFIG_FUNCTION_GRAPH_TRACER=n
+CONFIG_IRQSOFF_TRACER=n
+CONFIG_STACK_TRACER=n
+
+to remove the overhead of virtual CPU accounting, syscall auditing and
+the ftrace mcount tracers. 64kB pages were enabled to minimise TLB misses.
+
+POWER6: +8.2%
+POWER7: +7.0%
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: powerpc.git/arch/powerpc/include/asm/cputable.h
+===================================================================
+--- powerpc.git.orig/arch/powerpc/include/asm/cputable.h	2010-08-11 12:56:03.340741765 +1000
++++ powerpc.git/arch/powerpc/include/asm/cputable.h	2010-08-11 13:02:30.131470190 +1000
+@@ -198,6 +198,7 @@ extern const char *powerpc_base_platform
+ #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
+ #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
+ #define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0100000000000000)
++#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0200000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -392,28 +393,31 @@ extern const char *powerpc_base_platform
+ 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+ #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+-	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ)
++	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
++	    CPU_FTR_STCX_CHECKS_ADDRESS)
+ #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
+-	    CPU_FTR_CP_USE_DCBTZ)
++	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS)
+ #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+-	    CPU_FTR_PURR)
++	    CPU_FTR_PURR | CPU_FTR_STCX_CHECKS_ADDRESS)
+ #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+-	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD)
++	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
++	    CPU_FTR_STCX_CHECKS_ADDRESS)
+ #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
+ 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+-	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT)
++	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
++	    CPU_FTR_STCX_CHECKS_ADDRESS)
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+Index: powerpc.git/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/entry_64.S	2010-08-11 12:56:03.360742333 +1000
++++ powerpc.git/arch/powerpc/kernel/entry_64.S	2010-08-11 13:00:08.862283406 +1000
+@@ -202,7 +202,9 @@ syscall_exit:
+ 	bge-	syscall_error
+ syscall_error_cont:
+ 	ld	r7,_NIP(r1)
++BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1			/* to clear the reservation */
++END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	andi.	r6,r8,MSR_PR
+ 	ld	r4,_LINK(r1)
+ 	/*
