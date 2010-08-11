@@ -1,20 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 47EA9B6EFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:51:48 +1000 (EST)
-Date: Wed, 11 Aug 2010 17:51:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <sripathik@in.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp08.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id CCEA6B6EF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:53:21 +1000 (EST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+	by e28smtp08.in.ibm.com (8.14.4/8.13.1) with ESMTP id o7B7gKSw032262
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 13:12:20 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7B7rEBG3219572
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 13:23:14 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o7B7rEfE029251
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 13:23:14 +0530
+Date: Wed, 11 Aug 2010 13:23:13 +0530
+From: Sripathi Kodi <sripathik@in.ibm.com>
 To: divya <dipraksh@linux.vnet.ibm.com>
 Subject: Re: kernel version 2.6.35-git10 build failure
-Message-Id: <20100811175142.0af4d271.sfr@canb.auug.org.au>
+Message-ID: <20100811132313.3d6c7f27@sripathi.in.ibm.com>
 In-Reply-To: <4C624F7F.3070608@linux.vnet.ibm.com>
 References: <4C624F7F.3070608@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a"
-Cc: linuxppc-dev@ozlabs.org, sripathik@in.ibm.com,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 11 Aug 2010 12:51:35 +0530
+divya <dipraksh@linux.vnet.ibm.com> wrote:
 
-Hi Divya,
-
-On Wed, 11 Aug 2010 12:51:35 +0530 divya <dipraksh@linux.vnet.ibm.com> wrot=
-e:
->
-> Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails wi=
-th following error on both system x and p
->=20
+> Hi,
+> 
+> Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails with following error on both system x and p
+> 
 >    fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
->    fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode=
-_setattr'
+>    fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode_setattr'
+>    make[2]: *** [fs/9p/vfs_inode.o] Error 1
+>    make[2]: *** Waiting for unfinished jobs....
+>    make[1]: *** [fs/9p] Error 2
+>    make[1]: *** Waiting for unfinished jobs....
+>    make: *** [fs] Error 2
+>    make: *** Waiting for unfinished jobs....
+> 
+> Seems like the commit 87d7845aa0b is the corrupt which added the function v9fs_vfs_setattr_dotl()
 
-This is known about and a fix is pending.  Thanks.
+Yes, it is a problem I created. Stephen Rothwell has already fixed it.
+Al Viro has sent a git pull request to Linus today with the fix in it.
+Here is the patch you need: http://lkml.org/lkml/2010/6/21/442
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Thanks,
+Sripathi.
 
---Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQEcBAEBAgAGBQJMYlaOAAoJEDMEi1NhKgbs/xoH/RYnIu1WnZBUrmVNMKeTk6VA
-gwRrx8eIGrlOBNa4Bd2/YZyBV5WKx3zvp5iH9a+/I+llFUlmmvQAxW0I0A7k2n5e
-3tCiSvpBWICjHCm0pbnXWBZL/o6otL7SPI/7UwHrSpa6G9qR7LxZJ0Pmg7LGHlwD
-tJy6IthuBMD3NkG0v6+zFM4669a3pUvqo0ehfLUv/mDQZYFh8z7uqTCA1QcTnTAk
-lc6oMZQKI9G9T9Kk11cZJNS+1DlGfWPryKFMg9D6RtVcMqB1X5lh0pKPpBrrOvrC
-pw2pLnVDGkxSM5BRo179MpNZydyGw1ZGL5nMWquOPpy2jtCIyxIPOyALp+5lKAA=
-=iJGy
------END PGP SIGNATURE-----
-
---Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a--
+> 
+> Thanks
+> Divya
+> 
+> 
