@@ -1,19 +1,16 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id D3500B70DC
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Aug 2010 02:48:06 +1000 (EST)
-Date: Wed, 11 Aug 2010 09:25:09 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Ravi Gupta <dceravigupta@gmail.com>
-Subject: Re: How to use mpc8xxx_gpio.c device driver
-Message-ID: <20100811162509.GC27705@ovro.caltech.edu>
-References: <AANLkTinYCfFJB2NR3hcQ4aZU7QXfCs2ixdEu7VuNxf0=@mail.gmail.com>
-	<AANLkTimJ1+d7U2SN_SSHepo6u01RJqUEXUDQXUgBfCWK@mail.gmail.com>
+Return-Path: <avorontsov@mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [213.79.90.228])
+	by ozlabs.org (Postfix) with ESMTP id 73582B70E3
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 02:56:06 +1000 (EST)
+Date: Wed, 11 Aug 2010 20:56:03 +0400
+From: Anton Vorontsov <avorontsov@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] booting-without-of: Remove nonexistent chapters from TOC,
+	fix numbering
+Message-ID: <20100811165603.GA22708@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AANLkTimJ1+d7U2SN_SSHepo6u01RJqUEXUDQXUgBfCWK@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 11, 2010 at 07:49:40PM +0530, Ravi Gupta wrote:
-> Also, when I try to export a gpio in sysfs
-> 
-> echo 9 > /sys/class/gpio/export
-> 
-> It gives me an error in dmesg
-> gpio_request: gpio-9 (sysfs) status -22
-> export_store: status -22
-> 
-> Here is a look of sysfs on my machine
-> 
-> # ls /sys/class/gpio/ -la
-> drwxr-xr-x    4 root     root            0 Jan  1 00:00 .
-> drwxr-xr-x   24 root     root            0 Jan  1 00:00 ..
-> --w-------    1 root     root         4096 Jan  1 00:10 export
-> drwxr-xr-x    3 root     root            0 Jan  1 00:00 gpiochip192
-> drwxr-xr-x    3 root     root            0 Jan  1 00:00 gpiochip224
-> --w-------    1 root     root         4096 Jan  1 00:00 unexport
+Marvell and GPIO bindings live in their own files, so the TOC should not
+mention them.
 
+Also fix chapters numbering.
 
-Your GPIO pins are numbered from 192-223 on one GPIO chip, and 224-255
-on the next GPIO chip. You should be exporting GPIO pin 200 or 201
-(192+8 or 192+9), depending on whether your pins are numbered from zero
-or one.
+Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   31 +------------------------
+ 1 files changed, 2 insertions(+), 29 deletions(-)
 
-"status -22" is -EINVAL: Invalid Argument. You're doing something which
-is invalid, so this makes sense. There is no "pin 9".
-
-Ira
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 46d2210..3f454b7 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -49,40 +49,13 @@ Table of Contents
+       f) MDIO on GPIOs
+       g) SPI busses
+ 
+-  VII - Marvell Discovery mv64[345]6x System Controller chips
+-    1) The /system-controller node
+-    2) Child nodes of /system-controller
+-      a) Marvell Discovery MDIO bus
+-      b) Marvell Discovery ethernet controller
+-      c) Marvell Discovery PHY nodes
+-      d) Marvell Discovery SDMA nodes
+-      e) Marvell Discovery BRG nodes
+-      f) Marvell Discovery CUNIT nodes
+-      g) Marvell Discovery MPSCROUTING nodes
+-      h) Marvell Discovery MPSCINTR nodes
+-      i) Marvell Discovery MPSC nodes
+-      j) Marvell Discovery Watch Dog Timer nodes
+-      k) Marvell Discovery I2C nodes
+-      l) Marvell Discovery PIC (Programmable Interrupt Controller) nodes
+-      m) Marvell Discovery MPP (Multipurpose Pins) multiplexing nodes
+-      n) Marvell Discovery GPP (General Purpose Pins) nodes
+-      o) Marvell Discovery PCI host bridge node
+-      p) Marvell Discovery CPU Error nodes
+-      q) Marvell Discovery SRAM Controller nodes
+-      r) Marvell Discovery PCI Error Handler nodes
+-      s) Marvell Discovery Memory Controller nodes
+-
+-  VIII - Specifying interrupt information for devices
++  VII - Specifying interrupt information for devices
+     1) interrupts property
+     2) interrupt-parent property
+     3) OpenPIC Interrupt Controllers
+     4) ISA Interrupt Controllers
+ 
+-  IX - Specifying GPIO information for devices
+-    1) gpios property
+-    2) gpio-controller nodes
+-
+-  X - Specifying device power management information (sleep property)
++  VIII - Specifying device power management information (sleep property)
+ 
+   Appendix A - Sample SOC node for MPC8540
+ 
+-- 
+1.7.0.5
