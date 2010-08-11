@@ -1,18 +1,28 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
-	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id 9B80FB70D9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:16:35 +1000 (EST)
-Received: by eyh6 with SMTP id 6so12714466eyh.15
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 00:16:32 -0700 (PDT)
+Return-Path: <dipraksh@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EC426B6F01
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:21:38 +1000 (EST)
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+	by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id o7B7LZE3015832
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 12:51:35 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7B7LYGa3764422
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 12:51:34 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+	by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+	o7B7LY7O026239
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:21:34 +1000
+Message-ID: <4C624F7F.3070608@linux.vnet.ibm.com>
+Date: Wed, 11 Aug 2010 12:51:35 +0530
+From: divya <dipraksh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <AANLkTi=ZSBNUYgwv3CKA1PEZm7Vkk6SsubcFR8410qz+@mail.gmail.com>
-References: <AANLkTi=ZSBNUYgwv3CKA1PEZm7Vkk6SsubcFR8410qz+@mail.gmail.com>
-Date: Wed, 11 Aug 2010 00:16:32 -0700
-Message-ID: <AANLkTimHuOxhUW-qH1z27omr98Q+HpcKYkd6of=b7Di=@mail.gmail.com>
-Subject: Re: kernel 2.6.33 fail to mount rootfs on ramdisk
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcdev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	sripathik@in.ibm.com
+Subject: kernel version 2.6.35-git10 build failure
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 10, 2010 at 11:55 PM, Shawn Jin <shawnxjin@gmail.com> wrote:
-> Hi,
->
-> The kernel 2.6.33 failed to mount the rootfs on the ramdisk. I enabled
-> the ramdisk block device support and ext2 filesystem as shown below.
->
-> CONFIG_BLK_DEV_RAM=y
-> CONFIG_BLK_DEV_RAM_COUNT=16
-> CONFIG_BLK_DEV_RAM_SIZE=4096
-> CONFIG_EXT2_FS=y
->
-> Are these adequate configurations for kernel to support rootfs on
-> ramdisk? What have I missed? The ramdisk image is from DENX's SELF.
-> The boot message is shown below.
+Hi,
 
-I figured that out. What I missed is CONFIG_BLK_DEV_INITRD.
+Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails with following error on both system x and p
 
-Thanks,
--Shawn.
+   fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
+   fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode_setattr'
+   make[2]: *** [fs/9p/vfs_inode.o] Error 1
+   make[2]: *** Waiting for unfinished jobs....
+   make[1]: *** [fs/9p] Error 2
+   make[1]: *** Waiting for unfinished jobs....
+   make: *** [fs] Error 2
+   make: *** Waiting for unfinished jobs....
+
+Seems like the commit 87d7845aa0b is the corrupt which added the function v9fs_vfs_setattr_dotl()
+
+Thanks
+Divya
