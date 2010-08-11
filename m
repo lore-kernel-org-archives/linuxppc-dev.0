@@ -1,28 +1,20 @@
-Return-Path: <dipraksh@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e28smtp01.in.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id EC426B6F01
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:21:38 +1000 (EST)
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
-	by e28smtp01.in.ibm.com (8.14.4/8.13.1) with ESMTP id o7B7LZE3015832
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 12:51:35 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
-	by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7B7LYGa3764422
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 12:51:34 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
-	by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o7B7LY7O026239
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:21:34 +1000
-Message-ID: <4C624F7F.3070608@linux.vnet.ibm.com>
-Date: Wed, 11 Aug 2010 12:51:35 +0530
-From: divya <dipraksh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	sripathik@in.ibm.com
-Subject: kernel version 2.6.35-git10 build failure
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 47EA9B6EFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 17:51:48 +1000 (EST)
+Date: Wed, 11 Aug 2010 17:51:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: divya <dipraksh@linux.vnet.ibm.com>
+Subject: Re: kernel version 2.6.35-git10 build failure
+Message-Id: <20100811175142.0af4d271.sfr@canb.auug.org.au>
+In-Reply-To: <4C624F7F.3070608@linux.vnet.ibm.com>
+References: <4C624F7F.3070608@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a"
+Cc: linuxppc-dev@ozlabs.org, sripathik@in.ibm.com,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails with following error on both system x and p
+Hi Divya,
 
-   fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
-   fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode_setattr'
-   make[2]: *** [fs/9p/vfs_inode.o] Error 1
-   make[2]: *** Waiting for unfinished jobs....
-   make[1]: *** [fs/9p] Error 2
-   make[1]: *** Waiting for unfinished jobs....
-   make: *** [fs] Error 2
-   make: *** Waiting for unfinished jobs....
+On Wed, 11 Aug 2010 12:51:35 +0530 divya <dipraksh@linux.vnet.ibm.com> wrot=
+e:
+>
+> Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails wi=
+th following error on both system x and p
+>=20
+>    fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
+>    fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode=
+_setattr'
 
-Seems like the commit 87d7845aa0b is the corrupt which added the function v9fs_vfs_setattr_dotl()
+This is known about and a fix is pending.  Thanks.
 
-Thanks
-Divya
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJMYlaOAAoJEDMEi1NhKgbs/xoH/RYnIu1WnZBUrmVNMKeTk6VA
+gwRrx8eIGrlOBNa4Bd2/YZyBV5WKx3zvp5iH9a+/I+llFUlmmvQAxW0I0A7k2n5e
+3tCiSvpBWICjHCm0pbnXWBZL/o6otL7SPI/7UwHrSpa6G9qR7LxZJ0Pmg7LGHlwD
+tJy6IthuBMD3NkG0v6+zFM4669a3pUvqo0ehfLUv/mDQZYFh8z7uqTCA1QcTnTAk
+lc6oMZQKI9G9T9Kk11cZJNS+1DlGfWPryKFMg9D6RtVcMqB1X5lh0pKPpBrrOvrC
+pw2pLnVDGkxSM5BRo179MpNZydyGw1ZGL5nMWquOPpy2jtCIyxIPOyALp+5lKAA=
+=iJGy
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Aug_2010_17_51_42_+1000_S.AIO6DRbm6gKF.a--
