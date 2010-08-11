@@ -1,16 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 11 Aug 2010 21:40:27 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Feature nop out reservation clear when stcx
-	checks address
-Message-ID: <20100811114027.GW29316@kryten>
-References: <20100811052005.GV29316@kryten>
- <20100811064152.GC15252@drongo>
+Return-Path: <piotr@hosowicz.com>
+Received: from 27.mail-out.ovh.net (27.mail-out.ovh.net [91.121.30.210])
+	by ozlabs.org (Postfix) with SMTP id 7303CB70A9
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 19:05:50 +1000 (EST)
+Message-ID: <4C626659.5040704@example.com>
+Date: Wed, 11 Aug 2010 10:59:05 +0200
+From: Piotr Hosowicz <piotr@hosowicz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20100811064152.GC15252@drongo>
-Cc: linuxppc-dev@ozlabs.org
+To: Sripathi Kodi <sripathik@in.ibm.com>
+Subject: Re: kernel version 2.6.35-git10 build failure
+References: <4C624F7F.3070608@linux.vnet.ibm.com>
+	<20100811132313.3d6c7f27@sripathi.in.ibm.com>
+In-Reply-To: <20100811132313.3d6c7f27@sripathi.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	LKML <linux-kernel@vger.kernel.org>, divya <dipraksh@linux.vnet.ibm.com>
+Reply-To: piotr@hosowicz.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,165 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 11.08.2010 09:53, Sripathi Kodi wrote:
+> On Wed, 11 Aug 2010 12:51:35 +0530
+> divya<dipraksh@linux.vnet.ibm.com>  wrote:
+>
+>> Hi,
+>>
+>> Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails with following error on both system x and p
+>>
+>>     fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
+>>     fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode_setattr'
+>>     make[2]: *** [fs/9p/vfs_inode.o] Error 1
+>>     make[2]: *** Waiting for unfinished jobs....
+>>     make[1]: *** [fs/9p] Error 2
+>>     make[1]: *** Waiting for unfinished jobs....
+>>     make: *** [fs] Error 2
+>>     make: *** Waiting for unfinished jobs....
+>>
+>> Seems like the commit 87d7845aa0b is the corrupt which added the function v9fs_vfs_setattr_dotl()
+>
+> Yes, it is a problem I created. Stephen Rothwell has already fixed it.
+> Al Viro has sent a git pull request to Linus today with the fix in it.
+> Here is the patch you need: http://lkml.org/lkml/2010/6/21/442
 
-Hi Paul,
+I fail to apply the patch.
 
-> Nice...  Just one nit, and that is that I think we now need a dummy
-> stcx in the context switch code so there is no possibility of getting
-> from one user context to another with a reservation still pending from
-> the first context.  I guess our chances of getting through schedule()
-> without doing any atomics, bitops or spinlocks are pretty remote, but
-> nevertheless it might be as well to make sure.
+aapi205:/usr/src/linux# patch -p1 < ../9p-patch.txt
+patching file fs/9p/vfs_inode.c
+Hunk #1 FAILED at 1052.
+1 out of 1 hunk FAILED -- saving rejects to file fs/9p/vfs_inode.c.rej
 
-Good point. How does this look? It also swaps uses a larx in the exception
-exit path if we can, it's a clear win too.
+aapi205:/usr/src/linux# cat fs/9p/vfs_inode.c.rej
+--- fs/9p/vfs_inode.c
++++ fs/9p/vfs_inode.c
+@@ -1052,10 +1052,19 @@
+                 return PTR_ERR(fid);
 
-Anton
---
+         retval = p9_client_setattr(fid, &p9attr);
+-       if (retval >= 0)
+-               retval = inode_setattr(dentry->d_inode, iattr);
++       if (retval < 0)
++               return retval;
 
-[PATCH] powerpc: Feature nop out reservation clear when stcx checks address
-
-The POWER architecture does not require stcx to check that it is operating
-on the same address as the larx. This means it is possible for an
-an exception handler to execute a larx, get a reservation, decide
-not to do the stcx and then return back with an active reservation. If the
-interrupted code was in the middle of a larx/stcx sequence the stcx could
-incorrectly succeed.
-
-All recent POWER CPUs check the address before letting the stcx succeed
-so we can create a CPU feature and nop it out. As Ben suggested, we can
-only do this in our syscall path because there is a remote possibility
-some kernel code gets interrupted by an exception that ends up operating
-on the same cacheline.
-
-Thanks to Paul Mackerras and Derek Williams for the idea.
-
-To test this I used a very simple null syscall (actually getppid) testcase
-at http://ozlabs.org/~anton/junkcode/null_syscall.c
-
-I tested against 2.6.35-git10 with the following changes against the
-pseries_defconfig:
-
-CONFIG_VIRT_CPU_ACCOUNTING=n
-CONFIG_AUDIT=n
-CONFIG_PPC_4K_PAGES=n
-CONFIG_PPC_64K_PAGES=y
-CONFIG_FORCE_MAX_ZONEORDER=9
-CONFIG_PPC_SUBPAGE_PROT=n
-CONFIG_FUNCTION_TRACER=n
-CONFIG_FUNCTION_GRAPH_TRACER=n
-CONFIG_IRQSOFF_TRACER=n
-CONFIG_STACK_TRACER=n
-
-to remove the overhead of virtual CPU accounting, syscall auditing and
-the ftrace mcount tracers. 64kB pages were enabled to minimise TLB misses.
-
-POWER6: +8.2%
-POWER7: +7.0%
-
-Another suggestion was to use a larx to something in the L1 instead of a stcx.
-This was almost as fast as removing the larx on POWER6, but only 3.5% faster
-on POWER7. We can use this to speed up the reservation clear in our
-exception exit code.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: powerpc.git/arch/powerpc/kernel/entry_64.S
-===================================================================
---- powerpc.git.orig/arch/powerpc/kernel/entry_64.S	2010-08-11 21:04:52.644491970 +1000
-+++ powerpc.git/arch/powerpc/kernel/entry_64.S	2010-08-11 21:13:46.210740998 +1000
-@@ -202,7 +202,9 @@ syscall_exit:
- 	bge-	syscall_error
- syscall_error_cont:
- 	ld	r7,_NIP(r1)
-+BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1			/* to clear the reservation */
-+END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	andi.	r6,r8,MSR_PR
- 	ld	r4,_LINK(r1)
- 	/*
-@@ -419,6 +421,17 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	sync
- #endif /* CONFIG_SMP */
- 
-+	/*
-+	 * If we optimise away the clear of the reservation in system
-+	 * calls because we know the CPU tracks the address of the
-+	 * reservation, then we need to clear it here to cover the
-+	 * case that the kernel context switch path has no larx
-+	 * instructions.
-+	 */
-+BEGIN_FTR_SECTION
-+	ldarx	r6,0,r1
-+END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
+-       return retval;
++       if ((iattr->ia_valid & ATTR_SIZE) &&
++           iattr->ia_size != i_size_read(dentry->d_inode)) {
++               retval = vmtruncate(dentry->d_inode, iattr->ia_size);
++               if (retval)
++                       return retval;
++       }
 +
- 	addi	r6,r4,-THREAD	/* Convert THREAD to 'current' */
- 	std	r6,PACACURRENT(r13)	/* Set new 'current' */
- 
-@@ -576,7 +589,16 @@ ALT_FW_FTR_SECTION_END_IFCLR(FW_FEATURE_
- 	andi.	r0,r3,MSR_RI
- 	beq-	unrecov_restore
- 
-+	/*
-+	 * Clear the reservation. If we know the CPU tracks the address of
-+	 * the reservation then we can potentially save some cycles and use
-+	 * a larx. On POWER6 and POWER7 this is significantly faster.
-+	 */
-+BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1		/* to clear the reservation */
-+FTR_SECTION_ELSE
-+	ldarx	r4,0,r1
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 
- 	/*
- 	 * Clear RI before restoring r13.  If we are returning to
-Index: powerpc.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- powerpc.git.orig/arch/powerpc/include/asm/cputable.h	2010-08-11 21:04:52.614491766 +1000
-+++ powerpc.git/arch/powerpc/include/asm/cputable.h	2010-08-11 21:13:14.190741348 +1000
-@@ -198,6 +198,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
- #define CPU_FTR_ASYM_SMT		LONG_ASM_CONST(0x0100000000000000)
-+#define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0200000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -392,28 +393,31 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
- #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
--	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ)
-+	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
-+	    CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_PPC970	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA | \
--	    CPU_FTR_CP_USE_DCBTZ)
-+	    CPU_FTR_CP_USE_DCBTZ | CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_POWER5	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
--	    CPU_FTR_PURR)
-+	    CPU_FTR_PURR | CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_POWER6 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD)
-+	    CPU_FTR_DSCR | CPU_FTR_UNALIGNED_LD_STD | \
-+	    CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_POWER7 (CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
-+	    CPU_FTR_STCX_CHECKS_ADDRESS)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
++       setattr_copy(dentry->d_inode, iattr);
++       mark_inode_dirty(dentry->d_inode);
++       return 0;
+  }
+
+  /**
+
+I must be doing something wrong way.
+
+Regards,
+
+Piotr Hosowicz
+
+-- 
+Z cyklu "Uroki demokracji", czyli pytania i odpowiedzi w teledurniejach:
+- Jak± walutê maj± Indie?
+- Ramadan.
+NP: Patrick O'Hearn - Approaching Summit
+NB: 2.6.35-git9
