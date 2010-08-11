@@ -1,20 +1,16 @@
-Return-Path: <piotr@hosowicz.com>
-Received: from 27.mail-out.ovh.net (27.mail-out.ovh.net [91.121.30.210])
-	by ozlabs.org (Postfix) with SMTP id 7303CB70A9
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 19:05:50 +1000 (EST)
-Message-ID: <4C626659.5040704@example.com>
-Date: Wed, 11 Aug 2010 10:59:05 +0200
-From: Piotr Hosowicz <piotr@hosowicz.com>
+Return-Path: <dceravigupta@gmail.com>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 28E96B6F14
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 23:27:17 +1000 (EST)
+Received: by pxi17 with SMTP id 17so57001pxi.15
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 06:27:16 -0700 (PDT)
 MIME-Version: 1.0
-To: Sripathi Kodi <sripathik@in.ibm.com>
-Subject: Re: kernel version 2.6.35-git10 build failure
-References: <4C624F7F.3070608@linux.vnet.ibm.com>
-	<20100811132313.3d6c7f27@sripathi.in.ibm.com>
-In-Reply-To: <20100811132313.3d6c7f27@sripathi.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>, divya <dipraksh@linux.vnet.ibm.com>
-Reply-To: piotr@hosowicz.com
+Date: Wed, 11 Aug 2010 18:57:16 +0530
+Message-ID: <AANLkTinYCfFJB2NR3hcQ4aZU7QXfCs2ixdEu7VuNxf0=@mail.gmail.com>
+Subject: How to use mpc8xxx_gpio.c device driver
+From: Ravi Gupta <dceravigupta@gmail.com>
+To: linuxppc-dev@ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=00163645915a540ff7048d8c3522
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +20,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11.08.2010 09:53, Sripathi Kodi wrote:
-> On Wed, 11 Aug 2010 12:51:35 +0530
-> divya<dipraksh@linux.vnet.ibm.com>  wrote:
->
->> Hi,
->>
->> Today kernel(version 2.6.35-git10 -commitid 3d30701b58970) build fails with following error on both system x and p
->>
->>     fs/9p/vfs_inode.c: In function 'v9fs_vfs_setattr_dotl':
->>     fs/9p/vfs_inode.c:1267: error: implicit declaration of function 'inode_setattr'
->>     make[2]: *** [fs/9p/vfs_inode.o] Error 1
->>     make[2]: *** Waiting for unfinished jobs....
->>     make[1]: *** [fs/9p] Error 2
->>     make[1]: *** Waiting for unfinished jobs....
->>     make: *** [fs] Error 2
->>     make: *** Waiting for unfinished jobs....
->>
->> Seems like the commit 87d7845aa0b is the corrupt which added the function v9fs_vfs_setattr_dotl()
->
-> Yes, it is a problem I created. Stephen Rothwell has already fixed it.
-> Al Viro has sent a git pull request to Linus today with the fix in it.
-> Here is the patch you need: http://lkml.org/lkml/2010/6/21/442
+--00163645915a540ff7048d8c3522
+Content-Type: text/plain; charset=ISO-8859-1
 
-I fail to apply the patch.
+Hi,
 
-aapi205:/usr/src/linux# patch -p1 < ../9p-patch.txt
-patching file fs/9p/vfs_inode.c
-Hunk #1 FAILED at 1052.
-1 out of 1 hunk FAILED -- saving rejects to file fs/9p/vfs_inode.c.rej
+I am new to device driver development. I am trying to access the GPIO of
+MPC837xERDB eval board. I have upgraded its kernel to linux-2.6.28.9 and
+enable support for mpc8xxx_gpio.c. On boot up, it successfully detect two
+gpio controllers. Now my question is how I am going to use it to communicate
+with the gpio pins? Do I have to modify the code in mpc8xxx_gpio.c file to
+do whatever I want to do with gpios or I can use the standard gpio API
+provided in kernel ( gpio_request()/gpio_free() ). I also tries the standard
+kernel API, but it fails. Here is my code :
 
-aapi205:/usr/src/linux# cat fs/9p/vfs_inode.c.rej
---- fs/9p/vfs_inode.c
-+++ fs/9p/vfs_inode.c
-@@ -1052,10 +1052,19 @@
-                 return PTR_ERR(fid);
+#include <linux/module.h>
+#include <linux/errno.h>  /* error codes */
+#include <linux/gpio.h>
 
-         retval = p9_client_setattr(fid, &p9attr);
--       if (retval >= 0)
--               retval = inode_setattr(dentry->d_inode, iattr);
-+       if (retval < 0)
-+               return retval;
+static __init int sample_module_init(void)
+{
+  int ret;
 
--       return retval;
-+       if ((iattr->ia_valid & ATTR_SIZE) &&
-+           iattr->ia_size != i_size_read(dentry->d_inode)) {
-+               retval = vmtruncate(dentry->d_inode, iattr->ia_size);
-+               if (retval)
-+                       return retval;
-+       }
-+
-+       setattr_copy(dentry->d_inode, iattr);
-+       mark_inode_dirty(dentry->d_inode);
-+       return 0;
+  int i;
+  for (i=1; i<32; i++) {
+    ret = gpio_request(i, "Sample Driver");
+    if (ret) {
+      printk(KERN_WARNING "sample_driver: unable to request GPIO_PG%d\n",
+i);
+      //return ret;
+    }
   }
 
-  /**
+  return 0;
+}
 
-I must be doing something wrong way.
+static __exit void sample_module_exit(void)
+{
+  gpio_free(9);
+}
 
-Regards,
+MODULE_LICENSE("GPL");
 
-Piotr Hosowicz
+module_init(sample_module_init);
+module_exit(sample_module_exit);
 
--- 
-Z cyklu "Uroki demokracji", czyli pytania i odpowiedzi w teledurniejach:
-- Jak± walutê maj± Indie?
-- Ramadan.
-NP: Patrick O'Hearn - Approaching Summit
-NB: 2.6.35-git9
+It give the following O/P:
+
+[  617.075329] sample_driver: unable to request GPIO_PG1
+[  617.080418] sample_driver: unable to request GPIO_PG2
+[  617.085470] sample_driver: unable to request GPIO_PG3
+[  617.090522] sample_driver: unable to request GPIO_PG4
+[  617.095574] sample_driver: unable to request GPIO_PG5
+[  617.100625] sample_driver: unable to request GPIO_PG6
+[  617.105676] sample_driver: unable to request GPIO_PG7
+[  617.110727] sample_driver: unable to request GPIO_PG8
+[  617.115779] sample_driver: unable to request GPIO_PG9
+[  617.120830] sample_driver: unable to request GPIO_PG10
+[  617.125968] sample_driver: unable to request GPIO_PG11
+[  617.131106] sample_driver: unable to request GPIO_PG12
+[  617.136245] sample_driver: unable to request GPIO_PG13
+[  617.141383] sample_driver: unable to request GPIO_PG14
+[  617.146521] sample_driver: unable to request GPIO_PG15
+[  617.151660] sample_driver: unable to request GPIO_PG16
+[  617.156798] sample_driver: unable to request GPIO_PG17
+[  617.161936] sample_driver: unable to request GPIO_PG18
+[  617.167074] sample_driver: unable to request GPIO_PG19
+[  617.172213] sample_driver: unable to request GPIO_PG20
+[  617.177351] sample_driver: unable to request GPIO_PG21
+[  617.182489] sample_driver: unable to request GPIO_PG22
+[  617.187628] sample_driver: unable to request GPIO_PG23
+[  617.192767] sample_driver: unable to request GPIO_PG24
+[  617.197905] sample_driver: unable to request GPIO_PG25
+[  617.203042] sample_driver: unable to request GPIO_PG26
+[  617.208182] sample_driver: unable to request GPIO_PG27
+[  617.213319] sample_driver: unable to request GPIO_PG28
+[  617.218458] sample_driver: unable to request GPIO_PG29
+[  617.223597] sample_driver: unable to request GPIO_PG30
+[  617.228735] sample_driver: unable to request GPIO_PG31
+[  617.233873] sample_driver: unable to request GPIO_PG32
+
+Can someone provide me a sample code or something else. Actually I am trying
+to set the GPIO pin no. 9 to active low as it is connected to a LED on
+board.
+
+Thanks in advance
+Ravi Gupta
+
+--00163645915a540ff7048d8c3522
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br><br>I am new to device driver development. I am trying to access the=
+ GPIO of MPC837xERDB eval board. I have upgraded its kernel to linux-2.6.28=
+.9 and enable support for mpc8xxx_gpio.c. On boot up, it successfully detec=
+t two gpio controllers. Now my question is how I am going to use it to comm=
+unicate with the gpio pins? Do I have to modify the code in mpc8xxx_gpio.c =
+file to do whatever I want to do with gpios or I can use the standard gpio =
+API provided in kernel ( gpio_request()/gpio_free() ). I also tries the sta=
+ndard kernel API, but it fails. Here is my code :<br>
+<br>#include &lt;linux/module.h&gt;<br>#include &lt;linux/errno.h&gt;=A0 /*=
+ error codes */<br>#include &lt;linux/gpio.h&gt;<br><br>static __init int s=
+ample_module_init(void)<br>{<br>=A0 int ret;<br><br>=A0 int i;<br>=A0 for (=
+i=3D1; i&lt;32; i++) {<br>
+=A0=A0=A0 ret =3D gpio_request(i, &quot;Sample Driver&quot;);<br>=A0=A0=A0 =
+if (ret) {<br>=A0=A0=A0=A0=A0 printk(KERN_WARNING &quot;sample_driver: unab=
+le to request GPIO_PG%d\n&quot;, i); <br>=A0=A0=A0=A0=A0 //return ret;<br>=
+=A0=A0=A0 }=A0=A0 <br>=A0 }<br><br>=A0 return 0;<br>
+}<br><br>static __exit void sample_module_exit(void)<br>{<br>=A0 gpio_free(=
+9);<br>}<br><br>MODULE_LICENSE(&quot;GPL&quot;);<br><br>module_init(sample_=
+module_init);<br>module_exit(sample_module_exit);<br><br>It give the follow=
+ing O/P:<br>
+<br>[=A0 617.075329] sample_driver: unable to request GPIO_PG1<br>[=A0 617.=
+080418] sample_driver: unable to request GPIO_PG2<br>[=A0 617.085470] sampl=
+e_driver: unable to request GPIO_PG3<br>[=A0 617.090522] sample_driver: una=
+ble to request GPIO_PG4<br>
+[=A0 617.095574] sample_driver: unable to request GPIO_PG5<br>[=A0 617.1006=
+25] sample_driver: unable to request GPIO_PG6<br>[=A0 617.105676] sample_dr=
+iver: unable to request GPIO_PG7<br>[=A0 617.110727] sample_driver: unable =
+to request GPIO_PG8<br>
+[=A0 617.115779] sample_driver: unable to request GPIO_PG9<br>[=A0 617.1208=
+30] sample_driver: unable to request GPIO_PG10<br>[=A0 617.125968] sample_d=
+river: unable to request GPIO_PG11<br>[=A0 617.131106] sample_driver: unabl=
+e to request GPIO_PG12<br>
+[=A0 617.136245] sample_driver: unable to request GPIO_PG13<br>[=A0 617.141=
+383] sample_driver: unable to request GPIO_PG14<br>[=A0 617.146521] sample_=
+driver: unable to request GPIO_PG15<br>[=A0 617.151660] sample_driver: unab=
+le to request GPIO_PG16<br>
+[=A0 617.156798] sample_driver: unable to request GPIO_PG17<br>[=A0 617.161=
+936] sample_driver: unable to request GPIO_PG18<br>[=A0 617.167074] sample_=
+driver: unable to request GPIO_PG19<br>[=A0 617.172213] sample_driver: unab=
+le to request GPIO_PG20<br>
+[=A0 617.177351] sample_driver: unable to request GPIO_PG21<br>[=A0 617.182=
+489] sample_driver: unable to request GPIO_PG22<br>[=A0 617.187628] sample_=
+driver: unable to request GPIO_PG23<br>[=A0 617.192767] sample_driver: unab=
+le to request GPIO_PG24<br>
+[=A0 617.197905] sample_driver: unable to request GPIO_PG25<br>[=A0 617.203=
+042] sample_driver: unable to request GPIO_PG26<br>[=A0 617.208182] sample_=
+driver: unable to request GPIO_PG27<br>[=A0 617.213319] sample_driver: unab=
+le to request GPIO_PG28<br>
+[=A0 617.218458] sample_driver: unable to request GPIO_PG29<br>[=A0 617.223=
+597] sample_driver: unable to request GPIO_PG30<br>[=A0 617.228735] sample_=
+driver: unable to request GPIO_PG31<br>[=A0 617.233873] sample_driver: unab=
+le to request GPIO_PG32<br>
+<br>Can someone provide me a sample code or something else. Actually I am t=
+rying to set the GPIO pin no. 9 to active low as it is connected to a LED o=
+n board. <br><br>Thanks in advance<br>Ravi Gupta<br>
+
+--00163645915a540ff7048d8c3522--
