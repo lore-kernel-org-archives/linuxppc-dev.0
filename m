@@ -1,35 +1,33 @@
-Return-Path: <dvhltc@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id 0B307B6F06
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 08:36:50 +1000 (EST)
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
-	[9.17.195.228])
-	by e33.co.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7AMVrkL011963
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:31:53 -0600
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7AMaOKm021042
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:36:27 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
-	id o7AMaMb3013502
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 16:36:23 -0600
-Message-ID: <4C61D464.5090307@us.ibm.com>
-Date: Tue, 10 Aug 2010 15:36:20 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
+Return-Path: <R61911@freescale.com>
+Received: from TX2EHSOBE006.bigfish.com (tx2ehsobe003.messaging.microsoft.com
+	[65.55.88.13]) by ozlabs.org (Postfix) with ESMTP id A65E2B70AB
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 12:46:08 +1000 (EST)
+Received: from mail89-tx2 (localhost.localdomain [127.0.0.1])	by
+	mail89-tx2-R.bigfish.com (Postfix) with ESMTP id 614511968150	for
+	<linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 02:46:04 +0000 (UTC)
+Received: from TX2EHSMHS028.bigfish.com (unknown [10.9.14.240])	by
+	mail89-tx2.bigfish.com (Postfix) with ESMTP id 2B75A188804C	for
+	<linuxppc-dev@ozlabs.org>; Wed, 11 Aug 2010 02:46:04 +0000 (UTC)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by az33egw02.freescale.net (8.14.3/8.14.3) with ESMTP id
+	o7B2jkRo023983	for
+	<linuxppc-dev@ozlabs.org>; Tue, 10 Aug 2010 19:45:56 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP
+	id o7B2wkb4001005	for <linuxppc-dev@ozlabs.org>;
+	Tue, 10 Aug 2010 21:58:47 -0500 (CDT)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH][RFC] preempt_count corruption across H_CEDE call with
-	CONFIG_PREEMPT on pseries
-References: <4C488CCD.60004@us.ibm.com>
-	<alpine.LFD.2.00.1007222028420.2616@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1007222028420.2616@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Gautham R Shenoy <ego@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
-	Will Schmidt <willschm@us.ibm.com>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset="us-ascii"
+Subject: RE: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc interrupt common
+	to elbc devices
+Date: Wed, 11 Aug 2010 10:45:41 +0800
+Message-ID: <3850A844E6A3854C827AC5C0BEC7B60A056382@zch01exm23.fsl.freescale.net>
+In-Reply-To: <1281063096-26598-1-git-send-email-tie-fei.zang@freescale.com>
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: "Zang Roy-R61911" <R61911@freescale.com>, <linux-mtd@lists.infradead.org>
+Cc: Lan Chunhe-B25806 <B25806@freescale.com>, linuxppc-dev@ozlabs.org,
+	akpm@linux-foundation.org, Gala Kumar-B11780 <B11780@freescale.com>,
+	Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2010 11:38 AM, Thomas Gleixner wrote:
-> On Thu, 22 Jul 2010, Darren Hart wrote:
->
->> Also of interest is that this path
->> cpu_idle()->cpu_die()->pseries_mach_cpu_die() to start_secondary()
->> enters with a preempt_count=1 if it wasn't corrupted across the hcall.
->
-> That triggers the problem as well. preempt_count needs to be 0 when
-> entering start_secondary(). So I really wonder how that ever worked.
->
->> The early boot path from _start however appears to call
->> start_secondary() with a preempt_count of 0.
->
-> Which is correct.
->
->> The following patch is most certainly not correct, but it does eliminate
->
-> It is correct, but i think it is incomplete as other portions of the
-> thread_info on the stack might be in some weird state as well.
+=20
 
-Just FYI, I took a look at the stack pointers as well as all the fields 
-in the thread_info struct. The only one that changes is preempt_count. 
-The previous value of preempt_count doesn't impact the value after cede. 
-An initial value of 0, 1, or 4 all result in an after-cede value of 
-0xffffffff. I also added 32 bits of padding on either side of the 
-preempt_count in case the change was accidental - it wasnt', the padded 
-values remained unchanged across the cede call while the preempt_count 
-still changed to 0xffffffff.
-
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+> -----Original Message-----
+> From: Zang Roy-R61911=20
+> Sent: Friday, August 06, 2010 10:52 AM
+> To: linux-mtd@lists.infradead.org
+> Cc: linuxppc-dev@ozlabs.org; akpm@linux-foundation.org; Gala=20
+> Kumar-B11780; Lan Chunhe-B25806
+> Subject: [PATCH 1/3][MTD] P4080/eLBC: Make Freescale elbc=20
+> interrupt common to elbc devices
+>=20
+> From: Lan Chunhe-B25806 <b25806@freescale.com>
+>=20
+> Move Freescale elbc interrupt from nand dirver to elbc driver.
+> Then all elbc devices can use the interrupt instead of ONLY nand.
+>=20
+> Signed-off-by: Lan Chunhe-B25806 <b25806@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> ---
+> send the patch to linux-mtd@lists.infradead.org
+> it has been posted to linuxppc-dev@ozlabs.org and do not get=20
+> any comment.
+>=20
+>  arch/powerpc/Kconfig               |    7 +-
+>  arch/powerpc/include/asm/fsl_lbc.h |   34 +++++-
+>  arch/powerpc/sysdev/fsl_lbc.c      |  254=20
+> ++++++++++++++++++++++++++++++------
+>  3 files changed, 253 insertions(+), 42 deletions(-)
+Who is response to review the nand driver in mtd list?
+Please help to  comment on this serial patch.
+Thanks.
+Roy
