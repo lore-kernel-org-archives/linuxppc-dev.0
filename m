@@ -2,15 +2,15 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 23417B70DE
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 10:04:43 +1000 (EST)
-Message-Id: <20100812000127.671295845@clark.site>
-Date: Wed, 11 Aug 2010 17:01:03 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 1D728B70D6
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 10:09:07 +1000 (EST)
+Message-Id: <20100812000618.582410219@clark.site>
+Date: Wed, 11 Aug 2010 17:06:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org,
  stable@kernel.org
-Subject: [48/54] irq: Add new IRQ flag IRQF_NO_SUSPEND
-In-Reply-To: <20100812000249.GA30948@kroah.com>
+Subject: [64/67] irq: Add new IRQ flag IRQF_NO_SUSPEND
+In-Reply-To: <20100812000641.GA6348@kroah.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Ian Campbell <ian.campbell@citrix.com>,
@@ -29,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.34-stable review patch.  If anyone has any objections, please let us know.
+2.6.35-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
@@ -64,7 +64,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/include/linux/interrupt.h
 +++ b/include/linux/interrupt.h
-@@ -52,16 +52,21 @@
+@@ -53,16 +53,21 @@
   * IRQF_ONESHOT - Interrupt is not reenabled after the hardirq handler finished.
   *                Used by threaded interrupts which need to keep the
   *                irq line disabled until the threaded handler has been run.
@@ -89,7 +89,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
   * Bits used by threaded handlers:
 --- a/kernel/irq/manage.c
 +++ b/kernel/irq/manage.c
-@@ -200,7 +200,7 @@ static inline int setup_affinity(unsigne
+@@ -216,7 +216,7 @@ static inline int setup_affinity(unsigne
  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
  {
  	if (suspend) {
