@@ -2,15 +2,15 @@ Return-Path: <greg@kroah.com>
 Received: from coco.kroah.org (kroah.org [198.145.64.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id B7D6AB70DA
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 09:58:10 +1000 (EST)
-Message-Id: <20100811235459.104341564@clark.site>
-Date: Wed, 11 Aug 2010 16:54:20 -0700
+	by ozlabs.org (Postfix) with ESMTPS id 23417B70DE
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 10:04:43 +1000 (EST)
+Message-Id: <20100812000127.671295845@clark.site>
+Date: Wed, 11 Aug 2010 17:01:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org,
  stable@kernel.org
-Subject: [039/111] irq: Add new IRQ flag IRQF_NO_SUSPEND
-In-Reply-To: <20100811235623.GA24440@kroah.com>
+Subject: [48/54] irq: Add new IRQ flag IRQF_NO_SUSPEND
+In-Reply-To: <20100812000249.GA30948@kroah.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
 	Thomas Gleixner <tglx@linutronix.de>,
 	Ian Campbell <ian.campbell@citrix.com>,
@@ -29,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+2.6.34-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
