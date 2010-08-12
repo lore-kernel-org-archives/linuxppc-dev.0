@@ -1,34 +1,16 @@
-Return-Path: <dave@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e9.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTPS id AFC32B70A6
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 06:07:28 +1000 (EST)
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
-	by e9.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7CJnih5000491
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 15:49:44 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
-	o7CK76Mj367754
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 16:07:06 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
-	o7CK75dr017001
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 16:07:06 -0400
-Subject: Re: [PATCH 0/8] v5 De-couple sysfs memory directories from memory
-	sections
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20100812120816.e97d8b9e.akpm@linux-foundation.org>
-References: <4C60407C.2080608@austin.ibm.com>
-	<20100812120816.e97d8b9e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ANSI_X3.4-1968"
-Date: Thu, 12 Aug 2010 13:07:03 -0700
-Message-ID: <1281643623.6772.78.camel@nimitz>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <fchen@apm.com>
+Received: from exprod5og107.obsmtp.com (exprod5og107.obsmtp.com [64.18.0.184])
+	by ozlabs.org (Postfix) with SMTP id 4621AB70B8
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 05:28:21 +1000 (EST)
+Received: by yxn35 with SMTP id 35so615383yxn.4
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 12:28:19 -0700 (PDT)
+MIME-Version: 1.0
+Date: Thu, 12 Aug 2010 12:28:18 -0700
+Message-ID: <AANLkTi=mOpSWnzfiMyPF+04NmEHZkF61nZJvkGU+gJau@mail.gmail.com>
+Subject: Question about dma_direct_ops in PowerPC.
+From: Fushen Chen <fchen@apm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=0022152d614957ebb4048da55ec2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +20,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2010-08-12 at 12:08 -0700, Andrew Morton wrote:
-> > This set of patches allows for each directory created in sysfs
-> > to cover more than one memory section.  The default behavior for
-> > sysfs directory creation is the same, in that each directory
-> > represents a single memory section.  A new file 'end_phys_index'
-> > in each directory contains the physical_id of the last memory
-> > section covered by the directory so that users can easily
-> > determine the memory section range of a directory.
-> 
-> What you're proposing appears to be a non-back-compatible
-> userspace-visible change.  This is a big issue! 
+--0022152d614957ebb4048da55ec2
+Content-Type: text/plain; charset=ISO-8859-1
 
-Nathan, one thought to get around this at the moment would be to bump up
-the size that we export in /sys/devices/system/memory/block_size_bytes.
-I think you have already done most of the hard work to accomplish
-this.  
+We have a board with PCI device driver that calls for
+pci_dma_sync_single_for_device.
+This driver used to work for Linux kernel 2.6.25.
 
-You can still add the end_phys_index stuff.  But, for now, it would
-always be equal to start_phys_index.
+We ported to the driver to Linux kernel 2.6.32. The PCI device driver
+doesn't work anymore.
+The following call trace shows why the PCI driver won't work in kernel
+2.6.32.
+1. In pci_include/asm-generic/pci-dma-compat.h
+    pci_dma_sync_single_for_device calls for dma_sync_single_for_cpu
+2. In include/asm-generic/dma-mapping-common.h
+    dma_sync_single_for_cpu calls for ops->sync_single_for_cpu
+3. In arch/powerpc/kernel/dma.c
+struct dma_map_ops dma_direct_ops = {
+        .alloc_coherent = dma_direct_alloc_coherent,
+        .free_coherent  = dma_direct_free_coherent,
+        .map_sg         = dma_direct_map_sg,
+        .unmap_sg       = dma_direct_unmap_sg,
+        .dma_supported  = dma_direct_dma_supported,
+        .map_page       = dma_direct_map_page,
+        .unmap_page     = dma_direct_unmap_page,
+#ifdef CONFIG_NOT_COHERENT_CACHE
+        .sync_single_range_for_cpu      = dma_direct_sync_single_range,
+        .sync_single_range_for_device   = dma_direct_sync_single_range,
+        .sync_sg_for_cpu                = dma_direct_sync_sg,
+        .sync_sg_for_device             = dma_direct_sync_sg,
+#endif
+};
+There is no ops defined for sync_single_for_cpu.
+The pci_dma_sync_single_for_device is a no-op.
 
--- Dave
+However Linux kernel 2.6.35.1 from kernel.org has the  .sync_single_for_cpu
+for dma_direct_ops.
+in arch/powerpc/kernel/dma.c
+#ifdef CONFIG_NOT_COHERENT_CACHE
+        .sync_single_for_cpu            = dma_direct_sync_single,
+        .sync_single_for_device         = dma_direct_sync_single,
+        .sync_sg_for_cpu                = dma_direct_sync_sg,
+        .sync_sg_for_device             = dma_direct_sync_sg,
+#endif
+
+
+We won't move to Linux kernel 2.6.35 anytime soon.
+My questions:
+1. Is there any side effect for adding .sync_single_for_cpu to
+dma_direct_ops in 2.6.32?
+2. What will be the future development here?
+
+
+Best regards & Thanks,
+Fushen
+
+--0022152d614957ebb4048da55ec2
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+We have a board with PCI device driver that calls for pci_dma_sync_single_f=
+or_device.<br>This driver used to work for Linux kernel 2.6.25.<br><br>We p=
+orted to the driver to Linux kernel 2.6.32. The PCI device driver doesn&#39=
+;t work anymore.<br>
+The following call trace shows why the PCI driver won&#39;t work in kernel =
+2.6.32. <br>1. In pci_include/asm-generic/pci-dma-compat.h<br>=A0=A0=A0 pci=
+_dma_sync_single_for_device calls for dma_sync_single_for_cpu<br>2. In incl=
+ude/asm-generic/dma-mapping-common.h<br>
+=A0=A0=A0 dma_sync_single_for_cpu calls for ops-&gt;sync_single_for_cpu<br>=
+3. In arch/powerpc/kernel/dma.c<br>struct dma_map_ops dma_direct_ops =3D {<=
+br>=A0=A0=A0=A0=A0=A0=A0 .alloc_coherent =3D dma_direct_alloc_coherent,<br>=
+=A0=A0=A0=A0=A0=A0=A0 .free_coherent=A0 =3D dma_direct_free_coherent,<br>
+=A0=A0=A0=A0=A0=A0=A0 .map_sg=A0=A0=A0=A0=A0=A0=A0=A0 =3D dma_direct_map_sg=
+,<br>=A0=A0=A0=A0=A0=A0=A0 .unmap_sg=A0=A0=A0=A0=A0=A0 =3D dma_direct_unmap=
+_sg,<br>=A0=A0=A0=A0=A0=A0=A0 .dma_supported=A0 =3D dma_direct_dma_supporte=
+d,<br>=A0=A0=A0=A0=A0=A0=A0 .map_page=A0=A0=A0=A0=A0=A0 =3D dma_direct_map_=
+page,<br>=A0=A0=A0=A0=A0=A0=A0 .unmap_page=A0=A0=A0=A0 =3D dma_direct_unmap=
+_page,<br>
+#ifdef CONFIG_NOT_COHERENT_CACHE<br>=A0=A0=A0=A0=A0=A0=A0 .sync_single_rang=
+e_for_cpu=A0=A0=A0=A0=A0 =3D dma_direct_sync_single_range,<br>=A0=A0=A0=A0=
+=A0=A0=A0 .sync_single_range_for_device=A0=A0 =3D dma_direct_sync_single_ra=
+nge,<br>=A0=A0=A0=A0=A0=A0=A0 .sync_sg_for_cpu=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0 =3D dma_direct_sync_sg,<br>
+=A0=A0=A0=A0=A0=A0=A0 .sync_sg_for_device=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0 =3D dma_direct_sync_sg,<br>#endif<br>};<br>There is no ops defined for =
+sync_single_for_cpu.<br>The pci_dma_sync_single_for_device is a no-op.<br><=
+br>However Linux kernel 2.6.35.1 from <a href=3D"http://kernel.org">kernel.=
+org</a> has the=A0 .sync_single_for_cpu for dma_direct_ops.<br>
+in arch/powerpc/kernel/dma.c<br>#ifdef CONFIG_NOT_COHERENT_CACHE<br>=A0=A0=
+=A0=A0=A0=A0=A0 .sync_single_for_cpu=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =3D d=
+ma_direct_sync_single,<br>=A0=A0=A0=A0=A0=A0=A0 .sync_single_for_device=A0=
+=A0=A0=A0=A0=A0=A0=A0 =3D dma_direct_sync_single,<br>=A0=A0=A0=A0=A0=A0=A0 =
+.sync_sg_for_cpu=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =3D dma_direc=
+t_sync_sg,<br>
+=A0=A0=A0=A0=A0=A0=A0 .sync_sg_for_device=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0 =3D dma_direct_sync_sg,<br>#endif<br><br><br>We won&#39;t move to Linux=
+ kernel 2.6.35 anytime soon.<br>My questions:<br>1. Is there any side effec=
+t for adding .sync_single_for_cpu to dma_direct_ops in 2.6.32?<br>
+2. What will be the future development here?<br><br><br>Best regards &amp; =
+Thanks,<br>Fushen<br><br><br><br><br>
+
+--0022152d614957ebb4048da55ec2--
