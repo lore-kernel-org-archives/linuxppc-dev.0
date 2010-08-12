@@ -1,25 +1,12 @@
-Return-Path: <greg@kroah.com>
-Received: from coco.kroah.org (kroah.org [198.145.64.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "coco.kroah.org", Issuer "Greg KH" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 1D728B70D6
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 10:09:07 +1000 (EST)
-Message-Id: <20100812000618.582410219@clark.site>
-Date: Wed, 11 Aug 2010 17:06:19 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org,
- stable@kernel.org
-Subject: [64/67] irq: Add new IRQ flag IRQF_NO_SUSPEND
-In-Reply-To: <20100812000641.GA6348@kroah.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ian Campbell <ian.campbell@citrix.com>,
-	devicetree-discuss@lists.ozlabs.org,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-input@vger.kernel.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, stable-review@kernel.org,
-	alan@lxorguk.ukuu.org.uk
+Return-Path: <anton@ozlabs.org>
+Date: Thu, 12 Aug 2010 12:42:48 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Fix bogus it_blocksize in VIO iommu code
+Message-ID: <20100812024248.GX29316@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +16,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2.6.35-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+When looking at some issues with the virtual ethernet driver I noticed
+that TCE allocation was following a very strange pattern:
 
-From: Ian Campbell <ian.campbell@citrix.com>
+address 00e9000 length 2048
+address 0409000 length 2048 <-----
+address 0429000 length 2048
+address 0449000 length 2048
+address 0469000 length 2048
+address 0489000 length 2048
+address 04a9000 length 2048
+address 04c9000 length 2048
+address 04e9000 length 2048
+address 4009000 length 2048 <-----
+address 4029000 length 2048
 
-commit 685fd0b4ea3f0f1d5385610b0d5b57775a8d5842 upstream.
+Huge unexplained gaps in what should be an empty TCE table. It turns out
+it_blocksize, the amount we want to align the next allocation to, was
+c0000000fe903b20. Completely bogus.
 
-A small number of users of IRQF_TIMER are using it for the implied no
-suspend behaviour on interrupts which are not timer interrupts.
+Initialise it to something reasonable in the VIO IOMMU code, and use kzalloc
+everywhere to protect against this when we next add a non compulsary
+field to iommu code and forget to initialise it.
 
-Therefore add a new IRQF_NO_SUSPEND flag, rename IRQF_TIMER to
-__IRQF_TIMER and redefine IRQF_TIMER in terms of these new flags.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>
-Cc: xen-devel@lists.xensource.com
-Cc: linux-input@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org
-Cc: devicetree-discuss@lists.ozlabs.org
-LKML-Reference: <1280398595-29708-1-git-send-email-ian.campbell@citrix.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- include/linux/interrupt.h |    7 ++++++-
- kernel/irq/manage.c       |    2 +-
- 2 files changed, 7 insertions(+), 2 deletions(-)
 
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -53,16 +53,21 @@
-  * IRQF_ONESHOT - Interrupt is not reenabled after the hardirq handler finished.
-  *                Used by threaded interrupts which need to keep the
-  *                irq line disabled until the threaded handler has been run.
-+ * IRQF_NO_SUSPEND - Do not disable this IRQ during suspend
-+ *
-  */
- #define IRQF_DISABLED		0x00000020
- #define IRQF_SAMPLE_RANDOM	0x00000040
- #define IRQF_SHARED		0x00000080
- #define IRQF_PROBE_SHARED	0x00000100
--#define IRQF_TIMER		0x00000200
-+#define __IRQF_TIMER		0x00000200
- #define IRQF_PERCPU		0x00000400
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
- #define IRQF_ONESHOT		0x00002000
-+#define IRQF_NO_SUSPEND		0x00004000
-+
-+#define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND)
+Index: powerpc.git/arch/powerpc/kernel/vio.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/kernel/vio.c	2010-08-12 12:27:58.674490962 +1000
++++ powerpc.git/arch/powerpc/kernel/vio.c	2010-08-12 12:28:18.660741428 +1000
+@@ -1059,7 +1059,7 @@ static struct iommu_table *vio_build_iom
+ 	if (!dma_window)
+ 		return NULL;
  
- /*
-  * Bits used by threaded handlers:
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -216,7 +216,7 @@ static inline int setup_affinity(unsigne
- void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- {
- 	if (suspend) {
--		if (!desc->action || (desc->action->flags & IRQF_TIMER))
-+		if (!desc->action || (desc->action->flags & IRQF_NO_SUSPEND))
- 			return;
- 		desc->status |= IRQ_SUSPENDED;
- 	}
+-	tbl = kmalloc(sizeof(*tbl), GFP_KERNEL);
++	tbl = kzalloc(sizeof(*tbl), GFP_KERNEL);
+ 	if (tbl == NULL)
+ 		return NULL;
+ 
+@@ -1072,6 +1072,7 @@ static struct iommu_table *vio_build_iom
+ 	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
+ 	tbl->it_busno = 0;
+ 	tbl->it_type = TCE_VB;
++	tbl->it_blocksize = 16;
+ 
+ 	return iommu_init_table(tbl, -1);
+ }
+Index: powerpc.git/arch/powerpc/platforms/iseries/iommu.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/iseries/iommu.c	2010-08-12 12:29:35.473241172 +1000
++++ powerpc.git/arch/powerpc/platforms/iseries/iommu.c	2010-08-12 12:29:50.190890563 +1000
+@@ -184,7 +184,7 @@ static void pci_dma_dev_setup_iseries(st
+ 
+ 	BUG_ON(lsn == NULL);
+ 
+-	tbl = kmalloc(sizeof(struct iommu_table), GFP_KERNEL);
++	tbl = kzalloc(sizeof(struct iommu_table), GFP_KERNEL);
+ 
+ 	iommu_table_getparms_iSeries(pdn->busno, *lsn, 0, tbl);
+ 
+Index: powerpc.git/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/pseries/iommu.c	2010-08-12 12:28:45.340756738 +1000
++++ powerpc.git/arch/powerpc/platforms/pseries/iommu.c	2010-08-12 12:29:15.401118951 +1000
+@@ -403,7 +403,7 @@ static void pci_dma_bus_setup_pSeries(st
+ 	pci->phb->dma_window_size = 0x8000000ul;
+ 	pci->phb->dma_window_base_cur = 0x8000000ul;
+ 
+-	tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 			   pci->phb->node);
+ 
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+@@ -448,7 +448,7 @@ static void pci_dma_bus_setup_pSeriesLP(
+ 		 pdn->full_name, ppci->iommu_table);
+ 
+ 	if (!ppci->iommu_table) {
+-		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   ppci->phb->node);
+ 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window,
+ 			bus->number);
+@@ -478,7 +478,7 @@ static void pci_dma_dev_setup_pSeries(st
+ 		struct pci_controller *phb = PCI_DN(dn)->phb;
+ 
+ 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
+-		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   phb->node);
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+@@ -544,7 +544,7 @@ static void pci_dma_dev_setup_pSeriesLP(
+ 
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+-		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   pci->phb->node);
+ 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window,
+ 			pci->phb->bus->number);
+Index: powerpc.git/arch/powerpc/platforms/cell/iommu.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/cell/iommu.c	2010-08-12 12:31:27.040741891 +1000
++++ powerpc.git/arch/powerpc/platforms/cell/iommu.c	2010-08-12 12:31:34.641324320 +1000
+@@ -477,7 +477,7 @@ cell_iommu_setup_window(struct cbe_iommu
+ 
+ 	ioid = cell_iommu_get_ioid(np);
+ 
+-	window = kmalloc_node(sizeof(*window), GFP_KERNEL, iommu->nid);
++	window = kzalloc_node(sizeof(*window), GFP_KERNEL, iommu->nid);
+ 	BUG_ON(window == NULL);
+ 
+ 	window->offset = offset;
