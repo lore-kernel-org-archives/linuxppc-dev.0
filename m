@@ -1,17 +1,18 @@
-Return-Path: <matt@console-pimps.org>
-Received: from arkanian.console-pimps.org (arkanian.console-pimps.org
-	[212.110.184.194]) by ozlabs.org (Postfix) with ESMTP id 62369B70D1
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Aug 2010 21:42:43 +1000 (EST)
-Date: Thu, 12 Aug 2010 12:34:21 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Running out of SDHCI quirk space (Re: [PATCH 1/3 v2] sdhci: Add
-	auto CMD12 support for eSDHC driver)
-Message-ID: <20100812113421.GB30744@console-pimps.org>
+Return-Path: <nareshsankapelly@gmail.com>
+Received: from mail-pw0-f51.google.com (mail-pw0-f51.google.com
+	[209.85.160.51]) by ozlabs.org (Postfix) with ESMTP id 6D340B70D4
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 Aug 2010 23:40:25 +1000 (EST)
+Received: by pwj5 with SMTP id 5so230091pwj.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Thu, 12 Aug 2010 06:40:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Ben Dooks <ben@simtec.co.uk>, linux-mmc@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+From: Naresh Reddy Sankapelly <nareshsankapelly@gmail.com>
+Date: Thu, 12 Aug 2010 19:10:04 +0530
+Message-ID: <AANLkTik-5wQSezV_X=6wVkguCLrOQnZ_byS6skFm1kEz@mail.gmail.com>
+Subject: Flash Programmer Problem in Code Warrior
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001636457a1c1ff9c9048da082e4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,32 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 03, 2010 at 04:43:46PM -0700, Andrew Morton wrote:
-> On Tue, 3 Aug 2010 11:11:10 +0800
-> Roy Zang <tie-fei.zang@freescale.com> wrote:
-> 
-> > --- a/drivers/mmc/host/sdhci.h
-> > +++ b/drivers/mmc/host/sdhci.h
-> > @@ -240,6 +240,8 @@ struct sdhci_host {
-> >  #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN		(1<<25)
-> >  /* Controller cannot support End Attribute in NOP ADMA descriptor */
-> >  #define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC		(1<<26)
-> > +/* Controller uses Auto CMD12 command to stop the transfer */
-> > +#define SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12		(1<<27)
-> 
-> This becomes 1<<29 in my tree.
-> 
-> We're about to run out.  What happens then?
+--001636457a1c1ff9c9048da082e4
+Content-Type: text/plain; charset=ISO-8859-1
 
-I've been wondering for a while now if many of the quirks should be
-hidden behind function pointers. While we could of course extend the
-quirk space, I think that's kinda missing the point that quirks are
-being used too liberally. Take SDHCI_QUIRK_SINGLE_POWER_WRITE in
-drivers/mmc/host/sdhci.c:sdhci_set_power(). Really, that quirk should
-probably be hidden inside a set_power() function in the sdhci_ops
-structure.
+Hi,
+I am trying to program NOR flash (M29DW323DT) on MPC8321 board. I have
+imported the details of the flash into FPDeviceConfig.xml. When I try to run
+Program/verify flash, it is taking large amount of time(in hours). I could
+not figure out the reason for that. Kindly let me know the troubleshooting
+method for this.
 
-I'm gonna have a go at trying to remove some of the quirks that don't
-make sense being quirks. I'll post the series when I'm done.
+-- 
+Thanks and Regards
+Naresh Reddy S.
+Noida, 9873240342
 
-Does anyone think that this approach is crazy?
+--001636457a1c1ff9c9048da082e4
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br>I am trying to program NOR flash (M29DW323DT) on MPC8321 board. I ha=
+ve imported the details of the flash into FPDeviceConfig.xml. When I try to=
+ run Program/verify flash, it is taking large amount of time(in hours). I c=
+ould not figure out the reason for that. Kindly let me know the troubleshoo=
+ting method for this.<br>
+
+<br>-- <br>Thanks and Regards<br>Naresh Reddy S.<br>Noida, 9873240342<br><b=
+r>
+
+--001636457a1c1ff9c9048da082e4--
