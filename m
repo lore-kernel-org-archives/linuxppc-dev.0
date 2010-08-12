@@ -1,21 +1,25 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.178.251.9])
-	by ozlabs.org (Postfix) with ESMTP id 5DB34B6EE9
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 Aug 2010 04:02:49 +1000 (EST)
-Received: from [10.11.13.106] (unknown [10.11.13.106])
-	by mail.theptrgroup.com (Postfix) with ESMTP id AF8611E003
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 12 Aug 2010 13:53:52 -0400 (EDT)
-Message-ID: <4C64352F.4090005@theptrgroup.com>
-Date: Thu, 12 Aug 2010 13:53:51 -0400
-From: Jeff Angielski <jeff@theptrgroup.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Query regarding 2.6.335 RT[Ingo's] and Non-RT performance
-References: <AANLkTikrpqFQsK=YLkHeWc1ZC=_Gz2rWStJrbQ8O-SrZ@mail.gmail.com>
-In-Reply-To: <AANLkTikrpqFQsK=YLkHeWc1ZC=_Gz2rWStJrbQ8O-SrZ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[140.211.169.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id EF7ABB70CE
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 05:08:30 +1000 (EST)
+Date: Thu, 12 Aug 2010 12:08:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Subject: Re: [PATCH 0/8] v5 De-couple sysfs memory directories from memory
+	sections
+Message-Id: <20100812120816.e97d8b9e.akpm@linux-foundation.org>
+In-Reply-To: <4C60407C.2080608@austin.ibm.com>
+References: <4C60407C.2080608@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2010 06:18 PM, Manikandan Ramachandran wrote:
-> Hello All,
->      I created a very simple program which has higher priority than
-> normal tasks and runs a tight loop. Under same test environment I ran
-> this program on both non-rt and rt 2.6.33.5 kernel.  To my suprise I see
-> that performance of non-RT kernel is better than RT. non-RT kernel took
-> 3 sec and 366156 usec while RT kernel took about 3 sec and 418011
-> usec.Can someone please explain why the performance of non-rt kernel is
-> better than rt kernel? From the face of the test result, I feel RT has
-> more overhead,Is there any configuration that I could do to bring down
-> the overhead?
+On Mon, 09 Aug 2010 12:53:00 -0500
+Nathan Fontenot <nfont@austin.ibm.com> wrote:
 
-Your "surprise" is due to your definition of "performance".
+> This set of patches de-couples the idea that there is a single
+> directory in sysfs for each memory section.  The intent of the
+> patches is to reduce the number of sysfs directories created to
+> resolve a boot-time performance issue.  On very large systems
+> boot time are getting very long (as seen on powerpc hardware)
+> due to the enormous number of sysfs directories being created.
+> On a system with 1 TB of memory we create ~63,000 directories.
+> For even larger systems boot times are being measured in hours.
 
-The purpose of the -rt kernels is to reduce the kernel latency.  This is 
-important for servicing hardware.  Normal users find the -rt useful for 
-audio/video applications.  Engineering and scientific users find the -rt 
-beneficially for servicing hardware like sensors or control systems.
+And those "hours" are mainly due to this problem, I assume.
 
-If you are just trying to run calculations as fast as you can in user 
-space, you'd be better off using the non-rt variants.
+> This set of patches allows for each directory created in sysfs
+> to cover more than one memory section.  The default behavior for
+> sysfs directory creation is the same, in that each directory
+> represents a single memory section.  A new file 'end_phys_index'
+> in each directory contains the physical_id of the last memory
+> section covered by the directory so that users can easily
+> determine the memory section range of a directory.
+
+What you're proposing appears to be a non-back-compatible
+userspace-visible change.  This is a big issue!
+
+It's not an unresolvable issue, as this is a must-fix problem.  But you
+should tell us what your proposal is to prevent breakage of existing
+installations.  A Kconfig option would be good, but a boot-time kernel
+command line option which selects the new format would be much better.
+
+However you didn't mention this issue at all, and it's the most
+important one.
 
 
--- 
-Jeff Angielski
-The PTR Group
-www.theptrgroup.com
+> Updates for version 5 of the patchset include the following:
+> 
+> Patch 4/8 Add mutex for add/remove of memory blocks
+> - Define the mutex using DEFINE_MUTEX macro.
+> 
+> Patch 8/8 Update memory-hotplug documentation
+> - Add information concerning memory holes in phys_index..end_phys_index.
+
+And you forgot to tell us how long those machines boot with the
+patchset applied, which is the entire point of the patchset!
