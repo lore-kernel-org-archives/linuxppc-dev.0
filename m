@@ -1,25 +1,18 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
-	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 4C22FB70D0
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 Aug 2010 23:16:25 +1000 (EST)
-Received: by eyd9 with SMTP id 9so182333eyd.38
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Fri, 13 Aug 2010 06:16:22 -0700 (PDT)
-Date: Fri, 13 Aug 2010 17:16:18 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Ravi Gupta <dceravigupta@gmail.com>
-Subject: Re: How to use mpc8xxx_gpio.c device driver
-Message-ID: <20100813131618.GA25414@oksana.dev.rtsoft.ru>
-References: <AANLkTinYCfFJB2NR3hcQ4aZU7QXfCs2ixdEu7VuNxf0=@mail.gmail.com>
-	<AANLkTimJ1+d7U2SN_SSHepo6u01RJqUEXUDQXUgBfCWK@mail.gmail.com>
-	<20100811164527.GA19793@oksana.dev.rtsoft.ru>
-	<AANLkTi=H1sKaGL8cHm9LAZm1tzm88dvkReXk12hmkWLj@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AANLkTi=H1sKaGL8cHm9LAZm1tzm88dvkReXk12hmkWLj@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, MJ embd <mj.embd@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, "Ira W. Snyder" <iws@ovro.caltech.edu>
+Return-Path: <abounine@tundra.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTPS id 98B5AB70DA
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Aug 2010 01:20:09 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/9] RapidIO: fix RapidIO sysfs hierarchy
+Date: Fri, 13 Aug 2010 11:17:58 -0400
+Message-Id: <1281712686-31308-2-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
+References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Makes RapidIO devices appear in /sys/devices/rapidio directory instead of top
+of /sys/devices directory.
 
-On Fri, Aug 13, 2010 at 03:29:11PM +0530, Ravi Gupta wrote:
-[...]
-> Thanks for the reply.
-> I had added the entries for gpio pin 9 for both controllers(I was not sure
-> with controller's pin is connected to LED, but now I know it is pin no. 233
-> i.e 224+9) in the mpc8377_rdb.dts file. Below is a portion of my dts file, I
-> have attached the complete dts file as attachment.
-> 
-> immr@e0000000 {
-[...]
->    * led@0 {
->         compatible = "gpio-leds";
->         label = "hdd";
->         gpios = <&gpio1 9 0>;
->     };
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Reviewed-by: Thomas Moll <thomas.moll@sysgo.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/rapidio/rio-driver.c |    2 +-
+ drivers/rapidio/rio-scan.c   |    1 +
+ include/linux/rio.h          |    1 +
+ 3 files changed, 3 insertions(+), 1 deletions(-)
 
-What kernel version you look at? Please see the latest kernel,
-it has MCU GPIO LED nodes already, and you can just add some
-additional nodes.
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/mpc8377_rdb.dts#l490
-
-[...]
-> Also I have enabled drivers/leds/leds-gpio.c in my kernel. To test whether
-> the leds entires in dts file get attached to leds-gpio driver, I added
-> printks in the probe function of the driver.
-> 
-> static int gpio_led_probe(struct platform_device *pdev)
-> {
->   struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
->   struct gpio_led *cur_led;
->   struct gpio_led_data *leds_data, *led_dat;
->   int i, ret = 0;
-> 
->   *printk(KERN_INFO "led: inside gpio_led_probe.\n");*
-
-You have put the printk into the wrong function. It should
-have been of_gpio_leds_probe():
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/leds/leds-gpio.c#l227
-
-If you don't have that function then you use too old kernel.
-
-Thanks,
-
+diff --git a/drivers/rapidio/rio-driver.c b/drivers/rapidio/rio-driver.c
+index 3222fa3..0f4a53b 100644
+--- a/drivers/rapidio/rio-driver.c
++++ b/drivers/rapidio/rio-driver.c
+@@ -192,7 +192,7 @@ static int rio_match_bus(struct device *dev, struct device_driver *drv)
+       out:return 0;
+ }
+ 
+-static struct device rio_bus = {
++struct device rio_bus = {
+ 	.init_name = "rapidio",
+ };
+ 
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 8070e07..1123be8 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -478,6 +478,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 	}
+ 
+ 	rdev->dev.bus = &rio_bus_type;
++	rdev->dev.parent = &rio_bus;
+ 
+ 	device_initialize(&rdev->dev);
+ 	rdev->dev.release = rio_release_dev;
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index bd6eb0e..84c9f8c 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -67,6 +67,7 @@
+ #define RIO_PW_MSG_SIZE		64
+ 
+ extern struct bus_type rio_bus_type;
++extern struct device rio_bus;
+ extern struct list_head rio_devices;	/* list of all devices */
+ 
+ struct rio_mport;
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.7.0.5
