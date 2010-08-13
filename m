@@ -1,22 +1,25 @@
-Return-Path: <dceravigupta@gmail.com>
-Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 4CE81B70CB
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 20:01:13 +1000 (EST)
-Received: by pxi17 with SMTP id 17so1225859pxi.15
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 03:01:12 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20100812153618.GA7498@ovro.caltech.edu>
-References: <AANLkTinYCfFJB2NR3hcQ4aZU7QXfCs2ixdEu7VuNxf0=@mail.gmail.com>
-	<AANLkTikNt7hrxA+QR-omUiiLKVBnjqCw+HTDQh_5B5Ff@mail.gmail.com>
-	<AANLkTi=-YiWtBqCGSt-h8dd3WwTMVJcDitvROCDBEMdw@mail.gmail.com>
-	<20100812153618.GA7498@ovro.caltech.edu>
-Date: Fri, 13 Aug 2010 15:31:11 +0530
-Message-ID: <AANLkTikqUsrwPFu75QhuEGj63H0_FX3Jx6TVM4PQfKJw@mail.gmail.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ey0-f179.google.com (mail-ey0-f179.google.com
+	[209.85.215.179]) by ozlabs.org (Postfix) with ESMTP id 4C22FB70D0
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 13 Aug 2010 23:16:25 +1000 (EST)
+Received: by eyd9 with SMTP id 9so182333eyd.38
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Fri, 13 Aug 2010 06:16:22 -0700 (PDT)
+Date: Fri, 13 Aug 2010 17:16:18 +0400
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Ravi Gupta <dceravigupta@gmail.com>
 Subject: Re: How to use mpc8xxx_gpio.c device driver
-From: Ravi Gupta <dceravigupta@gmail.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Content-Type: multipart/alternative; boundary=00163646c428044f82048db19025
-Cc: linuxppc-dev@ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Message-ID: <20100813131618.GA25414@oksana.dev.rtsoft.ru>
+References: <AANLkTinYCfFJB2NR3hcQ4aZU7QXfCs2ixdEu7VuNxf0=@mail.gmail.com>
+	<AANLkTimJ1+d7U2SN_SSHepo6u01RJqUEXUDQXUgBfCWK@mail.gmail.com>
+	<20100811164527.GA19793@oksana.dev.rtsoft.ru>
+	<AANLkTi=H1sKaGL8cHm9LAZm1tzm88dvkReXk12hmkWLj@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AANLkTi=H1sKaGL8cHm9LAZm1tzm88dvkReXk12hmkWLj@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, MJ embd <mj.embd@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org, "Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00163646c428044f82048db19025
-Content-Type: text/plain; charset=ISO-8859-1
+Hi,
 
-> Looking at the device tree for this board, it appears U-Boot remaps the
-> IMMR registers to 0xe0000000. They are no longer accessible at
-> 0xff400000.
->
-> I would recommend studying arch/powerpc/boot/dts/mpc8377_rdb.dts in the
-> Linux source code. That describes the device layout on your board after
-> U-Boot has run.
->
-> A wonderful tool for testing devices from userspace is "busybox devmem".
-> It allows you to poke any physical address with any value. The output of
-> "busybox devmem --help" should get you started. As a quick example,
-> "busybox devmem 0xe0000c00 w 0x1" will write the 32-bit value 0x1 to
-> address 0xe0000c00.
->
-> I would also recommend using the built-in Linux GPIO API. It works, you
-> just need to figure out how to use it. It will be much easier to get
-> your code upstream if you use the provided APIs.
->
-> The Documentation/gpio.txt file should help you in understanding the
-> in-kernel Linux GPIO API. I'm afraid I don't have much experience other
-> than accessing it via sysfs from userspace.
->
-> Ira
->
+On Fri, Aug 13, 2010 at 03:29:11PM +0530, Ravi Gupta wrote:
+[...]
+> Thanks for the reply.
+> I had added the entries for gpio pin 9 for both controllers(I was not sure
+> with controller's pin is connected to LED, but now I know it is pin no. 233
+> i.e 224+9) in the mpc8377_rdb.dts file. Below is a portion of my dts file, I
+> have attached the complete dts file as attachment.
+> 
+> immr@e0000000 {
+[...]
+>    * led@0 {
+>         compatible = "gpio-leds";
+>         label = "hdd";
+>         gpios = <&gpio1 9 0>;
+>     };
 
-Hi Ira,
+What kernel version you look at? Please see the latest kernel,
+it has MCU GPIO LED nodes already, and you can just add some
+additional nodes.
 
-Thanks for another great reply. Now I can also access gpio memory map
-registers.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/powerpc/boot/dts/mpc8377_rdb.dts#l490
 
-Thanks and Regards,
-Ravi Gupta
+[...]
+> Also I have enabled drivers/leds/leds-gpio.c in my kernel. To test whether
+> the leds entires in dts file get attached to leds-gpio driver, I added
+> printks in the probe function of the driver.
+> 
+> static int gpio_led_probe(struct platform_device *pdev)
+> {
+>   struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
+>   struct gpio_led *cur_led;
+>   struct gpio_led_data *leds_data, *led_dat;
+>   int i, ret = 0;
+> 
+>   *printk(KERN_INFO "led: inside gpio_led_probe.\n");*
 
---00163646c428044f82048db19025
-Content-Type: text/html; charset=ISO-8859-1
+You have put the printk into the wrong function. It should
+have been of_gpio_leds_probe():
 
-<br><div class="gmail_quote"><blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;">Looking at the device tree for this board, it appears U-Boot remaps the<br>
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/leds/leds-gpio.c#l227
 
-IMMR registers to 0xe0000000. They are no longer accessible at<br>
-0xff400000.<br>
-<br>
-I would recommend studying arch/powerpc/boot/dts/mpc8377_rdb.dts in the<br>
-Linux source code. That describes the device layout on your board after<br>
-U-Boot has run.<br>
-<br>
-A wonderful tool for testing devices from userspace is &quot;busybox devmem&quot;.<br>
-It allows you to poke any physical address with any value. The output of<br>
-&quot;busybox devmem --help&quot; should get you started. As a quick example,<br>
-&quot;busybox devmem 0xe0000c00 w 0x1&quot; will write the 32-bit value 0x1 to<br>
-address 0xe0000c00.<br>
-<br>
-I would also recommend using the built-in Linux GPIO API. It works, you<br>
-just need to figure out how to use it. It will be much easier to get<br>
-your code upstream if you use the provided APIs.<br>
-<br>
-The Documentation/gpio.txt file should help you in understanding the<br>
-in-kernel Linux GPIO API. I&#39;m afraid I don&#39;t have much experience other<br>
-than accessing it via sysfs from userspace.<br>
-<font color="#888888"><br>
-Ira<br>
-</font></blockquote></div><br>Hi Ira,<br><br>Thanks for another great reply. Now I can also access gpio memory map registers.<br><br>Thanks and Regards,<br>Ravi Gupta<br>
+If you don't have that function then you use too old kernel.
 
---00163646c428044f82048db19025--
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
