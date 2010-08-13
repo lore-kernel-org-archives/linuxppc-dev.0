@@ -2,15 +2,15 @@ Return-Path: <abounine@tundra.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id 0CB03B7208
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Aug 2010 01:20:13 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTPS id 43369B70EB
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Aug 2010 01:20:20 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/9] RapidIO,
-	powerpc/85xx: modify RIO port-write interrupt handler
-Date: Fri, 13 Aug 2010 11:17:59 -0400
-Message-Id: <1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 3/9] RapidIO: Add the ingress port number into the RIO switch
+	data structure
+Date: Fri, 13 Aug 2010 11:18:00 -0400
+Message-Id: <1281712686-31308-4-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Alexandre Bounine <alexandre.bounine@idt.com>
@@ -23,10 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- Rearranged RIO port-write interrupt handling to perform message buffering
-as soon as possible.
-- Modified to disable port-write controller when clearing Transaction Error (TE)
-bit.
+A switch ingress port number has to be saved for software assisted error
+recovery from the error-stopped state. Saving this information also allows
+to remove several register reads from the RIO enumeration process.
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Reviewed-by: Thomas Moll <thomas.moll@sysgo.com>
@@ -34,108 +33,146 @@ Cc: Matt Porter <mporter@kernel.crashing.org>
 Cc: Li Yang <leoli@freescale.com>
 Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/sysdev/fsl_rio.c |   67 ++++++++++++++++++++++------------------
- 1 files changed, 37 insertions(+), 30 deletions(-)
+ drivers/rapidio/rio-scan.c |   38 ++++++++------------------------------
+ include/linux/rio.h        |    4 ++--
+ 2 files changed, 10 insertions(+), 32 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index cd71dc1..708d94e 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -1065,18 +1065,12 @@ fsl_rio_port_write_handler(int irq, void *dev_instance)
- 	struct rio_priv *priv = port->priv;
- 	u32 epwisr, tmp;
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 1123be8..efe3519 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -389,6 +389,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 	int ret = 0;
+ 	struct rio_dev *rdev;
+ 	struct rio_switch *rswitch = NULL;
++	u32 swpinfo;
+ 	int result, rdid;
  
--	ipwmr = in_be32(&priv->msg_regs->pwmr);
--	ipwsr = in_be32(&priv->msg_regs->pwsr);
--
- 	epwisr = in_be32(priv->regs_win + RIO_EPWISR);
--	if (epwisr & 0x80000000) {
--		tmp = in_be32(priv->regs_win + RIO_LTLEDCSR);
--		pr_info("RIO_LTLEDCSR = 0x%x\n", tmp);
--		out_be32(priv->regs_win + RIO_LTLEDCSR, 0);
--	}
--
- 	if (!(epwisr & 0x00000001))
--		return IRQ_HANDLED;
-+		goto pw_done;
-+
-+	ipwmr = in_be32(&priv->msg_regs->pwmr);
-+	ipwsr = in_be32(&priv->msg_regs->pwsr);
- 
- #ifdef DEBUG_PW
- 	pr_debug("PW Int->IPWMR: 0x%08x IPWSR: 0x%08x (", ipwmr, ipwsr);
-@@ -1092,22 +1086,8 @@ fsl_rio_port_write_handler(int irq, void *dev_instance)
- 		pr_debug(" PWB");
- 	pr_debug(" )\n");
- #endif
--	out_be32(&priv->msg_regs->pwsr,
--		 ipwsr & (RIO_IPWSR_TE | RIO_IPWSR_QFI | RIO_IPWSR_PWD));
--
--	if ((ipwmr & RIO_IPWMR_EIE) && (ipwsr & RIO_IPWSR_TE)) {
--		priv->port_write_msg.err_count++;
--		pr_info("RIO: Port-Write Transaction Err (%d)\n",
--			 priv->port_write_msg.err_count);
--	}
--	if (ipwsr & RIO_IPWSR_PWD) {
--		priv->port_write_msg.discard_count++;
--		pr_info("RIO: Port Discarded Port-Write Msg(s) (%d)\n",
--			 priv->port_write_msg.discard_count);
--	}
--
- 	/* Schedule deferred processing if PW was received */
--	if (ipwsr & RIO_IPWSR_QFI) {
-+	if ((ipwmr & RIO_IPWMR_QFIE) && (ipwsr & RIO_IPWSR_QFI)) {
- 		/* Save PW message (if there is room in FIFO),
- 		 * otherwise discard it.
- 		 */
-@@ -1117,16 +1097,43 @@ fsl_rio_port_write_handler(int irq, void *dev_instance)
- 				 RIO_PW_MSG_SIZE);
- 		} else {
- 			priv->port_write_msg.discard_count++;
--			pr_info("RIO: ISR Discarded Port-Write Msg(s) (%d)\n",
-+			pr_debug("RIO: ISR Discarded Port-Write Msg(s) (%d)\n",
- 				 priv->port_write_msg.discard_count);
- 		}
-+		/* Clear interrupt and issue Clear Queue command. This allows
-+		 * another port-write to be received.
-+		 */
-+		out_be32(&priv->msg_regs->pwsr,	RIO_IPWSR_QFI);
-+		out_be32(&priv->msg_regs->pwmr, ipwmr | RIO_IPWMR_CQ);
-+
- 		schedule_work(&priv->pw_work);
- 	}
- 
--	/* Issue Clear Queue command. This allows another
--	 * port-write to be received.
--	 */
--	out_be32(&priv->msg_regs->pwmr, ipwmr | RIO_IPWMR_CQ);
-+	if ((ipwmr & RIO_IPWMR_EIE) && (ipwsr & RIO_IPWSR_TE)) {
-+		priv->port_write_msg.err_count++;
-+		pr_debug("RIO: Port-Write Transaction Err (%d)\n",
-+			 priv->port_write_msg.err_count);
-+		/* Clear Transaction Error: port-write controller should be
-+		 * disabled when clearing this error
-+		 */
-+		out_be32(&priv->msg_regs->pwmr, ipwmr & ~RIO_IPWMR_PWE);
-+		out_be32(&priv->msg_regs->pwsr,	RIO_IPWSR_TE);
-+		out_be32(&priv->msg_regs->pwmr, ipwmr);
-+	}
-+
-+	if (ipwsr & RIO_IPWSR_PWD) {
-+		priv->port_write_msg.discard_count++;
-+		pr_debug("RIO: Port Discarded Port-Write Msg(s) (%d)\n",
-+			 priv->port_write_msg.discard_count);
-+		out_be32(&priv->msg_regs->pwsr, RIO_IPWSR_PWD);
-+	}
-+
-+pw_done:
-+	if (epwisr & 0x80000000) {
-+		tmp = in_be32(priv->regs_win + RIO_LTLEDCSR);
-+		pr_debug("RIO_LTLEDCSR = 0x%x\n", tmp);
-+		out_be32(priv->regs_win + RIO_LTLEDCSR, 0);
-+	}
- 
- 	return IRQ_HANDLED;
+ 	rdev = kzalloc(sizeof(struct rio_dev), GFP_KERNEL);
+@@ -440,7 +441,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 	/* If a PE has both switch and other functions, show it as a switch */
+ 	if (rio_is_switch(rdev)) {
+ 		rio_mport_read_config_32(port, destid, hopcount,
+-					 RIO_SWP_INFO_CAR, &rdev->swpinfo);
++					 RIO_SWP_INFO_CAR, &swpinfo);
+ 		rswitch = kzalloc(sizeof(struct rio_switch), GFP_KERNEL);
+ 		if (!rswitch)
+ 			goto cleanup;
+@@ -448,6 +449,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 		rswitch->hopcount = hopcount;
+ 		rswitch->destid = destid;
+ 		rswitch->port_ok = 0;
++		rswitch->inport = (u8)(swpinfo & RIO_SWP_INFO_PORT_NUM_MASK);
+ 		rswitch->route_table = kzalloc(sizeof(u8)*
+ 					RIO_MAX_ROUTE_ENTRIES(port->sys_size),
+ 					GFP_KERNEL);
+@@ -719,25 +721,6 @@ static u16 rio_get_host_deviceid_lock(struct rio_mport *port, u8 hopcount)
  }
+ 
+ /**
+- * rio_get_swpinfo_inport- Gets the ingress port number
+- * @mport: Master port to send transaction
+- * @destid: Destination ID associated with the switch
+- * @hopcount: Number of hops to the device
+- *
+- * Returns port number being used to access the switch device.
+- */
+-static u8
+-rio_get_swpinfo_inport(struct rio_mport *mport, u16 destid, u8 hopcount)
+-{
+-	u32 result;
+-
+-	rio_mport_read_config_32(mport, destid, hopcount, RIO_SWP_INFO_CAR,
+-				 &result);
+-
+-	return (u8) (result & 0xff);
+-}
+-
+-/**
+  * rio_get_swpinfo_tports- Gets total number of ports on the switch
+  * @mport: Master port to send transaction
+  * @destid: Destination ID associated with the switch
+@@ -834,8 +817,7 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 
+ 	if (rio_is_switch(rdev)) {
+ 		next_switchid++;
+-		sw_inport = rio_get_swpinfo_inport(port,
+-				RIO_ANY_DESTID(port->sys_size), hopcount);
++		sw_inport = rdev->rswitch->inport;
+ 		rio_route_add_entry(port, rdev->rswitch, RIO_GLOBAL_TABLE,
+ 				    port->host_deviceid, sw_inport, 0);
+ 		rdev->rswitch->route_table[port->host_deviceid] = sw_inport;
+@@ -989,8 +971,7 @@ rio_disc_peer(struct rio_net *net, struct rio_mport *port, u16 destid,
+ 		    "RIO: found %s (vid %4.4x did %4.4x) with %d ports\n",
+ 		    rio_name(rdev), rdev->vid, rdev->did, num_ports);
+ 		for (port_num = 0; port_num < num_ports; port_num++) {
+-			if (rio_get_swpinfo_inport(port, destid, hopcount) ==
+-			    port_num)
++			if (rdev->rswitch->inport == port_num)
+ 				continue;
+ 
+ 			if (rio_sport_is_active
+@@ -1092,7 +1073,6 @@ static void rio_update_route_tables(struct rio_mport *port)
+ {
+ 	struct rio_dev *rdev;
+ 	struct rio_switch *rswitch;
+-	u8 sport;
+ 	u16 destid;
+ 
+ 	list_for_each_entry(rdev, &rio_devices, global_list) {
+@@ -1109,14 +1089,12 @@ static void rio_update_route_tables(struct rio_mport *port)
+ 				if (rswitch->destid == destid)
+ 					continue;
+ 
+-				sport = rio_get_swpinfo_inport(port,
+-						rswitch->destid, rswitch->hopcount);
+-
+ 				if (rswitch->add_entry)	{
+ 					rio_route_add_entry(port, rswitch,
+ 						RIO_GLOBAL_TABLE, destid,
+-						sport, 0);
+-					rswitch->route_table[destid] = sport;
++						rswitch->inport, 0);
++					rswitch->route_table[destid] =
++								rswitch->inport;
+ 				}
+ 			}
+ 		}
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 84c9f8c..718075a 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -86,7 +86,6 @@ union rio_pw_msg;
+  * @asm_rev: Assembly revision
+  * @efptr: Extended feature pointer
+  * @pef: Processing element features
+- * @swpinfo: Switch port info
+  * @src_ops: Source operation capabilities
+  * @dst_ops: Destination operation capabilities
+  * @comp_tag: RIO component tag
+@@ -112,7 +111,6 @@ struct rio_dev {
+ 	u16 asm_rev;
+ 	u16 efptr;
+ 	u32 pef;
+-	u32 swpinfo;		/* Only used for switches */
+ 	u32 src_ops;
+ 	u32 dst_ops;
+ 	u32 comp_tag;
+@@ -222,6 +220,7 @@ struct rio_net {
+  * @switchid: Switch ID that is unique across a network
+  * @hopcount: Hopcount to this switch
+  * @destid: Associated destid in the path
++ * @inport: Switch ingress port number
+  * @route_table: Copy of switch routing table
+  * @port_ok: Status of each port (one bit per port) - OK=1 or UNINIT=0
+  * @add_entry: Callback for switch-specific route add function
+@@ -237,6 +236,7 @@ struct rio_switch {
+ 	u16 switchid;
+ 	u16 hopcount;
+ 	u16 destid;
++	u8  inport;
+ 	u8 *route_table;
+ 	u32 port_ok;
+ 	int (*add_entry) (struct rio_mport * mport, u16 destid, u8 hopcount,
 -- 
 1.7.0.5
