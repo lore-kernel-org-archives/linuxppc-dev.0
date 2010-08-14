@@ -1,17 +1,20 @@
-Return-Path: <temerkhanov@cifronik.ru>
-Received: from cifronik.21th.com (cifronik.21th.com [62.16.86.116])
-	by ozlabs.org (Postfix) with ESMTP id 91C0BB70D1
-	for <linuxppc-dev@lists.ozlabs.org>;
-	Sat, 14 Aug 2010 14:15:26 +1000 (EST)
-From: Sergey Temerkhanov <temerkhanov@cifronik.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Resend][PATCHv3] Xilinx Virtex 4 FX Soft FPU support
-Date: Sat, 14 Aug 2010 08:09:53 +0400
+Return-Path: <terren.chow@gmail.com>
+Received: from mail-ey0-f170.google.com (mail-ey0-f170.google.com
+	[209.85.215.170]) by ozlabs.org (Postfix) with ESMTP id AA659B70DC
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Aug 2010 14:21:08 +1000 (EST)
+Received: by eyh6 with SMTP id 6so2168037eyh.15
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Aug 2010 21:21:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Message-Id: <201008140809.54230.temerkhanov@cifronik.ru>
-Cc: John Linn <John.Linn@xilinx.com>
+In-Reply-To: <1281413958.28245.17.camel@pasglop>
+References: <AANLkTinqKv1OXDBtQfg0jOyw=04FQcAvoE8CPmMN7M5_@mail.gmail.com>
+	<1281413958.28245.17.camel@pasglop>
+Date: Sat, 14 Aug 2010 12:21:06 +0800
+Message-ID: <AANLkTi=++AWzA8m5CYWULRyOg+Pf2ZRePMakf73KMXrh@mail.gmail.com>
+Subject: Re: Questions about powerpc kernel tree
+From: Terren Chow <terren.chow@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/alternative; boundary=00c09f7b2db2988593048dc0edcb
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,172 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for Xilinx Virtex 4 FX singe-float FPU.
+--00c09f7b2db2988593048dc0edcb
+Content-Type: text/plain; charset=ISO-8859-1
 
-Changelog v2-v3:
-	-Fixed whitespaces for SAVE_FPR/REST_FPR.
-	-Changed description of MSR_AP bit.
-	-Removed the stub for APU unavailable exception.
+Do you mean the "powerpc kernel tree" function as the "next" git branch for
+PPC architecture?
 
-Changelog v1->v2:
-	-Added MSR_AP bit definition
-	-Renamed CONFIG_XILINX_FPU to CONFIG_XILINX_SOFTFPU, moved it to
-	 'Platform support' and made it Virtex4-FX-only.
-	-Changed SAVE_FPR/REST_FPR definition style.
+2010/8/10 Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Caveats:
-	- Hard-float binaries which rely on in-kernel math emulation will
-	give wrong results since they expect 64-bit double-precision instead of
-	32-bit single-precision numbers which Xilinx V4-FX Soft FPU produces.
+> On Tue, 2010-08-10 at 10:39 +0800, Terren Chow wrote:
+> > Hi Ben:
+> >     I'm not quite clearly know about the powerpc kernel tree histroy.
+> > why the tags in the powerpc kernel tree are only update to 2.6.26-rc9
+> > at about 2 years ago?
+>
+> Not sure what you're looking at but your shouldn't need to use the
+> "powerpc kernel tree" whatever tree this is :-) All our work goes into
+> Linus tree on a regular basis, so unless you are specifically looking at
+> the powerpc "next" git branch aimed at the next merge window, there
+> should be nothing of interest to you there.
+>
+> Ben.
+>
+>
+>
 
-
-Signed-off-by: Sergey Temerkhanov<temerkhanov@cifronik.ru>
-
-diff -r 626de0d94469 arch/powerpc/include/asm/ppc_asm.h
---- a/arch/powerpc/include/asm/ppc_asm.h	Wed May 26 15:33:32 2010 +0400
-+++ b/arch/powerpc/include/asm/ppc_asm.h	Wed May 26 20:30:43 2010 +0400
-@@ -85,13 +85,21 @@
- #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
- #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
- 
-+
-+#ifdef CONFIG_XILINX_SOFTFPU
-+#define SAVE_FPR(n, base)	stfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define REST_FPR(n, base)	lfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#else
- #define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+#endif
-+
- #define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
- #define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
- #define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
- #define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
- #define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
--#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
-+
- #define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
- #define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
- #define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
-diff -r 626de0d94469 arch/powerpc/include/asm/reg.h
---- a/arch/powerpc/include/asm/reg.h	Wed May 26 15:33:32 2010 +0400
-+++ b/arch/powerpc/include/asm/reg.h	Wed May 26 20:30:43 2010 +0400
-@@ -30,6 +30,7 @@
- #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
- #define MSR_HV_LG 	60              /* Hypervisor state */
- #define MSR_VEC_LG	25	        /* Enable AltiVec */
-+#define MSR_AP_LG	25	        /* Enable PPC405 APU */
- #define MSR_VSX_LG	23		/* Enable VSX */
- #define MSR_POW_LG	18		/* Enable Power Management */
- #define MSR_WE_LG	18		/* Wait State Enable */
-@@ -71,6 +72,7 @@
- #define MSR_HV		0
- #endif
- 
-+#define MSR_AP		__MASK(MSR_AP_LG)	/* Enable PPC405 APU */
- #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
- #define MSR_VSX		__MASK(MSR_VSX_LG)	/* Enable VSX */
- #define MSR_POW		__MASK(MSR_POW_LG)	/* Enable Power Management */
-diff -r 626de0d94469 arch/powerpc/kernel/fpu.S
---- a/arch/powerpc/kernel/fpu.S	Wed May 26 15:33:32 2010 +0400
-+++ b/arch/powerpc/kernel/fpu.S	Wed May 26 20:30:43 2010 +0400
-@@ -57,6 +57,9 @@
- _GLOBAL(load_up_fpu)
- 	mfmsr	r5
- 	ori	r5,r5,MSR_FP
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r5,r5,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r5,r5,MSR_VSX@h
-@@ -85,6 +88,9 @@
- 	toreal(r5)
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 	li	r10,MSR_FP|MSR_FE0|MSR_FE1
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r10,r10,MSR_AP@h
-+#endif
- 	andc	r4,r4,r10		/* disable FP for previous task */
- 	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 1:
-@@ -94,6 +100,9 @@
- 	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
- 	lwz	r4,THREAD_FPEXC_MODE(r5)
- 	ori	r9,r9,MSR_FP		/* enable FP for current */
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r9,r9,MSR_AP@h
-+#endif
- 	or	r9,r9,r4
- #else
- 	ld	r4,PACACURRENT(r13)
-@@ -124,6 +133,9 @@
- _GLOBAL(giveup_fpu)
- 	mfmsr	r5
- 	ori	r5,r5,MSR_FP
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r5,r5,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r5,r5,MSR_VSX@h
-@@ -145,6 +157,9 @@
- 	beq	1f
- 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
- 	li	r3,MSR_FP|MSR_FE0|MSR_FE1
-+#ifdef CONFIG_XILINX_SOFTFPU
-+	oris	r3,r3,MSR_AP@h
-+#endif
- #ifdef CONFIG_VSX
- BEGIN_FTR_SECTION
- 	oris	r3,r3,MSR_VSX@h
-diff -r 626de0d94469 arch/powerpc/kernel/head_40x.S
---- a/arch/powerpc/kernel/head_40x.S	Wed May 26 15:33:32 2010 +0400
-+++ b/arch/powerpc/kernel/head_40x.S	Wed May 26 20:30:43 2010 +0400
-@@ -420,7 +420,19 @@
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_STD(0x700, program_check_exception)
- 
-+/* 0x0800 - FPU unavailable Exception */
-+#ifdef CONFIG_PPC_FPU
-+	START_EXCEPTION(0x0800, FloatingPointUnavailable)
-+	NORMAL_EXCEPTION_PROLOG
-+	beq	1f;							      \
-+	bl	load_up_fpu;		/* if from user, just load it up */   \
-+	b	fast_exception_return;					      \
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
-+	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
-+#else
- 	EXCEPTION(0x0800, Trap_08, unknown_exception, EXC_XFER_EE)
-+#endif
-+
- 	EXCEPTION(0x0900, Trap_09, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0A00, Trap_0A, unknown_exception, EXC_XFER_EE)
- 	EXCEPTION(0x0B00, Trap_0B, unknown_exception, EXC_XFER_EE)
-@@ -821,8 +833,10 @@
-  * The PowerPC 4xx family of processors do not have an FPU, so this just
-  * returns.
-  */
-+#ifndef CONFIG_PPC_FPU
- _ENTRY(giveup_fpu)
- 	blr
-+#endif
- 
- /* This is where the main kernel code starts.
-  */
-diff -r 626de0d94469 arch/powerpc/platforms/Kconfig
---- a/arch/powerpc/platforms/Kconfig	Wed May 26 15:33:32 2010 +0400
-+++ b/arch/powerpc/platforms/Kconfig	Wed May 26 20:30:43 2010 +0400
-@@ -333,4 +333,9 @@
- 	bool "Xilinx PCI host bridge support"
- 	depends on PCI && XILINX_VIRTEX
- 
-+config XILINX_SOFTFPU
-+	bool "Xilinx Soft FPU"
-+	select PPC_FPU
-+	depends on XILINX_VIRTEX_4_FX && !PPC40x_SIMPLE && !405GP && !405GPR
-+
- endmenu
 
 -- 
-Regards, Sergey Temerkhanov
+Terren Chow
+College of informatics, SCAU
+Graduate student
+Lab of Embedded System and Wireless Sensor Network
+MSN: terren.chow@hotmail.com
+
+--00c09f7b2db2988593048dc0edcb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Do you mean the &quot;powerpc kernel tree&quot; function as the &quot;next&=
+quot; git branch for PPC architecture? <br><br><div class=3D"gmail_quote">2=
+010/8/10 Benjamin Herrenschmidt <span dir=3D"ltr">&lt;<a href=3D"mailto:ben=
+h@kernel.crashing.org">benh@kernel.crashing.org</a>&gt;</span><br>
+<blockquote class=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; borde=
+r-left: 1px solid rgb(204, 204, 204); padding-left: 1ex;"><div class=3D"im"=
+>On Tue, 2010-08-10 at 10:39 +0800, Terren Chow wrote:<br>
+&gt; Hi Ben:<br>
+&gt; =A0 =A0 I&#39;m not quite clearly know about the powerpc kernel tree h=
+istroy.<br>
+&gt; why the tags in the powerpc kernel tree are only update to 2.6.26-rc9<=
+br>
+&gt; at about 2 years ago?<br>
+<br>
+</div>Not sure what you&#39;re looking at but your shouldn&#39;t need to us=
+e the<br>
+&quot;powerpc kernel tree&quot; whatever tree this is :-) All our work goes=
+ into<br>
+Linus tree on a regular basis, so unless you are specifically looking at<br=
+>
+the powerpc &quot;next&quot; git branch aimed at the next merge window, the=
+re<br>
+should be nothing of interest to you there.<br>
+<br>
+Ben.<br>
+<br>
+<br>
+</blockquote></div><br><br clear=3D"all"><br>-- <br>Terren Chow<br>College =
+of informatics, SCAU<br>Graduate student <br>Lab of Embedded System and Wir=
+eless Sensor Network<br>MSN: <a href=3D"mailto:terren.chow@hotmail.com">ter=
+ren.chow@hotmail.com</a><br>
+<br>
+
+--00c09f7b2db2988593048dc0edcb--
