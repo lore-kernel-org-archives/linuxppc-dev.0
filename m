@@ -1,20 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
+Return-Path: <temerkhanov@cifronik.ru>
+Received: from cifronik.21th.com (cifronik.21th.com [62.16.86.116])
+	by ozlabs.org (Postfix) with ESMTP id 91C0BB70D1
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Sat, 14 Aug 2010 14:15:26 +1000 (EST)
+From: Sergey Temerkhanov <temerkhanov@cifronik.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Resend][PATCHv3] Xilinx Virtex 4 FX Soft FPU support
+Date: Sat, 14 Aug 2010 08:09:53 +0400
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <20100813093438.GA18112@riccoc20.at.omicron.at>
-References: <cover.1276615626.git.richard.cochran@omicron.at>
-	<4a030d2bace90f089f2f3f61496b918c6f1dfb52.1276615626.git.richard.cochran@omicron.at>
-	<AANLkTinYjzfChsN0AB5W6kOh6xJYPJtoEq941pG8WbmS@mail.gmail.com>
-	<20100813093438.GA18112@riccoc20.at.omicron.at>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 13 Aug 2010 17:54:42 -0600
-Message-ID: <AANLkTi=f0i7vetMvr4mK1cNJK6TYj1J6iCxjFeka00jc@mail.gmail.com>
-Subject: Re: [PATCH 08/12] ptp: Added a brand new class driver for ptp clocks.
-To: Richard Cochran <richardcochran@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: netdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201008140809.54230.temerkhanov@cifronik.ru>
+Cc: John Linn <John.Linn@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +21,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 13, 2010 at 3:34 AM, Richard Cochran
-<richardcochran@gmail.com> wrote:
-> On Tue, Jun 15, 2010 at 01:11:30PM -0600, Grant Likely wrote:
->> On Tue, Jun 15, 2010 at 10:09 AM, Richard Cochran
->> > +static DEFINE_SPINLOCK(clocks_lock); /* protects 'clocks' */
->>
->> Doesn't appear that clocks is manipulated at atomic context. =A0Mutex in=
-stead?
-> ...
->> If the spinlock is changed to a mutex that is held for the entire
->> function call, then the logic here can be simpler.
->
-> Grant,
->
-> I am working on another go at this patch series. Stupid question:
->
-> The caller of ptp_clock_register(), which takes the clocks_lock, is
-> always a module_init() function. Is this always a safe context in
-> which to call mutex_lock?
+This patch enables support for Xilinx Virtex 4 FX singe-float FPU.
 
-Yes, you can take mutexes in the module_init context.
+Changelog v2-v3:
+	-Fixed whitespaces for SAVE_FPR/REST_FPR.
+	-Changed description of MSR_AP bit.
+	-Removed the stub for APU unavailable exception.
 
-g.
+Changelog v1->v2:
+	-Added MSR_AP bit definition
+	-Renamed CONFIG_XILINX_FPU to CONFIG_XILINX_SOFTFPU, moved it to
+	 'Platform support' and made it Virtex4-FX-only.
+	-Changed SAVE_FPR/REST_FPR definition style.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Caveats:
+	- Hard-float binaries which rely on in-kernel math emulation will
+	give wrong results since they expect 64-bit double-precision instead of
+	32-bit single-precision numbers which Xilinx V4-FX Soft FPU produces.
+
+
+Signed-off-by: Sergey Temerkhanov<temerkhanov@cifronik.ru>
+
+diff -r 626de0d94469 arch/powerpc/include/asm/ppc_asm.h
+--- a/arch/powerpc/include/asm/ppc_asm.h	Wed May 26 15:33:32 2010 +0400
++++ b/arch/powerpc/include/asm/ppc_asm.h	Wed May 26 20:30:43 2010 +0400
+@@ -85,13 +85,21 @@
+ #define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
+ #define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
+ 
++
++#ifdef CONFIG_XILINX_SOFTFPU
++#define SAVE_FPR(n, base)	stfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
++#define REST_FPR(n, base)	lfs	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
++#else
+ #define SAVE_FPR(n, base)	stfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
++#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
++#endif
++
+ #define SAVE_2FPRS(n, base)	SAVE_FPR(n, base); SAVE_FPR(n+1, base)
+ #define SAVE_4FPRS(n, base)	SAVE_2FPRS(n, base); SAVE_2FPRS(n+2, base)
+ #define SAVE_8FPRS(n, base)	SAVE_4FPRS(n, base); SAVE_4FPRS(n+4, base)
+ #define SAVE_16FPRS(n, base)	SAVE_8FPRS(n, base); SAVE_8FPRS(n+8, base)
+ #define SAVE_32FPRS(n, base)	SAVE_16FPRS(n, base); SAVE_16FPRS(n+16, base)
+-#define REST_FPR(n, base)	lfd	n,THREAD_FPR0+8*TS_FPRWIDTH*(n)(base)
++
+ #define REST_2FPRS(n, base)	REST_FPR(n, base); REST_FPR(n+1, base)
+ #define REST_4FPRS(n, base)	REST_2FPRS(n, base); REST_2FPRS(n+2, base)
+ #define REST_8FPRS(n, base)	REST_4FPRS(n, base); REST_4FPRS(n+4, base)
+diff -r 626de0d94469 arch/powerpc/include/asm/reg.h
+--- a/arch/powerpc/include/asm/reg.h	Wed May 26 15:33:32 2010 +0400
++++ b/arch/powerpc/include/asm/reg.h	Wed May 26 20:30:43 2010 +0400
+@@ -30,6 +30,7 @@
+ #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
+ #define MSR_HV_LG 	60              /* Hypervisor state */
+ #define MSR_VEC_LG	25	        /* Enable AltiVec */
++#define MSR_AP_LG	25	        /* Enable PPC405 APU */
+ #define MSR_VSX_LG	23		/* Enable VSX */
+ #define MSR_POW_LG	18		/* Enable Power Management */
+ #define MSR_WE_LG	18		/* Wait State Enable */
+@@ -71,6 +72,7 @@
+ #define MSR_HV		0
+ #endif
+ 
++#define MSR_AP		__MASK(MSR_AP_LG)	/* Enable PPC405 APU */
+ #define MSR_VEC		__MASK(MSR_VEC_LG)	/* Enable AltiVec */
+ #define MSR_VSX		__MASK(MSR_VSX_LG)	/* Enable VSX */
+ #define MSR_POW		__MASK(MSR_POW_LG)	/* Enable Power Management */
+diff -r 626de0d94469 arch/powerpc/kernel/fpu.S
+--- a/arch/powerpc/kernel/fpu.S	Wed May 26 15:33:32 2010 +0400
++++ b/arch/powerpc/kernel/fpu.S	Wed May 26 20:30:43 2010 +0400
+@@ -57,6 +57,9 @@
+ _GLOBAL(load_up_fpu)
+ 	mfmsr	r5
+ 	ori	r5,r5,MSR_FP
++#ifdef CONFIG_XILINX_SOFTFPU
++	oris	r5,r5,MSR_AP@h
++#endif
+ #ifdef CONFIG_VSX
+ BEGIN_FTR_SECTION
+ 	oris	r5,r5,MSR_VSX@h
+@@ -85,6 +88,9 @@
+ 	toreal(r5)
+ 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 	li	r10,MSR_FP|MSR_FE0|MSR_FE1
++#ifdef CONFIG_XILINX_SOFTFPU
++	oris	r10,r10,MSR_AP@h
++#endif
+ 	andc	r4,r4,r10		/* disable FP for previous task */
+ 	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 1:
+@@ -94,6 +100,9 @@
+ 	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
+ 	lwz	r4,THREAD_FPEXC_MODE(r5)
+ 	ori	r9,r9,MSR_FP		/* enable FP for current */
++#ifdef CONFIG_XILINX_SOFTFPU
++	oris	r9,r9,MSR_AP@h
++#endif
+ 	or	r9,r9,r4
+ #else
+ 	ld	r4,PACACURRENT(r13)
+@@ -124,6 +133,9 @@
+ _GLOBAL(giveup_fpu)
+ 	mfmsr	r5
+ 	ori	r5,r5,MSR_FP
++#ifdef CONFIG_XILINX_SOFTFPU
++	oris	r5,r5,MSR_AP@h
++#endif
+ #ifdef CONFIG_VSX
+ BEGIN_FTR_SECTION
+ 	oris	r5,r5,MSR_VSX@h
+@@ -145,6 +157,9 @@
+ 	beq	1f
+ 	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+ 	li	r3,MSR_FP|MSR_FE0|MSR_FE1
++#ifdef CONFIG_XILINX_SOFTFPU
++	oris	r3,r3,MSR_AP@h
++#endif
+ #ifdef CONFIG_VSX
+ BEGIN_FTR_SECTION
+ 	oris	r3,r3,MSR_VSX@h
+diff -r 626de0d94469 arch/powerpc/kernel/head_40x.S
+--- a/arch/powerpc/kernel/head_40x.S	Wed May 26 15:33:32 2010 +0400
++++ b/arch/powerpc/kernel/head_40x.S	Wed May 26 20:30:43 2010 +0400
+@@ -420,7 +420,19 @@
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_STD(0x700, program_check_exception)
+ 
++/* 0x0800 - FPU unavailable Exception */
++#ifdef CONFIG_PPC_FPU
++	START_EXCEPTION(0x0800, FloatingPointUnavailable)
++	NORMAL_EXCEPTION_PROLOG
++	beq	1f;							      \
++	bl	load_up_fpu;		/* if from user, just load it up */   \
++	b	fast_exception_return;					      \
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
++	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
++#else
+ 	EXCEPTION(0x0800, Trap_08, unknown_exception, EXC_XFER_EE)
++#endif
++
+ 	EXCEPTION(0x0900, Trap_09, unknown_exception, EXC_XFER_EE)
+ 	EXCEPTION(0x0A00, Trap_0A, unknown_exception, EXC_XFER_EE)
+ 	EXCEPTION(0x0B00, Trap_0B, unknown_exception, EXC_XFER_EE)
+@@ -821,8 +833,10 @@
+  * The PowerPC 4xx family of processors do not have an FPU, so this just
+  * returns.
+  */
++#ifndef CONFIG_PPC_FPU
+ _ENTRY(giveup_fpu)
+ 	blr
++#endif
+ 
+ /* This is where the main kernel code starts.
+  */
+diff -r 626de0d94469 arch/powerpc/platforms/Kconfig
+--- a/arch/powerpc/platforms/Kconfig	Wed May 26 15:33:32 2010 +0400
++++ b/arch/powerpc/platforms/Kconfig	Wed May 26 20:30:43 2010 +0400
+@@ -333,4 +333,9 @@
+ 	bool "Xilinx PCI host bridge support"
+ 	depends on PCI && XILINX_VIRTEX
+ 
++config XILINX_SOFTFPU
++	bool "Xilinx Soft FPU"
++	select PPC_FPU
++	depends on XILINX_VIRTEX_4_FX && !PPC40x_SIMPLE && !405GP && !405GPR
++
+ endmenu
+
+-- 
+Regards, Sergey Temerkhanov
