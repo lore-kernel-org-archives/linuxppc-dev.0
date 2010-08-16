@@ -1,17 +1,17 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id C4545B70CE
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:22:25 +1000 (EST)
-Message-ID: <4C692B42.9050407@neli.hopto.org>
-Date: Mon, 16 Aug 2010 14:12:50 +0200
+	by ozlabs.org (Postfix) with ESMTP id 5B9A9B70CD
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:25:51 +1000 (EST)
+Message-ID: <4C692E4C.4040300@neli.hopto.org>
+Date: Mon, 16 Aug 2010 14:25:48 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH 2/9] RapidIO, powerpc/85xx: modify RIO port-write interrupt
-	handler
+Subject: Re: [PATCH 6/9] RapidIO: Add switch-specific sysfs initialization
+	callback
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
+	<1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -25,24 +25,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Alexandre Bounine wrote:
-> - Rearranged RIO port-write interrupt handling to perform message buffering
-> as soon as possible.
+> -	if (!rdev->rswitch)
+> -		goto out;
+> -
 
-I don't understand this comment: you still schedule work to read the 
-port-write queue; so how is this message buffering performed as soon as 
-possible?
+Is it safe? All devices have a switch?
 
-> - Modified to disable port-write controller when clearing Transaction Error (TE)
-> bit.
->  	/* Schedule deferred processing if PW was received */
-> -	if (ipwsr & RIO_IPWSR_QFI) {
-> +	if ((ipwmr & RIO_IPWMR_QFIE) && (ipwsr & RIO_IPWSR_QFI)) {
+> @@ -63,10 +59,11 @@ struct device_attribute rio_dev_attrs[] = {
+>  	__ATTR_RO(asm_did),
+>  	__ATTR_RO(asm_vid),
+>  	__ATTR_RO(asm_rev),
+> -	__ATTR_RO(routes),
+>  	__ATTR_NULL,
+>  };
+>  
+> +static DEVICE_ATTR(routes, S_IRUGO, routes_show, NULL);
+> +
 
-Why check the QFIE bit also?
+This seems a separate change from the sw_sysfs? Why make it separate?
 
-> +pw_done:
-> +	if (epwisr & 0x80000000) {
+>   */
+>  struct rio_switch {
+> @@ -256,6 +257,7 @@ struct rio_switch {
+>  			   u8 *sw_domain);
+>  	int (*em_init) (struct rio_dev *dev);
+>  	int (*em_handle) (struct rio_dev *dev, u8 swport);
+> +	int (*sw_sysfs) (struct rio_dev *dev, int create);
+>  	struct rio_dev *nextdev[0];
+>  };
 
-Magic value.
+Why not make a sw_sysfs_create and sw_sysfs_remove? Is better for 
+readability. Now you call 'sw_sysfs(dev, 0)' or 'sw_sysfs(dev, 1)';
 
 Micha
