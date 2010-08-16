@@ -1,17 +1,17 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 96A57B70A8
+	by ozlabs.org (Postfix) with ESMTP id C4545B70CE
 	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:22:25 +1000 (EST)
-Message-ID: <4C692BBB.8090707@neli.hopto.org>
-Date: Mon, 16 Aug 2010 14:14:51 +0200
+Message-ID: <4C692B42.9050407@neli.hopto.org>
+Date: Mon, 16 Aug 2010 14:12:50 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH 3/9] RapidIO: Add the ingress port number into the RIO
-	switch  data structure
+Subject: Re: [PATCH 2/9] RapidIO, powerpc/85xx: modify RIO port-write interrupt
+	handler
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-4-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1281712686-31308-4-git-send-email-alexandre.bounine@idt.com>
+	<1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1281712686-31308-3-git-send-email-alexandre.bounine@idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -25,14 +25,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Alexandre Bounine wrote:
-> A switch ingress port number has to be saved for software assisted error
-> recovery from the error-stopped state. Saving this information also allows
-> to remove several register reads from the RIO enumeration process.
+> - Rearranged RIO port-write interrupt handling to perform message buffering
+> as soon as possible.
 
-Why not keep using the swpinfo field, as you can extract it from there? 
-And your code actually does this.
+I don't understand this comment: you still schedule work to read the 
+port-write queue; so how is this message buffering performed as soon as 
+possible?
 
-Also processor devices can have multiple ports (not only switches), it 
-would be good to be ready for that use case.
+> - Modified to disable port-write controller when clearing Transaction Error (TE)
+> bit.
+>  	/* Schedule deferred processing if PW was received */
+> -	if (ipwsr & RIO_IPWSR_QFI) {
+> +	if ((ipwmr & RIO_IPWMR_QFIE) && (ipwsr & RIO_IPWSR_QFI)) {
+
+Why check the QFIE bit also?
+
+> +pw_done:
+> +	if (epwisr & 0x80000000) {
+
+Magic value.
 
 Micha
