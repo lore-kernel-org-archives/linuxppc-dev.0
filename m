@@ -1,15 +1,15 @@
-Return-Path: <richardcochran@gmail.com>
-Date: Mon, 16 Aug 2010 21:00:03 +0200
-From: Richard Cochran <richardcochran@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Message-ID: <20100816190003.GB4166@riccoc20.at.omicron.at>
+Return-Path: <johnstul.lkml@gmail.com>
+MIME-Version: 1.0
+Sender: johnstul.lkml@gmail.com
+In-Reply-To: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
 References: <cover.1281956490.git.richard.cochran@omicron.at>
 	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
-	<201008161626.24083.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201008161626.24083.arnd@arndb.de>
+Date: Mon, 16 Aug 2010 12:24:48 -0700
+Message-ID: <AANLkTik_2MKMhOuDGOmu8Kzyq-ipLe+Bxrb3FaD+Tv4U@mail.gmail.com>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+From: john stultz <johnstul@us.ibm.com>
+To: Richard Cochran <richardcochran@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Rodolfo Giometti <giometti@linux.it>, netdev@vger.kernel.org,
 	devicetree-discuss@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -23,32 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 16, 2010 at 04:26:23PM +0200, Arnd Bergmann wrote:
-> Have you considered integrating the subsystem into the Posix clock/timer
-> framework?
+On Mon, Aug 16, 2010 at 4:17 AM, Richard Cochran
+<richardcochran@gmail.com> wrote:
+> This patch adds an infrastructure for hardware clocks that implement
+> IEEE 1588, the Precision Time Protocol (PTP). A class driver offers a
+> registration method to particular hardware clock drivers. Each clock is
+> exposed to user space as a character device with ioctls that allow tuning
+> of the PTP clock.
+>
+> Signed-off-by: Richard Cochran <richard.cochran@omicron.at>
 
-Yes, but see below.
- 
-> I can't really tell from reading the source if this is possible or
-> not, but my feeling is that if it can be done, that would be a much
-> nicer interface. We already have clock_gettime/clock_settime/
-> timer_settime/... system calls, and while you'd need to add another
-> clockid and some syscalls, my feeling is that it will be more
-> usable in the end.
+Hey Richard!
+   Its very cool to see this work on lkml! I'm excited to see more
+work done on ptp.  We had a short private thread discussion earlier (I
+got busy and never replied to your last message, my apologies!), but I
+wanted to bring up the concerns I have here as well.
 
-You are not the first person to ask about this. See this link for
-longer explanation of why I did not go that way:
+A few comments below....
 
-  http://marc.info/?l=linux-netdev&m=127669810232201&w=2
+> +** PTP user space API
+> +
+> + =A0 The class driver creates a character device for each registered PTP
+> + =A0 clock. User space programs may control the clock using standardized
+> + =A0 ioctls. A program may query, enable, configure, and disable the
+> + =A0 ancillary clock features. User space can receive time stamped
+> + =A0 events via blocking read() and poll(). One shot and periodic
+> + =A0 signals may be configured via an ioctl API with semantics similar
+> + =A0 to the POSIX timer_settime() system call.
 
-You *could* offer the PTP clock as a Linux clock source/event device,
-and I agree that it would be nicer. However, the problem is, what do
-you do with the PHY based clocks?  Just one 16 bit read from a PHY
-clock can take 40 usec, and you need four such read operations just to
-get the current time value.
+As I mentioned earlier, I'm not a huge fan of the char device
+interface for abstracted PTP clocks.
+If it was just the direct hardware access, similar to RTC, which user
+apps then use as a timesource, I'd not have much of a problem. But as
+I mentioned in an earlier private mail, the abstraction level concerns
+me.
 
-Also, I really did not want to add or change any syscalls. I could not
-see a practical way to extend the existing syscalls to accommodate PTP
-clocks.
+1) The driver-like model exposes a char dev for each clock, which
+allows for poorly-written userland applications to hit portability
+issues  (ie: /dev/hpet vs /dev/rtc). Granted this isn't a huge flaw,
+but good APIs should be hard to get wrong.
 
-Richard
+2) As Arnd already mentioned, the chardev interface seems to duplicate
+the clock_gettime/settime() and adjtimex() interfaces.
+
+3) I'm not sure I see the benefit of being able to have multiple
+frequency corrected time domains.  In other words, what benefit would
+you get from adjusting a PTP clock's frequency instead of just
+adjusting the system's time freq? Having the PTP time as a reference
+to correct the system time seems reasonable, but I'm not sure I see
+why userland would want to adjust the PTP clock's freq.
+
+thanks
+-john
