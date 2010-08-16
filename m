@@ -1,18 +1,22 @@
-Return-Path: <dceravigupta@gmail.com>
-Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
-	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id 8D406B780E
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:22:42 +1000 (EST)
-Received: by pxi17 with SMTP id 17so2989150pxi.15
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 05:22:41 -0700 (PDT)
-MIME-Version: 1.0
-Date: Mon, 16 Aug 2010 17:52:41 +0530
-Message-ID: <AANLkTi=ZSeYf0apwK3Tuf3b3-OTsRrddMkNHkxgViw-x@mail.gmail.com>
-Subject: Distinguish between kernel and user space
-From: Ravi Gupta <dceravigupta@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org,
-	"Ira W. Snyder" <iws@ovro.caltech.edu>, MJ embd <mj.embd@gmail.com>,
-	Anton Vorontsov <cbouatmailru@gmail.com>
-Content-Type: multipart/alternative; boundary=00163646ca928f144e048defe380
+Return-Path: <agraf@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A2F42B6F0E
+	for <linuxppc-dev@lists.ozlabs.org>;
+	Mon, 16 Aug 2010 23:12:03 +1000 (EST)
+Subject: Re: [PATCH 00/27] KVM PPC PV framework v3
+Mime-Version: 1.0 (Apple Message framework v1081)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <17DF4824-9EC7-44F4-9408-EA6241C33E70@kernel.crashing.org>
+Date: Mon, 16 Aug 2010 15:11:53 +0200
+Message-Id: <B9621BC4-4C9D-4C51-89A7-ACE38955DEE5@suse.de>
+References: <1280407688-9815-1-git-send-email-agraf@suse.de>
+	<17DF4824-9EC7-44F4-9408-EA6241C33E70@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	KVM list <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---00163646ca928f144e048defe380
-Content-Type: text/plain; charset=ISO-8859-1
 
-Hi,
+On 06.08.2010, at 18:28, Kumar Gala wrote:
 
-I have defined a header file for ioctls macros definitions. I am including
-it in both, my user space application as well as in my device driver. Now
-there are some macros that I want to be visible only in device drive and
-some only in user space application. Is there any set of macros defined in
-linux for such purpose? This is my present header file
+>=20
+> On Jul 29, 2010, at 7:47 AM, Alexander Graf wrote:
+>=20
+>> [without]
+>>=20
+>> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
+/dev/null; done
+>>=20
+>> real    0m14.659s
+>> user    0m8.967s
+>> sys     0m5.688s
+>>=20
+>> [with]
+>>=20
+>> debian-powerpc:~# time for i in {1..1000}; do /bin/echo hello > =
+/dev/null; done
+>>=20
+>> real    0m7.557s
+>> user    0m4.121s
+>> sys     0m3.426s
+>=20
+> Do you have #'s for w/o HV to compare to.
 
-gpio_ioctl.h
+Native was around 2-3 seconds overall. So we still have quite a big =
+impact on performance, but things are improving :).
 
-#ifndef _GPIO_IOCTL_H_
-#define _GPIO_IOCTL_H_
-
-/*
- * Ioctl definitions
- */
-
-/* Use 250 as type/magic number */
-#define GPIO_IOC_MAGIC    250
-#define GPIO_READ         _IOW (GPIO_IOC_MAGIC, 0, int)
-#define GPIO_WRITE        _IOW (GPIO_IOC_MAGIC, 1, int)
-#define GPIO_IOC_MAXNR    2
-
-
-#ifdef _DEVICE_DRIVE_ ---> these macros should not be visible in user space
-application
-#define ...
-...
-..
-#endif
-
-#ifdef _USER_SPACE_ ---> these macros should not be visible in device driver
-i.e kernel space
-#define ...
-...
-..
-
-#endif  /*_GPIO_IOCTL_H_ */
-
-Thanks in advance
-Ravi Gupta
-
---00163646ca928f144e048defe380
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,<br>
-<br>
-I have defined a header file for ioctls macros definitions. I am=20
-including it in both, my user space application as well as in my device=20
-driver. Now there are some macros that I want to be visible only in=20
-device drive and some only in user space application. Is there any set=20
-of macros defined in linux for such purpose? This is my present header file=
-<br><br>gpio_ioctl.h<br><br>#ifndef _GPIO_IOCTL_H_<br>#define _GPIO_IOCTL_H=
-_<br><br>/*<br>=A0* Ioctl definitions<br>=A0*/<br><br>/* Use 250 as type/ma=
-gic number */<br>
-#define GPIO_IOC_MAGIC=A0=A0=A0 250<br>#define GPIO_READ=A0=A0=A0=A0=A0=A0=
-=A0=A0 _IOW (GPIO_IOC_MAGIC, 0, int)<br>#define GPIO_WRITE=A0=A0=A0=A0=A0=
-=A0=A0 _IOW (GPIO_IOC_MAGIC, 1, int)<br>#define GPIO_IOC_MAXNR=A0=A0=A0 2<b=
-r><br><br>#ifdef _DEVICE_DRIVE_ ---&gt; these macros should not be visible =
-in user space application<br>
-#define ...<br>...<br>..<br>#endif<br><br>#ifdef _USER_SPACE_ ---&gt; these=
- macros should not be visible in device driver i.e kernel space<br>#define =
-...<br>...<br>..<br><br>
-#endif=A0 /*_GPIO_IOCTL_H_ */<br><br>
-Thanks in advance<br>
-Ravi Gupta
-
---00163646ca928f144e048defe380--
+Alex
