@@ -1,19 +1,35 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Richard Cochran <richardcochran@gmail.com>
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Date: Mon, 16 Aug 2010 16:26:23 +0200
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
-In-Reply-To: <363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
+Return-Path: <nfont@austin.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e8.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTPS id A18C4B70AF
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 00:34:19 +1000 (EST)
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+	by e8.ny.us.ibm.com (8.14.4/8.13.1) with ESMTP id o7GEGcGd017914
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 10:16:38 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+	o7GEYB3g074296
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 10:34:12 -0400
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP
+	id o7GEY8KG020554
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 08:34:09 -0600
+Message-ID: <4C694C60.6030207@austin.ibm.com>
+Date: Mon, 16 Aug 2010 09:34:08 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008161626.24083.arnd@arndb.de>
-Cc: Rodolfo Giometti <giometti@linux.it>, netdev@vger.kernel.org,
-	devicetree-discuss@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/8] v5 De-couple sysfs memory directories from memory
+	sections
+References: <4C60407C.2080608@austin.ibm.com>
+	<20100812120816.e97d8b9e.akpm@linux-foundation.org>
+In-Reply-To: <20100812120816.e97d8b9e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org,
+	Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,83 +39,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 16 August 2010, Richard Cochran wrote:
-> This patch adds an infrastructure for hardware clocks that implement
-> IEEE 1588, the Precision Time Protocol (PTP). A class driver offers a
-> registration method to particular hardware clock drivers. Each clock is
-> exposed to user space as a character device with ioctls that allow tuning
-> of the PTP clock.
+On 08/12/2010 02:08 PM, Andrew Morton wrote:
+> On Mon, 09 Aug 2010 12:53:00 -0500
+> Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> 
+>> This set of patches de-couples the idea that there is a single
+>> directory in sysfs for each memory section.  The intent of the
+>> patches is to reduce the number of sysfs directories created to
+>> resolve a boot-time performance issue.  On very large systems
+>> boot time are getting very long (as seen on powerpc hardware)
+>> due to the enormous number of sysfs directories being created.
+>> On a system with 1 TB of memory we create ~63,000 directories.
+>> For even larger systems boot times are being measured in hours.
+> 
+> And those "hours" are mainly due to this problem, I assume.
 
-Have you considered integrating the subsystem into the Posix clock/timer
-framework?
+Yes, those hours are spent creating the sysfs directories for each
+of the memory sections.
 
-I can't really tell from reading the source if this is possible or
-not, but my feeling is that if it can be done, that would be a much
-nicer interface. We already have clock_gettime/clock_settime/
-timer_settime/... system calls, and while you'd need to add another
-clockid and some syscalls, my feeling is that it will be more
-usable in the end.
+> 
+>> This set of patches allows for each directory created in sysfs
+>> to cover more than one memory section.  The default behavior for
+>> sysfs directory creation is the same, in that each directory
+>> represents a single memory section.  A new file 'end_phys_index'
+>> in each directory contains the physical_id of the last memory
+>> section covered by the directory so that users can easily
+>> determine the memory section range of a directory.
+> 
+> What you're proposing appears to be a non-back-compatible
+> userspace-visible change.  This is a big issue!
+> 
+> It's not an unresolvable issue, as this is a must-fix problem.  But you
+> should tell us what your proposal is to prevent breakage of existing
+> installations.  A Kconfig option would be good, but a boot-time kernel
+> command line option which selects the new format would be much better.
 
-> +static const struct file_operations ptp_fops = {
-> +       .owner          = THIS_MODULE,
-> +       .ioctl          = ptp_ioctl,
-> +       .open           = ptp_open,
-> +       .poll           = ptp_poll,
-> +       .read           = ptp_read,
-> +       .release        = ptp_release,
-> +};
+This shouldn't break existing installations, unless an architecture chooses
+to do so.  With my patch only the powerpc/pseries arch is updated such that
+what is seen in userspace is different.
 
-.ioctl is gone, you have to use .unlocked_ioctl and make sure that
-your ptp_ioctl function can handle being called concurrently.
+The default behavior is maintained for all architectures unless they define
+their own version of memory_block_size_bytes().  The default definition of
+this routine (defined as __weak in Patch 5/8) sets the memory block size
+to the same size it currently is, and thus preserving the exisitng 1 sysfs
+directory per memory section.  The only change that will be seen is a new
+propery for memory section, end_phys_addr, which will have the same value
+as the existing 'phys_addr' property.
 
-You should also add a .compat_ioctl function, ideally one that
-points to ptp_ioctl so you don't have to list every command as
-being compatible. Right now, some commands are incompatible,
-which means you need more changes to the interface.
+> 
+> However you didn't mention this issue at all, and it's the most
+> important one.
+> 
+> 
+>> Updates for version 5 of the patchset include the following:
+>>
+>> Patch 4/8 Add mutex for add/remove of memory blocks
+>> - Define the mutex using DEFINE_MUTEX macro.
+>>
+>> Patch 8/8 Update memory-hotplug documentation
+>> - Add information concerning memory holes in phys_index..end_phys_index.
+> 
+> And you forgot to tell us how long those machines boot with the
+> patchset applied, which is the entire point of the patchset!
 
-> +struct ptp_clock_timer {
-> +       int alarm_index;       /* Which alarm to query or configure. */
-> +       int signum;            /* Requested signal. */
-> +       int flags;             /* Zero or TIMER_ABSTIME, see TIMER_SETTIME(2) */
-> +       struct itimerspec tsp; /* See TIMER_SETTIME(2) */
-> +};
+Yes,  I am working on getting more time on our large systems to get
+performance numbers with this patch.  I'll post them when I get them.
 
-This data structure is incompatible between 32 and 64 bit user space,
-so you would need a compat_ioctl() function to convert between the
-two formats. Better define the structure in a compatible way, avoiding
-variable-length fields and implicit padding.
-
-> +struct ptp_clock_request {
-> +       int type;  /* One of the ptp_request_types enumeration values. */
-> +       int index; /* Which channel to configure. */
-> +       struct timespec ts; /* For period signals, the desired period. */
-> +       int flags; /* Bit field for PTP_ENABLE_FEATURE or other flags. */
-> +};
-
-Same problem here, timespec is either 64 or 128 bits long and has different
-alignment.
-
-> +struct ptp_extts_event {
-> +       int index;
-> +       struct timespec ts;
-> +};
-
-here too.
-
-> +#define PTP_CLOCK_VERSION 0x00000001
-> +
-> +#define PTP_CLK_MAGIC '='
-> +
-> +#define PTP_CLOCK_APIVERS _IOR (PTP_CLK_MAGIC, 1, __u32)
-
-Try avoiding versioned ABIs. It's better to just add new ioctls
-or syscalls when you need some extra functionality and leave the
-old ones around.
-
-> +#define PTP_CLOCK_ADJTIME _IOW (PTP_CLK_MAGIC, 3, struct timespec)
-> +#define PTP_CLOCK_GETTIME _IOR (PTP_CLK_MAGIC, 4, struct timespec)
-> +#define PTP_CLOCK_SETTIME _IOW (PTP_CLK_MAGIC, 5, struct timespec)
-
-These are also incompatible.
-
-	Arnd
+-Nathan
