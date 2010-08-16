@@ -1,17 +1,17 @@
 Return-Path: <micha@neli.hopto.org>
 Received: from edu-smtp-01.edutel.nl (edu-smtp-01.edutel.nl [88.159.1.175])
-	by ozlabs.org (Postfix) with ESMTP id 5B9A9B70CD
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:25:51 +1000 (EST)
-Message-ID: <4C692E4C.4040300@neli.hopto.org>
-Date: Mon, 16 Aug 2010 14:25:48 +0200
+	by ozlabs.org (Postfix) with ESMTP id AFC1BB70A8
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 22:29:40 +1000 (EST)
+Message-ID: <4C692F31.2020705@neli.hopto.org>
+Date: Mon, 16 Aug 2010 14:29:37 +0200
 From: Micha Nelissen <micha@neli.hopto.org>
 MIME-Version: 1.0
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH 6/9] RapidIO: Add switch-specific sysfs initialization
-	callback
+Subject: Re: [PATCH 7/9] RapidIO: Add handling for PW message from a lost
+	device
 References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1281712686-31308-7-git-send-email-alexandre.bounine@idt.com>
+	<1281712686-31308-8-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1281712686-31308-8-git-send-email-alexandre.bounine@idt.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
 	linux-kernel@vger.kernel.org
@@ -25,36 +25,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Alexandre Bounine wrote:
-> -	if (!rdev->rswitch)
-> -		goto out;
-> -
+> Add check if PW message source device is accessible and change PW message
+> handler to recover if PW message source device is not available anymore (power
+> down or link disconnect).
 
-Is it safe? All devices have a switch?
+I am not quite sure what the point is of this patch. What do you need to 
+recover from?
 
-> @@ -63,10 +59,11 @@ struct device_attribute rio_dev_attrs[] = {
->  	__ATTR_RO(asm_did),
->  	__ATTR_RO(asm_vid),
->  	__ATTR_RO(asm_rev),
-> -	__ATTR_RO(routes),
->  	__ATTR_NULL,
->  };
->  
-> +static DEVICE_ATTR(routes, S_IRUGO, routes_show, NULL);
-> +
+> To avoid possible loss of notification, the PW message handler scans the route
+> back from the source device to identify end of the broken link.
 
-This seems a separate change from the sw_sysfs? Why make it separate?
-
->   */
->  struct rio_switch {
-> @@ -256,6 +257,7 @@ struct rio_switch {
->  			   u8 *sw_domain);
->  	int (*em_init) (struct rio_dev *dev);
->  	int (*em_handle) (struct rio_dev *dev, u8 swport);
-> +	int (*sw_sysfs) (struct rio_dev *dev, int create);
->  	struct rio_dev *nextdev[0];
->  };
-
-Why not make a sw_sysfs_create and sw_sysfs_remove? Is better for 
-readability. Now you call 'sw_sysfs(dev, 0)' or 'sw_sysfs(dev, 1)';
+Do you mean if port-writes are dropped? Then they did not reach you in 
+the first place. If a link in between is broken, the associated switch 
+will 'complain' and send port-writes, no?
 
 Micha
