@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
-Date: Mon, 16 Aug 2010 21:59:39 +0200
-References: <cover.1281956490.git.richard.cochran@omicron.at>
-	<201008161626.24083.arnd@arndb.de>
-	<20100816190003.GB4166@riccoc20.at.omicron.at>
-In-Reply-To: <20100816190003.GB4166@riccoc20.at.omicron.at>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-px0-f170.google.com (mail-px0-f170.google.com
+	[209.85.212.170]) by ozlabs.org (Postfix) with ESMTP id A203CB6F0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 07:09:56 +1000 (EST)
+Received: by pxi17 with SMTP id 17so3266436pxi.15
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Aug 2010 14:09:55 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+Date: Mon, 16 Aug 2010 15:09:53 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Anton Vorontsov <avorontsov@mvista.com>
+Subject: Re: [PATCH] booting-without-of: Remove nonexistent chapters from
+	TOC, fix numbering
+Message-ID: <20100816210953.GC17571@angua.secretlab.ca>
+References: <20100811165603.GA22708@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201008162159.39734.arnd@arndb.de>
-Cc: netdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>,
-	linux-kernel@vger.kernel.org, Rodolfo Giometti <giometti@linux.it>,
-	devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100811165603.GA22708@oksana.dev.rtsoft.ru>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 16 August 2010 21:00:03 Richard Cochran wrote:
+On Wed, Aug 11, 2010 at 08:56:03PM +0400, Anton Vorontsov wrote:
+> Marvell and GPIO bindings live in their own files, so the TOC should not
+> mention them.
 > 
-> On Mon, Aug 16, 2010 at 04:26:23PM +0200, Arnd Bergmann wrote:
-> > Have you considered integrating the subsystem into the Posix clock/timer
-> > framework?
+> Also fix chapters numbering.
 > 
-> Yes, but see below.
+> Signed-off-by: Anton Vorontsov <avorontsov@mvista.com>
+
+Applied, thanks.
+
+g.
+
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   31 +------------------------
+>  1 files changed, 2 insertions(+), 29 deletions(-)
+> 
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 46d2210..3f454b7 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -49,40 +49,13 @@ Table of Contents
+>        f) MDIO on GPIOs
+>        g) SPI busses
 >  
-> > I can't really tell from reading the source if this is possible or
-> > not, but my feeling is that if it can be done, that would be a much
-> > nicer interface. We already have clock_gettime/clock_settime/
-> > timer_settime/... system calls, and while you'd need to add another
-> > clockid and some syscalls, my feeling is that it will be more
-> > usable in the end.
-> 
-> You are not the first person to ask about this. See this link for
-> longer explanation of why I did not go that way:
-> 
->   http://marc.info/?l=linux-netdev&m=127669810232201&w=2
-> 
-> You could offer the PTP clock as a Linux clock source/event device,
-> and I agree that it would be nicer. However, the problem is, what do
-> you do with the PHY based clocks?  Just one 16 bit read from a PHY
-> clock can take 40 usec, and you need four such read operations just to
-> get the current time value.
-
-Why does it matter how long it takes to read the clock? I wasn't thinking
-of replacing the system clock with this, just exposing the additional
-clock as a new clockid_t value that can be accessed using the existing
-syscalls.
-
-> Also, I really did not want to add or change any syscalls. I could not
-> see a practical way to extend the existing syscalls to accommodate PTP
-> clocks.
-
-Why did you not want to add syscalls? Adding ioctls instead of syscalls
-does not make the interface better, just less visible.
-
-Out of the ioctl commands you define, we already seem to have half or more:
-
-PTP_CLOCK_APIVERS -> not needed
-PTP_CLOCK_ADJFREQ -> new clock_adjfreq
-PTP_CLOCK_ADJTIME -> new clock_adjtime
-PTP_CLOCK_GETTIME -> clock_gettime
-PTP_CLOCK_SETTIME -> clock_settime
-PTP_CLOCK_GETCAPS -> new clock_getcaps
-PTP_CLOCK_GETTIMER -> timer_gettime
-PTP_CLOCK_SETTIMER -> timer_create/timer_settime
-PTP_FEATURE_REQUEST -> possibly clock_feature
-
-	Arnd
+> -  VII - Marvell Discovery mv64[345]6x System Controller chips
+> -    1) The /system-controller node
+> -    2) Child nodes of /system-controller
+> -      a) Marvell Discovery MDIO bus
+> -      b) Marvell Discovery ethernet controller
+> -      c) Marvell Discovery PHY nodes
+> -      d) Marvell Discovery SDMA nodes
+> -      e) Marvell Discovery BRG nodes
+> -      f) Marvell Discovery CUNIT nodes
+> -      g) Marvell Discovery MPSCROUTING nodes
+> -      h) Marvell Discovery MPSCINTR nodes
+> -      i) Marvell Discovery MPSC nodes
+> -      j) Marvell Discovery Watch Dog Timer nodes
+> -      k) Marvell Discovery I2C nodes
+> -      l) Marvell Discovery PIC (Programmable Interrupt Controller) nodes
+> -      m) Marvell Discovery MPP (Multipurpose Pins) multiplexing nodes
+> -      n) Marvell Discovery GPP (General Purpose Pins) nodes
+> -      o) Marvell Discovery PCI host bridge node
+> -      p) Marvell Discovery CPU Error nodes
+> -      q) Marvell Discovery SRAM Controller nodes
+> -      r) Marvell Discovery PCI Error Handler nodes
+> -      s) Marvell Discovery Memory Controller nodes
+> -
+> -  VIII - Specifying interrupt information for devices
+> +  VII - Specifying interrupt information for devices
+>      1) interrupts property
+>      2) interrupt-parent property
+>      3) OpenPIC Interrupt Controllers
+>      4) ISA Interrupt Controllers
+>  
+> -  IX - Specifying GPIO information for devices
+> -    1) gpios property
+> -    2) gpio-controller nodes
+> -
+> -  X - Specifying device power management information (sleep property)
+> +  VIII - Specifying device power management information (sleep property)
+>  
+>    Appendix A - Sample SOC node for MPC8540
+>  
+> -- 
+> 1.7.0.5
