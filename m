@@ -1,24 +1,19 @@
-Return-Path: <Alexandre.Bounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTPS id E3216B70A7
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Aug 2010 04:30:58 +1000 (EST)
+Return-Path: <richardcochran@gmail.com>
+Date: Mon, 16 Aug 2010 21:00:03 +0200
+From: Richard Cochran <richardcochran@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/5] ptp: Added a brand new class driver for ptp clocks.
+Message-ID: <20100816190003.GB4166@riccoc20.at.omicron.at>
+References: <cover.1281956490.git.richard.cochran@omicron.at>
+	<363bd749a38d0b785d8431e591bf54c38db4c2d7.1281956490.git.richard.cochran@omicron.at>
+	<201008161626.24083.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 9/9] RapidIO: Add support for IDT CPS Gen2 switches
-Date: Mon, 16 Aug 2010 11:30:39 -0700
-Message-ID: <0CE8B6BE3C4AD74AB97D9D29BD24E552011D6074@CORPEXCH1.na.ads.idt.com>
-In-Reply-To: <4C6930EA.8030406@neli.hopto.org>
-References: <1281712686-31308-1-git-send-email-alexandre.bounine@idt.com>
-	<1281712686-31308-10-git-send-email-alexandre.bounine@idt.com>
-	<4C6930EA.8030406@neli.hopto.org>
-From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
-To: "Micha Nelissen" <micha@neli.hopto.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, "Bounine,
-	Alexandre" <Alexandre.Bounine@idt.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201008161626.24083.arnd@arndb.de>
+Cc: Rodolfo Giometti <giometti@linux.it>, netdev@vger.kernel.org,
+	devicetree-discuss@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, Krzysztof Halasa <khc@pm.waw.pl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Micha Nelissen wrote:
->=20
-> Alexandre Bounine wrote:
-> > +	rio_mport_write_config_32(mport, destid, hopcount,
-> > +				  LOCAL_RTE_CONF_DESTID_SEL, table);
-> > +
-> > +	for (i =3D 0x80000000; i <=3D 0x800000ff;) {
-> > +		rio_mport_write_config_32(mport, destid, hopcount,
-> > +			RIO_STD_RTE_CONF_DESTID_SEL_CSR, i);
->=20
-> The 0x80000000 is that an autoincrement bit? If so, it only needs to
-do
-> this once I think? If so please call it like that, and loop the 'i'
-> variable through the destination IDs.
+On Mon, Aug 16, 2010 at 04:26:23PM +0200, Arnd Bergmann wrote:
+> Have you considered integrating the subsystem into the Posix clock/timer
+> framework?
 
-No. This is EXTENDED_CONFIGURATION_ENABLE bit defined in Part 3 of RIO
-spec (v.2.1, sect.3.5.4).
-Anyway, I should add definition for this bit. Will do now.
+Yes, but see below.
+ 
+> I can't really tell from reading the source if this is possible or
+> not, but my feeling is that if it can be done, that would be a much
+> nicer interface. We already have clock_gettime/clock_settime/
+> timer_settime/... system calls, and while you'd need to add another
+> clockid and some syscalls, my feeling is that it will be more
+> usable in the end.
 
-Alex.
-  =20
+You are not the first person to ask about this. See this link for
+longer explanation of why I did not go that way:
+
+  http://marc.info/?l=linux-netdev&m=127669810232201&w=2
+
+You *could* offer the PTP clock as a Linux clock source/event device,
+and I agree that it would be nicer. However, the problem is, what do
+you do with the PHY based clocks?  Just one 16 bit read from a PHY
+clock can take 40 usec, and you need four such read operations just to
+get the current time value.
+
+Also, I really did not want to add or change any syscalls. I could not
+see a practical way to extend the existing syscalls to accommodate PTP
+clocks.
+
+Richard
